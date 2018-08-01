@@ -71,17 +71,13 @@ std::unique_ptr<UserCloudPolicyManager>
 UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
     content::BrowserContext* context,
     bool force_immediate_load,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
   UserCloudPolicyManagerFactory* factory = GetInstance();
   // If there's a testing factory set, don't bother creating a new one.
   if (factory->testing_factory_ != NULL)
     return std::unique_ptr<UserCloudPolicyManager>();
   return factory->CreateManagerForOriginalBrowserContext(
-      context,
-      force_immediate_load,
-      background_task_runner,
-      io_task_runner);
+      context, force_immediate_load, background_task_runner);
 }
 
 // static
@@ -132,8 +128,7 @@ std::unique_ptr<UserCloudPolicyManager>
 UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
     content::BrowserContext* context,
     bool force_immediate_load,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
   DCHECK(!context->IsOffTheRecord());
 
   // This should never be called if we're using a testing factory.
@@ -149,10 +144,10 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
       context->GetPath().Append(kPolicy).Append(kComponentsDir);
 
   std::unique_ptr<UserCloudPolicyManager> manager;
-  manager.reset(new UserCloudPolicyManager(
-      std::move(store), component_policy_cache_dir,
-      std::unique_ptr<CloudExternalDataManager>(),
-      base::ThreadTaskRunnerHandle::Get(), io_task_runner));
+  manager.reset(
+      new UserCloudPolicyManager(std::move(store), component_policy_cache_dir,
+                                 std::unique_ptr<CloudExternalDataManager>(),
+                                 base::ThreadTaskRunnerHandle::Get()));
   manager->Init(
       SchemaRegistryServiceFactory::GetForContext(context)->registry());
   manager_wrappers_[context] = new ManagerWrapper(manager.get());

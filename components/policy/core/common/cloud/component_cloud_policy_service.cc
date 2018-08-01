@@ -28,7 +28,7 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
 
@@ -274,16 +274,12 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
     CloudPolicyCore* core,
     CloudPolicyClient* client,
     std::unique_ptr<ResourceCache> cache,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
-    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : policy_type_(policy_type),
       delegate_(delegate),
       schema_registry_(schema_registry),
       core_(core),
-      request_context_(request_context),
       backend_task_runner_(backend_task_runner),
-      io_task_runner_(io_task_runner),
       weak_ptr_factory_(this) {
   DCHECK(policy_type == dm_protocol::kChromeExtensionPolicyType ||
          policy_type ==
@@ -292,7 +288,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
   CHECK(!core_->client());
 
   external_policy_data_fetcher_backend_.reset(
-      new ExternalPolicyDataFetcherBackend(io_task_runner_, request_context));
+      new ExternalPolicyDataFetcherBackend(client->GetURLLoaderFactory()));
 
   backend_.reset(
       new Backend(weak_ptr_factory_.GetWeakPtr(), backend_task_runner_,
@@ -329,8 +325,6 @@ ComponentCloudPolicyService::~ComponentCloudPolicyService() {
   if (core_->client())
     Disconnect();
 
-  io_task_runner_->DeleteSoon(FROM_HERE,
-                              external_policy_data_fetcher_backend_.release());
   backend_task_runner_->DeleteSoon(FROM_HERE, backend_.release());
 }
 

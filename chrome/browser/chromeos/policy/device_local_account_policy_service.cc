@@ -203,7 +203,7 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
 
   CreateComponentCloudPolicyService(request_context, client.get());
   core_.Connect(std::move(client));
-  external_data_manager_->Connect(request_context);
+  external_data_manager_->Connect(url_loader_factory);
   core_.StartRefreshScheduler();
   UpdateRefreshDelay();
   invalidator_.reset(new AffiliatedCloudPolicyInvalidator(
@@ -258,10 +258,7 @@ void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
 
   component_policy_service_.reset(new ComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, this, &schema_registry_, core(),
-      client, std::move(resource_cache), request_context,
-      resource_cache_task_runner_,
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO)));
+      client, std::move(resource_cache), resource_cache_task_runner_));
 }
 
 DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
@@ -273,7 +270,6 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
     scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner,
     scoped_refptr<base::SequencedTaskRunner>
         external_data_service_backend_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : session_manager_client_(session_manager_client),
@@ -298,10 +294,9 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
   CHECK(base::PathService::Get(
       chromeos::DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY,
       &component_policy_cache_root_));
-  external_data_service_.reset(new DeviceLocalAccountExternalDataService(
-      this,
-      external_data_service_backend_task_runner,
-      io_task_runner));
+  external_data_service_ =
+      std::make_unique<DeviceLocalAccountExternalDataService>(
+          this, std::move(external_data_service_backend_task_runner));
   UpdateAccountList();
 }
 

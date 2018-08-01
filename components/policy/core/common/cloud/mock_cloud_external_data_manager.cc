@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/external_data_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
 

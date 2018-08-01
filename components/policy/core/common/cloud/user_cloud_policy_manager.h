@@ -39,14 +39,11 @@ class UserCloudPolicyStore;
 class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
  public:
   // |task_runner| is the runner for policy refresh tasks.
-  // |io_task_runner| is used for network IO. Currently this must be the IO
-  // BrowserThread.
   UserCloudPolicyManager(
       std::unique_ptr<UserCloudPolicyStore> store,
       const base::FilePath& component_policy_cache_path,
       std::unique_ptr<CloudExternalDataManager> external_data_manager,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~UserCloudPolicyManager() override;
 
   // ConfigurationPolicyProvider overrides:
@@ -59,7 +56,6 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
   // mocking.
   virtual void Connect(
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context,
       std::unique_ptr<CloudPolicyClient> client);
 
   // Shuts down the UserCloudPolicyManager (removes and stops refreshing the

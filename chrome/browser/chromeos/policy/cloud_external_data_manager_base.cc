@@ -29,7 +29,7 @@
 #include "components/policy/core/common/cloud/external_policy_data_updater.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
 
@@ -358,19 +358,14 @@ void CloudExternalDataManagerBase::Backend::StartDownload(
 
 CloudExternalDataManagerBase::CloudExternalDataManagerBase(
     const GetChromePolicyDetailsCallback& get_policy_details,
-    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : backend_task_runner_(backend_task_runner),
-      io_task_runner_(io_task_runner),
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
+    : backend_task_runner_(std::move(backend_task_runner)),
       backend_(new Backend(get_policy_details,
                            backend_task_runner_,
-                           base::ThreadTaskRunnerHandle::Get())) {
-}
+                           base::ThreadTaskRunnerHandle::Get())) {}
 
 CloudExternalDataManagerBase::~CloudExternalDataManagerBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  io_task_runner_->DeleteSoon(FROM_HERE,
-                              external_policy_data_fetcher_backend_.release());
   backend_task_runner_->DeleteSoon(FROM_HERE, backend_.release());
 }
 
@@ -426,24 +421,23 @@ void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
 }
 
 void CloudExternalDataManagerBase::Connect(
-    scoped_refptr<net::URLRequestContextGetter> request_context) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!external_policy_data_fetcher_backend_);
-  external_policy_data_fetcher_backend_.reset(
-      new ExternalPolicyDataFetcherBackend(io_task_runner_,
-                                           request_context));
+
+  external_policy_data_fetcher_backend_ =
+      std::make_unique<ExternalPolicyDataFetcherBackend>(
+          std::move(url_loader_factory));
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &Backend::Connect, base::Unretained(backend_.get()),
-          base::Passed(external_policy_data_fetcher_backend_->CreateFrontend(
-              backend_task_runner_))));
+      base::BindOnce(&Backend::Connect, base::Unretained(backend_.get()),
+                     external_policy_data_fetcher_backend_->CreateFrontend(
+                         backend_task_runner_)));
 }
 
 void CloudExternalDataManagerBase::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  io_task_runner_->DeleteSoon(FROM_HERE,
-                              external_policy_data_fetcher_backend_.release());
+  external_policy_data_fetcher_backend_.reset();
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&Backend::Disconnect, base::Unretained(backend_.get())));

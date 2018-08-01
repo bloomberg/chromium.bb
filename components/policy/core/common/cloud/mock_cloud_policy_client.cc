@@ -15,12 +15,16 @@ namespace em = enterprise_management;
 namespace policy {
 
 MockCloudPolicyClient::MockCloudPolicyClient()
+    : MockCloudPolicyClient(nullptr) {}
+
+MockCloudPolicyClient::MockCloudPolicyClient(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : CloudPolicyClient(std::string() /* machine_id */,
                         std::string() /* machine_model */,
                         std::string() /* brand_code */,
                         nullptr /* service */,
                         nullptr /* request_context */,
-                        nullptr /* url_loader_factory */,
+                        std::move(url_loader_factory),
                         nullptr /* signing_service */,
                         CloudPolicyClient::DeviceDMTokenCallback()) {}
 

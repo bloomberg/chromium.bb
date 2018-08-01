@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "components/policy/policy_export.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -25,9 +26,8 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace policy {
@@ -61,22 +61,21 @@ class POLICY_EXPORT ExternalPolicyDataFetcher {
     MAX_SIZE_EXCEEDED,
   };
 
-  // Encapsulates the metadata for a fetch job.
-  struct Job;
+  // Encapsulates the state for a fetch job.
+  class Job;
 
   // Callback invoked when a fetch job finishes. If the fetch was successful,
   // the Result is SUCCESS and the scoped_ptr contains the retrieved data.
   // Otherwise, Result indicates the type of error that occurred and the
   // scoped_ptr is NULL.
-  typedef base::Callback<void(Result, std::unique_ptr<std::string>)>
-      FetchCallback;
+  using FetchCallback =
+      base::OnceCallback<void(Result, std::unique_ptr<std::string>)>;
 
   // |task_runner| represents the background thread that |this| runs on.
-  // |backend| is used to perform network I/O. It will be dereferenced and
-  // accessed via |io_task_runner| only.
+  // |backend| is used to perform network I/O. It must be dereferenced and
+  // accessed via |task_runner| only.
   ExternalPolicyDataFetcher(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       const base::WeakPtr<ExternalPolicyDataFetcherBackend>& backend);
   ~ExternalPolicyDataFetcher();
 
@@ -85,30 +84,27 @@ class POLICY_EXPORT ExternalPolicyDataFetcher {
   // should be retried after an error, it is the caller's responsibility to call
   // StartJob() again. Returns an opaque job identifier. Ownership of the job
   // identifier is retained by |this|.
-  Job* StartJob(const GURL& url,
-                int64_t max_size,
-                const FetchCallback& callback);
+  Job* StartJob(const GURL& url, int64_t max_size, FetchCallback callback);
 
   // Cancel the fetch job identified by |job|. The job is canceled silently,
   // without invoking the |callback| that was passed to StartJob().
   void CancelJob(Job* job);
 
  private:
-  // Callback invoked when a fetch job finishes in the |backend_|.
-  void OnJobFinished(const FetchCallback& callback,
+  // Invoked when a fetch job finishes in the |backend_|.
+  void OnJobFinished(FetchCallback callback,
                      Job* job,
                      Result result,
                      std::unique_ptr<std::string> data);
 
   // Task runner representing the thread that |this| runs on.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Task runner representing the thread on which the |backend_| runs and
-  // performs network I/O.
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+  // Task runner representing the thread on which the |backend_| runs.
+  const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // The |backend_| is used to perform network I/O. It may be dereferenced and
-  // accessed via |io_task_runner_| only.
+  // accessed via |backend_task_runner_| only.
   base::WeakPtr<ExternalPolicyDataFetcherBackend> backend_;
 
   // Set that owns all currently running Jobs.
@@ -122,62 +118,36 @@ class POLICY_EXPORT ExternalPolicyDataFetcher {
 
 // This class handles network I/O for one or more ExternalPolicyDataFetchers. It
 // can be instantiated on any thread that is allowed to reference
-// URLRequestContextGetters (in Chrome, these are the UI and IO threads) and
+// SharedURLLoaderFactories (in Chrome, these are the UI and IO threads) and
 // CreateFrontend() may be called from the same thread after instantiation. From
 // then on, it must be accessed and destroyed on the thread that handles network
 // I/O only (in Chrome, this is the IO thread).
-class POLICY_EXPORT ExternalPolicyDataFetcherBackend
-    : public net::URLFetcherDelegate {
+class POLICY_EXPORT ExternalPolicyDataFetcherBackend {
  public:
-  // Callback invoked when a fetch job finishes. If the fetch was successful,
-  // the Result is SUCCESS and the scoped_ptr contains the retrieved data.
-  // Otherwise, Result indicates the type of error that occurred and the
-  // scoped_ptr is NULL.
-  typedef base::Callback<void(ExternalPolicyDataFetcher::Job*,
-                              ExternalPolicyDataFetcher::Result,
-                              std::unique_ptr<std::string>)>
-      FetchCallback;
-
-  // |io_task_runner_| represents the thread that handles network I/O and that
-  // |this| runs on. |request_context| is used to construct URLFetchers.
-  ExternalPolicyDataFetcherBackend(
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      scoped_refptr<net::URLRequestContextGetter> request_context);
-  ~ExternalPolicyDataFetcherBackend() override;
+  explicit ExternalPolicyDataFetcherBackend(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  ~ExternalPolicyDataFetcherBackend();
 
   // Create an ExternalPolicyDataFetcher that allows fetch jobs to be started
-  // from the thread represented by |task_runner|.
+  // from |frontend_task_runner|.
   std::unique_ptr<ExternalPolicyDataFetcher> CreateFrontend(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> frontend_task_runner);
 
   // Start a fetch job defined by |job|. The caller retains ownership of |job|
   // and must ensure that it remains valid until the job ends, CancelJob() is
   // called or |this| is destroyed.
-  void StartJob(ExternalPolicyDataFetcher::Job* job);
+  void StartJob(const GURL& url,
+                int64_t max_size,
+                ExternalPolicyDataFetcher::Job* job);
 
   // Cancel the fetch job defined by |job| and invoke |callback| to confirm.
   void CancelJob(ExternalPolicyDataFetcher::Job* job,
-                 const base::Closure& callback);
-
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64_t current,
-                                  int64_t total,
-                                  int64_t current_network_bytes) override;
+                 base::OnceClosure callback);
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
-  // A monotonically increasing fetch ID. Used to identify fetches in tests.
-  int last_fetch_id_;
-
-  // Map that owns the net::URLFetchers for all currently running jobs and maps
-  // from these to the corresponding Job.
-  struct FetcherAndJob;
-  std::map<const net::URLFetcher*, FetcherAndJob> job_map_;
-
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   base::WeakPtrFactory<ExternalPolicyDataFetcherBackend> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPolicyDataFetcherBackend);

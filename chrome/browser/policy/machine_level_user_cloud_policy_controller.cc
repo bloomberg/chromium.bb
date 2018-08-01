@@ -84,9 +84,7 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   return std::make_unique<MachineLevelUserCloudPolicyManager>(
       std::move(policy_store), nullptr, policy_dir,
-      base::ThreadTaskRunnerHandle::Get(),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 void MachineLevelUserCloudPolicyController::Init(

@@ -20,7 +20,6 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "components/prefs/pref_service.h"
-#include "net/url_request/url_request_context_getter.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "components/policy/core/common/cloud/resource_cache.h"
@@ -32,11 +31,9 @@ CloudPolicyManager::CloudPolicyManager(
     const std::string& policy_type,
     const std::string& settings_entity_id,
     CloudPolicyStore* cloud_policy_store,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : core_(policy_type, settings_entity_id, cloud_policy_store, task_runner),
-      waiting_for_policy_refresh_(false),
-      io_task_runner_(io_task_runner) {}
+      waiting_for_policy_refresh_(false) {}
 
 CloudPolicyManager::~CloudPolicyManager() {}
 
@@ -118,7 +115,6 @@ void CloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
 void CloudPolicyManager::CreateComponentCloudPolicyService(
     const std::string& policy_type,
     const base::FilePath& policy_cache_path,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
     CloudPolicyClient* client,
     SchemaRegistry* schema_registry) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -148,8 +144,7 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
       new ResourceCache(policy_cache_path, task_runner));
   component_policy_service_.reset(new ComponentCloudPolicyService(
       policy_type, this, schema_registry, core(), client,
-      std::move(resource_cache), request_context, task_runner,
-      io_task_runner_));
+      std::move(resource_cache), task_runner));
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 }
 

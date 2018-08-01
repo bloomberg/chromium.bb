@@ -58,8 +58,9 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -274,8 +275,7 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
       "extensions/signin_screen_managed_storage";
   static constexpr const char* kTestExtensionVersion = "1.0";
   static constexpr const char* kTestExtensionTestPage = "test.html";
-  static constexpr const char* kFakePolicyUrl =
-      "http://example.org/test-policy.json";
+  static constexpr const char* kFakePolicyPath = "/test-policy.json";
   static constexpr const char* kFakePolicy =
       "{\"string-policy\": {\"Value\": \"value\"}}";
   static constexpr int kFakePolicyPublicKeyVersion = 1;
@@ -284,6 +284,11 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
       "signinextension-policy-data";
 
   SigninExtensionsDeviceCloudPolicyBrowserTestBase() {}
+
+  void SetUp() override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    DevicePolicyCrosBrowserTest::SetUp();
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
@@ -309,6 +314,8 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->device_management_service()->ScheduleInitialization(0);
+
+    embedded_test_server()->StartAcceptingConnections();
   }
 
   static base::FilePath GetTestExtensionSourcePath() {
@@ -333,14 +340,13 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     return extension;
   }
 
-  static enterprise_management::PolicyFetchResponse BuildTestComponentPolicy() {
+  enterprise_management::PolicyFetchResponse BuildTestComponentPolicy() {
     ComponentCloudPolicyBuilder builder;
     MakeTestComponentPolicyBuilder(&builder);
     return builder.policy();
   }
 
-  static enterprise_management::ExternalPolicyData
-  BuildTestComponentPolicyPayload() {
+  enterprise_management::ExternalPolicyData BuildTestComponentPolicyPayload() {
     ComponentCloudPolicyBuilder builder;
     MakeTestComponentPolicyBuilder(&builder);
     return builder.payload();
@@ -354,13 +360,13 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     session_manager_client()->set_device_policy(device_policy()->GetBlob());
   }
 
-  static void MakeTestComponentPolicyBuilder(
-      ComponentCloudPolicyBuilder* builder) {
+  void MakeTestComponentPolicyBuilder(ComponentCloudPolicyBuilder* builder) {
     builder->policy_data().set_policy_type(
         dm_protocol::kChromeSigninExtensionPolicyType);
     builder->policy_data().set_settings_entity_id(kTestExtensionId);
     builder->policy_data().set_public_key_version(kFakePolicyPublicKeyVersion);
-    builder->payload().set_download_url(kFakePolicyUrl);
+    builder->payload().set_download_url(
+        embedded_test_server()->GetURL(kFakePolicyPath).spec());
     builder->payload().set_secure_hash(crypto::SHA256HashString(kFakePolicy));
     builder->Build();
   }
@@ -379,9 +385,6 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
 class SigninExtensionsDeviceCloudPolicyBrowserTest
     : public SigninExtensionsDeviceCloudPolicyBrowserTestBase {
  protected:
-  SigninExtensionsDeviceCloudPolicyBrowserTest()
-      : fetcher_factory_(&fetcher_impl_factory_) {}
-
   scoped_refptr<const extensions::Extension> InstallAndLoadTestExtension()
       const {
     extensions::ChromeTestExtensionLoader loader(GetSigninProfile());
@@ -391,7 +394,7 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
  private:
   void SetUp() override {
     StartPolicyTestServer();
-    DevicePolicyCrosBrowserTest::SetUp();
+    SigninExtensionsDeviceCloudPolicyBrowserTestBase::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -438,14 +441,20 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
     EXPECT_TRUE(policy_test_server_.UpdatePolicy(
         dm_protocol::kChromeSigninExtensionPolicyType, kTestExtensionId,
         BuildTestComponentPolicyPayload().SerializeAsString()));
-    fetcher_factory_.SetFakeResponse(GURL(kFakePolicyUrl), kFakePolicy,
-                                     net::HTTP_OK,
-                                     net::URLRequestStatus::SUCCESS);
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        [](const net::test_server::HttpRequest& request)
+            -> std::unique_ptr<net::test_server::HttpResponse> {
+          if (request.relative_url != kFakePolicyPath)
+            return nullptr;
+
+          auto response =
+              std::make_unique<net::test_server::BasicHttpResponse>();
+          response->set_content(kFakePolicy);
+          return response;
+        }));
   }
 
   LocalPolicyTestServer policy_test_server_;
-  net::URLFetcherImplFactory fetcher_impl_factory_;
-  net::FakeURLFetcherFactory fetcher_factory_;
   base::FilePath component_policy_cache_dir_;
   std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
 };
