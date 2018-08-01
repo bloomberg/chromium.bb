@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
  * Since there're numerous asynchronous calls involved in getting the application to launch
  * the class is implemented as a state machine.
  */
+// Migrated to CafMediaRouteProvider. See https://crbug.com/711860.
 public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
                                            GoogleApiClient.OnConnectionFailedListener,
                                            ResultCallback<Cast.ApplicationConnectionResult>,
