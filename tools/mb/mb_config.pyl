@@ -152,7 +152,7 @@
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'CFI Linux (icall)': 'cfi_full_diag_icall_release_static_dcheck_always_on',
       'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
-      'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
 
       'Linux Builder Goma Canary': 'release_bot',
       'Linux x64 Goma Canary (clobber)': 'release_bot',
@@ -1170,8 +1170,8 @@
       'cros_chrome_sdk',
     ],
 
-    'cros_chrome_sdk_headless_ozone': [
-      'cros_chrome_sdk', 'ozone_platform_headless',
+    'cros_chrome_sdk_headless_ozone_dcheck_always_on': [
+      'cros_chrome_sdk', 'ozone_platform_headless', 'dcheck_always_on',
     ],
 
     'debug_bot': [
