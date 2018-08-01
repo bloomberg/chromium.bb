@@ -295,7 +295,7 @@ ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
       child_resource_provider, size, is_overlay_candidate);
 
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating([](const std::vector<ReturnedResource>&) {}));
+      base::BindRepeating([](const std::vector<ReturnedResource>&) {}), true);
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;

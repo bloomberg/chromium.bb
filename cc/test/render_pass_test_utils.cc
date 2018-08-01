@@ -316,7 +316,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
-      base::Bind(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), true);
 
   // Transfer resource to the parent.
   std::vector<viz::TransferableResource> list;
