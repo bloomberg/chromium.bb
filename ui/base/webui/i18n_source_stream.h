@@ -51,7 +51,7 @@ class UI_BASE_EXPORT I18nSourceStream : public net::FilterSourceStream {
   std::string output_;
 
   // A map of i18n replacement keys and translations.
-  const TemplateReplacements* replacements_;  // weak
+  const TemplateReplacements* replacements_;
 
   DISALLOW_COPY_AND_ASSIGN(I18nSourceStream);
 };
