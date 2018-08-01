@@ -5,16 +5,21 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/pattern.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/secure_origin_whitelist.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
 #include "components/security_state/content/content_utils.h"
@@ -31,6 +36,7 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -55,6 +61,22 @@ void RecordSecurityLevel(const security_state::SecurityInfo& security_info) {
   }
 }
 
+bool IsOriginSecureWithWhitelist(
+    const std::vector<std::string>& secure_origins_and_patterns,
+    const GURL& url) {
+  if (content::IsOriginSecure(url))
+    return true;
+
+  url::Origin origin = url::Origin::Create(url);
+  if (base::ContainsValue(secure_origins_and_patterns, origin.Serialize()))
+    return true;
+  for (const auto& origin_or_pattern : secure_origins_and_patterns) {
+    if (base::MatchPattern(origin.host(), origin_or_pattern))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 using safe_browsing::SafeBrowsingUIManager;
@@ -75,9 +97,11 @@ SecurityStateTabHelper::~SecurityStateTabHelper() {}
 
 void SecurityStateTabHelper::GetSecurityInfo(
     security_state::SecurityInfo* result) const {
-  security_state::GetSecurityInfo(GetVisibleSecurityState(),
-                                  UsedPolicyInstalledCertificate(),
-                                  base::Bind(&content::IsOriginSecure), result);
+  security_state::GetSecurityInfo(
+      GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
+      base::BindRepeating(&IsOriginSecureWithWhitelist,
+                          GetSecureOriginsAndPatterns()),
+      result);
 }
 
 void SecurityStateTabHelper::DidStartNavigation(
@@ -331,4 +355,21 @@ SecurityStateTabHelper::GetVisibleSecurityState() const {
   state->is_incognito = is_incognito_;
 
   return state;
+}
+
+std::vector<std::string> SecurityStateTabHelper::GetSecureOriginsAndPatterns()
+    const {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
+  std::string origins_str = "";
+  if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure)) {
+    origins_str = command_line.GetSwitchValueASCII(
+        switches::kUnsafelyTreatInsecureOriginAsSecure);
+  } else if (prefs->HasPrefPath(prefs::kUnsafelyTreatInsecureOriginAsSecure)) {
+    origins_str = prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure);
+  }
+  return secure_origin_whitelist::ParseWhitelist(origins_str);
 }

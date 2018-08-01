@@ -106,36 +106,28 @@ std::string CanonicalizePatternComponents(const std::string& hostname_pattern) {
 
 namespace secure_origin_whitelist {
 
-std::vector<std::string> GetWhitelist() {
+std::vector<std::string> ParseWhitelist(const std::string& origins_str) {
   std::vector<std::string> origin_patterns;
-  // If kUnsafelyTreatInsecureOriginAsSecure option is given, then treat the
-  // value as a comma-separated list of origins or origin patterns:
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure)) {
-    std::string origins_str = command_line.GetSwitchValueASCII(
-        switches::kUnsafelyTreatInsecureOriginAsSecure);
-    for (const std::string& origin_str : base::SplitString(
-             origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-      if (origin_str.find("*") != std::string::npos) {
-        if (IsValidWildcardPattern(origin_str)) {
-          std::string canonicalized_pattern =
-              CanonicalizePatternComponents(origin_str);
-          if (!canonicalized_pattern.empty()) {
-            origin_patterns.push_back(canonicalized_pattern);
-            continue;
-          }
+  for (const std::string& origin_str : base::SplitString(
+           origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    if (origin_str.find("*") != std::string::npos) {
+      if (IsValidWildcardPattern(origin_str)) {
+        std::string canonicalized_pattern =
+            CanonicalizePatternComponents(origin_str);
+        if (!canonicalized_pattern.empty()) {
+          origin_patterns.push_back(canonicalized_pattern);
+          continue;
         }
-        LOG(ERROR) << "Whitelisted secure origin pattern " << origin_str
-                   << " is not valid; ignoring.";
-        continue;
       }
-
-      // Drop .unique() origins, as they are unequal to any other origins.
-      url::Origin origin(url::Origin::Create(GURL(origin_str)));
-      if (!origin.unique())
-        origin_patterns.push_back(origin.Serialize());
+      LOG(ERROR) << "Whitelisted secure origin pattern " << origin_str
+                 << " is not valid; ignoring.";
+      continue;
     }
+
+    // Drop .unique() origins, as they are unequal to any other origins.
+    url::Origin origin(url::Origin::Create(GURL(origin_str)));
+    if (!origin.unique())
+      origin_patterns.push_back(origin.Serialize());
   }
 
   UMA_HISTOGRAM_COUNTS_100("Security.TreatInsecureOriginAsSecure",
@@ -150,6 +142,23 @@ std::vector<std::string> GetWhitelist() {
 #endif
 
   return origin_patterns;
+}
+
+std::vector<std::string> GetWhitelist() {
+  // If kUnsafelyTreatInsecureOriginAsSecure option is given, then treat the
+  // value as a comma-separated list of origins or origin patterns. Callers that
+  // need to also check the kUnsafelyTreatInsecureOriginAsSecure pref value must
+  // instead use ParseWhitelist directly (as there is no way for GetWhitelist()
+  // to access prefs). For renderer processes the pref and the switch will
+  // match, but for non-renderer processes the switch may not be set.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string origins_str = "";
+  if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure)) {
+    origins_str = command_line.GetSwitchValueASCII(
+        switches::kUnsafelyTreatInsecureOriginAsSecure);
+  }
+  return ParseWhitelist(origins_str);
 }
 
 std::set<std::string> GetSchemesBypassingSecureContextCheck() {
