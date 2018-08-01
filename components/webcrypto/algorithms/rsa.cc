@@ -555,6 +555,9 @@ Status RsaHashedAlgorithm::DeserializeKeyForClone(
       return Status::ErrorUnexpected();
   }
 
+  if (!status.IsSuccess())
+    return status;
+
   // There is some duplicated information in the serialized format used by
   // structured clone (since the KeyAlgorithm is serialized separately from the
   // key data). Use this extra information to further validate what was
