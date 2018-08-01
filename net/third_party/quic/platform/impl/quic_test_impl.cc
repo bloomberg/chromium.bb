@@ -6,12 +6,12 @@
 
 QuicFlagSaverImpl::QuicFlagSaverImpl() {
 #define QUIC_FLAG(type, flag, value) saved_##flag##_ = flag;
-#include "net/third_party/quic/core/quic_flags_list.h"
+#include "net/quic/quic_flags_list.h"
 #undef QUIC_FLAG
 }
 
 QuicFlagSaverImpl::~QuicFlagSaverImpl() {
 #define QUIC_FLAG(type, flag, value) flag = saved_##flag##_;
-#include "net/third_party/quic/core/quic_flags_list.h"
+#include "net/quic/quic_flags_list.h"
 #undef QUIC_FLAG
 }

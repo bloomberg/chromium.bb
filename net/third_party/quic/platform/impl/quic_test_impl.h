@@ -20,7 +20,7 @@ class QuicFlagSaverImpl {
 
  private:
 #define QUIC_FLAG(type, flag, value) type saved_##flag##_;
-#include "net/third_party/quic/core/quic_flags_list.h"
+#include "net/quic/quic_flags_list.h"
 #undef QUIC_FLAG
 };
 
@@ -33,7 +33,7 @@ class QuicFlagChecker {
       << "Flag set to an unexpected value.  A prior test is likely "      \
       << "setting a flag without using a QuicFlagSaver. Use QuicTest to " \
          "avoid this issue.";
-#include "net/third_party/quic/core/quic_flags_list.h"
+#include "net/quic/quic_flags_list.h"
 #undef QUIC_FLAG
   }
 };

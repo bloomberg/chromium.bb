@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 
 #define QUIC_FLAG(type, flag, value) QUIC_EXPORT_PRIVATE extern type flag;
-#include "net/third_party/quic/core/quic_flags_list.h"
+#include "net/quic/quic_flags_list.h"
 #undef QUIC_FLAG
 
 // API compatibility with new-style flags.
