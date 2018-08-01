@@ -479,8 +479,14 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 }
 
 // Regression test for https://crbug.com/839955
+// TODO(crbug.com/869830) The test is flaky on ChromeOS rel.
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_ActiveStateOfButtonMatchesWidget DISABLED_ActiveStateOfButtonMatchesWidget
+#else
+#define MAYBE_ActiveStateOfButtonMatchesWidget ActiveStateOfButtonMatchesWidget
+#endif
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       ActiveStateOfButtonMatchesWidget) {
+                       MAYBE_ActiveStateOfButtonMatchesWidget) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
 
   ash::FrameCaptionButtonContainerView::TestApi test(
