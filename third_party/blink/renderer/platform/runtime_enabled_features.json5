@@ -569,6 +569,7 @@
     },
     {
       name: "HeapIncrementalMarking",
+      status: "stable",
     },
     {
       name: "HeapIncrementalMarkingStress"
