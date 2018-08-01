@@ -192,7 +192,7 @@ std::unique_ptr<views::Widget> CreateNewSelectorItemWidget(
   params.bounds = display::Screen::GetScreen()
                       ->GetDisplayNearestWindow(dragged_window)
                       .work_area();
-  std::unique_ptr<views::Widget> widget(new views::Widget);
+  std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
   widget->Init(params);
 
@@ -299,9 +299,6 @@ WindowGrid::WindowGrid(aura::Window* root_window,
       window_selector_(window_selector),
       window_observer_(this),
       window_state_observer_(this),
-      selected_index_(0),
-      num_columns_(0),
-      prepared_for_overview_(false),
       bounds_(bounds_in_screen) {
   aura::Window::Windows windows_in_root;
   for (auto* window : windows) {
@@ -310,8 +307,6 @@ WindowGrid::WindowGrid(aura::Window* root_window,
   }
 
   for (auto* window : windows_in_root) {
-    // TODO(https://crbug.com/812496): Investigate why we need to keep target
-    // transform instead of using identity when exiting.
     // Stop ongoing animations before entering overview mode. Because we are
     // deferring SetTransform of the windows beneath the window covering the
     // available workspace, we need to set the correct transforms of these
@@ -355,8 +350,8 @@ void WindowGrid::PositionWindows(
     WindowSelector::OverviewTransition transition) {
   if (window_selector_->IsShuttingDown())
     return;
-  DCHECK_NE(transition, WindowSelector::OverviewTransition::kExit);
 
+  DCHECK_NE(transition, WindowSelector::OverviewTransition::kExit);
   DCHECK(shield_widget_.get());
   // Keep the background shield widget covering the whole screen. A grid without
   // any windows still needs the shield widget bounds updated.
@@ -392,11 +387,10 @@ void WindowGrid::PositionWindows(
     if (IsNewSelectorItemWindow(window_item->GetWindow()))
       should_animate_item = false;
 
-    window_item->SetBounds(
-        rects[i],
-        should_animate_item
-            ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
-            : OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
+    window_item->SetBounds(rects[i],
+                           should_animate_item
+                               ? OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
+                               : OVERVIEW_ANIMATION_NONE);
   }
 
   // If the selection widget is active, reposition it without any animation.
@@ -529,8 +523,7 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
     return;
   aura::Window* selection_widget_window = selection_widget_->GetNativeWindow();
   ScopedOverviewAnimationSettings animation_settings_label(
-      OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM,
-      selection_widget_window);
+      OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM, selection_widget_window);
   selection_widget_->SetOpacity(0.f);
 }
 
@@ -771,7 +764,7 @@ void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
                    });
   if (iter != window_list_.end()) {
     (*iter)->OnMinimizedStateChanged();
-    PositionWindows(false);
+    PositionWindows(/*animate=*/false);
   }
 }
 

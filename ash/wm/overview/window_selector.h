@@ -188,7 +188,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   }
 
   // display::DisplayObserver:
-  void OnDisplayAdded(const display::Display& display) override;
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;

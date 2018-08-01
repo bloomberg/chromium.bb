@@ -28,14 +28,12 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
-#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
@@ -183,7 +181,6 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
     : selector_item_(selector_item),
       window_(window),
       ignored_by_shelf_(wm::GetWindowState(window)->ignored_by_shelf()),
-      overview_started_(false),
       original_opacity_(window->layer()->GetTargetOpacity()),
       weak_ptr_factory_(this) {
   type_ = GetWindowDimensionsType(window);

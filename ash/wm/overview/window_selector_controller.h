@@ -5,7 +5,6 @@
 #ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
 #define ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
 
-#include <list>
 #include <memory>
 #include <vector>
 

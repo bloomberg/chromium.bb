@@ -20,10 +20,6 @@ namespace views {
 class Widget;
 }  // namespace views
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 
 // Returns true if |window| can cover available workspace.

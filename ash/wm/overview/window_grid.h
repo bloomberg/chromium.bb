@@ -324,13 +324,13 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   std::unique_ptr<views::Widget> new_selector_item_widget_;
 
   // Current selected window position.
-  size_t selected_index_;
+  size_t selected_index_ = 0;
 
   // Number of columns in the grid.
-  size_t num_columns_;
+  size_t num_columns_ = 0;
 
   // True only after all windows have been prepared for overview.
-  bool prepared_for_overview_;
+  bool prepared_for_overview_ = false;
 
   // This WindowGrid's total bounds in screen coordinates.
   gfx::Rect bounds_;

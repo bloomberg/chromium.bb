@@ -16,7 +16,9 @@ namespace ash {
 // A View having rounded corners and a specified background color which is
 // only painted within the bounds defined by the rounded corners.
 // TODO(varkha): This duplicates code from RoundedImageView. Refactor these
-//               classes and move into ui/views.
+// classes and move into ui/views.
+// TODO(manucornet): Move this class out of ash/wm/overview as a stop gap to the
+// above as it is also used by shelf and splitview.
 class RoundedRectView : public views::View {
  public:
   RoundedRectView(int corner_radius, SkColor background_color);

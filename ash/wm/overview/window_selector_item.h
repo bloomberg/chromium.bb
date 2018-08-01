@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -21,15 +20,11 @@
 
 namespace gfx {
 class SlideAnimation;
-}
+}  // namespace gfx
 
 namespace ui {
 class Shadow;
-}
-
-namespace views {
-class ImageButton;
-}
+}  // namespace ui
 
 namespace ash {
 
@@ -135,9 +130,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   // Closes |transform_window_|.
   void CloseWindow();
-
-  // Hides the original window header.
-  void HideHeader();
 
   // Called when the window is minimized or unminimized.
   void OnMinimizedStateChanged();
@@ -265,6 +257,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
                            OverviewUnsnappableIndicatorVisibility);
 
   // The different ways the overview header can fade in and be laid out.
+  // TODO(sammiequon): See if we can combine this with
+  // WindowSelector::OverviewTransition.
   enum class HeaderFadeInMode {
     // Used when entering overview mode, to fade in the header background color.
     kEnter,
@@ -303,11 +297,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Updates the accessibility name to match the window title.
   void UpdateAccessibilityName();
 
-  // Select this window if |event_location| is less than the drag threshold for
-  // clicks. This should only be called if the original event was on the title
-  // bar (|tap_down_event_on_title_| has a value).
-  void SelectWindowIfBelowDistanceThreshold(const gfx::Point& event_location);
-
   // Allows a test to directly set animation state.
   gfx::SlideAnimation* GetBackgroundViewAnimation();
 
@@ -320,7 +309,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   // True if the item is being shown in the overview, false if it's being
   // filtered.
-  bool dimmed_;
+  bool dimmed_ = false;
 
   // The root window this item is being displayed on.
   aura::Window* root_window_;
@@ -334,11 +323,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // True if running SetItemBounds. This prevents recursive calls resulting from
   // the bounds update when calling ::wm::RecreateWindowLayers to copy
   // a window layer for display on another monitor.
-  bool in_bounds_update_;
+  bool in_bounds_update_ = false;
 
   // True when |this| item is visually selected. Item header is made transparent
   // when the item is selected.
-  bool selected_;
+  bool selected_ = false;
 
   // A widget that covers the |transform_window_|. The widget has
   // |caption_container_view_| as its contents view. The widget is backed by a
@@ -355,18 +344,18 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // targeting the |transform_window_| or the overview header above the window.
   // The shield button owns |background_view_| which owns |label_view_|
   // and |close_button_|.
-  CaptionContainerView* caption_container_view_;
+  CaptionContainerView* caption_container_view_ = nullptr;
 
   // A View for the text label above the window owned by the |background_view_|.
-  views::Label* label_view_;
+  views::Label* label_view_ = nullptr;
 
   // A View for the text label in the center of the window warning users that
   // this window cannot be snapped for splitview. Owned by a container in
   // |background_view_|.
-  views::Label* cannot_snap_label_view_;
+  views::Label* cannot_snap_label_view_ = nullptr;
 
   // A close button for the window in this item owned by the |background_view_|.
-  OverviewCloseButton* close_button_;
+  OverviewCloseButton* close_button_ = nullptr;
 
   // Pointer to the WindowSelector that owns the WindowGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.
@@ -375,7 +364,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Pointer to a view that covers the original header and has rounded top
   // corners. This view can have its color and opacity animated. It has a layer
   // which is the only textured layer used by the |item_widget_|.
-  RoundedContainerView* background_view_;
+  RoundedContainerView* background_view_ = nullptr;
 
   // Pointer to the WindowGrid that contains |this|. Guaranteed to be non-null
   // for the lifetime of |this|.

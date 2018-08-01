@@ -155,15 +155,15 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       break;
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
+      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       break;
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
+      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       break;
   }
   animation_settings_->SetTransitionDuration(

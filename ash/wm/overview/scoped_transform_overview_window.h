@@ -56,13 +56,13 @@ class ASH_EXPORT ScopedTransformOverviewWindow
     kPillarBoxed,
   };
 
+  using ScopedAnimationSettings =
+      std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
+
   // Windows whose aspect ratio surpass this (width twice as large as height or
   // vice versa) will be classified as too wide or too tall and will be handled
   // slightly differently in overview mode.
   static constexpr float kExtremeWindowRatioThreshold = 2.f;
-
-  using ScopedAnimationSettings =
-      std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
 
   // Calculates and returns an optimal scale ratio. This is only taking into
   // account |size.height()| as the width can vary.
@@ -86,12 +86,12 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   //
   // Example:
   //  ScopedTransformOverviewWindow overview_window(window);
-  //  ScopedTransformOverviewWindow::ScopedAnimationSettings scoped_settings;
+  //  ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
   //  overview_window.BeginScopedAnimation(
-  //      OverviewAnimationType::OVERVIEW_ANIMATION_SELECTOR_ITEM_SCROLL_CANCEL,
+  //      OVERVIEW_ANIMATION_SELECTOR_ITEM_SCROLL_CANCEL,
   //      &animation_settings);
   //  // Calls to SetTransform & SetOpacity will use the same animation settings
-  //  // until scoped_settings is destroyed.
+  //  // until animation_settings is destroyed.
   //  overview_window.SetTransform(root_window, new_transform);
   //  overview_window.SetOpacity(1);
   void BeginScopedAnimation(OverviewAnimationType animation_type,
@@ -110,11 +110,12 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // the original |window_|'s header to be hidden.
   gfx::Rect GetTransformedBounds() const;
 
-  // Returns TOP_VIEW_COLOR property of |window_| unless there are transient
-  // ancestors, in which case returns SK_ColorTRANSPARENT.
+  // Returns the kFrameActiveColorKey or kFrameInactiveColorKey property of
+  // |window_| unless there are transient ancestors, in which case returns
+  // SK_ColorTRANSPARENT.
   SkColor GetTopColor() const;
 
-  // Returns TOP_VIEW_INSET property of |window_| unless there are transient
+  // Returns the kTopViewInset property of |window_| unless there are transient
   // ancestors, in which case returns 0.
   int GetTopInset() const;
 
@@ -218,7 +219,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   bool ignored_by_shelf_;
 
   // True if the window has been transformed for overview mode.
-  bool overview_started_;
+  bool overview_started_ = false;
 
   // The original opacity of the window before entering overview mode.
   float original_opacity_;

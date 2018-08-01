@@ -9,7 +9,6 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
