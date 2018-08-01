@@ -339,7 +339,7 @@ foreach(NUM RANGE ${AOM_RTCD_CUSTOM_COMMAND_COUNT})
   list(GET AOM_RTCD_HEADER_FILE_LIST ${NUM} AOM_RTCD_HEADER_FILE)
   list(GET AOM_RTCD_SOURCE_FILE_LIST ${NUM} AOM_RTCD_SOURCE_FILE)
   list(GET AOM_RTCD_SYMBOL_LIST ${NUM} AOM_RTCD_SYMBOL)
-  execute_process(COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
+  execute_process(COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/cmake/rtcd.pl"
                           --arch=${AOM_TARGET_CPU}
                           --sym=${AOM_RTCD_SYMBOL} ${AOM_RTCD_FLAGS}
                           --config=${AOM_CONFIG_DIR}/config/aom_config.h

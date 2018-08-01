@@ -56,7 +56,7 @@ list(APPEND AOM_RTCD_SOURCES
             "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
             "${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
             "${AOM_ROOT}/av1/common/av1_rtcd.c"
-            "${AOM_ROOT}/build/make/rtcd.pl")
+            "${AOM_ROOT}/build/cmake/rtcd.pl")
 
 list(APPEND AOM_LIBWEBM_SOURCES
             "${AOM_ROOT}/third_party/libwebm/common/hdr_util.cc"
