@@ -2114,8 +2114,6 @@ void Element::AttachLayoutTree(AttachContext& context) {
     rare_data->ClearPseudoElements();
   }
 
-  SelectorFilterParentScope filter_scope(*this);
-
   AttachContext children_context(context);
 
   LayoutObject* layout_object = GetLayoutObject();
@@ -2500,7 +2498,6 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
   } else {
-    SelectorFilterParentScope filter_scope(*this);
     // We create a local WhitespaceAttacher when rebuilding children of an
     // element with a LayoutObject since whitespace nodes do not rely on layout
     // objects further up the tree. Also, if this Element's layout object is an
