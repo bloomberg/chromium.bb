@@ -20,8 +20,8 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/public/cpp/notification.h"
-#include "ui/message_center/ui_delegate.h"
 
+class PopupsOnlyUiController;
 class Profile;
 class ProfileNotification;
 
@@ -30,9 +30,6 @@ class Notification;
 class NotificationBlocker;
 FORWARD_DECLARE_TEST(NotificationTrayTest, ManuallyCloseMessageCenter);
 }
-
-// Implementations are platform specific.
-message_center::UiDelegate* CreateUiDelegate();
 
 // This class extends NotificationUIManagerImpl and delegates actual display
 // of notifications to MessageCenter, doing necessary conversions. This is only
@@ -60,23 +57,24 @@ class MessageCenterNotificationManager
   void CancelAll() override;
   void StartShutdown() override;
 
-  // MessageCenterObserver
+  // MessageCenterObserver:
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override;
 
-  // Takes ownership of |delegate|.
-  void SetUiDelegateForTest(message_center::UiDelegate* delegate);
+  // Resets the ui controller.
+  void ResetUiControllerForTest();
 
   // Returns the notification id which this manager will use to add to message
   // center, for this combination of delegate id and profile.
   std::string GetMessageCenterNotificationIdForTest(
       const std::string& delegate_id, Profile* profile);
 
+  // Returns true if the popup bubbles are currently visible.
+  bool popups_visible() const { return popups_visible_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(message_center::NotificationTrayTest,
                            ManuallyCloseMessageCenter);
-
-  std::unique_ptr<message_center::UiDelegate> tray_;
 
   // Use a map by notification_id since this mapping is the most often used.
   std::map<std::string, std::unique_ptr<ProfileNotification>>
@@ -97,8 +95,14 @@ class MessageCenterNotificationManager
 
   NotificationSystemObserver system_observer_;
 
+  // Delegate of this class.
+  std::unique_ptr<PopupsOnlyUiController> popups_only_ui_controller_;
+
   // Tracks if shutdown has started.
   bool is_shutdown_started_ = false;
+
+  // Tracks the current visibility status of the popup bubbles.
+  bool popups_visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
 };

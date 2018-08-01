@@ -17,13 +17,11 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/fake_ui_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
-#include "ui/message_center/ui_controller.h"
 
 namespace message_center {
 
@@ -37,8 +35,7 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 
     BrowserWithTestWindowTest::SetUp();
     message_center_ = MessageCenter::Get();
-    delegate_ = new FakeUiDelegate();
-    notification_manager()->SetUiDelegateForTest(delegate_);
+    notification_manager()->ResetUiControllerForTest();
   }
 
   void TearDown() override {
@@ -65,7 +62,6 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 
  private:
   MessageCenter* message_center_;
-  FakeUiDelegate* delegate_;
 };
 
 TEST_F(MessageCenterNotificationManagerTest, SetupNotificationManager) {
