@@ -34,10 +34,6 @@ namespace {
 // The left-hand margin used for rows with the refresh UI.
 static constexpr int kRefreshMarginLeft = 4;
 
-// In the MD refresh or rich suggestions, x-offset of the content and
-// description text.
-static constexpr int kTextIndent = 47;
-
 // TODO(dschuyler): Perhaps this should be based on the font size
 // instead of hardcoded to 2 dp (e.g. by adding a space in an
 // appropriate font to the beginning of the description, then reducing
@@ -63,6 +59,18 @@ static constexpr int kRefreshOneLineRowMarginHeight = 8;
 
 // The margin height of a two-line suggestion row when MD Refresh is enabled.
 static constexpr int kRefreshTwoLineRowMarginHeight = 4;
+
+// In the MD refresh or rich suggestions, x-offset of the content and
+// description text.
+int GetTextIndent() {
+  constexpr int kTextIndent = 47;
+  constexpr int kTouchableExtraIndent = 4;
+
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    return kTextIndent + kTouchableExtraIndent;
+  else
+    return kTextIndent;
+}
 
 // Returns the padding width between elements.
 int HorizontalPadding() {
@@ -276,7 +284,7 @@ gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   int height = 0;
   if (is_rich_suggestion_ || should_show_tab_match_) {
     height = content_view_->GetLineHeight() +
-             description_view_->GetHeightForWidth(width() - kTextIndent);
+             description_view_->GetHeightForWidth(width() - GetTextIndent());
   } else if (is_old_style_answer_) {
     int icon_width = icon_view_->width();
     int answer_image_size =
@@ -301,7 +309,7 @@ bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
 
 int OmniboxMatchCellView::IconWidthAndPadding() const {
   return ui::MaterialDesignController::IsRefreshUi()
-             ? kTextIndent
+             ? GetTextIndent()
              : icon_view_->width() + (HorizontalPadding() * 2);
 }
 
@@ -422,7 +430,7 @@ void OmniboxMatchCellView::Layout() {
                                   ? kRefreshImageBoxSize
                                   : icon_view_->width();
   const int text_indent = ui::MaterialDesignController::IsRefreshUi()
-                              ? kTextIndent
+                              ? GetTextIndent()
                               : icon_view_->width() + HorizontalPadding();
 
   if (is_rich_suggestion_ || should_show_tab_match_) {
@@ -472,18 +480,18 @@ void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
     image_view = icon_view_;
   }
   image_view->SetBounds(x, y, kRefreshImageBoxSize, child_area.height());
-  const int text_width = child_area.width() - kTextIndent;
+  const int text_width = child_area.width() - GetTextIndent();
   if (description_view_->text().empty()) {
     // This vertically centers content in the rare case that no description is
     // provided.
-    content_view_->SetBounds(x + kTextIndent, y, text_width,
+    content_view_->SetBounds(x + GetTextIndent(), y, text_width,
                              child_area.height());
     description_view_->SetSize(gfx::Size());
   } else {
     const int text_height = content_view_->GetLineHeight();
-    content_view_->SetBounds(x + kTextIndent, y, text_width, text_height);
+    content_view_->SetBounds(x + GetTextIndent(), y, text_width, text_height);
     description_view_->SetBounds(
-        x + kTextIndent, y + text_height, text_width,
+        x + GetTextIndent(), y + text_height, text_width,
         description_view_->GetHeightForWidth(text_width));
   }
 }
