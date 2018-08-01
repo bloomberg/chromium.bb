@@ -51,7 +51,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chromeos/chromeos_pref_names.h"
-#include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
 #include "components/arc/arc_prefs.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/drive/drive_pref_names.h"
@@ -696,17 +695,6 @@ const char* incognito_whitelist[] = {
     chromeos::prefs::kAudioOutputAllowed, chromeos::prefs::kAudioVolumePercent,
     chromeos::prefs::kAudioDevicesState,
     chromeos::prefs::kQuirksClientLastServerCheck,
-#endif  // defined(OS_CHROMEOS)
-
-// chromeos/components/proximity_auth/proximity_auth_pref_names.h
-#if defined(OS_CHROMEOS)
-    proximity_auth::prefs::kEasyUnlockEnabled,
-    proximity_auth::prefs::kEasyUnlockEnabledStateSet,
-    proximity_auth::prefs::kEasyUnlockProximityThreshold,
-    proximity_auth::prefs::kProximityAuthLastPromotionCheckTimestampMs,
-    proximity_auth::prefs::kProximityAuthPromotionShownCount,
-    proximity_auth::prefs::kProximityAuthRemoteBleDevices,
-    proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
 #endif  // defined(OS_CHROMEOS)
 
 // components/arc/arc_prefs.h
