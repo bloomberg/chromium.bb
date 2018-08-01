@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
@@ -119,7 +119,7 @@ int InitSocketHandleForHttpRequest(
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
     const OnHostResolutionCallback& resolution_callback,
-    const CompletionCallback& callback);
+    CompletionOnceCallback callback);
 
 // A helper method that uses the passed in proxy information to initialize a
 // ClientSocketHandle with the relevant socket pool. Use this method for
@@ -144,7 +144,7 @@ int InitSocketHandleForWebSocketRequest(
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
     const OnHostResolutionCallback& resolution_callback,
-    const CompletionCallback& callback);
+    CompletionOnceCallback callback);
 
 // Deprecated: Please do not use this outside of //net and //services/network.
 // A helper method that uses the passed in proxy information to initialize a
@@ -162,7 +162,7 @@ NET_EXPORT int InitSocketHandleForRawConnect(
     PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
-    const CompletionCallback& callback);
+    CompletionOnceCallback callback);
 
 // Deprecated: Please do not use this outside of //net and //services/network.
 // A helper method that uses the passed in proxy information to initialize a
@@ -180,7 +180,7 @@ NET_EXPORT int InitSocketHandleForTlsConnect(
     PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
-    const CompletionCallback& callback);
+    CompletionOnceCallback callback);
 
 // Similar to InitSocketHandleForHttpRequest except that it initiates the
 // desired number of preconnect streams from the relevant socket pool.
