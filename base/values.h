@@ -302,6 +302,15 @@ class BASE_EXPORT Value {
   size_t DictSize() const;
   bool DictEmpty() const;
 
+  // Merge |dictionary| into this value. This is done recursively, i.e. any
+  // sub-dictionaries will be merged as well. In case of key collisions, the
+  // passed in dictionary takes precedence and data already present will be
+  // replaced. Values within |dictionary| are deep-copied, so |dictionary| may
+  // be freed any time after this call.
+  // Note: This fatally asserts if type() or dictionary->type() is not
+  // Type::DICTIONARY.
+  void MergeDictionary(const Value* dictionary);
+
   // These methods allow the convenient retrieval of the contents of the Value.
   // If the current object can be converted into the given type, the value is
   // returned through the |out_value| parameter and true is returned;
@@ -541,13 +550,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   // Makes a copy of |this| but doesn't include empty dictionaries and lists in
   // the copy.  This never returns NULL, even if |this| itself is empty.
   std::unique_ptr<DictionaryValue> DeepCopyWithoutEmptyChildren() const;
-
-  // Merge |dictionary| into this dictionary. This is done recursively, i.e. any
-  // sub-dictionaries will be merged as well. In case of key collisions, the
-  // passed in dictionary takes precedence and data already present will be
-  // replaced. Values within |dictionary| are deep-copied, so |dictionary| may
-  // be freed any time after this call.
-  void MergeDictionary(const DictionaryValue* dictionary);
 
   // Swaps contents with the |other| dictionary.
   void Swap(DictionaryValue* other);
