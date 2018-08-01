@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 
 # The path to the BRANDING file in chrome/app/theme.
@@ -44,7 +45,7 @@ template("process_version_rc_template") {
     _template_file = "//chrome/app/chrome_version.rc.version"
   }
   _sources = [
-    "//build/util/LASTCHANGE",
+    lastchange_file,
     "//chrome/VERSION",
     branding_file_path,
   ]

@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/mac/symbols.gni")
 import("//build/mac/tweak_info_plist.gni")
+import("//build/util/lastchange.gni")
 import("//components/cronet/native/include/headers.gni")
 import("//components/grpc_support/include/headers.gni")
 import("//testing/test.gni")
@@ -289,7 +290,7 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
 
     script = "//tools/licenses.py"
     inputs = [
-      "//build/util/LASTCHANGE",
+      lastchange_file,
     ]
     outputs = [
       _license_path,

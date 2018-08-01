@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/util/lastchange.gni")
+
 action("webkit_version") {
   script = "version.py"
-
-  lastchange_file = "LASTCHANGE"
 
   template_file = "webkit_version.h.in"
   inputs = [

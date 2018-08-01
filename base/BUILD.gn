@@ -29,6 +29,7 @@ import("//build/config/nacl/config.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
+import("//build/util/lastchange.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
@@ -2737,7 +2738,7 @@ action("build_date") {
 
   # Force recalculation if there's been a change.
   inputs = [
-    "//build/util/LASTCHANGE",
+    lastchange_file,
   ]
   outputs = [
     "$target_gen_dir/generated_build_date.h",

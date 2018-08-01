@@ -9,6 +9,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/sysroot.gni")
+import("//build/util/lastchange.gni")
 import("//build/util/version.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 import("//components/nacl/features.gni")
@@ -102,9 +103,9 @@ process_version("save_build_info") {
   # Just output the default version info variables (no template).
   process_only = true
   sources = [
-    "//build/util/LASTCHANGE",
     "//chrome/VERSION",
     branding_file_path,
+    lastchange_file,
   ]
   output = "$root_out_dir/app_shell_installer/version.txt"
 }
