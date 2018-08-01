@@ -177,11 +177,10 @@ class RequestImpl : public SMSService::Request {
     resource_request->load_flags =
         net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
     resource_request->method = post_data_ ? "POST" : "GET";
-    resource_request->headers.AddHeaderFromString("Authorization: Bearer " +
-                                                  access_token);
-    resource_request->headers.AddHeaderFromString(
-        "X-Developer-Key: " +
-        GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+    resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                                        "Bearer " + access_token);
+    resource_request->headers.SetHeader(
+        "X-Developer-Key", GaiaUrls::GetInstance()->oauth2_chrome_client_id());
     simple_url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), traffic_annotation);
     simple_url_loader_->SetRetryOptions(kMaxRetries,

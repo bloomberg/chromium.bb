@@ -39,8 +39,8 @@ constexpr char kDeviceId[] = "device_id";
 constexpr char kDeviceType[] = "device_type";
 constexpr char kDeviceTypeArc[] = "arc_plus_plus";
 constexpr char kLoginScopedToken[] = "login_scoped_token";
-constexpr char kGetAuthCodeHeaders[] =
-    "Content-Type: application/json; charset=utf-8";
+constexpr char kGetAuthCodeKey[] = "Content-Type";
+constexpr char kGetAuthCodeValue[] = "application/json; charset=utf-8";
 constexpr char kContentTypeJSON[] = "application/json";
 
 }  // namespace
@@ -131,7 +131,7 @@ void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
       net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE |
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   resource_request->method = "POST";
-  resource_request->headers.AddHeaderFromString(kGetAuthCodeHeaders);
+  resource_request->headers.SetHeader(kGetAuthCodeKey, kGetAuthCodeValue);
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->AttachStringForUpload(request_string, kContentTypeJSON);

@@ -201,8 +201,10 @@ void FamilyInfoFetcher::OnGetTokenSuccess(
   resource_request->url = url;
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  resource_request->headers.AddHeaderFromString(base::StringPrintf(
-      supervised_users::kAuthorizationHeaderFormat, access_token.c_str()));
+  resource_request->headers.SetHeader(
+      net::HttpRequestHeaders::kAuthorization,
+      base::StringPrintf(supervised_users::kAuthorizationHeaderFormat,
+                         access_token.c_str()));
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->SetRetryOptions(

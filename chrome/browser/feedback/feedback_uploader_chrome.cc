@@ -77,8 +77,9 @@ void FeedbackUploaderChrome::AppendExtraHeadersToUploadRequest(
   if (access_token_.empty())
     return;
 
-  resource_request->headers.AddHeaderFromString(
-      base::StringPrintf("Authorization: Bearer %s", access_token_.c_str()));
+  resource_request->headers.SetHeader(
+      net::HttpRequestHeaders::kAuthorization,
+      base::StringPrintf("Bearer %s", access_token_.c_str()));
 }
 
 }  // namespace feedback

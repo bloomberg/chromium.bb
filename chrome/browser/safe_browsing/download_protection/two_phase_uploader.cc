@@ -24,7 +24,8 @@
 namespace {
 
 // Header sent on initial request to start the two phase upload process.
-const char kStartHeader[] = "x-goog-resumable: start";
+const char kStartHeaderKey[] = "x-goog-resumable";
+const char kStartHeaderValue[] = "start";
 
 // Header returned on initial response with URL to use for the second phase.
 const char kLocationHeader[] = "Location";
@@ -154,7 +155,7 @@ void TwoPhaseUploaderImpl::UploadMetadata() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = base_url_;
   resource_request->method = "POST";
-  resource_request->headers.AddHeadersFromString(kStartHeader);
+  resource_request->headers.SetHeader(kStartHeaderKey, kStartHeaderValue);
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation_);
   url_loader_->SetAllowHttpErrorResults(true);
