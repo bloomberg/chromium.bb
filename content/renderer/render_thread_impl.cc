@@ -1249,7 +1249,8 @@ void RenderThreadImpl::InitializeWebKit(
   GetContentClient()
       ->renderer()
       ->SetRuntimeFeaturesDefaultsBeforeBlinkInitialization();
-  blink::Initialize(blink_platform_impl_.get(), registry);
+  blink::Initialize(blink_platform_impl_.get(), registry,
+                    blink_platform_impl_->CurrentThread());
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
   isolate->SetCreateHistogramFunction(CreateHistogram);

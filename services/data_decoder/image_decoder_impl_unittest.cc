@@ -87,7 +87,7 @@ class BlinkInitializer : public blink::Platform {
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
     service_manager::BinderRegistry empty_registry;
-    blink::Initialize(this, &empty_registry);
+    blink::Initialize(this, &empty_registry, CurrentThread());
   }
 
   ~BlinkInitializer() override {}

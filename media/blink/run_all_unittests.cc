@@ -47,7 +47,6 @@ class BlinkPlatformWithTaskEnvironment : public blink::Platform {
     main_thread_scheduler_->Shutdown();
   }
 
- protected:
   blink::WebThread* CurrentThread() override {
     CHECK(main_thread_->IsCurrentThread());
     return main_thread_.get();
@@ -83,7 +82,7 @@ static int RunTests(base::TestSuite* test_suite) {
 
   BlinkPlatformWithTaskEnvironment platform_;
   service_manager::BinderRegistry empty_registry;
-  blink::Initialize(&platform_, &empty_registry);
+  blink::Initialize(&platform_, &empty_registry, platform_.CurrentThread());
 
   return test_suite->Run();
 }

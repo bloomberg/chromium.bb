@@ -180,7 +180,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
                           weak_factory_.GetWeakPtr()));
 
   service_manager::BinderRegistry empty_registry;
-  blink::Initialize(this, &empty_registry);
+  blink::Initialize(this, &empty_registry, CurrentThread());
   g_test_platform = this;
   blink::SetLayoutTestMode(true);
   blink::WebRuntimeFeatures::EnableDatabase(true);

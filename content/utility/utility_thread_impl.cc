@@ -121,7 +121,8 @@ void UtilityThreadImpl::EnsureBlinkInitializedInternal(bool sandbox_support) {
           ? std::make_unique<UtilityBlinkPlatformWithSandboxSupportImpl>(
                 GetConnector())
           : std::make_unique<UtilityBlinkPlatformImpl>();
-  blink::Platform::Initialize(blink_platform_impl_.get());
+  blink::Platform::Initialize(blink_platform_impl_.get(),
+                              blink_platform_impl_->CurrentThread());
 }
 
 void UtilityThreadImpl::Init() {
