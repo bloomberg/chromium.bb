@@ -47,6 +47,8 @@ static_library("vr_android") {
     "vr_shell_gl.h",
     "vr_web_contents_observer.cc",
     "vr_web_contents_observer.h",
+    "web_xr_presentation_state.cc",
+    "web_xr_presentation_state.h",
   ]
 
   if (enable_arcore) {
