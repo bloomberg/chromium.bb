@@ -97,6 +97,6 @@ void ChromeHistoryBackendClient::OnHistoryBackendInitialized(
 void ChromeHistoryBackendClient::OnHistoryBackendDestroyed(
     history::HistoryBackend* history_backend,
     const base::FilePath& history_dir) {
-  sql::Connection::Delete(history_dir.Append(kAndroidCacheFilename));
+  sql::Database::Delete(history_dir.Append(kAndroidCacheFilename));
 }
 #endif  // defined(OS_ANDROID)

@@ -19,7 +19,7 @@
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -36,7 +36,7 @@ struct PageInfo {
 
 std::vector<PageInfo> GetPageInfosByNamespaces(
     const std::vector<std::string>& temp_namespaces,
-    sql::Connection* db) {
+    sql::Database* db) {
   std::vector<PageInfo> result;
 
   static const char kSql[] =
@@ -69,7 +69,7 @@ std::set<base::FilePath> GetAllArchives(const base::FilePath& archives_dir) {
 }
 
 bool DeletePagesByOfflineIds(const std::vector<int64_t>& offline_ids,
-                             sql::Connection* db) {
+                             sql::Database* db) {
   static const char kSql[] =
       "DELETE FROM " OFFLINE_PAGES_TABLE_NAME " WHERE offline_id = ?";
 
@@ -98,7 +98,7 @@ bool DeleteFiles(const std::vector<base::FilePath>& file_paths) {
 // - For all files without any associated DB entry:
 //   Delete the files, since they're 'headless' and has no way to be accessed.
 SyncOperationResult ClearLegacyPagesInPrivateDirSync(
-    sql::Connection* db,
+    sql::Database* db,
     const std::vector<std::string>& temporary_namespaces,
     const std::vector<std::string>& persistent_namespaces,
     const base::FilePath& private_dir) {
@@ -163,7 +163,7 @@ SyncOperationResult ClearLegacyPagesInPrivateDirSync(
 }
 
 SyncOperationResult CheckTemporaryPageConsistencySync(
-    sql::Connection* db,
+    sql::Database* db,
     const std::vector<std::string>& namespaces,
     const base::FilePath& archives_dir) {
   // One large database transaction that will:
@@ -224,7 +224,7 @@ SyncOperationResult CheckTemporaryPageConsistencySync(
   return SyncOperationResult::SUCCESS;
 }
 
-void ReportStorageUsageSync(sql::Connection* db,
+void ReportStorageUsageSync(sql::Database* db,
                             const std::vector<std::string>& namespaces) {
   static const char kSql[] =
       "SELECT sum(file_size) FROM " OFFLINE_PAGES_TABLE_NAME
@@ -247,7 +247,7 @@ bool StartupMaintenanceSync(
     const std::vector<std::string>& temporary_namespaces,
     const base::FilePath& temporary_archives_dir,
     const base::FilePath& private_archives_dir,
-    sql::Connection* db) {
+    sql::Database* db) {
   // Clear temporary pages that are in legacy directory, which is also the
   // directory that serves as the 'private' directory.
   SyncOperationResult result = ClearLegacyPagesInPrivateDirSync(

@@ -26,7 +26,7 @@
 class GURL;
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 // Importer for Mozilla Firefox 3 and later.
@@ -75,19 +75,19 @@ class FirefoxImporter : public Importer {
 
   // Gets the specific ID of bookmark node with given GUID from |db|.
   // Returns -1 if not found.
-  int LoadNodeIDByGUID(sql::Connection* db, const std::string& GUID);
+  int LoadNodeIDByGUID(sql::Database* db, const std::string& GUID);
 
   // Loads all livemark IDs from database |db|.
-  void LoadLivemarkIDs(sql::Connection* db, std::set<int>* livemark);
+  void LoadLivemarkIDs(sql::Database* db, std::set<int>* livemark);
 
   // Gets the bookmark folder with given ID, and adds the entry in |list|
   // if successful.
-  void GetTopBookmarkFolder(sql::Connection* db,
+  void GetTopBookmarkFolder(sql::Database* db,
                             int folder_id,
                             BookmarkList* list);
 
   // Loads all children of the given folder, and appends them to the |list|.
-  void GetWholeBookmarkFolder(sql::Connection* db,
+  void GetWholeBookmarkFolder(sql::Database* db,
                               BookmarkList* list,
                               size_t position,
                               FaviconsLocation favicons_location,
@@ -96,7 +96,7 @@ class FirefoxImporter : public Importer {
   // Loads the favicons given in the map from places.sqlite database, loads the
   // data, and converts it into FaviconUsageData structures.
   // This function supports older Firefox profiles (up to version 54).
-  void LoadFavicons(sql::Connection* db,
+  void LoadFavicons(sql::Database* db,
                     const FaviconMap& favicon_map,
                     favicon_base::FaviconUsageDataList* favicons);
 

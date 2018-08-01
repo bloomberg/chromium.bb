@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/android/android_history_types.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/init_status.h"
 
 namespace history {
@@ -67,7 +67,7 @@ class AndroidCacheDatabase {
  protected:
   // Returns the database for the functions in this interface. The decendent of
   // this class implements these functions to return its objects.
-  virtual sql::Connection& GetDB() = 0;
+  virtual sql::Database& GetDB() = 0;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AndroidCacheDatabaseTest, InitAndroidCacheDatabase);

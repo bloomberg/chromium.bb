@@ -143,8 +143,7 @@ ResourcePrefetchPredictorTables::origin_table() {
 }
 
 // static
-bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(
-    sql::Connection* db) {
+bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(sql::Database* db) {
   int version = GetDatabaseVersion(db);
   bool success = true;
   // Too new is also a problem.
@@ -188,7 +187,7 @@ bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(
 }
 
 // static
-int ResourcePrefetchPredictorTables::GetDatabaseVersion(sql::Connection* db) {
+int ResourcePrefetchPredictorTables::GetDatabaseVersion(sql::Database* db) {
   int version = 0;
   if (db->DoesTableExist(kMetadataTableName)) {
     sql::Statement statement(db->GetUniqueStatement(
@@ -202,7 +201,7 @@ int ResourcePrefetchPredictorTables::GetDatabaseVersion(sql::Connection* db) {
 }
 
 // static
-bool ResourcePrefetchPredictorTables::SetDatabaseVersion(sql::Connection* db,
+bool ResourcePrefetchPredictorTables::SetDatabaseVersion(sql::Database* db,
                                                          int version) {
   sql::Statement statement(db->GetUniqueStatement(
       base::StringPrintf(
@@ -218,7 +217,7 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
     return;
 
   // Database initialization is all-or-nothing.
-  sql::Connection* db = DB();
+  sql::Database* db = DB();
   bool success = db->BeginTransaction();
   success = success && DropTablesIfOutdated(db);
 

@@ -32,7 +32,7 @@
 #include "content/public/browser/local_storage_usage_info.h"
 #include "services/file/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -264,7 +264,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
       deleted_old_data_ = true;
       context_->task_runner_->PostShutdownBlockingTask(
           FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-          base::BindOnce(base::IgnoreResult(&sql::Connection::Delete),
+          base::BindOnce(base::IgnoreResult(&sql::Database::Delete),
                          sql_db_path()));
     }
 

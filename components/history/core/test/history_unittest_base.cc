@@ -12,7 +12,7 @@
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 namespace history {
 
@@ -33,7 +33,7 @@ void HistoryUnitTestBase::ExecuteSQLScript(const base::FilePath& sql_path,
   sql_time.push_back(base::StringPrintf("%" PRId64, now));  // time_slot
   sql = base::ReplaceStringPlaceholders(sql, sql_time, nullptr);
 
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.Open(db_path));
   ASSERT_TRUE(connection.Execute(sql.c_str()));
 }

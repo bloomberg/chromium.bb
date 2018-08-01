@@ -15,7 +15,7 @@
 #include "components/offline_pages/core/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/core/background/request_queue_store_sql.h"
 #include "components/offline_pages/core/background/save_page_request.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ enum class LastResult {
 };
 
 void BuildTestStoreWithSchemaFromM57(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("RequestQueue.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -88,7 +88,7 @@ void BuildTestStoreWithSchemaFromM57(const base::FilePath& file) {
 }
 
 void BuildTestStoreWithSchemaFromM58(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("RequestQueue.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -135,7 +135,7 @@ void BuildTestStoreWithSchemaFromM58(const base::FilePath& file) {
 }
 
 void BuildTestStoreWithSchemaFromM61(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("RequestQueue.db"))));
   ASSERT_TRUE(connection.is_open());

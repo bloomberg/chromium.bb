@@ -12,7 +12,7 @@
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -25,7 +25,7 @@ struct DownloadInfo {
   std::string guid;
 };
 
-std::vector<DownloadInfo> GetAllOutstandingDownloadsSync(sql::Connection* db) {
+std::vector<DownloadInfo> GetAllOutstandingDownloadsSync(sql::Database* db) {
   static const char kSql[] =
       "SELECT offline_id, guid"
       " FROM prefetch_items"
@@ -42,7 +42,7 @@ std::vector<DownloadInfo> GetAllOutstandingDownloadsSync(sql::Connection* db) {
 
 bool RetryOrExpireDownloadSync(int64_t offline_id,
                                int max_attempts,
-                               sql::Connection* db) {
+                               sql::Database* db) {
   // For all items in DOWNLOADING state:
   // * transit to RECEIVED_BUNDLE state if not exceeding maximum attempts
   // * transit to FINISHED state with error_code set otherwise.
@@ -70,7 +70,7 @@ bool RetryOrExpireDownloadSync(int64_t offline_id,
 bool MarkDownloadAsCompletedSync(int64_t offline_id,
                                  const base::FilePath& file_path,
                                  int64_t file_size,
-                                 sql::Connection* db) {
+                                 sql::Database* db) {
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?, file_path = ?, file_size = ?"
@@ -90,7 +90,7 @@ bool CleanupDownloadsSync(
     const std::set<std::string>& outstanding_download_ids,
     const std::map<std::string, std::pair<base::FilePath, int64_t>>&
         success_downloads,
-    sql::Connection* db) {
+    sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;

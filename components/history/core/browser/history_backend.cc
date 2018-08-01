@@ -1503,7 +1503,7 @@ void HistoryBackend::DeleteFTSIndexDatabases() {
   int num_databases_deleted = 0;
   base::FilePath current_file;
   while (!(current_file = enumerator.Next()).empty()) {
-    if (sql::Connection::Delete(current_file))
+    if (sql::Database::Delete(current_file))
       num_databases_deleted++;
   }
   UMA_HISTOGRAM_COUNTS("History.DeleteFTSIndexDatabases",
@@ -2773,7 +2773,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(
     // error opening it. In this case, we just try to blow it away to try to
     // fix the error if it exists. This may fail, in which case either the
     // file doesn't exist or there's no more we can do.
-    sql::Connection::Delete(GetFaviconsFileName());
+    sql::Database::Delete(GetFaviconsFileName());
     return true;
   }
 

@@ -128,9 +128,9 @@ void RecordInvalidStructure(InvalidStructureType invalid_type) {
                             invalid_type, STRUCTURE_EVENT_MAX);
 }
 
-// TODO(shess): If this proves out, move it all into sql::Connection to be
+// TODO(shess): If this proves out, move it all into sql::Database to be
 // shared.
-void GenerateDiagnostics(sql::Connection* db,
+void GenerateDiagnostics(sql::Database* db,
                          int extended_error,
                          sql::Statement* stmt) {
   // Since some/most errors will not resolve themselves, only report
@@ -152,7 +152,7 @@ void GenerateDiagnostics(sql::Connection* db,
 
 // NOTE(shess): Schema modifications must consider initial creation in
 // |InitImpl()| and history pruning in |RetainDataForPageUrls()|.
-bool InitTables(sql::Connection* db) {
+bool InitTables(sql::Database* db) {
   static const char kIconMappingSql[] =
       "CREATE TABLE IF NOT EXISTS icon_mapping"
       "("
@@ -195,7 +195,7 @@ bool InitTables(sql::Connection* db) {
 
 // NOTE(shess): Schema modifications must consider initial creation in
 // |InitImpl()| and history pruning in |RetainDataForPageUrls()|.
-bool InitIndices(sql::Connection* db) {
+bool InitIndices(sql::Database* db) {
   static const char kIconMappingUrlIndexSql[] =
       "CREATE INDEX IF NOT EXISTS icon_mapping_page_url_idx"
       " ON icon_mapping(page_url)";
@@ -221,7 +221,7 @@ bool InitIndices(sql::Connection* db) {
   return true;
 }
 
-void DatabaseErrorCallback(sql::Connection* db,
+void DatabaseErrorCallback(sql::Database* db,
                            const base::FilePath& db_path,
                            HistoryBackendClient* backend_client,
                            int extended_error,
@@ -263,12 +263,12 @@ void DatabaseErrorCallback(sql::Connection* db,
     // or hardware issues, not coding errors at the client level, so displaying
     // the error would probably lead to confusion.  The ignored call signals the
     // test-expectation framework that the error was handled.
-    ignore_result(sql::Connection::IsExpectedSqliteError(extended_error));
+    ignore_result(sql::Database::IsExpectedSqliteError(extended_error));
     return;
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Connection::IsExpectedSqliteError(extended_error))
+  if (!sql::Database::IsExpectedSqliteError(extended_error))
     DLOG(FATAL) << db->GetErrorMessage();
 }
 
@@ -1057,7 +1057,7 @@ favicon_base::IconType ThumbnailDatabase::FromPersistedIconType(int icon_type) {
   return static_cast<favicon_base::IconType>(val);
 }
 
-sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
+sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Database* db,
                                                 const base::FilePath& db_name) {
   db->set_histogram_tag("Thumbnail");
   db->set_error_callback(base::Bind(&DatabaseErrorCallback,

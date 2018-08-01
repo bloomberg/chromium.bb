@@ -7,13 +7,13 @@
 #include <limits>
 
 #include "base/rand_util.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 namespace offline_pages {
 
 // static
-bool PrefetchStoreUtils::DeletePrefetchItemByOfflineIdSync(sql::Connection* db,
+bool PrefetchStoreUtils::DeletePrefetchItemByOfflineIdSync(sql::Database* db,
                                                            int64_t offline_id) {
   DCHECK(db);
   static const char kSql[] = "DELETE FROM prefetch_items WHERE offline_id=?";

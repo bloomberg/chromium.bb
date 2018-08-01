@@ -11,7 +11,7 @@
 #include "components/history/core/browser/history_types.h"
 
 namespace sql {
-class Connection;
+class Database;
 class Statement;
 }
 
@@ -197,7 +197,7 @@ class VisitDatabase {
 
  protected:
   // Returns the database for the functions in this interface.
-  virtual sql::Connection& GetDB() = 0;
+  virtual sql::Database& GetDB() = 0;
 
   // Called by the derived classes on initialization to make sure the tables
   // and indices are properly set up. Must be called before anything else.

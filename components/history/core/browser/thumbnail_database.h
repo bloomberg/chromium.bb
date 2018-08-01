@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "components/history/core/browser/history_types.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -284,7 +284,7 @@ class ThumbnailDatabase {
   // it is created.
   // |db| is the database to open.
   // |db_name| is a path to the database file.
-  sql::InitStatus OpenDatabase(sql::Connection* db,
+  sql::InitStatus OpenDatabase(sql::Database* db,
                                const base::FilePath& db_name);
 
   // Helper function to implement internals of Init().  This allows
@@ -307,7 +307,7 @@ class ThumbnailDatabase {
   // Returns true if the |favicons| database is missing a column.
   bool IsFaviconDBStructureIncorrect();
 
-  sql::Connection db_;
+  sql::Database db_;
   sql::MetaTable meta_table_;
 
   HistoryBackendClient* backend_client_;

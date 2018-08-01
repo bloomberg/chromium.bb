@@ -93,7 +93,7 @@
 #include "net/websockets/websocket_handshake_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -2051,7 +2051,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
       return false;
     }
 
-    sql::Connection db;
+    sql::Database db;
     if (!db.Open(cookie_path)) {
       EXPECT_TRUE(false);
       return false;
@@ -2076,7 +2076,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    sql::Connection db;
+    sql::Database db;
     base::FilePath cookie_path(
         SafeBrowsingService::GetCookieFilePathForTesting());
     ASSERT_TRUE(db.Open(cookie_path));

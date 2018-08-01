@@ -194,7 +194,7 @@ std::unique_ptr<CreditCard> CreditCardFromStatement(
   return credit_card;
 }
 
-bool AddAutofillProfileNamesToProfile(sql::Connection* db,
+bool AddAutofillProfileNamesToProfile(sql::Database* db,
                                       AutofillProfile* profile) {
   // TODO(estade): update schema so that multiple names are not associated per
   // unique profile guid. Please refer https://crbug.com/497934.
@@ -218,7 +218,7 @@ bool AddAutofillProfileNamesToProfile(sql::Connection* db,
   return s.Succeeded();
 }
 
-bool AddAutofillProfileEmailsToProfile(sql::Connection* db,
+bool AddAutofillProfileEmailsToProfile(sql::Database* db,
                                        AutofillProfile* profile) {
   // TODO(estade): update schema so that multiple emails are not associated per
   // unique profile guid. Please refer https://crbug.com/497934.
@@ -236,7 +236,7 @@ bool AddAutofillProfileEmailsToProfile(sql::Connection* db,
   return s.Succeeded();
 }
 
-bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
+bool AddAutofillProfilePhonesToProfile(sql::Database* db,
                                        AutofillProfile* profile) {
   // TODO(estade): update schema so that multiple phone numbers are not
   // associated per unique profile guid. Please refer https://crbug.com/497934.
@@ -255,7 +255,7 @@ bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
 }
 
 bool AddAutofillProfileNames(const AutofillProfile& profile,
-                             sql::Connection* db) {
+                             sql::Database* db) {
   // Add the new name.
   sql::Statement s(db->GetUniqueStatement(
       "INSERT INTO autofill_profile_names"
@@ -271,7 +271,7 @@ bool AddAutofillProfileNames(const AutofillProfile& profile,
 }
 
 bool AddAutofillProfileEmails(const AutofillProfile& profile,
-                              sql::Connection* db) {
+                              sql::Database* db) {
   // Add the new email.
   sql::Statement s(db->GetUniqueStatement(
       "INSERT INTO autofill_profile_emails (guid, email) VALUES (?,?)"));
@@ -282,7 +282,7 @@ bool AddAutofillProfileEmails(const AutofillProfile& profile,
 }
 
 bool AddAutofillProfilePhones(const AutofillProfile& profile,
-                              sql::Connection* db) {
+                              sql::Database* db) {
   // Add the new number.
   sql::Statement s(db->GetUniqueStatement(
       "INSERT INTO autofill_profile_phones (guid, number) VALUES (?,?)"));
@@ -293,7 +293,7 @@ bool AddAutofillProfilePhones(const AutofillProfile& profile,
 }
 
 bool AddAutofillProfilePieces(const AutofillProfile& profile,
-                              sql::Connection* db) {
+                              sql::Database* db) {
   if (!AddAutofillProfileNames(profile, db))
     return false;
 
@@ -306,7 +306,7 @@ bool AddAutofillProfilePieces(const AutofillProfile& profile,
   return true;
 }
 
-bool RemoveAutofillProfilePieces(const std::string& guid, sql::Connection* db) {
+bool RemoveAutofillProfilePieces(const std::string& guid, sql::Database* db) {
   sql::Statement s1(db->GetUniqueStatement(
       "DELETE FROM autofill_profile_names WHERE guid = ?"));
   s1.BindString(0, guid);

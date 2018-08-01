@@ -13,7 +13,7 @@
 #include "base/strings/string_piece.h"
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace password_manager {
@@ -38,7 +38,7 @@ namespace password_manager {
 //
 // // Now, assuming that |db| has a table "logins" in a state corresponding
 // // version 0, this will migrate it to the latest version:
-// sql::Connection* db = ...;
+// sql::Database* db = ...;
 // builder.MigrateFrom(0, db);
 //
 // // And assuming |db| has no table called "logins", this will create one
@@ -100,13 +100,13 @@ class SQLTableBuilder {
   // Assuming that the database connected through |db| contains a table called
   // |table_name_| in a state described by version |old_version|, migrates it to
   // the current version, which must be sealed. Returns true on success.
-  bool MigrateFrom(unsigned old_version, sql::Connection* db) const;
+  bool MigrateFrom(unsigned old_version, sql::Database* db) const;
 
   // If |db| connects to a database where table |table_name_| already exists,
   // this is a no-op and returns true. Otherwise, |table_name_| is created in a
   // state described by the current version known to the builder. The current
   // version must be sealed. Returns true on success.
-  bool CreateTable(sql::Connection* db) const;
+  bool CreateTable(sql::Database* db) const;
 
   // Returns the comma-separated list of all column names present in the last
   // version. The last version must be sealed.
@@ -151,15 +151,14 @@ class SQLTableBuilder {
   // |table_name_| in a state described by version |old_version|, migrates it to
   // version |old_version + 1|. The current version known to the builder must be
   // at least |old_version + 1| and sealed. Returns true on success.
-  bool MigrateToNextFrom(unsigned old_version, sql::Connection* db) const;
+  bool MigrateToNextFrom(unsigned old_version, sql::Database* db) const;
 
   // Assuming that the database connected through |db| contains a table called
   // |table_name_| in a state described by version |old_version|, migrates it
   // indices to version |old_version + 1|. The current version known to the
   // builder must be at least |old_version + 1| and sealed. Returns true on
   // success.
-  bool MigrateIndicesToNextFrom(unsigned old_version,
-                                sql::Connection* db) const;
+  bool MigrateIndicesToNextFrom(unsigned old_version, sql::Database* db) const;
 
   // Looks up column named |name| in |columns_|. If present, returns the last
   // one.

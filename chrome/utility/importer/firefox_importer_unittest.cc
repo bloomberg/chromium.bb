@@ -20,7 +20,7 @@
 #include "chrome/utility/importer/firefox_importer_unittest_utils.h"
 #include "chrome/utility/importer/nss_decryptor.h"
 #include "components/favicon_base/favicon_usage_data.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -108,7 +108,7 @@ TEST(FirefoxImporterTest, MAYBE_NSS(FirefoxNSSDecryptorDeduceAuthScheme)) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath signons_path =
       temp_dir.GetPath().AppendASCII("signons.sqlite");
-  sql::Connection db_conn;
+  sql::Database db_conn;
 
   ASSERT_TRUE(db_conn.Open(signons_path));
 

@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +42,7 @@ class StatisticsTableTest : public testing::Test {
   void ReloadDatabase() {
     base::FilePath file = temp_dir_.GetPath().AppendASCII("TestDatabase");
     db_.reset(new StatisticsTable);
-    connection_.reset(new sql::Connection);
+    connection_.reset(new sql::Database);
     connection_->set_exclusive_locking();
     ASSERT_TRUE(connection_->Open(file));
     db_->Init(connection_.get());
@@ -54,7 +54,7 @@ class StatisticsTableTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<sql::Connection> connection_;
+  std::unique_ptr<sql::Database> connection_;
   std::unique_ptr<StatisticsTable> db_;
   InteractionsStats test_data_;
 };

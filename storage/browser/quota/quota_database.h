@@ -26,7 +26,7 @@ class QuotaDatabaseTest;
 }
 
 namespace sql {
-class Connection;
+class Database;
 class MetaTable;
 }
 
@@ -61,7 +61,7 @@ class STORAGE_EXPORT QuotaDatabase {
   explicit QuotaDatabase(const base::FilePath& path);
   ~QuotaDatabase();
 
-  void CloseConnection();
+  void CloseDatabase();
 
   // Returns whether the record could be found.
   bool GetHostQuota(const std::string& host,
@@ -183,12 +183,14 @@ class STORAGE_EXPORT QuotaDatabase {
                                 blink::mojom::StorageType type,
                                 int64_t quota);
 
-  static bool CreateSchema(
-      sql::Connection* database,
-      sql::MetaTable* meta_table,
-      int schema_version, int compatible_version,
-      const TableSchema* tables, size_t tables_size,
-      const IndexSchema* indexes, size_t indexes_size);
+  static bool CreateSchema(sql::Database* database,
+                           sql::MetaTable* meta_table,
+                           int schema_version,
+                           int compatible_version,
+                           const TableSchema* tables,
+                           size_t tables_size,
+                           const IndexSchema* indexes,
+                           size_t indexes_size);
 
   // |callback| may return false to stop reading data.
   bool DumpQuotaTable(const QuotaTableCallback& callback);
@@ -196,7 +198,7 @@ class STORAGE_EXPORT QuotaDatabase {
 
   base::FilePath db_file_path_;
 
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   std::unique_ptr<sql::MetaTable> meta_table_;
   bool is_recreating_;
   bool is_disabled_;

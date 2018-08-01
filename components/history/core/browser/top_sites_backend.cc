@@ -19,7 +19,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/top_sites_database.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 namespace history {
 
@@ -138,7 +138,7 @@ void TopSitesBackend::SetPageThumbnailOnDBThread(const MostVisitedURL& url,
 void TopSitesBackend::ResetDatabaseOnDBThread(const base::FilePath& file_path) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   db_.reset(nullptr);
-  sql::Connection::Delete(db_path_);
+  sql::Database::Delete(db_path_);
   db_.reset(new TopSitesDatabase());
   InitDBOnDBThread(db_path_);
 }

@@ -15,7 +15,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -26,7 +26,7 @@ namespace {
 using DownloadItem = DownloadArchivesTask::DownloadItem;
 using ItemsToDownload = DownloadArchivesTask::ItemsToDownload;
 
-ItemsToDownload FindItemsReadyForDownload(sql::Connection* db) {
+ItemsToDownload FindItemsReadyForDownload(sql::Database* db) {
   static const char kSql[] =
       "SELECT offline_id, archive_body_name, operation_name,"
       " archive_body_length"
@@ -49,7 +49,7 @@ ItemsToDownload FindItemsReadyForDownload(sql::Connection* db) {
   return items_to_download;
 }
 
-std::unique_ptr<int> CountDownloadsInProgress(sql::Connection* db) {
+std::unique_ptr<int> CountDownloadsInProgress(sql::Database* db) {
   static const char kSql[] =
       "SELECT COUNT(offline_id) FROM prefetch_items WHERE state = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -59,7 +59,7 @@ std::unique_ptr<int> CountDownloadsInProgress(sql::Connection* db) {
   return std::make_unique<int>(statement.ColumnInt(0));
 }
 
-bool MarkItemAsDownloading(sql::Connection* db,
+bool MarkItemAsDownloading(sql::Database* db,
                            int64_t offline_id,
                            const std::string& guid) {
   // Code below only changes freshness time once, when the archive download is
@@ -82,7 +82,7 @@ bool MarkItemAsDownloading(sql::Connection* db,
 }
 
 std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
-    sql::Connection* db) {
+    sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return nullptr;

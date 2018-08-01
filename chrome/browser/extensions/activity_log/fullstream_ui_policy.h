@@ -67,8 +67,8 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
 
   // The ActivityDatabase::Delegate interface.  These are always called from
   // the database thread.
-  bool InitDatabase(sql::Connection* db) override;
-  bool FlushDatabase(sql::Connection* db) override;
+  bool InitDatabase(sql::Database* db) override;
+  bool FlushDatabase(sql::Database* db) override;
   void OnDatabaseFailure() override;
   void OnDatabaseClose() override;
 

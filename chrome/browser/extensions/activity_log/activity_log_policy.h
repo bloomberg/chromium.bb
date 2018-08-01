@@ -216,7 +216,7 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
   // Access to the SQL connection in the ActivityDatabase.  This should only be
   // called from the database thread.  May return NULL if the database is not
   // valid.
-  sql::Connection* GetDatabaseConnection() const;
+  sql::Database* GetDatabaseConnection() const;
 
  private:
   // See the comments for the ActivityDatabase class for a discussion of how

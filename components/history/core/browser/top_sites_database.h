@@ -19,7 +19,7 @@ class FilePath;
 }
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace history {
@@ -107,9 +107,9 @@ class TopSitesDatabase {
   // invoke recovery code.
   bool InitImpl(const base::FilePath& db_name);
 
-  sql::Connection* CreateDB(const base::FilePath& db_name);
+  sql::Database* CreateDB(const base::FilePath& db_name);
 
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesDatabase);

@@ -147,7 +147,7 @@ class InMemoryURLIndexTest : public testing::Test {
                  base::string16 term) const;
 
   // Pass-through function to simplify our friendship with HistoryService.
-  sql::Connection& GetDB();
+  sql::Database& GetDB();
 
   // Pass-through functions to simplify our friendship with InMemoryURLIndex.
   URLIndexPrivateData* GetPrivateData() const;
@@ -177,7 +177,7 @@ class InMemoryURLIndexTest : public testing::Test {
   std::unique_ptr<InMemoryURLIndex> url_index_;
 };
 
-sql::Connection& InMemoryURLIndexTest::GetDB() {
+sql::Database& InMemoryURLIndexTest::GetDB() {
   return history_database_->GetDB();
 }
 
@@ -253,7 +253,7 @@ void InMemoryURLIndexTest::SetUp() {
   ASSERT_TRUE(base::PathExists(golden_path));
   std::string sql;
   ASSERT_TRUE(base::ReadFileToString(golden_path, &sql));
-  sql::Connection& db(GetDB());
+  sql::Database& db(GetDB());
   ASSERT_TRUE(db.is_open());
   ASSERT_TRUE(db.Execute(sql.c_str()));
 

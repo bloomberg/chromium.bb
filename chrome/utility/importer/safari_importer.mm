@@ -90,7 +90,7 @@ void SafariImporter::ImportBookmarks() {
   }
 
   // Import favicons.
-  sql::Connection db;
+  sql::Database db;
   if (!OpenDatabase(&db))
     return;
 
@@ -104,7 +104,7 @@ void SafariImporter::ImportBookmarks() {
   }
 }
 
-bool SafariImporter::OpenDatabase(sql::Connection* db) {
+bool SafariImporter::OpenDatabase(sql::Database* db) {
   // Construct ~/Library/Safari/WebIcons.db path.
   NSString* library_dir = [NSString
       stringWithUTF8String:library_dir_.value().c_str()];
@@ -117,7 +117,7 @@ bool SafariImporter::OpenDatabase(sql::Connection* db) {
   return db->Open(base::FilePath(db_path));
 }
 
-void SafariImporter::ImportFaviconURLs(sql::Connection* db,
+void SafariImporter::ImportFaviconURLs(sql::Database* db,
                                        FaviconMap* favicon_map) {
   const char query[] = "SELECT iconID, url FROM PageURL;";
   sql::Statement s(db->GetUniqueStatement(query));
@@ -130,7 +130,7 @@ void SafariImporter::ImportFaviconURLs(sql::Connection* db,
 }
 
 void SafariImporter::LoadFaviconData(
-    sql::Connection* db,
+    sql::Database* db,
     const FaviconMap& favicon_map,
     favicon_base::FaviconUsageDataList* favicons) {
   const char query[] = "SELECT i.url, d.data "

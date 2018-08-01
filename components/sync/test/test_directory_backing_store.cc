@@ -11,7 +11,7 @@ namespace syncable {
 
 TestDirectoryBackingStore::TestDirectoryBackingStore(
     const std::string& dir_name,
-    sql::Connection* db)
+    sql::Database* db)
     : DirectoryBackingStore(dir_name, db) {}
 
 TestDirectoryBackingStore::~TestDirectoryBackingStore() {

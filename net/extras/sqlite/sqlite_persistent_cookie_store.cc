@@ -319,7 +319,7 @@ class SQLitePersistentCookieStore::Backend
                               bool success);
 
   const base::FilePath path_;
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   sql::MetaTable meta_table_;
 
   typedef std::list<std::unique_ptr<PendingOperation>> PendingOperationsList;
@@ -529,7 +529,7 @@ class IncrementTimeDelta {
 
 // Initializes the cookies table, returning true on success.
 // The table cannot exist when calling this function.
-bool CreateV10Schema(sql::Connection* db) {
+bool CreateV10Schema(sql::Database* db) {
   DCHECK(!db->DoesTableExist("cookies"));
 
   std::string stmt(base::StringPrintf(
@@ -557,7 +557,7 @@ bool CreateV10Schema(sql::Connection* db) {
   return true;
 }
 
-bool InitTable(sql::Connection* db) {
+bool InitTable(sql::Database* db) {
   if (db->DoesTableExist("cookies"))
     return true;
 
@@ -740,7 +740,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   if (base::GetFileSize(path_, &db_size))
     UMA_HISTOGRAM_COUNTS_1M("Cookie.DBSizeInKB", db_size / 1024);
 
-  db_.reset(new sql::Connection);
+  db_.reset(new sql::Database);
   db_->set_histogram_tag("Cookie");
 
   // Unretained to avoid a ref loop with |db_|.
@@ -1208,8 +1208,8 @@ bool SQLitePersistentCookieStore::Backend::EnsureDatabaseVersion() {
     UMA_HISTOGRAM_COUNTS_100("Cookie.CorruptMetaTable", 1);
 
     meta_table_.Reset();
-    db_.reset(new sql::Connection);
-    if (!sql::Connection::Delete(path_) || !db_->Open(path_) ||
+    db_.reset(new sql::Database);
+    if (!sql::Database::Delete(path_) || !db_->Open(path_) ||
         !meta_table_.Init(db_.get(), kCurrentVersionNumber,
                           kCompatibleVersionNumber)) {
       UMA_HISTOGRAM_COUNTS_100("Cookie.CorruptMetaTableRecoveryFailed", 1);

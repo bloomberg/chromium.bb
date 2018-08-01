@@ -18,13 +18,13 @@ namespace sql {
 // we don't have to null-check the ref_ to see if the statement is valid: we
 // only have to check the ref's validity bit.
 Statement::Statement()
-    : ref_(base::MakeRefCounted<Connection::StatementRef>(nullptr,
-                                                          nullptr,
-                                                          false)),
+    : ref_(base::MakeRefCounted<Database::StatementRef>(nullptr,
+                                                        nullptr,
+                                                        false)),
       stepped_(false),
       succeeded_(false) {}
 
-Statement::Statement(scoped_refptr<Connection::StatementRef> ref)
+Statement::Statement(scoped_refptr<Database::StatementRef> ref)
     : ref_(std::move(ref)), stepped_(false), succeeded_(false) {}
 
 Statement::~Statement() {
@@ -34,14 +34,13 @@ Statement::~Statement() {
   Reset(true);
 }
 
-void Statement::Assign(scoped_refptr<Connection::StatementRef> ref) {
+void Statement::Assign(scoped_refptr<Database::StatementRef> ref) {
   Reset(true);
   ref_ = std::move(ref);
 }
 
 void Statement::Clear() {
-  Assign(
-      base::MakeRefCounted<Connection::StatementRef>(nullptr, nullptr, false));
+  Assign(base::MakeRefCounted<Database::StatementRef>(nullptr, nullptr, false));
   succeeded_ = false;
 }
 
@@ -61,24 +60,24 @@ int Statement::StepInternal(bool timer_flag) {
   const bool was_stepped = stepped_;
   stepped_ = true;
   int ret = SQLITE_ERROR;
-  if (!ref_->connection()) {
+  if (!ref_->database()) {
     ret = sqlite3_step(ref_->stmt());
   } else {
     if (!timer_flag) {
       ret = sqlite3_step(ref_->stmt());
     } else {
-      const base::TimeTicks before = ref_->connection()->NowTicks();
+      const base::TimeTicks before = ref_->database()->NowTicks();
       ret = sqlite3_step(ref_->stmt());
-      const base::TimeTicks after = ref_->connection()->NowTicks();
+      const base::TimeTicks after = ref_->database()->NowTicks();
       const bool read_only = !!sqlite3_stmt_readonly(ref_->stmt());
-      ref_->connection()->RecordTimeAndChanges(after - before, read_only);
+      ref_->database()->RecordTimeAndChanges(after - before, read_only);
     }
 
     if (!was_stepped)
-      ref_->connection()->RecordOneEvent(Connection::EVENT_STATEMENT_RUN);
+      ref_->database()->RecordOneEvent(Database::EVENT_STATEMENT_RUN);
 
     if (ret == SQLITE_ROW)
-      ref_->connection()->RecordOneEvent(Connection::EVENT_STATEMENT_ROWS);
+      ref_->database()->RecordOneEvent(Database::EVENT_STATEMENT_ROWS);
   }
   return CheckError(ret);
 }
@@ -108,14 +107,14 @@ void Statement::Reset(bool clear_bound_vars) {
     // sqlite3_reset() returns the last step error, which StepInternal() already
     // checked.
     const int rc =sqlite3_reset(ref_->stmt());
-    if (rc == SQLITE_OK && ref_->connection())
-      ref_->connection()->RecordOneEvent(Connection::EVENT_STATEMENT_SUCCESS);
+    if (rc == SQLITE_OK && ref_->database())
+      ref_->database()->RecordOneEvent(Database::EVENT_STATEMENT_SUCCESS);
   }
 
   // Potentially release dirty cache pages if an autocommit statement made
   // changes.
-  if (ref_->connection())
-    ref_->connection()->ReleaseCacheMemoryIfNeeded(false);
+  if (ref_->database())
+    ref_->database()->ReleaseCacheMemoryIfNeeded(false);
 
   succeeded_ = false;
   stepped_ = false;
@@ -316,8 +315,8 @@ bool Statement::CheckOk(int err) const {
 int Statement::CheckError(int err) {
   // Please don't add DCHECKs here, OnSqliteError() already has them.
   succeeded_ = (err == SQLITE_OK || err == SQLITE_ROW || err == SQLITE_DONE);
-  if (!succeeded_ && ref_.get() && ref_->connection())
-    return ref_->connection()->OnSqliteError(err, this, nullptr);
+  if (!succeeded_ && ref_.get() && ref_->database())
+    return ref_->database()->OnSqliteError(err, this, nullptr);
   return err;
 }
 

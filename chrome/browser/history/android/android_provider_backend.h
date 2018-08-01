@@ -332,7 +332,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
   const base::FilePath android_cache_db_filename_;
 
   // The history db's connection.
-  sql::Connection* db_;
+  sql::Database* db_;
 
   HistoryDatabase* history_db_;
 

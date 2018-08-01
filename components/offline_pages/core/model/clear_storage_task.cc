@@ -20,7 +20,7 @@
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -74,7 +74,7 @@ PageInfo MakePageInfo(sql::Statement* statement) {
 
 std::unique_ptr<std::vector<PageInfo>> GetAllTemporaryPageInfos(
     const std::map<std::string, LifetimePolicy>& temp_namespace_policy_map,
-    sql::Connection* db) {
+    sql::Database* db) {
   auto result = std::make_unique<std::vector<PageInfo>>();
 
   static const char kSql[] = "SELECT " PAGE_INFO_PROJECTION
@@ -100,7 +100,7 @@ std::unique_ptr<std::vector<PageInfo>> GetPageInfosToClear(
     const std::map<std::string, LifetimePolicy>& temp_namespace_policy_map,
     const base::Time& start_time,
     const ArchiveManager::StorageStats& stats,
-    sql::Connection* db) {
+    sql::Database* db) {
   std::map<std::string, int> namespace_page_count;
   auto page_infos_to_delete = std::make_unique<std::vector<PageInfo>>();
   std::vector<PageInfo> pages_remaining;
@@ -173,7 +173,7 @@ bool DeleteArchiveSync(const base::FilePath& file_path) {
 }
 
 // Deletes a page from the store by |offline_id|.
-bool DeletePageEntryByOfflineIdSync(sql::Connection* db, int64_t offline_id) {
+bool DeletePageEntryByOfflineIdSync(sql::Database* db, int64_t offline_id) {
   static const char kSql[] = "DELETE FROM offlinepages_v1 WHERE offline_id = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, offline_id);
@@ -184,7 +184,7 @@ std::pair<size_t, DeletePageResult> ClearPagesSync(
     std::map<std::string, LifetimePolicy> temp_namespace_policy_map,
     const base::Time& start_time,
     const ArchiveManager::StorageStats& stats,
-    sql::Connection* db) {
+    sql::Database* db) {
   std::unique_ptr<std::vector<PageInfo>> page_infos =
       GetPageInfosToClear(temp_namespace_policy_map, start_time, stats, db);
 

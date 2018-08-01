@@ -12,7 +12,7 @@ namespace sql {
 // Makes sure that sqlite3_initialize() is called.
 //
 // Users of the APIs exposed in //sql do not need to worry about SQLite
-// initialization, because sql::Connection calls this function internally.
+// initialization, because sql::Database calls this function internally.
 //
 // The function is exposed for other components that use SQLite indirectly, such
 // as Blink.

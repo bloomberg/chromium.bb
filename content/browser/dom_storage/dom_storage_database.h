@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/common/dom_storage/dom_storage_types.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 namespace base {
 namespace trace_event {
@@ -116,7 +116,7 @@ class CONTENT_EXPORT DOMStorageDatabase {
 
   // Path to the database on disk.
   const base::FilePath file_path_;
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   bool failed_to_open_;
   bool tried_to_recreate_;
   bool known_to_be_empty_;

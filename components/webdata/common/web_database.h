@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "components/webdata/common/web_database_table.h"
 #include "components/webdata/common/webdata_export.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
 
@@ -43,8 +43,7 @@ class WEBDATA_EXPORT WebDatabase {
 
   // Call before Init() to set the error callback to be used for the
   // underlying database connection.
-  void set_error_callback(
-      const sql::Connection::ErrorCallback& error_callback) {
+  void set_error_callback(const sql::Database::ErrorCallback& error_callback) {
     db_.set_error_callback(error_callback);
   }
 
@@ -63,7 +62,7 @@ class WEBDATA_EXPORT WebDatabase {
   std::string GetDiagnosticInfo(int extended_error, sql::Statement* statement);
 
   // Exposed for testing only.
-  sql::Connection* GetSQLConnection();
+  sql::Database* GetSQLConnection();
 
  private:
   // Used by |Init()| to migration database schema from older versions to
@@ -82,7 +81,7 @@ class WEBDATA_EXPORT WebDatabase {
   // Migration method for version 58.
   bool MigrateToVersion58DropWebAppsAndIntents();
 
-  sql::Connection db_;
+  sql::Database db_;
   sql::MetaTable meta_table_;
 
   // Map of all the different tables that have been added to this

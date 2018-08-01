@@ -23,8 +23,8 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace sql {
-class Connection;
-}
+class Database;
+}  // namespace sql
 
 namespace blacklist {
 
@@ -58,7 +58,7 @@ class OptOutStoreSQL : public OptOutStore {
   const base::FilePath db_file_path_;
 
   // SQL connection to the SQLite database.
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
 
   DISALLOW_COPY_AND_ASSIGN(OptOutStoreSQL);
 };

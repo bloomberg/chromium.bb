@@ -34,7 +34,7 @@ namespace predictors {
 //  - OriginTable - key: host, value: OriginData
 class ResourcePrefetchPredictorTables : public PredictorTableBase {
  public:
-  typedef base::OnceCallback<void(sql::Connection*)> DBTask;
+  typedef base::OnceCallback<void(sql::Database*)> DBTask;
 
   virtual void ScheduleDBTask(const base::Location& from_here, DBTask task);
 
@@ -84,9 +84,9 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   void CreateTableIfNonExistent() override;
   void LogDatabaseStats() override;
 
-  static bool DropTablesIfOutdated(sql::Connection* db);
-  static int GetDatabaseVersion(sql::Connection* db);
-  static bool SetDatabaseVersion(sql::Connection* db, int version);
+  static bool DropTablesIfOutdated(sql::Database* db);
+  static int GetDatabaseVersion(sql::Database* db);
+  static bool SetDatabaseVersion(sql::Database* db, int version);
 
   std::unique_ptr<GlowplugKeyValueTable<RedirectData>> host_redirect_table_;
   std::unique_ptr<GlowplugKeyValueTable<OriginData>> origin_table_;

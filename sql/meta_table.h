@@ -13,7 +13,7 @@
 
 namespace sql {
 
-class Connection;
+class Database;
 class Statement;
 
 // Creates and manages a table to store generic metadata. The features provided
@@ -35,7 +35,7 @@ class SQL_EXPORT MetaTable {
   static constexpr int64_t kMmapSuccess = -1;
 
   // Returns true if the 'meta' table exists.
-  static bool DoesTableExist(Connection* db);
+  static bool DoesTableExist(Database* db);
 
   // If the current version of the database is less than or equal to
   // |deprecated_version|, raze the database. Must be called outside of a
@@ -48,22 +48,22 @@ class SQL_EXPORT MetaTable {
   // TODO(shess): Folding this into Init() would allow enforcing
   // |deprecated_version|<|version|. But Init() is often called in a
   // transaction.
-  static void RazeIfDeprecated(Connection* db, int deprecated_version);
+  static void RazeIfDeprecated(Database* db, int deprecated_version);
 
   // Used to tuck some data into the meta table about mmap status. The value
   // represents how much data in bytes has successfully been read from the
   // database, or |kMmapFailure| or |kMmapSuccess|.
-  static bool GetMmapStatus(Connection* db, int64_t* status);
-  static bool SetMmapStatus(Connection* db, int64_t status);
+  static bool GetMmapStatus(Database* db, int64_t* status);
+  static bool SetMmapStatus(Database* db, int64_t status);
 
-  // Initializes the MetaTableHelper, providing the |Connection| pointer and
+  // Initializes the MetaTableHelper, providing the |Database| pointer and
   // creating the meta table if necessary. Must be called before any other
   // non-static methods. For new tables, it will initialize the version number
   // to |version| and the compatible version number to |compatible_version|.
   // Versions must be greater than 0 to distinguish missing versions (see
   // GetVersionNumber()). If there was no meta table (proxy for a fresh
   // database), mmap status is set to |kMmapSuccess|.
-  bool Init(Connection* db, int version, int compatible_version);
+  bool Init(Database* db, int version, int compatible_version);
 
   // Resets this MetaTable object, making another call to Init() possible.
   void Reset();
@@ -113,7 +113,7 @@ class SQL_EXPORT MetaTable {
   void PrepareSetStatement(Statement* statement, const char* key);
   bool PrepareGetStatement(Statement* statement, const char* key);
 
-  Connection* db_;
+  Database* db_;
 
   DISALLOW_COPY_AND_ASSIGN(MetaTable);
 };

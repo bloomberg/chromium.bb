@@ -9,7 +9,7 @@
 #include "components/history/core/browser/android/android_history_types.h"
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace history {
@@ -67,7 +67,7 @@ class AndroidURLsDatabase {
  protected:
   // Returns the database for the functions in this interface. The decendent of
   // this class implements these functions to return its objects.
-  virtual sql::Connection& GetDB() = 0;
+  virtual sql::Database& GetDB() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AndroidURLsDatabase);

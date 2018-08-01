@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sql/connection.h"
+#include "sql/database.h"
 
 #include <limits.h>
 #include <stddef.h>
@@ -30,7 +30,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "sql/connection_memory_dump_provider.h"
+#include "sql/database_memory_dump_provider.h"
 #include "sql/initialization.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -46,12 +46,8 @@ const int kBusyTimeoutSeconds = 1;
 
 class ScopedBusyTimeout {
  public:
-  explicit ScopedBusyTimeout(sqlite3* db)
-      : db_(db) {
-  }
-  ~ScopedBusyTimeout() {
-    sqlite3_busy_timeout(db_, 0);
-  }
+  explicit ScopedBusyTimeout(sqlite3* db) : db_(db) {}
+  ~ScopedBusyTimeout() { sqlite3_busy_timeout(db_, 0); }
 
   int SetTimeout(base::TimeDelta timeout) {
     DCHECK_LT(timeout.InMilliseconds(), INT_MAX);
@@ -71,8 +67,7 @@ class ScopedBusyTimeout {
 // sqlite_master table (none of our code does this).
 class ScopedWritableSchema {
  public:
-  explicit ScopedWritableSchema(sqlite3* db)
-      : db_(db) {
+  explicit ScopedWritableSchema(sqlite3* db) : db_(db) {
     sqlite3_exec(db_, "PRAGMA writable_schema=1", nullptr, nullptr, nullptr);
   }
   ~ScopedWritableSchema() {
@@ -141,7 +136,8 @@ int GetSqlite3File(sqlite3* db, sqlite3_file** file) {
 
 // Convenience to get the sqlite3_file* and the size for the "main" database.
 int GetSqlite3FileAndSize(sqlite3* db,
-                          sqlite3_file** file, sqlite3_int64* db_size) {
+                          sqlite3_file** file,
+                          sqlite3_int64* db_size) {
   int rc = GetSqlite3File(db, file);
   if (rc != SQLITE_OK)
     return rc;
@@ -152,10 +148,8 @@ int GetSqlite3FileAndSize(sqlite3* db,
 // This should match UMA_HISTOGRAM_MEDIUM_TIMES().
 base::HistogramBase* GetMediumTimeHistogram(const std::string& name) {
   return base::Histogram::FactoryTimeGet(
-      name,
-      base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromMinutes(3),
-      50,
+      name, base::TimeDelta::FromMilliseconds(10),
+      base::TimeDelta::FromMinutes(3), 50,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
@@ -172,16 +166,16 @@ std::string AsUTF8ForSQL(const base::FilePath& path) {
 namespace sql {
 
 // static
-Connection::ErrorExpecterCallback* Connection::current_expecter_cb_ = nullptr;
+Database::ErrorExpecterCallback* Database::current_expecter_cb_ = nullptr;
 
 // static
-bool Connection::IsExpectedSqliteError(int error) {
+bool Database::IsExpectedSqliteError(int error) {
   if (!current_expecter_cb_)
     return false;
   return current_expecter_cb_->Run(error);
 }
 
-void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
+void Database::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
   AssertIOAllowed();
 
   std::string debug_info = GetDiagnosticInfo(extended_error, stmt);
@@ -192,53 +186,51 @@ void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
 }
 
 // static
-void Connection::SetErrorExpecter(Connection::ErrorExpecterCallback* cb) {
+void Database::SetErrorExpecter(Database::ErrorExpecterCallback* cb) {
   CHECK(!current_expecter_cb_);
   current_expecter_cb_ = cb;
 }
 
 // static
-void Connection::ResetErrorExpecter() {
+void Database::ResetErrorExpecter() {
   CHECK(current_expecter_cb_);
   current_expecter_cb_ = nullptr;
 }
 
 // static
-base::FilePath Connection::JournalPath(const base::FilePath& db_path) {
+base::FilePath Database::JournalPath(const base::FilePath& db_path) {
   return base::FilePath(db_path.value() + FILE_PATH_LITERAL("-journal"));
 }
 
 // static
-base::FilePath Connection::WriteAheadLogPath(const base::FilePath& db_path) {
+base::FilePath Database::WriteAheadLogPath(const base::FilePath& db_path) {
   return base::FilePath(db_path.value() + FILE_PATH_LITERAL("-wal"));
 }
 
 // static
-base::FilePath Connection::SharedMemoryFilePath(const base::FilePath& db_path) {
+base::FilePath Database::SharedMemoryFilePath(const base::FilePath& db_path) {
   return base::FilePath(db_path.value() + FILE_PATH_LITERAL("-shm"));
 }
 
-Connection::StatementRef::StatementRef(Connection* connection,
-                                       sqlite3_stmt* stmt,
-                                       bool was_valid)
-    : connection_(connection),
-      stmt_(stmt),
-      was_valid_(was_valid) {
-  if (connection)
-    connection_->StatementRefCreated(this);
+Database::StatementRef::StatementRef(Database* database,
+                                     sqlite3_stmt* stmt,
+                                     bool was_valid)
+    : database_(database), stmt_(stmt), was_valid_(was_valid) {
+  if (database)
+    database_->StatementRefCreated(this);
 }
 
-Connection::StatementRef::~StatementRef() {
-  if (connection_)
-    connection_->StatementRefDeleted(this);
+Database::StatementRef::~StatementRef() {
+  if (database_)
+    database_->StatementRefDeleted(this);
   Close(false);
 }
 
-void Connection::StatementRef::Close(bool forced) {
+void Database::StatementRef::Close(bool forced) {
   if (stmt_) {
     // Call to AssertIOAllowed() cannot go at the beginning of the function
     // because Close() is called unconditionally from destructor to clean
-    // connection_. And if this is inactive statement this won't cause any
+    // database_. And if this is inactive statement this won't cause any
     // disk access and destructor most probably will be called on thread
     // not allowing disk access.
     // TODO(paivanof@gmail.com): This should move to the beginning
@@ -247,7 +239,7 @@ void Connection::StatementRef::Close(bool forced) {
     sqlite3_finalize(stmt_);
     stmt_ = nullptr;
   }
-  connection_ = nullptr;  // The connection may be getting deleted.
+  database_ = nullptr;  // The Database may be getting deleted.
 
   // Forced close is expected to happen from a statement error
   // handler.  In that case maintain the sense of |was_valid_| which
@@ -256,12 +248,12 @@ void Connection::StatementRef::Close(bool forced) {
 }
 
 static_assert(
-    Connection::kDefaultPageSize == SQLITE_DEFAULT_PAGE_SIZE,
-    "Connection::kDefaultPageSize must match the value configured into SQLite");
+    Database::kDefaultPageSize == SQLITE_DEFAULT_PAGE_SIZE,
+    "Database::kDefaultPageSize must match the value configured into SQLite");
 
-constexpr int Connection::kDefaultPageSize;
+constexpr int Database::kDefaultPageSize;
 
-Connection::Connection()
+Database::Database()
     : db_(nullptr),
       page_size_(kDefaultPageSize),
       cache_size_(0),
@@ -281,11 +273,11 @@ Connection::Connection()
       query_time_histogram_(nullptr),
       clock_(std::make_unique<base::DefaultTickClock>()) {}
 
-Connection::~Connection() {
+Database::~Database() {
   Close();
 }
 
-void Connection::RecordEvent(Events event, size_t count) {
+void Database::RecordEvent(Events event, size_t count) {
   for (size_t i = 0; i < count; ++i) {
     UMA_HISTOGRAM_ENUMERATION("Sqlite.Stats", event, EVENT_MAX_VALUE);
   }
@@ -297,35 +289,35 @@ void Connection::RecordEvent(Events event, size_t count) {
   }
 }
 
-void Connection::RecordCommitTime(const base::TimeDelta& delta) {
+void Database::RecordCommitTime(const base::TimeDelta& delta) {
   RecordUpdateTime(delta);
   UMA_HISTOGRAM_MEDIUM_TIMES("Sqlite.CommitTime", delta);
   if (commit_time_histogram_)
     commit_time_histogram_->AddTime(delta);
 }
 
-void Connection::RecordAutoCommitTime(const base::TimeDelta& delta) {
+void Database::RecordAutoCommitTime(const base::TimeDelta& delta) {
   RecordUpdateTime(delta);
   UMA_HISTOGRAM_MEDIUM_TIMES("Sqlite.AutoCommitTime", delta);
   if (autocommit_time_histogram_)
     autocommit_time_histogram_->AddTime(delta);
 }
 
-void Connection::RecordUpdateTime(const base::TimeDelta& delta) {
+void Database::RecordUpdateTime(const base::TimeDelta& delta) {
   RecordQueryTime(delta);
   UMA_HISTOGRAM_MEDIUM_TIMES("Sqlite.UpdateTime", delta);
   if (update_time_histogram_)
     update_time_histogram_->AddTime(delta);
 }
 
-void Connection::RecordQueryTime(const base::TimeDelta& delta) {
+void Database::RecordQueryTime(const base::TimeDelta& delta) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Sqlite.QueryTime", delta);
   if (query_time_histogram_)
     query_time_histogram_->AddTime(delta);
 }
 
-void Connection::RecordTimeAndChanges(
-    const base::TimeDelta& delta, bool read_only) {
+void Database::RecordTimeAndChanges(const base::TimeDelta& delta,
+                                    bool read_only) {
   if (read_only) {
     RecordQueryTime(delta);
   } else {
@@ -340,16 +332,15 @@ void Connection::RecordTimeAndChanges(
   }
 }
 
-bool Connection::Open(const base::FilePath& path) {
+bool Database::Open(const base::FilePath& path) {
   if (!histogram_tag_.empty()) {
     int64_t size_64 = 0;
     if (base::GetFileSize(path, &size_64)) {
       size_t sample = static_cast<size_t>(size_64 / 1024);
       std::string full_histogram_name = "Sqlite.SizeKB." + histogram_tag_;
-      base::HistogramBase* histogram =
-          base::Histogram::FactoryGet(
-              full_histogram_name, 1, 1000000, 50,
-              base::HistogramBase::kUmaTargetedHistogramFlag);
+      base::HistogramBase* histogram = base::Histogram::FactoryGet(
+          full_histogram_name, 1, 1000000, 50,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
       if (histogram)
         histogram->Add(sample);
       UMA_HISTOGRAM_COUNTS("Sqlite.SizeKB", sample);
@@ -359,16 +350,16 @@ bool Connection::Open(const base::FilePath& path) {
   return OpenInternal(AsUTF8ForSQL(path), RETRY_ON_POISON);
 }
 
-bool Connection::OpenInMemory() {
+bool Database::OpenInMemory() {
   in_memory_ = true;
   return OpenInternal(":memory:", NO_RETRY);
 }
 
-bool Connection::OpenTemporary() {
+bool Database::OpenTemporary() {
   return OpenInternal("", NO_RETRY);
 }
 
-void Connection::CloseInternal(bool forced) {
+void Database::CloseInternal(bool forced) {
   // TODO(shess): Calling "PRAGMA journal_mode = DELETE" at this point
   // will delete the -journal file.  For ChromiumOS or other more
   // embedded systems, this is probably not appropriate, whereas on
@@ -419,7 +410,7 @@ void Connection::CloseInternal(bool forced) {
   db_ = nullptr;
 }
 
-void Connection::Close() {
+void Database::Close() {
   // If the database was already closed by RazeAndClose(), then no
   // need to close again.  Clear the |poisoned_| bit so that incorrect
   // API calls are caught.
@@ -431,7 +422,7 @@ void Connection::Close() {
   CloseInternal(false);
 }
 
-void Connection::Preload() {
+void Database::Preload() {
   AssertIOAllowed();
 
   if (!db_) {
@@ -469,7 +460,7 @@ void Connection::Preload() {
   }
 }
 
-// SQLite keeps unused pages associated with a connection in a cache.  It asks
+// SQLite keeps unused pages associated with a database in a cache.  It asks
 // the cache for pages by an id, and if the page is present and the database is
 // unchanged, it considers the content of the page valid and doesn't read it
 // from disk.  When memory-mapped I/O is enabled, on read SQLite uses page
@@ -482,7 +473,7 @@ void Connection::Preload() {
 // not re-used for reads, but they are re-used for writes if the re-written page
 // is still in the cache. The implementation of sqlite3_db_release_memory() as
 // of SQLite 3.8.7.4 frees all pages from pcaches associated with the
-// connection, so it should free these pages.
+// database, so it should free these pages.
 //
 // Unfortunately, the zero page is also freed.  That page is never accessed
 // using memory-mapped I/O, and the cached copy can be re-used after verifying
@@ -511,11 +502,11 @@ void Connection::Preload() {
 // TODO(shess): The TrimMemory() trick of bouncing the cache size would also
 // work.  There could be two prepared statements, one for cache_size=1 one for
 // cache_size=goal.
-void Connection::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
+void Database::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
   // The database could have been closed during a transaction as part of error
   // recovery.
   if (!db_) {
-    DCHECK(poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
     return;
   }
 
@@ -543,7 +534,7 @@ void Connection::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
   sqlite3_db_release_memory(db_);
 }
 
-base::FilePath Connection::DbPath() const {
+base::FilePath Database::DbPath() const {
   if (!is_open())
     return base::FilePath();
 
@@ -562,7 +553,7 @@ base::FilePath Connection::DbPath() const {
 // Data is persisted in a file shared between databases in the same directory.
 // The "sqlite-diag" file contains a dictionary with the version number, and an
 // array of histogram tags for databases which have been dumped.
-bool Connection::RegisterIntentToUpload() const {
+bool Database::RegisterIntentToUpload() const {
   static const char* kVersionKey = "version";
   static const char* kDiagnosticDumpsKey = "DiagnosticDumps";
   static int kVersion = 1;
@@ -664,15 +655,15 @@ bool Connection::RegisterIntentToUpload() const {
   return true;
 }
 
-std::string Connection::CollectErrorInfo(int error, Statement* stmt) const {
+std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
   // Buffer for accumulating debugging info about the error.  Place
   // more-relevant information earlier, in case things overflow the
   // fixed-size reporting buffer.
   std::string debug_info;
 
   // The error message from the failed operation.
-  base::StringAppendF(&debug_info, "db error: %d/%s\n",
-                      GetErrorCode(), GetErrorMessage());
+  base::StringAppendF(&debug_info, "db error: %d/%s\n", GetErrorCode(),
+                      GetErrorMessage());
 
   // TODO(shess): |error| and |GetErrorCode()| should always be the same, but
   // reading code does not entirely convince me.  Remove if they turn out to be
@@ -680,8 +671,8 @@ std::string Connection::CollectErrorInfo(int error, Statement* stmt) const {
   if (error != GetErrorCode())
     base::StringAppendF(&debug_info, "reported error: %d\n", error);
 
-  // System error information.  Interpretation of Windows errors is different
-  // from posix.
+// System error information.  Interpretation of Windows errors is different
+// from posix.
 #if defined(OS_WIN)
   base::StringAppendF(&debug_info, "LastError: %d\n", GetLastErrno());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -749,7 +740,7 @@ std::string Connection::CollectErrorInfo(int error, Statement* stmt) const {
 
 // TODO(shess): Since this is only called in an error situation, it might be
 // prudent to rewrite in terms of SQLite API calls, and mark the function const.
-std::string Connection::CollectCorruptionInfo() {
+std::string Database::CollectCorruptionInfo() {
   AssertIOAllowed();
 
   // If the file cannot be accessed it is unlikely that an integrity check will
@@ -778,10 +769,8 @@ std::string Connection::CollectCorruptionInfo() {
     const base::TimeTicks before = base::TimeTicks::Now();
     FullIntegrityCheck(&messages);
     base::StringAppendF(
-        &debug_info,
-        "integrity_check %" PRId64 " ms, %" PRIuS " records:\n",
-        (base::TimeTicks::Now() - before).InMilliseconds(),
-        messages.size());
+        &debug_info, "integrity_check %" PRId64 " ms, %" PRIuS " records:\n",
+        (base::TimeTicks::Now() - before).InMilliseconds(), messages.size());
 
     // SQLite returns up to 100 messages by default, trim deeper to
     // keep close to the 2000-character size limit for dumping.
@@ -794,7 +783,7 @@ std::string Connection::CollectCorruptionInfo() {
   return debug_info;
 }
 
-bool Connection::GetMmapAltStatus(int64_t* status) {
+bool Database::GetMmapAltStatus(int64_t* status) {
   // The [meta] version uses a missing table as a signal for a fresh database.
   // That will not work for the view, which would not exist in either a new or
   // an existing database.  A new database _should_ be only one page long, so
@@ -812,7 +801,7 @@ bool Connection::GetMmapAltStatus(int64_t* status) {
   return s.Succeeded();
 }
 
-bool Connection::SetMmapAltStatus(int64_t status) {
+bool Database::SetMmapAltStatus(int64_t status) {
   if (!BeginTransaction())
     return false;
 
@@ -826,10 +815,9 @@ bool Connection::SetMmapAltStatus(int64_t status) {
   // value, this construct should be safe from SQL injection, if the value
   // becomes more complicated use "SELECT quote(?)" to generate a safe quoted
   // value.
-  const std::string createViewSql =
-      base::StringPrintf("CREATE VIEW MmapStatus (value) AS SELECT %" PRId64,
-                         status);
-  if (!Execute(createViewSql.c_str())) {
+  const std::string create_view_sql = base::StringPrintf(
+      "CREATE VIEW MmapStatus (value) AS SELECT %" PRId64, status);
+  if (!Execute(create_view_sql.c_str())) {
     RollbackTransaction();
     return false;
   }
@@ -837,7 +825,7 @@ bool Connection::SetMmapAltStatus(int64_t status) {
   return CommitTransaction();
 }
 
-size_t Connection::GetAppropriateMmapSize() {
+size_t Database::GetAppropriateMmapSize() {
   AssertIOAllowed();
 
   // How much to map if no errors are found.  50MB encompasses the 99th
@@ -963,7 +951,7 @@ size_t Connection::GetAppropriateMmapSize() {
   return mmap_ofs;
 }
 
-void Connection::TrimMemory(bool aggressively) {
+void Database::TrimMemory(bool aggressively) {
   if (!db_)
     return;
 
@@ -994,7 +982,7 @@ void Connection::TrimMemory(bool aggressively) {
 
 // Create an in-memory database with the existing database's page
 // size, then backup that database over the existing database.
-bool Connection::Raze() {
+bool Database::Raze() {
   AssertIOAllowed();
 
   if (!db_) {
@@ -1007,7 +995,7 @@ bool Connection::Raze() {
     return false;
   }
 
-  sql::Connection null_db;
+  sql::Database null_db;
   if (!null_db.OpenInMemory()) {
     DLOG(DCHECK) << "Unable to open in-memory database.";
     return false;
@@ -1033,7 +1021,7 @@ bool Connection::Raze() {
   // version will create the first page.  This will not affect the
   // schema version in the resulting database, as SQLite's backup
   // implementation propagates the schema version from the original
-  // connection to the new version of the database, incremented by one
+  // database to the new version of the database, incremented by one
   // so that other readers see the schema change and act accordingly.
   if (!null_db.Execute("PRAGMA schema_version = 1"))
     return false;
@@ -1052,8 +1040,8 @@ bool Connection::Raze() {
 #if defined(OS_WIN)
   // On Windows, truncate silently fails when applied to memory-mapped files.
   // Disable memory-mapping so that the truncate succeeds.  Note that other
-  // connections may have memory-mapped the file, so this may not entirely
-  // prevent the problem.
+  // Database connections may have memory-mapped the file, so this may not
+  // entirely prevent the problem.
   // [Source: <https://sqlite.org/mmap.html> plus experiments.]
   ignore_result(Execute("PRAGMA mmap_size = 0"));
 #endif
@@ -1101,7 +1089,7 @@ bool Connection::Raze() {
   return rc == SQLITE_DONE;
 }
 
-bool Connection::RazeAndClose() {
+bool Database::RazeAndClose() {
   if (!db_) {
     DCHECK(poisoned_) << "Cannot raze null db";
     return false;
@@ -1122,7 +1110,7 @@ bool Connection::RazeAndClose() {
   return result;
 }
 
-void Connection::Poison() {
+void Database::Poison() {
   if (!db_) {
     DCHECK(poisoned_) << "Cannot poison null db";
     return;
@@ -1138,7 +1126,7 @@ void Connection::Poison() {
 }
 
 // TODO(shess): To the extent possible, figure out the optimal
-// ordering for these deletes which will prevent other connections
+// ordering for these deletes which will prevent other Database connections
 // from seeing odd behavior.  For instance, it may be necessary to
 // manually lock the main database file in a SQLite-compatible fashion
 // (to prevent other processes from opening it), then delete the
@@ -1148,11 +1136,11 @@ void Connection::Poison() {
 // Gears "SQLite poison 3" trick).
 //
 // static
-bool Connection::Delete(const base::FilePath& path) {
+bool Database::Delete(const base::FilePath& path) {
   base::AssertBlockingAllowed();
 
-  base::FilePath journal_path = Connection::JournalPath(path);
-  base::FilePath wal_path = Connection::WriteAheadLogPath(path);
+  base::FilePath journal_path = Database::JournalPath(path);
+  base::FilePath wal_path = Database::WriteAheadLogPath(path);
 
   std::string journal_str = AsUTF8ForSQL(journal_path);
   std::string wal_str = AsUTF8ForSQL(wal_path);
@@ -1187,7 +1175,7 @@ bool Connection::Delete(const base::FilePath& path) {
   return !journal_exists && !wal_exists && !path_exists;
 }
 
-bool Connection::BeginTransaction() {
+bool Database::BeginTransaction() {
   if (needs_rollback_) {
     DCHECK_GT(transaction_nesting_, 0);
 
@@ -1209,7 +1197,7 @@ bool Connection::BeginTransaction() {
   return success;
 }
 
-void Connection::RollbackTransaction() {
+void Database::RollbackTransaction() {
   if (!transaction_nesting_) {
     DCHECK(poisoned_) << "Rolling back a nonexistent transaction";
     return;
@@ -1226,7 +1214,7 @@ void Connection::RollbackTransaction() {
   DoRollback();
 }
 
-bool Connection::CommitTransaction() {
+bool Database::CommitTransaction() {
   if (!transaction_nesting_) {
     DCHECK(poisoned_) << "Committing a nonexistent transaction";
     return false;
@@ -1260,16 +1248,16 @@ bool Connection::CommitTransaction() {
   return ret;
 }
 
-void Connection::RollbackAllTransactions() {
+void Database::RollbackAllTransactions() {
   if (transaction_nesting_ > 0) {
     transaction_nesting_ = 0;
     DoRollback();
   }
 }
 
-bool Connection::AttachDatabase(const base::FilePath& other_db_path,
-                                const char* attachment_point,
-                                InternalApiToken) {
+bool Database::AttachDatabase(const base::FilePath& other_db_path,
+                              const char* attachment_point,
+                              InternalApiToken) {
   DCHECK(ValidAttachmentPoint(attachment_point));
 
   Statement s(GetUniqueStatement("ATTACH DATABASE ? AS ?"));
@@ -1284,8 +1272,7 @@ bool Connection::AttachDatabase(const base::FilePath& other_db_path,
   return s.Run();
 }
 
-bool Connection::DetachDatabase(const char* attachment_point,
-                                InternalApiToken) {
+bool Database::DetachDatabase(const char* attachment_point, InternalApiToken) {
   DCHECK(ValidAttachmentPoint(attachment_point));
 
   Statement s(GetUniqueStatement("DETACH DATABASE ?"));
@@ -1296,10 +1283,10 @@ bool Connection::DetachDatabase(const char* attachment_point,
 // TODO(shess): Consider changing this to execute exactly one statement.  If a
 // caller wishes to execute multiple statements, that should be explicit, and
 // perhaps tucked into an explicit transaction with rollback in case of error.
-int Connection::ExecuteAndReturnErrorCode(const char* sql) {
+int Database::ExecuteAndReturnErrorCode(const char* sql) {
   AssertIOAllowed();
   if (!db_) {
-    DCHECK(poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
     return SQLITE_ERROR;
   }
   DCHECK(sql);
@@ -1308,7 +1295,7 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
   int rc = SQLITE_OK;
   while ((rc == SQLITE_OK) && *sql) {
     sqlite3_stmt* stmt = nullptr;
-    const char *leftover_sql;
+    const char* leftover_sql;
 
     const base::TimeTicks before = NowTicks();
     rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, &leftover_sql);
@@ -1328,18 +1315,18 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
     // Save for use after statement is finalized.
     const bool read_only = !!sqlite3_stmt_readonly(stmt);
 
-    RecordOneEvent(Connection::EVENT_STATEMENT_RUN);
+    RecordOneEvent(Database::EVENT_STATEMENT_RUN);
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
       // TODO(shess): Audit to see if this can become a DCHECK.  I think PRAGMA
       // is the only legitimate case for this.
-      RecordOneEvent(Connection::EVENT_STATEMENT_ROWS);
+      RecordOneEvent(Database::EVENT_STATEMENT_ROWS);
     }
 
     // sqlite3_finalize() returns SQLITE_OK if the most recent sqlite3_step()
     // returned SQLITE_DONE or SQLITE_ROW, otherwise the error code.
     rc = sqlite3_finalize(stmt);
     if (rc == SQLITE_OK)
-      RecordOneEvent(Connection::EVENT_STATEMENT_SUCCESS);
+      RecordOneEvent(Database::EVENT_STATEMENT_SUCCESS);
 
     // sqlite3_exec() does this, presumably to avoid spinning the parser for
     // trailing whitespace.
@@ -1360,9 +1347,9 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
   return rc;
 }
 
-bool Connection::Execute(const char* sql) {
+bool Database::Execute(const char* sql) {
   if (!db_) {
-    DCHECK(poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
     return false;
   }
 
@@ -1379,9 +1366,9 @@ bool Connection::Execute(const char* sql) {
   return error == SQLITE_OK;
 }
 
-bool Connection::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
+bool Database::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
   if (!db_) {
-    DCHECK(poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
     return false;
   }
 
@@ -1390,7 +1377,7 @@ bool Connection::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
   return Execute(sql);
 }
 
-scoped_refptr<Connection::StatementRef> Connection::GetCachedStatement(
+scoped_refptr<Database::StatementRef> Database::GetCachedStatement(
     StatementID id,
     const char* sql) {
   auto it = statement_cache_.find(id);
@@ -1414,13 +1401,14 @@ scoped_refptr<Connection::StatementRef> Connection::GetCachedStatement(
   return statement;
 }
 
-scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
+scoped_refptr<Database::StatementRef> Database::GetUniqueStatement(
     const char* sql) {
   return GetStatementImpl(this, sql);
 }
 
-scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
-    sql::Connection* tracking_db, const char* sql) const {
+scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
+    sql::Database* tracking_db,
+    const char* sql) const {
   AssertIOAllowed();
   DCHECK(sql);
   DCHECK(!tracking_db || tracking_db == this);
@@ -1442,12 +1430,12 @@ scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
   return base::MakeRefCounted<StatementRef>(tracking_db, stmt, true);
 }
 
-scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
+scoped_refptr<Database::StatementRef> Database::GetUntrackedStatement(
     const char* sql) const {
   return GetStatementImpl(nullptr, sql);
 }
 
-std::string Connection::GetSchema() const {
+std::string Database::GetSchema() const {
   // The ORDER BY should not be necessary, but relying on organic
   // order for something like this is questionable.
   static const char kSql[] =
@@ -1470,10 +1458,10 @@ std::string Connection::GetSchema() const {
   return schema;
 }
 
-bool Connection::IsSQLValid(const char* sql) {
+bool Database::IsSQLValid(const char* sql) {
   AssertIOAllowed();
   if (!db_) {
-    DCHECK(poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
     return false;
   }
 
@@ -1485,20 +1473,19 @@ bool Connection::IsSQLValid(const char* sql) {
   return true;
 }
 
-bool Connection::DoesIndexExist(const char* index_name) const {
+bool Database::DoesIndexExist(const char* index_name) const {
   return DoesSchemaItemExist(index_name, "index");
 }
 
-bool Connection::DoesTableExist(const char* table_name) const {
+bool Database::DoesTableExist(const char* table_name) const {
   return DoesSchemaItemExist(table_name, "table");
 }
 
-bool Connection::DoesViewExist(const char* view_name) const {
+bool Database::DoesViewExist(const char* view_name) const {
   return DoesSchemaItemExist(view_name, "view");
 }
 
-bool Connection::DoesSchemaItemExist(
-    const char* name, const char* type) const {
+bool Database::DoesSchemaItemExist(const char* name, const char* type) const {
   const char* kSql =
       "SELECT name FROM sqlite_master WHERE type=? AND name=? COLLATE NOCASE";
   Statement statement(GetUntrackedStatement(kSql));
@@ -1514,8 +1501,8 @@ bool Connection::DoesSchemaItemExist(
   return statement.Step();  // Table exists if any row was returned.
 }
 
-bool Connection::DoesColumnExist(const char* table_name,
-                                 const char* column_name) const {
+bool Database::DoesColumnExist(const char* table_name,
+                               const char* column_name) const {
   std::string sql("PRAGMA TABLE_INFO(");
   sql.append(table_name);
   sql.append(")");
@@ -1535,29 +1522,29 @@ bool Connection::DoesColumnExist(const char* table_name,
   return false;
 }
 
-int64_t Connection::GetLastInsertRowId() const {
+int64_t Database::GetLastInsertRowId() const {
   if (!db_) {
-    DCHECK(poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
     return 0;
   }
   return sqlite3_last_insert_rowid(db_);
 }
 
-int Connection::GetLastChangeCount() const {
+int Database::GetLastChangeCount() const {
   if (!db_) {
-    DCHECK(poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
     return 0;
   }
   return sqlite3_changes(db_);
 }
 
-int Connection::GetErrorCode() const {
+int Database::GetErrorCode() const {
   if (!db_)
     return SQLITE_ERROR;
   return sqlite3_errcode(db_);
 }
 
-int Connection::GetLastErrno() const {
+int Database::GetLastErrno() const {
   if (!db_)
     return -1;
 
@@ -1568,31 +1555,29 @@ int Connection::GetLastErrno() const {
   return err;
 }
 
-const char* Connection::GetErrorMessage() const {
+const char* Database::GetErrorMessage() const {
   if (!db_)
-    return "sql::Connection has no connection.";
+    return "sql::Database is not opened.";
   return sqlite3_errmsg(db_);
 }
 
-bool Connection::OpenInternal(const std::string& file_name,
-                              Connection::Retry retry_flag) {
+bool Database::OpenInternal(const std::string& file_name,
+                            Database::Retry retry_flag) {
   AssertIOAllowed();
 
   if (db_) {
-    DLOG(DCHECK) << "sql::Connection is already open.";
+    DLOG(DCHECK) << "sql::Database is already open.";
     return false;
   }
 
   EnsureSqliteInitialized();
 
   // Setup the stats histograms immediately rather than allocating lazily.
-  // Connections which won't exercise all of these probably shouldn't exist.
+  // Databases which won't exercise all of these probably shouldn't exist.
   if (!histogram_tag_.empty()) {
-    stats_histogram_ =
-        base::LinearHistogram::FactoryGet(
-            "Sqlite.Stats." + histogram_tag_,
-            1, EVENT_MAX_VALUE, EVENT_MAX_VALUE + 1,
-            base::HistogramBase::kUmaTargetedHistogramFlag);
+    stats_histogram_ = base::LinearHistogram::FactoryGet(
+        "Sqlite.Stats." + histogram_tag_, 1, EVENT_MAX_VALUE,
+        EVENT_MAX_VALUE + 1, base::HistogramBase::kUmaTargetedHistogramFlag);
 
     // The timer setup matches UMA_HISTOGRAM_MEDIUM_TIMES().  3 minutes is an
     // unreasonable time for any single operation, so there is not much value to
@@ -1617,15 +1602,15 @@ bool Connection::OpenInternal(const std::string& file_name,
   // only considers the sqlite3 handle's state.
   // TODO(shess): Revise is_open() to consider poisoned_, and review
   // to see if any non-testing code even depends on it.
-  DCHECK(!poisoned_) << "sql::Connection is already open.";
+  DCHECK(!poisoned_) << "sql::Database is already open.";
   poisoned_ = false;
 
   // Custom memory-mapping VFS which reads pages using regular I/O on first hit.
   sqlite3_vfs* vfs = VFSWrapper();
   const char* vfs_name = (vfs ? vfs->zName : nullptr);
-  int err = sqlite3_open_v2(file_name.c_str(), &db_,
-                            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
-                            vfs_name);
+  int err =
+      sqlite3_open_v2(file_name.c_str(), &db_,
+                      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs_name);
   if (err != SQLITE_OK) {
     // Extended error codes cannot be enabled until a handle is
     // available, fetch manually.
@@ -1699,15 +1684,16 @@ bool Connection::OpenInternal(const std::string& file_name,
   ignore_result(Execute("PRAGMA journal_mode = TRUNCATE"));
 
   const base::TimeDelta kBusyTimeout =
-    base::TimeDelta::FromSeconds(kBusyTimeoutSeconds);
+      base::TimeDelta::FromSeconds(kBusyTimeoutSeconds);
 
-  const std::string sql = base::StringPrintf("PRAGMA page_size=%d", page_size_);
-  ignore_result(ExecuteWithTimeout(sql.c_str(), kBusyTimeout));
+  const std::string page_size_sql =
+      base::StringPrintf("PRAGMA page_size=%d", page_size_);
+  ignore_result(ExecuteWithTimeout(page_size_sql.c_str(), kBusyTimeout));
 
   if (cache_size_ != 0) {
-    const std::string sql =
+    const std::string cache_size_sql =
         base::StringPrintf("PRAGMA cache_size=%d", cache_size_);
-    ignore_result(ExecuteWithTimeout(sql.c_str(), kBusyTimeout));
+    ignore_result(ExecuteWithTimeout(cache_size_sql.c_str(), kBusyTimeout));
   }
 
   if (!ExecuteWithTimeout("PRAGMA secure_delete=ON", kBusyTimeout)) {
@@ -1756,14 +1742,14 @@ bool Connection::OpenInternal(const std::string& file_name,
 
   DCHECK(!memory_dump_provider_);
   memory_dump_provider_.reset(
-      new ConnectionMemoryDumpProvider(db_, histogram_tag_));
+      new DatabaseMemoryDumpProvider(db_, histogram_tag_));
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      memory_dump_provider_.get(), "sql::Connection", nullptr);
+      memory_dump_provider_.get(), "sql::Database", nullptr);
 
   return true;
 }
 
-void Connection::DoRollback() {
+void Database::DoRollback() {
   Statement rollback(GetCachedStatement(SQL_FROM_HERE, "ROLLBACK"));
 
   // Collect the rollback time manually, sql::Statement would register it as
@@ -1783,26 +1769,26 @@ void Connection::DoRollback() {
   needs_rollback_ = false;
 }
 
-void Connection::StatementRefCreated(StatementRef* ref) {
+void Database::StatementRefCreated(StatementRef* ref) {
   DCHECK(!open_statements_.count(ref))
       << __func__ << " already called with this statement";
   open_statements_.insert(ref);
 }
 
-void Connection::StatementRefDeleted(StatementRef* ref) {
+void Database::StatementRefDeleted(StatementRef* ref) {
   DCHECK(open_statements_.count(ref))
       << __func__ << " called with non-existing statement";
   open_statements_.erase(ref);
 }
 
-void Connection::set_histogram_tag(const std::string& tag) {
+void Database::set_histogram_tag(const std::string& tag) {
   DCHECK(!is_open());
 
   histogram_tag_ = tag;
 }
 
-void Connection::AddTaggedHistogram(const std::string& name,
-                                    size_t sample) const {
+void Database::AddTaggedHistogram(const std::string& name,
+                                  size_t sample) const {
   if (histogram_tag_.empty())
     return;
 
@@ -1811,16 +1797,15 @@ void Connection::AddTaggedHistogram(const std::string& name,
   // often enough for such caching to be crucial.  If it becomes an
   // issue, the object could be cached alongside histogram_prefix_.
   std::string full_histogram_name = name + "." + histogram_tag_;
-  base::HistogramBase* histogram =
-      base::SparseHistogram::FactoryGet(
-          full_histogram_name,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
+      full_histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
   if (histogram)
     histogram->Add(sample);
 }
 
-int Connection::OnSqliteError(
-    int err, sql::Statement *stmt, const char* sql) const {
+int Database::OnSqliteError(int err,
+                            sql::Statement* stmt,
+                            const char* sql) const {
   base::UmaHistogramSparse("Sqlite.Error", err);
   AddTaggedHistogram("Sqlite.Error", err);
 
@@ -1833,10 +1818,8 @@ int Connection::OnSqliteError(
   std::string id = histogram_tag_;
   if (id.empty())
     id = DbPath().BaseName().AsUTF8Unsafe();
-  LOG(ERROR) << id << " sqlite error " << err
-             << ", errno " << GetLastErrno()
-             << ": " << GetErrorMessage()
-             << ", sql: " << sql;
+  LOG(ERROR) << id << " sqlite error " << err << ", errno " << GetLastErrno()
+             << ": " << GetErrorMessage() << ", sql: " << sql;
 
   if (!error_callback_.is_null()) {
     // Fire from a copy of the callback in case of reentry into
@@ -1852,26 +1835,26 @@ int Connection::OnSqliteError(
   return err;
 }
 
-bool Connection::FullIntegrityCheck(std::vector<std::string>* messages) {
+bool Database::FullIntegrityCheck(std::vector<std::string>* messages) {
   return IntegrityCheckHelper("PRAGMA integrity_check", messages);
 }
 
-bool Connection::QuickIntegrityCheck() {
+bool Database::QuickIntegrityCheck() {
   std::vector<std::string> messages;
   if (!IntegrityCheckHelper("PRAGMA quick_check", &messages))
     return false;
   return messages.size() == 1 && messages[0] == "ok";
 }
 
-std::string Connection::GetDiagnosticInfo(int extended_error,
-                                          Statement* statement) {
+std::string Database::GetDiagnosticInfo(int extended_error,
+                                        Statement* statement) {
   // Prevent reentrant calls to the error callback.
   ErrorCallback original_callback = std::move(error_callback_);
   reset_error_callback();
 
   // Trim extended error codes.
   const int error = (extended_error & 0xFF);
-  // CollectCorruptionInfo() is implemented in terms of sql::Connection,
+  // CollectCorruptionInfo() is implemented in terms of sql::Database,
   // TODO(shess): Rewrite IntegrityCheckHelper() in terms of raw SQLite.
   std::string result = (error == SQLITE_CORRUPT)
                            ? CollectCorruptionInfo()
@@ -1898,9 +1881,8 @@ std::string Connection::GetDiagnosticInfo(int extended_error,
 }
 
 // TODO(shess): Allow specifying maximum results (default 100 lines).
-bool Connection::IntegrityCheckHelper(
-    const char* pragma_sql,
-    std::vector<std::string>* messages) {
+bool Database::IntegrityCheckHelper(const char* pragma_sql,
+                                    std::vector<std::string>* messages) {
   messages->clear();
 
   // This has the side effect of setting SQLITE_RecoveryMode, which
@@ -1933,8 +1915,8 @@ bool Connection::IntegrityCheckHelper(
   return ret;
 }
 
-bool Connection::ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
-                                   const std::string& dump_name) {
+bool Database::ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
+                                 const std::string& dump_name) {
   return memory_dump_provider_ &&
          memory_dump_provider_->ReportMemoryUsage(pmd, dump_name);
 }

@@ -15,7 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_expecter.h"
@@ -465,8 +465,8 @@ class QuotaDatabaseTest : public testing::Test {
 
  private:
   template <typename Iterator>
-  void AssignQuotaTable(sql::Connection* db, Iterator itr, Iterator end) {
-    ASSERT_NE(db, (sql::Connection*)NULL);
+  void AssignQuotaTable(sql::Database* db, Iterator itr, Iterator end) {
+    ASSERT_NE(db, (sql::Database*)NULL);
     for (; itr != end; ++itr) {
       const char* kSql =
           "INSERT INTO HostQuotaTable"
@@ -484,8 +484,8 @@ class QuotaDatabaseTest : public testing::Test {
   }
 
   template <typename Iterator>
-  void AssignOriginInfoTable(sql::Connection* db, Iterator itr, Iterator end) {
-    ASSERT_NE(db, (sql::Connection*)NULL);
+  void AssignOriginInfoTable(sql::Database* db, Iterator itr, Iterator end) {
+    ASSERT_NE(db, (sql::Database*)NULL);
     for (; itr != end; ++itr) {
       const char* kSql =
           "INSERT INTO OriginInfoTable"
@@ -504,7 +504,7 @@ class QuotaDatabaseTest : public testing::Test {
     }
   }
 
-  bool OpenDatabase(sql::Connection* db, const base::FilePath& kDbFile) {
+  bool OpenDatabase(sql::Database* db, const base::FilePath& kDbFile) {
     if (kDbFile.empty()) {
       return db->OpenInMemory();
     }
@@ -521,7 +521,7 @@ class QuotaDatabaseTest : public testing::Test {
       const base::FilePath& kDbFile,
       const QuotaTableEntry* entries,
       size_t entries_size) {
-    std::unique_ptr<sql::Connection> db(new sql::Connection);
+    std::unique_ptr<sql::Database> db(new sql::Database);
     std::unique_ptr<sql::MetaTable> meta_table(new sql::MetaTable);
 
     // V2 schema definitions.

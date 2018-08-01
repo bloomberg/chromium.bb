@@ -159,7 +159,7 @@ class SQLiteChannelIDStore::Backend
   void KillDatabase();
 
   const base::FilePath path_;
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   sql::MetaTable meta_table_;
 
   typedef std::list<std::unique_ptr<PendingOperation>> PendingOperationsList;
@@ -211,7 +211,7 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
     return;
   }
 
-  db_.reset(new sql::Connection);
+  db_.reset(new sql::Database);
   db_->set_histogram_tag("DomainBoundCerts");
 
   // Unretained to avoid a ref loop with db_.

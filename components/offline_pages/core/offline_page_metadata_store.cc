@@ -17,7 +17,7 @@
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -39,7 +39,7 @@ void ReportStoreEvent(OfflinePagesStoreEvent event) {
                             OfflinePagesStoreEvent::STORE_EVENT_COUNT);
 }
 
-bool CreateOfflinePagesTable(sql::Connection* db) {
+bool CreateOfflinePagesTable(sql::Database* db) {
   static const char kSql[] =
       "CREATE TABLE IF NOT EXISTS " OFFLINE_PAGES_TABLE_NAME
       "(offline_id INTEGER PRIMARY KEY NOT NULL,"
@@ -62,7 +62,7 @@ bool CreateOfflinePagesTable(sql::Connection* db) {
   return db->Execute(kSql);
 }
 
-bool UpgradeWithQuery(sql::Connection* db, const char* upgrade_sql) {
+bool UpgradeWithQuery(sql::Database* db, const char* upgrade_sql) {
   if (!db->Execute("ALTER TABLE " OFFLINE_PAGES_TABLE_NAME
                    " RENAME TO temp_" OFFLINE_PAGES_TABLE_NAME)) {
     return false;
@@ -76,7 +76,7 @@ bool UpgradeWithQuery(sql::Connection* db, const char* upgrade_sql) {
   return true;
 }
 
-bool UpgradeFrom52(sql::Connection* db) {
+bool UpgradeFrom52(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
@@ -90,7 +90,7 @@ bool UpgradeFrom52(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool UpgradeFrom53(sql::Connection* db) {
+bool UpgradeFrom53(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
@@ -104,7 +104,7 @@ bool UpgradeFrom53(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool UpgradeFrom54(sql::Connection* db) {
+bool UpgradeFrom54(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
@@ -118,7 +118,7 @@ bool UpgradeFrom54(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool UpgradeFrom55(sql::Connection* db) {
+bool UpgradeFrom55(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
@@ -132,7 +132,7 @@ bool UpgradeFrom55(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool UpgradeFrom56(sql::Connection* db) {
+bool UpgradeFrom56(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
@@ -146,7 +146,7 @@ bool UpgradeFrom56(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool UpgradeFrom57(sql::Connection* db) {
+bool UpgradeFrom57(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
@@ -160,7 +160,7 @@ bool UpgradeFrom57(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool UpgradeFrom61(sql::Connection* db) {
+bool UpgradeFrom61(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
@@ -174,7 +174,7 @@ bool UpgradeFrom61(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool CreatePageThumbnailsTable(sql::Connection* db) {
+bool CreatePageThumbnailsTable(sql::Database* db) {
   static const char kSql[] =
       "CREATE TABLE IF NOT EXISTS page_thumbnails"
       " (offline_id INTEGER PRIMARY KEY NOT NULL,"
@@ -184,7 +184,7 @@ bool CreatePageThumbnailsTable(sql::Connection* db) {
   return db->Execute(kSql);
 }
 
-bool CreateLatestSchema(sql::Connection* db) {
+bool CreateLatestSchema(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -205,7 +205,7 @@ bool CreateLatestSchema(sql::Connection* db) {
 
 // Upgrades the database from before the database version was stored in the
 // MetaTable. This function should never need to be modified.
-bool UpgradeFromLegacyVersion(sql::Connection* db) {
+bool UpgradeFromLegacyVersion(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -243,7 +243,7 @@ bool UpgradeFromLegacyVersion(sql::Connection* db) {
   return transaction.Commit();
 }
 
-bool UpgradeFromVersion1ToVersion2(sql::Connection* db,
+bool UpgradeFromVersion1ToVersion2(sql::Database* db,
                                    sql::MetaTable* meta_table) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
@@ -264,7 +264,7 @@ bool UpgradeFromVersion1ToVersion2(sql::Connection* db,
   return transaction.Commit();
 }
 
-bool UpgradeFromVersion2ToVersion3(sql::Connection* db,
+bool UpgradeFromVersion2ToVersion3(sql::Database* db,
                                    sql::MetaTable* meta_table) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
@@ -277,7 +277,7 @@ bool UpgradeFromVersion2ToVersion3(sql::Connection* db,
   return transaction.Commit();
 }
 
-bool CreateSchema(sql::Connection* db) {
+bool CreateSchema(sql::Database* db) {
   if (!sql::MetaTable::DoesTableExist(db)) {
     // If this looks like a completely empty DB, simply start from scratch.
     if (!db->DoesTableExist(OFFLINE_PAGES_TABLE_NAME))
@@ -327,7 +327,7 @@ bool PrepareDirectory(const base::FilePath& path) {
   return true;
 }
 
-bool InitDatabase(sql::Connection* db,
+bool InitDatabase(sql::Database* db,
                   const base::FilePath& path,
                   bool in_memory) {
   db->set_page_size(4096);
@@ -354,7 +354,7 @@ bool InitDatabase(sql::Connection* db,
 }
 
 void CloseDatabaseSync(
-    sql::Connection* db,
+    sql::Database* db,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
     base::OnceClosure callback) {
   if (db)
@@ -421,7 +421,7 @@ void OfflinePageMetadataStore::InitializeInternal(
   }
 
   state_ = StoreState::INITIALIZING;
-  db_.reset(new sql::Connection());
+  db_.reset(new sql::Database());
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(&InitDatabase, db_.get(), db_file_path_, in_memory_),
@@ -480,7 +480,7 @@ void OfflinePageMetadataStore::CloseInternal() {
 }
 
 void OfflinePageMetadataStore::CloseInternalDone(
-    std::unique_ptr<sql::Connection> db) {
+    std::unique_ptr<sql::Database> db) {
   db.reset();
   TRACE_EVENT_ASYNC_STEP_PAST0("offline_pages", "Metadata Store", this,
                                "Closing");

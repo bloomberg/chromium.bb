@@ -21,7 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -70,7 +70,7 @@ int MaxRowsInOptOutDB() {
 // enabled_previews_v1.
 #define ENABLED_TYPES_TABLE_NAME "enabled_previews_v1"
 
-void CreateSchema(sql::Connection* db) {
+void CreateSchema(sql::Database* db) {
   static const char kSqlCreateTable[] =
       "CREATE TABLE IF NOT EXISTS " OPT_OUT_TABLE_NAME
       " (host_name VARCHAR NOT NULL,"
@@ -90,7 +90,7 @@ void CreateSchema(sql::Connection* db) {
     return;
 }
 
-void DatabaseErrorCallback(sql::Connection* db,
+void DatabaseErrorCallback(sql::Database* db,
                            const base::FilePath& db_path,
                            int extended_error,
                            sql::Statement* stmt) {
@@ -107,12 +107,12 @@ void DatabaseErrorCallback(sql::Connection* db,
     // or hardware issues, not coding errors at the client level, so displaying
     // the error would probably lead to confusion.  The ignored call signals the
     // test-expectation framework that the error was handled.
-    ignore_result(sql::Connection::IsExpectedSqliteError(extended_error));
+    ignore_result(sql::Database::IsExpectedSqliteError(extended_error));
     return;
   }
 }
 
-void InitDatabase(sql::Connection* db, base::FilePath path) {
+void InitDatabase(sql::Database* db, base::FilePath path) {
   // The entry size should be between 11 and 10 + x bytes, where x is the the
   // length of the host name string in bytes.
   // The total number of entries per host is bounded at 32, and the total number
@@ -143,7 +143,7 @@ void InitDatabase(sql::Connection* db, base::FilePath path) {
 }
 
 // Adds a new OptOut entry to the data base.
-void AddEntryToDataBase(sql::Connection* db,
+void AddEntryToDataBase(sql::Database* db,
                         bool opt_out,
                         const std::string& host_name,
                         int type,
@@ -165,7 +165,7 @@ void AddEntryToDataBase(sql::Connection* db,
 
 // Removes OptOut entries for |host_name| if the per-host row limit is exceeded.
 // Removes OptOut entries if per data base row limit is exceeded.
-void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
+void MaybeEvictHostEntryFromDataBase(sql::Database* db,
                                      const std::string& host_name) {
   // Delete the oldest entries if there are more than |MaxRowsPerHostInOptOutDB|
   // for |host_name|.
@@ -186,7 +186,7 @@ void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
 }
 
 // Deletes every entry for |type|.
-void ClearBlacklistForTypeInDataBase(sql::Connection* db, int type) {
+void ClearBlacklistForTypeInDataBase(sql::Database* db, int type) {
   static const char kSql[] =
       "DELETE FROM " OPT_OUT_TABLE_NAME " WHERE type == ?";
   sql::Statement statement(db->GetUniqueStatement(kSql));
@@ -196,7 +196,7 @@ void ClearBlacklistForTypeInDataBase(sql::Connection* db, int type) {
 
 // Retrieves the list of previously enabled types with their version from the
 // Enabled table.
-BlacklistData::AllowedTypesAndVersions GetStoredEntries(sql::Connection* db) {
+BlacklistData::AllowedTypesAndVersions GetStoredEntries(sql::Database* db) {
   static const char kSqlLoadEnabledTypesVersions[] =
       "SELECT type, version FROM " ENABLED_TYPES_TABLE_NAME;
 
@@ -213,7 +213,7 @@ BlacklistData::AllowedTypesAndVersions GetStoredEntries(sql::Connection* db) {
 }
 
 // Adds a newly enabled |type| with its |version| to the Enabled types table.
-void InsertEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
+void InsertEnabledTypesInDataBase(sql::Database* db, int type, int version) {
   static const char kSqlInsert[] = "INSERT INTO " ENABLED_TYPES_TABLE_NAME
                                    " (type, version)"
                                    " VALUES "
@@ -226,7 +226,7 @@ void InsertEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
 }
 
 // Updates the |version| of an enabled |type| in the Enabled table.
-void UpdateEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
+void UpdateEnabledTypesInDataBase(sql::Database* db, int type, int version) {
   static const char kSqlUpdate[] = "UPDATE " ENABLED_TYPES_TABLE_NAME
                                    " SET version = ?"
                                    " WHERE type = ?";
@@ -239,7 +239,7 @@ void UpdateEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
 }
 
 // Deletes a previously enabled |type| from the Enabled table.
-void DeleteEnabledTypesInDataBase(sql::Connection* db, int type) {
+void DeleteEnabledTypesInDataBase(sql::Database* db, int type) {
   static const char kSqlDelete[] =
       "DELETE FROM " ENABLED_TYPES_TABLE_NAME " WHERE type == ?";
 
@@ -252,7 +252,7 @@ void DeleteEnabledTypesInDataBase(sql::Connection* db, int type) {
 // and where a type is now disabled or has a different version, cleans up
 // any associated blacklist entries.
 void CheckAndReconcileEnabledTypesWithDataBase(
-    sql::Connection* db,
+    sql::Database* db,
     const BlacklistData::AllowedTypesAndVersions& allowed_types) {
   BlacklistData::AllowedTypesAndVersions stored_entries = GetStoredEntries(db);
 
@@ -282,7 +282,7 @@ void CheckAndReconcileEnabledTypesWithDataBase(
 }
 
 void LoadBlackListFromDataBase(
-    sql::Connection* db,
+    sql::Database* db,
     std::unique_ptr<BlacklistData> blacklist_data,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     LoadBlackListCallback callback) {
@@ -331,7 +331,7 @@ void LoadBlackListFromDataBase(
 
 // Synchronous implementations, these are run on the background thread
 // and actually do the work to access the SQL data base.
-void LoadBlackListSync(sql::Connection* db,
+void LoadBlackListSync(sql::Database* db,
                        const base::FilePath& path,
                        std::unique_ptr<BlacklistData> blacklist_data,
                        scoped_refptr<base::SingleThreadTaskRunner> runner,
@@ -345,7 +345,7 @@ void LoadBlackListSync(sql::Connection* db,
 
 // Deletes every row in the table that has entry time between |begin_time| and
 // |end_time|.
-void ClearBlackListSync(sql::Connection* db,
+void ClearBlackListSync(sql::Database* db,
                         base::Time begin_time,
                         base::Time end_time) {
   static const char kSql[] =
@@ -361,7 +361,7 @@ void AddEntrySync(bool opt_out,
                   const std::string& host_name,
                   int type,
                   base::Time now,
-                  sql::Connection* db) {
+                  sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return;
@@ -412,7 +412,7 @@ void OptOutStoreSQL::LoadBlackList(
     LoadBlackListCallback callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!db_)
-    db_ = std::make_unique<sql::Connection>();
+    db_ = std::make_unique<sql::Database>();
   background_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LoadBlackListSync, db_.get(), db_file_path_,

@@ -16,8 +16,8 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
-#include "sql/connection.h"
-#include "sql/connection_memory_dump_provider.h"
+#include "sql/database.h"
+#include "sql/database_memory_dump_provider.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
@@ -29,15 +29,15 @@
 
 namespace sql {
 
-class ConnectionTestPeer {
+class DatabaseTestPeer {
  public:
-  static bool AttachDatabase(Connection* db,
+  static bool AttachDatabase(Database* db,
                              const base::FilePath& other_db_path,
                              const char* attachment_point) {
     return db->AttachDatabase(other_db_path, attachment_point,
                               InternalApiToken());
   }
-  static bool DetachDatabase(Connection* db, const char* attachment_point) {
+  static bool DetachDatabase(Database* db, const char* attachment_point) {
     return db->DetachDatabase(attachment_point, InternalApiToken());
   }
 };
@@ -48,7 +48,7 @@ namespace test {
 class ScopedScalarFunction {
  public:
   ScopedScalarFunction(
-      sql::Connection& db,
+      sql::Database& db,
       const char* function_name,
       int args,
       base::RepeatingCallback<void(sqlite3_context*, int, sqlite3_value**)> cb)
@@ -63,8 +63,8 @@ class ScopedScalarFunction {
 
  private:
   static void Run(sqlite3_context* context, int argc, sqlite3_value** argv) {
-    ScopedScalarFunction* t = static_cast<ScopedScalarFunction*>(
-        sqlite3_user_data(context));
+    ScopedScalarFunction* t =
+        static_cast<ScopedScalarFunction*>(sqlite3_user_data(context));
     t->cb_.Run(context, argc, argv);
   }
 
@@ -78,7 +78,7 @@ class ScopedScalarFunction {
 // Allow a test to add a SQLite commit hook in a scoped context.
 class ScopedCommitHook {
  public:
-  ScopedCommitHook(sql::Connection& db, base::RepeatingCallback<int()> cb)
+  ScopedCommitHook(sql::Database& db, base::RepeatingCallback<int()> cb)
       : db_(db.db_), cb_(std::move(cb)) {
     sqlite3_commit_hook(db_, &Run, this);
   }
@@ -105,7 +105,7 @@ using sql::test::ExecuteWithResult;
 
 // Helper to return the count of items in sqlite_master.  Return -1 in
 // case of error.
-int SqliteMasterCount(sql::Connection* db) {
+int SqliteMasterCount(sql::Database* db) {
   const char* kMasterCount = "SELECT COUNT(*) FROM sqlite_master";
   sql::Statement s(db->GetUniqueStatement(kMasterCount));
   return s.Step() ? s.ColumnInt(0) : -1;
@@ -116,17 +116,11 @@ int SqliteMasterCount(sql::Connection* db) {
 // explicitly having the ref count live longer than the object.
 class RefCounter {
  public:
-  RefCounter(size_t* counter)
-      : counter_(counter) {
+  RefCounter(size_t* counter) : counter_(counter) { (*counter_)++; }
+  RefCounter(const RefCounter& other) : counter_(other.counter_) {
     (*counter_)++;
   }
-  RefCounter(const RefCounter& other)
-      : counter_(other.counter_) {
-    (*counter_)++;
-  }
-  ~RefCounter() {
-    (*counter_)--;
-  }
+  ~RefCounter() { (*counter_)--; }
 
  private:
   size_t* counter_;
@@ -135,23 +129,24 @@ class RefCounter {
 };
 
 // Empty callback for implementation of ErrorCallbackSetHelper().
-void IgnoreErrorCallback(int error, sql::Statement* stmt) {
-}
+void IgnoreErrorCallback(int error, sql::Statement* stmt) {}
 
-void ErrorCallbackSetHelper(sql::Connection* db,
+void ErrorCallbackSetHelper(sql::Database* db,
                             size_t* counter,
                             const RefCounter& r,
-                            int error, sql::Statement* stmt) {
+                            int error,
+                            sql::Statement* stmt) {
   // The ref count should not go to zero when changing the callback.
   EXPECT_GT(*counter, 0u);
   db->set_error_callback(base::BindRepeating(&IgnoreErrorCallback));
   EXPECT_GT(*counter, 0u);
 }
 
-void ErrorCallbackResetHelper(sql::Connection* db,
+void ErrorCallbackResetHelper(sql::Database* db,
                               size_t* counter,
                               const RefCounter& r,
-                              int error, sql::Statement* stmt) {
+                              int error,
+                              sql::Statement* stmt) {
   // The ref count should not go to zero when clearing the callback.
   EXPECT_GT(*counter, 0u);
   db->reset_error_callback();
@@ -159,13 +154,13 @@ void ErrorCallbackResetHelper(sql::Connection* db,
 }
 
 // Handle errors by blowing away the database.
-void RazeErrorCallback(sql::Connection* db,
+void RazeErrorCallback(sql::Database* db,
                        int expected_error,
                        int error,
                        sql::Statement* stmt) {
   // Nothing here needs extended errors at this time.
-  EXPECT_EQ(expected_error, expected_error&0xff);
-  EXPECT_EQ(expected_error, error&0xff);
+  EXPECT_EQ(expected_error, expected_error & 0xff);
+  EXPECT_EQ(expected_error, error & 0xff);
   db->RazeAndClose();
 }
 
@@ -178,6 +173,7 @@ class ScopedUmaskSetter {
     old_umask_ = umask(target_mask);
   }
   ~ScopedUmaskSetter() { umask(old_umask_); }
+
  private:
   mode_t old_umask_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedUmaskSetter);
@@ -209,9 +205,9 @@ const char kQueryTime[] = "Sqlite.QueryTime.Test";
 
 }  // namespace
 
-using SQLConnectionTest = sql::SQLTestBase;
+using SQLDatabaseTest = sql::SQLTestBase;
 
-TEST_F(SQLConnectionTest, Execute) {
+TEST_F(SQLDatabaseTest, Execute) {
   // Valid statement should return true.
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   EXPECT_EQ(SQLITE_OK, db().GetErrorCode());
@@ -222,17 +218,15 @@ TEST_F(SQLConnectionTest, Execute) {
   EXPECT_EQ(SQLITE_ERROR, db().GetErrorCode());
 }
 
-TEST_F(SQLConnectionTest, ExecuteWithErrorCode) {
+TEST_F(SQLDatabaseTest, ExecuteWithErrorCode) {
   ASSERT_EQ(SQLITE_OK,
             db().ExecuteAndReturnErrorCode("CREATE TABLE foo (a, b)"));
-  ASSERT_EQ(SQLITE_ERROR,
-            db().ExecuteAndReturnErrorCode("CREATE TABLE TABLE"));
-  ASSERT_EQ(SQLITE_ERROR,
-            db().ExecuteAndReturnErrorCode(
-                "INSERT INTO foo(a, b) VALUES (1, 2, 3, 4)"));
+  ASSERT_EQ(SQLITE_ERROR, db().ExecuteAndReturnErrorCode("CREATE TABLE TABLE"));
+  ASSERT_EQ(SQLITE_ERROR, db().ExecuteAndReturnErrorCode(
+                              "INSERT INTO foo(a, b) VALUES (1, 2, 3, 4)"));
 }
 
-TEST_F(SQLConnectionTest, CachedStatement) {
+TEST_F(SQLDatabaseTest, CachedStatement) {
   sql::StatementID id1 = SQL_FROM_HERE;
   sql::StatementID id2 = SQL_FROM_HERE;
   static const char kId1Sql[] = "SELECT a FROM foo";
@@ -244,7 +238,7 @@ TEST_F(SQLConnectionTest, CachedStatement) {
   sqlite3_stmt* raw_id1_statement;
   sqlite3_stmt* raw_id2_statement;
   {
-    scoped_refptr<sql::Connection::StatementRef> ref_from_id1 =
+    scoped_refptr<sql::Database::StatementRef> ref_from_id1 =
         db().GetCachedStatement(id1, kId1Sql);
     raw_id1_statement = ref_from_id1->stmt();
 
@@ -253,7 +247,7 @@ TEST_F(SQLConnectionTest, CachedStatement) {
     ASSERT_TRUE(from_id1.Step());
     EXPECT_EQ(12, from_id1.ColumnInt(0));
 
-    scoped_refptr<sql::Connection::StatementRef> ref_from_id2 =
+    scoped_refptr<sql::Database::StatementRef> ref_from_id2 =
         db().GetCachedStatement(id2, kId2Sql);
     raw_id2_statement = ref_from_id2->stmt();
     EXPECT_NE(raw_id1_statement, raw_id2_statement);
@@ -265,7 +259,7 @@ TEST_F(SQLConnectionTest, CachedStatement) {
   }
 
   {
-    scoped_refptr<sql::Connection::StatementRef> ref_from_id1 =
+    scoped_refptr<sql::Database::StatementRef> ref_from_id1 =
         db().GetCachedStatement(id1, kId1Sql);
     EXPECT_EQ(raw_id1_statement, ref_from_id1->stmt())
         << "statement was not cached";
@@ -275,7 +269,7 @@ TEST_F(SQLConnectionTest, CachedStatement) {
     ASSERT_TRUE(from_id1.Step()) << "cached statement was not reset";
     EXPECT_EQ(12, from_id1.ColumnInt(0));
 
-    scoped_refptr<sql::Connection::StatementRef> ref_from_id2 =
+    scoped_refptr<sql::Database::StatementRef> ref_from_id2 =
         db().GetCachedStatement(id2, kId2Sql);
     EXPECT_EQ(raw_id2_statement, ref_from_id2->stmt())
         << "statement was not cached";
@@ -287,13 +281,13 @@ TEST_F(SQLConnectionTest, CachedStatement) {
   }
 }
 
-TEST_F(SQLConnectionTest, IsSQLValidTest) {
+TEST_F(SQLDatabaseTest, IsSQLValidTest) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   ASSERT_TRUE(db().IsSQLValid("SELECT a FROM foo"));
   ASSERT_FALSE(db().IsSQLValid("SELECT no_exist FROM foo"));
 }
 
-TEST_F(SQLConnectionTest, DoesTableExist) {
+TEST_F(SQLDatabaseTest, DoesTableExist) {
   EXPECT_FALSE(db().DoesTableExist("foo"));
   EXPECT_FALSE(db().DoesTableExist("foo_index"));
 
@@ -303,7 +297,7 @@ TEST_F(SQLConnectionTest, DoesTableExist) {
   EXPECT_FALSE(db().DoesTableExist("foo_index"));
 }
 
-TEST_F(SQLConnectionTest, DoesIndexExist) {
+TEST_F(SQLDatabaseTest, DoesIndexExist) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   EXPECT_FALSE(db().DoesIndexExist("foo"));
   EXPECT_FALSE(db().DoesIndexExist("foo_ubdex"));
@@ -313,7 +307,7 @@ TEST_F(SQLConnectionTest, DoesIndexExist) {
   EXPECT_FALSE(db().DoesIndexExist("foo"));
 }
 
-TEST_F(SQLConnectionTest, DoesViewExist) {
+TEST_F(SQLDatabaseTest, DoesViewExist) {
   EXPECT_FALSE(db().DoesViewExist("voo"));
   ASSERT_TRUE(db().Execute("CREATE VIEW voo (a) AS SELECT 1"));
   EXPECT_FALSE(db().DoesIndexExist("voo"));
@@ -321,7 +315,7 @@ TEST_F(SQLConnectionTest, DoesViewExist) {
   EXPECT_TRUE(db().DoesViewExist("voo"));
 }
 
-TEST_F(SQLConnectionTest, DoesColumnExist) {
+TEST_F(SQLDatabaseTest, DoesColumnExist) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
   EXPECT_FALSE(db().DoesColumnExist("foo", "bar"));
@@ -335,7 +329,7 @@ TEST_F(SQLConnectionTest, DoesColumnExist) {
   EXPECT_TRUE(db().DoesColumnExist("FOO", "A"));
 }
 
-TEST_F(SQLConnectionTest, GetLastInsertRowId) {
+TEST_F(SQLDatabaseTest, GetLastInsertRowId) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (id INTEGER PRIMARY KEY, value)"));
 
   ASSERT_TRUE(db().Execute("INSERT INTO foo (value) VALUES (12)"));
@@ -351,7 +345,7 @@ TEST_F(SQLConnectionTest, GetLastInsertRowId) {
   EXPECT_EQ(12, s.ColumnInt(0));
 }
 
-TEST_F(SQLConnectionTest, Rollback) {
+TEST_F(SQLDatabaseTest, Rollback) {
   ASSERT_TRUE(db().BeginTransaction());
   ASSERT_TRUE(db().BeginTransaction());
   EXPECT_EQ(2, db().transaction_nesting());
@@ -362,7 +356,7 @@ TEST_F(SQLConnectionTest, Rollback) {
 
 // Test the scoped error expecter by attempting to insert a duplicate
 // value into an index.
-TEST_F(SQLConnectionTest, ScopedErrorExpecter) {
+TEST_F(SQLDatabaseTest, ScopedErrorExpecter) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
@@ -377,7 +371,7 @@ TEST_F(SQLConnectionTest, ScopedErrorExpecter) {
 
 // Test that clients of GetUntrackedStatement() can test corruption-handling
 // with ScopedErrorExpecter.
-TEST_F(SQLConnectionTest, ScopedIgnoreUntracked) {
+TEST_F(SQLDatabaseTest, ScopedIgnoreUntracked) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_FALSE(db().DoesTableExist("bar"));
@@ -399,7 +393,7 @@ TEST_F(SQLConnectionTest, ScopedIgnoreUntracked) {
   }
 }
 
-TEST_F(SQLConnectionTest, ErrorCallback) {
+TEST_F(SQLDatabaseTest, ErrorCallback) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
@@ -412,7 +406,7 @@ TEST_F(SQLConnectionTest, ErrorCallback) {
 
     // Later versions of SQLite throw SQLITE_CONSTRAINT_UNIQUE.  The specific
     // sub-error isn't really important.
-    EXPECT_EQ(SQLITE_CONSTRAINT, (error&0xff));
+    EXPECT_EQ(SQLITE_CONSTRAINT, (error & 0xff));
   }
 
   // Callback is no longer in force due to reset.
@@ -454,9 +448,9 @@ TEST_F(SQLConnectionTest, ErrorCallback) {
   }
 }
 
-// Test that sql::Connection::Raze() results in a database without the
+// Test that sql::Database::Raze() results in a database without the
 // tables from the original database.
-TEST_F(SQLConnectionTest, Raze) {
+TEST_F(SQLDatabaseTest, Raze) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO foo (value) VALUES (12)"));
@@ -507,7 +501,7 @@ TEST_F(SQLConnectionTest, Raze) {
   }
 }
 
-// Helper for SQLConnectionTest.RazePageSize.  Creates a fresh db based on
+// Helper for SQLDatabaseTest.RazePageSize.  Creates a fresh db based on
 // db_prefix, with the given initial page size, and verifies it against the
 // expected size.  Then changes to the final page size and razes, verifying that
 // the fresh database ends up with the expected final page size.
@@ -522,8 +516,8 @@ void TestPageSize(const base::FilePath& db_prefix,
 
   const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
       base::IntToString(initial_page_size));
-  sql::Connection::Delete(db_path);
-  sql::Connection db;
+  sql::Database::Delete(db_path);
+  sql::Database db;
   db.set_page_size(initial_page_size);
   ASSERT_TRUE(db.Open(db_path));
   ASSERT_TRUE(db.Execute(kCreateSql));
@@ -551,7 +545,7 @@ void TestPageSize(const base::FilePath& db_prefix,
 // Verify that sql::Recovery maintains the page size, and the virtual table
 // works with page sizes other than SQLite's default.  Also verify the case
 // where the default page size has changed.
-TEST_F(SQLConnectionTest, RazePageSize) {
+TEST_F(SQLDatabaseTest, RazePageSize) {
   const std::string default_page_size =
       ExecuteWithResult(&db(), "PRAGMA page_size");
 
@@ -565,23 +559,21 @@ TEST_F(SQLConnectionTest, RazePageSize) {
   // 1k is the default page size before 3.12.0.
   EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 1024, "1024", 1024, "1024"));
 
-  EXPECT_NO_FATAL_FAILURE(
-      TestPageSize(db_path(), 2048, "2048", 4096, "4096"));
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 2048, "2048", 4096, "4096"));
 
   // Databases with no page size specified should result in the default
   // page size.  2k has never been the default page size.
   ASSERT_NE("2048", default_page_size);
-  EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 2048, "2048",
-                                       Connection::kDefaultPageSize,
-                                       default_page_size));
+  EXPECT_NO_FATAL_FAILURE(TestPageSize(
+      db_path(), 2048, "2048", Database::kDefaultPageSize, default_page_size));
 }
 
 // Test that Raze() results are seen in other connections.
-TEST_F(SQLConnectionTest, RazeMultiple) {
+TEST_F(SQLDatabaseTest, RazeMultiple) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
 
-  sql::Connection other_db;
+  sql::Database other_db;
   ASSERT_TRUE(other_db.Open(db_path()));
 
   // Check that the second connection sees the table.
@@ -593,14 +585,14 @@ TEST_F(SQLConnectionTest, RazeMultiple) {
   ASSERT_EQ(0, SqliteMasterCount(&other_db));
 }
 
-TEST_F(SQLConnectionTest, RazeLocked) {
+TEST_F(SQLDatabaseTest, RazeLocked) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
 
   // Open a transaction and write some data in a second connection.
   // This will acquire a PENDING or EXCLUSIVE transaction, which will
   // cause the raze to fail.
-  sql::Connection other_db;
+  sql::Database other_db;
   ASSERT_TRUE(other_db.Open(db_path()));
   ASSERT_TRUE(other_db.BeginTransaction());
   const char* kInsertSql = "INSERT INTO foo VALUES (1, 'data')";
@@ -618,7 +610,7 @@ TEST_F(SQLConnectionTest, RazeLocked) {
 
   // An unfinished read transaction in the other connection also
   // blocks raze.
-  const char *kQuery = "SELECT COUNT(*) FROM foo";
+  const char* kQuery = "SELECT COUNT(*) FROM foo";
   sql::Statement s(other_db.GetUniqueStatement(kQuery));
   ASSERT_TRUE(s.Step());
   ASSERT_FALSE(db().Raze());
@@ -630,7 +622,7 @@ TEST_F(SQLConnectionTest, RazeLocked) {
 
 // Verify that Raze() can handle an empty file.  SQLite should treat
 // this as an empty database.
-TEST_F(SQLConnectionTest, RazeEmptyDB) {
+TEST_F(SQLDatabaseTest, RazeEmptyDB) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   db().Close();
@@ -643,9 +635,9 @@ TEST_F(SQLConnectionTest, RazeEmptyDB) {
 }
 
 // Verify that Raze() can handle a file of junk.
-TEST_F(SQLConnectionTest, RazeNOTADB) {
+TEST_F(SQLDatabaseTest, RazeNOTADB) {
   db().Close();
-  sql::Connection::Delete(db_path());
+  sql::Database::Delete(db_path());
   ASSERT_FALSE(GetPathExists(db_path()));
 
   WriteJunkToDatabase(SQLTestBase::TYPE_OVERWRITE_AND_TRUNCATE);
@@ -669,7 +661,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB) {
 }
 
 // Verify that Raze() can handle a database overwritten with garbage.
-TEST_F(SQLConnectionTest, RazeNOTADB2) {
+TEST_F(SQLDatabaseTest, RazeNOTADB2) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_EQ(1, SqliteMasterCount(&db()));
@@ -698,7 +690,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
 // essential for cases where the Open() can fail entirely, so the
 // Raze() cannot happen later.  Additionally test that when the
 // callback does this during Open(), the open is retried and succeeds.
-TEST_F(SQLConnectionTest, RazeCallbackReopen) {
+TEST_F(SQLDatabaseTest, RazeCallbackReopen) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_EQ(1, SqliteMasterCount(&db()));
@@ -731,7 +723,7 @@ TEST_F(SQLConnectionTest, RazeCallbackReopen) {
 }
 
 // Basic test of RazeAndClose() operation.
-TEST_F(SQLConnectionTest, RazeAndClose) {
+TEST_F(SQLDatabaseTest, RazeAndClose) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   const char* kPopulateSql = "INSERT INTO foo (value) VALUES (12)";
 
@@ -759,7 +751,7 @@ TEST_F(SQLConnectionTest, RazeAndClose) {
 
 // Test that various operations fail without crashing after
 // RazeAndClose().
-TEST_F(SQLConnectionTest, RazeAndCloseDiagnostics) {
+TEST_F(SQLDatabaseTest, RazeAndCloseDiagnostics) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   const char* kPopulateSql = "INSERT INTO foo (value) VALUES (12)";
   const char* kSimpleSql = "SELECT 1";
@@ -812,15 +804,14 @@ TEST_F(SQLConnectionTest, RazeAndCloseDiagnostics) {
   // Close normally to reset the poisoned flag.
   db().Close();
 
-  // DEATH tests not supported on Android, iOS, or Fuchsia.
+// DEATH tests not supported on Android, iOS, or Fuchsia.
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
   // Once the real Close() has been called, various calls enforce API
   // usage by becoming fatal in debug mode.  Since DEATH tests are
   // expensive, just test one of them.
   if (DLOG_IS_ON(FATAL)) {
-    ASSERT_DEATH({
-        db().IsSQLValid(kSimpleSql);
-      }, "Illegal use of connection without a db");
+    ASSERT_DEATH({ db().IsSQLValid(kSimpleSql); },
+                 "Illegal use of Database without a db");
   }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
 }
@@ -834,7 +825,7 @@ TEST_F(SQLConnectionTest, RazeAndCloseDiagnostics) {
 // Test that Raze() turns off memory mapping so that the file is truncated.
 // [This would not cover the case of multiple connections where one of the other
 // connections is memory-mapped.  That is infrequent in Chromium.]
-TEST_F(SQLConnectionTest, RazeTruncate) {
+TEST_F(SQLDatabaseTest, RazeTruncate) {
   // The empty database has 0 or 1 pages.  Raze() should leave it with exactly 1
   // page.  Not checking directly because auto_vacuum on Android adds a freelist
   // page.
@@ -866,8 +857,7 @@ TEST_F(SQLConnectionTest, RazeTruncate) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(SQLConnectionTest, SetTempDirForSQL) {
-
+TEST_F(SQLDatabaseTest, SetTempDirForSQL) {
   sql::MetaTable meta_table;
   // Below call needs a temporary directory in sqlite3
   // On Android, it can pass only when the temporary directory is set.
@@ -878,25 +868,25 @@ TEST_F(SQLConnectionTest, SetTempDirForSQL) {
 }
 #endif  // defined(OS_ANDROID)
 
-TEST_F(SQLConnectionTest, DeleteNonWal) {
+TEST_F(SQLDatabaseTest, DeleteNonWal) {
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
   db().Close();
 
   // Should have both a main database file and a journal file because
   // of journal_mode TRUNCATE.
-  base::FilePath journal_path = sql::Connection::JournalPath(db_path());
+  base::FilePath journal_path = sql::Database::JournalPath(db_path());
   ASSERT_TRUE(GetPathExists(db_path()));
   ASSERT_TRUE(GetPathExists(journal_path));
 
-  sql::Connection::Delete(db_path());
+  sql::Database::Delete(db_path());
   EXPECT_FALSE(GetPathExists(db_path()));
   EXPECT_FALSE(GetPathExists(journal_path));
 }
 
 #if defined(OS_POSIX)  // This test operates on POSIX file permissions.
-TEST_F(SQLConnectionTest, PosixFilePermissions) {
+TEST_F(SQLDatabaseTest, PosixFilePermissions) {
   db().Close();
-  sql::Connection::Delete(db_path());
+  sql::Database::Delete(db_path());
   ASSERT_FALSE(GetPathExists(db_path()));
 
   // If the bots all had a restrictive umask setting such that databases are
@@ -917,7 +907,7 @@ TEST_F(SQLConnectionTest, PosixFilePermissions) {
   ASSERT_EQ(mode, 0600);
 
   {
-    base::FilePath journal_path = sql::Connection::JournalPath(db_path());
+    base::FilePath journal_path = sql::Database::JournalPath(db_path());
     DLOG(ERROR) << "journal_path: " << journal_path;
     ASSERT_TRUE(GetPathExists(journal_path));
     EXPECT_TRUE(base::GetPosixFilePermissions(journal_path, &mode));
@@ -926,7 +916,7 @@ TEST_F(SQLConnectionTest, PosixFilePermissions) {
 
   // Reopen the database and turn on WAL mode.
   db().Close();
-  sql::Connection::Delete(db_path());
+  sql::Database::Delete(db_path());
   ASSERT_FALSE(GetPathExists(db_path()));
   ASSERT_TRUE(db().Open(db_path()));
   ASSERT_TRUE(db().Execute("PRAGMA journal_mode = WAL"));
@@ -936,12 +926,12 @@ TEST_F(SQLConnectionTest, PosixFilePermissions) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
   {
-    base::FilePath wal_path = sql::Connection::WriteAheadLogPath(db_path());
+    base::FilePath wal_path = sql::Database::WriteAheadLogPath(db_path());
     ASSERT_TRUE(GetPathExists(wal_path));
     EXPECT_TRUE(base::GetPosixFilePermissions(wal_path, &mode));
     ASSERT_EQ(mode, 0600);
 
-    base::FilePath shm_path = sql::Connection::SharedMemoryFilePath(db_path());
+    base::FilePath shm_path = sql::Database::SharedMemoryFilePath(db_path());
     ASSERT_TRUE(GetPathExists(shm_path));
     EXPECT_TRUE(base::GetPosixFilePermissions(shm_path, &mode));
     ASSERT_EQ(mode, 0600);
@@ -950,7 +940,7 @@ TEST_F(SQLConnectionTest, PosixFilePermissions) {
 #endif  // defined(OS_POSIX)
 
 // Test that errors start happening once Poison() is called.
-TEST_F(SQLConnectionTest, Poison) {
+TEST_F(SQLDatabaseTest, Poison) {
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
 
   // Before the Poison() call, things generally work.
@@ -997,15 +987,15 @@ TEST_F(SQLConnectionTest, Poison) {
   EXPECT_FALSE(db().CommitTransaction());
 }
 
-TEST_F(SQLConnectionTest, AttachDatabase) {
+TEST_F(SQLDatabaseTest, AttachDatabase) {
   EXPECT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
   // Create a database to attach to.
   base::FilePath attach_path =
-      db_path().DirName().AppendASCII("SQLConnectionAttach.db");
+      db_path().DirName().AppendASCII("SQLDatabaseAttach.db");
   static const char kAttachmentPoint[] = "other";
   {
-    sql::Connection other_db;
+    sql::Database other_db;
     ASSERT_TRUE(other_db.Open(attach_path));
     EXPECT_TRUE(other_db.Execute("CREATE TABLE bar (a, b)"));
     EXPECT_TRUE(other_db.Execute("INSERT INTO bar VALUES ('hello', 'world')"));
@@ -1015,7 +1005,7 @@ TEST_F(SQLConnectionTest, AttachDatabase) {
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
   EXPECT_TRUE(
-      ConnectionTestPeer::AttachDatabase(&db(), attach_path, kAttachmentPoint));
+      DatabaseTestPeer::AttachDatabase(&db(), attach_path, kAttachmentPoint));
   EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
   // Queries can touch both databases after the ATTACH.
@@ -1026,19 +1016,19 @@ TEST_F(SQLConnectionTest, AttachDatabase) {
     EXPECT_EQ(1, s.ColumnInt(0));
   }
 
-  EXPECT_TRUE(ConnectionTestPeer::DetachDatabase(&db(), kAttachmentPoint));
+  EXPECT_TRUE(DatabaseTestPeer::DetachDatabase(&db(), kAttachmentPoint));
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 }
 
-TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
+TEST_F(SQLDatabaseTest, AttachDatabaseWithOpenTransaction) {
   EXPECT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
   // Create a database to attach to.
   base::FilePath attach_path =
-      db_path().DirName().AppendASCII("SQLConnectionAttach.db");
+      db_path().DirName().AppendASCII("SQLDatabaseAttach.db");
   static const char kAttachmentPoint[] = "other";
   {
-    sql::Connection other_db;
+    sql::Database other_db;
     ASSERT_TRUE(other_db.Open(attach_path));
     EXPECT_TRUE(other_db.Execute("CREATE TABLE bar (a, b)"));
     EXPECT_TRUE(other_db.Execute("INSERT INTO bar VALUES ('hello', 'world')"));
@@ -1050,7 +1040,7 @@ TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
   // Attach succeeds in a transaction.
   EXPECT_TRUE(db().BeginTransaction());
   EXPECT_TRUE(
-      ConnectionTestPeer::AttachDatabase(&db(), attach_path, kAttachmentPoint));
+      DatabaseTestPeer::AttachDatabase(&db(), attach_path, kAttachmentPoint));
   EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
   // Queries can touch both databases after the ATTACH.
@@ -1065,18 +1055,18 @@ TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_ERROR);
-    EXPECT_FALSE(ConnectionTestPeer::DetachDatabase(&db(), kAttachmentPoint));
+    EXPECT_FALSE(DatabaseTestPeer::DetachDatabase(&db(), kAttachmentPoint));
     EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
   // Detach succeeds when the transaction is closed.
   db().RollbackTransaction();
-  EXPECT_TRUE(ConnectionTestPeer::DetachDatabase(&db(), kAttachmentPoint));
+  EXPECT_TRUE(DatabaseTestPeer::DetachDatabase(&db(), kAttachmentPoint));
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 }
 
-TEST_F(SQLConnectionTest, Basic_QuickIntegrityCheck) {
+TEST_F(SQLDatabaseTest, Basic_QuickIntegrityCheck) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   EXPECT_TRUE(db().QuickIntegrityCheck());
@@ -1093,7 +1083,7 @@ TEST_F(SQLConnectionTest, Basic_QuickIntegrityCheck) {
   }
 }
 
-TEST_F(SQLConnectionTest, Basic_FullIntegrityCheck) {
+TEST_F(SQLDatabaseTest, Basic_FullIntegrityCheck) {
   const std::string kOk("ok");
   std::vector<std::string> messages;
 
@@ -1121,7 +1111,7 @@ TEST_F(SQLConnectionTest, Basic_FullIntegrityCheck) {
 }
 
 // Test Sqlite.Stats histogram for execute-oriented calls.
-TEST_F(SQLConnectionTest, EventsExecute) {
+TEST_F(SQLDatabaseTest, EventsExecute) {
   // Re-open with histogram tag.
   db().Close();
   db().set_histogram_tag("Test");
@@ -1141,11 +1131,12 @@ TEST_F(SQLConnectionTest, EventsExecute) {
   EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (12, 'text')"));
   EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (13, 'text')"));
   EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (14, 'text')"));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (15, 'text');"
-                           "INSERT INTO foo VALUES (16, 'text');"
-                           "INSERT INTO foo VALUES (17, 'text');"
-                           "INSERT INTO foo VALUES (18, 'text');"
-                           "INSERT INTO foo VALUES (19, 'text')"));
+  EXPECT_TRUE(
+      db().Execute("INSERT INTO foo VALUES (15, 'text');"
+                   "INSERT INTO foo VALUES (16, 'text');"
+                   "INSERT INTO foo VALUES (17, 'text');"
+                   "INSERT INTO foo VALUES (18, 'text');"
+                   "INSERT INTO foo VALUES (19, 'text')"));
   ASSERT_TRUE(db().CommitTransaction());
   ASSERT_TRUE(db().BeginTransaction());
   EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (20, 'text')"));
@@ -1155,50 +1146,49 @@ TEST_F(SQLConnectionTest, EventsExecute) {
 
   // The create, 5 inserts, multi-statement insert, rolled-back insert, 2
   // inserts outside transaction.
-  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_EXECUTE, 10);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_EXECUTE, 10);
+  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_EXECUTE, 10);
+  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_EXECUTE,
+                           10);
 
   // All of the executes, with the multi-statement inserts broken out, plus one
   // for each begin, commit, and rollback.
-  tester.ExpectBucketCount(kHistogramName,
-                           sql::Connection::EVENT_STATEMENT_RUN, 18);
+  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_STATEMENT_RUN,
+                           18);
   tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_STATEMENT_RUN, 18);
+                           sql::Database::EVENT_STATEMENT_RUN, 18);
 
-  tester.ExpectBucketCount(kHistogramName,
-                           sql::Connection::EVENT_STATEMENT_ROWS, 0);
+  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_STATEMENT_ROWS,
+                           0);
   tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_STATEMENT_ROWS, 0);
+                           sql::Database::EVENT_STATEMENT_ROWS, 0);
   tester.ExpectBucketCount(kHistogramName,
-                           sql::Connection::EVENT_STATEMENT_SUCCESS, 18);
+                           sql::Database::EVENT_STATEMENT_SUCCESS, 18);
   tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_STATEMENT_SUCCESS, 18);
+                           sql::Database::EVENT_STATEMENT_SUCCESS, 18);
 
   // The 2 inserts outside the transaction.
   tester.ExpectBucketCount(kHistogramName,
-                           sql::Connection::EVENT_CHANGES_AUTOCOMMIT, 2);
+                           sql::Database::EVENT_CHANGES_AUTOCOMMIT, 2);
   tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_CHANGES_AUTOCOMMIT, 2);
+                           sql::Database::EVENT_CHANGES_AUTOCOMMIT, 2);
 
   // 11 inserts inside transactions.
-  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_CHANGES, 11);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_CHANGES, 11);
+  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_CHANGES, 11);
+  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_CHANGES,
+                           11);
 
-  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_BEGIN, 2);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_BEGIN, 2);
-  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_COMMIT, 1);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_COMMIT, 1);
-  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_ROLLBACK, 1);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Connection::EVENT_ROLLBACK, 1);
+  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_BEGIN, 2);
+  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_BEGIN, 2);
+  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_COMMIT, 1);
+  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_COMMIT,
+                           1);
+  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_ROLLBACK, 1);
+  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_ROLLBACK,
+                           1);
 }
 
 // Test Sqlite.Stats histogram for prepared statements.
-TEST_F(SQLConnectionTest, EventsStatement) {
+TEST_F(SQLDatabaseTest, EventsStatement) {
   // Re-open with histogram tag.
   db().Close();
   db().set_histogram_tag("Test");
@@ -1223,47 +1213,47 @@ TEST_F(SQLConnectionTest, EventsStatement) {
       }
     }
 
-    tester.ExpectBucketCount(kHistogramName,
-                             sql::Connection::EVENT_STATEMENT_RUN, 1);
+    tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_STATEMENT_RUN,
+                             1);
     tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Connection::EVENT_STATEMENT_RUN, 1);
+                             sql::Database::EVENT_STATEMENT_RUN, 1);
     tester.ExpectBucketCount(kHistogramName,
-                             sql::Connection::EVENT_STATEMENT_ROWS, 3);
+                             sql::Database::EVENT_STATEMENT_ROWS, 3);
     tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Connection::EVENT_STATEMENT_ROWS, 3);
+                             sql::Database::EVENT_STATEMENT_ROWS, 3);
     tester.ExpectBucketCount(kHistogramName,
-                             sql::Connection::EVENT_STATEMENT_SUCCESS, 1);
+                             sql::Database::EVENT_STATEMENT_SUCCESS, 1);
     tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Connection::EVENT_STATEMENT_SUCCESS, 1);
+                             sql::Database::EVENT_STATEMENT_SUCCESS, 1);
   }
 
   {
     base::HistogramTester tester;
 
     {
-      sql::Statement s(db().GetUniqueStatement(
-          "SELECT value FROM foo WHERE id > 10"));
+      sql::Statement s(
+          db().GetUniqueStatement("SELECT value FROM foo WHERE id > 10"));
       while (s.Step()) {
       }
     }
 
-    tester.ExpectBucketCount(kHistogramName,
-                             sql::Connection::EVENT_STATEMENT_RUN, 1);
+    tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_STATEMENT_RUN,
+                             1);
     tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Connection::EVENT_STATEMENT_RUN, 1);
+                             sql::Database::EVENT_STATEMENT_RUN, 1);
     tester.ExpectBucketCount(kHistogramName,
-                             sql::Connection::EVENT_STATEMENT_ROWS, 2);
+                             sql::Database::EVENT_STATEMENT_ROWS, 2);
     tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Connection::EVENT_STATEMENT_ROWS, 2);
+                             sql::Database::EVENT_STATEMENT_ROWS, 2);
     tester.ExpectBucketCount(kHistogramName,
-                             sql::Connection::EVENT_STATEMENT_SUCCESS, 1);
+                             sql::Database::EVENT_STATEMENT_SUCCESS, 1);
     tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Connection::EVENT_STATEMENT_SUCCESS, 1);
+                             sql::Database::EVENT_STATEMENT_SUCCESS, 1);
   }
 }
 
 // Read-only query allocates time to QueryTime, but not others.
-TEST_F(SQLConnectionTest, TimeQuery) {
+TEST_F(SQLDatabaseTest, TimeQuery) {
   // Re-open with histogram tag.  Use an in-memory database to minimize variance
   // due to filesystem.
   db().Close();
@@ -1304,7 +1294,7 @@ TEST_F(SQLConnectionTest, TimeQuery) {
 
 // Autocommit update allocates time to QueryTime, UpdateTime, and
 // AutoCommitTime.
-TEST_F(SQLConnectionTest, TimeUpdateAutocommit) {
+TEST_F(SQLDatabaseTest, TimeUpdateAutocommit) {
   // Re-open with histogram tag.  Use an in-memory database to minimize variance
   // due to filesystem.
   db().Close();
@@ -1347,7 +1337,7 @@ TEST_F(SQLConnectionTest, TimeUpdateAutocommit) {
 
 // Update with explicit transaction allocates time to QueryTime, UpdateTime, and
 // CommitTime.
-TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
+TEST_F(SQLDatabaseTest, TimeUpdateTransaction) {
   // Re-open with histogram tag.  Use an in-memory database to minimize variance
   // due to filesystem.
   db().Close();
@@ -1374,8 +1364,7 @@ TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
     sql::test::ScopedCommitHook scoped_hook(
         db(), base::BindRepeating(adjust_commit_hook, mock_clock_ptr, 1000));
     ASSERT_TRUE(db().BeginTransaction());
-    EXPECT_TRUE(db().Execute(
-        "INSERT INTO foo VALUES (11, milliadjust(10))"));
+    EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (11, milliadjust(10))"));
     EXPECT_TRUE(
         db().Execute("UPDATE foo SET value = milliadjust(100) WHERE id = 11"));
     EXPECT_TRUE(db().CommitTransaction());
@@ -1399,7 +1388,7 @@ TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
   EXPECT_EQ(0, samples->sum());
 }
 
-TEST_F(SQLConnectionTest, OnMemoryDump) {
+TEST_F(SQLDatabaseTest, OnMemoryDump) {
   base::trace_event::MemoryDumpArgs args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
   base::trace_event::ProcessMemoryDump pmd(args);
@@ -1409,7 +1398,7 @@ TEST_F(SQLConnectionTest, OnMemoryDump) {
 
 // Test that the functions to collect diagnostic data run to completion, without
 // worrying too much about what they generate (since that will change).
-TEST_F(SQLConnectionTest, CollectDiagnosticInfo) {
+TEST_F(SQLDatabaseTest, CollectDiagnosticInfo) {
   const std::string corruption_info = db().CollectCorruptionInfo();
   EXPECT_NE(std::string::npos, corruption_info.find("SQLITE_CORRUPT"));
   EXPECT_NE(std::string::npos, corruption_info.find("integrity_check"));
@@ -1440,7 +1429,7 @@ TEST_F(SQLConnectionTest, CollectDiagnosticInfo) {
   EXPECT_NE(std::string::npos, error_info.find("version: 4"));
 }
 
-TEST_F(SQLConnectionTest, RegisterIntentToUpload) {
+TEST_F(SQLDatabaseTest, RegisterIntentToUpload) {
   base::FilePath breadcrumb_path =
       db_path().DirName().AppendASCII("sqlite-diag");
 
@@ -1476,7 +1465,7 @@ TEST_F(SQLConnectionTest, RegisterIntentToUpload) {
 
 // Test that a fresh database has mmap enabled by default, if mmap'ed I/O is
 // enabled by SQLite.
-TEST_F(SQLConnectionTest, MmapInitiallyEnabled) {
+TEST_F(SQLDatabaseTest, MmapInitiallyEnabled) {
   {
     sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
     ASSERT_TRUE(s.Step())
@@ -1496,7 +1485,7 @@ TEST_F(SQLConnectionTest, MmapInitiallyEnabled) {
 
   // Test that explicit disable prevents mmap'ed I/O.
   db().Close();
-  sql::Connection::Delete(db_path());
+  sql::Database::Delete(db_path());
   db().set_mmap_disabled();
   ASSERT_TRUE(db().Open(db_path()));
   EXPECT_EQ("0", ExecuteWithResult(&db(), "PRAGMA mmap_size"));
@@ -1504,10 +1493,10 @@ TEST_F(SQLConnectionTest, MmapInitiallyEnabled) {
 
 // Test whether a fresh database gets mmap enabled when using alternate status
 // storage.
-TEST_F(SQLConnectionTest, MmapInitiallyEnabledAltStatus) {
+TEST_F(SQLDatabaseTest, MmapInitiallyEnabledAltStatus) {
   // Re-open fresh database with alt-status flag set.
   db().Close();
-  sql::Connection::Delete(db_path());
+  sql::Database::Delete(db_path());
   db().set_mmap_alt_status();
   ASSERT_TRUE(db().Open(db_path()));
 
@@ -1530,13 +1519,13 @@ TEST_F(SQLConnectionTest, MmapInitiallyEnabledAltStatus) {
 
   // Test that explicit disable overrides set_mmap_alt_status().
   db().Close();
-  sql::Connection::Delete(db_path());
+  sql::Database::Delete(db_path());
   db().set_mmap_disabled();
   ASSERT_TRUE(db().Open(db_path()));
   EXPECT_EQ("0", ExecuteWithResult(&db(), "PRAGMA mmap_size"));
 }
 
-TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
+TEST_F(SQLDatabaseTest, GetAppropriateMmapSize) {
   const size_t kMmapAlot = 25 * 1024 * 1024;
   int64_t mmap_status = MetaTable::kMmapFailure;
 
@@ -1579,10 +1568,10 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
   ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
 }
 
-TEST_F(SQLConnectionTest, GetAppropriateMmapSizeAltStatus) {
+TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
   const size_t kMmapAlot = 25 * 1024 * 1024;
 
-  // At this point, Connection still expects a future [meta] table.
+  // At this point, Database still expects a future [meta] table.
   ASSERT_FALSE(db().DoesTableExist("meta"));
   ASSERT_FALSE(db().DoesViewExist("MmapStatus"));
   ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
@@ -1618,14 +1607,13 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSizeAltStatus) {
 // To prevent invalid SQL from accidentally shipping to production, prepared
 // statements which fail to compile with SQLITE_ERROR call DLOG(DCHECK).  This
 // case cannot be suppressed with an error callback.
-TEST_F(SQLConnectionTest, CompileError) {
-  // DEATH tests not supported on Android, iOS, or Fuchsia.
+TEST_F(SQLDatabaseTest, CompileError) {
+// DEATH tests not supported on Android, iOS, or Fuchsia.
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
   if (DLOG_IS_ON(FATAL)) {
     db().set_error_callback(base::BindRepeating(&IgnoreErrorCallback));
-    ASSERT_DEATH({
-        db().GetUniqueStatement("SELECT x");
-      }, "SQL compile error no such column: x");
+    ASSERT_DEATH({ db().GetUniqueStatement("SELECT x"); },
+                 "SQL compile error no such column: x");
   }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
 }

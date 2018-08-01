@@ -35,7 +35,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 namespace content {
 namespace {
@@ -244,7 +244,7 @@ void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin,
   if (!legacy_localstorage_path_.empty()) {
     context_->task_runner()->PostShutdownBlockingTask(
         FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-        base::BindOnce(base::IgnoreResult(&sql::Connection::Delete),
+        base::BindOnce(base::IgnoreResult(&sql::Database::Delete),
                        legacy_localstorage_path_.Append(
                            DOMStorageArea::DatabaseFileNameFromOrigin(
                                url::Origin::Create(origin)))));

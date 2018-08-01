@@ -23,7 +23,7 @@ class PrefetchStore {
   // Definition of the callback that is going to run the core of the command in
   // the |Execute| method.
   template <typename T>
-  using RunCallback = base::OnceCallback<T(sql::Connection*)>;
+  using RunCallback = base::OnceCallback<T(sql::Database*)>;
 
   // Definition of the callback used to pass the result back to the caller of
   // |Execute| method.
@@ -58,7 +58,7 @@ class PrefetchStore {
 ```
 
 It allows for enough flexibility to execute `run_callback` on a background
-(blocking) task runner with a `sql::Connection` pointer provided, and then
+(blocking) task runner with a `sql::Database` pointer provided, and then
 return result using `result_callback`.
 
 ## How to implement your command
@@ -74,7 +74,7 @@ Signature of the callback to run on a background thread is defined by
 following (in this example `bool` is used as a sample return type.
 
 ```cpp
-bool ExampleRunCallback(sql::Connection* db) {
+bool ExampleRunCallback(sql::Database* db) {
   // Note that the run function won't be called if the database fails to
   // initialize, so db is always non-null.
 

@@ -111,7 +111,7 @@
 #include "components/feed/buildflags.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -225,7 +225,7 @@ void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
   // still here.
   base::FilePath db_path(browser_context->GetPath().Append(
       base::FilePath(FILE_PATH_LITERAL("PrecacheDatabase"))));
-  sql::Connection::Delete(db_path);
+  sql::Database::Delete(db_path);
 }
 #endif
 

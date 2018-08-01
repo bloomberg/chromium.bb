@@ -14,7 +14,7 @@ class SequencedTaskRunner;
 }
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace predictors {
@@ -38,10 +38,10 @@ class PredictorTableBase
   // DB sequence functions.
   virtual void CreateTableIfNonExistent() = 0;
   virtual void LogDatabaseStats() = 0;
-  void Initialize(sql::Connection* db);
+  void Initialize(sql::Database* db);
   void SetCancelled();
   bool IsCancelled();
-  sql::Connection* DB();
+  sql::Database* DB();
   void ResetDB();
 
   bool CantAccessDatabase();
@@ -52,7 +52,7 @@ class PredictorTableBase
   friend class base::RefCountedThreadSafe<PredictorTableBase>;
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
-  sql::Connection* db_;
+  sql::Database* db_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictorTableBase);
 };

@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +37,7 @@ class TypedURLSyncMetadataDatabaseTest : public testing::Test,
   ~TypedURLSyncMetadataDatabaseTest() override {}
 
  protected:
-  sql::Connection& GetDB() override { return db_; }
+  sql::Database& GetDB() override { return db_; }
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -55,7 +56,7 @@ class TypedURLSyncMetadataDatabaseTest : public testing::Test,
   sql::MetaTable& GetMetaTable() override { return meta_table_; }
 
   base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
+  sql::Database db_;
   sql::MetaTable meta_table_;
 
  private:

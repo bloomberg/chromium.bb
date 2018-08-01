@@ -12,7 +12,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -20,7 +20,7 @@ namespace offline_pages {
 
 namespace {
 
-bool UpdatePrefetchItemsSync(sql::Connection* db,
+bool UpdatePrefetchItemsSync(sql::Database* db,
                              const std::string& operation_name) {
   static const char kSql[] =
       "UPDATE prefetch_items SET state = ?, freshness_time = ?"
@@ -43,7 +43,7 @@ MarkOperationDoneTask::TaskResult MakeStoreError() {
 // attempt in the database.
 MarkOperationDoneTask::TaskResult MarkOperationCompletedOnServerSync(
     const std::string& operation_name,
-    sql::Connection* db) {
+    sql::Database* db) {
   sql::Transaction transaction(db);
   if (transaction.Begin() && UpdatePrefetchItemsSync(db, operation_name) &&
       transaction.Commit()) {

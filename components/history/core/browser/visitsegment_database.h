@@ -13,7 +13,7 @@
 #include "components/history/core/browser/history_types.h"
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace history {
@@ -64,7 +64,7 @@ class VisitSegmentDatabase {
 
  protected:
   // Returns the database for the functions in this interface.
-  virtual sql::Connection& GetDB() = 0;
+  virtual sql::Database& GetDB() = 0;
 
   // Creates the tables used by this class if necessary. Returns true on
   // success.

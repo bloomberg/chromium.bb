@@ -14,7 +14,7 @@
 #include "base/macros.h"
 
 namespace sql {
-class Connection;
+class Database;
 }  // namespace sql
 
 namespace extensions {
@@ -38,13 +38,13 @@ class DatabaseStringTable {
 
   // Initialize the database table.  This will create the table if it does not
   // exist.  Returns true on success; false on error.
-  bool Initialize(sql::Connection* connection);
+  bool Initialize(sql::Database* connection);
 
   // Interns a string in the database table and sets *id to the corresponding
   // integer.  If the string already exists, the existing number is returned;
   // otherwise, new database row is inserted with the new string.  Returns true
   // on success and false on database error.
-  bool StringToInt(sql::Connection* connection,
+  bool StringToInt(sql::Database* connection,
                    const std::string& value,
                    int64_t* id);
 
@@ -52,7 +52,7 @@ class DatabaseStringTable {
   // *value).  Returns true on success.  A false return does not necessarily
   // indicate a database error; it might simply be that the value cannot be
   // found.
-  bool IntToString(sql::Connection* connection, int64_t id, std::string* value);
+  bool IntToString(sql::Database* connection, int64_t id, std::string* value);
 
   // Clears the in-memory cache; this should be called if the underlying
   // database table has been manipulated and the cache may be stale.

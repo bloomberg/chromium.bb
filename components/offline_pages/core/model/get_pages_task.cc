@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "url/gurl.h"
@@ -63,7 +63,7 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   return item;
 }
 
-ReadResult ReadAllPagesSync(sql::Connection* db) {
+ReadResult ReadAllPagesSync(sql::Database* db) {
   ReadResult result;
 
   static const char kSql[] =
@@ -77,7 +77,7 @@ ReadResult ReadAllPagesSync(sql::Connection* db) {
 }
 
 ReadResult ReadPagesByClientIdsSync(const std::vector<ClientId>& client_ids,
-                                    sql::Connection* db) {
+                                    sql::Database* db) {
   ReadResult result;
 
   sql::Transaction transaction(db);
@@ -104,7 +104,7 @@ ReadResult ReadPagesByClientIdsSync(const std::vector<ClientId>& client_ids,
   return result;
 }
 
-void ReadPagesByNamespaceSync(sql::Connection* db,
+void ReadPagesByNamespaceSync(sql::Database* db,
                               const std::string& name_space,
                               ReadResult* result) {
   DCHECK(db);
@@ -121,7 +121,7 @@ void ReadPagesByNamespaceSync(sql::Connection* db,
 
 ReadResult ReadPagesByMultipleNamespacesSync(
     const std::vector<std::string>& namespaces,
-    sql::Connection* db) {
+    sql::Database* db) {
   ReadResult result;
   sql::Transaction transaction(db);
   if (!transaction.Begin())
@@ -140,7 +140,7 @@ ReadResult ReadPagesByMultipleNamespacesSync(
 }
 
 ReadResult ReadPagesByRequestOriginSync(const std::string& request_origin,
-                                        sql::Connection* db) {
+                                        sql::Database* db) {
   ReadResult result;
 
   static const char kSql[] = "SELECT " OFFLINE_PAGE_PROJECTION
@@ -169,7 +169,7 @@ ReadResult ReadPagesByRequestOriginSync(const std::string& request_origin,
 // Above approach produces false positives, because '_' replacing '%' in
 // original URL, but we deal with that by doing exact URL match inside of the
 // while loop.
-ReadResult ReadPagesByUrlSync(const GURL& url, sql::Connection* db) {
+ReadResult ReadPagesByUrlSync(const GURL& url, sql::Database* db) {
   ReadResult result;
 
   GURL::Replacements remove_fragment;
@@ -197,7 +197,7 @@ ReadResult ReadPagesByUrlSync(const GURL& url, sql::Connection* db) {
   return result;
 }
 
-ReadResult ReadPagesByOfflineId(int64_t offline_id, sql::Connection* db) {
+ReadResult ReadPagesByOfflineId(int64_t offline_id, sql::Database* db) {
   ReadResult result;
 
   static const char kSql[] = "SELECT " OFFLINE_PAGE_PROJECTION
@@ -212,7 +212,7 @@ ReadResult ReadPagesByOfflineId(int64_t offline_id, sql::Connection* db) {
   return result;
 }
 
-ReadResult ReadPagesByGuid(const std::string& guid, sql::Connection* db) {
+ReadResult ReadPagesByGuid(const std::string& guid, sql::Database* db) {
   ReadResult result;
 
   static const char kSql[] = "SELECT " OFFLINE_PAGE_PROJECTION
@@ -229,7 +229,7 @@ ReadResult ReadPagesByGuid(const std::string& guid, sql::Connection* db) {
 
 ReadResult ReadPagesBySizeAndDigest(int64_t file_size,
                                     const std::string& digest,
-                                    sql::Connection* db) {
+                                    sql::Database* db) {
   ReadResult result;
 
   static const char kSql[] = "SELECT " OFFLINE_PAGE_PROJECTION
@@ -253,7 +253,7 @@ void WrapInMultipleItemsCallback(SingleOfflinePageItemCallback callback,
     std::move(callback).Run(&pages[0]);
 }
 
-ReadResult SelectItemsForUpgrade(sql::Connection* db) {
+ReadResult SelectItemsForUpgrade(sql::Database* db) {
   ReadResult result;
 
   static const char kSql[] =

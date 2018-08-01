@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -146,7 +146,7 @@ QuotaDatabase::~QuotaDatabase() {
   }
 }
 
-void QuotaDatabase::CloseConnection() {
+void QuotaDatabase::CloseDatabase() {
   meta_table_.reset();
   db_.reset();
 }
@@ -530,7 +530,7 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
     return false;
   }
 
-  db_.reset(new sql::Connection);
+  db_.reset(new sql::Database);
   meta_table_.reset(new sql::MetaTable);
 
   db_->set_histogram_tag("Quota");
@@ -596,12 +596,14 @@ bool QuotaDatabase::EnsureDatabaseVersion() {
 }
 
 // static
-bool QuotaDatabase::CreateSchema(
-    sql::Connection* database,
-    sql::MetaTable* meta_table,
-    int schema_version, int compatible_version,
-    const TableSchema* tables, size_t tables_size,
-    const IndexSchema* indexes, size_t indexes_size) {
+bool QuotaDatabase::CreateSchema(sql::Database* database,
+                                 sql::MetaTable* meta_table,
+                                 int schema_version,
+                                 int compatible_version,
+                                 const TableSchema* tables,
+                                 size_t tables_size,
+                                 const IndexSchema* indexes,
+                                 size_t indexes_size) {
   // TODO(kinuko): Factor out the common code to create databases.
   sql::Transaction transaction(database);
   if (!transaction.Begin())
@@ -648,7 +650,7 @@ bool QuotaDatabase::ResetSchema() {
   db_.reset();
   meta_table_.reset();
 
-  if (!sql::Connection::Delete(db_file_path_))
+  if (!sql::Database::Delete(db_file_path_))
     return false;
 
   // So we can't go recursive.

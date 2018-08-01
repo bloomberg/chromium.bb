@@ -14,7 +14,7 @@
 #include "url/gurl.h"
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace password_manager {
@@ -50,7 +50,7 @@ class StatisticsTable {
   ~StatisticsTable();
 
   // Initializes |db_|.
-  void Init(sql::Connection* db);
+  void Init(sql::Database* db);
 
   // Creates the statistics table if it doesn't exist.
   bool CreateTableIfNecessary();
@@ -83,7 +83,7 @@ class StatisticsTable {
       base::Time delete_end);
 
  private:
-  sql::Connection* db_;
+  sql::Database* db_;
 
   DISALLOW_COPY_AND_ASSIGN(StatisticsTable);
 };

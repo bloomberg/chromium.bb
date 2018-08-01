@@ -49,7 +49,7 @@ void BindShortcutToStatement(const ShortcutsDatabase::Shortcut& shortcut,
 
 bool DeleteShortcut(const char* field_name,
                     const std::string& id,
-                    sql::Connection& db) {
+                    sql::Database& db) {
   sql::Statement s(db.GetUniqueStatement(
       base::StringPrintf("DELETE FROM omni_box_shortcuts WHERE %s = ?",
                          field_name).c_str()));
@@ -57,7 +57,7 @@ bool DeleteShortcut(const char* field_name,
   return s.Run();
 }
 
-void DatabaseErrorCallback(sql::Connection* db,
+void DatabaseErrorCallback(sql::Database* db,
                            const base::FilePath& db_path,
                            int extended_error,
                            sql::Statement* stmt) {
@@ -74,12 +74,12 @@ void DatabaseErrorCallback(sql::Connection* db,
     // or hardware issues, not coding errors at the client level, so displaying
     // the error would probably lead to confusion.  The ignored call signals the
     // test-expectation framework that the error was handled.
-    ignore_result(sql::Connection::IsExpectedSqliteError(extended_error));
+    ignore_result(sql::Database::IsExpectedSqliteError(extended_error));
     return;
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Connection::IsExpectedSqliteError(extended_error))
+  if (!sql::Database::IsExpectedSqliteError(extended_error))
     DLOG(FATAL) << db->GetErrorMessage();
 }
 

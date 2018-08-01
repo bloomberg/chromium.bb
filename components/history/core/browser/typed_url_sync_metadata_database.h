@@ -12,10 +12,10 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/sync_metadata_store.h"
-#include "sql/meta_table.h"
 
 namespace sql {
-class Connection;
+class Database;
+class MetaTable;
 }
 
 namespace history {
@@ -50,7 +50,7 @@ class TypedURLSyncMetadataDatabase : public syncer::SyncMetadataStore {
 
  protected:
   // Returns the database for the functions in this interface.
-  virtual sql::Connection& GetDB() = 0;
+  virtual sql::Database& GetDB() = 0;
 
   // Returns MetaTable, so this sync can store ModelTypeState in MetaTable.
   // Check if GetMetaTable().GetVersionNumber() is greater than 0 to make sure

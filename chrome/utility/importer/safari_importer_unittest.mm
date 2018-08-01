@@ -23,7 +23,7 @@
 #include "chrome/common/importer/safari_importer_utils.h"
 #include "chrome/utility/importer/safari_importer.h"
 #include "components/favicon_base/favicon_usage_data.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "testing/platform_test.h"
 
 using base::ASCIIToUTF16;
@@ -227,7 +227,7 @@ TEST_F(SafariImporterTest, BookmarkImportWithEmptyBookmarksMenu) {
 
 TEST_F(SafariImporterTest, FaviconImport) {
   scoped_refptr<SafariImporter> importer(GetSafariImporter());
-  sql::Connection db;
+  sql::Database db;
   ASSERT_TRUE(importer->OpenDatabase(&db));
 
   SafariImporter::FaviconMap favicon_map;

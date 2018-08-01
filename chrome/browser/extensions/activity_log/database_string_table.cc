@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/stringprintf.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 using base::StringPrintf;
@@ -23,7 +23,7 @@ DatabaseStringTable::DatabaseStringTable(const std::string& table)
 
 DatabaseStringTable::~DatabaseStringTable() {}
 
-bool DatabaseStringTable::Initialize(sql::Connection* connection) {
+bool DatabaseStringTable::Initialize(sql::Database* connection) {
   if (!connection->DoesTableExist(table_.c_str())) {
     return connection->Execute(StringPrintf(
         "CREATE TABLE %s (id INTEGER PRIMARY KEY, value TEXT NOT NULL); "
@@ -36,7 +36,7 @@ bool DatabaseStringTable::Initialize(sql::Connection* connection) {
   }
 }
 
-bool DatabaseStringTable::StringToInt(sql::Connection* connection,
+bool DatabaseStringTable::StringToInt(sql::Database* connection,
                                       const std::string& value,
                                       int64_t* id) {
   std::map<std::string, int64_t>::const_iterator lookup =
@@ -82,7 +82,7 @@ bool DatabaseStringTable::StringToInt(sql::Connection* connection,
   return true;
 }
 
-bool DatabaseStringTable::IntToString(sql::Connection* connection,
+bool DatabaseStringTable::IntToString(sql::Database* connection,
                                       int64_t id,
                                       std::string* value) {
   std::map<int64_t, std::string>::const_iterator lookup = id_to_value_.find(id);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SQL_CONNECTION_H_
-#define SQL_CONNECTION_H_
+#ifndef SQL_DATABASE_H_
+#define SQL_DATABASE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -39,7 +39,7 @@ class ProcessMemoryDump;
 
 namespace sql {
 
-class ConnectionMemoryDumpProvider;
+class DatabaseMemoryDumpProvider;
 class Statement;
 
 // To allow some test classes to be friended.
@@ -50,10 +50,10 @@ class ScopedScalarFunction;
 class ScopedMockTimeSource;
 }  // namespace test
 
-// Exposes private Connection functionality to unit tests.
+// Exposes private Database functionality to unit tests.
 //
 // This class is only defined in test targets.
-class ConnectionTestPeer;
+class DatabaseTestPeer;
 
 // Handle to an open SQLite database.
 //
@@ -63,15 +63,15 @@ class ConnectionTestPeer;
 // TODO(pwnall): This should be renamed to Database. Class instances are
 // typically named "db_" / "db", and the class' equivalents in other systems
 // used by Chrome are named LevelDB::DB and blink::IDBDatabase.
-class SQL_EXPORT Connection {
+class SQL_EXPORT Database {
  private:
   class StatementRef;  // Forward declaration, see real one below.
 
  public:
   // The database is opened by calling Open[InMemory](). Any uncommitted
   // transactions will be rolled back when this object is deleted.
-  Connection();
-  ~Connection();
+  Database();
+  ~Database();
 
   // Pre-init configuration ----------------------------------------------------
 
@@ -133,7 +133,7 @@ class SQL_EXPORT Connection {
   bool has_error_callback() const { return !error_callback_.is_null(); }
   void reset_error_callback() { error_callback_.Reset(); }
 
-  // Set this to enable additional per-connection histogramming.  Must be called
+  // Set this to enable additional per-database histogramming.  Must be called
   // before Open().
   void set_histogram_tag(const std::string& tag);
 
@@ -183,8 +183,8 @@ class SQL_EXPORT Connection {
     EVENT_MMAP_SUCCESS_PARTIAL,      // Read but did not reach EOF.
     EVENT_MMAP_SUCCESS_NO_PROGRESS,  // Read quota exhausted.
 
-    EVENT_MMAP_STATUS_FAILURE_READ,  // Failure reading MmapStatus view.
-    EVENT_MMAP_STATUS_FAILURE_UPDATE,// Failure updating MmapStatus view.
+    EVENT_MMAP_STATUS_FAILURE_READ,    // Failure reading MmapStatus view.
+    EVENT_MMAP_STATUS_FAILURE_UPDATE,  // Failure updating MmapStatus view.
 
     // Leave this at the end.
     // TODO(shess): |EVENT_MAX| causes compile fail on Windows.
@@ -214,11 +214,11 @@ class SQL_EXPORT Connection {
 
   // Initialization ------------------------------------------------------------
 
-  // Initializes the SQL connection for the given file, returning true if the
+  // Initializes the SQL database for the given file, returning true if the
   // file could be opened. You can call this or OpenInMemory.
   bool Open(const base::FilePath& path) WARN_UNUSED_RESULT;
 
-  // Initializes the SQL connection for a temporary in-memory database. There
+  // Initializes the SQL database for a temporary in-memory database. There
   // will be no associated file on disk, and the initial database will be
   // empty. You can call this or Open.
   bool OpenInMemory() WARN_UNUSED_RESULT;
@@ -268,7 +268,7 @@ class SQL_EXPORT Connection {
   //
   // NOTE(shess): Raze() will DCHECK in the following situations:
   // - database is not open.
-  // - the connection has a transaction open.
+  // - the database has a transaction open.
   // - a SQLite issue occurs which is structural in nature (like the
   //   statements used are broken).
   // Since Raze() is expected to be called in unexpected situations,
@@ -284,14 +284,14 @@ class SQL_EXPORT Connection {
   // NOTE(shess): For Android, SQLITE_DEFAULT_AUTOVACUUM is set to 1,
   // so Raze() sets auto_vacuum to 1.
   //
-  // TODO(shess): Raze() needs a connection so cannot clear SQLITE_NOTADB.
-  // TODO(shess): Bake auto_vacuum into Connection's API so it can
+  // TODO(shess): Raze() needs a database so cannot clear SQLITE_NOTADB.
+  // TODO(shess): Bake auto_vacuum into Database's API so it can
   // just pick up the default.
   bool Raze();
 
   // Breaks all outstanding transactions (as initiated by
   // BeginTransaction()), closes the SQLite database, and poisons the
-  // object so that all future operations against the Connection (or
+  // object so that all future operations against the Database (or
   // its Statements) fail safely, without side effects.
   //
   // This is intended as an alternative to Close() in error callbacks.
@@ -303,12 +303,11 @@ class SQL_EXPORT Connection {
   // TODO(shess): Rename to RazeAndPoison().
   bool RazeAndClose();
 
-  // Delete the underlying database files associated with |path|.
-  // This should be used on a database which has no existing
-  // connections.  If any other connections are open to the same
-  // database, this could cause odd results or corruption (for
-  // instance if a hot journal is deleted but the associated database
-  // is not).
+  // Delete the underlying database files associated with |path|. This should be
+  // used on a database which is not opened by any Database instance. Open
+  // Database instances pointing to the database can cause odd results or
+  // corruption (for instance if a hot journal is deleted but the associated
+  // database is not).
   //
   // Returns true if the database file and associated journals no
   // longer exist, false otherwise.  If the database has never
@@ -391,7 +390,7 @@ class SQL_EXPORT Connection {
   // you having to manage unique names. See StatementID above for more.
   //
   // Example:
-  //   sql::Statement stmt(connection_.GetCachedStatement(
+  //   sql::Statement stmt(database_.GetCachedStatement(
   //       SQL_FROM_HERE, "SELECT * FROM foo"));
   //   if (!stmt)
   //     return false;  // Error creating statement.
@@ -520,18 +519,18 @@ class SQL_EXPORT Connection {
   // (they should go through Statement).
   friend class Statement;
 
-  friend class ConnectionTestPeer;
+  friend class DatabaseTestPeer;
 
   friend class test::ScopedCommitHook;
   friend class test::ScopedScalarFunction;
   friend class test::ScopedMockTimeSource;
 
-  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, CachedStatement);
-  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, CollectDiagnosticInfo);
-  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, GetAppropriateMmapSize);
-  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, GetAppropriateMmapSizeAltStatus);
-  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, OnMemoryDump);
-  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, RegisterIntentToUpload);
+  FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, CachedStatement);
+  FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, CollectDiagnosticInfo);
+  FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, GetAppropriateMmapSize);
+  FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus);
+  FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, OnMemoryDump);
+  FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, RegisterIntentToUpload);
   FRIEND_TEST_ALL_PREFIXES(SQLiteFeaturesTest, WALNoClose);
 
   // Internal initialize function used by both Init and InitInMemory. The file
@@ -540,10 +539,7 @@ class SQL_EXPORT Connection {
   //
   // |retry_flag| controls retrying the open if the error callback
   // addressed errors using RazeAndClose().
-  enum Retry {
-    NO_RETRY = 0,
-    RETRY_ON_POISON
-  };
+  enum Retry { NO_RETRY = 0, RETRY_ON_POISON };
   bool OpenInternal(const std::string& file_name, Retry retry_flag);
 
   // Internal close function used by Close() and RazeAndClose().
@@ -577,36 +573,36 @@ class SQL_EXPORT Connection {
   // indicate that the statement hasn't been created yet, has an error, or has
   // been destroyed.
   //
-  // The Connection may revoke a StatementRef in some error cases, so callers
+  // The Database may revoke a StatementRef in some error cases, so callers
   // should always check validity before using.
   class SQL_EXPORT StatementRef : public base::RefCounted<StatementRef> {
    public:
     REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
-    // |connection| is the sql::Connection instance associated with
+    // |database| is the sql::Database instance associated with
     // the statement, and is used for tracking outstanding statements
     // and for error handling.  Set to nullptr for invalid or untracked
     // refs.  |stmt| is the actual statement, and should only be null
     // to create an invalid ref.  |was_valid| indicates whether the
     // statement should be considered valid for diagnistic purposes.
-    // |was_valid| can be true for a null |stmt| if the connection has
+    // |was_valid| can be true for a null |stmt| if the Database has
     // been forcibly closed by an error handler.
-    StatementRef(Connection* connection, sqlite3_stmt* stmt, bool was_valid);
+    StatementRef(Database* database, sqlite3_stmt* stmt, bool was_valid);
 
     // When true, the statement can be used.
     bool is_valid() const { return !!stmt_; }
 
     // When true, the statement is either currently valid, or was
-    // previously valid but the connection was forcibly closed.  Used
+    // previously valid but the database was forcibly closed.  Used
     // for diagnostic checks.
     bool was_valid() const { return was_valid_; }
 
-    // If we've not been linked to a connection, this will be null.
+    // If we've not been linked to a database, this will be null.
     //
-    // TODO(shess): connection_ can be nullptr in case of
+    // TODO(shess): database_ can be nullptr in case of
     // GetUntrackedStatement(), which prevents Statement::OnError() from
     // forwarding errors.
-    Connection* connection() const { return connection_; }
+    Database* database() const { return database_; }
 
     // Returns the sqlite statement if any. If the statement is not active,
     // this will return nullptr.
@@ -614,14 +610,14 @@ class SQL_EXPORT Connection {
 
     // Destroys the compiled statement and sets it to nullptr. The statement
     // will no longer be active. |forced| is used to indicate if
-    // orderly-shutdown checks should apply (see Connection::RazeAndClose()).
+    // orderly-shutdown checks should apply (see Database::RazeAndClose()).
     void Close(bool forced);
 
     // Check whether the current thread is allowed to make IO calls, but only
     // if database wasn't open in memory.
     void AssertIOAllowed() const {
-      if (connection_)
-        connection_->AssertIOAllowed();
+      if (database_)
+        database_->AssertIOAllowed();
     }
 
    private:
@@ -629,7 +625,7 @@ class SQL_EXPORT Connection {
 
     ~StatementRef();
 
-    Connection* connection_;
+    Database* database_;
     sqlite3_stmt* stmt_;
     bool was_valid_;
 
@@ -659,15 +655,15 @@ class SQL_EXPORT Connection {
   int OnSqliteError(int err, Statement* stmt, const char* sql) const;
 
   // Like |Execute()|, but retries if the database is locked.
-  bool ExecuteWithTimeout(const char* sql, base::TimeDelta ms_timeout)
-      WARN_UNUSED_RESULT;
+  bool ExecuteWithTimeout(const char* sql,
+                          base::TimeDelta ms_timeout) WARN_UNUSED_RESULT;
 
   // Implementation helper for GetUniqueStatement() and GetUntrackedStatement().
   // |tracking_db| is the db the resulting ref should register with for
   // outstanding statement tracking, which should be |this| to track or null to
   // not track.
-  scoped_refptr<StatementRef> GetStatementImpl(
-      sql::Connection* tracking_db, const char* sql) const;
+  scoped_refptr<StatementRef> GetStatementImpl(sql::Database* tracking_db,
+                                               const char* sql) const;
 
   // Helper for implementing const member functions.  Like GetUniqueStatement(),
   // except the StatementRef is not entered into |open_statements_|, so an
@@ -676,9 +672,9 @@ class SQL_EXPORT Connection {
   // |error_callback_| which can close the database.
   scoped_refptr<StatementRef> GetUntrackedStatement(const char* sql) const;
 
-  bool IntegrityCheckHelper(
-      const char* pragma_sql,
-      std::vector<std::string>* messages) WARN_UNUSED_RESULT;
+  bool IntegrityCheckHelper(const char* pragma_sql,
+                            std::vector<std::string>* messages)
+      WARN_UNUSED_RESULT;
 
   // Record time spent executing explicit COMMIT statements.
   void RecordCommitTime(const base::TimeDelta& delta);
@@ -785,7 +781,7 @@ class SQL_EXPORT Connection {
   // with Open().
   bool in_memory_;
 
-  // |true| if the connection was closed using RazeAndClose().  Used
+  // |true| if the Database was closed using RazeAndClose().  Used
   // to enable diagnostics to distinguish calls to never-opened
   // databases (incorrect use of the API) from calls to once-valid
   // databases.
@@ -794,10 +790,10 @@ class SQL_EXPORT Connection {
   // |true| to use alternate storage for tracking mmap status.
   bool mmap_alt_status_;
 
-  // |true| if SQLite memory-mapped I/O is not desired for this connection.
+  // |true| if SQLite memory-mapped I/O is not desired for this database.
   bool mmap_disabled_;
 
-  // |true| if SQLite memory-mapped I/O was enabled for this connection.
+  // |true| if SQLite memory-mapped I/O was enabled for this database.
   // Used by ReleaseCacheMemoryIfNeeded().
   bool mmap_enabled_;
 
@@ -831,11 +827,11 @@ class SQL_EXPORT Connection {
   std::unique_ptr<base::TickClock> clock_;
 
   // Stores the dump provider object when db is open.
-  std::unique_ptr<ConnectionMemoryDumpProvider> memory_dump_provider_;
+  std::unique_ptr<DatabaseMemoryDumpProvider> memory_dump_provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(Connection);
+  DISALLOW_COPY_AND_ASSIGN(Database);
 };
 
 }  // namespace sql
 
-#endif  // SQL_CONNECTION_H_
+#endif  // SQL_DATABASE_H_

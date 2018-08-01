@@ -16,7 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_schema.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 namespace offline_pages {
 namespace {
@@ -39,7 +39,7 @@ bool PrepareDirectory(const base::FilePath& path) {
 // benefit from a better status code reportable through UMA to better capture
 // the reason for failure, aiding the process of repeated attempts to
 // open/initialize the database.
-bool InitializeSync(sql::Connection* db,
+bool InitializeSync(sql::Database* db,
                     const base::FilePath& path,
                     bool in_memory) {
   // These values are default.
@@ -67,7 +67,7 @@ bool InitializeSync(sql::Connection* db,
 }
 
 void CloseDatabaseSync(
-    sql::Connection* db,
+    sql::Database* db,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
     base::OnceClosure callback) {
   if (db)
@@ -126,8 +126,8 @@ void PrefetchStore::Initialize(base::OnceClosure pending_command) {
 
   // This is how we reset a pointer and provide deleter. This is necessary to
   // ensure that we can close the store more than once.
-  db_ = std::unique_ptr<sql::Connection, base::OnTaskRunnerDeleter>(
-      new sql::Connection, base::OnTaskRunnerDeleter(blocking_task_runner_));
+  db_ = DatabaseUniquePtr(new sql::Database,
+                          base::OnTaskRunnerDeleter(blocking_task_runner_));
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
@@ -180,8 +180,7 @@ void PrefetchStore::CloseInternal() {
                          weak_ptr_factory_.GetWeakPtr(), std::move(db_))));
 }
 
-void PrefetchStore::CloseInternalDone(
-    std::unique_ptr<sql::Connection, base::OnTaskRunnerDeleter> db) {
+void PrefetchStore::CloseInternalDone(DatabaseUniquePtr db) {
   db.reset();
   TRACE_EVENT_ASYNC_STEP_PAST0("offline_pages", "Prefetch Store", this,
                                "Closing");

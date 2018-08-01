@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_expecter.h"
@@ -80,7 +80,7 @@ TEST(AppCacheDatabaseTest, ReCreate) {
 }
 
 #ifdef NDEBUG
-// Only run in release builds because sql::Connection and familiy
+// Only run in release builds because sql::Database and familiy
 // crank up DLOG(FATAL)'ness and this test presents it with
 // intentionally bad data which causes debug builds to exit instead
 // of run to completion. In release builds, errors the are delivered
@@ -961,7 +961,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to7) {
     const int kTableCount4 = arraysize(kTables4);
     const int kIndexCount4 = arraysize(kIndexes4);
 
-    sql::Connection connection;
+    sql::Database connection;
     EXPECT_TRUE(connection.Open(kDbFile));
 
     sql::Transaction transaction(&connection);
@@ -1212,7 +1212,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema5or6to7) {
     const int kTableCount5 = arraysize(kTables5);
     const int kIndexCount5 = arraysize(kIndexes5);
 
-    sql::Connection connection;
+    sql::Database connection;
     EXPECT_TRUE(connection.Open(kDbFile));
 
     sql::Transaction transaction(&connection);

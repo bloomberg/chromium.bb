@@ -6,6 +6,7 @@
 
 #include "base/big_endian.h"
 #include "base/logging.h"
+#include "sql/meta_table.h"
 #include "sql/statement.h"
 
 namespace history {

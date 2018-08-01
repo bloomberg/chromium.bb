@@ -13,7 +13,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -24,7 +24,7 @@ namespace {
 
 // Marks a successfully rendered URL as having received the bundle, and returns
 // whether any records matched the given RenderPageInfo.
-bool MarkUrlRenderedSync(sql::Connection* db,
+bool MarkUrlRenderedSync(sql::Database* db,
                          const RenderPageInfo& page,
                          const std::string& operation_name) {
   DCHECK_EQ(page.status, RenderStatus::RENDERED);
@@ -71,7 +71,7 @@ bool MarkUrlRenderedSync(sql::Connection* db,
 }
 
 // Marks a URL that failed to render as finished.
-void MarkUrlFailedSync(sql::Connection* db,
+void MarkUrlFailedSync(sql::Database* db,
                        const RenderPageInfo& page,
                        const std::string& operation_name,
                        PrefetchItemErrorCode final_status) {
@@ -107,7 +107,7 @@ void MarkUrlFailedSync(sql::Connection* db,
 }
 
 // Marks URLs known to be PENDING as awaiting GCM.
-void MarkAwaitingGCMSync(sql::Connection* db,
+void MarkAwaitingGCMSync(sql::Database* db,
                          const RenderPageInfo& page,
                          const std::string& operation_name) {
   static const char kSql[] = R"(UPDATE prefetch_items
@@ -135,7 +135,7 @@ void MarkAwaitingGCMSync(sql::Connection* db,
 PageBundleUpdateResult UpdateWithOperationResultsSync(
     const std::string operation_name,
     const std::vector<RenderPageInfo>& pages,
-    sql::Connection* db) {
+    sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;

@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "url/gurl.h"
 
@@ -125,7 +125,7 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
   bool EnsureTable();
 
   // The sql database. Not valid until Init is called.
-  sql::Connection db_;
+  sql::Database db_;
   base::FilePath database_path_;
 
   sql::MetaTable meta_table_;

@@ -16,7 +16,7 @@ class SequencedTaskRunner;
 }
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace predictors {
@@ -35,7 +35,7 @@ class PredictorDatabase : public KeyedService {
   scoped_refptr<ResourcePrefetchPredictorTables> resource_prefetch_tables();
 
   // Used for testing.
-  sql::Connection* GetDatabase();
+  sql::Database* GetDatabase();
 
  private:
   // KeyedService

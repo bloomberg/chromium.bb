@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sql/connection_memory_dump_provider.h"
+#include "sql/database_memory_dump_provider.h"
 
 #include <inttypes.h>
 
@@ -12,19 +12,18 @@
 
 namespace sql {
 
-ConnectionMemoryDumpProvider::ConnectionMemoryDumpProvider(
-    sqlite3* db,
-    const std::string& name)
+DatabaseMemoryDumpProvider::DatabaseMemoryDumpProvider(sqlite3* db,
+                                                       const std::string& name)
     : db_(db), connection_name_(name) {}
 
-ConnectionMemoryDumpProvider::~ConnectionMemoryDumpProvider() = default;
+DatabaseMemoryDumpProvider::~DatabaseMemoryDumpProvider() = default;
 
-void ConnectionMemoryDumpProvider::ResetDatabase() {
+void DatabaseMemoryDumpProvider::ResetDatabase() {
   base::AutoLock lock(lock_);
   db_ = nullptr;
 }
 
-bool ConnectionMemoryDumpProvider::OnMemoryDump(
+bool DatabaseMemoryDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   if (args.level_of_detail == base::trace_event::MemoryDumpLevelOfDetail::LIGHT)
@@ -54,7 +53,7 @@ bool ConnectionMemoryDumpProvider::OnMemoryDump(
   return true;
 }
 
-bool ConnectionMemoryDumpProvider::ReportMemoryUsage(
+bool DatabaseMemoryDumpProvider::ReportMemoryUsage(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& dump_name) {
   int cache_size = 0;
@@ -72,9 +71,9 @@ bool ConnectionMemoryDumpProvider::ReportMemoryUsage(
   return true;
 }
 
-bool ConnectionMemoryDumpProvider::GetDbMemoryUsage(int* cache_size,
-                                                    int* schema_size,
-                                                    int* statement_size) {
+bool DatabaseMemoryDumpProvider::GetDbMemoryUsage(int* cache_size,
+                                                  int* schema_size,
+                                                  int* statement_size) {
   // Lock is acquired here so that db_ is not reset in ResetDatabase when
   // collecting stats.
   base::AutoLock lock(lock_);
@@ -97,7 +96,7 @@ bool ConnectionMemoryDumpProvider::GetDbMemoryUsage(int* cache_size,
   return true;
 }
 
-std::string ConnectionMemoryDumpProvider::FormatDumpName() const {
+std::string DatabaseMemoryDumpProvider::FormatDumpName() const {
   return base::StringPrintf(
       "sqlite/%s_connection/0x%" PRIXPTR,
       connection_name_.empty() ? "Unknown" : connection_name_.c_str(),

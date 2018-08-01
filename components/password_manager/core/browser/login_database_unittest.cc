@@ -25,7 +25,7 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -100,7 +100,7 @@ template<> std::string GetFirstColumn(const sql::Statement& s) {
 template <class T>
 std::vector<T> GetColumnValuesFromDatabase(const base::FilePath& database_path,
                                            const std::string& column_name) {
-  sql::Connection db;
+  sql::Database db;
   std::vector<T> results;
   CHECK(db.Open(database_path));
 
@@ -1731,7 +1731,7 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
 // Only the current user has permission to read the database.
 //
 // Only POSIX because GetPosixFilePermissions() only exists on POSIX.
-// This tests that sql::Connection::set_restrict_to_user() was called,
+// This tests that sql::Database::set_restrict_to_user() was called,
 // and that function is a noop on non-POSIX platforms in any case.
 TEST_F(LoginDatabaseTest, FilePermissions) {
   int mode = base::FILE_PERMISSION_MASK;
@@ -1790,7 +1790,7 @@ TEST(LoginDatabaseFailureTest, Init_NoCrashOnFailedRollback) {
   // current version (in reality, this could happen if, e.g., someone opened a
   // Canary-created profile with Chrome Stable.
   {
-    sql::Connection connection;
+    sql::Database connection;
     sql::MetaTable meta_table;
     ASSERT_TRUE(connection.Open(database_path));
     ASSERT_TRUE(meta_table.Init(&connection, kCurrentVersionNumber + 1,
@@ -1830,7 +1830,7 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
 
   void DestroyDatabase() {
     if (!database_path_.empty())
-      sql::Connection::Delete(database_path_);
+      sql::Database::Delete(database_path_);
   }
 
   // Returns the database version for the test.
@@ -1930,7 +1930,7 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
   {
     // On versions < 15 |kCompatibleVersionNumber| was set to 1, but
     // the migration should bring it to the correct value.
-    sql::Connection db;
+    sql::Database db;
     sql::MetaTable meta_table;
     ASSERT_TRUE(db.Open(database_path_));
     ASSERT_TRUE(
@@ -2035,7 +2035,7 @@ PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
   }
 
   if (should_be_corrupted) {
-    sql::Connection db;
+    sql::Database db;
     EXPECT_TRUE(db.Open(database_path()));
 
     // Change encrypted password in the database if the login should be

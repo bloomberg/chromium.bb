@@ -25,7 +25,7 @@
 #include "chrome/utility/importer/favicon_reencode.h"
 #include "chrome/utility/importer/nss_decryptor.h"
 #include "components/autofill/core/common/password_form.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "url/gurl.h"
 
@@ -174,7 +174,7 @@ void FirefoxImporter::ImportHistory() {
   if (!base::PathExists(file))
     return;
 
-  sql::Connection db;
+  sql::Database db;
   if (!db.Open(file))
     return;
 
@@ -219,7 +219,7 @@ void FirefoxImporter::ImportBookmarks() {
   if (!base::PathExists(file))
     return;
 
-  sql::Connection db;
+  sql::Database db;
   if (!db.Open(file))
     return;
 
@@ -438,7 +438,7 @@ void FirefoxImporter::ImportAutofillFormData() {
   if (!base::PathExists(file))
     return;
 
-  sql::Connection db;
+  sql::Database db;
   if (!db.Open(file))
     return;
 
@@ -478,7 +478,7 @@ void FirefoxImporter::GetSearchEnginesXMLData(
     return;
   }
 
-  sql::Connection db;
+  sql::Database db;
   if (!db.Open(file))
     return;
 
@@ -677,7 +677,7 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
   }
 }
 
-int FirefoxImporter::LoadNodeIDByGUID(sql::Connection* db,
+int FirefoxImporter::LoadNodeIDByGUID(sql::Database* db,
                                       const std::string& GUID) {
   const char query[] =
       "SELECT id "
@@ -691,7 +691,7 @@ int FirefoxImporter::LoadNodeIDByGUID(sql::Connection* db,
   return s.ColumnInt(0);
 }
 
-void FirefoxImporter::LoadLivemarkIDs(sql::Connection* db,
+void FirefoxImporter::LoadLivemarkIDs(sql::Database* db,
                                       std::set<int>* livemark) {
   static const char kFeedAnnotation[] = "livemark/feedURI";
   livemark->clear();
@@ -708,7 +708,7 @@ void FirefoxImporter::LoadLivemarkIDs(sql::Connection* db,
     livemark->insert(s.ColumnInt(0));
 }
 
-void FirefoxImporter::GetTopBookmarkFolder(sql::Connection* db,
+void FirefoxImporter::GetTopBookmarkFolder(sql::Database* db,
                                            int folder_id,
                                            BookmarkList* list) {
   const char query[] =
@@ -731,7 +731,7 @@ void FirefoxImporter::GetTopBookmarkFolder(sql::Connection* db,
   }
 }
 
-void FirefoxImporter::GetWholeBookmarkFolder(sql::Connection* db,
+void FirefoxImporter::GetWholeBookmarkFolder(sql::Database* db,
                                              BookmarkList* list,
                                              size_t position,
                                              FaviconsLocation favicons_location,
@@ -787,7 +787,7 @@ void FirefoxImporter::GetWholeBookmarkFolder(sql::Connection* db,
 }
 
 void FirefoxImporter::LoadFavicons(
-    sql::Connection* db,
+    sql::Database* db,
     const FaviconMap& favicon_map,
     favicon_base::FaviconUsageDataList* favicons) {
   const char query[] = "SELECT url, data FROM moz_favicons WHERE id=?";
@@ -822,7 +822,7 @@ void FirefoxImporter::LoadFavicons(
   if (!base::PathExists(file))
     return;
 
-  sql::Connection db;
+  sql::Database db;
   if (!db.Open(file))
     return;
 

@@ -13,7 +13,7 @@
 #include "components/history/core/browser/top_sites_database.h"
 #include "components/history/core/test/database_test_utils.h"
 #include "components/history/core/test/thumbnail-inl.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/recovery.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
@@ -37,7 +37,7 @@ const GURL kUrl2 = GURL("https://chrome.google.com/webstore?hl=en");
 // should be there are, but do not check if extraneous items are
 // present.  Any extraneous items have the potential to interact
 // negatively with future schema changes.
-void VerifyTablesAndColumns(sql::Connection* db) {
+void VerifyTablesAndColumns(sql::Database* db) {
   // [meta] and [thumbnails].
   EXPECT_EQ(2u, sql::test::CountSQLTables(db));
 
@@ -53,7 +53,7 @@ void VerifyTablesAndColumns(sql::Connection* db) {
   EXPECT_EQ(11u, sql::test::CountTableColumns(db, "thumbnails"));
 }
 
-void VerifyDatabaseEmpty(sql::Connection* db) {
+void VerifyDatabaseEmpty(sql::Database* db) {
   size_t rows = 0;
   EXPECT_TRUE(sql::test::CountTableRows(db, "thumbnails", &rows));
   EXPECT_EQ(0u, rows);
@@ -141,7 +141,7 @@ TEST_F(TopSitesDatabaseTest, Recovery1) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
@@ -172,7 +172,7 @@ TEST_F(TopSitesDatabaseTest, Recovery2) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
@@ -203,7 +203,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
@@ -234,7 +234,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
 
   // Double-check database integrity.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
   }
@@ -253,7 +253,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
   // SQLite can operate on the database, but notices the corruption in integrity
   // check.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_NE("ok", sql::test::IntegrityCheck(&raw_db));
   }
@@ -279,7 +279,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
 
   // Check that the database is recovered at the SQLite level.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
   }

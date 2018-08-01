@@ -16,7 +16,7 @@
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -41,7 +41,7 @@ struct PageInfo {
 
 std::vector<PageInfo> GetPageInfosByNamespaces(
     const std::vector<std::string>& temp_namespaces,
-    sql::Connection* db) {
+    sql::Database* db) {
   std::vector<PageInfo> result;
 
   static const char kSql[] =
@@ -64,7 +64,7 @@ std::vector<PageInfo> GetPageInfosByNamespaces(
 }
 
 bool DeletePagesByOfflineIds(const std::vector<int64_t>& offline_ids,
-                             sql::Connection* db) {
+                             sql::Database* db) {
   static const char kSql[] =
       "DELETE FROM " OFFLINE_PAGES_TABLE_NAME " WHERE offline_id = ?";
 
@@ -79,7 +79,7 @@ bool DeletePagesByOfflineIds(const std::vector<int64_t>& offline_ids,
 
 bool MarkPagesAsMissing(const std::vector<int64_t>& ids_of_missing_pages,
                         base::Time missing_time,
-                        sql::Connection* db) {
+                        sql::Database* db) {
   static const char kSql[] = "UPDATE OR IGNORE " OFFLINE_PAGES_TABLE_NAME
                              " SET file_missing_time = ?"
                              " WHERE offline_id = ?";
@@ -95,7 +95,7 @@ bool MarkPagesAsMissing(const std::vector<int64_t>& ids_of_missing_pages,
 }
 
 bool MarkPagesAsReappeared(const std::vector<int64_t>& ids_of_reappeared_pages,
-                           sql::Connection* db) {
+                           sql::Database* db) {
   static const char kSql[] = "UPDATE OR IGNORE " OFFLINE_PAGES_TABLE_NAME
                              " SET file_missing_time = ?"
                              " WHERE offline_id = ?";
@@ -118,7 +118,7 @@ PersistentPageConsistencyCheckSync(
     const base::FilePath& public_dir,
     const std::vector<std::string>& persistent_namespaces,
     base::Time check_time,
-    sql::Connection* db) {
+    sql::Database* db) {
   std::vector<int64_t> download_ids_of_deleted_pages;
 
   sql::Transaction transaction(db);

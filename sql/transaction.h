@@ -10,7 +10,7 @@
 
 namespace sql {
 
-class Connection;
+class Database;
 
 class SQL_EXPORT Transaction {
  public:
@@ -19,9 +19,9 @@ class SQL_EXPORT Transaction {
   // constructor will roll back the transaction. If you want to commit, you
   // need to manually call Commit before this goes out of scope.
   //
-  // Nested transactions are supported. See sql::Connection::BeginTransaction
+  // Nested transactions are supported. See sql::Database::BeginTransaction
   // for details.
-  explicit Transaction(Connection* connection);
+  explicit Transaction(Database* connection);
   ~Transaction();
 
   // Returns true when there is a transaction that has been successfully begun.
@@ -46,7 +46,7 @@ class SQL_EXPORT Transaction {
   bool Commit();
 
  private:
-  Connection* connection_;
+  Database* database_;
 
   // True when the transaction is open, false when it's already been committed
   // or rolled back.
