@@ -355,11 +355,23 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void SetLastErrorForTest(const std::string& service_path,
                            const std::string& error);
 
-  // Sets |allow_only_policy_networks_to_connect_| and |blacklisted_hex_ssids_|
-  // and calls |UpdateBlockedByPolicy()| for each network state.
-  virtual void UpdateBlockedNetworks(
+  // Sets |allow_only_policy_networks_to_connect_|,
+  // |allow_only_policy_networks_to_connect_if_available_| and
+  // |blacklisted_hex_ssids_| and calls |UpdateBlockedWifiNetworksInternal()|.
+  virtual void UpdateBlockedWifiNetworks(
       bool only_managed,
+      bool available_only,
       const std::vector<std::string>& blacklisted_hex_ssids);
+
+  // Returns the NetworkState associated to the wifi device's
+  // available_managed_network_path or |nullptr| if no managed network is
+  // available.
+  const NetworkState* GetAvailableManagedWifiNetwork() const;
+
+  // Returns true if the AllowOnlyPolicyNetworksToConnect policy is enabled or
+  // if the AllowOnlyPolicyNetworksToConnectIfAvailable policy is enabled and
+  // there is a managed wifi network available.
+  bool OnlyManagedWifiNetworksAllowed() const;
 
   // Constructs and initializes an instance for testing.
   static std::unique_ptr<NetworkStateHandler> InitializeForTest();
@@ -434,6 +446,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, NetworkStateHandlerStub);
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, BlockedByPolicyBlacklisted);
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, BlockedByPolicyOnlyManaged);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest,
+                           BlockedByPolicyOnlyManagedIfAvailable);
 
   // Sorts the network list. Called when all network updates have been received,
   // or when the network list is requested but the list is in an unsorted state.
@@ -477,6 +491,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // be called by Get[Network|Device]State, even though they return non-const
   // pointers.
   DeviceState* GetModifiableDeviceState(const std::string& device_path) const;
+  DeviceState* GetModifiableDeviceStateByType(
+      const NetworkTypePattern& type) const;
   NetworkState* GetModifiableNetworkState(
       const std::string& service_path) const;
   NetworkState* GetModifiableNetworkStateFromGuid(
@@ -554,6 +570,14 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Returns true if the value changed.
   bool UpdateBlockedByPolicy(NetworkState* network) const;
 
+  // Updates the device's |managed_network_available_| depending on the list of
+  // networks associated with this device. Calls
+  // |UpdateBlockedWifiNetworksInternal()| if the availability changed.
+  void UpdateManagedWifiNetworkAvailable();
+
+  // Calls |UpdateBlockedByPolicy()| for each wifi network.
+  void UpdateBlockedWifiNetworksInternal();
+
   // Shill property handler instance, owned by this class.
   std::unique_ptr<internal::ShillPropertyHandler> shill_property_handler_;
 
@@ -606,6 +630,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Policies which control WiFi blocking (Controlled from
   // |ManagedNetworkConfigurationHandler| by calling |UpdateBlockedNetworks()|).
   bool allow_only_policy_networks_to_connect_ = false;
+  bool allow_only_policy_networks_to_connect_if_available_ = false;
   std::vector<std::string> blacklisted_hex_ssids_;
 
   SEQUENCE_CHECKER(sequence_checker_);

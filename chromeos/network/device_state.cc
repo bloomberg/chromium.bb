@@ -24,8 +24,7 @@ DeviceState::DeviceState(const std::string& path)
       scanning_(false),
       sim_retries_left_(0),
       sim_present_(true),
-      eap_authentication_completed_(false) {
-}
+      eap_authentication_completed_(false) {}
 
 DeviceState::~DeviceState() = default;
 

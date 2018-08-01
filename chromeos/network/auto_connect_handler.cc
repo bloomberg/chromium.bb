@@ -57,6 +57,19 @@ void RemoveNetworkConfigurationErrorCallback(
                  << "Error data: " << error_data_ss.str();
 }
 
+void ConnectToNetworkErrorCallback(
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  std::stringstream error_data_ss;
+  if (error_data)
+    error_data_ss << *error_data;
+  else
+    error_data_ss << "<none>";
+  NET_LOG(ERROR) << "AutoConnectHandler ConnectToNetwork failed. "
+                 << "Error name: \"" << error_name << "\", "
+                 << "Error data: " << error_data_ss.str();
+}
+
 void SetPropertiesErrorCallback(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
@@ -187,10 +200,30 @@ void AutoConnectHandler::PoliciesApplied(const std::string& userhash) {
 }
 
 void AutoConnectHandler::ScanCompleted(const DeviceState* device) {
-  if (!connect_to_best_services_after_scan_ ||
-      device->type() != shill::kTypeWifi) {
+  if (device->type() != shill::kTypeWifi)
     return;
+
+  // Enforce AllowOnlyPolicyNetworksToConnectIfAvailable policy if enabled.
+  const NetworkState* managed_network =
+      network_state_handler_->GetAvailableManagedWifiNetwork();
+  if (device_policy_applied_ && user_policy_applied_ && managed_network &&
+      managed_configuration_handler_
+          ->AllowOnlyPolicyNetworksToConnectIfAvailable()) {
+    const NetworkState* connected_network =
+        network_state_handler_->ConnectedNetworkByType(
+            NetworkTypePattern::WiFi());
+    if (connected_network && !connected_network->IsManagedByPolicy()) {
+      network_connection_handler_->ConnectToNetwork(
+          managed_network->path(), base::DoNothing(),
+          base::Bind(&ConnectToNetworkErrorCallback), false,
+          ConnectCallbackMode::ON_COMPLETED);
+      return;
+    }
   }
+
+  if (!connect_to_best_services_after_scan_)
+    return;
+
   connect_to_best_services_after_scan_ = false;
   // Request ConnectToBestServices after processing any pending DBus calls.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -295,6 +328,10 @@ void AutoConnectHandler::DisconnectIfPolicyRequires() {
       managed_configuration_handler_->AllowOnlyPolicyNetworksToConnect();
   bool only_managed_autoconnect =
       managed_configuration_handler_->AllowOnlyPolicyNetworksToAutoconnect();
+  bool available_only =
+      managed_configuration_handler_
+          ->AllowOnlyPolicyNetworksToConnectIfAvailable() &&
+      network_state_handler_->GetAvailableManagedWifiNetwork();
 
   // Enforce the autoconnect-policy only once.
   if (applied_autoconnect_policy_)
@@ -304,7 +341,7 @@ void AutoConnectHandler::DisconnectIfPolicyRequires() {
 
   // Early exit if no policy is set that requires any disconnects.
   if (!only_managed && !only_managed_autoconnect &&
-      blacklisted_hex_ssids.empty()) {
+      blacklisted_hex_ssids.empty() && !available_only) {
     return;
   }
 
@@ -319,7 +356,7 @@ void AutoConnectHandler::DisconnectIfPolicyRequires() {
       // Disconnect & remove configuration.
       if (network->IsConnectingOrConnected())
         DisconnectNetwork(network->path());
-      if (network->IsInProfile())
+      if (network->IsInProfile() && !available_only)
         RemoveNetworkConfigurationForNetwork(network->path());
     } else if (only_managed_autoconnect) {
       // Disconnect & disable auto-connect.

@@ -722,8 +722,10 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
       user_policy_applied_ = true;
 
     if (device_policy_applied_ && user_policy_applied_) {
-      network_state_handler_->UpdateBlockedNetworks(
-          AllowOnlyPolicyNetworksToConnect(), GetBlacklistedHexSSIDs());
+      network_state_handler_->UpdateBlockedWifiNetworks(
+          AllowOnlyPolicyNetworksToConnect(),
+          AllowOnlyPolicyNetworksToConnectIfAvailable(),
+          GetBlacklistedHexSSIDs());
     }
 
     for (auto& observer : observers_)
@@ -823,6 +825,23 @@ bool ManagedNetworkConfigurationHandlerImpl::AllowOnlyPolicyNetworksToConnect()
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
       base::Value::Type::BOOLEAN);
   return managed_only_value && managed_only_value->GetBool();
+}
+
+bool ManagedNetworkConfigurationHandlerImpl::
+    AllowOnlyPolicyNetworksToConnectIfAvailable() const {
+  const base::DictionaryValue* global_network_config =
+      GetGlobalConfigFromPolicy(
+          std::string() /* no username hash, device policy */);
+  if (!global_network_config)
+    return false;
+
+  // Check if policy is enabled.
+  const base::Value* available_only_value =
+      global_network_config->FindKeyOfType(
+          ::onc::global_network_config::
+              kAllowOnlyPolicyNetworksToConnectIfAvailable,
+          base::Value::Type::BOOLEAN);
+  return available_only_value && available_only_value->GetBool();
 }
 
 bool ManagedNetworkConfigurationHandlerImpl::

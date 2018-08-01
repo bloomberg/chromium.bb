@@ -76,6 +76,7 @@ class CHROMEOS_EXPORT MockManagedNetworkConfigurationHandler
                                    const std::string& profile_path,
                                    ::onc::ONCSource* onc_source));
   MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToConnect, bool());
+  MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToConnectIfAvailable, bool());
   MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToAutoconnect, bool());
   MOCK_CONST_METHOD0(GetBlacklistedHexSSIDs, std::vector<std::string>());
 

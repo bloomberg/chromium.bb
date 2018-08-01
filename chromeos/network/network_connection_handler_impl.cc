@@ -18,6 +18,7 @@
 #include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/client_cert_util.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -473,11 +474,10 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
       ErrorCallbackForPendingRequest(service_path, kErrorHexSsidRequired);
       return;
     }
-    std::string hex_ssid = hex_ssid_value->GetString();
-    std::vector<std::string> blacklisted_hex_ssids =
-        managed_configuration_handler_->GetBlacklistedHexSSIDs();
-    if (managed_configuration_handler_->AllowOnlyPolicyNetworksToConnect() ||
-        base::ContainsValue(blacklisted_hex_ssids, hex_ssid)) {
+    if (network_state_handler_->OnlyManagedWifiNetworksAllowed() ||
+        base::ContainsValue(
+            managed_configuration_handler_->GetBlacklistedHexSSIDs(),
+            hex_ssid_value->GetString())) {
       ErrorCallbackForPendingRequest(service_path, kErrorBlockedByPolicy);
       return;
     }
