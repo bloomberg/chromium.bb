@@ -4,8 +4,15 @@
 
 #include "device/bluetooth/test/fake_gatt_descriptor_winrt.h"
 
+#include <utility>
+
 #include "base/strings/string_piece.h"
+#include "base/win/async_operation.h"
+#include "base/win/winrt_storage_util.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/test/bluetooth_test_win.h"
+#include "device/bluetooth/test/fake_gatt_read_result_winrt.h"
+#include "device/bluetooth/test/fake_gatt_write_result_winrt.h"
 
 namespace device {
 
@@ -21,12 +28,16 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteResult;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Storage::Streams::IBuffer;
+using Microsoft::WRL::Make;
 
 }  // namespace
 
-FakeGattDescriptorWinrt::FakeGattDescriptorWinrt(base::StringPiece uuid,
-                                                 uint16_t attribute_handle)
-    : uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
+FakeGattDescriptorWinrt::FakeGattDescriptorWinrt(
+    BluetoothTestWinrt* bluetooth_test_winrt,
+    base::StringPiece uuid,
+    uint16_t attribute_handle)
+    : bluetooth_test_winrt_(bluetooth_test_winrt),
+      uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
       attribute_handle_(attribute_handle) {}
 
 FakeGattDescriptorWinrt::~FakeGattDescriptorWinrt() = default;
@@ -53,7 +64,12 @@ HRESULT FakeGattDescriptorWinrt::get_AttributeHandle(uint16_t* value) {
 
 HRESULT FakeGattDescriptorWinrt::ReadValueAsync(
     IAsyncOperation<GattReadResult*>** value) {
-  return E_NOTIMPL;
+  auto async_op = Make<base::win::AsyncOperation<GattReadResult*>>();
+  DCHECK(!read_value_callback_);
+  read_value_callback_ = async_op->callback();
+  *value = async_op.Detach();
+  bluetooth_test_winrt_->OnFakeBluetoothDescriptorReadValue();
+  return S_OK;
 }
 
 HRESULT FakeGattDescriptorWinrt::ReadValueWithCacheModeAsync(
@@ -71,7 +87,43 @@ HRESULT FakeGattDescriptorWinrt::WriteValueAsync(
 HRESULT FakeGattDescriptorWinrt::WriteValueWithResultAsync(
     IBuffer* value,
     IAsyncOperation<GattWriteResult*>** operation) {
-  return E_NOTIMPL;
+  uint8_t* data;
+  uint32_t size;
+  base::win::GetPointerToBufferData(value, &data, &size);
+  bluetooth_test_winrt_->OnFakeBluetoothDescriptorWriteValue(
+      std::vector<uint8_t>(data, data + size));
+  auto async_op = Make<base::win::AsyncOperation<GattWriteResult*>>();
+  DCHECK(!write_value_callback_);
+  write_value_callback_ = async_op->callback();
+  *operation = async_op.Detach();
+  return S_OK;
+}
+
+void FakeGattDescriptorWinrt::SimulateGattDescriptorRead(
+    const std::vector<uint8_t>& data) {
+  if (read_value_callback_)
+    std::move(read_value_callback_).Run(Make<FakeGattReadResultWinrt>(data));
+}
+
+void FakeGattDescriptorWinrt::SimulateGattDescriptorReadError(
+    BluetoothGattService::GattErrorCode error_code) {
+  if (read_value_callback_) {
+    std::move(read_value_callback_)
+        .Run(Make<FakeGattReadResultWinrt>(error_code));
+  }
+}
+
+void FakeGattDescriptorWinrt::SimulateGattDescriptorWrite() {
+  if (write_value_callback_)
+    std::move(write_value_callback_).Run(Make<FakeGattWriteResultWinrt>());
+}
+
+void FakeGattDescriptorWinrt::SimulateGattDescriptorWriteError(
+    BluetoothGattService::GattErrorCode error_code) {
+  if (write_value_callback_) {
+    std::move(write_value_callback_)
+        .Run(Make<FakeGattWriteResultWinrt>(error_code));
+  }
 }
 
 }  // namespace device

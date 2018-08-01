@@ -149,12 +149,24 @@ class BluetoothTestWinrt : public BluetoothTestWin,
       BluetoothRemoteGattService::GattErrorCode error_code) override;
   void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
                               const std::string& uuid) override;
+  void SimulateGattDescriptorRead(BluetoothRemoteGattDescriptor* descriptor,
+                                  const std::vector<uint8_t>& value) override;
+  void SimulateGattDescriptorReadError(
+      BluetoothRemoteGattDescriptor* descriptor,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
+  void SimulateGattDescriptorWrite(
+      BluetoothRemoteGattDescriptor* descriptor) override;
+  void SimulateGattDescriptorWriteError(
+      BluetoothRemoteGattDescriptor* descriptor,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
   void DeleteDevice(BluetoothDevice* device) override;
 
   void OnFakeBluetoothDeviceConnectGattCalled();
   void OnFakeBluetoothGattDisconnect();
   void OnFakeBluetoothCharacteristicReadValue();
   void OnFakeBluetoothCharacteristicWriteValue(std::vector<uint8_t> value);
+  void OnFakeBluetoothDescriptorReadValue();
+  void OnFakeBluetoothDescriptorWriteValue(std::vector<uint8_t> value);
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
