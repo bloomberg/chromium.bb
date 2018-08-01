@@ -66,12 +66,6 @@ const int kMaxAgcSegmentDiffMs =
   200;
 #endif
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_WebRtcAudioQualityBrowserTest WebRtcAudioQualityBrowserTest
-#else
-// Not implemented on Android, ChromeOS etc.
-#define MAYBE_WebRtcAudioQualityBrowserTest DISABLED_WebRtcAudioQualityBrowserTest
-#endif
 
 }  // namespace
 
@@ -134,9 +128,9 @@ const int kMaxAgcSegmentDiffMs =
 //    50 / 100 in level. Also go into the playback tab, right-click Speakers,
 //    and set that level to 50 / 100. Otherwise you will get distortion in
 //    the recording.
-class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
+class WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
-  MAYBE_WebRtcAudioQualityBrowserTest() {}
+  WebRtcAudioQualityBrowserTest() {}
   void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
@@ -657,7 +651,7 @@ bool ForceMicrophoneVolumeTo100Percent() {
 // plenty of time. Similarly, the recording time should be enough to catch the
 // whole reference file. If you then silence-trim the reference file and actual
 // file, you should end up with two time-synchronized files.
-void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
+void WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
     const base::FilePath& recording,
     const std::string& constraints,
     const base::TimeDelta recording_time) {
@@ -688,7 +682,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
   HangUp(left_tab);
 }
 
-void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
+void WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
     const std::string& constraints,
     const std::string& perf_modifier) {
   if (OnWin8OrHigher()) {
@@ -706,14 +700,30 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
   DeleteFileUnlessTestFailed(recording, false);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestCallQualityWithAudioFromFakeDevice) {
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice \
+  MANUAL_TestCallQualityWithAudioFromFakeDevice
+#else
+// Not implemented on Android, ChromeOS etc.
+#define MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice \
+  DISABLED_MANUAL_TestCallQualityWithAudioFromFakeDevice
+#endif
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
+                       MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   TestWithFakeDeviceGetUserMedia(kAudioOnlyCallConstraints, "_getusermedia");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestCallQualityWithAudioFromWebAudio) {
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_MANUAL_TestCallQualityWithAudioFromWebAudio \
+  MANUAL_TestCallQualityWithAudioFromWebAudio
+#else
+// Not implemented on Android, ChromeOS etc.
+#define MAYBE_MANUAL_TestCallQualityWithAudioFromWebAudio \
+  DISABLED_MANUAL_TestCallQualityWithAudioFromWebAudio
+#endif
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
+                       MAYBE_MANUAL_TestCallQualityWithAudioFromWebAudio) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   if (OnWin8OrHigher()) {
     // http://crbug.com/379798.
@@ -786,7 +796,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
  * device currently supports, and we want to be able to compare directly. See
  * http://crbug.com/421054.
  */
-void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
+void WebRtcAudioQualityBrowserTest::TestAutoGainControl(
     const std::string& constraints,
     const std::string& perf_modifier) {
   if (OnWin8OrHigher()) {
@@ -823,9 +833,18 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
   DeleteFileUnlessTestFailed(actual_files_dir, true);
 }
 
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_MANUAL_TestAutoGainControlOnLowAudio \
+  MANUAL_TestAutoGainControlOnLowAudio
+#else
+// Not implemented on Android, ChromeOS etc. Temporary disabled on Windows
+// (https://crbug.com/850936).
+#define MAYBE_MANUAL_TestAutoGainControlOnLowAudio \
+  DISABLED_MANUAL_TestAutoGainControlOnLowAudio
+#endif
 // The AGC should apply non-zero gain here.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestAutoGainControlOnLowAudio) {
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
+                       MAYBE_MANUAL_TestAutoGainControlOnLowAudio) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // Disables AEC, but leaves AGC on.
   const char* kAudioCallWithoutEchoCancellation =
@@ -834,9 +853,18 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
       TestAutoGainControl(kAudioCallWithoutEchoCancellation, "_with_agc"));
 }
 
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff \
+  MANUAL_TestAutoGainIsOffWithAudioProcessingOff
+#else
+// Not implemented on Android, ChromeOS etc. Temporary disabled on Windows
+// (https://crbug.com/850936).
+#define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff \
+  DISABLED_MANUAL_TestAutoGainIsOffWithAudioProcessingOff
+#endif
 // Since the AGC is off here there should be no gain at all.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
+                       MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   const char* kAudioCallWithoutAudioProcessing =
       "{audio: { mandatory: { echoCancellation: false } } }";
