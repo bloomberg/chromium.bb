@@ -260,7 +260,7 @@ public class OMADownloadHandler extends BroadcastReceiver
      */
     public void handleOMADownload(DownloadInfo downloadInfo, long downloadId) {
         OMAParserTask task = new OMAParserTask(downloadInfo, downloadId);
-        task.execute();
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -452,7 +452,7 @@ public class OMADownloadHandler extends BroadcastReceiver
         if (omaInfo == null) return false;
         if (omaInfo.isValueEmpty(OMA_INSTALL_NOTIFY_URI)) return false;
         PostStatusTask task = new PostStatusTask(omaInfo, downloadInfo, downloadId, statusMessage);
-        task.execute();
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         return true;
     }
 
@@ -849,7 +849,7 @@ public class OMADownloadHandler extends BroadcastReceiver
             item.setSystemDownloadId(downloadId);
         }
         ClearPendingOMADownloadTask task = new ClearPendingOMADownloadTask(item, installNotifyURI);
-        task.execute();
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

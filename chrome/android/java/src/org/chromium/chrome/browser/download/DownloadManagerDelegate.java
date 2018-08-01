@@ -293,7 +293,8 @@ public class DownloadManagerDelegate {
      */
     public void enqueueDownloadManagerRequest(final DownloadItem item, boolean notifyCompleted,
             EnqueueDownloadRequestCallback callback) {
-        new EnqueueDownloadRequestTask(item, notifyCompleted, callback).execute();
+        new EnqueueDownloadRequestTask(item, notifyCompleted, callback)
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
