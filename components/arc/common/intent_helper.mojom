@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 22
+// Next MinVersion: 23
 
 module arc.mojom;
 
@@ -39,6 +39,11 @@ struct IntentInfo {
   string? type;  // explicit MIME type for data
   [MinVersion=13] string? clip_data_uri;  // optional URI to provide as ClipData.
   [MinVersion=20] bool ui_bypassed; // Whether or not the user saw the UI.
+
+  // Optional string extras. These are the key-value pairs stored in android
+  // intents to carry additional data. See:
+  // https://developer.android.com/reference/android/content/Intent#putExtra(java.lang.String,%20java.lang.String)
+  [MinVersion=22] map<string, string>? extras;
 };
 
 struct IntentFilter {
@@ -124,7 +129,8 @@ enum ChromePage {
   LAST = ABOUTHISTORY,
 };
 
-// Describes an action given by the android text classifier (e.g. open maps).
+// Describes an action given by the android text selection delegate (e.g. open
+// maps).
 struct TextSelectionAction {
   // The icon of the component that can handle the action intent.
   ActivityIcon icon;
@@ -174,7 +180,7 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
-// Next method ID: 15
+// Next method ID: 16
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
   // intent is sent with a URL that requires disambiguation, instead of opening
@@ -237,6 +243,14 @@ interface IntentHelperInstance {
 
   // Asks TextClassifier to generate an action that can handle the |text|.
   // |scale_factor| is used to find a suitable icon to show in the context menu.
-  [MinVersion=21] ClassifySelection@14(string text, ScaleFactor scale_factor)
+  [MinVersion=21] ClassifySelectionDeprecated@14(string text,
+                                                 ScaleFactor scale_factor)
       => (TextSelectionAction? action);
+
+  // Asks ChromeTextSelectionDelegate to generate actions that can handle the
+  // |text|. |scale_factor| is used to find a suitable icon to show in the
+  // context menu.
+  [MinVersion=22] RequestTextSelectionActions@15(string text,
+                                                 ScaleFactor scale_factor)
+      => (array<TextSelectionAction> actions);
 };

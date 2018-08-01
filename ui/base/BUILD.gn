@@ -818,6 +818,7 @@ test("ui_base_unittests") {
     "l10n/time_format_unittest.cc",
     "layout_unittest.cc",
     "material_design/material_design_controller_unittest.cc",
+    "models/simple_menu_model_unittest.cc",
     "models/tree_node_iterator_unittest.cc",
     "resource/data_pack_literal.cc",
     "resource/data_pack_literal.h",

@@ -47,12 +47,10 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
     virtual void UpdateMenuItem(int command_id,
                                 bool enabled,
                                 bool hidden,
-                                const base::string16& title) = 0;
-#if defined(OS_CHROMEOS)
-    virtual void UpdateMenuIcon(int command_id, const gfx::Image& image) = 0;
+                                const base::string16& title) {}
 
-    virtual void AddSeparatorAt(int index) = 0;
-#endif
+    // Recreates the menu using the |menu_model_|.
+    virtual void RebuildMenu(){}
   };
 
   static const size_t kMaxSelectionTextLength;
@@ -107,7 +105,8 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
                       bool hidden,
                       const base::string16& title) override;
   void UpdateMenuIcon(int command_id, const gfx::Image& image) override;
-  void AddSeparatorBelowMenuItem(int command_id) override;
+  void RemoveMenuItem(int command_id) override;
+  void RemoveAdjacentSeparators() override;
   content::RenderViewHost* GetRenderViewHost() const override;
   content::WebContents* GetWebContents() const override;
   content::BrowserContext* GetBrowserContext() const override;

@@ -5,6 +5,7 @@
 #ifndef UI_BASE_MODELS_SIMPLE_MENU_MODEL_H_
 #define UI_BASE_MODELS_SIMPLE_MENU_MODEL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -135,6 +136,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   // Sets the icon for the item at |index|.
   void SetIcon(int index, const gfx::Image& icon);
 
+  // Sets the label for the item at |index|.
+  void SetLabel(int index, const base::string16& label);
+
   // Sets the sublabel for the item at |index|.
   void SetSublabel(int index, const base::string16& sublabel);
 
@@ -143,6 +147,12 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
 
   // Sets the minor icon for the item at |index|.
   void SetMinorIcon(int index, const gfx::VectorIcon& minor_icon);
+
+  // Sets whether the item at |index| is enabled.
+  void SetEnabledAt(int index, bool enabled);
+
+  // Sets whether the item at |index| is visible.
+  void SetVisibleAt(int index, bool visible);
 
   // Clears all items. Note that it does not free MenuModel of submenu.
   void Clear();
@@ -210,6 +220,8 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     MenuModel* submenu = nullptr;
     ButtonMenuItemModel* button_model = nullptr;
     MenuSeparatorType separator_type = NORMAL_SEPARATOR;
+    bool enabled = true;
+    bool visible = true;
   };
 
   typedef std::vector<Item> ItemVector;
