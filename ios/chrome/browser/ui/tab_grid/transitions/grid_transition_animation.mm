@@ -39,6 +39,9 @@ CGFloat DeviceCornerRadius() {
 @end
 
 @implementation GridTransitionAnimation
+
+@synthesize activeCell = _activeCell;
+
 @synthesize animations = _animations;
 @synthesize layout = _layout;
 @synthesize duration = _duration;
@@ -416,6 +419,7 @@ CGFloat DeviceCornerRadius() {
   }
   [self positionItemInGrid:self.layout.activeItem];
   [self.layout.activeItem.cell positionCellViews];
+  self.activeCell = self.layout.activeItem.cell;
   [self positionItemInGrid:self.layout.selectionItem];
 }
 

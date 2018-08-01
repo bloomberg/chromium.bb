@@ -838,19 +838,39 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
-// Shows (by setting the alpha to 1.0) the two toolbar views and the floating
-// button. Suitable for use in animations.
+// Shows the two toolbars and the floating button. Suitable for use in
+// animations.
 - (void)showToolbars {
-  self.topToolbar.alpha = 1.0;
-  self.bottomToolbar.alpha = 1.0;
+  // To show a toolbar, set its background to be clear, and its controls to have
+  // an alpha of 1.0.
+  self.topToolbar.backgroundColor = UIColor.clearColor;
+  self.topToolbar.leadingButton.alpha = 1.0;
+  self.topToolbar.trailingButton.alpha = 1.0;
+  self.topToolbar.pageControl.alpha = 1.0;
+
+  self.bottomToolbar.backgroundColor = UIColor.clearColor;
+  self.bottomToolbar.leadingButton.alpha = 1.0;
+  self.bottomToolbar.trailingButton.alpha = 1.0;
+  self.bottomToolbar.centerButton.alpha = 1.0;
+
   self.floatingButton.alpha = 1.0;
 }
 
-// Hides (by setting the alpha to 0.0) the two toolbar views and the floating
-// button. Suitable for use in animations.
+// Hides the two toolbars and the floating button. Suitable for use in
+// animations.
 - (void)hideToolbars {
-  self.topToolbar.alpha = 0.0;
-  self.bottomToolbar.alpha = 0.0;
+  // To hide a toolbar, set its background to be black, and its controls to have
+  // an alpha of 0.0.
+  self.topToolbar.backgroundColor = UIColor.blackColor;
+  self.topToolbar.leadingButton.alpha = 0.0;
+  self.topToolbar.trailingButton.alpha = 0.0;
+  self.topToolbar.pageControl.alpha = 0.0;
+
+  self.bottomToolbar.backgroundColor = UIColor.blackColor;
+  self.bottomToolbar.leadingButton.alpha = 0.0;
+  self.bottomToolbar.trailingButton.alpha = 0.0;
+  self.bottomToolbar.centerButton.alpha = 0.0;
+
   self.floatingButton.alpha = 0.0;
 }
 
