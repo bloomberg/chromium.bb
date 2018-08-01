@@ -70,4 +70,8 @@ void AppListFolderItem::OnFolderImageUpdated() {
   SetIcon(folder_image_.icon());
 }
 
+void AppListFolderItem::NotifyOfDraggedItem(AppListItem* dragged_item) {
+  folder_image_.UpdateDraggedItem(dragged_item);
+}
+
 }  // namespace app_list

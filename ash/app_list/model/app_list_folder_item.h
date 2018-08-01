@@ -73,6 +73,10 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem : public AppListItem,
   // FolderImageObserver overrides:
   void OnFolderImageUpdated() override;
 
+  // Informs the folder item of an item being dragged, that it may notify its
+  // image.
+  void NotifyOfDraggedItem(AppListItem* dragged_item);
+
  private:
   // The type of folder; may affect behavior of folder views.
   const FolderType folder_type_;

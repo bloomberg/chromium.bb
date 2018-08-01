@@ -1629,6 +1629,10 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
   if (!drag_view_)
     return;
 
+  DCHECK(activated_folder_item_view_);
+  static_cast<AppListFolderItem*>(activated_folder_item_view_->item())
+      ->NotifyOfDraggedItem(nullptr);
+
   DCHECK(IsDraggingForReparentInRootLevelGridView());
   bool cancel_reparent = cancel_drag || drop_attempt_ == DROP_FOR_NONE;
   if (!events_forwarded_to_drag_drop_host && !cancel_reparent) {

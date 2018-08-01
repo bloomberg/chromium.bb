@@ -52,6 +52,10 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   // and notifies observers that the icon has changed.
   void UpdateIcon();
 
+  // Given an AppListItem currently being dragged, updates |dragged_item_| then
+  // executes an ordinary run of UpdateIcon()
+  void UpdateDraggedItem(const AppListItem* dragged_item);
+
   const gfx::ImageSkia& icon() const { return icon_; }
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
@@ -95,6 +99,9 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
 
   // List of top-level app list items (to display small in the icon).
   AppListItemList* item_list_;
+
+  // Item being dragged, if any.
+  const AppListItem* dragged_item_ = nullptr;
 
   // Top items for generating folder icon.
   std::vector<AppListItem*> top_items_;
