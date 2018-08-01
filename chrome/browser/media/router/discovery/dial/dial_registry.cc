@@ -32,10 +32,6 @@ const int kDialExpirationSecs = 240;
 // The maximum number of devices retained at once in the registry.
 const size_t kDialMaxDevices = 256;
 
-// We create a global instead of using base::Singleton so we can check whether
-// an instance has been created.
-media_router::DialRegistry* g_dial_registry_instance;
-
 }  // namespace
 
 namespace media_router {
@@ -65,31 +61,16 @@ DialRegistry::~DialRegistry() = default;
 // static
 DialRegistry* DialRegistry::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!g_dial_registry_instance)
-    g_dial_registry_instance = new DialRegistry();
-  return g_dial_registry_instance;
-}
-
-// static
-void DialRegistry::Shutdown() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (g_dial_registry_instance) {
-    g_dial_registry_instance->StopPeriodicDiscovery();
-    g_dial_registry_instance->DoShutdown();
-  }
+  return base::Singleton<DialRegistry,
+                         base::LeakySingletonTraits<DialRegistry>>::get();
 }
 
 void DialRegistry::SetNetworkConnectionTracker(
     content::NetworkConnectionTracker* tracker) {
   network_connection_tracker_ = tracker;
-  network_connection_tracker_->AddNetworkConnectionObserver(this);
+  network_connection_tracker_->AddLeakyNetworkConnectionObserver(this);
   // If there are no observers yet, it won't actually start.
   StartPeriodicDiscovery();
-}
-
-void DialRegistry::DoShutdown() {
-  if (network_connection_tracker_)
-    network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 void DialRegistry::SetNetLog(net::NetLog* net_log) {

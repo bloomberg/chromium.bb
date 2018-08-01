@@ -70,7 +70,19 @@ class CONTENT_EXPORT NetworkConnectionTracker
   // Registers |observer| to receive notifications of network changes. The
   // thread on which this is called is the thread on which |observer| will be
   // called back with notifications.
+  //
+  // Observers registered with this method are required to be unregistered
+  // before the NetworkConnectionTracker is deleted.
   void AddNetworkConnectionObserver(NetworkConnectionObserver* observer);
+
+  // Registers |observer| to receive notifications of network changes. The
+  // thread on which this is called is the thread on which |observer| will be
+  // called back with notifications.
+  //
+  // Observers registered with this method are not expected to be unregistered.
+  // This should only be used by leaky singletons to avoid an error on shutdown
+  // about observers not being unregistered.
+  void AddLeakyNetworkConnectionObserver(NetworkConnectionObserver* observer);
 
   // Unregisters |observer| from receiving notifications.  This must be called
   // on the same thread on which AddNetworkConnectionObserver() was called.
@@ -121,6 +133,8 @@ class CONTENT_EXPORT NetworkConnectionTracker
 
   const scoped_refptr<base::ObserverListThreadSafe<NetworkConnectionObserver>>
       network_change_observer_list_;
+  const scoped_refptr<base::ObserverListThreadSafe<NetworkConnectionObserver>>
+      leaky_network_change_observer_list_;
 
   mojo::Binding<network::mojom::NetworkChangeManagerClient> binding_;
 

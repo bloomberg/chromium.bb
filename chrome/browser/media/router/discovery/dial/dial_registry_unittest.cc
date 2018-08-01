@@ -90,8 +90,6 @@ class DialRegistryTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { registry_->DoShutdown(); }
-
  protected:
   void SetListenerExpectations() {
     EXPECT_CALL(registry_->mock_service(),

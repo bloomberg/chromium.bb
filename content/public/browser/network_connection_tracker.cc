@@ -43,12 +43,16 @@ NetworkConnectionTracker::NetworkConnectionTracker(
       network_change_observer_list_(
           new base::ObserverListThreadSafe<NetworkConnectionObserver>(
               base::ObserverListPolicy::EXISTING_ONLY)),
+      leaky_network_change_observer_list_(
+          new base::ObserverListThreadSafe<NetworkConnectionObserver>(
+              base::ObserverListPolicy::EXISTING_ONLY)),
       binding_(this) {
   Initialize();
   DCHECK(binding_.is_bound());
 }
 
 NetworkConnectionTracker::~NetworkConnectionTracker() {
+  // Don't check that the leaky list is empty.
   network_change_observer_list_->AssertEmpty();
 }
 
@@ -107,6 +111,11 @@ void NetworkConnectionTracker::AddNetworkConnectionObserver(
   network_change_observer_list_->AddObserver(observer);
 }
 
+void NetworkConnectionTracker::AddLeakyNetworkConnectionObserver(
+    NetworkConnectionObserver* observer) {
+  leaky_network_change_observer_list_->AddObserver(observer);
+}
+
 void NetworkConnectionTracker::RemoveNetworkConnectionObserver(
     NetworkConnectionObserver* observer) {
   network_change_observer_list_->RemoveObserver(observer);
@@ -115,6 +124,9 @@ void NetworkConnectionTracker::RemoveNetworkConnectionObserver(
 NetworkConnectionTracker::NetworkConnectionTracker()
     : connection_type_(kConnectionTypeInvalid),
       network_change_observer_list_(
+          new base::ObserverListThreadSafe<NetworkConnectionObserver>(
+              base::ObserverListPolicy::EXISTING_ONLY)),
+      leaky_network_change_observer_list_(
           new base::ObserverListThreadSafe<NetworkConnectionObserver>(
               base::ObserverListPolicy::EXISTING_ONLY)),
       binding_(this) {}
@@ -135,6 +147,8 @@ void NetworkConnectionTracker::OnNetworkChanged(
   base::subtle::NoBarrier_Store(&connection_type_,
                                 static_cast<base::subtle::Atomic32>(type));
   network_change_observer_list_->Notify(
+      FROM_HERE, &NetworkConnectionObserver::OnConnectionChanged, type);
+  leaky_network_change_observer_list_->Notify(
       FROM_HERE, &NetworkConnectionObserver::OnConnectionChanged, type);
 }
 

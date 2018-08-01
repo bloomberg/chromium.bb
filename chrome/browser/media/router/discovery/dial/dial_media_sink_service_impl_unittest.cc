@@ -78,8 +78,6 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { test_dial_registry_.DoShutdown(); }
-
   DialMediaSinkServiceImpl::SinkQueryByAppSubscription
   StartMonitoringAvailableSinksForApp(const std::string& app_name) {
     return media_sink_service_->StartMonitoringAvailableSinksForApp(

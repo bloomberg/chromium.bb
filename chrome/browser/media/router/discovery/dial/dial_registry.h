@@ -63,10 +63,6 @@ class DialRegistry
 
   static DialRegistry* GetInstance();
 
-  // Stops discovery and shuts down the DialRegistry. Should be called as the
-  // browser is shutting down.
-  static void Shutdown();
-
   // Sets the NetLog object used for logging. Should be called right after
   // GetInstance(). If the registry already has a NetLog, does nothing. The
   // NetLog should live at least as long as the IO Thread.
@@ -125,8 +121,6 @@ class DialRegistry
 
   // Called when we've gotten the NetworkConnectionTracker from the UI thread.
   void SetNetworkConnectionTracker(content::NetworkConnectionTracker* tracker);
-
-  void DoShutdown();
 
   // DialService::Observer:
   void OnDiscoveryRequest(DialService* service) override;
