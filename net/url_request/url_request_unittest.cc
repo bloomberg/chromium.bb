@@ -5619,9 +5619,11 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
                   LoadState expected_second_load_state,
                   LoadState expected_third_load_state,
                   Callback callback) {
-    AsyncDelegateLogger* logger = new AsyncDelegateLogger(
+    // base::MakeRefCounted<AsyncDelegateLogger> is unavailable here, since the
+    // constructor of AsyncDelegateLogger is private.
+    auto logger = base::WrapRefCounted(new AsyncDelegateLogger(
         url_request, expected_first_load_state, expected_second_load_state,
-        expected_third_load_state, std::move(callback));
+        expected_third_load_state, std::move(callback)));
     logger->Start();
   }
 
