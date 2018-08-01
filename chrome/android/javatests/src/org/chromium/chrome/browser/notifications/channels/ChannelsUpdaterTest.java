@@ -159,6 +159,9 @@ public class ChannelsUpdaterTest {
     @TargetApi(Build.VERSION_CODES.O)
     public void testUpdateChannels_deletesLegacyChannelsAndCreatesExpectedOnes() throws Exception {
         // Set up any legacy channels.
+        mNotificationManagerProxy.createNotificationChannelGroup(
+                ChannelDefinitions.getChannelGroup(ChannelDefinitions.ChannelGroupId.GENERAL)
+                        .toNotificationChannelGroup(mMockResources));
         for (String id : ChannelDefinitions.getLegacyChannelIds()) {
             NotificationChannel channel =
                     new NotificationChannel(id, id, NotificationManager.IMPORTANCE_LOW);
