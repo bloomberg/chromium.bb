@@ -198,5 +198,5 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyBlockingBrowserTest,
             ReadModuleBlacklistCache(module_blacklist_cache_path, &metadata,
                                      &blacklisted_modules, &md5_digest));
 
-  EXPECT_GE(blacklisted_modules.size(), 1);
+  EXPECT_GE(blacklisted_modules.size(), 1u);
 }
