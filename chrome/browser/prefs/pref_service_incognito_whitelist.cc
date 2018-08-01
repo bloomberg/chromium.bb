@@ -60,13 +60,46 @@
 
 namespace {
 
-// TODO(https://crbug.com/861722): Remove this list and file.
-//
-// WARNING: PLEASE DO NOT ADD ANYTHING TO THIS FILE.
-// This file is temporarily added for transition of incognito preferences
+// List of keys that can be changed in the user prefs file by the incognito
+// profile.
+const char* persistent_pref_names[] = {
+#if defined(OS_CHROMEOS)
+    // Accessibility preferences should be persisted if they are changed in
+    // incognito mode.
+    ash::prefs::kAccessibilityLargeCursorEnabled,
+    ash::prefs::kAccessibilityLargeCursorDipSize,
+    ash::prefs::kAccessibilityStickyKeysEnabled,
+    ash::prefs::kAccessibilitySpokenFeedbackEnabled,
+    ash::prefs::kAccessibilityHighContrastEnabled,
+    ash::prefs::kAccessibilityScreenMagnifierCenterFocus,
+    ash::prefs::kAccessibilityScreenMagnifierEnabled,
+    ash::prefs::kAccessibilityScreenMagnifierScale,
+    ash::prefs::kAccessibilityVirtualKeyboardEnabled,
+    ash::prefs::kAccessibilityMonoAudioEnabled,
+    ash::prefs::kAccessibilityAutoclickEnabled,
+    ash::prefs::kAccessibilityAutoclickDelayMs,
+    ash::prefs::kAccessibilityCaretHighlightEnabled,
+    ash::prefs::kAccessibilityCursorHighlightEnabled,
+    ash::prefs::kAccessibilityFocusHighlightEnabled,
+    ash::prefs::kAccessibilitySelectToSpeakEnabled,
+    ash::prefs::kAccessibilitySwitchAccessEnabled,
+    ash::prefs::kAccessibilityDictationEnabled,
+    ash::prefs::kDockedMagnifierEnabled,
+    ash::prefs::kDockedMagnifierScale,
+    ash::prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
+    ash::prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
+    ash::prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
+    ash::prefs::kShouldAlwaysShowAccessibilityMenu
+#endif  // defined(OS_CHROMEOS)
+};
+
+// TODO(https://crbug.com/861722): Remove this list.
+// WARNING: PLEASE DO NOT ADD ANYTHING TO THIS LIST.
+// This list is temporarily added for transition of incognito preferences
 // storage default, from on disk to in memory. All items in this list will be
-// audited and checked with owners and removed from whitelist.
-const char* incognito_whitelist[] = {
+// audited, checked with owners, and removed or transfered to
+// |persistent_pref_names|.
+const char* temporary_incognito_whitelist[] = {
 // ash/public/cpp/ash_pref_names.h
 #if defined(OS_CHROMEOS)
     ash::prefs::kDetachableBaseDevices, ash::prefs::kEnableStylusTools,
@@ -969,14 +1002,20 @@ const char* incognito_whitelist[] = {
 
 namespace prefs {
 
-// TODO(https://crbug.com/861722): Remove this function and file.
-// WARNING: PLEASE DO NOT ADD ANYTHING TO THIS FILE.
-// This is temporarily added for transition of incognito preferences
-// storage default, from on disk to in memory. All items in this list will be
-// audited and checked with owners and removed from whitelist.
-void GetIncognitoWhitelist(std::vector<const char*>* whitelist) {
-  whitelist->insert(whitelist->end(), incognito_whitelist,
-                    incognito_whitelist + base::size(incognito_whitelist));
+std::vector<const char*> GetIncognitoPersistentPrefsWhitelist() {
+  std::vector<const char*> whitelist;
+  // TODO(https://crbug.com/861722): Change to base::size when the list is non-
+  // empty for all platforms.
+  whitelist.insert(
+      whitelist.end(), persistent_pref_names,
+      persistent_pref_names + sizeof(persistent_pref_names) / sizeof(char*));
+
+  // TODO(https://crbug.com/861722): Remove after the list is audited and
+  // emptied.
+  whitelist.insert(whitelist.end(), temporary_incognito_whitelist,
+                   temporary_incognito_whitelist +
+                       base::size(temporary_incognito_whitelist));
+  return whitelist;
 }
 
 }  // namespace prefs
