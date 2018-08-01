@@ -64,6 +64,9 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->provider_info->cache_storage);
   service_manager::mojom::InterfaceProviderPtrInfo interface_provider =
       std::move(params->provider_info->interface_provider);
+  blink::PrivacyPreferences privacy_preferences(
+      params->renderer_preferences.enable_do_not_track,
+      params->renderer_preferences.enable_referrers);
 
   auto client = std::make_unique<ServiceWorkerContextClient>(
       params->embedded_worker_id, params->service_worker_version_id,
@@ -86,7 +89,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       StartWorkerHistogramEnum::NUM_TYPES);
   wrapper_ = StartWorkerContext(std::move(params), std::move(client),
                                 std::move(cache_storage),
-                                std::move(interface_provider));
+                                std::move(interface_provider),
+                                std::move(privacy_preferences));
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {
@@ -143,7 +147,8 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     mojom::EmbeddedWorkerStartParamsPtr params,
     std::unique_ptr<ServiceWorkerContextClient> context_client,
     blink::mojom::CacheStoragePtrInfo cache_storage,
-    service_manager::mojom::InterfaceProviderPtrInfo interface_provider) {
+    service_manager::mojom::InterfaceProviderPtrInfo interface_provider,
+    blink::PrivacyPreferences privacy_preferences) {
   std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager;
   // |installed_scripts_info| is null if scripts should be served by net layer,
   // when the worker is not installed, or the worker is launched for checking
@@ -174,6 +179,7 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
       params->pause_after_download
           ? blink::WebEmbeddedWorkerStartData::kPauseAfterDownload
           : blink::WebEmbeddedWorkerStartData::kDontPauseAfterDownload;
+  start_data.privacy_preferences = std::move(privacy_preferences);
 
   wrapper->worker()->StartWorkerContext(start_data);
   return wrapper;

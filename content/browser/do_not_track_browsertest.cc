@@ -161,10 +161,15 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Worker) {
   EXPECT_EQ("1", header_map["DNT"]);
 }
 
-// Checks that the DNT header is sent in a request for a shared worker
-// script.
-// Disabled due to crbug.com/853085.
-IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_SharedWorker) {
+// Checks that the DNT header is sent in a request for shared worker script.
+// Disabled on Android since a shared worker is not available on Android:
+// crbug.com/869745.
+#if defined(OS_ANDROID)
+#define MAYBE_SharedWorker DISABLED_SharedWorker
+#else
+#define MAYBE_SharedWorker SharedWorker
+#endif
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, MAYBE_SharedWorker) {
   net::test_server::HttpRequest::HeaderMap header_map;
   base::RunLoop loop;
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
@@ -183,8 +188,7 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_SharedWorker) {
 
 // Checks that the DNT header is sent in a request for a service worker
 // script.
-// Disabled due to crbug.com/853085.
-IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_ServiceWorker) {
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, ServiceWorker) {
   net::test_server::HttpRequest::HeaderMap header_map;
   base::RunLoop loop;
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
@@ -221,7 +225,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromWorker) {
 
 // Checks that the DNT header is preserved when fetching from a shared worker.
 //
-// Disabled on Android since a shared worker is not available on Android.
+// Disabled on Android since a shared worker is not available on Android:
+// crbug.com/869745.
 #if defined(OS_ANDROID)
 #define MAYBE_FetchFromSharedWorker DISABLED_FetchFromSharedWorker
 #else

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WORKER_SHADOW_PAGE_H_
 
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -56,7 +57,8 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   // requests.
   WorkerShadowPage(
       Client* client,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+      PrivacyPreferences preferences);
   ~WorkerShadowPage() override;
 
   // Initializes this instance and calls Client::OnShadowPageInitialized() when
@@ -74,6 +76,7 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   void DidFinishDocumentLoad() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
+  void WillSendRequest(WebURLRequest&) override;
 
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
   WebSettings* GetSettings() { return web_view_->GetSettings(); }
@@ -92,6 +95,10 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WebView* web_view_;
   Persistent<WebLocalFrameImpl> main_frame_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+
+  // TODO(crbug.com/862854): Update the values when the browser process changes
+  // the preferences.
+  const PrivacyPreferences preferences_;
 
   State state_ = State::kUninitialized;
 };

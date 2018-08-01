@@ -25,6 +25,9 @@
 
 namespace content {
 
+// User preferences needed to be passed to the renderer process.
+// TODO(crbug.com/869748): Move the preferences into
+// third_party/blink/public/mojom as a mojom struct.
 struct CONTENT_EXPORT RendererPreferences {
   RendererPreferences();
   RendererPreferences(const RendererPreferences& other);
@@ -84,9 +87,11 @@ struct CONTENT_EXPORT RendererPreferences {
   bool use_custom_colors;
 
   // Set to false to not send referrers.
+  // The default value should be in sync with blink::PrivacyPreferences.
   bool enable_referrers;
 
   // Set to true to indicate that the preference to set DNT to 1 is enabled.
+  // The default value should be in sync with blink::PrivacyPreferences.
   bool enable_do_not_track;
 
   // Whether to allow the use of Encrypted Media Extensions (EME), except for

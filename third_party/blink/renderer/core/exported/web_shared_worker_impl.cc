@@ -214,6 +214,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     WebContentSecurityPolicyType policy_type,
     mojom::IPAddressSpace creation_address_space,
     const base::UnguessableToken& devtools_worker_token,
+    PrivacyPreferences privacy_preferences,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider) {
@@ -231,7 +232,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // triggers creation of a InspectorNetworkAgent that tries to access the
   // token.
   shadow_page_ =
-      std::make_unique<WorkerShadowPage>(this, std::move(loader_factory));
+      std::make_unique<WorkerShadowPage>(this, std::move(loader_factory),
+                                         std::move(privacy_preferences));
 
   // If we were asked to pause worker context on start and wait for debugger
   // then now is a good time to do that.
