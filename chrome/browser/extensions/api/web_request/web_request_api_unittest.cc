@@ -229,8 +229,6 @@ class ExtensionWebRequestTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
-    ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        nullptr, nullptr, nullptr, profile_.GetTestingPrefService());
     network_delegate_.reset(new ChromeNetworkDelegate(event_router_.get()));
     network_delegate_->set_profile(&profile_);
     network_delegate_->set_cookie_settings(
@@ -1122,8 +1120,6 @@ class ExtensionWebRequestHeaderModificationTest
  protected:
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
-    ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        nullptr, nullptr, nullptr, profile_.GetTestingPrefService());
     network_delegate_.reset(new ChromeNetworkDelegate(event_router_.get()));
     network_delegate_->set_profile(&profile_);
     network_delegate_->set_cookie_settings(

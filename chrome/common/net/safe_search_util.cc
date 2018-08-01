@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/safe_search_util.h"
+#include "chrome/common/net/safe_search_util.h"
 
 #include <string>
 #include <utility>
@@ -14,7 +14,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/url_constants.h"
 #include "components/google/core/common/google_util.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_request_headers.h"
@@ -22,13 +21,6 @@
 #include "url/gurl.h"
 
 namespace {
-
-int g_force_google_safe_search_count_for_test = 0;
-int g_force_youtube_restrict_count_for_test = 0;
-
-const char kYouTubeRestrictHeaderName[] = "YouTube-Restrict";
-const char kYouTubeRestrictHeaderValueModerate[] = "Moderate";
-const char kYouTubeRestrictHeaderValueStrict[] = "Strict";
 
 // Returns whether a URL parameter, |first_parameter| (e.g. foo=bar), has the
 // same key as the the |second_parameter| (e.g. foo=baz). Both parameters
@@ -48,8 +40,8 @@ bool HasSameParameterKey(base::StringPiece first_parameter,
 // return value is the |query| string modified such that SafeSearch is active.
 std::string AddSafeSearchParameters(const std::string& query) {
   std::vector<base::StringPiece> new_parameters;
-  std::string safe_parameter = chrome::kSafeSearchSafeParameter;
-  std::string ssui_parameter = chrome::kSafeSearchSsuiParameter;
+  std::string safe_parameter = safe_search_util::kSafeSearchSafeParameter;
+  std::string ssui_parameter = safe_search_util::kSafeSearchSsuiParameter;
 
   for (const base::StringPiece& param : base::SplitStringPiece(
            query, "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
@@ -64,38 +56,40 @@ std::string AddSafeSearchParameters(const std::string& query) {
   return base::JoinString(new_parameters, "&");
 }
 
-} // namespace
+}  // namespace
 
 namespace safe_search_util {
+
+const char kSafeSearchSafeParameter[] = "safe=active";
+const char kSafeSearchSsuiParameter[] = "ssui=on";
+const char kYouTubeRestrictHeaderName[] = "YouTube-Restrict";
+const char kYouTubeRestrictHeaderValueModerate[] = "Moderate";
+const char kYouTubeRestrictHeaderValueStrict[] = "Strict";
+const char kGoogleAppsAllowedDomains[] = "X-GoogApps-Allowed-Domains";
 
 // If |request| is a request to Google Web Search the function
 // enforces that the SafeSearch query parameters are set to active.
 // Sets the query part of |new_url| with the new value of the parameters.
-void ForceGoogleSafeSearch(const net::URLRequest* request, GURL* new_url) {
-  ++g_force_google_safe_search_count_for_test;
-
-  if (!google_util::IsGoogleSearchUrl(request->url()) &&
-      !google_util::IsGoogleHomePageUrl(request->url()))
+void ForceGoogleSafeSearch(const GURL& url, GURL* new_url) {
+  if (!google_util::IsGoogleSearchUrl(url) &&
+      !google_util::IsGoogleHomePageUrl(url))
     return;
 
-  std::string query = request->url().query();
+  std::string query = url.query();
   std::string new_query = AddSafeSearchParameters(query);
   if (query == new_query)
     return;
 
   GURL::Replacements replacements;
   replacements.SetQueryStr(new_query);
-  *new_url = request->url().ReplaceComponents(replacements);
+  *new_url = url.ReplaceComponents(replacements);
 }
 
-void ForceYouTubeRestrict(const net::URLRequest* request,
+void ForceYouTubeRestrict(const GURL& url,
                           net::HttpRequestHeaders* headers,
                           YouTubeRestrictMode mode) {
-  ++g_force_youtube_restrict_count_for_test;
-
   if (!google_util::IsYoutubeDomainUrl(
-          request->url(),
-          google_util::ALLOW_SUBDOMAIN,
+          url, google_util::ALLOW_SUBDOMAIN,
           google_util::DISALLOW_NON_STANDARD_PORTS))
     return;
 
@@ -115,22 +109,6 @@ void ForceYouTubeRestrict(const net::URLRequest* request,
                          kYouTubeRestrictHeaderValueStrict);
       break;
   }
-}
-
-int GetForceGoogleSafeSearchCountForTesting() {
-  return g_force_google_safe_search_count_for_test;
-}
-
-int GetForceYouTubeRestrictCountForTesting() {
-  return g_force_youtube_restrict_count_for_test;
-}
-
-void ClearForceGoogleSafeSearchCountForTesting() {
-  g_force_google_safe_search_count_for_test = 0;
-}
-
-void ClearForceYouTubeRestrictCountForTesting() {
-  g_force_youtube_restrict_count_for_test = 0;
 }
 
 }  // namespace safe_search_util
