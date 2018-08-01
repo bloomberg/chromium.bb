@@ -119,13 +119,8 @@ std::unique_ptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
                         gbm_bo_get_plane_offset(bo, i),
                         gbm_bo_get_plane_size(bo, i), modifier);
   }
-  auto buffer =
-      std::make_unique<GbmBuffer>(gbm, bo, format, flags, modifier,
-                                  std::move(fds), size, std::move(planes));
-  if (flags & GBM_BO_USE_SCANOUT && !buffer->framebuffer())
-    return nullptr;
-
-  return buffer;
+  return std::make_unique<GbmBuffer>(gbm, bo, format, flags, modifier,
+                                     std::move(fds), size, std::move(planes));
 }
 
 // static
