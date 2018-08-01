@@ -93,6 +93,9 @@ namespace content {
 
 namespace {
 
+constexpr char kServiceWorkerContextClientScope[] =
+    "ServiceWorkerContextClient";
+
 // For now client must be a per-thread instance.
 base::LazyInstance<base::ThreadLocalPointer<ServiceWorkerContextClient>>::
     Leaky g_worker_client_tls = LAZY_INSTANCE_INITIALIZER;
@@ -1075,9 +1078,12 @@ void ServiceWorkerContextClient::DidHandleInstallEvent(
 void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
     int fetch_event_id,
     double event_dispatch_time) {
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerContextClient::RespondToFetchEventWithNoResponse",
-               "event_id", fetch_event_id);
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerContextClient::RespondToFetchEventWithNoResponse",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                          TRACE_ID_LOCAL(fetch_event_id)),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
@@ -1090,9 +1096,11 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
     int fetch_event_id,
     const blink::WebServiceWorkerResponse& web_response,
     double event_dispatch_time) {
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerContextClient::RespondToFetchEvent", "event_id",
-               fetch_event_id);
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerContextClient::RespondToFetchEvent",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                          TRACE_ID_LOCAL(fetch_event_id)),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   ServiceWorkerResponse response(
       GetServiceWorkerResponseFromWebResponse(web_response));
@@ -1121,10 +1129,12 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
     const blink::WebServiceWorkerResponse& web_response,
     blink::WebServiceWorkerStreamHandle* web_body_as_stream,
     double event_dispatch_time) {
-  TRACE_EVENT1(
+  TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerContextClient::RespondToFetchEventWithResponseStream",
-      "event_id", fetch_event_id);
+      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                          TRACE_ID_LOCAL(fetch_event_id)),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   ServiceWorkerResponse response(
       GetServiceWorkerResponseFromWebResponse(web_response));
@@ -1152,10 +1162,12 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
     double event_dispatch_time) {
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
-  TRACE_EVENT2("ServiceWorker",
-               "ServiceWorkerContextClient::DidHandleFetchEvent", "event_id",
-               event_id, "status",
-               ServiceWorkerUtils::MojoEnumToString(status));
+  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
+                         "ServiceWorkerContextClient::DidHandleFetchEvent",
+                         TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                                             TRACE_ID_LOCAL(event_id)),
+                         TRACE_EVENT_FLAG_FLOW_IN, "status",
+                         ServiceWorkerUtils::MojoEnumToString(status));
   if (RunEventCallback(&context_->fetch_event_callbacks,
                        context_->timeout_timer.get(), event_id, status,
                        base::Time::FromDoubleT(event_dispatch_time))) {
@@ -1681,9 +1693,11 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
 
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
-  TRACE_EVENT2("ServiceWorker",
-               "ServiceWorkerContextClient::DispatchFetchEvent", "event_id",
-               event_id, "url", params->request.url.spec());
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerContextClient::DispatchFetchEvent",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                          TRACE_ID_LOCAL(event_id)),
+      TRACE_EVENT_FLAG_FLOW_OUT, "url", params->request.url.spec());
 
   // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
   const bool navigation_preload_sent = !!params->preload_handle;
