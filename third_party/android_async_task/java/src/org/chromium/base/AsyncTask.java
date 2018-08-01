@@ -204,7 +204,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
 
         @Override
         public Thread newThread(Runnable r) {
-            return new Thread(r, "AsyncTask #" + mCount.getAndIncrement());
+            return new Thread(r, "CrAsyncTask #" + mCount.getAndIncrement());
         }
     };
 
