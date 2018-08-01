@@ -53,11 +53,13 @@ including the original CIPD symlinks under
 `build.gradle` modifications.
 
 If you are updating any of the gms dependencies, please ensure that the license
-file that they reference is up-to-date with the one on android's
-[website][android_sdk_link].
+file that they use, explained in the [README.chromium][readme_chromium_link] is
+up-to-date with the one on android's [website][android_sdk_link], last updated
+date is at the bottom.
 
 [docs_link]: ../../../../docs/adding_to_third_party.md
 [android_sdk_link]: https://developer.android.com/studio/terms
+[readme_chromium_link]: ../../../../third_party/android_deps/README.chromium
 
 ### Implementation notes:
 The script invokes a Gradle plugin to leverage its dependency resolution

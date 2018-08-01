@@ -50,6 +50,10 @@ _ANDROID_DEPS_SUBDIR = 'third_party/android_deps'
 # Path to BUILD.gn file under android_deps/
 _ANDROID_DEPS_BUILD_GN = _ANDROID_DEPS_SUBDIR + '/BUILD.gn'
 
+# Path to updated Android SDK License under android_deps/
+_ANDROID_SDK_LICENSE_PATH = (
+    _ANDROID_DEPS_SUBDIR + '/Android_SDK_License-December_9_2016.txt')
+
 # Path to additional_readme_paths.json
 _ANDROID_DEPS_ADDITIONAL_README_PATHS = (
     _ANDROID_DEPS_SUBDIR + '/additional_readme_paths.json')
@@ -73,6 +77,7 @@ _UPDATED_GIT_FILES = [
 # The list of files that are copied to the build directory by this script.
 # Should not include _UPDATED_GIT_FILES.
 _COPIED_PATHS = [
+  _ANDROID_SDK_LICENSE_PATH,
   _BUILD_GRADLE_PATH,
   _GRADLE_BUILDSRC_PATH,
 ]
