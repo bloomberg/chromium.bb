@@ -894,6 +894,8 @@ jumbo_split_static_library("browser") {
     "notifications/persistent_notification_handler.h",
     "notifications/platform_notification_service_impl.cc",
     "notifications/platform_notification_service_impl.h",
+    "notifications/popups_only_ui_controller.cc",
+    "notifications/popups_only_ui_controller.h",
     "notifications/system_notification_helper.cc",
     "notifications/system_notification_helper.h",
     "ntp_snippets/bookmark_last_visit_updater.cc",

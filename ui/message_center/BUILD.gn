@@ -89,9 +89,6 @@ jumbo_component("message_center") {
       "popup_timer.h",
       "popup_timers_controller.cc",
       "popup_timers_controller.h",
-      "ui_controller.cc",
-      "ui_controller.h",
-      "ui_delegate.h",
     ]
 
     sources += get_target_outputs(":message_center_vector_icons")
@@ -107,6 +104,15 @@ jumbo_component("message_center") {
       libs = [
         "AppKit.framework",
         "Foundation.framework",
+      ]
+    }
+
+    # TODO(yoshiki): move the following files to ash/message_center.
+    if (is_chromeos) {
+      sources += [
+        "ui_controller.cc",
+        "ui_controller.h",
+        "ui_delegate.h",
       ]
     }
 
@@ -176,8 +182,6 @@ if (enable_message_center) {
     sources = [
       "fake_message_center.cc",
       "fake_message_center.h",
-      "fake_ui_delegate.cc",
-      "fake_ui_delegate.h",
     ]
 
     deps = [
@@ -203,7 +207,6 @@ if (enable_message_center) {
       "notification_list_unittest.cc",
       "public/cpp/notification_delegate_unittest.cc",
       "test/run_all_unittests.cc",
-      "ui_controller_unittest.cc",
     ]
 
     deps = [
@@ -236,7 +239,13 @@ if (enable_message_center) {
     ]
 
     if (is_chromeos) {
-      sources += [ "public/mojo/struct_traits_unittest.cc" ]
+      sources += [
+        "public/mojo/struct_traits_unittest.cc",
+
+        # TODO(yoshiki): move ui_controller_unittest.cc to ash/message_center.
+        "ui_controller_unittest.cc",
+      ]
+
       deps += [
         "//mojo/core/embedder",
         "//ui/message_center/public/mojo:test_interfaces",

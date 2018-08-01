@@ -9,7 +9,10 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/notifications/fullscreen_notification_blocker.h"
+#include "chrome/browser/notifications/popups_only_ui_controller.h"
 #include "chrome/browser/notifications/profile_notification.h"
+#include "chrome/browser/notifications/screen_lock_notification_blocker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -23,34 +26,21 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
-#include "ui/message_center/ui_controller.h"
-
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/notifications/fullscreen_notification_blocker.h"
-#include "chrome/browser/notifications/screen_lock_notification_blocker.h"
-#endif
 
 using message_center::MessageCenter;
 using message_center::NotifierId;
 
 MessageCenterNotificationManager::MessageCenterNotificationManager()
-    : system_observer_(this) {
+    : system_observer_(this),
+      popups_only_ui_controller_(std::make_unique<PopupsOnlyUiController>(
+          PopupsOnlyUiController::CreateDelegate())) {
   auto* message_center = MessageCenter::Get();
   message_center->AddObserver(this);
 
-#if !defined(OS_CHROMEOS)
   blockers_.push_back(
       std::make_unique<ScreenLockNotificationBlocker>(message_center));
   blockers_.push_back(
       std::make_unique<FullscreenNotificationBlocker>(message_center));
-#endif
-
-#if defined(OS_WIN) || defined(OS_MACOSX) \
-  || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  // On Windows, Linux and Mac, the notification manager owns the tray icon and
-  // views.Other platforms have global ownership and Create will return NULL.
-  tray_.reset(CreateUiDelegate());
-#endif
 }
 
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
@@ -223,15 +213,15 @@ void MessageCenterNotificationManager::StartShutdown() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // MessageCenter::Observer
+
 void MessageCenterNotificationManager::OnNotificationRemoved(
     const std::string& id,
     bool by_user) {
   RemoveProfileNotification(id);
 }
 
-void MessageCenterNotificationManager::SetUiDelegateForTest(
-    message_center::UiDelegate* delegate) {
-  tray_.reset(delegate);
+void MessageCenterNotificationManager::ResetUiControllerForTest() {
+  popups_only_ui_controller_.reset();
 }
 
 std::string
@@ -266,8 +256,8 @@ void MessageCenterNotificationManager::RemoveProfileNotification(
   // the one ScopedKeepAlive object that was keeping the browser alive, and
   // destroying it would result in:
   // a) A reentrant call to this class. Because every method in this class
-  //   touches |profile_notifications_|, |profile_notifications_| must always
-  //   be in a self-consistent state in moments where re-entrance might happen.
+  //    touches |profile_notifications_|, |profile_notifications_| must always
+  //    be in a self-consistent state in moments where re-entrance might happen.
   // b) A crash like https://crbug.com/649971 because it can trigger
   //    shutdown process while we're still inside the call stack from UI
   //    framework.

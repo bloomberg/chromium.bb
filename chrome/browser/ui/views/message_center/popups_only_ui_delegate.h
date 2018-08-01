@@ -8,12 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/message_center/ui_delegate.h"
+#include "chrome/browser/notifications/popups_only_ui_controller.h"
 
 namespace message_center {
 class DesktopPopupAlignmentDelegate;
-class MessageCenter;
-class UiController;
 class MessagePopupCollection;
 }  // namespace message_center
 
@@ -21,28 +19,19 @@ class MessagePopupCollection;
 // in the corner of the screen, but has no dedicated message center (widget with
 // multiple notifications inside). This is used on Windows and Linux for
 // non-native notifications.
-class PopupsOnlyUiDelegate : public message_center::UiDelegate {
+class PopupsOnlyUiDelegate : public PopupsOnlyUiController::Delegate {
  public:
   PopupsOnlyUiDelegate();
   ~PopupsOnlyUiDelegate() override;
 
-  message_center::MessageCenter* message_center();
-
   // UiDelegate implementation.
-  bool ShowPopups() override;
+  void ShowPopups() override;
   void HidePopups() override;
-  bool ShowMessageCenter(bool show_by_click) override;
-  void HideMessageCenter() override;
-  void OnMessageCenterContentsChanged() override;
-  bool ShowNotifierSettings() override;
-
-  message_center::UiController* GetUiControllerForTesting();
 
  private:
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
   std::unique_ptr<message_center::DesktopPopupAlignmentDelegate>
       alignment_delegate_;
-  std::unique_ptr<message_center::UiController> ui_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupsOnlyUiDelegate);
 };
