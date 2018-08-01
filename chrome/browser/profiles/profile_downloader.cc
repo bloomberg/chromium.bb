@@ -44,7 +44,7 @@ using content::BrowserThread;
 namespace {
 
 // Template for optional authorization header when using an OAuth access token.
-constexpr char kAuthorizationHeader[] = "Authorization: Bearer %s";
+constexpr char kAuthorizationHeader[] = "Bearer %s";
 
 }  // namespace
 
@@ -235,7 +235,8 @@ void ProfileDownloader::FetchImageData() {
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   if (!auth_token_.empty()) {
-    resource_request->headers.AddHeadersFromString(
+    resource_request->headers.SetHeader(
+        net::HttpRequestHeaders::kAuthorization,
         base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
   }
 

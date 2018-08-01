@@ -11,7 +11,7 @@ const char kAccountConsistencyMirrorRequired[] =
     "AccountConsistencyMirrorRequired";
 #endif
 const char kApprovedExtensions[] = "ApprovedExtensions";
-const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
+const char kAuthorizationHeaderFormat[] = "Bearer %s";
 const char kCameraMicDisabled[] = "CameraMicDisabled";
 const char kContentPackDefaultFilteringBehavior[] =
     "ContentPackDefaultFilteringBehavior";
