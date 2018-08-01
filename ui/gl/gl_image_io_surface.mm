@@ -15,6 +15,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/mac/display_icc_profiles.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -468,6 +469,20 @@ void GLImageIOSurface::SetColorSpace(const gfx::ColorSpace& color_space) {
   if (color_space_ == color_space)
     return;
   color_space_ = color_space;
+
+  // Prefer to use data from DisplayICCProfiles, which will give a byte-for-byte
+  // match for color spaces of the system displays. Note that DisplayICCProfiles
+  // is not used in IOSurfaceSetColorSpace because that call may be made in the
+  // renderer process (e.g, for video frames).
+  base::ScopedCFTypeRef<CFDataRef> cf_data =
+      gfx::DisplayICCProfiles::GetInstance()->GetDataForColorSpace(color_space);
+  if (cf_data) {
+    IOSurfaceSetValue(io_surface_, CFSTR("IOSurfaceColorSpace"), cf_data);
+    return;
+  }
+
+  // Only if that fails, fall back to IOSurfaceSetColorSpace, which will
+  // generate a profile.
   IOSurfaceSetColorSpace(io_surface_, color_space);
 }
 
