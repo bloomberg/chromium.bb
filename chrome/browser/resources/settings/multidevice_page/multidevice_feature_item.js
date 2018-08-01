@@ -31,7 +31,7 @@ Polymer({
 
     /**
      * The full icon name used provided by the containing iron-iconset-svg
-     * (i.e. [iron-iconset-svg name]:[SVG <g> tag id]
+     * (i.e. [iron-iconset-svg name]:[SVG <g> tag id]).
      * @type {string}
      */
     iconName: String,
@@ -51,12 +51,6 @@ Polymer({
    */
   hasSubpageClickHandler_: function() {
     return !!this.subpageRoute;
-  },
-
-  /** @private */
-  onChangeToggle_: function() {
-    // TODO (jordynass): Trigger the correct workflow.
-    console.log('Toggle changed');
   },
 
   /** @private */

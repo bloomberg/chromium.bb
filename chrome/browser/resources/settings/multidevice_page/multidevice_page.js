@@ -14,12 +14,6 @@ Polymer({
   behaviors: [I18nBehavior, PrefsBehavior],
 
   properties: {
-    /** SettingsPrefsElement 'prefs' Object reference. See prefs.js. */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
     /** @type {MultiDevicePageContentData} */
     pageContentData: Object,
 

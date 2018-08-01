@@ -15,12 +15,6 @@ Polymer({
   behaviors: [I18nBehavior, PrefsBehavior],
 
   properties: {
-    /** SettingsPrefsElement 'prefs' Object reference. See prefs.js. */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
     /** @type {?SettingsRoutes} */
     routes: {
       type: Object,
@@ -29,6 +23,25 @@ Polymer({
 
     /** @type {MultiDevicePageContentData} */
     pageContentData: Object,
+
+    // TODO(jordynass): Set this variable once the information can be retrieved
+    // by whatever implementation we use (possibly an IPC or from prefs).
+    /**
+     * If SMS Connect requires setup, it displays a paper button prompting the
+     * setup flow. If it is already set up, it displays a regular toggle for the
+     * feature.
+     * @private {boolean}
+     */
+    androidMessagesRequiresSetup_: {
+      type: Boolean,
+      value: true,
+    },
+  },
+
+  /** @private */
+  handleAndroidMessagesButtonClick_: function() {
+    this.androidMessagesRequiresSetup_ = false;
+    this.setPrefValue('multidevice.sms_connect_enabled', true);
   },
 
   /**
