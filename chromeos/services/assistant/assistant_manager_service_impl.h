@@ -119,6 +119,7 @@ class AssistantManagerServiceImpl
       assistant_client::ConversationStateListener::RecognitionState state,
       const assistant_client::ConversationStateListener::RecognitionResult&
           recognition_result) override;
+  void OnRespondingStarted(bool is_error_response) override;
 
   // AssistantManagerDelegate overrides
   assistant_client::ActionModule::Result HandleModifySettingClientOp(
@@ -177,6 +178,7 @@ class AssistantManagerServiceImpl
       assistant_client::ConversationStateListener::RecognitionState state,
       const assistant_client::ConversationStateListener::RecognitionResult&
           recognition_result);
+  void OnRespondingStartedOnMainThread();
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
 

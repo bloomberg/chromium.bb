@@ -107,8 +107,7 @@ void AssistantHeaderView::OnCommittedQueryChanged(
   progress_indicator_->SetVisible(true);
 }
 
-void AssistantHeaderView::OnUiElementAdded(
-    const AssistantUiElement* ui_element) {
+void AssistantHeaderView::OnResponseChanged(const AssistantResponse& response) {
   progress_indicator_->SetVisible(false);
 }
 

@@ -6,7 +6,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
-#include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/model/assistant_response.h"
 
 namespace ash {
 
@@ -26,13 +26,22 @@ void AssistantInteractionModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void AssistantInteractionModel::ClearInteraction(bool retain_committed_query) {
+void AssistantInteractionModel::ClearInteraction() {
+  ClearInteraction(/*retain_committed_query=*/false,
+                   /*retain_pending_response=*/false);
+}
+
+void AssistantInteractionModel::ClearInteraction(bool retain_committed_query,
+                                                 bool retain_pending_response) {
   if (!retain_committed_query)
     ClearCommittedQuery();
 
   ClearPendingQuery();
-  ClearUiElements();
-  ClearSuggestions();
+
+  if (!retain_pending_response)
+    ClearPendingResponse();
+
+  ClearResponse();
 }
 
 void AssistantInteractionModel::SetInteractionState(
@@ -93,44 +102,24 @@ void AssistantInteractionModel::ClearPendingQuery() {
   NotifyPendingQueryCleared();
 }
 
-void AssistantInteractionModel::AddUiElement(
-    std::unique_ptr<AssistantUiElement> ui_element) {
-  AssistantUiElement* ptr = ui_element.get();
-  ui_element_list_.push_back(std::move(ui_element));
-  NotifyUiElementAdded(ptr);
+void AssistantInteractionModel::SetPendingResponse(
+    std::unique_ptr<AssistantResponse> pending_response) {
+  pending_response_ = std::move(pending_response);
 }
 
-void AssistantInteractionModel::ClearUiElements() {
-  ui_element_list_.clear();
-  NotifyUiElementsCleared();
+void AssistantInteractionModel::FinalizePendingResponse() {
+  DCHECK(pending_response_);
+  response_ = std::move(pending_response_);
+  NotifyResponseChanged();
 }
 
-void AssistantInteractionModel::AddSuggestions(
-    std::vector<AssistantSuggestionPtr> suggestions) {
-  std::map<int, AssistantSuggestion*> ptrs;
-
-  // We use vector index to uniquely identify a given suggestion. This means
-  // that suggestion ids will reset with each call to |ClearSuggestions|, but
-  // that is acceptable.
-  for (AssistantSuggestionPtr& suggestion : suggestions) {
-    int id = suggestions_.size();
-    suggestions_.push_back(std::move(suggestion));
-    ptrs[id] = suggestions_.back().get();
-  }
-
-  NotifySuggestionsAdded(ptrs);
+void AssistantInteractionModel::ClearPendingResponse() {
+  pending_response_.reset();
 }
 
-const AssistantInteractionModel::AssistantSuggestion*
-AssistantInteractionModel::GetSuggestionById(int id) const {
-  return id >= 0 && id < static_cast<int>(suggestions_.size())
-             ? suggestions_.at(id).get()
-             : nullptr;
-}
-
-void AssistantInteractionModel::ClearSuggestions() {
-  suggestions_.clear();
-  NotifySuggestionsCleared();
+void AssistantInteractionModel::ClearResponse() {
+  response_.reset();
+  NotifyResponseCleared();
 }
 
 void AssistantInteractionModel::SetSpeechLevel(float speech_level_db) {
@@ -172,26 +161,14 @@ void AssistantInteractionModel::NotifyPendingQueryCleared() {
     observer.OnPendingQueryCleared();
 }
 
-void AssistantInteractionModel::NotifyUiElementAdded(
-    const AssistantUiElement* ui_element) {
+void AssistantInteractionModel::NotifyResponseChanged() {
   for (AssistantInteractionModelObserver& observer : observers_)
-    observer.OnUiElementAdded(ui_element);
+    observer.OnResponseChanged(*response_);
 }
 
-void AssistantInteractionModel::NotifyUiElementsCleared() {
+void AssistantInteractionModel::NotifyResponseCleared() {
   for (AssistantInteractionModelObserver& observer : observers_)
-    observer.OnUiElementsCleared();
-}
-
-void AssistantInteractionModel::NotifySuggestionsAdded(
-    const std::map<int, AssistantSuggestion*>& suggestions) {
-  for (AssistantInteractionModelObserver& observer : observers_)
-    observer.OnSuggestionsAdded(suggestions);
-}
-
-void AssistantInteractionModel::NotifySuggestionsCleared() {
-  for (AssistantInteractionModelObserver& observer : observers_)
-    observer.OnSuggestionsCleared();
+    observer.OnResponseCleared();
 }
 
 void AssistantInteractionModel::NotifySpeechLevelChanged(
