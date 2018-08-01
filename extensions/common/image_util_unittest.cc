@@ -228,6 +228,13 @@ TEST(ImageUtilTest, IsIconSufficientlyVisible) {
     ASSERT_TRUE(LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
   }
+  {
+    // Test with an icon that is rectangular.
+    icon_path = test_dir.AppendASCII("rectangle.png");
+    SkBitmap visible_icon;
+    ASSERT_TRUE(LoadPngFromFile(icon_path, &visible_icon));
+    EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+  }
 }
 
 }  // namespace extensions
