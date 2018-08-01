@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
 
@@ -21,6 +22,8 @@ struct NameParts {
   base::string16 middle;
   base::string16 family;
 };
+
+bool IsCreditCardExpirationType(ServerFieldType type);
 
 // Used to map Chrome card issuer networks to Payment Request API basic card
 // payment spec issuer networks and icons.

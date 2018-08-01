@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -149,14 +150,6 @@ void SelectRightNameType(const ServerFieldTypeSet& old_types,
   } else {
     *new_types = old_types;
   }
-}
-
-bool IsCreditCardExpirationType(ServerFieldType type) {
-  return type == CREDIT_CARD_EXP_MONTH ||
-         type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
-         type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
-         type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
-         type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
 }
 
 void LogDeveloperEngagementUkm(ukm::UkmRecorder* ukm_recorder,
@@ -579,7 +572,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
   if (suggestions.empty() && !ShouldShowCreditCardSigninPromo(form, field) &&
       field.should_autocomplete &&
       !(context.focused_field &&
-        (IsCreditCardExpirationType(
+        (autofill::data_util::IsCreditCardExpirationType(
              context.focused_field->Type().GetStorableType()) ||
          context.focused_field->Type().html_type() == HTML_TYPE_UNRECOGNIZED ||
          context.focused_field->Type().GetStorableType() ==
@@ -1354,7 +1347,8 @@ void AutofillManager::FillOrPreviewDataModelForm(
     }
 
     // Don't fill expired cards expiration date.
-    if (IsCreditCardExpirationType(cached_field->Type().GetStorableType()) &&
+    if (data_util::IsCreditCardExpirationType(
+            cached_field->Type().GetStorableType()) &&
         static_cast<const CreditCard*>(&data_model)
             ->IsExpired(AutofillClock::Now())) {
       continue;

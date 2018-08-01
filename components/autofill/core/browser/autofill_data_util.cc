@@ -240,6 +240,14 @@ bool SplitCJKName(const std::vector<base::StringPiece16>& name_tokens,
 
 }  // namespace
 
+bool IsCreditCardExpirationType(ServerFieldType type) {
+  return type == CREDIT_CARD_EXP_MONTH ||
+         type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+         type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+         type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+         type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
+}
+
 bool IsCJKName(base::StringPiece16 name) {
   // The name is considered to be a CJK name if it is only CJK characters,
   // spaces, and "middle dot" separators, with at least one CJK character, and
