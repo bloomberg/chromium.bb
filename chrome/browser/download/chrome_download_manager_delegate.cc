@@ -300,6 +300,7 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
       disk_access_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      is_file_picker_showing_(false),
       weak_ptr_factory_(this) {
 #if defined(OS_ANDROID)
   location_dialog_bridge_.reset(new DownloadLocationDialogBridgeImpl);
@@ -961,8 +962,47 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 #else   // !OS_ANDROID
   // Desktop Chrome displays a file picker for all confirmation needs. We can do
   // better.
-  DownloadFilePicker::ShowFilePicker(download, suggested_path, callback);
+  if (is_file_picker_showing_) {
+    file_picker_callbacks_.emplace_back(
+        base::BindOnce(&ChromeDownloadManagerDelegate::ShowFilePicker,
+                       weak_ptr_factory_.GetWeakPtr(), download->GetGuid(),
+                       suggested_path, callback));
+  } else {
+    is_file_picker_showing_ = true;
+    ShowFilePicker(download->GetGuid(), suggested_path, callback);
+  }
 #endif  // !OS_ANDROID
+}
+
+void ChromeDownloadManagerDelegate::OnConfirmationCallbackComplete(
+    const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+    DownloadConfirmationResult result,
+    const base::FilePath& virtual_path) {
+  callback.Run(result, virtual_path);
+  if (!file_picker_callbacks_.empty()) {
+    base::OnceClosure callback = std::move(file_picker_callbacks_.front());
+    std::move(callback).Run();
+    file_picker_callbacks_.pop_front();
+  } else {
+    is_file_picker_showing_ = false;
+  }
+}
+
+void ChromeDownloadManagerDelegate::ShowFilePicker(
+    const std::string& guid,
+    const base::FilePath& suggested_path,
+    const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback) {
+  DownloadItem* download = download_manager_->GetDownloadByGuid(guid);
+  if (download) {
+    DownloadFilePicker::ShowFilePicker(
+        download, suggested_path,
+        base::BindRepeating(
+            &ChromeDownloadManagerDelegate::OnConfirmationCallbackComplete,
+            weak_ptr_factory_.GetWeakPtr(), callback));
+  } else {
+    OnConfirmationCallbackComplete(
+        callback, DownloadConfirmationResult::CANCELED, base::FilePath());
+  }
 }
 
 #if defined(OS_ANDROID)

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
@@ -133,6 +134,12 @@ class ChromeDownloadManagerDelegate
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService();
 
+  // Called to show a file picker
+  virtual void ShowFilePicker(
+      const std::string& guid,
+      const base::FilePath& suggested_path,
+      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
+
   // DownloadTargetDeterminerDelegate. Protected for testing.
   void NotifyExtensions(download::DownloadItem* download,
                         const base::FilePath& suggested_virtual_path,
@@ -161,6 +168,12 @@ class ChromeDownloadManagerDelegate
       download::DownloadItem* download,
       DownloadController::DownloadCancelReason reason);
 #endif
+
+  // Called when the file picker returns the confirmation result.
+  void OnConfirmationCallbackComplete(
+      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+      DownloadConfirmationResult result,
+      const base::FilePath& virtual_path);
 
   // So that test classes that inherit from this for override purposes
   // can call back into the DownloadManager.
@@ -256,6 +269,12 @@ class ChromeDownloadManagerDelegate
       CrxInstallerMap;
   CrxInstallerMap crx_installers_;
 #endif
+
+  // Outstanding callbacks to open file selection dialog.
+  std::deque<base::OnceClosure> file_picker_callbacks_;
+
+  // Whether a file picker dialog is showing.
+  bool is_file_picker_showing_;
 
   content::NotificationRegistrar registrar_;
 

@@ -63,15 +63,23 @@ DownloadFilePicker::DownloadFilePicker(DownloadItem* item,
   should_record_file_picker_result_ = !prefs->PromptForDownload();
 
   WebContents* web_contents = content::DownloadItemUtils::GetWebContents(item);
-  if (!web_contents || !web_contents->GetNativeView())
+  if (!web_contents || !web_contents->GetNativeView()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadFilePicker::FileSelectionCanceled,
+                                  base::Unretained(this), nullptr));
     return;
+  }
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
   // |select_file_dialog_| could be null in Linux. See CreateSelectFileDialog()
   // in shell_dialog_linux.cc.
-  if (!select_file_dialog_.get())
+  if (!select_file_dialog_.get()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadFilePicker::FileSelectionCanceled,
+                                  base::Unretained(this), nullptr));
     return;
+  }
 
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   // Platform file pickers, notably on Mac and Windows, tend to break
