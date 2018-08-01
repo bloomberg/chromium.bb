@@ -108,7 +108,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
 IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
                        ShouldPollWhenIntervalExpiredAcrossRestarts) {
   base::Time start = base::Time::Now();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  SyncPrefs remote_prefs(GetProfile(0)->GetPrefs());
+  remote_prefs.SetShortPollInterval(base::TimeDelta::FromMinutes(10));
+  remote_prefs.SetLongPollInterval(base::TimeDelta::FromMinutes(10));
+
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
   // Trigger a sync-cycle.
   ASSERT_TRUE(CheckInitialState(0));
   ASSERT_TRUE(OpenTab(0, GURL(chrome::kChromeUIHistoryURL)));
@@ -119,7 +127,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
                   .Wait());
 
   // Verify that the last poll time got initialized to a reasonable value.
-  SyncPrefs remote_prefs(GetProfile(0)->GetPrefs());
   EXPECT_THAT(remote_prefs.GetLastPollTime(), Ge(start));
   EXPECT_THAT(remote_prefs.GetLastPollTime(), Le(base::Time::Now()));
 
@@ -129,8 +136,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
   GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
 
   // Simulate elapsed time so that the poll interval expired.
-  remote_prefs.SetShortPollInterval(base::TimeDelta::FromMinutes(10));
-  remote_prefs.SetLongPollInterval(base::TimeDelta::FromMinutes(10));
   remote_prefs.SetLastPollTime(base::Time::Now() -
                                base::TimeDelta::FromMinutes(11));
   ASSERT_TRUE(GetClient(0)->StartSyncService()) << "SetupSync() failed.";
