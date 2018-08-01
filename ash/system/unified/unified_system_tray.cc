@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray.h"
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
@@ -220,6 +221,10 @@ gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {
 void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
   SetVisible(true);
   PreferredSizeChanged();
+}
+
+bool UnifiedSystemTray::ShouldEnableExtraKeyboardAccessibility() {
+  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
 }
 
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {

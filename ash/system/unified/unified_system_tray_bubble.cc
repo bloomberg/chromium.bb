@@ -138,18 +138,10 @@ void UnifiedSystemTrayBubble::ActivateBubble() {
   DCHECK(unified_view_);
   DCHECK(bubble_widget_);
 
-  views::Widget* bubble_widget = bubble_widget_;
-  // RequestInitFocus() may cause UnifiedSystemTrayBubble to destruct through
-  // Shell::NotifyFullscreenStateChanged, MessageCenter::OnBlockingStateChanged,
-  // and UiDelegate::HideMessageCenter().  https://crbug.com/853434
-  unified_view_->RequestInitFocus();
-
-  // |bubble_widget| is destructed asynchronously, so the instance is still
-  // alive here.
-  if (bubble_widget->IsClosed())
+  if (bubble_widget_->IsClosed())
     return;
-  bubble_widget->widget_delegate()->set_can_activate(true);
-  bubble_widget->Activate();
+  bubble_widget_->widget_delegate()->set_can_activate(true);
+  bubble_widget_->Activate();
 }
 
 void UnifiedSystemTrayBubble::CloseNow() {
@@ -168,6 +160,14 @@ void UnifiedSystemTrayBubble::EnsureExpanded() {
   DCHECK(unified_view_);
   DCHECK(controller_);
   controller_->EnsureExpanded();
+}
+
+void UnifiedSystemTrayBubble::UpdateBubble() {
+  if (!bubble_widget_)
+    return;
+  DCHECK(bubble_view_);
+
+  bubble_view_->UpdateBubble();
 }
 
 void UnifiedSystemTrayBubble::UpdateTransform() {
