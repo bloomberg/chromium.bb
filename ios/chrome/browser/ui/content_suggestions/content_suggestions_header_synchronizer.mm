@@ -49,7 +49,6 @@ UIEdgeInsets SafeAreaInsetsForViewWithinNTP(UIView* view) {
 @property(nonatomic, weak) id<ContentSuggestionsHeaderControlling>
     headerController;
 @property(nonatomic, assign) CFTimeInterval shiftTileStartTime;
-@property(nonatomic, strong) ProceduralBlock shiftUpCompletionBlock;
 
 // Tap gesture recognizer when the omnibox is focused.
 @property(nonatomic, strong) UITapGestureRecognizer* tapGestureRecognizer;
@@ -63,7 +62,6 @@ UIEdgeInsets SafeAreaInsetsForViewWithinNTP(UIView* view) {
 @synthesize shiftTileStartTime = _shiftTileStartTime;
 @synthesize tapGestureRecognizer = _tapGestureRecognizer;
 @synthesize collectionShiftingOffset = _collectionShiftingOffset;
-@synthesize shiftUpCompletionBlock = _shiftUpCompletionBlock;
 
 - (instancetype)
 initWithCollectionController:
@@ -143,19 +141,28 @@ initWithCollectionController:
 
   self.collectionController.scrolledToTop = YES;
   self.shouldAnimateHeader = YES;
-  self.shiftUpCompletionBlock = completion;
 
-  // Layout the header for the constraints to be animated.
-  [self.headerController layoutHeader];
-  [self.collectionView.collectionViewLayout invalidateLayout];
-
-  // Similar to -shiftTilesDown, also use a CADisplayLink so each contentOffset
-  // tick forces an update for the fake omnibox. Otherwise the fakebox and its
-  // label will be sized incorrectly when tapped.
-  CADisplayLink* link = [CADisplayLink
-      displayLinkWithTarget:self
-                   selector:@selector(shiftTilesUpAnimationDidFire:)];
-  [link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+  [UIView animateWithDuration:kShiftTilesUpAnimationDuration
+      animations:^{
+        if (self.collectionView.contentOffset.y < pinnedOffsetY) {
+          // Changing the contentOffset of the collection results in a scroll
+          // and a change in the constraints of the header.
+          self.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);
+          // Layout the header for the constraints to be animated.
+          [self.headerController layoutHeader];
+          [self.collectionView.collectionViewLayout invalidateLayout];
+        }
+      }
+      completion:^(BOOL finished) {
+        // Check to see if the collection are still scrolled to the top -- it's
+        // possible (and difficult) to unfocus the omnibox and initiate a
+        // -shiftTilesDown before the animation here completes.
+        if (self.collectionController.scrolledToTop) {
+          self.shouldAnimateHeader = NO;
+          if (completion)
+            completion();
+        }
+      }];
 }
 
 - (void)invalidateLayout {
@@ -227,47 +234,6 @@ initWithCollectionController:
 // Convenience method to get the collection view of the suggestions.
 - (UICollectionView*)collectionView {
   return [self.collectionController collectionView];
-}
-
-// Updates the collection view's scroll view offset for the next frame of the
-// -shiftTilesUpWithCompletionBlock animation.
-- (void)shiftTilesUpAnimationDidFire:(CADisplayLink*)link {
-  // If this is the first frame of the animation, store the starting timestamp
-  // and do nothing.
-  if (self.shiftTileStartTime == -1) {
-    self.shiftTileStartTime = link.timestamp;
-    return;
-  }
-
-  CFTimeInterval timeElapsed = link.timestamp - self.shiftTileStartTime;
-  double percentComplete = timeElapsed / kShiftTilesUpAnimationDuration;
-  // Ensure that the percentage cannot be above 1.0.
-  if (percentComplete > 1.0)
-    percentComplete = 1.0;
-
-  // Find how much the collection view should be scrolled up in the next frame.
-  CGFloat pinnedOffsetY = [self.headerController pinnedOffsetY];
-  CGFloat startingOffset = pinnedOffsetY - self.collectionShiftingOffset;
-  CGFloat yOffset =
-      startingOffset + percentComplete * (pinnedOffsetY - startingOffset);
-  self.collectionView.contentOffset = CGPointMake(0, yOffset);
-
-  if (percentComplete == 1.0) {
-    [link invalidate];
-    // Reset |shiftTileStartTime| to its sentinel value.
-    self.shiftTileStartTime = -1;
-
-    // Check to see if the collection are still scrolled to the top -- it's
-    // possible (and difficult) to initiate a -shiftTilesDown before the
-    // animation here completes.
-    if (self.collectionController.scrolledToTop) {
-      self.shouldAnimateHeader = NO;
-      if (self.shiftUpCompletionBlock) {
-        self.shiftUpCompletionBlock();
-        self.shiftUpCompletionBlock = nil;
-      }
-    }
-  }
 }
 
 // Updates the collection view's scroll view offset for the next frame of the

@@ -204,27 +204,25 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
 }
 
 void configureSearchHintLabel(UILabel* searchHintLabel,
-                              UIView* hintLabelContainer,
                               UIButton* searchTapTarget) {
-  // searchHintLabel is intentionally not using autolayout because it will need
-  // to use a CGAffineScale transform that will not work correctly with
-  // autolayout.  Instead, |hintLabelContainer| will use autolayout and will
-  // contain |searchHintLabel|.
-  searchHintLabel.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  [hintLabelContainer setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [searchTapTarget addSubview:hintLabelContainer];
-  [hintLabelContainer addSubview:searchHintLabel];
+  [searchHintLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [searchTapTarget addSubview:searchHintLabel];
 
   CGFloat centerYOffsetConstant =
       IsUIRefreshPhase1Enabled() ? 0 : kSearchHintVerticalOffset;
   [NSLayoutConstraint activateConstraints:@[
-    [hintLabelContainer.centerYAnchor
+    [searchHintLabel.centerYAnchor
         constraintEqualToAnchor:searchTapTarget.centerYAnchor
                        constant:centerYOffsetConstant],
-    [hintLabelContainer.heightAnchor
+    [searchHintLabel.heightAnchor
         constraintEqualToConstant:kSearchFieldHeight - 2 * kSearchHintMargin],
   ]];
+
+  if (IsUIRefreshPhase1Enabled()) {
+    [searchHintLabel.centerXAnchor
+        constraintEqualToAnchor:searchTapTarget.centerXAnchor]
+        .active = YES;
+  }
 
   [searchHintLabel setText:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
   if (base::i18n::IsRTL()) {
