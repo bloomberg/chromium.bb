@@ -45,20 +45,22 @@ interface EmbeddedSearch {
   // Tells InstantExtended to undo one most visited item deletion.
   UndoMostVisitedDeletion(int32 page_seq_no, url.mojom.Url url);
 
-  // Tells InstantExtended to add a custom link.
-  AddCustomLink(int32 page_seq_no, url.mojom.Url url, string title);
+  // Tells InstantExtended to add a custom link. Returns true if successful.
+  AddCustomLink(int32 page_seq_no, url.mojom.Url url, string title)
+      => (bool success);
 
-  // Tells InstantExtended to update a custom link.
+  // Tells InstantExtended to update a custom link. Returns true if successful.
   UpdateCustomLink(int32 page_seq_no,
                    url.mojom.Url url,
                    url.mojom.Url new_url,
-                   string new_title);
+                   string new_title) => (bool success);
 
-  // Tells InstantExtended to delete a custom link.
-  DeleteCustomLink(int32 page_seq_no, url.mojom.Url url);
+  // Tells InstantExtended to delete a custom link. Returns true if successful.
+  DeleteCustomLink(int32 page_seq_no, url.mojom.Url url) => (bool success);
 
-  // Tells InstantExtended to restore the previously deleted custom link.
-  UndoDeleteCustomLink(int32 page_seq_no);
+  // Tells InstantExtended to undo the previous custom link action (add, edit,
+  // delete, etc.).
+  UndoCustomLinkAction(int32 page_seq_no);
 
   // Tells InstantExtended to delete all custom links and use most visited sites
   // instead.

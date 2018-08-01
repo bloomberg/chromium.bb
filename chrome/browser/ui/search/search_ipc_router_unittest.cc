@@ -61,13 +61,13 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
   MOCK_METHOD2(OnAddCustomLink,
-               void(const GURL& url, const std::string& title));
+               bool(const GURL& url, const std::string& title));
   MOCK_METHOD3(OnUpdateCustomLink,
-               void(const GURL& url,
+               bool(const GURL& url,
                     const GURL& new_url,
                     const std::string& new_title));
-  MOCK_METHOD1(OnDeleteCustomLink, void(const GURL& url));
-  MOCK_METHOD0(OnUndoDeleteCustomLink, void());
+  MOCK_METHOD1(OnDeleteCustomLink, bool(const GURL& url));
+  MOCK_METHOD0(OnUndoCustomLinkAction, void());
   MOCK_METHOD0(OnResetCustomLinks, void());
   MOCK_METHOD2(OnLogEvent, void(NTPLoggingEventType event,
                                 base::TimeDelta time));
@@ -98,7 +98,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessAddCustomLink, bool());
   MOCK_METHOD0(ShouldProcessUpdateCustomLink, bool());
   MOCK_METHOD0(ShouldProcessDeleteCustomLink, bool());
-  MOCK_METHOD0(ShouldProcessUndoDeleteCustomLink, bool());
+  MOCK_METHOD0(ShouldProcessUndoCustomLinkAction, bool());
   MOCK_METHOD0(ShouldProcessResetCustomLinks, bool());
   MOCK_METHOD0(ShouldProcessLogEvent, bool());
   MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
@@ -480,13 +480,17 @@ TEST_F(SearchIPCRouterTest, ProcessAddCustomLinkMsg) {
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
   GURL item_url("www.foo.com");
   std::string item_title("foo");
-  EXPECT_CALL(*mock_delegate(), OnAddCustomLink(item_url, item_title)).Times(1);
+  EXPECT_CALL(*mock_delegate(), OnAddCustomLink(item_url, item_title))
+      .Times(1)
+      .WillOnce(Return(true));
   EXPECT_CALL(*policy, ShouldProcessAddCustomLink())
       .Times(1)
       .WillOnce(Return(true));
 
+  base::MockCallback<SearchIPCRouter::AddCustomLinkCallback> callback;
+  EXPECT_CALL(callback, Run(true));
   GetSearchIPCRouter().AddCustomLink(GetSearchIPCRouterSeqNo(), item_url,
-                                     item_title);
+                                     item_title, callback.Get());
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreAddCustomLinkMsg) {
@@ -500,8 +504,10 @@ TEST_F(SearchIPCRouterTest, IgnoreAddCustomLinkMsg) {
       .Times(1)
       .WillOnce(Return(false));
 
+  base::MockCallback<SearchIPCRouter::AddCustomLinkCallback> callback;
+  EXPECT_CALL(callback, Run(false));
   GetSearchIPCRouter().AddCustomLink(GetSearchIPCRouterSeqNo(), item_url,
-                                     item_title);
+                                     item_title, callback.Get());
 }
 
 TEST_F(SearchIPCRouterTest, ProcessUpdateCustomLinkMsg) {
@@ -513,13 +519,16 @@ TEST_F(SearchIPCRouterTest, ProcessUpdateCustomLinkMsg) {
   std::string new_title("foo");
   EXPECT_CALL(*mock_delegate(),
               OnUpdateCustomLink(item_url, new_url, new_title))
-      .Times(1);
+      .Times(1)
+      .WillOnce(Return(true));
   EXPECT_CALL(*policy, ShouldProcessUpdateCustomLink())
       .Times(1)
       .WillOnce(Return(true));
 
+  base::MockCallback<SearchIPCRouter::AddCustomLinkCallback> callback;
+  EXPECT_CALL(callback, Run(true));
   GetSearchIPCRouter().UpdateCustomLink(GetSearchIPCRouterSeqNo(), item_url,
-                                        new_url, new_title);
+                                        new_url, new_title, callback.Get());
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreUpdateCustomLinkMsg) {
@@ -536,8 +545,10 @@ TEST_F(SearchIPCRouterTest, IgnoreUpdateCustomLinkMsg) {
       .Times(1)
       .WillOnce(Return(false));
 
+  base::MockCallback<SearchIPCRouter::AddCustomLinkCallback> callback;
+  EXPECT_CALL(callback, Run(false));
   GetSearchIPCRouter().UpdateCustomLink(GetSearchIPCRouterSeqNo(), item_url,
-                                        new_url, new_title);
+                                        new_url, new_title, callback.Get());
 }
 
 TEST_F(SearchIPCRouterTest, ProcessDeleteCustomLinkMsg) {
@@ -545,12 +556,17 @@ TEST_F(SearchIPCRouterTest, ProcessDeleteCustomLinkMsg) {
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
   GURL item_url("www.foo.com");
-  EXPECT_CALL(*mock_delegate(), OnDeleteCustomLink(item_url)).Times(1);
+  EXPECT_CALL(*mock_delegate(), OnDeleteCustomLink(item_url))
+      .Times(1)
+      .WillOnce(Return(true));
   EXPECT_CALL(*policy, ShouldProcessDeleteCustomLink())
       .Times(1)
       .WillOnce(Return(true));
 
-  GetSearchIPCRouter().DeleteCustomLink(GetSearchIPCRouterSeqNo(), item_url);
+  base::MockCallback<SearchIPCRouter::AddCustomLinkCallback> callback;
+  EXPECT_CALL(callback, Run(true));
+  GetSearchIPCRouter().DeleteCustomLink(GetSearchIPCRouterSeqNo(), item_url,
+                                        callback.Get());
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreDeleteCustomLinkMsg) {
@@ -563,31 +579,34 @@ TEST_F(SearchIPCRouterTest, IgnoreDeleteCustomLinkMsg) {
       .Times(1)
       .WillOnce(Return(false));
 
-  GetSearchIPCRouter().DeleteCustomLink(GetSearchIPCRouterSeqNo(), item_url);
+  base::MockCallback<SearchIPCRouter::AddCustomLinkCallback> callback;
+  EXPECT_CALL(callback, Run(false));
+  GetSearchIPCRouter().DeleteCustomLink(GetSearchIPCRouterSeqNo(), item_url,
+                                        callback.Get());
 }
 
-TEST_F(SearchIPCRouterTest, ProcessUndoDeleteCustomLinkMsg) {
+TEST_F(SearchIPCRouterTest, ProcessUndoCustomLinkActionMsg) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*mock_delegate(), OnUndoDeleteCustomLink()).Times(1);
-  EXPECT_CALL(*policy, ShouldProcessUndoDeleteCustomLink())
+  EXPECT_CALL(*mock_delegate(), OnUndoCustomLinkAction()).Times(1);
+  EXPECT_CALL(*policy, ShouldProcessUndoCustomLinkAction())
       .Times(1)
       .WillOnce(Return(true));
 
-  GetSearchIPCRouter().UndoDeleteCustomLink(GetSearchIPCRouterSeqNo());
+  GetSearchIPCRouter().UndoCustomLinkAction(GetSearchIPCRouterSeqNo());
 }
 
-TEST_F(SearchIPCRouterTest, IgnoreUndoDeleteCustomLinkMsg) {
+TEST_F(SearchIPCRouterTest, IgnoreUndoCustomLinkActionMsg) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*mock_delegate(), OnUndoDeleteCustomLink()).Times(0);
-  EXPECT_CALL(*policy, ShouldProcessUndoDeleteCustomLink())
+  EXPECT_CALL(*mock_delegate(), OnUndoCustomLinkAction()).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessUndoCustomLinkAction())
       .Times(1)
       .WillOnce(Return(false));
 
-  GetSearchIPCRouter().UndoDeleteCustomLink(GetSearchIPCRouterSeqNo());
+  GetSearchIPCRouter().UndoCustomLinkAction(GetSearchIPCRouterSeqNo());
 }
 
 TEST_F(SearchIPCRouterTest, ProcessResetCustomLinksMsg) {

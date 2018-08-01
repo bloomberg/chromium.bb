@@ -65,6 +65,7 @@ bool CustomLinksManagerImpl::AddLink(const GURL& url,
   if (FindLinkWithUrl(url) != current_links_.end())
     return false;
 
+  previous_links_ = current_links_;
   current_links_.emplace_back(Link{url, title});
   store_.StoreLinks(current_links_);
   return true;
@@ -78,19 +79,22 @@ bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
     return false;
   }
 
+  // Do not update if |new_url| is invalid or already exists in the list.
+  if (!new_url.is_empty() &&
+      (!new_url.is_valid() ||
+       FindLinkWithUrl(new_url) != current_links_.end())) {
+    return false;
+  }
+
   auto it = FindLinkWithUrl(url);
   if (it == current_links_.end())
     return false;
 
-  if (!new_url.is_empty()) {
-    // Do not update if |new_url| already exists in the list.
-    if (!new_url.is_valid() ||
-        FindLinkWithUrl(new_url) != current_links_.end()) {
-      return false;
-    }
-    it->url = new_url;
-  }
+  // At this point, we will be modifying at least one of the values.
+  previous_links_ = current_links_;
 
+  if (!new_url.is_empty())
+    it->url = new_url;
   if (!new_title.empty())
     it->title = new_title;
 
@@ -106,24 +110,19 @@ bool CustomLinksManagerImpl::DeleteLink(const GURL& url) {
   if (it == current_links_.end())
     return false;
 
-  prev_deleted_link_ =
-      std::make_pair(std::distance(current_links_.begin(), it), *it);
+  previous_links_ = current_links_;
   current_links_.erase(it);
   store_.StoreLinks(current_links_);
   return true;
 }
 
-bool CustomLinksManagerImpl::UndoDeleteLink() {
-  if (!IsInitialized() || !prev_deleted_link_.has_value() ||
-      current_links_.size() == kMaxNumLinks) {
+bool CustomLinksManagerImpl::UndoAction() {
+  if (!IsInitialized() || !previous_links_.has_value())
     return false;
-  }
-  DCHECK_LE(prev_deleted_link_->first, current_links_.size());
 
-  // Inserts the previously deleted link where it was located before.
-  current_links_.insert(current_links_.begin() + prev_deleted_link_->first,
-                        std::move(prev_deleted_link_->second));
-  prev_deleted_link_ = base::nullopt;
+  // Replace the current links with the previous state.
+  current_links_ = *previous_links_;
+  previous_links_ = base::nullopt;
   store_.StoreLinks(current_links_);
   return true;
 }
@@ -131,7 +130,7 @@ bool CustomLinksManagerImpl::UndoDeleteLink() {
 void CustomLinksManagerImpl::ClearLinks() {
   store_.ClearLinks();
   current_links_.clear();
-  prev_deleted_link_ = base::nullopt;
+  previous_links_ = base::nullopt;
 }
 
 std::vector<CustomLinksManager::Link>::iterator

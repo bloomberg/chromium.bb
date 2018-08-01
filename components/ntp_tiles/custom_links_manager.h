@@ -61,9 +61,10 @@ class CustomLinksManager {
   // if custom links is not initialized, |url| is invalid, or |url| does not
   // exist in the list.
   virtual bool DeleteLink(const GURL& url) = 0;
-  // Replaces the previously removed link. Returns false and does nothing if
-  // custom links is not initialized or there is no previously deleted link.
-  virtual bool UndoDeleteLink() = 0;
+  // Restores the previous state of the list of links. Used to undo the previous
+  // action (add, edit, delete, etc.). Returns false and does nothing if custom
+  // links is not initialized or there is no previous state to restore.
+  virtual bool UndoAction() = 0;
 };
 
 }  // namespace ntp_tiles

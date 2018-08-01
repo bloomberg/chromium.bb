@@ -287,6 +287,72 @@ TEST_F(CustomLinksManagerImplTest, DeleteLinkWhenUrlDoesNotExist) {
   EXPECT_TRUE(custom_links_->GetLinks().empty());
 }
 
+TEST_F(CustomLinksManagerImplTest, UndoAddLink) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<CustomLinksManager::Link> initial_links =
+      FillTestLinks(kTestCase1);
+  std::vector<CustomLinksManager::Link> expected_links = initial_links;
+  expected_links.emplace_back(
+      CustomLinksManager::Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)});
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to undo before add is called. This should fail and not modify the list.
+  EXPECT_FALSE(custom_links_->UndoAction());
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Add link.
+  EXPECT_TRUE(
+      custom_links_->AddLink(GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)));
+  EXPECT_EQ(expected_links, custom_links_->GetLinks());
+
+  // Undo add link.
+  EXPECT_TRUE(custom_links_->UndoAction());
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to undo again. This should fail and not modify the list.
+  EXPECT_FALSE(custom_links_->UndoAction());
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+}
+
+TEST_F(CustomLinksManagerImplTest, UndoUpdateLink) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<CustomLinksManager::Link> initial_links =
+      FillTestLinks(kTestCase1);
+  std::vector<CustomLinksManager::Link> links_after_update_url(initial_links);
+  links_after_update_url[0].url = GURL(kTestUrl);
+  std::vector<CustomLinksManager::Link> links_after_update_title(initial_links);
+  links_after_update_title[0].title = base::UTF8ToUTF16(kTestTitle);
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Update the link's URL.
+  EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(kTestUrl),
+                                        base::string16()));
+  EXPECT_EQ(links_after_update_url, custom_links_->GetLinks());
+
+  // Undo update link.
+  EXPECT_TRUE(custom_links_->UndoAction());
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Update the link's title.
+  EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(),
+                                        base::UTF8ToUTF16(kTestTitle)));
+  EXPECT_EQ(links_after_update_title, custom_links_->GetLinks());
+
+  // Undo update link.
+  EXPECT_TRUE(custom_links_->UndoAction());
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Try to undo again. This should fail and not modify the list.
+  EXPECT_FALSE(custom_links_->UndoAction());
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+}
+
 TEST_F(CustomLinksManagerImplTest, UndoDeleteLink) {
   NTPTilesVector initial_tiles;
   AddTile(&initial_tiles, kTestUrl, kTestTitle);
@@ -298,17 +364,12 @@ TEST_F(CustomLinksManagerImplTest, UndoDeleteLink) {
   ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
   ASSERT_EQ(expected_links, custom_links_->GetLinks());
 
-  // Try to undo delete before delete is called. This should fail and not modify
-  // the list.
-  EXPECT_FALSE(custom_links_->UndoDeleteLink());
-  EXPECT_EQ(expected_links, custom_links_->GetLinks());
-
   // Delete link.
   ASSERT_TRUE(custom_links_->DeleteLink(GURL(kTestUrl)));
   ASSERT_TRUE(custom_links_->GetLinks().empty());
 
   // Undo delete link.
-  EXPECT_TRUE(custom_links_->UndoDeleteLink());
+  EXPECT_TRUE(custom_links_->UndoAction());
   EXPECT_EQ(expected_links, custom_links_->GetLinks());
 }
 
@@ -332,36 +393,8 @@ TEST_F(CustomLinksManagerImplTest, UndoDeleteLinkAfterAdd) {
   ASSERT_TRUE(custom_links_->GetLinks().empty());
 
   // Undo delete link.
-  EXPECT_TRUE(custom_links_->UndoDeleteLink());
+  EXPECT_TRUE(custom_links_->UndoAction());
   EXPECT_EQ(expected_links, custom_links_->GetLinks());
-}
-
-TEST_F(CustomLinksManagerImplTest, UndoDeleteLinkWhenAtMaxLinks) {
-  NTPTilesVector initial_tiles = FillTestTiles(kTestCaseMax);
-  std::vector<CustomLinksManager::Link> intial_links =
-      FillTestLinks(kTestCaseMax);
-  std::vector<CustomLinksManager::Link> links_after_delete(intial_links);
-  links_after_delete.pop_back();
-  std::vector<CustomLinksManager::Link> links_after_add(links_after_delete);
-  links_after_add.emplace_back(
-      CustomLinksManager::Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)});
-
-  // Initialize.
-  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
-  ASSERT_EQ(intial_links, custom_links_->GetLinks());
-
-  // Delete link.
-  ASSERT_TRUE(custom_links_->DeleteLink(GURL(kTestCaseMax[9].url)));
-  ASSERT_EQ(links_after_delete, custom_links_->GetLinks());
-
-  // Add link. Should be at max links.
-  ASSERT_TRUE(
-      custom_links_->AddLink(GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle)));
-  ASSERT_EQ(links_after_add, custom_links_->GetLinks());
-
-  // Try to undo delete link. This should fail and not modify the list.
-  EXPECT_FALSE(custom_links_->UndoDeleteLink());
-  EXPECT_EQ(links_after_add, custom_links_->GetLinks());
 }
 
 }  // namespace ntp_tiles

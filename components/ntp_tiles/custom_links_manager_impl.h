@@ -43,7 +43,7 @@ class CustomLinksManagerImpl : public CustomLinksManager {
                   const GURL& new_url,
                   const base::string16& new_title) override;
   bool DeleteLink(const GURL& url) override;
-  bool UndoDeleteLink() override;
+  bool UndoAction() override;
 
   // Register preferences used by this class.
   static void RegisterProfilePrefs(
@@ -57,8 +57,9 @@ class CustomLinksManagerImpl : public CustomLinksManager {
   PrefService* const prefs_;
   CustomLinksStore store_;
   std::vector<Link> current_links_;
-  // Contains the deleted link's data and the index it was located at.
-  base::Optional<std::pair<size_t, Link>> prev_deleted_link_;
+  // The state of the current list of links before the last action was
+  // performed.
+  base::Optional<std::vector<Link>> previous_links_;
 
   base::WeakPtrFactory<CustomLinksManagerImpl> weak_ptr_factory_;
 

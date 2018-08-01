@@ -25,6 +25,12 @@ class SearchBoxExtension {
   static void DispatchFocusChange(blink::WebLocalFrame* frame);
   static void DispatchHistorySyncCheckResult(blink::WebLocalFrame* frame,
                                              bool sync_history);
+  static void DispatchAddCustomLinkResult(blink::WebLocalFrame* frame,
+                                          bool success);
+  static void DispatchUpdateCustomLinkResult(blink::WebLocalFrame* frame,
+                                             bool success);
+  static void DispatchDeleteCustomLinkResult(blink::WebLocalFrame* frame,
+                                             bool success);
   static void DispatchInputCancel(blink::WebLocalFrame* frame);
   static void DispatchInputStart(blink::WebLocalFrame* frame);
   static void DispatchKeyCaptureChange(blink::WebLocalFrame* frame);

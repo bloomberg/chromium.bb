@@ -81,16 +81,16 @@ class InstantService : public KeyedService,
   // Invoked when the Instant page wants to undo all Most Visited deletions.
   void UndoAllMostVisitedDeletions();
   // Invoked when the Instant page wants to add a custom link.
-  void AddCustomLink(const GURL& url, const std::string& title);
+  bool AddCustomLink(const GURL& url, const std::string& title);
   // Invoked when the Instant page wants to update a custom link.
-  void UpdateCustomLink(const GURL& url,
+  bool UpdateCustomLink(const GURL& url,
                         const GURL& new_url,
                         const std::string& new_title);
   // Invoked when the Instant page wants to delete a custom link.
-  void DeleteCustomLink(const GURL& url);
-  // Invoked when the Instant page wants to restore the previously deleted
-  // custom link.
-  void UndoDeleteCustomLink();
+  bool DeleteCustomLink(const GURL& url);
+  // Invoked when the Instant page wants to undo the previous custom link
+  // action.
+  void UndoCustomLinkAction();
   // Invoked when the Instant page wants to delete all custom links and use Most
   // Visited sites instead.
   void ResetCustomLinks();

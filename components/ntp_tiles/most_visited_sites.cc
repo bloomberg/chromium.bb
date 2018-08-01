@@ -234,38 +234,44 @@ bool MostVisitedSites::IsCustomLinksInitialized() {
   return custom_links_->IsInitialized();
 }
 
-void MostVisitedSites::AddCustomLink(const GURL& url,
+bool MostVisitedSites::AddCustomLink(const GURL& url,
                                      const base::string16& title) {
   if (!custom_links_)
-    return;
+    return false;
 
-  if (custom_links_->AddLink(url, title))
+  bool success = custom_links_->AddLink(url, title);
+  if (success)
     BuildCurrentTiles();
+  return success;
 }
 
-void MostVisitedSites::UpdateCustomLink(const GURL& url,
+bool MostVisitedSites::UpdateCustomLink(const GURL& url,
                                         const GURL& new_url,
                                         const base::string16& new_title) {
   if (!custom_links_)
-    return;
+    return false;
 
-  if (custom_links_->UpdateLink(url, new_url, new_title))
+  bool success = custom_links_->UpdateLink(url, new_url, new_title);
+  if (success)
     BuildCurrentTiles();
+  return success;
 }
 
-void MostVisitedSites::DeleteCustomLink(const GURL& url) {
+bool MostVisitedSites::DeleteCustomLink(const GURL& url) {
+  if (!custom_links_)
+    return false;
+
+  bool success = custom_links_->DeleteLink(url);
+  if (success)
+    BuildCurrentTiles();
+  return success;
+}
+
+void MostVisitedSites::UndoCustomLinkAction() {
   if (!custom_links_)
     return;
 
-  if (custom_links_->DeleteLink(url))
-    BuildCurrentTiles();
-}
-
-void MostVisitedSites::UndoDeleteCustomLink() {
-  if (!custom_links_)
-    return;
-
-  if (custom_links_->UndoDeleteLink())
+  if (custom_links_->UndoAction())
     BuildCurrentTiles();
 }
 

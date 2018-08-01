@@ -298,30 +298,33 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
     instant_service_->UndoAllMostVisitedDeletions();
 }
 
-void SearchTabHelper::OnAddCustomLink(const GURL& url,
+bool SearchTabHelper::OnAddCustomLink(const GURL& url,
                                       const std::string& title) {
   DCHECK(!url.is_empty());
   if (instant_service_)
-    instant_service_->AddCustomLink(url, title);
+    return instant_service_->AddCustomLink(url, title);
+  return false;
 }
 
-void SearchTabHelper::OnUpdateCustomLink(const GURL& url,
+bool SearchTabHelper::OnUpdateCustomLink(const GURL& url,
                                          const GURL& new_url,
                                          const std::string& new_title) {
   DCHECK(!url.is_empty());
   if (instant_service_)
-    instant_service_->UpdateCustomLink(url, new_url, new_title);
+    return instant_service_->UpdateCustomLink(url, new_url, new_title);
+  return false;
 }
 
-void SearchTabHelper::OnDeleteCustomLink(const GURL& url) {
+bool SearchTabHelper::OnDeleteCustomLink(const GURL& url) {
   DCHECK(!url.is_empty());
   if (instant_service_)
-    instant_service_->DeleteCustomLink(url);
+    return instant_service_->DeleteCustomLink(url);
+  return false;
 }
 
-void SearchTabHelper::OnUndoDeleteCustomLink() {
+void SearchTabHelper::OnUndoCustomLinkAction() {
   if (instant_service_)
-    instant_service_->UndoDeleteCustomLink();
+    instant_service_->UndoCustomLinkAction();
 }
 
 void SearchTabHelper::OnResetCustomLinks() {

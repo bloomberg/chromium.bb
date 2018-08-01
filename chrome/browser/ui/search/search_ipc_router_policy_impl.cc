@@ -50,7 +50,7 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteCustomLink() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldProcessUndoDeleteCustomLink() {
+bool SearchIPCRouterPolicyImpl::ShouldProcessUndoCustomLinkAction() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
