@@ -1,0 +1,23 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package content;
+
+message FontUniqueNameTable {
+  // The Android build fingerprint for which this font list is stored.
+  required string stored_for_android_build_fp = 1;
+
+  message FontUniqueNameEntry {
+    required string file_path = 10;
+    required uint32 ttc_index = 20;
+    optional string full_name = 30;
+    optional string postscript_name = 40;
+  }
+
+  repeated FontUniqueNameEntry font_entries = 10;
+}
