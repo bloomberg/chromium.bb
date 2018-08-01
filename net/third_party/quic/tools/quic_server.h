@@ -14,7 +14,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/quic/chromium/quic_chromium_connection_helper.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/core/quic_framer.h"

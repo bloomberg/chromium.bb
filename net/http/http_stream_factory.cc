@@ -28,7 +28,7 @@
 #include "net/http/http_stream_factory_job.h"
 #include "net/http/http_stream_factory_job_controller.h"
 #include "net/http/transport_security_state.h"
-#include "net/quic/chromium/quic_http_utils.h"
+#include "net/quic/quic_http_utils.h"
 #include "net/spdy/bidirectional_stream_spdy_impl.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/third_party/quic/core/quic_packets.h"

@@ -304,7 +304,7 @@ performance and for optimization hints.
 [Seed Corpus]: efficient_fuzzer.md#Seed-Corpus
 [Undefined Behavior Sanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 [crbug/598448]: https://bugs.chromium.org/p/chromium/issues/detail?id=598448
-[quic_stream_factory_fuzzer.cc]: https://cs.chromium.org/chromium/src/net/quic/chromium/quic_stream_factory_fuzzer.cc
+[quic_stream_factory_fuzzer.cc]: https://cs.chromium.org/chromium/src/net/quic/quic_stream_factory_fuzzer.cc
 [Build Config]: reference.md#Builder-configurations
 [its own documentation]: http://llvm.org/docs/LibFuzzer.html#output
 [Getting Started with libprotobuf-mutator in Chromium]: libprotobuf-mutator.md

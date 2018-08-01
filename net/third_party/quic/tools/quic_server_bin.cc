@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "net/quic/chromium/crypto/proof_source_chromium.h"
+#include "net/quic/crypto/proof_source_chromium.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
