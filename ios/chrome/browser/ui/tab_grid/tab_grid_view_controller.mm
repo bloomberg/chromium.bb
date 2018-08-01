@@ -1001,7 +1001,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
           base::UserMetricsAction("MobileTabSwitcherCreateNonIncognitoTab"));
       break;
     case TabGridPageRemoteTabs:
-      // This is intended as NO-OP since the user can ⌘-t while on this page.
+      NOTREACHED() << "It is invalid to have an active tab in remote tabs.";
       break;
   }
   self.activePage = page;
@@ -1021,6 +1021,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 // Creates and shows a new tab in the current page.
 - (void)openNewTabInCurrentPageForKeyboardCommand {
+  // Tabs cannot be opened with ⌘-t from the remote tabs page.
+  if (self.currentPage == TabGridPageRemoteTabs)
+    return;
   [self openNewTabInPage:self.currentPage focusOmnibox:YES];
 }
 
