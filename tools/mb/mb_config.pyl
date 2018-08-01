@@ -24,11 +24,6 @@
     # generated publicly advertised non-Official builds which are not allowed
     # to have proprietary codecs enabled.
     'chromium': {
-      'Android': 'android_without_codecs_release_bot_minimal_symbols',
-      'Linux x64': 'release_bot',
-      'Mac': 'release_bot_mac_strip',
-      'Win': 'release_bot_x86_minimal_symbols_enable_archive_compression',
-      'Win x64': 'release_bot_minimal_symbols_enable_archive_compression',
       'android-rel': 'android_without_codecs_release_bot_minimal_symbols',
       'linux-rel': 'release_bot',
       'mac-rel': 'release_bot_mac_strip',
