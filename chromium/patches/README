@@ -802,18 +802,3 @@ Date:   Thu May 24 13:43:24 2018 -0700
  Affects: 
 libavutil/encryption_info.c
 
-------------------------------------------------------------------
-commit 5ceb9b2b805173b4eea81ae15065e254014f867a
-Author: Jacob Trimble <modmaker-at-google.com@ffmpeg.org>
-Date:   Tue Jun 12 14:26:20 2018 -0700
-
-    avformat/mov: Add check for per-sample IV size.
-    
-    Found by Chrome's ClusterFuzz: http://crbug.com/849062.
-    
-    Signed-off-by: Jacob Trimble <modmaker@google.com>
-    Signed-off-by: Michael Niedermayer <michael@niedermayer.cc>
-
- Affects: 
-libavformat/mov.c
-

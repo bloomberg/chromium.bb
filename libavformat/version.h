@@ -33,7 +33,7 @@
 // Also please add any ticket numbers that you believe might be affected here
 #define LIBAVFORMAT_VERSION_MAJOR  58
 #define LIBAVFORMAT_VERSION_MINOR  17
-#define LIBAVFORMAT_VERSION_MICRO 100
+#define LIBAVFORMAT_VERSION_MICRO 101
 
 #define LIBAVFORMAT_VERSION_INT AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, \
                                                LIBAVFORMAT_VERSION_MINOR, \
@@ -96,6 +96,9 @@
 #endif
 #ifndef FF_API_DASH_MIN_SEG_DURATION
 #define FF_API_DASH_MIN_SEG_DURATION    (LIBAVFORMAT_VERSION_MAJOR < 59)
+#endif
+#ifndef FF_API_LAVF_MP4A_LATM
+#define FF_API_LAVF_MP4A_LATM           (LIBAVFORMAT_VERSION_MAJOR < 59)
 #endif
 
 
