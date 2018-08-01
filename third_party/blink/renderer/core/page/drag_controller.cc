@@ -478,25 +478,26 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
   // UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (frame->Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
-    const PositionWithAffinity& position = frame->PositionForPoint(point);
-    if (!position.IsConnected())
-      return false;
-
-    frame->Selection().SetSelectionAndEndTyping(
-        SelectionInDOMTree::Builder().Collapse(position).Build());
-    // TODO(editing-dev): The use of
-    // UpdateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-    const VisibleSelection& drag_caret =
-        frame->Selection().ComputeVisibleSelectionInDOMTree();
-    range = CreateRange(drag_caret.ToNormalizedEphemeralRange());
+  if (!frame->Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
+    return frame->Selection()
+        .ComputeVisibleSelectionInDOMTree()
+        .IsContentEditable();
   }
-  return !frame->Selection().ComputeVisibleSelectionInDOMTree().IsNone() &&
-         frame->Selection()
-             .ComputeVisibleSelectionInDOMTree()
-             .IsContentEditable();
+
+  const PositionWithAffinity& position = frame->PositionForPoint(point);
+  if (!position.IsConnected())
+    return false;
+
+  frame->Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder().Collapse(position).Build());
+  // TODO(editing-dev): The use of
+  // UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  const VisibleSelection& visible_selection =
+      frame->Selection().ComputeVisibleSelectionInDOMTree();
+  range = CreateRange(visible_selection.ToNormalizedEphemeralRange());
+  return !visible_selection.IsNone() && visible_selection.IsContentEditable();
 }
 
 DispatchEventResult DragController::DispatchTextInputEventFor(
