@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/clipping_textfield_container.h"
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
@@ -68,6 +69,14 @@
 }
 
 - (void)startClipping {
+  // TODO(crbug.com/860790) : reenable this.
+  if (base::ios::IsRunningOnIOS12OrLater()) {
+    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
+    // rendered when the backing layer is large (approx. 915 characters with
+    // current font).
+    return;
+  }
+
   self.clipping = YES;
   [self applyClipping];
   [self setNeedsLayout];
