@@ -24,7 +24,6 @@ goog.require('cvox.DomUtil');
 goog.require('cvox.FindUtil');
 goog.require('cvox.Focuser');
 goog.require('cvox.Interframe');
-goog.require('cvox.MathShifter');
 goog.require('cvox.NavBraille');
 goog.require('cvox.NavDescription');
 goog.require('cvox.NavigationHistory');
@@ -33,7 +32,6 @@ goog.require('cvox.NavigationSpeaker');
 goog.require('cvox.PageSelection');
 goog.require('cvox.SelectionUtil');
 goog.require('cvox.TableShifter');
-goog.require('cvox.TraverseMath');
 goog.require('cvox.Widget');
 
 
@@ -85,8 +83,7 @@ cvox.NavigationManager.prototype.reset = function() {
    * @type {!Array<Object>}
    * @private
    */
-  this.shifterTypes_ =
-      [cvox.NavigationShifter, cvox.TableShifter, cvox.MathShifter];
+  this.shifterTypes_ = [cvox.NavigationShifter, cvox.TableShifter];
 
   /**
    * @type {!Array<!cvox.AbstractShifter>}
@@ -216,9 +213,6 @@ cvox.NavigationManager.prototype.reset = function() {
   if (document.activeElement != document.body) {
     this.sync();
   }
-
-  // This object is effectively empty when no math is in the page.
-  cvox.TraverseMath.getInstance();
 };
 
 

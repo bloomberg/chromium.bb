@@ -12,7 +12,6 @@ goog.provide('cvox.HostFactory');
 
 goog.require('cvox.AbstractEarcons');
 goog.require('cvox.AbstractHost');
-goog.require('cvox.AbstractMathJax');
 goog.require('cvox.AbstractTts');
 
 
@@ -54,14 +53,6 @@ cvox.HostFactory.getEarcons = function() {
 };
 
 /**
- * Returns the MathJax interface.
- * @return {cvox.MathJaxInterface} The MathJax interface.
- */
-cvox.HostFactory.getMathJax = function() {
-  return new cvox.HostFactory.mathJaxConstructor;
-};
-
-/**
  * @type {function (new:cvox.AbstractHost)}
  */
 cvox.HostFactory.hostConstructor;
@@ -80,9 +71,3 @@ cvox.HostFactory.brailleConstructor;
  * @type {function (new:cvox.AbstractEarcons)}
  */
 cvox.HostFactory.earconsConstructor;
-
-
-/**
- * @type {function (new:cvox.AbstractMathJax)}
- */
-cvox.HostFactory.mathJaxConstructor;

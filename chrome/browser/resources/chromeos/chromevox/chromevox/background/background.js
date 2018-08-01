@@ -386,16 +386,6 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
           cvox.ChromeVoxBackground.setPref(pref, msg['value'], announce);
         }
         break;
-      case 'Math':
-        // TODO (sorge): Put the change of styles etc. here!
-        if (msg['action'] == 'getDomains') {
-          port.postMessage({
-            'message': 'DOMAINS_STYLES',
-            'domains': this.backgroundTts_.mathmap.allDomains,
-            'styles': this.backgroundTts_.mathmap.allStyles
-          });
-        }
-        break;
       case 'TTS':
         if (msg['startCallbackId'] != undefined) {
           msg['properties']['startCallback'] = function(opt_cleanupOnly) {

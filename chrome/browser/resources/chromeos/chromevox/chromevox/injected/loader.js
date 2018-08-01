@@ -13,7 +13,6 @@ goog.require('Msgs');
 goog.require('cvox.ChromeBraille');
 goog.require('cvox.ChromeEarcons');
 goog.require('cvox.ChromeHost');
-goog.require('cvox.ChromeMathJax');
 goog.require('cvox.ChromeTts');
 goog.require('cvox.ChromeVoxInit');
 

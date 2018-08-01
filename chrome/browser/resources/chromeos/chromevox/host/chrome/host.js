@@ -19,7 +19,6 @@ goog.require('cvox.ExtensionBridge');
 goog.require('cvox.HostFactory');
 goog.require('cvox.InitialSpeech');
 goog.require('cvox.SearchLoader');
-goog.require('cvox.TraverseMath');
 
 /**
  * @constructor
@@ -95,13 +94,6 @@ cvox.ChromeHost.prototype.init = function() {
     }
   };
   cvox.ExtensionBridge.addMessageListener(listener);
-
-  cvox.ExtensionBridge.addMessageListener(function(msg, port) {
-    if (msg['message'] == 'DOMAINS_STYLES') {
-      cvox.TraverseMath.getInstance().addDomainsAndStyles(
-          msg['domains'], msg['styles']);
-    }
-  });
 
   cvox.ExtensionBridge.addMessageListener(function(msg, port) {
     var message = msg['message'];

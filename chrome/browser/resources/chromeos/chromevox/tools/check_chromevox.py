@@ -72,7 +72,6 @@ _COMMON_EXTERNS = [
     CVoxPath('common/externs.js'),
     CVoxPath('common/chrome_extension_externs.js'),
     CVoxPath('chromevox/background/externs.js'),
-    CVoxPath('chromevox/injected/externs.js'),
     CVoxPath('host/chrome/externs.js'),
     _ACCESSIBILITY_PRIVATE_EXTERNS,
     _AUTOMATION_EXTERNS,

@@ -14,7 +14,6 @@ goog.require('PanelCommand');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.ChromeTtsBase');
 goog.require('cvox.ChromeVox');
-goog.require('cvox.MathMap');
 goog.require('goog.i18n.MessageFormat');
 
 
@@ -38,12 +37,9 @@ cvox.Utterance.nextUtteranceId_ = 1;
 
 /**
  * @constructor
- * @param {boolean=} opt_enableMath Whether to process math. Used when running
- * on forge. Defaults to true.
  * @extends {cvox.ChromeTtsBase}
  */
-cvox.TtsBackground = function(opt_enableMath) {
-  opt_enableMath = opt_enableMath == undefined ? true : opt_enableMath;
+cvox.TtsBackground = function() {
   goog.base(this);
 
   // Use the current locale as the speech language if not otherwise
@@ -105,12 +101,6 @@ cvox.TtsBackground = function(opt_enableMath) {
    * @private
    */
   this.retainPunctuation_ = [';', '?', '!', '\''];
-
-  /**
-   * Mapping for math elements.
-   * @type {cvox.MathMap}
-   */
-  this.mathmap = opt_enableMath ? new cvox.MathMap() : null;
 
   /**
    * The id of a callback returned from setTimeout.
@@ -562,11 +552,6 @@ cvox.TtsBackground.prototype.onError_ = function(errorMessage) {
 cvox.TtsBackground.prototype.preprocess = function(text, properties) {
   properties = properties ? properties : {};
 
-  // Perform specialized processing, such as mathematics.
-  if (properties.math) {
-    text = this.preprocessMath_(text, properties.math);
-  }
-
   // Perform generic processing.
   text = goog.base(this, 'preprocess', text, properties);
 
@@ -589,14 +574,6 @@ cvox.TtsBackground.prototype.preprocess = function(text, properties) {
   if (properties.math || !properties['phoneticCharacters'] ||
       !this.pronouncePhonetically_(text)) {
     this.clearTimeout_();
-  }
-
-  // Try looking up in our unicode tables for a short description.
-  if (!properties.math && text.length == 1 && this.mathmap) {
-    text = this.mathmap.store.lookupString(
-               text.toLowerCase(),
-               cvox.MathStore.createDynamicConstraint('default', 'short')) ||
-        text;
   }
 
   //  Remove all whitespace from the beginning and end, and collapse all
@@ -640,29 +617,6 @@ cvox.TtsBackground.prototype.cyclePunctuationEcho = function() {
   localStorage[cvox.AbstractTts.PUNCTUATION_ECHO] =
       this.currentPunctuationEcho_;
   return this.punctuationEchoes_[this.currentPunctuationEcho_].msg;
-};
-
-
-/**
- * Process a math expression into a string suitable for a speech engine.
- * @param {string} text Text representing a math expression.
- * @param {Object= } math Parameter containing information how to
- *     process the math expression.
- * @return {string} The string with a spoken version of the math expression.
- * @private
- */
-cvox.TtsBackground.prototype.preprocessMath_ = function(text, math) {
-  if (!this.mathmap) {
-    return text;
-  }
-  var result = '';
-  var dynamicCstr =
-      cvox.MathStore.createDynamicConstraint(math['domain'], math['style']);
-  result = this.mathmap.store.lookupString(text, dynamicCstr);
-  if (result) {
-    return result;
-  }
-  return text;
 };
 
 

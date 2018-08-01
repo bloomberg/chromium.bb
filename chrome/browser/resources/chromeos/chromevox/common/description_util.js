@@ -15,10 +15,7 @@ goog.require('cvox.BareObjectWalker');
 goog.require('cvox.CursorSelection');
 goog.require('cvox.DomUtil');
 goog.require('cvox.EarconUtil');
-goog.require('cvox.MathmlStore');
 goog.require('cvox.NavDescription');
-goog.require('cvox.SpeechRuleEngine');
-goog.require('cvox.TraverseMath');
 
 
 /**
@@ -191,11 +188,6 @@ cvox.DescriptionUtil.getDescriptionFromNavigation = function(
     return [];
   }
 
-  // Specialized math descriptions.
-  if (cvox.DomUtil.isMath(node) && !cvox.AriaUtil.isMath(node)) {
-    return cvox.DescriptionUtil.getMathDescription(node);
-  }
-
   // Next, check to see if the current node is a collection type.
   if (cvox.DescriptionUtil.COLLECTION_NODE_TYPE[node.tagName]) {
     return cvox.DescriptionUtil.getCollectionDescription(
@@ -273,15 +265,10 @@ cvox.DescriptionUtil.getRawDescriptions_ = function(prevSel, sel) {
 
   while (cvox.DomUtil.isDescendantOfNode(node, sel.start.node)) {
     var ancestors = cvox.DomUtil.getUniqueAncestors(prevNode, node);
-    // Specialized math descriptions.
-    if (cvox.DomUtil.isMath(node) && !cvox.AriaUtil.isMath(node)) {
-      descriptions =
-          descriptions.concat(cvox.DescriptionUtil.getMathDescription(node));
-    } else {
-      var description = cvox.DescriptionUtil.getDescriptionFromAncestors(
-          ancestors, true, cvox.ChromeVox.verbosity);
-      descriptions.push(description);
-    }
+    var description = cvox.DescriptionUtil.getDescriptionFromAncestors(
+        ancestors, true, cvox.ChromeVox.verbosity);
+    descriptions.push(description);
+
     curSel = cvox.DescriptionUtil.subWalker_.next(curSel);
     if (!curSel) {
       break;
@@ -440,33 +427,4 @@ cvox.DescriptionUtil.shouldDescribeExit_ = function(ancestors) {
     }
     return cvox.AriaUtil.isLandmark(node);
   });
-};
-
-
-// TODO(sorge): Bad naming...this thing returns *multiple* descriptions.
-/**
- * Generates a description for a math node.
- * @param {Node} node The given node.
- * @return {!Array<cvox.NavDescription>} A list of Navigation descriptions.
- */
-cvox.DescriptionUtil.getMathDescription = function(node) {
-  if (!node) {
-    return [];
-  }
-  // TODO (sorge) This function should evantually be removed. Descriptions
-  //     should come directly from the speech rule engine, taking information on
-  //     verbosity etc. into account.
-  var speechEngine = cvox.SpeechRuleEngine.getInstance();
-  var traverse = cvox.TraverseMath.getInstance();
-  speechEngine.parameterize(cvox.MathmlStore.getInstance());
-  traverse.initialize(node);
-  var ret = speechEngine.evaluateNode(traverse.activeNode);
-  if (ret == []) {
-    return [new cvox.NavDescription({'text': 'empty math'})];
-  }
-  if (cvox.ChromeVox.verbosity == cvox.VERBOSITY_VERBOSE) {
-    ret[ret.length - 1].annotation = 'math';
-  }
-  ret[0].pushEarcon(cvox.Earcon.MATH);
-  return ret;
 };

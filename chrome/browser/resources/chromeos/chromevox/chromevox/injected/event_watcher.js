@@ -993,13 +993,17 @@ cvox.ChromeVoxEventWatcher.setUpTextHandler = function() {
         cvox.ChromeVoxEventWatcher.shouldEchoKeys) {
       cvox.ChromeVoxEventWatcher.currentTextControl = currentFocus;
       cvox.ChromeVoxEventWatcher.currentTextHandler =
-          new cvox.ChromeVoxEditableHTMLInput(currentFocus, cvox.ChromeVox.tts);
+          new cvox.ChromeVoxEditableHTMLInput(
+              /** @type {HTMLInputElement} */ (currentFocus),
+              cvox.ChromeVox.tts);
     } else if (
         (currentFocus.constructor == HTMLTextAreaElement) &&
         cvox.ChromeVoxEventWatcher.shouldEchoKeys) {
       cvox.ChromeVoxEventWatcher.currentTextControl = currentFocus;
       cvox.ChromeVoxEventWatcher.currentTextHandler =
-          new cvox.ChromeVoxEditableTextArea(currentFocus, cvox.ChromeVox.tts);
+          new cvox.ChromeVoxEditableTextArea(
+              /** @type {HTMLTextAreaElement} */ (currentFocus),
+              cvox.ChromeVox.tts);
     } else if (
         currentFocus.isContentEditable ||
         currentFocus.getAttribute('role') == 'textbox') {
