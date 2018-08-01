@@ -46,13 +46,6 @@ cvox.TtsBackground = function(opt_enableMath) {
   opt_enableMath = opt_enableMath == undefined ? true : opt_enableMath;
   goog.base(this);
 
-  this.ttsProperties['rate'] =
-      (parseFloat(localStorage['rate']) || this.propertyDefault['rate']);
-  this.ttsProperties['pitch'] =
-      (parseFloat(localStorage['pitch']) || this.propertyDefault['pitch']);
-  this.ttsProperties['volume'] =
-      (parseFloat(localStorage['volume']) || this.propertyDefault['volume']);
-
   // Use the current locale as the speech language if not otherwise
   // specified.
   if (this.ttsProperties['lang'] == undefined) {
@@ -188,6 +181,30 @@ cvox.TtsBackground = function(opt_enableMath) {
       this.updateVoice_(changes.voiceName.newValue);
     }
   }.bind(this));
+
+  // Migration: localStorage tts properties -> Chrome pref settings.
+  if (localStorage['rate']) {
+    chrome.settingsPrivate.setPref(
+        'settings.tts.speech_rate', parseFloat(localStorage['rate']));
+    delete localStorage['rate'];
+  }
+  if (localStorage['pitch']) {
+    chrome.settingsPrivate.setPref(
+        'settings.tts.speech_pitch', parseFloat(localStorage['pitch']));
+    delete localStorage['pitch'];
+  }
+  if (localStorage['volume']) {
+    chrome.settingsPrivate.setPref(
+        'settings.tts.speech_volume', parseFloat(localStorage['volume']));
+    delete localStorage['volume'];
+  }
+
+  // At startup.
+  chrome.settingsPrivate.getAllPrefs(this.updateFromPrefs_.bind(this, false));
+
+  // At runtime.
+  chrome.settingsPrivate.onPrefsChanged.addListener(
+      this.updateFromPrefs_.bind(this, true));
 };
 goog.inherits(cvox.TtsBackground, cvox.ChromeTtsBase);
 
@@ -479,7 +496,23 @@ cvox.TtsBackground.prototype.cancelUtterance_ = function(utterance) {
 cvox.TtsBackground.prototype.increaseOrDecreaseProperty = function(
     propertyName, increase) {
   goog.base(this, 'increaseOrDecreaseProperty', propertyName, increase);
-  localStorage[propertyName] = this.ttsProperties[propertyName];
+
+  var pref;
+  switch (propertyName) {
+    case cvox.AbstractTts.RATE:
+      pref = 'settings.tts.speech_rate';
+      break;
+    case cvox.AbstractTts.PITCH:
+      pref = 'settings.tts.speech_pitch';
+      break;
+    case cvox.AbstractTts.VOLUME:
+      pref = 'settings.tts.speech_volume';
+      break;
+    default:
+      return;
+  }
+  var value = this.ttsProperties[propertyName];
+  chrome.settingsPrivate.setPref(pref, value);
 };
 
 /** @override */
@@ -731,4 +764,44 @@ cvox.TtsBackground.prototype.updateVoice_ = function(voiceName, opt_callback) {
     if (opt_callback)
       opt_callback(this.currentVoice);
   }, this));
+};
+
+/**
+ * @param {boolean} announce
+ * @param {Array<chrome.settingsPrivate.PrefObject>} prefs
+ * @private
+ */
+cvox.TtsBackground.prototype.updateFromPrefs_ = function(announce, prefs) {
+  prefs.forEach((pref) => {
+    var msg;
+    var propertyName;
+    switch (pref.key) {
+      case 'settings.tts.speech_rate':
+        propertyName = cvox.AbstractTts.RATE;
+        msg = 'announce_rate';
+        break;
+      case 'settings.tts.speech_pitch':
+        propertyName = cvox.AbstractTts.PITCH;
+        msg = 'announce_pitch';
+        break;
+      case 'settings.tts.speech_volume':
+        propertyName = cvox.AbstractTts.VOLUME;
+        msg = 'announce_volume';
+        break;
+      default:
+        return;
+    }
+
+    this.ttsProperties[propertyName] = pref.value;
+
+    if (!announce)
+      return;
+
+    var valueAsPercent =
+        Math.round(this.propertyToPercentage(propertyName) * 100);
+    var announcement = Msgs.getMsg(msg, [valueAsPercent]);
+    cvox.ChromeVox.tts.speak(
+        announcement, cvox.QueueMode.FLUSH,
+        cvox.AbstractTts.PERSONALITY_ANNOTATION);
+  });
 };

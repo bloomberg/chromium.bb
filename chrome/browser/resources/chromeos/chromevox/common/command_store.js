@@ -431,6 +431,8 @@ cvox.CommandStore.CMD_WHITELIST = {
     'disallowOOBE': true,
     category: 'help_commands'
   },
+  'showTtsSettings':
+      {announce: false, msgId: 'show_tts_settings', category: 'help_commands'},
   'toggleBrailleCaptions':
       {announce: false, msgId: 'braille_captions', category: 'help_commands'},
   'reportIssue': {

@@ -2999,6 +2999,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Voice name for the system default Text-to-Speech voice" name="IDS_CHROMEVOX_SYSTEM_VOICE">
         System Text-to-Speech voice
       </message>
+      <message desc="Menu item text for a command to open the text to speech settings page" name="IDS_CHROMEVOX_SHOW_TTS_SETTINGS">
+        Open text-to-speech settings
+      </message>
     </messages>
   </release>
 </grit>
