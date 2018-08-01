@@ -108,15 +108,6 @@ static VideoPixelFormat AomImgFmtToVideoPixelFormat(const aom_image_t* img) {
 static void SetColorSpaceForFrame(const aom_image_t* img,
                                   const VideoDecoderConfig& config,
                                   VideoFrame* frame) {
-  // Default to the color space from the config, but if the bistream specifies
-  // one, prefer that instead.
-  if (config.color_space_info() != VideoColorSpace()) {
-    // config_.color_space_info() comes from the color tag which is more
-    // expressive than the bitstream, so prefer it over the bitstream data
-    // below.
-    frame->set_color_space(config.color_space_info().ToGfxColorSpace());
-    return;
-  }
 
   gfx::ColorSpace::RangeID range = img->range == AOM_CR_FULL_RANGE
                                        ? gfx::ColorSpace::RangeID::FULL
@@ -125,9 +116,14 @@ static void SetColorSpaceForFrame(const aom_image_t* img,
   // AOM color space defines match ISO 23001-8:2016 via ISO/IEC 23091-4/ITU-T
   // H.273.
   // http://av1-spec.argondesign.com/av1-spec/av1-spec.html#color-config-semantics
-  frame->set_color_space(
-      media::VideoColorSpace(img->cp, img->tc, img->mc, range)
-          .ToGfxColorSpace());
+  media::VideoColorSpace color_space(img->cp, img->tc, img->mc, range);
+
+  // If the bitstream doesn't specify a color space, use the one
+  // from the container.
+  if (!color_space.IsSpecified())
+    color_space = config.color_space_info();
+
+  frame->set_color_space(color_space.ToGfxColorSpace());
 }
 
 // Copies plane of 8-bit pixels out of a 16-bit values.
