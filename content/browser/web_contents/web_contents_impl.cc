@@ -1121,10 +1121,10 @@ void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
   // them into a single tree and call |callback| with that result, then
   // delete |combiner|.
   FrameTreeNode* root_node = frame_tree_.root();
-  AXTreeSnapshotCombiner* combiner =
-      new AXTreeSnapshotCombiner(std::move(callback));
+  auto combiner =
+      base::MakeRefCounted<AXTreeSnapshotCombiner>(std::move(callback));
 
-  RecursiveRequestAXTreeSnapshotOnFrame(root_node, combiner, ax_mode);
+  RecursiveRequestAXTreeSnapshotOnFrame(root_node, combiner.get(), ax_mode);
 }
 
 void WebContentsImpl::RecursiveRequestAXTreeSnapshotOnFrame(

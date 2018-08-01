@@ -350,17 +350,6 @@ TestFileErrorInjector::TestFileErrorInjector(DownloadManager* download_manager)
     :  // This code is only used for browser_tests, so a
       // DownloadManager is always a DownloadManagerImpl.
       download_manager_(static_cast<DownloadManagerImpl*>(download_manager)) {
-  // Record the value of the pointer, for later validation.
-  created_factory_ = new DownloadFileWithErrorFactory(
-      base::Bind(&TestFileErrorInjector::RecordDownloadFileConstruction, this),
-      base::Bind(&TestFileErrorInjector::RecordDownloadFileDestruction, this));
-
-  // We will transfer ownership of the factory to the download manager.
-  std::unique_ptr<download::DownloadFileFactory> download_file_factory(
-      created_factory_);
-
-  download_manager_->SetDownloadFileFactoryForTesting(
-      std::move(download_file_factory));
 }
 
 TestFileErrorInjector::~TestFileErrorInjector() {
@@ -430,6 +419,20 @@ scoped_refptr<TestFileErrorInjector> TestFileErrorInjector::Create(
 
   scoped_refptr<TestFileErrorInjector> single_injector(
       new TestFileErrorInjector(download_manager));
+  // Record the value of the pointer, for later validation.
+  single_injector->created_factory_ = new DownloadFileWithErrorFactory(
+      base::BindRepeating(
+          &TestFileErrorInjector::RecordDownloadFileConstruction,
+          single_injector),
+      base::BindRepeating(&TestFileErrorInjector::RecordDownloadFileDestruction,
+                          single_injector));
+
+  // We will transfer ownership of the factory to the download manager.
+  std::unique_ptr<download::DownloadFileFactory> download_file_factory(
+      single_injector->created_factory_);
+
+  single_injector->download_manager_->SetDownloadFileFactoryForTesting(
+      std::move(download_file_factory));
 
   return single_injector;
 }
