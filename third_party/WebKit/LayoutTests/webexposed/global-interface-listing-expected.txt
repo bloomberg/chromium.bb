@@ -4116,6 +4116,7 @@ interface KeyframeEffect : AnimationEffect
     method getKeyframes
     method setKeyframes
     setter composite
+    setter target
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor
