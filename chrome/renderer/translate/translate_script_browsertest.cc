@@ -123,7 +123,7 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
       // TranslateHelper::ExecuteScriptAndGetDoubleResult().
       return 0.0;
     }
-    return result->NumberValue();
+    return result.As<v8::Number>()->Value();
   }
 
   bool ExecuteScriptAndGetBoolResult(const std::string& script) {
@@ -136,7 +136,7 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
       NOTREACHED();
       return false;
     }
-    return result->BooleanValue();
+    return result.As<v8::Boolean>()->Value();
   }
 
   DISALLOW_COPY_AND_ASSIGN(TranslateScriptBrowserTest);
