@@ -208,8 +208,8 @@ and `ShadowRoot` implements `TreeScope`.
 
 `TreeScope` maintains a lot of information about the underlying tree for
 efficiency. For example, TreeScope has a _id-to-element_ mapping, as
-[`TreeOrderedMap`](./tree_ordered_map.h), so that `querySelector('#foo')` can find
-an element whose id attribute is "foo" in O(1). In other words,
+[`TreeOrderedMap`](./tree_ordered_map.h), so that `querySelector('#foo')` can
+find an element whose id attribute is "foo" in O(1). In other words,
 `root.querySelector('#foo')` can be slow if that is used in a node tree whose
 root is not `TreeScope`.
 
@@ -612,7 +612,8 @@ A
 │   └── slot1
 │       └── H
 ├── slot2
-│   └── G, I
+│   ├── G
+│   └── I
 ├── D
 └── slot3
     ├── E
@@ -671,7 +672,8 @@ A
 │           └── slot1
 │               └── H
 ├── slot2
-│   └── G, I
+│   ├── G
+│   └── I
 ├── D
 └── slot3
     ├── E
@@ -686,7 +688,40 @@ to know how assignments are recalc-ed.
 
 # FlatTreeTraversal
 
-TODO(hayato): Explain.
+Blink doesn't store nor maintain a flat tree data structure in the memory.
+Instead, Blink provides a utility class,
+[`FlatTreeTraversal`](./flat_tree_traversal.h), which traverses a composed tree
+_in a flat tree order_.
+
+e.g. in the above example 3,
+
+- `FlatTreeTraversal::firstChild(slot1)` returns `H`
+- `FlatTreeTraversal::parent(H)` returns `slot1`
+- `FlatTreeTraversal::nextSibling(G)` returns `I`
+- `FlatTreeTraversal::previousSibling(I)` returns `G`
+
+The APIs which `FlatTreeTraversal` provides are very similar to ones other
+traversal utility classes provide, such as `NodeTraversal` and
+`ElementTraversal`.
+
+## Warning
+
+For historical reasons, Blink still supports Shadow DOM v0, where the different
+node distribution mechanism is still used. To support v0, you need to call
+`Node::UpdateDistributionForFlatTreeTraversal` before calling any function of
+`FlatTreeTraversal`.
+
+If you use `FlatTreeTraversal` without updating distribution, you would hit
+DCHECK. :(
+
+Since `Node::UpdateDistributionForFlatTreeTraversal` can take O(N) in the worst
+case (_even if the distribution flag is clean!_), you should be careful not to
+call it in hot code paths. If you are not sure, please contact
+dom-dev@chromium.org, or add hayato@chromium.org to reviewers.
+
+Once Blink removes Shadow DOM v0 in the future, you don't need to call
+`Node::UpdateDistributionForFlatTreeTraversal` before using `FlatTreeTraversal`
+beforehand in most cases, however, that wouldn't happen soon.
 
 # DOM mutations
 
