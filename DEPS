@@ -210,6 +210,14 @@ vars = {
   # the commit queue can handle CLs rolling android_sdk_tools_version
   # and whatever else without interference from each other.
   'android_sdk_tools_version': 'version:26.1.1-cr9',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
+  'spv_tools_revision': 'a97c1d911ae7b5aa40b34b21e680e7496a9e6a55',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
+  'spv_headers_revision': 'ff684ffc6a35d2a58f0f63108877d0064ea33feb',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -345,8 +353,13 @@ deps = {
       'dep_type': 'cipd',
   },
 
+  'src/third_party/spirv-headers/src':
+    Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Headers.git@' +
+        Var('spv_headers_revision'),
+
   'src/third_party/SPIRV-Tools/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Tools.git' + '@' + '9166854ac93ef81b026e943ccd230fed6c8b8d3c',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Tools.git@' +
+        Var('spv_tools_revision'),
 
   'src/third_party/accessibility_test_framework': {
       'packages': [
