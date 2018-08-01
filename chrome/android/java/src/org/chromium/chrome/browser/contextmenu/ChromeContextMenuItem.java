@@ -11,6 +11,7 @@ import android.support.annotation.StringRes;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
@@ -99,6 +100,22 @@ public enum ChromeContextMenuItem implements ContextMenuItem {
             return DefaultBrowserInfo.getTitleOpenInDefaultBrowser(false);
         } else if (mStringId == 0) {
             return "";
+        }
+
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)) {
+            @StringRes
+            int alternativeStringId = 0;
+            if (this == OPEN_IN_CHROME_INCOGNITO_TAB) {
+                alternativeStringId = R.string.contextmenu_open_in_chrome_private_tab;
+            } else if (this == OPEN_IN_INCOGNITO_TAB) {
+                alternativeStringId = R.string.contextmenu_open_in_private_tab;
+            } else if (this == BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB) {
+                alternativeStringId = R.string.browser_actions_open_in_private_tab;
+            }
+            if (alternativeStringId != 0) {
+                return context.getString(alternativeStringId);
+            }
         }
 
         return context.getString(mStringId);

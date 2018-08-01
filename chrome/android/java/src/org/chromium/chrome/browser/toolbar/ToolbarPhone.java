@@ -27,6 +27,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
@@ -665,8 +666,11 @@ public class ToolbarPhone extends ToolbarLayout
         if (v == mToggleTabStackButton) {
             description = getResources().getString(R.string.open_tabs);
         } else if (v == mNewTabButton) {
-            description = getResources().getString(
-                    isIncognito() ? R.string.button_new_incognito_tab : R.string.button_new_tab);
+            description = getResources().getString(isIncognito()
+                            ? (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                                              ? R.string.button_new_private_tab
+                                              : R.string.button_new_incognito_tab)
+                            : R.string.button_new_tab);
         } else {
             return false;
         }
@@ -2735,9 +2739,16 @@ public class ToolbarPhone extends ToolbarLayout
 
         if (mNewTabButton != null) {
             mNewTabButton.setIsIncognito(isIncognito);
-            CharSequence newTabContentDescription = getResources().getText(isIncognito
-                            ? R.string.accessibility_toolbar_btn_new_incognito_tab
-                            : R.string.accessibility_toolbar_btn_new_tab);
+            @StringRes
+            int resId;
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)) {
+                resId = isIncognito ? R.string.accessibility_toolbar_btn_new_private_tab
+                                    : R.string.accessibility_toolbar_btn_new_tab;
+            } else {
+                resId = isIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab
+                                    : R.string.accessibility_toolbar_btn_new_tab;
+            }
+            CharSequence newTabContentDescription = getResources().getText(resId);
 
             if (!newTabContentDescription.equals(mNewTabButton.getContentDescription())) {
                 mNewTabButton.setContentDescription(newTabContentDescription);

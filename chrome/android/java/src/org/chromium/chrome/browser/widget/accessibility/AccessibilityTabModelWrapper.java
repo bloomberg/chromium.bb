@@ -16,6 +16,7 @@ import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -132,7 +133,9 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
                     mModernStackButtonWrapper.newTab()
                             .setCustomView(mModernIncognitoButtonIcon)
                             .setContentDescription(
-                                    R.string.accessibility_tab_switcher_incognito_stack);
+                                    ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                                            ? R.string.accessibility_tab_switcher_private_stack
+                                            : R.string.accessibility_tab_switcher_incognito_stack);
             mModernStackButtonWrapper.addTab(mModernIncognitoButton);
             mModernStackButtonWrapper.addOnTabSelectedListener(
                     new TabLayout.OnTabSelectedListener() {
@@ -222,7 +225,9 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
 
         mAccessibilityView.setContentDescription(incognitoSelected
                         ? getContext().getString(
-                                  R.string.accessibility_tab_switcher_incognito_stack)
+                                  ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                                          ? R.string.accessibility_tab_switcher_private_stack
+                                          : R.string.accessibility_tab_switcher_incognito_stack)
                         : getContext().getString(
                                   R.string.accessibility_tab_switcher_standard_stack));
 
@@ -248,7 +253,9 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         setStateBasedOnModel();
 
         int stackAnnouncementId = incognitoSelected
-                ? R.string.accessibility_tab_switcher_incognito_stack_selected
+                ? (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                                  ? R.string.accessibility_tab_switcher_private_stack_selected
+                                  : R.string.accessibility_tab_switcher_incognito_stack_selected)
                 : R.string.accessibility_tab_switcher_standard_stack_selected;
         AccessibilityTabModelWrapper.this.announceForAccessibility(
                 getResources().getString(stackAnnouncementId));
