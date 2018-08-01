@@ -465,18 +465,20 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // tree so only the limits need to be provided.
   target_tree->PushPageScaleFactorAndLimits(nullptr, min_page_scale_factor(),
                                             max_page_scale_factor());
-  target_tree->SetDeviceScaleFactor(device_scale_factor());
-  target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
+
   target_tree->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
   target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->set_content_source_id(content_source_id());
 
+  target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
+  target_tree->SetDeviceScaleFactor(device_scale_factor());
+  target_tree->SetDeviceViewportSize(device_viewport_size_);
+  target_tree->SetViewportVisibleRect(viewport_visible_rect_);
+
   if (TakeNewLocalSurfaceIdRequest())
     target_tree->RequestNewLocalSurfaceId();
   target_tree->SetLocalSurfaceIdFromParent(local_surface_id_from_parent());
-  target_tree->SetDeviceViewportSize(device_viewport_size_);
-  target_tree->SetViewportVisibleRect(viewport_visible_rect_);
 
   target_tree->pending_page_scale_animation_ =
       std::move(pending_page_scale_animation_);
