@@ -203,7 +203,8 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         mThisYear = -1;
         mThisMonth = -1;
-        if (mShouldRequestExpirationDate) new CalendarTask().execute();
+        if (mShouldRequestExpirationDate)
+            new CalendarTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         // Set the max length of the CVC field.
         mCardUnmaskInput.setFilters(
@@ -290,7 +291,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         mInstructions.setText(instructions);
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         if (mShouldRequestExpirationDate && (mThisYear == -1 || mThisMonth == -1)) {
-            new CalendarTask().execute();
+            new CalendarTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         showExpirationDateInputsInputs();
     }
