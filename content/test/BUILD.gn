@@ -1970,6 +1970,11 @@ test("content_unittests") {
     if (is_mac) {
       sources += [ "../browser/media/capture/cursor_renderer_mac_unittest.mm" ]
     }
+    if (is_chromeos) {
+      sources += [
+        "../browser/media/capture/lame_capture_overlay_chromeos_unittest.cc",
+      ]
+    }
   }
 
   if (is_linux) {

@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "content/browser/media/capture/lame_capture_overlay_chromeos.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
@@ -47,6 +48,7 @@ namespace content {
 //
 // TODO(crbug/806366): The goal is to remove this code by 2019.
 class LameWindowCapturerChromeOS : public viz::mojom::FrameSinkVideoCapturer,
+                                   public LameCaptureOverlayChromeOS::Owner,
                                    public aura::WindowObserver {
  public:
   explicit LameWindowCapturerChromeOS(aura::Window* target);
@@ -75,6 +77,9 @@ class LameWindowCapturerChromeOS : public viz::mojom::FrameSinkVideoCapturer,
   // delivered to the consumer. When the consumer is done with the frame, this
   // returns the buffer back to the pool.
   class InFlightFrame;
+
+  // LameWindowCapturerChromeOS::Owner implementation.
+  void OnOverlayConnectionLost(LameCaptureOverlayChromeOS* overlay) final;
 
   // Initiates capture of the next frame. This is called periodically by the
   // |timer_|.
@@ -123,6 +128,9 @@ class LameWindowCapturerChromeOS : public viz::mojom::FrameSinkVideoCapturer,
   // A value provided in the copy requests to enable VIZ to optimize around
   // video capture.
   const base::UnguessableToken copy_request_source_;
+
+  // An optional overlay to be rendered over each captured video frame.
+  std::unique_ptr<LameCaptureOverlayChromeOS> overlay_;
 
   // Used for cancelling any outstanding activities' results, once Stop() is
   // called and there is no longer a consumer to receive another frame.

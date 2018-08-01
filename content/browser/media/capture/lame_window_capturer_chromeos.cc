@@ -143,8 +143,10 @@ void LameWindowCapturerChromeOS::RequestRefreshFrame() {
 void LameWindowCapturerChromeOS::CreateOverlay(
     int32_t stacking_index,
     viz::mojom::FrameSinkVideoCaptureOverlayRequest request) {
-  // TODO(crbug.com/810133): Provide an implementation.
-  NOTIMPLEMENTED();
+  // LameWindowCapturerChromeOS only supports one overlay at a time. If one
+  // already exists, the following will cause it to be dropped.
+  overlay_ =
+      std::make_unique<LameCaptureOverlayChromeOS>(this, std::move(request));
 }
 
 class LameWindowCapturerChromeOS::InFlightFrame
@@ -171,6 +173,15 @@ class LameWindowCapturerChromeOS::InFlightFrame
   const gfx::Rect& content_rect() const { return content_rect_; }
   void set_content_rect(const gfx::Rect& rect) { content_rect_ = rect; }
 
+  void set_overlay_renderer(LameCaptureOverlayChromeOS::OnceRenderer renderer) {
+    overlay_renderer_ = std::move(renderer);
+  }
+  void RenderOptionalOverlay() {
+    if (overlay_renderer_) {
+      std::move(overlay_renderer_).Run(video_frame_.get());
+    }
+  }
+
   void Done() final {
     if (auto* capturer = capturer_.get()) {
       DCHECK_GT(capturer->in_flight_count_, 0);
@@ -195,9 +206,17 @@ class LameWindowCapturerChromeOS::InFlightFrame
   BufferAndSize buffer_;
   scoped_refptr<VideoFrame> video_frame_;
   gfx::Rect content_rect_;
+  LameCaptureOverlayChromeOS::OnceRenderer overlay_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightFrame);
 };
+
+void LameWindowCapturerChromeOS::OnOverlayConnectionLost(
+    LameCaptureOverlayChromeOS* overlay) {
+  if (overlay_.get() == overlay) {
+    overlay_.reset();
+  }
+}
 
 void LameWindowCapturerChromeOS::CaptureNextFrame() {
   // If the maximum frame in-flight count has been reached, skip this frame.
@@ -280,6 +299,10 @@ void LameWindowCapturerChromeOS::CaptureNextFrame() {
   }
   DCHECK(target_);
 
+  if (overlay_) {
+    in_flight_frame->set_overlay_renderer(overlay_->MakeRenderer(content_rect));
+  }
+
   // Request a copy of the Layer associated with the |target_| aura::Window.
   auto request = std::make_unique<viz::CopyOutputRequest>(
       // Note: As of this writing, I420_PLANES is not supported external to VIZ.
@@ -314,6 +337,8 @@ void LameWindowCapturerChromeOS::DidCopyFrame(
   if (!result->ReadI420Planes(y, y_stride, u, u_stride, v, v_stride)) {
     return;  // Copy request failed, punt.
   }
+
+  in_flight_frame->RenderOptionalOverlay();
 
   // The result may be smaller than what was requested, if unforeseen clamping
   // to the source boundaries occurred by the executor of the copy request.
