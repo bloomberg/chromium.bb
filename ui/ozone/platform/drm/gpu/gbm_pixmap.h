@@ -11,11 +11,8 @@
 #include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
-struct gbm_bo;
-
 namespace ui {
 
-class GbmDevice;
 class GbmSurfaceFactory;
 
 class GbmPixmap : public gfx::NativePixmap {

@@ -16,6 +16,7 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
+#include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
@@ -24,7 +25,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
-#include "ui/ozone/platform/drm/gpu/gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/gbm_pixmap.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
@@ -36,7 +36,7 @@ namespace ui {
 namespace {
 
 scoped_refptr<DrmFramebuffer> AddFramebuffersForBo(
-    const scoped_refptr<GbmDevice>& gbm,
+    const scoped_refptr<DrmDevice>& drm,
     gbm_bo* bo,
     uint32_t format,
     uint64_t format_modifier) {
@@ -57,11 +57,11 @@ scoped_refptr<DrmFramebuffer> AddFramebuffersForBo(
   // a bo with modifiers, otherwise, we rely on the "no modifiers"
   // behavior doing the right thing.
   params.flags = 0;
-  if (gbm->allow_addfb2_modifiers() &&
+  if (drm->allow_addfb2_modifiers() &&
       params.modifier != DRM_FORMAT_MOD_INVALID)
     params.flags |= DRM_MODE_FB_MODIFIERS;
 
-  return DrmFramebuffer::AddFramebuffer(gbm.get(), params);
+  return DrmFramebuffer::AddFramebuffer(drm, params);
 }
 
 uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
@@ -88,7 +88,7 @@ uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
   }
 }
 
-void CreateBufferWithGbmFlags(const scoped_refptr<GbmDevice>& gbm,
+void CreateBufferWithGbmFlags(const scoped_refptr<DrmDevice>& drm,
                               uint32_t fourcc_format,
                               const gfx::Size& size,
                               uint32_t flags,
@@ -97,16 +97,17 @@ void CreateBufferWithGbmFlags(const scoped_refptr<GbmDevice>& gbm,
                               scoped_refptr<DrmFramebuffer>* out_framebuffer) {
   std::unique_ptr<GbmBuffer> buffer;
   if (modifiers.empty())
-    buffer = GbmBuffer::CreateBuffer(gbm->device(), fourcc_format, size, flags);
+    buffer =
+        GbmBuffer::CreateBuffer(drm->gbm_device(), fourcc_format, size, flags);
   else
-    buffer = GbmBuffer::CreateBufferWithModifiers(gbm->device(), fourcc_format,
-                                                  size, flags, modifiers);
+    buffer = GbmBuffer::CreateBufferWithModifiers(
+        drm->gbm_device(), fourcc_format, size, flags, modifiers);
   if (!buffer)
     return;
 
   scoped_refptr<DrmFramebuffer> framebuffer;
   if (flags & GBM_BO_USE_SCANOUT) {
-    framebuffer = AddFramebuffersForBo(gbm, buffer->bo(), buffer->format(),
+    framebuffer = AddFramebuffersForBo(drm, buffer->bo(), buffer->format(),
                                        buffer->format_modifier());
     if (!framebuffer)
       return;
@@ -126,21 +127,20 @@ class GbmBufferGenerator : public DrmFramebufferGenerator {
                                        uint32_t format,
                                        const std::vector<uint64_t>& modifiers,
                                        const gfx::Size& size) override {
-    scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
     std::unique_ptr<GbmBuffer> buffer;
 
     if (modifiers.size() > 0) {
       buffer = GbmBuffer::CreateBufferWithModifiers(
-          gbm->device(), format, size, GBM_BO_USE_SCANOUT, modifiers);
+          drm->gbm_device(), format, size, GBM_BO_USE_SCANOUT, modifiers);
     } else {
-      buffer = GbmBuffer::CreateBuffer(gbm->device(), format, size,
+      buffer = GbmBuffer::CreateBuffer(drm->gbm_device(), format, size,
                                        GBM_BO_USE_SCANOUT);
     }
 
     if (!buffer)
       return nullptr;
 
-    return AddFramebuffersForBo(gbm, buffer->bo(), buffer->format(),
+    return AddFramebuffersForBo(drm, buffer->bo(), buffer->format(),
                                 buffer->format_modifier());
   }
 
@@ -157,12 +157,11 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
   scoped_refptr<DrmDevice> CreateDevice(const base::FilePath& path,
                                         base::File file,
                                         bool is_primary_device) override {
-    scoped_refptr<DrmDevice> drm =
-        new GbmDevice(path, std::move(file), is_primary_device);
-    if (drm->Initialize())
-      return drm;
-
-    return nullptr;
+    auto drm = base::MakeRefCounted<DrmDevice>(path, std::move(file),
+                                               is_primary_device);
+    if (!drm->Initialize())
+      return nullptr;
+    return drm;
   }
 
  private:
@@ -212,9 +211,8 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
                              uint32_t client_flags,
                              std::unique_ptr<GbmBuffer>* buffer,
                              scoped_refptr<DrmFramebuffer>* framebuffer) {
-  scoped_refptr<GbmDevice> gbm =
-      static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
-  DCHECK(gbm);
+  scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
+  DCHECK(drm);
 
   DrmWindow* window = screen_manager_->GetWindow(widget);
   uint32_t flags = BufferUsageToGbmFlags(usage);
@@ -228,7 +226,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
     modifiers = window->GetController()->GetFormatModifiers(fourcc_format);
   }
 
-  CreateBufferWithGbmFlags(gbm, fourcc_format, size, flags, modifiers, buffer,
+  CreateBufferWithGbmFlags(drm, fourcc_format, size, flags, modifiers, buffer,
                            framebuffer);
 
   // NOTE: BufferUsage::SCANOUT is used to create buffers that will be
@@ -237,7 +235,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   // buffer in that case.
   if (!*buffer && usage != gfx::BufferUsage::SCANOUT) {
     flags &= ~GBM_BO_USE_SCANOUT;
-    CreateBufferWithGbmFlags(gbm, fourcc_format, size, flags, modifiers, buffer,
+    CreateBufferWithGbmFlags(drm, fourcc_format, size, flags, modifiers, buffer,
                              framebuffer);
   }
 }
@@ -250,19 +248,18 @@ void DrmThread::CreateBufferFromFds(
     const std::vector<gfx::NativePixmapPlane>& planes,
     std::unique_ptr<GbmBuffer>* out_buffer,
     scoped_refptr<DrmFramebuffer>* out_framebuffer) {
-  scoped_refptr<GbmDevice> gbm =
-      static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
-  DCHECK(gbm);
+  scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
+  DCHECK(drm);
 
   std::unique_ptr<GbmBuffer> buffer = GbmBuffer::CreateBufferFromFds(
-      gbm->device(), ui::GetFourCCFormatFromBufferFormat(format), size,
+      drm->gbm_device(), ui::GetFourCCFormatFromBufferFormat(format), size,
       std::move(fds), planes);
   if (!buffer)
     return;
 
   scoped_refptr<DrmFramebuffer> framebuffer;
   if (buffer->flags() & GBM_BO_USE_SCANOUT) {
-    framebuffer = AddFramebuffersForBo(gbm, buffer->bo(), buffer->format(),
+    framebuffer = AddFramebuffersForBo(drm, buffer->bo(), buffer->format(),
                                        buffer->format_modifier());
     if (!framebuffer)
       return;
