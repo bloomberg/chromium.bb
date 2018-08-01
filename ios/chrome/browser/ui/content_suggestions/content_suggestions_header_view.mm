@@ -235,8 +235,10 @@ const CGFloat kBackgroundLandscapeInset = 169;
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
-  CGFloat constantDiff = percent * (ntp_header::kMaxHorizontalMarginDiff +
-                                    inset + safeAreaInsets.left);
+  CGFloat constantDiff = IsUIRefreshPhase1Enabled()
+                             ? -maxXInset * percent
+                             : percent * (ntp_header::kMaxHorizontalMarginDiff +
+                                          inset + safeAreaInsets.left);
   for (NSLayoutConstraint* constraint in constraints) {
     if (constraint.constant > 0)
       constraint.constant = constantDiff + ntp_header::kHintLabelSidePadding;
