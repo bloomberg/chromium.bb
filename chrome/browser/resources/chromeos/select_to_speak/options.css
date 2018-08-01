@@ -108,15 +108,6 @@ h2 {
     border-color: rgb(0, 0, 255);
 }
 
-.option button {
-    background-color: #ddd;
-    border-width: 0;
-    font-weight: bold;
-    height: 30px;
-    margin-left: 20px;
-    padding: 0 20px;
-}
-
 label {
     line-height: 60px;
     vertical-align: middle;
@@ -150,45 +141,27 @@ label {
     z-index: 10;
 }
 
-.slider {
-    -webkit-appearance: none;
-    padding: 15px 0 15px 0;
-    transition: all 200ms ease;
-    width: 200px;
+.option button {
+  background-color: #fff;
+  border-color: rgb(210, 227, 252);
+  border-radius: 4px;
+  border-style: solid;
+  border-width: 0;
+  border-width: 1px;
+  color: rgb(26, 115, 232);
+  float: right;
+  font-weight: bold;
+  height: 30px;
+  margin-left: 20px;
+  margin-top: 15px;
+  padding: 0 20px;
+  vertical-align: middle;
 }
 
-.slider::-webkit-slider-runnable-track {
-    background: #bbb;
-    border: none;
-    border-radius: 1px;
-    height: 2px;
+.option button:hover {
+  background-color: rgba(66, 133, 244, 0.04);
 }
 
-.slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    -webkit-transition: 200ms;
-    appearance: none;
-    background: rgb(51, 103, 214);
-    border-radius: 50%;
-    height: 10px;
-    margin-top: -3px;
-    width: 10px;
-}
-
-.slider:focus::-webkit-slider-thumb {
-    background-clip: padding-box;
-    border: 10px solid rgba(51, 103, 214, .2);
-    height: 30px;
-    margin-top: -13px;
-    width: 30px;
-}
-
-.slider:active::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    border:0px;
-    border-radius:50%;
-    height: 20px;
-    margin-top: -10px;
-    width: 20px;
+.option button:active {
+  background-color: rgba(66, 133, 244, 0.15);
 }

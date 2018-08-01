@@ -121,25 +121,16 @@
         Select-to-speak
       </message>
       <message desc="The description for Select-to-speak." name="IDS_SELECT_TO_SPEAK_DESCRIPTION">
-        
+
       </message>
       <message desc="The title of the Select-to-speak options page." name="IDS_SELECT_TO_SPEAK_OPTIONS_PAGE_TITLE">
         Select-to-speak Settings
-      </message>      
+      </message>
       <message desc="Section of the Select-to-speak options dialog where the user can adjust synthesized speech properties." name="IDS_SELECT_TO_SPEAK_OPTIONS_SPEECH">
         Speech
       </message>
       <message desc="Label for the control in the Select-to-speak options dialog where the user can choose a voice from a list." name="IDS_SELECT_TO_SPEAK_OPTIONS_VOICES_DESCRIPTION">
         Select a voice:
-      </message>
-      <message desc="Label for the control in the Select-to-speak options dialog where the user can choose the rate/speed of synthesized speech." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_DESCRIPTION">
-        Select a speech rate:
-      </message>
-      <message desc="Label for the slowest synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_SLOWEST">
-        Slowest
-      </message>
-      <message desc="Label for the fastest synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_FASTEST">
-        Fastest
       </message>
       <message desc="Group of options controlling highlighting." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT">
         Highlighting
@@ -171,26 +162,20 @@
       <message desc="Example of a word highlight on a light background in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_LIGHT">
         Light background
       </message>
-      <message desc="Label for the control in the Select-to-speak options dialog where the user can choose the pitch of synthesized speech." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_DESCRIPTION">
-        Select a speech pitch:
+      <message desc="Link to the Text-to-Speech settings page." name="IDS_SELECT_TO_SPEAK_OPTIONS_TEXT_TO_SPEECH_SETTINGS">
+        Personalize Text-to-Speech settings
       </message>
-      <message desc="Label for the lowest synthesized speech pitch in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_LOWEST">
-        Lowest
+      <message desc="Link to the Text-to-Speech settings page." name="IDS_SELECT_TO_SPEAK_OPTIONS_TEXT_TO_SPEECH_SETTINGS_LINK">
+        Text-to-Speech settings
       </message>
-      <message desc="Label forer low synthesized speech pitch in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_LOWER">
-        Lower
+      <message desc="Title for a notification shown to the user when Select-to-Speak migrates Text-to-Speech settings to the global Text-to-Speech settings page." name="IDS_SELECT_TO_SPEAK_TTS_MIGRATION_TITLE">
+        Select-to-Speak speech settings updated
       </message>
-      <message desc="Label for low synthesized speech pitch in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_LOW">
-        Low
+      <message desc="Message shown to the user when Select-to-Speak's Text-to-Speech settings have been copied into the global Text-to-Speech settings." name="IDS_SELECT_TO_SPEAK_TTS_MIGRATED_TO_GLOBAL">
+        Your Select-to-Speak Text-to-Speech settings were migrated to global Text-to-Speech settings.
       </message>
-      <message desc="Label for a normal synthesized speech pitch in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_NORMAL">
-        Normal
-      </message>
-      <message desc="Label for high synthesized speech pitch in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_HIGH">
-        High
-      </message>
-      <message desc="Label for highest synthesized speech pitch in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_HIGHEST">
-        Highest
+      <message desc="Message shown to the user when Select-to-Speak's Text-to-Speech settings were overwritten by the global Text-to-Speech settings." name="IDS_SELECT_TO_SPEAK_TTS_NOT_MIGRATED_TO_GLOBAL">
+        Select to speak now uses global Text-to-Speech settings.
       </message>
       <message desc="Voice name for the system default Text-to-Speech voice" name="IDS_SELECT_TO_SPEAK_SYSTEM_VOICE">
         System Text-to-Speech voice

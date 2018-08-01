@@ -21,8 +21,6 @@ SelectToSpeakOptionsPage.prototype = {
       this.populateVoiceList_('voice');
     }.bind(this));
     this.syncSelectControlToPref_('voice', 'voice', 'voiceName');
-    this.syncRangeControlToPref_('rate', 'rate');
-    this.syncSelectControlToPref_('pitch', 'pitch', 'value');
     this.syncCheckboxControlToPref_(
         'wordHighlight', 'wordHighlight', function(checked) {
           let elem = document.getElementById('highlightSubOption');
@@ -38,6 +36,7 @@ SelectToSpeakOptionsPage.prototype = {
           }
         });
     this.setUpHighlightListener_();
+    this.setUpTtsButtonClickListener_();
     chrome.metricsPrivate.recordUserAction(
         'Accessibility.CrosSelectToSpeak.LoadSettings');
   },
@@ -185,40 +184,8 @@ SelectToSpeakOptionsPage.prototype = {
   },
 
   /**
-   * Given the id of an HTML range element and the name of a chrome.storage
-   * pref, sync them both ways.
-   * @param {string} rangeId The id of the range element.
-   * @param {string} pref The name of a chrome.storage pref.
-   * @param {?function(string): undefined=} opt_onChange Optional change
-   *     listener to call when the setting has been changed.
-   */
-  syncRangeControlToPref_: function(rangeId, pref, opt_onChange) {
-    var element = document.getElementById(rangeId);
-
-    function updateFromPref() {
-      chrome.storage.sync.get(pref, function(items) {
-        var value = items[pref];
-        element.value = value;
-        if (opt_onChange) {
-          opt_onChange(value);
-        }
-      });
-    }
-
-    element.addEventListener('change', function() {
-      var newValue = element.value;
-      var setParams = {};
-      setParams[pref] = newValue;
-      chrome.storage.sync.set(setParams);
-    });
-
-    element.updateFunction = updateFromPref;
-    updateFromPref();
-    chrome.storage.onChanged.addListener(updateFromPref);
-  },
-
-  /**
    * Sets up the highlight listeners and preferences.
+   * @private
    */
   setUpHighlightListener_: function() {
     let onChange = function(value) {
@@ -230,6 +197,18 @@ SelectToSpeakOptionsPage.prototype = {
 
     this.syncSelectControlToPref_(
         'highlightColor', 'highlightColor', 'value', onChange);
+  },
+
+  /**
+   * Sets up a listener on the TTS settings button.
+   * @private
+   */
+  setUpTtsButtonClickListener_: function() {
+    let button = document.getElementById('ttsSettingsBtn');
+    button.addEventListener('click', () => {
+      let url = 'chrome://settings/manageAccessibility/tts';
+      chrome.tabs.create({url: url});
+    });
   }
 };
 

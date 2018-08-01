@@ -7,6 +7,7 @@
  * This class has functions and callbacks necessary for Select-to-Speak
  * to function. It keeps track of the utterances currently being spoken,
  * and whether TTS should be speaking or is stopped.
+ * @constructor
  */
 var MockTts = function() {
   /**
