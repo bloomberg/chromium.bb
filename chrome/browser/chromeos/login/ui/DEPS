@@ -21,6 +21,7 @@ specific_include_rules = {
      "+ash/focus_cycler.h",
      "+ash/public/cpp/ash_features.h",
      "+ash/root_window_controller.h",
+     "+ash/shelf/shelf.h",
      "+ash/shelf/shelf_widget.h",
      "+ash/shell.h",
      "+ash/system",
