@@ -135,6 +135,8 @@ void DesktopWindowTreeHostPlatform::CloseNow() {
   if (!weak_ref || got_on_closed_)
     return;
 
+  native_widget_delegate_->OnNativeWidgetDestroying();
+
   got_on_closed_ = true;
   desktop_native_widget_aura_->OnHostClosed();
 }
