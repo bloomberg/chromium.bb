@@ -445,7 +445,15 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   uint32_t shader_id = PaintShader::kInvalidRecordShaderId;
   size_t shader_size = 0;
   if (has_record) {
+    if (shader_type != PaintShader::Type::kPaintRecord) {
+      SetInvalid();
+      return;
+    }
     Read(&shader_id);
+    if (shader_id == PaintShader::kInvalidRecordShaderId) {
+      SetInvalid();
+      return;
+    }
 
     // Track dependent transfer cache entries to make cached shader size
     // more realistic.
@@ -492,12 +500,8 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
     return;
   }
 
-  if (shader_id == PaintShader::kInvalidRecordShaderId) {
-    // Paint record shaders must have ids.
-    if (shader_type == PaintShader::Type::kPaintRecord) {
-      SetInvalid();
-      return;
-    }
+  // All shader types but records are done.
+  if (shader_type != PaintShader::Type::kPaintRecord) {
     (*shader)->CreateSkShader();
     return;
   }
