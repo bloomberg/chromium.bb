@@ -8,8 +8,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -202,32 +200,6 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   if (frame_tree_node_->opener()) {
     opener_routing_id = frame_tree_node_->render_manager()->GetOpenerRoutingID(
         site_instance_.get());
-  }
-
-  // Temporary debugging code for https://crbug.com/794625 to see if we're ever
-  // sending a message to create a RenderFrameProxy when one already exists.
-  // TODO(alexmos): Remove after the investigation.
-  if (GetProcess()->GetProcess().IsValid() &&
-      GetProcess()->GetProcess().Pid() ==
-          pid_of_last_create_message_for_debugging_) {
-    SiteInstanceImpl* site_instance =
-        static_cast<SiteInstanceImpl*>(site_instance_.get());
-    GURL site_url(site_instance->GetSiteURL());
-    DEBUG_ALIAS_FOR_GURL(site_url_copy, site_url);
-    GURL current_rfh_site_url(frame_tree_node_->render_manager()
-                                  ->current_frame_host()
-                                  ->GetSiteInstance()
-                                  ->GetSiteURL());
-    DEBUG_ALIAS_FOR_GURL(current_rfh_site_url_copy, current_rfh_site_url);
-
-    int routing_id_copy = routing_id_;
-    base::debug::Alias(&routing_id_copy);
-    int parent_routing_id_copy = parent_routing_id;
-    base::debug::Alias(&parent_routing_id_copy);
-    int active_frame_count = site_instance->active_frame_count();
-    base::debug::Alias(&active_frame_count);
-
-    base::debug::DumpWithoutCrashing();
   }
 
   int view_routing_id = frame_tree_node_->frame_tree()
