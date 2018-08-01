@@ -607,6 +607,7 @@ class PLATFORM_EXPORT ThreadState final
   void AtomicPauseEpilogue(BlinkGC::MarkingType, BlinkGC::SweepingType);
   void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void MarkPhaseVisitRoots();
+  void MarkPhaseVisitNotFullyConstructedObjects();
   bool MarkPhaseAdvanceMarking(TimeTicks deadline);
   void VerifyMarking(BlinkGC::MarkingType);
 

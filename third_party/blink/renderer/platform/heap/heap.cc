@@ -211,12 +211,7 @@ void ThreadHeap::RegisterMovingObjectCallback(MovableReference reference,
                                              callback_data);
 }
 
-void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
-  bool complete = AdvanceMarkingStackProcessing(visitor, TimeTicks::Max());
-  CHECK(complete);
-}
-
-void ThreadHeap::MarkNotFullyConstructedObjects(Visitor* visitor) {
+void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
   DCHECK(!thread_state_->IsIncrementalMarking());
   ThreadHeapStatsCollector::Scope stats_scope(
       stats_collector(),
@@ -226,8 +221,7 @@ void ThreadHeap::MarkNotFullyConstructedObjects(Visitor* visitor) {
   while (
       not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
     BasePage* const page = PageFromObject(item);
-    reinterpret_cast<MarkingVisitor*>(visitor)->ConservativelyMarkAddress(
-        page, reinterpret_cast<Address>(item));
+    visitor->ConservativelyMarkAddress(page, reinterpret_cast<Address>(item));
   }
 }
 
@@ -255,8 +249,7 @@ void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
   ephemeron_callbacks_ = std::move(final_set);
 }
 
-bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
-                                               TimeTicks deadline) {
+bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor, TimeTicks deadline) {
   const size_t kDeadlineCheckInterval = 2500;
   size_t processed_callback_count = 0;
   // Ephemeron fixed point loop.

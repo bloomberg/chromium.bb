@@ -287,10 +287,12 @@ class PLATFORM_EXPORT ThreadHeap {
   template <typename T>
   static Address Reallocate(void* previous, size_t);
 
-  void ProcessMarkingStack(Visitor*);
   void WeakProcessing(Visitor*);
-  void MarkNotFullyConstructedObjects(Visitor*);
-  bool AdvanceMarkingStackProcessing(Visitor*, TimeTicks deadline);
+
+  // Marks not fully constructed objects.
+  void MarkNotFullyConstructedObjects(MarkingVisitor*);
+  // Marks the transitive closure including ephemerons.
+  bool AdvanceMarking(MarkingVisitor*, TimeTicks deadline);
   void VerifyMarking();
 
   // Conservatively checks whether an address is a pointer in any of the
