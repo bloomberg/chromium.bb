@@ -7221,6 +7221,11 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Clicked 'Always show on mobile'"/>
 </enum>
 
+<enum name="ContentSettings.EphemeralFlashPermission">
+  <int value="0" label="The First time permission is granted to a host."/>
+  <int value="1" label="Subsequant grants to a host."/>
+</enum>
+
 <enum name="ContentSettingScheme">
   <int value="0" label="(wildcard)"/>
   <int value="1" label="(other)"/>

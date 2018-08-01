@@ -35,6 +35,7 @@
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -186,6 +187,13 @@ content_settings::PatternPair GetPatternsForContentSettingsType(
       website_settings_info->scoping_type(), primary_url, secondary_url);
   return patterns;
 }
+
+// This enum is used to collect Flash permission data.
+enum class FlashPermissions {
+  kFirstTime = 0,
+  kRepeated = 1,
+  kMaxValue = kRepeated,
+};
 
 }  // namespace
 
@@ -509,6 +517,23 @@ void HostContentSettingsMap::SetContentSettingCustomScope(
     ContentSetting setting) {
   DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
       content_type));
+
+  // Record stats on Flash permission grants with ephemeral storage.
+  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      setting == CONTENT_SETTING_ALLOW &&
+      base::FeatureList::IsEnabled(
+          content_settings::features::kEnableEphemeralFlashPermission)) {
+    GURL url(primary_pattern.ToString());
+    ContentSettingsPattern temp_patterns[2];
+    std::unique_ptr<base::Value> value(GetContentSettingValueAndPatterns(
+        content_settings_providers_[PREF_PROVIDER].get(), url, url,
+        CONTENT_SETTINGS_TYPE_PLUGINS_DATA, resource_identifier, is_incognito_,
+        temp_patterns, temp_patterns + 1));
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "ContentSettings.EphemeralFlashPermission",
+        value ? FlashPermissions::kRepeated : FlashPermissions::kFirstTime);
+  }
 
   std::unique_ptr<base::Value> value;
   // A value of CONTENT_SETTING_DEFAULT implies deleting the content setting.
