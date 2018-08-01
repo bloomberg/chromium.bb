@@ -54,6 +54,9 @@ _AUTOMATION_EXTERNS = (
 _METRICS_PRIVATE_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/metrics_private.js'))
 
+# Settings private API externs file.
+_SETTINGS_PRIVATE_EXTERNS = (
+    ChromeRootPath('third_party/closure_compiler/externs/settings_private.js'))
 
 # Additional chrome api externs file.
 _CHROME_EXTERNS = (
@@ -75,7 +78,8 @@ _COMMON_EXTERNS = [
     _AUTOMATION_EXTERNS,
     _CHROME_EXTERNS,
     _CHROME_EXTENSIONS_EXTERNS,
-    _METRICS_PRIVATE_EXTERNS]
+    _METRICS_PRIVATE_EXTERNS,
+    _SETTINGS_PRIVATE_EXTERNS,]
 
 # List of top-level scripts and externs that we can check.
 _TOP_LEVEL_SCRIPTS = [

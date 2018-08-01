@@ -233,6 +233,10 @@ CommandHandler.onCommand = function(command) {
       chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp(
           false);
       break;
+    case 'showTtsSettings':
+      var ttsSettings = {url: 'chrome://settings/manageAccessibility/tts'};
+      chrome.windows.create(ttsSettings);
+      break;
     default:
       break;
   }
@@ -906,25 +910,6 @@ CommandHandler.onCommand = function(command) {
 CommandHandler.increaseOrDecreaseSpeechProperty_ = function(
     propertyName, increase) {
   cvox.ChromeVox.tts.increaseOrDecreaseProperty(propertyName, increase);
-  var announcement;
-  var valueAsPercent =
-      Math.round(cvox.ChromeVox.tts.propertyToPercentage(propertyName) * 100);
-  switch (propertyName) {
-    case cvox.AbstractTts.RATE:
-      announcement = Msgs.getMsg('announce_rate', [valueAsPercent]);
-      break;
-    case cvox.AbstractTts.PITCH:
-      announcement = Msgs.getMsg('announce_pitch', [valueAsPercent]);
-      break;
-    case cvox.AbstractTts.VOLUME:
-      announcement = Msgs.getMsg('announce_volume', [valueAsPercent]);
-      break;
-  }
-  if (announcement) {
-    cvox.ChromeVox.tts.speak(
-        announcement, cvox.QueueMode.FLUSH,
-        cvox.AbstractTts.PERSONALITY_ANNOTATION);
-  }
 };
 
 /**

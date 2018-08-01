@@ -950,6 +950,15 @@
         },
         "doubleTap": true
       }
+    },
+    {
+      "command": "showTtsSettings",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [79, 83]
+        }
+      }
     }
   ]
 }
