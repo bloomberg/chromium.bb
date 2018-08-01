@@ -974,18 +974,6 @@
       ]
     },
     {
-      "name": "nautilus",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "ninja",
       "configs": [
         {
@@ -2038,6 +2026,21 @@
             "bvt-cq",
             "bvt-perbuild"
           ],
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "nautilus",
+      "reference_board_name": "nautilus",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "nautilus",
+          "name": "nautilus",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
