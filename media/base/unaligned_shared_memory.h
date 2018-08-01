@@ -50,7 +50,7 @@ class MEDIA_EXPORT UnalignedSharedMemory {
 // offsets.
 class MEDIA_EXPORT WritableUnalignedMapping {
  public:
-  // Creates an |UnalignedSharedMemory| instance from a
+  // Creates an |WritableUnalignedMapping| instance from a
   // |UnsafeSharedMemoryRegion|. |size| sets the maximum size that may be mapped
   // within |region| and |offset| is the offset that will be mapped. |region| is
   // not retained and is used only in the constructor.
@@ -58,7 +58,7 @@ class MEDIA_EXPORT WritableUnalignedMapping {
                            size_t size,
                            off_t offset);
 
-  // As above, but creates from a handle. This region will not own the handle.
+  // As above, but creates from a handle. This region will own the handle.
   // DEPRECATED: this should be used only for the legacy shared memory
   // conversion project, see https://crbug.com/795291.
   WritableUnalignedMapping(const base::SharedMemoryHandle& handle,
