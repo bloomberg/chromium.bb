@@ -732,4 +732,116 @@ TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
   }
 }
 
+// Tests runtime-granting permissions beyond what are explicitly requested by
+// the extension.
+TEST_F(PermissionsUpdaterTest, GrantingBroadRuntimePermissions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermission("https://maps.google.com/*")
+          .Build();
+
+  const URLPattern kMapsPattern(Extension::kValidHostPermissionSchemes,
+                                "https://maps.google.com/*");
+  const URLPattern kAllGooglePattern(Extension::kValidHostPermissionSchemes,
+                                     "https://*.google.com/*");
+
+  // Withhold host permissions. Effective hosts should be empty.
+  PermissionsUpdater updater(profile());
+  updater.InitializePermissions(extension.get());
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+  EXPECT_TRUE(extension->permissions_data()
+                  ->active_permissions()
+                  .effective_hosts()
+                  .is_empty());
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  {
+    // Verify initial state. The extension "active" permissions in preferences
+    // represent the permissions that would be active on the extension without
+    // the runtime host permissions feature. Thus, this should include the
+    // requested host permissions, and nothing more.
+    std::unique_ptr<const PermissionSet> active_prefs =
+        prefs->GetActivePermissions(extension->id());
+    EXPECT_TRUE(active_prefs->effective_hosts().ContainsPattern(kMapsPattern));
+    EXPECT_FALSE(
+        active_prefs->effective_hosts().ContainsPattern(kAllGooglePattern));
+
+    // Runtime granted permissions should not contain any permissions (all
+    // hosts are withheld).
+    std::unique_ptr<const PermissionSet> runtime_granted_prefs =
+        prefs->GetRuntimeGrantedPermissions(extension->id());
+    EXPECT_FALSE(
+        runtime_granted_prefs->effective_hosts().ContainsPattern(kMapsPattern));
+    EXPECT_FALSE(runtime_granted_prefs->effective_hosts().ContainsPattern(
+        kAllGooglePattern));
+  }
+
+  // Grant permission to all google.com domains.
+  const PermissionSet runtime_permissions(
+      APIPermissionSet(), ManifestPermissionSet(),
+      URLPatternSet({kAllGooglePattern}), URLPatternSet());
+  updater.GrantRuntimePermissions(*extension, runtime_permissions);
+
+  // The extension object's permission should never include un-requested
+  // permissions, so it should only include maps.google.com.
+  EXPECT_TRUE(extension->permissions_data()
+                  ->active_permissions()
+                  .effective_hosts()
+                  .ContainsPattern(kMapsPattern));
+  EXPECT_FALSE(extension->permissions_data()
+                   ->active_permissions()
+                   .effective_hosts()
+                   .ContainsPattern(kAllGooglePattern));
+
+  {
+    // The active permissions in preferences should reflect the extension's
+    // permission state without the runtime host permissions feature, so should
+    // still include exactly the requested permissions.
+    std::unique_ptr<const PermissionSet> active_prefs =
+        prefs->GetActivePermissions(extension->id());
+    EXPECT_TRUE(active_prefs->effective_hosts().ContainsPattern(kMapsPattern));
+    EXPECT_FALSE(
+        active_prefs->effective_hosts().ContainsPattern(kAllGooglePattern));
+    // The runtime-granted permissions should include all permissions that have
+    // been granted, which in this case includes google.com subdomains.
+    std::unique_ptr<const PermissionSet> runtime_granted_prefs =
+        prefs->GetRuntimeGrantedPermissions(extension->id());
+    EXPECT_TRUE(
+        runtime_granted_prefs->effective_hosts().ContainsPattern(kMapsPattern));
+    EXPECT_TRUE(runtime_granted_prefs->effective_hosts().ContainsPattern(
+        kAllGooglePattern));
+  }
+
+  // Revoke the host permission.
+  updater.RevokeRuntimePermissions(*extension, runtime_permissions);
+
+  EXPECT_FALSE(extension->permissions_data()
+                   ->active_permissions()
+                   .effective_hosts()
+                   .ContainsPattern(kMapsPattern));
+
+  {
+    // Active permissions in the preferences should remain constant (unaffected
+    // by the runtime host permissions feature).
+    std::unique_ptr<const PermissionSet> active_prefs =
+        prefs->GetActivePermissions(extension->id());
+    EXPECT_TRUE(active_prefs->effective_hosts().ContainsPattern(kMapsPattern));
+    EXPECT_FALSE(
+        active_prefs->effective_hosts().ContainsPattern(kAllGooglePattern));
+    // The runtime granted preferences should be empty again.
+    std::unique_ptr<const PermissionSet> runtime_granted_prefs =
+        prefs->GetRuntimeGrantedPermissions(extension->id());
+    EXPECT_FALSE(
+        runtime_granted_prefs->effective_hosts().ContainsPattern(kMapsPattern));
+    EXPECT_FALSE(runtime_granted_prefs->effective_hosts().ContainsPattern(
+        kAllGooglePattern));
+  }
+}
+
 }  // namespace extensions

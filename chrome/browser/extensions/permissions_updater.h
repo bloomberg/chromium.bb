@@ -78,7 +78,10 @@ class PermissionsUpdater {
 
   // Grants |permissions| that were withheld at installation and granted at
   // runtime to |extension|, updating the active permission set and notifying
-  // any observers.
+  // any observers. |permissions| may contain permissions that were not
+  // explicitly requested by the extension; if this happens, those permissions
+  // will be added to the runtime-granted permissions in the preferences, but
+  // will not be granted to the extension object or process itself.
   // NOTE: This should only be used for granting permissions through the runtime
   // host permissions feature.
   void GrantRuntimePermissions(const Extension& extension,
@@ -156,15 +159,15 @@ class PermissionsUpdater {
     kNone = 0,
     kGrantedPermissions = 1 << 0,
     kRuntimeGrantedPermissions = 1 << 1,
+    kActivePermissions = 1 << 2,
   };
 
-  // Sets the |extension|'s active permissions to |active| and records the
-  // change in the prefs. If |withheld| is non-null, also sets the extension's
-  // withheld permissions to |withheld|. Otherwise, |withheld| permissions are
-  // not changed.
+  // Sets the |extension|'s active permissions to |active|, and calculates and
+  // sets the |extension|'s new withheld permissions. If |update_prefs| is true,
+  // also updates the set of active permissions in the extension preferences.
   void SetPermissions(const Extension* extension,
                       std::unique_ptr<const PermissionSet> active,
-                      std::unique_ptr<const PermissionSet> withheld);
+                      bool update_prefs);
 
   // Dispatches specified event to the extension.
   void DispatchEvent(const std::string& extension_id,
@@ -189,17 +192,26 @@ class PermissionsUpdater {
       const URLPatternSet& default_runtime_blocked_hosts,
       const URLPatternSet& default_runtime_allowed_hosts);
 
-  // Adds the given |permissions| to |extension|. Updates the preferences
-  // according to |permission_store_mask|.
+  // Adds the given |active_permissions_to_add| to |extension|'s current
+  // active permissions (i.e., the permissions associated with the |extension|
+  // object and the extension's process). Updates the preferences according to
+  // |permission_store_mask| with |prefs_permissions_to_add|.
+  // The sets of |prefs_permissions_to_add| and |active_permissions_to_add| may
+  // differ in the case of granting a wider set of permissions than what the
+  // extension explicitly requested, as described in GrantRuntimePermissions().
   void AddPermissionsImpl(const Extension& extension,
-                          const PermissionSet& permissions,
-                          int permission_store_mask);
+                          const PermissionSet& active_permissions_to_add,
+                          int permission_store_mask,
+                          const PermissionSet& prefs_permissions_to_add);
 
-  // Removes the given |permissions| to |extension|. Updates the preferences
-  // according to |permission_store_mask|.
+  // Removes the given |active_permissions_to_remove| from |extension|'s current
+  // active permissions. Updates the preferences according to
+  // |permission_store_mask| with |prefs_permissions_to_remove|. As above, the
+  // permission sets may be different.
   void RemovePermissionsImpl(const Extension& extension,
-                             const PermissionSet& permissions,
-                             int permission_store_mask);
+                             const PermissionSet& active_permissions_to_remove,
+                             int permission_store_mask,
+                             const PermissionSet& prefs_permissions_to_remove);
 
   // The associated BrowserContext.
   content::BrowserContext* browser_context_;
