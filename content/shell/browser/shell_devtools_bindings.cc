@@ -30,6 +30,7 @@
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -75,11 +76,11 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
   ~ResponseWriter() override;
 
   // URLFetcherResponseWriter overrides:
-  int Initialize(const net::CompletionCallback& callback) override;
+  int Initialize(net::CompletionOnceCallback callback) override;
   int Write(net::IOBuffer* buffer,
             int num_bytes,
-            const net::CompletionCallback& callback) override;
-  int Finish(int net_error, const net::CompletionCallback& callback) override;
+            net::CompletionOnceCallback callback) override;
+  int Finish(int net_error, net::CompletionOnceCallback callback) override;
 
  private:
   base::WeakPtr<ShellDevToolsBindings> devtools_bindings_;
@@ -95,13 +96,13 @@ ResponseWriter::ResponseWriter(
 
 ResponseWriter::~ResponseWriter() {}
 
-int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
+int ResponseWriter::Initialize(net::CompletionOnceCallback callback) {
   return net::OK;
 }
 
 int ResponseWriter::Write(net::IOBuffer* buffer,
                           int num_bytes,
-                          const net::CompletionCallback& callback) {
+                          net::CompletionOnceCallback callback) {
   std::string chunk = std::string(buffer->data(), num_bytes);
   if (!base::IsStringUTF8(chunk))
     return num_bytes;
@@ -118,7 +119,7 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
 }
 
 int ResponseWriter::Finish(int net_error,
-                           const net::CompletionCallback& callback) {
+                           net::CompletionOnceCallback callback) {
   return net::OK;
 }
 

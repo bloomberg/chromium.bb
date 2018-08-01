@@ -61,6 +61,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_channel.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -216,11 +217,11 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
   ~ResponseWriter() override;
 
   // URLFetcherResponseWriter overrides:
-  int Initialize(const net::CompletionCallback& callback) override;
+  int Initialize(net::CompletionOnceCallback callback) override;
   int Write(net::IOBuffer* buffer,
             int num_bytes,
-            const net::CompletionCallback& callback) override;
-  int Finish(int net_error, const net::CompletionCallback& callback) override;
+            net::CompletionOnceCallback callback) override;
+  int Finish(int net_error, net::CompletionOnceCallback callback) override;
 
  private:
   base::WeakPtr<DevToolsUIBindings> bindings_;
@@ -239,13 +240,13 @@ ResponseWriter::ResponseWriter(base::WeakPtr<DevToolsUIBindings> bindings,
 ResponseWriter::~ResponseWriter() {
 }
 
-int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
+int ResponseWriter::Initialize(net::CompletionOnceCallback callback) {
   return net::OK;
 }
 
 int ResponseWriter::Write(net::IOBuffer* buffer,
                           int num_bytes,
-                          const net::CompletionCallback& callback) {
+                          net::CompletionOnceCallback callback) {
   std::string chunk = std::string(buffer->data(), num_bytes);
   bool encoded = false;
   if (!base::IsStringUTF8(chunk)) {
@@ -266,7 +267,7 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
 }
 
 int ResponseWriter::Finish(int net_error,
-                           const net::CompletionCallback& callback) {
+                           net::CompletionOnceCallback callback) {
   return net::OK;
 }
 

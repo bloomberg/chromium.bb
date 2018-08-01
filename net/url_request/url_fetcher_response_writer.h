@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 
 namespace base {
@@ -35,14 +35,14 @@ class NET_EXPORT URLFetcherResponseWriter {
   // Initializes this instance. If ERR_IO_PENDING is returned, |callback| will
   // be run later with the result. Calling this method again after a
   // Initialize() success results in discarding already written data.
-  virtual int Initialize(const CompletionCallback& callback) = 0;
+  virtual int Initialize(CompletionOnceCallback callback) = 0;
 
   // Writes |num_bytes| bytes in |buffer|, and returns the number of bytes
   // written or an error code. If ERR_IO_PENDING is returned, |callback| will be
   // run later with the result.
   virtual int Write(IOBuffer* buffer,
                     int num_bytes,
-                    const CompletionCallback& callback) = 0;
+                    CompletionOnceCallback callback) = 0;
 
   // Finishes writing. If |net_error| is not OK, this method can be called
   // in the middle of another operation (eg. Initialize() and Write()). On
@@ -51,7 +51,7 @@ class NET_EXPORT URLFetcherResponseWriter {
   // graceful shutdown and completion of the pending operation. After such a
   // failure, the URLFetcherResponseWriter may be reused. If ERR_IO_PENDING is
   // returned, |callback| will be run later with the result.
-  virtual int Finish(int net_error, const CompletionCallback& callback) = 0;
+  virtual int Finish(int net_error, CompletionOnceCallback callback) = 0;
 
   // Returns this instance's pointer as URLFetcherStringWriter when possible.
   virtual URLFetcherStringWriter* AsStringWriter();
@@ -69,11 +69,11 @@ class NET_EXPORT URLFetcherStringWriter : public URLFetcherResponseWriter {
   const std::string& data() const { return data_; }
 
   // URLFetcherResponseWriter overrides:
-  int Initialize(const CompletionCallback& callback) override;
+  int Initialize(CompletionOnceCallback callback) override;
   int Write(IOBuffer* buffer,
             int num_bytes,
-            const CompletionCallback& callback) override;
-  int Finish(int net_error, const CompletionCallback& callback) override;
+            CompletionOnceCallback callback) override;
+  int Finish(int net_error, CompletionOnceCallback callback) override;
   URLFetcherStringWriter* AsStringWriter() override;
 
  private:
@@ -95,11 +95,11 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
   const base::FilePath& file_path() const { return file_path_; }
 
   // URLFetcherResponseWriter overrides:
-  int Initialize(const CompletionCallback& callback) override;
+  int Initialize(CompletionOnceCallback callback) override;
   int Write(IOBuffer* buffer,
             int num_bytes,
-            const CompletionCallback& callback) override;
-  int Finish(int net_error, const CompletionCallback& callback) override;
+            CompletionOnceCallback callback) override;
+  int Finish(int net_error, CompletionOnceCallback callback) override;
   URLFetcherFileWriter* AsFileWriter() override;
 
   // Drops ownership of the file at |file_path_|.
@@ -132,7 +132,7 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
 
   std::unique_ptr<FileStream> file_stream_;
 
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_;
 
