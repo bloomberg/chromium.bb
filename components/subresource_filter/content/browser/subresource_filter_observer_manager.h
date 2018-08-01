@@ -14,6 +14,7 @@
 
 namespace content {
 class NavigationHandle;
+class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
@@ -53,6 +54,10 @@ class SubresourceFilterObserverManager
       content::NavigationHandle* navigation_handle,
       LoadPolicy load_policy,
       bool is_ad_subframe);
+
+  // Called in TODO to notify observers that an ad frame has been detected
+  // with the associated RenderFrameHost.
+  void NotifyAdSubframeDetected(content::RenderFrameHost* render_frame_host);
 
  private:
   base::ObserverList<SubresourceFilterObserver> observers_;

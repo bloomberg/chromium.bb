@@ -12,6 +12,7 @@
 
 namespace content {
 class NavigationHandle;
+class RenderFrameHost;
 }  // namespace content
 
 namespace subresource_filter {
@@ -54,6 +55,9 @@ class SubresourceFilterObserver {
       content::NavigationHandle* navigation_handle,
       LoadPolicy load_policy,
       bool is_ad_subframe) {}
+
+  virtual void OnAdSubframeDetected(
+      content::RenderFrameHost* render_frame_host) {}
 };
 
 }  // namespace subresource_filter

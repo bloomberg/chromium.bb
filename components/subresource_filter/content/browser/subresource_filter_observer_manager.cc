@@ -51,4 +51,10 @@ void SubresourceFilterObserverManager::NotifySubframeNavigationEvaluated(
                                            is_ad_subframe);
 }
 
+void SubresourceFilterObserverManager::NotifyAdSubframeDetected(
+    content::RenderFrameHost* render_frame_host) {
+  for (auto& observer : observers_)
+    observer.OnAdSubframeDetected(render_frame_host);
+}
+
 }  // namespace subresource_filter
