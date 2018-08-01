@@ -25,8 +25,8 @@ namespace {
 #if defined(OS_ANDROID)
 // Check memory usage every 5 minutes.
 const int kRepeatingCheckMemoryDelayInMinutes = 5;
-// Every 5 min, rate of 1/3000 for shipping a control memlog report.
-const int kControlPopulationSamplingRate = 3000;
+// Every 5 min, rate of 1/300 for shipping a control memlog report.
+const int kControlPopulationSamplingRate = 300;
 
 const size_t kBrowserProcessMallocTriggerKb = 100 * 1024;    // 100 MB
 const size_t kGPUProcessMallocTriggerKb = 40 * 1024;         // 40 MB
@@ -37,8 +37,8 @@ const uint32_t kHighWaterMarkThresholdKb = 50 * 1024;  // 50 MB
 #else
 // Check memory usage every 15 minutes.
 const int kRepeatingCheckMemoryDelayInMinutes = 15;
-// Every 15 min, rate of 1/1000 for shipping a control memlog report.
-const int kControlPopulationSamplingRate = 1000;
+// Every 15 min, rate of 1/100 for shipping a control memlog report.
+const int kControlPopulationSamplingRate = 100;
 
 const size_t kBrowserProcessMallocTriggerKb = 400 * 1024;    // 400 MB
 const size_t kGPUProcessMallocTriggerKb = 400 * 1024;        // 400 MB
@@ -168,7 +168,6 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
 
   // Detect whether memory footprint is too high and send a memlog report.
   bool should_send_report = false;
-  std::string trigger_name;
   for (const auto& proc : dump->process_dumps()) {
     if (!base::ContainsValue(profiled_pids, proc.pid()))
       continue;
@@ -177,7 +176,6 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
     auto it = pmf_at_last_upload_.find(proc.pid());
     if (it != pmf_at_last_upload_.end()) {
       if (private_footprint_kb > it->second + kHighWaterMarkThresholdKb) {
-        trigger_name = "MEMLOG_BACKGROUND_TRIGGER";
         should_send_report = true;
         it->second = private_footprint_kb;
       }
@@ -187,7 +185,6 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
     // No high water mark exists yet, check the trigger threshold.
     if (IsOverTriggerThreshold(GetContentProcessType(proc.process_type()),
                                private_footprint_kb)) {
-      trigger_name = "MEMLOG_BACKGROUND_TRIGGER";
       should_send_report = true;
       pmf_at_last_upload_[proc.pid()] = private_footprint_kb;
     }
@@ -204,7 +201,7 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
       }
     }
 
-    TriggerMemoryReport(std::move(trigger_name));
+    TriggerMemoryReport("MEMLOG_BACKGROUND_TRIGGER");
   }
 }
 
