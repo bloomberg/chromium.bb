@@ -49,7 +49,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private final UiConfig mUiConfig;
     private SuggestionsRecyclerView mRecyclerView;
 
-    private final InnerNode mRoot;
+    private final InnerNode<NewTabPageViewHolder, PartialBindCallback> mRoot;
 
     private final SectionList mSections;
     private final @Nullable SignInPromo mSigninPromo;
@@ -74,7 +74,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
-        mRoot = new InnerNode();
+        mRoot = new InnerNode<>();
         mSections = new SectionList(mUiDelegate, offlinePageBridge);
         mSigninPromo = SignInPromo.maybeCreatePromo(mUiDelegate);
         mAllDismissed = new AllDismissedItem();
@@ -152,18 +152,18 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
         if (payloads.isEmpty()) {
-            mRoot.onBindViewHolder(holder, position);
+            onBindViewHolder(holder, position);
             return;
         }
 
         for (Object payload : payloads) {
-            ((PartialBindCallback) payload).onResult(holder);
+            mRoot.onBindViewHolder(holder, position, (PartialBindCallback) payload);
         }
     }
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, final int position) {
-        mRoot.onBindViewHolder(holder, position);
+        mRoot.onBindViewHolder(holder, position, null);
     }
 
     @Override

@@ -54,7 +54,9 @@ import org.chromium.base.test.asynctask.CustomShadowAsyncTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo.SigninObserver;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -183,7 +185,7 @@ public class NewTabPageAdapterTest {
         private final List<String> mExpectedDescriptions = new ArrayList<>();
         private final List<String> mActualDescriptions = new ArrayList<>();
 
-        public ItemsMatcher(TreeNode root) {
+        public ItemsMatcher(RecyclerViewAdapter.Delegate root) {
             for (int i = 0; i < root.getItemCount(); i++) {
                 mActualDescriptions.add(root.describeItemForTesting(i));
             }
@@ -773,7 +775,8 @@ public class NewTabPageAdapterTest {
         registerCategory(suggestionsSource, categories[3], 0);
         reloadNtp();
 
-        List<ChildNode> children = mAdapter.getSectionListForTesting().getChildren();
+        List<RecyclerViewAdapter.Delegate<NewTabPageViewHolder, PartialBindCallback>> children =
+                mAdapter.getSectionListForTesting().getChildren();
         assertEquals(4, children.size());
         assertEquals(SuggestionsSection.class, children.get(0).getClass());
         assertEquals(categories[0], getCategory(children.get(0)));
@@ -1233,7 +1236,7 @@ public class NewTabPageAdapterTest {
         return mAdapter.getFirstPositionForType(ItemViewType.PROMO) != RecyclerView.NO_POSITION;
     }
 
-    private int getCategory(TreeNode item) {
+    private int getCategory(RecyclerViewAdapter.Delegate item) {
         return ((SuggestionsSection) item).getCategory();
     }
 

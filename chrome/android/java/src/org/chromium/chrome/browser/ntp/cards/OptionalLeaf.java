@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.cards;
 import android.support.annotation.CallSuper;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 
 import java.util.Collections;
 import java.util.Set;
@@ -19,7 +20,8 @@ import java.util.Set;
  *
  * For a non optional leaf, see {@link Leaf}. They have similar interfaces.
  */
-public abstract class OptionalLeaf extends ChildNode {
+public abstract class OptionalLeaf
+        extends ChildNode<NewTabPageViewHolder, PartialBindCallback> implements PartiallyBindable {
     private boolean mVisible;
 
     @Override

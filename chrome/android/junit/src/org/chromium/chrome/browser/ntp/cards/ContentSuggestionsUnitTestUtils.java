@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.cards;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
@@ -33,13 +34,14 @@ public final class ContentSuggestionsUnitTestUtils {
         return makeUiConfig(HorizontalDisplayStyle.REGULAR, VerticalDisplayStyle.REGULAR);
     }
 
-    public static void bindViewHolders(InnerNode node) {
+    public static void bindViewHolders(InnerNode<NewTabPageViewHolder, PartialBindCallback> node) {
         bindViewHolders(node, 0, node.getItemCount());
     }
 
-    public static void bindViewHolders(InnerNode node, int startIndex, int endIndex) {
+    public static void bindViewHolders(InnerNode<NewTabPageViewHolder, PartialBindCallback> node,
+            int startIndex, int endIndex) {
         for (int i = startIndex; i < endIndex; ++i) {
-            node.onBindViewHolder(makeViewHolder(node.getItemViewType(i)), i);
+            node.onBindViewHolder(makeViewHolder(node.getItemViewType(i)), i, null);
         }
     }
 

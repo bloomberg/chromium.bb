@@ -7,16 +7,21 @@ package org.chromium.chrome.browser.ntp.cards;
 import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.modelutil.ListObservableImpl;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 
 /**
  * A node in the tree that has a parent and can notify it about changes.
  *
- * This class mostly serves as a convenience base class for implementations of {@link TreeNode}.
+ * This class mostly serves as a convenience base class for implementations of {@link
+ * RecyclerViewAdapter.Delegate}.
+ *
+ * @param <VH> The view holder type.
+ * @param <P> The payload type for partial updates, or Void if the node doesn't support partial
+ *         updates.
  */
-public abstract class ChildNode
-        extends ListObservableImpl<PartialBindCallback> implements TreeNode {
-    private int mNumItems = 0;
+public abstract class ChildNode<VH, P>
+        extends ListObservableImpl<P> implements RecyclerViewAdapter.Delegate<VH, P> {
+    private int mNumItems;
 
     @Override
     public int getItemCount() {
@@ -28,8 +33,7 @@ public abstract class ChildNode
     }
 
     @Override
-    protected void notifyItemRangeChanged(
-            int index, int count, @Nullable PartialBindCallback callback) {
+    protected void notifyItemRangeChanged(int index, int count, @Nullable P callback) {
         assert isRangeValid(index, count);
         super.notifyItemRangeChanged(index, count, callback);
     }

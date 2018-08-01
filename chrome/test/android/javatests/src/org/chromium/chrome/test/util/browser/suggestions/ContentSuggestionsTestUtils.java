@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.test.util.browser.suggestions;
 
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
-import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
@@ -135,7 +135,7 @@ public final class ContentSuggestionsTestUtils {
     }
 
     /** Helper method to print the current state of a node. */
-    public static String stringify(TreeNode root) {
+    public static String stringify(RecyclerViewAdapter.Delegate root) {
         final StringBuilder stringBuilder = new StringBuilder();
 
         for (int i = 0; i < root.getItemCount(); i++) {

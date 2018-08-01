@@ -4,15 +4,17 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
-import org.chromium.chrome.browser.ntp.cards.ChildNode;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.cards.InnerNode;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 
 import java.util.List;
 
 /**
  * A node in a tree containing a list of {@link ContextualSuggestionsCluster}s.
  */
-class ClusterList extends InnerNode {
+class ClusterList
+        extends InnerNode<NewTabPageViewHolder, NewTabPageViewHolder.PartialBindCallback> {
     /**
      * Replaces the list of clusters under this node with a new list. Any previous clusters will be
      * destroyed.
@@ -35,7 +37,7 @@ class ClusterList extends InnerNode {
     }
 
     private void destroyClusters() {
-        for (ChildNode c : getChildren()) {
+        for (RecyclerViewAdapter.Delegate c : getChildren()) {
             ((ContextualSuggestionsCluster) c).destroy();
         }
     }
