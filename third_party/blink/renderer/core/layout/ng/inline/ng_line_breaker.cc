@@ -801,8 +801,8 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
 // Performs layout and positions a float.
 //
 // If there is a known available_width (e.g. something has resolved the
-// container BFC offset) it will attempt to position the float on the current
-// line.
+// container BFC block offset) it will attempt to position the float on the
+// current line.
 // Additionally updates the available_width for the line as the float has
 // (probably) consumed space.
 //
