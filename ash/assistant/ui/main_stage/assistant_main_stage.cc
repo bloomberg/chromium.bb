@@ -4,13 +4,18 @@
 
 #include "ash/assistant/ui/main_stage/assistant_main_stage.h"
 
-#include <memory>
-
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_container_view.h"
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
+#include "ash/assistant/util/animation_util.h"
+#include "base/bind.h"
+#include "base/time/time.h"
+#include "ui/compositor/callback_layer_animation_observer.h"
+#include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
@@ -18,6 +23,23 @@
 namespace ash {
 
 namespace {
+
+// Animation.
+constexpr base::TimeDelta kAnimationExitFadeDuration =
+    base::TimeDelta::FromMilliseconds(50);
+constexpr int kAnimationExitTranslationDip = -103;
+constexpr base::TimeDelta kAnimationExitTranslateDuration =
+    base::TimeDelta::FromMilliseconds(333);
+constexpr base::TimeDelta kAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kAnimationTranslateUpDelay =
+    base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kAnimationTranslateUpDuration =
+    base::TimeDelta::FromMilliseconds(333);
 
 // StackLayout -----------------------------------------------------------------
 
@@ -75,7 +97,12 @@ class StackLayout : public views::LayoutManager {
 
 AssistantMainStage::AssistantMainStage(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+    : assistant_controller_(assistant_controller),
+      committed_query_exit_animation_observer_(
+          std::make_unique<ui::CallbackLayerAnimationObserver>(
+              /*animation_ended_callback=*/base::BindRepeating(
+                  &AssistantMainStage::OnCommittedQueryExitAnimationEnded,
+                  base::Unretained(this)))) {
   InitLayout(assistant_controller);
 
   // The view hierarchy will be destructed before Shell, which owns
@@ -175,10 +202,15 @@ void AssistantMainStage::InitQueryLayoutContainer(
   query_layout_container_->set_can_process_events_within_subtree(false);
   query_layout_container_->SetLayoutManager(std::make_unique<StackLayout>());
 
+  // The children of the query layout container will be animated but should be
+  // clipped by their parent's bounds.
+  query_layout_container_->SetPaintToLayer();
+  query_layout_container_->layer()->SetFillsBoundsOpaquely(false);
+  query_layout_container_->layer()->SetMasksToBounds(true);
+
   AddChildView(query_layout_container_);
 }
 
-// TODO(dmblack): Animate transformation.
 void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
   // Clean up any previous committed query.
   OnCommittedQueryCleared();
@@ -186,9 +218,37 @@ void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
   committed_query_view_ = pending_query_view_;
   pending_query_view_ = nullptr;
 
-  // Update the view and move it to the top of its parent.
+  // Update the view.
   committed_query_view_->SetQuery(query);
-  committed_query_view_->layer()->SetTransform(gfx::Transform());
+
+  // Upon query commit, the view for the query should move from the bottom of
+  // its parent to the top. This transition is animated in the motion spec.
+  if (!assistant::ui::kIsMotionSpecEnabled) {
+    committed_query_view_->layer()->SetTransform(gfx::Transform());
+  } else {
+    using namespace assistant::util;
+    committed_query_view_->layer()->GetAnimator()->StartTogether(
+        {// Animate transformation.
+         CreateLayerAnimationSequence(
+             // Pause...
+             ui::LayerAnimationElement::CreatePauseElement(
+                 ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
+                 kAnimationTranslateUpDelay),
+             // ...then translate up to top of parent.
+             CreateTransformElement(gfx::Transform(),
+                                    kAnimationTranslateUpDuration,
+                                    gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+         // Animate opacity.
+         CreateLayerAnimationSequence(
+             // Fade out to 0%...
+             CreateOpacityElement(0.f, kAnimationFadeOutDuration),
+             // ...then pause...
+             ui::LayerAnimationElement::CreatePauseElement(
+                 ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                 kAnimationFadeInDelay),
+             // ...then fade in to 100%.
+             CreateOpacityElement(1.f, kAnimationFadeInDuration))});
+  }
 
   UpdateCommittedQueryViewSpacer();
   UpdateSuggestionContainer();
@@ -198,12 +258,49 @@ void AssistantMainStage::OnCommittedQueryCleared() {
   if (!committed_query_view_)
     return;
 
-  query_layout_container_->RemoveChildView(committed_query_view_);
+  if (!assistant::ui::kIsMotionSpecEnabled) {
+    delete committed_query_view_;
+    committed_query_view_ = nullptr;
+    UpdateCommittedQueryViewSpacer();
+    return;
+  }
 
-  delete committed_query_view_;
+  using namespace assistant::util;
+
+  // The previous committed query view will translate off stage.
+  gfx::Transform transform;
+  transform.Translate(0, kAnimationExitTranslationDip);
+
+  // Animate an exit of the previous committed query view.
+  StartLayerAnimationSequencesTogether(
+      committed_query_view_->layer()->GetAnimator(),
+      {// Animate transformation.
+       CreateLayerAnimationSequence(
+           CreateTransformElement(transform, kAnimationExitTranslateDuration,
+                                  gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+       // Animate opacity to 0%.
+       CreateLayerAnimationSequence(
+           CreateOpacityElement(0.f, kAnimationExitFadeDuration))},
+      // Observe the animation.
+      committed_query_exit_animation_observer_.get());
+
+  // Set the animation observer to active so that we receive callback events.
+  committed_query_exit_animation_observer_->SetActive();
+
+  // Note that we have not yet deleted the query view but it will be cleaned up
+  // when the animation observer callback runs.
   committed_query_view_ = nullptr;
+}
 
+bool AssistantMainStage::OnCommittedQueryExitAnimationEnded(
+    const ui::CallbackLayerAnimationObserver& observer) {
+  // The exited committed query view will always be the first child of its
+  // parent view.
+  delete query_layout_container_->child_at(0);
   UpdateCommittedQueryViewSpacer();
+
+  // Return false to prevent the observer from destroying itself.
+  return false;
 }
 
 void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
@@ -225,8 +322,6 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
 
 void AssistantMainStage::OnPendingQueryCleared() {
   if (pending_query_view_) {
-    query_layout_container_->RemoveChildView(pending_query_view_);
-
     delete pending_query_view_;
     pending_query_view_ = nullptr;
   }
