@@ -98,7 +98,7 @@ NotificationDatabase::Status DeserializedNotificationData(
 
 // Updates the time of the last click on the notification, and the first if
 // necessary.
-void UpdateNotificationClickTimestamps(NotificationDatabaseData* data) {
+void UpdateNotificationTimestamps(NotificationDatabaseData* data) {
   base::TimeDelta delta = base::Time::Now() - data->creation_time_millis;
   if (!data->time_until_first_click_millis.has_value())
     data->time_until_first_click_millis = delta;
@@ -192,11 +192,11 @@ NotificationDatabase::ReadNotificationDataAndRecordInteraction(
       break;
     case PlatformNotificationContext::Interaction::ACTION_BUTTON_CLICKED:
       notification_database_data->num_action_button_clicks += 1;
-      UpdateNotificationClickTimestamps(notification_database_data);
+      UpdateNotificationTimestamps(notification_database_data);
       break;
     case PlatformNotificationContext::Interaction::CLICKED:
       notification_database_data->num_clicks += 1;
-      UpdateNotificationClickTimestamps(notification_database_data);
+      UpdateNotificationTimestamps(notification_database_data);
       break;
   }
 

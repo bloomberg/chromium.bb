@@ -287,7 +287,7 @@ void PushMessagingNotificationManager::ProcessSilentPush(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&PlatformNotificationContext::WriteNotificationData,
                      notification_context, next_persistent_notification_id,
-                     origin, database_data,
+                     service_worker_registration_id, origin, database_data,
                      base::Bind(&PushMessagingNotificationManager::
                                     DidWriteNotificationDataIOProxy,
                                 weak_factory_.GetWeakPtr(), origin,
