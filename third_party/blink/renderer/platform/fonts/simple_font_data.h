@@ -110,7 +110,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   }
 
   FloatRect BoundsForGlyph(Glyph) const;
-  void BoundsForGlyphs(const Vector<Glyph, 256>, Vector<FloatRect, 256>*) const;
+  void BoundsForGlyphs(const Vector<Glyph>, Vector<SkRect>*) const;
   FloatRect PlatformBoundsForGlyph(Glyph) const;
   float WidthForGlyph(Glyph) const;
   float PlatformWidthForGlyph(Glyph) const;
