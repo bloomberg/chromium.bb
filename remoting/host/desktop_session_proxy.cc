@@ -386,8 +386,14 @@ void DesktopSessionProxy::SetScreenResolution(
   // Depending on the session kind the screen resolution can be set by either
   // the daemon (for example RDP sessions on Windows) or by the desktop session
   // agent (when sharing the physical console).
-  if (desktop_session_connector_.get())
+  // Desktop-size-restore functionality (via an empty resolution param) does not
+  // exist for the Daemon process.  Passing an empty resolution object is
+  // treated as a critical error so we want to prevent that here.
+  if (desktop_session_connector_.get() && !screen_resolution_.IsEmpty())
     desktop_session_connector_->SetScreenResolution(this, screen_resolution_);
+
+  // Passing an empty |screen_resolution_| value to the desktop process
+  // indicates that the original resolution, if one exists, should be restored.
   SendToDesktop(
       new ChromotingNetworkDesktopMsg_SetScreenResolution(screen_resolution_));
 }
