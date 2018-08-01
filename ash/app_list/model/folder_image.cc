@@ -163,13 +163,24 @@ void FolderImage::UpdateIcon() {
     item->RemoveObserver(this);
   top_items_.clear();
 
-  for (size_t i = 0; i < std::min(kNumFolderTopItems, item_list_->item_count());
+  for (size_t i = 0;
+       i < item_list_->item_count() && top_items_.size() < kNumFolderTopItems;
        ++i) {
     AppListItem* item = item_list_->item_at(i);
+    // If this item is currently being dragged, pretend it has already left our
+    // folder
+    if (item == dragged_item_)
+      continue;
     item->AddObserver(this);
     top_items_.push_back(item);
   }
   RedrawIconAndNotify();
+}
+
+void FolderImage::UpdateDraggedItem(const AppListItem* dragged_item) {
+  DCHECK(dragged_item_ != dragged_item);
+  dragged_item_ = dragged_item;
+  UpdateIcon();
 }
 
 // static

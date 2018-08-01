@@ -728,6 +728,9 @@ void AppListFolderView::ReparentItem(
   gfx::Point to_root_level_grid = drag_point_in_folder_grid;
   ConvertPointToTarget(items_grid_view_, container_view_->apps_grid_view(),
                        &to_root_level_grid);
+  // Ensures the icon updates to reflect that the icon has been removed during
+  // the drag
+  folder_item_->NotifyOfDraggedItem(original_drag_view->item());
   StartSetupDragInRootLevelAppsGridView(original_drag_view, to_root_level_grid,
                                         has_native_drag);
   container_view_->ReparentFolderItemTransit(folder_item_);
