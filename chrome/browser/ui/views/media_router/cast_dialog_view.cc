@@ -314,8 +314,10 @@ void CastDialogView::RestoreSinkListState() {
 
   views::ScrollBar* scroll_bar =
       const_cast<views::ScrollBar*>(scroll_view_->vertical_scroll_bar());
-  if (scroll_bar)
+  if (scroll_bar) {
     scroll_view_->ScrollToPosition(scroll_bar, scroll_position_);
+    scroll_view_->Layout();
+  }
 }
 
 void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
