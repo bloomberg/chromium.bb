@@ -99,7 +99,7 @@ void BroadcastChannel::OnMessage(BlinkCloneableMessage message) {
   MessageEvent* event = MessageEvent::Create(
       nullptr, std::move(message.message),
       GetExecutionContext()->GetSecurityOrigin()->ToString());
-  EnqueueEvent(event, TaskType::kInternalMedia);
+  EnqueueEvent(event, TaskType::kPostedMessage);
 }
 
 void BroadcastChannel::OnError() {
