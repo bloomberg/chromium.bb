@@ -46,6 +46,7 @@ class SecurityStateTabHelper
   security_state::MaliciousContentStatus GetMaliciousContentStatus() const;
   std::unique_ptr<security_state::VisibleSecurityState>
   GetVisibleSecurityState() const;
+  std::vector<std::string> GetSecureOriginsAndPatterns() const;
 
   // True if a console message has been logged about an omnibox warning shown
   // when sensitive input fields are shown on insecure HTTP pages. This message

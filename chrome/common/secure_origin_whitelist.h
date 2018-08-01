@@ -31,6 +31,11 @@ namespace secure_origin_whitelist {
 // patterns, each component is individually canonicalized.
 std::vector<std::string> GetWhitelist();
 
+// Parses a comma-separated list of origins and wildcard hostname patterns.
+// This separate function allows callers other than GetWhitelist() to
+// explicitly pass a whitelist to be parsed.
+std::vector<std::string> ParseWhitelist(const std::string& origins_str);
+
 // Returns a whitelist of schemes that should bypass the Is Privileged Context
 // check. See http://www.w3.org/TR/powerful-features/#settings-privileged.
 std::set<std::string> GetSchemesBypassingSecureContextCheck();

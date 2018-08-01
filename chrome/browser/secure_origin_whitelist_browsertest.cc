@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -161,5 +162,34 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, Simple) {
   } else {
     EXPECT_EQ(title_watcher.WaitAndGetTitle(),
               ExpectSecureContext() ? secure : insecure);
+  }
+}
+
+// Tests that whitelisted insecure origins are correctly set as security level
+// NONE instead of the default level HTTPS_SHOW_WARNING.
+IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "example.com", "/secure_origin_whitelist_browsertest.html"));
+  auto* helper = SecurityStateTabHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+
+  if (GetParam() == TestVariant::kPolicyOldAndNew) {
+    // When both policies are set, the new policy overrides the old policy.
+    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL(
+            "otherexample.com", "/secure_origin_whitelist_browsertest.html"));
+    helper->GetSecurityInfo(&security_info);
+    EXPECT_EQ(security_state::NONE, security_info.security_level);
+  } else {
+    EXPECT_EQ(ExpectSecureContext() ? security_state::NONE
+                                    : security_state::HTTP_SHOW_WARNING,
+              security_info.security_level);
   }
 }
