@@ -149,18 +149,6 @@ void MediaPipelineBackendManager::RemoveAllowVolumeFeedbackObserver(
   allow_volume_feedback_observers_->RemoveObserver(observer);
 }
 
-void MediaPipelineBackendManager::LogicalPause(CmaBackend* backend) {
-  MediaPipelineBackendWrapper* wrapper =
-      static_cast<MediaPipelineBackendWrapper*>(backend);
-  wrapper->LogicalPause();
-}
-
-void MediaPipelineBackendManager::LogicalResume(CmaBackend* backend) {
-  MediaPipelineBackendWrapper* wrapper =
-      static_cast<MediaPipelineBackendWrapper*>(backend);
-  wrapper->LogicalResume();
-}
-
 void MediaPipelineBackendManager::AddExtraPlayingStream(bool sfx) {
   UpdatePlayingAudioCount(sfx, 1);
 }

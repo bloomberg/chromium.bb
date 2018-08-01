@@ -64,6 +64,8 @@ class MockCmaBackend : public CmaBackend {
   MOCK_METHOD0(Resume, bool());
   MOCK_METHOD0(GetCurrentPts, int64_t());
   MOCK_METHOD1(SetPlaybackRate, bool(float));
+  MOCK_METHOD0(LogicalPause, void());
+  MOCK_METHOD0(LogicalResume, void());
 };
 
 }  // namespace media

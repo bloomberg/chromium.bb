@@ -30,9 +30,6 @@ class MediaPipelineBackendWrapper : public CmaBackend {
                               MediaPipelineBackendManager* backend_manager);
   ~MediaPipelineBackendWrapper() override;
 
-  void LogicalPause();
-  void LogicalResume();
-
   // CmaBackend implementation:
   AudioDecoder* CreateAudioDecoder() override;
   VideoDecoder* CreateVideoDecoder() override;
@@ -43,6 +40,8 @@ class MediaPipelineBackendWrapper : public CmaBackend {
   bool Resume() override;
   int64_t GetCurrentPts() override;
   bool SetPlaybackRate(float rate) override;
+  void LogicalPause() override;
+  void LogicalResume() override;
 
  private:
   void SetPlaying(bool playing);

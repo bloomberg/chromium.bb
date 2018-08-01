@@ -195,6 +195,9 @@ class FakeCmaBackend : public CmaBackend {
   int64_t GetCurrentPts() override { return 0; }
   bool SetPlaybackRate(float rate) override { return true; }
 
+  void LogicalPause() override {}
+  void LogicalResume() override {}
+
   State state() const { return state_; }
   FakeAudioDecoder* decoder() const { return audio_decoder_.get(); }
 

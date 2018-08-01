@@ -99,13 +99,6 @@ class MediaPipelineBackendManager {
   void AddAllowVolumeFeedbackObserver(AllowVolumeFeedbackObserver* observer);
   void RemoveAllowVolumeFeedbackObserver(AllowVolumeFeedbackObserver* observer);
 
-  // Logically pauses/resumes a backend instance, without actually pausing or
-  // resuming it. This is used by multiroom output to avoid playback stutter on
-  // resume. |backend| must have been created via a call to this instance's
-  // CreateCmaBackend().
-  void LogicalPause(CmaBackend* backend);
-  void LogicalResume(CmaBackend* backend);
-
   // Add/remove a playing audio stream that is not accounted for by a
   // CmaBackend instance (for example, direct audio output using
   // CastMediaShlib::AddDirectAudioSource()). |sfx| indicates whether or not
