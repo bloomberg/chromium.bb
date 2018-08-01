@@ -88,6 +88,7 @@ IdentityManager::IdentityManager(
       ->set_diagnostics_client(this);
 #endif
   token_service_->AddDiagnosticsObserver(this);
+  token_service_->AddObserver(this);
   token_service_->set_diagnostics_client(this);
   gaia_cookie_manager_service_->AddObserver(this);
 }
@@ -98,6 +99,7 @@ IdentityManager::~IdentityManager() {
   SigninManager::FromSigninManagerBase(signin_manager_)
       ->set_diagnostics_client(nullptr);
 #endif
+  token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   token_service_->set_diagnostics_client(nullptr);
   gaia_cookie_manager_service_->RemoveObserver(this);
@@ -286,6 +288,8 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
 void IdentityManager::WillFireOnRefreshTokenAvailable(
     const std::string& account_id,
     bool is_valid) {
+  DCHECK(!pending_token_available_state_);
+
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
 
@@ -319,15 +323,16 @@ void IdentityManager::WillFireOnRefreshTokenAvailable(
     iterator = insertion_result.first;
   }
 
-  // Use iterator instead of account_info as it may have been moved, thus is
-  // invalid to use.
-  for (auto& observer : observer_list_) {
-    observer.OnRefreshTokenUpdatedForAccount(iterator->second, is_valid);
-  }
+  PendingTokenAvailableState pending_token_available_state;
+  pending_token_available_state.account_info = iterator->second;
+  pending_token_available_state.refresh_token_is_valid = is_valid;
+  pending_token_available_state_ = std::move(pending_token_available_state);
 }
 
 void IdentityManager::WillFireOnRefreshTokenRevoked(
     const std::string& account_id) {
+  DCHECK(!pending_token_revoked_info_);
+
   auto iterator = accounts_with_refresh_tokens_.find(account_id);
   if (iterator == accounts_with_refresh_tokens_.end()) {
     // A corner case exists wherein the token service revokes tokens while
@@ -345,7 +350,7 @@ void IdentityManager::WillFireOnRefreshTokenRevoked(
 
   accounts_with_refresh_tokens_.erase(iterator);
 
-  AccountInfo account_info =
+  pending_token_revoked_info_ =
       account_tracker_service_->GetAccountInfo(account_id);
 
   // In the context of supervised users, the ProfileOAuth2TokenService is used
@@ -356,14 +361,52 @@ void IdentityManager::WillFireOnRefreshTokenRevoked(
 
   // TODO(860492): Remove this special case once supervised user support is
   // removed.
-  DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
-  if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
+  DCHECK(!pending_token_revoked_info_->IsEmpty() ||
+         account_id == kSupervisedUserPseudoEmail);
+  if (account_id == kSupervisedUserPseudoEmail &&
+      pending_token_revoked_info_->IsEmpty()) {
     // Populate the information manually to maintain the invariant that the
     // account ID, gaia ID, and email are always set.
-    account_info.account_id = account_id;
-    account_info.email = account_id;
-    account_info.gaia = kSupervisedUserPseudoGaiaID;
+    pending_token_revoked_info_->account_id = account_id;
+    pending_token_revoked_info_->email = account_id;
+    pending_token_revoked_info_->gaia = kSupervisedUserPseudoGaiaID;
   }
+}
+
+void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
+  DCHECK(pending_token_available_state_);
+  DCHECK_EQ(pending_token_available_state_->account_info.account_id,
+            account_id);
+
+  // Move the state out of |pending_token_available_state_| in case any observer
+  // callbacks fired below result in mutations of refresh tokens.
+  AccountInfo account_info =
+      std::move(pending_token_available_state_->account_info);
+  bool refresh_token_is_valid =
+      pending_token_available_state_->refresh_token_is_valid;
+
+  pending_token_available_state_.reset();
+
+  for (auto& observer : observer_list_) {
+    observer.OnRefreshTokenUpdatedForAccount(account_info,
+                                             refresh_token_is_valid);
+  }
+}
+
+void IdentityManager::OnRefreshTokenRevoked(const std::string& account_id) {
+  // NOTE: It is possible for |pending_token_revoked_info_| to be null in the
+  // corner case of tokens being revoked during initial startup (see
+  // WillFireOnRefreshTokenRevoked() above).
+  if (!pending_token_revoked_info_) {
+    return;
+  }
+
+  DCHECK_EQ(pending_token_revoked_info_->account_id, account_id);
+
+  // Move the state out of |pending_token_revoked_info_| in case any observer
+  // callbacks fired below result in mutations of refresh tokens.
+  AccountInfo account_info = pending_token_revoked_info_.value();
+  pending_token_revoked_info_.reset();
 
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenRemovedForAccount(account_info);

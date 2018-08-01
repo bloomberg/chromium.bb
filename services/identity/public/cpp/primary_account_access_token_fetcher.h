@@ -46,6 +46,9 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
 
   ~PrimaryAccountAccessTokenFetcher() override;
 
+  // Exposed for tests.
+  bool access_token_request_retried() { return access_token_retried_; }
+
  private:
   // Returns true iff there is a primary account with a refresh token. Should
   // only be called in mode |kWaitUntilAvailable|.
