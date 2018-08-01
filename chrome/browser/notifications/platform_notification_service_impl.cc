@@ -423,10 +423,39 @@ void PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete(
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   recorder->UpdateSourceURL(source_id, data.origin);
 
-  ukm::builders::Notification(source_id)
-      .SetClosedReason(static_cast<int>(data.closed_reason))
-      .SetNumClicks(data.num_clicks)
+  ukm::builders::Notification builder(source_id);
+
+  int64_t time_until_first_click_millis =
+      data.time_until_first_click_millis.has_value()
+          ? data.time_until_first_click_millis.value().InMilliseconds()
+          : -1;
+
+  int64_t time_until_last_click_millis =
+      data.time_until_last_click_millis.has_value()
+          ? data.time_until_last_click_millis.value().InMilliseconds()
+          : -1;
+
+  int64_t time_until_close_millis =
+      data.time_until_close_millis.has_value()
+          ? data.time_until_close_millis.value().InMilliseconds()
+          : -1;
+
+  // TODO(yangsharon):Add did_user_open_settings field and update here.
+  builder.SetClosedReason(static_cast<int>(data.closed_reason))
+      .SetDidReplaceAnotherNotification(data.replaced_existing_notification)
+      .SetHasBadge(!data.notification_data.badge.is_empty())
+      .SetHasIcon(!data.notification_data.icon.is_empty())
+      .SetHasImage(!data.notification_data.image.is_empty())
+      .SetHasRenotify(data.notification_data.renotify)
+      .SetHasTag(!data.notification_data.tag.empty())
+      .SetIsSilent(data.notification_data.silent)
+      .SetNumActions(data.notification_data.actions.size())
       .SetNumActionButtonClicks(data.num_action_button_clicks)
+      .SetNumClicks(data.num_clicks)
+      .SetRequireInteraction(data.notification_data.require_interaction)
+      .SetTimeUntilClose(time_until_close_millis)
+      .SetTimeUntilFirstClick(time_until_first_click_millis)
+      .SetTimeUntilLastClick(time_until_last_click_millis)
       .Record(recorder);
 }
 

@@ -34,12 +34,19 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   output->num_action_button_clicks = message.num_action_button_clicks();
   output->creation_time_millis = base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(message.creation_time_millis()));
-  output->time_until_first_click_millis = base::TimeDelta::FromMilliseconds(
-      message.time_until_first_click_millis());
-  output->time_until_last_click_millis =
-      base::TimeDelta::FromMilliseconds(message.time_until_last_click_millis());
-  output->time_until_close_millis =
-      base::TimeDelta::FromMilliseconds(message.time_until_close_millis());
+
+  if (message.has_time_until_close_millis()) {
+    output->time_until_close_millis =
+        base::TimeDelta::FromMilliseconds(message.time_until_close_millis());
+  }
+  if (message.has_time_until_first_click_millis()) {
+    output->time_until_first_click_millis = base::TimeDelta::FromMilliseconds(
+        message.time_until_first_click_millis());
+  }
+  if (message.has_time_until_last_click_millis()) {
+    output->time_until_last_click_millis = base::TimeDelta::FromMilliseconds(
+        message.time_until_last_click_millis());
+  }
 
   switch (message.closed_reason()) {
     case NotificationDatabaseDataProto::USER:
