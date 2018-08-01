@@ -173,8 +173,8 @@ bool IsIconSufficientlyVisible(const SkBitmap& bitmap) {
   constexpr double kMinPercentVisiblePixels = 0.05;
   const unsigned int total_pixels = bitmap.height() * bitmap.width();
   unsigned int visible_pixels = 0;
-  for (int y = 0; y < bitmap.width(); ++y) {
-    for (int x = 0; x < bitmap.height(); ++x) {
+  for (int y = 0; y < bitmap.height(); ++y) {
+    for (int x = 0; x < bitmap.width(); ++x) {
       if (SkColorGetA(bitmap.getColor(x, y)) >= kAlphaThreshold) {
         ++visible_pixels;
       }
