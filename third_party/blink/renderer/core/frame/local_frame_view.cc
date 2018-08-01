@@ -2453,14 +2453,16 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     // TODO(pdr): PrePaint should be under the "Paint" devtools timeline
     // step for slimming paint v2.
     run_more_lifecycle_phases = RunPrePaintLifecyclePhase(target_state);
-    DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean);
+    DCHECK(ShouldThrottleRendering() ||
+           Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
     if (!run_more_lifecycle_phases)
       return;
   }
 
   DCHECK_EQ(target_state, DocumentLifecycle::kPaintClean);
   RunPaintLifecyclePhase();
-  DCHECK((frame_->GetDocument()->Printing() &&
+  DCHECK(ShouldThrottleRendering() ||
+         (frame_->GetDocument()->Printing() &&
           !RuntimeEnabledFeatures::PrintBrowserEnabled()) ||
          Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
 }
