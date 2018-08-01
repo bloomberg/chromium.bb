@@ -359,6 +359,8 @@ function sendThemeInfoToMostVisitedIframe() {
 
   var message = {cmd: 'updateTheme'};
   message.isThemeDark = isThemeDark;
+  message.isUsingTheme =
+      !info.customBackgroundConfigured && !info.usingDefaultTheme;
 
   var titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
