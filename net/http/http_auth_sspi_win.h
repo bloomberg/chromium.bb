@@ -17,7 +17,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 
@@ -148,7 +148,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
                         const std::string& spn,
                         const std::string& channel_bindings,
                         std::string* auth_token,
-                        const CompletionCallback& callback);
+                        CompletionOnceCallback callback);
 
   // Delegation is allowed on the Kerberos ticket. This allows certain servers
   // to act as the user, such as an IIS server retrieving data from a

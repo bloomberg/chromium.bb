@@ -10,6 +10,7 @@
 
 #include "build/build_config.h"
 #include "net/base/address_list.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler.h"
@@ -123,7 +124,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                             const HttpRequestInfo* request,
-                            const CompletionCallback& callback,
+                            CompletionOnceCallback callback,
                             std::string* auth_token) override;
 
  private:
@@ -160,7 +161,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   std::string channel_bindings_;
 
   // Things which vary each round.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   std::string* auth_token_;
 
   State next_state_;

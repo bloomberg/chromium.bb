@@ -100,7 +100,7 @@ int HttpAuthNegotiateAndroid::GenerateAuthToken(
     const std::string& spn,
     const std::string& channel_bindings,
     std::string* auth_token,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   if (prefs_->AuthAndroidNegotiateAccountType().empty()) {
     // This can happen if there is a policy change, removing the account type,
     // in the middle of a negotiation.
@@ -111,7 +111,7 @@ int HttpAuthNegotiateAndroid::GenerateAuthToken(
   DCHECK(!callback.is_null());
 
   auth_token_ = auth_token;
-  completion_callback_ = callback;
+  completion_callback_ = std::move(callback);
   scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   base::Callback<void(int, const std::string&)> thread_safe_callback =

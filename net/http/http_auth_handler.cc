@@ -4,6 +4,8 @@
 
 #include "net/http/http_auth_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -61,20 +63,21 @@ NetLogEventType EventTypeFromAuthTarget(HttpAuth::Target target) {
 
 }  // namespace
 
-int HttpAuthHandler::GenerateAuthToken(
-    const AuthCredentials* credentials, const HttpRequestInfo* request,
-    const CompletionCallback& callback, std::string* auth_token) {
+int HttpAuthHandler::GenerateAuthToken(const AuthCredentials* credentials,
+                                       const HttpRequestInfo* request,
+                                       CompletionOnceCallback callback,
+                                       std::string* auth_token) {
   DCHECK(!callback.is_null());
   DCHECK(request);
   DCHECK(credentials != NULL || AllowsDefaultCredentials());
   DCHECK(auth_token != NULL);
   DCHECK(callback_.is_null());
-  callback_ = callback;
+  callback_ = std::move(callback);
   net_log_.BeginEvent(EventTypeFromAuthTarget(target_));
   int rv = GenerateAuthTokenImpl(
       credentials, request,
-      base::Bind(&HttpAuthHandler::OnGenerateAuthTokenComplete,
-                 base::Unretained(this)),
+      base::BindOnce(&HttpAuthHandler::OnGenerateAuthTokenComplete,
+                     base::Unretained(this)),
       auth_token);
   if (rv != ERR_IO_PENDING)
     FinishGenerateAuthToken();
@@ -94,10 +97,10 @@ bool HttpAuthHandler::AllowsExplicitCredentials() {
 }
 
 void HttpAuthHandler::OnGenerateAuthTokenComplete(int rv) {
-  CompletionCallback callback = callback_;
+  CompletionOnceCallback callback = std::move(callback_);
   FinishGenerateAuthToken();
   DCHECK(!callback.is_null());
-  callback.Run(rv);
+  std::move(callback).Run(rv);
 }
 
 void HttpAuthHandler::FinishGenerateAuthToken() {

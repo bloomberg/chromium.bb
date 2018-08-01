@@ -4,6 +4,8 @@
 
 #include "net/http/http_auth_controller.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/base/net_errors.h"
@@ -157,12 +159,10 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
 
     int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                               const HttpRequestInfo* request,
-                              const CompletionCallback& callback,
+                              CompletionOnceCallback callback,
                               std::string* auth_token) override {
-      int result =
-          HttpAuthHandlerMock::GenerateAuthTokenImpl(credentials,
-                                                     request, callback,
-                                                     auth_token);
+      int result = HttpAuthHandlerMock::GenerateAuthTokenImpl(
+          credentials, request, std::move(callback), auth_token);
       EXPECT_TRUE(result != OK ||
                   !AllowsExplicitCredentials() ||
                   !credentials->Empty());
@@ -230,7 +230,7 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
 
   // Should only succeed if we are using the AUTH_SCHEME_MOCK MockHandler.
   EXPECT_EQ(OK, controller->MaybeGenerateAuthToken(
-      &request, CompletionCallback(), dummy_log));
+                    &request, CompletionOnceCallback(), dummy_log));
   controller->AddAuthorizationHeader(&request_headers);
 
   // Once a token is generated, simulate the receipt of a server response
@@ -246,7 +246,7 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
 
   // Should only succeed if we are using the AUTH_SCHEME_BASIC MockHandler.
   EXPECT_EQ(OK, controller->MaybeGenerateAuthToken(
-      &request, CompletionCallback(), dummy_log));
+                    &request, CompletionOnceCallback(), dummy_log));
 }
 
 }  // namespace net

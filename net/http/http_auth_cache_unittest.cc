@@ -47,7 +47,7 @@ class MockAuthHandler : public HttpAuthHandler {
 
   int GenerateAuthTokenImpl(const AuthCredentials*,
                             const HttpRequestInfo*,
-                            const CompletionCallback& callback,
+                            CompletionOnceCallback callback,
                             std::string* auth_token) override {
     *auth_token = "mock-credentials";
     return OK;

@@ -30,7 +30,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
-#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_timing_info.h"
@@ -13692,11 +13691,11 @@ class UrlRecordingHttpAuthHandlerMock : public HttpAuthHandlerMock {
  protected:
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                             const HttpRequestInfo* request,
-                            const CompletionCallback& callback,
+                            CompletionOnceCallback callback,
                             std::string* auth_token) override {
     *url_ = request->url;
     return HttpAuthHandlerMock::GenerateAuthTokenImpl(
-        credentials, request, callback, auth_token);
+        credentials, request, std::move(callback), auth_token);
   }
 
  private:

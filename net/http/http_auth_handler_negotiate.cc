@@ -248,8 +248,10 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
 }
 
 int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
-    const AuthCredentials* credentials, const HttpRequestInfo* request,
-    const CompletionCallback& callback, std::string* auth_token) {
+    const AuthCredentials* credentials,
+    const HttpRequestInfo* request,
+    CompletionOnceCallback callback,
+    std::string* auth_token) {
   DCHECK(callback_.is_null());
   DCHECK(auth_token_ == NULL);
   auth_token_ = auth_token;
@@ -267,7 +269,7 @@ int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
   }
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
   return rv;
 }
 
@@ -352,8 +354,8 @@ int HttpAuthHandlerNegotiate::DoGenerateAuthToken() {
   AuthCredentials* credentials = has_credentials_ ? &credentials_ : NULL;
   return auth_system_.GenerateAuthToken(
       credentials, spn_, channel_bindings_, auth_token_,
-      base::Bind(&HttpAuthHandlerNegotiate::OnIOComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&HttpAuthHandlerNegotiate::OnIOComplete,
+                     base::Unretained(this)));
 }
 
 int HttpAuthHandlerNegotiate::DoGenerateAuthTokenComplete(int rv) {

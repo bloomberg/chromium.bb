@@ -93,9 +93,9 @@ TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
 
   // Generate an auth token and create another thing.
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                            std::string(), &auth_token,
-                                            base::Bind(&UnexpectedCallback)));
+  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
+                    NULL, "HTTP/intranet.google.com", std::string(),
+                    &auth_token, base::BindOnce(&UnexpectedCallback)));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
@@ -130,9 +130,9 @@ TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
             auth_sspi.ParseChallenge(&first_challenge));
 
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                            std::string(), &auth_token,
-                                            base::Bind(&UnexpectedCallback)));
+  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
+                    NULL, "HTTP/intranet.google.com", std::string(),
+                    &auth_token, base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());
@@ -153,9 +153,9 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
             auth_sspi.ParseChallenge(&first_challenge));
 
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                            std::string(), &auth_token,
-                                            base::Bind(&UnexpectedCallback)));
+  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
+                    NULL, "HTTP/intranet.google.com", std::string(),
+                    &auth_token, base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());

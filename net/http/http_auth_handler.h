@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 #include "net/log/net_log_with_source.h"
@@ -83,7 +83,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // token, and the value of |*auth_token| is unspecified.
   int GenerateAuthToken(const AuthCredentials* credentials,
                         const HttpRequestInfo* request,
-                        const CompletionCallback& callback,
+                        CompletionOnceCallback callback,
                         std::string* auth_token);
 
   // The authentication scheme as an enumerated value.
@@ -180,7 +180,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // which will in turn call |GenerateAuthTokenImpl()|
   virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                                     const HttpRequestInfo* request,
-                                    const CompletionCallback& callback,
+                                    CompletionOnceCallback callback,
                                     std::string* auth_token) = 0;
 
   // The auth-scheme as an enumerated value.
@@ -212,7 +212,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   void OnGenerateAuthTokenComplete(int rv);
   void FinishGenerateAuthToken();
 
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 };
 
 }  // namespace net

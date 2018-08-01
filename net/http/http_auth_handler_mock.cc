@@ -4,6 +4,8 @@
 
 #include "net/http/http_auth_handler_mock.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -102,7 +104,7 @@ bool HttpAuthHandlerMock::Init(HttpAuthChallengeTokenizer* challenge,
 int HttpAuthHandlerMock::GenerateAuthTokenImpl(
     const AuthCredentials* credentials,
     const HttpRequestInfo* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     std::string* auth_token) {
   EXPECT_EQ(State::WAIT_FOR_GENERATE_AUTH_TOKEN, state_);
   first_round_ = false;
@@ -110,7 +112,7 @@ int HttpAuthHandlerMock::GenerateAuthTokenImpl(
   if (generate_async_) {
     EXPECT_TRUE(callback_.is_null());
     EXPECT_TRUE(auth_token_ == NULL);
-    callback_ = callback;
+    callback_ = std::move(callback);
     auth_token_ = auth_token;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&HttpAuthHandlerMock::OnGenerateAuthToken,

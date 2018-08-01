@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_once_callback.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "url/gurl.h"
@@ -95,14 +96,14 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
 
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                             const HttpRequestInfo* request,
-                            const CompletionCallback& callback,
+                            CompletionOnceCallback callback,
                             std::string* auth_token) override;
 
  private:
   void OnGenerateAuthToken();
 
   State state_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   bool generate_async_;
   int generate_rv_;
   std::string* auth_token_;

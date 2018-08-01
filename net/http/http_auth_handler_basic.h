@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -40,7 +41,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerBasic : public HttpAuthHandler {
 
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                             const HttpRequestInfo* request,
-                            const CompletionCallback& callback,
+                            CompletionOnceCallback callback,
                             std::string* auth_token) override;
 
  private:
