@@ -386,10 +386,14 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
   if (!router)
     return;
 
-  router->RecordNewWebContents(web_contents(),
-                               source_render_frame_host->GetProcess()->GetID(),
-                               source_render_frame_host->GetRoutingID(), url,
-                               new_contents, renderer_initiated);
+  TabStripModel* ignored_tab_strip_model = nullptr;
+  int ignored_tab_index = -1;
+  bool new_contents_is_present_in_tabstrip = ExtensionTabUtil::GetTabStripModel(
+      new_contents, &ignored_tab_strip_model, &ignored_tab_index);
+  router->RecordNewWebContents(
+      web_contents(), source_render_frame_host->GetProcess()->GetID(),
+      source_render_frame_host->GetRoutingID(), url, new_contents,
+      !new_contents_is_present_in_tabstrip);
 }
 
 void WebNavigationTabObserver::WebContentsDestroyed() {

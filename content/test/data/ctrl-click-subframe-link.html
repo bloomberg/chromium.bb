@@ -2,7 +2,12 @@
 <head>
 <script>
   function simulateCtrlClick(target) {
-    var evt = new MouseEvent("click", { "ctrlKey": true });
+    var is_mac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    if (is_mac) {
+      var evt = new MouseEvent("click", { "metaKey": true });
+    } else {
+      var evt = new MouseEvent("click", { "ctrlKey": true });
+    }
     return target.dispatchEvent(evt);
   }
   function ctrlClickLink() {
