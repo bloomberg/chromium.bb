@@ -618,7 +618,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
     // We're just going to collapse through this one, so whatever went in on one
     // side will go out on the other side. The position of the adjoining floats
-    // will be affected by any subsequent block, until the BFC offset is
+    // will be affected by any subsequent block, until the BFC block offset is
     // resolved.
     container_builder_.AddAdjoiningFloatTypes(
         ConstraintSpace().AdjoiningFloatTypes());
@@ -635,8 +635,8 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     container_builder_.SetBfcBlockOffset(
         ConstraintSpace().BfcOffset().block_offset);
 
-    // The BFC offset was determined before entering this algorithm. This means
-    // that there should be no adjoining floats.
+    // The BFC block offset was determined before entering this algorithm. This
+    // means that there should be no adjoining floats.
     DCHECK(!ConstraintSpace().AdjoiningFloatTypes());
   }
 

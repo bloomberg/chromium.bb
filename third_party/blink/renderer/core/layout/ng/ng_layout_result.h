@@ -31,7 +31,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
  public:
   enum NGLayoutResultStatus {
     kSuccess = 0,
-    kBfcOffsetResolved = 1,
+    kBfcBlockOffsetResolved = 1,
     // When adding new values, make sure the bit size of |status_| is large
     // enough to store.
   };
@@ -101,8 +101,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
   // Return the types (none, left, right, both) of preceding adjoining
-  // floats. These are floats that are added while the in-flow BFC offset is
-  // still unknown. The floats may or may not be unpositioned (pending). That
+  // floats. These are floats that are added while the in-flow BFC block offset
+  // is still unknown. The floats may or may not be unpositioned (pending). That
   // depends on which layout pass we're in. Adjoining floats should be treated
   // differently when calculating clearance on a block with adjoining
   // block-start margin (in such cases we will know up front that the block will

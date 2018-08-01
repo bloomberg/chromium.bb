@@ -53,7 +53,7 @@ CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
     NGExclusionSpace* exclusion_space);
 
 // Add a pending float to the list. It will be committed (positioned) once we
-// have resolved the BFC offset.
+// have resolved the BFC block offset.
 void AddUnpositionedFloat(
     Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
     NGContainerFragmentBuilder* fragment_builder,
