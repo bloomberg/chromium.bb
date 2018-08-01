@@ -684,4 +684,12 @@ void CreateFileURLLoader(
                      std::move(extra_response_headers)));
 }
 
+std::unique_ptr<network::mojom::URLLoaderFactory> CreateFileURLLoaderFactory(
+    const base::FilePath& profile_path) {
+  return std::make_unique<content::FileURLLoaderFactory>(
+      profile_path, base::CreateSequencedTaskRunnerWithTraits(
+                        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+}
+
 }  // namespace content
