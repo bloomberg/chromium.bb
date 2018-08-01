@@ -18,6 +18,8 @@ class PointerWatcherAdapterClassic;
 
 // Implementation of ShellPort for classic ash/aura. See ash/README.md for more
 // details.
+// DEPRECATED: Being removed, since there is no longer a distinct "classic"
+// config in ash. See https://crbug.com/866523
 class ASH_EXPORT ShellPortClassic : public ShellPort {
  public:
   ShellPortClassic();
@@ -28,33 +30,16 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
   // ShellPort:
   void Shutdown() override;
   Config GetAshConfig() const override;
-  std::unique_ptr<display::TouchTransformSetter> CreateTouchTransformDelegate()
-      override;
-  std::unique_ptr<WindowResizer> CreateDragWindowResizer(
-      std::unique_ptr<WindowResizer> next_window_resizer,
-      wm::WindowState* window_state) override;
-  std::unique_ptr<WindowCycleEventFilter> CreateWindowCycleEventFilter()
-      override;
-  std::unique_ptr<wm::TabletModeEventHandler> CreateTabletModeEventHandler()
-      override;
-  std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
-      aura::Window* workspace_window) override;
-  std::unique_ptr<KeyboardUI> CreateKeyboardUI() override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
                          views::PointerWatcherEventTypes events) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
   bool IsTouchDown() override;
   void ToggleIgnoreExternalKeyboard() override;
   void CreatePointerWatcherAdapter() override;
-  std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
-      const AshWindowTreeHostInitParams& init_params) override;
   void OnCreatedRootWindowContainers(
       RootWindowController* root_window_controller) override;
   void UpdateSystemModalAndBlockingContainers() override;
   void OnHostsInitialized() override;
-  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
-      override;
-  std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
   void AddVideoDetectorObserver(
       viz::mojom::VideoDetectorObserverPtr observer) override;
 

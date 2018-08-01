@@ -14,8 +14,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/default_window_resizer.h"
+#include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -76,7 +76,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     window_state->CreateDragDetails(point_in_parent, window_component, source);
     window_resizer =
         std::make_unique<TabletModeBrowserWindowDragController>(window_state);
-    window_resizer = ShellPort::Get()->CreateDragWindowResizer(
+    window_resizer = std::make_unique<DragWindowResizer>(
         std::move(window_resizer), window_state);
     return window_resizer;
   }
@@ -101,7 +101,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   } else {
     window_resizer.reset(DefaultWindowResizer::Create(window_state));
   }
-  window_resizer = ShellPort::Get()->CreateDragWindowResizer(
+  window_resizer = std::make_unique<DragWindowResizer>(
       std::move(window_resizer), window_state);
   if (window->type() == aura::client::WINDOW_TYPE_PANEL) {
     window_resizer.reset(

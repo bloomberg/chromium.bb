@@ -7,29 +7,12 @@
 #include <memory>
 #include <utility>
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/host/ash_window_tree_host.h"
-#include "ash/host/ash_window_tree_host_init_params.h"
-#include "ash/keyboard/keyboard_ui.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/pointer_watcher_adapter_classic.h"
 #include "ash/public/cpp/config.h"
-#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
-#include "ash/wm/tablet_mode/tablet_mode_event_handler_classic.h"
-#include "ash/wm/window_cycle_event_filter_classic.h"
-#include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_event_handler_classic.h"
-#include "base/memory/ptr_util.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/env.h"
-#include "ui/display/manager/default_touch_transform_setter.h"
-#include "ui/display/types/native_display_delegate.h"
-#include "ui/ozone/public/ozone_platform.h"
 
 namespace ash {
 
@@ -51,37 +34,6 @@ void ShellPortClassic::Shutdown() {
 
 Config ShellPortClassic::GetAshConfig() const {
   return Config::CLASSIC;
-}
-
-std::unique_ptr<display::TouchTransformSetter>
-ShellPortClassic::CreateTouchTransformDelegate() {
-  return std::make_unique<display::DefaultTouchTransformSetter>();
-}
-
-std::unique_ptr<WindowResizer> ShellPortClassic::CreateDragWindowResizer(
-    std::unique_ptr<WindowResizer> next_window_resizer,
-    wm::WindowState* window_state) {
-  return base::WrapUnique(
-      DragWindowResizer::Create(next_window_resizer.release(), window_state));
-}
-
-std::unique_ptr<WindowCycleEventFilter>
-ShellPortClassic::CreateWindowCycleEventFilter() {
-  return std::make_unique<WindowCycleEventFilterClassic>();
-}
-
-std::unique_ptr<wm::TabletModeEventHandler>
-ShellPortClassic::CreateTabletModeEventHandler() {
-  return std::make_unique<wm::TabletModeEventHandlerClassic>();
-}
-
-std::unique_ptr<WorkspaceEventHandler>
-ShellPortClassic::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
-  return std::make_unique<WorkspaceEventHandlerClassic>(workspace_window);
-}
-
-std::unique_ptr<KeyboardUI> ShellPortClassic::CreateKeyboardUI() {
-  return KeyboardUI::Create();
 }
 
 void ShellPortClassic::AddPointerWatcher(
@@ -106,28 +58,12 @@ void ShellPortClassic::CreatePointerWatcherAdapter() {
   pointer_watcher_adapter_ = std::make_unique<PointerWatcherAdapterClassic>();
 }
 
-std::unique_ptr<AshWindowTreeHost> ShellPortClassic::CreateAshWindowTreeHost(
-    const AshWindowTreeHostInitParams& init_params) {
-  // A return value of null results in falling back to the default.
-  return nullptr;
-}
-
 void ShellPortClassic::OnCreatedRootWindowContainers(
     RootWindowController* root_window_controller) {}
 
 void ShellPortClassic::UpdateSystemModalAndBlockingContainers() {}
 
 void ShellPortClassic::OnHostsInitialized() {}
-
-std::unique_ptr<display::NativeDisplayDelegate>
-ShellPortClassic::CreateNativeDisplayDelegate() {
-  return ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate();
-}
-
-std::unique_ptr<AcceleratorController>
-ShellPortClassic::CreateAcceleratorController() {
-  return std::make_unique<AcceleratorController>(nullptr);
-}
 
 void ShellPortClassic::AddVideoDetectorObserver(
     viz::mojom::VideoDetectorObserverPtr observer) {

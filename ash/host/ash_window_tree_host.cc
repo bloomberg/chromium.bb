@@ -11,7 +11,6 @@
 #include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/shell_port.h"
 #include "base/command_line.h"
 #include "base/sys_info.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -72,11 +71,6 @@ void AshWindowTreeHost::TranslateLocatedEvent(ui::LocatedEvent* event) {
 // static
 std::unique_ptr<AshWindowTreeHost> AshWindowTreeHost::Create(
     const AshWindowTreeHostInitParams& init_params) {
-  std::unique_ptr<AshWindowTreeHost> ash_window_tree_host =
-      ShellPort::Get()->CreateAshWindowTreeHost(init_params);
-  if (ash_window_tree_host)
-    return ash_window_tree_host;
-
   if (init_params.mirroring_unified) {
     return std::make_unique<AshWindowTreeHostMirroringUnified>(
         init_params.initial_bounds, init_params.display_id,
