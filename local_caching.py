@@ -223,8 +223,12 @@ class Cache(object):
     """
     raise NotImplementedError()
 
+  def save(self):
+    """Saves the current cache to disk."""
+    raise NotImplementedError()
+
   def trim(self):
-    """Enforces cache policies.
+    """Enforces cache policies, then calls save().
 
     Returns:
       Slice with the size of evicted items.
@@ -232,7 +236,8 @@ class Cache(object):
     raise NotImplementedError()
 
   def cleanup(self):
-    """Deletes any corrupted item from the cache and trims it if necessary.
+    """Deletes any corrupted item from the cache, then calls trim(), then
+    save().
 
     It is assumed to take significantly more time than trim().
     """
@@ -332,6 +337,9 @@ class MemoryContentAddressedCache(ContentAddressedCache):
       # TODO(maruel): Update self._added.
       # (key, (value, ts))
       return len(self._lru.pop_oldest()[1][0])
+
+  def save(self):
+    pass
 
   def trim(self):
     """Trimming is not implemented for MemoryContentAddressedCache."""
@@ -443,6 +451,10 @@ class DiskContentAddressedCache(ContentAddressedCache):
     with self._lock:
       # TODO(maruel): Update self._added.
       return self._remove_lru_file(True)
+
+  def save(self):
+    with self._lock:
+      return self._save()
 
   def trim(self):
     """Forces retention policies."""
@@ -883,6 +895,14 @@ class NamedCache(Cache):
             'cannot uninstall cache named %r at %r: %s' % (
               name, path, ex))
       finally:
+        # Call save() at every uninstall. The assumptions are:
+        # - The total the number of named caches is low, so the state.json file
+        #   is small, so the time it takes to write it to disk is short.
+        # - The number of mapped named caches per task is low, so the number of
+        #   times save() is called on tear-down isn't high enough to be
+        #   significant.
+        # - uninstall() sometimes throws due to file locking on Windows or
+        #   access rights on Linux. We want to keep as many as possible.
         self._save()
 
   # Cache interface implementation.
@@ -916,6 +936,10 @@ class NamedCache(Cache):
     with self._lock:
       # TODO(maruel): Update self._added.
       return self._remove_lru_item()
+
+  def save(self):
+    with self._lock:
+      return self._save()
 
   def trim(self):
     evicted = []
