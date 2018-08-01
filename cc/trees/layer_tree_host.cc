@@ -330,10 +330,6 @@ void LayerTreeHost::FinishCommitOnImplThread(
 
     sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
 
-    // TODO(pdr): Move this into PushPropertyTreesTo or introduce a lifecycle
-    // state for it.
-    sync_tree->SetDeviceScaleFactor(device_scale_factor_);
-
     sync_tree->set_ui_resource_request_queue(
         ui_resource_manager_->TakeUIResourcesRequests());
 
@@ -1429,19 +1425,20 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   if (tree_impl->IsActiveTree())
     tree_impl->elastic_overscroll()->PushPendingToActive();
 
-  tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);
-
   tree_impl->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
 
   tree_impl->set_content_source_id(content_source_id_);
+
+  tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);
+  tree_impl->SetDeviceScaleFactor(device_scale_factor_);
+  tree_impl->SetDeviceViewportSize(device_viewport_size_);
+  tree_impl->SetViewportVisibleRect(viewport_visible_rect_);
 
   if (TakeNewLocalSurfaceIdRequest())
     tree_impl->RequestNewLocalSurfaceId();
 
   tree_impl->SetLocalSurfaceIdFromParent(local_surface_id_from_parent_);
   has_pushed_local_surface_id_from_parent_ = true;
-  tree_impl->SetDeviceViewportSize(device_viewport_size_);
-  tree_impl->SetViewportVisibleRect(viewport_visible_rect_);
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(
