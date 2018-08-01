@@ -194,9 +194,6 @@
 -ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttp
 -ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsNoWhitelisted
 
-# crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
--BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
-
 # These rely on proxy configuration and PAC execution being configured on the
 # legacy in-process URLRequestContext. They should be removed or updated to
 # use Mojo APIs instead.

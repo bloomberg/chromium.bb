@@ -73,10 +73,12 @@ class URLLoaderInterceptor {
   ~URLLoaderInterceptor();
 
   // Helper methods for use when intercepting.
-  // Writes the given response body and header to |client|.
-  static void WriteResponse(const std::string& headers,
-                            const std::string& body,
-                            network::mojom::URLLoaderClient* client);
+  // Writes the given response body, header, and SSL Info to |client|.
+  static void WriteResponse(
+      const std::string& headers,
+      const std::string& body,
+      network::mojom::URLLoaderClient* client,
+      base::Optional<net::SSLInfo> ssl_info = base::nullopt);
 
   // Reads the given path, relative to the root source directory, and writes it
   // to |client|. For headers:
@@ -85,9 +87,12 @@ class URLLoaderInterceptor {
   //      found, its contents will be used
   //   3) otherwise a simple 200 response will be used, with a Content-Type
   //      guessed from the file extension
-  static void WriteResponse(const std::string& relative_path,
-                            network::mojom::URLLoaderClient* client,
-                            const std::string* headers = nullptr);
+  // For SSL info, if |ssl_info| is specified, then it is added to the response.
+  static void WriteResponse(
+      const std::string& relative_path,
+      network::mojom::URLLoaderClient* client,
+      const std::string* headers = nullptr,
+      base::Optional<net::SSLInfo> ssl_info = base::nullopt);
 
  private:
   class BrowserProcessWrapper;

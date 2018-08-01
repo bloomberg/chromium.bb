@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "build/build_config.h"
@@ -56,6 +57,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_result.h"
@@ -72,7 +74,6 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -2480,76 +2481,10 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
 // After AddNonsecureUrlHandler() is called, requests to this hostname
 // will use obsolete TLS settings.
 const char kMockNonsecureHostname[] = "example-nonsecure.test";
+const char kResponseFilePath[] = "chrome/test/data/title1.html";
 const int kObsoleteTLSVersion = net::SSL_CONNECTION_VERSION_TLS1_1;
 // ECDHE_RSA + AES_128_CBC with HMAC-SHA1
 const uint16_t kObsoleteCipherSuite = 0xc013;
-
-// A URLRequestMockHTTPJob that mocks a TLS connection with the obsolete
-// TLS settings specified in kObsoleteTLSVersion and
-// kObsoleteCipherSuite.
-class URLRequestObsoleteTLSJob : public net::URLRequestMockHTTPJob {
- public:
-  URLRequestObsoleteTLSJob(net::URLRequest* request,
-                           net::NetworkDelegate* network_delegate,
-                           const base::FilePath& file_path,
-                           scoped_refptr<net::X509Certificate> cert)
-      : net::URLRequestMockHTTPJob(request, network_delegate, file_path),
-        cert_(std::move(cert)) {}
-
-  void GetResponseInfo(net::HttpResponseInfo* info) override {
-    net::URLRequestMockHTTPJob::GetResponseInfo(info);
-    net::SSLConnectionStatusSetVersion(kObsoleteTLSVersion,
-                                       &info->ssl_info.connection_status);
-    net::SSLConnectionStatusSetCipherSuite(kObsoleteCipherSuite,
-                                           &info->ssl_info.connection_status);
-    info->ssl_info.cert = cert_;
-  }
-
- protected:
-  ~URLRequestObsoleteTLSJob() override {}
-
- private:
-  const scoped_refptr<net::X509Certificate> cert_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestObsoleteTLSJob);
-};
-
-// A URLRequestInterceptor that handles requests with
-// URLRequestObsoleteTLSJob jobs.
-class URLRequestNonsecureInterceptor : public net::URLRequestInterceptor {
- public:
-  URLRequestNonsecureInterceptor(const base::FilePath& base_path,
-                                 scoped_refptr<net::X509Certificate> cert)
-      : base_path_(base_path), cert_(std::move(cert)) {}
-
-  ~URLRequestNonsecureInterceptor() override {}
-
-  // net::URLRequestInterceptor:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new URLRequestObsoleteTLSJob(request, network_delegate, base_path_,
-                                        cert_);
-  }
-
- private:
-  const base::FilePath base_path_;
-  const scoped_refptr<net::X509Certificate> cert_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestNonsecureInterceptor);
-};
-
-// Installs a handler to serve HTTPS requests to
-// |kMockNonsecureHostname| with connections that have obsolete TLS
-// settings.
-void AddNonsecureUrlHandler(const base::FilePath& base_path,
-                            scoped_refptr<net::X509Certificate> cert) {
-  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddHostnameInterceptor(
-      "https", kMockNonsecureHostname,
-      std::unique_ptr<net::URLRequestInterceptor>(
-          new URLRequestNonsecureInterceptor(base_path, cert)));
-}
 
 class BrowserTestNonsecureURLRequest : public InProcessBrowserTest {
  public:
@@ -2562,16 +2497,41 @@ class BrowserTestNonsecureURLRequest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    base::FilePath serve_file;
-    base::PathService::Get(chrome::DIR_TEST_DATA, &serve_file);
-    serve_file = serve_file.Append(FILE_PATH_LITERAL("title1.html"));
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&AddNonsecureUrlHandler, serve_file, cert_));
+    // Create URLLoaderInterceptor to mock a TLS connection with obsolete TLS
+    // settings specified in kObsoleteTLSVersion and kObsoleteCipherSuite.
+    url_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindLambdaForTesting(
+            [&](content::URLLoaderInterceptor::RequestParams* params) {
+              // Ignore non-test URLs.
+              if (params->url_request.url.host() != kMockNonsecureHostname) {
+                return false;
+              }
+
+              // Set SSLInfo to reflect an obsolete connection.
+              base::Optional<net::SSLInfo> ssl_info;
+              if (params->url_request.url.SchemeIsCryptographic()) {
+                ssl_info = net::SSLInfo();
+                net::SSLConnectionStatusSetVersion(
+                    kObsoleteTLSVersion, &ssl_info->connection_status);
+                net::SSLConnectionStatusSetCipherSuite(
+                    kObsoleteCipherSuite, &ssl_info->connection_status);
+                ssl_info->cert = cert_;
+              }
+
+              // Write the response.
+              content::URLLoaderInterceptor::WriteResponse(
+                  kResponseFilePath, params->client.get(), nullptr,
+                  std::move(ssl_info));
+
+              return true;
+            }));
   }
+
+  void TearDownOnMainThread() override { url_interceptor_.reset(); }
 
  private:
   scoped_refptr<net::X509Certificate> cert_;
+  std::unique_ptr<content::URLLoaderInterceptor> url_interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTestNonsecureURLRequest);
 };

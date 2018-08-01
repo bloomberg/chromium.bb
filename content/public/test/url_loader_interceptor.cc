@@ -266,13 +266,15 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
 void URLLoaderInterceptor::WriteResponse(
     const std::string& headers,
     const std::string& body,
-    network::mojom::URLLoaderClient* client) {
+    network::mojom::URLLoaderClient* client,
+    base::Optional<net::SSLInfo> ssl_info) {
   net::HttpResponseInfo info;
   info.headers = new net::HttpResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
   network::ResourceResponseHead response;
   response.headers = info.headers;
   response.headers->GetMimeType(&response.mime_type);
+  response.ssl_info = std::move(ssl_info);
   client->OnReceiveResponse(response);
 
   uint32_t bytes_written = body.size();
@@ -291,7 +293,8 @@ void URLLoaderInterceptor::WriteResponse(
 void URLLoaderInterceptor::WriteResponse(
     const std::string& relative_path,
     network::mojom::URLLoaderClient* client,
-    const std::string* headers) {
+    const std::string* headers,
+    base::Optional<net::SSLInfo> ssl_info) {
   base::ScopedAllowBlockingForTesting allow_io;
   std::string headers_str;
   if (headers) {
@@ -308,7 +311,8 @@ void URLLoaderInterceptor::WriteResponse(
                     "\n\n";
     }
   }
-  WriteResponse(headers_str, ReadFile(relative_path), client);
+  WriteResponse(headers_str, ReadFile(relative_path), client,
+                std::move(ssl_info));
 }
 
 void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
