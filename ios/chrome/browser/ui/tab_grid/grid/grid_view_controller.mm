@@ -505,8 +505,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   cell.itemIdentifier = item.identifier;
   cell.title = item.title;
   cell.titleHidden = item.hidesTitle;
-  cell.snapshot = nil;
-  cell.icon = nil;
   NSString* itemIdentifier = item.identifier;
   [self.imageDataSource faviconForIdentifier:itemIdentifier
                                   completion:^(UIImage* icon) {

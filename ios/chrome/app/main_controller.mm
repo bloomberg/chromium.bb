@@ -1965,7 +1965,21 @@ enum class ShowTabSwitcherSnapshotResult {
       snapshotResult = ShowTabSwitcherSnapshotResult::
           kSnapshotNotAttemptedBecausePageIsLoading;
       SnapshotTabHelper::FromWebState(currentTab.webState)->RemoveSnapshot();
+      // TODO(crbug.com/869256) : It is possible that the navigation completes
+      // in the time it takes to animate to the tab grid. The navigation
+      // completion will trigger another snapshot. But that snapshot may have
+      // the previous webpage because the rendering is not guaranteed to have
+      // been completed at navigation completion. It is better to have a blank
+      // snapshot than the wrong snapshot. We pause snapshotting here, and
+      // resume once we have animated to the tab grid.
+      SnapshotTabHelper::FromWebState(currentTab.webState)->PauseSnapshotting();
     } else {
+      // TODO(crbug.com/869256) : There is a very small possibility that the
+      // navigation has already completed, but the new webpage has not been
+      // rendered yet, so we may take a snapshot of the previous webpage. The
+      // reason for this is that rendering is not guaranteed at page loaded. But
+      // the possibility of this happening in this codepath is very small, and
+      // is not easily reproducible.
       UIImage* snapshot = SnapshotTabHelper::FromWebState(currentTab.webState)
                               ->UpdateSnapshot(/*with_overlays=*/true,
                                                /*visible_frame_only=*/true);
@@ -2013,7 +2027,16 @@ enum class ShowTabSwitcherSnapshotResult {
       break;
   }
 
-  [self.viewControllerSwapper showTabSwitcher:_tabSwitcher completion:nil];
+  [self.viewControllerSwapper
+      showTabSwitcher:_tabSwitcher
+           completion:^{
+             // Snapshotting may have been paused if the user initiated showing
+             // the tab switcher while the webpage was still loading.
+             if (currentTab && currentTab.webState) {
+               SnapshotTabHelper::FromWebState(currentTab.webState)
+                   ->ResumeSnapshotting();
+             }
+           }];
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {

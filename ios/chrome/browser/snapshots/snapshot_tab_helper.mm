@@ -147,6 +147,14 @@ void SnapshotTabHelper::IgnoreNextLoad() {
   ignore_next_load_ = true;
 }
 
+void SnapshotTabHelper::PauseSnapshotting() {
+  pause_snapshotting_ = true;
+}
+
+void SnapshotTabHelper::ResumeSnapshotting() {
+  pause_snapshotting_ = false;
+}
+
 // static
 UIImage* SnapshotTabHelper::GetDefaultSnapshotImage() {
   return [SnapshotGenerator defaultSnapshotImage];
@@ -171,7 +179,7 @@ SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state,
 void SnapshotTabHelper::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
-  if (!ignore_next_load_ &&
+  if (!ignore_next_load_ && !pause_snapshotting_ &&
       load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
     UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   }
