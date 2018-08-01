@@ -388,7 +388,7 @@ void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
   procs.fTypefaceCtx = &typeface_ctx;
   sk_sp<SkTextBlob> blob = SkTextBlob::Deserialize(
       const_cast<const char*>(memory_), data_bytes, procs);
-  if (typeface_ctx.invalid_typeface) {
+  if (!blob || typeface_ctx.invalid_typeface) {
     SetInvalid();
     return;
   }
