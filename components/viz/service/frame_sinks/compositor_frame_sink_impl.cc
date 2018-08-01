@@ -68,7 +68,7 @@ void CompositorFrameSinkImpl::SubmitCompositorFrameInternal(
   const auto result = support_->MaybeSubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
       submit_time, std::move(callback));
-  if (result == CompositorFrameSinkSupport::ACCEPTED)
+  if (result == SubmitResult::ACCEPTED)
     return;
 
   const char* reason =

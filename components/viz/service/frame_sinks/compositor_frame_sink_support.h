@@ -33,19 +33,23 @@ class LatestLocalSurfaceIdLookupDelegate;
 class Surface;
 class SurfaceManager;
 
+// Possible outcomes of MaybeSubmitCompositorFrame().
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SubmitResult {
+  ACCEPTED = 0,
+  COPY_OUTPUT_REQUESTS_NOT_ALLOWED = 1,
+  SURFACE_INVARIANTS_VIOLATION = 2,
+  // Magic constant used by the histogram macros.
+  kMaxValue = SURFACE_INVARIANTS_VIOLATION,
+};
+
 class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     : public BeginFrameObserver,
       public SurfaceResourceHolderClient,
       public SurfaceClient,
       public CapturableFrameSink {
  public:
-  // Possible outcomes of MaybeSubmitCompositorFrame().
-  enum SubmitResult {
-    ACCEPTED,
-    COPY_OUTPUT_REQUESTS_NOT_ALLOWED,
-    SURFACE_INVARIANTS_VIOLATION,
-  };
-
   using AggregatedDamageCallback =
       base::RepeatingCallback<void(const LocalSurfaceId& local_surface_id,
                                    const gfx::Size& frame_size_in_pixels,

@@ -134,9 +134,9 @@ class CompositorFrameSinkSupportTest : public testing::Test {
         local_surface_id_, std::move(frame), base::nullopt, 0,
         mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
     switch (result) {
-      case CompositorFrameSinkSupport::ACCEPTED:
+      case SubmitResult::ACCEPTED:
         return true;
-      case CompositorFrameSinkSupport::COPY_OUTPUT_REQUESTS_NOT_ALLOWED:
+      case SubmitResult::COPY_OUTPUT_REQUESTS_NOT_ALLOWED:
         return false;
       default:
         ADD_FAILURE()
@@ -557,27 +557,27 @@ TEST_F(CompositorFrameSinkSupportTest, MonotonicallyIncreasingLocalSurfaceIds) {
   auto result = support->MaybeSubmitCompositorFrame(
       local_surface_id1, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id2, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id3, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id4, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id5, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id6, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
 
   manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
@@ -809,7 +809,7 @@ TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
   const auto result = support_->MaybeSubmitCompositorFrame(
       local_surface_id_, std::move(frame), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
   EXPECT_FALSE(GetSurfaceForId(id));
 }
 
@@ -825,7 +825,7 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
   auto result = support_->MaybeSubmitCompositorFrame(
       local_surface_id_, std::move(frame), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
   EXPECT_TRUE(GetSurfaceForId(id));
 
   // Submit a frame with size (5,4). This frame should be rejected and the
@@ -841,7 +841,7 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
       local_surface_id_, std::move(frame), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
 
-  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
 
   // All the resources in the rejected frame should have been returned.
   CheckReturnedResourcesMatchExpected(frame_resource_ids,
@@ -862,7 +862,7 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
   auto result = support_->MaybeSubmitCompositorFrame(
       local_surface_id_, std::move(frame), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
   EXPECT_TRUE(GetSurfaceForId(id));
 
   // Submit a frame with device scale factor of 0.4. This frame should be
@@ -874,7 +874,7 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
   result = support_->MaybeSubmitCompositorFrame(
       local_surface_id_, std::move(frame), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
 }
 
 TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {

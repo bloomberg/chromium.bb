@@ -6886,6 +6886,12 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Will use composited scrolling"/>
 </enum>
 
+<enum name="CompositorFrameSinkSubmitResult">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="CopyOutputResults not allowed"/>
+  <int value="2" label="Surface Invariants Violation"/>
+</enum>
+
 <enum name="CompositorScrollResult">
   <int value="0" label="ScrollOnMainThread"/>
   <int value="1" label="ScrollStarted"/>
