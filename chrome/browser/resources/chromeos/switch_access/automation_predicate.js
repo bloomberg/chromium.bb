@@ -19,7 +19,7 @@ function AutomationPredicate() {}
  * @return {boolean}
  */
 AutomationPredicate.isSubtreeLeaf = function(node, scope) {
-  return AutomationPredicate.isInteresting(node) ||
+  return AutomationPredicate.isActionable(node) ||
       AutomationPredicate.isGroup(node, scope);
 };
 
@@ -80,7 +80,7 @@ AutomationPredicate.hasSameLocation_ = function(node1, node2) {
  */
 AutomationPredicate.isInterestingSubtree = function(node) {
   let children = node.children || [];
-  return AutomationPredicate.isInteresting(node) ||
+  return AutomationPredicate.isActionable(node) ||
       children.some(AutomationPredicate.isInterestingSubtree);
 };
 
@@ -91,7 +91,7 @@ AutomationPredicate.isInterestingSubtree = function(node) {
  * @param {!chrome.automation.AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.isInteresting = function(node) {
+AutomationPredicate.isActionable = function(node) {
   let loc = node.location;
   let parent = node.parent;
   let root = node.root;

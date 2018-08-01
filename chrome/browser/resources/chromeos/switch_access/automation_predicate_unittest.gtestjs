@@ -165,9 +165,9 @@ TEST_F('AutomationPredicateUnitTest', 'IsInteresting', function() {
   let node1 = {location: loc1, state: {}};
   let node2 = {location: loc1, state: {focusable: false}};
   let node3 = {location: loc1, state: {focusable: true}};
-  assertFalse(AutomationPredicate.isInteresting(node1));
-  assertFalse(AutomationPredicate.isInteresting(node2));
-  assertTrue(AutomationPredicate.isInteresting(node3));
+  assertFalse(AutomationPredicate.isActionable(node1));
+  assertFalse(AutomationPredicate.isActionable(node2));
+  assertTrue(AutomationPredicate.isActionable(node3));
 
   // Testing onscreen.
   let loc2 = {left: -1, top: 0, width: 0, height: 0};
@@ -175,22 +175,22 @@ TEST_F('AutomationPredicateUnitTest', 'IsInteresting', function() {
   let node4 = {location: loc2, state: {focusable: true}};
   let node5 = {location: loc3, state: {focusable: true}};
   let node6 = {location: loc1, state: {focusable: true, offscreen: true}}
-  assertFalse(AutomationPredicate.isInteresting(node4));
-  assertFalse(AutomationPredicate.isInteresting(node5));
-  assertFalse(AutomationPredicate.isInteresting(node6));
+  assertFalse(AutomationPredicate.isActionable(node4));
+  assertFalse(AutomationPredicate.isActionable(node5));
+  assertFalse(AutomationPredicate.isActionable(node6));
 
   // Testing if tab.
   let node7 = {location: loc1, role: 'desktop', state: {}};
   let node8 = {location: loc1, role: 'tabList', state: {}};
   let node9 =
       {location: loc1, parent: node8, root: node7, role: 'tab', state: {}};
-  assertFalse(AutomationPredicate.isInteresting(node7));
-  assertFalse(AutomationPredicate.isInteresting(node8));
-  assertTrue(AutomationPredicate.isInteresting(node9));
+  assertFalse(AutomationPredicate.isActionable(node7));
+  assertFalse(AutomationPredicate.isActionable(node8));
+  assertTrue(AutomationPredicate.isActionable(node9));
 
   // Testing if webView or rootWebArea.
   let node10 = {location: loc1, role: 'webView', state: {focusable: true}};
   let node11 = {location: loc1, role: 'rootWebArea', state: {focusable: true}};
-  assertFalse(AutomationPredicate.isInteresting(node10));
-  assertFalse(AutomationPredicate.isInteresting(node11));
+  assertFalse(AutomationPredicate.isActionable(node10));
+  assertFalse(AutomationPredicate.isActionable(node11));
 });
