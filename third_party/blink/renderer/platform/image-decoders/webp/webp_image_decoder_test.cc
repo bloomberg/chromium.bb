@@ -391,10 +391,8 @@ TEST(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache) {
       &CreateWEBPDecoder, "/images/resources/webp-animated-icc-xmp.webp");
 }
 
-// This test is disabled since it timed out on the Windows bot. See
-// crrev.com/962853004
 TEST(AnimatedWebPTests,
-     DISABLED_resumePartialDecodeAfterClearFrameBufferCache) {
+     resumePartialDecodeAfterClearFrameBufferCache) {
   TestResumePartialDecodeAfterClearFrameBufferCache(
       &CreateWEBPDecoder, "/images/resources/webp-animated-large.webp");
 }
