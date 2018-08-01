@@ -78,6 +78,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // The text color for the invalid URL label.
 const CGFloat kInvalidURLTextColor = 0xEA4335;
+
+// Estimated Table Row height.
+const CGFloat kEstimatedTableRowHeight = 50;
+// Estimated TableSection Footer height.
+const CGFloat kEstimatedTableSectionFooterHeight = 40;
 }  // namespace
 
 @interface BookmarkEditViewController ()<BookmarkFolderViewControllerDelegate,
@@ -214,9 +219,12 @@ const CGFloat kInvalidURLTextColor = 0xEA4335;
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.tableView.backgroundColor = self.styler.tableViewBackgroundColor;
-  self.tableView.estimatedRowHeight = 88.0;
+  self.tableView.estimatedRowHeight = kEstimatedTableRowHeight;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
+  self.tableView.sectionFooterHeight = UITableViewAutomaticDimension;
+  self.tableView.estimatedSectionFooterHeight =
+      kEstimatedTableSectionFooterHeight;
   self.view.accessibilityIdentifier = kBookmarkEditViewContainerIdentifier;
 
   if (experimental_flags::IsBookmarksUIRebootEnabled()) {
