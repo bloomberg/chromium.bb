@@ -84,6 +84,13 @@
     self.orchestrator.locationBarAnimatee =
         [self.locationBarCoordinator locationBarAnimatee];
   }
+
+  if ([self.locationBarCoordinator
+          respondsToSelector:@selector(editViewAnimatee)]) {
+    self.orchestrator.editViewAnimatee =
+        [self.locationBarCoordinator editViewAnimatee];
+  }
+
   [super start];
 
   _fullscreenObserver =

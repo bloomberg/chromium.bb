@@ -18,6 +18,7 @@ class WebStateList;
 @class CommandDispatcher;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol EditViewAnimatee;
 @protocol LocationBarAnimatee;
 @protocol OmniboxPopupPositioner;
 @protocol ToolbarCoordinatorDelegate;
@@ -63,8 +64,11 @@ class WebStateList;
 // @optional label and matching respondsToSelector: calls.
 @optional
 
-// Returns the animatee.
+// Returns the location bar animatee.
 - (id<LocationBarAnimatee>)locationBarAnimatee;
+
+// Returns the edit view animatee.
+- (id<EditViewAnimatee>)editViewAnimatee;
 
 @end
 

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/orchestrator/omnibox_focus_orchestrator.h"
 
+#import "ios/chrome/browser/ui/orchestrator/edit_view_animatee.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_animatee.h"
 #import "ios/chrome/browser/ui/orchestrator/toolbar_animatee.h"
 #import "ios/chrome/common/material_timing.h"
@@ -22,6 +23,7 @@
 
 @synthesize toolbarAnimatee = _toolbarAnimatee;
 @synthesize locationBarAnimatee = _locationBarAnimatee;
+@synthesize editViewAnimatee = _editViewAnimatee;
 @synthesize isAnimating = _isAnimating;
 
 - (void)transitionToStateOmniboxFocused:(BOOL)omniboxFocused
@@ -70,6 +72,8 @@
     [self.locationBarAnimatee resetTransforms];
     [self.locationBarAnimatee setSteadyViewFaded:NO];
     [self.locationBarAnimatee setEditViewFaded:NO];
+    [self.editViewAnimatee setLeadingIconFaded:NO];
+    [self.editViewAnimatee setClearButtonFaded:NO];
     self.isAnimating = NO;
   };
 
@@ -79,6 +83,8 @@
     // Make edit view transparent, but not hidden.
     [self.locationBarAnimatee setEditViewHidden:NO];
     [self.locationBarAnimatee setEditViewFaded:YES];
+    [self.editViewAnimatee setLeadingIconFaded:YES];
+    [self.editViewAnimatee setClearButtonFaded:YES];
 
     CGFloat duration = ios::material::kDuration1;
 
@@ -112,6 +118,14 @@
                        [self.locationBarAnimatee setEditViewFaded:NO];
                      }
                      completion:nil];
+    [UIView animateWithDuration:duration * 0.2
+                          delay:duration * 0.8
+                        options:UIViewAnimationCurveLinear
+                     animations:^{
+                       [self.editViewAnimatee setLeadingIconFaded:NO];
+                       [self.editViewAnimatee setClearButtonFaded:NO];
+                     }
+                     completion:nil];
   } else {
     cleanup(YES);
   }
@@ -127,7 +141,8 @@
     [self.locationBarAnimatee resetTransforms];
     self.isAnimating = NO;
     [self.locationBarAnimatee setSteadyViewFaded:NO];
-    [self.locationBarAnimatee setEditViewFaded:NO];
+    [self.editViewAnimatee setLeadingIconFaded:NO];
+    [self.editViewAnimatee setClearButtonFaded:NO];
   };
 
   if (animated) {
@@ -136,6 +151,8 @@
     // Make steady view transparent, but not hidden.
     [self.locationBarAnimatee setSteadyViewHidden:NO];
     [self.locationBarAnimatee setSteadyViewFaded:YES];
+    [self.editViewAnimatee setLeadingIconFaded:NO];
+    [self.editViewAnimatee setClearButtonFaded:NO];
 
     CGFloat duration = ios::material::kDuration1;
 
@@ -150,6 +167,12 @@
 
     // These timings are explained in a comment in
     // focusOmniboxAnimated:shouldExpand:.
+    [UIView animateWithDuration:0.2 * duration
+                     animations:^{
+                       [self.editViewAnimatee setLeadingIconFaded:YES];
+                       [self.editViewAnimatee setClearButtonFaded:YES];
+                     }];
+
     [UIView animateWithDuration:duration * 0.8
                           delay:duration * 0.1
                         options:UIViewAnimationCurveEaseInOut

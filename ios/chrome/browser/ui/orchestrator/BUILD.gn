@@ -5,6 +5,7 @@
 source_set("orchestrator") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "edit_view_animatee.h",
     "location_bar_animatee.h",
     "location_bar_offset_provider.h",
     "omnibox_focus_orchestrator.h",

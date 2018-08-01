@@ -132,6 +132,10 @@ const CGFloat kTextFieldClearButtonTrailingOffset = 4;
   self.textField.incognito = incognito;
 }
 
+- (void)setLeadingImageAlpha:(CGFloat)alpha {
+  self.leadingImageView.alpha = alpha;
+}
+
 #pragma mark - private
 
 - (void)createLeadingImageView {

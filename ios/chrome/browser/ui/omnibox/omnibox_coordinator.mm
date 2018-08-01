@@ -51,6 +51,8 @@
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
 
+#pragma mark - public
+
 - (void)start {
   BOOL isIncognito = self.browserState->IsOffTheRecord();
 
@@ -152,6 +154,10 @@
 }
 
 - (id<LocationBarOffsetProvider>)offsetProvider {
+  return self.viewController;
+}
+
+- (id<EditViewAnimatee>)animatee {
   return self.viewController;
 }
 

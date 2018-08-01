@@ -39,6 +39,9 @@
 // Shows or hides the leading button.
 - (void)setLeadingImageHidden:(BOOL)hidden;
 
+// Sets the alpha level of the leading image view.
+- (void)setLeadingImageAlpha:(CGFloat)alpha;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CONTAINER_VIEW_H_
