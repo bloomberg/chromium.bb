@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(yuweih): This doesn't build on CrOS. crbug.com/869578
 source_set("display") {
   sources = [
     "canvas.h",

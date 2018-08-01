@@ -157,7 +157,6 @@ test("remoting_unittests") {
     "//remoting/base:unit_tests",
     "//remoting/client:unit_tests",
     "//remoting/client/audio:unit_tests",
-    "//remoting/client/display:unit_tests",
     "//remoting/client/input:unit_tests",
     "//remoting/client/ui:unit_tests",
     "//remoting/protocol:unit_tests",
@@ -190,6 +189,12 @@ test("remoting_unittests") {
       "comctl32.lib",
       "rpcrt4.lib",
       "wtsapi32.lib",
+    ]
+  }
+
+  if (!is_chromeos) {
+    deps += [
+      "//remoting/client/display:unit_tests",
     ]
   }
 }
