@@ -1754,11 +1754,17 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_INCOGNITO_STACK" desc="Content description for the incognito stack selection 'button'.">
         Incognito tabs
       </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_PRIVATE_STACK" desc="Content description for the private stack selection 'button'.">
+        Private tabs
+      </message>
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_STANDARD_STACK_SELECTED" desc="Announcement when the standard tab stack is selected.">
         Switched to standard tabs
       </message>
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_INCOGNITO_STACK_SELECTED" desc="Announcement when the incognito tab stack is selected.">
         Switched to incognito tabs
+      </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_PRIVATE_STACK_SELECTED" desc="Announcement when the private tab stack is selected.">
+        Switched to private tabs
       </message>
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_UNDO_TAB_CLOSED" desc="Content description for the undo tab closed 'button.">
         Reopen closed tab
@@ -1934,6 +1940,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_CONTEXTMENU_OPEN_IN_INCOGNITO_TAB" desc="Context sensitive menu item to open the selected link in a new incognito tab. [CHAR-LIMIT=30]">
         Open in incognito tab
       </message>
+      <message name="IDS_CONTEXTMENU_OPEN_IN_PRIVATE_TAB" desc="Context sensitive menu item to open the selected link in a new private tab. [CHAR-LIMIT=30]">
+        Open in private tab
+      </message>
       <message name="IDS_CONTEXTMENU_CALL" desc="Context sensitive menu for calling phone number. [CHAR-LIMIT=30]">
         Call
       </message>
@@ -1985,6 +1994,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_CONTEXTMENU_OPEN_IN_CHROME_INCOGNITO_TAB" desc="Context sensitive menu item to open the selected link in a Chrome incognito tab from Chrome Custom Tab. [CHAR-LIMIT=30]">
         Open in incognito tab
       </message>
+      <message name="IDS_CONTEXTMENU_OPEN_IN_CHROME_PRIVATE_TAB" desc="Context sensitive menu item to open the selected link in a Chrome private tab from Chrome Custom Tab. [CHAR-LIMIT=30]">
+        Open in private tab
+      </message>
       <!-- Swipe refresh -->
       <message name="IDS_ACCESSIBILITY_SWIPE_REFRESH" desc="Content description for the swipe refresh action.">
         Refreshing page
@@ -1996,6 +2008,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB" desc="Browser Actions menu item to open the selected link in a Chrome incognito tab. [CHAR-LIMIT=30]">
         Open in incognito tab
+      </message>
+      <message name="IDS_BROWSER_ACTIONS_OPEN_IN_PRIVATE_TAB" desc="Browser Actions menu item to open the selected link in a Chrome private tab. [CHAR-LIMIT=30]">
+        Open in private tab
       </message>
       <message name="IDS_BROWSER_ACTIONS_SAVE_LINK_AS" desc="Browser Actions menu item to download the page of the selected link. [CHAR-LIMIT=30]">
         Download link
@@ -2451,6 +2466,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION" desc="Message on the notification that closes all incognito tabs in document mode">
         Close all incognito tabs
       </message>
+      <message name="IDS_CLOSE_ALL_PRIVATE_NOTIFICATION" desc="Message on the notification that closes all private tabs in document mode">
+        Close all private tabs
+      </message>
 
       <!-- Autofill/Wallet integration prompt -->
       <message name="IDS_CARD_UNMASK_INPUT_HINT" desc="Hint text for an input field containing the user's credit card CVC (card verification code).">
@@ -2769,6 +2787,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BUTTON_NEW_INCOGNITO_TAB" desc="Tooltip for the button to open a new incognito browser tab.">
         New incognito tab
       </message>
+      <message name="IDS_BUTTON_NEW_PRIVATE_TAB" desc="Tooltip for the button to open a new private browser tab.">
+        New private tab
+      </message>
       <message name="IDS_CUSTOM_TAB_AMP_PUBLISHER_URL" desc="Text shown in a Custom Tab toolbar for a web page that is hosted by the Google content delivery network but was originally published by someone else.">
         From <ph name="PUBLISHER_ORIGIN">&lt;pub&gt;%1$s&lt;/pub&gt;<ex>example.com</ex></ph> – <ph name="BEGIN_DEEMPHASIZED">&lt;bg&gt;</ph>delivered by Google<ph name="END_DEEMPHASIZED">&lt;/bg&gt;</ph>
       </message>
@@ -2807,6 +2828,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_MENU_NEW_INCOGNITO_TAB" desc="Menu item for opening a new incognito tab that facilitates pseudononymous browsing. [CHAR-LIMIT=27]" meaning="Android menu">
         New incognito tab
       </message>
+      <message name="IDS_MENU_NEW_PRIVATE_TAB" desc="Menu item for opening a new private tab that facilitates pseudononymous browsing. [CHAR-LIMIT=27]" meaning="Android menu">
+        New private tab
+      </message>
       <message name="IDS_MENU_BOOKMARKS" desc="Menu item for opening the bookmarks page that contains all the user's bookmarks. [CHAR-LIMIT=27]">
         Bookmarks
       </message>
@@ -2842,6 +2866,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_MENU_CLOSE_ALL_INCOGNITO_TABS" desc="Menu item for closing all open incognito tabs. [CHAR-LIMIT=27]">
         Close incognito tabs
+      </message>
+      <message name="IDS_MENU_CLOSE_ALL_PRIVATE_TABS" desc="Menu item for closing all open private tabs. [CHAR-LIMIT=27]">
+        Close private tabs
       </message>
       <message name="IDS_MENU_SEND_FEEDBACK" desc="Menu item for sending feedback. [CHAR-LIMIT=27]">
         Send feedback
@@ -3050,11 +3077,17 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_NEW_INCOGNITO_TAB_PAGE" desc="Accessibility text to read aloud when the user focuses the new incognito tab view.">
         New incognito tab
       </message>
+      <message name="IDS_ACCESSIBILITY_NEW_PRIVATE_TAB_PAGE" desc="Accessibility text to read aloud when the user focuses the new private tab view.">
+        New private tab
+      </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_NEW_TAB" desc="Content description for the new tab button.">
         New tab
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_NEW_INCOGNITO_TAB" desc="Content description for the new incognito tab button.">
         New incognito tab
+      </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_NEW_PRIVATE_TAB" desc="Content description for the new private tab button.">
+        New private tab
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_TABSWITCHER_TOGGLE" desc="Content description for the button that enters or leaves the tab switcher. [ICU Syntax]">
         {OPEN_TABS, plural, =1 {%1$d open tab} other {%1$d open tabs}}
@@ -3083,8 +3116,14 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_INCOGNITO_TOGGLE_STANDARD" desc="Content description for the incognito tabs toggle button when viewing standard tabs.">
         Enter incognito mode
       </message>
+      <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_PRIVATE_TOGGLE_STANDARD" desc="Content description for the private tabs toggle button when viewing standard tabs.">
+        Enter private mode
+      </message>
       <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_INCOGNITO_TOGGLE_INCOGNITO" desc="Content description for the incognito tabs toggle button when viewing incognito tabs.">
         Leave incognito mode
+      </message>
+      <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_PRIVATE_TOGGLE_PRIVATE" desc="Content description for the private tabs toggle button when viewing private tabs.">
+        Leave private mode
       </message>
       <message name="IDS_ACCESSIBILITY_TABSTRIP_IDENTIFIER" desc="Content description for tabs that are not selected">
         Tab
@@ -3095,8 +3134,14 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_TABSTRIP_INCOGNITO_IDENTIFIER" desc="Content description for tabs that are not selected in incognito mode">
         Incognito Tab
       </message>
+      <message name="IDS_ACCESSIBILITY_TABSTRIP_PRIVATE_IDENTIFIER" desc="Content description for tabs that are not selected in private mode">
+        Private Tab
+      </message>
       <message name="IDS_ACCESSIBILITY_TABSTRIP_INCOGNITO_IDENTIFIER_SELECTED" desc="Content description for the tab that is selected in incognito mode">
         Selected Incognito Tab
+      </message>
+      <message name="IDS_ACCESSIBILITY_TABSTRIP_PRIVATE_IDENTIFIER_SELECTED" desc="Content description for the tab that is selected in private mode">
+        Selected Private Tab
       </message>
       <message name="IDS_ACCESSIBILITY_OMNIBOX_BTN_REFINE" desc="Content description for the omnibox refine button.">
         Refine
@@ -3151,10 +3196,18 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_NEW_TAB_INCOGNITO_HEADER" desc="Header shown when a user opens an incognito tab explaining incognito mode">
         You’ve gone incognito.
       </message>
+      <message name="IDS_NEW_TAB_PRIVATE_HEADER" desc="Header shown when a user opens an incognito tab explaining private mode">
+        You’ve gone private.
+      </message>
       <message name="IDS_NEW_TAB_INCOGNITO_MESSAGE" desc="Message shown when a user opens an incognito tab explaining incognito mode">
         Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed all of your incognito tabs. Any files you download or bookmarks you create will be kept.
 
 However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
+      </message>
+      <message name="IDS_NEW_TAB_PRIVATE_MESSAGE" desc="Message shown when a user opens an incognito tab explaining private mode">
+        Pages you view in private tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed all of your private tabs. Any files you download or bookmarks you create will be kept.
+
+However, you aren’t invisible. Going private doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
       </message>
 
       <!-- Contextual Search -->
@@ -3393,6 +3446,9 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       </message>
       <message name="IDS_KEYBOARD_SHORTCUT_NEW_INCOGNITO_TAB" desc="A text label that appears next to a keyboard shortcut to open a new tab in incognito mode in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=55]">
         Open a new tab in Incognito mode
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_NEW_PRIVATE_TAB" desc="A text label that appears next to a keyboard shortcut to open a new tab in private mode in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=55]">
+        Open a new tab in Private mode
       </message>
       <message name="IDS_KEYBOARD_SHORTCUT_OPEN_MENU" desc="A text label that appears next to a keyboard shortcut that opens the overflow menu in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=55]">
         Open the menu

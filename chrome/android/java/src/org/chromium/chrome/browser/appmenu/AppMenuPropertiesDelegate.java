@@ -23,6 +23,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
@@ -217,6 +218,22 @@ public class AppMenuPropertiesDelegate {
                 // Enable close all tabs if there are normal tabs or incognito tabs.
                 menu.findItem(R.id.close_all_tabs_menu_id).setEnabled(
                         mActivity.getTabModelSelector().getTotalTabCount() > 0);
+            }
+        }
+
+        // We have to iterate all menu items since same menu item ID may be associated with more
+        // than one menu items.
+        boolean useAlternativeIncognitoStrings =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
+        for (int i = 0; i < menu.size(); ++i) {
+            MenuItem item = menu.getItem(i);
+            if (item.getItemId() == R.id.new_incognito_tab_menu_id) {
+                item.setTitle(useAlternativeIncognitoStrings ? R.string.menu_new_private_tab
+                                                             : R.string.menu_new_incognito_tab);
+            } else if (item.getItemId() == R.id.close_all_incognito_tabs_menu_id) {
+                item.setTitle(useAlternativeIncognitoStrings
+                                ? R.string.menu_close_all_private_tabs
+                                : R.string.menu_close_all_incognito_tabs);
             }
         }
 

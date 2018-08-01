@@ -84,10 +84,18 @@ public class IncognitoNewTabPage
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
 
         if (!useMDIncognitoNTP()) {
+            boolean useAlternateIncognitoStrings =
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
+            TextView newTabIncognitoHeader =
+                    (TextView) mIncognitoNewTabPageView.findViewById(R.id.ntp_incognito_header);
+            newTabIncognitoHeader.setText(useAlternateIncognitoStrings
+                            ? R.string.new_tab_private_header
+                            : R.string.new_tab_incognito_header);
             TextView newTabIncognitoMessage = (TextView) mIncognitoNewTabPageView.findViewById(
                     R.id.new_tab_incognito_message);
-            newTabIncognitoMessage.setText(
-                    activity.getResources().getString(R.string.new_tab_incognito_message));
+            newTabIncognitoMessage.setText(useAlternateIncognitoStrings
+                            ? R.string.new_tab_private_message
+                            : R.string.new_tab_incognito_message);
         }
     }
 
