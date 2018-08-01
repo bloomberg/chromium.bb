@@ -4720,8 +4720,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOM_LINKS_DONE" desc="The text label of the custom link done button on the edit shortcut dialog. (On the New Tab Page)">
         Done
       </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_INVALID_URL" desc="The text of displayed when an invalid URL is provided when creating a custom link. (On the New Tab Page)">
+      <message name="IDS_NTP_CUSTOM_LINKS_INVALID_URL" desc="Error message for when an invalid URL is provided while creating a custom link. (On the New Tab Page)">
        Type a valid URL
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_SHORTCUT_EXISTS" desc="Error message for when the shortcut being created already exists. (On the New Tab Page)">
+       Shortcut already exists
+      </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_CANT_CREATE" desc="A catchall error message for when the shortcut cannot be created. (On the New Tab Page)">
+       Can’t create shortcut
       </message>
       <message name="IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED" desc="The title of the shortcut removed confirmation message when removing a custom link. (On the New Tab Page)">
         Shortcut removed
