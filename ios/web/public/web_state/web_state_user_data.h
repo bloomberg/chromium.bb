@@ -54,23 +54,15 @@ class WebStateUserData : public base::SupportsUserData::Data {
   }
 
  protected:
-  static inline void* UserDataKey() { return &kLocatorKey; }
-
- private:
-  // The user data key.
-  static int kLocatorKey;
+  static inline const void* UserDataKey() {
+    static const int kId = 0;
+    return &kId;
+  }
 };
 
-// The macro to define the locator key. This key should be defined in the .cc
-// file of the derived class.
-//
-// The "= 0" is surprising, but is required to effect a definition rather than
-// a declaration. Without it, this would be merely a declaration of a template
-// specialization. (C++98: 14.7.3.15; C++11: 14.7.3.13)
-//
-#define DEFINE_WEB_STATE_USER_DATA_KEY(TYPE) \
-  template <>                                \
-  int web::WebStateUserData<TYPE>::kLocatorKey = 0
+// Macro previously used to define the UserDataKey().
+// TODO(crbug.com/589840): Remove this once all use have been deleted.
+#define DEFINE_WEB_STATE_USER_DATA_KEY(TYPE)
 
 }  // namespace web
 
