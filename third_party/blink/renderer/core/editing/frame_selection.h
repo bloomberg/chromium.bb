@@ -248,7 +248,6 @@ class CORE_EXPORT FrameSelection final
 
   base::Optional<unsigned> LayoutSelectionStart() const;
   base::Optional<unsigned> LayoutSelectionEnd() const;
-  void ClearLayoutSelection();
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
       const NGPaintFragment&) const;
 

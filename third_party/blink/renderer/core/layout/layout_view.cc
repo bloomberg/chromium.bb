@@ -594,10 +594,6 @@ void LayoutView::AbsoluteQuads(Vector<FloatQuad>& quads,
       FloatRect(FloatPoint(), FloatSize(Layer()->Size())), mode));
 }
 
-void LayoutView::ClearSelection() {
-  frame_view_->GetFrame().Selection().ClearLayoutSelection();
-}
-
 void LayoutView::CommitPendingSelection() {
   TRACE_EVENT0("blink", "LayoutView::commitPendingSelection");
   DCHECK(!NeedsLayout());

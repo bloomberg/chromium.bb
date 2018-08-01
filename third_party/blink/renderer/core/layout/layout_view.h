@@ -146,7 +146,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
       const PaintInfo&,
       const LayoutPoint& paint_offset) const override;
 
-  void ClearSelection();
   void CommitPendingSelection();
 
   void AbsoluteRects(Vector<IntRect>&,
