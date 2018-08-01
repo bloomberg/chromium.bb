@@ -356,6 +356,10 @@ void FileInputType::FilesChosen(const Vector<FileChooserFileInfo>& files) {
   }
 }
 
+LocalFrame* FileInputType::FrameOrNull() const {
+  return GetElement().GetDocument().GetFrame();
+}
+
 void FileInputType::SetFilesFromDirectory(const String& path) {
   if (ChromeClient* chrome_client = GetChromeClient()) {
     Vector<String> files;

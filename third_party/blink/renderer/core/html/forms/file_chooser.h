@@ -42,6 +42,7 @@
 namespace blink {
 
 class FileChooser;
+class LocalFrame;
 
 struct FileChooserFileInfo {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -63,6 +64,7 @@ struct FileChooserFileInfo {
 class FileChooserClient : public GarbageCollectedMixin {
  public:
   virtual void FilesChosen(const Vector<FileChooserFileInfo>&) = 0;
+  virtual LocalFrame* FrameOrNull() const = 0;
   virtual ~FileChooserClient();
 
  protected:
@@ -82,6 +84,9 @@ class FileChooser : public RefCounted<FileChooser> {
                                            const WebFileChooserParams&);
   ~FileChooser();
 
+  LocalFrame* FrameOrNull() const {
+    return client_ ? client_->FrameOrNull() : nullptr;
+  }
   void DisconnectClient() { client_ = nullptr; }
 
   // FIXME: We should probably just pass file paths that could be virtual paths
