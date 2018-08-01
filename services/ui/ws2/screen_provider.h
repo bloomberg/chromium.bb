@@ -10,7 +10,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "services/ui/public/interfaces/screen_provider.mojom.h"
+#include "services/ui/public/interfaces/screen_provider_observer.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/insets.h"

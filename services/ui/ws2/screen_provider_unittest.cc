@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/screen_provider.mojom.h"
+#include "services/ui/public/interfaces/screen_provider_observer.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/test_screen_provider_observer.h"
