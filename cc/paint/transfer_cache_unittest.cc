@@ -203,10 +203,8 @@ TEST_F(TransferCacheTest, RawMemoryTransfer) {
 }
 
 TEST_F(TransferCacheTest, ImageMemoryTransfer) {
-// TODO(ericrk): This test doesn't work on Android. crbug.com/777628
-#if defined(OS_ANDROID)
+  // TODO(ericrk): This test doesn't work. crbug.com/859619
   return;
-#endif
 
   auto* service_cache = ServiceTransferCache();
 

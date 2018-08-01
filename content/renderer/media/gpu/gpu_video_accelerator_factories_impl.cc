@@ -301,6 +301,15 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(size_t bit_depth) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+  // TODO(sugoi): This configuration is currently used only for testing ChromeOS
+  // on Linux and doesn't support hardware acceleration. OSMesa did not support
+  // any hardware acceleration here, so this was never an issue, but SwiftShader
+  // revealed this issue. See https://crbug.com/859946
+  if (gpu_channel_host_->gpu_info().gl_renderer.find("SwiftShader") !=
+      std::string::npos)
+    return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+#endif
   auto capabilities = context_provider_->ContextCapabilities();
   if (bit_depth > 8) {
     // If high bit depth rendering is enabled, bail here, otherwise try and use

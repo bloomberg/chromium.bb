@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframe_model.h"
@@ -612,7 +613,26 @@ LayerTreeTest::LayerTreeTest()
   // specified (for running in a debugger).
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kCCLayerTreeTestNoTimeout))
-    timeout_seconds_ = 5;
+#if defined(THREAD_SANITIZER)
+    // SwiftShader is a multi-threaded renderer and TSAN takes a lot longer to
+    // run tests when using SwiftShader
+    timeout_seconds_ = 35;
+#elif defined(OS_WIN) && defined(_DEBUG)
+    // Debug builds on Windows are much slower than on other platforms, possibly
+    // because Windows uses separate debug versions of the C Run-Time Library
+    // for debug builds, whereas other platforms use the same system libraries
+    // for debug and release builds.
+    timeout_seconds_ = 25;
+#elif defined(MEMORY_SANITIZER)
+    // MSAN is slower than uninstrumented code
+    timeout_seconds_ = 20;
+#elif defined(ADDRESS_SANITIZER) || defined(_DEBUG) || defined(USE_OZONE)
+    // ASAN and Debug builds are slower than release builds, as expected
+    // Ozone builds also go through a slower path than regular Linux builds
+    timeout_seconds_ = 12;
+#else
+    timeout_seconds_ = 6;
+#endif
   if (command_line->HasSwitch(switches::kCCLayerTreeTestLongTimeout))
     timeout_seconds_ = 5 * 60;
 }
