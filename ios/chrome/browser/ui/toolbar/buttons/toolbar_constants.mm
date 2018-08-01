@@ -68,11 +68,13 @@ const CGFloat kAdaptiveLocationBarCornerRadius = 18;
 const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.09;
 const CGFloat kAdaptiveLocationBarBackgroundAlphaIncognito = 0.12;
 const CGFloat kAdaptiveLocationBarVerticalMargin = 6.0f;
+const CGFloat kAdaptiveLocationBarVerticalMarginFullscreen = 3.0f;
+const CGFloat kAdaptiveLocationBarExtraVerticalMargin = 1.0f;
 
 const CGFloat kToolbarHeight = 56;
 const CGFloat kTopToolbarUnsplitMargin = 2;
 const CGFloat kAdaptiveToolbarHeight = 48;
-const CGFloat kToolbarHeightFullscreen = 30;
+const CGFloat kToolbarHeightFullscreen = 20;
 
 NSString* const kToolbarToolsMenuButtonIdentifier =
     @"kToolbarToolsMenuButtonIdentifier";
