@@ -5,10 +5,16 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_MAIN_STAGE_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_MAIN_STAGE_H_
 
+#include <memory>
+
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
+
+namespace ui {
+class CallbackLayerAnimationObserver;
+}  // namespace ui
 
 namespace ash {
 
@@ -50,6 +56,9 @@ class AssistantMainStage : public views::View,
   void UpdateCommittedQueryViewSpacer();
   void UpdateSuggestionContainer();
 
+  bool OnCommittedQueryExitAnimationEnded(
+      const ui::CallbackLayerAnimationObserver& observer);
+
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   views::View* committed_query_view_spacer_;       // Owned by view hierarchy.
@@ -60,6 +69,9 @@ class AssistantMainStage : public views::View,
   // Owned by view hierarchy.
   AssistantQueryView* committed_query_view_ = nullptr;
   AssistantQueryView* pending_query_view_ = nullptr;
+
+  std::unique_ptr<ui::CallbackLayerAnimationObserver>
+      committed_query_exit_animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMainStage);
 };
