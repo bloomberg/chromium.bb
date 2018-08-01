@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/data_type_manager_mock.h"
 
+#include "components/sync/driver/configure_context.h"
+
 namespace syncer {
 
 DataTypeManagerMock::DataTypeManagerMock() : result_(OK, ModelTypeSet()) {}

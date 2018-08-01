@@ -43,7 +43,8 @@ class FrontendDataTypeController : public DirectoryDataTypeController {
   ~FrontendDataTypeController() override;
 
   // DataTypeController interface.
-  void LoadModels(const ModelLoadCallback& model_load_callback) override;
+  void LoadModels(const ConfigureContext& configure_context,
+                  const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop(SyncStopMetadataFate metadata_fate) override;
   State state() const override;

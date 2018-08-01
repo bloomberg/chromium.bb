@@ -12,9 +12,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
 
-namespace syncer {
-class SyncClient;
-}
+class PrefService;
 
 namespace sync_sessions {
 
@@ -22,7 +20,7 @@ namespace sync_sessions {
 class SessionModelTypeController : public syncer::ModelTypeController {
  public:
   SessionModelTypeController(
-      syncer::SyncClient* sync_client,
+      PrefService* pref_service,
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate,
       const std::string& history_disabled_pref_name);
   ~SessionModelTypeController() override;
@@ -32,6 +30,8 @@ class SessionModelTypeController : public syncer::ModelTypeController {
 
  private:
   void OnSavingBrowserHistoryPrefChanged();
+
+  PrefService* const pref_service_;
 
   // Name of the pref that indicates whether saving history is disabled.
   const std::string history_disabled_pref_name_;

@@ -31,6 +31,7 @@ FrontendDataTypeController::FrontendDataTypeController(
 }
 
 void FrontendDataTypeController::LoadModels(
+    const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   model_load_callback_ = model_load_callback;

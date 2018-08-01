@@ -22,6 +22,7 @@
 
 namespace syncer {
 
+struct ConfigureContext;
 class ModelTypeConfigurer;
 class SyncError;
 class SyncMergeResult;
@@ -105,7 +106,8 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // with the result. If the models are already loaded it is safe to call the
   // callback right away. Else the callback needs to be stored and called when
   // the models are ready.
-  virtual void LoadModels(const ModelLoadCallback& model_load_callback) = 0;
+  virtual void LoadModels(const ConfigureContext& configure_context,
+                          const ModelLoadCallback& model_load_callback) = 0;
 
   // Registers with sync backend if needed. This function is called by
   // DataTypeManager before downloading initial data. Non-blocking types need to

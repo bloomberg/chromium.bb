@@ -18,6 +18,7 @@
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/fake_sync_service.h"
@@ -129,6 +130,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
 
   void Start() {
     bookmark_dtc_->LoadModels(
+        syncer::ConfigureContext(),
         base::Bind(&ModelLoadCallbackMock::Run,
                    base::Unretained(&model_load_callback_)));
     bookmark_dtc_->StartAssociating(
@@ -174,6 +176,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   bookmark_dtc_->LoadModels(
+      syncer::ConfigureContext(),
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, bookmark_dtc_->state());
@@ -200,6 +203,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartHistoryServiceNotReady) {
       .WillRepeatedly(Return(false));
 
   bookmark_dtc_->LoadModels(
+      syncer::ConfigureContext(),
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
 
@@ -230,9 +234,11 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBusy) {
 
   EXPECT_CALL(model_load_callback_, Run(_, _));
   bookmark_dtc_->LoadModels(
+      syncer::ConfigureContext(),
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
   bookmark_dtc_->LoadModels(
+      syncer::ConfigureContext(),
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
 }
@@ -289,6 +295,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAborted) {
       .WillRepeatedly(Return(false));
 
   bookmark_dtc_->LoadModels(
+      syncer::ConfigureContext(),
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
 

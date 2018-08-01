@@ -16,9 +16,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "components/sync/device_info/local_device_info_provider_mock.h"
-#include "components/sync/driver/fake_sync_service.h"
-#include "components/sync/driver/sync_client_mock.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/fake_model_type_processor.h"
@@ -164,36 +162,12 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
   std::unique_ptr<ModelTypeProcessor> processor_;
 };
 
-class TestSyncService : public FakeSyncService {
- public:
-  TestSyncService() {
-    local_device_info_provider_.Initialize(kCacheGuid,
-                                           /*signin_scoped_device_id=*/"");
-  }
-
-  ~TestSyncService() override {}
-
-  const LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override {
-    return &local_device_info_provider_;
-  }
-
- private:
-  LocalDeviceInfoProviderMock local_device_info_provider_;
-};
-
 }  // namespace
 
 class ModelTypeControllerTest : public testing::Test {
  public:
   ModelTypeControllerTest() : model_thread_("modelthread") {
     model_thread_.Start();
-
-    AccountInfo account_info;
-    account_info.account_id = kAccountId;
-    sync_service_.SetAuthenticatedAccountInfo(account_info);
-
-    ON_CALL(sync_client_mock_, GetSyncService())
-        .WillByDefault(testing::Return(&sync_service_));
 
     // TODO(crbug.com/855010): Remove the proxy and simplify these tests.
     controller_ = std::make_unique<ModelTypeController>(
@@ -204,17 +178,20 @@ class ModelTypeControllerTest : public testing::Test {
                 [](base::WeakPtr<ModelTypeControllerDelegate> delegate) {
                   return delegate;
                 },
-                base::AsWeakPtr(&delegate_))),
-        &sync_client_mock_);
+                base::AsWeakPtr(&delegate_))));
   }
 
-  ~ModelTypeControllerTest() {
+  ~ModelTypeControllerTest() override {
     PumpModelThread();
     PumpUIThread();
   }
 
   void LoadModels() {
-    controller_->LoadModels(base::Bind(&ModelTypeControllerTest::LoadModelsDone,
+    ConfigureContext context;
+    context.authenticated_account_id = kAccountId;
+    context.cache_guid = kCacheGuid;
+    controller_->LoadModels(context,
+                            base::Bind(&ModelTypeControllerTest::LoadModelsDone,
                                        base::Unretained(this)));
   }
 
@@ -299,8 +276,6 @@ class ModelTypeControllerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::Thread model_thread_;
   TestDelegate delegate_;
-  TestSyncService sync_service_;
-  testing::NiceMock<SyncClientMock> sync_client_mock_;
   TestModelTypeConfigurer configurer_;
   std::unique_ptr<ModelTypeController> controller_;
 };

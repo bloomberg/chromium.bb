@@ -37,6 +37,7 @@
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/clear_server_data_events.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory.h"
@@ -1530,9 +1531,14 @@ void ProfileSyncService::SetPlatformSyncAllowedProvider(
 
 void ProfileSyncService::ConfigureDataTypeManager(
     syncer::ConfigureReason reason) {
-  DCHECK_NE(reason, syncer::CONFIGURE_REASON_UNKNOWN);
   DCHECK(CanConfigureDataTypes() ||
          reason == syncer::CONFIGURE_REASON_MIGRATION);
+
+  syncer::ConfigureContext configure_context;
+  configure_context.authenticated_account_id =
+      GetAuthenticatedAccountInfo().account_id;
+  configure_context.cache_guid = local_device_->GetLocalSyncCacheGUID();
+  configure_context.reason = reason;
 
   if (!migrator_) {
     // We create the migrator at the same time.
@@ -1547,11 +1553,16 @@ void ProfileSyncService::ConfigureDataTypeManager(
     // Override reason if no configuration has completed ever.
     if (is_first_time_sync_configure_ &&
         reason != syncer::CONFIGURE_REASON_CATCH_UP) {
-      reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
+      configure_context.reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
     }
   }
 
-  data_type_manager_->Configure(GetPreferredDataTypes(), reason);
+  DCHECK(!configure_context.authenticated_account_id.empty() ||
+         IsLocalSyncEnabled());
+  DCHECK(!configure_context.cache_guid.empty());
+  DCHECK_NE(configure_context.reason, syncer::CONFIGURE_REASON_UNKNOWN);
+
+  data_type_manager_->Configure(GetPreferredDataTypes(), configure_context);
 }
 
 syncer::UserShare* ProfileSyncService::GetUserShare() const {

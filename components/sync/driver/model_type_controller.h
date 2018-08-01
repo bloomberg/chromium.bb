@@ -20,21 +20,20 @@
 
 namespace syncer {
 
-class SyncClient;
 struct DataTypeActivationResponse;
 
 // DataTypeController implementation for Unified Sync and Storage model types.
 class ModelTypeController : public DataTypeController {
  public:
   ModelTypeController(ModelType type,
-                      std::unique_ptr<ModelTypeControllerDelegate> delegate,
-                      SyncClient* sync_client);
+                      std::unique_ptr<ModelTypeControllerDelegate> delegate);
   ~ModelTypeController() override;
 
   // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
   void BeforeLoadModels(ModelTypeConfigurer* configurer) override;
-  void LoadModels(const ModelLoadCallback& model_load_callback) override;
+  void LoadModels(const ConfigureContext& configure_context,
+                  const ModelLoadCallback& model_load_callback) override;
   void RegisterWithBackend(base::Callback<void(bool)> set_downloaded,
                            ModelTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
@@ -49,8 +48,6 @@ class ModelTypeController : public DataTypeController {
  protected:
   void ReportModelError(SyncError::ErrorType error_type,
                         const ModelError& error);
-
-  SyncClient* sync_client() const { return sync_client_; }
 
  private:
   void RecordStartFailure(ConfigureResult result) const;
@@ -67,9 +64,6 @@ class ModelTypeController : public DataTypeController {
       std::unique_ptr<DataTypeActivationResponse> activation_response);
 
   const std::unique_ptr<ModelTypeControllerDelegate> delegate_;
-
-  // The sync client, which provides access to this type's Delegate.
-  SyncClient* const sync_client_;
 
   // State of this datatype controller.
   State state_;

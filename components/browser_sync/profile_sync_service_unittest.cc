@@ -18,6 +18,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
@@ -52,10 +53,10 @@ class FakeDataTypeManager : public syncer::DataTypeManager {
   ~FakeDataTypeManager() override {}
 
   void Configure(syncer::ModelTypeSet desired_types,
-                 syncer::ConfigureReason reason) override {
+                 const syncer::ConfigureContext& context) override {
     state_ = CONFIGURED;
     DCHECK(!configure_called_.is_null());
-    configure_called_.Run(reason);
+    configure_called_.Run(context.reason);
   }
 
   void ReenableType(syncer::ModelType type) override {}

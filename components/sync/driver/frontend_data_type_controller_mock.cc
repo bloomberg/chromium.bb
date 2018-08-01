@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/frontend_data_type_controller_mock.h"
 
+#include "components/sync/driver/configure_context.h"
+
 namespace syncer {
 
 FrontendDataTypeControllerMock::FrontendDataTypeControllerMock() {}

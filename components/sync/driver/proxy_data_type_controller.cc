@@ -35,6 +35,7 @@ void ProxyDataTypeController::BeforeLoadModels(
 }
 
 void ProxyDataTypeController::LoadModels(
+    const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   state_ = MODEL_LOADED;

@@ -18,6 +18,8 @@
 
 namespace syncer {
 
+struct ConfigureContext;
+
 // This interface is for managing the start up and shut down life cycle
 // of many different syncable data types.
 class DataTypeManager {
@@ -69,7 +71,7 @@ class DataTypeManager {
   // progress.  Configuration will be complete only when the
   // desired_types supplied in the last call to Configure is achieved.
   virtual void Configure(ModelTypeSet desired_types,
-                         ConfigureReason reason) = 0;
+                         const ConfigureContext& context) = 0;
 
   // Resets the error state for |type| and triggers a reconfiguration if
   // necessary.

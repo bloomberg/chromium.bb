@@ -21,6 +21,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_generic_change_processor.h"
 #include "components/sync/driver/fake_sync_client.h"
@@ -124,6 +125,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
 
   void Start() {
     autofill_wallet_dtc_->LoadModels(
+        syncer::ConfigureContext(),
         base::Bind(&AutofillWalletDataTypeControllerTest::OnLoadFinished,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();

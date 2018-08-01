@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_generic_change_processor.h"
 #include "components/sync/driver/fake_sync_client.h"
@@ -71,6 +72,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test,
 
   void Start() {
     search_engine_dtc_.LoadModels(
+        syncer::ConfigureContext(),
         base::Bind(&syncer::ModelLoadCallbackMock::Run,
                    base::Unretained(&model_load_callback_)));
     search_engine_dtc_.StartAssociating(base::Bind(
@@ -105,6 +107,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_FALSE(syncable_service_.syncing());
   search_engine_dtc_.LoadModels(
+      syncer::ConfigureContext(),
       base::Bind(&syncer::ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
   EXPECT_TRUE(search_engine_dtc_.GetSubscriptionForTesting());
@@ -165,6 +168,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
 TEST_F(SyncSearchEngineDataTypeControllerTest, StopBeforeLoaded) {
   EXPECT_FALSE(syncable_service_.syncing());
   search_engine_dtc_.LoadModels(
+      syncer::ConfigureContext(),
       base::Bind(&syncer::ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
   EXPECT_TRUE(search_engine_dtc_.GetSubscriptionForTesting());

@@ -12,12 +12,13 @@
 namespace sync_sessions {
 
 SessionModelTypeController::SessionModelTypeController(
-    syncer::SyncClient* sync_client,
+    PrefService* pref_service,
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate,
     const std::string& history_disabled_pref_name)
-    : ModelTypeController(syncer::SESSIONS, std::move(delegate), sync_client),
+    : ModelTypeController(syncer::SESSIONS, std::move(delegate)),
+      pref_service_(pref_service),
       history_disabled_pref_name_(history_disabled_pref_name) {
-  pref_registrar_.Init(sync_client->GetPrefService());
+  pref_registrar_.Init(pref_service);
   pref_registrar_.Add(
       history_disabled_pref_name_,
       base::BindRepeating(
@@ -29,14 +30,12 @@ SessionModelTypeController::~SessionModelTypeController() {}
 
 bool SessionModelTypeController::ReadyForStart() const {
   DCHECK(CalledOnValidThread());
-  return !sync_client()->GetPrefService()->GetBoolean(
-      history_disabled_pref_name_);
+  return !pref_service_->GetBoolean(history_disabled_pref_name_);
 }
 
 void SessionModelTypeController::OnSavingBrowserHistoryPrefChanged() {
   DCHECK(CalledOnValidThread());
-  if (!sync_client()->GetPrefService()->GetBoolean(
-          history_disabled_pref_name_)) {
+  if (!pref_service_->GetBoolean(history_disabled_pref_name_)) {
     return;
   }
 
