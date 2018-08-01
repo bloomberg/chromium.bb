@@ -35,6 +35,51 @@ namespace ui {
 
 namespace {
 
+uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
+  switch (usage) {
+    case gfx::BufferUsage::GPU_READ:
+      return GBM_BO_USE_TEXTURING;
+    case gfx::BufferUsage::SCANOUT:
+      return GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
+      break;
+    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
+      return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_SCANOUT |
+             GBM_BO_USE_TEXTURING;
+      break;
+    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+      return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_TEXTURING;
+    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
+      return GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
+    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+      return GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING |
+             GBM_BO_USE_HW_VIDEO_DECODER;
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
+      return GBM_BO_USE_LINEAR | GBM_BO_USE_TEXTURING;
+  }
+}
+
+void CreateBufferWithGbmFlags(const scoped_refptr<GbmDevice>& gbm,
+                              uint32_t fourcc_format,
+                              const gfx::Size& size,
+                              uint32_t flags,
+                              const std::vector<uint64_t>& modifiers,
+                              std::unique_ptr<GbmBuffer>* out_buffer) {
+  std::unique_ptr<GbmBuffer> buffer;
+  if (modifiers.empty())
+    buffer = GbmBuffer::CreateBuffer(gbm, fourcc_format, size, flags);
+  else
+    buffer = GbmBuffer::CreateBufferWithModifiers(gbm, fourcc_format, size,
+                                                  flags, modifiers);
+  if (!buffer)
+    return;
+
+  if (flags & GBM_BO_USE_SCANOUT && !buffer->framebuffer())
+    return;
+
+  *out_buffer = std::move(buffer);
+}
+
 class GbmBufferGenerator : public DrmFramebufferGenerator {
  public:
   GbmBufferGenerator() {}
@@ -46,15 +91,19 @@ class GbmBufferGenerator : public DrmFramebufferGenerator {
                                        const std::vector<uint64_t>& modifiers,
                                        const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
+    std::unique_ptr<GbmBuffer> buffer;
+
     if (modifiers.size() > 0) {
-      auto buffer = GbmBuffer::CreateBufferWithModifiers(
+      buffer = GbmBuffer::CreateBufferWithModifiers(
           gbm, format, size, GBM_BO_USE_SCANOUT, modifiers);
-      return buffer->framebuffer();
     } else {
-      auto buffer =
-          GbmBuffer::CreateBuffer(gbm, format, size, GBM_BO_USE_SCANOUT);
-      return buffer->framebuffer();
+      buffer = GbmBuffer::CreateBuffer(gbm, format, size, GBM_BO_USE_SCANOUT);
     }
+
+    if (!buffer)
+      return nullptr;
+
+    return buffer->framebuffer();
   }
 
  protected:
@@ -128,61 +177,29 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
       static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
   DCHECK(gbm);
 
-  uint32_t flags = 0;
-  switch (usage) {
-    case gfx::BufferUsage::GPU_READ:
-      flags = GBM_BO_USE_TEXTURING;
-      break;
-    case gfx::BufferUsage::SCANOUT:
-      flags = GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
-      break;
-    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
-      flags = GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_SCANOUT |
-              GBM_BO_USE_TEXTURING;
-      break;
-    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
-      flags =
-          GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_TEXTURING;
-      break;
-    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
-      flags = GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
-      break;
-    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
-      flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING |
-              GBM_BO_USE_HW_VIDEO_DECODER;
-      break;
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-      flags = GBM_BO_USE_LINEAR | GBM_BO_USE_TEXTURING;
-      break;
-  }
-
   DrmWindow* window = screen_manager_->GetWindow(widget);
-  std::vector<uint64_t> modifiers;
-
+  uint32_t flags = BufferUsageToGbmFlags(usage);
   uint32_t fourcc_format = ui::GetFourCCFormatFromBufferFormat(format);
 
   // TODO(hoegsberg): We shouldn't really get here without a window,
   // but it happens during init. Need to figure out why.
-  if (window && window->GetController())
+  std::vector<uint64_t> modifiers;
+  if (window && window->GetController() && !(flags & GBM_BO_USE_LINEAR) &&
+      !(client_flags & GbmBuffer::kFlagNoModifiers)) {
     modifiers = window->GetController()->GetFormatModifiers(fourcc_format);
+  }
+
+  CreateBufferWithGbmFlags(gbm, fourcc_format, size, flags, modifiers, buffer);
 
   // NOTE: BufferUsage::SCANOUT is used to create buffers that will be
   // explicitly set via kms on a CRTC (e.g: BufferQueue buffers), therefore
   // allocation should fail if it's not possible to allocate a BO_USE_SCANOUT
   // buffer in that case.
-  bool retry_without_scanout = usage != gfx::BufferUsage::SCANOUT;
-  do {
-    if (modifiers.size() > 0 && !(flags & GBM_BO_USE_LINEAR) &&
-        !(client_flags & GbmBuffer::kFlagNoModifiers))
-      *buffer = GbmBuffer::CreateBufferWithModifiers(gbm, fourcc_format, size,
-                                                     flags, modifiers);
-    else
-      *buffer = GbmBuffer::CreateBuffer(gbm, fourcc_format, size, flags);
-    retry_without_scanout =
-        retry_without_scanout && !*buffer && (flags & GBM_BO_USE_SCANOUT);
+  if (!*buffer && usage != gfx::BufferUsage::SCANOUT) {
     flags &= ~GBM_BO_USE_SCANOUT;
-  } while (retry_without_scanout);
+    CreateBufferWithGbmFlags(gbm, fourcc_format, size, flags, modifiers,
+                             buffer);
+  }
 }
 
 void DrmThread::CreateBufferFromFds(
@@ -195,6 +212,7 @@ void DrmThread::CreateBufferFromFds(
   scoped_refptr<GbmDevice> gbm =
       static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
   DCHECK(gbm);
+
   *buffer = GbmBuffer::CreateBufferFromFds(
       gbm, ui::GetFourCCFormatFromBufferFormat(format), size, std::move(fds),
       planes);
