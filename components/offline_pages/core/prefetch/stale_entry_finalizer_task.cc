@@ -13,7 +13,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -82,7 +82,7 @@ PrefetchItemErrorCode ErrorCodeForState(PrefetchItemState state) {
 
 bool FinalizeStaleItems(PrefetchItemState state,
                         base::Time now,
-                        sql::Connection* db) {
+                        sql::Database* db) {
   static const char kSql[] =
       "UPDATE prefetch_items SET state = ?, error_code = ?"
       " WHERE state = ? AND freshness_time < ?";
@@ -97,7 +97,7 @@ bool FinalizeStaleItems(PrefetchItemState state,
   return statement.Run();
 }
 
-bool MoreWorkInQueue(sql::Connection* db) {
+bool MoreWorkInQueue(sql::Database* db) {
   static const char kSql[] =
       "SELECT COUNT(*) FROM prefetch_items"
       " WHERE state NOT IN (?, ?)";
@@ -117,7 +117,7 @@ bool MoreWorkInQueue(sql::Connection* db) {
 // potentially outdated content.
 bool FinalizeFutureItems(PrefetchItemState state,
                          base::Time now,
-                         sql::Connection* db) {
+                         sql::Database* db) {
   static const char kSql[] =
       "UPDATE prefetch_items SET state = ?, error_code = ?"
       " WHERE state = ? AND freshness_time > ?";
@@ -136,7 +136,7 @@ bool FinalizeFutureItems(PrefetchItemState state,
 
 // If there is a bug in our code, an item might be stuck in the queue waiting
 // on an event that didn't happen.  If so, finalize that item and report it.
-void ReportAndFinalizeStuckItems(base::Time now, sql::Connection* db) {
+void ReportAndFinalizeStuckItems(base::Time now, sql::Database* db) {
   const int64_t earliest_valid_creation_time = store_utils::ToDatabaseTime(
       now - base::TimeDelta::FromDays(kStuckTimeLimitInDays));
   // Report.
@@ -173,7 +173,7 @@ void ReportAndFinalizeStuckItems(base::Time now, sql::Connection* db) {
 }
 
 Result FinalizeStaleEntriesSync(StaleEntryFinalizerTask::NowGetter now_getter,
-                                sql::Connection* db) {
+                                sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return Result::NO_MORE_WORK;

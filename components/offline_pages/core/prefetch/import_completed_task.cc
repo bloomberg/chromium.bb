@@ -11,7 +11,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "url/gurl.h"
 
@@ -20,7 +20,7 @@ namespace {
 
 bool UpdateToFinishedStateSync(int64_t offline_id,
                                bool success,
-                               sql::Connection* db) {
+                               sql::Database* db) {
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?, error_code = ?"

@@ -17,7 +17,7 @@
 #include "components/sync/syncable/dir_open_result.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/metahandle_set.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 namespace base {
@@ -109,12 +109,11 @@ class DirectoryBackingStore {
 
  protected:
   // For test classes.
-  DirectoryBackingStore(const std::string& dir_name,
-                        sql::Connection* connection);
+  DirectoryBackingStore(const std::string& dir_name, sql::Database* connection);
 
-  // An accessor for the underlying sql::Connection. Avoid using outside of
+  // An accessor for the underlying sql::Database. Avoid using outside of
   // tests.
-  sql::Connection* db();
+  sql::Database* db();
 
   // Return true if the DB is open.
   bool IsOpen() const;
@@ -259,7 +258,7 @@ class DirectoryBackingStore {
   const std::string dir_name_;
   const int database_page_size_;
 
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   sql::Statement save_meta_statement_;
   sql::Statement save_delete_journal_statement_;
 
@@ -269,7 +268,7 @@ class DirectoryBackingStore {
   bool needs_share_info_column_refresh_;
 
   // We keep a copy of the Closure so we reinstall it when the underlying
-  // sql::Connection is destroyed/recreated.
+  // sql::Database is destroyed/recreated.
   base::Closure catastrophic_error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryBackingStore);

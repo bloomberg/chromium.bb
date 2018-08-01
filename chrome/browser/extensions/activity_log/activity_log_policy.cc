@@ -60,7 +60,7 @@ void ActivityLogDatabasePolicy::Flush() {
                     ActivityDatabase::kFlushImmediately);
 }
 
-sql::Connection* ActivityLogDatabasePolicy::GetDatabaseConnection() const {
+sql::Database* ActivityLogDatabasePolicy::GetDatabaseConnection() const {
   return db_->GetSqlConnection();
 }
 

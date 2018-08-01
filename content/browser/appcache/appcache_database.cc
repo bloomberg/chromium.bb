@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -156,14 +156,14 @@ const IndexInfo kIndexes[] = {
 const int kTableCount = arraysize(kTables);
 const int kIndexCount = arraysize(kIndexes);
 
-bool CreateTable(sql::Connection* db, const TableInfo& info) {
+bool CreateTable(sql::Database* db, const TableInfo& info) {
   std::string sql("CREATE TABLE ");
   sql += info.table_name;
   sql += info.columns;
   return db->Execute(sql.c_str());
 }
 
-bool CreateIndex(sql::Connection* db, const IndexInfo& info) {
+bool CreateIndex(sql::Database* db, const IndexInfo& info) {
   std::string sql;
   if (info.unique)
     sql += "CREATE UNIQUE INDEX ";
@@ -1042,7 +1042,7 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
     return false;
   }
 
-  db_.reset(new sql::Connection);
+  db_.reset(new sql::Database);
   meta_table_.reset(new sql::MetaTable);
 
   db_->set_histogram_tag("AppCache");

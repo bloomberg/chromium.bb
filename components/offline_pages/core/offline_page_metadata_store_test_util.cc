@@ -10,7 +10,7 @@
 #include "components/offline_pages/core/model/add_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/offline_page_types.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +18,7 @@ namespace offline_pages {
 
 namespace {
 
-int64_t GetPageCountSync(sql::Connection* db) {
+int64_t GetPageCountSync(sql::Database* db) {
   static const char kSql[] = "SELECT count(*) FROM offlinepages_v1";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   if (statement.Step()) {

@@ -10,7 +10,7 @@
 #include "components/webdata/common/webdata_export.h"
 
 namespace sql {
-class Connection;
+class Database;
 class MetaTable;
 }
 
@@ -31,7 +31,7 @@ class WEBDATA_EXPORT WebDatabaseTable {
   virtual TypeKey GetTypeKey() const = 0;
 
   // Stores the passed members as instance variables.
-  void Init(sql::Connection* db, sql::MetaTable* meta_table);
+  void Init(sql::Database* db, sql::MetaTable* meta_table);
 
   // Create all of the expected SQL tables if they do not already exist.
   // Returns true on success, false on failure.
@@ -59,7 +59,7 @@ class WEBDATA_EXPORT WebDatabaseTable {
   // class exists. Since lifetime of WebDatabaseTable objects slightly
   // exceeds that of WebDatabase, they should not be used in
   // ~WebDatabaseTable.
-  sql::Connection* db_;
+  sql::Database* db_;
   sql::MetaTable* meta_table_;
 
  private:

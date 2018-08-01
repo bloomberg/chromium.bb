@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/browser/visit_database.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -68,10 +68,10 @@ class VisitDatabaseTest : public PlatformTest,
   }
 
   // Provided for URL/VisitDatabase.
-  sql::Connection& GetDB() override { return db_; }
+  sql::Database& GetDB() override { return db_; }
 
   base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
+  sql::Database db_;
 };
 
 TEST_F(VisitDatabaseTest, Add) {

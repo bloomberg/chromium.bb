@@ -35,7 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/transaction.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -107,7 +107,7 @@ void AppCacheStorageImpl::ClearSessionOnlyOrigins(
   if (origins.empty())
     return;  // nothing to delete
 
-  sql::Connection* connection = database->db_connection();
+  sql::Database* connection = database->db_connection();
   if (!connection) {
     NOTREACHED() << "Missing database connection.";
     return;
@@ -701,7 +701,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
   DCHECK(!success_);
-  sql::Connection* connection = database_->db_connection();
+  sql::Database* connection = database_->db_connection();
   if (!connection)
     return;
 
@@ -1185,7 +1185,7 @@ AppCacheStorageImpl::MakeGroupObsoleteTask::MakeGroupObsoleteTask(
 
 void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
   DCHECK(!success_);
-  sql::Connection* connection = database_->db_connection();
+  sql::Database* connection = database_->db_connection();
   if (!connection)
     return;
 

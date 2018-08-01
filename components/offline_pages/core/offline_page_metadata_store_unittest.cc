@@ -24,7 +24,7 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_thumbnail.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -52,7 +52,7 @@ const base::Time kThumbnailExpiration = store_utils::FromDatabaseTime(42);
 
 // Build a store with outdated schema to simulate the upgrading process.
 void BuildTestStoreWithSchemaFromM52(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -96,7 +96,7 @@ void BuildTestStoreWithSchemaFromM52(const base::FilePath& file) {
 }
 
 void BuildTestStoreWithSchemaFromM53(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -141,7 +141,7 @@ void BuildTestStoreWithSchemaFromM53(const base::FilePath& file) {
 }
 
 void BuildTestStoreWithSchemaFromM54(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -193,7 +193,7 @@ void BuildTestStoreWithSchemaFromM54(const base::FilePath& file) {
 }
 
 void BuildTestStoreWithSchemaFromM55(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -237,7 +237,7 @@ void BuildTestStoreWithSchemaFromM55(const base::FilePath& file) {
 }
 
 void BuildTestStoreWithSchemaFromM56(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -282,7 +282,7 @@ void BuildTestStoreWithSchemaFromM56(const base::FilePath& file) {
 }
 
 void BuildTestStoreWithSchemaFromM57(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -325,7 +325,7 @@ void BuildTestStoreWithSchemaFromM57(const base::FilePath& file) {
 }
 
 void BuildTestStoreWithSchemaFromM61(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -369,7 +369,7 @@ void BuildTestStoreWithSchemaFromM61(const base::FilePath& file) {
   ASSERT_FALSE(connection.DoesColumnExist(OFFLINE_PAGES_TABLE_V1, "digest"));
 }
 
-void InjectItemInM62Store(sql::Connection* db, const OfflinePageItem& item) {
+void InjectItemInM62Store(sql::Database* db, const OfflinePageItem& item) {
   ASSERT_TRUE(db->BeginTransaction());
   sql::Statement statement(db->GetUniqueStatement(
       "INSERT INTO " OFFLINE_PAGES_TABLE_V1
@@ -400,7 +400,7 @@ void InjectItemInM62Store(sql::Connection* db, const OfflinePageItem& item) {
 }
 
 void BuildTestStoreWithSchemaFromM62(const base::FilePath& file) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -440,7 +440,7 @@ void BuildTestStoreWithSchemaFromM62(const base::FilePath& file) {
 
 void BuildTestStoreWithSchemaVersion1(const base::FilePath& file) {
   BuildTestStoreWithSchemaFromM62(file);
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(
       connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   ASSERT_TRUE(connection.is_open());
@@ -466,7 +466,7 @@ void BuildTestStoreWithSchemaVersion1(const base::FilePath& file) {
 
 void BuildTestStoreWithSchemaVersion2(const base::FilePath& file) {
   BuildTestStoreWithSchemaVersion1(file);
-  sql::Connection db;
+  sql::Database db;
   ASSERT_TRUE(db.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   sql::MetaTable meta_table;
   ASSERT_TRUE(meta_table.Init(&db, OfflinePageMetadataStore::kCurrentVersion,
@@ -516,7 +516,7 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   return item;
 }
 
-std::vector<OfflinePageItem> GetOfflinePagesSync(sql::Connection* db) {
+std::vector<OfflinePageItem> GetOfflinePagesSync(sql::Database* db) {
   std::vector<OfflinePageItem> result;
 
   static const char kSql[] = "SELECT * FROM " OFFLINE_PAGES_TABLE_V1;
@@ -606,7 +606,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   }
 
   void VerifyMetaVersions() {
-    sql::Connection connection;
+    sql::Database connection;
     ASSERT_TRUE(connection.Open(temp_directory_.GetPath().Append(
         FILE_PATH_LITERAL("OfflinePages.db"))));
     ASSERT_TRUE(connection.is_open());
@@ -656,7 +656,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
 
   template <typename T>
   T ExecuteSync(OfflinePageMetadataStore* store,
-                base::OnceCallback<T(sql::Connection*)> run_callback,
+                base::OnceCallback<T(sql::Database*)> run_callback,
                 T default_value) {
     bool called = false;
     T result;
@@ -686,7 +686,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
 
   ItemActionStatus AddOfflinePage(OfflinePageMetadataStore* store,
                                   const OfflinePageItem& item) {
-    auto result_callback = base::BindLambdaForTesting([&](sql::Connection* db) {
+    auto result_callback = base::BindLambdaForTesting([&](sql::Database* db) {
       // Using 'INSERT OR FAIL' or 'INSERT OR ABORT' in the query below
       // causes debug builds to DLOG.
       static const char kSql[] =
@@ -732,7 +732,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   std::vector<OfflinePageThumbnail> GetThumbnails(
       OfflinePageMetadataStore* store) {
     std::vector<OfflinePageThumbnail> thumbnails;
-    auto run_callback = base::BindLambdaForTesting([&](sql::Connection* db) {
+    auto run_callback = base::BindLambdaForTesting([&](sql::Database* db) {
       static const char kSql[] = "SELECT * FROM page_thumbnails";
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
@@ -755,7 +755,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   void AddThumbnail(OfflinePageMetadataStore* store,
                     const OfflinePageThumbnail& thumbnail) {
     std::vector<OfflinePageThumbnail> thumbnails;
-    auto run_callback = base::BindLambdaForTesting([&](sql::Connection* db) {
+    auto run_callback = base::BindLambdaForTesting([&](sql::Database* db) {
       static const char kSql[] =
           "INSERT INTO page_thumbnails"
           " (offline_id, expiration, thumbnail) VALUES (?, ?, ?)";

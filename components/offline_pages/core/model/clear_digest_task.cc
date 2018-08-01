@@ -6,14 +6,14 @@
 
 #include "base/bind.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 namespace offline_pages {
 
 namespace {
 
-bool ClearDigestSync(int64_t offline_id, sql::Connection* db) {
+bool ClearDigestSync(int64_t offline_id, sql::Database* db) {
   static const char kSql[] =
       "UPDATE OR IGNORE offlinepages_v1"
       " SET digest = '' "

@@ -19,12 +19,12 @@ ScopedErrorExpecter::ScopedErrorExpecter()
     : checked_(false) {
   callback_ = base::BindRepeating(&ScopedErrorExpecter::ErrorSeen,
                                   base::Unretained(this));
-  Connection::SetErrorExpecter(&callback_);
+  Database::SetErrorExpecter(&callback_);
 }
 
 ScopedErrorExpecter::~ScopedErrorExpecter() {
   EXPECT_TRUE(checked_) << " Test must call SawExpectedErrors()";
-  Connection::ResetErrorExpecter();
+  Database::ResetErrorExpecter();
 }
 
 void ScopedErrorExpecter::ExpectError(int err) {

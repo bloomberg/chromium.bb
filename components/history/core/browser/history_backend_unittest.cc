@@ -1681,7 +1681,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   // Now the database should already be migrated.
   // Check version first.
   int cur_version = HistoryDatabase::GetCurrentVersion();
-  sql::Connection db;
+  sql::Database db;
   ASSERT_TRUE(db.Open(new_history_file));
   sql::Statement s(db.GetUniqueStatement(
       "SELECT value FROM meta WHERE key = 'version'"));
@@ -3576,7 +3576,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
 
   // Check version in history database first.
   int cur_version = HistoryDatabase::GetCurrentVersion();
-  sql::Connection db;
+  sql::Database db;
   ASSERT_TRUE(db.Open(new_history_file));
   sql::Statement s(db.GetUniqueStatement(
       "SELECT value FROM meta WHERE key = 'version'"));

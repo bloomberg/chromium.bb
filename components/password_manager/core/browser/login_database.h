@@ -19,7 +19,7 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 
 #if defined(OS_IOS)
@@ -229,7 +229,7 @@ class LoginDatabase {
   void InitializeStatementStrings(const SQLTableBuilder& builder);
 
   base::FilePath db_path_;
-  mutable sql::Connection db_;
+  mutable sql::Database db_;
   sql::MetaTable meta_table_;
   StatisticsTable stats_table_;
 

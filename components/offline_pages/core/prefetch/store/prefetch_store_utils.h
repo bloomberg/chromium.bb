@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 namespace sql {
-class Connection;
+class Database;
 }  // namespace sql
 
 namespace offline_pages {
@@ -18,7 +18,7 @@ class PrefetchStoreUtils {
  public:
   // Deletes a prefetch item by its offline ID. Returns whether it was the item
   // was successfully deleted.
-  static bool DeletePrefetchItemByOfflineIdSync(sql::Connection* db,
+  static bool DeletePrefetchItemByOfflineIdSync(sql::Database* db,
                                                 int64_t offline_id);
 };
 }  // namespace offline_pages

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "storage/browser/database/databases_table.h"
@@ -28,7 +28,7 @@ static void CheckDetailsAreEqual(const DatabaseDetails& d1,
   EXPECT_EQ(d1.estimated_size, d2.estimated_size);
 }
 
-static bool DatabasesTableIsEmpty(sql::Connection* db) {
+static bool DatabasesTableIsEmpty(sql::Database* db) {
   sql::Statement statement(
       db->GetCachedStatement(SQL_FROM_HERE, "SELECT COUNT(*) FROM Databases"));
   return (statement.is_valid() && statement.Step() && !statement.ColumnInt(0));
@@ -36,7 +36,7 @@ static bool DatabasesTableIsEmpty(sql::Connection* db) {
 
 TEST(DatabasesTableTest, TestIt) {
   // Initialize the 'Databases' table.
-  sql::Connection db;
+  sql::Database db;
 
   sql::test::ScopedErrorExpecter expecter;
   // TODO(shess): Suppressing SQLITE_CONSTRAINT because the code

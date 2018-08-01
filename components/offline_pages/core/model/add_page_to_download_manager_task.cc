@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/system_download_manager.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 #define OFFLINE_PAGES_TABLE_NAME "offlinepages_v1"
@@ -18,7 +18,7 @@ namespace {
 
 bool SetDownloadIdSync(int64_t offline_id,
                        int64_t download_id,
-                       sql::Connection* db) {
+                       sql::Database* db) {
   static const char kSql[] = "UPDATE OR IGNORE " OFFLINE_PAGES_TABLE_NAME
                              " SET system_download_id = ?"
                              " WHERE offline_id = ?";

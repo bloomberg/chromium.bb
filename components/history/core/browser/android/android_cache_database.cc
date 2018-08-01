@@ -6,7 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "components/history/core/browser/android/android_time.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 using base::Time;
@@ -174,10 +174,10 @@ bool AndroidCacheDatabase::DeleteUnusedSearchTerms() {
 
 bool AndroidCacheDatabase::CreateDatabase(const base::FilePath& db_name) {
   db_name_ = db_name;
-  sql::Connection::Delete(db_name_);
+  sql::Database::Delete(db_name_);
 
   // Using a new connection, otherwise we can not create the database.
-  sql::Connection connection;
+  sql::Database connection;
 
   // The db doesn't store too much data, so we don't need that big a page
   // size or cache.

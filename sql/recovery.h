@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 namespace base {
 class FilePath;
@@ -68,16 +68,16 @@ class SQL_EXPORT Recovery {
 
   // Begin the recovery process by opening a temporary database handle
   // and attach the existing database to it at "corrupt".  To prevent
-  // deadlock, all transactions on |connection| are rolled back.
+  // deadlock, all transactions on |database| are rolled back.
   //
   // Returns nullptr in case of failure, with no cleanup done on the
-  // original connection (except for breaking the transactions).  The
+  // original database (except for breaking the transactions).  The
   // caller should Raze() or otherwise cleanup as appropriate.
   //
   // TODO(shess): Later versions of SQLite allow extracting the path
-  // from the connection.
+  // from the database.
   // TODO(shess): Allow specifying the connection point?
-  static std::unique_ptr<Recovery> Begin(Connection* connection,
+  static std::unique_ptr<Recovery> Begin(Database* database,
                                          const base::FilePath& db_path)
       WARN_UNUSED_RESULT;
 
@@ -107,7 +107,7 @@ class SQL_EXPORT Recovery {
   static void Rollback(std::unique_ptr<Recovery> r);
 
   // Handle to the temporary recovery database.
-  sql::Connection* db() { return &recover_db_; }
+  sql::Database* db() { return &recover_db_; }
 
   // Attempt to recover the named table from the corrupt database into
   // the recovery database using a temporary recover virtual table.
@@ -153,20 +153,20 @@ class SQL_EXPORT Recovery {
   //
   // In case of SQLITE_NOTADB, the database is deemed unrecoverable and deleted.
   static std::unique_ptr<Recovery> BeginRecoverDatabase(
-      Connection* db,
+      Database* db,
       const base::FilePath& db_path) WARN_UNUSED_RESULT;
 
   // Call BeginRecoverDatabase() to recover the database, then commit the
   // changes using Recovered().  After this call, the |db| handle will be
   // poisoned (though technically remaining open) so that future calls will
   // return errors until the handle is re-opened.
-  static void RecoverDatabase(Connection* db, const base::FilePath& db_path);
+  static void RecoverDatabase(Database* db, const base::FilePath& db_path);
 
   // Variant on RecoverDatabase() which requires that the database have a valid
   // meta table with a version value.  The meta version value is used by some
   // clients to make assertions about the database schema.  If this information
   // cannot be determined, the database is considered unrecoverable.
-  static void RecoverDatabaseWithMetaVersion(Connection* db,
+  static void RecoverDatabaseWithMetaVersion(Database* db,
                                              const base::FilePath& db_path);
 
   // Returns true for SQLite errors which RecoverDatabase() can plausibly fix.
@@ -175,7 +175,7 @@ class SQL_EXPORT Recovery {
   static bool ShouldRecover(int extended_error);
 
  private:
-  explicit Recovery(Connection* connection);
+  explicit Recovery(Database* database);
 
   // Setup the recovery database handle for Begin().  Returns false in
   // case anything failed.
@@ -193,8 +193,8 @@ class SQL_EXPORT Recovery {
   };
   void Shutdown(Disposition raze);
 
-  Connection* db_;         // Original database connection.
-  Connection recover_db_;  // Recovery connection.
+  Database* db_;         // Original Database connection.
+  Database recover_db_;  // Recovery Database connection.
 
   DISALLOW_COPY_AND_ASSIGN(Recovery);
 };

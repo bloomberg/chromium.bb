@@ -41,20 +41,20 @@ class FakeGlowplugKeyValueTable : public GlowplugKeyValueTable<T> {
  public:
   FakeGlowplugKeyValueTable() : GlowplugKeyValueTable<T>("") {}
   void GetAllData(std::map<std::string, T>* data_map,
-                  sql::Connection* db) const override {
+                  sql::Database* db) const override {
     *data_map = data_;
   }
   void UpdateData(const std::string& key,
                   const T& data,
-                  sql::Connection* db) override {
+                  sql::Database* db) override {
     data_[key] = data;
   }
   void DeleteData(const std::vector<std::string>& keys,
-                  sql::Connection* db) override {
+                  sql::Database* db) override {
     for (const auto& key : keys)
       data_.erase(key);
   }
-  void DeleteAllData(sql::Connection* db) override { data_.clear(); }
+  void DeleteAllData(sql::Database* db) override { data_.clear(); }
 
   std::map<std::string, T> data_;
 };

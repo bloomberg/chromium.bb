@@ -56,7 +56,7 @@ FullStreamUIPolicy::FullStreamUIPolicy(Profile* profile)
 
 FullStreamUIPolicy::~FullStreamUIPolicy() {}
 
-bool FullStreamUIPolicy::InitDatabase(sql::Connection* db) {
+bool FullStreamUIPolicy::InitDatabase(sql::Database* db) {
   // Create the unified activity log entry table.
   return ActivityDatabase::InitializeTable(db,
                                            kTableName,
@@ -65,7 +65,7 @@ bool FullStreamUIPolicy::InitDatabase(sql::Connection* db) {
                                            arraysize(kTableContentFields));
 }
 
-bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
+bool FullStreamUIPolicy::FlushDatabase(sql::Database* db) {
   if (queued_actions_.empty())
     return true;
 
@@ -130,7 +130,7 @@ std::unique_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
   activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
   std::unique_ptr<Action::ActionVector> actions(new Action::ActionVector());
 
-  sql::Connection* db = GetDatabaseConnection();
+  sql::Database* db = GetDatabaseConnection();
   if (!db) {
     return actions;
   }
@@ -225,7 +225,7 @@ void FullStreamUIPolicy::DoRemoveActions(
   if (action_ids.empty())
     return;
 
-  sql::Connection* db = GetDatabaseConnection();
+  sql::Database* db = GetDatabaseConnection();
   if (!db) {
     LOG(ERROR) << "Unable to connect to database";
     return;
@@ -258,7 +258,7 @@ void FullStreamUIPolicy::DoRemoveActions(
 }
 
 void FullStreamUIPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
-  sql::Connection* db = GetDatabaseConnection();
+  sql::Database* db = GetDatabaseConnection();
   if (!db) {
     LOG(ERROR) << "Unable to connect to database";
     return;
@@ -324,7 +324,7 @@ void FullStreamUIPolicy::DoRemoveExtensionData(
   if (extension_id.empty())
     return;
 
-  sql::Connection* db = GetDatabaseConnection();
+  sql::Database* db = GetDatabaseConnection();
   if (!db) {
     LOG(ERROR) << "Unable to connect to database";
     return;
@@ -347,7 +347,7 @@ void FullStreamUIPolicy::DoRemoveExtensionData(
 }
 
 void FullStreamUIPolicy::DoDeleteDatabase() {
-  sql::Connection* db = GetDatabaseConnection();
+  sql::Database* db = GetDatabaseConnection();
   if (!db) {
     LOG(ERROR) << "Unable to connect to database";
     return;

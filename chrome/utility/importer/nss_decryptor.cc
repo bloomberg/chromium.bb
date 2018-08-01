@@ -18,7 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 #if defined(USE_NSS_CERTS)
@@ -252,7 +252,7 @@ void NSSDecryptor::ParseSignons(const base::FilePath& signon_file,
 bool NSSDecryptor::ReadAndParseSignons(
     const base::FilePath& sqlite_file,
     std::vector<autofill::PasswordForm>* forms) {
-  sql::Connection db;
+  sql::Database db;
   if (!db.Open(sqlite_file))
     return false;
 

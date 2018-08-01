@@ -18,7 +18,7 @@ class SequencedTaskRunner;
 }
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace offline_pages {
@@ -78,7 +78,7 @@ class RequestQueueStoreSQL : public RequestQueueStore {
   base::FilePath db_file_path_;
 
   // Database connection.
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
 
   // State of the store.
   StoreState state_;

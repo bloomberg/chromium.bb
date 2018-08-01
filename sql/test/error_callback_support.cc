@@ -12,9 +12,8 @@ void CaptureErrorCallback(int* error_pointer, int error, sql::Statement* stmt) {
   *error_pointer = error;
 }
 
-ScopedErrorCallback::ScopedErrorCallback(
-    sql::Connection* db,
-    const sql::Connection::ErrorCallback& cb)
+ScopedErrorCallback::ScopedErrorCallback(sql::Database* db,
+                                         const sql::Database::ErrorCallback& cb)
     : db_(db) {
   // Make sure someone isn't trying to nest things.
   EXPECT_FALSE(db_->has_error_callback());

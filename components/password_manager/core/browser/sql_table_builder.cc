@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/transaction.h"
 
 namespace password_manager {
@@ -236,7 +236,7 @@ unsigned SQLTableBuilder::SealVersion() {
 }
 
 bool SQLTableBuilder::MigrateFrom(unsigned old_version,
-                                  sql::Connection* db) const {
+                                  sql::Database* db) const {
   for (; old_version < sealed_version_; ++old_version) {
     if (!MigrateToNextFrom(old_version, db))
       return false;
@@ -245,7 +245,7 @@ bool SQLTableBuilder::MigrateFrom(unsigned old_version,
   return true;
 }
 
-bool SQLTableBuilder::CreateTable(sql::Connection* db) const {
+bool SQLTableBuilder::CreateTable(sql::Database* db) const {
   DCHECK(IsVersionLastAndSealed(sealed_version_));
   DCHECK(!constraints_.empty());
 
@@ -355,7 +355,7 @@ size_t SQLTableBuilder::NumberOfIndices() const {
 }
 
 bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
-                                        sql::Connection* db) const {
+                                        sql::Database* db) const {
   DCHECK_LT(old_version, sealed_version_);
   DCHECK_GE(old_version, 0u);
   DCHECK(IsVersionLastAndSealed(sealed_version_));
@@ -457,7 +457,7 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
 }
 
 bool SQLTableBuilder::MigrateIndicesToNextFrom(unsigned old_version,
-                                               sql::Connection* db) const {
+                                               sql::Database* db) const {
   DCHECK_LT(old_version, sealed_version_);
   DCHECK(IsVersionLastAndSealed(sealed_version_));
   sql::Transaction transaction(db);

@@ -18,7 +18,7 @@ using base::ASCIIToUTF16;
 
 namespace content {
 
-void CreateV2Table(sql::Connection* db) {
+void CreateV2Table(sql::Database* db) {
   ASSERT_TRUE(db->is_open());
   ASSERT_TRUE(db->Execute("DROP TABLE IF EXISTS ItemTable"));
   ASSERT_TRUE(db->Execute(
@@ -27,7 +27,7 @@ void CreateV2Table(sql::Connection* db) {
       "value BLOB NOT NULL ON CONFLICT FAIL)"));
 }
 
-void CreateInvalidTable(sql::Connection* db) {
+void CreateInvalidTable(sql::Database* db) {
   // Create a table with out a key column - this is "invalid"
   // as far as the DOM Storage db is concerned.
   ASSERT_TRUE(db->is_open());
@@ -167,7 +167,7 @@ TEST(DOMStorageDatabaseTest, TestLazyOpenIsLazy) {
 
 TEST(DOMStorageDatabaseTest, TestDetectSchemaVersion) {
   DOMStorageDatabase db;
-  db.db_.reset(new sql::Connection());
+  db.db_.reset(new sql::Database());
   ASSERT_TRUE(db.db_->OpenInMemory());
 
   CreateInvalidTable(db.db_.get());

@@ -14,7 +14,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -23,7 +23,7 @@ namespace offline_pages {
 namespace {
 
 std::unique_ptr<std::vector<std::string>> GetAllOperationsSync(
-    sql::Connection* db) {
+    sql::Database* db) {
   static const char kSql[] =
       "SELECT DISTINCT operation_name"
       " FROM prefetch_items"
@@ -43,7 +43,7 @@ std::unique_ptr<std::vector<std::string>> GetAllOperationsSync(
 
 bool UpdateOperationSync(const std::string& operation_name,
                          int max_attempts,
-                         sql::Connection* db) {
+                         sql::Database* db) {
   // For all items in SENT_GET_OPERATION state and matching |operation_name|:
   // * transit to RECEIVED_GCM state if not exceeding maximum attempts
   // * transit to FINISHED state with error_code set otherwise.
@@ -72,7 +72,7 @@ bool UpdateOperationSync(const std::string& operation_name,
 bool CleanupOperationsSync(
     std::unique_ptr<std::set<std::string>> ongoing_operation_names,
     int max_attempts,
-    sql::Connection* db) {
+    sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;

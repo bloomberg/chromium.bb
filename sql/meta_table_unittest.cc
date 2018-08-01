@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/sql_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"

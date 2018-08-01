@@ -35,7 +35,7 @@ DOMStorageDatabase::~DOMStorageDatabase() {
   if (known_to_be_empty_ && !file_path_.empty()) {
     // Delete the db and any lingering journal file from disk.
     Close();
-    sql::Connection::Delete(file_path_);
+    sql::Database::Delete(file_path_);
   }
 }
 
@@ -148,7 +148,7 @@ bool DOMStorageDatabase::LazyOpen(bool create_if_needed) {
     return false;
   }
 
-  db_.reset(new sql::Connection());
+  db_.reset(new sql::Database());
   db_->set_histogram_tag("DOMStorageDatabase");
 
   // This db does not use [meta] table, store mmap status data elsewhere.
@@ -173,7 +173,7 @@ bool DOMStorageDatabase::LazyOpen(bool create_if_needed) {
     }
   }
 
-  // sql::Connection uses UTF-8 encoding, but WebCore style databases use
+  // sql::Database uses UTF-8 encoding, but WebCore style databases use
   // UTF-16, so ensure we match.
   ignore_result(db_->Execute("PRAGMA encoding=\"UTF-16\""));
 
@@ -202,7 +202,7 @@ DOMStorageDatabase::SchemaVersion DOMStorageDatabase::DetectSchemaVersion() {
   // Connection::Open() may succeed even if the file we try and open is not a
   // database, however in the case that the database is corrupted to the point
   // that SQLite doesn't actually think it's a database,
-  // sql::Connection::GetCachedStatement will DCHECK when we later try and
+  // sql::Database::GetCachedStatement will DCHECK when we later try and
   // run statements. So we run a query here that will not DCHECK but fail
   // on an invalid database to verify that what we've opened is usable.
   if (db_->ExecuteAndReturnErrorCode("PRAGMA auto_vacuum") != SQLITE_OK)
@@ -237,8 +237,7 @@ bool DOMStorageDatabase::DeleteFileAndRecreate() {
   tried_to_recreate_ = true;
 
   // If it's not a directory and we can delete the file, try and open it again.
-  if (!base::DirectoryExists(file_path_) &&
-      sql::Connection::Delete(file_path_)) {
+  if (!base::DirectoryExists(file_path_) && sql::Database::Delete(file_path_)) {
     return LazyOpen(true);
   }
 

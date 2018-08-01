@@ -36,7 +36,7 @@
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -455,7 +455,7 @@ void InitializeBuilder(SQLTableBuilder* builder) {
 // the current version to kCurrentVersionNumber.
 bool MigrateLogins(unsigned current_version,
                    SQLTableBuilder* builder,
-                   sql::Connection* db) {
+                   sql::Database* db) {
   if (!builder->MigrateFrom(current_version, db))
     return false;
 
@@ -484,7 +484,7 @@ bool MigrateLogins(unsigned current_version,
 
 // Because of https://crbug.com/295851, some early version numbers might be
 // wrong. This function detects that and fixes the version.
-bool FixVersionIfNeeded(sql::Connection* db, int* current_version) {
+bool FixVersionIfNeeded(sql::Database* db, int* current_version) {
   if (*current_version == 1) {
     int extra_columns = 0;
     if (db->DoesColumnExist("logins", "password_type"))
@@ -1258,7 +1258,7 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   DCHECK(db_.is_open());
   meta_table_.Reset();
   db_.Close();
-  sql::Connection::Delete(db_path_);
+  sql::Database::Delete(db_path_);
   return Init();
 }
 

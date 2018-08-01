@@ -8,8 +8,8 @@
 #include <string>
 
 namespace sql {
-class Connection;
-}
+class Database;
+}  // namespace sql
 
 namespace offline_pages {
 
@@ -23,7 +23,7 @@ class PrefetchStoreSchema {
   // Creates or upgrade the database schema as needed from information stored in
   // a metadata table. Returns |true| if the database is ready to be used,
   // |false| if creation or upgrades failed.
-  static bool CreateOrUpgradeIfNeeded(sql::Connection* db);
+  static bool CreateOrUpgradeIfNeeded(sql::Database* db);
 
   // Returns the current items table creation SQL command for test usage.
   static std::string GetItemTableCreationSqlForTesting();

@@ -16,7 +16,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "extensions/common/extension.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 namespace base {
 class FilePath;
@@ -73,13 +73,13 @@ class ActivityDatabase {
     // Initializes the database schema; this gives a policy a chance to create
     // or update database tables as needed.  Should return true on success.
     // Will be called from within a database transaction.
-    virtual bool InitDatabase(sql::Connection* db) = 0;
+    virtual bool InitDatabase(sql::Database* db) = 0;
 
     // Requests that the policy flush any pending actions to the database.
     // Should return true on success or false on a database error.  Will not be
     // called from a transaction (the implementation may wish to use a
     // transaction for the flush).
-    virtual bool FlushDatabase(sql::Connection* db) = 0;
+    virtual bool FlushDatabase(sql::Database* db) = 0;
 
     // Called if the database encounters a permanent error; the policy should
     // not expect to make any future writes to the database and may want to
@@ -129,7 +129,7 @@ class ActivityDatabase {
   // database. The field_types should specify the types of the corresponding
   // columns (e.g., INTEGER or LONGVARCHAR). There should be the same number of
   // field_types as content_fields, since the two arrays should correspond.
-  static bool InitializeTable(sql::Connection* db,
+  static bool InitializeTable(sql::Database* db,
                               const char* table_name,
                               const char* const content_fields[],
                               const char* const field_types[],
@@ -172,13 +172,13 @@ class ActivityDatabase {
   // Retrieve a handle to the raw SQL database.  This is only intended to be
   // used by ActivityLogDatabasePolicy::GetDatabaseConnection(), and should
   // only be called on the database thread.
-  sql::Connection* GetSqlConnection();
+  sql::Database* GetSqlConnection();
 
   // A reference a Delegate for policy-specific database behavior.  See the
   // top-level comment for ActivityDatabase for comments on cleanup.
   Delegate* delegate_;
 
-  sql::Connection db_;
+  sql::Database db_;
   bool valid_db_;
   bool batch_mode_;
   base::TimeDelta batching_period_;

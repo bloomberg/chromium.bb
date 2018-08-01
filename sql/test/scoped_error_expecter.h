@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 // This is not strictly necessary for the operation of ScopedErrorExpecter, but
 // the class is not useful without the SQLite error codes.
@@ -17,7 +17,7 @@
 namespace sql {
 namespace test {
 
-// sql::Connection and sql::Statement treat most SQLite errors as fatal in debug
+// sql::Database and sql::Statement treat most SQLite errors as fatal in debug
 // mode.  The goal is to catch SQL errors before code is shipped to production.
 // That fatal check makes it hard to write tests for error-handling code.  This
 // scoper lists errors to expect and treat as non-fatal.  Errors are expected
@@ -48,15 +48,15 @@ class ScopedErrorExpecter {
   static int SQLiteLibVersionNumber() WARN_UNUSED_RESULT;
 
  private:
-  // The target of the callback passed to Connection::SetErrorExpecter().  If
+  // The target of the callback passed to Database::SetErrorExpecter().  If
   // |err| matches an error passed to ExpectError(), records |err| and returns
   // |true|; this indicates that the enclosing test expected this error and the
   // caller should continue as it would in production.  Otherwise returns
   // |false| and adds a failure to the current test.
   bool ErrorSeen(int err);
 
-  // Callback passed to Connection::SetErrorExpecter().
-  Connection::ErrorExpecterCallback callback_;
+  // Callback passed to Database::SetErrorExpecter().
+  Database::ErrorExpecterCallback callback_;
 
   // Record whether SawExpectedErrors() has been called.
   bool checked_;

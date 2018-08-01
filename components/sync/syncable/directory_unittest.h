@@ -99,7 +99,7 @@ class SyncableDirectoryTest : public testing::Test {
   NullDirectoryChangeDelegate delegate_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
-  sql::Connection connection_;
+  sql::Database connection_;
 };
 
 }  // namespace syncable

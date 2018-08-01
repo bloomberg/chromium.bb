@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/history/core/browser/url_database.h"
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/keyword_search_term.h"
-#include "components/history/core/browser/url_database.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -59,7 +60,7 @@ class URLDatabaseTest : public testing::Test,
 
  protected:
   // Provided for URL/VisitDatabase.
-  sql::Connection& GetDB() override { return db_; }
+  sql::Database& GetDB() override { return db_; }
 
  private:
   // Test setup.
@@ -78,7 +79,7 @@ class URLDatabaseTest : public testing::Test,
   void TearDown() override { db_.Close(); }
 
   base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
+  sql::Database db_;
 };
 
 // Test add, update, upsert, and query for the URL table in the HistoryDatabase.

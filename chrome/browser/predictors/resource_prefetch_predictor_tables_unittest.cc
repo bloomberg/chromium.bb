@@ -434,14 +434,14 @@ TEST_F(ResourcePrefetchPredictorTablesTest, DeleteAllData) {
 }
 
 TEST_F(ResourcePrefetchPredictorTablesTest, DatabaseVersionIsSet) {
-  sql::Connection* db = tables_->DB();
+  sql::Database* db = tables_->DB();
   const int version = ResourcePrefetchPredictorTables::kDatabaseVersion;
   EXPECT_EQ(version, ResourcePrefetchPredictorTables::GetDatabaseVersion(db));
 }
 
 TEST_F(ResourcePrefetchPredictorTablesTest, DatabaseIsResetWhenIncompatible) {
   const int version = ResourcePrefetchPredictorTables::kDatabaseVersion;
-  sql::Connection* db = tables_->DB();
+  sql::Database* db = tables_->DB();
   ASSERT_TRUE(
       ResourcePrefetchPredictorTables::SetDatabaseVersion(db, version + 1));
   EXPECT_EQ(version + 1,

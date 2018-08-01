@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/sql_export.h"
 
 namespace sql {
@@ -49,12 +49,12 @@ class SQL_EXPORT Statement {
   // you initialize it via Assign.
   Statement();
 
-  explicit Statement(scoped_refptr<Connection::StatementRef> ref);
+  explicit Statement(scoped_refptr<Database::StatementRef> ref);
   ~Statement();
 
   // Initializes this object with the given statement, which may or may not
   // be valid. Use is_valid() to check if it's OK.
-  void Assign(scoped_refptr<Connection::StatementRef> ref);
+  void Assign(scoped_refptr<Database::StatementRef> ref);
 
   // Resets the statement to an uninitialized state corrosponding to
   // the default constructor, releasing the StatementRef.
@@ -150,10 +150,10 @@ class SQL_EXPORT Statement {
   const char* GetSQLStatement();
 
  private:
-  friend class Connection;
+  friend class Database;
 
   // This is intended to check for serious errors and report them to the
-  // connection object. It takes a sqlite error code, and returns the same
+  // Database object. It takes a sqlite error code, and returns the same
   // code. Currently this function just updates the succeeded flag, but will be
   // enhanced in the future to do the notification.
   int CheckError(int err);
@@ -177,19 +177,19 @@ class SQL_EXPORT Statement {
   bool CheckValid() const;
 
   // Helper for Run() and Step(), calls sqlite3_step() and then generates
-  // sql::Connection histograms based on the results.  Timing and change count
+  // sql::Database histograms based on the results.  Timing and change count
   // are only recorded if |timer_flag| is true.  The checked value from
   // sqlite3_step() is returned.
   int StepInternal(bool timer_flag);
 
-  // sql::Connection uses cached statments for transactions, but tracks their
+  // sql::Database uses cached statments for transactions, but tracks their
   // runtime independently.
   bool RunWithoutTimers();
 
   // The actual sqlite statement. This may be unique to us, or it may be cached
-  // by the connection, which is why it's ref-counted. This pointer is
+  // by the Database, which is why it's ref-counted. This pointer is
   // guaranteed non-null.
-  scoped_refptr<Connection::StatementRef> ref_;
+  scoped_refptr<Database::StatementRef> ref_;
 
   // Set after Step() or Run() are called, reset by Reset().  Used to
   // prevent accidental calls to API functions which would not work

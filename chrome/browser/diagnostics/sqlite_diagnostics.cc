@@ -24,7 +24,7 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "content/public/common/content_constants.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "storage/browser/database/database_tracker.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -63,7 +63,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
         case DIAG_SQLITE_DB_CORRUPTED:
           LOG(WARNING) << "Removing broken SQLite database: "
                        << db_path_.value();
-          sql::Connection::Delete(db_path_);
+          sql::Database::Delete(db_path_);
           break;
         case DIAG_SQLITE_SUCCESS:
         case DIAG_SQLITE_FILE_NOT_FOUND_OK:
@@ -101,13 +101,13 @@ class SqliteIntegrityTest : public DiagnosticsTest {
 
     int errors = 0;
     {  // Scope the statement and database so they close properly.
-      sql::Connection database;
+      sql::Database database;
       database.set_exclusive_locking();
       scoped_refptr<ErrorRecorder> recorder(new ErrorRecorder);
 
       // Set the error callback so that we can get useful results in a debug
       // build for a corrupted database. Without setting the error callback,
-      // sql::Connection will just DCHECK.
+      // sql::Database will just DCHECK.
       database.set_error_callback(
           base::Bind(&SqliteIntegrityTest::ErrorRecorder::RecordSqliteError,
                      recorder->AsWeakPtr(),
@@ -171,7 +171,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
    public:
     ErrorRecorder() : has_error_(false), sqlite_error_(0), last_errno_(0) {}
 
-    void RecordSqliteError(sql::Connection* connection,
+    void RecordSqliteError(sql::Database* connection,
                            int sqlite_error,
                            sql::Statement* statement) {
       has_error_ = true;

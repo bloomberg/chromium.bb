@@ -17,7 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -34,7 +34,7 @@ using SuccessCallback = base::OnceCallback<void(bool)>;
 #define REQUEST_QUEUE_TABLE_NAME "request_queue_v1"
 const bool kUserRequested = true;
 
-bool CreateRequestQueueTable(sql::Connection* db) {
+bool CreateRequestQueueTable(sql::Database* db) {
   static const char kSql[] =
       "CREATE TABLE IF NOT EXISTS " REQUEST_QUEUE_TABLE_NAME
       " (request_id INTEGER PRIMARY KEY NOT NULL,"
@@ -54,7 +54,7 @@ bool CreateRequestQueueTable(sql::Connection* db) {
   return db->Execute(kSql);
 }
 
-bool UpgradeWithQuery(sql::Connection* db, const char* upgrade_sql) {
+bool UpgradeWithQuery(sql::Database* db, const char* upgrade_sql) {
   if (!db->Execute("ALTER TABLE " REQUEST_QUEUE_TABLE_NAME
                    " RENAME TO temp_" REQUEST_QUEUE_TABLE_NAME)) {
     return false;
@@ -66,7 +66,7 @@ bool UpgradeWithQuery(sql::Connection* db, const char* upgrade_sql) {
   return db->Execute("DROP TABLE IF EXISTS temp_" REQUEST_QUEUE_TABLE_NAME);
 }
 
-bool UpgradeFrom57(sql::Connection* db) {
+bool UpgradeFrom57(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time, last_attempt_time, "
@@ -80,7 +80,7 @@ bool UpgradeFrom57(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool UpgradeFrom58(sql::Connection* db) {
+bool UpgradeFrom58(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time, last_attempt_time, "
@@ -94,7 +94,7 @@ bool UpgradeFrom58(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool UpgradeFrom61(sql::Connection* db) {
+bool UpgradeFrom61(sql::Database* db) {
   static const char kSql[] =
       "INSERT INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time, last_attempt_time, "
@@ -108,7 +108,7 @@ bool UpgradeFrom61(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool CreateSchema(sql::Connection* db) {
+bool CreateSchema(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -182,7 +182,7 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
 }
 
 // Get a request for a specific id.
-std::unique_ptr<SavePageRequest> GetOneRequest(sql::Connection* db,
+std::unique_ptr<SavePageRequest> GetOneRequest(sql::Database* db,
                                                const int64_t request_id) {
   static const char kSql[] =
       "SELECT request_id, creation_time, activation_time,"
@@ -199,7 +199,7 @@ std::unique_ptr<SavePageRequest> GetOneRequest(sql::Connection* db,
   return std::unique_ptr<SavePageRequest>(nullptr);
 }
 
-ItemActionStatus DeleteRequestById(sql::Connection* db, int64_t request_id) {
+ItemActionStatus DeleteRequestById(sql::Database* db, int64_t request_id) {
   static const char kSql[] =
       "DELETE FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -211,7 +211,7 @@ ItemActionStatus DeleteRequestById(sql::Connection* db, int64_t request_id) {
   return ItemActionStatus::SUCCESS;
 }
 
-ItemActionStatus Insert(sql::Connection* db, const SavePageRequest& request) {
+ItemActionStatus Insert(sql::Database* db, const SavePageRequest& request) {
   static const char kSql[] =
       "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time,"
@@ -244,7 +244,7 @@ ItemActionStatus Insert(sql::Connection* db, const SavePageRequest& request) {
   return ItemActionStatus::SUCCESS;
 }
 
-ItemActionStatus Update(sql::Connection* db, const SavePageRequest& request) {
+ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
   static const char kSql[] =
       "UPDATE OR IGNORE " REQUEST_QUEUE_TABLE_NAME
       " SET creation_time = ?, activation_time = ?, last_attempt_time = ?,"
@@ -310,7 +310,7 @@ void PostStoreErrorForAllIds(scoped_refptr<base::SingleThreadTaskRunner> runner,
                               std::move(callback));
 }
 
-bool InitDatabase(sql::Connection* db, const base::FilePath& path) {
+bool InitDatabase(sql::Database* db, const base::FilePath& path) {
   db->set_page_size(4096);
   db->set_cache_size(500);
   db->set_histogram_tag("BackgroundRequestQueue");
@@ -326,7 +326,7 @@ bool InitDatabase(sql::Connection* db, const base::FilePath& path) {
   return CreateSchema(db);
 }
 
-void GetRequestsSync(sql::Connection* db,
+void GetRequestsSync(sql::Database* db,
                      scoped_refptr<base::SingleThreadTaskRunner> runner,
                      RequestQueueStore::GetRequestsCallback callback) {
   static const char kSql[] =
@@ -347,7 +347,7 @@ void GetRequestsSync(sql::Connection* db,
                                   std::move(requests)));
 }
 
-void GetRequestsByIdsSync(sql::Connection* db,
+void GetRequestsByIdsSync(sql::Database* db,
                           scoped_refptr<base::SingleThreadTaskRunner> runner,
                           const std::vector<int64_t>& request_ids,
                           RequestQueueStore::UpdateCallback callback) {
@@ -385,7 +385,7 @@ void GetRequestsByIdsSync(sql::Connection* db,
                    base::BindOnce(std::move(callback), std::move(result)));
 }
 
-void AddRequestSync(sql::Connection* db,
+void AddRequestSync(sql::Database* db,
                     scoped_refptr<base::SingleThreadTaskRunner> runner,
                     const SavePageRequest& request,
                     RequestQueueStore::AddCallback callback) {
@@ -393,7 +393,7 @@ void AddRequestSync(sql::Connection* db,
   runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), status));
 }
 
-void UpdateRequestsSync(sql::Connection* db,
+void UpdateRequestsSync(sql::Database* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const std::vector<SavePageRequest>& requests,
                         RequestQueueStore::UpdateCallback callback) {
@@ -423,7 +423,7 @@ void UpdateRequestsSync(sql::Connection* db,
                    base::BindOnce(std::move(callback), std::move(result)));
 }
 
-void RemoveRequestsSync(sql::Connection* db,
+void RemoveRequestsSync(sql::Database* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const std::vector<int64_t>& request_ids,
                         RequestQueueStore::UpdateCallback callback) {
@@ -457,7 +457,7 @@ void RemoveRequestsSync(sql::Connection* db,
                    base::BindOnce(std::move(callback), std::move(result)));
 }
 
-void OpenConnectionSync(sql::Connection* db,
+void OpenConnectionSync(sql::Database* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const base::FilePath& path,
                         SuccessCallback callback) {
@@ -465,7 +465,7 @@ void OpenConnectionSync(sql::Connection* db,
   runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
-void ResetSync(sql::Connection* db,
+void ResetSync(sql::Database* db,
                const base::FilePath& db_file_path,
                scoped_refptr<base::SingleThreadTaskRunner> runner,
                SuccessCallback callback) {
@@ -496,7 +496,7 @@ RequestQueueStoreSQL::~RequestQueueStoreSQL() {
 
 void RequestQueueStoreSQL::Initialize(InitializeCallback callback) {
   DCHECK(!db_);
-  db_.reset(new sql::Connection());
+  db_.reset(new sql::Database());
   background_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

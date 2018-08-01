@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 namespace history {

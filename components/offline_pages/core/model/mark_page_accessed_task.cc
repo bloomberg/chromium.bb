@@ -11,7 +11,7 @@
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -23,7 +23,7 @@ namespace {
 
 void ReportAccessHistogram(int64_t offline_id,
                            base::Time access_time,
-                           sql::Connection* db) {
+                           sql::Database* db) {
   // Used as upper bound of PageAccessInterval histogram which is used for
   // evaluating how good the expiration period is. The expiration period of a
   // page will be longer than one year in extreme cases so it's good enough.
@@ -51,7 +51,7 @@ void ReportAccessHistogram(int64_t offline_id,
 
 bool MarkPageAccessedSync(const base::Time& access_time,
                           int64_t offline_id,
-                          sql::Connection* db) {
+                          sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;

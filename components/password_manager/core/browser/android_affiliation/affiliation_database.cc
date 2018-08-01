@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -37,7 +37,7 @@ AffiliationDatabase::~AffiliationDatabase() {
 }
 
 bool AffiliationDatabase::Init(const base::FilePath& path) {
-  sql_connection_.reset(new sql::Connection);
+  sql_connection_.reset(new sql::Database);
   sql_connection_->set_histogram_tag("Affiliation");
   sql_connection_->set_error_callback(base::Bind(
       &AffiliationDatabase::SQLErrorCallback, base::Unretained(this)));
@@ -259,7 +259,7 @@ void AffiliationDatabase::StoreAndRemoveConflicting(
 
 // static
 void AffiliationDatabase::Delete(const base::FilePath& path) {
-  bool success = sql::Connection::Delete(path);
+  bool success = sql::Database::Delete(path);
   DCHECK(success);
 }
 
@@ -333,13 +333,13 @@ void AffiliationDatabase::SQLErrorCallback(int error,
     // Normally this will poison the database, causing any subsequent operations
     // to silently fail without any side effects. However, if RazeAndClose() is
     // called from the error callback in response to an error raised from within
-    // sql::Connection::Open, opening the now-razed database will be retried.
+    // sql::Database::Open, opening the now-razed database will be retried.
     sql_connection_->RazeAndClose();
     return;
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Connection::IsExpectedSqliteError(error))
+  if (!sql::Database::IsExpectedSqliteError(error))
     DLOG(FATAL) << sql_connection_->GetErrorMessage();
 }
 

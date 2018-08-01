@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "net/base/net_errors.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/transaction.h"
 #include "storage/browser/database/database_quota_client.h"
@@ -86,7 +86,7 @@ DatabaseTracker::DatabaseTracker(
       db_dir_(is_incognito_
                   ? profile_path_.Append(kIncognitoDatabaseDirectoryName)
                   : profile_path_.Append(kDatabaseDirectoryName)),
-      db_(new sql::Connection()),
+      db_(new sql::Database()),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
@@ -357,7 +357,7 @@ bool DatabaseTracker::DeleteClosedDatabase(
 
   // Try to delete the file on the hard drive.
   base::FilePath db_file = GetFullDBFilePath(origin_identifier, database_name);
-  if (!sql::Connection::Delete(db_file))
+  if (!sql::Database::Delete(db_file))
     return false;
 
   if (quota_manager_proxy_.get() && db_file_size)

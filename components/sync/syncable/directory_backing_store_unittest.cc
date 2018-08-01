@@ -72,35 +72,35 @@ class MigrationTest : public testing::TestWithParam<int> {
                      &kernel_load_info) == OPENED;
   }
 
-  void SetUpCorruptedRootDatabase(sql::Connection* connection);
-  void SetUpVersion67Database(sql::Connection* connection);
-  void SetUpVersion68Database(sql::Connection* connection);
-  void SetUpVersion69Database(sql::Connection* connection);
-  void SetUpVersion70Database(sql::Connection* connection);
-  void SetUpVersion71Database(sql::Connection* connection);
-  void SetUpVersion72Database(sql::Connection* connection);
-  void SetUpVersion73Database(sql::Connection* connection);
-  void SetUpVersion74Database(sql::Connection* connection);
-  void SetUpVersion75Database(sql::Connection* connection);
-  void SetUpVersion76Database(sql::Connection* connection);
-  void SetUpVersion77Database(sql::Connection* connection);
-  void SetUpVersion78Database(sql::Connection* connection);
-  void SetUpVersion79Database(sql::Connection* connection);
-  void SetUpVersion80Database(sql::Connection* connection);
-  void SetUpVersion81Database(sql::Connection* connection);
-  void SetUpVersion82Database(sql::Connection* connection);
-  void SetUpVersion83Database(sql::Connection* connection);
-  void SetUpVersion84Database(sql::Connection* connection);
-  void SetUpVersion85Database(sql::Connection* connection);
-  void SetUpVersion86Database(sql::Connection* connection);
-  void SetUpVersion87Database(sql::Connection* connection);
-  void SetUpVersion88Database(sql::Connection* connection);
-  void SetUpVersion89Database(sql::Connection* connection);
-  void SetUpVersion90Database(sql::Connection* connection);
-  void SetUpVersion91Database(sql::Connection* connection);
-  void SetUpVersion92Database(sql::Connection* connection);
+  void SetUpCorruptedRootDatabase(sql::Database* connection);
+  void SetUpVersion67Database(sql::Database* connection);
+  void SetUpVersion68Database(sql::Database* connection);
+  void SetUpVersion69Database(sql::Database* connection);
+  void SetUpVersion70Database(sql::Database* connection);
+  void SetUpVersion71Database(sql::Database* connection);
+  void SetUpVersion72Database(sql::Database* connection);
+  void SetUpVersion73Database(sql::Database* connection);
+  void SetUpVersion74Database(sql::Database* connection);
+  void SetUpVersion75Database(sql::Database* connection);
+  void SetUpVersion76Database(sql::Database* connection);
+  void SetUpVersion77Database(sql::Database* connection);
+  void SetUpVersion78Database(sql::Database* connection);
+  void SetUpVersion79Database(sql::Database* connection);
+  void SetUpVersion80Database(sql::Database* connection);
+  void SetUpVersion81Database(sql::Database* connection);
+  void SetUpVersion82Database(sql::Database* connection);
+  void SetUpVersion83Database(sql::Database* connection);
+  void SetUpVersion84Database(sql::Database* connection);
+  void SetUpVersion85Database(sql::Database* connection);
+  void SetUpVersion86Database(sql::Database* connection);
+  void SetUpVersion87Database(sql::Database* connection);
+  void SetUpVersion88Database(sql::Database* connection);
+  void SetUpVersion89Database(sql::Database* connection);
+  void SetUpVersion90Database(sql::Database* connection);
+  void SetUpVersion91Database(sql::Database* connection);
+  void SetUpVersion92Database(sql::Database* connection);
 
-  void SetUpCurrentDatabaseAndCheckVersion(sql::Connection* connection) {
+  void SetUpCurrentDatabaseAndCheckVersion(sql::Database* connection) {
     SetUpVersion92Database(connection);  // Prepopulates data.
     TestDirectoryBackingStore dbs(GetUsername(), connection);
     ASSERT_EQ(kCurrentDBVersion, dbs.GetVersion());
@@ -334,7 +334,7 @@ std::map<int64_t, base::Time> GetExpectedMetaTimes() {
 
 // Extracts a map from metahandle -> time (in proto format) from the
 // given database.
-std::map<int64_t, int64_t> GetMetaProtoTimes(sql::Connection* db) {
+std::map<int64_t, int64_t> GetMetaProtoTimes(sql::Database* db) {
   sql::Statement s(db->GetCachedStatement(
           SQL_FROM_HERE,
           "SELECT metahandle, mtime, server_mtime, ctime, server_ctime "
@@ -406,7 +406,7 @@ void ExpectTimes(const Directory::MetahandlesMap& handles_map,
 
 }  // namespace
 
-void MigrationTest::SetUpCorruptedRootDatabase(sql::Connection* connection) {
+void MigrationTest::SetUpCorruptedRootDatabase(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -451,7 +451,7 @@ void MigrationTest::SetUpCorruptedRootDatabase(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion67Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion67Database(sql::Database* connection) {
   // This is a version 67 database dump whose contents were backformed from
   // the contents of the version 68 database dump (the v68 migration was
   // actually written first).
@@ -572,7 +572,7 @@ void MigrationTest::SetUpVersion67Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion68Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion68Database(sql::Database* connection) {
   // This sets up an actual version 68 database dump.  The IDs were
   // canonicalized to be less huge, and the favicons were overwritten
   // with random junk so that they didn't contain any unprintable
@@ -681,7 +681,7 @@ void MigrationTest::SetUpVersion68Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion69Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion69Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -801,7 +801,7 @@ void MigrationTest::SetUpVersion69Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion70Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion70Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -908,7 +908,7 @@ void MigrationTest::SetUpVersion70Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion71Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion71Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1013,7 +1013,7 @@ void MigrationTest::SetUpVersion71Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion72Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion72Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1116,7 +1116,7 @@ void MigrationTest::SetUpVersion72Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion73Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion73Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1220,7 +1220,7 @@ void MigrationTest::SetUpVersion73Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion74Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion74Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1321,7 +1321,7 @@ void MigrationTest::SetUpVersion74Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion75Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion75Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1426,7 +1426,7 @@ void MigrationTest::SetUpVersion75Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion76Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion76Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1522,7 +1522,7 @@ void MigrationTest::SetUpVersion76Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion77Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion77Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1612,7 +1612,7 @@ void MigrationTest::SetUpVersion77Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion78Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion78Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1706,7 +1706,7 @@ void MigrationTest::SetUpVersion78Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion79Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion79Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1800,7 +1800,7 @@ void MigrationTest::SetUpVersion79Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion80Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion80Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -1913,7 +1913,7 @@ std::string V81_Ordinal(int n) {
 // Unlike the earlier versions, the rows for version 81 are generated
 // programmatically to accurately handle unprintable characters for the
 // server_ordinal_in_parent field.
-void MigrationTest::SetUpVersion81Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion81Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2018,7 +2018,7 @@ void MigrationTest::SetUpVersion81Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion82Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion82Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2124,7 +2124,7 @@ void MigrationTest::SetUpVersion82Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion83Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion83Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2232,7 +2232,7 @@ void MigrationTest::SetUpVersion83Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion84Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion84Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2355,7 +2355,7 @@ void MigrationTest::SetUpVersion84Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion85Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion85Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2477,7 +2477,7 @@ void MigrationTest::SetUpVersion85Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion86Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion86Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2583,7 +2583,7 @@ void MigrationTest::SetUpVersion86Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion87Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion87Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2698,7 +2698,7 @@ void MigrationTest::SetUpVersion87Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion88Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion88Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2813,7 +2813,7 @@ void MigrationTest::SetUpVersion88Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion89Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion89Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -2926,7 +2926,7 @@ void MigrationTest::SetUpVersion89Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion90Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion90Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   ASSERT_TRUE(connection->Execute(
@@ -3038,7 +3038,7 @@ void MigrationTest::SetUpVersion90Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion91Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion91Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   // clang-format mangles the below query by indenting each time the
@@ -3154,7 +3154,7 @@ void MigrationTest::SetUpVersion91Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion92Database(sql::Connection* connection) {
+void MigrationTest::SetUpVersion92Database(sql::Database* connection) {
   ASSERT_TRUE(connection->is_open());
   ASSERT_TRUE(connection->BeginTransaction());
   // clang-format mangles the below query by indenting each time the
@@ -3268,7 +3268,7 @@ void MigrationTest::SetUpVersion92Database(sql::Connection* connection) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
 
   SetUpVersion67Database(&connection);
@@ -3287,7 +3287,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion68Database(&connection);
 
@@ -3323,7 +3323,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion69To70) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion69Database(&connection);
 
@@ -3349,7 +3349,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion69To70) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion70Database(&connection);
 
@@ -3386,7 +3386,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
 
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion71To72) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion71Database(&connection);
 
@@ -3405,7 +3405,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion71To72) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion72To73) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion72Database(&connection);
 
@@ -3424,7 +3424,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion72To73) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion73To74) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion73Database(&connection);
 
@@ -3466,7 +3466,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion73To74) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion74To75) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion74Database(&connection);
 
@@ -3487,7 +3487,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion74To75) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion75To76) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion75Database(&connection);
 
@@ -3512,7 +3512,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion75To76) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion76Database(&connection);
 
@@ -3535,7 +3535,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion77Database(&connection);
 
@@ -3554,7 +3554,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion78Database(&connection);
 
@@ -3566,7 +3566,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion79Database(&connection);
 
@@ -3592,7 +3592,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion80Database(&connection);
 
@@ -3620,7 +3620,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion81To82) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion81Database(&connection);
   ASSERT_FALSE(connection.DoesColumnExist("models", "transaction_version"));
@@ -3635,7 +3635,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion81To82) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion82To83) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion82Database(&connection);
   ASSERT_FALSE(connection.DoesColumnExist("metas", "transaction_version"));
@@ -3648,7 +3648,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion82To83) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion83To84) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion83Database(&connection);
   ASSERT_FALSE(connection.DoesTableExist("deleted_metas"));
@@ -3661,7 +3661,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion83To84) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion84To85) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion84Database(&connection);
   ASSERT_TRUE(connection.DoesColumnExist("models", "initial_sync_ended"));
@@ -3673,7 +3673,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion84To85) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion85Database(&connection);
   ASSERT_TRUE(connection.DoesColumnExist("metas", "next_id"));
@@ -3693,7 +3693,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion86To87) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion86Database(&connection);
   ASSERT_FALSE(connection.DoesColumnExist("metas", "attachment_metadata"));
@@ -3706,7 +3706,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion86To87) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion87To88) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion87Database(&connection);
 
@@ -3717,7 +3717,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion87To88) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion88To89) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion88Database(&connection);
   ASSERT_FALSE(
@@ -3732,7 +3732,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion88To89) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion89To90) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion89Database(&connection);
   ASSERT_TRUE(connection.DoesColumnExist("share_info", "db_create_version"));
@@ -3757,7 +3757,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion89To90) {
 // 91 is a cleanup with no schema change, similar to 79, so we just check that
 // it succeeds.
 TEST_F(DirectoryBackingStoreTest, MigrateVersion90To91) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion90Database(&connection);
 
@@ -3769,7 +3769,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion90To91) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion91To92) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion91Database(&connection);
   ASSERT_TRUE(connection.DoesColumnExist("metas", "attachment_metadata"));
@@ -3808,7 +3808,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion91To92) {
 //      a SetupVersionYDatabase method.
 TEST_F(DirectoryBackingStoreTest, MigrateToLatestAndDump) {
   {
-    sql::Connection connection;
+    sql::Database connection;
     ASSERT_TRUE(connection.Open(GetDatabasePath()));
     SetUpVersion91Database(&connection);  // Update this.
 
@@ -3822,7 +3822,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateToLatestAndDump) {
 }
 
 TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion86Database(&connection);
 
@@ -3848,7 +3848,7 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
 }
 
 TEST_F(DirectoryBackingStoreTest, DetectCorruptedRoot) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpCorruptedRootDatabase(&connection);
 
@@ -3864,7 +3864,7 @@ TEST_F(DirectoryBackingStoreTest, DetectCorruptedRoot) {
 }
 
 TEST_P(MigrationTest, ToCurrentVersion) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.Open(GetDatabasePath()));
   // Assume all old versions have an old page size.
   connection.set_page_size(4096);
@@ -4294,7 +4294,7 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
 
   // Corrupt the root node.
   {
-    sql::Connection connection;
+    sql::Database connection;
     ASSERT_TRUE(connection.Open(GetDatabasePath()));
     ASSERT_TRUE(connection.Execute(
             "UPDATE metas SET parent_id='bogus' WHERE id = 'r';"));
@@ -4316,7 +4316,7 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
 
   // Make the node look outdated with an invalid version.
   {
-    sql::Connection connection;
+    sql::Database connection;
     ASSERT_TRUE(connection.Open(GetDatabasePath()));
     ASSERT_TRUE(connection.Execute("UPDATE share_version SET data = 0;"));
     ASSERT_TRUE(connection.Execute("PRAGMA page_size=4096;"));
@@ -4337,7 +4337,7 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
 }
 
 TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.OpenInMemory());
 
   SetUpCurrentDatabaseAndCheckVersion(&connection);
@@ -4396,7 +4396,7 @@ TEST_F(DirectoryBackingStoreTest, GenerateCacheGUID) {
 }
 
 TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
-  sql::Connection connection;
+  sql::Database connection;
   ASSERT_TRUE(connection.Open(GetDatabasePath()));
 
   SetUpCurrentDatabaseAndCheckVersion(&connection);

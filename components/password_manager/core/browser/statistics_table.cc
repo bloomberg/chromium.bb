@@ -10,7 +10,7 @@
 #include <limits>
 #include <set>
 
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 namespace password_manager {
@@ -65,7 +65,7 @@ StatisticsTable::StatisticsTable() : db_(nullptr) {
 
 StatisticsTable::~StatisticsTable() = default;
 
-void StatisticsTable::Init(sql::Connection* db) {
+void StatisticsTable::Init(sql::Database* db) {
   db_ = db;
 }
 

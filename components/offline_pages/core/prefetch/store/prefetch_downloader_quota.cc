@@ -9,7 +9,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/variations/variations_associated_data.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 
 namespace offline_pages {
@@ -35,7 +35,7 @@ int64_t NormalizeQuota(int64_t quota) {
 
 }  // namespace
 
-PrefetchDownloaderQuota::PrefetchDownloaderQuota(sql::Connection* db,
+PrefetchDownloaderQuota::PrefetchDownloaderQuota(sql::Database* db,
                                                  base::Clock* clock)
     : db_(db), clock_(clock) {
   DCHECK(db_);

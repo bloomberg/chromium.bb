@@ -31,7 +31,7 @@ class GURL;
 struct ImportedBookmarkEntry;
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 // Importer for Safari on OS X.
@@ -88,13 +88,13 @@ class SafariImporter : public Importer {
   void ParseHistoryItems(std::vector<ImporterURLRow>* history_items);
 
   // Opens the favicon database file.
-  bool OpenDatabase(sql::Connection* db);
+  bool OpenDatabase(sql::Database* db);
 
   // Loads the urls associated with the favicons into favicon_map;
-  void ImportFaviconURLs(sql::Connection* db, FaviconMap* favicon_map);
+  void ImportFaviconURLs(sql::Database* db, FaviconMap* favicon_map);
 
   // Loads and reencodes the individual favicons.
-  void LoadFaviconData(sql::Connection* db,
+  void LoadFaviconData(sql::Database* db,
                        const FaviconMap& favicon_map,
                        favicon_base::FaviconUsageDataList* favicons);
 

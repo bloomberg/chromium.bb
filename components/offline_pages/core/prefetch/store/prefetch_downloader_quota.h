@@ -14,7 +14,7 @@ class Clock;
 }  // namespace base
 
 namespace sql {
-class Connection;
+class Database;
 }  // namespace sql
 
 namespace offline_pages {
@@ -25,7 +25,7 @@ class PrefetchDownloaderQuota {
   // Public for unit tests.
   static const int64_t kDefaultMaxDailyQuotaBytes;
 
-  PrefetchDownloaderQuota(sql::Connection* db, base::Clock* clock);
+  PrefetchDownloaderQuota(sql::Database* db, base::Clock* clock);
   ~PrefetchDownloaderQuota();
 
   // Gets the max daily quota from Finch.
@@ -41,7 +41,7 @@ class PrefetchDownloaderQuota {
 
  private:
   // DB connection. Not owned.
-  sql::Connection* db_;
+  sql::Database* db_;
 
   // Clock used for time related calculation and quota updates in DB. Not owned.
   base::Clock* clock_;

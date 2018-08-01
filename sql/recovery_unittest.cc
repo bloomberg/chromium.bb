@@ -17,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/test/paths.h"
@@ -36,7 +36,7 @@ using sql::test::ExecuteWithResult;
 // schema.  For tables or indices, this will contain the sql command
 // to create the table or index.  For certain automatic SQLite
 // structures with no sql, the name is used.
-std::string GetSchema(sql::Connection* db) {
+std::string GetSchema(sql::Database* db) {
   static const char kSql[] =
       "SELECT COALESCE(sql, name) FROM sqlite_master ORDER BY 1";
   return ExecuteWithResults(db, kSql, "|", "\n");
@@ -195,9 +195,13 @@ TEST_F(SQLRecoveryTest, VirtualTable) {
             ExecuteWithResults(&db(), kXSql, "|", "\n"));
 }
 
-void RecoveryCallback(sql::Connection* db, const base::FilePath& db_path,
-                      const char* create_table, const char* create_index,
-                      int* record_error, int error, sql::Statement* stmt) {
+void RecoveryCallback(sql::Database* db,
+                      const base::FilePath& db_path,
+                      const char* create_table,
+                      const char* create_index,
+                      int* record_error,
+                      int error,
+                      sql::Statement* stmt) {
   *record_error = error;
 
   // Clear the error callback to prevent reentrancy.
@@ -938,8 +942,8 @@ void TestPageSize(const base::FilePath& db_prefix,
 
   const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
       base::IntToString(initial_page_size));
-  sql::Connection::Delete(db_path);
-  sql::Connection db;
+  sql::Database::Delete(db_path);
+  sql::Database db;
   db.set_page_size(initial_page_size);
   ASSERT_TRUE(db.Open(db_path));
   ASSERT_TRUE(db.Execute(kCreateSql));
@@ -957,7 +961,7 @@ void TestPageSize(const base::FilePath& db_prefix,
   db.Close();
 
   // Make sure the page size is read from the file.
-  db.set_page_size(sql::Connection::kDefaultPageSize);
+  db.set_page_size(sql::Database::kDefaultPageSize);
   ASSERT_TRUE(db.Open(db_path));
   ASSERT_EQ(expected_final_page_size,
             ExecuteWithResult(&db, "PRAGMA page_size"));
@@ -974,8 +978,8 @@ TEST_F(SQLRecoveryTest, PageSize) {
 
   // Check the default page size first.
   EXPECT_NO_FATAL_FAILURE(TestPageSize(
-      db_path(), sql::Connection::kDefaultPageSize, default_page_size,
-      sql::Connection::kDefaultPageSize, default_page_size));
+      db_path(), sql::Database::kDefaultPageSize, default_page_size,
+      sql::Database::kDefaultPageSize, default_page_size));
 
   // Sync uses 32k pages.
   EXPECT_NO_FATAL_FAILURE(
@@ -991,7 +995,7 @@ TEST_F(SQLRecoveryTest, PageSize) {
   // page size.  2k has never been the default page size.
   ASSERT_NE("2048", default_page_size);
   EXPECT_NO_FATAL_FAILURE(TestPageSize(db_path(), 2048, "2048",
-                                       sql::Connection::kDefaultPageSize,
+                                       sql::Database::kDefaultPageSize,
                                        default_page_size));
 }
 

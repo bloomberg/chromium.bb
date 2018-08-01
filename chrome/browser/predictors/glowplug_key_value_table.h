@@ -55,13 +55,13 @@ class GlowplugKeyValueTable {
   // Virtual for testing.
   virtual ~GlowplugKeyValueTable() {}
   virtual void GetAllData(std::map<std::string, T>* data_map,
-                          sql::Connection* db) const;
+                          sql::Database* db) const;
   virtual void UpdateData(const std::string& key,
                           const T& data,
-                          sql::Connection* db);
+                          sql::Database* db);
   virtual void DeleteData(const std::vector<std::string>& keys,
-                          sql::Connection* db);
-  virtual void DeleteAllData(sql::Connection* db);
+                          sql::Database* db);
+  virtual void DeleteAllData(sql::Database* db);
 
  private:
   const std::string table_name_;
@@ -75,7 +75,7 @@ GlowplugKeyValueTable<T>::GlowplugKeyValueTable(const std::string& table_name)
 
 template <typename T>
 void GlowplugKeyValueTable<T>::GetAllData(std::map<std::string, T>* data_map,
-                                          sql::Connection* db) const {
+                                          sql::Database* db) const {
   sql::Statement reader(db->GetUniqueStatement(
       ::predictors::internal::GetSelectAllSql(table_name_).c_str()));
   while (reader.Step()) {
@@ -90,7 +90,7 @@ void GlowplugKeyValueTable<T>::GetAllData(std::map<std::string, T>* data_map,
 template <typename T>
 void GlowplugKeyValueTable<T>::UpdateData(const std::string& key,
                                           const T& data,
-                                          sql::Connection* db) {
+                                          sql::Database* db) {
   sql::Statement inserter(db->GetUniqueStatement(
       ::predictors::internal::GetReplaceSql(table_name_).c_str()));
   ::predictors::internal::BindDataToStatement(key, data, &inserter);
@@ -99,7 +99,7 @@ void GlowplugKeyValueTable<T>::UpdateData(const std::string& key,
 
 template <typename T>
 void GlowplugKeyValueTable<T>::DeleteData(const std::vector<std::string>& keys,
-                                          sql::Connection* db) {
+                                          sql::Database* db) {
   sql::Statement deleter(db->GetUniqueStatement(
       ::predictors::internal::GetDeleteSql(table_name_).c_str()));
   for (const auto& key : keys) {
@@ -110,7 +110,7 @@ void GlowplugKeyValueTable<T>::DeleteData(const std::vector<std::string>& keys,
 }
 
 template <typename T>
-void GlowplugKeyValueTable<T>::DeleteAllData(sql::Connection* db) {
+void GlowplugKeyValueTable<T>::DeleteAllData(sql::Database* db) {
   sql::Statement deleter(db->GetUniqueStatement(
       ::predictors::internal::GetDeleteAllSql(table_name_).c_str()));
   deleter.Run();

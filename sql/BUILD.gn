@@ -6,10 +6,10 @@ import("//testing/test.gni")
 
 component("sql") {
   sources = [
-    "connection.cc",
-    "connection.h",
-    "connection_memory_dump_provider.cc",
-    "connection_memory_dump_provider.h",
+    "database.cc",
+    "database.h",
+    "database_memory_dump_provider.cc",
+    "database_memory_dump_provider.h",
     "error_delegate_util.cc",
     "error_delegate_util.h",
     "init_status.h",
@@ -84,7 +84,7 @@ bundle_data("sql_unittests_bundle_data") {
 
 test("sql_unittests") {
   sources = [
-    "connection_unittest.cc",
+    "database_unittest.cc",
     "meta_table_unittest.cc",
     "recovery_unittest.cc",
     "sql_memory_dump_provider_unittest.cc",

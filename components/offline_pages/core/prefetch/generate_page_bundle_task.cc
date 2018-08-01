@@ -15,7 +15,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -53,7 +53,7 @@ struct FetchedUrl {
 // This is maximum URLs that Offline Page Service can take in one request.
 const int kMaxUrlsToSend = 100;
 
-bool UpdateStateSync(sql::Connection* db,
+bool UpdateStateSync(sql::Database* db,
                      const int64_t offline_id,
                      base::Clock* clock) {
   static const char kSql[] =
@@ -71,7 +71,7 @@ bool UpdateStateSync(sql::Connection* db,
   return statement.Run();
 }
 
-std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Connection* db) {
+std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Database* db) {
   static const char kSql[] =
       "SELECT offline_id, client_namespace, client_id, requested_url,"
       "       generate_bundle_attempts"
@@ -97,7 +97,7 @@ std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Connection* db) {
   return urls;
 }
 
-bool MarkUrlFinishedWithError(sql::Connection* db, const FetchedUrl& url) {
+bool MarkUrlFinishedWithError(sql::Database* db, const FetchedUrl& url) {
   static const char kSql[] =
       "UPDATE prefetch_items SET state = ?, error_code = ?"
       " WHERE offline_id = ?";
@@ -110,7 +110,7 @@ bool MarkUrlFinishedWithError(sql::Connection* db, const FetchedUrl& url) {
 }
 
 std::unique_ptr<UrlAndIds> SelectUrlsToPrefetchSync(base::Clock* clock,
-                                                    sql::Connection* db) {
+                                                    sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return nullptr;

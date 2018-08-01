@@ -13,7 +13,7 @@
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "url/gurl.h"
@@ -22,7 +22,7 @@ namespace offline_pages {
 namespace {
 
 std::unique_ptr<std::vector<PrefetchArchiveInfo>> GetArchivesSync(
-    sql::Connection* db) {
+    sql::Database* db) {
   static const char kSql[] =
       "SELECT offline_id, client_namespace, guid, requested_url,"
       "  final_archived_url, title, file_path, file_size"
@@ -53,7 +53,7 @@ std::unique_ptr<std::vector<PrefetchArchiveInfo>> GetArchivesSync(
   return archives;
 }
 
-bool UpdateToImportingStateSync(int64_t offline_id, sql::Connection* db) {
+bool UpdateToImportingStateSync(int64_t offline_id, sql::Database* db) {
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?"
@@ -67,7 +67,7 @@ bool UpdateToImportingStateSync(int64_t offline_id, sql::Connection* db) {
 }
 
 std::unique_ptr<std::vector<PrefetchArchiveInfo>>
-GetArchivesAndUpdateToImportingStateSync(sql::Connection* db) {
+GetArchivesAndUpdateToImportingStateSync(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return nullptr;

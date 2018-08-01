@@ -72,7 +72,7 @@ std::string WebDatabase::GetDiagnosticInfo(int extended_error,
   return db_.GetDiagnosticInfo(extended_error, statement);
 }
 
-sql::Connection* WebDatabase::GetSQLConnection() {
+sql::Database* WebDatabase::GetSQLConnection() {
   return &db_;
 }
 

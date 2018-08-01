@@ -25,7 +25,7 @@ class TestDirectoryBackingStore : public DirectoryBackingStore {
   // constructor unless you understand and intend to test the
   // DirectoryBackingStore's internals.
   TestDirectoryBackingStore(const std::string& dir_name,
-                            sql::Connection* connection);
+                            sql::Database* connection);
   ~TestDirectoryBackingStore() override;
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,
                      JournalIndex* delete_journals,

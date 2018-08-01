@@ -73,7 +73,7 @@ void SyncableDirectoryTest::TearDown() {
 }
 
 DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
-  // Use a TestDirectoryBackingStore and sql::Connection so we can have test
+  // Use a TestDirectoryBackingStore and sql::Database so we can have test
   // data persist across Directory object lifetimes while getting the
   // performance benefits of not writing to disk.
   dir_ = std::make_unique<Directory>(

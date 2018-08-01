@@ -9,7 +9,7 @@
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -19,7 +19,7 @@ namespace {
 
 bool UpdateFilePathSync(const base::FilePath& new_file_path,
                         int64_t offline_id,
-                        sql::Connection* db) {
+                        sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;

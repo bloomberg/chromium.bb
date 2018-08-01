@@ -31,7 +31,7 @@ class MockDatabaseTracker;
 }
 
 namespace sql {
-class Connection;
+class Database;
 class MetaTable;
 }
 
@@ -289,7 +289,7 @@ class STORAGE_EXPORT DatabaseTracker
   // Thread-safety argument: The member is immutable.
   const base::FilePath db_dir_;
 
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   std::unique_ptr<DatabasesTable> databases_table_;
   std::unique_ptr<sql::MetaTable> meta_table_;
   base::ObserverList<Observer, true> observers_;

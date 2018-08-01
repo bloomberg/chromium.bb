@@ -4,7 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/store/prefetch_store_schema.h"
 
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/transaction.h"
 
@@ -90,7 +90,7 @@ static const char kItemsTableCreationSql[] =
     " file_path VARCHAR NOT NULL DEFAULT ''"
     ")";
 
-bool CreatePrefetchItemsTable(sql::Connection* db) {
+bool CreatePrefetchItemsTable(sql::Database* db) {
   return db->Execute(kItemsTableCreationSql);
 }
 
@@ -100,11 +100,11 @@ static const char kQuotaTableCreationSql[] =
     " update_time INTEGER NOT NULL,"
     " available_quota INTEGER NOT NULL DEFAULT 0)";
 
-bool CreatePrefetchQuotaTable(sql::Connection* db) {
+bool CreatePrefetchQuotaTable(sql::Database* db) {
   return db->Execute(kQuotaTableCreationSql);
 }
 
-bool CreateLatestSchema(sql::Connection* db) {
+bool CreateLatestSchema(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -116,7 +116,7 @@ bool CreateLatestSchema(sql::Connection* db) {
   return transaction.Commit();
 }
 
-int MigrateFromVersion1To2(sql::Connection* db, sql::MetaTable* meta_table) {
+int MigrateFromVersion1To2(sql::Database* db, sql::MetaTable* meta_table) {
   const int target_version = 2;
   const int target_compatible_version = 1;
   const char kVersion1ToVersion2MigrationSql[] =
@@ -175,7 +175,7 @@ int MigrateFromVersion1To2(sql::Connection* db, sql::MetaTable* meta_table) {
 }  // namespace
 
 // static
-bool PrefetchStoreSchema::CreateOrUpgradeIfNeeded(sql::Connection* db) {
+bool PrefetchStoreSchema::CreateOrUpgradeIfNeeded(sql::Database* db) {
   DCHECK_GE(kCurrentVersion, kCompatibleVersion);
   DCHECK(db);
   if (!db)

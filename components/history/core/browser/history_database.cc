@@ -392,7 +392,7 @@ void HistoryDatabase::UpdateEarlyExpirationThreshold(base::Time threshold) {
   cached_early_expiration_threshold_ = threshold;
 }
 
-sql::Connection& HistoryDatabase::GetDB() {
+sql::Database& HistoryDatabase::GetDB() {
   return db_;
 }
 

@@ -18,7 +18,7 @@ class FilePath;
 }  // namespace base
 
 namespace sql {
-class Connection;
+class Database;
 class Statement;
 }  // namespace sql
 
@@ -110,7 +110,7 @@ class AffiliationDatabase {
   void SQLErrorCallback(int error_number, sql::Statement* statement);
 
   // The SQL connection to the database.
-  std::unique_ptr<sql::Connection> sql_connection_;
+  std::unique_ptr<sql::Database> sql_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationDatabase);
 };

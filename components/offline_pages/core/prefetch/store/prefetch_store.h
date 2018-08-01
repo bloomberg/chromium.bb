@@ -18,7 +18,7 @@
 #include "base/trace_event/trace_event.h"
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace offline_pages {
@@ -44,7 +44,7 @@ class PrefetchStore {
   // Definition of the callback that is going to run the core of the command in
   // the |Execute| method.
   template <typename T>
-  using RunCallback = base::OnceCallback<T(sql::Connection*)>;
+  using RunCallback = base::OnceCallback<T(sql::Database*)>;
 
   // Definition of the callback used to pass the result back to the caller of
   // |Execute| method.
@@ -94,9 +94,9 @@ class PrefetchStore {
     // Ensure that any scheduled close operations are canceled.
     closing_weak_ptr_factory_.InvalidateWeakPtrs();
 
-    sql::Connection* db =
-        initialization_status_ == InitializationStatus::SUCCESS ? db_.get()
-                                                                : nullptr;
+    sql::Database* db = initialization_status_ == InitializationStatus::SUCCESS
+                            ? db_.get()
+                            : nullptr;
     if (!db) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -120,6 +120,9 @@ class PrefetchStore {
 
  private:
   friend class PrefetchStoreTestUtil;
+
+  using DatabaseUniquePtr =
+      std::unique_ptr<sql::Database, base::OnTaskRunnerDeleter>;
 
   // Used internally to initialize connection.
   void Initialize(base::OnceClosure pending_command);
@@ -152,8 +155,7 @@ class PrefetchStore {
   void CloseInternal();
 
   // Completes the closing. Main purpose is to destroy the db pointer.
-  void CloseInternalDone(
-      std::unique_ptr<sql::Connection, base::OnTaskRunnerDeleter> db);
+  void CloseInternalDone(DatabaseUniquePtr db);
 
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -165,7 +167,7 @@ class PrefetchStore {
   bool in_memory_;
 
   // Database connection.
-  std::unique_ptr<sql::Connection, base::OnTaskRunnerDeleter> db_;
+  std::unique_ptr<sql::Database, base::OnTaskRunnerDeleter> db_;
 
   // Initialization status of the store.
   InitializationStatus initialization_status_;

@@ -285,7 +285,7 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
 }
 
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
-                                             sql::Connection* db)
+                                             sql::Database* db)
     : dir_name_(dir_name),
       database_page_size_(kCurrentPageSizeKB),
       db_(db),
@@ -412,7 +412,7 @@ bool DirectoryBackingStore::SaveChanges(
   return transaction.Commit();
 }
 
-sql::Connection* DirectoryBackingStore::db() {
+sql::Database* DirectoryBackingStore::db() {
   return db_.get();
 }
 
@@ -1804,7 +1804,7 @@ bool DirectoryBackingStore::needs_column_refresh() const {
 }
 
 void DirectoryBackingStore::ResetAndCreateConnection() {
-  db_ = std::make_unique<sql::Connection>();
+  db_ = std::make_unique<sql::Database>();
   db_->set_histogram_tag("SyncDirectory");
   db_->set_cache_size(32);
   db_->set_page_size(database_page_size_);
@@ -1821,7 +1821,7 @@ void DirectoryBackingStore::SetCatastrophicErrorHandler(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!catastrophic_error_handler.is_null());
   catastrophic_error_handler_ = catastrophic_error_handler;
-  sql::Connection::ErrorCallback error_callback =
+  sql::Database::ErrorCallback error_callback =
       base::Bind(&OnSqliteError, catastrophic_error_handler_);
   db_->set_error_callback(error_callback);
 }

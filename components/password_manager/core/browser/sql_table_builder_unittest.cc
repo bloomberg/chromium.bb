@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +27,7 @@ class SQLTableBuilderTest : public testing::Test {
   // |type| in the database.
   bool IsColumnOfType(const std::string& name, const std::string& type);
 
-  sql::Connection* db() { return &db_; }
+  sql::Database* db() { return &db_; }
 
   SQLTableBuilder* builder() { return &builder_; }
 
@@ -39,7 +39,7 @@ class SQLTableBuilderTest : public testing::Test {
   // statement details.
   void PrintDBError(int code, sql::Statement* statement);
 
-  sql::Connection db_;
+  sql::Database db_;
   SQLTableBuilder builder_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLTableBuilderTest);

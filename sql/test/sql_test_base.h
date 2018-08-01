@@ -8,12 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sql {
-
-class Connection;
 
 // Base class for SQL tests.
 //
@@ -38,7 +36,7 @@ class SQLTestBase : public testing::Test {
   base::FilePath db_path();
 
   // Returns a connection to the database at db_path().
-  sql::Connection& db();
+  sql::Database& db();
 
   // Closes the current connection to the database and reopens it.
   bool Reopen();
@@ -68,7 +66,7 @@ class SQLTestBase : public testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
+  sql::Database db_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLTestBase);
 };

@@ -7,7 +7,7 @@
 #include <limits>
 #include <memory>
 
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -27,7 +27,7 @@ static const char kAnotherTableCreationSql[] =
 
 TEST(PrefetchStoreSchemaPreconditionTest,
      TestSqliteCreateTableIsTransactional) {
-  sql::Connection db;
+  sql::Database db;
   ASSERT_TRUE(db.OpenInMemory());
 
   sql::Transaction transaction(&db);
@@ -41,7 +41,7 @@ TEST(PrefetchStoreSchemaPreconditionTest,
 }
 
 TEST(PrefetchStoreSchemaPreconditionTest, TestSqliteDropTableIsTransactional) {
-  sql::Connection db;
+  sql::Database db;
   ASSERT_TRUE(db.OpenInMemory());
   EXPECT_TRUE(db.Execute(kSomeTableCreationSql));
   EXPECT_TRUE(db.Execute(kAnotherTableCreationSql));
@@ -57,7 +57,7 @@ TEST(PrefetchStoreSchemaPreconditionTest, TestSqliteDropTableIsTransactional) {
 }
 
 TEST(PrefetchStoreSchemaPreconditionTest, TestSqliteAlterTableIsTransactional) {
-  sql::Connection db;
+  sql::Database db;
   ASSERT_TRUE(db.OpenInMemory());
   EXPECT_TRUE(db.Execute(kSomeTableCreationSql));
 
@@ -74,7 +74,7 @@ TEST(PrefetchStoreSchemaPreconditionTest, TestSqliteAlterTableIsTransactional) {
 
 TEST(PrefetchStoreSchemaPreconditionTest,
      TestCommonMigrationCodeIsTransactional) {
-  sql::Connection db;
+  sql::Database db;
   ASSERT_TRUE(db.OpenInMemory());
   EXPECT_TRUE(db.Execute(kSomeTableCreationSql));
 
@@ -96,7 +96,7 @@ class PrefetchStoreSchemaTest : public testing::Test {
   ~PrefetchStoreSchemaTest() override = default;
 
   void SetUp() override {
-    db_ = std::make_unique<sql::Connection>();
+    db_ = std::make_unique<sql::Database>();
     ASSERT_TRUE(db_->OpenInMemory());
     ASSERT_FALSE(sql::MetaTable::DoesTableExist(db_.get()));
   }
@@ -108,7 +108,7 @@ class PrefetchStoreSchemaTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   std::unique_ptr<PrefetchStoreSchema> schema_;
 };
 
@@ -150,7 +150,7 @@ TEST_F(PrefetchStoreSchemaTest, TestMissingTablesAreRecreated) {
   CheckTablesExistence();
 }
 
-void CreateVersion1TablesWithSampleRows(sql::Connection* db) {
+void CreateVersion1TablesWithSampleRows(sql::Database* db) {
   // Create version 1 tables.
   static const char kV0ItemsTableCreationSql[] =
       "CREATE TABLE prefetch_items"
@@ -213,7 +213,7 @@ void CreateVersion1TablesWithSampleRows(sql::Connection* db) {
   EXPECT_TRUE(insertStatement2.Run());
 }
 
-void CheckSampleRowsAtCurrentVersion(sql::Connection* db) {
+void CheckSampleRowsAtCurrentVersion(sql::Database* db) {
   // Checks the previously inserted item row was migrated correctly.
   static const char kV0ItemSelectSql[] =
       "SELECT "

@@ -13,7 +13,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -49,7 +49,7 @@ UpdateInfo UpdatePrefetchItemOnDownloadSuccessSync(
     const std::string& guid,
     const base::FilePath& file_path,
     int64_t file_size,
-    sql::Connection* db) {
+    sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return UpdateInfo();
@@ -91,7 +91,7 @@ UpdateInfo UpdatePrefetchItemOnDownloadSuccessSync(
 // Updates a prefetch item after its archive failed being downloaded. Returns
 // true if the respective row was successfully updated (as normally expected).
 UpdateInfo UpdatePrefetchItemOnDownloadErrorSync(const std::string& guid,
-                                                 sql::Connection* db) {
+                                                 sql::Database* db) {
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?, error_code = ?"

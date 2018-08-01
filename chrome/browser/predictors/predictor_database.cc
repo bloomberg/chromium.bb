@@ -19,7 +19,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 using content::BrowserThread;
 
@@ -58,7 +58,7 @@ class PredictorDatabaseInternal
 
   bool is_loading_predictor_enabled_;
   base::FilePath db_path_;
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
   scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 
   // TODO(shishir): These tables may not need to be refcounted. Maybe move them
@@ -73,7 +73,7 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(
     Profile* profile,
     scoped_refptr<base::SequencedTaskRunner> db_task_runner)
     : db_path_(profile->GetPath().Append(kPredictorDatabaseName)),
-      db_(std::make_unique<sql::Connection>()),
+      db_(std::make_unique<sql::Database>()),
       db_task_runner_(db_task_runner),
       autocomplete_table_(
           new AutocompleteActionPredictorTable(db_task_runner_)),
@@ -158,7 +158,7 @@ scoped_refptr<ResourcePrefetchPredictorTables>
   return db_->resource_prefetch_tables_;
 }
 
-sql::Connection* PredictorDatabase::GetDatabase() {
+sql::Database* PredictorDatabase::GetDatabase() {
   return db_->db_.get();
 }
 

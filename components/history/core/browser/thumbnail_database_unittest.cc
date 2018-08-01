@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/test/database_test_utils.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/recovery.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
@@ -63,7 +63,7 @@ const gfx::Size kLargeSize = gfx::Size(32, 32);
 // should be there are, but do not check if extraneous items are
 // present.  Any extraneous items have the potential to interact
 // negatively with future schema changes.
-void VerifyTablesAndColumns(sql::Connection* db) {
+void VerifyTablesAndColumns(sql::Database* db) {
   // [meta], [favicons], [favicon_bitmaps], and [icon_mapping].
   EXPECT_EQ(4u, sql::test::CountSQLTables(db));
 
@@ -99,7 +99,7 @@ void AddAndMapFaviconSimple(ThumbnailDatabase* db,
   db->AddIconMapping(page_url, favicon_id);
 }
 
-void VerifyDatabaseEmpty(sql::Connection* db) {
+void VerifyDatabaseEmpty(sql::Database* db) {
   size_t rows = 0;
   EXPECT_TRUE(sql::test::CountTableRows(db, "favicons", &rows));
   EXPECT_EQ(0u, rows);
@@ -1010,7 +1010,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   {
     EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "Favicons.v8.sql"));
 
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     VerifyTablesAndColumns(&raw_db);
   }
@@ -1031,7 +1031,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   // Corrupt the |icon_mapping.page_url| index by deleting an element
   // from the backing table but not the index.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
   }
@@ -1043,7 +1043,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
 
   // Database should be corrupt at the SQLite level.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_NE("ok", sql::test::IntegrityCheck(&raw_db));
   }
@@ -1066,7 +1066,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
 
   // Check that the database is recovered at the SQLite level.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
 
@@ -1095,7 +1095,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
@@ -1125,7 +1125,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
   // Corrupt the |icon_mapping.page_url| index by deleting an element
   // from the backing table but not the index.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
   }
@@ -1137,7 +1137,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
 
   // Database should be corrupt at the SQLite level.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_NE("ok", sql::test::IntegrityCheck(&raw_db));
   }
@@ -1161,7 +1161,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
 
   // Check that the database is recovered at the SQLite level.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
 
@@ -1190,7 +1190,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
@@ -1226,7 +1226,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
@@ -1244,7 +1244,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery6) {
   // The database should be usable at the SQLite level, with a current schema
   // and no data.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
 
@@ -1270,7 +1270,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery5) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
     ASSERT_TRUE(expecter.SawExpectedErrors());
@@ -1288,7 +1288,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery5) {
   // The database should be usable at the SQLite level, with a current schema
   // and no data.
   {
-    sql::Connection raw_db;
+    sql::Database raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
 

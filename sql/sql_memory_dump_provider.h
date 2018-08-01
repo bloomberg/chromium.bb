@@ -13,7 +13,7 @@
 namespace sql {
 
 // Adds process-wide memory usage statistics about sqlite to chrome://tracing.
-// sql::Connection::OnMemoryDump adds per-connection memory statistics.
+// sql::Database::OnMemoryDump adds per-connection memory statistics.
 class SQL_EXPORT SqlMemoryDumpProvider
     : public base::trace_event::MemoryDumpProvider {
  public:

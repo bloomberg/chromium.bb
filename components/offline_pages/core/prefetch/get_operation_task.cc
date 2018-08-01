@@ -12,7 +12,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -24,7 +24,7 @@ GetOperationTask::OperationResultList MakeError() {
   return nullptr;
 }
 
-bool UpdatePrefetchItemsForOperationSync(sql::Connection* db,
+bool UpdatePrefetchItemsForOperationSync(sql::Database* db,
                                          const std::string& operation_name) {
   static const char kSql[] =
       "UPDATE prefetch_items SET"
@@ -41,7 +41,7 @@ bool UpdatePrefetchItemsForOperationSync(sql::Connection* db,
 }
 
 std::unique_ptr<std::vector<std::string>> AvailableOperationsSync(
-    sql::Connection* db) {
+    sql::Database* db) {
   static const char kSql[] =
       "SELECT DISTINCT operation_name FROM prefetch_items WHERE state = ?";
 
@@ -56,7 +56,7 @@ std::unique_ptr<std::vector<std::string>> AvailableOperationsSync(
 }
 
 GetOperationTask::OperationResultList SelectOperationsToFetch(
-    sql::Connection* db) {
+    sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return MakeError();

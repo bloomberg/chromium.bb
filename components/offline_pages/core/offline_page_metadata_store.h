@@ -25,7 +25,7 @@ class SequencedTaskRunner;
 }
 
 namespace sql {
-class Connection;
+class Database;
 }
 
 namespace offline_pages {
@@ -83,7 +83,7 @@ class OfflinePageMetadataStore {
   // Definition of the callback that is going to run the core of the command in
   // the |Execute| method.
   template <typename T>
-  using RunCallback = base::OnceCallback<T(sql::Connection*)>;
+  using RunCallback = base::OnceCallback<T(sql::Database*)>;
 
   // Definition of the callback used to pass the result back to the caller of
   // |Execute| method.
@@ -154,7 +154,7 @@ class OfflinePageMetadataStore {
     // Ensure that any scheduled close operations are canceled.
     closing_weak_ptr_factory_.InvalidateWeakPtrs();
 
-    sql::Connection* db = state_ == StoreState::LOADED ? db_.get() : nullptr;
+    sql::Database* db = state_ == StoreState::LOADED ? db_.get() : nullptr;
     if (!db) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -206,7 +206,7 @@ class OfflinePageMetadataStore {
   void CloseInternal();
 
   // Completes the closing. Main purpose is to destroy the db pointer.
-  void CloseInternalDone(std::unique_ptr<sql::Connection> db);
+  void CloseInternalDone(std::unique_ptr<sql::Database> db);
 
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
@@ -218,7 +218,7 @@ class OfflinePageMetadataStore {
   base::FilePath db_file_path_;
 
   // Database connection.
-  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Database> db_;
 
   // State of the store.
   StoreState state_;

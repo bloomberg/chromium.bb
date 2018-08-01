@@ -16,7 +16,7 @@
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -52,7 +52,7 @@ struct PrefetchItemStats {
   int64_t file_size;
 };
 
-std::vector<PrefetchItemStats> FetchUrlsSync(sql::Connection* db) {
+std::vector<PrefetchItemStats> FetchUrlsSync(sql::Database* db) {
   static const char kSql[] = R"(
   SELECT offline_id, generate_bundle_attempts, get_operation_attempts,
     download_initiation_attempts, archive_body_length, creation_time,
@@ -81,7 +81,7 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Connection* db) {
   return urls;
 }
 
-bool MarkUrlAsZombie(sql::Connection* db,
+bool MarkUrlAsZombie(sql::Database* db,
                      base::Time freshness_time,
                      int64_t offline_id) {
   static const char kSql[] =
@@ -104,7 +104,7 @@ void LogStateCountMetrics(PrefetchItemState state, int count) {
   histogram->AddCount(static_cast<int>(state), count);
 }
 
-void CountEntriesInEachState(sql::Connection* db) {
+void CountEntriesInEachState(sql::Database* db) {
   static const char kSql[] =
       "SELECT state, COUNT (*) FROM prefetch_items GROUP BY state";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -201,7 +201,7 @@ void ReportMetricsFor(const PrefetchItemStats& url, const base::Time now) {
       url.download_initiation_attempts, kMaxPossibleRetries);
 }
 
-bool ReportMetricsAndFinalizeSync(sql::Connection* db) {
+bool ReportMetricsAndFinalizeSync(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;

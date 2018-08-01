@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SQL_CONNECTION_MEMORY_DUMP_PROVIDER_H
-#define SQL_CONNECTION_MEMORY_DUMP_PROVIDER_H
+#ifndef SQL_DATABASE_MEMORY_DUMP_PROVIDER_H_
+#define SQL_DATABASE_MEMORY_DUMP_PROVIDER_H_
 
 #include <string>
 
@@ -17,15 +17,15 @@ namespace base {
 namespace trace_event {
 class ProcessMemoryDump;
 }
-}
+}  // namespace base
 
 namespace sql {
 
-class ConnectionMemoryDumpProvider
+class DatabaseMemoryDumpProvider
     : public base::trace_event::MemoryDumpProvider {
  public:
-  ConnectionMemoryDumpProvider(sqlite3* db, const std::string& name);
-  ~ConnectionMemoryDumpProvider() override;
+  DatabaseMemoryDumpProvider(sqlite3* db, const std::string& name);
+  ~DatabaseMemoryDumpProvider() override;
 
   void ResetDatabase();
 
@@ -35,14 +35,12 @@ class ConnectionMemoryDumpProvider
       base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
   // Reports memory usage into provided memory dump with the given |dump_name|.
-  // Called by sql::Connection when its owner asks it to report memory usage.
+  // Called by sql::Database when its owner asks it to report memory usage.
   bool ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
                          const std::string& dump_name);
 
  private:
-  bool GetDbMemoryUsage(int* cache_size,
-                        int* schema_size,
-                        int* statement_size);
+  bool GetDbMemoryUsage(int* cache_size, int* schema_size, int* statement_size);
 
   std::string FormatDumpName() const;
 
@@ -50,9 +48,9 @@ class ConnectionMemoryDumpProvider
   base::Lock lock_;
   std::string connection_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConnectionMemoryDumpProvider);
+  DISALLOW_COPY_AND_ASSIGN(DatabaseMemoryDumpProvider);
 };
 
 }  // namespace sql
 
-#endif  // SQL_CONNECTION_MEMORY_DUMP_PROVIDER_H
+#endif  // SQL_DATABASE_MEMORY_DUMP_PROVIDER_H_

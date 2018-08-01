@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/history/core/browser/url_database.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 
 namespace base {
 class FilePath;
@@ -34,14 +34,14 @@ class InMemoryDatabase : public URLDatabase {
 
  protected:
   // Implemented for URLDatabase.
-  sql::Connection& GetDB() override;
+  sql::Database& GetDB() override;
 
  private:
   // Initializes the database connection, this is the shared code between
   // InitFromScratch() and InitFromDisk() above. Returns true on success.
   bool InitDB();
 
-  sql::Connection db_;
+  sql::Database db_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryDatabase);
 };

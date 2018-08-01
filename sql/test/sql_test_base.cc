@@ -17,7 +17,7 @@ base::FilePath SQLTestBase::db_path() {
   return temp_dir_.GetPath().AppendASCII("SQLTest.db");
 }
 
-sql::Connection& SQLTestBase::db() {
+sql::Database& SQLTestBase::db() {
   return db_;
 }
 

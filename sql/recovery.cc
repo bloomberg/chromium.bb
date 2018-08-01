@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "sql/connection.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/sqlite/src/src/recover.h"
@@ -142,20 +142,20 @@ void RecordRecoveryEvent(RecoveryEventType recovery_event) {
 }  // namespace
 
 // static
-std::unique_ptr<Recovery> Recovery::Begin(Connection* connection,
+std::unique_ptr<Recovery> Recovery::Begin(Database* database,
                                           const base::FilePath& db_path) {
   // Recovery is likely to be used in error handling.  Since recovery changes
   // the state of the handle, protect against multiple layers attempting the
   // same recovery.
-  if (!connection->is_open()) {
+  if (!database->is_open()) {
     // Warn about API mis-use.
-    DCHECK(connection->poisoned(InternalApiToken()))
-        << "Illegal to recover with closed database";
+    DCHECK(database->poisoned(InternalApiToken()))
+        << "Illegal to recover with closed Database";
     return std::unique_ptr<Recovery>();
   }
 
   // Using `new` to access a non-public constructor
-  std::unique_ptr<Recovery> recovery(new Recovery(connection));
+  std::unique_ptr<Recovery> recovery(new Recovery(database));
   if (!recovery->Init(db_path)) {
     // TODO(shess): Should Init() failure result in Raze()?
     recovery->Shutdown(POISON);
@@ -183,9 +183,7 @@ void Recovery::Rollback(std::unique_ptr<Recovery> r) {
   r->Shutdown(POISON);
 }
 
-Recovery::Recovery(Connection* connection)
-    : db_(connection),
-      recover_db_() {
+Recovery::Recovery(Database* connection) : db_(connection), recover_db_() {
   // Result should keep the page size specified earlier.
   recover_db_.set_page_size(db_->page_size());
 
@@ -562,7 +560,7 @@ namespace {
 // Returns |true| if all of the matching items were created in the main
 // database.  Returns |false| if an item fails on creation, or if the corrupt
 // database schema cannot be queried.
-bool SchemaCopyHelper(Connection* db, const char* prefix) {
+bool SchemaCopyHelper(Database* db, const char* prefix) {
   const size_t prefix_len = strlen(prefix);
   DCHECK_EQ(' ', prefix[prefix_len-1]);
 
@@ -602,7 +600,7 @@ bool SchemaCopyHelper(Connection* db, const char* prefix) {
 //
 // static
 std::unique_ptr<Recovery> Recovery::BeginRecoverDatabase(
-    Connection* db,
+    Database* db,
     const base::FilePath& db_path) {
   std::unique_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
   if (!recovery) {
@@ -615,7 +613,7 @@ std::unique_ptr<Recovery> Recovery::BeginRecoverDatabase(
     // attaching the corrupt database, with 2/3 being SQLITE_NOTADB.  Don't
     // delete the database except for that specific failure case.
     {
-      Connection probe_db;
+      Database probe_db;
       if (!probe_db.OpenInMemory() ||
           probe_db.AttachDatabase(db_path, "corrupt", InternalApiToken()) ||
           probe_db.GetErrorCode() != SQLITE_NOTADB) {
@@ -627,7 +625,7 @@ std::unique_ptr<Recovery> Recovery::BeginRecoverDatabase(
     // The database has invalid data in the SQLite header, so it is almost
     // certainly not recoverable without manual intervention (and likely not
     // recoverable _with_ manual intervention).  Clear away the broken database.
-    if (!sql::Connection::Delete(db_path)) {
+    if (!sql::Database::Delete(db_path)) {
       RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_NOTADB_DELETE);
       return nullptr;
     }
@@ -636,7 +634,7 @@ std::unique_ptr<Recovery> Recovery::BeginRecoverDatabase(
     // Delete() appears to succeed, even though the file remains.  The following
     // attempts to track if this happens often enough to cause concern.
     {
-      Connection probe_db;
+      Database probe_db;
       if (!probe_db.Open(db_path)) {
         RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_NOTADB_REOPEN);
         return nullptr;
@@ -735,7 +733,7 @@ std::unique_ptr<Recovery> Recovery::BeginRecoverDatabase(
   return recovery;
 }
 
-void Recovery::RecoverDatabase(Connection* db, const base::FilePath& db_path) {
+void Recovery::RecoverDatabase(Database* db, const base::FilePath& db_path) {
   std::unique_ptr<sql::Recovery> recovery = BeginRecoverDatabase(db, db_path);
 
   // ignore_result() because BeginRecoverDatabase() and Recovered() already
@@ -744,7 +742,7 @@ void Recovery::RecoverDatabase(Connection* db, const base::FilePath& db_path) {
     ignore_result(Recovery::Recovered(std::move(recovery)));
 }
 
-void Recovery::RecoverDatabaseWithMetaVersion(Connection* db,
+void Recovery::RecoverDatabaseWithMetaVersion(Database* db,
                                               const base::FilePath& db_path) {
   std::unique_ptr<sql::Recovery> recovery = BeginRecoverDatabase(db, db_path);
   if (!recovery)

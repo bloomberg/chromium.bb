@@ -126,7 +126,7 @@ class CountingPolicyTest : public testing::Test {
   static void CheckStringTableSizes(CountingPolicy* policy,
                                     int string_size,
                                     int url_size) {
-    sql::Connection* db = policy->GetDatabaseConnection();
+    sql::Database* db = policy->GetDatabaseConnection();
     sql::Statement statement1(db->GetCachedStatement(
         sql::StatementID(SQL_FROM_HERE), "SELECT COUNT(*) FROM string_ids"));
     ASSERT_TRUE(statement1.Step());
