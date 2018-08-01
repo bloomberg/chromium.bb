@@ -90,6 +90,9 @@ extern const CGFloat kAdaptiveLocationBarCornerRadius;
 extern const CGFloat kAdaptiveLocationBarBackgroundAlpha;
 extern const CGFloat kAdaptiveLocationBarBackgroundAlphaIncognito;
 extern const CGFloat kAdaptiveLocationBarVerticalMargin;
+extern const CGFloat kAdaptiveLocationBarVerticalMarginFullscreen;
+// Extra margin for the location bar vertical margin.
+extern const CGFloat kAdaptiveLocationBarExtraVerticalMargin;
 
 // Height of the toolbar.
 extern const CGFloat kToolbarHeight;

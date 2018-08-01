@@ -30,12 +30,15 @@
 // Redefined to be a PrimaryToolbarView.
 @property(nonatomic, strong) PrimaryToolbarView* view;
 @property(nonatomic, assign) BOOL isNTP;
+// The last fullscreen progress registered.
+@property(nonatomic, assign) CGFloat previousFullscreenProgress;
 @end
 
 @implementation PrimaryToolbarViewController
 
 @synthesize delegate = _delegate;
 @synthesize isNTP = _isNTP;
+@synthesize previousFullscreenProgress = _previousFullscreenProgress;
 @dynamic view;
 
 #pragma mark - Public
@@ -98,6 +101,13 @@
   // This method cannot be called from the init as the topSafeAnchor can only be
   // set to topLayoutGuide after the view creation on iOS 10.
   [self.view setUp];
+
+  if (IsCompactHeight(self)) {
+    self.view.locationBarExtraBottomPadding.constant =
+        kAdaptiveLocationBarExtraVerticalMargin;
+  } else {
+    self.view.locationBarExtraBottomPadding.constant = 0;
+  }
 }
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
@@ -111,6 +121,15 @@
   [super traitCollectionDidChange:previousTraitCollection];
   [self.delegate
       viewControllerTraitCollectionDidChange:previousTraitCollection];
+  if (IsCompactHeight(self)) {
+    self.view.locationBarExtraBottomPadding.constant =
+        kAdaptiveLocationBarExtraVerticalMargin;
+  } else {
+    self.view.locationBarExtraBottomPadding.constant = 0;
+  }
+  self.view.locationBarBottomConstraint.constant =
+      [self verticalMarginForLocationBarForFullscreenProgress:
+                self.previousFullscreenProgress];
 }
 
 #pragma mark - Property accessors
@@ -148,10 +167,11 @@
        kToolbarHeightFullscreen) *
           progress);
   self.view.locationBarBottomConstraint.constant =
-      -AlignValueToPixel(kAdaptiveLocationBarVerticalMargin * progress);
+      [self verticalMarginForLocationBarForFullscreenProgress:progress];
   self.view.locationBarContainer.backgroundColor =
       [self.buttonFactory.toolbarConfiguration
           locationBarBackgroundColorWithVisibility:alphaValue];
+  self.previousFullscreenProgress = progress;
 }
 
 - (void)updateForFullscreenEnabled:(BOOL)enabled {
@@ -220,6 +240,19 @@
 }
 
 #pragma mark - Private
+
+// Returns the vertical margin to the location bar based on fullscreen
+// |progress|, aligned to the nearest pixel.
+- (CGFloat)verticalMarginForLocationBarForFullscreenProgress:(CGFloat)progress {
+  // The vertical bottom margin for the location bar is such that the location
+  // bar looks visually centered. However, the constraints are not geometrically
+  // centering the location bar. It is moved by 0pt (+ 1pt from extra padding)
+  // in iPhone landscape and by 3pt in all other configurations.
+  CGFloat fullscreenVerticalMargin =
+      IsCompactHeight(self) ? 0 : kAdaptiveLocationBarVerticalMarginFullscreen;
+  return -AlignValueToPixel(kAdaptiveLocationBarVerticalMargin * progress +
+                            fullscreenVerticalMargin * (1 - progress));
+}
 
 // Deactivates the constraints on the location bar positioning.
 - (void)deactivateViewLocationBarConstraints {
