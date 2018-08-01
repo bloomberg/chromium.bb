@@ -51,9 +51,6 @@ class GbmBuffer {
   ~GbmBuffer();
 
   const GbmBoWrapper* gbm_bo() const { return &gbm_bo_; }
-  const scoped_refptr<DrmFramebuffer>& framebuffer() const {
-    return framebuffer_;
-  }
 
  private:
   static std::unique_ptr<GbmBuffer> CreateBufferForBO(
@@ -63,7 +60,6 @@ class GbmBuffer {
       const gfx::Size& size,
       uint32_t flags);
 
-  scoped_refptr<DrmFramebuffer> framebuffer_;
   const scoped_refptr<GbmDevice> drm_;
 
   // Owned gbm_bo wrapper.
@@ -75,7 +71,8 @@ class GbmBuffer {
 class GbmPixmap : public gfx::NativePixmap {
  public:
   GbmPixmap(GbmSurfaceFactory* surface_manager,
-            std::unique_ptr<GbmBuffer> buffer);
+            std::unique_ptr<GbmBuffer> buffer,
+            scoped_refptr<DrmFramebuffer> framebuffer);
 
   // NativePixmap:
   bool AreDmaBufFdsValid() const override;
@@ -97,14 +94,16 @@ class GbmPixmap : public gfx::NativePixmap {
   gfx::NativePixmapHandle ExportHandle() override;
 
   GbmBuffer* buffer() { return buffer_.get(); }
+  const scoped_refptr<DrmFramebuffer>& framebuffer() const {
+    return framebuffer_;
+  }
 
  private:
   ~GbmPixmap() override;
-  scoped_refptr<DrmFramebuffer> ProcessBuffer(const gfx::Size& size,
-                                              uint32_t format);
 
   GbmSurfaceFactory* surface_manager_;
   std::unique_ptr<GbmBuffer> buffer_;
+  scoped_refptr<DrmFramebuffer> framebuffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmPixmap);
 };
