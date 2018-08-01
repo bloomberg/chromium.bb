@@ -362,6 +362,7 @@ TEST_F(NetworkConnectionHandlerImplTest,
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
       base::Value(true));
   SetupPolicy("[]", global_config, false /* load as device policy */);
+  SetupPolicy("[]", base::DictionaryValue(), true /* load as user policy */);
   LoginToRegularUser();
   Connect(kWifi0);
   EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
@@ -383,6 +384,7 @@ TEST_F(NetworkConnectionHandlerImplTest,
   global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
                        base::Value(blacklist));
   SetupPolicy("[]", global_config, false /* load as device policy */);
+  SetupPolicy("[]", base::DictionaryValue(), true /* load as user policy */);
 
   LoginToRegularUser();
 

@@ -79,6 +79,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& error() const { return error_; }
   const std::string& last_error() const { return last_error_; }
   void clear_last_error() { last_error_.clear(); }
+  ::onc::ONCSource onc_source() const { return onc_source_; }
 
   // Returns |connection_state_| if visible, kStateDisconnect otherwise.
   std::string connection_state() const;
@@ -101,6 +102,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   int signal_strength() const { return signal_strength_; }
   void set_signal_strength(int signal_strength) {
     signal_strength_ = signal_strength;
+  }
+  bool blocked_by_policy() const { return blocked_by_policy_; }
+  void set_blocked_by_policy(bool blocked_by_policy) {
+    blocked_by_policy_ = blocked_by_policy;
   }
 
   // Wifi property accessors
@@ -135,6 +140,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   }
   const std::string& tether_guid() const { return tether_guid_; }
   void set_tether_guid(const std::string& guid) { tether_guid_ = guid; }
+
+  // Returns true if the network is managed by policy (determined by
+  // |onc_source_|).
+  bool IsManagedByPolicy() const;
 
   // Returns true if current connection is using mobile data.
   bool IsUsingMobileData() const;
@@ -223,6 +232,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string profile_path_;
   std::vector<uint8_t> raw_ssid_;  // Unknown encoding. Not necessarily UTF-8.
   int priority_ = 0;
+  ::onc::ONCSource onc_source_ = ::onc::ONC_SOURCE_UNKNOWN;
 
   // Reflects the current Shill Service.Error property. This might get cleared
   // by Shill shortly after a failure.
@@ -243,6 +253,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   int signal_strength_ = 0;
   std::string bssid_;  // For ARC
   int frequency_ = 0;  // For ARC
+  bool blocked_by_policy_ = false;
 
   // Cellular properties, used for icons, Connect, and Activation.
   std::string network_technology_;

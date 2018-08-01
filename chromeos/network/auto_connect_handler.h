@@ -77,32 +77,17 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
 
   // This function is called whenever the logged in state changes or when a new
   // policy is applied. Once both device and user policy have been applied and
-  // either of AllowOnlyPolicyNetworksToConnect or
+  // either of AllowOnlyPolicyNetworksToConnect,
+  // AllowOnlyPolicyNetworksToConnectIfAvailable or
   // AllowOnlyPolicyNetworksToAutoconnect is enabled, we disconnect from all
   // connecting/connected unmanaged networks and either remove the network
-  // configuration (for AllowOnlyPolicyNetworksToConnect) or only disable
-  // auto-connect (for AllowOnlyPolicyNetworksToAutoconnect) for all aunmanaged
+  // configuration (for AllowOnlyPolicyNetworksToConnect*) or only disable
+  // auto-connect (for AllowOnlyPolicyNetworksToAutoconnect) for all unmanaged
   // networks (see |DisconnectFromAllUnmanagedWiFiNetworks(...)|).
   // For the AllowOnlyPolicyNetworksToAutoconnect policy we only disconnect once
   // to allow managed networks to auto-connect and prevent disconnects with
   // manually connected unmanaged networks on every policy update.
   void DisconnectIfPolicyRequires();
-
-  // Disconnects from all currently connected/connecting blacklisted WiFis. Also
-  // removes the corresponding network configuration for all blacklisted
-  // networks to prevent Shill from re-connecting to them (e.g. during
-  // ConnectToBestService).
-  void DisconnectAndRemoveBlacklistedNetworks();
-
-  // Disconnects from all currently connected/connecting unmanaged WiFis.
-  // When |remove_configuration|==true, we also remove the corresponding network
-  // configuration for all unmanaged networks from Shill.
-  // When |disable_auto_connect|==true, we also disable auto-connect for all
-  // unmanaged networks in Shill.
-  // With both options we can prevent Shill from re-connecting to the unmanaged
-  // networks when looking for a best service to connect to.
-  void DisconnectFromAllUnmanagedWiFiNetworks(bool remove_configuration,
-                                              bool disable_auto_connect);
 
   // Disconnects the connection to the network represented by |service_path|.
   void DisconnectNetwork(const std::string& service_path);

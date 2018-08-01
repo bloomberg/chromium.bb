@@ -355,6 +355,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void SetLastErrorForTest(const std::string& service_path,
                            const std::string& error);
 
+  // Sets |allow_only_policy_networks_to_connect_| and |blacklisted_hex_ssids_|
+  // and calls |UpdateBlockedByPolicy()| for each network state.
+  virtual void UpdateBlockedNetworks(
+      bool only_managed,
+      const std::vector<std::string>& blacklisted_hex_ssids);
+
   // Constructs and initializes an instance for testing.
   static std::unique_ptr<NetworkStateHandler> InitializeForTest();
 
@@ -426,6 +432,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
   typedef std::map<std::string, std::string> SpecifierGuidMap;
   friend class NetworkStateHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, NetworkStateHandlerStub);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, BlockedByPolicyBlacklisted);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, BlockedByPolicyOnlyManaged);
 
   // Sorts the network list. Called when all network updates have been received,
   // or when the network list is requested but the list is in an unsorted state.
@@ -541,6 +549,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // it is not present in |device_list_| if it is TECHNOLOGY_UNAVAILABLE.
   void EnsureTetherDeviceState();
 
+  // Updates the network's |blocked_by_policy_| depending on
+  // |allow_only_policy_networks_to_connect_| and |blacklisted_hex_ssids_|.
+  // Returns true if the value changed.
+  bool UpdateBlockedByPolicy(NetworkState* network) const;
+
   // Shill property handler instance, owned by this class.
   std::unique_ptr<internal::ShillPropertyHandler> shill_property_handler_;
 
@@ -589,6 +602,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Ensure that we do not delete any networks while notifying observers.
   bool notifying_network_observers_ = false;
+
+  // Policies which control WiFi blocking (Controlled from
+  // |ManagedNetworkConfigurationHandler| by calling |UpdateBlockedNetworks()|).
+  bool allow_only_policy_networks_to_connect_ = false;
+  std::vector<std::string> blacklisted_hex_ssids_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

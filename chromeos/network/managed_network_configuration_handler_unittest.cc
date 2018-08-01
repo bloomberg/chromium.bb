@@ -17,11 +17,11 @@
 #include "chromeos/dbus/fake_shill_profile_client.h"
 #include "chromeos/dbus/fake_shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
+#include "chromeos/network/mock_network_state_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -90,7 +90,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   ManagedNetworkConfigurationHandlerTest() {
     DBusThreadManager::Initialize();
 
-    network_state_handler_ = NetworkStateHandler::InitializeForTest();
+    network_state_handler_ = MockNetworkStateHandler::InitializeForTest();
     network_profile_handler_ = std::make_unique<TestNetworkProfileHandler>();
     network_configuration_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
@@ -207,7 +207,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   TestNetworkPolicyObserver policy_observer_;
-  std::unique_ptr<NetworkStateHandler> network_state_handler_;
+  std::unique_ptr<MockNetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestNetworkProfileHandler> network_profile_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
@@ -619,9 +619,8 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
 
   // Apply the user policy with global autoconnect config and expect that
   // autoconnect is disabled in the network's profile entry.
-  SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
-            kUser1,
-            "policy/policy_disallow_autoconnect.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1,
+            "policy/policy_allow_only_policy_networks_to_autoconnect.onc");
   base::RunLoop().RunUntilIdle();
 
   const base::DictionaryValue* properties =
@@ -690,6 +689,68 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   // calling RunUntilIdle to simulate shutdown during policy application.
   ResetManagedNetworkConfigurationHandler();
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       AllowOnlyPolicyNetworksToConnect) {
+  InitializeStandardProfiles();
+
+  // Check transfer to NetworkStateHandler
+  EXPECT_CALL(*network_state_handler_,
+              UpdateBlockedNetworks(true, std::vector<std::string>()))
+      .Times(1);
+
+  // Set 'AllowOnlyPolicyNetworksToConnect' policy and a random user policy.
+  SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
+            "policy/policy_allow_only_policy_networks_to_connect.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  base::RunLoop().RunUntilIdle();
+
+  // Check ManagedNetworkConfigurationHandler policy accessors.
+  EXPECT_TRUE(managed_handler()->AllowOnlyPolicyNetworksToConnect());
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
+  EXPECT_TRUE(managed_handler()->GetBlacklistedHexSSIDs().empty());
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       AllowOnlyPolicyNetworksToAutoconnect) {
+  InitializeStandardProfiles();
+
+  // Check transfer to NetworkStateHandler
+  EXPECT_CALL(*network_state_handler_,
+              UpdateBlockedNetworks(false, std::vector<std::string>()))
+      .Times(1);
+
+  // Set 'AllowOnlyPolicyNetworksToAutoconnect' policy and a random user policy.
+  SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
+            "policy/policy_allow_only_policy_networks_to_autoconnect.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  base::RunLoop().RunUntilIdle();
+
+  // Check ManagedNetworkConfigurationHandler policy accessors.
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToConnect());
+  EXPECT_TRUE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
+  EXPECT_TRUE(managed_handler()->GetBlacklistedHexSSIDs().empty());
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest, GetBlacklistedHexSSIDs) {
+  InitializeStandardProfiles();
+  std::vector<std::string> blacklist = {"476F6F676C65477565737450534B"};
+
+  // Check transfer to NetworkStateHandler
+  EXPECT_CALL(*network_state_handler_, UpdateBlockedNetworks(false, blacklist))
+      .Times(1);
+
+  // Set 'BlacklistedHexSSIDs' policy and a random user policy.
+  SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
+            "policy/policy_blacklisted_hex_ssids.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  base::RunLoop().RunUntilIdle();
+
+  // Check ManagedNetworkConfigurationHandler policy accessors.
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToConnect());
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
+  EXPECT_EQ(blacklist, managed_handler()->GetBlacklistedHexSSIDs());
 }
 
 }  // namespace chromeos

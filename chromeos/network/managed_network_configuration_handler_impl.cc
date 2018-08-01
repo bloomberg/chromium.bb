@@ -716,6 +716,16 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
     queued_modified_policies_.erase(userhash);
     ApplyOrQueuePolicies(userhash, &modified_policies);
   } else {
+    if (userhash.empty())
+      device_policy_applied_ = true;
+    else
+      user_policy_applied_ = true;
+
+    if (device_policy_applied_ && user_policy_applied_) {
+      network_state_handler_->UpdateBlockedNetworks(
+          AllowOnlyPolicyNetworksToConnect(), GetBlacklistedHexSSIDs());
+    }
+
     for (auto& observer : observers_)
       observer.PoliciesApplied(userhash);
   }
@@ -801,44 +811,52 @@ ManagedNetworkConfigurationHandlerImpl::FindPolicyByGuidAndProfile(
   return policy;
 }
 
-bool ManagedNetworkConfigurationHandlerImpl::IsNetworkBlockedByPolicy(
-    const std::string& type,
-    const std::string& guid,
-    const std::string& profile_path,
-    const std::string& hex_ssid) const {
-  // Only apply blocking to WiFi networks.
-  if (!NetworkTypePattern::WiFi().MatchesType(type))
-    return false;
-
-  // Policies to block WiFis are located in the |global_network_config|.
+bool ManagedNetworkConfigurationHandlerImpl::AllowOnlyPolicyNetworksToConnect()
+    const {
   const base::DictionaryValue* global_network_config =
       GetGlobalConfigFromPolicy(
           std::string() /* no username hash, device policy */);
   if (!global_network_config)
     return false;
 
-  // Check if the network is managed. Managed networks are always allowed.
-  bool is_managed =
-      FindPolicyByGuidAndProfile(guid, profile_path, nullptr /* onc_source */);
-  if (is_managed)
-    return false;
-
-  // Check if the network is blacklisted.
-  const base::Value* blacklist_value = global_network_config->FindKeyOfType(
-      ::onc::global_network_config::kBlacklistedHexSSIDs,
-      base::Value::Type::LIST);
-  if (blacklist_value && !blacklist_value->GetList().empty() &&
-      base::ContainsValue(blacklist_value->GetList(), base::Value(hex_ssid)))
-    return true;
-
-  // Check if only managed networks are allowed.
   const base::Value* managed_only_value = global_network_config->FindKeyOfType(
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
       base::Value::Type::BOOLEAN);
-  if (managed_only_value && managed_only_value->GetBool())
-    return true;
+  return managed_only_value && managed_only_value->GetBool();
+}
 
-  return false;
+bool ManagedNetworkConfigurationHandlerImpl::
+    AllowOnlyPolicyNetworksToAutoconnect() const {
+  const base::DictionaryValue* global_network_config =
+      GetGlobalConfigFromPolicy(
+          std::string() /* no username hash, device policy */);
+  if (!global_network_config)
+    return false;
+
+  const base::Value* autoconnect_value = global_network_config->FindKeyOfType(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      base::Value::Type::BOOLEAN);
+  return autoconnect_value && autoconnect_value->GetBool();
+}
+
+std::vector<std::string>
+ManagedNetworkConfigurationHandlerImpl::GetBlacklistedHexSSIDs() const {
+  const base::DictionaryValue* global_network_config =
+      GetGlobalConfigFromPolicy(
+          std::string() /* no username hash, device policy */);
+  if (!global_network_config)
+    return std::vector<std::string>();
+
+  const base::Value* blacklist_value = global_network_config->FindKeyOfType(
+      ::onc::global_network_config::kBlacklistedHexSSIDs,
+      base::Value::Type::LIST);
+  if (!blacklist_value)
+    return std::vector<std::string>();
+
+  std::vector<std::string> blacklisted_hex_ssids;
+  for (const base::Value& entry : blacklist_value->GetList())
+    blacklisted_hex_ssids.push_back(entry.GetString());
+  return blacklisted_hex_ssids;
 }
 
 const ManagedNetworkConfigurationHandlerImpl::Policies*
@@ -863,6 +881,8 @@ ManagedNetworkConfigurationHandlerImpl::ManagedNetworkConfigurationHandlerImpl()
       network_profile_handler_(NULL),
       network_configuration_handler_(NULL),
       network_device_handler_(NULL),
+      user_policy_applied_(false),
+      device_policy_applied_(false),
       weak_ptr_factory_(this) {
   CHECK(base::ThreadTaskRunnerHandle::IsSet());
 }

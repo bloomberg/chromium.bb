@@ -75,11 +75,9 @@ class CHROMEOS_EXPORT MockManagedNetworkConfigurationHandler
       const base::DictionaryValue*(const std::string& guid,
                                    const std::string& profile_path,
                                    ::onc::ONCSource* onc_source));
-  MOCK_CONST_METHOD4(IsNetworkBlockedByPolicy,
-                     bool(const std::string& type,
-                          const std::string& guid,
-                          const std::string& profile_path,
-                          const std::string& hex_ssid));
+  MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToConnect, bool());
+  MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToAutoconnect, bool());
+  MOCK_CONST_METHOD0(GetBlacklistedHexSSIDs, std::vector<std::string>());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockManagedNetworkConfigurationHandler);
