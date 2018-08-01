@@ -18,17 +18,15 @@ namespace ukm {
 const base::Feature kUkmAppLogging{"UkmAppLogging",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-enum class AppType { kArc, kChromeExtension };
-
 class AppSourceUrlRecorder {
  private:
   friend class AppSourceUrlRecorderTest;
 
-  // Get a UKM SourceId for the app.
-  // Generates a url for the source depending upon AppType:
-  // kArc: app://play/id
-  // kChromeExtension: chrome-extension://id/
-  static SourceId GetSourceIdForApp(AppType type, const std::string& id);
+  // Get a UKM SourceId for a Chrome app.
+  static SourceId GetSourceIdForChromeApp(const std::string& id);
+
+  // Get a UKM SourceId for an Arc app.
+  static SourceId GetSourceIdForArc(const std::string& package_name);
 
   // Get a UKM SourceId for a PWA.
   static SourceId GetSourceIdForPWA(const GURL& url);
