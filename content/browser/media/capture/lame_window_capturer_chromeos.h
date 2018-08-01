@@ -66,6 +66,9 @@ class LameWindowCapturerChromeOS : public viz::mojom::FrameSinkVideoCapturer,
   void Start(viz::mojom::FrameSinkVideoConsumerPtr consumer) final;
   void Stop() final;
   void RequestRefreshFrame() final;
+  void CreateOverlay(
+      int32_t stacking_index,
+      viz::mojom::FrameSinkVideoCaptureOverlayRequest request) final;
 
  private:
   // Represents an in-flight frame, being populated by this capturer and then

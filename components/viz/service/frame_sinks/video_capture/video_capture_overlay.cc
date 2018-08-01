@@ -26,9 +26,14 @@ namespace viz {
 
 VideoCaptureOverlay::FrameSource::~FrameSource() = default;
 
-VideoCaptureOverlay::VideoCaptureOverlay(FrameSource* frame_source)
-    : frame_source_(frame_source) {
+VideoCaptureOverlay::VideoCaptureOverlay(
+    FrameSource* frame_source,
+    mojom::FrameSinkVideoCaptureOverlayRequest request)
+    : frame_source_(frame_source), binding_(this, std::move(request)) {
   DCHECK(frame_source_);
+  binding_.set_connection_error_handler(
+      base::BindOnce(&FrameSource::OnOverlayConnectionLost,
+                     base::Unretained(frame_source_), this));
 }
 
 VideoCaptureOverlay::~VideoCaptureOverlay() = default;
@@ -160,7 +165,7 @@ VideoCaptureOverlay::OnceRenderer VideoCaptureOverlay::MakeRenderer(
 
 // static
 VideoCaptureOverlay::OnceRenderer VideoCaptureOverlay::MakeCombinedRenderer(
-    const std::vector<std::unique_ptr<VideoCaptureOverlay>>& overlays,
+    const std::vector<VideoCaptureOverlay*>& overlays,
     const gfx::Rect& region_in_frame,
     const VideoPixelFormat frame_format,
     const gfx::ColorSpace& frame_color_space) {
@@ -169,7 +174,7 @@ VideoCaptureOverlay::OnceRenderer VideoCaptureOverlay::MakeCombinedRenderer(
   }
 
   std::vector<OnceRenderer> renderers;
-  for (const std::unique_ptr<VideoCaptureOverlay>& overlay : overlays) {
+  for (VideoCaptureOverlay* overlay : overlays) {
     renderers.emplace_back(overlay->MakeRenderer(region_in_frame, frame_format,
                                                  frame_color_space));
     if (renderers.back().is_null()) {

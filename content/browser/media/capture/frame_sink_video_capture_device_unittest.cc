@@ -110,6 +110,9 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   }
   MOCK_METHOD0(MockStop, void());
   MOCK_METHOD0(RequestRefreshFrame, void());
+  MOCK_METHOD2(CreateOverlay,
+               void(int32_t stacking_index,
+                    viz::mojom::FrameSinkVideoCaptureOverlayRequest request));
 
  private:
   mojo::Binding<viz::mojom::FrameSinkVideoCapturer> binding_;

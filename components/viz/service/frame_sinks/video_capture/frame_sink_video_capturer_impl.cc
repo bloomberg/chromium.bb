@@ -255,6 +255,17 @@ void FrameSinkVideoCapturerImpl::RequestRefreshFrame() {
   }
 }
 
+void FrameSinkVideoCapturerImpl::CreateOverlay(
+    int32_t stacking_index,
+    mojom::FrameSinkVideoCaptureOverlayRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // This will cause an existing overlay with the same stacking index to be
+  // dropped, per mojom-documented behavior.
+  overlays_.emplace(stacking_index, std::make_unique<VideoCaptureOverlay>(
+                                        this, std::move(request)));
+}
+
 void FrameSinkVideoCapturerImpl::ScheduleRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -327,7 +338,7 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(
   DCHECK(resolved_target_);
 
   if (frame_size == oracle_.source_size()) {
-    dirty_rect_.Union(damage_rect);
+    InvalidateRect(damage_rect);
   } else {
     oracle_.SetSourceSize(frame_size);
     dirty_rect_ = kMaxRect;
@@ -335,6 +346,45 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(
 
   MaybeCaptureFrame(VideoCaptureOracle::kCompositorUpdate, damage_rect,
                     expected_display_time, frame_metadata);
+}
+
+gfx::Size FrameSinkVideoCapturerImpl::GetSourceSize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return oracle_.source_size();
+}
+
+void FrameSinkVideoCapturerImpl::InvalidateRect(const gfx::Rect& rect) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  gfx::Rect positive_rect = rect;
+  positive_rect.Intersect(kMaxRect);
+  dirty_rect_.Union(positive_rect);
+}
+
+void FrameSinkVideoCapturerImpl::OnOverlayConnectionLost(
+    VideoCaptureOverlay* overlay) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const auto it =
+      std::find_if(overlays_.begin(), overlays_.end(),
+                   [&overlay](const decltype(overlays_)::value_type& entry) {
+                     return entry.second.get() == overlay;
+                   });
+  DCHECK(it != overlays_.end());
+  overlays_.erase(it);
+}
+
+std::vector<VideoCaptureOverlay*>
+FrameSinkVideoCapturerImpl::GetOverlaysInOrder() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::vector<VideoCaptureOverlay*> list;
+  list.reserve(overlays_.size());
+  for (const auto& entry : overlays_) {
+    list.push_back(entry.second.get());
+  }
+  return list;
 }
 
 void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
@@ -497,7 +547,11 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
           : CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(&FrameSinkVideoCapturerImpl::DidCopyFrame,
                      capture_weak_factory_.GetWeakPtr(), frame_number,
-                     oracle_frame_number, content_rect, std::move(frame))));
+                     oracle_frame_number, content_rect,
+                     VideoCaptureOverlay::MakeCombinedRenderer(
+                         GetOverlaysInOrder(), content_rect, frame->format(),
+                         frame->ColorSpace()),
+                     std::move(frame))));
   request->set_source(copy_request_source_);
   request->set_area(gfx::Rect(source_size));
   request->SetScaleRatio(
@@ -515,6 +569,7 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     int64_t frame_number,
     OracleFrameNumber oracle_frame_number,
     const gfx::Rect& content_rect,
+    VideoCaptureOverlay::OnceRenderer overlay_renderer,
     scoped_refptr<VideoFrame> frame,
     std::unique_ptr<CopyOutputResult> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -543,17 +598,7 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     uint8_t* const v = frame->visible_data(VideoFrame::kVPlane) +
                        (content_rect.y() / 2) * v_stride +
                        (content_rect.x() / 2);
-    if (result->ReadI420Planes(y, y_stride, u, u_stride, v, v_stride)) {
-      // The result may be smaller than what was requested, if unforeseen
-      // clamping to the source boundaries occurred by the executor of the
-      // CopyOutputRequest. However, the result should never contain more than
-      // what was requested.
-      DCHECK_LE(result->size().width(), content_rect.width());
-      DCHECK_LE(result->size().height(), content_rect.height());
-      media::LetterboxVideoFrame(
-          frame.get(), gfx::Rect(content_rect.origin(),
-                                 AdjustSizeForPixelFormat(result->size())));
-    } else {
+    if (!result->ReadI420Planes(y, y_stride, u, u_stride, v, v_stride)) {
       frame = nullptr;
     }
   } else {
@@ -561,13 +606,25 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format_);
     uint8_t* const pixels = frame->visible_data(VideoFrame::kARGBPlane) +
                             content_rect.y() * stride + content_rect.x() * 4;
-    if (result->ReadRGBAPlane(pixels, stride)) {
-      media::LetterboxVideoFrame(
-          frame.get(), gfx::Rect(content_rect.origin(),
-                                 AdjustSizeForPixelFormat(result->size())));
-    } else {
+    if (!result->ReadRGBAPlane(pixels, stride)) {
       frame = nullptr;
     }
+  }
+
+  if (frame) {
+    if (overlay_renderer) {
+      std::move(overlay_renderer).Run(frame.get());
+    }
+
+    // The result may be smaller than what was requested, if unforeseen
+    // clamping to the source boundaries occurred by the executor of the
+    // CopyOutputRequest. However, the result should never contain more than
+    // what was requested.
+    DCHECK_LE(result->size().width(), content_rect.width());
+    DCHECK_LE(result->size().height(), content_rect.height());
+    media::LetterboxVideoFrame(
+        frame.get(), gfx::Rect(content_rect.origin(),
+                               AdjustSizeForPixelFormat(result->size())));
   }
 
   DidCaptureFrame(frame_number, oracle_frame_number, content_rect,

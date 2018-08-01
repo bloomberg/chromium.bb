@@ -9,7 +9,9 @@
 
 #include <memory>
 #include <queue>
+#include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -23,6 +25,7 @@
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
 #include "components/viz/service/frame_sinks/video_capture/in_flight_frame_delivery.h"
 #include "components/viz/service/frame_sinks/video_capture/interprocess_frame_pool.h"
+#include "components/viz/service/frame_sinks/video_capture/video_capture_overlay.h"
 #include "components/viz/service/viz_service_export.h"
 #include "media/base/video_frame.h"
 #include "media/capture/content/video_capture_oracle.h"
@@ -64,6 +67,7 @@ class FrameSinkVideoCapturerManager;
 // memory for efficient transport to the consumer.
 class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
     : public CapturableFrameSink::Client,
+      public VideoCaptureOverlay::FrameSource,
       public mojom::FrameSinkVideoCapturer {
  public:
   // |frame_sink_manager| must outlive this instance. Binds this instance to the
@@ -104,6 +108,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   void Start(mojom::FrameSinkVideoConsumerPtr consumer) final;
   void Stop() final;
   void RequestRefreshFrame() final;
+  void CreateOverlay(int32_t stacking_index,
+                     mojom::FrameSinkVideoCaptureOverlayRequest request) final;
 
   // Default configuration.
   static constexpr media::VideoPixelFormat kDefaultPixelFormat =
@@ -162,6 +168,14 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                       base::TimeTicks target_display_time,
                       const CompositorFrameMetadata& frame_metadata) final;
 
+  // VideoCaptureOverlay::FrameSource implementation:
+  gfx::Size GetSourceSize() final;
+  void InvalidateRect(const gfx::Rect& rect) final;
+  void OnOverlayConnectionLost(VideoCaptureOverlay* overlay) final;
+
+  // Returns a list of the overlays in rendering order.
+  std::vector<VideoCaptureOverlay*> GetOverlaysInOrder() const;
+
   // Consults the VideoCaptureOracle to decide whether to capture a frame,
   // then ensures prerequisites are met before initiating the capture: that
   // there is a consumer present and that the pipeline is not already full.
@@ -175,6 +189,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   void DidCopyFrame(int64_t frame_number,
                     OracleFrameNumber oracle_frame_number,
                     const gfx::Rect& content_rect,
+                    VideoCaptureOverlay::OnceRenderer overlay_renderer,
                     scoped_refptr<media::VideoFrame> frame,
                     std::unique_ptr<CopyOutputResult> result);
 
@@ -277,6 +292,12 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // The Oracle-provided media timestamp of the first frame. This is used to
   // compute the relative media stream timestamps for each successive frame.
   base::Optional<base::TimeTicks> first_frame_media_ticks_;
+
+  // Zero or more overlays to be rendered over each captured video frame. The
+  // order of the entries in this map determines the order in which each overlay
+  // is rendered. This is important because alpha blending between overlays can
+  // make a difference in the overall results.
+  base::flat_map<int32_t, std::unique_ptr<VideoCaptureOverlay>> overlays_;
 
   // This class assumes its control operations and async callbacks won't execute
   // simultaneously.

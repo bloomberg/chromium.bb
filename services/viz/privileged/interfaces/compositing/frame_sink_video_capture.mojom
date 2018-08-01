@@ -8,6 +8,7 @@ import "media/capture/mojom/video_capture_types.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
+import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Provided with each call to FrameSinkVideoConsumer::OnFrameCaptured() so that
@@ -129,4 +130,30 @@ interface FrameSinkVideoCapturer {
   // Requests the capturer send a duplicate of the last frame. This is used to
   // resolve occasional "picture loss" issues consumer-side.
   RequestRefreshFrame();
+
+  // Creates an overlay to be renderered within each captured video frame. The
+  // |stacking_index| is an arbitrary value that determines whether to render
+  // this overlay before/after other overlays. Greater values mean "after" and
+  // "on top of" those with lesser values. Specifying the same index as an
+  // existing overlay will cause the existing one to be dropped and replaced
+  // with a new one.
+  CreateOverlay(int32 stacking_index, FrameSinkVideoCaptureOverlay& request);
+};
+
+// Control interface for a small image to be composited on top of each captured
+// video frame. This allows clients to, for example, have the capturer render
+// mouse cursors or debug info boxes on top of the captured content.
+interface FrameSinkVideoCaptureOverlay {
+  // Sets/Changes the overlay |image| and its position and size, relative to the
+  // source content. |bounds| consists of coordinates where the range [0.0,1.0)
+  // indicates the relative position+size within the bounds of the source
+  // content (e.g., 0.0 refers to the top or left edge; 1.0 to just after the
+  // bottom or right edge). Pass empty |bounds| to temporarily hide the overlay
+  // until a later call to SetBounds().
+  SetImageAndBounds(skia.mojom.Bitmap image, gfx.mojom.RectF bounds);
+
+  // Changes the bounds of the previously-set image, showing the overlay if
+  // non-empty bounds are provided, and hiding the overlay otherwise. |bounds|
+  // has the same semantics as described in ShowImageAt().
+  SetBounds(gfx.mojom.RectF bounds);
 };
