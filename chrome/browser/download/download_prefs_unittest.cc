@@ -140,6 +140,13 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
   EXPECT_TRUE(prefs.DownloadPath().IsAbsolute());
   EXPECT_EQ(prefs.DownloadPath(), testdir);
 
+  // Test a valid path for Linux files.
+  testdir = base::FilePath("/media/fuse/crostini_test_termina_penguin/testdir");
+  profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
+                                testdir.value());
+  EXPECT_TRUE(prefs.DownloadPath().IsAbsolute());
+  EXPECT_EQ(prefs.DownloadPath(), testdir);
+
   // Test with an invalid path outside the download directory.
   profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
                                 "/home/chronos");

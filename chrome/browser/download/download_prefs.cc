@@ -478,6 +478,14 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     return android_files_mount_point.Append(relative);
   }
 
+  // Allow paths under the Linux files mount point.
+  base::FilePath linux_files_mount_point =
+      file_manager::util::GetCrostiniMountDirectory(profile_);
+  if (linux_files_mount_point.AppendRelativePath(path, &relative) &&
+      !relative.ReferencesParent()) {
+    return linux_files_mount_point.Append(relative);
+  }
+
   // Fall back to the default download directory for all other paths.
   return profile_download_dir;
 #endif
