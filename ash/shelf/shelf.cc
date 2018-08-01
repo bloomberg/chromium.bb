@@ -303,7 +303,6 @@ bool Shelf::ShouldHideOnSecondaryDisplay(session_manager::SessionState state) {
 void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   keyboard::KeyboardStateDescriptor state;
   state.is_visible = !bounds.IsEmpty();
-  state.is_locked = false;
   state.visual_bounds = bounds;
   state.occluded_bounds = bounds;
   state.displaced_bounds = gfx::Rect();

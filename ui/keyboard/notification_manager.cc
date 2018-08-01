@@ -28,7 +28,6 @@ NotificationManager::NotificationManager() {}
 
 void NotificationManager::SendNotifications(
     bool does_occluded_bounds_affect_layout,
-    bool is_locked,
     const gfx::Rect& visual_bounds,
     const gfx::Rect& occluded_bounds,
     const base::ObserverList<KeyboardControllerObserver>& observers) {
@@ -50,7 +49,6 @@ void NotificationManager::SendNotifications(
 
   KeyboardStateDescriptor state;
   state.is_visible = is_visible;
-  state.is_locked = is_locked;
   state.visual_bounds = visual_bounds;
   state.occluded_bounds = occluded_bounds;
   state.displaced_bounds = workspace_layout_offset_region;

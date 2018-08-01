@@ -479,7 +479,7 @@ gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
     // TODO(blakeo): There are minor variances in padding depending on if the
     // keyboard is in anchored accessibility mode or in regular mode.
     const gfx::Rect keyboard_occluding_bounds =
-        shelf_->shelf_layout_manager()->keyboard_bounds();
+        shelf_->shelf_layout_manager()->keyboard_occluded_bounds();
     int keyboard_offset = keyboard_occluding_bounds.height();
     return gfx::Insets(-tray_bg_insets.top() - keyboard_offset,
                        anchor_insets.left(), -tray_bg_insets.bottom(),

@@ -205,7 +205,9 @@ class ASH_EXPORT ShelfLayoutManager
   // panel height. The Docked Magnifier appears above the ChromeVox panel.
   void SetDockedMagnifierHeight(int height);
 
-  gfx::Rect keyboard_bounds() const { return keyboard_bounds_; }
+  gfx::Rect keyboard_occluded_bounds() const {
+    return keyboard_occluded_bounds_;
+  }
 
  private:
   class UpdateShelfObserver;
@@ -389,8 +391,13 @@ class ASH_EXPORT ShelfLayoutManager
   // Used to delay updating shelf background.
   UpdateShelfObserver* update_shelf_observer_ = nullptr;
 
-  // The bounds of the keyboard.
-  gfx::Rect keyboard_bounds_;
+  // The occluded bounds of the keyboard. See
+  // ui/keyboard/keyboard_controller_observer.h for details.
+  gfx::Rect keyboard_occluded_bounds_;
+
+  // The displaced bounds of the keyboard. See
+  // ui/keyboard/keyboard_controller_observer.h for details.
+  gfx::Rect keyboard_displaced_bounds_;
 
   // The bounds within the root window not occupied by the shelf nor the virtual
   // keyboard.

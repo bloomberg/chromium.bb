@@ -2159,7 +2159,6 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
     state.visual_bounds = bounds;
     state.occluded_bounds = bounds;
     state.displaced_bounds = is_locked ? bounds : gfx::Rect();
-    state.is_locked = is_locked;
     state.is_visible = !bounds.IsEmpty();
     layout_manager->OnKeyboardVisibilityStateChanged(state.is_visible);
     layout_manager->OnKeyboardAppearanceChanged(state);

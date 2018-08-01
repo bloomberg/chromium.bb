@@ -487,9 +487,11 @@ void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
 
 void ShelfLayoutManager::OnKeyboardAppearanceChanged(
     const keyboard::KeyboardStateDescriptor& state) {
-  // If in locked mode, change the work area.
-  bool change_work_area = state.is_locked;
-  keyboard_bounds_ = state.occluded_bounds;
+  keyboard_occluded_bounds_ = state.occluded_bounds;
+  keyboard_displaced_bounds_ = state.displaced_bounds;
+
+  // If there are displaced bounds, then change the work area.
+  bool change_work_area = !keyboard_displaced_bounds_.IsEmpty();
   LayoutShelfAndUpdateBounds(change_work_area);
 }
 
@@ -701,7 +703,8 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // If user session is blocked (login to new user session or add user to
       // the existing session - multi-profile) then give 100% of work area only
       // if keyboard is not shown.
-      if (!state_.IsAddingSecondaryUser() || !keyboard_bounds_.IsEmpty())
+      if (!state_.IsAddingSecondaryUser() ||
+          !keyboard_displaced_bounds_.IsEmpty())
         insets = target_bounds.work_area_insets;
       Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
                                              insets);
@@ -736,8 +739,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
     // takes care of setting the height properly.
     shelf_size = kShelfAutoHideSize;
   } else if (state.visibility_state == SHELF_HIDDEN ||
-             (!keyboard_bounds_.IsEmpty() &&
-              !keyboard::IsKeyboardOverscrollEnabled())) {
+             !keyboard_displaced_bounds_.IsEmpty()) {
     shelf_size = 0;
   }
 
@@ -784,9 +786,9 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   // should probably be pushed to a separate component. This would simplify or
   // remove entirely the dependency on keyboard and dock.
 
-  if (!keyboard_bounds_.IsEmpty() && !keyboard::IsKeyboardOverscrollEnabled()) {
+  if (!keyboard_displaced_bounds_.IsEmpty()) {
     // Also push in the work area inset for the keyboard if it is visible.
-    gfx::Insets keyboard_insets(0, 0, keyboard_bounds_.height(), 0);
+    gfx::Insets keyboard_insets(0, 0, keyboard_displaced_bounds_.height(), 0);
     target_bounds->work_area_insets += keyboard_insets;
   }
 
@@ -817,7 +819,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
                 shelf_height - status_size.height()));
 
   available_bounds.Subtract(target_bounds->shelf_bounds_in_root);
-  available_bounds.Subtract(keyboard_bounds_);
+  available_bounds.Subtract(keyboard_occluded_bounds_);
 
   aura::Window* root = shelf_window->GetRootWindow();
   ::wm::ConvertRectToScreen(root, &available_bounds);

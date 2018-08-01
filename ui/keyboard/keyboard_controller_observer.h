@@ -17,9 +17,18 @@ namespace keyboard {
 // Describes the various attributes of the keyboard's appearance and usability.
 struct KeyboardStateDescriptor {
   bool is_visible;
-  bool is_locked;
+
+  // The bounds of the keyboard window on the screen.
   gfx::Rect visual_bounds;
+
+  // The bounds of the area on the screen that is considered "blocked" by the
+  // keyboard. For example, the docked keyboard's occluded bounds is the same as
+  // the visual bounds, but the floating keyboard has no occluded bounds (as the
+  // window is small and moveable).
   gfx::Rect occluded_bounds;
+
+  // The bounds of the area on the screen that is considered "unusable" because
+  // it is blocked by the keyboard. This is used by the accessibility keyboard.
   gfx::Rect displaced_bounds;
 };
 
@@ -37,13 +46,18 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   virtual void OnKeyboardVisibleBoundsChanged(const gfx::Rect& new_bounds) {}
 
   // Called when the keyboard bounds have changed in a way that should affect
-  // the usable region of the workspace.
+  // the usable region of the workspace. The user interface should respond to
+  // this event by moving important elements away from |new_bounds| so that they
+  // don't overlap. However, drastic visual changes should be avoided, as the
+  // occluded bounds may change frequently.
   virtual void OnKeyboardWorkspaceOccludedBoundsChanged(
       const gfx::Rect& new_bounds) {}
 
   // Called when the keyboard bounds have changed in a way that affects how the
   // workspace should change to not take up the screen space occupied by the
-  // keyboard.
+  // keyboard. The user interface should respond to this event by moving all
+  // elements away from |new_bounds| so that they don't overlap. Large visual
+  // changes are okay, as the displacing bounds do not change frequently.
   virtual void OnKeyboardWorkspaceDisplacingBoundsChanged(
       const gfx::Rect& new_bounds) {}
 

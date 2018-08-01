@@ -273,9 +273,8 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
   if (ui_->HasKeyboardWindow() && ui_->GetKeyboardWindow()->IsVisible()) {
     const gfx::Rect occluded_bounds_in_screen = GetWorkspaceOccludedBounds();
     notification_manager_.SendNotifications(
-        container_behavior_->OccludedBoundsAffectWorkspaceLayout(),
-        keyboard_locked(), new_bounds, occluded_bounds_in_screen,
-        observer_list_);
+        container_behavior_->OccludedBoundsAffectWorkspaceLayout(), new_bounds,
+        occluded_bounds_in_screen, observer_list_);
 
     if (keyboard::IsKeyboardOverscrollEnabled())
       ui_->InitInsets(occluded_bounds_in_screen);
