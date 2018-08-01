@@ -1062,6 +1062,10 @@
       "../../content/test/gpu/run_gpu_integration_test.py",
     ],
   },
+  "telemetry_gpu_integration_test_scripts_only": {
+    "label": "//chrome/test:telemetry_gpu_integration_test_scripts_only",
+    "type": "additional_compile_target",
+  },
   "telemetry_gpu_unittests": {
     "label": "//chrome/test:telemetry_gpu_unittests",
     "type": "script",

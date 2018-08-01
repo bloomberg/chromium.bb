@@ -338,6 +338,17 @@ group("telemetry_gpu_integration_test") {
   ]
 }
 
+group("telemetry_gpu_integration_test_scripts_only") {
+  testonly = true
+  deps = [
+    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
+  ]
+
+  data = [
+    "//content/test/gpu/",
+  ]
+}
+
 static_library("browser_tests_runner") {
   testonly = true
   sources = []

@@ -171,6 +171,9 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   # These are only run on V8 CI.
   'pdfium_test',
   'postmortem-metadata',
+
+  # These are only for developer convenience and not on any bots.
+  'telemetry_gpu_integration_test_scripts_only',
 }
 
 
