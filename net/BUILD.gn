@@ -980,6 +980,7 @@ component("net") {
       "quic/quic_connectivity_probing_manager.h",
       "quic/quic_crypto_client_stream_factory.cc",
       "quic/quic_crypto_client_stream_factory.h",
+      "quic/quic_flags_list.h",
       "quic/quic_http_stream.cc",
       "quic/quic_http_stream.h",
       "quic/quic_http_utils.cc",
@@ -1410,7 +1411,6 @@ component("net") {
       "third_party/quic/core/quic_data_reader.h",
       "third_party/quic/core/quic_data_writer.cc",
       "third_party/quic/core/quic_data_writer.h",
-      "third_party/quic/core/quic_flags_list.h",
       "third_party/quic/core/quic_flow_controller.cc",
       "third_party/quic/core/quic_flow_controller.h",
       "third_party/quic/core/quic_framer.cc",
@@ -3030,6 +3030,16 @@ source_set("quic_test_tools") {
   testonly = true
   sources = [
     "quic/crypto_test_utils_chromium.cc",
+    "quic/mock_crypto_client_stream.cc",
+    "quic/mock_crypto_client_stream.h",
+    "quic/mock_crypto_client_stream_factory.cc",
+    "quic/mock_crypto_client_stream_factory.h",
+    "quic/mock_decrypter.cc",
+    "quic/mock_decrypter.h",
+    "quic/mock_encrypter.cc",
+    "quic/mock_encrypter.h",
+    "quic/test_task_runner.cc",
+    "quic/test_task_runner.h",
     "third_party/quic/core/quic_trace_visitor.cc",
     "third_party/quic/core/quic_trace_visitor.h",
     "third_party/quic/platform/api/quic_expect_bug.h",
@@ -3057,12 +3067,6 @@ source_set("quic_test_tools") {
     "third_party/quic/test_tools/fake_proof_source.h",
     "third_party/quic/test_tools/mock_clock.cc",
     "third_party/quic/test_tools/mock_clock.h",
-    "third_party/quic/test_tools/mock_crypto_client_stream.cc",
-    "third_party/quic/test_tools/mock_crypto_client_stream.h",
-    "third_party/quic/test_tools/mock_decrypter.cc",
-    "third_party/quic/test_tools/mock_decrypter.h",
-    "third_party/quic/test_tools/mock_encrypter.cc",
-    "third_party/quic/test_tools/mock_encrypter.h",
     "third_party/quic/test_tools/mock_quic_client_promised_info.cc",
     "third_party/quic/test_tools/mock_quic_client_promised_info.h",
     "third_party/quic/test_tools/mock_quic_dispatcher.cc",
@@ -4833,8 +4837,6 @@ test("net_unittests") {
     "quic/bidirectional_stream_quic_impl_unittest.cc",
     "quic/crypto/proof_test_chromium.cc",
     "quic/crypto/proof_verifier_chromium_test.cc",
-    "quic/mock_crypto_client_stream_factory.cc",
-    "quic/mock_crypto_client_stream_factory.h",
     "quic/mock_quic_data.cc",
     "quic/mock_quic_data.h",
     "quic/network_connection_unittest.cc",
@@ -4859,8 +4861,6 @@ test("net_unittests") {
     "quic/quic_test_packet_maker.cc",
     "quic/quic_test_packet_maker.h",
     "quic/quic_utils_chromium_test.cc",
-    "quic/test_task_runner.cc",
-    "quic/test_task_runner.h",
     "third_party/http2/decoder/decode_buffer_test.cc",
     "third_party/http2/decoder/decode_http2_structures_test.cc",
     "third_party/http2/decoder/frame_decoder_state_test_util.cc",
@@ -5976,7 +5976,7 @@ fuzzer_test("net_parse_url_hostname_to_address_fuzzer") {
 
 fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
   sources = [
-    "third_party/quic/core/quic_crypto_framer_parse_message_fuzzer.cc",
+    "quic/quic_crypto_framer_parse_message_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",
@@ -6185,11 +6185,7 @@ fuzzer_test("net_reporting_header_parser_fuzzer") {
 
 fuzzer_test("net_quic_stream_factory_fuzzer") {
   sources = [
-    "quic/mock_crypto_client_stream_factory.cc",
-    "quic/mock_crypto_client_stream_factory.h",
     "quic/quic_stream_factory_fuzzer.cc",
-    "quic/test_task_runner.cc",
-    "quic/test_task_runner.h",
   ]
 
   deps = [

@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quic/test_tools/mock_crypto_client_stream.h"
+#include "net/quic/mock_crypto_client_stream.h"
 
+#include "net/quic/mock_decrypter.h"
+#include "net/quic/mock_encrypter.h"
 #include "net/third_party/quic/core/crypto/null_decrypter.h"
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/http/quic_spdy_client_session_base.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quic/test_tools/mock_decrypter.h"
-#include "net/third_party/quic/test_tools/mock_encrypter.h"
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 
 namespace quic {
 

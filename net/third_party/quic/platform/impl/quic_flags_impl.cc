@@ -5,5 +5,5 @@
 #include "net/third_party/quic/platform/impl/quic_flags_impl.h"
 
 #define QUIC_FLAG(type, flag, value) type flag = value;
-#include "net/third_party/quic/core/quic_flags_list.h"
+#include "net/quic/quic_flags_list.h"
 #undef QUIC_FLAG
