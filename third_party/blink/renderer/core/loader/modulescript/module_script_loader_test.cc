@@ -192,7 +192,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
   global_scope_ = new MainThreadWorkletGlobalScope(
       &GetFrame(), std::move(creation_params), *reporting_proxy_);
-  global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");
+  global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context",
+                                                               NullURL());
   modulator_ = new ModuleScriptLoaderTestModulator(
       global_scope_->ScriptController()->GetScriptState(),
       GetDocument().GetSecurityOrigin(), fetcher);

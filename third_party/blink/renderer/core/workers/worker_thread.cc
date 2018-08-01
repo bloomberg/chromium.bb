@@ -420,6 +420,8 @@ void WorkerThread::InitializeOnWorkerThread(
     }
     GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
 
+    const KURL url_for_debugger = global_scope_creation_params->script_url;
+
     console_message_storage_ = new ConsoleMessageStorage();
     global_scope_ =
         CreateWorkerGlobalScope(std::move(global_scope_creation_params));
@@ -436,7 +438,7 @@ void WorkerThread::InitializeOnWorkerThread(
     // TODO(nhiroki): Handle a case where the script controller fails to
     // initialize the context.
     if (GlobalScope()->ScriptController()->InitializeContextIfNeeded(
-            String())) {
+            String(), url_for_debugger)) {
       worker_reporting_proxy_.DidInitializeWorkerContext();
       v8::HandleScope handle_scope(GetIsolate());
       Platform::Current()->WorkerContextCreated(

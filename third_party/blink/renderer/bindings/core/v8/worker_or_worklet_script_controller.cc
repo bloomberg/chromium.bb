@@ -129,8 +129,7 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
   if (!IsContextInitialized())
     return;
 
-  if (global_scope_->IsWorkerGlobalScope() ||
-      global_scope_->IsThreadedWorkletGlobalScope()) {
+  if (!global_scope_->IsMainThreadWorkletGlobalScope()) {
     ScriptState::Scope scope(script_state_);
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(isolate_);
     debugger->ContextWillBeDestroyed(global_scope_->GetThread(),
@@ -142,7 +141,8 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
 }
 
 bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
-    const String& human_readable_name) {
+    const String& human_readable_name,
+    const KURL& url_for_debugger) {
   v8::HandleScope handle_scope(isolate_);
 
   if (IsContextInitialized())
@@ -230,19 +230,19 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
   // So we explicitly call constructorForType for the global object.
   V8PerContextData::From(context)->ConstructorForType(wrapper_type_info);
 
-  // Name new context for debugging. For main thread worklet global scopes
-  // this is done once the context is initialized.
-  if (global_scope_->IsWorkerGlobalScope() ||
-      global_scope_->IsThreadedWorkletGlobalScope()) {
+  if (global_scope_->IsMainThreadWorkletGlobalScope()) {
+    // Set the human readable name for the world if the call passes an actual
+    // |human_readable name|.
+    if (!human_readable_name.IsEmpty()) {
+      world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
+                                               human_readable_name);
+    }
+  } else {
+    // Name new context for debugging. For main thread worklet global scopes
+    // this is done once the context is initialized.
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(isolate_);
-    debugger->ContextCreated(global_scope_->GetThread(), context);
-  }
-
-  // Set the human readable name for the world if the call passes an actual
-  // |human_readable name|.
-  if (!human_readable_name.IsEmpty()) {
-    world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
-                                             human_readable_name);
+    debugger->ContextCreated(global_scope_->GetThread(), url_for_debugger,
+                             context);
   }
 
   wrapper_type_info->InstallConditionalFeatures(
@@ -262,11 +262,11 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
 ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     const ScriptSourceCode& source_code,
     V8CacheOptions v8_cache_options) {
+  DCHECK(IsContextInitialized());
+
   TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
                InspectorEvaluateScriptEvent::Data(nullptr, source_code.Url(),
                                                   source_code.StartPosition()));
-  if (!InitializeContextIfNeeded(String()))
-    return ScriptValue();
 
   ScriptState::Scope scope(script_state_);
 

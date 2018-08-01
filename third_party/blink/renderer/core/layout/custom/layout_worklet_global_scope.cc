@@ -31,7 +31,8 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
                                    reporting_proxy, pending_layout_registry);
   String context_name("LayoutWorklet #");
   context_name.append(String::Number(global_scope_number));
-  global_scope->ScriptController()->InitializeContextIfNeeded(context_name);
+  global_scope->ScriptController()->InitializeContextIfNeeded(context_name,
+                                                              NullURL());
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
       global_scope->GetFrame(), global_scope->DocumentSecurityOrigin());
