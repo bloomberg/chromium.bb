@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
@@ -14,13 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.cards.ChildNode;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
-import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -37,43 +30,7 @@ class ContentCoordinator {
     private ContextualSuggestionsModel mModel;
     private WindowAndroid mWindowAndroid;
     private ContextMenuManager mContextMenuManager;
-    private ModelChangeProcessor mModelChangeProcessor;
-
-    /**
-     * This class acts as an adapter between RecyclerView contents represented by a
-     * {@link TreeNode} and the new {@link RecyclerViewAdapter.Delegate} interface.
-     * TODO(bauerb): Merge {@link TreeNode} into {@link RecyclerViewAdapter.Delegate}.
-     */
-    private static class ModelChangeProcessor extends ForwardingListObservable<PartialBindCallback>
-            implements RecyclerViewAdapter.Delegate<NewTabPageViewHolder, PartialBindCallback> {
-        private final TreeNode mTreeNode;
-
-        private ModelChangeProcessor(ChildNode treeNode) {
-            mTreeNode = treeNode;
-            treeNode.addObserver(this);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mTreeNode.getItemCount();
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return mTreeNode.getItemViewType(position);
-        }
-
-        @Override
-        public void onBindViewHolder(NewTabPageViewHolder viewHolder, int position,
-                @Nullable PartialBindCallback payload) {
-            if (payload == null) {
-                mTreeNode.onBindViewHolder(viewHolder, position);
-                return;
-            }
-
-            payload.onResult(viewHolder);
-        }
-    }
+    private ContextualSuggestionsAdapter mAdapter;
 
     /**
      * Construct a new {@link ContentCoordinator}.
@@ -116,11 +73,10 @@ class ContentCoordinator {
                 mRecyclerView::setTouchEnabled, closeContextMenuCallback);
         mWindowAndroid.addContextMenuCloseListener(mContextMenuManager);
 
-        final ClusterList clusterList = mModel.getClusterList();
-        mModelChangeProcessor = new ModelChangeProcessor(clusterList);
-        mRecyclerView.setAdapter(
-                new ContextualSuggestionsAdapter(profile, new UiConfig(mRecyclerView), uiDelegate,
-                        mContextMenuManager, mModelChangeProcessor));
+        ClusterList clusterList = mModel.getClusterList();
+        mAdapter = new ContextualSuggestionsAdapter(
+                profile, new UiConfig(mRecyclerView), uiDelegate, mContextMenuManager, clusterList);
+        mRecyclerView.setAdapter(mAdapter);
 
         // TODO(twellington): Should this be a proper model property, set by the mediator and bound
         // to the RecyclerView?
@@ -143,8 +99,8 @@ class ContentCoordinator {
     void destroy() {
         // The model outlives the content sub-component. Remove the observer so that this object
         // can be garbage collected.
-        if (mModelChangeProcessor != null) {
-            mModel.getClusterList().removeObserver(mModelChangeProcessor);
+        if (mAdapter != null) {
+            mModel.getClusterList().removeObserver(mAdapter);
         }
         if (mWindowAndroid != null) {
             mWindowAndroid.removeContextMenuCloseListener(mContextMenuManager);

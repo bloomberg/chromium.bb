@@ -13,6 +13,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -42,7 +43,7 @@ import java.util.Set;
  * A group of suggestions, with a header, a status card, and a progress indicator. This is
  * responsible for tracking whether its suggestions have been saved offline.
  */
-public class SuggestionsSection extends InnerNode {
+public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialBindCallback> {
     private static final String TAG = "NtpCards";
 
     private final Delegate mDelegate;
@@ -113,7 +114,9 @@ public class SuggestionsSection extends InnerNode {
 
     }
 
-    private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
+    private static class SuggestionsList
+            extends ChildNode<NewTabPageViewHolder, PartialBindCallback>
+            implements Iterable<SnippetArticle>, PartiallyBindable {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
 
         private final SuggestionsSource mSuggestionsSource;

@@ -9,9 +9,13 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.ViewGroup;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A base {@link RecyclerView} adapter that delegates most of its logic. This allows compositing
@@ -32,14 +36,17 @@ public class RecyclerViewAdapter<VH extends ViewHolder, P>
      */
     public interface Delegate<VH, P> extends ListObservable<P> {
         /**
-         * @return The number of items represented by the adapter.
-         * @see RecyclerView.Adapter#getItemCount
+         * Returns the number of items under this subtree. This method may be called
+         * before initialization.
+         *
+         * @return The number of items under this subtree.
+         * @see RecyclerView.Adapter#getItemCount()
          */
         int getItemCount();
 
         /**
-         * @param position The adapter position for which to return the view type.
-         * @return The view type for the item at the given {@code position} in the adapter.
+         * @param position The position to query
+         * @return The view type of the item at {@code position} under this subtree.
          * @see RecyclerView.Adapter#getItemViewType
          */
         int getItemViewType(int position);
@@ -54,6 +61,40 @@ public class RecyclerViewAdapter<VH extends ViewHolder, P>
          * @see RecyclerView.Adapter#onBindViewHolder
          */
         void onBindViewHolder(VH viewHolder, int position, @Nullable P payload);
+
+        /**
+         * @param position The position of an item to be dismissed.
+         * @return The set of item positions that should be dismissed simultaneously when dismissing
+         *         the item at the given {@code position} (including the position itself), or an
+         *         empty set if the item can't be dismissed.
+         * @see NewTabPageAdapter#getItemDismissalGroup
+         */
+        default Set<Integer> getItemDismissalGroup(int position) {
+            return Collections.emptySet();
+        }
+
+        /**
+         * Dismiss the item at the given {@code position}.
+         * @param position The position of the item to be dismissed.
+         * @param itemRemovedCallback Should be called with the title of the dismissed item, to
+         * announce it for accessibility purposes.
+         * @see NewTabPageAdapter#dismissItem
+         */
+        default void dismissItem(int position, Callback<String> itemRemovedCallback) {
+            assert false;
+        }
+
+        /**
+         * Describe the item at the given {@code position}. As the description is used in tests for
+         * dumping state and equality checks, different items should have distinct descriptions,
+         * but for items that are unique or don't have interesting state it can be sufficient to
+         * return e.g. a string that describes the type of the item.
+         * @param position The position of the item to be described.
+         * @return A string description of the item.
+         */
+        default String describeItemForTesting(int position) {
+            return "Unknown item at position " + position;
+        }
     }
 
     /**

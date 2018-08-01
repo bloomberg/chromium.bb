@@ -10,7 +10,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,9 +21,13 @@ import java.util.Set;
 
 /**
  * An inner node in the tree: the root of a subtree, with a list of child nodes.
+ *
+ * @param <VH> The view holder type.
+ * @param <P> The payload type for partial updates, or Void if the node doesn't support partial
+ *         updates.
  */
-public class InnerNode extends ChildNode implements ListObserver<PartialBindCallback> {
-    private final List<ChildNode> mChildren = new ArrayList<>();
+public class InnerNode<VH, P> extends ChildNode<VH, P> implements ListObserver<P> {
+    private final List<RecyclerViewAdapter.Delegate<VH, P>> mChildren = new ArrayList<>();
 
     private int getChildIndexForPosition(int position) {
         checkIndex(position);
@@ -57,7 +61,7 @@ public class InnerNode extends ChildNode implements ListObserver<PartialBindCall
     @Override
     protected int getItemCountForDebugging() {
         int numItems = 0;
-        for (TreeNode child : mChildren) {
+        for (RecyclerViewAdapter.Delegate<VH, P> child : mChildren) {
             numItems += child.getItemCount();
         }
         return numItems;
@@ -72,10 +76,10 @@ public class InnerNode extends ChildNode implements ListObserver<PartialBindCall
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
+    public void onBindViewHolder(VH holder, int position, P callback) {
         int index = getChildIndexForPosition(position);
         mChildren.get(index).onBindViewHolder(
-                holder, position - getStartingOffsetForChildIndex(index));
+                holder, position - getStartingOffsetForChildIndex(index), callback);
     }
 
     @Override
@@ -103,7 +107,7 @@ public class InnerNode extends ChildNode implements ListObserver<PartialBindCall
 
     @Override
     public void onItemRangeChanged(
-            ListObservable source, int index, int count, @Nullable PartialBindCallback payload) {
+            ListObservable<P> source, int index, int count, @Nullable P payload) {
         notifyItemRangeChanged(getStartingOffsetForChild(source) + index, count, payload);
     }
 
@@ -120,17 +124,18 @@ public class InnerNode extends ChildNode implements ListObserver<PartialBindCall
     /**
      * Helper method that adds all the children and notifies about the inserted items.
      */
-    protected void addChildren(ChildNode... children) {
+    @SafeVarargs
+    protected final void addChildren(RecyclerViewAdapter.Delegate<VH, P>... children) {
         addChildren(Arrays.asList(children));
     }
 
     /**
      * Helper method that adds all the children and notifies about the inserted items.
      */
-    protected void addChildren(Iterable<ChildNode> children) {
+    protected void addChildren(Iterable<RecyclerViewAdapter.Delegate<VH, P>> children) {
         int initialCount = getItemCount();
         int addedCount = 0;
-        for (ChildNode child : children) {
+        for (RecyclerViewAdapter.Delegate<VH, P> child : children) {
             mChildren.add(child);
             child.addObserver(this);
             addedCount += child.getItemCount();
@@ -144,7 +149,7 @@ public class InnerNode extends ChildNode implements ListObserver<PartialBindCall
      *
      * @param child The child node to be removed.
      */
-    protected void removeChild(ChildNode child) {
+    protected void removeChild(RecyclerViewAdapter.Delegate<VH, P> child) {
         int removedIndex = mChildren.indexOf(child);
         if (removedIndex == -1) throw new IndexOutOfBoundsException();
 
@@ -162,7 +167,7 @@ public class InnerNode extends ChildNode implements ListObserver<PartialBindCall
     protected void removeChildren() {
         int itemCount = getItemCount();
 
-        for (ChildNode child : mChildren) {
+        for (RecyclerViewAdapter.Delegate<VH, P> child : mChildren) {
             child.removeObserver(this);
         }
         mChildren.clear();
@@ -170,7 +175,7 @@ public class InnerNode extends ChildNode implements ListObserver<PartialBindCall
     }
 
     @VisibleForTesting
-    protected final List<ChildNode> getChildren() {
+    protected final List<RecyclerViewAdapter.Delegate<VH, P>> getChildren() {
         return mChildren;
     }
 

@@ -28,9 +28,11 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,18 +42,20 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 public class InnerNodeTest {
     private static final int[] ITEM_COUNTS = {1, 2, 3, 0, 3, 2, 1};
-    private final List<ChildNode> mChildren = new ArrayList<>();
+    private final List<ChildNode<NewTabPageViewHolder, PartialBindCallback>> mChildren =
+            new ArrayList<>();
     @Mock
     private ListObserver<PartialBindCallback> mObserver;
-    private InnerNode mInnerNode;
+    private InnerNode<NewTabPageViewHolder, PartialBindCallback> mInnerNode;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mInnerNode = spy(new InnerNode());
+        mInnerNode = spy(new InnerNode<>());
 
         for (int childItemCount : ITEM_COUNTS) {
-            ChildNode child = makeDummyNode(childItemCount);
+            ChildNode<NewTabPageViewHolder, PartialBindCallback> child =
+                    makeDummyNode(childItemCount);
             mChildren.add(child);
             mInnerNode.addChildren(child);
         }
@@ -80,29 +84,29 @@ public class InnerNodeTest {
     @Test
     public void testBindViewHolder() {
         NewTabPageViewHolder holder = mock(NewTabPageViewHolder.class);
-        mInnerNode.onBindViewHolder(holder, 0);
-        mInnerNode.onBindViewHolder(holder, 5);
-        mInnerNode.onBindViewHolder(holder, 6);
-        mInnerNode.onBindViewHolder(holder, 11);
+        mInnerNode.onBindViewHolder(holder, 0, null);
+        mInnerNode.onBindViewHolder(holder, 5, null);
+        mInnerNode.onBindViewHolder(holder, 6, null);
+        mInnerNode.onBindViewHolder(holder, 11, null);
 
-        verify(mChildren.get(0)).onBindViewHolder(holder, 0);
-        verify(mChildren.get(2)).onBindViewHolder(holder, 2);
-        verify(mChildren.get(4)).onBindViewHolder(holder, 0);
-        verify(mChildren.get(6)).onBindViewHolder(holder, 0);
+        verify(mChildren.get(0)).onBindViewHolder(holder, 0, null);
+        verify(mChildren.get(2)).onBindViewHolder(holder, 2, null);
+        verify(mChildren.get(4)).onBindViewHolder(holder, 0, null);
+        verify(mChildren.get(6)).onBindViewHolder(holder, 0, null);
     }
 
     @Test
     public void testAddChild() {
         final int itemCountBefore = mInnerNode.getItemCount();
 
-        ChildNode child = makeDummyNode(23);
+        ChildNode<NewTabPageViewHolder, PartialBindCallback> child = makeDummyNode(23);
         mInnerNode.addChildren(child);
 
         // The child should have been initialized and the parent hierarchy notified about it.
         verify(child).addObserver(eq(mInnerNode));
         verify(mObserver).onItemRangeInserted(mInnerNode, itemCountBefore, 23);
 
-        ChildNode child2 = makeDummyNode(0);
+        ChildNode<NewTabPageViewHolder, PartialBindCallback> child2 = makeDummyNode(0);
         mInnerNode.addChildren(child2);
 
         // The empty child should have been initialized, but there should be no change
@@ -113,7 +117,7 @@ public class InnerNodeTest {
 
     @Test
     public void testRemoveChild() {
-        ChildNode child = mChildren.get(4);
+        ChildNode<NewTabPageViewHolder, PartialBindCallback> child = mChildren.get(4);
         mInnerNode.removeChild(child);
 
         // The parent should have been notified about the removed items.
@@ -122,7 +126,7 @@ public class InnerNodeTest {
 
         Mockito.<ListObserver>reset(
                 mObserver); // Prepare for the #verifyNoMoreInteractions() call below.
-        ChildNode child2 = mChildren.get(3);
+        ChildNode<NewTabPageViewHolder, PartialBindCallback> child2 = mChildren.get(3);
         mInnerNode.removeChild(child2);
         verify(child2).removeObserver(eq(mInnerNode));
 
@@ -136,7 +140,7 @@ public class InnerNodeTest {
 
         // The parent should have been notified about the removed items.
         verify(mObserver).onItemRangeRemoved(mInnerNode, 0, 12);
-        for (ChildNode child : mChildren) {
+        for (ChildNode<NewTabPageViewHolder, PartialBindCallback> child : mChildren) {
             verify(child).removeObserver(eq(mInnerNode));
         }
     }
@@ -165,9 +169,10 @@ public class InnerNodeTest {
     public void testChangeNotificationsTiming() {
         // The MockModeParent will enforce a given number of items in the child when notified.
         MockListObserver observer = spy(new MockListObserver());
-        InnerNode rootNode = new InnerNode();
+        InnerNode<NewTabPageViewHolder, PartialBindCallback> rootNode = new InnerNode<>();
 
-        ChildNode[] children = {makeDummyNode(3), makeDummyNode(5)};
+        List<RecyclerViewAdapter.Delegate<NewTabPageViewHolder, PartialBindCallback>> children =
+                Arrays.asList(makeDummyNode(3), makeDummyNode(5));
         rootNode.addChildren(children);
         rootNode.addObserver(observer);
 
@@ -183,7 +188,7 @@ public class InnerNodeTest {
         verify(observer).onItemRangeInserted(eq(rootNode), eq(24), eq(4));
 
         observer.expectItemCount(23);
-        rootNode.removeChild(children[1]);
+        rootNode.removeChild(children.get(1));
         verify(observer).onItemRangeRemoved(eq(rootNode), eq(3), eq(5));
 
         observer.expectItemCount(0);
@@ -226,8 +231,10 @@ public class InnerNodeTest {
         }
     }
 
-    private static ChildNode makeDummyNode(int itemCount) {
-        ChildNode node = mock(ChildNode.class);
+    @SuppressWarnings("unchecked")
+    private static ChildNode<NewTabPageViewHolder, PartialBindCallback> makeDummyNode(
+            int itemCount) {
+        ChildNode<NewTabPageViewHolder, PartialBindCallback> node = mock(ChildNode.class);
         when(node.getItemCount()).thenReturn(itemCount);
         return node;
     }
