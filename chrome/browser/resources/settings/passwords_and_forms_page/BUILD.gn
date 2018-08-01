@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
     ":password_manager_proxy",
     ":passwords_and_forms_page",
     ":passwords_section",
+    ":payments_section",
     ":show_password_behavior",
   ]
 }
@@ -22,6 +23,7 @@ js_library("passwords_and_forms_page") {
   deps = [
     ":autofill_section",
     ":passwords_section",
+    ":payments_section",
     "..:route",
     "../prefs:prefs_behavior",
     "../settings_page:settings_animated_pages",
@@ -37,10 +39,20 @@ js_library("passwords_and_forms_page") {
 js_library("autofill_section") {
   deps = [
     ":address_edit_dialog",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
+  ]
+  externs_list = [ "$externs_path/autofill_private.js" ]
+}
+
+js_library("payments_section") {
+  deps = [
     ":credit_card_edit_dialog",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/autofill_private.js" ]

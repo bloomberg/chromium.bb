@@ -25,6 +25,7 @@
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../passwords_and_forms_page/autofill_section.html">
 <link rel="import" href="../passwords_and_forms_page/passwords_section.html">
+<link rel="import" href="../passwords_and_forms_page/payments_section.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <if expr="chromeos">
@@ -290,7 +291,7 @@
           <cr-link-row id="paymentManagerButton"
                start-icon="settings20:credit-card"
                label="$i18n{creditCards}" icon-class="subpage-arrow"
-               on-click="onAutofillTap_"></cr-link-row>
+               on-click="onPaymentsTap_"></cr-link-row>
           <cr-link-row id="addressesManagerButton"
                start-icon="settings20:location-on"
                label="$i18n{addresses}" icon-class="subpage-arrow"
@@ -387,6 +388,14 @@
               page-title="$i18n{autofill}">
             <settings-autofill-section id="autofillSection" prefs="{{prefs}}">
             </settings-autofill-section>
+          </settings-subpage>
+        </template>
+        <template is="dom-if" route-path="/payments">
+          <settings-subpage
+              associated-control="[[$$('#paymentManagerButton')]]"
+              page-title="$i18n{creditCards}">
+            <settings-payments-section id="paymentsSection" prefs="{{prefs}}">
+            </settings-payments-section>
           </settings-subpage>
         </template>
       </template>

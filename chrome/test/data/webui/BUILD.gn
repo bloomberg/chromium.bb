@@ -90,7 +90,6 @@ js2gtest("browser_tests_js_webui") {
     "settings/help_page_browsertest.js",
     "settings/passwords_and_autofill_fake_data.js",
     "settings/passwords_and_forms_browsertest.js",
-    "settings/settings_autofill_section_browsertest.js",
     "settings/settings_idle_load_browsertest.js",
     "settings/settings_page_browsertest.js",
     "settings/settings_passwords_section_browsertest.js",

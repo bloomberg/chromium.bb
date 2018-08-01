@@ -147,7 +147,10 @@ Polymer({
               settings.routes.MANAGE_PASSWORDS.path, '#passwordManagerButton');
         }
         if (settings.routes.AUTOFILL) {
-          map.set(settings.routes.AUTOFILL.path, '#paymentManagerButton');
+          map.set(settings.routes.AUTOFILL.path, '#addressesManagerButton');
+        }
+        if (settings.routes.PAYMENTS) {
+          map.set(settings.routes.PAYMENTS.path, '#paymentManagerButton');
         }
         // <if expr="not chromeos">
         if (settings.routes.MANAGE_PROFILE) {
@@ -339,12 +342,21 @@ Polymer({
   },
 
   /**
-   * Shows the manage autofill sub page.
+   * Shows the manage autofill addresses sub page.
    * @param {!Event} event
    * @private
    */
   onAutofillTap_: function(event) {
     settings.navigateTo(settings.routes.AUTOFILL);
+  },
+
+  /**
+   * Shows the manage payment information sub page.
+   * @param {!Event} event
+   * @private
+   */
+  onPaymentsTap_: function(event) {
+    settings.navigateTo(settings.routes.PAYMENTS);
   },
 
   /** @private */
