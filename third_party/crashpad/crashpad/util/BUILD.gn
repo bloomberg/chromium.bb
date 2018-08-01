@@ -458,6 +458,10 @@ static_library("util") {
       asmflags = [ "/safeseh" ]
     }
   }
+
+  if (crashpad_is_fuchsia) {
+    public_deps += [ "../third_party/fuchsia:zx" ]
+  }
 }
 
 if (use_boringssl_for_http_transport_socket) {
