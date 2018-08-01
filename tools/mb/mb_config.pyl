@@ -605,7 +605,7 @@
       # on the continuous builder.
       'linux_chromium_msan_rel_ng': 'msan_release_bot',
 
-      'linux_chromium_rel_ng': 'gpu_tests_release_trybot_no_symbols',
+      'linux_chromium_rel_ng': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
       'linux_layout_tests_layout_ng': 'release_trybot',
@@ -1326,6 +1326,10 @@
 
     'gpu_tests_release_trybot_no_symbols': [
       'gpu_tests', 'release_trybot', 'no_symbols',
+    ],
+
+    'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange': [
+      'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
     ],
 
     'gpu_tests_release_trybot_cm': [
@@ -2056,6 +2060,12 @@
 
     'no_lld': {
       'gn_args': 'use_lld=false',
+    },
+
+    # TODO(crbug.com/869348): Remove this if we set this by default or don't use
+    # this feature.
+    'use_dummy_lastchange': {
+      'gn_args': 'use_dummy_lastchange=true',
     },
 
     'use_vaapi': {
