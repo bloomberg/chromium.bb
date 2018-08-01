@@ -903,6 +903,11 @@ def main():
       args.force_local_build):
     AddSvnToPathOnWin()
 
+  if use_head_revision:
+    # TODO(hans): Trunk version was updated; remove after the next roll.
+    global VERSION
+    VERSION = '8.0.0'
+
   if args.verify_version and args.verify_version != VERSION:
     print 'VERSION is %s but --verify-version argument was %s, exiting.' % (
         VERSION, args.verify_version)
