@@ -120,8 +120,13 @@ void WebDialogUI::RenderFrameCreated(RenderFrameHost* render_frame_host) {
   HandleRenderFrameCreated(render_frame_host);
 }
 
+// Note: chrome.send() must always be enabled for dialogs, since dialogs rely on
+// chrome.send() to notify their handlers that the dialog should be closed. See
+// the "dialogClose" message handler above in
+// WebDialogUIBase::HandleRenderFrameCreated().
 MojoWebDialogUI::MojoWebDialogUI(content::WebUI* web_ui)
-    : WebDialogUIBase(web_ui), MojoWebUIController(web_ui) {}
+    : WebDialogUIBase(web_ui),
+      MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {}
 
 MojoWebDialogUI::~MojoWebDialogUI() = default;
 

@@ -33,7 +33,7 @@ class TestWebUI : public WebUI {
   const base::string16& GetOverriddenTitle() const override;
   void OverrideTitle(const base::string16& title) override {}
   int GetBindings() const override;
-  void SetBindings(int bindings) override {}
+  void SetBindings(int bindings) override;
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(base::StringPiece message,
                                const MessageCallback& callback) override {}
@@ -93,6 +93,7 @@ class TestWebUI : public WebUI {
  private:
   std::vector<std::unique_ptr<CallData>> call_data_;
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;
+  int bindings_ = 0;
   base::string16 temp_string_;
   WebContents* web_contents_;
   std::unique_ptr<WebUIController> controller_;
