@@ -422,19 +422,17 @@ void HeapCompact::FinishedArenaCompaction(NormalPageArena* arena,
 }
 
 void HeapCompact::Relocate(Address from, Address to) {
-  DCHECK(fixups_);
-  fixups_->Relocate(from, to);
+  Fixups().Relocate(from, to);
 }
 
 void HeapCompact::StartThreadCompaction() {
   if (!do_compact_)
     return;
 
-  DCHECK(fixups_);
   // The mapping between the slots and the backing stores are created
   for (auto** slot : traced_slots_) {
     if (*slot)
-      fixups_->Add(slot);
+      Fixups().Add(slot);
   }
   traced_slots_.clear();
 }
