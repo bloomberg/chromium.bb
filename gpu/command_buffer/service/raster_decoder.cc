@@ -3000,6 +3000,13 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   DCHECK(!raster_canvas_);
   raster_decoder_context_state_->need_context_state_reset = true;
 
+  if (texture->target() != GL_TEXTURE_2D &&
+      texture->target() != GL_TEXTURE_RECTANGLE_ARB) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "invalid texture target");
+    return;
+  }
+
   // This function should look identical to
   // ResourceProvider::ScopedSkSurfaceProvider.
   GrGLTextureInfo texture_info;
@@ -3020,13 +3027,6 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   }
   texture_info.fID = texture->service_id();
   texture_info.fTarget = texture->target();
-
-  if (texture->target() != GL_TEXTURE_2D &&
-      texture->target() != GL_TEXTURE_RECTANGLE_ARB) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "invalid texture target");
-    return;
-  }
 
   // GetInternalFormat may return a base internal format but Skia requires a
   // sized internal format. So this may be adjusted below.
