@@ -46,6 +46,8 @@ struct ArcFeatures {
   // This map contains all ARC build properties.
   BuildPropsMapping build_props;
 
+  std::string play_store_version;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcFeatures);
 };
@@ -71,7 +73,8 @@ struct ArcFeatures {
 //   "properties": {
 //     "ro.product.cpu.abilist": "x86_64,x86,armeabi-v7a,armeabi",
 //     "ro.build.version.sdk": "25"
-//   }
+//   },
+//   "play_store_version": "81010860"
 // }
 class ArcFeaturesParser {
  public:

@@ -31,7 +31,8 @@ constexpr const char kValidJson[] = R"json({"features": [
     "properties": {
       "ro.product.cpu.abilist": "x86_64,x86,armeabi-v7a,armeabi",
       "ro.build.version.sdk": "25"
-    }})json";
+    },
+    "play_store_version": "81010860"})json";
 
 constexpr const char kValidJsonWithUnavailableFeature[] =
     R"json({"features": [
@@ -45,7 +46,8 @@ constexpr const char kValidJsonWithUnavailableFeature[] =
       }
     ],
     "unavailable_features": ["android.software.location"],
-    "properties": {}})json";
+    "properties": {},
+    "play_store_version": "81010860"})json";
 
 constexpr const char kValidJsonFeatureEmptyName[] =
     R"json({"features": [
@@ -63,9 +65,10 @@ constexpr const char kValidJsonFeatureEmptyName[] =
       }
     ],
     "unavailable_features": ["android.software.home_screen", ""],
-    "properties": {}})json";
+    "properties": {},
+    "play_store_version": "81010860"})json";
 
-constexpr const char kValidJsonWithMissingFields[] =
+constexpr const char kInvalidJsonWithMissingFields[] =
     R"json({"invalid_root": [
       {
         "name": "android.hardware.location"
@@ -86,7 +89,7 @@ TEST_F(ArcFeaturesParserTest, ParseEmptyJson) {
 TEST_F(ArcFeaturesParserTest, ParseInvalidJson) {
   base::Optional<ArcFeatures> arc_features =
       ArcFeaturesParser::ParseFeaturesJsonForTesting(
-          kValidJsonWithMissingFields);
+          kInvalidJsonWithMissingFields);
   EXPECT_EQ(arc_features, base::nullopt);
 }
 
@@ -96,9 +99,11 @@ TEST_F(ArcFeaturesParserTest, ParseValidJson) {
   auto feature_map = arc_features->feature_map;
   auto unavailable_features = arc_features->unavailable_features;
   auto build_props = arc_features->build_props;
+  auto play_store_version = arc_features->play_store_version;
   EXPECT_EQ(feature_map.size(), 2u);
   EXPECT_EQ(unavailable_features.size(), 0u);
   EXPECT_EQ(build_props.size(), 2u);
+  EXPECT_EQ(play_store_version, "81010860");
 }
 
 TEST_F(ArcFeaturesParserTest, ParseValidJsonWithUnavailableFeature) {
@@ -108,9 +113,11 @@ TEST_F(ArcFeaturesParserTest, ParseValidJsonWithUnavailableFeature) {
   auto feature_map = arc_features->feature_map;
   auto unavailable_features = arc_features->unavailable_features;
   auto build_props = arc_features->build_props;
+  auto play_store_version = arc_features->play_store_version;
   EXPECT_EQ(feature_map.size(), 2u);
   EXPECT_EQ(unavailable_features.size(), 1u);
   EXPECT_EQ(build_props.size(), 0u);
+  EXPECT_EQ(play_store_version, "81010860");
 }
 
 TEST_F(ArcFeaturesParserTest, ParseValidJsonWithEmptyFeatureName) {

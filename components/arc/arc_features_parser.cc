@@ -95,6 +95,15 @@ base::Optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
     arc_features.build_props.emplace(item.first, item.second.GetString());
   }
 
+  // Parse the Play Store version
+  const base::Value* play_version = json_value->FindKeyOfType(
+      "play_store_version", base::Value::Type::STRING);
+  if (!play_version) {
+    LOG(ERROR) << "No Play Store version in JSON.";
+    return base::nullopt;
+  }
+  arc_features.play_store_version = play_version->GetString();
+
   return arc_features;
 }
 
