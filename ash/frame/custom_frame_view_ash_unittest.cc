@@ -32,7 +32,6 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
-#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
@@ -138,32 +137,6 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
   // header/content separator line overlays the window controls.
   EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
             delegate->custom_frame_view()->GetHeaderView()->height());
-}
-
-// Regression test for https://crbug.com/839955
-TEST_F(CustomFrameViewAshTest, ActiveStateOfButtonMatchesWidget) {
-  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
-  FrameCaptionButtonContainerView::TestApi test_api(
-      delegate->custom_frame_view()
-          ->GetHeaderView()
-          ->caption_button_container());
-
-  widget->Show();
-  EXPECT_TRUE(widget->IsActive());
-  // The paint state doesn't change till the next paint.
-  ui::DrawWaiterForTest::WaitForCompositingEnded(
-      widget->GetLayer()->GetCompositor());
-  EXPECT_TRUE(test_api.size_button()->paint_as_active());
-
-  // Activate a different widget so the original one loses activation.
-  std::unique_ptr<views::Widget> widget2 =
-      CreateTestWidget(new CustomFrameTestWidgetDelegate);
-  widget2->Show();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(widget->IsActive());
-  EXPECT_FALSE(test_api.size_button()->paint_as_active());
 }
 
 // Verify that CustomFrameViewAsh returns the correct minimum and maximum frame
