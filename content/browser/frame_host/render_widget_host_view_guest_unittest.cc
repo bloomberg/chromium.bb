@@ -198,6 +198,12 @@ class RenderWidgetHostViewGuestSurfaceTest
 };
 
 TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
+  // Early out because RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder
+  // is no-op on mash and the test expects it call into FirstSurfaceActivation
+  // of BrowserPluginGuest.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;

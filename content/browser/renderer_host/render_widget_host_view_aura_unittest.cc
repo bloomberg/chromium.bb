@@ -498,6 +498,11 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   static void InstallDelegatedFrameHostClient(
       RenderWidgetHostViewAura* view,
       std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client) {
+    // Follow RWHVAura code that does not create DelegateFrameHost when there is
+    // no valid frame sink id.
+    if (!view->frame_sink_id_.is_valid())
+      return;
+
     view->delegated_frame_host_client_ = std::move(delegated_frame_host_client);
     const bool enable_viz = features::IsVizDisplayCompositorEnabled();
     view->delegated_frame_host_ = nullptr;
@@ -3441,6 +3446,10 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 // then the fallback is dropped.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DropFallbackWhenHidden) {
+  // Early out because DelegatedFrameHost is not used in mash.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3465,6 +3474,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // This test verifies that the primary SurfaceId is populated on resize and
 // the fallback SurfaceId is populated in OnFirstSurfaceActivation.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
+  // Early out because DelegatedFrameHost is not used in mash.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3565,6 +3578,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // RenderWidgetHostViewAuraTest.DiscardDelegatedFrame.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DiscardDelegatedFrames) {
+  // Early out because DelegatedFrameHost is not used in mash.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   view_->InitAsChild(nullptr);
 
   size_t max_renderer_frames =
@@ -3701,6 +3718,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
+  // Early out because DelegatedFrameHost is not used in mash.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   view_->InitAsChild(nullptr);
 
   size_t max_renderer_frames =
@@ -3771,6 +3792,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 // Test that changing the memory pressure should delete saved frames. This test
 // only applies to ChromeOS.
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
+  // Early out because DelegatedFrameHost is not used in mash.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   view_->InitAsChild(nullptr);
 
   // The test logic below relies on having max_renderer_frames > 2.  By default,
@@ -5958,6 +5983,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // visible we show blank.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DropFallbackIfResizedWhileHidden) {
+  // Early out because DelegatedFrameHost is not used in mash.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -5977,6 +6006,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // fallback SurfaceId has to be preserved.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DontDropFallbackIfNotResizedWhileHidden) {
+  // Early out because DelegatedFrameHost is not used in mash.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -5995,6 +6028,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // background color from the previous view to the new view.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        TakeFallbackContent) {
+  // Early out because DelegatedFrameHost is not used in mash.
+  if (!features::IsAshInBrowserProcess())
+    return;
+
   // Initialize the first view.
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
