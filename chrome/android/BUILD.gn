@@ -1318,6 +1318,7 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "version_name",
                              "is_base_module",
                              "module_name",
+                             "proguard_jar_path",
                              "target_type",
                            ])
 
@@ -1349,6 +1350,10 @@ monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
   version_name = chrome_version_name
   apk_name = "MonochromePublic"
   target_type = "android_apk"
+  if (!is_java_debug) {
+    # TODO(crbug.com/868770): Address proguard version skew.
+    proguard_jar_path = "//third_party/proguard/lib/proguard.6.0.3.jar"
+  }
 }
 
 monochrome_public_apk_or_module_tmpl("monochrome_public_base_module") {
@@ -1620,4 +1625,8 @@ android_app_bundle("chrome_modern_public_bundle") {
 android_app_bundle("monochrome_public_bundle") {
   base_module_target = ":monochrome_public_base_module"
   synchronized_proguard_enabled = !is_java_debug
+  if (!is_java_debug) {
+    # TODO(crbug.com/868770): Address proguard version skew.
+    proguard_jar_path = "//third_party/proguard/lib/proguard.6.0.3.jar"
+  }
 }
