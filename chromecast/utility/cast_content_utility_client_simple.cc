@@ -9,7 +9,7 @@ namespace shell {
 
 // static
 std::unique_ptr<CastContentUtilityClient> CastContentUtilityClient::Create() {
-  return std::unique_ptr<CastContentUtilityClient>();
+  return std::make_unique<CastContentUtilityClient>();
 }
 
 }  // namespace shell
