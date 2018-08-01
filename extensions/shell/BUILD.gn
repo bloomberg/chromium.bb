@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -360,8 +361,8 @@ test("app_shell_unittests") {
 process_version("version_header") {
   template_file = "common/version.h.in"
   sources = [
-    "//build/util/LASTCHANGE",
     "//chrome/VERSION",
+    lastchange_file,
   ]
   output = "$target_gen_dir/common/version.h"
 }

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 
@@ -53,9 +54,9 @@ source_set("channel") {
 process_version("generate_version_info") {
   template_file = "version_info_values.h.version"
   sources = [
-    "//build/util/LASTCHANGE",
     "//chrome/VERSION",
     branding_file_path,
+    lastchange_file,
   ]
   output = "$target_gen_dir/version_info_values.h"
 }

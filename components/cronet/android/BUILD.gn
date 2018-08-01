@@ -6,6 +6,7 @@ import("//base/android/jni_generator/jni_exception_list.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
 import("//testing/test.gni")
@@ -114,8 +115,8 @@ process_version("cronet_api_version_java") {
   _api_level = read_file("api_version.txt", "value")
   template_file = "api/src/org/chromium/net/ApiVersion.template"
   sources = [
-    "//build/util/LASTCHANGE",
     "//chrome/VERSION",
+    lastchange_file,
   ]
   extra_args = [
     "-e",
@@ -144,8 +145,8 @@ process_version("cronet_impl_version_java") {
   _api_level = read_file("api_version.txt", "value")
   template_file = "java/src/org/chromium/net/impl/ImplVersion.template"
   sources = [
-    "//build/util/LASTCHANGE",
     "//chrome/VERSION",
+    lastchange_file,
   ]
   extra_args = [
     "-e",
@@ -1656,8 +1657,8 @@ if (!is_component_build) {
   process_version("cronet_maven_build_embedded_copy") {
     template_file = "maven/test/build_embedded.gradle.template"
     sources = [
-      "//build/util/LASTCHANGE",
       "//chrome/VERSION",
+      lastchange_file,
     ]
     output = "$_maven_test_dir/test_embedded/build.gradle"
   }
@@ -1665,8 +1666,8 @@ if (!is_component_build) {
   process_version("cronet_maven_build_fallback_copy") {
     template_file = "maven/test/build_fallback.gradle.template"
     sources = [
-      "//build/util/LASTCHANGE",
       "//chrome/VERSION",
+      lastchange_file,
     ]
     output = "$_maven_test_dir/test_fallback/build.gradle"
   }
@@ -1713,8 +1714,8 @@ if (!is_component_build) {
     process_version(_pom_target_name) {
       template_file = "maven/$_module_name.pom.template"
       sources = [
-        "//build/util/LASTCHANGE",
         "//chrome/VERSION",
+        lastchange_file,
       ]
       output = "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version.pom"
     }

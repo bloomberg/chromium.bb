@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/util/lastchange.gni")
+
 # Template to run the tweak_info_plist.py script on a plist.
 #
 # Arguments:
@@ -59,7 +61,7 @@ template("tweak_info_plist") {
     inputs = [
       script,
       "//build/util/version.py",
-      "//build/util/LASTCHANGE",
+      lastchange_file,
       "//chrome/VERSION",
     ]
     sources = [
