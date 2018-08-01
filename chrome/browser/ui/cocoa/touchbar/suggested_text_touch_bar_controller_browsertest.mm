@@ -52,8 +52,8 @@
 
 @implementation MockSuggestedTextTouchBarController
 
-- (void)requestSuggestionsForText:(NSString*)text inRange:(NSRange)range {
-  [self setSuggestions:@[ text ]];
+- (void)requestSuggestions {
+  [self setSuggestions:@[ [self text] ]];
   [[self controller] invalidateTouchBar];
 }
 
@@ -64,10 +64,6 @@
 @end
 
 namespace {
-
-NSString* const kSuggestedTextTouchBarId = @"suggested-text";
-NSString* const kText = @"text";
-NSString* const kEmptyText = @"";
 
 class SuggestedTextTouchBarControllerBrowserTest : public InProcessBrowserTest {
  public:
@@ -80,10 +76,8 @@ class SuggestedTextTouchBarControllerBrowserTest : public InProcessBrowserTest {
     web_textfield_controller_.reset(
         [[MockWebTextfieldTouchBarController alloc] init]);
     [web_textfield_controller_ resetNumInvalidations];
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
     touch_bar_controller_.reset([[MockSuggestedTextTouchBarController alloc]
-        initWithWebContents:web_contents
+        initWithWebContents:GetActiveWebContents()
                  controller:web_textfield_controller_]);
   }
 
@@ -98,15 +92,10 @@ class SuggestedTextTouchBarControllerBrowserTest : public InProcessBrowserTest {
         browser(), GURL("data:text/html;charset=utf-8,<input type=\"text\">"));
   }
 
-  MockWebTextfieldTouchBarController* web_textfield_controller() const {
-    return web_textfield_controller_;
+  content::WebContents* GetActiveWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  MockSuggestedTextTouchBarController* touch_bar_controller() const {
-    return touch_bar_controller_;
-  }
-
- private:
   base::scoped_nsobject<MockWebTextfieldTouchBarController>
       web_textfield_controller_;
   base::scoped_nsobject<MockSuggestedTextTouchBarController>
@@ -118,13 +107,15 @@ class SuggestedTextTouchBarControllerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
                        TouchBarTest) {
   if (@available(macOS 10.12.2, *)) {
+    NSString* const kSuggestedTextTouchBarId = @"suggested-text";
+
     // Touch bar shouldn't appear if the focused element is not a textfield.
     UnfocusTextfield();
-    EXPECT_FALSE([touch_bar_controller() makeTouchBar]);
+    EXPECT_FALSE([touch_bar_controller_ makeTouchBar]);
 
     // Touch bar should appear if a textfield is focused.
     FocusTextfield();
-    NSTouchBar* touch_bar = [touch_bar_controller() makeTouchBar];
+    NSTouchBar* touch_bar = [touch_bar_controller_ makeTouchBar];
     EXPECT_TRUE(touch_bar);
     EXPECT_TRUE([[touch_bar customizationIdentifier]
         isEqual:ui::GetTouchBarId(kSuggestedTextTouchBarId)]);
@@ -133,27 +124,28 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
 
 // Tests that a change in text selection is handled properly.
 IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
-                       TextSelectionChangedTest) {
+                       UpdateTextSelectionTest) {
   if (@available(macOS 10.12.2, *)) {
-    const NSRange kRange = NSMakeRange(0, [kText length]);
-    const NSRange kEmptyRange = NSMakeRange(0, 0);
+    NSString* const kText = @"text";
+    NSString* const kEmptyText = @"";
+    const gfx::Range kRange = gfx::Range(0, 4);
+    const gfx::Range kEmptyRange = gfx::Range();
 
     // If not in a textfield,
     //  1. Textfield text should not be saved.
     //  2. Selected range should not be saved.
     //  3. Touch bar should be invalidated.
     UnfocusTextfield();
-    [touch_bar_controller() setText:kEmptyText];
-    [touch_bar_controller() setSelectionRange:kEmptyRange];
-    [web_textfield_controller() resetNumInvalidations];
+    [touch_bar_controller_ setText:kEmptyText];
+    [touch_bar_controller_ setSelectionRange:kEmptyRange];
+    [web_textfield_controller_ resetNumInvalidations];
 
-    [touch_bar_controller()
-        webContentsTextSelectionChanged:base::SysNSStringToUTF16(kText)
-                                  range:kRange];
-    EXPECT_TRUE([kEmptyText isEqualToString:[touch_bar_controller() text]]);
-    EXPECT_EQ(gfx::Range(kEmptyRange),
-              gfx::Range([touch_bar_controller() selectionRange]));
-    EXPECT_EQ(1, [web_textfield_controller() numInvalidations]);
+    [touch_bar_controller_ updateTextSelection:base::SysNSStringToUTF16(kText)
+                                         range:kRange];
+    EXPECT_STREQ(kEmptyText.UTF8String,
+                 [touch_bar_controller_ text].UTF8String);
+    EXPECT_EQ(kEmptyRange, [touch_bar_controller_ selectionRange]);
+    EXPECT_EQ(1, [web_textfield_controller_ numInvalidations]);
 
     // If in a textfield,
     //   1. Textfield text should be saved.
@@ -161,20 +153,39 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
     //   3. Suggestions should be generated based on text selection.
     //   4. Touch bar should be invalidated.
     FocusTextfield();
-    [touch_bar_controller() setText:kEmptyText];
-    [touch_bar_controller() setSelectionRange:kEmptyRange];
-    [web_textfield_controller() resetNumInvalidations];
+    [touch_bar_controller_ setText:kEmptyText];
+    [touch_bar_controller_ setSelectionRange:kEmptyRange];
+    [web_textfield_controller_ resetNumInvalidations];
 
-    [touch_bar_controller()
-        webContentsTextSelectionChanged:base::SysNSStringToUTF16(kText)
-                                  range:kRange];
-    EXPECT_TRUE([kText isEqualToString:[touch_bar_controller() text]]);
-    EXPECT_EQ(gfx::Range(kRange),
-              gfx::Range([touch_bar_controller() selectionRange]));
-    EXPECT_TRUE(
-        [kText isEqualToString:[touch_bar_controller() firstSuggestion]]);
-    EXPECT_EQ(1, [web_textfield_controller() numInvalidations]);
+    [touch_bar_controller_ updateTextSelection:base::SysNSStringToUTF16(kText)
+                                         range:kRange];
+    EXPECT_STREQ(kText.UTF8String, [touch_bar_controller_ text].UTF8String);
+    EXPECT_EQ(kRange, [touch_bar_controller_ selectionRange]);
+    EXPECT_STREQ(kText.UTF8String,
+                 [touch_bar_controller_ firstSuggestion].UTF8String);
+    EXPECT_EQ(1, [web_textfield_controller_ numInvalidations]);
   }
+}
+
+// Tests that a change in WebContents is handled properly.
+IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
+                       SetWebContentsTest) {
+  NSString* const kText = @"text";
+  const gfx::Range kRange = gfx::Range(1, 1);
+
+  // A null-pointer should not break the controller.
+  [touch_bar_controller_ setWebContents:nullptr];
+  EXPECT_FALSE([touch_bar_controller_ webContents]);
+
+  FocusTextfield();
+  [touch_bar_controller_ setText:kText];
+  [touch_bar_controller_ setSelectionRange:kRange];
+
+  // The text selection should change if the WebContents pointer is not null.
+  [touch_bar_controller_ setWebContents:GetActiveWebContents()];
+  EXPECT_EQ(GetActiveWebContents(), [touch_bar_controller_ webContents]);
+  EXPECT_STRNE(kText.UTF8String, [touch_bar_controller_ text].UTF8String);
+  EXPECT_NE(kRange, [touch_bar_controller_ selectionRange]);
 }
 
 }  // namespace
