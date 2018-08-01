@@ -8,6 +8,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -81,9 +82,11 @@ void SuggestionContainerView::InitLayout() {
   SetVerticalScrollBar(new InvisibleScrollBar(/*horizontal=*/false));
 }
 
-void SuggestionContainerView::OnSuggestionsAdded(
-    const std::map<int, AssistantSuggestion*>& suggestions) {
-  for (const std::pair<int, AssistantSuggestion*>& suggestion : suggestions) {
+void SuggestionContainerView::OnResponseChanged(
+    const AssistantResponse& response) {
+  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  for (const std::pair<int, const AssistantSuggestion*>& suggestion :
+       response.GetSuggestions()) {
     // We will use the same identifier by which the Assistant interaction model
     // uniquely identifies a suggestion to uniquely identify its corresponding
     // suggestion chip view.
@@ -120,10 +123,11 @@ void SuggestionContainerView::OnSuggestionsAdded(
 
     contents_view_->AddChildView(suggestion_chip_view);
   }
+
   UpdateContentsBounds();
 }
 
-void SuggestionContainerView::OnSuggestionsCleared() {
+void SuggestionContainerView::OnResponseCleared() {
   // Abort any download requests in progress.
   download_request_weak_factory_.InvalidateWeakPtrs();
 

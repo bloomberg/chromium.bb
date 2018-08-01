@@ -90,6 +90,9 @@ interface AssistantInteractionSubscriber {
 
   // Assistant got an instantaneous speech level update in dB.
   OnSpeechLevelUpdated(float speech_level);
+
+  // Assistant has started speaking.
+  OnTtsStarted();
 };
 
 // Subscribes to assistant's notification event. These events are server

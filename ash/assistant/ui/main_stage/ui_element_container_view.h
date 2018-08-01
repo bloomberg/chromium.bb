@@ -18,6 +18,7 @@ namespace ash {
 class AssistantCardElement;
 class AssistantController;
 class AssistantHeaderView;
+class AssistantResponse;
 class AssistantTextElement;
 class AssistantUiElement;
 
@@ -34,12 +35,13 @@ class UiElementContainerView : public views::View,
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // AssistantInteractionModelObserver:
-  void OnUiElementAdded(const AssistantUiElement* ui_element) override;
-  void OnUiElementsCleared() override;
+  void OnResponseChanged(const AssistantResponse& response) override;
+  void OnResponseCleared() override;
 
  private:
   void InitLayout();
 
+  void OnUiElementAdded(const AssistantUiElement* ui_element);
   void OnCardElementAdded(const AssistantCardElement* card_element);
   void OnCardReady(const base::Optional<base::UnguessableToken>& embed_token);
   void OnTextElementAdded(const AssistantTextElement* text_element);

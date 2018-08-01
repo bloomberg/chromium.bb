@@ -371,6 +371,14 @@ void AssistantManagerServiceImpl::OnRecognitionStateChanged(
           weak_factory_.GetWeakPtr(), state, recognition_result));
 }
 
+void AssistantManagerServiceImpl::OnRespondingStarted(bool is_error_response) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::OnRespondingStartedOnMainThread,
+          weak_factory_.GetWeakPtr()));
+}
+
 void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
     const float speech_level) {
   main_thread_task_runner_->PostTask(
@@ -713,6 +721,10 @@ void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
       });
       break;
   }
+}
+
+void AssistantManagerServiceImpl::OnRespondingStartedOnMainThread() {
+  interaction_subscribers_.ForAllPtrs([](auto* ptr) { ptr->OnTtsStarted(); });
 }
 
 void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(

@@ -11,18 +11,10 @@
 
 #include "base/macros.h"
 
-namespace chromeos {
-namespace assistant {
-namespace mojom {
-class AssistantSuggestion;
-}  // namespace mojom
-}  // namespace assistant
-}  // namespace chromeos
-
 namespace ash {
 
 class AssistantQuery;
-class AssistantUiElement;
+class AssistantResponse;
 enum class InputModality;
 enum class InteractionState;
 enum class MicState;
@@ -31,8 +23,6 @@ enum class MicState;
 // interaction.
 class AssistantInteractionModelObserver {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
-
   // Invoked when the interaction state is changed.
   virtual void OnInteractionStateChanged(InteractionState interaction_state) {}
 
@@ -56,21 +46,11 @@ class AssistantInteractionModelObserver {
   // Invoked when the pending query associated with the interaction is cleared.
   virtual void OnPendingQueryCleared() {}
 
-  // Invoked when a UI element associated with the interaction is added.
-  virtual void OnUiElementAdded(const AssistantUiElement* ui_element) {}
+  // Invoked when the response associated with the interaction is changed.
+  virtual void OnResponseChanged(const AssistantResponse& response) {}
 
-  // Invoked when all UI elements associated with the interaction are cleared.
-  virtual void OnUiElementsCleared() {}
-
-  // Invoked when the specified |suggestions| are added to the associated
-  // interaction. The key for the map is the unique identifier by which the
-  // interaction model identifies each suggestion before the next
-  // |OnSuggestionsCleared| call.
-  virtual void OnSuggestionsAdded(
-      const std::map<int, AssistantSuggestion*>& suggestions) {}
-
-  // Invoked when all suggestions associated with the interaction are cleared.
-  virtual void OnSuggestionsCleared() {}
+  // Invoked when the response associated with the interaction is cleared.
+  virtual void OnResponseCleared() {}
 
   // Invoked when the speech level is changed.
   virtual void OnSpeechLevelChanged(float speech_level_db) {}

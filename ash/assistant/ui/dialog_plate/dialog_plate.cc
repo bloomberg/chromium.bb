@@ -114,12 +114,12 @@ void DialogPlate::InitLayout() {
   input_modality_layout_container->SetPaintToLayer();
   input_modality_layout_container->layer()->SetFillsBoundsOpaquely(false);
   input_modality_layout_container->layer()->SetMasksToBounds(true);
+  AddChildView(input_modality_layout_container);
+
+  layout_manager->SetFlexForView(input_modality_layout_container, 1);
 
   InitKeyboardLayoutContainer(input_modality_layout_container);
   InitVoiceLayoutContainer(input_modality_layout_container);
-
-  layout_manager->SetFlexForView(input_modality_layout_container, 1);
-  AddChildView(input_modality_layout_container);
 
   // Settings.
   views::ImageButton* settings_button = new views::ImageButton(this);

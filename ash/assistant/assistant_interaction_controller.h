@@ -87,6 +87,7 @@ class AssistantInteractionController
   void OnSpeechRecognitionEndOfUtterance() override;
   void OnSpeechRecognitionFinalResult(const std::string& final_result) override;
   void OnSpeechLevelUpdated(float speech_level) override;
+  void OnTtsStarted() override;
 
   // DialogPlateObserver:
   void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;

@@ -8,6 +8,7 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
+#include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/shell.h"
@@ -172,19 +173,24 @@ void AssistantInteractionController::OnInteractionStarted(
 
     // Clear the interaction to wipe the stage.
     assistant_interaction_model_.ClearInteraction(
-        /*retain_committed_query=*/true);
+        /*retain_committed_query=*/true,
+        /*retain_pending_query=*/false);
   }
+
+  // Start caching a new Assistant response for the interaction.
+  assistant_interaction_model_.SetPendingResponse(
+      std::make_unique<AssistantResponse>());
 }
 
 void AssistantInteractionController::OnInteractionFinished(
     AssistantInteractionResolution resolution) {
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
+  assistant_interaction_model_.SetMicState(MicState::kClosed);
 
-  // When a voice query is interrupted we do not receive any follow up speech
-  // recognition events but the mic is closed.
-  if (resolution == AssistantInteractionResolution::kInterruption) {
-    assistant_interaction_model_.SetMicState(MicState::kClosed);
-  }
+  // The interaction has finished, so we finalize the pending response if it
+  // hasn't already been finalized.
+  if (assistant_interaction_model_.pending_response())
+    assistant_interaction_model_.FinalizePendingResponse();
 }
 
 void AssistantInteractionController::OnHtmlResponse(
@@ -194,13 +200,13 @@ void AssistantInteractionController::OnHtmlResponse(
     return;
   }
 
-  assistant_interaction_model_.AddUiElement(
+  assistant_interaction_model_.pending_response()->AddUiElement(
       std::make_unique<AssistantCardElement>(response));
 }
 
 void AssistantInteractionController::OnSuggestionChipPressed(int id) {
   const AssistantSuggestion* suggestion =
-      assistant_interaction_model_.GetSuggestionById(id);
+      assistant_interaction_model_.response()->GetSuggestionById(id);
 
   // If the suggestion contains a non-empty action url, we will handle the
   // suggestion chip pressed event by launching the action url in the browser.
@@ -220,7 +226,8 @@ void AssistantInteractionController::OnSuggestionsResponse(
     return;
   }
 
-  assistant_interaction_model_.AddSuggestions(std::move(response));
+  assistant_interaction_model_.pending_response()->AddSuggestions(
+      std::move(response));
 }
 
 void AssistantInteractionController::OnTextResponse(
@@ -230,7 +237,7 @@ void AssistantInteractionController::OnTextResponse(
     return;
   }
 
-  assistant_interaction_model_.AddUiElement(
+  assistant_interaction_model_.pending_response()->AddUiElement(
       std::make_unique<AssistantTextElement>(response));
 }
 
@@ -261,11 +268,25 @@ void AssistantInteractionController::OnSpeechRecognitionFinalResult(
 
   // Clear the interaction to wipe the stage.
   assistant_interaction_model_.ClearInteraction(
-      /*retain_committed_query=*/true);
+      /*retain_committed_query=*/true,
+      /*retain_pending_response=*/true);
 }
 
 void AssistantInteractionController::OnSpeechLevelUpdated(float speech_level) {
   assistant_interaction_model_.SetSpeechLevel(speech_level);
+}
+
+void AssistantInteractionController::OnTtsStarted() {
+  if (assistant_interaction_model_.interaction_state() !=
+      InteractionState::kActive) {
+    return;
+  }
+
+  // We have an agreement with the server that TTS will always be the last part
+  // of an interaction to be processed. To be timely in updating UI, we use
+  // this as an opportunity to finalize the Assistant response and update the
+  // interaction model.
+  assistant_interaction_model_.FinalizePendingResponse();
 }
 
 void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
@@ -329,6 +350,11 @@ void AssistantInteractionController::StopActiveInteraction() {
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
   assistant_interaction_model_.ClearPendingQuery();
   assistant_->StopActiveInteraction();
+
+  // Because we are stopping an interaction in progress, we discard any pending
+  // response for it that is cached to prevent it from being finalized when the
+  // interaction is finished.
+  assistant_interaction_model_.ClearPendingResponse();
 }
 
 }  // namespace ash

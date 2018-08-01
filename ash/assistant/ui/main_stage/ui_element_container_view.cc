@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_header_view.h"
@@ -63,26 +64,24 @@ void UiElementContainerView::InitLayout() {
   AddChildView(assistant_header_view_.get());
 }
 
-void UiElementContainerView::OnUiElementAdded(
-    const AssistantUiElement* ui_element) {
-  // If we are processing a UI element we need to pend the incoming element
-  // instead of handling it immediately.
-  if (is_processing_ui_element_) {
-    pending_ui_element_list_.push_back(ui_element);
-    return;
-  }
+void UiElementContainerView::OnResponseChanged(
+    const AssistantResponse& response) {
+  OnResponseCleared();
 
-  switch (ui_element->GetType()) {
-    case AssistantUiElementType::kCard:
-      OnCardElementAdded(static_cast<const AssistantCardElement*>(ui_element));
-      break;
-    case AssistantUiElementType::kText:
-      OnTextElementAdded(static_cast<const AssistantTextElement*>(ui_element));
-      break;
+  for (const std::unique_ptr<AssistantUiElement>& ui_element :
+       response.GetUiElements()) {
+    // If we are processing a UI element we need to pend the incoming elements
+    // instead of handling them immediately.
+    if (is_processing_ui_element_) {
+      pending_ui_element_list_.push_back(ui_element.get());
+      continue;
+    }
+
+    OnUiElementAdded(ui_element.get());
   }
 }
 
-void UiElementContainerView::OnUiElementsCleared() {
+void UiElementContainerView::OnResponseCleared() {
   // Prevent any in-flight card rendering requests from returning.
   render_request_weak_factory_.InvalidateWeakPtrs();
 
@@ -96,6 +95,18 @@ void UiElementContainerView::OnUiElementsCleared() {
   // We can clear any pending UI elements as they are no longer relevant.
   pending_ui_element_list_.clear();
   SetProcessingUiElement(false);
+}
+
+void UiElementContainerView::OnUiElementAdded(
+    const AssistantUiElement* ui_element) {
+  switch (ui_element->GetType()) {
+    case AssistantUiElementType::kCard:
+      OnCardElementAdded(static_cast<const AssistantCardElement*>(ui_element));
+      break;
+    case AssistantUiElementType::kText:
+      OnTextElementAdded(static_cast<const AssistantTextElement*>(ui_element));
+      break;
+  }
 }
 
 void UiElementContainerView::OnCardElementAdded(

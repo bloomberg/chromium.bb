@@ -10,6 +10,7 @@
 #include "ash/app_list/views/suggestion_chip_view.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/scroll_view.h"
 
 namespace ash {
@@ -33,9 +34,8 @@ class SuggestionContainerView : public views::ScrollView,
   int GetHeightForWidth(int width) const override;
 
   // AssistantInteractionModelObserver:
-  void OnSuggestionsAdded(
-      const std::map<int, AssistantSuggestion*>& suggestions) override;
-  void OnSuggestionsCleared() override;
+  void OnResponseChanged(const AssistantResponse& response) override;
+  void OnResponseCleared() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
