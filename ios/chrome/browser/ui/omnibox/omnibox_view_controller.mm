@@ -118,6 +118,16 @@ const CGFloat kClearButtonSize = 28.0f;
   [self.view setLeadingImage:icon];
 }
 
+#pragma mark - EditViewAnimatee
+
+- (void)setLeadingIconFaded:(BOOL)faded {
+  [self.view setLeadingImageAlpha:faded ? 0 : 1];
+}
+
+- (void)setClearButtonFaded:(BOOL)faded {
+  self.textField.rightView.alpha = faded ? 0 : 1;
+}
+
 #pragma mark - LocationBarOffsetProvider
 
 - (CGFloat)xOffsetForString:(NSString*)string {

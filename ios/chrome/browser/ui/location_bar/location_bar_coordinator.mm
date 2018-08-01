@@ -176,6 +176,10 @@ const int kLocationAuthorizationStatusCount = 4;
   return self.viewController;
 }
 
+- (id<EditViewAnimatee>)editViewAnimatee {
+  return self.omniboxCoordinator.animatee;
+}
+
 #pragma mark - LoadQueryCommands
 
 - (void)loadQuery:(NSString*)query immediately:(BOOL)immediately {
