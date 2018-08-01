@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -76,6 +77,7 @@ public class FeedRefreshTaskTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/868647")
     public void testSchedule() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(0, mTaskScheduler.getTaskInfoList().size());
