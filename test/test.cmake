@@ -71,8 +71,6 @@ list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
             "${AOM_ROOT}/test/qm_test.cc"
             "${AOM_ROOT}/test/resize_test.cc"
             "${AOM_ROOT}/test/scalability_test.cc"
-            "${AOM_ROOT}/test/wiener_test.cc"
-            "${AOM_ROOT}/test/pickrst_test.cc"
             "${AOM_ROOT}/test/y4m_test.cc"
             "${AOM_ROOT}/test/y4m_video_source.h"
             "${AOM_ROOT}/test/yuv_video_source.h")
@@ -186,11 +184,13 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/noise_model_test.cc"
               "${AOM_ROOT}/test/obmc_sad_test.cc"
               "${AOM_ROOT}/test/obmc_variance_test.cc"
+              "${AOM_ROOT}/test/pickrst_test.cc"
               "${AOM_ROOT}/test/sad_test.cc"
               "${AOM_ROOT}/test/subtract_test.cc"
               "${AOM_ROOT}/test/reconinter_test.cc"
               "${AOM_ROOT}/test/sum_squares_test.cc"
-              "${AOM_ROOT}/test/variance_test.cc")
+              "${AOM_ROOT}/test/variance_test.cc"
+              "${AOM_ROOT}/test/wiener_test.cc")
 
   list(APPEND AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1
               "${AOM_ROOT}/test/av1_highbd_iht_test.cc"
