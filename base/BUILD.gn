@@ -1398,7 +1398,6 @@ jumbo_component("base") {
       "fuchsia/filtered_service_directory.h",
       "fuchsia/fuchsia_logging.cc",
       "fuchsia/fuchsia_logging.h",
-      "fuchsia/scoped_zx_handle.h",
       "fuchsia/service_directory.cc",
       "fuchsia/service_directory.h",
       "memory/platform_shared_memory_region_fuchsia.cc",
