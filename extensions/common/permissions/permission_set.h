@@ -48,9 +48,13 @@ class PermissionSet {
 
   // Creates a new permission set equal to the intersection of |set1| and
   // |set2|.
+  // TODO(https://crbug.com/867549): Audit callers of CreateIntersection() and
+  // have them determine the proper intersection behavior.
   static std::unique_ptr<const PermissionSet> CreateIntersection(
       const PermissionSet& set1,
-      const PermissionSet& set2);
+      const PermissionSet& set2,
+      URLPatternSet::IntersectionBehavior intersection_behavior =
+          URLPatternSet::IntersectionBehavior::kPatternsContainedByBoth);
 
   // Creates a new permission set equal to the union of |set1| and |set2|.
   static std::unique_ptr<const PermissionSet> CreateUnion(

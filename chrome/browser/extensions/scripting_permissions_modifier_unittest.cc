@@ -512,4 +512,57 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
 }
 
+// Tests granting runtime permissions for a full host when the extension only
+// wants to run on a subset of that host.
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       GrantingHostPermissionsBeyondRequested) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  DictionaryBuilder content_script;
+  content_script
+      .Set("matches", ListBuilder().Append("https://google.com/maps").Build())
+      .Set("js", ListBuilder().Append("foo.js").Build());
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test")
+          .SetManifestKey("content_scripts",
+                          ListBuilder().Append(content_script.Build()).Build())
+          .Build();
+
+  // At installation, all permissions granted.
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
+              testing::UnorderedElementsAre("https://google.com/maps"));
+
+  // Withhold host permissions.
+  modifier.SetWithholdHostPermissions(true);
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+
+  // Grant the requested host permission. We grant origins (rather than just
+  // paths), but we don't over-grant permissions to the actual extension object.
+  // The active permissions on the extension should be restricted to the
+  // permissions explicitly requested (google.com/maps), but the granted
+  // permissions in preferences will be the full host (google.com).
+  modifier.GrantHostPermission(GURL("https://google.com/maps"));
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
+              testing::UnorderedElementsAre("https://google.com/maps"));
+  EXPECT_THAT(GetPatternsAsStrings(
+                  modifier.GetRevokablePermissions()->effective_hosts()),
+              // Subtle: revokable permissions include permissions either in
+              // the runtime granted permissions preference or active on the
+              // extension object. In this case, that includes both google.com/*
+              // and google.com/maps.
+              testing::UnorderedElementsAre("https://google.com/maps",
+                                            "https://google.com/*"));
+
+  // Remove the granted permission. This should remove the permission from both
+  // the active permissions on the extension object and the entry in the
+  // preferences.
+  modifier.RemoveAllGrantedHostPermissions();
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+  EXPECT_THAT(GetPatternsAsStrings(
+                  modifier.GetRevokablePermissions()->effective_hosts()),
+              testing::IsEmpty());
+}
+
 }  // namespace extensions
