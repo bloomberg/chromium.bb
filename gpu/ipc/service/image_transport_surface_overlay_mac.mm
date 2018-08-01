@@ -79,20 +79,10 @@ bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
 }
 
 void ImageTransportSurfaceOverlayMac::ApplyBackpressure() {
-  // TODO(ccameron): This early-out is to determine if https://crbug.com/863817
-  // is caused by ApplyBackpressure, or if ApplyBackpressure happens to be
-  // what triggers a crash that was already going to happen.
-  return;
-
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::ApplyBackpressure");
-
-  gl::GLContext* current_context = gl::GLContext::GetCurrent();
-  // TODO(ccameron): Remove these CHECKs.
-  CHECK(current_context);
-  CHECK(current_context->IsCurrent(this));
-
   // Create the fence for the current frame before waiting on the previous
   // frame's fence (to maximize CPU and GPU execution overlap).
+  gl::GLContext* current_context = gl::GLContext::GetCurrent();
   uint64_t this_frame_fence = current_context->BackpressureFenceCreate();
   current_context->BackpressureFenceWait(previous_frame_fence_);
   previous_frame_fence_ = this_frame_fence;
@@ -227,10 +217,6 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  // Temporary flush for debugging https://crbug.com/863817.
-  // TODO(ccameron): Remove this.
-  glFlush();
-
   if (transform != gfx::OVERLAY_TRANSFORM_NONE) {
     DLOG(ERROR) << "Invalid overlay plane transform.";
     return false;
@@ -262,10 +248,6 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
 
 bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     const ui::CARendererLayerParams& params) {
-  // Temporary flush for debugging https://crbug.com/863817.
-  // TODO(ccameron): Remove this.
-  glFlush();
-
   if (params.image) {
     gl::GLImageIOSurface* io_surface_image =
         gl::GLImageIOSurface::FromGLImage(params.image);

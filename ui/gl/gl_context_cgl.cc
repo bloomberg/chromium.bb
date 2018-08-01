@@ -224,10 +224,7 @@ YUVToRGBConverter* GLContextCGL::GetYUVToRGBConverter(
   return yuv_to_rgb_converter.get();
 }
 
-// If the GLFence extensions are not supported or are unstable, fall back to
-// using a glFinish. Use this id to denote a fence that should be implemented
-// as glFinish.
-constexpr uint64_t kFinishFenceId = -1;
+constexpr uint64_t kInvalidFenceId = 0;
 
 uint64_t GLContextCGL::BackpressureFenceCreate() {
   TRACE_EVENT0("gpu", "GLContextCGL::BackpressureFenceCreate");
@@ -236,16 +233,17 @@ uint64_t GLContextCGL::BackpressureFenceCreate() {
   glFlush();
 
   if (gl::GLFence::IsSupported()) {
+    next_backpressure_fence_ += 1;
     backpressure_fences_[next_backpressure_fence_] = GLFence::Create();
-    return next_backpressure_fence_++;
+    return next_backpressure_fence_;
   }
-  return kFinishFenceId;
+  glFinish();
+  return kInvalidFenceId;
 }
 
 void GLContextCGL::BackpressureFenceWait(uint64_t fence_id) {
   TRACE_EVENT0("gpu", "GLContextCGL::BackpressureFenceWait");
-  if (fence_id == kFinishFenceId) {
-    glFinish();
+  if (fence_id == kInvalidFenceId) {
     return;
   }
 
