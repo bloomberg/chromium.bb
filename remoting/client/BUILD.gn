@@ -57,16 +57,26 @@ static_library("client") {
       "chromoting_client_runtime.h",
       "dual_buffer_frame_consumer.cc",
       "dual_buffer_frame_consumer.h",
-      "gesture_interpreter.cc",
-      "gesture_interpreter.h",
       "oauth_token_getter_proxy.cc",
       "oauth_token_getter_proxy.h",
     ]
     deps += [
-      "//remoting/client/display",
       "//remoting/client/input",
       "//remoting/client/ui",
     ]
+
+    if (!is_chromeos) {
+      # GestureInterpreter depends on //remoting/client/display, which currently
+      # doesn't build on CrOS. crbug.com/869578
+      sources += [
+        "gesture_interpreter.cc",
+        "gesture_interpreter.h",
+      ]
+
+      deps += [
+        "//remoting/client/display",
+      ]
+    }
   }
   if (is_android) {
     libs += [ "android" ]
