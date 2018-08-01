@@ -41,7 +41,6 @@ class GranularityStrategyTest : public PageTestBase {
  protected:
   void SetUp() override;
 
-  void SetSelectionAndEndTyping(const VisibleSelection&);
   Text* AppendTextNode(const String& data);
   int LayoutCount() const {
     return GetDummyPageHolder().GetFrameView().LayoutCount();
@@ -86,11 +85,6 @@ void GranularityStrategyTest::SetUp() {
   PageTestBase::SetUp();
   GetFrame().GetSettings()->SetDefaultFontSize(12);
   GetFrame().GetSettings()->SetSelectionStrategy(SelectionStrategy::kDirection);
-}
-
-void GranularityStrategyTest::SetSelectionAndEndTyping(
-    const VisibleSelection& new_selection) {
-  Selection().SetSelectionAndEndTyping(new_selection.AsSelection());
 }
 
 Text* GranularityStrategyTest::AppendTextNode(const String& data) {
