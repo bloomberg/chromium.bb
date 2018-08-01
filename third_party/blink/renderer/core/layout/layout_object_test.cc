@@ -264,6 +264,22 @@ TEST_F(LayoutObjectTest, FloatUnderBlock) {
   EXPECT_EQ(container, floating->ContainingBlock());
 }
 
+TEST_F(LayoutObjectTest, InlineFloatMismatch) {
+  SetBodyInnerHTML(R"HTML(
+    <span id=span style='position: relative; left: 40px; width: 100px; height: 100px'>
+      <div id=float_obj style='float: left; margin-left: 10px;'>
+      </div>
+    </span>
+  )HTML");
+
+  LayoutObject* float_obj =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("float_obj"));
+  LayoutObject* span =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
+  // 10px for margin, -40px because float is to the left of the span.
+  EXPECT_EQ(LayoutSize(-30, 0), float_obj->OffsetFromAncestor(span));
+}
+
 TEST_F(LayoutObjectTest, FloatUnderInline) {
   SetBodyInnerHTML(R"HTML(
     <div id='layered-div' style='position: absolute'>

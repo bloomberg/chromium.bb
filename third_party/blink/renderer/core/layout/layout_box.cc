@@ -2422,7 +2422,7 @@ void LayoutBox::InflateVisualRectForFilterUnderContainer(
       // Convert rect into coordinate space of parent to apply parent's
       // reflection and filter.
       LayoutSize parent_offset =
-          parent->OffsetFromAncestorContainer(&container);
+          parent->OffsetFromAncestor(&container);
       transform_state.Move(-parent_offset);
       ToLayoutBox(parent)->InflateVisualRectForFilter(transform_state);
       transform_state.Move(parent_offset);
@@ -2511,7 +2511,7 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     // If the ancestor is below the container, then we need to map the rect into
     // ancestor's coordinates.
     LayoutSize container_offset =
-        ancestor->OffsetFromAncestorContainer(container);
+        ancestor->OffsetFromAncestor(container);
     transform_state.Move(-container_offset, accumulation);
     return true;
   }
