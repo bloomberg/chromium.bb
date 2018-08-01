@@ -2884,6 +2884,7 @@ test("unit_tests") {
     "//ui/gfx:test_support",
     "//ui/gl",
     "//ui/resources",
+    "//ui/web_dialogs:web_dialogs_unittests",
     "//v8",
   ]
 

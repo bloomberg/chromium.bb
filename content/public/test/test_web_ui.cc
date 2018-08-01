@@ -45,7 +45,11 @@ const base::string16& TestWebUI::GetOverriddenTitle() const {
 }
 
 int TestWebUI::GetBindings() const {
-  return 0;
+  return bindings_;
+}
+
+void TestWebUI::SetBindings(int bindings) {
+  bindings_ = bindings;
 }
 
 void TestWebUI::AddMessageHandler(

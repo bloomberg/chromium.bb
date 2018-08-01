@@ -52,3 +52,21 @@ static_library("test_support") {
     "//url",
   ]
 }
+
+source_set("web_dialogs_unittests") {
+  testonly = true
+
+  sources = [
+    "web_dialog_ui_unittest.cc",
+  ]
+
+  deps = [
+    ":web_dialogs",
+    "//base",
+    "//base/test:test_support",
+    "//content/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//third_party/boringssl",
+  ]
+}
