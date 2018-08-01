@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
@@ -24,6 +25,12 @@
 namespace chromeos {
 namespace power {
 namespace ml {
+
+namespace {
+void LogPowerMLPreviousEventLoggingResult(PreviousEventLoggingResult result) {
+  UMA_HISTOGRAM_ENUMERATION("PowerML.PreviousEventLogging.Result", result);
+}
+}  // namespace
 
 struct UserActivityManager::PreviousIdleEventData {
   // Gap between two ScreenDimImminent signals.
@@ -407,9 +414,11 @@ void UserActivityManager::MaybeLogEvent(
   UserActivityEvent::Event* event = activity_event.mutable_event();
   event->set_type(type);
   event->set_reason(reason);
-  event->set_log_duration_sec(
-      (boot_clock_->GetTimeSinceBoot() - idle_event_start_since_boot_.value())
-          .InSeconds());
+  if (idle_event_start_since_boot_) {
+    event->set_log_duration_sec(
+        (boot_clock_->GetTimeSinceBoot() - idle_event_start_since_boot_.value())
+            .InSeconds());
+  }
   event->set_screen_dim_occurred(screen_dim_occurred_);
   event->set_screen_lock_occurred(screen_lock_occurred_);
   event->set_screen_off_occurred(screen_off_occurred_);
@@ -426,9 +435,12 @@ void UserActivityManager::MaybeLogEvent(
   // If there's an earlier idle event that has not received its own event, log
   // it here too.
   if (previous_idle_event_data_) {
-    event->set_log_duration_sec(
-        event->log_duration_sec() +
-        previous_idle_event_data_->dim_imminent_signal_interval.InSeconds());
+    if (event->has_log_duration_sec()) {
+      event->set_log_duration_sec(
+          event->log_duration_sec() +
+          previous_idle_event_data_->dim_imminent_signal_interval.InSeconds());
+    }
+
     *activity_event.mutable_features() = previous_idle_event_data_->features;
     *activity_event.mutable_model_prediction() =
         previous_idle_event_data_->model_prediction;
@@ -452,10 +464,33 @@ void UserActivityManager::SetTaskRunnerForTesting(
 
 void UserActivityManager::PopulatePreviousEventData(
     const base::TimeDelta& now) {
-  // Should not have been set.
-  DCHECK(!previous_idle_event_data_);
-  DCHECK(idle_event_start_since_boot_);
-  DCHECK(model_prediction_);
+  PreviousEventLoggingResult result = PreviousEventLoggingResult::kSuccess;
+  if (!model_prediction_) {
+    result = base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
+                     smart_dim_model_
+                 ? PreviousEventLoggingResult::kErrorModelPredictionMissing
+                 : PreviousEventLoggingResult::kErrorModelDisabled;
+    LogPowerMLPreviousEventLoggingResult(result);
+  }
+
+  if (previous_idle_event_data_) {
+    result = PreviousEventLoggingResult::kErrorMultiplePreviousEvents;
+    previous_idle_event_data_.reset();
+    LogPowerMLPreviousEventLoggingResult(result);
+  }
+
+  if (!idle_event_start_since_boot_) {
+    result = PreviousEventLoggingResult::kErrorIdleStartMissing;
+    LogPowerMLPreviousEventLoggingResult(result);
+  }
+
+  if (result != PreviousEventLoggingResult::kSuccess) {
+    LogPowerMLPreviousEventLoggingResult(PreviousEventLoggingResult::kError);
+    return;
+  }
+
+  // Only log if none of the errors above occurred.
+  LogPowerMLPreviousEventLoggingResult(result);
 
   previous_idle_event_data_ = std::make_unique<PreviousIdleEventData>();
   previous_idle_event_data_->dim_imminent_signal_interval =
