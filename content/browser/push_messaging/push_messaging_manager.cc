@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -133,7 +134,7 @@ struct PushMessagingManager::RegisterData {
 
   GURL requesting_origin;
   int64_t service_worker_registration_id;
-  std::string existing_subscription_id;
+  base::Optional<std::string> existing_subscription_id;
   PushSubscriptionOptions options;
   SubscribeCallback callback;
 
@@ -502,11 +503,12 @@ void PushMessagingManager::Core::DidRegister(
     mojom::PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(nator): Handle the case where |push_subscription_id| and
+  // TODO(crbug.com/646721): Handle the case where |push_subscription_id| and
   // |data.existing_subscription_id| are not the same. Right now we just
   // override the old subscription ID and encryption information.
   const bool subscription_changed =
-      push_subscription_id != data.existing_subscription_id;
+      data.existing_subscription_id.has_value() &&
+      data.existing_subscription_id.value() != push_subscription_id;
 
   if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE) {
     BrowserThread::PostTask(
