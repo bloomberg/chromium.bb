@@ -278,8 +278,6 @@ void LocationBarView::Init() {
 
   size_animation_.Reset(1);
 
-  // This is for hover effect mouse event handling.
-  set_notify_enter_exit_on_child(true);
   hover_animation_.SetSlideDuration(200);
 }
 
@@ -1166,15 +1164,6 @@ void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {
   BrowserView::Paint1pxHorizontalLine(canvas, border_color, bounds, true);
 }
 
-void LocationBarView::OnMouseEntered(const ui::MouseEvent& event) {
-  // Only show the hover animation when omnibox is in unfocused steady state.
-  if (!omnibox_view_->HasFocus())
-    hover_animation_.Show();
-}
-void LocationBarView::OnMouseExited(const ui::MouseEvent& event) {
-  hover_animation_.Hide();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private views::DragController implementation:
 
@@ -1284,6 +1273,16 @@ void LocationBarView::OnOmniboxBlurred() {
 
   if (IsRounded())
     RefreshBackground();
+}
+
+void LocationBarView::OnOmniboxHovered(bool is_hovering) {
+  if (is_hovering) {
+    // Only show the hover animation when omnibox is in unfocused steady state.
+    if (!omnibox_view_->HasFocus())
+      hover_animation_.Show();
+  } else {
+    hover_animation_.Hide();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
