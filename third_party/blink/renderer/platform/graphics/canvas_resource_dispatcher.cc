@@ -132,8 +132,9 @@ void CanvasResourceDispatcher::DispatchFrameSync(
     const SkIRect& damage_rect) {
   viz::CompositorFrame frame;
   if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
-                    &frame))
+                    &frame)) {
     return;
+  }
 
   pending_compositor_frames_++;
   WTF::Vector<viz::ReturnedResource> resources;
@@ -149,8 +150,9 @@ void CanvasResourceDispatcher::DispatchFrame(
     const SkIRect& damage_rect) {
   viz::CompositorFrame frame;
   if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
-                    &frame))
+                    &frame)) {
     return;
+  }
 
   pending_compositor_frames_++;
   sink_->SubmitCompositorFrame(
@@ -236,6 +238,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   offscreen_canvas_resource_provider_->SetTransferableResource(&resource,
                                                                canvas_resource);
+  // TODO(crbug.com/869913): add unit testing for this.
+  const gfx::Size canvas_resource_size(canvas_resource->Size());
 
   commit_type_histogram.Count(commit_type);
 
@@ -247,7 +251,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   viz::TextureDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-  gfx::Size rect_size(size_.Width(), size_.Height());
 
   // TODO(crbug.com/705019): optimize for contexts that have {alpha: false}
   const bool kNeedsBlending = true;
@@ -257,16 +260,16 @@ bool CanvasResourceDispatcher::PrepareFrame(
   const bool kPremultipliedAlpha = true;
   const gfx::PointF uv_top_left(0.f, 0.f);
   const gfx::PointF uv_bottom_right(1.f, 1.f);
-  float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
+  const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
   // TODO(crbug.com/645994): this should be true when using style
   // "image-rendering: pixelated".
   // TODO(crbug.com/645590): filter should respect the image-rendering CSS
   // property of associated canvas element.
   const bool kNearestNeighbor = false;
-  quad->SetAll(sqs, bounds, bounds, kNeedsBlending, resource.id, gfx::Size(),
-               kPremultipliedAlpha, uv_top_left, uv_bottom_right,
-               SK_ColorTRANSPARENT, vertex_opacity, yflipped, kNearestNeighbor,
-               false);
+  quad->SetAll(sqs, bounds, bounds, kNeedsBlending, resource.id,
+               canvas_resource_size, kPremultipliedAlpha, uv_top_left,
+               uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, yflipped,
+               kNearestNeighbor, false);
 
   frame->render_pass_list.push_back(std::move(pass));
 
