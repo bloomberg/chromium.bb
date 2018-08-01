@@ -2990,12 +2990,6 @@ inline LayoutObject* LayoutObject::ParentCrossingFrames() const {
   return Parent();
 }
 
-bool LayoutObject::IsSelectionBorder() const {
-  SelectionState st = GetSelectionState();
-  return st == SelectionState::kStart || st == SelectionState::kEnd ||
-         st == SelectionState::kStartAndEnd;
-}
-
 inline void LayoutObject::ClearLayoutRootIfNeeded() const {
   if (LocalFrameView* view = GetFrameView()) {
     if (!DocumentBeingDestroyed())

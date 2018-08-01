@@ -48,8 +48,6 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   IntRect AbsoluteSelectionBounds();
   void InvalidatePaintForSelection();
 
-  // TODO(yoichio): Remove this function since this doesn't do anything.
-  void ClearSelection();
   base::Optional<unsigned> SelectionStart() const;
   base::Optional<unsigned> SelectionEnd() const;
   LayoutSelectionStatus ComputeSelectionStatus(const NGPaintFragment&) const;

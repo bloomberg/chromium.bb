@@ -376,8 +376,6 @@ static OldSelectedLayoutObjects ResetOldSelectedLayoutObjects(
   return std::move(visitor.old_selected_objects);
 }
 
-void LayoutSelection::ClearSelection() {}
-
 static base::Optional<unsigned> ComputeStartOffset(
     const LayoutObject& layout_object,
     const PositionInFlatTree& position) {

@@ -1229,10 +1229,6 @@ base::Optional<unsigned> FrameSelection::LayoutSelectionEnd() const {
   return layout_selection_->SelectionEnd();
 }
 
-void FrameSelection::ClearLayoutSelection() {
-  layout_selection_->ClearSelection();
-}
-
 LayoutSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
     const NGPaintFragment& text_fragment) const {
   return layout_selection_->ComputeSelectionStatus(text_fragment);

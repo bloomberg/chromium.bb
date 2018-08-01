@@ -101,13 +101,6 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     ToLayoutBox(old_child)->DeleteLineBoxWrapper();
 
   if (!owner->DocumentBeingDestroyed()) {
-    // If oldChild is the start or end of the selection, then clear the
-    // selection to avoid problems of invalid pointers.
-    // FIXME: The FrameSelection should be responsible for this when it
-    // is notified of DOM mutations.
-    if (old_child->IsSelectionBorder() && owner->View())
-      owner->View()->ClearSelection();
-
     owner->NotifyOfSubtreeChange();
 
     if (notify_layout_object) {
