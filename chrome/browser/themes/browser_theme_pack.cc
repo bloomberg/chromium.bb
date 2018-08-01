@@ -51,7 +51,7 @@ constexpr int kTallestTabHeight = 41;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 52;
+const int kThemePackVersion = 53;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -955,10 +955,12 @@ void BrowserThemePack::BuildColorsFromJSON(
   // Generate inactive background tab text colors if active colors were
   // specified.
   static constexpr int kColorsToCopy[][2] = {
-    {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT,
-     ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
-    {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
-     ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
+      {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT,
+       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
+      {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT,
+       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},
+      {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
+       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
   };
   for (const int* text_colors : kColorsToCopy) {
     const auto src_it = temp_colors.find(text_colors[0]);
