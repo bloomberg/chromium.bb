@@ -42,7 +42,7 @@ class LocalCardMigrationBubbleControllerImpl
   LocalCardMigrationBubble* local_card_migration_bubble_view() const;
 
   // LocalCardBubbleController:
-  base::string16 GetWindowTitle() const override;
+  base::string16 GetBubbleMessage() const override;
   void OnConfirmButtonClicked() override;
   void OnCancelButtonClicked() override;
   void OnBubbleClosed() override;

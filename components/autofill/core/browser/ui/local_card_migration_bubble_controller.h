@@ -20,8 +20,8 @@ class LocalCardMigrationBubbleController {
   LocalCardMigrationBubbleController() {}
   virtual ~LocalCardMigrationBubbleController() {}
 
-  // Returns the title that should be displayed in the bubble.
-  virtual base::string16 GetWindowTitle() const = 0;
+  // Returns the explanatory message that should be displayed in the bubble.
+  virtual base::string16 GetBubbleMessage() const = 0;
 
   // Interaction.
   virtual void OnConfirmButtonClicked() = 0;

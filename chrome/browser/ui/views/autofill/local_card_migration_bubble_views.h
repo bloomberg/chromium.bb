@@ -41,14 +41,12 @@ class LocalCardMigrationBubbleViews : public LocalCardMigrationBubble,
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
-  base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
  private:
   ~LocalCardMigrationBubbleViews() override;
-
-  std::unique_ptr<views::View> CreateMainContentView();
 
   // views::BubbleDialogDelegateView:
   void Init() override;
