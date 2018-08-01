@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -106,6 +107,14 @@ void DocumentProvider::Start(const AutocompleteInput& input,
   if (!IsDocumentProviderAllowed(client_->GetPrefs(), client_->IsOffTheRecord(),
                                  is_authenticated,
                                  client_->GetTemplateURLService())) {
+    return;
+  }
+
+  // Experiment: don't issue queries for inputs under some length.
+  const size_t min_query_length =
+      static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+          omnibox::kDocumentProvider, "DocumentProviderMinQueryLength", 4));
+  if (input.text().length() < min_query_length) {
     return;
   }
 
@@ -220,9 +229,21 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   size_t num_results = results_list->GetSize();
   UMA_HISTOGRAM_COUNTS("Omnibox.DocumentSuggest.ResultCount", num_results);
 
+  // Create a synthetic score. Eventually we'll have signals from the API.
+  // For now, allow setting of each of three scores from Finch.
+  int score0 = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDocumentProvider, "DocumentScoreResult1", 1100);
+  int score1 = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDocumentProvider, "DocumentScoreResult2", 700);
+  int score2 = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDocumentProvider, "DocumentScoreResult3", 300);
+
   // Clear the previous results now that new results are available.
   matches->clear();
   for (size_t i = 0; i < num_results; i++) {
+    if (matches->size() >= AutocompleteProvider::kMaxMatches) {
+      break;
+    }
     const base::DictionaryValue* result = nullptr;
     if (!results_list->GetDictionary(i, &result)) {
       return false;
@@ -234,13 +255,20 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     if (title.empty() || url.empty()) {
       continue;
     }
-    // Create a synthetic score. Eventually we'll have signals from the API.
-    // For now, first result gets some max store, subsequent results are
-    // penalized incrementally and linearly.
-    // TODO(skare): Use experiment params once a formal study file exists.
-    const unsigned int baseValue = 1100;
-    const int penalty = 100;
-    int relevance = baseValue - i * penalty;
+    int relevance = 0;
+    switch (matches->size()) {
+      case 0:
+        relevance = score0;
+        break;
+      case 1:
+        relevance = score1;
+        break;
+      case 2:
+        relevance = score2;
+        break;
+      default:
+        break;
+    }
     AutocompleteMatch match(this, relevance, false,
                             AutocompleteMatchType::DOCUMENT_SUGGESTION);
     match.destination_url = GURL(url);
