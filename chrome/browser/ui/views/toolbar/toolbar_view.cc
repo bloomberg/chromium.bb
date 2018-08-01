@@ -614,11 +614,14 @@ void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
   const ui::ThemeProvider* tp = GetThemeProvider();
 
   if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    canvas->TileImageInt(
-        *tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-        bounds().x() +
-            browserView()->frame()->GetFrameView()->GetThemeBackgroundXInset(),
-        bounds().y(), 0, 0, width(), height());
+    const int x_offset =
+        GetMirroredX() + browser_view_->GetMirroredX() +
+        browser_view_->frame()->GetFrameView()->GetThemeBackgroundXInset();
+    const int y_offset = GetLayoutConstant(TAB_HEIGHT) -
+                         Tab::GetStrokeHeight() -
+                         GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
+    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR), x_offset,
+                         y_offset, 0, 0, width(), height());
   } else {
     canvas->FillRect(GetLocalBounds(),
                      tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
