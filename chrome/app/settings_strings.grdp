@@ -622,8 +622,8 @@
     Autofill settings
   </message>
   <!-- TODO(https://crbug.com/854562): Rename this to "IDS_SETTINGS_AUTOFILL" once Autofill Home is fully launched. -->
-  <message name="IDS_SETTINGS_AUTOFILL_AUTOFILL_HOME" desc="Name for the addresses and payment methods section used for Autofill Home.">
-    Addresses &amp; payment methods
+  <message name="IDS_SETTINGS_AUTOFILL_AUTOFILL_HOME" desc="Name for the addresses section used for Autofill Home.">
+    Addresses
   </message>
   <message name="IDS_SETTINGS_GOOGLE_PAYMENTS" desc="Label used to differentiate when an address or credit card entry comes from Google Pay. This should follow the casing of the 'Google Pay' brand. 'Google Pay' should not be translated as it is the product name.">
     Google Pay
@@ -655,9 +655,13 @@
   <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_EMAIL" desc="This is the label for the field that lets a user modify the email address that will be used when auto-filling forms on the web.">
     Email
   </message>
-  <!-- TODO(https://crbug.com/854562): Remove this string (and use "IDS_SETTINGS_AUTOFILL_PAYMENT_METHODS" instead) once Autofill Home is fully launched. -->
+  <!-- TODO(https://crbug.com/854562): Remove this string once Autofill Home is fully launched. -->
   <message name="IDS_SETTINGS_AUTOFILL_CREDIT_CARD_HEADING" desc="Title for the list of saved passwords that can be used to fill in forms.">
-    Credit cards
+    Credit card settings
+  </message>
+  <!-- TODO(https://crbug.com/854562): Remove this string once Autofill Home is fully launched. -->
+  <message name="IDS_SETTINGS_AUTOFILL_CREDIT_CARD_DETAIL" desc="Description of what toggling the 'Credit card' setting does. Immediately underneath IDS_SETTINGS_AUTOFILL_CREDIT_CARD_HEADING.">
+    Enable credit card Autofill to fill out forms in a single click
   </message>
   <message name="IDS_SETTINGS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms.">
     Payment methods

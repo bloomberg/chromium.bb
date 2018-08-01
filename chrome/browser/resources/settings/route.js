@@ -55,6 +55,7 @@
  *   NETWORK_DETAIL: (undefined|!settings.Route),
  *   ON_STARTUP: (undefined|!settings.Route),
  *   PASSWORDS: (undefined|!settings.Route),
+ *   PAYMENTS: (undefined|!settings.Route),
  *   PEOPLE: (undefined|!settings.Route),
  *   POINTERS: (undefined|!settings.Route),
  *   POWER: (undefined|!settings.Route),
@@ -275,6 +276,7 @@ cr.define('settings', function() {
       if (autofillHomeEnabled) {
         r.AUTOFILL = r.PEOPLE.createChild('/autofill');
         r.MANAGE_PASSWORDS = r.PEOPLE.createChild('/passwords');
+        r.PAYMENTS = r.PEOPLE.createChild('/payments');
       }
       // <if expr="not chromeos">
       r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
@@ -375,6 +377,7 @@ cr.define('settings', function() {
             r.ADVANCED.createSection('/passwordsAndForms', 'passwordsAndForms');
         r.AUTOFILL = r.PASSWORDS.createChild('/autofill');
         r.MANAGE_PASSWORDS = r.PASSWORDS.createChild('/passwords');
+        r.PAYMENTS = r.PASSWORDS.createChild('/payments');
       }
 
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');

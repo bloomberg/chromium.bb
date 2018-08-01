@@ -760,6 +760,12 @@
       <structure name="IDR_SETTINGS_PASSWORDS_EXPORT_DIALOG_JS"
                  file="passwords_and_forms_page/passwords_export_dialog.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PAYMENTS_SECTION_HTML"
+                 file="passwords_and_forms_page/payments_section.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PAYMENTS_SECTION_JS"
+                 file="passwords_and_forms_page/payments_section.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PEOPLE_PAGE_HTML"
                  file="people_page/people_page.html"
                  type="chrome_html"
