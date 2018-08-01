@@ -61,6 +61,10 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
 
+#ifdef OS_ANDROID
+#include "content/browser/renderer_host/compositor_impl_android.h"
+#endif
+
 namespace content {
 namespace protocol {
 
@@ -202,9 +206,16 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       emulation_handler_(emulation_handler),
       observer_(this),
       weak_factory_(this) {
-  if (features::IsVizDisplayCompositorEnabled() ||
+  bool create_video_consumer =
+      features::IsVizDisplayCompositorEnabled() ||
       base::FeatureList::IsEnabled(
-          features::kUseVideoCaptureApiForDevToolsSnapshots)) {
+          features::kUseVideoCaptureApiForDevToolsSnapshots);
+#ifdef OS_ANDROID
+  // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.
+  if (!CompositorImpl::IsInitialized())
+    create_video_consumer = false;
+#endif
+  if (create_video_consumer) {
     video_consumer_ = std::make_unique<DevToolsVideoConsumer>(
         base::BindRepeating(&PageHandler::OnFrameFromVideoConsumer,
                             weak_factory_.GetWeakPtr()));
