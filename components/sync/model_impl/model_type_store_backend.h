@@ -11,8 +11,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/sync/model/model_type_store.h"
@@ -55,14 +53,15 @@ enum StoreInitResultForHistogram {
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
 // meaning it shouldn't deal with callbacks and task_runners.
-class ModelTypeStoreBackend
-    : public base::RefCountedThreadSafe<ModelTypeStoreBackend> {
+class ModelTypeStoreBackend {
  public:
-  static scoped_refptr<ModelTypeStoreBackend> GetOrCreateInMemoryForTest();
+  static std::unique_ptr<ModelTypeStoreBackend> CreateInMemoryForTest();
 
   // Create a new and uninitialized instance of ModelTypeStoreBackend. Init()
   // must be called afterwards, which binds the instance to a certain sequence.
-  static scoped_refptr<ModelTypeStoreBackend> CreateUninitialized();
+  static std::unique_ptr<ModelTypeStoreBackend> CreateUninitialized();
+
+  ~ModelTypeStoreBackend();
 
   // Init opens database at |path|. If database doesn't exist it creates one.
   // It can be called from a sequence that is different to the constructing one,
@@ -110,14 +109,11 @@ class ModelTypeStoreBackend
   static const char kStoreInitResultHistogramName[];
 
  private:
-  friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
-
   // Normally |env| should be nullptr, this causes leveldb to use default disk
   // based environment from leveldb::Env::Default().
   // Providing |env| allows to override environment used by leveldb for tests
   // with in-memory or faulty environment.
   explicit ModelTypeStoreBackend(std::unique_ptr<leveldb::Env> env);
-  ~ModelTypeStoreBackend();
 
   // Opens leveldb database passing correct options. On success sets |db_| and
   // returns ok status. On failure |db_| is nullptr and returned status reflects
@@ -157,7 +153,7 @@ class ModelTypeStoreBackend
 
   // Ensures that operations with backend are performed seqentially, not
   // concurrently.
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeStoreBackend);
 };

@@ -18,7 +18,6 @@
 
 namespace syncer {
 
-class BlockingModelTypeStoreImpl;
 class ModelTypeStoreBackend;
 
 // Handles the shared resources for ModelTypeStore and related classes,
@@ -39,11 +38,6 @@ class ModelTypeStoreServiceImpl : public ModelTypeStoreService {
  private:
   void CreateModelTypeStore(ModelType type,
                             ModelTypeStore::InitCallback callback);
-  void CreateModelTypeStoreOnUIThread(
-      ModelType type,
-      ModelTypeStore::InitCallback callback,
-      std::unique_ptr<std::unique_ptr<BlockingModelTypeStoreImpl>>
-          blocking_store_ptr);
 
   // The path to the base directory under which sync should store its
   // information.
@@ -56,7 +50,8 @@ class ModelTypeStoreServiceImpl : public ModelTypeStoreService {
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // Constructed in the UI thread, used and destroyed in |backend_task_runner_|.
-  scoped_refptr<ModelTypeStoreBackend> store_backend_;
+  std::unique_ptr<ModelTypeStoreBackend, base::OnTaskRunnerDeleter>
+      store_backend_;
 
   SEQUENCE_CHECKER(ui_sequence_checker_);
 

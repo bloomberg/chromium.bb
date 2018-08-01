@@ -12,7 +12,7 @@
 namespace syncer {
 
 TestModelTypeStoreService::TestModelTypeStoreService()
-    : store_backend_(ModelTypeStoreBackend::GetOrCreateInMemoryForTest()) {
+    : store_backend_(ModelTypeStoreBackend::CreateInMemoryForTest()) {
   DCHECK(sync_data_path_.CreateUniqueTempDir());
 }
 
@@ -34,7 +34,8 @@ TestModelTypeStoreService::GetBackendTaskRunner() {
 std::unique_ptr<BlockingModelTypeStore>
 TestModelTypeStoreService::CreateBlockingStoreFromBackendSequence(
     ModelType type) {
-  return std::make_unique<BlockingModelTypeStoreImpl>(type, store_backend_);
+  return std::make_unique<BlockingModelTypeStoreImpl>(type,
+                                                      store_backend_.get());
 }
 
 }  // namespace syncer

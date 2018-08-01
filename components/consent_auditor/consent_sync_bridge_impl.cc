@@ -201,6 +201,12 @@ void ConsentSyncBridgeImpl::RecordConsent(
   deferred_consents_while_initializing_.push_back(std::move(specifics));
 }
 
+// static
+std::string ConsentSyncBridgeImpl::GetStorageKeyFromSpecificsForTest(
+    const UserConsentSpecifics& specifics) {
+  return GetStorageKeyFromSpecifics(specifics);
+}
+
 void ConsentSyncBridgeImpl::RecordConsentImpl(
     std::unique_ptr<UserConsentSpecifics> specifics) {
   DCHECK(store_);

@@ -15,8 +15,7 @@ namespace syncer {
 // classes that use ModelTypeStore objects.
 class ModelTypeStoreTestUtil {
  public:
-  // Creates an in memory store synchronously. Be aware that to do this all
-  // outstanding tasks will be run as the current message loop is pumped.
+  // Creates an in memory store synchronously.
   static std::unique_ptr<ModelTypeStore> CreateInMemoryStoreForTest(
       ModelType type = UNSPECIFIED);
 

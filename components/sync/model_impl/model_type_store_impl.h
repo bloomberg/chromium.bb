@@ -28,7 +28,8 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   // |backend_task_runner|.
   ModelTypeStoreImpl(
       ModelType type,
-      std::unique_ptr<BlockingModelTypeStoreImpl> backend_store,
+      std::unique_ptr<BlockingModelTypeStoreImpl, base::OnTaskRunnerDeleter>
+          backend_store,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   ~ModelTypeStoreImpl() override;
 
@@ -57,11 +58,10 @@ class ModelTypeStoreImpl : public ModelTypeStore {
                               const base::Optional<ModelError>& error);
 
   const ModelType type_;
-  // |backend_store_| should be deleted on backend thread.
-  // To accomplish this store's dtor posts task to backend thread passing
-  // backend ownership to task parameter.
-  std::unique_ptr<BlockingModelTypeStoreImpl> backend_store_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
+  // |backend_store_| should be deleted on backend thread.
+  std::unique_ptr<BlockingModelTypeStoreImpl, base::OnTaskRunnerDeleter>
+      backend_store_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

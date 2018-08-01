@@ -48,6 +48,9 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
 
   void RecordUserEvent(std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
 
+  static std::string GetStorageKeyFromSpecificsForTest(
+      const sync_pb::UserEventSpecifics& specifics);
+
  private:
   void RecordUserEventImpl(
       std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
