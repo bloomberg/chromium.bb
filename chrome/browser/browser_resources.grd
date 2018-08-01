@@ -454,6 +454,7 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_BLUETOOTH_PAIRING_DIALOG_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
@@ -482,8 +483,10 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_config_dialog\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_config_dialog\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_INTERNET_CONFIG_DIALOG_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_config_dialog\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
             <include name="IDR_INTERNET_DETAIL_DIALOG_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_detail_dialog\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_INTERNET_DETAIL_DIALOG_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_detail_dialog\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_INTERNET_DETAIL_DIALOG_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_detail_dialog\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
