@@ -46,6 +46,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "extensions/common/constants.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/page_size_margins.h"
@@ -528,6 +529,10 @@ content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_PRINT_PREVIEW_CRISPER_JS);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);
+  source->SetDefaultResource(
+      base::FeatureList::IsEnabled(features::kWebUIPolymer2) ?
+          IDR_PRINT_PREVIEW_VULCANIZED_P2_HTML :
+          IDR_PRINT_PREVIEW_VULCANIZED_HTML);
 #else
   for (size_t i = 0; i < kPrintPreviewResourcesSize; ++i) {
     source->AddResourcePath(kPrintPreviewResources[i].name,

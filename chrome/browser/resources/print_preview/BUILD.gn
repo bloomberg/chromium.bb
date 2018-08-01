@@ -15,6 +15,7 @@ if (optimize_webui) {
     host = "print"
     html_in_files = [ "print_preview_new.html" ]
     html_out_files = [ "vulcanized.html" ]
+    html_out_files_polymer2 = [ "vulcanized.p2.html" ]
     insert_in_head = "<base href=\"chrome://print\">"
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
     js_out_files = [ "crisper.js" ]

@@ -30,6 +30,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -174,12 +175,16 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
   source->UseGzip(exclude_from_gzip);
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
+  const bool use_polymer_2 =
+      base::FeatureList::IsEnabled(features::kWebUIPolymer2);
   source->AddResourcePath("app.html",
-                          IDR_MD_HISTORY_APP_VULCANIZED_HTML);
-  source->AddResourcePath("app.crisper.js",
-                          IDR_MD_HISTORY_APP_CRISPER_JS);
+                          use_polymer_2 ? IDR_MD_HISTORY_APP_VULCANIZED_P2_HTML
+                                        : IDR_MD_HISTORY_APP_VULCANIZED_HTML);
+  source->AddResourcePath("app.crisper.js", IDR_MD_HISTORY_APP_CRISPER_JS);
   source->AddResourcePath("lazy_load.html",
-                          IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
+                          use_polymer_2
+                              ? IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_P2_HTML
+                              : IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
   source->AddResourcePath("lazy_load.crisper.js",
                           IDR_MD_HISTORY_LAZY_LOAD_CRISPER_JS);
 #endif
@@ -217,7 +222,8 @@ MdHistoryUI::~MdHistoryUI() {}
 
 void MdHistoryUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kMdHistoryMenuPromoShown, false,
+  registry->RegisterBooleanPref(
+      prefs::kMdHistoryMenuPromoShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
