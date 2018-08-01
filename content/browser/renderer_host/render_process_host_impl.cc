@@ -2716,6 +2716,11 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
       child_connection_->service_token());
   command_line->AppendSwitchASCII(switches::kRendererClientId,
                                   std::to_string(GetID()));
+
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
+    // Disable V8 code mitigations if renderer processes are site-isolated.
+    command_line->AppendSwitch(switches::kNoV8UntrustedCodeMitigations);
+  }
 }
 
 void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
