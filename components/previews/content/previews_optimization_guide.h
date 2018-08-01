@@ -15,8 +15,6 @@
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_experiments.h"
 
-class GURL;
-
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -48,12 +46,11 @@ class PreviewsOptimizationGuide
   virtual bool IsWhitelisted(const net::URLRequest& request,
                              PreviewsType type) const;
 
-  // Whether |url| is whitelisted for previews type |type|. The method may
-  // make the decision based only on a partial comparison (e.g., only the
-  // hostname of |url|). As such, the method may return true even if |type|
-  // can't be used for the previews.
-  bool IsHostWhitelistedAtNavigation(const GURL& url,
-                                     previews::PreviewsType type) const;
+  // Returns whether |request| may have associated optimization hints
+  // (specifically, PageHints). If so, but the hints are not available
+  // synchronously, this method will request that they be loaded (from disk or
+  // network).
+  bool MaybeLoadOptimizationHints(const net::URLRequest& request) const;
 
   // optimization_guide::OptimizationGuideServiceObserver implementation:
   void OnHintsProcessed(

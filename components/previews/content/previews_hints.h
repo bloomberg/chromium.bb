@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/activation_list.h"
+#include "components/previews/content/hint_cache.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/core/previews_user_data.h"
 #include "components/url_matcher/url_matcher.h"
@@ -35,18 +35,19 @@ class PreviewsHints {
       const optimization_guide::proto::Configuration& config,
       const optimization_guide::ComponentInfo& info);
 
+  void Initialize();
+
   // Whether the URL is whitelisted for the given previews type. If so,
   // |out_inflation_percent| will be populated if meta data available for it.
+  // Note: this is top-level whitelist check which does not include checking
+  // within PageHints.
   bool IsWhitelisted(const GURL& url,
                      PreviewsType type,
                      int* out_inflation_percent);
 
-  // Whether |url| is whitelisted for previews type |type|. The method may
-  // make the decision based only on a partial comparison (e.g., only the
-  // hostname of |url|). As such, the method may return true even if |type|
-  // can't be used for the previews.
-  bool IsHostWhitelistedAtNavigation(const GURL& url,
-                                     previews::PreviewsType type) const;
+  // Returns whether |url| may have PageHints and triggers asynchronous load
+  // of such hints are not currently available synchronously.
+  bool MaybeLoadOptimizationHints(const GURL& url) const;
 
  private:
   PreviewsHints();
@@ -55,15 +56,16 @@ class PreviewsHints {
   // it.
   url_matcher::URLMatcher url_matcher_;
 
-  // Holds the activation list of hosts extracted from the server hints
-  // configuration.
-  std::unique_ptr<ActivationList> activation_list_;
+  // Holds the hint cache (if any optimizations using it are enabled).
+  std::unique_ptr<HintCache> hint_cache_;
 
   // A map from the condition set ID to associated whitelist Optimization
   // details.
   std::map<url_matcher::URLMatcherConditionSet::ID,
            std::set<std::pair<PreviewsType, int>>>
       whitelist_;
+
+  std::vector<optimization_guide::proto::Hint> initial_hints_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -4,8 +4,8 @@
 
 static_library("content") {
   sources = [
-    "activation_list.cc",
-    "activation_list.h",
+    "hint_cache.cc",
+    "hint_cache.h",
     "previews_content_util.cc",
     "previews_content_util.h",
     "previews_decider_impl.cc",
@@ -34,7 +34,7 @@ static_library("content") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "activation_list_unittest.cc",
+    "hint_cache_unittest.cc",
     "previews_content_util_unittest.cc",
     "previews_decider_impl_unittest.cc",
     "previews_optimization_guide_unittest.cc",
