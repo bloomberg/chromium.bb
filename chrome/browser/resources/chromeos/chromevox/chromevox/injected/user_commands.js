@@ -708,17 +708,6 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       }
       break;
 
-    // Math specific commands.
-    case 'toggleSemantics':
-      if (cvox.TraverseMath.toggleSemantic()) {
-        cvox.ChromeVox.tts.speak(
-            Msgs.getMsg('semantics_on'), cvox.QueueMode.QUEUE);
-      } else {
-        cvox.ChromeVox.tts.speak(
-            Msgs.getMsg('semantics_off'), cvox.QueueMode.QUEUE);
-      }
-      break;
-
     // Braille specific commands.
     case cvox.BrailleKeyCommand.ROUTING:
       var braille = cmdStruct.content;

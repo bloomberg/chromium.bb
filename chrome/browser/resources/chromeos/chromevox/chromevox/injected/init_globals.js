@@ -41,7 +41,7 @@ cvox.InitGlobals.initGlobals = function() {
   if (!cvox.ChromeVox.braille) {
     cvox.ChromeVox.braille = cvox.HostFactory.getBraille();
   }
-  cvox.ChromeVox.mathJax = cvox.HostFactory.getMathJax();
+
 
   cvox.ChromeVox.earcons = cvox.HostFactory.getEarcons();
   cvox.ChromeVox.isActive = true;

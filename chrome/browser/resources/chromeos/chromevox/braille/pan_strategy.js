@@ -75,10 +75,10 @@ cvox.PanStrategy = function() {
    */
   this.panStrategyWrapped_ = false;
 
-  /** @typedef {{start: (number), end: (number)}} */
+  /** @type {{start: (number), end: (number)}} */
   this.cursor_ = {start: -1, end: -1};
 
-  /** @typedef {{start: (number), end: (number)}} */
+  /** @type {{start: (number), end: (number)}} */
   this.wrappedCursor_ = {start: -1, end: -1};
 };
 
