@@ -44,6 +44,7 @@ ARC_EXPORT extern const char kVoiceInteractionActivityControlAccepted[];
 ARC_EXPORT extern const char kVoiceInteractionEnabled[];
 ARC_EXPORT extern const char kVoiceInteractionContextEnabled[];
 ARC_EXPORT extern const char kVoiceInteractionHotwordEnabled[];
+ARC_EXPORT extern const char kVoiceInteractionNotificationEnabled[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
