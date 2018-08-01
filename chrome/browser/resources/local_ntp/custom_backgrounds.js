@@ -843,6 +843,7 @@ customBackgrounds.initCustomBackgrounds = function() {
   // Interactions with the "Restore default background" option.
   var restoreDefaultInteraction = function(event) {
     editDialog.close();
+    customBackgrounds.clearAttribution();
     window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
   };
   $(customBackgrounds.IDS.RESTORE_DEFAULT).onclick = restoreDefaultInteraction;
