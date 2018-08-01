@@ -122,21 +122,53 @@ void Service::SuspendDone(const base::TimeDelta& sleep_duration) {
 void Service::OnSessionActivated(bool activated) {
   DCHECK(client_);
   session_active_ = activated;
-  client_->OnAssistantStatusChanged(activated);
+
+  if (assistant_manager_service_->GetState() !=
+      AssistantManagerService::State::RUNNING) {
+    return;
+  }
+
+  client_->OnAssistantStatusChanged(activated /* running */);
   UpdateListeningState();
 }
 
 void Service::OnLockStateChanged(bool locked) {
   locked_ = locked;
-  UpdateListeningState();
-}
 
-void Service::OnVoiceInteractionHotwordEnabled(bool enabled) {
   if (assistant_manager_service_->GetState() !=
       AssistantManagerService::State::RUNNING) {
     return;
   }
-  CreateAssistantManagerService(enabled);
+
+  UpdateListeningState();
+}
+
+void Service::OnVoiceInteractionSettingsEnabled(bool enabled) {
+  settings_enabled_ = enabled;
+  if (enabled && assistant_manager_service_->GetState() ==
+                     AssistantManagerService::State::STOPPED) {
+    // This will eventually trigger the actual start of assistant services
+    // because they all depend on it.
+    RequestAccessToken();
+  } else if (!enabled && assistant_manager_service_->GetState() !=
+                             AssistantManagerService::State::STOPPED) {
+    assistant_manager_service_->Stop();
+    client_->OnAssistantStatusChanged(false /* running */);
+  }
+}
+
+void Service::OnVoiceInteractionHotwordEnabled(bool enabled) {
+  if (hotword_enabled_ == enabled)
+    return;
+  hotword_enabled_ = enabled;
+
+  if (assistant_manager_service_->GetState() !=
+      AssistantManagerService::State::RUNNING) {
+    return;
+  }
+
+  assistant_manager_service_->Stop();
+  client_->OnAssistantStatusChanged(false /* running */);
   RequestAccessToken();
 }
 
@@ -188,9 +220,9 @@ void Service::Init(mojom::ClientPtr client,
       std::make_unique<FakeAssistantManagerServiceImpl>();
 #endif
 
-  // This will eventually trigger the actual start of assistant services because
-  // they all depend on it.
-  RequestAccessToken();
+  voice_interaction_controller_->IsSettingEnabled(
+      base::BindOnce(&Service::OnVoiceInteractionSettingsEnabled,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Service::GetPrimaryAccountInfoCallback(
@@ -244,19 +276,14 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
 }
 
 void Service::CreateAssistantManagerService(bool enable_hotword) {
+  hotword_enabled_ = enable_hotword;
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  // TODO(updowndota): Check settings enabled pref when start Assistant.
   device::mojom::BatteryMonitorPtr battery_monitor;
   context()->connector()->BindInterface(device::mojom::kServiceName,
                                         mojo::MakeRequest(&battery_monitor));
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
       context()->connector(), std::move(battery_monitor), this, enable_hotword);
 #endif
-}
-
-void Service::FinalizeAssistantManagerService() {
-  DCHECK(assistant_manager_service_->GetState() ==
-         AssistantManagerService::State::RUNNING);
 
   // Bind to Assistant controller in ash.
   context()->connector()->BindInterface(ash::mojom::kServiceName,
@@ -273,9 +300,27 @@ void Service::FinalizeAssistantManagerService() {
       assistant_manager_service_.get()->GetAssistantSettingsManager();
   registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
       &Service::BindAssistantSettingsManager, base::Unretained(this)));
+}
 
-  client_->OnAssistantStatusChanged(true);
+void Service::FinalizeAssistantManagerService() {
+  DCHECK(assistant_manager_service_->GetState() ==
+         AssistantManagerService::State::RUNNING);
+
+  // Double check settings enabled status to avoid racing issue.
+  if (!settings_enabled_) {
+    assistant_manager_service_->Stop();
+    client_->OnAssistantStatusChanged(false /* running */);
+    return;
+  }
+
+  client_->OnAssistantStatusChanged(true /* running */);
+  UpdateListeningState();
   DVLOG(1) << "Assistant is running";
+
+  // Double check hotword status to avoid racing issue.
+  voice_interaction_controller_->IsHotwordEnabled(
+      base::BindOnce(&Service::OnVoiceInteractionHotwordEnabled,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Service::AddAshSessionObserver() {

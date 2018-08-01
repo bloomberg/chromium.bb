@@ -26,6 +26,7 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   // assistant::AssistantManagerService overrides
   void Start(const std::string& access_token,
              base::OnceClosure callback) override;
+  void Stop() override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
   State GetState() const override;

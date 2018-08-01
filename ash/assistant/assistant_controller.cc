@@ -13,6 +13,7 @@
 #include "ash/new_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
@@ -27,7 +28,12 @@ AssistantController::AssistantController()
       assistant_screen_context_controller_(
           std::make_unique<AssistantScreenContextController>(this)),
       assistant_ui_controller_(std::make_unique<AssistantUiController>(this)),
+      voice_interaction_binding_(this),
       weak_factory_(this) {
+  mojom::VoiceInteractionObserverPtr ptr;
+  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
+  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
+
   AddObserver(this);
   NotifyConstructed();
 }
@@ -218,6 +224,12 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
 void AssistantController::NotifyUrlOpened(const GURL& url) {
   for (AssistantControllerObserver& observer : observers_)
     observer.OnUrlOpened(url);
+}
+
+void AssistantController::OnVoiceInteractionStatusChanged(
+    mojom::VoiceInteractionState state) {
+  if (state == mojom::VoiceInteractionState::STOPPED)
+    assistant_ui_controller_->HideUi(AssistantSource::kUnspecified);
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {

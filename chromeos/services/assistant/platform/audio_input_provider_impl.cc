@@ -150,6 +150,14 @@ void AudioInputImpl::SetMicState(bool mic_open) {
   }
 }
 
+void AudioInputImpl::OnHotwordEnabled(bool enable) {
+  default_on_ = enable;
+  if (default_on_ || mic_open)
+    source_->Start();
+  else
+    source_->Stop();
+}
+
 void AudioInputImpl::StartRecording() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   source_->Start();
@@ -178,6 +186,10 @@ int64_t AudioInputProviderImpl::GetCurrentAudioTime() {
 
 void AudioInputProviderImpl::SetMicState(bool mic_open) {
   audio_input_.SetMicState(mic_open);
+}
+
+void AudioInputProviderImpl::OnHotwordEnabled(bool enable) {
+  audio_input_.OnHotwordEnabled(enable);
 }
 
 }  // namespace assistant

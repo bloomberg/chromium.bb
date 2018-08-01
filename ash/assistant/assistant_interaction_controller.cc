@@ -11,7 +11,9 @@
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -327,6 +329,10 @@ void AssistantInteractionController::StartTextInteraction(
     const std::string text) {
   StopActiveInteraction();
 
+  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
+      mojom::VoiceInteractionState::RUNNING)
+    return;
+
   assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantTextQuery>(text));
 
@@ -335,6 +341,10 @@ void AssistantInteractionController::StartTextInteraction(
 
 void AssistantInteractionController::StartVoiceInteraction() {
   StopActiveInteraction();
+
+  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
+      mojom::VoiceInteractionState::RUNNING)
+    return;
 
   assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantVoiceQuery>());
@@ -349,6 +359,10 @@ void AssistantInteractionController::StopActiveInteraction() {
   // events belonging to the interaction being stopped.
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
   assistant_interaction_model_.ClearPendingQuery();
+
+  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
+      mojom::VoiceInteractionState::RUNNING)
+    return;
   assistant_->StopActiveInteraction();
 
   // Because we are stopping an interaction in progress, we discard any pending

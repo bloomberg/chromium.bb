@@ -9,7 +9,9 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -170,6 +172,10 @@ void AssistantScreenContextController::RequestScreenshot(
 
 void AssistantScreenContextController::RequestScreenContext(
     const gfx::Rect& rect) {
+  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
+      mojom::VoiceInteractionState::RUNNING)
+    return;
+
   // Abort any request in progress and update request state.
   screen_context_request_factory_.InvalidateWeakPtrs();
   assistant_screen_context_model_.SetRequestState(

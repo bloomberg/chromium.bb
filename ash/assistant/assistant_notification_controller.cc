@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -110,11 +111,17 @@ void AssistantNotificationController::SetAssistant(
 void AssistantNotificationController::RetrieveNotification(
     AssistantNotificationPtr notification,
     int action_index) {
+  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
+      mojom::VoiceInteractionState::RUNNING)
+    return;
   assistant_->RetrieveNotification(std::move(notification), action_index);
 }
 
 void AssistantNotificationController::DismissNotification(
     AssistantNotificationPtr notification) {
+  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() !=
+      mojom::VoiceInteractionState::RUNNING)
+    return;
   assistant_->DismissNotification(std::move(notification));
 }
 

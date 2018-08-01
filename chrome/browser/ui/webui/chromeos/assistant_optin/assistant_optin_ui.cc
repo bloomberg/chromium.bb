@@ -68,6 +68,10 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   source->AddResourcePath("assistant_logo.png", IDR_ASSISTANT_LOGO_PNG);
   source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+
+  // Make sure enable Assistant service since we need it during the flow.
+  PrefService* prefs = Profile::FromWebUI(web_ui)->GetPrefs();
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
 }
 
 AssistantOptInUI::~AssistantOptInUI() = default;
