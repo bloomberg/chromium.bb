@@ -133,7 +133,8 @@ class ChromiumDepGraph {
     private customizeDep(DependencyDescription dep) {
         if (dep.id?.startsWith("com_google_android_gms_play_services_")) {
             dep.licenseUrl = ""
-            dep.licensePath = "/third_party/android_deps/Android_SDK_License-December_9_2016.txt"
+            // This should match fetch_all._ANDROID_SDK_LICENSE_PATH
+            dep.licensePath = "Android_SDK_License-December_9_2016.txt"
             if (dep.url?.isEmpty()) {
                 dep.url = "https://developers.google.com/android/guides/setup"
             }

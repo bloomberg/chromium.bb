@@ -78,6 +78,9 @@ class BuildConfigGenerator extends DefaultTask {
             new File("${absoluteDepDir}/OWNERS").write(makeOwners())
             if (!dependency.licenseUrl?.trim()?.isEmpty()) {
                 downloadFile(dependency.licenseUrl, new File("${absoluteDepDir}/LICENSE"))
+            } else if (!dependency.licensePath?.isEmpty()) {
+                new File("${absoluteDepDir}/LICENSE").write(
+                        new File("${normalisedRepoPath}/${dependency.licensePath}").text)
             }
         }
 
@@ -231,9 +234,6 @@ class BuildConfigGenerator extends DefaultTask {
         }
 
         def licenseFile = dependency.supportsAndroid ? "LICENSE" : "NOT_SHIPPED"
-        if (!dependency.licensePath?.isEmpty()) {
-            licenseFile = dependency.licensePath
-        }
 
         return """\
         Name: ${dependency.displayName}
