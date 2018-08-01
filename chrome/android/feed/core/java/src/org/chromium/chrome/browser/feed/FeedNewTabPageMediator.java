@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed;
 
 import android.content.res.Resources;
 
+import com.google.android.libraries.feed.api.stream.ContentChangedListener;
 import com.google.android.libraries.feed.api.stream.ScrollListener;
 import com.google.android.libraries.feed.api.stream.Stream;
 
@@ -27,7 +28,13 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
     private final PrefChangeRegistrar mPrefChangeRegistrar;
 
     private ScrollListener mStreamScrollListener;
+    private ContentChangedListener mStreamContentChangedListener;
     private SectionHeader mSectionHeader;
+
+    private boolean mStreamContentChanged;
+    private int mThumbnailWidth;
+    private int mThumbnailHeight;
+    private int mThumbnailScrollY;
 
     /**
      * @param feedNewTabPage The {@link FeedNewTabPage} that interacts with this class.
@@ -44,7 +51,9 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
 
     /** Clears any dependencies. */
     void destroy() {
-        mCoordinator.getStream().removeScrollListener(mStreamScrollListener);
+        Stream stream = mCoordinator.getStream();
+        stream.removeScrollListener(mStreamScrollListener);
+        stream.removeOnContentChangedListener(mStreamContentChangedListener);
         mPrefChangeRegistrar.destroy();
     }
 
@@ -61,6 +70,7 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
                     mSnapScrollHelper.handleScroll();
                 });
 
+        Stream stream = mCoordinator.getStream();
         mStreamScrollListener = new ScrollListener() {
             @Override
             public void onScrollStateChanged(int state) {}
@@ -70,7 +80,10 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
                 mSnapScrollHelper.handleScroll();
             }
         };
-        mCoordinator.getStream().addScrollListener(mStreamScrollListener);
+        stream.addScrollListener(mStreamScrollListener);
+
+        mStreamContentChangedListener = () -> mStreamContentChanged = true;
+        stream.addOnContentChangedListener(mStreamContentChangedListener);
 
         Resources res = mCoordinator.getSectionHeaderView().getResources();
         mSectionHeader =
@@ -78,7 +91,7 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
                         PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE),
                         this::onSectionHeaderToggled);
         mCoordinator.getSectionHeaderView().setHeader(mSectionHeader);
-        mCoordinator.getStream().setStreamContentVisibility(mSectionHeader.isExpanded());
+        stream.setStreamContentVisibility(mSectionHeader.isExpanded());
     }
 
     /** Update whether the section header should be expanded. */
@@ -99,6 +112,21 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
         mCoordinator.getStream().setStreamContentVisibility(mSectionHeader.isExpanded());
         // TODO(huayinz): Update the section header view through a ModelChangeProcessor.
         mCoordinator.getSectionHeaderView().updateIconDrawable();
+    }
+
+    /** Whether a new thumbnail should be captured. */
+    boolean shouldCaptureThumbnail() {
+        return mStreamContentChanged || mCoordinator.getView().getWidth() != mThumbnailWidth
+                || mCoordinator.getView().getHeight() != mThumbnailHeight
+                || getVerticalScrollOffset() != mThumbnailScrollY;
+    }
+
+    /** Reset all the properties for thumbnail capturing after a new thumbnail is captured. */
+    void onThumbnailCaptured() {
+        mThumbnailWidth = mCoordinator.getView().getWidth();
+        mThumbnailHeight = mCoordinator.getView().getHeight();
+        mThumbnailScrollY = getVerticalScrollOffset();
+        mStreamContentChanged = false;
     }
 
     // ScrollDelegate interface.
