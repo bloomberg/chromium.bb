@@ -55,11 +55,23 @@ using message_center::Notification;
 
 namespace {
 
-const char kNotificationId[] = "my-notification-id";
 const int kNotificationVibrationPattern[] = { 100, 200, 300 };
+const char kNotificationId[] = "my-notification-id";
 const char kClosedReason[] = "ClosedReason";
+const char kDidReplaceAnotherNotification[] = "DidReplaceAnotherNotification";
+const char kHasBadge[] = "HasBadge";
+const char kHasImage[] = "HasImage";
+const char kHasIcon[] = "HasIcon";
+const char kHasRenotify[] = "HasRenotify";
+const char kHasTag[] = "HasTag";
+const char kIsSilent[] = "IsSilent";
+const char kNumActions[] = "NumActions";
 const char kNumClicks[] = "NumClicks";
 const char kNumActionButtonClicks[] = "NumActionButtonClicks";
+const char kRequireInteraction[] = "RequireInteraction";
+const char kTimeUntilCloseMillis[] = "TimeUntilClose";
+const char kTimeUntilFirstClickMillis[] = "TimeUntilFirstClick";
+const char kTimeUntilLastClickMillis[] = "TimeUntilLastClick";
 
 class TestingProfileWithPermissionManager : public TestingProfile {
  public:
@@ -143,12 +155,12 @@ class PlatformNotificationServiceTest : public testing::Test {
 };
 
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentThenClose) {
-  PlatformNotificationData notification_data;
-  notification_data.title = base::ASCIIToUTF16("My Notification");
-  notification_data.body = base::ASCIIToUTF16("Hello, world!");
+  PlatformNotificationData data;
+  data.title = base::ASCIIToUTF16("My Notification");
+  data.body = base::ASCIIToUTF16("Hello, world!");
 
   service()->DisplayNotification(&profile_, kNotificationId,
-                                 GURL("https://chrome.com/"), notification_data,
+                                 GURL("https://chrome.com/"), data,
                                  NotificationResources());
 
   EXPECT_EQ(1u, GetNotificationCountForType(
@@ -161,14 +173,14 @@ TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentThenClose) {
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayPersistentThenClose) {
-  PlatformNotificationData notification_data;
-  notification_data.title = base::ASCIIToUTF16("My notification's title");
-  notification_data.body = base::ASCIIToUTF16("Hello, world!");
+  PlatformNotificationData data;
+  data.title = base::ASCIIToUTF16("My notification's title");
+  data.body = base::ASCIIToUTF16("Hello, world!");
 
   EXPECT_CALL(*mock_logger_, LogPersistentNotificationShown());
   service()->DisplayPersistentNotification(
       &profile_, kNotificationId, GURL() /* service_worker_scope */,
-      GURL("https://chrome.com/"), notification_data, NotificationResources());
+      GURL("https://chrome.com/"), data, NotificationResources());
 
   ASSERT_EQ(1u, GetNotificationCountForType(
                     NotificationHandler::Type::WEB_PERSISTENT));
@@ -216,14 +228,14 @@ TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
       kNotificationVibrationPattern,
       kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
 
-  PlatformNotificationData notification_data;
-  notification_data.title = base::ASCIIToUTF16("My notification's title");
-  notification_data.body = base::ASCIIToUTF16("Hello, world!");
-  notification_data.vibration_pattern = vibration_pattern;
-  notification_data.silent = true;
+  PlatformNotificationData data;
+  data.title = base::ASCIIToUTF16("My notification's title");
+  data.body = base::ASCIIToUTF16("Hello, world!");
+  data.vibration_pattern = vibration_pattern;
+  data.silent = true;
 
   service()->DisplayNotification(&profile_, kNotificationId,
-                                 GURL("https://chrome.com/"), notification_data,
+                                 GURL("https://chrome.com/"), data,
                                  NotificationResources());
 
   ASSERT_EQ(1u, GetNotificationCountForType(
@@ -248,26 +260,24 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
       kNotificationVibrationPattern,
       kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
 
-  PlatformNotificationData notification_data;
-  notification_data.title = base::ASCIIToUTF16("My notification's title");
-  notification_data.body = base::ASCIIToUTF16("Hello, world!");
-  notification_data.vibration_pattern = vibration_pattern;
-  notification_data.silent = true;
-  notification_data.actions.resize(2);
-  notification_data.actions[0].type =
-      content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
-  notification_data.actions[0].title = base::ASCIIToUTF16("Button 1");
-  notification_data.actions[1].type =
-      content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
-  notification_data.actions[1].title = base::ASCIIToUTF16("Button 2");
+  PlatformNotificationData data;
+  data.title = base::ASCIIToUTF16("My notification's title");
+  data.body = base::ASCIIToUTF16("Hello, world!");
+  data.vibration_pattern = vibration_pattern;
+  data.silent = true;
+  data.actions.resize(2);
+  data.actions[0].type = content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+  data.actions[0].title = base::ASCIIToUTF16("Button 1");
+  data.actions[1].type = content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
+  data.actions[1].title = base::ASCIIToUTF16("Button 2");
 
   NotificationResources notification_resources;
-  notification_resources.action_icons.resize(notification_data.actions.size());
+  notification_resources.action_icons.resize(data.actions.size());
 
   EXPECT_CALL(*mock_logger_, LogPersistentNotificationShown());
   service()->DisplayPersistentNotification(
       &profile_, kNotificationId, GURL() /* service_worker_scope */,
-      GURL("https://chrome.com/"), notification_data, notification_resources);
+      GURL("https://chrome.com/"), data, notification_resources);
 
   ASSERT_EQ(1u, GetNotificationCountForType(
                     NotificationHandler::Type::WEB_PERSISTENT));
@@ -362,8 +372,23 @@ TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
   NotificationDatabaseData data;
   data.notification_id = "notification1";
   data.closed_reason = NotificationDatabaseData::ClosedReason::USER;
+  data.replaced_existing_notification = true;
+  data.notification_data.icon = GURL("https://icon.com");
+  data.notification_data.image = GURL("https://image.com");
+  data.notification_data.renotify = false;
+  data.notification_data.tag = "tag";
+  data.notification_data.silent = true;
+  content::PlatformNotificationAction action1, action2, action3;
+  data.notification_data.actions.push_back(action1);
+  data.notification_data.actions.push_back(action2);
+  data.notification_data.actions.push_back(action3);
+  data.notification_data.require_interaction = false;
   data.num_clicks = 3;
   data.num_action_button_clicks = 1;
+  data.time_until_close_millis = base::TimeDelta::FromMilliseconds(10000);
+  data.time_until_first_click_millis = base::TimeDelta::FromMilliseconds(2222);
+  data.time_until_last_click_millis = base::TimeDelta::FromMilliseconds(3333);
+
   history::URLRow url_row;
   history::VisitVector visits;
 
@@ -375,13 +400,27 @@ TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
 
   // The history service finds the given URL and the notification is logged.
   service()->OnUrlHistoryQueryComplete(data, true, url_row, visits);
-  auto* entry =
-      recorder_->GetEntriesByName(ukm::builders::Notification::kEntryName)[0];
+  entries =
+      recorder_->GetEntriesByName(ukm::builders::Notification::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries[0];
   recorder_->ExpectEntryMetric(
       entry, kClosedReason,
       static_cast<int>(NotificationDatabaseData::ClosedReason::USER));
-  recorder_->ExpectEntryMetric(entry, kNumClicks, 3);
+  recorder_->ExpectEntryMetric(entry, kDidReplaceAnotherNotification, true);
+  recorder_->ExpectEntryMetric(entry, kHasBadge, false);
+  recorder_->ExpectEntryMetric(entry, kHasIcon, 1);
+  recorder_->ExpectEntryMetric(entry, kHasImage, 1);
+  recorder_->ExpectEntryMetric(entry, kHasRenotify, false);
+  recorder_->ExpectEntryMetric(entry, kHasTag, true);
+  recorder_->ExpectEntryMetric(entry, kIsSilent, 1);
+  recorder_->ExpectEntryMetric(entry, kNumActions, 3);
   recorder_->ExpectEntryMetric(entry, kNumActionButtonClicks, 1);
+  recorder_->ExpectEntryMetric(entry, kNumClicks, 3);
+  recorder_->ExpectEntryMetric(entry, kRequireInteraction, false);
+  recorder_->ExpectEntryMetric(entry, kTimeUntilCloseMillis, 10000);
+  recorder_->ExpectEntryMetric(entry, kTimeUntilFirstClickMillis, 2222);
+  recorder_->ExpectEntryMetric(entry, kTimeUntilLastClickMillis, 3333);
 }
 
 // Expect each call to ReadNextPersistentNotificationId to return a larger
