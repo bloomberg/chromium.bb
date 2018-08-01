@@ -3245,10 +3245,10 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
 
   if (new_contents && source_render_frame_host && new_contents != this) {
     for (auto& observer : observers_) {
-      observer.DidOpenRequestedURL(new_contents, source_render_frame_host,
-                                   params.url, params.referrer,
-                                   params.disposition, params.transition,
-                                   params.started_from_context_menu, false);
+      observer.DidOpenRequestedURL(
+          new_contents, source_render_frame_host, params.url, params.referrer,
+          params.disposition, params.transition,
+          params.started_from_context_menu, params.is_renderer_initiated);
     }
   }
 

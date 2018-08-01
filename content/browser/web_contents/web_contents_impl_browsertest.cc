@@ -2753,4 +2753,63 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
             web_contents->current_fullscreen_frame_tree_node_id_);
 }
 
+class MockDidOpenRequestedURLObserver : public WebContentsObserver {
+ public:
+  explicit MockDidOpenRequestedURLObserver(Shell* shell)
+      : WebContentsObserver(shell->web_contents()) {}
+
+  MOCK_METHOD8(DidOpenRequestedURL,
+               void(WebContents* new_contents,
+                    RenderFrameHost* source_render_frame_host,
+                    const GURL& url,
+                    const Referrer& referrer,
+                    WindowOpenDisposition disposition,
+                    ui::PageTransition transition,
+                    bool started_from_context_menu,
+                    bool renderer_initiated));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockDidOpenRequestedURLObserver);
+};
+
+// Test WebContentsObserver::DidOpenRequestedURL for ctrl-click-ed links.
+// This is a regression test for https://crbug.com/864736 (although it also
+// covers slightly more ground than just the |is_renderer_initiated| value).
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, CtrlClickSubframeLink) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load a page with a subframe link.
+  GURL main_url(
+      embedded_test_server()->GetURL("/ctrl-click-subframe-link.html"));
+  NavigateToURL(shell(), main_url);
+
+  // Start intercepting the DidOpenRequestedURL callback.
+  MockDidOpenRequestedURLObserver mock_observer(shell());
+  WebContents* new_web_contents1 = nullptr;
+  RenderFrameHost* subframe = shell()->web_contents()->GetAllFrames()[1];
+  EXPECT_CALL(mock_observer,
+              DidOpenRequestedURL(
+                  ::testing::_,  // new_contents (captured via SaveArg below)
+                  subframe,      // source_render_frame_host
+                  embedded_test_server()->GetURL("/title1.html"),
+                  ::testing::Field(&Referrer::url, main_url),
+                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                  ::testing::Truly([](ui::PageTransition arg) {
+                    return ui::PageTransitionCoreTypeIs(
+                        arg, ui::PAGE_TRANSITION_LINK);
+                  }),
+                  false,  // started_from_context_menu
+                  true))  // is_renderer_initiated
+      .WillOnce(testing::SaveArg<0>(&new_web_contents1));
+
+  // Simulate a ctrl click on the link and ask GMock to verify that the
+  // MockDidOpenRequestedURLObserver got called with the expected args.
+  WebContentsAddedObserver new_web_contents_observer;
+  EXPECT_TRUE(ExecuteScript(
+      shell(), "window.domAutomationController.send(ctrlClickLink());"));
+  WebContents* new_web_contents2 = new_web_contents_observer.GetWebContents();
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_observer));
+  EXPECT_EQ(new_web_contents1, new_web_contents2);
+}
+
 }  // namespace content
