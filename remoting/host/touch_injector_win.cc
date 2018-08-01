@@ -155,15 +155,19 @@ DWORD TouchInjectorWinDelegate::InjectTouchInput(
   return inject_touch_input_func_(count, contacts);
 }
 
-TouchInjectorWin::TouchInjectorWin()
-    : delegate_(TouchInjectorWinDelegate::Create()) {}
+TouchInjectorWin::TouchInjectorWin() = default;
 
-TouchInjectorWin::~TouchInjectorWin() {}
+TouchInjectorWin::~TouchInjectorWin() = default;
 
 // Note that TouchInjectorWinDelegate::Create() is not called in this method
 // so that a mock delegate can be injected in tests and set expectations on the
 // mock and return value of this method.
 bool TouchInjectorWin::Init() {
+  if (!delegate_)
+    delegate_ = TouchInjectorWinDelegate::Create();
+
+  // If initializing the delegate failed above, then the platform likely doesn't
+  // support touch (or the libraries failed to load for some reason).
   if (!delegate_)
     return false;
 
