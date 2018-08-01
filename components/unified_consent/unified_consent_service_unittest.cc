@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/fake_sync_service.h"
@@ -186,6 +187,8 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverything) {
+  base::HistogramTester histogram_tester;
+
   // Create inconsistent state.
   identity_test_environment_.SetPrimaryAccount("testaccount");
   syncer::SyncPrefs sync_prefs(&pref_service_);
@@ -204,6 +207,9 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverything) {
   EXPECT_EQ(
       consent_service_->GetMigrationState(),
       unified_consent::MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP);
+  // A metric should be recorded that the user was syncing everything.
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.Migration.SyncEverythingWasOn", true, 1);
 
   // When the user signs out, the migration state changes to completed.
   identity_test_environment_.ClearPrimaryAccount();
@@ -213,6 +219,8 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverything) {
 #endif  // !defined(OS_CHROMEOS)
 
 TEST_F(UnifiedConsentServiceTest, Migration_NotSyncingEverything) {
+  base::HistogramTester histogram_tester;
+
   identity_test_environment_.SetPrimaryAccount("testaccount");
   syncer::SyncPrefs sync_prefs(&pref_service_);
   sync_prefs.SetKeepEverythingSynced(false);
@@ -224,6 +232,9 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSyncingEverything) {
   // creation of the consent service.
   EXPECT_EQ(consent_service_->GetMigrationState(),
             unified_consent::MigrationState::COMPLETED);
+  // A metric should be recorded that the user wasn't syncing everything.
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.Migration.SyncEverythingWasOn", false, 1);
 }
 
 #if !defined(OS_CHROMEOS)

@@ -4,6 +4,7 @@
 
 #include "components/unified_consent/unified_consent_service.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -181,26 +182,32 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
   DCHECK_EQ(GetMigrationState(), MigrationState::NOT_INITIALIZED);
   DCHECK(!IsUnifiedConsentGiven());
 
-  syncer::SyncPrefs sync_prefs(pref_service_);
-  if (identity_manager_->HasPrimaryAccount() &&
-      sync_prefs.HasKeepEverythingSynced()) {
-    // When the user was syncing everything, the consent bump should be shown
-    // when this is possible.
-    pref_service_->SetInteger(
-        prefs::kUnifiedConsentMigrationState,
-        static_cast<int>(MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP));
-    // Set sync-everything to false to match the |kUnifiedConsentGiven| pref.
-    // Note: If the sync engine isn't initialized at this point, sync-everything
-    // is set to false once the sync engine state changes. Sync-everything can
-    // then be set to true again after going through the consent bump and opting
-    // into unified consent.
-    SetSyncEverythingIfPossible(false);
+  if (!identity_manager_->HasPrimaryAccount()) {
+    MarkMigrationComplete();
     return;
   }
 
-  // When the user isn't signed in or doesn't sync everything, nothing has to be
-  // done. Mark migration as complete.
-  MarkMigrationComplete();
+  bool is_syncing_everything =
+      syncer::SyncPrefs(pref_service_).HasKeepEverythingSynced();
+  // Record whether the user was syncing everything during Migration.
+  UMA_HISTOGRAM_BOOLEAN("UnifiedConsent.Migration.SyncEverythingWasOn",
+                        is_syncing_everything);
+  if (!is_syncing_everything) {
+    MarkMigrationComplete();
+    return;
+  }
+
+  // When the user was syncing everything, the consent bump should be shown
+  // when this is possible.
+  pref_service_->SetInteger(
+      prefs::kUnifiedConsentMigrationState,
+      static_cast<int>(MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP));
+  // Set sync-everything to false to match the |kUnifiedConsentGiven| pref.
+  // Note: If the sync engine isn't initialized at this point,
+  // sync-everything is set to false once the sync engine state changes.
+  // Sync-everything can then be set to true again after going through the
+  // consent bump and opting into unified consent.
+  SetSyncEverythingIfPossible(false);
 }
 
 }  //  namespace unified_consent
