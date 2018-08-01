@@ -151,7 +151,9 @@ template("gcc_toolchain") {
     # toolchain args, use those values, otherwise default to the global one.
     # This works because the only reasonable override that toolchains might
     # supply for these values are to force-disable them.
-    if (toolchain_uses_goma) {
+    # But if has_gomacc_path is set, we assumes that compiler wrapper find
+    # gomacc from GOMACC_PATH envvar.
+    if (toolchain_uses_goma && !has_gomacc_path) {
       goma_path = "$goma_dir/gomacc"
 
       # Use the static analysis script if static analysis is turned on
