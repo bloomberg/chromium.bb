@@ -12055,8 +12055,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test to verify that viewport intersection is propagated to nested OOPIFs
 // even when a parent OOPIF has been throttled.
+// TODO(crbug.com/869758) The test is flaky on android
+#if defined(OS_ANDROID)
+#define MAYBE_NestedFrameViewportIntersectionUpdated \
+  DISABLED_NestedFrameViewportIntersectionUpdated
+#else
+#define MAYBE_NestedFrameViewportIntersectionUpdated \
+  NestedFrameViewportIntersectionUpdated
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       NestedFrameViewportIntersectionUpdated) {
+                       MAYBE_NestedFrameViewportIntersectionUpdated) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/frame_tree/scrollable_page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
