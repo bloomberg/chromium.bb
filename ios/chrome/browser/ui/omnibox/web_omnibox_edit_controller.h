@@ -21,7 +21,8 @@ class WebOmniboxEditController : public OmniboxEditController {
   // The autocomplete edit lost focus.
   virtual void OnKillFocus() = 0;
 
-  // The autocomplete got focus.
+  // The autocomplete got focus. In UI Refresh, this is not called if the popup
+  // was already open when the omnibox is refocused.
   virtual void OnSetFocus() = 0;
 
  protected:

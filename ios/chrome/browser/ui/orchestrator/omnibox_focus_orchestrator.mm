@@ -68,6 +68,8 @@
     [self.locationBarAnimatee setEditViewHidden:NO];
     [self.locationBarAnimatee setSteadyViewHidden:YES];
     [self.locationBarAnimatee resetTransforms];
+    [self.locationBarAnimatee setSteadyViewFaded:NO];
+    [self.locationBarAnimatee setEditViewFaded:NO];
     self.isAnimating = NO;
   };
 
@@ -124,6 +126,8 @@
     [self.locationBarAnimatee setSteadyViewHidden:NO];
     [self.locationBarAnimatee resetTransforms];
     self.isAnimating = NO;
+    [self.locationBarAnimatee setSteadyViewFaded:NO];
+    [self.locationBarAnimatee setEditViewFaded:NO];
   };
 
   if (animated) {
