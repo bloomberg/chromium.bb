@@ -15,15 +15,6 @@
 #include "ui/aura/client/window_types.h"
 #include "ui/base/ui_base_types.h"
 
-namespace aura {
-class Window;
-}
-
-namespace display {
-class NativeDisplayDelegate;
-class TouchTransformSetter;
-}
-
 namespace gfx {
 class Point;
 }
@@ -34,25 +25,14 @@ enum class PointerWatcherEventTypes;
 }
 
 namespace ash {
-class AcceleratorController;
-class AshWindowTreeHost;
-struct AshWindowTreeHostInitParams;
-class KeyboardUI;
 class RootWindowController;
-class WindowCycleEventFilter;
-class WindowResizer;
-class WorkspaceEventHandler;
 
 enum class Config;
-enum class TaskSwitchSource;
-
-namespace wm {
-class TabletModeEventHandler;
-class WindowState;
-}
 
 // Porting layer for Shell. This class contains the part of Shell that are
 // different in classic ash and mus/mash.
+// DEPRECATED: Being removed, since there is no longer a distinct "classic"
+// config in ash. See https://crbug.com/866523
 class ASH_EXPORT ShellPort {
  public:
   virtual ~ShellPort();
@@ -64,33 +44,9 @@ class ASH_EXPORT ShellPort {
 
   virtual Config GetAshConfig() const = 0;
 
-  // The return value from this is supplied to AshTouchTransformController; see
-  // it and TouchTransformSetter for details.
-  virtual std::unique_ptr<display::TouchTransformSetter>
-  CreateTouchTransformDelegate() = 0;
-
   // Shows the context menu for the wallpaper or shelf at |location_in_screen|.
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
-
-  // Returns a WindowResizer to handle dragging. |next_window_resizer| is
-  // the next WindowResizer in the WindowResizer chain. This may return
-  // |next_window_resizer|.
-  virtual std::unique_ptr<WindowResizer> CreateDragWindowResizer(
-      std::unique_ptr<WindowResizer> next_window_resizer,
-      wm::WindowState* window_state) = 0;
-
-  virtual std::unique_ptr<WindowCycleEventFilter>
-  CreateWindowCycleEventFilter() = 0;
-
-  virtual std::unique_ptr<wm::TabletModeEventHandler>
-  CreateTabletModeEventHandler() = 0;
-
-  virtual std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
-      aura::Window* workspace_window) = 0;
-
-  // Creates the KeyboardUI. This is called early on.
-  virtual std::unique_ptr<KeyboardUI> CreateKeyboardUI() = 0;
 
   // If |events| is PointerWatcherEventTypes::MOVES,
   // PointerWatcher::OnPointerEventObserved() is called for pointer move events.
@@ -109,11 +65,6 @@ class ASH_EXPORT ShellPort {
   virtual void ToggleIgnoreExternalKeyboard() = 0;
 
   virtual void CreatePointerWatcherAdapter() = 0;
-
-  // Creates an AshWindowTreeHost. A return value of null results in a platform
-  // specific AshWindowTreeHost being created.
-  virtual std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
-      const AshWindowTreeHostInitParams& init_params) = 0;
 
   // Called after the containers of |root_window_controller| have been created.
   // Allows ShellPort to install any additional state on the containers.
@@ -134,15 +85,7 @@ class ASH_EXPORT ShellPort {
   // Called after WindowTreeHostManager::InitHosts().
   virtual void OnHostsInitialized() = 0;
 
-  virtual std::unique_ptr<display::NativeDisplayDelegate>
-  CreateNativeDisplayDelegate() = 0;
-
-  // Called during startup to create the AcceleratorController.
-  virtual std::unique_ptr<AcceleratorController>
-  CreateAcceleratorController() = 0;
-
  private:
-  friend class AcceleratorControllerTest;
   friend class Shell;
 
   static ShellPort* instance_;

@@ -207,6 +207,7 @@
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
@@ -1083,7 +1084,7 @@ void Shell::Init(
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
-  accelerator_controller_ = shell_port_->CreateAcceleratorController();
+  accelerator_controller_ = std::make_unique<AcceleratorController>(nullptr);
 
   // |app_list_controller_| is put after |tablet_mode_controller_| as the former
   // uses the latter in constructor.
@@ -1224,9 +1225,9 @@ void Shell::Init(
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
   touch_transformer_controller_ = std::make_unique<AshTouchTransformController>(
       display_configurator_.get(), display_manager_.get(),
-      shell_port_->CreateTouchTransformDelegate());
+      std::make_unique<display::DefaultTouchTransformSetter>());
 
-  keyboard_ui_ = shell_port_->CreateKeyboardUI();
+  keyboard_ui_ = KeyboardUI::Create();
 
   // |system_tray_model_| should be available before
   // |system_notification_controller_| is initialized and Shelf is created by
@@ -1313,8 +1314,8 @@ void Shell::InitializeDisplayManager() {
   display_configuration_controller_ =
       std::make_unique<DisplayConfigurationController>(
           display_manager_.get(), window_tree_host_manager_.get());
-  display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
-                              false);
+  display_configurator_->Init(
+      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
   display_configuration_observer_ =
       std::make_unique<DisplayConfigurationObserver>();
 

@@ -10,10 +10,9 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
-#include "ash/wm/window_cycle_event_filter.h"
+#include "ash/wm/window_cycle_event_filter_classic.h"
 #include "ash/wm/window_cycle_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -62,7 +61,7 @@ void WindowCycleController::StartCycling() {
   active_window_before_window_cycle_ = GetActiveWindow(window_list);
 
   window_cycle_list_.reset(new WindowCycleList(window_list));
-  event_filter_ = ShellPort::Get()->CreateWindowCycleEventFilter();
+  event_filter_ = std::make_unique<WindowCycleEventFilterClassic>();
   cycle_start_time_ = base::Time::Now();
   base::RecordAction(base::UserMetricsAction("WindowCycleController_Cycle"));
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowCycleController.Items",

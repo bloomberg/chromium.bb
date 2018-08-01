@@ -13,6 +13,8 @@ namespace ash {
 namespace wm {
 
 // Implementation of TabletModeEventHandler for aura. Uses ui::EventHandler.
+// TODO(jamescook): Collapse with TabletModeEventHandler.
+// https://crbug.com/866523
 class ASH_EXPORT TabletModeEventHandlerClassic : public TabletModeEventHandler,
                                                  public ui::EventHandler {
  public:

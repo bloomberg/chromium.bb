@@ -45,6 +45,7 @@ ASH_EXPORT extern const char kFullscreenMagnifierToggleAccelNotificationId[];
 class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
                                          public mojom::AcceleratorController {
  public:
+  // TODO(jamescook): Remove |manager_delegate|. https://crbug.com/842365
   explicit AcceleratorController(
       ui::AcceleratorManagerDelegate* manager_delegate);
   ~AcceleratorController() override;

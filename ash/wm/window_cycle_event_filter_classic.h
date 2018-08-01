@@ -13,6 +13,8 @@
 
 namespace ash {
 
+// TODO(jamescook): Collapse with WindowCycleEventFilter.
+// https://crbug.com/866523
 class ASH_EXPORT WindowCycleEventFilterClassic : public ui::EventHandler,
                                                  public WindowCycleEventFilter {
  public:
