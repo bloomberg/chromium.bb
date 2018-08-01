@@ -19,7 +19,6 @@
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/message_loop/sequenced_task_source.h"
 #include "base/run_loop.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
