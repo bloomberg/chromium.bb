@@ -166,8 +166,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Spacing between the image and the label.
   int GetInternalSpacing() const;
 
-  // Retrieves the width taken the separator including padding before the
-  // separator stroke, taking into account whether it is shown or not.
+  // Returns the width taken by the separator stroke and the before-padding.
+  // If the separator is not shown, and ShouldShowExtraEndSpace() is false,
+  // this returns 0.
   int GetPrefixedSeparatorWidth() const;
 
   // Padding after the separator.

@@ -434,13 +434,23 @@ int IconLabelBubbleView::GetInternalSpacing() const {
   if (image_->GetPreferredSize().IsEmpty())
     return 0;
 
-  // In touch, the icon-to-label spacing is a custom value.
-  constexpr int kIconLabelSpacingTouch = 4;
-  const int default_spacing =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-          ? kIconLabelSpacingTouch
-          : GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-                GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
+  // Touch Optimized, Refresh, and Touch Refresh all have custom spacing values.
+  int default_spacing = 0;
+  switch (ui::MaterialDesignController::GetMode()) {
+    case ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED:
+      default_spacing = 4;
+      break;
+    case ui::MaterialDesignController::MATERIAL_REFRESH:
+      default_spacing = 8;
+      break;
+    case ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH:
+      default_spacing = 10;
+      break;
+    default:
+      default_spacing =
+          GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
+          GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
+  }
 
   return default_spacing +
          (ShouldShowExtraInternalSpace() ? GetPrefixedSeparatorWidth() : 0);
