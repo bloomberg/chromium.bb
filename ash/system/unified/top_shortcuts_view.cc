@@ -68,10 +68,14 @@ void TopShortcutButtonContainer::Layout() {
     total_horizontal_size += child_horizontal_size;
     num_visible++;
   }
-  int spacing = std::max(kUnifiedTopShortcutButtonMinSpacing,
+
+  int spacing = 0;
+  if (num_visible > 1) {
+    spacing = std::max(kUnifiedTopShortcutButtonMinSpacing,
                          std::min(kUnifiedTopShortcutButtonDefaultSpacing,
                                   (child_area.width() - total_horizontal_size) /
                                       (num_visible - 1)));
+  }
 
   int sign_out_button_width = 0;
   if (sign_out_button_ && sign_out_button_->visible()) {
@@ -155,13 +159,13 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
   lock_button_ = new TopShortcutButton(this, kUnifiedMenuLockIcon,
                                        IDS_ASH_STATUS_TRAY_LOCK);
-  lock_button_->SetEnabled(can_show_web_ui &&
+  lock_button_->SetVisible(can_show_web_ui &&
                            Shell::Get()->session_controller()->CanLockScreen());
   container_->AddChildView(lock_button_);
 
   settings_button_ = new TopShortcutButton(this, kUnifiedMenuSettingsIcon,
                                            IDS_ASH_STATUS_TRAY_SETTINGS);
-  settings_button_->SetEnabled(can_show_web_ui);
+  settings_button_->SetVisible(can_show_web_ui);
   container_->AddChildView(settings_button_);
 
   bool reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
