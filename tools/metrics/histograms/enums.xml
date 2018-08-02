@@ -32266,6 +32266,12 @@ Called by update_use_counter_css.py.-->
   <int value="17" label="externalfile"/>
 </enum>
 
+<enum name="NavigationSuggestionEvent">
+  <int value="0" label="None"/>
+  <int value="1" label="Infobar shown"/>
+  <int value="2" label="Link clicked on the infobar"/>
+</enum>
+
 <enum name="NavigationWasServedFromCache">
   <int value="0" label="Navigation wasn't served from cache"/>
   <int value="1" label="Navigation was served from cache"/>

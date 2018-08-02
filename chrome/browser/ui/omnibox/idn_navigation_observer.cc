@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/omnibox/idn_navigation_observer.h"
 
+#include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -11,6 +13,18 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+
+namespace {
+
+void RecordEvent(IdnNavigationObserver::NavigationSuggestionEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(IdnNavigationObserver::kHistogramName, event);
+}
+
+}  // namespace
+
+// static
+const char IdnNavigationObserver::kHistogramName[] =
+    "NavigationSuggestion.Event";
 
 IdnNavigationObserver::IdnNavigationObserver(content::WebContents* web_contents)
     : WebContentsObserver(web_contents) {}
@@ -32,9 +46,12 @@ void IdnNavigationObserver::NavigationEntryCommitted(
   replace_host.SetHostStr(result.matching_top_domain);
   const GURL suggested_url = url.ReplaceComponents(replace_host);
 
+  RecordEvent(NavigationSuggestionEvent::kInfobarShown);
+
   AlternateNavInfoBarDelegate::CreateForIDNNavigation(
       web_contents(), base::UTF8ToUTF16(result.matching_top_domain),
-      suggested_url, load_details.entry->GetVirtualURL());
+      suggested_url, load_details.entry->GetVirtualURL(),
+      base::BindOnce(RecordEvent, NavigationSuggestionEvent::kLinkClicked));
 }
 
 // static

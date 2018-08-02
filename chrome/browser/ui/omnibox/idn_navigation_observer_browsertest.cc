@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/infobars/infobar_observer.h"
@@ -9,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
+#include "chrome/browser/ui/omnibox/idn_navigation_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -77,6 +79,8 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest, TopDomainIdn_Infobar) {
   if (!GetParam())
     return;
 
+  base::HistogramTester histograms;
+
   history::HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(browser()->profile(),
                                            ServiceAccessType::EXPLICIT_ACCESS);
@@ -116,6 +120,14 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest, TopDomainIdn_Infobar) {
   // history.
   ui_test_utils::HistoryEnumerator enumerator(browser()->profile());
   EXPECT_FALSE(base::ContainsValue(enumerator.urls(), kIdnUrl));
+
+  histograms.ExpectTotalCount(IdnNavigationObserver::kHistogramName, 2);
+  histograms.ExpectBucketCount(
+      IdnNavigationObserver::kHistogramName,
+      IdnNavigationObserver::NavigationSuggestionEvent::kInfobarShown, 1);
+  histograms.ExpectBucketCount(
+      IdnNavigationObserver::kHistogramName,
+      IdnNavigationObserver::NavigationSuggestionEvent::kLinkClicked, 1);
 }
 
 // The infobar shouldn't be shown when the feature is disabled.

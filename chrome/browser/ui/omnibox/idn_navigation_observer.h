@@ -14,6 +14,19 @@ class IdnNavigationObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<IdnNavigationObserver> {
  public:
+  // Used for metrics.
+  enum class NavigationSuggestionEvent {
+    kNone = 0,
+    kInfobarShown = 1,
+    kLinkClicked = 2,
+
+    // Append new items to the end of the list above; do not modify or
+    // replace existing values. Comment out obsolete items.
+    kMaxValue = kLinkClicked,
+  };
+
+  static const char kHistogramName[];
+
   static void CreateForWebContents(content::WebContents* web_contents);
 
   explicit IdnNavigationObserver(content::WebContents* web_contents);
