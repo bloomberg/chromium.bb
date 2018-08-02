@@ -614,6 +614,22 @@ TEST_P(PasswordProtectionServiceTest, TestRemoveCachedVerdictOnURLsDeleted) {
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
 }
 
+TEST_P(PasswordProtectionServiceTest, TestDoesNotCacheAboutBlank) {
+  ASSERT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+
+  // Should not actually cache, since about:blank is not valid for reputation
+  // computing.
+  CacheVerdict(GURL("about:blank"),
+               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+               PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
+               LoginReputationClientResponse::SAFE, 10 * kMinute, "about:blank",
+               base::Time::Now());
+
+  EXPECT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+}
+
 TEST_P(PasswordProtectionServiceTest, VerifyCanGetReputationOfURL) {
   // Invalid main frame URL.
   EXPECT_FALSE(PasswordProtectionService::CanGetReputationOfURL(GURL()));
