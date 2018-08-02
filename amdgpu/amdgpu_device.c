@@ -39,23 +39,12 @@
 #include "xf86drm.h"
 #include "amdgpu_drm.h"
 #include "amdgpu_internal.h"
-#include "util_hash_table.h"
 #include "util_math.h"
 
 #define PTR_TO_UINT(x) ((unsigned)((intptr_t)(x)))
 
 static pthread_mutex_t fd_mutex = PTHREAD_MUTEX_INITIALIZER;
 static amdgpu_device_handle fd_list;
-
-static unsigned handle_hash(void *key)
-{
-	return PTR_TO_UINT(key);
-}
-
-static int handle_compare(void *key1, void *key2)
-{
-	return PTR_TO_UINT(key1) != PTR_TO_UINT(key2);
-}
 
 static int fd_compare(int fd1, int fd2)
 {
@@ -123,7 +112,7 @@ static void amdgpu_device_free_internal(amdgpu_device_handle dev)
 	amdgpu_vamgr_deinit(&dev->vamgr_high_32);
 	amdgpu_vamgr_deinit(&dev->vamgr_high);
 	handle_table_fini(&dev->bo_handles);
-	util_hash_table_destroy(dev->bo_flink_names);
+	handle_table_fini(&dev->bo_flink_names);
 	pthread_mutex_destroy(&dev->bo_table_mutex);
 	free(dev->marketing_name);
 	free(dev);
@@ -228,8 +217,6 @@ int amdgpu_device_initialize(int fd,
 	dev->minor_version = version->version_minor;
 	drmFreeVersion(version);
 
-	dev->bo_flink_names = util_hash_table_create(handle_hash,
-						     handle_compare);
 	pthread_mutex_init(&dev->bo_table_mutex, NULL);
 
 	/* Check if acceleration is working. */

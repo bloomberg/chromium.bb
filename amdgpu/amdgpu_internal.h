@@ -76,7 +76,7 @@ struct amdgpu_device {
 	/** List of buffer handles. Protected by bo_table_mutex. */
 	struct handle_table bo_handles;
 	/** List of buffer GEM flink names. Protected by bo_table_mutex. */
-	struct util_hash_table *bo_flink_names;
+	struct handle_table bo_flink_names;
 	/** This protects all hash tables. */
 	pthread_mutex_t bo_table_mutex;
 	struct drm_amdgpu_info_device dev_info;

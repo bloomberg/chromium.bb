@@ -37,7 +37,6 @@
 #include "xf86drm.h"
 #include "amdgpu_drm.h"
 #include "amdgpu_internal.h"
-#include "util_hash_table.h"
 #include "util_math.h"
 
 static void amdgpu_close_kms_handle(amdgpu_device_handle dev,
@@ -219,12 +218,10 @@ static int amdgpu_bo_export_flink(amdgpu_bo_handle bo)
 	}
 
 	pthread_mutex_lock(&bo->dev->bo_table_mutex);
-	util_hash_table_set(bo->dev->bo_flink_names,
-			    (void*)(uintptr_t)bo->flink_name,
-			    bo);
+	r = handle_table_insert(&bo->dev->bo_flink_names, bo->flink_name, bo);
 	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
 
-	return 0;
+	return r;
 }
 
 int amdgpu_bo_export(amdgpu_bo_handle bo,
@@ -301,8 +298,7 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	/* If we have already created a buffer with this handle, find it. */
 	switch (type) {
 	case amdgpu_bo_handle_type_gem_flink_name:
-		bo = util_hash_table_get(dev->bo_flink_names,
-					 (void*)(uintptr_t)shared_handle);
+		bo = handle_table_lookup(&dev->bo_flink_names, shared_handle);
 		break;
 
 	case amdgpu_bo_handle_type_dma_buf_fd:
@@ -370,8 +366,13 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		}
 		bo->flink_name = shared_handle;
 		bo->alloc_size = open_arg.size;
-		util_hash_table_set(dev->bo_flink_names,
-				    (void*)(uintptr_t)bo->flink_name, bo);
+		r = handle_table_insert(&dev->bo_flink_names, shared_handle,
+					bo);
+		if (r) {
+			pthread_mutex_unlock(&dev->bo_table_mutex);
+			amdgpu_bo_free(bo);
+			return r;
+		}
 		break;
 
 	case amdgpu_bo_handle_type_dma_buf_fd:
@@ -410,10 +411,9 @@ int amdgpu_bo_free(amdgpu_bo_handle buf_handle)
 		/* Remove the buffer from the hash tables. */
 		handle_table_remove(&dev->bo_handles, bo->handle);
 
-		if (bo->flink_name) {
-			util_hash_table_remove(dev->bo_flink_names,
-						(void*)(uintptr_t)bo->flink_name);
-		}
+		if (bo->flink_name)
+			handle_table_remove(&dev->bo_flink_names,
+					    bo->flink_name);
 
 		/* Release CPU access. */
 		if (bo->cpu_map_count > 0) {
