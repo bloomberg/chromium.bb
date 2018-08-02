@@ -39,11 +39,11 @@ TEST_F(SuggestedTextTouchBarControllerUnitTest, CollapsedCandidateListTest) {
   if (@available(macOS 10.12.2, *)) {
     base::scoped_nsobject<NSCandidateListTouchBarItem> item;
 
-    [controller_ setSelectionRange:gfx::Range()];
+    [controller_ setSelectionRange:NSMakeRange(0, 0)];
     item.reset([controller_ createCandidateListItem]);
     EXPECT_FALSE([item isCollapsed]);
 
-    [controller_ setSelectionRange:gfx::Range(0, 1)];
+    [controller_ setSelectionRange:NSMakeRange(0, 1)];
     item.reset([controller_ createCandidateListItem]);
     EXPECT_TRUE([item isCollapsed]);
   }
