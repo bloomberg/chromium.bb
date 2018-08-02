@@ -82,6 +82,9 @@ class VIEWS_EXPORT SelectionController {
   // |last_drag_location_|. Can be called asynchronously, through a timer.
   void SelectThroughLastDragLocation();
 
+  // Returns whether |point| is inside any substring of the text.
+  bool IsInsideText(const gfx::Point& point);
+
   // A timer and point used to modify the selection when dragging.
   base::RepeatingTimer drag_selection_timer_;
   gfx::Point last_drag_location_;

@@ -75,7 +75,8 @@ bool SelectionController::OnMousePressed(
         initial_focus_state == InitialFocusStateOnMousePress::UNFOCUSED) {
       SelectAll();
     } else if (PlatformStyle::kSelectWordOnRightClick &&
-               !render_text->IsPointInSelection(event.location())) {
+               !render_text->IsPointInSelection(event.location()) &&
+               IsInsideText(event.location())) {
       SelectWord(event.location());
     }
   }
@@ -221,6 +222,18 @@ void SelectionController::SelectThroughLastDragLocation() {
     render_text->SelectRange(selection);
   }
   delegate_->OnAfterPointerAction(false, true);
+}
+
+bool SelectionController::IsInsideText(const gfx::Point& point) {
+  gfx::RenderText* render_text = GetRenderText();
+  std::vector<gfx::Rect> bounds_rects = render_text->GetSubstringBounds(
+      gfx::Range(0, render_text->text().length()));
+
+  for (const auto& bounds : bounds_rects)
+    if (bounds.Contains(point))
+      return true;
+
+  return false;
 }
 
 }  // namespace views
