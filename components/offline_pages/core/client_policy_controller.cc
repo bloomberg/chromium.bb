@@ -69,7 +69,7 @@ ClientPolicyController::ClientPolicyController() {
           .SetIsRemovedOnCacheReset(true)
           .SetIsDisabledWhenPrefetchDisabled(true)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
-          .SetIsSupportedByDownload(IsOfflinePagesPrefetchingUIEnabled())
+          .SetIsSupportedByDownload(IsPrefetchingOfflinePagesEnabled())
           .SetIsSuggested(true)
           .Build()));
   policies_.insert(std::make_pair(
