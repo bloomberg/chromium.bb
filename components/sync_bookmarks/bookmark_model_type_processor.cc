@@ -17,6 +17,7 @@
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/protocol/bookmark_model_metadata.pb.h"
 #include "components/sync_bookmarks/bookmark_local_changes_builder.h"
+#include "components/sync_bookmarks/bookmark_model_merger.h"
 #include "components/sync_bookmarks/bookmark_model_observer_impl.h"
 #include "components/sync_bookmarks/bookmark_remote_updates_handler.h"
 #include "components/undo/bookmark_undo_utils.h"
@@ -135,10 +136,20 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   DCHECK(model_type_state.initial_sync_done());
 
   if (!bookmark_tracker_) {
-    // TODO(crbug.com/516866): Implement the merge logic.
     StartTrackingMetadata(
         std::vector<NodeMetadataPair>(),
         std::make_unique<sync_pb::ModelTypeState>(model_type_state));
+    {
+      ScopedRemoteUpdateBookmarks update_bookmarks(
+          bookmark_model_, bookmark_undo_service_,
+          bookmark_model_observer_.get());
+
+      BookmarkModelMerger(&updates, bookmark_model_, bookmark_tracker_.get())
+          .Merge();
+    }
+    schedule_save_closure_.Run();
+    NudgeForCommitIfNeeded();
+    return;
   }
   // TODO(crbug.com/516866): Set the model type state.
 

@@ -14,6 +14,8 @@ static_library("sync_bookmarks") {
     "bookmark_local_changes_builder.h",
     "bookmark_model_associator.cc",
     "bookmark_model_associator.h",
+    "bookmark_model_merger.cc",
+    "bookmark_model_merger.h",
     "bookmark_model_observer_impl.cc",
     "bookmark_model_observer_impl.h",
     "bookmark_model_type_processor.cc",
@@ -45,6 +47,7 @@ source_set("unit_tests") {
 
   sources = [
     "bookmark_data_type_controller_unittest.cc",
+    "bookmark_model_merger_unittest.cc",
     "bookmark_model_observer_impl_unittest.cc",
     "bookmark_model_type_processor_unittest.cc",
     "bookmark_remote_updates_handler_unittest.cc",

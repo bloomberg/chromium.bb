@@ -77,14 +77,6 @@ class BookmarkRemoteUpdatesHandler {
   // from |bookmark_tracker_|.
   void RemoveEntityAndChildrenFromTracker(const bookmarks::BookmarkNode* node);
 
-  // Associates the permanent bookmark folders with the corresponding server
-  // side ids and registers the association in |bookmark_tracker_|.
-  // |update_entity| must contain server_defined_unique_tag that is used to
-  // determine the corresponding permanent node. All permanent nodes are assumed
-  // to be directly children nodes of |kBookmarksRootId|. This method is used in
-  // the initial sync cycle only.
-  void AssociatePermanentFolder(const syncer::UpdateResponseData& update);
-
   bookmarks::BookmarkModel* const bookmark_model_;
   SyncedBookmarkTracker* const bookmark_tracker_;
 

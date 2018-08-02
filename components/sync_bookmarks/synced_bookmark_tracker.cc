@@ -344,6 +344,10 @@ void SyncedBookmarkTracker::UpdateUponCommitResponse(
   }
 }
 
+bool SyncedBookmarkTracker::IsEmpty() const {
+  return sync_id_to_entities_map_.empty();
+}
+
 std::size_t SyncedBookmarkTracker::TrackedEntitiesCountForTest() const {
   return sync_id_to_entities_map_.size();
 }

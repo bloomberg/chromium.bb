@@ -20,29 +20,11 @@ namespace sync_bookmarks {
 
 namespace {
 
-// The sync protocol identifies top-level entities by means of well-known tags,
-// (aka server defined tags) which should not be confused with titles or client
-// tags that aren't supported by bookmarks (at the time of writing). Each tag
-// corresponds to a singleton instance of a particular top-level node in a
-// user's share; the tags are consistent across users. The tags allow us to
-// locate the specific folders whose contents we care about synchronizing,
-// without having to do a lookup by name or path.  The tags should not be made
-// user-visible. For example, the tag "bookmark_bar" represents the permanent
-// node for bookmarks bar in Chrome. The tag "other_bookmarks" represents the
-// permanent folder Other Bookmarks in Chrome.
-//
-// It is the responsibility of something upstream (at time of writing, the sync
-// server) to create these tagged nodes when initializing sync for the first
-// time for a user.  Thus, once the backend finishes initializing, the
-// ProfileSyncService can rely on the presence of tagged nodes.
-const char kBookmarkBarTag[] = "bookmark_bar";
-const char kMobileBookmarksTag[] = "synced_bookmarks";
-const char kOtherBookmarksTag[] = "other_bookmarks";
-
 // Id is created by concatenating the specifics field number and the server tag
 // similar to LookbackServerEntity::CreateId() that uses
 // GetSpecificsFieldNumberFromModelType() to compute the field number.
 const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
+const char kMobileBookmarksTag[] = "synced_bookmarks";
 
 // Recursive method to traverse a forest created by ReorderUpdates() to to
 // emit updates in top-down order. |ordered_updates| must not be null because
@@ -214,19 +196,20 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
 
 void BookmarkRemoteUpdatesHandler::ProcessRemoteCreate(
     const syncer::UpdateResponseData& update) {
-  // Because the Synced Bookmarks node can be created server side, it's possible
-  // it'll arrive at the client as an update. In that case it won't have been
-  // associated at startup, the GetChromeNodeFromSyncId call above will return
-  // null, and we won't detect it as a permanent node, resulting in us trying to
-  // create it here (which will fail). Therefore, we add special logic here just
-  // to detect the Synced Bookmarks folder.
   const syncer::EntityData& update_entity = update.entity.value();
   DCHECK(!update_entity.is_deleted());
+  // Because the Synced Bookmarks node can be created server side, it's possible
+  // it'll arrive at the client as an update.
+  if (update_entity.server_defined_unique_tag == kMobileBookmarksTag) {
+    bookmark_tracker_->Add(update_entity.id, bookmark_model_->mobile_node(),
+                           update.response_version, update_entity.creation_time,
+                           update_entity.unique_position,
+                           update_entity.specifics);
+    return;
+  }
   if (update_entity.parent_id == kBookmarksRootId) {
-    // Associate permanent folders.
-    // TODO(crbug.com/516866): Method documentation says this method should be
-    // used in initial sync only. Make sure this is the case.
-    AssociatePermanentFolder(update);
+    DLOG(ERROR) << "Permanent nodes other than the Synced Bookmarks node "
+                   "should have been merged during intial sync.";
     return;
   }
   if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
@@ -391,28 +374,6 @@ const bookmarks::BookmarkNode* BookmarkRemoteUpdatesHandler::GetParentNode(
     return nullptr;
   }
   return parent_entity->bookmark_node();
-}
-
-void BookmarkRemoteUpdatesHandler::AssociatePermanentFolder(
-    const syncer::UpdateResponseData& update) {
-  const syncer::EntityData& update_entity = update.entity.value();
-  DCHECK_EQ(update_entity.parent_id, kBookmarksRootId);
-
-  const bookmarks::BookmarkNode* permanent_node = nullptr;
-  if (update_entity.server_defined_unique_tag == kBookmarkBarTag) {
-    permanent_node = bookmark_model_->bookmark_bar_node();
-  } else if (update_entity.server_defined_unique_tag == kOtherBookmarksTag) {
-    permanent_node = bookmark_model_->other_node();
-  } else if (update_entity.server_defined_unique_tag == kMobileBookmarksTag) {
-    permanent_node = bookmark_model_->mobile_node();
-  }
-
-  if (permanent_node != nullptr) {
-    bookmark_tracker_->Add(update_entity.id, permanent_node,
-                           update.response_version, update_entity.creation_time,
-                           update_entity.unique_position,
-                           update_entity.specifics);
-  }
 }
 
 }  // namespace sync_bookmarks
