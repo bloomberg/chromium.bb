@@ -33,6 +33,7 @@ source_set("web_state") {
     "web_state_observer.mm",
     "web_state_observer_bridge.mm",
     "web_state_policy_decider.mm",
+    "web_state_policy_decider_bridge.mm",
   ]
 
   libs = [ "WebKit.framework" ]

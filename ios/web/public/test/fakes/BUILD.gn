@@ -24,6 +24,8 @@ source_set("fakes") {
   ]
 
   sources = [
+    "crw_fake_web_state_policy_decider.h",
+    "crw_fake_web_state_policy_decider.mm",
     "crw_test_js_injection_receiver.h",
     "crw_test_js_injection_receiver.mm",
     "crw_test_web_state_observer.h",
