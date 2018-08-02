@@ -122,8 +122,8 @@ static void amdgpu_device_free_internal(amdgpu_device_handle dev)
 	amdgpu_vamgr_deinit(&dev->vamgr);
 	amdgpu_vamgr_deinit(&dev->vamgr_high_32);
 	amdgpu_vamgr_deinit(&dev->vamgr_high);
+	handle_table_fini(&dev->bo_handles);
 	util_hash_table_destroy(dev->bo_flink_names);
-	util_hash_table_destroy(dev->bo_handles);
 	pthread_mutex_destroy(&dev->bo_table_mutex);
 	free(dev->marketing_name);
 	free(dev);
@@ -230,7 +230,6 @@ int amdgpu_device_initialize(int fd,
 
 	dev->bo_flink_names = util_hash_table_create(handle_hash,
 						     handle_compare);
-	dev->bo_handles = util_hash_table_create(handle_hash, handle_compare);
 	pthread_mutex_init(&dev->bo_table_mutex, NULL);
 
 	/* Check if acceleration is working. */

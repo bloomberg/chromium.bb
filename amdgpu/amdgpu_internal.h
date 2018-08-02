@@ -32,6 +32,7 @@
 #include "xf86atomic.h"
 #include "amdgpu.h"
 #include "util_double_list.h"
+#include "handle_table.h"
 
 #define AMDGPU_CS_MAX_RINGS 8
 /* do not use below macro if b is not power of 2 aligned value */
@@ -73,7 +74,7 @@ struct amdgpu_device {
 
 	char *marketing_name;
 	/** List of buffer handles. Protected by bo_table_mutex. */
-	struct util_hash_table *bo_handles;
+	struct handle_table bo_handles;
 	/** List of buffer GEM flink names. Protected by bo_table_mutex. */
 	struct util_hash_table *bo_flink_names;
 	/** This protects all hash tables. */

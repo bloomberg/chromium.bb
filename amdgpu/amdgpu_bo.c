@@ -90,8 +90,12 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
 
 	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
 
-	*buf_handle = bo;
-	return 0;
+	if (r)
+		amdgpu_bo_free(bo);
+	else
+		*buf_handle = bo;
+
+	return r;
 }
 
 int amdgpu_bo_set_metadata(amdgpu_bo_handle bo,
@@ -171,8 +175,7 @@ int amdgpu_bo_query_info(amdgpu_bo_handle bo,
 static void amdgpu_add_handle_to_table(amdgpu_bo_handle bo)
 {
 	pthread_mutex_lock(&bo->dev->bo_table_mutex);
-	util_hash_table_set(bo->dev->bo_handles,
-			    (void*)(uintptr_t)bo->handle, bo);
+	handle_table_insert(&bo->dev->bo_handles, bo->handle, bo);
 	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
 }
 
@@ -303,8 +306,7 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		break;
 
 	case amdgpu_bo_handle_type_dma_buf_fd:
-		bo = util_hash_table_get(dev->bo_handles,
-					 (void*)(uintptr_t)shared_handle);
+		bo = handle_table_lookup(&dev->bo_handles, shared_handle);
 		break;
 
 	case amdgpu_bo_handle_type_kms:
@@ -387,7 +389,7 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	bo->dev = dev;
 	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
 
-	util_hash_table_set(dev->bo_handles, (void*)(uintptr_t)bo->handle, bo);
+	handle_table_insert(&dev->bo_handles, bo->handle, bo);
 	pthread_mutex_unlock(&dev->bo_table_mutex);
 
 	output->buf_handle = bo;
@@ -406,8 +408,7 @@ int amdgpu_bo_free(amdgpu_bo_handle buf_handle)
 
 	if (update_references(&bo->refcount, NULL)) {
 		/* Remove the buffer from the hash tables. */
-		util_hash_table_remove(dev->bo_handles,
-					(void*)(uintptr_t)bo->handle);
+		handle_table_remove(&dev->bo_handles, bo->handle);
 
 		if (bo->flink_name) {
 			util_hash_table_remove(dev->bo_flink_names,
