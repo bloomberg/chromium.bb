@@ -10,6 +10,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/wm_toplevel_window_event_handler.h"
+#include "base/memory/weak_ptr.h"
 
 namespace ash {
 
@@ -17,19 +18,34 @@ enum class IndicatorState;
 class SplitViewDragIndicators;
 
 // This class includes the common logic when dragging a window around, either
-// it's a browser window, or an app window. It does everything needs to be done
-// other than updating the dragged window (which is done by DragController),
-// e.g., it decides when/where to show the drag indicators and preview windows,
-// shows/hides the backdrop, interacts with overview and splitview, etc.
+// it's a browser window, or an app window. It does almost everything needs to
+// be done, including updating the dragged window's bounds (if it's dragged by
+// tabs) or transform (if it's dragged by entire window). it also decides
+// when/where to show the drag indicators and preview windows, shows/hides the
+// backdrop, interacts with overview and splitview, etc.
 class TabletModeWindowDragDelegate {
  public:
+  enum class UpdateDraggedWindowType {
+    UPDATE_BOUNDS,
+    UPDATE_TRANSFORM,
+  };
+
   TabletModeWindowDragDelegate();
   virtual ~TabletModeWindowDragDelegate();
 
-  // Called when a window starts/continues/ends being dragged around.
+  // Called when a window starts being dragged.
   void StartWindowDrag(aura::Window* window,
                        const gfx::Point& location_in_screen);
-  void ContinueWindowDrag(const gfx::Point& location_in_screen);
+
+  // Called when a window continues being dragged. |type| specifies how we want
+  // to update the dragged window during dragging, and |target_bounds| is the
+  // target window bounds for the dragged window if |type| is UPDATE_BOUNDS.
+  // Note |target_bounds| has no use if |type| is UPDATE_TRANSFROM.
+  void ContinueWindowDrag(const gfx::Point& location_in_screen,
+                          UpdateDraggedWindowType type,
+                          const gfx::Rect& target_bounds = gfx::Rect());
+
+  // Calls when a window ends dragging with its drag result |result|.
   void EndWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
                      const gfx::Point& location_in_screen);
 
@@ -68,6 +84,9 @@ class TabletModeWindowDragDelegate {
   // Returns the IndicatorState according to |location_in_screen|.
   IndicatorState GetIndicatorState(const gfx::Point& location_in_screen) const;
 
+  // Update the dragged window's transform during dragging.
+  void UpdateDraggedWindowTransform(const gfx::Point& location_in_screen);
+
   SplitViewController* const split_view_controller_;
 
   // A widget to display the drag indicators and preview window.
@@ -77,6 +96,16 @@ class TabletModeWindowDragDelegate {
 
   // The backdrop should be disabled during dragging and resumed after dragging.
   BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAuto;
+
+  gfx::Point initial_location_in_screen_;
+
+  // Overview mode will be triggered if a window is being dragged, and a new
+  // selector item will be created in the overview grid. The variable stores
+  // the new selector item bounds in overview and will be used to calculate
+  // the desired window tranform during dragging.
+  gfx::Rect new_selector_item_bounds_;
+
+  base::WeakPtrFactory<TabletModeWindowDragDelegate> weak_ptr_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowDragDelegate);

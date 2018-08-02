@@ -4,6 +4,8 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
@@ -34,12 +36,30 @@ WindowSelector* GetWindowSelector() {
              : nullptr;
 }
 
+// Gets the new selector item's bounds in overview grid that is displaying in
+// the same root window as |dragged_window|.
+gfx::Rect GetNewSelectorItemBounds(aura::Window* dragged_window) {
+  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+    return gfx::Rect();
+
+  WindowGrid* window_grid = GetWindowSelector()->GetGridWithRootWindow(
+      dragged_window->GetRootWindow());
+  if (!window_grid || window_grid->empty())
+    return gfx::Rect();
+
+  WindowSelectorItem* last_item = window_grid->window_list().back().get();
+  if (!window_grid->IsNewSelectorItemWindow(last_item->GetWindow()))
+    return gfx::Rect();
+
+  return last_item->target_bounds();
+}
+
 }  // namespace
 
 TabletModeWindowDragDelegate::TabletModeWindowDragDelegate()
     : split_view_controller_(Shell::Get()->split_view_controller()),
-      split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>()) {
-}
+      split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>()),
+      weak_ptr_factory_(this) {}
 
 TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() = default;
 
@@ -47,8 +67,14 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
     aura::Window* dragged_window,
     const gfx::Point& location_in_screen) {
   dragged_window_ = dragged_window;
+  initial_location_in_screen_ = location_in_screen;
 
   PrepareForDraggedWindow(location_in_screen);
+
+  // Update the shelf's visibility.
+  RootWindowController::ForWindow(dragged_window_)
+      ->GetShelfLayoutManager()
+      ->UpdateVisibilityState();
 
   // Disable the backdrop on the dragged window.
   original_backdrop_mode_ = dragged_window_->GetProperty(kBackdropWindowMode);
@@ -72,10 +98,32 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
     GetWindowSelector()->OnWindowDragStarted(dragged_window_,
                                              /*animate=*/was_overview_open);
   }
+
+  new_selector_item_bounds_ = GetNewSelectorItemBounds(dragged_window_);
 }
 
 void TabletModeWindowDragDelegate::ContinueWindowDrag(
-    const gfx::Point& location_in_screen) {
+    const gfx::Point& location_in_screen,
+    UpdateDraggedWindowType type,
+    const gfx::Rect& target_bounds) {
+  if (type == UpdateDraggedWindowType::UPDATE_BOUNDS) {
+    // UPDATE_BOUNDS is used when dragging tab(s) out of a browser window.
+    // Changing bounds might delete ourselves as the dragged (browser) window
+    // tab(s) might merge into another browser window.
+    base::WeakPtr<TabletModeWindowDragDelegate> delegate(
+        weak_ptr_factory_.GetWeakPtr());
+    if (target_bounds != dragged_window_->bounds()) {
+      dragged_window_->SetBounds(target_bounds);
+      if (!delegate)
+        return;
+    }
+  } else {  // type == UpdateDraggedWindowType::UPDATE_TRANSFORM
+    // UPDATE_TRANSFORM is used when dragging an entire window around, either
+    // it's a browser window or an app window.
+    UpdateDraggedWindowTransform(location_in_screen);
+  }
+
+  // For child classes to do their special handling if any.
   UpdateForDraggedWindow(location_in_screen);
 
   // Update drag indicators and preview window if necessary.
@@ -109,6 +157,15 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
                                             location_in_screen);
   split_view_drag_indicators_->SetIndicatorState(IndicatorState::kNone,
                                                  location_in_screen);
+
+  // If |dragged_window_|'s transform has changed during dragging, and it has
+  // not been added into overview grid, restore its transform to identity.
+  if (!dragged_window_->layer()->GetTargetTransform().IsIdentity() &&
+      (!GetWindowSelector() ||
+       !GetWindowSelector()->IsWindowInOverview(dragged_window_))) {
+    dragged_window_->SetTransform(gfx::Transform());
+  }
+
   dragged_window_ = nullptr;
 }
 
@@ -226,6 +283,33 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
   }
 
   return can_snap ? IndicatorState::kDragArea : IndicatorState::kCannotSnap;
+}
+
+void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
+    const gfx::Point& location_in_screen) {
+  DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  // Calculate the desired scale along the y-axis. The scale of the window
+  // during drag is based on the distance from |y_location_in_screen| to the y
+  // position of |new_selector_item_bounds_|. The dragged window will become
+  // smaller when it becomes nearer to the new selector item. And then keep the
+  // minimum scale if it has been dragged further than the new selector item.
+  float scale = static_cast<float>(new_selector_item_bounds_.height()) /
+                static_cast<float>(dragged_window_->bounds().height());
+  int y_full = new_selector_item_bounds_.y();
+  int y_diff = y_full - location_in_screen.y();
+  if (y_diff >= 0)
+    scale = (1.0f - scale) * y_diff / y_full + scale;
+
+  gfx::Transform transform;
+  const gfx::Rect window_bounds = dragged_window_->bounds();
+  transform.Translate(
+      (location_in_screen.x() - window_bounds.x()) -
+          (initial_location_in_screen_.x() - window_bounds.x()) * scale,
+      (location_in_screen.y() - window_bounds.y()) -
+          (initial_location_in_screen_.y() - window_bounds.y()) * scale);
+  transform.Scale(scale, scale);
+  dragged_window_->SetTransform(transform);
 }
 
 }  // namespace ash

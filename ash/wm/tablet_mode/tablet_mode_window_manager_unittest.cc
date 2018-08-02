@@ -1790,22 +1790,6 @@ TEST_F(TabletModeWindowManagerTest, SetPropertyOnUnmanagedWindow) {
   window->Show();
 }
 
-// Test that there is no window resizer in tablet mode.
-TEST_F(TabletModeWindowManagerTest, NoWindowResizerInTabletMode) {
-  gfx::Rect rect(10, 10, 200, 200);
-  std::unique_ptr<aura::Window> window(
-      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
-  std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
-      window.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
-  EXPECT_TRUE(resizer.get());
-  resizer.reset();
-
-  CreateTabletModeWindowManager();
-  resizer = CreateWindowResizer(window.get(), gfx::Point(), HTCAPTION,
-                                ::wm::WINDOW_MOVE_SOURCE_MOUSE);
-  EXPECT_FALSE(resizer.get());
-}
-
 // Test that the minimized window bounds doesn't change until it's unminimized.
 TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForMinimizedWindow) {
   gfx::Rect rect(10, 10, 200, 50);

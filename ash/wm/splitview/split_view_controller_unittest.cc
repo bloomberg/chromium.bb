@@ -1582,27 +1582,35 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
 };
 
 // Test that in tablet mode, we only allow dragging that happens on window
-// caption area and tab-dragging is in process.
-TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnTabs) {
+// caption area.
+TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionArea) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
-  std::unique_ptr<WindowResizer> resizer =
-      CreateResizerForTest(window.get(), gfx::Point(), HTCAPTION);
-  EXPECT_FALSE(resizer.get());
 
-  SetIsInTabDragging(window.get(), /*is_dragging=*/true);
   // Only dragging on HTCAPTION area is allowed.
-  resizer = CreateResizerForTest(window.get(), gfx::Point(), HTLEFT);
+  std::unique_ptr<WindowResizer> resizer =
+      CreateResizerForTest(window.get(), gfx::Point(), HTLEFT);
   EXPECT_FALSE(resizer.get());
   resizer = CreateResizerForTest(window.get(), gfx::Point(), HTRIGHT);
   EXPECT_FALSE(resizer.get());
   resizer = CreateResizerForTest(window.get(), gfx::Point(), HTCAPTION);
   EXPECT_TRUE(resizer.get());
   resizer->CompleteDrag();
+  resizer.reset();
+
+  // No matter if we're in tab-dragging process, as long as the drag happens on
+  // the caption area, it should be able to drag the window.
+  SetIsInTabDragging(window.get(), /*is_dragging=*/true);
+  resizer = CreateResizerForTest(window.get(), gfx::Point(), HTCAPTION);
+  EXPECT_TRUE(resizer.get());
+  resizer->CompleteDrag();
+  resizer.reset();
 
   SetIsInTabDragging(window.get(), /*is_dragging=*/false);
   resizer = CreateResizerForTest(window.get(), gfx::Point(), HTCAPTION);
-  EXPECT_FALSE(resizer.get());
+  EXPECT_TRUE(resizer.get());
+  resizer->CompleteDrag();
+  resizer.reset();
 }
 
 // Test that in tablet mode, if the dragging is from mouse event, the mouse

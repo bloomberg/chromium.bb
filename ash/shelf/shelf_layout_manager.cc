@@ -262,8 +262,6 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     SetState(SHELF_HIDDEN);
-  } else if (IsDraggingWindowFromTopOfDisplay()) {
-    SetState(SHELF_VISIBLE);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
@@ -273,7 +271,9 @@ void ShelfLayoutManager::UpdateVisibilityState() {
 
     switch (window_state) {
       case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
-        if (IsShelfAutoHideForFullscreenMaximized()) {
+        if (IsDraggingWindowFromTopOrCaptionArea()) {
+          SetState(SHELF_VISIBLE);
+        } else if (IsShelfAutoHideForFullscreenMaximized()) {
           SetState(SHELF_AUTO_HIDE);
         } else if (IsShelfHiddenForFullscreen()) {
           SetState(SHELF_HIDDEN);
@@ -285,7 +285,9 @@ void ShelfLayoutManager::UpdateVisibilityState() {
         break;
       }
       case wm::WORKSPACE_WINDOW_STATE_MAXIMIZED:
-        if (IsShelfAutoHideForFullscreenMaximized()) {
+        if (IsDraggingWindowFromTopOrCaptionArea()) {
+          SetState(SHELF_VISIBLE);
+        } else if (IsShelfAutoHideForFullscreenMaximized()) {
           SetState(SHELF_AUTO_HIDE);
         } else {
           SetState(CalculateShelfVisibility());
@@ -414,14 +416,21 @@ bool ShelfLayoutManager::ProcessGestureEvent(
   return false;
 }
 
-bool ShelfLayoutManager::IsDraggingWindowFromTopOfDisplay() const {
+bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
+  // Currently dragging maximized or fullscreen window from the top or the
+  // caption area is only allowed in tablet mode.
+  if (!IsTabletModeEnabled())
+    return false;
+
   // TODO(minch): Check active window directly if removed search field
   // in overview mode. http://crbug.com/866679
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
   for (auto* window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_state && window_state->is_dragged() &&
-        window_state->drag_details()->window_component == HTCLIENT) {
+        (window_state->IsMaximized() || window_state->IsFullscreen()) &&
+        (window_state->drag_details()->window_component == HTCLIENT ||
+         window_state->drag_details()->window_component == HTCAPTION)) {
       return true;
     }
   }

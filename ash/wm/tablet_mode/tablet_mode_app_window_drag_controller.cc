@@ -4,8 +4,6 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -87,72 +85,29 @@ bool TabletModeAppWindowDragController::DragWindowFromTop(
 
 void TabletModeAppWindowDragController::StartWindowDrag(
     ui::GestureEvent* event) {
-  initial_location_in_screen_ = GetEventLocationInScreen(event);
   drag_delegate_->StartWindowDrag(static_cast<aura::Window*>(event->target()),
-                                  initial_location_in_screen_);
-
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
-  DCHECK(window_selector_controller->IsSelecting());
-  WindowGrid* window_grid =
-      window_selector_controller->window_selector()->GetGridWithRootWindow(
-          drag_delegate_->dragged_window()->GetRootWindow());
-  const std::vector<std::unique_ptr<WindowSelectorItem>>& selector_items =
-      window_grid->window_list();
-  new_selector_item_bounds_ = selector_items.back().get()->target_bounds();
+                                  GetEventLocationInScreen(event));
 }
 
 void TabletModeAppWindowDragController::UpdateWindowDrag(
     ui::GestureEvent* event) {
-  const gfx::Point location_in_screen(GetEventLocationInScreen(event));
-  UpdateDraggedWindow(location_in_screen);
-  drag_delegate_->ContinueWindowDrag(location_in_screen);
+  // Update the dragged window's tranform during dragging.
+  drag_delegate_->ContinueWindowDrag(
+      GetEventLocationInScreen(event),
+      TabletModeWindowDragDelegate::UpdateDraggedWindowType::UPDATE_TRANSFORM);
 }
 
 void TabletModeAppWindowDragController::EndWindowDrag(
     ui::GestureEvent* event,
     wm::WmToplevelWindowEventHandler::DragResult result) {
-  const gfx::Point location_in_screen(GetEventLocationInScreen(event));
-  drag_delegate_->dragged_window()->SetTransform(gfx::Transform());
   if (event->type() == ui::ET_SCROLL_FLING_START &&
       event->details().velocity_y() > kFlingToOverviewThreshold) {
+    DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
     Shell::Get()->window_selector_controller()->window_selector()->AddItem(
         drag_delegate_->dragged_window(), /*reposition=*/true,
         /*animate=*/true);
   }
-  drag_delegate_->EndWindowDrag(result, location_in_screen);
-}
-
-void TabletModeAppWindowDragController::UpdateDraggedWindow(
-    const gfx::Point& location_in_screen) {
-  DCHECK(drag_delegate_->dragged_window());
-  RootWindowController::ForWindow(drag_delegate_->dragged_window())
-      ->GetShelfLayoutManager()
-      ->UpdateVisibilityState();
-
-  float scale = CalculateWindowScale(location_in_screen.y());
-  gfx::Transform transform;
-  const gfx::Rect window_bounds = drag_delegate_->dragged_window()->bounds();
-  transform.Translate(
-      (location_in_screen.x() - window_bounds.x()) -
-          (initial_location_in_screen_.x() - window_bounds.x()) * scale,
-      (location_in_screen.y() - window_bounds.y()) -
-          (initial_location_in_screen_.y() - window_bounds.y()) * scale);
-  transform.Scale(scale, scale);
-  drag_delegate_->dragged_window()->SetTransform(transform);
-}
-
-float TabletModeAppWindowDragController::CalculateWindowScale(
-    int y_location_in_screen) const {
-  float minimum_scale =
-      static_cast<float>(new_selector_item_bounds_.height()) /
-      static_cast<float>(drag_delegate_->dragged_window()->bounds().height());
-  int y_full = new_selector_item_bounds_.y();
-  int y_diff = y_full - y_location_in_screen;
-  if (y_diff < 0)
-    return minimum_scale;
-
-  return (1.0f - minimum_scale) * y_diff / y_full + minimum_scale;
+  drag_delegate_->EndWindowDrag(result, GetEventLocationInScreen(event));
 }
 
 }  // namespace ash

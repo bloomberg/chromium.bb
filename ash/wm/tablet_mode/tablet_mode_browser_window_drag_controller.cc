@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
+#include "ash/wm/window_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 
@@ -40,23 +41,29 @@ TabletModeBrowserWindowDragController::
 void TabletModeBrowserWindowDragController::Drag(
     const gfx::Point& location_in_parent,
     int event_flags) {
-  // Update dragged window's bounds.
-  gfx::Rect bounds = CalculateBoundsForDrag(location_in_parent);
-  if (bounds != GetTarget()->bounds()) {
-    base::WeakPtr<TabletModeBrowserWindowDragController> resizer(
-        weak_ptr_factory_.GetWeakPtr());
-    GetTarget()->SetBounds(bounds);
-    if (!resizer)
-      return;
-  }
-
   gfx::Point location_in_screen = location_in_parent;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
   previous_location_in_screen_ = location_in_screen;
 
-  // Update the drag indicators, snap preview window, source window position,
-  // blurred backgournd, etc, if necessary.
-  drag_delegate_->ContinueWindowDrag(location_in_screen);
+  // Update the dragged window, the drag indicators, the preview window,
+  // source window position, blurred background, etc, if necessary.
+  if (wm::IsDraggingTabs(GetTarget())) {
+    // Update the dragged window's bounds if it's tab-dragging.
+    base::WeakPtr<TabletModeBrowserWindowDragController> resizer(
+        weak_ptr_factory_.GetWeakPtr());
+    drag_delegate_->ContinueWindowDrag(
+        location_in_screen,
+        TabletModeWindowDragDelegate::UpdateDraggedWindowType::UPDATE_BOUNDS,
+        CalculateBoundsForDrag(location_in_parent));
+    // Note, this might have been deleted when reaching here.
+    if (!resizer)
+      return;
+  } else {
+    // Otherwise, update the dragged window's transform.
+    drag_delegate_->ContinueWindowDrag(
+        location_in_screen, TabletModeWindowDragDelegate::
+                                UpdateDraggedWindowType::UPDATE_TRANSFORM);
+  }
 }
 
 void TabletModeBrowserWindowDragController::CompleteDrag() {
