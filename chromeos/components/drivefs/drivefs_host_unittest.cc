@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/timer/mock_timer.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -252,7 +253,10 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
             std::make_unique<FakeIdentityService>(&mock_identity_manager_));
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
         connector_factory_->CreateConnector(), account_id_);
-    host_ = std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get());
+    auto timer = std::make_unique<base::MockOneShotTimer>();
+    timer_ = timer.get();
+    host_ = std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get(),
+                                          std::move(timer));
   }
 
   void TearDown() override {
@@ -350,6 +354,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
+  base::MockOneShotTimer* timer_;
 
   mojo::Binding<mojom::DriveFsBootstrap> bootstrap_binding_;
   mojom::DriveFsRequest drive_fs_request_;
@@ -533,6 +538,35 @@ TEST_F(DriveFsHostTest, UnmountByRemote) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(DriveFsHostTest, BreakConnectionAfterMount) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  base::Optional<base::TimeDelta> empty;
+  EXPECT_CALL(*host_delegate_, OnUnmounted(empty));
+  delegate_ptr_.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DriveFsHostTest, BreakConnectionBeforeMount) {
+  auto token = StartMount();
+  DispatchMountSuccessEvent(token);
+  EXPECT_FALSE(host_->IsMounted());
+
+  base::Optional<base::TimeDelta> empty;
+  EXPECT_CALL(*host_delegate_, OnMountFailed(empty));
+  delegate_ptr_.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DriveFsHostTest, MountTimeout) {
+  auto token = StartMount();
+  DispatchMountSuccessEvent(token);
+  EXPECT_FALSE(host_->IsMounted());
+
+  base::Optional<base::TimeDelta> empty;
+  EXPECT_CALL(*host_delegate_, OnMountFailed(empty));
+  timer_->Fire();
+}
+
 TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
   EXPECT_CALL(*disk_manager_, MountPath(_, _, _, _, _, _)).Times(0);
   const AccountId unsupported_accounts[] = {
@@ -543,7 +577,9 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
   for (auto& account : unsupported_accounts) {
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
         connector_factory_->CreateConnector(), account);
-    host_ = std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get());
+    host_ = std::make_unique<DriveFsHost>(
+        profile_path_, host_delegate_.get(),
+        std::make_unique<base::MockOneShotTimer>());
     EXPECT_FALSE(host_->Mount());
     EXPECT_FALSE(host_->IsMounted());
   }

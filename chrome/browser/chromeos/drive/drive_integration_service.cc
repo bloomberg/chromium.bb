@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -288,7 +289,9 @@ class DriveIntegrationService::DriveFsHolder
         on_drivefs_unmounted_(std::move(on_drivefs_unmounted)),
         test_drivefs_mojo_connection_delegate_factory_(
             std::move(test_drivefs_mojo_connection_delegate_factory)),
-        drivefs_host_(profile_->GetPath(), this) {}
+        drivefs_host_(profile_->GetPath(),
+                      this,
+                      std::make_unique<base::OneShotTimer>()) {}
 
   drivefs::DriveFsHost* drivefs_host() { return &drivefs_host_; }
 
@@ -666,6 +669,7 @@ void DriveIntegrationService::AddDriveMountPointAfterMounted() {
   storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
+  drivefs_consecutive_failures_count_ = 0;
 
   bool success = mount_points->RegisterFileSystem(
       mount_point_name_,
@@ -713,13 +717,32 @@ void DriveIntegrationService::MaybeRemountFileSystem(
 
   RemoveDriveMountPoint();
 
-  if (remount_delay) {
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&DriveIntegrationService::AddDriveMountPoint,
-                       weak_ptr_factory_.GetWeakPtr()),
-        remount_delay.value());
+  if (!remount_delay) {
+    // If DriveFs didn't specify retry time it's likely unexpected error, e.g.
+    // crash. Use limited exponential backoff for retry.
+    ++drivefs_consecutive_failures_count_;
+    ++drivefs_total_failures_count_;
+    if (drivefs_total_failures_count_ > 10) {
+      logger_->Log(logging::LOG_ERROR,
+                   "DriveFs is too crashy. Leaving it alone.");
+      return;
+    }
+    if (drivefs_consecutive_failures_count_ > 3) {
+      logger_->Log(logging::LOG_ERROR,
+                   "DriveFs keeps failing at start. Giving up.");
+      return;
+    }
+    remount_delay = base::TimeDelta::FromSeconds(
+        5 * (1 << (drivefs_consecutive_failures_count_ - 1)));
+    logger_->Log(logging::LOG_WARNING, "DriveFs died, retry in %d seconds",
+                 static_cast<int>(remount_delay.value().InSeconds()));
   }
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&DriveIntegrationService::AddDriveMountPoint,
+                     weak_ptr_factory_.GetWeakPtr()),
+      remount_delay.value());
 }
 
 void DriveIntegrationService::Initialize() {

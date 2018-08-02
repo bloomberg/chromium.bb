@@ -23,6 +23,7 @@ namespace {
 constexpr char kMountScheme[] = "drivefs://";
 constexpr char kDataPath[] = "GCache/v2";
 constexpr char kIdentityConsumerId[] = "drivefs";
+const base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(10);
 
 class MojoConnectionDelegateImpl : public DriveFsHost::MojoConnectionDelegate {
  public:
@@ -85,9 +86,13 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
         mojo::MakeProxy(mojo_connection_delegate_->InitializeMojoConnection());
     mojom::DriveFsDelegatePtr delegate;
     binding_.Bind(mojo::MakeRequest(&delegate));
+    binding_.set_connection_error_handler(
+        base::BindOnce(&MountState::OnConnectionError, base::Unretained(this)));
     bootstrap->Init(
         {base::in_place, host_->delegate_->GetAccountId().GetUserEmail()},
         mojo::MakeRequest(&drivefs_), std::move(delegate));
+    drivefs_.set_connection_error_handler(
+        base::BindOnce(&MountState::OnConnectionError, base::Unretained(this)));
 
     // If unconsumed, the registration is cleaned up when |this| is destructed.
     PendingConnectionManager::Get().ExpectOpenIpcChannel(
@@ -100,10 +105,15 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
         base::StrCat({"drivefs-", host_->delegate_->GetObfuscatedAccountId()}),
         {datadir_option}, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
         chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+
+    host_->timer_->Start(
+        FROM_HERE, kMountTimeout,
+        base::BindOnce(&MountState::OnTimedOut, base::Unretained(this)));
   }
 
   ~MountState() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    host_->timer_->Stop();
     if (pending_token_) {
       PendingConnectionManager::Get().CancelExpectedOpenIpcChannel(
           pending_token_);
@@ -184,12 +194,14 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = false;
+    drivefs_has_terminated_ = true;
     host_->delegate_->OnMountFailed(std::move(remount_delay));
   }
 
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = false;
+    drivefs_has_terminated_ = true;
     host_->delegate_->OnUnmounted(std::move(remount_delay));
   }
 
@@ -210,8 +222,25 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
   }
 
+  void OnConnectionError() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (!drivefs_has_terminated_) {
+      if (mounted())
+        host_->delegate_->OnUnmounted({});
+      else
+        host_->delegate_->OnMountFailed({});
+      drivefs_has_terminated_ = true;
+    }
+  }
+
+  void OnTimedOut() {
+    host_->timer_->Stop();
+    OnMountFailed({});
+  }
+
   void MaybeNotifyDelegateOnMounted() {
     if (mounted()) {
+      host_->timer_->Stop();
       host_->delegate_->OnMounted(mount_path());
     }
   }
@@ -283,14 +312,17 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   mojo::Binding<mojom::DriveFsDelegate> binding_;
 
   bool drivefs_has_mounted_ = false;
+  bool drivefs_has_terminated_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MountState);
 };
 
 DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
-                         DriveFsHost::Delegate* delegate)
+                         DriveFsHost::Delegate* delegate,
+                         std::unique_ptr<base::OneShotTimer> timer)
     : profile_path_(profile_path),
-      delegate_(delegate) {
+      delegate_(delegate),
+      timer_(std::move(timer)) {
   chromeos::disks::DiskMountManager::GetInstance()->AddObserver(this);
 }
 
@@ -338,6 +370,7 @@ mojom::DriveFs* DriveFsHost::GetDriveFsInterface() const {
   }
   return mount_state_->GetDriveFsInterface();
 }
+
 void DriveFsHost::OnMountEvent(
     chromeos::disks::DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
