@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "device/fido/fido_request_handler_base.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace device {
 class FidoAuthenticator;
@@ -81,6 +82,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   virtual base::Optional<TouchIdAuthenticatorConfig>
   GetTouchIdAuthenticatorConfig() const;
 #endif
+
+  // Saves transport type the user used during WebAuthN API so that the
+  // WebAuthN UI will default to the same transport type during next API call.
+  virtual void UpdateLastTransportUsed(device::FidoTransportProtocol transport);
 
   // device::FidoRequestHandlerBase::AuthenticatorMapObserver:
   void BluetoothAdapterIsAvailable() override;

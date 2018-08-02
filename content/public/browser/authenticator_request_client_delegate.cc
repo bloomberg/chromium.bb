@@ -48,4 +48,7 @@ void AuthenticatorRequestClientDelegate::FidoAuthenticatorAdded(
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorRemoved(
     base::StringPiece device_id) {}
 
+void AuthenticatorRequestClientDelegate::UpdateLastTransportUsed(
+    device::FidoTransportProtocol transport) {}
+
 }  // namespace content

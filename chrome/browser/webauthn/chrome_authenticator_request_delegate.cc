@@ -32,7 +32,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/fido/fido_transport_protocol.h"
 
 #if defined(OS_MACOSX)
 #include "device/fido/mac/credential_metadata.h"
@@ -64,12 +63,35 @@ bool IsWebAuthnUiEnabled() {
       switches::kWebAuthenticationUI);
 }
 
+#if !defined(OS_ANDROID)
+void SetInitialUiModelBasedOnPreviouslyUsedTransport(
+    AuthenticatorRequestDialogModel* model,
+    base::Optional<device::FidoTransportProtocol> previous_transport) {
+  if (!previous_transport)
+    return;
+
+  // TODO(hongjunchoi): Add UI component for defaulting to BLE, Cable and Mac
+  // TouchID transports.
+  switch (*previous_transport) {
+    case device::FidoTransportProtocol::kUsbHumanInterfaceDevice:
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::
+                                kUsbInsertAndActivateOnRegister);
+      break;
+    default:
+      return;
+  }
+}
+#endif
+
 }  // namespace
 
 #if defined(OS_MACOSX)
 static const char kWebAuthnTouchIdMetadataSecretPrefName[] =
     "webauthn.touchid.metadata_secret";
 #endif
+
+static const char kWebAuthnLastTransportUsedPrefName[] =
+    "webauthn.last_transport_used";
 
 // static
 void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
@@ -78,6 +100,9 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
   registry->RegisterStringPref(kWebAuthnTouchIdMetadataSecretPrefName,
                                std::string());
 #endif
+
+  registry->RegisterStringPref(kWebAuthnLastTransportUsedPrefName,
+                               std::string());
 }
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
@@ -116,7 +141,10 @@ void ChromeAuthenticatorRequestDelegate::DidStartRequest() {
 
   auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
   weak_dialog_model_ = dialog_model.get();
+  SetInitialUiModelBasedOnPreviouslyUsedTransport(weak_dialog_model_,
+                                                  GetLastTransportUsed());
   weak_dialog_model_->AddObserver(this);
+
   ShowAuthenticatorRequestDialog(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       std::move(dialog_model));
@@ -220,6 +248,14 @@ ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() const {
 }
 #endif
 
+base::Optional<device::FidoTransportProtocol>
+ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  return device::ConvertToFidoTransportProtocol(
+      prefs->GetString(kWebAuthnLastTransportUsedPrefName));
+}
+
 void ChromeAuthenticatorRequestDelegate::BluetoothAdapterIsAvailable() {
   if (!IsWebAuthnUiEnabled())
     return;
@@ -266,6 +302,14 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
                    authenticator_reference.device_id == device_id;
           }),
       saved_authenticators.end());
+}
+
+void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
+    device::FidoTransportProtocol transport) {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  prefs->SetString(kWebAuthnLastTransportUsedPrefName,
+                   device::ToString(transport));
 }
 
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {

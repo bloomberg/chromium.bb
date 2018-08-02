@@ -10,16 +10,21 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
 namespace {
 
 class ChromeAuthenticatorRequestDelegateTest
     : public ChromeRenderViewHostTestHarness {};
 
+TEST_F(ChromeAuthenticatorRequestDelegateTest, TestDefaultTransportPrefType) {
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
+  EXPECT_FALSE(delegate.GetLastTransportUsed());
+}
+
 #if defined(OS_MACOSX)
 std::string TouchIdMetadataSecret(
     const ChromeAuthenticatorRequestDelegate& delegate) {
-  base::Optional<AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
+  base::Optional<
+      content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
       config = delegate.GetTouchIdAuthenticatorConfig();
   return config->metadata_secret;
 }
@@ -45,8 +50,8 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   // Different profiles have different secrets. (No way to reset
   // browser_context(), so we have to create our own.)
   auto browser_context = base::WrapUnique(CreateBrowserContext());
-  auto web_contents =
-      WebContentsTester::CreateTestWebContents(browser_context.get(), nullptr);
+  auto web_contents = content::WebContentsTester::CreateTestWebContents(
+      browser_context.get(), nullptr);
   EXPECT_NE(
       TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(main_rfh())),
       TouchIdMetadataSecret(
@@ -59,4 +64,3 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 #endif
 
 }  // namespace
-}  // namespace content
