@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTROLLEE_REQUEST_HANDLER_H_
 
 #include <stdint.h>
+#include <memory>
+#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -37,8 +39,9 @@ namespace content {
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
-// A request handler derivative used to handle requests from
-// controlled documents.
+// A request handler derivative used to handle requests for,
+// and requests from, controlled documents and shared workers.
+//
 // Note that in IsServicificationEnabled cases this is used only for
 // main resource fetch during navigation or shared worker creation.
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
@@ -92,8 +95,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
-  typedef ServiceWorkerControlleeRequestHandler self;
-
   class ScopedDisallowSetControllerRegistration;
 
   // For main resource case.
@@ -109,16 +110,17 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       std::unique_ptr<ScopedDisallowSetControllerRegistration>
           disallow_controller);
 
+  // For forced update.
   void DidUpdateRegistration(
-      const scoped_refptr<ServiceWorkerRegistration>& original_registration,
+      scoped_refptr<ServiceWorkerRegistration> original_registration,
       std::unique_ptr<ScopedDisallowSetControllerRegistration>
           disallow_controller,
       blink::ServiceWorkerStatusCode status,
       const std::string& status_message,
       int64_t registration_id);
   void OnUpdatedVersionStatusChanged(
-      const scoped_refptr<ServiceWorkerRegistration>& registration,
-      const scoped_refptr<ServiceWorkerVersion>& version,
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      scoped_refptr<ServiceWorkerVersion> version,
       std::unique_ptr<ScopedDisallowSetControllerRegistration>
           disallow_controller);
 
@@ -126,11 +128,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   void PrepareForSubResource();
 
   // ServiceWorkerURLJobWrapper::Delegate implementation:
-
-  // Called just before the request is restarted. Makes sure the next request
-  // goes over the network.
   void OnPrepareToRestart() override;
-
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override;
   bool RequestStillValid(
@@ -149,7 +147,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
 
   const ResourceType resource_type_;
   const bool is_main_resource_load_;
-  const bool is_main_frame_load_;
   std::unique_ptr<ServiceWorkerURLJobWrapper> url_job_;
   network::mojom::FetchRequestMode request_mode_;
   network::mojom::FetchCredentialsMode credentials_mode_;
