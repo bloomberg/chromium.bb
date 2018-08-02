@@ -5,9 +5,11 @@
 """Implements commands for running and interacting with Fuchsia on devices."""
 
 import boot_data
+import log_reader
 import logging
 import os
 import subprocess
+import sys
 import target
 import time
 import uuid
@@ -16,6 +18,9 @@ from common import SDK_ROOT, EnsurePathExists
 
 CONNECT_RETRY_COUNT = 20
 CONNECT_RETRY_WAIT_SECS = 1
+
+# Number of failed connection attempts before redirecting system logs to stdout.
+CONNECT_RETRY_COUNT_BEFORE_LOGGING = 10
 
 class DeviceTarget(target.Target):
   def __init__(self, output_dir, target_cpu, host=None, port=None,
@@ -93,8 +98,20 @@ class DeviceTarget(target.Target):
       logging.debug(' '.join(bootserver_command))
       subprocess.check_call(bootserver_command)
 
+      # Setup loglistener. Logs will be redirected to stdout if the device takes
+      # longer than expected to boot.
+      loglistener_path = os.path.join(SDK_ROOT, 'tools', 'loglistener')
+      loglistener = subprocess.Popen([loglistener_path, node_name],
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT,
+                                     stdin=open(os.devnull))
+      self._SetSystemLogsReader(
+          log_reader.LogReader(loglistener, loglistener.stdout))
+
       logging.debug('Waiting for device to join network.')
-      for _ in xrange(CONNECT_RETRY_COUNT):
+      for retry in xrange(CONNECT_RETRY_COUNT):
+        if retry == CONNECT_RETRY_COUNT_BEFORE_LOGGING:
+          self._system_logs_reader.RedirectTo(sys.stdout);
         self._host = self.__Discover(node_name)
         if self._host:
           break
