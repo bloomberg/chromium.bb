@@ -137,6 +137,11 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
         "AnchorElementMetrics.Clicked.HrefEngagementScorePositive",
         static_cast<int>(target_score));
   }
+  if (!metrics->is_same_host) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "AnchorElementMetrics.Clicked.HrefEngagementScoreExternal",
+        static_cast<int>(target_score));
+  }
 
   // Look up the clicked URL in |navigation_scores_map_|. Record if we find it.
   auto iter = navigation_scores_map_.find(metrics->target_url.spec());
@@ -285,7 +290,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
         static_cast<int>(metric->is_url_incremented_by_one);
   }
 
-  // Retrive site engagement score of the docuemnt. |metrics| is guaranteed to
+  // Retrieve site engagement score of the document. |metrics| is guaranteed to
   // be non-empty. All |metrics| have the same source_url.
   SiteEngagementService* engagement_service = GetEngagementService();
   double document_engagement_score =
@@ -316,6 +321,11 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     UMA_HISTOGRAM_COUNTS_100(
         "AnchorElementMetrics.Visible.HrefEngagementScore2",
         static_cast<int>(target_engagement_score));
+    if (!metric->is_same_host) {
+      UMA_HISTOGRAM_COUNTS_100(
+          "AnchorElementMetrics.Visible.HrefEngagementScoreExternal",
+          static_cast<int>(target_engagement_score));
+    }
 
     // Anchor elements with the same area are assigned with the same rank.
     size_t area_rank = i;
