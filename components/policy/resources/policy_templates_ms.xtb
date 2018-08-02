@@ -1174,15 +1174,15 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada daripada dasar 'DefaultKeygenSetting' jika ditetapkan atau konfigurasi peribadi pengguna jika tidak ditetapkan.</translation>
 <translation id="4239720644496144453">Cache tidak digunakan untuk apl Android. Jika beberapa orang pengguna memasang apl Android yang sama, apl yang baharu akan dimuat turun untuk setiap pengguna.</translation>
-<translation id="4243336580717651045">Mendayakan pengumpulan data awanama URL berkunci dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
+<translation id="4243336580717651045">Mendayakan pengumpulan data awanama termasuk URL dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
-      Pengumpulan data awanama URL berkunci menghantar URL halaman yang dilawati pengguna kepada Google untuk menambah baik carian dan penyemakan imbas.
+      Pengumpulan data awanama termasuk URL menghantar URL halaman yang dilawati pengguna kepada Google untuk menambah baik carian dan penyemakan imbas.
 
-      Jika anda mendayakan dasar ini, pengumpulan data awanama URL berkunci akan sentiasa aktif.
+      Jika anda mendayakan dasar ini, pengumpulan data awanama termasuk URL akan sentiasa aktif.
 
-      Jika anda melumpuhkan dasar ini, pengumpulan data awanama URL berkunci tidak akan diaktifkan.
+      Jika anda melumpuhkan dasar ini, pengumpulan data awanama termasuk URL tidak akan diaktifkan.
 
-      Jika dasar ini dibiarkan tanpa ditetapkan, pengumpulan data awanama URL berkunci akan didayakan, tetapi pengguna akan dapat menukarnya.</translation>
+      Jika dasar ini dibiarkan tanpa ditetapkan, pengumpulan data awanama termasuk URL akan didayakan, tetapi pengguna akan dapat menukarnya.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Tempat peristiwa skrin log masuk peranti</translation>
 <translation id="427220754384423013">Menentukan pencetak yang boleh digunakan oleh pengguna.
@@ -1841,7 +1841,7 @@
           Cara yang disyorkan untuk mengunci skrin semasa melahu adalah dengan mendayakan penguncian skrin semasa tergantung dan membuatkan <ph name="PRODUCT_OS_NAME" /> tergantung selepas kelewatan melahu. Dasar ini harus digunakan hanya apabila penguncian skrin berlaku jauh lebih awal daripada masa tergantung atau apabila tergantung yang berlaku semasa melahu tidak diingini sama sekali.
 
           Nilai dasar mesti dinyatakan dalam milisaat. Nilai diketatkan menjadi kurang daripada kelewatan melahu.</translation>
-<translation id="6097601282776163274">Dayakan pengumpulan data awanama URL berkunci</translation>
+<translation id="6097601282776163274">Dayakan pengumpulan data awanama termasuk URL</translation>
 <translation id="6111936128861357925">Benarkan Permainan Telur Easter Dinosaur</translation>
 <translation id="6114416803310251055">dikecam</translation>
 <translation id="6133088669883929098">Benarkan semua tapak untuk menggunakan penghasilan kunci</translation>

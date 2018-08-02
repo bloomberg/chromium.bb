@@ -1598,7 +1598,6 @@
 <translation id="3428419049384081277">Du er logget ind</translation>
 <translation id="3429275422858276529">Tilføj denne side som bogmærke, så du nemt kan finde den igen</translation>
 <translation id="3429599832623003132">$1 elementer</translation>
-<translation id="3431019676184503003">Adresser og betalingsmetoder</translation>
 <translation id="3432227430032737297">Fjern alle viste</translation>
 <translation id="3432757130254800023">Send lyd og video til visninger på det lokale netværk</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -2993,7 +2992,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="55601339223879446">Tilpas grænserne for dit skrivebord inden for skærmvisningen</translation>
 <translation id="5562781907504170924">Denne fane er tilsluttet en Bluetooth-enhed.</translation>
 <translation id="5563234215388768762">Søg på Google, eller angiv en webadresse</translation>
-<translation id="5565871407246142825">Kreditkort</translation>
 <translation id="5567989639534621706">Applikationscaches</translation>
 <translation id="5568069709869097550">Kan ikke logge ind</translation>
 <translation id="5568144734023334204">Android-lagerplads</translation>
@@ -3598,7 +3596,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="648637985389593741">Aktivér funktioner for synkronisering og tilpasning</translation>
 <translation id="6488384360522318064">Vælg sprog</translation>
 <translation id="648927581764831596">Ingen tilgængelig</translation>
-<translation id="6490936204492416398">Installer nye fra webbutikken</translation>
 <translation id="6491376743066338510">Godkendelse mislykkedes</translation>
 <translation id="6492313032770352219">Diskstørrelse:</translation>
 <translation id="6494445798847293442">Ikke et nøglecenter</translation>
@@ -5142,7 +5139,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8877448029301136595">[parent directory]</translation>
 <translation id="8879284080359814990">&amp;Vis som fane</translation>
 <translation id="8883847527783433352">Synkroniser med en anden konto</translation>
-<translation id="8884961208881553398">Tilføj nye tjenester</translation>
 <translation id="8885197664446363138">Smart Lock er ikke tilgængelig</translation>
 <translation id="8888432776533519951">Farve:</translation>
 <translation id="8890516388109605451">Kilder</translation>

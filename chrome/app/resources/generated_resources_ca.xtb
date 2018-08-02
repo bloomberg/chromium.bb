@@ -1598,7 +1598,6 @@
 <translation id="3428419049384081277">Has iniciat la sessió</translation>
 <translation id="3429275422858276529">Afegeix aquesta pàgina a les adreces d'interès per trobar-la fàcilment més endavant</translation>
 <translation id="3429599832623003132">$1 elements</translation>
-<translation id="3431019676184503003">Adreces i formes de pagament</translation>
 <translation id="3432227430032737297">Suprimeix totes les que es mostren</translation>
 <translation id="3432757130254800023">Envia àudio i vídeo a les visualitzacions de la xarxa local</translation>
 <translation id="3432762828853624962">Treballadors compartits</translation>
@@ -2994,7 +2993,6 @@
 <translation id="55601339223879446">Ajusta els límits de l'escriptori dins de la pantalla</translation>
 <translation id="5562781907504170924">Aquesta pestanya està connectada a un dispositiu Bluetooth</translation>
 <translation id="5563234215388768762">Fes una cerca a Google o escriu un URL</translation>
-<translation id="5565871407246142825">Targetes de crèdit</translation>
 <translation id="5567989639534621706">Memòries cau de l'aplicació</translation>
 <translation id="5568069709869097550">No puc accedir</translation>
 <translation id="5568144734023334204">Emmagatzematge d'Android</translation>
@@ -3598,7 +3596,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="648637985389593741">Endavant, activa les funcions de sincronització i personalització</translation>
 <translation id="6488384360522318064">Selecciona l'idioma</translation>
 <translation id="648927581764831596">No n'hi ha cap de disponible</translation>
-<translation id="6490936204492416398">Instal·la'n de nous des de la botiga web</translation>
 <translation id="6491376743066338510">No s'ha pogut completar l'autorització</translation>
 <translation id="6492313032770352219">Espai ocupat al disc:</translation>
 <translation id="6494445798847293442">No és una entitat emissora de certificats</translation>
@@ -4036,6 +4033,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7175353351958621980">Carregat des de:</translation>
 <translation id="7180611975245234373">Actualitza</translation>
 <translation id="7180865173735832675">Personalitza</translation>
+<translation id="7182359331070524176">Selecciona un àlbum de Google Fotos</translation>
 <translation id="7186088072322679094">Conserva a la barra d'eines</translation>
 <translation id="7187428571767585875">Entrades del registre que se suprimiran o canviaran:</translation>
 <translation id="7189234443051076392">Comprova que hi hagi prou espai al dispositiu</translation>
@@ -5140,7 +5138,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8877448029301136595">[directori principal]</translation>
 <translation id="8879284080359814990">&amp;Mostra com a pestanya</translation>
 <translation id="8883847527783433352">Sincronitza amb un altre compte</translation>
-<translation id="8884961208881553398">Afegeix serveis nous</translation>
 <translation id="8885197664446363138">Smart Lock no està disponible</translation>
 <translation id="8888432776533519951">Color:</translation>
 <translation id="8890516388109605451">Fonts</translation>

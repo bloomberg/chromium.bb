@@ -1601,7 +1601,6 @@
 <translation id="3428419049384081277">Olet kirjautunut sisään!</translation>
 <translation id="3429275422858276529">Lisää tämä sivu kirjanmerkkeihin, niin löydät sen myöhemmin helposti.</translation>
 <translation id="3429599832623003132">$1 kohdetta</translation>
-<translation id="3431019676184503003">Osoitteet ja maksutavat</translation>
 <translation id="3432227430032737297">Poista kaikki näytetyt</translation>
 <translation id="3432757130254800023">Lähetä ääntä ja videota näyttöihin lähiverkossa</translation>
 <translation id="3432762828853624962">SharedWorkerit</translation>
@@ -2993,7 +2992,6 @@
 <translation id="55601339223879446">Säädä työpöydän rajoja näytön sisällä</translation>
 <translation id="5562781907504170924">Tämä välilehti on yhdistetty Bluetooth-laitteeseen.</translation>
 <translation id="5563234215388768762">Hae Googlesta tai kirjoita URL-osoite</translation>
-<translation id="5565871407246142825">Luottokortit</translation>
 <translation id="5567989639534621706">Sovellusvälimuistit</translation>
 <translation id="5568069709869097550">Ei voi kirjautua sisään</translation>
 <translation id="5568144734023334204">Android-tallennustila</translation>
@@ -3599,7 +3597,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="648637985389593741">Ota synkronointi- ja räätälöintiominaisuudet käyttöön</translation>
 <translation id="6488384360522318064">Valitse kieli</translation>
 <translation id="648927581764831596">Ei saatavilla</translation>
-<translation id="6490936204492416398">Asenna uusi verkkokaupasta</translation>
 <translation id="6491376743066338510">Valtuutus epäonnistui.</translation>
 <translation id="6492313032770352219">Koko levyllä:</translation>
 <translation id="6494445798847293442">Ei varmenteen myöntäjä</translation>
@@ -5143,7 +5140,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8877448029301136595">[emohakemisto]</translation>
 <translation id="8879284080359814990">&amp;Näytä välilehtenä</translation>
 <translation id="8883847527783433352">Synkronoi toisen tilin kanssa</translation>
-<translation id="8884961208881553398">Lisää uusia palveluita</translation>
 <translation id="8885197664446363138">Smart Lock ei ole käytettävissä</translation>
 <translation id="8888432776533519951">Väri:</translation>
 <translation id="8890516388109605451">Lähteet</translation>

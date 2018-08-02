@@ -1600,7 +1600,6 @@
 <translation id="3428419049384081277">Bạn đã đăng nhập!</translation>
 <translation id="3429275422858276529">Đánh dấu trang này để dễ dàng tìm kiếm về sau</translation>
 <translation id="3429599832623003132">$1 mục</translation>
-<translation id="3431019676184503003">Địa chỉ và phương thức thanh toán</translation>
 <translation id="3432227430032737297">Xóa tất cả cookie hiển thị</translation>
 <translation id="3432757130254800023">Gửi âm thanh và video tới màn hình trên mạng cục bộ</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -2232,7 +2231,7 @@
 <translation id="4415748029120993980">Đường cong elip SECG secp384r1 (aka NIST P-384)</translation>
 <translation id="4416582610654027550">Nhập một URL hợp lệ</translation>
 <translation id="4419409365248380979">Luôn cho phép <ph name="HOST" /> đặt cookie</translation>
-<translation id="4419556793104466535">Kiểm soát tính năng đồng bộ hóa, cá nhân hóa, v.v.</translation>
+<translation id="4419556793104466535">Kiểm soát tính năng đồng bộ hóa, cá nhân hóa và nhiều nội dung khác</translation>
 <translation id="4421932782753506458">Mèo con dễ thương</translation>
 <translation id="4422347585044846479">Chỉnh sửa dấu trang của trang này</translation>
 <translation id="4423376891418188461">Khôi phục cài đặt</translation>
@@ -2995,7 +2994,6 @@
 <translation id="55601339223879446">Điều chỉnh các ranh giới của màn hình trong vòng hiển thị</translation>
 <translation id="5562781907504170924">Tab này được kết nối với thiết bị Bluetooth.</translation>
 <translation id="5563234215388768762">Tìm kiếm trên Google hoặc nhập một URL</translation>
-<translation id="5565871407246142825">Thẻ tín dụng</translation>
 <translation id="5567989639534621706">Bộ nhớ đệm của ứng dụng</translation>
 <translation id="5568069709869097550">Không thể đăng nhập</translation>
 <translation id="5568144734023334204">Bộ nhớ Android</translation>
@@ -3599,7 +3597,6 @@
 <translation id="648637985389593741">Tiếp tục bật tính năng đồng bộ hóa và cá nhân hóa</translation>
 <translation id="6488384360522318064">Chọn ngôn ngữ</translation>
 <translation id="648927581764831596">Không có</translation>
-<translation id="6490936204492416398">Cài đặt tiện ích mới từ cửa hàng trực tuyến</translation>
 <translation id="6491376743066338510">Ủy quyền không thành công</translation>
 <translation id="6492313032770352219">Dung lượng trên đĩa:</translation>
 <translation id="6494445798847293442">Không phải tổ chức phát hành chứng chỉ</translation>
@@ -4037,6 +4034,7 @@
 <translation id="7175353351958621980">Được tải từ:</translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7180865173735832675">Tùy chỉnh</translation>
+<translation id="7182359331070524176">Chọn một album trên Google Photos</translation>
 <translation id="7186088072322679094">Giữ trong thanh công cụ</translation>
 <translation id="7187428571767585875">Các mục sổ đăng ký sẽ bị xóa hoặc thay đổi:</translation>
 <translation id="7189234443051076392">Hãy đảm bảo thiết bị của bạn có đủ dung lượng</translation>
@@ -5143,7 +5141,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8877448029301136595">[thư mục cha]</translation>
 <translation id="8879284080359814990">&amp;Hiển thị Dưới dạng Tab</translation>
 <translation id="8883847527783433352">Đồng bộ hóa với một tài khoản khác</translation>
-<translation id="8884961208881553398">Thêm dịch vụ mới</translation>
 <translation id="8885197664446363138">Smart Lock không khả dụng</translation>
 <translation id="8888432776533519951">Màu:</translation>
 <translation id="8890516388109605451">Nguồn</translation>

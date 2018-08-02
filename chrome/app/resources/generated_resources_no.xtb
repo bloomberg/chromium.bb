@@ -318,7 +318,7 @@
 <translation id="1465827627707997754">Pizzastykke</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1468571364034902819">Du kan ikke bruke denne profilen</translation>
-<translation id="1470533772306424441">Vi installerer disse appene for deg. Du finner flere apper for din enhet i Play-butikken.</translation>
+<translation id="1470533772306424441">Vi installerer disse appene for deg. Du finner flere apper for enheten din i Play-butikken.</translation>
 <translation id="1470811252759861213">For å få utvidelsene dine på alle datamaskinene du bruker, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">«<ph name="FILENAME" />» ble ikke lastet opp. Det er ikke nok ledig plass på Google Disk.</translation>
 <translation id="1475502736924165259">Du har en fil med sertifikater som ikke passer inn i noen av de andre kategoriene</translation>
@@ -1540,7 +1540,7 @@
 <translation id="3326821416087822643">Til zip: <ph name="FILE_NAME" /> ...</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Appinformasjon</translation>
-<translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - videoen spilles av i bilde-i-bilde-modus</translation>
+<translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – videoen spilles av i bilde-i-bilde-modus</translation>
 <translation id="3335337277364016868">Innspillingsår</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
 <translation id="3336664756920573711">Lås opp <ph name="DEVICE_TYPE" /> med Android-telefonen din</translation>
@@ -1560,7 +1560,7 @@
 <translation id="3360297538363969800">Utskriften mislyktes. Kontrollér skriveren og prøv på nytt.</translation>
 <translation id="3364721542077212959">Pekepennverktøy</translation>
 <translation id="3365598184818502391">Bruk enten Ctrl eller Alt</translation>
-<translation id="3367047597842238025">Still inn din <ph name="DEVICE_TYPE" /> akkurat slik som du ønsker og oppdag alle de fantastiske funksjonene på din enhet.</translation>
+<translation id="3367047597842238025">Still inn <ph name="DEVICE_TYPE" /> akkurat slik du ønsker, og oppdag alle de fantastiske mulighetene du har.</translation>
 <translation id="3368922792935385530">Tilkoblet</translation>
 <translation id="3369624026883419694">Slår opp vertsnavn …</translation>
 <translation id="337286756654493126">lese mapper du åpner i appen</translation>
@@ -1595,7 +1595,6 @@
 <translation id="3428419049384081277">Du er pålogget</translation>
 <translation id="3429275422858276529">Sett denne siden som bokmerke for å finne den enkelt senere</translation>
 <translation id="3429599832623003132">$1 elementer</translation>
-<translation id="3431019676184503003">Adresser og betalingsmåter</translation>
 <translation id="3432227430032737297">Fjern alle som vises</translation>
 <translation id="3432757130254800023">Send lyd og bilde til skjermer på lokalnettverket</translation>
 <translation id="3432762828853624962">Delte arbeidere (SharedWorker)</translation>
@@ -1809,7 +1808,7 @@
 <translation id="3735740477244556633">Sortér etter</translation>
 <translation id="3737274407993947948">Feil ved installering av Linux …</translation>
 <translation id="3737536731758327622">Nedlastingene dine vises her</translation>
-<translation id="3738671331307774213">Ved å verifisere din identitet bidrar du til å beskytte de private dataene dine.</translation>
+<translation id="3738671331307774213">Ved å verifisere identiteten din bidrar du til å beskytte de private dataene dine.</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Vil du åpne <ph name="APPLICATION" />?</translation>
 <translation id="3741158646617793859">Nå vises <ph name="DEVICE_NAME" /> i administrasjonskonsollen</translation>
@@ -1894,7 +1893,7 @@
 <translation id="3846116211488856547">Skaff deg verktøy for å utvikle nettsteder, Android-apper med mer. Linux laster ned <ph name="DOWNLOAD_SIZE" /> med data.</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3851428669031642514">Last inn utrygge skripter</translation>
-<translation id="3854599674806204102">Velg et alternativj</translation>
+<translation id="3854599674806204102">Velg et alternativ</translation>
 <translation id="3855441664322950881">Pakk utvidelsen</translation>
 <translation id="3855676282923585394">Importér bokmerker og innstillinger</translation>
 <translation id="3856800405688283469">Velg tidssone</translation>
@@ -2987,7 +2986,6 @@
 <translation id="55601339223879446">Juster grensene for skrivebordet på skjermen</translation>
 <translation id="5562781907504170924">Denne fanen er koblet til en Bluetooth-enhet.</translation>
 <translation id="5563234215388768762">Søk i Google eller skriv inn en nettadresse</translation>
-<translation id="5565871407246142825">Kredittkort</translation>
 <translation id="5567989639534621706">Programbuffere</translation>
 <translation id="5568069709869097550">Kan ikke logge på</translation>
 <translation id="5568144734023334204">Android-lagring</translation>
@@ -3388,7 +3386,7 @@
 <translation id="6178664161104547336">Velg et sertifikat</translation>
 <translation id="6181431612547969857">Nedlastingen ble blokkert</translation>
 <translation id="6185132558746749656">Enhetsposisjon</translation>
-<translation id="6185617499004995178">CUPS IPP validator</translation>
+<translation id="6185617499004995178">CUPS IPP-validator</translation>
 <translation id="6185696379715117369">Opp én side</translation>
 <translation id="6189273858858366896">Konfigurer eller administrer fildelinger på nettverket.</translation>
 <translation id="6189412234224385711">Åpne med <ph name="EXTENSION_NAME" /></translation>
@@ -3590,7 +3588,6 @@
 <translation id="648637985389593741">Kom igjen, slå på funksjoner for synkronisering og personlig tilpasning</translation>
 <translation id="6488384360522318064">Velg språk</translation>
 <translation id="648927581764831596">Ikke tilgjengelig</translation>
-<translation id="6490936204492416398">Installer en ny fra nettmarkedet</translation>
 <translation id="6491376743066338510">Kunne ikke autorisere</translation>
 <translation id="6492313032770352219">Plass på disken:</translation>
 <translation id="6494445798847293442">Ikke en sertifiseringsinstans</translation>
@@ -3644,7 +3641,7 @@
 <translation id="657402800789773160">&amp;Last inn denne siden på nytt</translation>
 <translation id="6577284282025554716">Nedlasting avbrutt: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Kryptér synkroniserte passord med Google-brukernavnet og -passordet ditt</translation>
-<translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - skrivebordinnholdet er delt</translation>
+<translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – skrivebordinnholdet er delt</translation>
 <translation id="6580151766480067746">ARC-versjon</translation>
 <translation id="6581162200855843583">Google Disk-link</translation>
 <translation id="6582421931165117398">For å beskytte personopplysningene dine, endre passordet ditt nå. Du blir bedt om å logge på før du kan endre passordet.</translation>
@@ -4478,7 +4475,7 @@
 <translation id="7857949311770343000">Er dette den nye fanen du ventet på?</translation>
 <translation id="786073089922909430">Tjeneste: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">Ne&amp;dlastinger</translation>
-<translation id="7868378670806575181">{NUM_COOKIES,plural, =1{ Én informasjonskapsel}other{ #informasjonskapsler}}</translation>
+<translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 informasjonskapsel}other{# informasjonskapsler}}</translation>
 <translation id="786957569166715433">«<ph name="DEVICE_NAME" />» er tilkoblet</translation>
 <translation id="7870730066603611552">Gå gjennom alternativene for synkronisering etter konfigureringen</translation>
 <translation id="7870790288828963061">Fant ingen Kiosk-apper med nyere versjon. Ingenting å oppdatere. Ta ut USB-pinnen.</translation>
@@ -4802,7 +4799,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8373553483208508744">Slå av lyden for fanene</translation>
 <translation id="8382913212082956454">Kopier &amp;e-postadresse</translation>
 <translation id="8386903983509584791">Skanningen er fullført</translation>
-<translation id="8389492867173948260">lese og endre alle dataene dine på nettstedene du besøker:</translation>
+<translation id="8389492867173948260">La denne utvidelsen lese og endre alle dataene dine på nettsteder du besøker:</translation>
 <translation id="8390449457866780408">Tjeneren er ikke tilgjengelig.</translation>
 <translation id="8391712576156218334">Bildet er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="8392234662362215700">Trykk på Ctrl + Shift + mellomrom for å bytte tastaturoppsett.</translation>
@@ -4862,7 +4859,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8465252176946159372">Ikke gyldig</translation>
 <translation id="8465444703385715657">Du må gi tillatelse for at <ph name="PLUGIN_NAME" /> skal kunne kjøre</translation>
 <translation id="8466234950814670489">Tar-arkiv</translation>
-<translation id="8466417995783206254">Denne fanen spiller av en video i bilde-i-bilde.</translation>
+<translation id="8466417995783206254">Denne fanen spiller av en video i bilde-i-bilde-modus.</translation>
 <translation id="8468750959626135884">Lås opp <ph name="DEVICE_TYPE" /> med Android-telefonen din.</translation>
 <translation id="8470028084415844044">For å få alle passordene dine på alle enhetene du bruker, slå på synkronisering.</translation>
 <translation id="8470513973197838199">Lagrede passord for <ph name="ORIGIN" /></translation>
@@ -5132,7 +5129,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8877448029301136595">[overordnet katalog]</translation>
 <translation id="8879284080359814990">Vi&amp;s som fane</translation>
 <translation id="8883847527783433352">Synkroniser til en annen konto</translation>
-<translation id="8884961208881553398">Legg til nye tjenester</translation>
 <translation id="8885197664446363138">Smart Lock er utilgjengelig</translation>
 <translation id="8888432776533519951">Farge:</translation>
 <translation id="8890516388109605451">Kilder</translation>
@@ -5330,7 +5326,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9173995187295789444">Skanner etter Bluetooth-enheter …</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> – en Bluetooth-enhet er tilkoblet</translation>
 <translation id="9177499212658576372">Du er for øyeblikket tilkoblet nettverket <ph name="NETWORK_TYPE" />.</translation>
-<translation id="9179734824669616955">Sett opp Linux (Beta) på <ph name="DEVICE_TYPE" /> din</translation>
+<translation id="9179734824669616955">Sett opp Linux (Beta) på <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Denne prosessen kan ta noen minutter. Starter Linux-beholderen.</translation>
 <translation id="9180380851667544951">Nettstedet kan dele skjermen din</translation>
 <translation id="9188441292293901223">Du må oppdatere telefonen til en nyere versjon av Android for å låse opp <ph name="DEVICE_TYPE" />.</translation>

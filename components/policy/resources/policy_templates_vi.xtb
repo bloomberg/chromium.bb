@@ -296,6 +296,11 @@
       Nếu cài đặt không được chỉ định, giá trị mặc định sẽ được sử dụng.
 
       Nếu chính sách này không được thiết lập, các giá trị mặc định sẽ được sử dụng cho tất cả cài đặt.</translation>
+<translation id="1958138414749279167">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành thông tin địa chỉ trong biểu mẫu web bằng cách sử dụng thông tin đã lưu trữ trước đây.
+
+      Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Tự động điền sẽ không bao giờ gợi ý hoặc điền thông tin địa chỉ, đồng thời sẽ không lưu thông tin địa chỉ bổ sung mà người dùng có thể gửi trong khi duyệt web.
+
+      Nếu bạn bật hoặc không đặt giá trị nào cho tùy chọn cài đặt này, thì người dùng có thể kiểm soát tính năng Tự động điền cho địa chỉ trong giao diện người dùng.</translation>
 <translation id="1960840544413786116">Có cho phép chứng chỉ được cấp bởi mẩu neo đáng tin cậy cục bộ bị thiếu tiện ích subjectAlternativeName hay không</translation>
 <translation id="1964634611280150550">Đã tắt chế độ ẩn danh</translation>
 <translation id="1964802606569741174">Chính sách này không ảnh hưởng đến ứng dụng YouTube trên Android. Nếu bị buộc phải sử dụng Chế độ an toàn trên YouTube thì việc cài đặt ứng dụng YouTube trên Android sẽ không được cho phép.</translation>
@@ -1915,6 +1920,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6440051664870270040">Cho phép các trang web chuyển tới và mở các cửa sổ bật lên cùng một lúc</translation>
 <translation id="6447948611083700881">Đã tắt tính năng sao lưu và khôi phục</translation>
 <translation id="645425387487868471">Bật bắt buộc đăng nhập cho <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Bật tính năng Tự động điền cho địa chỉ</translation>
 <translation id="6473623140202114570">Định cấu hình danh sách các miền mà Duyệt web an toàn sẽ không kích hoạt cảnh báo.</translation>
 <translation id="6491139795995924304">Cho phép bluetooth trên thiết bị</translation>
 <translation id="6520802717075138474">Nhập công cụ tìm kiếm từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
