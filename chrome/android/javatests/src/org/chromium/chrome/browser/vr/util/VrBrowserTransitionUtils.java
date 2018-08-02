@@ -14,9 +14,9 @@ import org.junit.Assert;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.VrIntentUtils;
-import org.chromium.chrome.browser.vr.VrMainActivity;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.chrome.browser.vr.VrShellImpl;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -97,33 +97,18 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
     }
 
     /**
-     * Sends an intent to Chrome telling it to launch in VR mode. If the given autopresent param is
-     * true, this is expected to fail unless the trusted intent check is disabled in
-     * VrShellDelegate.
+     * Sends an intent to Chrome telling it to launch in VR mode.
      *
      * @param url String containing the URL to open.
-     * @param autopresent If this intent is expected to auto-present WebVR.
-     * @param avoidRelaunch Include an extra that prevents relaunching Chrome once the intent is
-     *        received.
      */
-    public static void sendVrLaunchIntent(String url, boolean autopresent, boolean avoidRelaunch) {
+    public static void sendVrLaunchIntent(String url) {
         // Create an intent that will launch Chrome at the specified URL.
         final Intent intent =
-                new Intent(ContextUtils.getApplicationContext(), VrMainActivity.class);
+                new Intent(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
+        intent.setAction(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
         VrIntentUtils.setupVrIntent(intent);
-
-        if (autopresent) {
-            // Daydream removes this category for deep-linked URLs for legacy reasons.
-            intent.removeCategory(VrIntentUtils.DAYDREAM_CATEGORY);
-            intent.putExtra(VrIntentUtils.AUTOPRESENT_WEVBVR_EXTRA, true);
-        }
-        if (avoidRelaunch) intent.putExtra(VrIntentUtils.AVOID_RELAUNCH_EXTRA, true);
-
-        // TODO(https://crbug.com/854327): Remove this workaround once the issue with launchInVr
-        // sometimes launching the given intent before entering VR is fixed.
-        intent.putExtra(VrIntentUtils.ENABLE_TEST_RELAUNCH_WORKAROUND_EXTRA, true);
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { VrShellDelegate.getVrDaydreamApi().launchInVr(intent); });

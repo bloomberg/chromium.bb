@@ -37,4 +37,5 @@ public interface VrDelegate {
     boolean bootsToVr();
     boolean isDaydreamReadyDevice();
     boolean isDaydreamCurrentViewer();
+    boolean willChangeDensityInVr(ChromeActivity activity);
 }

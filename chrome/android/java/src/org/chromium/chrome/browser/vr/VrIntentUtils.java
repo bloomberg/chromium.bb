@@ -18,18 +18,7 @@ import org.chromium.chrome.R;
  * Utilities dealing with extracting information about VR intents.
  */
 public class VrIntentUtils {
-    // The Daydream Home app adds this extra to auto-present intents.
-    public static final String AUTOPRESENT_WEVBVR_EXTRA = "browser.vr.AUTOPRESENT_WEBVR";
     public static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
-    // Tells Chrome not to relaunch itself when receiving a VR intent. This is used by tests since
-    // the relaunch logic does not work properly with the DON flow skipped.
-    public static final String AVOID_RELAUNCH_EXTRA =
-            "org.chromium.chrome.browser.vr.AVOID_RELAUNCH";
-    // Tells Chrome to attempts a relaunch of the intent if it is received outside of VR and doesn't
-    // have the Daydream category set. This is a workaround for https://crbug.com/854327 where
-    // launchInVr can sometimes launch the given intent before entering VR.
-    public static final String ENABLE_TEST_RELAUNCH_WORKAROUND_EXTRA =
-            "org.chromium.chrome.browser.vr.ENABLE_TEST_RELUANCH_WORKAROUND";
 
     static final String VR_FRE_INTENT_EXTRA = "org.chromium.chrome.browser.vr.VR_FRE";
 
