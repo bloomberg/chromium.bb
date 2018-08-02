@@ -50,7 +50,7 @@ namespace {
 
 const char kExpectedMimeType[] = "text/html";
 
-// NavigationAndLoadCallbacksTest is parameterized on this enum to test both
+// WebStateObserverTest is parameterized on this enum to test both
 // LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl.
 enum NavigationManagerChoice {
   TEST_LEGACY_NAVIGATION_MANAGER,
@@ -527,11 +527,11 @@ using test::WaitForWebViewContainingText;
 
 // Test fixture to test navigation and load callbacks from WebStateObserver and
 // WebStatePolicyDecider.
-class NavigationAndLoadCallbacksTest
+class WebStateObserverTest
     : public WebIntTest,
       public ::testing::WithParamInterface<NavigationManagerChoice> {
  public:
-  NavigationAndLoadCallbacksTest() : scoped_observer_(&observer_) {}
+  WebStateObserverTest() : scoped_observer_(&observer_) {}
 
   void SetUp() override {
     if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
@@ -584,11 +584,11 @@ class NavigationAndLoadCallbacksTest
   ScopedObserver<WebState, WebStateObserver> scoped_observer_;
   testing::InSequence callbacks_sequence_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigationAndLoadCallbacksTest);
+  DISALLOW_COPY_AND_ASSIGN(WebStateObserverTest);
 };
 
 // Tests successful navigation to a new page.
-TEST_P(NavigationAndLoadCallbacksTest, NewPageNavigation) {
+TEST_P(WebStateObserverTest, NewPageNavigation) {
   const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
@@ -620,7 +620,7 @@ TEST_P(NavigationAndLoadCallbacksTest, NewPageNavigation) {
 // Tests that if web usage is already enabled, enabling it again would not cause
 // any page loads (related to restoring cached session). This is a regression
 // test for crbug.com/781916.
-TEST_P(NavigationAndLoadCallbacksTest, EnableWebUsageTwice) {
+TEST_P(WebStateObserverTest, EnableWebUsageTwice) {
   const GURL url = test_server_->GetURL("/echo");
 
   // Only expect one set of load events from the first LoadUrl(), not subsequent
@@ -655,7 +655,7 @@ TEST_P(NavigationAndLoadCallbacksTest, EnableWebUsageTwice) {
 }
 
 // Tests failed navigation to a new page.
-TEST_P(NavigationAndLoadCallbacksTest, FailedNavigation) {
+TEST_P(WebStateObserverTest, FailedNavigation) {
   // TODO(crbug.com/851119): temporarily disable this failing test.
   if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
     return;
@@ -698,7 +698,7 @@ TEST_P(NavigationAndLoadCallbacksTest, FailedNavigation) {
 }
 
 // Tests web page reload navigation.
-TEST_P(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
+TEST_P(WebStateObserverTest, WebPageReloadNavigation) {
   const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
@@ -754,7 +754,7 @@ TEST_P(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
 }
 
 // Tests web page reload with user agent override.
-TEST_P(NavigationAndLoadCallbacksTest, ReloadWithUserAgentType) {
+TEST_P(WebStateObserverTest, ReloadWithUserAgentType) {
   // TODO(crbug.com/851119): temporarily disable this failing test.
   if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
     return;
@@ -805,7 +805,7 @@ TEST_P(NavigationAndLoadCallbacksTest, ReloadWithUserAgentType) {
 }
 
 // Tests user-initiated hash change.
-TEST_P(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
+TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
   // TODO(crbug.com/851119): temporarily disable this failing test.
   if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
     return;
@@ -888,7 +888,7 @@ TEST_P(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
 }
 
 // Tests renderer-initiated hash change.
-TEST_P(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
+TEST_P(WebStateObserverTest, RendererInitiatedHashChangeNavigation) {
   const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
@@ -943,7 +943,7 @@ TEST_P(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
 }
 
 // Tests state change.
-TEST_P(NavigationAndLoadCallbacksTest, StateNavigation) {
+TEST_P(WebStateObserverTest, StateNavigation) {
   const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
@@ -1008,7 +1008,7 @@ TEST_P(NavigationAndLoadCallbacksTest, StateNavigation) {
 }
 
 // Tests native content navigation.
-TEST_P(NavigationAndLoadCallbacksTest, NativeContentNavigation) {
+TEST_P(WebStateObserverTest, NativeContentNavigation) {
   GURL url(url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
@@ -1030,7 +1030,7 @@ TEST_P(NavigationAndLoadCallbacksTest, NativeContentNavigation) {
 }
 
 // Tests native content reload navigation.
-TEST_P(NavigationAndLoadCallbacksTest, NativeContentReload) {
+TEST_P(WebStateObserverTest, NativeContentReload) {
   GURL url(url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
@@ -1065,7 +1065,7 @@ TEST_P(NavigationAndLoadCallbacksTest, NativeContentReload) {
 
 // Tests WasTitleSet callback triggered when navigating back to native content
 // from web content.
-TEST_P(NavigationAndLoadCallbacksTest, GoBackToNativeContent) {
+TEST_P(WebStateObserverTest, GoBackToNativeContent) {
   // Load a native content URL.
   GURL url(url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -1136,7 +1136,7 @@ TEST_P(NavigationAndLoadCallbacksTest, GoBackToNativeContent) {
 }
 
 // Tests successful navigation to a new page with post HTTP method.
-TEST_P(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
+TEST_P(WebStateObserverTest, UserInitiatedPostNavigation) {
   // Prior to iOS 11, POST navigation is implemented as an XMLHttpRequest in
   // JavaScript. This doesn't create a WKBackForwardListItem in WKWebView on
   // which to attach the pending NavigationItem, if WKBasedNavigationManager is
@@ -1216,7 +1216,7 @@ TEST_P(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
 }
 
 // Tests successful navigation to a new page with post HTTP method.
-TEST_P(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
+TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
   const GURL url = test_server_->GetURL("/form?echo");
   const GURL action = test_server_->GetURL("/echo");
 
@@ -1273,7 +1273,7 @@ TEST_P(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
 }
 
 // Tests successful reload of a page returned for post request.
-TEST_P(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
+TEST_P(WebStateObserverTest, ReloadPostNavigation) {
   const GURL url = test_server_->GetURL("/form?echo");
   const GURL action = test_server_->GetURL("/echo");
 
@@ -1370,7 +1370,7 @@ TEST_P(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
 }
 
 // Tests going forward to a page rendered from post response.
-TEST_P(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
+TEST_P(WebStateObserverTest, ForwardPostNavigation) {
   // TODO(crbug.com/851119): temporarily disable this failing test.
   if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
     return;
@@ -1493,7 +1493,7 @@ TEST_P(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
 }
 
 // Tests server redirect navigation.
-TEST_P(NavigationAndLoadCallbacksTest, RedirectNavigation) {
+TEST_P(WebStateObserverTest, RedirectNavigation) {
   const GURL url = test_server_->GetURL("/server-redirect?echo");
   const GURL redirect_url = test_server_->GetURL("/echo");
 
@@ -1528,7 +1528,7 @@ TEST_P(NavigationAndLoadCallbacksTest, RedirectNavigation) {
 }
 
 // Tests download navigation.
-TEST_P(NavigationAndLoadCallbacksTest, DownloadNavigation) {
+TEST_P(WebStateObserverTest, DownloadNavigation) {
   GURL url = test_server_->GetURL("/download");
 
   // Perform download navigation.
@@ -1563,7 +1563,7 @@ TEST_P(NavigationAndLoadCallbacksTest, DownloadNavigation) {
 #else
 #define MAYBE_FailedLoad FLAKY_FailedLoad
 #endif
-TEST_P(NavigationAndLoadCallbacksTest, FLAKY_FailedLoad) {
+TEST_P(WebStateObserverTest, FLAKY_FailedLoad) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
@@ -1603,7 +1603,7 @@ TEST_P(NavigationAndLoadCallbacksTest, FLAKY_FailedLoad) {
 
 // Tests rejecting the navigation from ShouldAllowRequest. The load should stop,
 // but no other callbacks are called.
-TEST_P(NavigationAndLoadCallbacksTest, DisallowRequest) {
+TEST_P(WebStateObserverTest, DisallowRequest) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
@@ -1619,7 +1619,7 @@ TEST_P(NavigationAndLoadCallbacksTest, DisallowRequest) {
 
 // Tests rejecting the navigation from ShouldAllowResponse. PageLoaded callback
 // is not called.
-TEST_P(NavigationAndLoadCallbacksTest, DisallowResponse) {
+TEST_P(WebStateObserverTest, DisallowResponse) {
   const GURL url = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
@@ -1648,7 +1648,7 @@ TEST_P(NavigationAndLoadCallbacksTest, DisallowResponse) {
 
 // Tests stopping a navigation. Did FinishLoading and PageLoaded are never
 // called.
-TEST_P(NavigationAndLoadCallbacksTest, StopNavigation) {
+TEST_P(WebStateObserverTest, StopNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
@@ -1664,7 +1664,7 @@ TEST_P(NavigationAndLoadCallbacksTest, StopNavigation) {
 }
 
 // Tests stopping a finished navigation. PageLoaded is never called.
-TEST_P(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
+TEST_P(WebStateObserverTest, StopFinishedNavigation) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
@@ -1701,7 +1701,7 @@ TEST_P(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
 }
 
 // Tests that iframe navigation triggers DidChangeBackForwardState.
-TEST_P(NavigationAndLoadCallbacksTest, IframeNavigation) {
+TEST_P(WebStateObserverTest, IframeNavigation) {
   // LegacyNavigationManager doesn't support iframe navigation history.
   if (!GetWebClient()->IsSlimNavigationManagerEnabled())
     return;
@@ -1785,8 +1785,8 @@ TEST_P(NavigationAndLoadCallbacksTest, IframeNavigation) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    ProgrammaticNavigationAndLoadCallbacksTest,
-    NavigationAndLoadCallbacksTest,
+    ProgrammaticWebStateObserverTest,
+    WebStateObserverTest,
     ::testing::Values(
         NavigationManagerChoice::TEST_LEGACY_NAVIGATION_MANAGER,
         NavigationManagerChoice::TEST_WK_BASED_NAVIGATION_MANAGER));
