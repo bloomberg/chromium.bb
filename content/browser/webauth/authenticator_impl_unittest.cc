@@ -682,7 +682,7 @@ constexpr OriginClaimedAuthorityPair kValidAppIdCases[] = {
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
-TEST_F(AuthenticatorImplTest, AppIdExtension) {
+TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
   TestServiceManagerContext smc;
   device::test::ScopedVirtualFidoDevice virtual_device;
 
@@ -709,6 +709,31 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
   }
+}
+
+// Verify that a credential registered with U2F can be used via webauthn.
+TEST_F(AuthenticatorImplTest, AppIdExtension) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionCallback callback_receiver;
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  device::test::ScopedVirtualFidoDevice virtual_device;
+
+  // Inject a registration for the URL (which is a U2F AppID).
+  ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+      options->allow_credentials[0]->id, kTestOrigin1));
+
+  // Set the same URL as the appid parameter.
+  options->appid = kTestOrigin1;
+
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  // Trigger timer.
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
 }
 
 TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {

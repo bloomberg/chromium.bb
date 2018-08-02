@@ -178,7 +178,7 @@ void GetAssertionRequestHandler::HandleResponse(
     return;
   }
 
-  if (!response || !response->CheckRpIdHash(request_.rp_id()) ||
+  if (!response || !request_.CheckResponseRpIdHash(response->GetRpIdHash()) ||
       !CheckResponseCredentialIdMatchesRequestAllowList(*authenticator,
                                                         request_, *response) ||
       !CheckRequirementsOnResponseUserEntity(request_, *response)) {

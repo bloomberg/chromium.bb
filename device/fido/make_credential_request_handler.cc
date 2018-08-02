@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/make_credential_task.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -112,7 +113,10 @@ void MakeCredentialRequestHandler::HandleResponse(
     return;
   }
 
-  if (!response || !response->CheckRpIdHash(request_parameter_.rp().rp_id())) {
+  const auto rp_id_hash =
+      fido_parsing_utils::CreateSHA256Hash(request_parameter_.rp().rp_id());
+
+  if (!response || response->GetRpIdHash() != rp_id_hash) {
     OnAuthenticatorResponse(
         authenticator, CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
     return;
