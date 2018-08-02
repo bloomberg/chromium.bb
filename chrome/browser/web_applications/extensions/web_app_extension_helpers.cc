@@ -5,8 +5,6 @@
 #include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
 
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/common/pref_names.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace web_app {
 
@@ -16,10 +14,6 @@ std::string GenerateApplicationNameFromExtensionId(const std::string& id) {
 
 std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
   return GetAppIdFromApplicationName(app_name);
-}
-
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kWebAppInstallForceList);
 }
 
 }  // namespace web_app

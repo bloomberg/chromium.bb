@@ -28,4 +28,10 @@ WebAppProvider::WebAppProvider(PrefService* pref_service)
 
 WebAppProvider::~WebAppProvider() = default;
 
+// static
+void WebAppProvider::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  WebAppPolicyManager::RegisterProfilePrefs(registry);
+}
+
 }  // namespace web_app

@@ -13,6 +13,10 @@
 
 class PrefService;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace web_app {
 
 // Tracks the policy that affects Web Apps and also tracks which Web Apps are
@@ -26,6 +30,8 @@ class WebAppPolicyManager {
   explicit WebAppPolicyManager(PrefService* pref_service,
                                PendingAppManager* pending_app_manager);
   ~WebAppPolicyManager();
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   std::vector<PendingAppManager::AppInfo> GetAppsToInstall();
