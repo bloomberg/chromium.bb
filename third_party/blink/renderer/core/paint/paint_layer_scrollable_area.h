@@ -318,6 +318,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
   LayoutRect VisibleScrollSnapportRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   IntSize ContentsSize() const override;
+
+  // Similar to |ContentsSize| but snapped considering |paint_offset| which can
+  // have subpixel accumulation.
+  IntSize PixelSnappedContentsSize(const LayoutPoint& paint_offset) const;
+
   void ContentsResized() override;
   IntPoint LastKnownMousePosition() const override;
   bool ScrollAnimatorEnabled() const override;
@@ -397,8 +402,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   LayoutUnit ScrollWidth() const;
   LayoutUnit ScrollHeight() const;
-  int PixelSnappedScrollWidth() const;
-  int PixelSnappedScrollHeight() const;
 
   int VerticalScrollbarWidth(
       OverlayScrollbarClipBehavior =

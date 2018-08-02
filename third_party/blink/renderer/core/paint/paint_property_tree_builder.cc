@@ -1278,7 +1278,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           box.OverflowClipRect(context_.current.paint_offset));
       state.contents_rect = IntRect(
           -scrollable_area->ScrollOrigin() + state.container_rect.Location(),
-          scrollable_area->ContentsSize());
+          scrollable_area->PixelSnappedContentsSize(
+              context_.current.paint_offset));
+
       // In flipped blocks writing mode, if there is scrollbar on the right,
       // we move the contents to the left with extra amount of ScrollTranslation
       // (-VerticalScrollbarWidth, 0). As contents_rect is in the space of

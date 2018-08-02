@@ -1658,12 +1658,10 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
         ToIntSize(overflow_clip_rect.Location()));
   }
 
-  IntSize scroll_size =
-      PixelSnappedIntRect(
-          LayoutRect(
-              LayoutPoint(owning_layer_.SubpixelAccumulation()),
-              LayoutSize(layout_box.ScrollWidth(), layout_box.ScrollHeight())))
-          .Size();
+  PaintLayerScrollableArea* scrollable_area = owning_layer_.GetScrollableArea();
+  IntSize scroll_size = scrollable_area->PixelSnappedContentsSize(
+      LayoutPoint(owning_layer_.SubpixelAccumulation()));
+
   // Ensure scrolling contents are at least as large as the scroll clip
   scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
 
@@ -1693,16 +1691,8 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
 
   scrolling_contents_layer_->SetSize(scroll_size);
 
-  IntPoint scrolling_contents_layer_offset_from_layout_object;
-  if (PaintLayerScrollableArea* scrollable_area =
-          owning_layer_.GetScrollableArea()) {
-    scrolling_contents_layer_offset_from_layout_object =
-        -scrollable_area->ScrollOrigin();
-  }
-  scrolling_contents_layer_offset_from_layout_object.MoveBy(
-      overflow_clip_rect.Location());
   scrolling_contents_layer_->SetOffsetFromLayoutObject(
-      ToIntSize(scrolling_contents_layer_offset_from_layout_object));
+      overflow_clip_rect.Location() - scrollable_area->ScrollOrigin());
 }
 
 void CompositedLayerMapping::UpdateChildClippingMaskLayerGeometry() {

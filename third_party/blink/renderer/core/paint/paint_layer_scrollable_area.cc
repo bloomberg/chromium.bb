@@ -681,7 +681,15 @@ LayoutRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
 }
 
 IntSize PaintLayerScrollableArea::ContentsSize() const {
-  return IntSize(PixelSnappedScrollWidth(), PixelSnappedScrollHeight());
+  LayoutPoint offset(
+      GetLayoutBox()->ClientLeft() + GetLayoutBox()->Location().X(),
+      GetLayoutBox()->ClientTop() + GetLayoutBox()->Location().Y());
+  return PixelSnappedContentsSize(offset);
+}
+
+IntSize PaintLayerScrollableArea::PixelSnappedContentsSize(
+    const LayoutPoint& paint_offset) const {
+  return PixelSnappedIntSize(overflow_rect_.Size(), paint_offset);
 }
 
 void PaintLayerScrollableArea::ContentsResized() {
@@ -836,16 +844,6 @@ LayoutUnit PaintLayerScrollableArea::ScrollWidth() const {
 
 LayoutUnit PaintLayerScrollableArea::ScrollHeight() const {
   return overflow_rect_.Height();
-}
-
-int PaintLayerScrollableArea::PixelSnappedScrollWidth() const {
-  return SnapSizeToPixel(ScrollWidth(), GetLayoutBox()->ClientLeft() +
-                                            GetLayoutBox()->Location().X());
-}
-
-int PaintLayerScrollableArea::PixelSnappedScrollHeight() const {
-  return SnapSizeToPixel(ScrollHeight(), GetLayoutBox()->ClientTop() +
-                                             GetLayoutBox()->Location().Y());
 }
 
 void PaintLayerScrollableArea::UpdateScrollOrigin() {
