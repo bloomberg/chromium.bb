@@ -33,7 +33,9 @@ div {
 </div>
 
 <script>
+var body = document.body;
 var scroller = document.getElementById("scroller");
+var space = document.getElementById("space");
 
 function scrollLeft() {
   return scroller.scrollLeft;
@@ -51,12 +53,40 @@ promise_test (async () => {
 
 promise_test (async () => {
   scroller.scrollTo(0, 0);
-  await swipe(100, 200, 200, 'upleft', 1000);
+  await swipe(100, 200, 200, 'upleft', 900);
   await waitForAnimationEnd(scrollLeft, 1000, 30);
   await waitFor( () => {
     return approx_equals(scroller.scrollLeft, 200, 1) &&
            approx_equals(scroller.scrollTop, 200, 1);
   });
 }, "With fling enabled, the scroll ends at the closest snap point to the fling destination.")
+
+function MakeUnscrollable() {
+  scroller.removeChild(space);
+}
+function MakeScrollable() {
+  scroller.appendChild(space);
+}
+promise_test (async () => {
+  scroller.scrollTo(0, 0);
+  await swipe(100, 200, 200, 'upleft', 1000);
+  await waitFor( () => {
+    return scroller.scrollLeft > 120;
+  });
+  MakeUnscrollable();
+  await waitForAnimationEnd(scrollLeft, 1000, 20);
+  MakeScrollable();
+}, "Should not crash if the scroller becomes unscrollable during fling.");
+
+promise_test (async () => {
+  scroller.scrollTo(0, 0);
+  await swipe(100, 200, 200, 'upleft', 1000);
+  await waitFor( () => {
+    return scroller.scrollLeft > 120;
+  });
+  body.removeChild(scroller);
+  await waitForAnimationEnd(scrollLeft, 1000, 20);
+  body.appendChild(scroller);
+}, "Should not crash if the scroller is removed during fling.");
 
 </script>
