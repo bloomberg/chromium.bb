@@ -77,6 +77,7 @@
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
 #include "services/network/session_cleanup_channel_id_store.h"
@@ -517,6 +518,10 @@ void NetworkContext::DestroyURLLoaderFactory(
   url_loader_factories_.erase(it);
 }
 
+size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
+  return resolve_host_requests_.size();
+}
+
 void NetworkContext::ClearNetworkingHistorySince(
     base::Time time,
     base::OnceClosure completion_callback) {
@@ -792,6 +797,26 @@ void NetworkContext::CreateNetLogExporter(
     mojom::NetLogExporterRequest request) {
   net_log_exporter_bindings_.AddBinding(std::make_unique<NetLogExporter>(this),
                                         std::move(request));
+}
+
+void NetworkContext::ResolveHost(const net::HostPortPair& host,
+                                 mojom::ResolveHostHandleRequest control_handle,
+                                 mojom::ResolveHostClientPtr response_client) {
+  auto request = std::make_unique<ResolveHostRequest>(
+      url_request_context_->host_resolver(), host, network_service_->net_log());
+
+  int rv =
+      request->Start(std::move(control_handle), std::move(response_client),
+                     base::BindOnce(&NetworkContext::OnResolveHostComplete,
+                                    base::Unretained(this), request.get()));
+  if (rv != net::ERR_IO_PENDING)
+    return;
+
+  // Store the request with the context so it can be cancelled on context
+  // shutdown.
+  bool insertion_result =
+      resolve_host_requests_.insert(std::move(request)).second;
+  DCHECK(insertion_result);
 }
 
 void NetworkContext::AddHSTSForTesting(const std::string& host,
@@ -1204,6 +1229,15 @@ void NetworkContext::OnHttpCacheCleared(ClearHttpCacheCallback callback,
   }
   DCHECK(removed);
   std::move(callback).Run();
+}
+
+void NetworkContext::OnResolveHostComplete(ResolveHostRequest* request,
+                                           int error) {
+  DCHECK_NE(net::ERR_IO_PENDING, error);
+
+  auto found_request = resolve_host_requests_.find(request);
+  DCHECK(found_request != resolve_host_requests_.end());
+  resolve_host_requests_.erase(found_request);
 }
 
 void NetworkContext::OnHttpCacheSizeComputed(

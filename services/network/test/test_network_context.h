@@ -104,6 +104,9 @@ class TestNetworkContext : public mojom::NetworkContext {
       const GURL& url,
       ::network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {}
   void CreateNetLogExporter(mojom::NetLogExporterRequest exporter) override {}
+  void ResolveHost(const net::HostPortPair& host,
+                   mojom::ResolveHostHandleRequest control_handle,
+                   mojom::ResolveHostClientPtr response_client) override {}
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,

@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
@@ -40,6 +41,7 @@ class UnguessableToken;
 
 namespace net {
 class CertVerifier;
+class HostPortPair;
 class ReportSender;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
@@ -55,6 +57,7 @@ class CookieManager;
 class ExpectCTReporter;
 class NetworkService;
 class ProxyLookupRequest;
+class ResolveHostRequest;
 class ResourceScheduler;
 class ResourceSchedulerClient;
 class URLRequestContextBuilderMojo;
@@ -202,6 +205,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const GURL& url,
       mojom::ProxyLookupClientPtr proxy_lookup_client) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
+  void ResolveHost(const net::HostPortPair& host,
+                   mojom::ResolveHostHandleRequest control_handle,
+                   mojom::ResolveHostClientPtr response_client) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -225,6 +231,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // no open pipes.
   void DestroyURLLoaderFactory(cors::CORSURLLoaderFactory* url_loader_factory);
 
+  size_t GetNumOutstandingResolveHostRequestsForTesting() const;
+
   size_t pending_proxy_lookup_requests_for_testing() const {
     return proxy_lookup_requests_.size();
   }
@@ -240,6 +248,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
                           HttpCacheDataRemover* remover);
+
+  void OnResolveHostComplete(ResolveHostRequest* request, int error);
 
   // Invoked when the computation for ComputeHttpCacheSize() has been completed,
   // to report result to user via |callback| and clean things up.
@@ -322,6 +332,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>
       require_ct_delegate_;
   std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
+
+  std::set<std::unique_ptr<ResolveHostRequest>, base::UniquePtrComparator>
+      resolve_host_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };
