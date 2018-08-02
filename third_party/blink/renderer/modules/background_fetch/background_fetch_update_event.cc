@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_options.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_ui_options.h"
 #include "third_party/blink/renderer/modules/event_modules_names.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -45,7 +45,7 @@ void BackgroundFetchUpdateEvent::Trace(blink::Visitor* visitor) {
 
 ScriptPromise BackgroundFetchUpdateEvent::updateUI(
     ScriptState* script_state,
-    const BackgroundFetchUpdateUIOptions& ui_options) {
+    const BackgroundFetchUIOptions& ui_options) {
   if (!registration_) {
     // Return a Promise that will never settle when a developer calls this
     // method on a BackgroundFetchedEvent instance they created themselves.

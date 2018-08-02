@@ -12,7 +12,7 @@
 namespace blink {
 
 class BackgroundFetchIconLoader;
-class BackgroundFetchUpdateUIOptions;
+class BackgroundFetchUIOptions;
 
 // Event for interacting with fetch requests that have completed.
 class MODULES_EXPORT BackgroundFetchUpdateEvent final
@@ -41,7 +41,7 @@ class MODULES_EXPORT BackgroundFetchUpdateEvent final
 
   // Web Exposed method defined in the IDL file.
   ScriptPromise updateUI(ScriptState* script_state,
-                         const BackgroundFetchUpdateUIOptions& ui_options);
+                         const BackgroundFetchUIOptions& ui_options);
 
   void Trace(blink::Visitor* visitor) override;
 
