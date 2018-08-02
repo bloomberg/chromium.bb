@@ -13,44 +13,10 @@
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
 namespace sync_bookmarks {
-
-namespace {
-
-void UpdateBookmarkSpecificsMetaInfo(
-    const bookmarks::BookmarkNode::MetaInfoMap* metainfo_map,
-    sync_pb::BookmarkSpecifics* bm_specifics) {
-  // TODO(crbug.com/516866): update the implementation to be similar to the
-  // directory implementation
-  // https://cs.chromium.org/chromium/src/components/sync_bookmarks/bookmark_change_processor.cc?l=882&rcl=f38001d936d8b2abb5743e85cbc88c72746ae3d2
-  for (const std::pair<std::string, std::string>& pair : *metainfo_map) {
-    sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
-    meta_info->set_key(pair.first);
-    meta_info->set_value(pair.second);
-  }
-}
-
-sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
-    const bookmarks::BookmarkNode* node) {
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
-  bm_specifics->set_url(node->url().spec());
-  // TODO(crbug.com/516866): Set the favicon.
-  bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
-  bm_specifics->set_creation_time_us(
-      node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
-
-  bm_specifics->set_icon_url(node->icon_url() ? node->icon_url()->spec()
-                                              : std::string());
-  if (node->GetMetaInfoMap()) {
-    UpdateBookmarkSpecificsMetaInfo(node->GetMetaInfoMap(), bm_specifics);
-  }
-  return specifics;
-}
-
-}  // namespace
 
 BookmarkModelObserverImpl::BookmarkModelObserverImpl(
     const base::RepeatingClosure& nudge_for_commit_closure,
