@@ -95,7 +95,6 @@ class TestWebStateDelegate : public WebStateDelegate {
   void CommitPreviewingViewController(
       WebState* source,
       UIViewController* previewing_view_controller) override;
-  bool ShouldAllowAppLaunching(WebState* source) override;
 
   // Allows popups requested by a page with |opener_url|.
   void allow_popups(const GURL& opener_url) {

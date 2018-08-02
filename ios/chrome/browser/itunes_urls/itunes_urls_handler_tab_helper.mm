@@ -77,8 +77,15 @@ NSDictionary* ExtractITunesProductParameters(const GURL& url) {
   return params_dictionary;
 }
 
-// Returns true, if ITunesUrlsHandlerTabHelper can handle the given |url|.
-bool CanHandleUrl(const GURL& url) {
+}  // namespace
+
+ITunesUrlsHandlerTabHelper::~ITunesUrlsHandlerTabHelper() = default;
+
+ITunesUrlsHandlerTabHelper::ITunesUrlsHandlerTabHelper(web::WebState* web_state)
+    : web::WebStatePolicyDecider(web_state) {}
+
+// static
+bool ITunesUrlsHandlerTabHelper::CanHandleUrl(const GURL& url) {
   if (!IsITunesProductUrl(url))
     return false;
   // Valid iTunes URL structure:
@@ -100,13 +107,6 @@ bool CanHandleUrl(const GURL& url) {
     media_type_index--;
   return path_components[media_type_index] == kITunesAppPathIdentifier;
 }
-
-}  // namespace
-
-ITunesUrlsHandlerTabHelper::~ITunesUrlsHandlerTabHelper() = default;
-
-ITunesUrlsHandlerTabHelper::ITunesUrlsHandlerTabHelper(web::WebState* web_state)
-    : web::WebStatePolicyDecider(web_state) {}
 
 bool ITunesUrlsHandlerTabHelper::ShouldAllowRequest(
     NSURLRequest* request,

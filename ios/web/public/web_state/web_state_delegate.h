@@ -89,9 +89,6 @@ class WebStateDelegate {
       WebState* source,
       UIViewController* previewing_view_controller);
 
-  // Determines whether external applications launching is allowed or not.
-  virtual bool ShouldAllowAppLaunching(WebState* source);
-
  protected:
   virtual ~WebStateDelegate();
 

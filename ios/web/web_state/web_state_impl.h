@@ -268,9 +268,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                       NSURLCredential* proposed_credential,
                       const WebStateDelegate::AuthCallback& callback);
 
-  // Asks the delegate if Application launching is allowed.
-  bool ShouldAllowAppLaunching();
-
   // Cancels all dialogs associated with this web_state.
   void CancelDialogs();
 
