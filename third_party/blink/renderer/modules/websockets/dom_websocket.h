@@ -174,6 +174,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
     enum State {
       kActive,
       kPaused,
+      kUnpausePosted,
       kStopped,
     };
 
@@ -182,12 +183,11 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
     // Dispatches queued events if this queue is active.
     // Does nothing otherwise.
     void DispatchQueuedEvents();
-    void ResumeTimerFired(TimerBase*);
+    void UnpauseTask();
 
     State state_;
     Member<EventTarget> target_;
     HeapDeque<Member<Event>> events_;
-    TaskRunnerTimer<EventQueue> resume_timer_;
   };
 
   enum WebSocketSendType {
@@ -225,7 +225,8 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   // Updates |buffered_amount_after_close_| given the amount of data passed to
   // send() method after the state changed to CLOSING or CLOSED.
   void UpdateBufferedAmountAfterClose(uint64_t);
-  void ReflectBufferedAmountConsumption(TimerBase*);
+  void BufferedAmountUpdateTask();
+  void ReflectBufferedAmountConsumption();
 
   void ReleaseChannel();
   void RecordSendTypeHistogram(WebSocketSendType);
@@ -251,7 +252,8 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   String extensions_;
 
   Member<EventQueue> event_queue_;
-  TaskRunnerTimer<DOMWebSocket> buffered_amount_consume_timer_;
+
+  bool buffered_amount_update_task_pending_;
 };
 
 }  // namespace blink
