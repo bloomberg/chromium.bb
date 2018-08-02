@@ -202,6 +202,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   virtual uint64_t BackpressureFenceCreate();
   // Perform a client-side wait on a previously-created fence.
   virtual void BackpressureFenceWait(uint64_t fence);
+  // Temporary instrumentation for https://crbug.com/863817
+  virtual void FlushForDebugging();
 #endif
 
  protected:

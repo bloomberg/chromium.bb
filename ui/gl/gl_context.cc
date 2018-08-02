@@ -194,6 +194,8 @@ uint64_t GLContext::BackpressureFenceCreate() {
 }
 
 void GLContext::BackpressureFenceWait(uint64_t fence) {}
+
+void GLContext::FlushForDebugging() {}
 #endif
 
 bool GLContext::HasExtension(const char* name) {
