@@ -1920,21 +1920,6 @@ hooks = [
                 '-d', 'src/tools/luci-go/linux64',
     ],
   },
-  # Pull the Syzygy binaries, used for optimization and instrumentation.
-  # Remove this as soon as the zap_timestamp.exe utility is no longer used.
-  # See https://crbug.com/821764#c3.
-  {
-    'name': 'syzygy-binaries',
-    'pattern': '.',
-    'condition': 'host_os == "win"',
-    'action': ['python',
-               'src/build/get_syzygy_binaries.py',
-               '--output-dir=src/third_party/syzygy/binaries',
-               '--revision=8164b24ebde9c5649c9a09e88a7fc0b0fcbd1bc5',
-               '--overwrite',
-               '--copy-dia-binaries',
-    ],
-  },
   {
     'name': 'apache_win32',
     'pattern': '\\.sha1',
