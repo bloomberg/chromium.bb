@@ -242,12 +242,6 @@ static ScrollableArea* ScrollableAreaForNode(Node* node) {
   if (!node)
     return nullptr;
 
-  if (node->IsDocumentNode()) {
-    // This can be removed after root layer scrolling is enabled.
-    if (LocalFrameView* frame_view = ToDocument(node)->View())
-      return frame_view->LayoutViewport();
-  }
-
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object || !layout_object->IsBox())
     return nullptr;
