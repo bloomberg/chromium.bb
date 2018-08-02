@@ -177,7 +177,6 @@ NSString* const kTabUrlKey = @"url";
         ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
 
     [self updateLastVisitedTimestamp];
-    [[self webController] setDelegate:self];
   }
   return self;
 }

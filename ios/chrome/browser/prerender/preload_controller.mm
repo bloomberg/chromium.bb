@@ -29,7 +29,6 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
-#include "ios/web/public/web_state/ui/crw_web_delegate.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_thread.h"
@@ -89,8 +88,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
 @end
 
-@interface PreloadController ()<CRWWebDelegate,
-                                CRWWebStateObserver,
+@interface PreloadController ()<CRWWebStateObserver,
                                 ManageAccountsDelegate,
                                 PrefObserverDelegate>
 @end
@@ -254,7 +252,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState.get());
   [[tab webController] setNativeProvider:nil];
-  [[tab webController] setDelegate:tab];
 
   webState->SetShouldSuppressDialogs(false);
   webState->RemoveObserver(webStateObserver_.get());
@@ -392,7 +389,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   DCHECK(tab);
 
   [[tab webController] setNativeProvider:self];
-  [[tab webController] setDelegate:self];
 
   webState_->SetDelegate(webStateDelegate_.get());
   webState_->AddObserver(webStateObserver_.get());
@@ -435,7 +431,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
   [[tab webController] setNativeProvider:nil];
-  [[tab webController] setDelegate:tab];
   webState_->RemoveObserver(webStateObserver_.get());
   webState_->SetDelegate(nullptr);
   webState_.reset();

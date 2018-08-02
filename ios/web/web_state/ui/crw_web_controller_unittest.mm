@@ -834,8 +834,6 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
  protected:
   void SetUp() override {
     CRWWebControllerTest::SetUp();
-    mock_delegate_ = OCMProtocolMock(@protocol(CRWWebDelegate));
-    [web_controller() setDelegate:mock_delegate_];
   }
   // Calls webView:decidePolicyForNavigationAction:decisionHandler: callback
   // and waits for decision handler call. Returns false if decision handler
@@ -862,8 +860,6 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
     });
     return policy_match;
   }
-
-  id<CRWWebDelegate> mock_delegate_;
 };
 
 // Tests that App specific URLs in iframes are allowed if the main frame is App

@@ -6,16 +6,15 @@
 #define IOS_CHROME_BROWSER_TABS_TAB_PRIVATE_H_
 
 #include "ios/net/request_tracker.h"
-#import "ios/web/public/web_state/ui/crw_web_delegate.h"
 
 namespace web {
-class NavigationItem;
 class NavigationManagerImpl;
-class WebStateImpl;
 }
 
+@class CRWWebController;
+
 // Exposed private methods for testing purpose.
-@interface Tab ()<CRWWebDelegate>
+@interface Tab ()
 
 - (OpenInController*)openInController;
 

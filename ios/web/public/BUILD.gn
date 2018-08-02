@@ -79,7 +79,6 @@ source_set("public") {
     "web_state/ui/crw_generic_content_view.h",
     "web_state/ui/crw_native_content.h",
     "web_state/ui/crw_native_content_provider.h",
-    "web_state/ui/crw_web_delegate.h",
     "web_state/ui/crw_web_view_content_view.h",
     "web_state/ui/crw_web_view_proxy.h",
     "web_state/ui/crw_web_view_scroll_view_proxy.h",
