@@ -8,7 +8,6 @@
 #include "base/base_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/sequence_checker.h"
 
 namespace base {
 namespace internal {
@@ -67,8 +66,6 @@ class BASE_EXPORT SequenceLocalStorageMap {
   // in the map. For low number of entries, flat_map is known to perform better
   // than other map implementations.
   base::flat_map<int, ValueDestructorPair> sls_map_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SequenceLocalStorageMap);
 };

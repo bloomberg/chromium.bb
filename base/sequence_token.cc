@@ -89,21 +89,4 @@ ScopedSetSequenceTokenForCurrentThread::
   tls_current_task_token.Get().Set(nullptr);
 }
 
-ScopedSetNestedSequenceTokenForDestructorForCurrentThread ::
-    ScopedSetNestedSequenceTokenForDestructorForCurrentThread(
-        const SequenceToken& sequence_token)
-    : original_sequence_token_(tls_current_sequence_token.Get().Get()),
-      original_task_token_(tls_current_task_token.Get().Get()),
-      sequence_token_(sequence_token),
-      task_token_(TaskToken::Create()) {
-  tls_current_sequence_token.Get().Set(&sequence_token_);
-  tls_current_task_token.Get().Set(&task_token_);
-}
-
-ScopedSetNestedSequenceTokenForDestructorForCurrentThread ::
-    ~ScopedSetNestedSequenceTokenForDestructorForCurrentThread() {
-  tls_current_sequence_token.Get().Set(original_sequence_token_);
-  tls_current_task_token.Get().Set(original_task_token_);
-}
-
 }  // namespace base

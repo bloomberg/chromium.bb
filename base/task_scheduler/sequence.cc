@@ -12,7 +12,7 @@
 namespace base {
 namespace internal {
 
-Sequence::Sequence() : sequence_local_storage_(base::in_place) {}
+Sequence::Sequence() = default;
 
 bool Sequence::PushTask(Task task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
@@ -74,16 +74,7 @@ SequenceSortKey Sequence::GetSortKey() const {
   return SequenceSortKey(priority, next_task_sequenced_time);
 }
 
-Sequence::~Sequence() {
-  // Destroy the |sequence_local_storage_| with our |token_| set for the
-  // current thread, because objects stored in the sequence-local storage may
-  // expect to be destroyed on the same sequence they've been created on.
-  // This is fine, because this sequence can not be in use anywhere else when
-  // its destructor is running.
-  ScopedSetNestedSequenceTokenForDestructorForCurrentThread
-      scoped_set_sequence_token_for_current_thread(token_);
-  sequence_local_storage_.reset();
-}
+Sequence::~Sequence() = default;
 
 }  // namespace internal
 }  // namespace base

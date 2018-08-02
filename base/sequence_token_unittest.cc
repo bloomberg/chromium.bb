@@ -70,44 +70,6 @@ TEST(SequenceTokenTest, ToInternalValue) {
   EXPECT_NE(token1.ToInternalValue(), token2.ToInternalValue());
 }
 
-TEST(SequenceTokenTest, ReturnsToOriginalAfterNestedSequenceToken) {
-  const SequenceToken token1 = SequenceToken::Create();
-
-  {
-    ScopedSetSequenceTokenForCurrentThread
-        scoped_set_sequence_token_for_current_thread(token1);
-    EXPECT_TRUE(SequenceToken::GetForCurrentThread().IsValid());
-    EXPECT_EQ(token1, SequenceToken::GetForCurrentThread());
-
-    {
-      const SequenceToken token2 = SequenceToken::Create();
-      ScopedSetNestedSequenceTokenForDestructorForCurrentThread
-          scoped_set_nested_sequence_token_for_current_thread(token2);
-      EXPECT_TRUE(SequenceToken::GetForCurrentThread().IsValid());
-      EXPECT_EQ(token2, SequenceToken::GetForCurrentThread());
-    }
-
-    EXPECT_TRUE(SequenceToken::GetForCurrentThread().IsValid());
-    EXPECT_EQ(token1, SequenceToken::GetForCurrentThread());
-  }
-
-  EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
-}
-
-TEST(SequenceTokenTest, ReturnsToInvalidAfterNestedSequenceToken) {
-  EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
-
-  {
-    const SequenceToken token = SequenceToken::Create();
-    ScopedSetNestedSequenceTokenForDestructorForCurrentThread
-        scoped_set_nested_sequence_token_for_current_thread(token);
-    EXPECT_TRUE(SequenceToken::GetForCurrentThread().IsValid());
-    EXPECT_EQ(token, SequenceToken::GetForCurrentThread());
-  }
-
-  EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
-}
-
 // Expect a default-constructed TaskToken to be invalid and not equal to
 // another invalid TaskToken.
 TEST(TaskTokenTest, InvalidDefaultConstructed) {
@@ -168,41 +130,4 @@ TEST(TaskTokenTest, NotEqualInDifferentScopes) {
   EXPECT_NE(token_a, token_b);
 }
 
-TEST(TaskToken, ReturnsToOriginalAfterNestedTaskToken) {
-  TaskToken token_outer;
-  TaskToken token_inner;
-
-  {
-    ScopedSetSequenceTokenForCurrentThread
-        scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
-    token_outer = TaskToken::GetForCurrentThread();
-    EXPECT_TRUE(token_outer.IsValid());
-
-    {
-      ScopedSetNestedSequenceTokenForDestructorForCurrentThread
-          scoped_set_nested_sequence_token_for_current_thread(
-              SequenceToken::Create());
-      token_inner = TaskToken::GetForCurrentThread();
-      EXPECT_TRUE(token_inner.IsValid());
-      EXPECT_NE(token_outer, token_inner);
-    }
-
-    EXPECT_EQ(token_outer, TaskToken::GetForCurrentThread());
-  }
-
-  EXPECT_FALSE(TaskToken::GetForCurrentThread().IsValid());
-}
-
-TEST(TaskToken, ReturnsToInvalidAfterNestedTaskToken) {
-  EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
-
-  {
-    ScopedSetNestedSequenceTokenForDestructorForCurrentThread
-        scoped_set_nested_sequence_token_for_current_thread(
-            SequenceToken::Create());
-    EXPECT_TRUE(TaskToken::GetForCurrentThread().IsValid());
-  }
-
-  EXPECT_FALSE(TaskToken::GetForCurrentThread().IsValid());
-}
 }  // namespace base
