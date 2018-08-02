@@ -9,12 +9,12 @@
 
 #include "ash/ash_export.h"
 #include "ash/login_status.h"
+#include "ash/message_center/message_center_ui_delegate.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/animation/animation_container.h"
-#include "ui/message_center/ui_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace aura {
@@ -24,12 +24,12 @@ class Window;
 namespace message_center {
 class MessageCenter;
 class MessagePopupCollection;
-class UiController;
 }  // namespace message_center
 
 namespace ash {
 class AshPopupAlignmentDelegate;
 class MessageCenterBubble;
+class MessageCenterUiController;
 class NotificationBubbleWrapper;
 class NotificationTrayImageSubview;
 class NotificationTrayLabelSubview;
@@ -39,7 +39,7 @@ class NotificationTrayLabelSubview;
 // notification list. This class contains the Ash specific tray implementation.
 class ASH_EXPORT NotificationTray
     : public TrayBackgroundView,
-      public message_center::UiDelegate,
+      public MessageCenterUiDelegate,
       public base::SupportsWeakPtr<NotificationTray> {
  public:
   NotificationTray(Shelf* shelf, aura::Window* status_area_window);
@@ -128,7 +128,7 @@ class ASH_EXPORT NotificationTray
   MessageCenterBubble* GetMessageCenterBubbleForTest();
 
   aura::Window* status_area_window_;
-  std::unique_ptr<message_center::UiController> message_center_ui_controller_;
+  std::unique_ptr<MessageCenterUiController> message_center_ui_controller_;
   std::unique_ptr<NotificationBubbleWrapper> message_center_bubble_;
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
   std::unique_ptr<views::View> bell_icon_;

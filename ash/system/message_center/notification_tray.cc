@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/message_center/message_center_bubble.h"
+#include "ash/message_center/message_center_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -34,7 +35,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/ui_controller.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -317,7 +317,7 @@ NotificationTray::NotificationTray(Shelf* shelf,
   tray_container()->AddChildView(counter_.get());
 
   message_center_ui_controller_ =
-      std::make_unique<message_center::UiController>(this);
+      std::make_unique<MessageCenterUiController>(this);
   popup_alignment_delegate_ =
       std::make_unique<AshPopupAlignmentDelegate>(shelf);
   popup_collection_ = std::make_unique<message_center::MessagePopupCollection>(

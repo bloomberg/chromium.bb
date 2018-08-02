@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/ui_controller.h"
+#include "ash/message_center/message_center_ui_controller.h"
 
 #include <memory>
 
@@ -15,25 +15,25 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
-#include "ui/message_center/ui_delegate.h"
 #include "ui/message_center/views/notification_menu_model.h"
 #include "ui/strings/grit/ui_strings.h"
 
-namespace message_center {
+namespace ash {
 
-UiController::UiController(UiDelegate* delegate)
-    : message_center_(MessageCenter::Get()),
+MessageCenterUiController::MessageCenterUiController(
+    MessageCenterUiDelegate* delegate)
+    : message_center_(message_center::MessageCenter::Get()),
       message_center_visible_(false),
       popups_visible_(false),
       delegate_(delegate) {
   message_center_->AddObserver(this);
 }
 
-UiController::~UiController() {
+MessageCenterUiController::~MessageCenterUiController() {
   message_center_->RemoveObserver(this);
 }
 
-bool UiController::ShowMessageCenterBubble(bool show_by_click) {
+bool MessageCenterUiController::ShowMessageCenterBubble(bool show_by_click) {
   if (message_center_visible_)
     return true;
 
@@ -41,13 +41,13 @@ bool UiController::ShowMessageCenterBubble(bool show_by_click) {
 
   message_center_visible_ = delegate_->ShowMessageCenter(show_by_click);
   if (message_center_visible_) {
-    message_center_->SetVisibility(VISIBILITY_MESSAGE_CENTER);
+    message_center_->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
     NotifyUiControllerChanged();
   }
   return message_center_visible_;
 }
 
-bool UiController::HideMessageCenterBubble() {
+bool MessageCenterUiController::HideMessageCenterBubble() {
   if (!message_center_visible_)
     return false;
 
@@ -57,11 +57,11 @@ bool UiController::HideMessageCenterBubble() {
   return true;
 }
 
-void UiController::MarkMessageCenterHidden() {
+void MessageCenterUiController::MarkMessageCenterHidden() {
   if (!message_center_visible_)
     return;
   message_center_visible_ = false;
-  message_center_->SetVisibility(VISIBILITY_TRANSIENT);
+  message_center_->SetVisibility(message_center::VISIBILITY_TRANSIENT);
 
   // Some notifications (like system ones) should appear as popups again
   // after the message center is closed.
@@ -73,7 +73,7 @@ void UiController::MarkMessageCenterHidden() {
   NotifyUiControllerChanged();
 }
 
-void UiController::ShowPopupBubble() {
+void MessageCenterUiController::ShowPopupBubble() {
   if (message_center_visible_)
     return;
 
@@ -90,7 +90,7 @@ void UiController::ShowPopupBubble() {
   NotifyUiControllerChanged();
 }
 
-bool UiController::HidePopupBubble() {
+bool MessageCenterUiController::HidePopupBubble() {
   if (!popups_visible_)
     return false;
   HidePopupBubbleInternal();
@@ -99,7 +99,7 @@ bool UiController::HidePopupBubble() {
   return true;
 }
 
-void UiController::HidePopupBubbleInternal() {
+void MessageCenterUiController::HidePopupBubbleInternal() {
   if (!popups_visible_)
     return;
 
@@ -107,30 +107,33 @@ void UiController::HidePopupBubbleInternal() {
   popups_visible_ = false;
 }
 
-void UiController::ShowNotifierSettingsBubble() {
+void MessageCenterUiController::ShowNotifierSettingsBubble() {
   if (popups_visible_)
     HidePopupBubbleInternal();
 
   message_center_visible_ = delegate_->ShowNotifierSettings();
-  message_center_->SetVisibility(VISIBILITY_SETTINGS);
+  message_center_->SetVisibility(message_center::VISIBILITY_SETTINGS);
 
   NotifyUiControllerChanged();
 }
 
-void UiController::OnNotificationAdded(const std::string& notification_id) {
+void MessageCenterUiController::OnNotificationAdded(
+    const std::string& notification_id) {
   OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationRemoved(const std::string& notification_id,
-                                         bool by_user) {
+void MessageCenterUiController::OnNotificationRemoved(
+    const std::string& notification_id,
+    bool by_user) {
   OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationUpdated(const std::string& notification_id) {
+void MessageCenterUiController::OnNotificationUpdated(
+    const std::string& notification_id) {
   OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationClicked(
+void MessageCenterUiController::OnNotificationClicked(
     const std::string& notification_id,
     const base::Optional<int>& button_index,
     const base::Optional<base::string16>& reply) {
@@ -138,25 +141,27 @@ void UiController::OnNotificationClicked(
     OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationSettingsClicked(bool handled) {
+void MessageCenterUiController::OnNotificationSettingsClicked(bool handled) {
   if (!handled)
     ShowNotifierSettingsBubble();
 }
 
-void UiController::OnNotificationDisplayed(const std::string& notification_id,
-                                           const DisplaySource source) {
+void MessageCenterUiController::OnNotificationDisplayed(
+    const std::string& notification_id,
+    const message_center::DisplaySource source) {
   NotifyUiControllerChanged();
 }
 
-void UiController::OnQuietModeChanged(bool in_quiet_mode) {
+void MessageCenterUiController::OnQuietModeChanged(bool in_quiet_mode) {
   NotifyUiControllerChanged();
 }
 
-void UiController::OnBlockingStateChanged(NotificationBlocker* blocker) {
+void MessageCenterUiController::OnBlockingStateChanged(
+    message_center::NotificationBlocker* blocker) {
   OnMessageCenterChanged();
 }
 
-void UiController::OnMessageCenterChanged() {
+void MessageCenterUiController::OnMessageCenterChanged() {
   if (hide_on_last_notification_ && message_center_visible_ &&
       message_center_->NotificationCount() == 0) {
     HideMessageCenterBubble();
@@ -171,8 +176,8 @@ void UiController::OnMessageCenterChanged() {
   NotifyUiControllerChanged();
 }
 
-void UiController::NotifyUiControllerChanged() {
+void MessageCenterUiController::NotifyUiControllerChanged() {
   delegate_->OnMessageCenterContentsChanged();
 }
 
-}  // namespace message_center
+}  // namespace ash

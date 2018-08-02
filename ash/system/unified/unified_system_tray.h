@@ -92,7 +92,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   friend class UnifiedSystemTrayTest;
   friend class UnifiedSystemTrayTestApi;
 
-  // Private class implements message_center::UiDelegate.
+  // Private class implements MessageCenterUiDelegate.
   class UiDelegate;
 
   // Private class implements TrayNetworkStateObserver::Delegate.
