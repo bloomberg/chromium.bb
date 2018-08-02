@@ -24,7 +24,6 @@ const ::media::AudioParameters kDefaultAudioParams(
     ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
     ::media::CHANNEL_LAYOUT_STEREO,
     ::media::AudioParameters::kAudioCDSampleRate,
-    16,
     256);
 
 void OnLogMessage(const std::string& message) {}
