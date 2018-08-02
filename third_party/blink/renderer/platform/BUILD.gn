@@ -1219,7 +1219,6 @@ jumbo_component("platform") {
     "mojo/string16_mojom_traits.h",
     "partition_alloc_memory_dump_provider.cc",
     "partition_alloc_memory_dump_provider.h",
-    "paste_mode.h",
     "peerconnection/rtc_answer_options_platform.h",
     "peerconnection/rtc_offer_options_platform.h",
     "peerconnection/rtc_session_description_request.h",
