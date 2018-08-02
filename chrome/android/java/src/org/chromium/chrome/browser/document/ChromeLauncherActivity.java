@@ -26,8 +26,11 @@ public class ChromeLauncherActivity extends Activity {
         try {
             super.onCreate(savedInstanceState);
 
-            // VR Intents should only ever get routed through the VrMainActivity.
-            assert !VrModuleProvider.getIntentDelegate().isVrIntent(getIntent());
+            if (VrModuleProvider.getIntentDelegate().isVrIntent(getIntent())) {
+                // We need to turn VR mode on as early as possible in the intent handling flow to
+                // avoid brightness flickering when handling VR intents.
+                VrModuleProvider.getDelegate().setVrModeEnabled(this, true);
+            }
 
             @LaunchIntentDispatcher.Action
             int dispatchAction = LaunchIntentDispatcher.dispatch(this, getIntent());

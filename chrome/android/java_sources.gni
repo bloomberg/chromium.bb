@@ -1624,7 +1624,6 @@ chrome_vr_java_sources = [
   "java/src/org/chromium/chrome/browser/vr/keyboard/GvrKeyboardLoaderClient.java",
   "java/src/org/chromium/chrome/browser/vr/keyboard/TextEditAction.java",
   "java/src/org/chromium/chrome/browser/vr/keyboard/VrInputMethodManagerWrapper.java",
-  "java/src/org/chromium/chrome/browser/vr/VrMainActivity.java",
   "java/src/org/chromium/chrome/browser/vr/EmptySniffingVrViewContainer.java",
   "java/src/org/chromium/chrome/browser/vr/NoopCanvas.java",
   "java/src/org/chromium/chrome/browser/vr/VrAlertDialog.java",

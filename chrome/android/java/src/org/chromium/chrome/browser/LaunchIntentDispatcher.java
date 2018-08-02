@@ -20,6 +20,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.TrustedWebUtils;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -51,6 +52,7 @@ import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.WeakReference;
 import java.util.UUID;
 
 /**
@@ -384,6 +386,24 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     @SuppressLint("InlinedApi")
     private @Action int dispatchToTabbedActivity() {
+        if (mIsVrIntent) {
+            for (WeakReference<Activity> weakActivity : ApplicationStatus.getRunningActivities()) {
+                final Activity activity = weakActivity.get();
+                if (activity == null) continue;
+                if (activity instanceof ChromeTabbedActivity) {
+                    if (VrModuleProvider.getDelegate().willChangeDensityInVr(
+                                (ChromeActivity) activity)) {
+                        // In the rare case that entering VR will trigger a density change (and
+                        // hence an Activity recreation), just return to Daydream home and kill the
+                        // process, as there's no good way to recreate without showing 2D UI
+                        // in-headset.
+                        mActivity.finish();
+                        System.exit(0);
+                    }
+                }
+            }
+        }
+
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(mIntent);

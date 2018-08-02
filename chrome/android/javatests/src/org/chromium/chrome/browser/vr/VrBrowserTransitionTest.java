@@ -151,8 +151,7 @@ public class VrBrowserTransitionTest {
         // Send a VR intent, which will open the link in a CTA.
         final String url =
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
-        VrBrowserTransitionUtils.sendVrLaunchIntent(
-                url, false /* autopresent */, true /* avoidRelaunch */);
+        VrBrowserTransitionUtils.sendVrLaunchIntent(url);
 
         // Wait until we enter VR and have the correct URL.
         VrBrowserTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);

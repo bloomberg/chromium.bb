@@ -162,4 +162,9 @@ import org.chromium.chrome.browser.ChromeActivity;
     public Bundle getVrIntentOptions(Context context) {
         return VrIntentUtils.getVrIntentOptions(context);
     }
+
+    @Override
+    public boolean willChangeDensityInVr(ChromeActivity activity) {
+        return VrShellDelegate.willChangeDensityInVr(activity);
+    }
 }

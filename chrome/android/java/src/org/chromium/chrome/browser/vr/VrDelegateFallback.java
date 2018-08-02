@@ -143,4 +143,10 @@ import org.chromium.chrome.browser.ChromeActivity;
         assert false;
         return null;
     }
+
+    @Override
+    public boolean willChangeDensityInVr(ChromeActivity activity) {
+        assert false;
+        return false;
+    }
 }
