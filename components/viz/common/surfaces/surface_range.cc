@@ -34,7 +34,23 @@ bool SurfaceRange::operator<(const SurfaceRange& other) const {
 bool SurfaceRange::IsInRangeExclusive(const SurfaceId& surface_id) const {
   if (!start_)
     return end_.IsNewerThan(surface_id);
+
+  if (HasDifferentFrameSinkIds() ||
+      end_.local_surface_id().embed_token() !=
+          start_->local_surface_id().embed_token()) {
+    return surface_id.IsNewerThan(*start_) || end_.IsNewerThan(surface_id);
+  }
+
   return surface_id.IsNewerThan(*start_) && end_.IsNewerThan(surface_id);
+}
+
+bool SurfaceRange::IsInRangeInclusive(const SurfaceId& surface_id) const {
+  return IsInRangeExclusive(surface_id) || end_ == surface_id ||
+         start_ == surface_id;
+}
+
+bool SurfaceRange::HasDifferentFrameSinkIds() const {
+  return start_ && start_->frame_sink_id() != end_.frame_sink_id();
 }
 
 bool SurfaceRange::IsValid() const {
