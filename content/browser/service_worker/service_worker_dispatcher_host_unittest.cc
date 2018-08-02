@@ -162,70 +162,113 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   std::vector<std::string> bad_messages_;
 };
 
-TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
+TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedForNavigation) {
   int process_id = helper_->mock_render_process_id();
-  std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
 
-  {
-    // Prepare the first navigation handle to create provider host.
-    const int kProviderId = -2;
-    navigation_handle_core =
-        CreateNavigationHandleCore(helper_->context_wrapper());
-    ASSERT_TRUE(navigation_handle_core);
-    base::WeakPtr<ServiceWorkerProviderHost> host =
-        ServiceWorkerProviderHost::PreCreateNavigationHost(
-            context()->AsWeakPtr(), true /* are_ancestors_secure */,
-            base::RepeatingCallback<WebContents*(void)>());
-    EXPECT_EQ(kProviderId, host->provider_id());
-    mojom::ServiceWorkerProviderHostInfoPtr host_info =
-        CreateProviderHostInfoForWindow(kProviderId, 1 /* route_id */);
-    navigation_handle_core->DidPreCreateProviderHost(kProviderId);
-    RemoteProviderInfo remote_provider =
-        SendProviderCreated(std::move(host_info));
-    EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
+  // Prepare the navigation handle to create provider host.
+  std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
+      CreateNavigationHandleCore(helper_->context_wrapper());
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          context()->AsWeakPtr(), true /* are_ancestors_secure */,
+          base::RepeatingCallback<WebContents*(void)>());
+  int provider_id = host->provider_id();
+  mojom::ServiceWorkerProviderHostInfoPtr host_info =
+      CreateProviderHostInfoForWindow(provider_id, 1 /* route_id */);
+  EXPECT_TRUE(context()->GetProviderHost(ChildProcessHost::kInvalidUniqueID,
+                                         provider_id));
+  EXPECT_TRUE(context()->GetProviderHost(process_id, provider_id));
+  navigation_handle_core->DidPreCreateProviderHost(provider_id);
+  RemoteProviderInfo remote_provider =
+      SendProviderCreated(std::move(host_info));
 
-    // Releasing the interface pointer destroys the counterpart.
-    remote_provider.host_ptr.reset();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
-  }
+  // Releasing the interface pointer destroys the host.
+  remote_provider.host_ptr.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(context()->GetProviderHost(ChildProcessHost::kInvalidUniqueID,
+                                          provider_id));
+  EXPECT_FALSE(context()->GetProviderHost(process_id, provider_id));
+}
 
-  {
-    // Two with the same ID should be seen as a bad message.
-    const int kProviderId = 99;
-    RemoteProviderInfo remote_provider_1 = SendProviderCreated(
-        CreateProviderHostInfoForWindow(kProviderId, 1 /* route_id */));
+// Two with the same browser-assigned ID should be seen as a bad message.
+TEST_F(ServiceWorkerDispatcherHostTest, ReusedProviderCreatedForNavigation) {
+  int process_id = helper_->mock_render_process_id();
 
-    EXPECT_TRUE(bad_messages_.empty());
-    RemoteProviderInfo remote_provider_2 = SendProviderCreated(
-        CreateProviderHostInfoForWindow(kProviderId, 1 /* route_id */));
-    ASSERT_EQ(1u, bad_messages_.size());
-    EXPECT_EQ("SWDH_PROVIDER_CREATED_DUPLICATE_ID", bad_messages_[0]);
-  }
+  std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
+      CreateNavigationHandleCore(helper_->context_wrapper());
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          context()->AsWeakPtr(), true /* are_ancestors_secure */,
+          base::RepeatingCallback<WebContents*(void)>());
+  int provider_id = host->provider_id();
+  EXPECT_EQ(provider_id, host->provider_id());
+  mojom::ServiceWorkerProviderHostInfoPtr host_info =
+      CreateProviderHostInfoForWindow(provider_id, 1 /* route_id */);
+  EXPECT_TRUE(context()->GetProviderHost(ChildProcessHost::kInvalidUniqueID,
+                                         provider_id));
+  EXPECT_TRUE(context()->GetProviderHost(process_id, provider_id));
+  navigation_handle_core->DidPreCreateProviderHost(provider_id);
+  RemoteProviderInfo remote_provider =
+      SendProviderCreated(std::move(host_info));
 
-  {
-    // Prepare another navigation handle to create another provider host.
-    const int kProviderId = -3;
-    navigation_handle_core =
-        CreateNavigationHandleCore(helper_->context_wrapper());
-    base::WeakPtr<ServiceWorkerProviderHost> host =
-        ServiceWorkerProviderHost::PreCreateNavigationHost(
-            context()->AsWeakPtr(), true /* are_ancestors_secure */,
-            base::RepeatingCallback<WebContents*(void)>());
-    EXPECT_EQ(kProviderId, host->provider_id());
-    mojom::ServiceWorkerProviderHostInfoPtr host_info =
-        CreateProviderHostInfoForWindow(kProviderId, 2 /* route_id */);
-    navigation_handle_core->DidPreCreateProviderHost(kProviderId);
-    RemoteProviderInfo remote_provider =
-        SendProviderCreated(std::move(host_info));
-    EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
+  host_info = CreateProviderHostInfoForWindow(provider_id, 2 /* route_id */);
+  RemoteProviderInfo remote_provider2 =
+      SendProviderCreated(std::move(host_info));
 
-    // Simulate that the corresponding renderer process died.
-    dispatcher_host_->RenderProcessExited(nullptr /* host */,
-                                          ChildProcessTerminationInfo());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
-  }
+  ASSERT_EQ(1u, bad_messages_.size());
+  EXPECT_EQ("SWDH_PRECREATED_PROVIDER_RESUED", bad_messages_[0]);
+
+  // Releasing the interface pointer destroys the host.
+  remote_provider.host_ptr.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(context()->GetProviderHost(ChildProcessHost::kInvalidUniqueID,
+                                          provider_id));
+  EXPECT_FALSE(context()->GetProviderHost(process_id, provider_id));
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest,
+       RendererDiesWithProviderCreatedForNavigation) {
+  int process_id = helper_->mock_render_process_id();
+
+  // Prepare a navigation handle to create a provider host.
+  std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
+      CreateNavigationHandleCore(helper_->context_wrapper());
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          context()->AsWeakPtr(), true /* are_ancestors_secure */,
+          base::RepeatingCallback<WebContents*(void)>());
+  int provider_id = host->provider_id();
+  mojom::ServiceWorkerProviderHostInfoPtr host_info =
+      CreateProviderHostInfoForWindow(provider_id, 2 /* route_id */);
+  navigation_handle_core->DidPreCreateProviderHost(provider_id);
+  RemoteProviderInfo remote_provider =
+      SendProviderCreated(std::move(host_info));
+  EXPECT_TRUE(context()->GetProviderHost(process_id, provider_id));
+
+  // Simulate that the corresponding renderer process died.
+  dispatcher_host_->RenderProcessExited(nullptr /* host */,
+                                        ChildProcessTerminationInfo());
+  base::RunLoop().RunUntilIdle();
+  // The host still exists but is removed when the Mojo connection is
+  // destroyed.
+  EXPECT_TRUE(context()->GetProviderHost(process_id, provider_id));
+  // Releasing the interface pointer destroys the host.
+  remote_provider.host_ptr.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(context()->GetProviderHost(process_id, provider_id));
+}
+
+// Two with the same renderer-assigned ID should be seen as a bad message.
+TEST_F(ServiceWorkerDispatcherHostTest, DuplicateProvider) {
+  const int kProviderId = 99;
+  RemoteProviderInfo remote_provider_1 = SendProviderCreated(
+      CreateProviderHostInfoForWindow(kProviderId, 1 /* route_id */));
+
+  EXPECT_TRUE(bad_messages_.empty());
+  RemoteProviderInfo remote_provider_2 = SendProviderCreated(
+      CreateProviderHostInfoForWindow(kProviderId, 1 /* route_id */));
+  ASSERT_EQ(1u, bad_messages_.size());
+  EXPECT_EQ("SWDH_PROVIDER_CREATED_DUPLICATE_ID", bad_messages_[0]);
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {

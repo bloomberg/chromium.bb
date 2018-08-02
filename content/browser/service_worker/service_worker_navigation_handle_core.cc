@@ -31,13 +31,21 @@ ServiceWorkerNavigationHandleCore::~ServiceWorkerNavigationHandleCore() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (provider_id_ == kInvalidServiceWorkerProviderId)
     return;
-  // Remove the provider host if it was never completed (navigation failed).
   ServiceWorkerContextCore* context = context_wrapper_->context();
-  if (!context || !context->GetProviderHost(ChildProcessHost::kInvalidUniqueID,
-                                            provider_id_)) {
+  if (!context)
     return;
-  }
-  context->RemoveProviderHost(ChildProcessHost::kInvalidUniqueID, provider_id_);
+  ServiceWorkerProviderHost* host = context->GetProviderHost(
+      ChildProcessHost::kInvalidUniqueID, provider_id_);
+  if (!host)
+    return;
+  // Remove the provider host if it was never completed (navigation failed).
+  // TODO(falken): ServiceWorkerNavigationHandleCore should just own a Mojo
+  // pointer tied to the lifetime of ServiceWorkerProviderHost, and send the
+  // Mojo pointer to the renderer on navigation commit. If the handle core dies
+  // before that, the provider host would be destroyed by Mojo connection error.
+  if (!host->is_execution_ready())
+    context->RemoveProviderHost(ChildProcessHost::kInvalidUniqueID,
+                                provider_id_);
 }
 
 void ServiceWorkerNavigationHandleCore::DidPreCreateProviderHost(

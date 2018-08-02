@@ -179,12 +179,8 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
 
     // In production code, the OnProviderCreated IPC is received which
     // does this.
-    std::unique_ptr<ServiceWorkerProviderHost> owned_host =
-        helper_->context()->ReleaseProviderHost(host->process_id(),
-                                                host->provider_id());
     host->CompleteNavigationInitialized(helper_->mock_render_process_id(),
                                         std::move(info));
-    helper_->context()->AddProviderHost(std::move(owned_host));
   }
 
   blink::mojom::ServiceWorkerErrorType Register(
@@ -312,15 +308,10 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
         CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
     remote_endpoint->BindWithProviderHostInfo(&info);
 
-    std::unique_ptr<ServiceWorkerProviderHost> owned_host =
-        helper_->context()->ReleaseProviderHost(host->process_id(),
-                                                host->provider_id());
     host->CompleteNavigationInitialized(helper_->mock_render_process_id(),
                                         std::move(info));
     host->SetDocumentUrl(document_url);
     host->SetTopmostFrameUrl(topmost_frame_url);
-    helper_->context()->AddProviderHost(std::move(owned_host));
-
     return host.get();
   }
 
