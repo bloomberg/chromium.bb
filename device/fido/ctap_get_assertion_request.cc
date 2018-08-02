@@ -160,6 +160,13 @@ CtapGetAssertionRequest::SetAlternativeApplicationParameter(
   return *this;
 }
 
+bool CtapGetAssertionRequest::CheckResponseRpIdHash(
+    const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash) {
+  return response_rp_id_hash == fido_parsing_utils::CreateSHA256Hash(rp_id_) ||
+         (alternative_application_parameter_ &&
+          response_rp_id_hash == *alternative_application_parameter_);
+}
+
 base::Optional<CtapGetAssertionRequest> ParseCtapGetAssertionRequest(
     base::span<const uint8_t> request_bytes) {
   const auto& cbor_request = cbor::CBORReader::Read(request_bytes);

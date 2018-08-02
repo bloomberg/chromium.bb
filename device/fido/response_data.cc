@@ -32,9 +32,4 @@ std::string ResponseData::GetId() const {
   return id;
 }
 
-bool ResponseData::CheckRpIdHash(const std::string& rp_id) const {
-  return base::make_span(GetRpIdHash()) ==
-         base::make_span(fido_parsing_utils::CreateSHA256Hash(rp_id));
-}
-
 }  // namespace device

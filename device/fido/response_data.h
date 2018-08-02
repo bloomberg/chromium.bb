@@ -28,11 +28,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ResponseData {
 
   std::string GetId() const;
 
-  // Checks that the SHA256 hash of the relying party id obtained from the
-  // request parameter matches the application parameter returned from the
-  // authenticator.
-  bool CheckRpIdHash(const std::string& rp_id) const;
-
   const std::vector<uint8_t>& raw_credential_id() const {
     return raw_credential_id_;
   }
