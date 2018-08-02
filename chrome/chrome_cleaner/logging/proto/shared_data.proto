@@ -149,7 +149,7 @@ message RegistryValue {
 }
 
 // All the information found by the app about an UwS during a run.
-// Next tag: 10.
+// Next tag: 11.
 message UwS {
   optional uint32 id = 6;
   optional string name = 1;
@@ -169,14 +169,12 @@ message UwS {
   // Documents the detail level with which this UwS was collected.
   // Next tag: 3.
   message DetailLevel {
+    // Deprecated ran_collectors field that stopped being sent after 31.163.
+    reserved 2;
+
     // Whether or not the scanner stopped after finding one active
     // footprint.
     optional bool only_one_footprint = 1;
-
-    // Whether or not collectors were run to find items on the system,
-    // such as links and registry entries, that point to matched
-    // footprints.
-    optional bool ran_collectors = 2;
   }
   optional DetailLevel detail_level = 5;
 
@@ -185,7 +183,7 @@ message UwS {
     UNKNOWN = 0;
     REPORT_ONLY = 1;
     REMOVABLE = 2;
-    FORCED_DETECTION = 3;
+    DEPRECATED_FORCED_DETECTION = 3;  // Deprecated after 31.163.
   }
   optional State state = 8;
 
@@ -207,32 +205,8 @@ message UwS {
     FOUND_IN_MODULES = 10;         // Loaded modules of a process
   }
   repeated TraceLocation trace_locations = 9;
-}
 
-// Information collected by the app when it's only able to find incomplete
-// matches for an UwS that could correspond to a new flavour that is currently
-// not tracked.
-// Next tag: 4.
-message IncompleteUwSMatch {
-  optional uint32 uws_id = 1;
-  optional string uws_name = 2;
-
-  // Clue corresponding to an incomplete UwS matching.
-  // Next tag: 5.
-  message Clue {
-    // Deprecated details field that was defined only in 11.72 but never used.
-    reserved 3;
-
-    // Title of the clue (e.g. main problem encountered when attempting
-    // a match, relevance of files and registry entries listed in the trace
-    // etc.).
-    optional string title = 1;
-
-    repeated MatchedFile files = 2;
-
-    repeated MatchedRegistryEntry registry_entries = 4;
-  }
-  repeated Clue clues = 3;
+  optional Engine.Name detected_by = 10;
 }
 
 // ChromeFoilResponse is a legacy name that must be kept because existing
