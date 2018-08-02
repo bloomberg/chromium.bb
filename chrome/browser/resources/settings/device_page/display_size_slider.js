@@ -128,6 +128,16 @@ Polymer({
     'pageup end': 'resetToMaxIndex_',
   },
 
+  /** @override */
+  ready: function() {
+    chrome.settingsPrivate.onPrefsChanged.addListener((prefs) => {
+      prefs.forEach((pref) => {
+        if (pref.key == this.pref.key && this.pref.value != pref.value)
+          this.pref.value = pref.value;
+      });
+    });
+  },
+
   /** @private {boolean} */
   usedMouse_: false,
 
@@ -469,18 +479,20 @@ Polymer({
   updateIndex_: function() {
     if (!this.ticks || this.ticks.length == 0)
       return;
-    if (!this.pref)
+    if (!this.pref || typeof(this.pref.value) != 'number')
       return;
+    let resolvedTick = this.ticks.length - 1;
     for (let i = 0; i < this.ticks.length; i++) {
-      if (this.ticks[i].value == this.pref.value) {
-        this._setIndex(i);
-        this.setAttribute(
-            'aria-valuenow',
-            this.getAriaValueForIndex_(this.ticks, this.index));
-        this.setAttribute(
-            'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
+      if (this.ticks[i].value >= this.pref.value) {
+        resolvedTick = i;
+        break;
       }
     }
+    this._setIndex(resolvedTick);
+    this.setAttribute(
+        'aria-valuenow', this.getAriaValueForIndex_(this.ticks, this.index));
+    this.setAttribute(
+        'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
   },
 
   /**
