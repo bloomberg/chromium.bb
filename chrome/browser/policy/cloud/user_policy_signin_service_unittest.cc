@@ -281,6 +281,9 @@ class UserPolicySigninServiceTest : public testing::Test {
     EXPECT_CALL(*this, OnPolicyRefresh(true)).Times(0);
     RegisterPolicyClientWithCallback(signin_service);
 
+    // Sign in to Chrome.
+    signin_manager_->SignIn(kTestGaiaId, kTestUser, "");
+
     // Mimic successful oauth token fetch.
     MakeOAuthTokenFetchSucceed();
 
@@ -433,7 +436,7 @@ TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
       profile_.get()->GetPrefs(), kTestGaiaId, kTestUser);
   GetTokenService()->UpdateCredentials(account_id, "oauth_login_refresh_token");
 
-  // Not ssigned in yet, so client registration should be deferred.
+  // Not signed in yet, so client registration should be deferred.
   ASSERT_FALSE(IsRequestActive());
 
   // Sign in to Chrome.
