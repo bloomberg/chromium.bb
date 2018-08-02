@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 import java.text.NumberFormat;
 
@@ -33,6 +34,7 @@ public class AccessibilityPreferences extends PreferenceFragment
     private TextScalePreference mTextScalePref;
     private SeekBarLinkedCheckBoxPreference mForceEnableZoomPref;
     private ChromeBaseCheckBoxPreference mReaderForAccessibilityPref;
+    private ChromeBaseCheckBoxPreference mAccessibilityTabSwitcherPref;
 
     private FontSizePrefsObserver mFontSizePrefsObserver = new FontSizePrefsObserver() {
         @Override
@@ -70,7 +72,17 @@ public class AccessibilityPreferences extends PreferenceFragment
                     Pref.READER_FOR_ACCESSIBILITY_ENABLED));
             mReaderForAccessibilityPref.setOnPreferenceChangeListener(this);
         } else {
-            this.getPreferenceScreen().removePreference(mReaderForAccessibilityPref);
+            getPreferenceScreen().removePreference(mReaderForAccessibilityPref);
+        }
+
+        mAccessibilityTabSwitcherPref = (ChromeBaseCheckBoxPreference) findPreference(
+                ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER);
+        if (AccessibilityUtil.isAccessibilityEnabled()) {
+            mAccessibilityTabSwitcherPref.setChecked(
+                    ChromePreferenceManager.getInstance().readBoolean(
+                            ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER, true));
+        } else {
+            getPreferenceScreen().removePreference(mAccessibilityTabSwitcherPref);
         }
     }
 
