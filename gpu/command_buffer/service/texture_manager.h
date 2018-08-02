@@ -31,6 +31,7 @@
 namespace gpu {
 class DecoderContext;
 class ServiceDiscardableManager;
+class SharedImageFactory;
 
 namespace gles2 {
 class GLStreamTextureImage;
@@ -46,7 +47,7 @@ class TextureRef;
 
 // A ref-counted version of the TextureBase class that deletes the texture after
 // all references have been released.
-class TexturePassthrough final
+class GPU_GLES2_EXPORT TexturePassthrough final
     : public TextureBase,
       public base::RefCounted<TexturePassthrough>,
       public base::SupportsWeakPtr<TexturePassthrough> {
@@ -327,6 +328,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
  private:
   friend class MailboxManagerSync;
   friend class MailboxManagerTest;
+  friend class gpu::SharedImageFactory;
   friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;
@@ -1104,6 +1106,9 @@ class GPU_GLES2_EXPORT TextureManager
   uint32_t GetServiceIdGeneration() const;
   void IncrementServiceIdGeneration();
 
+  static const Texture::CompatibilitySwizzle* GetCompatibilitySwizzle(
+      const gles2::FeatureInfo* feature_info,
+      GLenum format);
   static GLenum AdjustTexInternalFormat(const gles2::FeatureInfo* feature_info,
                                         GLenum format);
   static GLenum AdjustTexFormat(const gles2::FeatureInfo* feature_info,

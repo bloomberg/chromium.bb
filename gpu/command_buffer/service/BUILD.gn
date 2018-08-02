@@ -216,6 +216,8 @@ target(link_target_type, "gles2_sources") {
     "shader_translator.h",
     "shader_translator_cache.cc",
     "shader_translator_cache.h",
+    "shared_image_factory.cc",
+    "shared_image_factory.h",
     "texture_definition.cc",
     "texture_definition.h",
     "texture_manager.cc",

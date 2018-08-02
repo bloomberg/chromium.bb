@@ -309,8 +309,8 @@ static const Texture::CompatibilitySwizzle kSwizzledFormats[] = {
     {GL_LUMINANCE_ALPHA, GL_RG, GL_RED, GL_RED, GL_RED, GL_GREEN},
 };
 
-// static
-const Texture::CompatibilitySwizzle* GetCompatibilitySwizzle(GLenum format) {
+const Texture::CompatibilitySwizzle* GetCompatibilitySwizzleInternal(
+    GLenum format) {
   size_t count = arraysize(kSwizzledFormats);
   for (size_t i = 0; i < count; ++i) {
     if (kSwizzledFormats[i].format == format)
@@ -1922,7 +1922,7 @@ void Texture::ApplyFormatWorkarounds(FeatureInfo* feature_info) {
     if (static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size())
       return;
     const Texture::LevelInfo& info = face_infos_[0].level_infos[base_level_];
-    SetCompatibilitySwizzle(GetCompatibilitySwizzle(info.format));
+    SetCompatibilitySwizzle(GetCompatibilitySwizzleInternal(info.format));
   }
 }
 
@@ -3303,12 +3303,23 @@ void TextureManager::DoTexSubImageLayerByLayerWorkaround(
 }
 
 // static
+const Texture::CompatibilitySwizzle* TextureManager::GetCompatibilitySwizzle(
+    const gles2::FeatureInfo* feature_info,
+    GLenum format) {
+  if (feature_info->gl_version_info().is_desktop_core_profile) {
+    return GetCompatibilitySwizzleInternal(format);
+  } else {
+    return nullptr;
+  }
+}
+
+// static
 GLenum TextureManager::AdjustTexInternalFormat(
     const gles2::FeatureInfo* feature_info,
     GLenum format) {
   if (feature_info->gl_version_info().is_desktop_core_profile) {
     const Texture::CompatibilitySwizzle* swizzle =
-        GetCompatibilitySwizzle(format);
+        GetCompatibilitySwizzleInternal(format);
     if (swizzle)
       return swizzle->dest_format;
   }
@@ -3328,7 +3339,7 @@ GLenum TextureManager::AdjustTexFormat(const gles2::FeatureInfo* feature_info,
   }
   if (feature_info->gl_version_info().is_desktop_core_profile) {
     const Texture::CompatibilitySwizzle* swizzle =
-        GetCompatibilitySwizzle(format);
+        GetCompatibilitySwizzleInternal(format);
     if (swizzle)
       return swizzle->dest_format;
   }
