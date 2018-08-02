@@ -799,7 +799,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, OnStreamReadyWithNoAlternativeJob) {
 TEST_F(HttpStreamFactoryJobControllerTest, CancelJobsBeforeBinding) {
   // Use COLD_START to make the alt job pending.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
   quic_data_ = std::make_unique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, OK);
 
@@ -892,7 +892,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, AltJobFailsAfterMainJobSucceeds) {
   quic_data_ = std::make_unique<MockQuicData>();
   quic_data_->AddRead(ASYNC, ERR_FAILED);
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
@@ -936,7 +936,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, AltJobSucceedsMainJobDestroyed) {
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   // Use cold start and complete alt job manually.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
 
@@ -1063,7 +1063,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   // Use cold start and complete alt job manually.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
@@ -1116,7 +1116,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, AltJobSucceedsAfterMainJobFailed) {
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   // Use cold start and complete alt job manually.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   // One failed TCP connect.
   tcp_data_ = std::make_unique<SequencedSocketData>();
@@ -1248,7 +1248,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetLoadStateAfterMainJobFailed) {
   quic_data_ = std::make_unique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(ASYNC, ERR_FAILED));
@@ -1295,7 +1295,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, ResumeMainJobWhenAltJobStalls) {
   quic_data_ = std::make_unique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
@@ -1381,7 +1381,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, HostResolutionHang) {
 
   // This prevents handshake from immediately succeeding.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   request_ =
       job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
@@ -1453,7 +1453,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCP) {
 
   // This prevents handshake from immediately succeeding.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   request_ =
       job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
@@ -1592,7 +1592,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPWithLargeSrtt) {
 
   // This prevents handshake from immediately succeeding.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   request_ =
       job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
@@ -1651,7 +1651,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 
   // This prevents handshake from immediately succeeding.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   request_ =
       job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
@@ -1770,7 +1770,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPAlternativeProxy) {
 
   // This prevents handshake from immediately succeeding.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   request_ =
       job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
@@ -1913,7 +1913,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 
   // Use COLD_START to make the alt job pending.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
   quic_data_ = std::make_unique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   tcp_data_ = std::make_unique<SequencedSocketData>();
@@ -2328,7 +2328,7 @@ TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
 // Tests that HTTP/2 throttling logic only applies to non-QUIC jobs.
 TEST_F(JobControllerLimitMultipleH2Requests, QuicJobNotThrottled) {
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
   quic_data_ = std::make_unique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};

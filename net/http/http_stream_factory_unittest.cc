@@ -2381,7 +2381,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     verify_details_.cert_verify_result.is_issued_by_known_root = true;
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
     crypto_client_stream_factory_.set_handshake_mode(
-        quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
+        MockCryptoClientStream::CONFIRM_HANDSHAKE);
     session_context.cert_verifier = &cert_verifier_;
     session_context.quic_crypto_client_stream_factory =
         &crypto_client_stream_factory_;

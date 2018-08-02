@@ -15,7 +15,7 @@ namespace net {
 MockCryptoClientStreamFactory::~MockCryptoClientStreamFactory() {}
 
 MockCryptoClientStreamFactory::MockCryptoClientStreamFactory()
-    : handshake_mode_(quic::MockCryptoClientStream::CONFIRM_HANDSHAKE),
+    : handshake_mode_(MockCryptoClientStream::CONFIRM_HANDSHAKE),
       last_stream_(nullptr),
       config_(new quic::QuicConfig()),
       use_mock_crypter_(false) {}
@@ -30,8 +30,7 @@ MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
     QuicChromiumClientSession* session,
     std::unique_ptr<quic::ProofVerifyContext> /*proof_verify_context*/,
     quic::QuicCryptoClientConfig* crypto_config) {
-  if (handshake_mode_ ==
-      quic::MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM) {
+  if (handshake_mode_ == MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM) {
     return new quic::QuicCryptoClientStream(server_id, session, nullptr,
                                             crypto_config, session);
   }
@@ -41,7 +40,7 @@ MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
     proof_verify_details = proof_verify_details_queue_.front();
     proof_verify_details_queue_.pop();
   }
-  last_stream_ = new quic::MockCryptoClientStream(
+  last_stream_ = new MockCryptoClientStream(
       server_id, session, nullptr, *(config_.get()), crypto_config,
       handshake_mode_, proof_verify_details, use_mock_crypter_);
   return last_stream_;

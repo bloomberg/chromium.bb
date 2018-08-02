@@ -32,7 +32,7 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory {
       quic::QuicCryptoClientConfig* crypto_config) override;
 
   void set_handshake_mode(
-      quic::MockCryptoClientStream::HandshakeMode handshake_mode) {
+      MockCryptoClientStream::HandshakeMode handshake_mode) {
     handshake_mode_ = handshake_mode;
   }
 
@@ -46,14 +46,14 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory {
     proof_verify_details_queue_.push(proof_verify_details);
   }
 
-  quic::MockCryptoClientStream* last_stream() const { return last_stream_; }
+  MockCryptoClientStream* last_stream() const { return last_stream_; }
 
   // Sets initial config for new sessions.
   void SetConfig(const quic::QuicConfig& config);
 
  private:
-  quic::MockCryptoClientStream::HandshakeMode handshake_mode_;
-  quic::MockCryptoClientStream* last_stream_;
+  MockCryptoClientStream::HandshakeMode handshake_mode_;
+  MockCryptoClientStream* last_stream_;
   base::queue<const ProofVerifyDetailsChromium*> proof_verify_details_queue_;
   std::unique_ptr<quic::QuicConfig> config_;
   bool use_mock_crypter_;

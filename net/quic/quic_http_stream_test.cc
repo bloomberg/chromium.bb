@@ -1138,7 +1138,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
   // By default the test setup defaults handshake to be confirmed. Manually set
   // it to be not confirmed.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
 
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;

@@ -764,7 +764,7 @@ class QuicNetworkTransactionTest
   }
 
   void AddQuicAlternateProtocolMapping(
-      quic::MockCryptoClientStream::HandshakeMode handshake_mode) {
+      MockCryptoClientStream::HandshakeMode handshake_mode) {
     crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
     url::SchemeHostPort server(request_.url);
     AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
@@ -774,7 +774,7 @@ class QuicNetworkTransactionTest
   }
 
   void AddQuicRemoteAlternativeServiceMapping(
-      quic::MockCryptoClientStream::HandshakeMode handshake_mode,
+      MockCryptoClientStream::HandshakeMode handshake_mode,
       const HostPortPair& alternative) {
     crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
     url::SchemeHostPort server(request_.url);
@@ -956,7 +956,7 @@ TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
@@ -988,7 +988,7 @@ TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmedAsync) {
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
@@ -1268,8 +1268,7 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
 TEST_P(QuicNetworkTransactionTest, ForceQuicForAll) {
   session_params_.origins_to_force_quic_on.insert(HostPortPair());
 
-  AddQuicAlternateProtocolMapping(
-      quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
@@ -1385,8 +1384,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
   request_.url = GURL("http://" + origin_host);
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
-  AddQuicAlternateProtocolMapping(
-      quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
 }
 
@@ -1430,7 +1428,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
 
   request_.url = GURL("https://" + origin.host());
   AddQuicRemoteAlternativeServiceMapping(
-      quic::MockCryptoClientStream::CONFIRM_HANDSHAKE, alternative);
+      MockCryptoClientStream::CONFIRM_HANDSHAKE, alternative);
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
@@ -2119,7 +2117,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -2227,7 +2225,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -2343,7 +2341,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -2464,7 +2462,7 @@ TEST_P(QuicNetworkTransactionTest,
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                         session_.get());
@@ -2535,7 +2533,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
 
   CreateSession();
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -2664,7 +2662,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -2798,7 +2796,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -2934,7 +2932,7 @@ TEST_P(QuicNetworkTransactionTest,
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -3077,7 +3075,7 @@ TEST_P(QuicNetworkTransactionTest,
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -3209,7 +3207,7 @@ TEST_P(QuicNetworkTransactionTest,
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                         session_.get());
@@ -3297,7 +3295,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -3395,7 +3393,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
 
   CreateSession();
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -4245,7 +4243,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
 
 TEST_P(QuicNetworkTransactionTest, HungAlternativeService) {
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
 
   MockWrite http_writes[] = {
       MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
@@ -4319,7 +4317,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   AddHangingNonAlternateProtocolSocketData();
 
   CreateSession();
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectQuicResponse("hello!");
 
   EXPECT_EQ(nullptr,
@@ -4362,7 +4360,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectQuicResponse("hello!");
 }
 
@@ -4400,7 +4398,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
 
   request_.url = GURL("http://mail.example.org/");
   CreateSession();
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectHttpResponse("hello world");
 }
 
@@ -4446,7 +4444,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -4529,7 +4527,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -4618,7 +4616,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -4685,7 +4683,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -4751,7 +4749,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -4811,7 +4809,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -4875,7 +4873,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -4911,7 +4909,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   CreateSession();
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::COLD_START);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   SendRequestAndExpectHttpResponse("hello from http");
   ExpectBrokenAlternateProtocolMapping();
 }
@@ -4936,7 +4934,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
 
   CreateSession();
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::COLD_START);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   SendRequestAndExpectHttpResponse("hello from http");
   ExpectBrokenAlternateProtocolMapping();
 }
@@ -4962,7 +4960,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::COLD_START);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
@@ -5006,7 +5004,7 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
   // QuicStreamFactory by default requires confirmation on construction.
   session_->quic_stream_factory()->set_require_confirmation(true);
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   // Stall host resolution so that QUIC job will not succeed synchronously.
   // Socket will not be configured immediately and QUIC support is not sorted
@@ -5059,7 +5057,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   // Stall host resolution so that QUIC job could not proceed and unblocks TCP.
   // Socket will not be configured immediately and QUIC support is not sorted
@@ -5111,7 +5109,7 @@ TEST_P(QuicNetworkTransactionTest, NetErrorDetailsSetBeforeHandshake) {
   // job to fail before it starts.
   session_->quic_stream_factory()->set_require_confirmation(true);
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::COLD_START);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
@@ -5152,7 +5150,7 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   SendRequestAndExpectHttpResponse("hello from http");
 
@@ -5182,7 +5180,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
   SendRequestAndExpectHttpResponse("hello from http");
 }
@@ -5204,7 +5202,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   CreateSession();
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::COLD_START);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   SendRequestAndExpectHttpResponse("hello from http");
 
   ExpectBrokenAlternateProtocolMapping();
@@ -5246,7 +5244,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
-  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectHttpResponse("hello world");
 }
 
@@ -5355,8 +5353,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
   request_.url = GURL("https://www.example.org:443");
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
-  AddQuicAlternateProtocolMapping(
-      quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponse("hello!");
   EXPECT_TRUE(
       test_socket_performance_watcher_factory_.rtt_notification_received());
@@ -6177,7 +6174,7 @@ class QuicNetworkTransactionWithDestinationTest
     session_context.quic_clock = &clock_;
 
     crypto_client_stream_factory_.set_handshake_mode(
-        quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
+        MockCryptoClientStream::CONFIRM_HANDSHAKE);
     session_context.quic_crypto_client_stream_factory =
         &crypto_client_stream_factory_;
 

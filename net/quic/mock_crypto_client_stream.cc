@@ -15,7 +15,38 @@
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace quic {
+using quic::CLIENT;
+using quic::ConnectionCloseBehavior;
+using quic::CryptoHandshakeMessage;
+using quic::CryptoMessageParser;
+using quic::ENCRYPTION_FORWARD_SECURE;
+using quic::ENCRYPTION_INITIAL;
+using quic::kAESG;
+using quic::kC255;
+using quic::kDefaultMaxStreamsPerConnection;
+using quic::kMaximumIdleTimeoutSecs;
+using quic::kQBIC;
+using quic::NullDecrypter;
+using quic::NullEncrypter;
+using quic::PACKET_8BYTE_CONNECTION_ID;
+using quic::Perspective;
+using quic::ProofVerifyContext;
+using quic::QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE;
+using quic::QUIC_NO_ERROR;
+using quic::QUIC_PROOF_INVALID;
+using quic::QuicConfig;
+using quic::QuicCryptoClientConfig;
+using quic::QuicCryptoNegotiatedParameters;
+using quic::QuicErrorCode;
+using quic::QuicMakeUnique;
+using quic::QuicServerId;
+using quic::QuicSession;
+using quic::QuicSpdyClientSessionBase;
+using quic::QuicString;
+using quic::QuicTagVector;
+using quic::QuicTime;
+
+namespace net {
 
 MockCryptoClientStream::MockCryptoClientStream(
     const QuicServerId& server_id,
@@ -211,4 +242,4 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   session()->OnConfigNegotiated();
 }
 
-}  // namespace quic
+}  // namespace net

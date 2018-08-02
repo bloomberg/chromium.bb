@@ -49,6 +49,12 @@ class ProcessMemoryDump;
 }
 }  // namespace base
 
+namespace quic {
+class QuicAlarmFactory;
+class QuicClock;
+class QuicRandom;
+}  // namespace quic
+
 namespace net {
 
 class CTPolicyEnforcer;
@@ -59,20 +65,8 @@ class CTVerifier;
 class HostResolver;
 class HttpServerProperties;
 class NetLog;
-}  // namespace net
-namespace quic {
-class QuicClock;
-
-class QuicAlarmFactory;
-}  // namespace quic
-namespace net {
 class QuicChromiumConnectionHelper;
 class QuicCryptoClientStreamFactory;
-}  // namespace net
-namespace quic {
-class QuicRandom;
-}  // namespace quic
-namespace net {
 class QuicServerInfo;
 class QuicStreamFactory;
 class SocketPerformanceWatcherFactory;
