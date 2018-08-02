@@ -473,6 +473,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     return;
 
   uint32_t private_footprint_total_kb = 0;
+  uint32_t renderer_private_footprint_total_kb = 0;
   uint32_t shared_footprint_total_kb = 0;
   bool record_uma = pid_scope_ == base::kNullProcessId;
 
@@ -492,6 +493,8 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         break;
       }
       case memory_instrumentation::mojom::ProcessType::RENDERER: {
+        renderer_private_footprint_total_kb +=
+            pmd.os_dump().private_footprint_kb;
         resource_coordinator::mojom::PageInfoPtr page_info;
         // If there is more than one frame being hosted in a renderer, don't
         // emit any URLs. This is not ideal, but UKM does not support
@@ -529,12 +532,15 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         break;
     }
   }
+
   if (record_uma) {
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
         "Memory.Experimental.Total2.PrivateMemoryFootprint",
         private_footprint_total_kb / 1024);
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                   private_footprint_total_kb / 1024);
+    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.RendererPrivateMemoryFootprint",
+                                  renderer_private_footprint_total_kb / 1024);
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.SharedMemoryFootprint",
                                   shared_footprint_total_kb / 1024);
   }
