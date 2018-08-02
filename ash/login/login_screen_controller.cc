@@ -440,6 +440,10 @@ void LoginScreenController::ShowResetScreen() {
   login_screen_client_->ShowResetScreen();
 }
 
+void LoginScreenController::ShowAccountAccessHelpApp() {
+  login_screen_client_->ShowAccountAccessHelpApp();
+}
+
 void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
                                                const std::string& password,
                                                bool authenticated_by_pin,

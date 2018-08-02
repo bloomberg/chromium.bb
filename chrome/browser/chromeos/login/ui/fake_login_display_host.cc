@@ -142,6 +142,8 @@ void FakeLoginDisplayHost::ShowFeedback() {}
 
 void FakeLoginDisplayHost::ShowResetScreen() {}
 
+void FakeLoginDisplayHost::ShowAccountAccessHelpApp() {}
+
 void FakeLoginDisplayHost::ShowDialogForCaptivePortal() {}
 
 void FakeLoginDisplayHost::HideDialogForCaptivePortal() {}

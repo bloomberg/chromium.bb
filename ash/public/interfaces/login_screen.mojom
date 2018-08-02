@@ -237,4 +237,7 @@ interface LoginScreenClient {
 
   // Show the powerwash (device reset) dialog.
   ShowResetScreen();
+
+  // Show the help app for when users have trouble signing in to their account.
+  ShowAccountAccessHelpApp();
 };

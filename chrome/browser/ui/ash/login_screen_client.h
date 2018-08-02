@@ -86,6 +86,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void LaunchKioskApp(const std::string& app_id) override;
   void LaunchArcKioskApp(const AccountId& account_id) override;
   void ShowResetScreen() override;
+  void ShowAccountAccessHelpApp() override;
 
  private:
   void SetPublicSessionKeyboardLayout(
