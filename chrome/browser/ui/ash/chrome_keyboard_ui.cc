@@ -37,6 +37,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -330,6 +332,9 @@ aura::Window* ChromeKeyboardUI::GetKeyboardWindow() {
     // but this causes the shadows to be clipped too, so clipping needs to
     // be disabled.
     keyboard_contents_->GetNativeView()->layer()->SetMasksToBounds(false);
+
+    keyboard_contents_->GetNativeView()->SetProperty(
+        ui::kAXRoleOverride, ax::mojom::Role::kKeyboard);
   }
 
   return keyboard_contents_->GetNativeView();

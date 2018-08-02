@@ -1884,8 +1884,16 @@ Output.prototype = {
 
     if (type == EventType.HOVER ||
         EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
-      if (node.defaultActionVerb != 'none')
+      var isWithinVirtualKeyboard = AutomationUtil.getAncestors(node).find(
+          (n) => n.role == RoleType.KEYBOARD);
+      if (node.defaultActionVerb != 'none' && !isWithinVirtualKeyboard)
         this.format_(node, '@hint_double_tap', buff);
+
+      var enteredVirtualKeyboard =
+          uniqueAncestors.find((n) => n.role == RoleType.KEYBOARD);
+      if (enteredVirtualKeyboard)
+        this.format_(node, '@hint_touch_type', buff);
+
       return;
     }
 

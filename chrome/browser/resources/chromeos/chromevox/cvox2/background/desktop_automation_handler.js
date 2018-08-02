@@ -110,13 +110,6 @@ DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 50;
  */
 DesktopAutomationHandler.announceActions = false;
 
-/**
- * The url of the keyboard.
- * @const {string}
- */
-DesktopAutomationHandler.KEYBOARD_URL =
-    'chrome-extension://jkghodnilhceideoidjikpgommlajknk/inputview.html';
-
 DesktopAutomationHandler.prototype = {
   __proto__: BaseAutomationHandler.prototype,
 
@@ -655,9 +648,9 @@ DesktopAutomationHandler.prototype = {
         (!opt_onFocus && target != voxTarget &&
          target.root.role != RoleType.DESKTOP &&
          voxTarget.root.role != RoleType.DESKTOP &&
-         voxTarget.root.url.indexOf(DesktopAutomationHandler.KEYBOARD_URL) !=
-             0) &&
-            !AutomationUtil.isDescendantOf(target, voxTarget))
+         !AutomationUtil.isDescendantOf(target, voxTarget) &&
+         !AutomationUtil.getAncestors(voxTarget.root)
+              .find((n) => n.role == RoleType.KEYBOARD)))
       return false;
 
     if (!this.textEditHandler_ || this.textEditHandler_.node !== target) {

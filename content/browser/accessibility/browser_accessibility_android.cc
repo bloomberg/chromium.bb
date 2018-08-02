@@ -761,6 +761,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kInputTime:
       message_id = IDS_AX_ROLE_INPUT_TIME;
       break;
+    case ax::mojom::Role::kKeyboard:
+      // No role description.
+      break;
     case ax::mojom::Role::kLabelText:
       // No role description.
       break;
