@@ -16,4 +16,9 @@
         android:summaryOn="@string/text_on"
         android:summaryOff="@string/text_off" />
 
+    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
+        android:key="prefetching_enabled"
+        android:title="@string/download_settings_enable_prefetch_title"
+        android:summary="@string/download_settings_enable_prefetch_description" />
+
 </PreferenceScreen>

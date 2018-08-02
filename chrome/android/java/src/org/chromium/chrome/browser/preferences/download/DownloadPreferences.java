@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
+import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -22,9 +23,11 @@ public class DownloadPreferences
         extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
     public static final String PREF_LOCATION_CHANGE = "location_change";
     private static final String PREF_LOCATION_PROMPT_ENABLED = "location_prompt_enabled";
+    private static final String PREF_PREFETCHING_ENABLED = "prefetching_enabled";
 
     private DownloadLocationPreference mLocationChangePref;
     private ChromeSwitchPreference mLocationPromptEnabledPref;
+    private ChromeSwitchPreference mPrefetchingEnabled;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,6 +41,13 @@ public class DownloadPreferences
         mLocationPromptEnabledPref.setOnPreferenceChangeListener(this);
 
         mLocationChangePref = (DownloadLocationPreference) findPreference(PREF_LOCATION_CHANGE);
+
+        if (PrefetchConfiguration.isPrefetchingFlagEnabled()) {
+            mPrefetchingEnabled = (ChromeSwitchPreference) findPreference(PREF_PREFETCHING_ENABLED);
+            mPrefetchingEnabled.setOnPreferenceChangeListener(this);
+        } else {
+            getPreferenceScreen().removePreference(findPreference(PREF_PREFETCHING_ENABLED));
+        }
     }
 
     @Override
@@ -58,6 +68,10 @@ public class DownloadPreferences
                     != DownloadPromptStatus.DONT_SHOW;
             mLocationPromptEnabledPref.setChecked(isLocationPromptEnabled);
         }
+
+        if (mPrefetchingEnabled != null) {
+            mPrefetchingEnabled.setChecked(PrefetchConfiguration.isPrefetchingEnabled());
+        }
     }
 
     // Preference.OnPreferenceChangeListener implementation.
@@ -76,6 +90,8 @@ public class DownloadPreferences
                 PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
                         DownloadPromptStatus.DONT_SHOW);
             }
+        } else if (PREF_PREFETCHING_ENABLED.equals(preference.getKey())) {
+            PrefetchConfiguration.setPrefetchingEnabledInSettings((boolean) newValue);
         }
         return true;
     }
