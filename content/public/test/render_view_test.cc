@@ -194,7 +194,7 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
     return false;
 
   if (int_result)
-    *int_result = result->Int32Value();
+    *int_result = result.As<v8::Int32>()->Value();
 
   return true;
 }
@@ -209,7 +209,7 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnNumberValue(
     return false;
 
   if (number_result)
-    *number_result = result->NumberValue();
+    *number_result = result.As<v8::Number>()->Value();
 
   return true;
 }
@@ -488,7 +488,7 @@ gfx::Rect RenderViewTest::GetElementBounds(const std::string& element_id) {
     v8::Local<v8::Value> value = array->Get(index);
     if (value.IsEmpty() || !value->IsInt32())
       return gfx::Rect();
-    coords.push_back(value->Int32Value());
+    coords.push_back(value.As<v8::Int32>()->Value());
   }
   return gfx::Rect(coords[0], coords[1], coords[2], coords[3]);
 }
