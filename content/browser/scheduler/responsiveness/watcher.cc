@@ -7,8 +7,10 @@
 #include "base/pending_task.h"
 #include "content/browser/scheduler/responsiveness/calculator.h"
 #include "content/browser/scheduler/responsiveness/message_loop_observer.h"
+#include "content/browser/scheduler/responsiveness/native_event_observer.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace content {
 namespace responsiveness {
 
 Watcher::Metadata::Metadata(const void* identifier) : identifier(identifier) {}
@@ -26,7 +28,8 @@ void Watcher::SetUp() {
   // and destruction.
   AddRef();
 
-  calculator_ = MakeCalculator();
+  calculator_ = CreateCalculator();
+  native_event_observer_ui_ = CreateNativeEventObserver();
 
   RegisterMessageLoopObserverUI();
 
@@ -43,14 +46,26 @@ void Watcher::Destroy() {
   destroy_was_called_ = true;
 
   message_loop_observer_ui_.reset();
+  native_event_observer_ui_.reset();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&Watcher::TearDownOnIOThread, base::Unretained(this)));
 }
 
-std::unique_ptr<Calculator> Watcher::MakeCalculator() {
+std::unique_ptr<Calculator> Watcher::CreateCalculator() {
   return std::make_unique<Calculator>();
+}
+
+std::unique_ptr<NativeEventObserver> Watcher::CreateNativeEventObserver() {
+  NativeEventObserver::WillRunEventCallback will_run_callback =
+      base::BindRepeating(&Watcher::WillRunEventOnUIThread,
+                          base::Unretained(this));
+  NativeEventObserver::DidRunEventCallback did_run_callback =
+      base::BindRepeating(&Watcher::DidRunEventOnUIThread,
+                          base::Unretained(this));
+  return std::make_unique<NativeEventObserver>(std::move(will_run_callback),
+                                               std::move(did_run_callback));
 }
 
 Watcher::~Watcher() {
@@ -162,8 +177,8 @@ void Watcher::DidRunTask(const base::PendingTask* task,
                          TaskOrEventFinishedCallback callback) {
   // Calls to DidRunTask should always be paired with WillRunTask. The only time
   // the identifier should differ is when Watcher is first constructed. The
-  // TaskRunner Observers are added while a task is being run, which means that
-  // there was no corresponding WillRunTask.
+  // TaskRunner Observers may be added while a task is being run, which means
+  // that there was no corresponding WillRunTask.
   if (UNLIKELY(currently_running_metadata->empty() ||
                (task != currently_running_metadata->top().identifier))) {
     *mismatched_task_identifiers += 1;
@@ -199,4 +214,44 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   std::move(callback).Run(schedule_time, base::TimeTicks::Now());
 }
 
+void Watcher::WillRunEventOnUIThread(const void* opaque_identifier) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Reentrancy should be rare.
+  if (UNLIKELY(!currently_running_metadata_ui_.empty())) {
+    currently_running_metadata_ui_.top().caused_reentrancy = true;
+  }
+
+  currently_running_metadata_ui_.emplace(opaque_identifier);
+}
+
+void Watcher::DidRunEventOnUIThread(const void* opaque_identifier,
+                                    base::TimeTicks creation_time) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Calls to DidRunEventOnUIThread should always be paired with
+  // WillRunEventOnUIThread. The only time the identifier should differ is when
+  // Watcher is first constructed. The TaskRunner Observers may be added while a
+  // task is being run, which means that there was no corresponding WillRunTask.
+  if (UNLIKELY(currently_running_metadata_ui_.empty() ||
+               (opaque_identifier !=
+                currently_running_metadata_ui_.top().identifier))) {
+    mismatched_event_identifiers_ui_ += 1;
+    DCHECK_LE(mismatched_event_identifiers_ui_, 1);
+    return;
+  }
+
+  bool caused_reentrancy =
+      currently_running_metadata_ui_.top().caused_reentrancy;
+  currently_running_metadata_ui_.pop();
+
+  // Ignore events that caused reentrancy, since their execution latency will
+  // be very large, but Chrome was still responsive.
+  if (UNLIKELY(caused_reentrancy))
+    return;
+
+  calculator_->TaskOrEventFinishedOnUIThread(creation_time,
+                                             base::TimeTicks::Now());
+}
+
 }  // namespace responsiveness
+}  // namespace content

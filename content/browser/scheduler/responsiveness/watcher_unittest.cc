@@ -9,10 +9,12 @@
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/scheduler/responsiveness/calculator.h"
+#include "content/browser/scheduler/responsiveness/native_event_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
 namespace responsiveness {
 
 namespace {
@@ -49,11 +51,15 @@ class FakeCalculator : public Calculator {
 
 class FakeWatcher : public Watcher {
  public:
-  std::unique_ptr<Calculator> MakeCalculator() override {
+  std::unique_ptr<Calculator> CreateCalculator() override {
     std::unique_ptr<FakeCalculator> calculator =
         std::make_unique<FakeCalculator>();
     calculator_ = calculator.get();
     return calculator;
+  }
+
+  std::unique_ptr<NativeEventObserver> CreateNativeEventObserver() override {
+    return nullptr;
   }
 
   void RegisterMessageLoopObserverUI() override {
@@ -220,3 +226,4 @@ TEST_F(ResponsivenessWatcherRealIOThreadTest, MessageLoopObserver) {
 }
 
 }  // namespace responsiveness
+}  // namespace content

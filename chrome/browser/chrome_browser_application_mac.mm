@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
+#include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -18,6 +19,8 @@
 #include "components/crash/core/common/crash_key.h"
 #import "components/crash/core/common/objc_zombie.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/native_event_processor_mac.h"
+#include "content/public/browser/native_event_processor_observer_mac.h"
 
 namespace chrome_browser_application_mac {
 
@@ -95,6 +98,11 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 // Used to determine when a Panel window can become the key window.
 @interface NSApplication (PanelsCanBecomeKey)
 - (void)_cycleWindowsReversed:(BOOL)arg1;
+@end
+
+@interface BrowserCrApplication ()<NativeEventProcessor> {
+  base::ObserverList<content::NativeEventProcessorObserver> observers_;
+}
 @end
 
 @implementation BrowserCrApplication
@@ -325,6 +333,8 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 
       default: {
         base::mac::ScopedSendingEvent sendingEventScoper;
+        content::ScopedNotifyNativeEventProcessorObserver
+            scopedObserverNotifier(&observers_, event);
         [super sendEvent:event];
       }
     }
@@ -351,6 +361,16 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 
 - (BOOL)isCyclingWindows {
   return cyclingWindows_;
+}
+
+- (void)addNativeEventProcessorObserver:
+    (content::NativeEventProcessorObserver*)observer {
+  observers_.AddObserver(observer);
+}
+
+- (void)removeNativeEventProcessorObserver:
+    (content::NativeEventProcessorObserver*)observer {
+  observers_.RemoveObserver(observer);
 }
 
 @end

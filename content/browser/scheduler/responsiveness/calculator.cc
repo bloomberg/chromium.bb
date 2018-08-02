@@ -9,6 +9,7 @@
 
 #include "content/public/browser/browser_thread.h"
 
+namespace content {
 namespace responsiveness {
 
 namespace {
@@ -189,28 +190,25 @@ Calculator::JankList& Calculator::GetJanksOnIOThread() {
 Calculator::JankList Calculator::TakeJanksOlderThanTime(
     JankList* janks,
     base::TimeTicks end_time) {
-  // Copy all janks with Jank.start_time < |end_time|.
-  auto it =
-      std::lower_bound(janks->begin(), janks->end(), end_time,
-                       [](const Jank& jank, const base::TimeTicks& end_time) {
-                         return jank.start_time < end_time;
-                       });
+  // Find all janks with Jank.start_time < |end_time|.
+  auto it = std::partition(
+      janks->begin(), janks->end(),
+      [&end_time](const Jank& jank) { return jank.start_time < end_time; });
 
-  // We don't need to remove any Janks either, since Jank.end_time >=
-  // Jank.start_time.
+  // Early exit. We don't need to remove any Janks either, since Jank.end_time
+  // >= Jank.start_time.
   if (it == janks->begin())
     return JankList();
 
   JankList janks_to_return(janks->begin(), it);
 
   // Remove all janks with Jank.end_time < |end_time|.
-  auto first_jank_to_keep =
-      std::lower_bound(janks->begin(), janks->end(), end_time,
-                       [](const Jank& jank, const base::TimeTicks& end_time) {
-                         return jank.end_time < end_time;
-                       });
+  auto first_jank_to_keep = std::partition(
+      janks->begin(), janks->end(),
+      [&end_time](const Jank& jank) { return jank.end_time < end_time; });
   janks->erase(janks->begin(), first_jank_to_keep);
   return janks_to_return;
 }
 
 }  // namespace responsiveness
+}  // namespace content

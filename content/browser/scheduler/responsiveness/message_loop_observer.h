@@ -13,6 +13,7 @@ namespace base {
 struct PendingTask;
 }  // namespace base
 
+namespace content {
 namespace responsiveness {
 
 // This object is not thread safe. It must be constructed and destroyed on the
@@ -41,5 +42,6 @@ class CONTENT_EXPORT MessageLoopObserver
 };
 
 }  // namespace responsiveness
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SCHEDULER_RESPONSIVENESS_MESSAGE_LOOP_OBSERVER_H_
