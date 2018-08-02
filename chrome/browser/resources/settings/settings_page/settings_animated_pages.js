@@ -32,9 +32,9 @@ Polymer({
     /**
      * A Map specifying which element should be focused when exiting a subpage.
      * The key of the map holds a settings.Route path, and the value holds
-     * either a query selector that identifies the desired element or a function
-     * to be run when a neon-animation-finish event is handled.
-     * @type {?Map<string, (string|Function)>}
+     * either a query selector that identifies the desired element, an element
+     * or a function to be run when a neon-animation-finish event is handled.
+     * @type {?Map<string, (string|Element|Function)>}
      */
     focusConfig: Object,
   },
@@ -107,20 +107,23 @@ Polymer({
     if (!e.detail.item.matches(query))
       return;
 
-    const selectorOrFunction = this.focusConfig.get(this.previousRoute_.path);
-    if (selectorOrFunction) {
+    let pathConfig = this.focusConfig.get(this.previousRoute_.path);
+    if (pathConfig) {
+      let handler;
+      if (typeof pathConfig == 'function') {
+        handler = pathConfig;
+      } else {
+        handler = () => {
+          if (typeof pathConfig == 'string')
+            pathConfig = assert(this.querySelector(pathConfig));
+          cr.ui.focusWithoutInk(/** @type {!Element} */ (pathConfig));
+        };
+      }
       // neon-animatable has "display: none" until the animation finishes,
       // so calling focus() on any of its children has no effect until
       // "display:none" is removed. Therefore, don't set focus from within
       // the currentRouteChanged callback.
-      listenOnce(this, 'neon-animation-finish', () => {
-        if (typeof selectorOrFunction == 'function') {
-          selectorOrFunction();
-        } else {
-          const selector = /** @type {string} */ (selectorOrFunction);
-          cr.ui.focusWithoutInk(assert(this.querySelector(selector)));
-        }
-      });
+      listenOnce(this, 'neon-animation-finish', handler);
     }
   },
 
