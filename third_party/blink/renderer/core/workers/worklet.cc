@@ -76,9 +76,10 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   // loading.
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kInternalLoading)
-      ->PostTask(FROM_HERE, WTF::Bind(&Worklet::FetchAndInvokeScript,
-                                      WrapPersistent(this), module_url_record,
-                                      options, WrapPersistent(pending_tasks)));
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&Worklet::FetchAndInvokeScript, WrapPersistent(this),
+                           module_url_record, options.credentials(),
+                           WrapPersistent(pending_tasks)));
   return promise;
 }
 
@@ -108,7 +109,7 @@ WorkletGlobalScopeProxy* Worklet::FindAvailableGlobalScope() {
 // algorithm:
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
-                                   const WorkletOptions& options,
+                                   const String& credentials,
                                    WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext())
@@ -116,8 +117,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
 
   // Step 6: "Let credentialOptions be the credentials member of options."
   network::mojom::FetchCredentialsMode credentials_mode;
-  bool result =
-      Request::ParseCredentialsMode(options.credentials(), &credentials_mode);
+  bool result = Request::ParseCredentialsMode(credentials, &credentials_mode);
   DCHECK(result);
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."
