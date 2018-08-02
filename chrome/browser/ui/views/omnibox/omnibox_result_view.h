@@ -70,6 +70,9 @@ class OmniboxResultView : public views::View,
   // Called when tab switch button pressed, due to being a listener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Called to indicate tab switch button has been focused.
+  void ProvideButtonFocusHint();
+
   // views::View:
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

@@ -366,6 +366,10 @@ void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SchedulePaint();
 }
 
+void OmniboxResultView::ProvideButtonFocusHint() {
+  suggestion_tab_switch_button_->ProvideFocusHint();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, private:
 
