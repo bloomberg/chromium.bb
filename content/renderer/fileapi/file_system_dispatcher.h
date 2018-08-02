@@ -18,8 +18,10 @@
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/quota/quota_limit_type.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 
 namespace base {
 class FilePath;
@@ -32,18 +34,21 @@ struct FileSystemInfo;
 class GURL;
 
 namespace content {
+class FileSystemOperationListenerImpl;
 
 // Dispatches and sends file system related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
-// per child process.  Messages are dispatched on the main child thread.
-class FileSystemDispatcher : public IPC::Listener {
+// per child process.
+class FileSystemDispatcher {
  public:
   typedef base::Callback<void(base::File::Error error)> StatusCallback;
   typedef base::Callback<void(const base::File::Info& file_info)>
       MetadataCallback;
-  typedef base::Callback<void(const base::File::Info& file_info,
-                              const base::FilePath& platform_path,
-                              int request_id)>
+  typedef base::Callback<void(
+      const base::File::Info& file_info,
+      const base::FilePath& platform_path,
+      base::Optional<blink::mojom::ReceivedSnapshotListenerPtr> opt_listener,
+      int request_id)>
       CreateSnapshotFileCallback;
 
   typedef base::Callback<void(
@@ -64,10 +69,7 @@ class FileSystemDispatcher : public IPC::Listener {
       OpenFileCallback;
 
   FileSystemDispatcher();
-  ~FileSystemDispatcher() override;
-
-  // IPC::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
+  ~FileSystemDispatcher();
 
   void OpenFileSystem(const GURL& origin_url,
                       storage::FileSystemType type,
@@ -114,39 +116,64 @@ class FileSystemDispatcher : public IPC::Listener {
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time,
                  const StatusCallback& callback);
-
-  // The caller must send FileSystemHostMsg_DidReceiveSnapshot message
-  // with |request_id| passed to |success_callback| after the snapshot file
-  // is successfully received.
   void CreateSnapshotFile(const GURL& file_path,
                           const CreateSnapshotFileCallback& success_callback,
                           const StatusCallback& error_callback);
 
  private:
   class CallbackDispatcher;
+  class FileSystemOperationListenerImpl;
 
-  // Message handlers.
-  void OnDidOpenFileSystem(int request_id,
-                           const std::string& name,
-                           const GURL& root);
-  void OnDidResolveURL(int request_id,
-                       const storage::FileSystemInfo& info,
-                       const base::FilePath& file_path,
-                       bool is_directory);
-  void OnDidSucceed(int request_id);
-  void OnDidReadMetadata(int request_id,
-                         const base::File::Info& file_info);
-  void OnDidCreateSnapshotFile(int request_id,
-                               const base::File::Info& file_info,
-                               const base::FilePath& platform_path);
-  void OnDidReadDirectory(
+  void DidOpenFileSystem(int request_id,
+                         const std::string& name,
+                         const GURL& root,
+                         base::File::Error error_code);
+  void DidResolveURL(int request_id,
+                     blink::mojom::FileSystemInfoPtr info,
+                     const base::FilePath& file_path,
+                     bool is_directory,
+                     base::File::Error error_code);
+  void DidFinish(int request_id, base::File::Error error_code);
+  void DidReadMetadata(int request_id,
+                       const base::File::Info& file_info,
+                       base::File::Error error);
+  void DidCreateSnapshotFile(
       int request_id,
-      const std::vector<filesystem::mojom::DirectoryEntry>& entries,
+      const base::File::Info& file_info,
+      const base::FilePath& platform_path,
+      base::File::Error error_code,
+      blink::mojom::ReceivedSnapshotListenerPtr listener);
+  void DidReadDirectory(
+      int request_id,
+      std::vector<filesystem::mojom::DirectoryEntryPtr> entries,
       bool has_more);
-  void OnDidFail(int request_id, base::File::Error error_code);
-  void OnDidWrite(int request_id, int64_t bytes, bool complete);
+  void DidFail(int request_id, base::File::Error error_code);
+  void DidWrite(int request_id, int64_t bytes, bool complete);
+  void DidTruncate(int request_id, base::File::Error error_code);
+  void DidCancel(int request_id,
+                 int cancelled_request_id,
+                 base::File::Error error_code);
+
+  void RemoveOperationPtr(int request_id) {
+    DCHECK(cancellable_operations_.find(request_id) !=
+           cancellable_operations_.end());
+    cancellable_operations_.erase(request_id);
+  }
+
+  void OnConnectionErrorHandler();
+
+  blink::mojom::FileSystemManager& GetFileSystemManager();
+
+  blink::mojom::FileSystemManagerPtr file_system_manager_ptr_;
 
   base::IDMap<std::unique_ptr<CallbackDispatcher>> dispatchers_;
+
+  mojo::StrongBindingSet<blink::mojom::FileSystemOperationListener>
+      op_listeners_;
+
+  using OperationsMap =
+      std::unordered_map<int, blink::mojom::FileSystemCancellableOperationPtr>;
+  OperationsMap cancellable_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcher);
 };

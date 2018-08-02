@@ -18,7 +18,6 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
-#include "content/common/fileapi/file_system_messages.h"
 #include "content/renderer/file_info_util.h"
 #include "content/renderer/fileapi/file_system_dispatcher.h"
 #include "content/renderer/fileapi/webfilewriter_impl.h"
@@ -87,12 +86,6 @@ typedef WebFileSystemImpl::WaitableCallbackResults WaitableCallbackResults;
 
 base::LazyInstance<base::ThreadLocalPointer<WebFileSystemImpl>>::Leaky
     g_webfilesystem_tls = LAZY_INSTANCE_INITIALIZER;
-
-void DidReceiveSnapshotFile(int request_id) {
-  if (ChildThreadImpl::current())
-    ChildThreadImpl::current()->Send(
-        new FileSystemHostMsg_DidReceiveSnapshotFile(request_id));
-}
 
 template <typename Method, typename Params>
 void CallDispatcherOnMainThread(
@@ -336,6 +329,7 @@ void DidCreateSnapshotFile(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
+    base::Optional<blink::mojom::ReceivedSnapshotListenerPtr> opt_listener,
     int request_id) {
   WebFileSystemImpl* filesystem =
       WebFileSystemImpl::ThreadSpecificInstance(nullptr);
@@ -352,8 +346,14 @@ void DidCreateSnapshotFile(
 
   // TODO(michaeln,kinuko): Use ThreadSafeSender when Blob becomes
   // non-bridge model.
-  main_thread_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&DidReceiveSnapshotFile, request_id));
+  if (opt_listener) {
+    main_thread_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](blink::mojom::ReceivedSnapshotListenerPtr listener) {
+                         listener->DidReceiveSnapshotFile();
+                       },
+                       std::move(opt_listener.value())));
+  }
 }
 
 void CreateSnapshotFileCallbackAdapter(
@@ -363,11 +363,13 @@ void CreateSnapshotFileCallbackAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
+    base::Optional<blink::mojom::ReceivedSnapshotListenerPtr> opt_listener,
     int request_id) {
   DispatchResultsClosure(
       task_runner, callbacks_id, waitable_results,
       base::Bind(&DidCreateSnapshotFile, callbacks_id, main_thread_task_runner,
-                 file_info, platform_path, request_id));
+                 file_info, platform_path, base::Passed(&opt_listener),
+                 request_id));
 }
 
 }  // namespace
