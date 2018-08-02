@@ -138,4 +138,40 @@ void WebXrPresentationState::EndPresentation() {
   last_ui_allows_sending_vsync = false;
 }
 
+bool WebXrPresentationState::CanProcessFrame() const {
+  if (!mailbox_bridge_ready_) {
+    DVLOG(2) << __FUNCTION__ << ": waiting for mailbox bridge";
+    return false;
+  }
+  if (processing_frame_) {
+    DVLOG(2) << __FUNCTION__ << ": waiting for previous processing frame";
+    return false;
+  }
+
+  return true;
+}
+
+void WebXrPresentationState::ProcessOrDefer(base::OnceClosure callback) {
+  DCHECK(animating_frame_ && !animating_frame_->deferred_start_processing);
+  if (CanProcessFrame()) {
+    TransitionFrameAnimatingToProcessing();
+    base::ResetAndReturn(&callback).Run();
+  } else {
+    DVLOG(2) << "Deferring processing frame, not ready";
+    animating_frame_->deferred_start_processing = std::move(callback);
+  }
+}
+
+void WebXrPresentationState::TryDeferredProcessing() {
+  if (!animating_frame_ || !animating_frame_->deferred_start_processing ||
+      !CanProcessFrame()) {
+    return;
+  }
+  DVLOG(2) << "Running deferred SubmitFrame";
+  // Run synchronously, not via PostTask, to ensure we don't
+  // get a new SendVSync scheduling in between.
+  TransitionFrameAnimatingToProcessing();
+  base::ResetAndReturn(&animating_frame_->deferred_start_processing).Run();
+}
+
 }  // namespace vr

@@ -162,12 +162,20 @@ class WebXrPresentationState {
   void RecycleUnusedAnimatingFrame();
   bool RecycleProcessingFrameIfPossible();
 
+  void ProcessOrDefer(base::OnceClosure callback);
+  // Call this after state changes that could result in CanProcessFrame
+  // becoming true.
+  void TryDeferredProcessing();
+
   bool HaveAnimatingFrame() { return animating_frame_; }
   WebXrFrame* GetAnimatingFrame();
   bool HaveProcessingFrame() { return processing_frame_; }
   WebXrFrame* GetProcessingFrame();
   bool HaveRenderingFrame() { return rendering_frame_; }
   WebXrFrame* GetRenderingFrame();
+
+  void set_mailbox_bridge_ready(bool ready) { mailbox_bridge_ready_ = ready; }
+  bool mailbox_bridge_ready() const { return mailbox_bridge_ready_; }
 
   // Used by WebVrCanAnimateFrame() to detect when ui_->CanSendWebVrVSync()
   // transitions from false to true, as part of starting the incoming frame
@@ -181,6 +189,10 @@ class WebXrPresentationState {
   base::OnceClosure end_presentation_callback;
 
  private:
+  // Checks if we're in a valid state for processing the current animating
+  // frame. Invalid states include mailbox_bridge_ready_ being false, or an
+  // already existing processing frame that's not done yet.
+  bool CanProcessFrame() const;
   std::unique_ptr<WebXrFrame> frames_storage_[kWebXrFrameCount];
 
   // Index of the next animating WebXR frame.
@@ -190,6 +202,8 @@ class WebXrPresentationState {
   WebXrFrame* processing_frame_ = nullptr;
   WebXrFrame* rendering_frame_ = nullptr;
   base::queue<WebXrFrame*> idle_frames_;
+
+  bool mailbox_bridge_ready_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebXrPresentationState);
 };
