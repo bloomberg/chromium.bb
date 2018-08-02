@@ -27,7 +27,6 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_WIN)
@@ -68,7 +67,6 @@ void ChromeBrowserPolicyConnector::OnResourceBundleCreated() {
 
 void ChromeBrowserPolicyConnector::Init(
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   std::unique_ptr<DeviceManagementService::Configuration> configuration(
       new DeviceManagementServiceConfiguration(
@@ -81,8 +79,8 @@ void ChromeBrowserPolicyConnector::Init(
   InitInternal(local_state, std::move(device_management_service));
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  machine_level_user_cloud_policy_controller_->Init(
-      local_state, request_context, url_loader_factory);
+  machine_level_user_cloud_policy_controller_->Init(local_state,
+                                                    url_loader_factory);
 #endif
 }
 

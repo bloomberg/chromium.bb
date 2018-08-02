@@ -124,8 +124,8 @@ void WildcardLoginChecker::OnPolicyTokenFetched(
 
 void WildcardLoginChecker::StartUserInfoFetcher(
     const std::string& access_token) {
-  user_info_fetcher_.reset(
-      new UserInfoFetcher(this, g_browser_process->system_request_context()));
+  user_info_fetcher_.reset(new UserInfoFetcher(
+      this, g_browser_process->shared_url_loader_factory()));
   user_info_fetcher_->Start(access_token);
 }
 

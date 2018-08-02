@@ -42,7 +42,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -64,7 +64,6 @@ std::string GetDeviceDMToken(
 std::unique_ptr<CloudPolicyClient> CreateClient(
     chromeos::DeviceSettingsService* device_settings_service,
     DeviceManagementService* device_management_service,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context,
     scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
   const em::PolicyData* policy_data = device_settings_service->policy_data();
   if (!policy_data ||
@@ -78,8 +77,7 @@ std::unique_ptr<CloudPolicyClient> CreateClient(
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
           std::string() /* brand_code */, device_management_service,
-          system_request_context, system_url_loader_factory,
-          nullptr /* signing_service */,
+          system_url_loader_factory, nullptr /* signing_service */,
           base::BindRepeating(&GetDeviceDMToken, device_settings_service));
   std::vector<std::string> user_affiliation_ids(
       policy_data->user_affiliation_ids().begin(),
@@ -190,18 +188,16 @@ bool DeviceLocalAccountPolicyBroker::HasInvalidatorForTest() const {
 void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
     chromeos::DeviceSettingsService* device_settings_service,
     DeviceManagementService* device_management_service,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   if (core_.client())
     return;
 
-  std::unique_ptr<CloudPolicyClient> client(
-      CreateClient(device_settings_service, device_management_service,
-                   request_context, url_loader_factory));
+  std::unique_ptr<CloudPolicyClient> client(CreateClient(
+      device_settings_service, device_management_service, url_loader_factory));
   if (!client)
     return;
 
-  CreateComponentCloudPolicyService(request_context, client.get());
+  CreateComponentCloudPolicyService(client.get());
   core_.Connect(std::move(client));
   external_data_manager_->Connect(url_loader_factory);
   core_.StartRefreshScheduler();
@@ -245,7 +241,6 @@ void DeviceLocalAccountPolicyBroker::OnComponentCloudPolicyUpdated() {
 }
 
 void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
     CloudPolicyClient* client) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableComponentCloudPolicy)) {
@@ -270,7 +265,6 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
     scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner,
     scoped_refptr<base::SequencedTaskRunner>
         external_data_service_backend_task_runner,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : session_manager_client_(session_manager_client),
       device_settings_service_(device_settings_service),
@@ -283,7 +277,6 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
       extension_cache_task_runner_(extension_cache_task_runner),
       resource_cache_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
-      request_context_(request_context),
       url_loader_factory_(url_loader_factory),
       local_accounts_subscription_(cros_settings_->AddSettingsObserver(
           chromeos::kAccountsPrefDeviceLocalAccounts,
@@ -301,13 +294,11 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
 }
 
 DeviceLocalAccountPolicyService::~DeviceLocalAccountPolicyService() {
-  DCHECK(!request_context_.get());
   DCHECK(policy_brokers_.empty());
 }
 
 void DeviceLocalAccountPolicyService::Shutdown() {
   device_management_service_ = nullptr;
-  request_context_ = nullptr;
   DeleteBrokers(&policy_brokers_);
 }
 
@@ -320,7 +311,7 @@ void DeviceLocalAccountPolicyService::Connect(
   for (PolicyBrokerMap::iterator it(policy_brokers_.begin());
        it != policy_brokers_.end(); ++it) {
     it->second->ConnectIfPossible(device_settings_service_,
-                                  device_management_service_, request_context_,
+                                  device_management_service_,
                                   url_loader_factory_);
   }
 }
@@ -494,8 +485,7 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
     // Fire up the cloud connection for fetching policy for the account from
     // the cloud if this is an enterprise-managed device.
     broker->ConnectIfPossible(device_settings_service_,
-                              device_management_service_, request_context_,
-                              url_loader_factory_);
+                              device_management_service_, url_loader_factory_);
 
     policy_brokers_[it->user_id] = broker.release();
     if (!broker_initialized) {

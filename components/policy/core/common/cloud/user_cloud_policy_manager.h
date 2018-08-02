@@ -22,9 +22,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -74,7 +71,6 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
   // want to check if the user's domain requires policy).
   static std::unique_ptr<CloudPolicyClient> CreateCloudPolicyClient(
       DeviceManagementService* device_management_service,
-      scoped_refptr<net::URLRequestContextGetter> request_context,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
  private:

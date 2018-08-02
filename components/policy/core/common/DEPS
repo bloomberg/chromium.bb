@@ -4,6 +4,8 @@ include_rules = [
   "+components/crash/core/common/crash_key.h",  # Remove once https://crbug.com/685996 is fixed.
   "+components/data_use_measurement/core",
   "+extensions/buildflags",
+  "+net/http",
+  "+net/traffic_annotation",
   "+services/network/test",
   "+third_party/libxml",
 ]

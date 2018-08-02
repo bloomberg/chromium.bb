@@ -17,6 +17,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace policy {
 
 // Extends BrowserPolicyConnector with the setup for iOS builds.
@@ -29,9 +33,9 @@ class POLICY_EXPORT BrowserPolicyConnectorIOS : public BrowserPolicyConnector {
 
   ~BrowserPolicyConnectorIOS() override;
 
-  void Init(
-      PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context) override;
+  void Init(PrefService* local_state,
+            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      override;
 
  private:
   std::string user_agent_;

@@ -49,7 +49,7 @@ const char kRobotAuthCode[] = "robot-oauth-auth-code";
 const char kEnrollmentToken[] = "enrollment_token";
 
 // Unit tests for the device management policy service. The tests are run
-// against a TestURLFetcherFactory that is used to short-circuit the request
+// against a TestURLLoaderFactory that is used to short-circuit the request
 // without calling into the actual network stack.
 class DeviceManagementServiceTestBase : public testing::Test {
  protected:
@@ -844,7 +844,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnProxyError) {
   SendResponse(net::ERR_PROXY_CONNECTION_FAILED, 200, std::string());
   base::RunLoop().RunUntilIdle();
 
-  // Verify that a new URLFetcher was started that bypasses the proxy.
+  // Verify that a new fetch was started that bypasses the proxy.
   request = GetPendingRequest(1);
   ASSERT_TRUE(request);
   EXPECT_TRUE(request->request.load_flags & net::LOAD_BYPASS_PROXY);
@@ -872,7 +872,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnBadResponseFromProxy) {
                true /* was_fetched_via_proxy */);
   base::RunLoop().RunUntilIdle();
 
-  // Verify that a new URLFetcher was started that bypasses the proxy.
+  // Verify that a new fetch was started that bypasses the proxy.
   request = GetPendingRequest(1);
   ASSERT_TRUE(request);
   EXPECT_NE(0, request->request.load_flags & net::LOAD_BYPASS_PROXY);
@@ -916,7 +916,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnNetworkChanges) {
   SendResponse(net::ERR_NETWORK_CHANGED, 0, std::string());
   base::RunLoop().RunUntilIdle();
 
-  // Verify that a new URLFetcher was started that retries this job, after
+  // Verify that a new fetch was started that retries this job, after
   // having called OnJobRetry.
   Mock::VerifyAndClearExpectations(this);
   request = GetPendingRequest(1);
@@ -948,7 +948,7 @@ TEST_F(DeviceManagementServiceTest, PolicyFetchRetryImmediately) {
   SendResponse(net::ERR_NETWORK_CHANGED, 0, std::string());
   base::RunLoop().RunUntilIdle();
 
-  // Verify that a new URLFetcher was started that retries this job, after
+  // Verify that a new fetch was started that retries this job, after
   // having called OnJobRetry.
   Mock::VerifyAndClearExpectations(this);
   request = GetPendingRequest(1);

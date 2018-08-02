@@ -24,9 +24,6 @@ class AccountId;
 class PrefService;
 class Profile;
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -72,7 +69,6 @@ class UserPolicySigninServiceBase : public KeyedService,
       DeviceManagementService* device_management_service,
       UserCloudPolicyManager* policy_manager,
       SigninManager* signin_manager,
-      scoped_refptr<net::URLRequestContextGetter> system_request_context,
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
   ~UserPolicySigninServiceBase() override;
 
@@ -85,7 +81,6 @@ class UserPolicySigninServiceBase : public KeyedService,
       const AccountId& account_id,
       const std::string& dm_token,
       const std::string& client_id,
-      scoped_refptr<net::URLRequestContextGetter> profile_request_context,
       scoped_refptr<network::SharedURLLoaderFactory> profile_url_loader_factory,
       const PolicyFetchCallback& callback);
 
@@ -109,14 +104,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   // KeyedService implementation:
   void Shutdown() override;
 
-  void SetSystemRequestContext(
-      scoped_refptr<net::URLRequestContextGetter> request_context);
-
  protected:
-  net::URLRequestContextGetter* system_request_context() {
-    return system_request_context_.get();
-  }
-
   // Returns a CloudPolicyClient to perform a registration with the DM server,
   // or NULL if |username| shouldn't register for policy management.
   std::unique_ptr<CloudPolicyClient> CreateClientForRegistrationOnly(
@@ -140,7 +128,6 @@ class UserPolicySigninServiceBase : public KeyedService,
   // user signs-in and an OAuth2 login refresh token becomes available.
   void InitializeForSignedInUser(
       const AccountId& account_id,
-      scoped_refptr<net::URLRequestContextGetter> profile_request_context,
       scoped_refptr<network::SharedURLLoaderFactory>
           profile_url_loader_factory);
 
@@ -177,7 +164,6 @@ class UserPolicySigninServiceBase : public KeyedService,
 
   PrefService* local_state_;
   DeviceManagementService* device_management_service_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_;
   scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory_;
 
   base::WeakPtrFactory<UserPolicySigninServiceBase> weak_factory_;

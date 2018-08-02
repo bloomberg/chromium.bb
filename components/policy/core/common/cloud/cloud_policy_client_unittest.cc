@@ -23,7 +23,6 @@
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/cloud/mock_signing_service.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -272,7 +271,7 @@ class CloudPolicyClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
     client_ = std::make_unique<CloudPolicyClient>(
-        kMachineID, kMachineModel, kBrandCode, &service_, nullptr,
+        kMachineID, kMachineModel, kBrandCode, &service_,
         shared_url_loader_factory_, &fake_signing_service_,
         base::BindRepeating(
             &MockDeviceDMTokenCallbackObserver::OnDeviceDMTokenRequested,

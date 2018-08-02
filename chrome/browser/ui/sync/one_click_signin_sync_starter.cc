@@ -48,7 +48,6 @@
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using browser_sync::ProfileSyncService;
@@ -269,7 +268,7 @@ void OneClickSigninSyncStarter::LoadPolicyWithCachedCredentials() {
       username.empty() ? EmptyAccountId()
                        : AccountId::FromUserEmailGaiaId(username, gaia_id);
   policy_service->FetchPolicyForSignedInUser(
-      account_id, dm_token_, client_id_, profile_->GetRequestContext(),
+      account_id, dm_token_, client_id_,
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess(),
       base::Bind(&OneClickSigninSyncStarter::OnPolicyFetchComplete,

@@ -26,7 +26,6 @@
 #include "components/policy/core/common/remote_commands/test_remote_command_job.h"
 #include "components/policy/core/common/remote_commands/testing_remote_commands_server.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +88,6 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
                           std::string() /* machine_model */,
                           std::string() /* brand_code */,
                           nullptr /* service */,
-                          nullptr /* request_context */,
                           nullptr /* url_loader_factory */,
                           nullptr /* signing_service */,
                           CloudPolicyClient::DeviceDMTokenCallback()),

@@ -25,9 +25,6 @@
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -113,7 +110,6 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& machine_model,
       const std::string& brand_code,
       DeviceManagementService* service,
-      scoped_refptr<net::URLRequestContextGetter> request_context,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       SigningService* signing_service,
       DeviceDMTokenCallback device_dm_token_callback);
@@ -353,8 +349,6 @@ class POLICY_EXPORT CloudPolicyClient {
     return fetched_invalidation_version_;
   }
 
-  scoped_refptr<net::URLRequestContextGetter> GetRequestContext();
-
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
   // Returns the number of active requests.
@@ -525,7 +519,6 @@ class POLICY_EXPORT CloudPolicyClient {
 
   base::ObserverList<Observer, true> observers_;
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
  private:

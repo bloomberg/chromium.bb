@@ -180,6 +180,19 @@ bool TestURLLoaderFactory::SimulateResponseForPendingRequest(
   return true;
 }
 
+bool TestURLLoaderFactory::SimulateResponseForPendingRequest(
+    const std::string& url,
+    const std::string& content,
+    net::HttpStatusCode http_status,
+    ResponseMatchFlags flags) {
+  ResourceResponseHead head = CreateResourceResponseHead(http_status);
+  head.mime_type = "text/html";
+  URLLoaderCompletionStatus status;
+  status.decoded_body_length = content.size();
+  return SimulateResponseForPendingRequest(GURL(url), status, head, content,
+                                           flags);
+}
+
 void TestURLLoaderFactory::SimulateResponseWithoutRemovingFromPendingList(
     PendingRequest* request,
     const ResourceResponseHead& head,

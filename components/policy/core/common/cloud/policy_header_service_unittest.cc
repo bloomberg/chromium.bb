@@ -16,8 +16,6 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -112,7 +110,6 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   user_store_.SetPolicy(std::move(policy));
   task_runner_->RunUntilIdle();
 
-  net::TestURLRequestContext context;
   std::unique_ptr<net::HttpRequestHeaders> extra_headers =
       std::make_unique<net::HttpRequestHeaders>();
   service_->AddPolicyHeaders(GURL(kDMServerURL), &extra_headers);

@@ -39,7 +39,6 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -255,7 +254,6 @@ void DiceTurnSyncOnHelper::LoadPolicyWithCachedCredentials() {
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   policy_service->FetchPolicyForSignedInUser(
       AccountIdFromAccountInfo(account_info_), dm_token_, client_id_,
-      profile_->GetRequestContext(),
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess(),
       base::Bind(&DiceTurnSyncOnHelper::OnPolicyFetchComplete,

@@ -413,7 +413,6 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   void InitAndConnectManager() {
     manager_->Init(&schema_registry_);
     manager_->Connect(&prefs_, &device_management_service_,
-                      /*system_request_context=*/nullptr,
                       /*system_url_loader_factory=*/nullptr);
     if (should_create_token_forwarder_) {
       // Create the UserCloudPolicyTokenForwarder, which fetches the access

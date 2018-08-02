@@ -49,7 +49,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "jni/SigninManager_jni.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::android::JavaParamRef;
 using bookmarks::BookmarkModel;
@@ -181,8 +180,7 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
         AccountIdFromAccountInfo(
             AccountTrackerServiceFactory::GetForProfile(profile_)
                 ->FindAccountInfoByEmail(username_)),
-        dm_token_, client_id_, profile_->GetRequestContext(),
-        url_loader_factory,
+        dm_token_, client_id_, url_loader_factory,
         base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
                    weak_factory_.GetWeakPtr()));
     dm_token_.clear();

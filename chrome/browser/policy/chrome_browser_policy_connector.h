@@ -44,7 +44,6 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
   void OnResourceBundleCreated();
 
   void Init(PrefService* local_state,
-            scoped_refptr<net::URLRequestContextGetter> request_context,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       override;
 

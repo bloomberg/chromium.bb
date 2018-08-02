@@ -1171,7 +1171,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   // resume its initialization now that the loops are spinning and the
   // system request context is available for the fetchers.
   browser_policy_connector()->Init(
-      local_state(), system_request_context(),
+      local_state(),
       system_network_context_manager()->GetSharedURLLoaderFactory());
 
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
