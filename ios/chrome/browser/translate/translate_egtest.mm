@@ -472,16 +472,8 @@ using translate::LanguageDetectionController;
   [self assertLanguageDetails:expectedLanguageDetails];
 }
 
-// TODO(crbug.com/847948): This test is faling on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testLanguageDetectionHttpContentLanguage \
-  testLanguageDetectionHttpContentLanguage
-#else
-#define MAYBE_testLanguageDetectionHttpContentLanguage \
-  DISABLED_testLanguageDetectionHttpContentLanguage
-#endif
 // Tests that language in http content is detected.
-- (void)MAYBE_testLanguageDetectionHttpContentLanguage {
+- (void)testLanguageDetectionHttpContentLanguage {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
