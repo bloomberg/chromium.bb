@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "components/policy/policy_export.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class GoogleServiceAuthError;
 
@@ -18,16 +18,16 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
 }
 
 namespace policy {
 
 // Class that makes a UserInfo request, parses the response, and notifies
 // a provided Delegate when the request is complete.
-class POLICY_EXPORT UserInfoFetcher : public net::URLFetcherDelegate {
+class POLICY_EXPORT UserInfoFetcher {
  public:
   class POLICY_EXPORT Delegate {
    public:
@@ -43,20 +43,23 @@ class POLICY_EXPORT UserInfoFetcher : public net::URLFetcherDelegate {
     virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error) = 0;
   };
 
-  // Create a new UserInfoFetcher. |context| can be NULL for unit tests.
-  UserInfoFetcher(Delegate* delegate, net::URLRequestContextGetter* context);
-  ~UserInfoFetcher() override;
+  // Create a new UserInfoFetcher. |url_loader_factory| can be nullptr for unit
+  // tests.
+  UserInfoFetcher(
+      Delegate* delegate,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  ~UserInfoFetcher();
 
   // Starts the UserInfo request, using the passed OAuth2 |access_token|.
   void Start(const std::string& access_token);
 
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Called by |url_loader_| on completion.
+  void OnFetchComplete(std::unique_ptr<std::string> body);
 
  private:
   Delegate* delegate_;
-  net::URLRequestContextGetter* context_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(UserInfoFetcher);
 };

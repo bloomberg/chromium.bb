@@ -96,7 +96,6 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
     policy_manager()->Connect(g_browser_process->local_state(),
                               UserCloudPolicyManager::CreateCloudPolicyClient(
                                   connector->device_management_service(),
-                                  g_browser_process->system_request_context(),
                                   test_shared_loader_factory_));
 #endif
   }

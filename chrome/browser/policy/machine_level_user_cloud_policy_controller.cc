@@ -89,7 +89,6 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
 
 void MachineLevelUserCloudPolicyController::Init(
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   MachineLevelUserCloudPolicyManager* policy_manager =
       g_browser_process->browser_policy_connector()
@@ -111,7 +110,7 @@ void MachineLevelUserCloudPolicyController::Init(
 
   if (!dm_token.empty()) {
     policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
-        policy_manager, local_state, device_management_service, request_context,
+        policy_manager, local_state, device_management_service,
         url_loader_factory);
     return;
   }
@@ -123,9 +122,9 @@ void MachineLevelUserCloudPolicyController::Init(
   DCHECK(!client_id.empty());
 
   policy_registrar_ = std::make_unique<MachineLevelUserCloudPolicyRegistrar>(
-      device_management_service, request_context, url_loader_factory);
+      device_management_service, url_loader_factory);
   policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
-      policy_manager, local_state, device_management_service, request_context,
+      policy_manager, local_state, device_management_service,
       url_loader_factory);
 
   if (dm_token.empty()) {

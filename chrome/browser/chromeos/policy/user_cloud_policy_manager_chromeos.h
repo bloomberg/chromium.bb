@@ -35,10 +35,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -114,7 +110,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   void Connect(
       PrefService* local_state,
       DeviceManagementService* device_management_service,
-      scoped_refptr<net::URLRequestContextGetter> system_request_context,
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
 
   // This class is one of the policy providers, and must be ready for the

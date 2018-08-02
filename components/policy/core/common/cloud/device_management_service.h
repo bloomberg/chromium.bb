@@ -23,7 +23,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {
 class SequencedTaskRunner;

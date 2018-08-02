@@ -302,11 +302,10 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
   // DMToken is already provided in the policy fetch requests.
   return std::make_unique<CloudPolicyClient>(
       statistics_provider_->GetEnterpriseMachineID(), machine_model, brand_code,
-      device_management_service, g_browser_process->system_request_context(),
+      device_management_service,
       system_url_loader_factory_for_testing_
           ? system_url_loader_factory_for_testing_
-          : g_browser_process->system_network_context_manager()
-                ->GetSharedURLLoaderFactory(),
+          : g_browser_process->shared_url_loader_factory(),
       signing_service_.get(), CloudPolicyClient::DeviceDMTokenCallback());
 }
 

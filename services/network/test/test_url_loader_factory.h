@@ -106,6 +106,13 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
       const std::string& content,
       ResponseMatchFlags flags = kMatchDefault);
 
+  // Simpler version of above for the common case of success or error page.
+  bool SimulateResponseForPendingRequest(
+      const std::string& url,
+      const std::string& content,
+      net::HttpStatusCode status = net::HTTP_OK,
+      ResponseMatchFlags flags = kMatchDefault);
+
   // Sends a response for the given request |request|.
   //
   // Differently from its variant above, this method does not remove |request|

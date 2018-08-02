@@ -98,7 +98,7 @@ KeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
       profile, g_browser_process->local_state(), device_management_service,
       UserCloudPolicyManagerFactory::GetForBrowserContext(context),
       SigninManagerFactory::GetForProfile(profile),
-      g_browser_process->system_request_context(), system_url_loader_factory,
+      std::move(system_url_loader_factory),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
   return service;
 }

@@ -48,7 +48,6 @@ UserPolicySigninService::UserPolicySigninService(
     DeviceManagementService* device_management_service,
     UserCloudPolicyManager* policy_manager,
     SigninManager* signin_manager,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context,
     scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
@@ -56,7 +55,6 @@ UserPolicySigninService::UserPolicySigninService(
                                   device_management_service,
                                   policy_manager,
                                   signin_manager,
-                                  system_request_context,
                                   system_url_loader_factory),
       oauth2_token_service_(token_service),
       profile_prefs_(profile->GetPrefs()),

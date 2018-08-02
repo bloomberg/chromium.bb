@@ -7,7 +7,6 @@
 
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
@@ -23,7 +22,6 @@ MockCloudPolicyClient::MockCloudPolicyClient(
                         std::string() /* machine_model */,
                         std::string() /* brand_code */,
                         nullptr /* service */,
-                        nullptr /* request_context */,
                         std::move(url_loader_factory),
                         nullptr /* signing_service */,
                         CloudPolicyClient::DeviceDMTokenCallback()) {}

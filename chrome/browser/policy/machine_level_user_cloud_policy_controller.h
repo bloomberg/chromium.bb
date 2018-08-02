@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "net/url_request/url_request_context_getter.h"
 
 class PrefService;
 
@@ -62,7 +61,6 @@ class MachineLevelUserCloudPolicyController {
   CreatePolicyManager();
 
   void Init(PrefService* local_state,
-            scoped_refptr<net::URLRequestContextGetter> request_context,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   RegisterResult WaitUntilPolicyEnrollmentFinished();

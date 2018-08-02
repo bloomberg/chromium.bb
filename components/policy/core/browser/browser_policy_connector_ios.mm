@@ -15,7 +15,7 @@
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_loader_ios.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
 
@@ -78,7 +78,7 @@ BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}
 
 void BrowserPolicyConnectorIOS::Init(
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> request_context) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   std::unique_ptr<DeviceManagementService::Configuration> configuration(
       new DeviceManagementServiceConfiguration(user_agent_));
   std::unique_ptr<DeviceManagementService> device_management_service(

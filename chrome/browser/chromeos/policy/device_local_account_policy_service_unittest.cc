@@ -168,7 +168,6 @@ void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
       &affiliated_invalidation_service_provider_,
       base::ThreadTaskRunnerHandle::Get(), extension_cache_task_runner_,
       base::ThreadTaskRunnerHandle::Get(),
-      new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get()),
       /*url_loader_factory=*/nullptr));
 }
 

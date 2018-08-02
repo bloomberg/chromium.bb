@@ -198,9 +198,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
         g_browser_process->local_state(),
         UserCloudPolicyManager::CreateCloudPolicyClient(
             connector->device_management_service(),
-            g_browser_process->system_request_context(),
-            g_browser_process->system_network_context_manager()
-                ->GetSharedURLLoaderFactory()));
+            g_browser_process->shared_url_loader_factory()));
 
 #endif  // defined(OS_CHROMEOS)
 

@@ -5,7 +5,6 @@
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
 
 #include "base/sequenced_task_runner.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
 

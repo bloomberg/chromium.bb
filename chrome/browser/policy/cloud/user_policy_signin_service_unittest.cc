@@ -52,10 +52,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -143,7 +139,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 #else
     service->RegisterForPolicyWithLoginToken(kTestUser, "mock_oauth_token",
                                              callback);
-    ASSERT_TRUE(IsOAuthTokenRequestActive());
+    ASSERT_TRUE(IsRequestActive());
 #endif
   }
 
@@ -155,15 +151,10 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     local_state_.reset(new TestingPrefServiceSimple);
     RegisterLocalState(local_state_->registry());
-    system_request_context_getter_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-        system_request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
 
     g_browser_process->browser_policy_connector()->Init(
-        local_state_.get(), system_request_context_getter_,
-        test_system_shared_loader_factory_);
+        local_state_.get(), test_system_shared_loader_factory_);
 
     // Create a testing profile with cloud-policy-on-signin enabled, and bring
     // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
@@ -192,7 +183,6 @@ class UserPolicySigninServiceTest : public testing::Test {
                               signin::BuildTestSigninClient);
 
     profile_ = builder.Build();
-    url_factory_.set_remove_fetcher_on_delete(true);
 
     signin_manager_ = static_cast<FakeSigninManager*>(
         SigninManagerFactory::GetForProfile(profile_.get()));
@@ -245,20 +235,10 @@ class UserPolicySigninServiceTest : public testing::Test {
     return static_cast<FakeProfileOAuth2TokenService*>(service);
   }
 
-  // Reports whether an OAuth token request is active.
-  // Note that at this time, only OAuth token requests use the SimpleURLLoader,
-  // and that's why we need this method and IsRequestActive().
-  // Once the other Gaia requests use it, we can have only one method.
-  bool IsOAuthTokenRequestActive() {
-    if (!GetTokenService()->GetPendingRequests().empty())
-      return true;
-    return test_url_loader_factory_.NumPending() > 0;
-  }
-
   bool IsRequestActive() {
     if (!GetTokenService()->GetPendingRequests().empty())
       return true;
-    return url_factory_.GetFetcherByID(0);
+    return test_url_loader_factory_.NumPending() > 0;
   }
 
   void MakeOAuthTokenFetchSucceed() {
@@ -267,7 +247,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     GetTokenService()->IssueTokenForAllPendingRequests("access_token",
                                                        base::Time::Now());
 #else
-    ASSERT_TRUE(IsOAuthTokenRequestActive());
+    ASSERT_TRUE(IsRequestActive());
     test_url_loader_factory_.AddResponse(
         GaiaUrls::GetInstance()->oauth2_token_url().spec(),
         kValidTokenResponse);
@@ -282,21 +262,17 @@ class UserPolicySigninServiceTest : public testing::Test {
     GetTokenService()->IssueErrorForAllPendingRequests(
         GoogleServiceAuthError::FromServiceError("fail"));
 #else
-    ASSERT_GT(test_url_loader_factory_.NumPending(), 0);
-    test_url_loader_factory_.AddResponse(
+    ASSERT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
         GaiaUrls::GetInstance()->oauth2_token_url().spec(), "",
-        net::HTTP_BAD_REQUEST);
-    base::RunLoop().RunUntilIdle();
-    test_url_loader_factory_.ClearResponses();
+        net::HTTP_BAD_REQUEST));
 #endif
   }
 
   void ReportHostedDomainStatus(bool is_hosted_domain) {
     ASSERT_TRUE(IsRequestActive());
-    net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
-    fetcher->set_response_code(net::HTTP_OK);
-    fetcher->SetResponseString(is_hosted_domain ? kHostedDomainResponse : "{}");
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    ASSERT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
+        GaiaUrls::GetInstance()->oauth_user_info_url().spec(),
+        is_hosted_domain ? kHostedDomainResponse : "{}"));
   }
 
   void TestSuccessfulSignin() {
@@ -351,7 +327,7 @@ class UserPolicySigninServiceTest : public testing::Test {
         .Times(1);
 
     signin_service->FetchPolicyForSignedInUser(
-        test_account_id_, dm_token_, client_id_, profile_->GetRequestContext(),
+        test_account_id_, dm_token_, client_id_,
         test_system_shared_loader_factory_,
         base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
                    base::Unretained(this)));
@@ -393,8 +369,6 @@ class UserPolicySigninServiceTest : public testing::Test {
   // various components asynchronously via tasks, so create fake threads here.
   content::TestBrowserThreadBundle thread_bundle_;
 
-  net::TestURLFetcherFactory url_factory_;
-
   FakeSigninManager* signin_manager_;
 
   // Used in conjunction with OnRegisterCompleted() to test client registration
@@ -413,7 +387,6 @@ class UserPolicySigninServiceTest : public testing::Test {
   MockDeviceManagementService device_management_service_;
 
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_system_shared_loader_factory_;
@@ -640,6 +613,13 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
   // Complete initialization of the store.
   mock_store_->NotifyStoreLoaded();
 
+  // Since there is a signed-in user expect a policy fetch to be started to
+  // refresh the policy for the user.
+  MockDeviceManagementJob* fetch_request = nullptr;
+  EXPECT_CALL(device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
+
   // Client registration should not be in progress since the client should be
   // already registered.
   ASSERT_TRUE(manager_->IsClientRegistered());
@@ -673,7 +653,7 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientOAuthFailure) {
 
   // UserCloudPolicyManager should not be initialized.
   ASSERT_FALSE(manager_->core()->service());
-  ASSERT_TRUE(IsOAuthTokenRequestActive());
+  ASSERT_TRUE(IsRequestActive());
   EXPECT_FALSE(register_completed_);
 
   // Cause the access token fetch to fail - callback should be invoked.
@@ -681,7 +661,7 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientOAuthFailure) {
 
   EXPECT_TRUE(register_completed_);
   EXPECT_TRUE(dm_token_.empty());
-  ASSERT_FALSE(IsOAuthTokenRequestActive());
+  ASSERT_FALSE(IsRequestActive());
 }
 
 TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientNonHostedDomain) {
@@ -691,7 +671,7 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientNonHostedDomain) {
 
   // UserCloudPolicyManager should not be initialized.
   ASSERT_FALSE(manager_->core()->service());
-  ASSERT_TRUE(IsOAuthTokenRequestActive());
+  ASSERT_TRUE(IsRequestActive());
 
   // Cause the access token request to succeed.
   MakeOAuthTokenFetchSucceed();
@@ -710,7 +690,7 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientNonHostedDomain) {
   // DMToken.
   EXPECT_TRUE(register_completed_);
   EXPECT_TRUE(dm_token_.empty());
-  ASSERT_FALSE(IsOAuthTokenRequestActive());
+  ASSERT_FALSE(IsRequestActive());
 }
 
 TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientFailedRegistration) {
@@ -805,7 +785,7 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicyFailed) {
       UserPolicySigninServiceFactory::GetForProfile(profile_.get());
   signin_service->FetchPolicyForSignedInUser(
       test_account_id_, "mock_dm_token", "mock_client_id",
-      profile_->GetRequestContext(), test_system_shared_loader_factory_,
+      test_system_shared_loader_factory_,
       base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
                  base::Unretained(this)));
   ASSERT_TRUE(fetch_request);

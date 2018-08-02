@@ -1067,9 +1067,7 @@ void ExistingUserController::OnOldEncryptionDetected(
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->device_management_service();
-  // Use signin profile request context
-  net::URLRequestContextGetter* const signin_profile_context =
-      ProfileHelper::GetSigninProfile()->GetRequestContext();
+  // Use signin profile URL loader factory
   scoped_refptr<network::SharedURLLoaderFactory>
       sigin_profile_url_loader_factory =
           content::BrowserContext::GetDefaultStoragePartition(
@@ -1079,8 +1077,7 @@ void ExistingUserController::OnOldEncryptionDetected(
   auto cloud_policy_client = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
       std::string() /* brand_code */, device_management_service,
-      signin_profile_context, sigin_profile_url_loader_factory,
-      nullptr /* signing_service */,
+      sigin_profile_url_loader_factory, nullptr /* signing_service */,
       chromeos::GetDeviceDMTokenForUserPolicyGetter(
           user_context.GetAccountId()));
   pre_signin_policy_fetcher_ = std::make_unique<policy::PreSigninPolicyFetcher>(

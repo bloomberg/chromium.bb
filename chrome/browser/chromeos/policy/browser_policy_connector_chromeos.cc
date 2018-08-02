@@ -61,7 +61,6 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
@@ -145,11 +144,9 @@ BrowserPolicyConnectorChromeOS::~BrowserPolicyConnectorChromeOS() {}
 
 void BrowserPolicyConnectorChromeOS::Init(
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   local_state_ = local_state;
-  ChromeBrowserPolicyConnector::Init(local_state, request_context,
-                                     url_loader_factory);
+  ChromeBrowserPolicyConnector::Init(local_state, url_loader_factory);
 
   affiliated_invalidation_service_provider_ =
       std::make_unique<AffiliatedInvalidationServiceProviderImpl>();
@@ -174,8 +171,7 @@ void BrowserPolicyConnectorChromeOS::Init(
             chromeos::CrosSettings::Get(),
             affiliated_invalidation_service_provider_.get(),
             GetBackgroundTaskRunner(), GetBackgroundTaskRunner(),
-            GetBackgroundTaskRunner(),
-            request_context, url_loader_factory);
+            GetBackgroundTaskRunner(), url_loader_factory);
     device_local_account_policy_service_->Connect(device_management_service());
   }
 

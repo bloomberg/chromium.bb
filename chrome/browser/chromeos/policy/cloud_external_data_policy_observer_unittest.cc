@@ -191,8 +191,7 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
           &affiliated_invalidation_service_provider_,
           base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(),
-          base::ThreadTaskRunnerHandle::Get(), /*request_context=*/nullptr,
-          shared_url_loader_factory_));
+          base::ThreadTaskRunnerHandle::Get(), shared_url_loader_factory_));
 
   EXPECT_CALL(user_policy_provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));

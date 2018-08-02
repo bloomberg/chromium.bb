@@ -185,7 +185,6 @@ UserCloudPolicyManagerChromeOS::~UserCloudPolicyManagerChromeOS() {}
 void UserCloudPolicyManagerChromeOS::Connect(
     PrefService* local_state,
     DeviceManagementService* device_management_service,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context,
     scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
   DCHECK(device_management_service);
   DCHECK(local_state);
@@ -203,16 +202,15 @@ void UserCloudPolicyManagerChromeOS::Connect(
   CHECK(!core()->client());
 
   local_state_ = local_state;
-  // Note: |system_request_context| can be null for tests.
-  // Use the system request context here instead of a context derived
+  // Note: |system_url_loader_factory| can be null for tests.
+  // Use the system URL loader context here instead of a context derived
   // from the Profile because Connect() is called before the profile is
   // fully initialized (required so we can perform the initial policy load).
   std::unique_ptr<CloudPolicyClient> cloud_policy_client =
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
           std::string() /* brand_code */, device_management_service,
-          system_request_context, system_url_loader_factory,
-          nullptr /* signing_service */,
+          system_url_loader_factory, nullptr /* signing_service */,
           chromeos::GetDeviceDMTokenForUserPolicyGetter(account_id_));
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,

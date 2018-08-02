@@ -23,7 +23,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
@@ -34,7 +33,6 @@ UserPolicySigninService::UserPolicySigninService(
     DeviceManagementService* device_management_service,
     UserCloudPolicyManager* policy_manager,
     SigninManager* signin_manager,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context,
     scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
@@ -42,7 +40,6 @@ UserPolicySigninService::UserPolicySigninService(
                                   device_management_service,
                                   policy_manager,
                                   signin_manager,
-                                  system_request_context,
                                   system_url_loader_factory),
       profile_(profile),
       oauth2_token_service_(token_service) {
@@ -177,7 +174,6 @@ void UserPolicySigninService::TryInitializeForSignedInUser() {
 
   InitializeForSignedInUser(
       AccountIdFromAccountInfo(signin_manager()->GetAuthenticatedAccountInfo()),
-      profile_->GetRequestContext(),
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess());
 }

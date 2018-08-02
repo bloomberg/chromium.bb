@@ -4,7 +4,7 @@ include_rules = [
   "+components/version_info",
   "+crypto",
   "+google_apis",
-  "+net",
+  "+net/base",
   "+third_party/re2",
   "+services/network/public/cpp",
 ]

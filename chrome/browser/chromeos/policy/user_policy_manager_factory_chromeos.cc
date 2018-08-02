@@ -417,9 +417,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
         SchemaRegistryServiceFactory::GetForContext(profile)->registry());
     manager->Connect(g_browser_process->local_state(),
                      device_management_service,
-                     g_browser_process->system_request_context(),
-                     g_browser_process->system_network_context_manager()
-                         ->GetSharedURLLoaderFactory());
+                     g_browser_process->shared_url_loader_factory());
 
     cloud_managers_[profile] = manager.get();
     return std::move(manager);
