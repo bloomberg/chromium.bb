@@ -8,20 +8,22 @@
 #include <stdint.h>
 
 #include <queue>
+#include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
+#include "url/gurl.h"
 
 namespace net {
 class ProxyInfo;
-class URLRequestContextGetter;
 }
 
 namespace ppapi {
@@ -33,6 +35,7 @@ struct ReplyMessageContext;
 namespace content {
 
 class BrowserPpapiHostImpl;
+class PepperProxyLookupHelper;
 
 // The host for PPB_NetworkProxy. This class lives on the IO thread.
 class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
@@ -44,15 +47,14 @@ class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
   ~PepperNetworkProxyHost() override;
 
  private:
-  // We retrieve the appropriate URLRequestContextGetter and whether this API
-  // is allowed for the instance on the UI thread and pass those to
-  // DidGetUIThreadData, which sets allowed_ and proxy_resolution_service_.
+  // We retrieve whether this API is allowed for the instance on the UI thread
+  // and pass it to DidGetUIThreadData, which sets allowed_.
   struct UIThreadData {
     UIThreadData();
     UIThreadData(const UIThreadData& other);
     ~UIThreadData();
+
     bool is_allowed;
-    scoped_refptr<net::URLRequestContextGetter> context_getter;
   };
   static UIThreadData GetUIThreadDataOnUIThread(int render_process_id,
                                                 int render_frame_id,
@@ -67,39 +69,38 @@ class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
   int32_t OnMsgGetProxyForURL(ppapi::host::HostMessageContext* context,
                               const std::string& url);
 
-  // If we have a valid proxy_resolution_service_, send all messages in
-  // unsent_requests_.
+  // Send all messages in |unsent_requests_|.
   void TryToSendUnsentRequests();
 
   void OnResolveProxyCompleted(ppapi::host::ReplyMessageContext context,
-                               net::ProxyInfo* proxy_info,
-                               int result);
+                               PepperProxyLookupHelper* pending_request,
+                               base::Optional<net::ProxyInfo> proxy_info);
   void SendFailureReply(int32_t error,
                         ppapi::host::ReplyMessageContext context);
 
-  // The following two members are invalid until we get some information from
-  // the UI thread. However, these are only ever set or accessed on the IO
-  // thread.
-  net::ProxyResolutionService* proxy_resolution_service_;
+  // Used to find correct NetworkContext to perform proxy lookups.
+  int render_process_id_;
+  int render_frame_id_;
+
+  // The following member is invalid until we get some information from the UI
+  // thread. However, it is only ever set or accessed on the IO thread.
   bool is_allowed_;
 
-  // True initially, but set to false once the values for
-  // proxy_resolution_service_ and is_allowed_ have been set.
+  // True initially, but set to false once is_allowed_ has been set.
   bool waiting_for_ui_thread_data_;
 
-  // We have to get the URLRequestContextGetter from the UI thread before we
-  // can retrieve proxy_resolution_service_. If we receive any calls for
-  // GetProxyForURL before proxy_resolution_service_ is available, we save them
-  // in unsent_requests_.
+  // We have to get is_allowed_ from the UI thread before we can start a
+  // request. If we receive any calls for GetProxyForURL before is_allowed_ is
+  // available, we save them in unsent_requests_.
   struct UnsentRequest {
     GURL url;
     ppapi::host::ReplyMessageContext reply_context;
   };
   base::queue<UnsentRequest> unsent_requests_;
 
-  // Requests awaiting a response from ProxyResolutionService. We need to store
+  // Requests awaiting a response from the network service. We need to store
   // these so that we can cancel them if we get destroyed.
-  base::queue<std::unique_ptr<net::ProxyResolutionService::Request>>
+  std::set<std::unique_ptr<PepperProxyLookupHelper>, base::UniquePtrComparator>
       pending_requests_;
 
   base::WeakPtrFactory<PepperNetworkProxyHost> weak_factory_;

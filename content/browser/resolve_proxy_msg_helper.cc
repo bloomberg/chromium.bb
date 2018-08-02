@@ -5,25 +5,33 @@
 #include "content/browser/resolve_proxy_msg_helper.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "content/common/view_messages.h"
-#include "net/base/net_errors.h"
-#include "net/log/net_log_with_source.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/proxy_resolution/proxy_info.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
 
-ResolveProxyMsgHelper::ResolveProxyMsgHelper(
-    net::URLRequestContextGetter* getter)
+ResolveProxyMsgHelper::ResolveProxyMsgHelper(int render_process_host_id)
     : BrowserMessageFilter(ViewMsgStart),
-      context_getter_(getter),
-      proxy_resolution_service_(nullptr) {}
+      render_process_host_id_(render_process_host_id),
+      binding_(this) {}
 
-ResolveProxyMsgHelper::ResolveProxyMsgHelper(
-    net::ProxyResolutionService* proxy_resolution_service)
-    : BrowserMessageFilter(ViewMsgStart), proxy_resolution_service_(proxy_resolution_service) {}
+void ResolveProxyMsgHelper::OnDestruct() const {
+  // Have to delete on the UI thread, since Mojo objects aren't threadsafe.
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+}
+
+void ResolveProxyMsgHelper::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
+  if (message.type() == ViewHostMsg_ResolveProxy::ID)
+    *thread = BrowserThread::UI;
+}
 
 bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -36,52 +44,72 @@ bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message) {
 
 void ResolveProxyMsgHelper::OnResolveProxy(const GURL& url,
                                            IPC::Message* reply_msg) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // Enqueue the pending request.
   pending_requests_.push_back(PendingRequest(url, reply_msg));
 
   // If nothing is in progress, start.
-  if (pending_requests_.size() == 1)
+  if (!binding_.is_bound()) {
+    DCHECK_EQ(1u, pending_requests_.size());
     StartPendingRequest();
+  }
 }
 
 ResolveProxyMsgHelper::~ResolveProxyMsgHelper() = default;
 
-void ResolveProxyMsgHelper::OnResolveProxyCompleted(int result) {
-  CHECK(!pending_requests_.empty());
+void ResolveProxyMsgHelper::StartPendingRequest() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!binding_.is_bound());
+  DCHECK(!pending_requests_.empty());
+
+  // Start the request.
+  network::mojom::ProxyLookupClientPtr proxy_lookup_client;
+  binding_.Bind(mojo::MakeRequest(&proxy_lookup_client));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&ResolveProxyMsgHelper::OnProxyLookupComplete,
+                     base::Unretained(this), base::nullopt));
+  if (!SendRequestToNetworkService(pending_requests_.front().url,
+                                   std::move(proxy_lookup_client))) {
+    OnProxyLookupComplete(base::nullopt);
+  }
+}
+
+bool ResolveProxyMsgHelper::SendRequestToNetworkService(
+    const GURL& url,
+    network::mojom::ProxyLookupClientPtr proxy_lookup_client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(render_process_host_id_);
+  // Fail the request if there's no such RenderProcessHost;
+  if (!render_process_host)
+    return false;
+  render_process_host->GetStoragePartition()
+      ->GetNetworkContext()
+      ->LookUpProxyForURL(url, std::move(proxy_lookup_client));
+  return true;
+}
+
+void ResolveProxyMsgHelper::OnProxyLookupComplete(
+    const base::Optional<net::ProxyInfo>& proxy_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!pending_requests_.empty());
+
+  binding_.Close();
 
   // Clear the current (completed) request.
   PendingRequest completed_req = std::move(pending_requests_.front());
   pending_requests_.pop_front();
 
-  ViewHostMsg_ResolveProxy::WriteReplyParams(completed_req.reply_msg.get(),
-                                             result == net::OK,
-                                             proxy_info_.ToPacString());
+  ViewHostMsg_ResolveProxy::WriteReplyParams(
+      completed_req.reply_msg.get(), !!proxy_info,
+      proxy_info ? proxy_info->ToPacString() : std::string());
   Send(completed_req.reply_msg.release());
 
   // Start the next request.
   if (!pending_requests_.empty())
     StartPendingRequest();
-}
-
-void ResolveProxyMsgHelper::StartPendingRequest() {
-  // Verify the request wasn't started yet.
-  DCHECK(nullptr == pending_requests_.front().request);
-
-  if (context_getter_.get()) {
-    proxy_resolution_service_ = context_getter_->GetURLRequestContext()->proxy_resolution_service();
-    context_getter_ = nullptr;
-  }
-
-  // Start the request.
-  int result = proxy_resolution_service_->ResolveProxy(
-      pending_requests_.front().url, std::string(), &proxy_info_,
-      base::BindOnce(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
-                     base::Unretained(this)),
-      &pending_requests_.front().request, nullptr, net::NetLogWithSource());
-
-  // Completed synchronously.
-  if (result != net::ERR_IO_PENDING)
-    OnResolveProxyCompleted(result);
 }
 
 ResolveProxyMsgHelper::PendingRequest::PendingRequest(const GURL& url,

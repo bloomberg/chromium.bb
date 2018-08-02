@@ -2022,6 +2022,8 @@ jumbo_source_set("browser") {
       "renderer_host/pepper/pepper_print_settings_manager.h",
       "renderer_host/pepper/pepper_printing_host.cc",
       "renderer_host/pepper/pepper_printing_host.h",
+      "renderer_host/pepper/pepper_proxy_lookup_helper.cc",
+      "renderer_host/pepper/pepper_proxy_lookup_helper.h",
       "renderer_host/pepper/pepper_renderer_connection.cc",
       "renderer_host/pepper/pepper_renderer_connection.h",
       "renderer_host/pepper/pepper_security_helper.cc",

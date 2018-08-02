@@ -100,6 +100,9 @@ class TestNetworkContext : public mojom::NetworkContext {
                        int32_t render_frame_id,
                        const url::Origin& origin,
                        mojom::AuthenticationHandlerPtr auth_handler) override {}
+  void LookUpProxyForURL(
+      const GURL& url,
+      ::network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {}
   void CreateNetLogExporter(mojom::NetLogExporterRequest exporter) override {}
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,

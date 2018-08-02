@@ -6,44 +6,65 @@
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_proxy_lookup_helper.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
-#include "net/base/net_errors.h"
-#include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 
 namespace content {
+
+namespace {
+
+bool LookUpProxyForURLCallback(
+    int render_process_host_id,
+    int render_frame_host_id,
+    const GURL& url,
+    network::mojom::ProxyLookupClientPtr proxy_lookup_client) {
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_host_id, render_frame_host_id);
+  if (!render_frame_host)
+    return false;
+
+  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+  StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
+      site_instance->GetBrowserContext(), site_instance);
+
+  storage_partition->GetNetworkContext()->LookUpProxyForURL(
+      url, std::move(proxy_lookup_client));
+  return true;
+}
+
+}  // namespace
 
 PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
                                                PP_Instance instance,
                                                PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      proxy_resolution_service_(nullptr),
+      render_process_id_(0),
+      render_frame_id_(0),
       is_allowed_(false),
       waiting_for_ui_thread_data_(true),
       weak_factory_(this) {
-  int render_process_id(0), render_frame_id(0);
-  host->GetRenderFrameIDsForInstance(
-      instance, &render_process_id, &render_frame_id);
+  host->GetRenderFrameIDsForInstance(instance, &render_process_id_,
+                                     &render_frame_id_);
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GetUIThreadDataOnUIThread,
-                 render_process_id,
-                 render_frame_id,
-                 host->external_plugin()),
-      base::Bind(&PepperNetworkProxyHost::DidGetUIThreadData,
-                 weak_factory_.GetWeakPtr()));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&GetUIThreadDataOnUIThread, render_process_id_,
+                     render_frame_id_, host->external_plugin()),
+      base::BindOnce(&PepperNetworkProxyHost::DidGetUIThreadData,
+                     weak_factory_.GetWeakPtr()));
 }
 
 PepperNetworkProxyHost::~PepperNetworkProxyHost() = default;
@@ -62,9 +83,6 @@ PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
                                                   bool is_external_plugin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PepperNetworkProxyHost::UIThreadData result;
-  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
-  if (rph)
-    result.context_getter = rph->GetStoragePartition()->GetURLRequestContext();
 
   SocketPermissionRequest request(
       content::SocketPermissionRequest::RESOLVE_PROXY, std::string(), 0);
@@ -80,16 +98,7 @@ PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
 void PepperNetworkProxyHost::DidGetUIThreadData(
     const UIThreadData& ui_thread_data) {
   is_allowed_ = ui_thread_data.is_allowed;
-  if (ui_thread_data.context_getter.get() &&
-      ui_thread_data.context_getter->GetURLRequestContext()) {
-    proxy_resolution_service_ =
-        ui_thread_data.context_getter->GetURLRequestContext()->proxy_resolution_service();
-  }
   waiting_for_ui_thread_data_ = false;
-  if (!proxy_resolution_service_) {
-    DLOG_IF(WARNING, proxy_resolution_service_)
-        << "Failed to find a ProxyResolutionService for Pepper plugin.";
-  }
   TryToSendUnsentRequests();
 }
 
@@ -123,27 +132,23 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
 
   while (!unsent_requests_.empty()) {
     const UnsentRequest& request = unsent_requests_.front();
-    if (!proxy_resolution_service_) {
-      SendFailureReply(PP_ERROR_FAILED, request.reply_context);
-    } else if (!is_allowed_) {
+    if (!is_allowed_) {
       SendFailureReply(PP_ERROR_NOACCESS, request.reply_context);
     } else {
       // Everything looks valid, so try to resolve the proxy.
-      net::ProxyInfo* proxy_info = new net::ProxyInfo;
-      std::unique_ptr<net::ProxyResolutionService::Request> pending_request;
-      base::Callback<void(int)> callback =
-          base::Bind(&PepperNetworkProxyHost::OnResolveProxyCompleted,
-                     weak_factory_.GetWeakPtr(),
-                     request.reply_context,
-                     base::Owned(proxy_info));
-      int result = proxy_resolution_service_->ResolveProxy(
-          request.url, std::string(), proxy_info, callback, &pending_request,
-          nullptr, net::NetLogWithSource());
-      pending_requests_.push(std::move(pending_request));
-      // If it was handled synchronously, we must run the callback now;
-      // proxy_resolution_service_ won't run it for us in this case.
-      if (result != net::ERR_IO_PENDING)
-        std::move(callback).Run(result);
+      auto lookup_helper = std::make_unique<PepperProxyLookupHelper>();
+      PepperProxyLookupHelper::LookUpProxyForURLCallback
+          look_up_proxy_for_url_callback = base::BindOnce(
+              &LookUpProxyForURLCallback, render_process_id_, render_frame_id_);
+      PepperProxyLookupHelper::LookUpCompleteCallback
+          look_up_complete_callback =
+              base::BindOnce(&PepperNetworkProxyHost::OnResolveProxyCompleted,
+                             weak_factory_.GetWeakPtr(), request.reply_context,
+                             lookup_helper.get());
+      lookup_helper->Start(request.url,
+                           std::move(look_up_proxy_for_url_callback),
+                           std::move(look_up_complete_callback));
+      pending_requests_.insert(std::move(lookup_helper));
     }
     unsent_requests_.pop();
   }
@@ -151,20 +156,24 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
 
 void PepperNetworkProxyHost::OnResolveProxyCompleted(
     ppapi::host::ReplyMessageContext context,
-    net::ProxyInfo* proxy_info,
-    int result) {
-  pending_requests_.pop();
+    PepperProxyLookupHelper* pending_request,
+    base::Optional<net::ProxyInfo> proxy_info) {
+  auto it = pending_requests_.find(pending_request);
+  DCHECK(it != pending_requests_.end());
+  pending_requests_.erase(it);
 
-  if (result != net::OK) {
-    // Currently, the only proxy-specific error we could get is
-    // MANDATORY_PROXY_CONFIGURATION_FAILED. There's really no action a plugin
-    // can take in this case, so there's no need to distinguish it from other
-    // failures.
+  std::string pac_string;
+  if (!proxy_info) {
+    // This can happen in cases of network service crash, shutdown, or when
+    // the request fails with ERR_MANDATORY_PROXY_CONFIGURATION_FAILED. There's
+    // really no action a plugin can take, so there's no need to distinguish
+    // which error occurred.
     context.params.set_result(PP_ERROR_FAILED);
+  } else {
+    pac_string = proxy_info->ToPacString();
   }
-  host()->SendReply(context,
-                    PpapiPluginMsg_NetworkProxy_GetProxyForURLReply(
-                        proxy_info->ToPacString()));
+  host()->SendReply(
+      context, PpapiPluginMsg_NetworkProxy_GetProxyForURLReply(pac_string));
 }
 
 void PepperNetworkProxyHost::SendFailureReply(

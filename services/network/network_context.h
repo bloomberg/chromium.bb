@@ -24,6 +24,7 @@
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
@@ -53,6 +54,7 @@ namespace network {
 class CookieManager;
 class ExpectCTReporter;
 class NetworkService;
+class ProxyLookupRequest;
 class ResourceScheduler;
 class ResourceSchedulerClient;
 class URLRequestContextBuilderMojo;
@@ -196,6 +198,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                        int32_t render_frame_id,
                        const url::Origin& origin,
                        mojom::AuthenticationHandlerPtr auth_handler) override;
+  void LookUpProxyForURL(
+      const GURL& url,
+      mojom::ProxyLookupClientPtr proxy_lookup_client) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
@@ -210,12 +215,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          bool privacy_mode_enabled) override;
   void ResetURLLoaderFactories() override;
 
+  // Destroys |request| when a proxy lookup completes.
+  void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);
+
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
 
   // Destroys the specified factory. Called by the factory itself when it has
   // no open pipes.
   void DestroyURLLoaderFactory(cors::CORSURLLoaderFactory* url_loader_factory);
+
+  size_t pending_proxy_lookup_requests_for_testing() const {
+    return proxy_lookup_requests_.size();
+  }
 
  private:
   class ContextNetworkDelegate;
@@ -275,8 +287,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<WebSocketFactory> websocket_factory_;
 #endif  // !defined(OS_IOS)
 
+  // These must be below the URLRequestContext, so they're destroyed before it
+  // is.
   std::vector<std::unique_ptr<HttpCacheDataRemover>> http_cache_data_removers_;
   std::vector<std::unique_ptr<HttpCacheDataCounter>> http_cache_data_counters_;
+  std::set<std::unique_ptr<ProxyLookupRequest>, base::UniquePtrComparator>
+      proxy_lookup_requests_;
 
   // This must be below |url_request_context_| so that the URLRequestContext
   // outlives all the URLLoaderFactories and URLLoaders that depend on it.

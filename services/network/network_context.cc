@@ -73,6 +73,7 @@
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
 #include "services/network/proxy_config_service_mojo.h"
+#include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -498,6 +499,13 @@ void NetworkContext::GetRestrictedCookieManager(
       std::move(request));
 }
 
+void NetworkContext::OnProxyLookupComplete(
+    ProxyLookupRequest* proxy_lookup_request) {
+  auto it = proxy_lookup_requests_.find(proxy_lookup_request);
+  DCHECK(it != proxy_lookup_requests_.end());
+  proxy_lookup_requests_.erase(it);
+}
+
 void NetworkContext::DisableQuic() {
   url_request_context_->http_transaction_factory()->GetSession()->DisableQuic();
 }
@@ -766,6 +774,18 @@ void NetworkContext::CreateWebSocket(
                                       std::move(auth_handler), process_id,
                                       render_frame_id, origin);
 #endif  // !defined(OS_IOS)
+}
+
+void NetworkContext::LookUpProxyForURL(
+    const GURL& url,
+    mojom::ProxyLookupClientPtr proxy_lookup_client) {
+  DCHECK(proxy_lookup_client);
+  std::unique_ptr<ProxyLookupRequest> proxy_lookup_request(
+      std::make_unique<ProxyLookupRequest>(std::move(proxy_lookup_client),
+                                           this));
+  ProxyLookupRequest* proxy_lookup_request_ptr = proxy_lookup_request.get();
+  proxy_lookup_requests_.insert(std::move(proxy_lookup_request));
+  proxy_lookup_request_ptr->Start(url);
 }
 
 void NetworkContext::CreateNetLogExporter(
