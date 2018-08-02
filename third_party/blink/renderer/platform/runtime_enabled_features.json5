@@ -1190,6 +1190,7 @@
     },
     {
       name: "ShapeDetection",
+      origin_trial_feature_name: "ShapeDetection",
       status: "experimental",
     },
     {
