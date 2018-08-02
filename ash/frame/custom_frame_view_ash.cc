@@ -63,11 +63,12 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     // immersive fullscreen via the "Restore" window control.
     // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
     window_state_ = window_state;
-    window_state_->AddObserver(this);
     window_state_->window()->AddObserver(this);
 
     if (!enable_immersive)
       return;
+
+    window_state_->AddObserver(this);
 
     Shell::Get()->tablet_mode_controller()->AddObserver(this);
 
