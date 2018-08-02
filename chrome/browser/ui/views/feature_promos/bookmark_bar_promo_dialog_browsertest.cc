@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/strings/grit/components_strings.h"
 
 class BookmarkBarPromoDialogTest : public DialogBrowserTest {
  public:
@@ -25,7 +26,8 @@ class BookmarkBarPromoDialogTest : public DialogBrowserTest {
                                              "a ");
 
     // Now actually show the promo.
-    BookmarkBarPromoBubbleView bubble_view;
+    BookmarkBarPromoBubbleView bubble_view(
+        IDS_NUX_GOOGLE_APPS_DESCRIPTION_PROMO_BUBBLE);
     bubble_view.ShowForNode(model->bookmark_bar_node()->GetChild(0));
   }
 

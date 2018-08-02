@@ -21,7 +21,7 @@ class BookmarkNode;
 // relevant bookmark node.
 class BookmarkBarPromoBubbleView : public ShowPromoDelegate {
  public:
-  BookmarkBarPromoBubbleView();
+  explicit BookmarkBarPromoBubbleView(int string_specifier);
   ~BookmarkBarPromoBubbleView() override = default;
 
   // ShowPromoDelegate:
@@ -31,6 +31,9 @@ class BookmarkBarPromoBubbleView : public ShowPromoDelegate {
 
  private:
   struct BubbleImpl;
+
+  // The string that will be shown on this bubble.
+  int string_specifier;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarPromoBubbleView);
 };
