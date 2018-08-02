@@ -62,8 +62,8 @@ TEST(AddressSorterTest, Sort) {
 
   AddressList result;
   TestCompletionCallback callback;
-  sorter->Sort(list, base::Bind(&OnSortComplete, &result,
-                                callback.callback()));
+  sorter->Sort(list,
+               base::BindOnce(&OnSortComplete, &result, callback.callback()));
   EXPECT_EQ(expected_result, callback.WaitForResult());
 }
 

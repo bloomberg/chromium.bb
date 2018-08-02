@@ -32,10 +32,9 @@ class AddressSorterWin : public AddressSorter {
   ~AddressSorterWin() override {}
 
   // AddressSorter:
-  void Sort(const AddressList& list,
-            const CallbackType& callback) const override {
+  void Sort(const AddressList& list, CallbackType callback) const override {
     DCHECK(!list.empty());
-    Job::Start(list, callback);
+    Job::Start(list, std::move(callback));
   }
 
  private:
@@ -43,8 +42,8 @@ class AddressSorterWin : public AddressSorter {
   // performs the necessary conversions to/from AddressList.
   class Job : public base::RefCountedThreadSafe<Job> {
    public:
-    static void Start(const AddressList& list, const CallbackType& callback) {
-      auto job = base::WrapRefCounted(new Job(list, callback));
+    static void Start(const AddressList& list, CallbackType callback) {
+      auto job = base::WrapRefCounted(new Job(list, std::move(callback)));
       base::PostTaskWithTraitsAndReply(
           FROM_HERE,
           {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
@@ -55,15 +54,15 @@ class AddressSorterWin : public AddressSorter {
    private:
     friend class base::RefCountedThreadSafe<Job>;
 
-    Job(const AddressList& list, const CallbackType& callback)
-        : callback_(callback),
+    Job(const AddressList& list, CallbackType callback)
+        : callback_(std::move(callback)),
           buffer_size_(sizeof(SOCKET_ADDRESS_LIST) +
-                       list.size() * (sizeof(SOCKET_ADDRESS) +
-                                      sizeof(SOCKADDR_STORAGE))),
-          input_buffer_(reinterpret_cast<SOCKET_ADDRESS_LIST*>(
-              malloc(buffer_size_))),
-          output_buffer_(reinterpret_cast<SOCKET_ADDRESS_LIST*>(
-              malloc(buffer_size_))),
+                       list.size() *
+                           (sizeof(SOCKET_ADDRESS) + sizeof(SOCKADDR_STORAGE))),
+          input_buffer_(
+              reinterpret_cast<SOCKET_ADDRESS_LIST*>(malloc(buffer_size_))),
+          output_buffer_(
+              reinterpret_cast<SOCKET_ADDRESS_LIST*>(malloc(buffer_size_))),
           success_(false) {
       input_buffer_->iAddressCount = list.size();
       SOCKADDR_STORAGE* storage = reinterpret_cast<SOCKADDR_STORAGE*>(
@@ -125,10 +124,10 @@ class AddressSorterWin : public AddressSorter {
           list.push_back(ipe);
         }
       }
-      callback_.Run(success_, list);
+      std::move(callback_).Run(success_, list);
     }
 
-    const CallbackType callback_;
+    CallbackType callback_;
     const size_t buffer_size_;
     std::unique_ptr<SOCKET_ADDRESS_LIST, base::FreeDeleter> input_buffer_;
     std::unique_ptr<SOCKET_ADDRESS_LIST, base::FreeDeleter> output_buffer_;

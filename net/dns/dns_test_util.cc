@@ -28,10 +28,9 @@ namespace {
 class MockAddressSorter : public AddressSorter {
  public:
   ~MockAddressSorter() override = default;
-  void Sort(const AddressList& list,
-            const CallbackType& callback) const override {
+  void Sort(const AddressList& list, CallbackType callback) const override {
     // Do nothing.
-    callback.Run(true, list);
+    std::move(callback).Run(true, list);
   }
 };
 
