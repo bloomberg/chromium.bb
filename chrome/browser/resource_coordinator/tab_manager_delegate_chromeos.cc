@@ -539,13 +539,7 @@ bool TabManagerDelegate::KillTab(LifecycleUnit* lifecycle_unit,
   DecisionDetails decision_details;
   if (!lifecycle_unit->CanDiscard(reason, &decision_details))
     return false;
-  auto old_state = lifecycle_unit->GetState();
   bool did_discard = lifecycle_unit->Discard(reason);
-  if (did_discard) {
-    // TODO(chrisha): Move this to a LifecycleUnitObserver.
-    TabManagerStatsCollector::RecordDiscardDecision(
-        lifecycle_unit, decision_details, old_state, reason);
-  }
   return did_discard;
 }
 
