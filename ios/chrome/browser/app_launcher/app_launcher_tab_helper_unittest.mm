@@ -7,9 +7,19 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/time/default_clock.h"
+#include "components/reading_list/core/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_model_impl.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
+#include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,6 +91,16 @@ class FakeNavigationManager : public web::TestNavigationManager {
   DISALLOW_COPY_AND_ASSIGN(FakeNavigationManager);
 };
 
+std::unique_ptr<KeyedService> BuildReadingListModel(
+    web::BrowserState* context) {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  std::unique_ptr<ReadingListModelImpl> reading_list_model(
+      new ReadingListModelImpl(nullptr, browser_state->GetPrefs(),
+                               base::DefaultClock::GetInstance()));
+  return reading_list_model;
+}
+
 // Test fixture for AppLauncherTabHelper class.
 class AppLauncherTabHelperTest : public PlatformTest {
  protected:
@@ -107,9 +127,58 @@ class AppLauncherTabHelperTest : public PlatformTest {
                                            request_info);
   }
 
+  // Initialize reading list model and its required tab helpers.
+  void InitializeReadingListModel() {
+    TestChromeBrowserState::Builder test_cbs_builder;
+    chrome_browser_state_ = test_cbs_builder.Build();
+    web_state_.SetBrowserState(chrome_browser_state_.get());
+    ReadingListModelFactory::GetInstance()->SetTestingFactoryAndUse(
+        chrome_browser_state_.get(), &BuildReadingListModel);
+    TabIdTabHelper::CreateForWebState(&web_state_);
+    LegacyTabHelper::CreateForWebState(&web_state_);
+    is_reading_list_initialized_ = true;
+  }
+
+  // Returns true if the |expected_read_status| matches the read status for any
+  // non empty source URL based on the transition type and the app policy.
+  bool TestReadingListUpdate(bool is_app_blocked,
+                             bool is_link_transition,
+                             bool expected_read_status) {
+    // Make sure reading list model is initialized.
+    if (!is_reading_list_initialized_)
+      InitializeReadingListModel();
+
+    GURL test_source_url("http://google.com");
+    ReadingListModel* model = ReadingListModelFactory::GetForBrowserState(
+        chrome_browser_state_.get());
+    EXPECT_TRUE(model->DeleteAllEntries());
+    model->AddEntry(test_source_url, "unread",
+                    reading_list::ADDED_VIA_CURRENT_APP);
+    abuse_detector_.policy = is_app_blocked ? ExternalAppLaunchPolicyBlock
+                                            : ExternalAppLaunchPolicyAllow;
+    ui::PageTransition transition_type =
+        is_link_transition
+            ? ui::PageTransition::PAGE_TRANSITION_LINK
+            : ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT;
+
+    NSURL* url = [NSURL
+        URLWithString:@"itms-apps://itunes.apple.com/us/app/appname/id123"];
+    web::WebStatePolicyDecider::RequestInfo request_info(
+        transition_type, test_source_url,
+        /*target_frame_is_main=*/true, /*has_user_gesture=*/true);
+    EXPECT_FALSE(tab_helper_->ShouldAllowRequest(
+        [NSURLRequest requestWithURL:url], request_info));
+
+    const ReadingListEntry* entry = model->GetEntryByURL(test_source_url);
+    return entry->IsRead() == expected_read_status;
+  }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   web::TestWebState web_state_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_ = nil;
   FakeAppLauncherAbuseDetector* abuse_detector_ = nil;
   FakeAppLauncherTabHelperDelegate* delegate_ = nil;
+  bool is_reading_list_initialized_ = false;
   AppLauncherTabHelper* tab_helper_;
 };
 
@@ -201,7 +270,7 @@ TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithNonAppUrl) {
 
 // Tests that invalid Urls are completely blocked.
 TEST_F(AppLauncherTabHelperTest, InvalidUrls) {
-  EXPECT_FALSE(TestShouldAllowRequest(@"",
+  EXPECT_FALSE(TestShouldAllowRequest(/*url_string=*/@"",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
   EXPECT_FALSE(TestShouldAllowRequest(@"invalid",
@@ -240,7 +309,62 @@ TEST_F(AppLauncherTabHelperTest, ChromeBundleUrlScheme) {
   EXPECT_FALSE(TestShouldAllowRequest(url,
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-
   EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
 }
+
+// Tests that ShouldAllowRequest updates the reading list correctly, when there
+// is a valid app URL to be launches successfully.
+// TODO(crbug.com/850760): Remove this test, once the new AppLauncherRefresh
+// logic is always enabled.
+TEST_F(AppLauncherTabHelperTest, UpdatingTheReadingList) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kAppLauncherRefresh);
+  // Reading list isn't expected to be updated if there was no app launch.
+  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/true,
+                                    /*is_link_transition*/ false,
+                                    /*expected_read_status*/ false));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+
+  // Reading list to be updated when app launch is successful.
+  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/false,
+                                    /*is_link_transition*/ false,
+                                    /*expected_read_status*/ true));
+  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+
+  // Transition type doesn't affect the reading list status
+  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/false,
+                                    /*is_link_transition*/ true,
+                                    /*expected_read_status*/ true));
+  EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
+}
+
+// Tests that ShouldAllowRequest updates the reading list correctly for non-link
+// transitions regardless of the app launching success when AppLauncherRefresh
+// flag is enabled.
+TEST_F(AppLauncherTabHelperTest, UpdatingTheReadingListWithAppLauncherRefresh) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kAppLauncherRefresh);
+  // Update reading list if the transition is not a link transition.
+  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/true,
+                                    /*is_link_transition*/ false,
+                                    /*expected_read_status*/ true));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+
+  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/false,
+                                    /*is_link_transition*/ false,
+                                    /*expected_read_status*/ true));
+  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+
+  // Don't update reading list if the transition is a link transition.
+  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/true,
+                                    /*is_link_transition*/ true,
+                                    /*expected_read_status*/ false));
+  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+
+  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/false,
+                                    /*is_link_transition*/ true,
+                                    /*expected_read_status*/ false));
+  EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
+}
+
 }  // namespace

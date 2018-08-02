@@ -11,6 +11,7 @@
 #import "base/strings/sys_string_conversions.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
+#include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -189,7 +190,7 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
 
   Tab* tab = LegacyTabHelper::GetTabForWebState(web_state_);
 
-  // If this is a Universal 2nd Factory (U2F) call, the origin needs to be
+  // If this is a Universal 2nd Factor (U2F) call, the origin needs to be
   // checked to make sure it's secure and then update the |request_url| with
   // the generated x-callback GURL based on x-callback-url specs.
   if (request_url.SchemeIs("u2f")) {
@@ -203,6 +204,23 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
   const GURL& source_url = request_info.source_url;
   bool is_link_transition = ui::PageTransitionTypeIncludingQualifiersIs(
       request_info.transition_type, ui::PAGE_TRANSITION_LINK);
+
+  if (base::FeatureList::IsEnabled(kAppLauncherRefresh)) {
+    if (!is_link_transition && source_url.is_valid()) {
+      // At this stage the navigation will be canceled in all cases. If this
+      // was a redirection, the |source_url| may not have been reported to
+      // ReadingListWebStateObserver. Report it to mark as read if needed.
+      ReadingListModel* model =
+          ReadingListModelFactory::GetForBrowserState(tab.browserState);
+      if (model && model->loaded())
+        model->SetReadStatus(source_url, true);
+    }
+    if (IsValidAppUrl(request_url)) {
+      RequestToLaunchApp(request_url, source_url, is_link_transition);
+    }
+    return false;
+  }
+
   if (IsValidAppUrl(request_url) &&
       RequestToLaunchApp(request_url, source_url, is_link_transition)) {
     // Clears pending navigation history after successfully launching the

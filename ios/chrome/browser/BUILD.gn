@@ -116,6 +116,7 @@ source_set("browser") {
     "//components/webdata_services",
     "//google_apis",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/app_launcher:feature_flags",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data:feature_flags",
     "//ios/chrome/browser/download",

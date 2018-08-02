@@ -20,6 +20,7 @@ source_set("app_launcher") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/app_launcher",
+    "//ios/chrome/browser/app_launcher:feature_flags",
     "//ios/chrome/browser/mailto:feature_flags",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/web",
@@ -43,7 +44,9 @@ source_set("unit_tests") {
   deps = [
     ":app_launcher",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/app_launcher:feature_flags",
     "//ios/chrome/browser/ui/collection_view:test_support",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/web",

@@ -16,6 +16,7 @@ source_set("app_launcher") {
     "app_launching_state.mm",
   ]
   deps = [
+    ":feature_flags",
     "//base",
     "//components/reading_list/core:core",
     "//ios/chrome/browser",
@@ -23,6 +24,17 @@ source_set("app_launcher") {
     "//ios/chrome/browser/tabs",
     "//ios/web/public",
     "//url",
+  ]
+}
+
+source_set("feature_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "app_launcher_flags.h",
+    "app_launcher_flags.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -36,9 +48,15 @@ source_set("unit_tests") {
   ]
   deps = [
     ":app_launcher",
+    ":feature_flags",
     "//base",
     "//base/test:test_support",
+    "//components/reading_list/core:core",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/chrome/browser/web:web_internal",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
