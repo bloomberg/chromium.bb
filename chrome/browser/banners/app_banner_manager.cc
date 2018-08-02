@@ -472,6 +472,7 @@ void AppBannerManager::SendBannerPromptRequest() {
   blink::mojom::AppBannerController* controller_ptr = controller.get();
   controller_ptr->BannerPromptRequest(
       std::move(banner_proxy), mojo::MakeRequest(&event_), {GetBannerType()},
+      IsExperimentalAppBannersEnabled(),
       base::BindOnce(&AppBannerManager::OnBannerPromptReply, GetWeakPtr(),
                      std::move(controller)));
 }
@@ -717,12 +718,7 @@ void AppBannerManager::ShowBanner() {
   UpdateState(State::COMPLETE);
 }
 
-void AppBannerManager::DisplayAppBanner(bool user_gesture) {
-  if (IsExperimentalAppBannersEnabled() && !user_gesture) {
-    Stop(NO_GESTURE);
-    return;
-  }
-
+void AppBannerManager::DisplayAppBanner() {
   if (state_ == State::PENDING_PROMPT) {
     ShowBanner();
   } else if (state_ == State::SENDING_EVENT) {

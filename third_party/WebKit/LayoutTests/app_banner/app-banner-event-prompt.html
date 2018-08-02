@@ -3,6 +3,23 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
 
+// Copied from resources/bluetooth/bluetooth-helpers.js.
+function callWithKeyDown(functionCalledOnKeyPress) {
+  return new Promise((resolve, reject) => {
+    function onKeyPress() {
+      document.removeEventListener('keypress', onKeyPress, false);
+      try {
+        resolve(functionCalledOnKeyPress());
+      } catch (e) {
+        reject(e);
+      }
+    }
+    document.addEventListener('keypress', onKeyPress, false);
+
+    eventSender.keyDown(' ', []);
+  });
+}
+
 var prompt_test_cases = [
     {
         name: 'prompt-accept-access-userchoice-first',
@@ -92,7 +109,8 @@ var prompt_test_cases = [
 ];
 
 function verify_prompt_resolve(e, t) {
-    e.prompt().then(function() { }, t.unreached_func("prompt() promise should resolve."));
+    callWithKeyDown(() => e.prompt().then(
+        function() { }, t.unreached_func("prompt() promise should resolve.")));
 }
 
 function verify_prompt_reject(e, t) {
@@ -104,7 +122,7 @@ function verify_prompt_reject(e, t) {
             );
             assert_equals(
                 error.message,
-                "The prompt() method may only be called once.",
+                "The prompt() method must be called with a user gesture",
                 "Rejected promise does not provide expected message."
             );
         })
@@ -115,8 +133,6 @@ function verify_userChoice(e, t, test_case, index) {
     e.userChoice.then(t.step_func(function(result) {
         assert_equals(result.platform, test_case.platform, 'Resolved platform');
         assert_equals(result.outcome, test_case.outcome, 'Outcome');
-    })).then(t.step_func(function() {
-        verify_prompt_reject(e, t);
     })).then(t.step_func(function() {
         prompt_test(index + 1);
         t.done();
@@ -160,6 +176,9 @@ function prompt_test(index) {
                 }, 0);
                 return;
             }
+
+            // Ensure prompt rejects without a user gesture.
+            verify_prompt_reject(e, t);
 
             // Call prompt() to restart the pipeline.
             verify_prompt_resolve(e, t);

@@ -34,6 +34,7 @@ void AppBannerController::BannerPromptRequest(
     mojom::blink::AppBannerServicePtr service_ptr,
     mojom::blink::AppBannerEventRequest event_request,
     const Vector<String>& platforms,
+    bool require_gesture,
     BannerPromptRequestCallback callback) {
   if (!frame_ || !frame_->GetDocument()) {
     std::move(callback).Run(mojom::blink::AppBannerPromptReply::NONE, "");
@@ -43,7 +44,7 @@ void AppBannerController::BannerPromptRequest(
   mojom::AppBannerPromptReply reply =
       frame_->DomWindow()->DispatchEvent(BeforeInstallPromptEvent::Create(
           EventTypeNames::beforeinstallprompt, *frame_, std::move(service_ptr),
-          std::move(event_request), platforms)) ==
+          std::move(event_request), platforms, require_gesture)) ==
               DispatchEventResult::kNotCanceled
           ? mojom::AppBannerPromptReply::NONE
           : mojom::AppBannerPromptReply::CANCEL;

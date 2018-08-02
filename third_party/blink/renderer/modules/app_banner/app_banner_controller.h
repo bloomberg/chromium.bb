@@ -26,6 +26,7 @@ class MODULES_EXPORT AppBannerController final
   void BannerPromptRequest(mojom::blink::AppBannerServicePtr,
                            mojom::blink::AppBannerEventRequest,
                            const Vector<String>& platforms,
+                           bool require_gesture,
                            BannerPromptRequestCallback) override;
 
  private:
