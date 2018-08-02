@@ -18,10 +18,12 @@ namespace base {
 struct PendingTask;
 }  // namespace base
 
+namespace content {
 namespace responsiveness {
 
 class Calculator;
 class MessageLoopObserver;
+class NativeEventObserver;
 
 // This class watches events and tasks processed on the UI and IO threads of the
 // browser process. It forwards stats on execution latency to Calculator, which
@@ -50,7 +52,8 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
 
  protected:
   // Exposed for tests.
-  virtual std::unique_ptr<Calculator> MakeCalculator();
+  virtual std::unique_ptr<Calculator> CreateCalculator();
+  virtual std::unique_ptr<NativeEventObserver> CreateNativeEventObserver();
   virtual ~Watcher();
   virtual void RegisterMessageLoopObserverUI();
   virtual void RegisterMessageLoopObserverIO();
@@ -105,17 +108,29 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
                   int* mismatched_task_identifiers,
                   TaskOrEventFinishedCallback callback);
 
+  // These methods are called by the NativeEventObserver of the UI thread to
+  // allow Watcher to collect metadata about the events being run.
+  void WillRunEventOnUIThread(const void* opaque_identifier);
+  void DidRunEventOnUIThread(const void* opaque_identifier,
+                             base::TimeTicks creation_time);
+
   // The following members are all affine to the UI thread.
   std::unique_ptr<Calculator> calculator_;
   std::unique_ptr<MessageLoopObserver> message_loop_observer_ui_;
+  std::unique_ptr<NativeEventObserver> native_event_observer_ui_;
 
   // Metadata for currently running tasks and events on the UI thread.
   std::stack<Metadata> currently_running_metadata_ui_;
 
-  // Task identifiers should only be mismatched once, since the Watcher
-  // registers itself during a Task execution, and thus doesn't capture the
+  // Task identifiers should only be mismatched once, since the Watcher may
+  // register itself during a Task execution, and thus doesn't capture the
   // initial WillRunTask() callback.
   int mismatched_task_identifiers_ui_ = 0;
+
+  // Event identifiers should be mismatched at most once, since the Watcher may
+  // register itself during an event execution, and thus doesn't capture the
+  // initial WillRunEventOnUIThread callback.
+  int mismatched_event_identifiers_ui_ = 0;
 
   // The following members are all affine to the IO thread.
   std::stack<Metadata> currently_running_metadata_io_;
@@ -136,5 +151,6 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
 };
 
 }  // namespace responsiveness
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SCHEDULER_RESPONSIVENESS_WATCHER_H_

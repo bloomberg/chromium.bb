@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 
+namespace content {
 namespace responsiveness {
 
 // This class receives execution latency on events and tasks, and uses that to
@@ -26,6 +27,10 @@ class CONTENT_EXPORT Calculator {
 
   // Must be called from the UI thread.
   // virtual for testing.
+  // The implementation will gracefully handle calls where finish_time <
+  // schedule_time.
+  // The implementation will gracefully handle successive calls with
+  // |schedule_times| that are out of order.
   virtual void TaskOrEventFinishedOnUIThread(base::TimeTicks schedule_time,
                                              base::TimeTicks finish_time);
 
@@ -84,8 +89,9 @@ class CONTENT_EXPORT Calculator {
   // already been taken. May be called from any thread.
   JankList& GetJanksOnIOThread();
 
-  // |janks| must be sorted by Jank.end_time. This method modifies |janks| to
-  // remove all janks older than |end_time|, and returns those.
+  // This method:
+  //   1) Removes all Janks with Jank.end_time < |end_time| from |janks|.
+  //   2) Returns all Janks with Jank.start_time < |end_time|.
   JankList TakeJanksOlderThanTime(JankList* janks, base::TimeTicks end_time);
 
   // This should only be accessed via the accessor, which checks that the caller
@@ -119,5 +125,6 @@ class CONTENT_EXPORT Calculator {
 };
 
 }  // namespace responsiveness
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SCHEDULER_RESPONSIVENESS_CALCULATOR_H_

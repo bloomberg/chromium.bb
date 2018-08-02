@@ -4,6 +4,7 @@
 
 #include "content/browser/scheduler/responsiveness/message_loop_observer.h"
 
+namespace content {
 namespace responsiveness {
 
 MessageLoopObserver::MessageLoopObserver(TaskCallback will_run_task_callback,
@@ -30,3 +31,4 @@ void MessageLoopObserver::DidProcessTask(
 }
 
 }  // namespace responsiveness
+}  // namespace content

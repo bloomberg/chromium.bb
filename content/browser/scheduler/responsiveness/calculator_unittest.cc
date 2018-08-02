@@ -7,6 +7,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
 namespace responsiveness {
 
 namespace {
@@ -211,4 +212,24 @@ TEST_F(ResponsivenessCalculatorTest, EventCrossesBoundary) {
   EXPECT_EQ(2, calculator_->Emissions()[1]);
 }
 
+// Events may not be ordered by start or end time.
+TEST_F(ResponsivenessCalculatorTest, UnorderedEvents) {
+  // We add the following events:
+  //   [100, 250]
+  //   [150, 300]
+  //   [50, 200]
+  //   [50, 390]
+  // The event [50, 400] subsumes all previous events.
+  AddEventUI(kJankThresholdInMs, 2.5 * kJankThresholdInMs);
+  AddEventUI(1.5 * kJankThresholdInMs, 3 * kJankThresholdInMs);
+  AddEventUI(0.5 * kJankThresholdInMs, 2 * kJankThresholdInMs);
+  AddEventUI(0.5 * kJankThresholdInMs, 3.9 * kJankThresholdInMs);
+
+  TriggerCalculation();
+
+  ASSERT_EQ(1u, calculator_->Emissions().size());
+  EXPECT_EQ(3, calculator_->Emissions()[0]);
+}
+
 }  // namespace responsiveness
+}  // namespace content
