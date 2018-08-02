@@ -63,6 +63,13 @@ class TestAnimationTarget : public cc::AnimationTarget {
                                  cc::KeyframeModel* keyframe_model) override {
     background_color_ = color;
   }
+  void NotifyClientFilterAnimated(const cc::FilterOperations& filter,
+                                  int target_property_id,
+                                  cc::KeyframeModel* keyframe_model) override {}
+  void NotifyClientScrollOffsetAnimated(
+      const gfx::ScrollOffset& scroll_offset,
+      int target_property_id,
+      cc::KeyframeModel* keyframe_model) override {}
 
  private:
   cc::TransformOperations layout_offset_;

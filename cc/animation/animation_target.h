@@ -27,24 +27,24 @@ class CC_ANIMATION_EXPORT AnimationTarget {
   virtual ~AnimationTarget() {}
   virtual void NotifyClientFloatAnimated(float opacity,
                                          int target_property_id,
-                                         KeyframeModel* keyframe_model) {}
+                                         KeyframeModel* keyframe_model) = 0;
   virtual void NotifyClientFilterAnimated(const FilterOperations& filter,
                                           int target_property_id,
-                                          KeyframeModel* keyframe_model) {}
+                                          KeyframeModel* keyframe_model) = 0;
   virtual void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                         int target_property_id,
-                                        KeyframeModel* keyframe_model) {}
+                                        KeyframeModel* keyframe_model) = 0;
   virtual void NotifyClientColorAnimated(SkColor color,
                                          int target_property_id,
-                                         KeyframeModel* keyframe_model) {}
+                                         KeyframeModel* keyframe_model) = 0;
   virtual void NotifyClientTransformOperationsAnimated(
       const TransformOperations& operations,
       int target_property_id,
-      KeyframeModel* keyframe_model) {}
+      KeyframeModel* keyframe_model) = 0;
   virtual void NotifyClientScrollOffsetAnimated(
       const gfx::ScrollOffset& scroll_offset,
       int target_property_id,
-      KeyframeModel* keyframe_model) {}
+      KeyframeModel* keyframe_model) = 0;
 };
 
 }  // namespace cc

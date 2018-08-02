@@ -148,6 +148,12 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void NotifyClientFilterAnimated(const FilterOperations& filter,
                                   int target_property_id,
                                   KeyframeModel* keyframe_model) override;
+  void NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                int target_property_id,
+                                KeyframeModel* keyframe_model) override{};
+  void NotifyClientColorAnimated(SkColor color,
+                                 int target_property_id,
+                                 KeyframeModel* keyframe_model) override{};
   void NotifyClientTransformOperationsAnimated(
       const TransformOperations& operations,
       int target_property_id,
