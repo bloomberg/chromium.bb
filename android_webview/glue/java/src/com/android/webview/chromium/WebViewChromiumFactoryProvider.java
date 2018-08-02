@@ -545,8 +545,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             // waiting for startup. Hence check the mTracingControler here to ensure
             // the singleton property.
             if (mTracingController == null) {
-                mTracingController =
-                        new TracingControllerAdapter(this, mAwInit.getAwTracingController());
+                mTracingController = ApiHelperForP.createTracingControllerAdapter(this, mAwInit);
             }
         }
         return mTracingController;
