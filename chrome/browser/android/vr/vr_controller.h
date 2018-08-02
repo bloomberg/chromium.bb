@@ -14,7 +14,6 @@
 #include "chrome/browser/vr/gesture_detector.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -48,7 +47,6 @@ class VrController : public PlatformController {
   void OnPause();
 
   device::GvrGamepadData GetGamepadData();
-  device::mojom::XRInputSourceStatePtr GetInputSourceState();
 
   // Called once per frame to update controller state.
   void UpdateState(const gfx::Transform& head_pose);
@@ -86,7 +84,6 @@ class VrController : public PlatformController {
   int GetBatteryLevel() const override;
 
  private:
-
   bool GetButtonLongPressFromButtonInfo();
 
   void UpdateTimestamps();
@@ -124,8 +121,6 @@ class VrController : public PlatformController {
   int64_t last_timestamp_nanos_ = 0;
 
   float alpha_value_ = 1.0f;
-
-  bool enable_deadzone_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VrController);
 };

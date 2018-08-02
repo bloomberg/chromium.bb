@@ -36,7 +36,6 @@ struct VR_BASE_EXPORT ControllerModel {
   bool recentered = false;
   PlatformController::Handedness handedness = PlatformController::kRightHanded;
   base::TimeTicks last_orientation_timestamp;
-  base::TimeTicks last_touch_timestamp;
   base::TimeTicks last_button_timestamp;
   int battery_level = 0;
 };

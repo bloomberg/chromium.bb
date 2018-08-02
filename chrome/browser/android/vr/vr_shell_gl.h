@@ -22,6 +22,7 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/controller_model.h"
+#include "chrome/browser/vr/render_loop.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
@@ -67,7 +68,6 @@ class MailboxToSurfaceBridge;
 class ScopedGpuTrace;
 class SlidingTimeDeltaAverage;
 class UiInterface;
-class VrController;
 class VrShell;
 
 struct WebVrBounds {
@@ -97,7 +97,8 @@ struct Viewport {
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VrShellGl : public device::mojom::XRPresentationProvider,
+class VrShellGl : public RenderLoop,
+                  public device::mojom::XRPresentationProvider,
                   public device::mojom::XRFrameDataProvider {
  public:
   VrShellGl(GlBrowserInterface* browser_interface,
@@ -176,7 +177,7 @@ class VrShellGl : public device::mojom::XRPresentationProvider,
   bool ResizeForWebVR(int16_t frame_index);
   void UpdateSamples();
   void UpdateEyeInfos(const gfx::Transform& head_pose,
-                      Viewport& viewport,
+                      const Viewport& viewport,
                       const gfx::Size& render_size,
                       RenderInfo* out_render_info);
   void UpdateContentViewportTransforms(const gfx::Transform& head_pose);
@@ -288,6 +289,8 @@ class VrShellGl : public device::mojom::XRPresentationProvider,
                                 bool ui_updated);
   void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
 
+  std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
+
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
   int content_texture_id_ = 0;
@@ -349,14 +352,11 @@ class VrShellGl : public device::mojom::XRPresentationProvider,
   int webvr_unstuff_ratelimit_frames_ = 0;
 
   bool cardboard_ = false;
-  gfx::Quaternion controller_quat_;
 
   gfx::Size content_tex_buffer_size_ = {0, 0};
   gfx::Size webvr_surface_size_ = {0, 0};
 
   std::unique_ptr<WebXrPresentationState> webxr_ = nullptr;
-
-  std::unique_ptr<UiInterface> ui_;
 
   bool web_vr_mode_ = false;
   bool ready_to_draw_ = false;
@@ -367,7 +367,6 @@ class VrShellGl : public device::mojom::XRPresentationProvider,
   bool cardboard_trigger_pressed_ = false;
   bool cardboard_trigger_clicked_ = false;
 
-  std::unique_ptr<VrController> controller_;
   std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -442,9 +441,7 @@ class VrShellGl : public device::mojom::XRPresentationProvider,
   std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
   bool showing_vr_dialog_ = false;
   std::unique_ptr<UiTestState> ui_test_state_;
-  std::queue<ControllerModel> test_controller_model_queue_;
-  ControllerModel cached_test_controller_model_;
-  bool using_test_controller_model_ = false;
+  bool using_controller_delegate_for_testing_ = false;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

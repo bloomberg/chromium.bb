@@ -21,7 +21,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "chrome/browser/android/vr/controller_delegate_for_testing.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
+#include "chrome/browser/android/vr/gvr_controller_delegate.h"
 #include "chrome/browser/android/vr/gvr_util.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "chrome/browser/android/vr/metrics_util_android.h"
@@ -201,8 +203,8 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
                      bool start_in_web_vr_mode,
                      bool pause_content,
                      bool low_density)
-    : low_density_(low_density),
-      ui_(std::move(ui)),
+    : RenderLoop(std::move(ui)),
+      low_density_(low_density),
       web_vr_mode_(start_in_web_vr_mode),
       surfaceless_rendering_(reprojected_rendering),
       daydream_support_(daydream_support),
@@ -222,6 +224,8 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       ui_controller_update_time_(kWebVRSlidingAverageSize),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
+  controller_delegate_ = std::make_unique<GvrControllerDelegate>(
+      std::make_unique<VrController>(gvr_api), browser_);
 }
 
 VrShellGl::~VrShellGl() {
@@ -947,7 +951,6 @@ void VrShellGl::OnWebVrTimeoutImminent() {
 
 void VrShellGl::GvrInit(gvr_context* gvr_api) {
   gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_api);
-  controller_.reset(new VrController(gvr_api));
 
   MetricsUtilAndroid::LogVrViewerType(gvr_api_->GetViewerType());
 
@@ -1102,101 +1105,6 @@ void VrShellGl::UpdateViewports() {
   content_underlay_viewport_.SetSourceUv(kContentUv);
 }
 
-void VrShellGl::UpdateController(const RenderInfo& render_info,
-                                 base::TimeTicks current_time) {
-  TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
-  controller_->UpdateState(render_info.head_pose);
-  gfx::Point3F laser_origin = controller_->GetPointerStart();
-
-  device::GvrGamepadData controller_data = controller_->GetGamepadData();
-  if (!ShouldDrawWebVr())
-    controller_data.connected = false;
-  browser_->UpdateGamepadData(controller_data);
-
-  if (ShouldDrawWebVr()) {
-    auto gestures = controller_->DetectGestures();
-    ui_->HandleMenuButtonEvents(&gestures);
-  } else {
-    HandleControllerInput(laser_origin, render_info, current_time);
-  }
-}
-
-void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
-                                      const RenderInfo& render_info,
-                                      base::TimeTicks current_time) {
-  gfx::Vector3dF head_direction = GetForwardVector(render_info.head_pose);
-  gfx::Vector3dF ergo_neutral_pose;
-  if (!controller_->IsConnected()) {
-    // No controller detected, set up a gaze cursor that tracks the
-    // forward direction.
-    ergo_neutral_pose = {0.0f, 0.0f, -1.0f};
-    controller_quat_ =
-        gfx::Quaternion(gfx::Vector3dF(0.0f, 0.0f, -1.0f), head_direction);
-  } else {
-    ergo_neutral_pose = {0.0f, -sin(kErgoAngleOffset), -cos(kErgoAngleOffset)};
-    controller_quat_ = controller_->Orientation();
-  }
-
-  gfx::Transform mat(controller_quat_);
-  gfx::Vector3dF controller_direction = ergo_neutral_pose;
-  mat.TransformVector(&controller_direction);
-
-  ControllerModel controller_model;
-  controller_->GetTransform(&controller_model.transform);
-  auto input_event_list = controller_->DetectGestures();
-  controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
-  DCHECK(!(controller_->ButtonUpHappened(PlatformController::kButtonSelect) &&
-           controller_->ButtonDownHappened(PlatformController::kButtonSelect)))
-      << "Cannot handle a button down and up event within one frame.";
-  if (controller_->ButtonState(gvr::kControllerButtonClick)) {
-    controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
-  }
-  controller_model.app_button_state =
-      controller_->ButtonState(gvr::kControllerButtonApp)
-          ? UiInputManager::ButtonState::DOWN
-          : UiInputManager::ButtonState::UP;
-  controller_model.home_button_state =
-      controller_->ButtonState(gvr::kControllerButtonHome)
-          ? UiInputManager::ButtonState::DOWN
-          : UiInputManager::ButtonState::UP;
-  controller_model.opacity = controller_->GetOpacity();
-  controller_model.laser_direction = controller_direction;
-  controller_model.laser_origin = laser_origin;
-  controller_model.handedness = controller_->GetHandedness();
-  controller_model.recentered = controller_->GetRecentered();
-  controller_model.touching_touchpad = controller_->IsTouchingTrackpad();
-  controller_model.touchpad_touch_position =
-      controller_->GetPositionInTrackpad();
-  controller_model.last_orientation_timestamp =
-      controller_->GetLastOrientationTimestamp();
-  controller_model.last_touch_timestamp = controller_->GetLastTouchTimestamp();
-  controller_model.last_button_timestamp =
-      controller_->GetLastButtonTimestamp();
-  controller_model.battery_level = controller_->GetBatteryLevel();
-
-  if (!test_controller_model_queue_.empty()) {
-    cached_test_controller_model_ = test_controller_model_queue_.front();
-    test_controller_model_queue_.pop();
-  }
-  if (using_test_controller_model_) {
-    // We need to copy the timestamps, otherwise we hit a DCHECK when submitting
-    // motion events due to invalid timestamps.
-    cached_test_controller_model_.last_orientation_timestamp =
-        controller_model.last_orientation_timestamp;
-    cached_test_controller_model_.last_touch_timestamp =
-        controller_model.last_touch_timestamp;
-    cached_test_controller_model_.last_button_timestamp =
-        controller_model.last_button_timestamp;
-    controller_model = cached_test_controller_model_;
-  }
-  controller_model_ = controller_model;
-
-  ReticleModel reticle_model;
-  ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
-                   &input_event_list);
-  ui_->OnControllerUpdated(controller_model, reticle_model);
-}
-
 bool VrShellGl::ResizeForWebVR(int16_t frame_index) {
   // Process all pending_bounds_ changes targeted for before this frame, being
   // careful of wrapping frame indices.
@@ -1257,7 +1165,7 @@ bool VrShellGl::ResizeForWebVR(int16_t frame_index) {
 }
 
 void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
-                               Viewport& viewport,
+                               const Viewport& viewport,
                                const gfx::Size& render_size,
                                RenderInfo* out_render_info) {
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
@@ -1373,7 +1281,8 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   if (!is_webvr_frame) {
     TRACE_EVENT0("gpu", "Controller");
     base::TimeTicks controller_start = base::TimeTicks::Now();
-    UpdateController(render_info_, current_time);
+    ProcessControllerInput(render_info_, current_time,
+                           false /* is_web_xr_frame */);
     controller_time = base::TimeTicks::Now() - controller_start;
     ui_controller_update_time_.AddSample(controller_time);
   }
@@ -1872,7 +1781,7 @@ void VrShellGl::DrawContentQuad(bool draw_overlay_texture) {
 void VrShellGl::OnPause() {
   paused_ = true;
   vsync_helper_.CancelVSyncRequest();
-  controller_->OnPause();
+  controller_delegate_->OnPause();
   ui_->OnPause();
   gvr_api_->PauseTracking();
   webvr_frame_timeout_.Cancel();
@@ -1884,7 +1793,7 @@ void VrShellGl::OnResume() {
   gvr_api_->RefreshViewerProfile();
   viewports_need_updating_ = true;
   gvr_api_->ResumeTracking();
-  controller_->OnResume();
+  controller_delegate_->OnResume();
   if (!ready_to_draw_)
     return;
   vsync_helper_.CancelVSyncRequest();
@@ -2102,9 +2011,9 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     base::TimeTicks controller_start = base::TimeTicks::Now();
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(),
                                                  &render_info_.head_pose);
-    UpdateController(render_info_, frame_time);
+    ProcessControllerInput(render_info_, frame_time, true /* is_webxr_frame */);
 
-    input_states_.push_back(controller_->GetInputSourceState());
+    input_states_.push_back(controller_delegate_->GetInputSourceState());
 
     ui_controller_update_time_.AddSample(base::TimeTicks::Now() -
                                          controller_start);
@@ -2382,27 +2291,32 @@ void VrShellGl::SetUiExpectingActivityForTesting(
   ui_test_state_ = std::make_unique<UiTestState>();
   ui_test_state_->quiescence_timeout_ms =
       base::TimeDelta::FromMilliseconds(ui_expectation.quiescence_timeout_ms);
-  // The controller is pretty much perpetually dirty due to noise, even during
-  // tests, so we need to apply a deadzone to it. We can't apply this deadzone
-  // all the time since it results in grid-like pointer movement.
-  // TODO(https://crbug.com/861807): Remove this workaround once the controller
-  // can be dirty with affecting quiescence.
-  controller_->EnableDeadzoneForTesting();
 }
 
 void VrShellGl::PerformControllerActionForTesting(
     ControllerTestInput controller_input) {
   if (controller_input.action ==
       VrControllerTestAction::kRevertToRealController) {
-    DCHECK(test_controller_model_queue_.empty()) << "Attempted to revert to "
-                                                    "using real controller "
-                                                    "with actions still queued";
-    using_test_controller_model_ = false;
+    if (using_controller_delegate_for_testing_) {
+      DCHECK(
+          static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
+              ->IsQueueEmpty())
+          << "Attempted to revert to using real controller with actions still "
+             "queued";
+      using_controller_delegate_for_testing_ = false;
+      controller_delegate_for_testing_.swap(controller_delegate_);
+    }
     return;
   }
-  ui_->PerformControllerActionForTesting(controller_input,
-                                         test_controller_model_queue_);
-  using_test_controller_model_ = true;
+  if (!using_controller_delegate_for_testing_) {
+    using_controller_delegate_for_testing_ = true;
+    if (!controller_delegate_for_testing_)
+      controller_delegate_for_testing_ =
+          std::make_unique<ControllerDelegateForTesting>(ui_.get());
+    controller_delegate_for_testing_.swap(controller_delegate_);
+  }
+  static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
+      ->QueueControllerActionForTesting(controller_input);
 }
 
 void VrShellGl::ReportUiStatusForTesting(const base::TimeTicks& current_time,

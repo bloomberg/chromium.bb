@@ -2425,6 +2425,10 @@ if (enable_java_templates) {
                 rebase_path(invoker.proguard_config_exclusions, root_build_dir)
             args += [ "--proguard-config-exclusions=$_rebased_proguard_config_exclusions" ]
           }
+          if (defined(invoker.apk_under_test)) {
+            args += [ "--mapping=@FileArg($_rebased_build_config:deps_info:proguard_under_test_mapping)" ]
+            deps += [ "${invoker.apk_under_test}__proguard" ]
+          }
         }
         _dex_sources = [ _proguard_output_jar_path ]
         _dex_deps = [ ":$_proguard_target" ]

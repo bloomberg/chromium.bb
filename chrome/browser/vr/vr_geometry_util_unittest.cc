@@ -15,7 +15,7 @@ TEST(VrGeometryUtilTest, CalculateScreenSize) {
   gfx::SizeF size(2.4f, 1.6f);
 
   gfx::SizeF screen_size =
-      CalculateScreenSize(kPixelDaydreamProjMatrix, 2.5f, size);
+      CalculateScreenSize(GetPixelDaydreamProjMatrix(), 2.5f, size);
 
   EXPECT_FLOAT_EQ(screen_size.width(), 0.49592164f);
   EXPECT_FLOAT_EQ(screen_size.height(), 0.27598655f);

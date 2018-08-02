@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/ui_test_input.h"
-#include "chrome/browser/vr/elements/ui_element_name.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/browser/vr/elements/ui_element_name.h"
 
 namespace vr {
 

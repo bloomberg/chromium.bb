@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <queue>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -156,10 +157,8 @@ class VR_EXPORT Ui : public UiInterface {
   void OnContentBoundsChanged(int width, int height) override;
 
   void AcceptDoffPromptForTesting() override;
-  void PerformControllerActionForTesting(
-      ControllerTestInput controller_input,
-      std::queue<ControllerModel>& controller_model_queue) override;
-
+  gfx::Point3F GetTargetPointForTesting(UserFriendlyElementName element_name,
+                                        const gfx::PointF& position) override;
   bool IsContentVisibleAndOpaque() override;
   bool IsContentOverlayTextureEmpty() override;
   void SetContentUsesQuadLayer(bool uses_quad_buffers) override;

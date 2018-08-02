@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <queue>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
@@ -15,7 +16,10 @@
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_scene.h"
-#include "chrome/browser/vr/ui_test_input.h"
+
+namespace gfx {
+class Point3F;
+}
 
 namespace vr {
 
@@ -24,6 +28,7 @@ class PlatformUiInputDelegate;
 struct ControllerModel;
 struct RenderInfo;
 struct ReticleModel;
+enum class UserFriendlyElementName;
 
 // This interface represents the methods that should be called by its owner, and
 // also serves to make all such methods virtual for the sake of separating a UI
@@ -75,9 +80,9 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
   virtual void OnSwapContents(int new_content_id) = 0;
   virtual void OnContentBoundsChanged(int width, int height) = 0;
   virtual void AcceptDoffPromptForTesting() = 0;
-  virtual void PerformControllerActionForTesting(
-      ControllerTestInput controller_input,
-      std::queue<ControllerModel>& controller_model_queue) = 0;
+  virtual gfx::Point3F GetTargetPointForTesting(
+      UserFriendlyElementName element_name,
+      const gfx::PointF& position) = 0;
   virtual bool IsContentVisibleAndOpaque() = 0;
   virtual bool IsContentOverlayTextureEmpty() = 0;
   virtual void SetContentUsesQuadLayer(bool uses_quad_buffers) = 0;

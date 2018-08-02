@@ -26,10 +26,6 @@ constexpr float kLaserStartDisplacement = 0.045;
 constexpr float kFadeDistanceFromFace = 0.34f;
 constexpr float kDeltaAlpha = 3.0f;
 
-// Small deadzone for testing that prevents the controller's head offset from
-// being updated every frame on 3DOF devices.
-constexpr float kHeadOffsetDeadzone = 0.0005f;
-
 void ClampTouchpadPosition(gfx::PointF* position) {
   position->set_x(base::ClampToRange(position->x(), 0.0f, 1.0f));
   position->set_y(base::ClampToRange(position->y(), 0.0f, 1.0f));
@@ -124,54 +120,6 @@ device::GvrGamepadData VrController::GetGamepadData() {
   }
 
   return pad;
-}
-
-device::mojom::XRInputSourceStatePtr VrController::GetInputSourceState() {
-  device::mojom::XRInputSourceStatePtr state =
-      device::mojom::XRInputSourceState::New();
-
-  // Only one controller is supported, so the source id can be static.
-  state->source_id = 1;
-
-  // Set the primary button state.
-  state->primary_input_pressed = ButtonState(GVR_CONTROLLER_BUTTON_CLICK);
-
-  if (ButtonUpHappened(PlatformController::kButtonSelect))
-    state->primary_input_clicked = true;
-
-  state->description = device::mojom::XRInputSourceDescription::New();
-
-  // It's a handheld pointing device.
-  state->description->target_ray_mode =
-      device::mojom::XRTargetRayMode::POINTING;
-
-  // Controller uses an arm model.
-  state->description->emulated_position = true;
-
-  // Set handedness.
-  switch (handedness_) {
-    case GVR_CONTROLLER_LEFT_HANDED:
-      state->description->handedness = device::mojom::XRHandedness::LEFT;
-      break;
-    case GVR_CONTROLLER_RIGHT_HANDED:
-      state->description->handedness = device::mojom::XRHandedness::RIGHT;
-      break;
-    default:
-      state->description->handedness = device::mojom::XRHandedness::NONE;
-      break;
-  }
-
-  // Get the grip transform
-  gfx::Transform grip;
-  GetTransform(&grip);
-  state->grip = grip;
-
-  // Set the pointer offset from the grip transform.
-  gfx::Transform pointer;
-  GetRelativePointerTransform(&pointer);
-  state->description->pointer_offset = pointer;
-
-  return state;
 }
 
 bool VrController::IsButtonDown(ButtonType type) const {
@@ -299,25 +247,12 @@ bool VrController::IsConnected() {
   return controller_state_->GetConnectionState() == gvr::kControllerConnected;
 }
 
-void VrController::EnableDeadzoneForTesting() {
-  enable_deadzone_ = true;
-}
-
 void VrController::UpdateState(const gfx::Transform& head_pose) {
   gfx::Transform inv_pose;
   if (head_pose.GetInverse(&inv_pose)) {
     auto current_head_offset = gfx::Point3F();
     inv_pose.TransformPoint(&current_head_offset);
-    // TODO(https://crbug.com/861807): Remove this once the controller can be
-    // dirty without necessarily affecting quiescence.
-    if (enable_deadzone_) {
-      if (head_offset_.SquaredDistanceTo(current_head_offset) >
-          kHeadOffsetDeadzone) {
-        head_offset_ = current_head_offset;
-      }
-    } else {
-      head_offset_ = current_head_offset;
-    }
+    head_offset_ = current_head_offset;
   }
 
   gvr::Mat4f gvr_head_pose;
