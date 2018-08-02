@@ -6,21 +6,14 @@
 #define DEVICE_BLUETOOTH_TEST_FAKE_GATT_DESCRIPTOR_WINRT_H_
 
 #include <windows.devices.bluetooth.genericattributeprofile.h>
-#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include <stdint.h>
 
-#include <vector>
-
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
 
 namespace device {
-
-class BluetoothTestWinrt;
 
 class FakeGattDescriptorWinrt
     : public Microsoft::WRL::RuntimeClass<
@@ -31,9 +24,7 @@ class FakeGattDescriptorWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattDescriptor2> {
  public:
-  FakeGattDescriptorWinrt(BluetoothTestWinrt* bluetooth_test_winrt,
-                          base::StringPiece uuid,
-                          uint16_t attribute_handle);
+  FakeGattDescriptorWinrt(base::StringPiece uuid, uint16_t attribute_handle);
   ~FakeGattDescriptorWinrt() override;
 
   // IGattDescriptor:
@@ -67,27 +58,9 @@ class FakeGattDescriptorWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               GattWriteResult*>** operation) override;
 
-  void SimulateGattDescriptorRead(const std::vector<uint8_t>& data);
-  void SimulateGattDescriptorReadError(
-      BluetoothGattService::GattErrorCode error_code);
-  void SimulateGattDescriptorWrite();
-  void SimulateGattDescriptorWriteError(
-      BluetoothGattService::GattErrorCode error_code);
-
  private:
-  BluetoothTestWinrt* bluetooth_test_winrt_;
   GUID uuid_;
   uint16_t attribute_handle_;
-
-  base::OnceCallback<void(
-      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
-                                 GenericAttributeProfile::IGattReadResult>)>
-      read_value_callback_;
-
-  base::OnceCallback<void(
-      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
-                                 GenericAttributeProfile::IGattWriteResult>)>
-      write_value_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGattDescriptorWinrt);
 };
