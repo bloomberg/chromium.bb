@@ -3,8 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This is a simple HTTP/FTP/TCP/UDP/BASIC_AUTH_PROXY/WEBSOCKET server used for
-testing Chrome.
+"""This is a simple HTTP/FTP/TCP/UDP/PROXY/BASIC_AUTH_PROXY/WEBSOCKET server
+used for testing Chrome.
 
 It supports several test URLs, as specified by the handlers in TestPageHandler.
 By default, it listens on an ephemeral port and sends the port number back to
@@ -64,6 +64,7 @@ SERVER_TCP_ECHO = 2
 SERVER_UDP_ECHO = 3
 SERVER_BASIC_AUTH_PROXY = 4
 SERVER_WEBSOCKET = 5
+SERVER_PROXY = 6
 
 # Default request queue size for WebSocketServer.
 _DEFAULT_REQUEST_QUEUE_SIZE = 128
@@ -1759,28 +1760,12 @@ class UDPEchoHandler(SocketServer.BaseRequestHandler):
     request_socket.sendto(return_data, self.client_address)
 
 
-class BasicAuthProxyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-  """A request handler that behaves as a proxy server which requires
-  basic authentication. Only CONNECT, GET and HEAD is supported for now.
+class ProxyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+  """A request handler that behaves as a proxy server. Only CONNECT, GET and
+  HEAD methods are supported.
   """
 
-  _AUTH_CREDENTIAL = 'Basic Zm9vOmJhcg==' # foo:bar
   redirect_connect_to_localhost = False;
-
-  def parse_request(self):
-    """Overrides parse_request to check credential."""
-
-    if not BaseHTTPServer.BaseHTTPRequestHandler.parse_request(self):
-      return False
-
-    auth = self.headers.getheader('Proxy-Authorization')
-    if auth != self._AUTH_CREDENTIAL:
-      self.send_response(407)
-      self.send_header('Proxy-Authenticate', 'Basic realm="MyRealm1"')
-      self.end_headers()
-      return False
-
-    return True
 
   def _start_read_write(self, sock):
     sock.setblocking(0)
@@ -1860,7 +1845,7 @@ class BasicAuthProxyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.send_response(400)
       self.end_headers()
 
-    if BasicAuthProxyRequestHandler.redirect_connect_to_localhost:
+    if ProxyRequestHandler.redirect_connect_to_localhost:
       host = "127.0.0.1"
 
     sock = None
@@ -1882,6 +1867,28 @@ class BasicAuthProxyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
   def do_HEAD(self):
     self._do_common_method()
+
+class BasicAuthProxyRequestHandler(ProxyRequestHandler):
+  """A request handler that behaves as a proxy server which requires
+  basic authentication.
+  """
+
+  _AUTH_CREDENTIAL = 'Basic Zm9vOmJhcg==' # foo:bar
+
+  def parse_request(self):
+    """Overrides parse_request to check credential."""
+
+    if not ProxyRequestHandler.parse_request(self):
+      return False
+
+    auth = self.headers.getheader('Proxy-Authorization')
+    if auth != self._AUTH_CREDENTIAL:
+      self.send_response(407)
+      self.send_header('Proxy-Authenticate', 'Basic realm="MyRealm1"')
+      self.end_headers()
+      return False
+
+    return True
 
 
 class ServerRunner(testserver_base.TestServerRunner):
@@ -2172,8 +2179,14 @@ class ServerRunner(testserver_base.TestServerRunner):
       server = UDPEchoServer((host, port), UDPEchoHandler)
       print 'Echo UDP server started on port %d...' % server.server_port
       server_data['port'] = server.server_port
+    elif self.options.server_type == SERVER_PROXY:
+      ProxyRequestHandler.redirect_connect_to_localhost = \
+          self.options.redirect_connect_to_localhost
+      server = ThreadingHTTPServer((host, port), ProxyRequestHandler)
+      print 'Proxy server started on port %d...' % server.server_port
+      server_data['port'] = server.server_port
     elif self.options.server_type == SERVER_BASIC_AUTH_PROXY:
-      BasicAuthProxyRequestHandler.redirect_connect_to_localhost = \
+      ProxyRequestHandler.redirect_connect_to_localhost = \
           self.options.redirect_connect_to_localhost
       server = ThreadingHTTPServer((host, port), BasicAuthProxyRequestHandler)
       print 'BasicAuthProxy server started on port %d...' % server.server_port
@@ -2232,6 +2245,10 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   const=SERVER_UDP_ECHO, default=SERVER_HTTP,
                                   dest='server_type',
                                   help='start up a udp echo server.')
+    self.option_parser.add_option('--proxy', action='store_const',
+                                  const=SERVER_PROXY,
+                                  default=SERVER_HTTP, dest='server_type',
+                                  help='start up a proxy server.')
     self.option_parser.add_option('--basic-auth-proxy', action='store_const',
                                   const=SERVER_BASIC_AUTH_PROXY,
                                   default=SERVER_HTTP, dest='server_type',
