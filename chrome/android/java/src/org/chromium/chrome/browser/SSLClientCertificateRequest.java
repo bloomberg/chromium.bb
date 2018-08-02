@@ -156,7 +156,8 @@ public class SSLClientCertificateRequest {
                     ThreadUtils.runOnUiThread(
                             () -> nativeOnSystemRequestCompletion(mNativePtr, null, null));
                 } else {
-                    new CertAsyncTaskKeyChain(mContext, mNativePtr, alias).execute();
+                    new CertAsyncTaskKeyChain(mContext, mNativePtr, alias)
+                            .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
         }
