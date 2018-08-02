@@ -160,7 +160,7 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
 void TabletModeWindowState::UpdateWindowPosition(
     wm::WindowState* window_state) {
   gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
-  if (bounds_in_parent == window_state->window()->bounds())
+  if (bounds_in_parent == window_state->window()->GetTargetBounds())
     return;
   window_state->SetBoundsDirect(bounds_in_parent);
 }
