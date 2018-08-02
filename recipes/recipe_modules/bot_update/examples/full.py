@@ -49,6 +49,7 @@ def RunSteps(api):
   gerrit_no_rebase_patch_ref = bool(
       api.properties.get('gerrit_no_rebase_patch_ref'))
   manifest_name = api.properties.get('manifest_name')
+  patch_refs = api.properties.get('patch_refs')
 
   if api.properties.get('test_apply_gerrit_ref'):
     prop2arg = {
@@ -78,7 +79,8 @@ def RunSteps(api):
         gerrit_no_reset=gerrit_no_reset,
         gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
         disable_syntax_validation=True,
-        manifest_name=manifest_name)
+        manifest_name=manifest_name,
+        patch_refs=patch_refs)
     if patch:
       api.bot_update.deapply_patch(bot_update_step)
 
@@ -230,4 +232,11 @@ def GenTests(api):
       git_url='https://webrtc.googlesource.com/src',
       patch_issue=338811,
       patch_set=3,
+  )
+  yield api.test('multiple_patch_refs') + api.properties(
+      patch=True,
+      patch_refs=[
+          'https://chromium.googlesource.com/chromium/src@refs/changes/12/34/5',
+          'https://chromium.googlesource.com/v8/v8@refs/changes/124/45/6',
+      ],
   )

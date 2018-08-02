@@ -81,6 +81,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patchset=None, gerrit_no_reset=False,
                       gerrit_no_rebase_patch_ref=False,
                       disable_syntax_validation=False, manifest_name=None,
+                      patch_refs=None,
                       **kwargs):
     """
     Args:
@@ -114,21 +115,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
       root = self.m.gclient.calculate_patch_root(
           self.m.properties.get('patch_project'), cfg, self._repository)
 
-    if patch:
-      patchset = patchset or self._patchset
-      gerrit_repo = self._repository
-      gerrit_ref = self._gerrit_ref
-    else:
-      # The trybot recipe sometimes wants to de-apply the patch. In which case
-      # we pretend the issue/patchset never existed.
-      gerrit_repo = gerrit_ref = None
-
-    # The gerrit_ref and gerrit_repo must be together or not at all.  If one is
-    # missing, clear both of them.
-    if not gerrit_ref or not gerrit_repo:
-      gerrit_repo = gerrit_ref = None
-    assert (gerrit_ref != None) == (gerrit_repo != None)
-
     # Allow patch_project's revision if necessary.
     # This is important for projects which are checked out as DEPS of the
     # gclient solution.
@@ -146,13 +132,21 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--git-cache-dir', cfg.cache_dir],
         ['--cleanup-dir', self.m.path['cleanup'].join('bot_update')],
 
-        # How to find the patch, if any
-        ['--gerrit_repo', gerrit_repo],
-        ['--gerrit_ref', gerrit_ref],
-
         # Hookups to JSON output back into recipes.
         ['--output_json', self.m.json.output()],
     ]
+
+    # How to find the patch, if any
+    if patch:
+      if patch_refs:
+        flags.extend(
+            ['--patch_ref', patch_ref]
+            for patch_ref in patch_refs)
+      elif self._repository and self._gerrit_ref:
+        flags.extend([
+            ['--gerrit_repo', self._repository],
+            ['--gerrit_ref', self._gerrit_ref],
+        ])
 
     # Compute requested revisions.
     revisions = {}
