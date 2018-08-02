@@ -40,6 +40,11 @@ template("optimize_webui") {
     foreach(_out, invoker.html_out_files) {
       outputs += [ "$target_gen_dir/$_out" ]
     }
+    if (defined(invoker.html_out_files_polymer2)) {
+      foreach(_out, invoker.html_out_files_polymer2) {
+        outputs += [ "$target_gen_dir/$_out" ]
+      }
+    }
     foreach(_out, invoker.js_out_files) {
       outputs += [ "$target_gen_dir/$_out" ]
     }
