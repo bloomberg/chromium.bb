@@ -125,7 +125,7 @@ Polymer({
       }
     },
 
-    /** @private {!Map<string, string>} */
+    /** @private {!Map<string, Element>} */
     focusConfig_: {
       type: Object,
       value: function() {
@@ -239,18 +239,19 @@ Polymer({
       return;
 
     // Focus the subpage arrow where appropriate.
-    let selector;
+    let element;
     if (route == settings.routes.INTERNET_NETWORKS) {
       // iron-list makes the correct timing to focus an item in the list
       // very complicated, and the item may not exist, so just focus the
       // entire list for now.
-      selector = '* /deep/ #networkList';
+      element = this.$$('settings-internet-subpage').$$('#networkList');
     } else if (this.detailType_) {
-      selector =
-          '* /deep/ #' + this.detailType_ + ' /deep/ .subpage-arrow button';
+      element = this.$$('network-summary')
+                    .$$(`#${this.detailType_}`)
+                    .$$('.subpage-arrow button');
     }
-    if (selector && this.querySelector(selector))
-      this.focusConfig_.set(oldRoute.path, selector);
+    if (element)
+      this.focusConfig_.set(oldRoute.path, element);
     else
       this.focusConfig_.delete(oldRoute.path);
   },
