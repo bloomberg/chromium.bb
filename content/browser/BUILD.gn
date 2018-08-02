@@ -2180,6 +2180,8 @@ jumbo_source_set("browser") {
       "font_unique_name_lookup/font_table_matcher.h",
       "font_unique_name_lookup/font_unique_name_lookup.cc",
       "font_unique_name_lookup/font_unique_name_lookup.h",
+      "font_unique_name_lookup/font_unique_name_lookup_service.cc",
+      "font_unique_name_lookup/font_unique_name_lookup_service.h",
       "font_unique_name_lookup/icu_fold_case_util.cc",
       "font_unique_name_lookup/icu_fold_case_util.h",
       "frame_host/render_frame_host_android.cc",

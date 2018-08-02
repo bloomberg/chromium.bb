@@ -87,6 +87,7 @@
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/field_trial_recorder.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
+#include "content/browser/font_unique_name_lookup/font_unique_name_lookup_service.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_client_impl.h"
@@ -1974,6 +1975,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION)
   registry->AddInterface(base::Bind(&hyphenation::HyphenationImpl::Create),
                          hyphenation::HyphenationImpl::GetTaskRunner());
+#endif
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
+    registry->AddInterface(
+        base::BindRepeating(&FontUniqueNameLookupService::Create),
+        FontUniqueNameLookupService::GetTaskRunner());
+  }
 #endif
 
   registry->AddInterface(base::Bind(&device::GamepadHapticsManager::Create));

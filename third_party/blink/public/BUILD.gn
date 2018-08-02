@@ -704,6 +704,7 @@ mojom("mojo_bindings") {
     "platform/modules/cache_storage/cache_storage.mojom",
     "platform/modules/credentialmanager/credential_manager.mojom",
     "platform/modules/fetch/fetch_api_request.mojom",
+    "platform/modules/font_unique_name_lookup/font_unique_name_lookup.mojom",
     "platform/modules/geolocation/geolocation_service.mojom",
     "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/insecure_input/insecure_input_service.mojom",
