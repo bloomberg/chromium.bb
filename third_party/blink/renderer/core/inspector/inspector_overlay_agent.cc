@@ -76,18 +76,6 @@ using protocol::Maybe;
 using protocol::Response;
 
 namespace {
-
-namespace OverlayAgentState {
-static const char kEnabled[] = "enabled";
-static const char kShowDebugBorders[] = "showDebugBorders";
-static const char kShowFPSCounter[] = "showFPSCounter";
-static const char kShowPaintRects[] = "showPaintRects";
-static const char kShowScrollBottleneckRects[] = "showScrollBottleneckRects";
-static const char kShowSizeOnResize[] = "showSizeOnResize";
-static const char kSuspended[] = "suspended";
-static const char kPausedInDebuggerMessage[] = "pausedInDebuggerMessage";
-}  // namespace OverlayAgentState
-
 Node* HoveredNodeForPoint(LocalFrame* frame,
                           const IntPoint& point_in_root_frame,
                           bool ignore_pointer_events_none) {
@@ -220,15 +208,12 @@ InspectorOverlayAgent::InspectorOverlayAgent(
     InspectorDOMAgent* dom_agent)
     : frame_impl_(frame_impl),
       inspected_frames_(inspected_frames),
-      enabled_(false),
-      draw_view_size_(false),
       resize_timer_active_(false),
       omit_tooltip_(false),
       timer_(
           frame_impl->GetFrame()->GetTaskRunner(TaskType::kInternalInspector),
           this,
           &InspectorOverlayAgent::OnTimer),
-      suspended_(false),
       disposed_(false),
       in_layout_(false),
       needs_update_(false),
@@ -236,7 +221,15 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       dom_agent_(dom_agent),
       swallow_next_mouse_up_(false),
       inspect_mode_(kNotSearching),
-      backend_node_id_to_inspect_(0) {}
+      backend_node_id_to_inspect_(0),
+      enabled_(&agent_state_, /*default_value=*/false),
+      suspended_(&agent_state_, /*default_value=*/false),
+      show_debug_borders_(&agent_state_, /*default_value=*/false),
+      show_fps_counter_(&agent_state_, /*default_value=*/false),
+      show_paint_rects_(&agent_state_, /*default_value=*/false),
+      show_scroll_bottleneck_rects_(&agent_state_, /*default_value=*/false),
+      show_size_on_resize_(&agent_state_, /*default_value=*/false),
+      paused_in_debugger_message_(&agent_state_, /*default_value=*/String()) {}
 
 InspectorOverlayAgent::~InspectorOverlayAgent() {
   DCHECK(!overlay_page_);
@@ -256,22 +249,14 @@ void InspectorOverlayAgent::Trace(blink::Visitor* visitor) {
 }
 
 void InspectorOverlayAgent::Restore() {
-  if (state_->booleanProperty(OverlayAgentState::kEnabled, false))
-    enabled_ = true;
-  setShowDebugBorders(
-      state_->booleanProperty(OverlayAgentState::kShowDebugBorders, false));
-  setShowFPSCounter(
-      state_->booleanProperty(OverlayAgentState::kShowFPSCounter, false));
-  setShowPaintRects(
-      state_->booleanProperty(OverlayAgentState::kShowPaintRects, false));
-  setShowScrollBottleneckRects(state_->booleanProperty(
-      OverlayAgentState::kShowScrollBottleneckRects, false));
-  setShowViewportSizeOnResize(
-      state_->booleanProperty(OverlayAgentState::kShowSizeOnResize, false));
-  String message;
-  if (state_->getString(OverlayAgentState::kPausedInDebuggerMessage, &message))
-    setPausedInDebuggerMessage(message);
-  setSuspended(state_->booleanProperty(OverlayAgentState::kSuspended, false));
+  setShowDebugBorders(show_debug_borders_.Get());
+  setShowFPSCounter(show_fps_counter_.Get());
+  setShowPaintRects(show_paint_rects_.Get());
+  setShowScrollBottleneckRects(show_scroll_bottleneck_rects_.Get());
+  setShowViewportSizeOnResize(show_size_on_resize_.Get());
+  if (paused_in_debugger_message_.Get().IsNull())
+    setPausedInDebuggerMessage(paused_in_debugger_message_.Get());
+  setSuspended(suspended_.Get());
 }
 
 void InspectorOverlayAgent::Dispose() {
@@ -283,8 +268,7 @@ void InspectorOverlayAgent::Dispose() {
 Response InspectorOverlayAgent::enable() {
   if (!dom_agent_->Enabled())
     return Response::Error("DOM should be enabled first");
-  state_->setBoolean(OverlayAgentState::kEnabled, true);
-  enabled_ = true;
+  enabled_.Set(true);
   if (backend_node_id_to_inspect_)
     GetFrontend()->inspectNodeRequested(backend_node_id_to_inspect_);
   backend_node_id_to_inspect_ = 0;
@@ -292,8 +276,7 @@ Response InspectorOverlayAgent::enable() {
 }
 
 Response InspectorOverlayAgent::disable() {
-  state_->setBoolean(OverlayAgentState::kEnabled, false);
-  enabled_ = false;
+  enabled_.Clear();
   setShowDebugBorders(false);
   setShowFPSCounter(false);
   setShowPaintRects(false);
@@ -307,7 +290,7 @@ Response InspectorOverlayAgent::disable() {
 }
 
 Response InspectorOverlayAgent::setShowDebugBorders(bool show) {
-  state_->setBoolean(OverlayAgentState::kShowDebugBorders, show);
+  show_debug_borders_.Set(show);
   if (show) {
     Response response = CompositingEnabled();
     if (!response.isSuccess())
@@ -318,7 +301,7 @@ Response InspectorOverlayAgent::setShowDebugBorders(bool show) {
 }
 
 Response InspectorOverlayAgent::setShowFPSCounter(bool show) {
-  state_->setBoolean(OverlayAgentState::kShowFPSCounter, show);
+  show_fps_counter_.Set(show);
   if (show) {
     Response response = CompositingEnabled();
     if (!response.isSuccess())
@@ -329,7 +312,7 @@ Response InspectorOverlayAgent::setShowFPSCounter(bool show) {
 }
 
 Response InspectorOverlayAgent::setShowPaintRects(bool show) {
-  state_->setBoolean(OverlayAgentState::kShowPaintRects, show);
+  show_paint_rects_.Set(show);
   if (show) {
     Response response = CompositingEnabled();
     if (!response.isSuccess())
@@ -342,7 +325,7 @@ Response InspectorOverlayAgent::setShowPaintRects(bool show) {
 }
 
 Response InspectorOverlayAgent::setShowScrollBottleneckRects(bool show) {
-  state_->setBoolean(OverlayAgentState::kShowScrollBottleneckRects, show);
+  show_scroll_bottleneck_rects_.Set(show);
   if (show) {
     Response response = CompositingEnabled();
     if (!response.isSuccess())
@@ -353,25 +336,21 @@ Response InspectorOverlayAgent::setShowScrollBottleneckRects(bool show) {
 }
 
 Response InspectorOverlayAgent::setShowViewportSizeOnResize(bool show) {
-  state_->setBoolean(OverlayAgentState::kShowSizeOnResize, show);
-  draw_view_size_ = show;
+  show_size_on_resize_.Set(show);
   return Response::OK();
 }
 
 Response InspectorOverlayAgent::setPausedInDebuggerMessage(
     Maybe<String> message) {
-  String just_message = message.fromMaybe(String());
-  state_->setString(OverlayAgentState::kPausedInDebuggerMessage, just_message);
-  paused_in_debugger_message_ = just_message;
+  paused_in_debugger_message_.Set(message.fromMaybe(String()));
   ScheduleUpdate();
   return Response::OK();
 }
 
 Response InspectorOverlayAgent::setSuspended(bool suspended) {
-  state_->setBoolean(OverlayAgentState::kSuspended, suspended);
-  if (suspended && !suspended_)
+  if (suspended && !suspended_.Get())
     ClearInternal();
-  suspended_ = suspended;
+  suspended_.Set(suspended);
   return Response::OK();
 }
 
@@ -640,12 +619,12 @@ void InspectorOverlayAgent::InnerHighlightQuad(
 bool InspectorOverlayAgent::IsEmpty() {
   if (disposed_)
     return true;
-  if (suspended_)
+  if (suspended_.Get())
     return true;
-  bool has_visible_elements = highlight_node_ || event_target_node_ ||
-                              highlight_quad_ ||
-                              (resize_timer_active_ && draw_view_size_) ||
-                              !paused_in_debugger_message_.IsNull();
+  bool has_visible_elements =
+      highlight_node_ || event_target_node_ || highlight_quad_ ||
+      (resize_timer_active_ && show_size_on_resize_.Get()) ||
+      !paused_in_debugger_message_.Get().IsNull();
   return !has_visible_elements && inspect_mode_ == kNotSearching;
 }
 
@@ -742,14 +721,15 @@ void InspectorOverlayAgent::DrawQuadHighlight() {
 }
 
 void InspectorOverlayAgent::DrawPausedInDebuggerMessage() {
-  if (inspect_mode_ == kNotSearching && !paused_in_debugger_message_.IsNull()) {
+  if (inspect_mode_ == kNotSearching &&
+      !paused_in_debugger_message_.Get().IsNull()) {
     EvaluateInOverlay("drawPausedInDebuggerMessage",
-                      paused_in_debugger_message_);
+                      paused_in_debugger_message_.Get());
   }
 }
 
 void InspectorOverlayAgent::DrawViewSize() {
-  if (resize_timer_active_ && draw_view_size_)
+  if (resize_timer_active_ && show_size_on_resize_.Get())
     EvaluateInOverlay("drawViewSize", "");
 }
 
@@ -945,7 +925,7 @@ void InspectorOverlayAgent::ClearInternal() {
     overlay_host_.Clear();
   }
   resize_timer_active_ = false;
-  paused_in_debugger_message_ = String();
+  paused_in_debugger_message_.Clear();
   inspect_mode_ = kNotSearching;
   screenshot_mode_ = false;
   timer_.Stop();
@@ -964,7 +944,7 @@ void InspectorOverlayAgent::OverlaySteppedOver() {
 }
 
 void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
-  if (resized && draw_view_size_) {
+  if (resized && show_size_on_resize_.Get()) {
     resize_timer_active_ = true;
     timer_.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
   }
@@ -1145,7 +1125,7 @@ void InspectorOverlayAgent::Inspect(Node* inspected_node) {
     return;
 
   int backend_node_id = DOMNodeIds::IdForNode(node);
-  if (!enabled_) {
+  if (!enabled_.Get()) {
     backend_node_id_to_inspect_ = backend_node_id;
     return;
   }
@@ -1154,7 +1134,7 @@ void InspectorOverlayAgent::Inspect(Node* inspected_node) {
 }
 
 void InspectorOverlayAgent::NodeHighlightRequested(Node* node) {
-  if (!enabled_)
+  if (!enabled_.Get())
     return;
 
   while (node && !node->IsElementNode() && !node->IsDocumentNode() &&
