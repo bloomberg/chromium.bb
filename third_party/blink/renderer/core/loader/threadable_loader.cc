@@ -263,7 +263,7 @@ ThreadableLoader::ThreadableLoader(
       timeout_timer_(execution_context_->GetTaskRunner(TaskType::kNetworking),
                      this,
                      &ThreadableLoader::DidTimeout),
-      cors_redirect_limit_(0),
+      redirect_limit_(kMaxCORSRedirects),
       redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       override_referrer_(false) {
   DCHECK(client);
@@ -282,9 +282,6 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   DCHECK(request.CORSPreflightPolicy() ==
              network::mojom::CORSPreflightPolicy::kConsiderPreflight ||
          cors_enabled);
-
-  if (cors_enabled)
-    cors_redirect_limit_ = kMaxCORSRedirects;
 
   initial_request_url_ = request.Url();
   last_request_url_ = initial_request_url_;
@@ -659,7 +656,6 @@ bool ThreadableLoader::RedirectReceived(
         DCHECK(actual_request_.IsNull());
         NotifyFinished(resource);
       }
-
       return false;
     }
 
@@ -667,25 +663,24 @@ bool ThreadableLoader::RedirectReceived(
       ThreadableLoaderClient* client = client_;
       Clear();
       client->DidFailRedirectCheck();
-
       return false;
     }
 
-    // Allow same origin requests to continue after allowing clients to audit
-    // the redirect.
-    if (out_of_blink_cors_ ||
-        IsAllowedRedirect(new_request.GetFetchRequestMode(), new_url)) {
+    if (out_of_blink_cors_)
       return client_->WillFollowRedirect(new_url, redirect_response);
-    }
 
-    if (cors_redirect_limit_ <= 0) {
+    if (redirect_limit_ <= 0) {
       ThreadableLoaderClient* client = client_;
       Clear();
       client->DidFailRedirectCheck();
       return false;
     }
+    --redirect_limit_;
 
-    --cors_redirect_limit_;
+    // Allow same origin requests to continue after allowing clients to audit
+    // the redirect.
+    if (IsAllowedRedirect(new_request.GetFetchRequestMode(), new_url))
+      return client_->WillFollowRedirect(new_url, redirect_response);
 
     probe::didReceiveCORSRedirectResponse(
         execution_context_, resource->Identifier(),
@@ -715,7 +710,8 @@ bool ThreadableLoader::RedirectReceived(
       }
     }
 
-    client_->WillFollowRedirect(new_url, redirect_response);
+    if (!client_->WillFollowRedirect(new_url, redirect_response))
+      return false;
 
     // FIXME: consider combining this with CORS redirect handling performed by
     // CrossOriginAccessControl::handleRedirect().
