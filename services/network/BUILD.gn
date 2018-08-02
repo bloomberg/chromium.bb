@@ -74,6 +74,8 @@ component("network_service") {
     "proxy_resolving_socket_factory_mojo.h",
     "proxy_resolving_socket_mojo.cc",
     "proxy_resolving_socket_mojo.h",
+    "resolve_host_request.cc",
+    "resolve_host_request.h",
     "resource_scheduler.cc",
     "resource_scheduler.h",
     "resource_scheduler_client.cc",

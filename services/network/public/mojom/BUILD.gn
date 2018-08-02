@@ -79,6 +79,7 @@ mojom("mojom") {
     "ct_log_info.mojom",
     "digitally_signed.mojom",
     "fetch_api.mojom",
+    "host_resolver.mojom",
     "http_request_headers.mojom",
     "network_change_manager.mojom",
     "network_context.mojom",
