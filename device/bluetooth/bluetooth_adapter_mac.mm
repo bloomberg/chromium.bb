@@ -25,6 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter_mac_metrics.h"
+#include "device/bluetooth/bluetooth_advertisement_mac.h"
 #include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -137,9 +138,13 @@ BluetoothAdapterMac::BluetoothAdapterMac()
                    queue:dispatch_get_main_queue()]);
     low_energy_discovery_manager_->SetCentralManager(
         low_energy_central_manager_);
+
+    low_energy_advertisement_manager_.reset(
+        new BluetoothLowEnergyAdvertisementManagerMac());
     low_energy_peripheral_manager_delegate_.reset(
         [[BluetoothLowEnergyPeripheralManagerDelegate alloc]
-            initWithAdapter:this]);
+            initWithAdvertisementManager:low_energy_advertisement_manager_.get()
+                              andAdapter:this]);
     low_energy_peripheral_manager_.reset([[CBPeripheralManager alloc]
         initWithDelegate:low_energy_peripheral_manager_delegate_
                    queue:dispatch_get_main_queue()]);
@@ -272,8 +277,8 @@ void BluetoothAdapterMac::RegisterAdvertisement(
     std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
     const CreateAdvertisementCallback& callback,
     const AdvertisementErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
-  error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
+  low_energy_advertisement_manager_->RegisterAdvertisement(
+      std::move(advertisement_data), callback, error_callback);
 }
 
 BluetoothLocalGattService* BluetoothAdapterMac::GetGattService(
@@ -485,6 +490,8 @@ bool BluetoothAdapterMac::StartDiscovery(
 
 void BluetoothAdapterMac::Init() {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  low_energy_advertisement_manager_->Init(ui_task_runner_,
+                                          low_energy_peripheral_manager_);
   PollAdapter();
 }
 

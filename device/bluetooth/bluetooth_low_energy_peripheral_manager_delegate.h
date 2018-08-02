@@ -17,15 +17,16 @@
 
 namespace device {
 class BluetoothAdapterMac;
-class BluetoothLowEnergyPeripheralManagerBridge;
+class BluetoothLowEnergyAdvertisementManagerMac;
 }  // namespace device
 
 @interface BluetoothLowEnergyPeripheralManagerDelegate
-    : NSObject<CBPeripheralManagerDelegate> {
-  std::unique_ptr<device::BluetoothLowEnergyPeripheralManagerBridge> bridge_;
-}
+    : NSObject<CBPeripheralManagerDelegate>
 
-- (id)initWithAdapter:(device::BluetoothAdapterMac*)adapter;
+- (instancetype)
+initWithAdvertisementManager:
+    (device::BluetoothLowEnergyAdvertisementManagerMac*)advertisementManager
+                  andAdapter:(device::BluetoothAdapterMac*)adapter;
 
 @end
 

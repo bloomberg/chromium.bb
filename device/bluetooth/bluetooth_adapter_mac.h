@@ -21,6 +21,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_discovery_manager_mac.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluetooth_low_energy_advertisement_manager_mac.h"
 #include "device/bluetooth/bluetooth_low_energy_device_mac.h"
 #include "device/bluetooth/bluetooth_low_energy_discovery_manager_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -30,6 +31,7 @@
 @class NSArray;
 @class NSDate;
 
+@class BluetoothAdvertisementMac;
 @class BluetoothLowEnergyCentralManagerDelegate;
 @class BluetoothLowEnergyPeripheralManagerDelegate;
 
@@ -214,6 +216,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // Updates |devices_| when there is a change to the CBCentralManager's state.
   void LowEnergyCentralManagerUpdatedState();
 
+  // Updates |advertisements_| when there is a change to the
+  // CBPeripheralManager's state.
+  void LowEnergyPeripheralManagerUpdatedState();
+
   // Updates |devices_| to include the currently paired devices and notifies
   // observers.
   void AddPairedDevices();
@@ -263,6 +269,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // Discovery manager for Bluetooth Low Energy.
   std::unique_ptr<BluetoothLowEnergyDiscoveryManagerMac>
       low_energy_discovery_manager_;
+
+  // Advertisement manager for Bluetooth Low Energy.
+  std::unique_ptr<BluetoothLowEnergyAdvertisementManagerMac>
+      low_energy_advertisement_manager_;
 
   // Underlying CoreBluetooth CBCentralManager and its delegate.
   base::scoped_nsobject<CBCentralManager> low_energy_central_manager_;

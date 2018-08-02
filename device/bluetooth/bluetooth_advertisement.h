@@ -38,10 +38,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
                                          // is not registered.
     ERROR_ADVERTISEMENT_INVALID_LENGTH,  // Advertisement is not of a valid
                                          // length.
+    ERROR_STARTING_ADVERTISEMENT,  // Error when starting the advertisement
+                                   // through a platform API.
+    ERROR_RESET_ADVERTISING,       // Error while resetting advertising.
+    ERROR_ADAPTER_POWERED_OFF,     // Error because the adapter is off
 #if defined(OS_LINUX)
     ERROR_INVALID_ADVERTISEMENT_INTERVAL,  // Advertisement interval specified
                                            // is out of valid range.
-    ERROR_RESET_ADVERTISING,               // Error while resetting advertising.
 #endif
     INVALID_ADVERTISEMENT_ERROR_CODE
   };
