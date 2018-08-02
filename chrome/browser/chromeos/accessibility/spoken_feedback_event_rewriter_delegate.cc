@@ -33,11 +33,6 @@ SpokenFeedbackEventRewriterDelegate::~SpokenFeedbackEventRewriterDelegate() {}
 void SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
     std::unique_ptr<ui::Event> event,
     bool capture) {
-  if (!ShouldDispatchKeyEventToChromeVox(event.get())) {
-    OnUnhandledSpokenFeedbackEvent(std::move(event));
-    return;
-  }
-
   extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
       extension_misc::kChromeVoxExtensionId);
   // Listen for any unhandled keyboard events from ChromeVox's background page
