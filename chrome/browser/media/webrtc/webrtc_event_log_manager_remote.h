@@ -7,7 +7,6 @@
 
 #include <map>
 #include <set>
-#include <vector>
 
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
@@ -25,7 +24,8 @@ class URLRequestContextGetter;
 class WebRtcRemoteEventLogManager final
     : public content::NetworkConnectionTracker::NetworkConnectionObserver {
   using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
-  using LogFilesMap = std::map<WebRtcEventLogPeerConnectionKey, LogFile>;
+  using LogFilesMap =
+      std::map<WebRtcEventLogPeerConnectionKey, std::unique_ptr<LogFileWriter>>;
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
  public:
@@ -45,6 +45,12 @@ class WebRtcRemoteEventLogManager final
   // Must not be called more than once.
   // Must be called before any call to EnableForBrowserContext().
   void SetUrlRequestContextGetter(net::URLRequestContextGetter* context_getter);
+
+  // Sets a LogFileWriter factory.
+  // Must not be called more than once.
+  // Must be called before any call to EnableForBrowserContext().
+  void SetLogFileWriterFactory(
+      std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory);
 
   // Enables remote-bound logging for a given BrowserContext. Logs stored during
   // previous sessions become eligible for upload, and recording of new logs for
@@ -148,12 +154,21 @@ class WebRtcRemoteEventLogManager final
   void UploadConditionsHoldForTesting(base::OnceCallback<void(bool)> callback);
 
  private:
+  // Validates log parameters (at the moment, only max file size).
+  // If valid, returns true. Otherwise, false, and |error_message| gets
+  // a relevant error.
+  bool AreLogParametersValid(size_t max_file_size_bytes,
+                             std::string* error_message) const;
+
   // Checks whether a browser context has already been enabled via a call to
   // EnableForBrowserContext(), and not yet disabled using a call to
   // DisableForBrowserContext().
   bool BrowserContextEnabled(BrowserContextId browser_context_id) const;
 
-  // Closes an active log file, changing its state from ACTIVE to PENDING.
+  // Closes an active log file.
+  // If |make_pending| is true, closing the file changes its state from ACTIVE
+  // to PENDING. If |make_pending| is false, or if the file couldn't be closed
+  // correctly, the file will be deleted.
   // Returns an iterator to the next ACTIVE file.
   LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it,
                                      bool make_pending);
@@ -324,8 +339,12 @@ class WebRtcRemoteEventLogManager final
   // are not considered active, regardless of whether they have been torn down.
   std::map<PeerConnectionKey, const std::string> active_peer_connections_;
 
+  // Creates LogFileWriter instances (compressed/uncompressed, etc.).
+  // TODO(crbug.com/775415): Add support for compressed version using GZIP.
+  std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory_;
+
   // Remote-bound logs which we're currently in the process of writing to disk.
-  std::map<PeerConnectionKey, LogFile> active_logs_;
+  LogFilesMap active_logs_;
 
   // Remote-bound logs which have been written to disk before (either during
   // this Chrome session or during an earlier one), and which are no waiting to

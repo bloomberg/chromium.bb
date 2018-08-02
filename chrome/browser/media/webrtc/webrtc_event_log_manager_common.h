@@ -5,12 +5,11 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_COMMON_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_COMMON_H_
 
-#include <map>
+#include <memory>
 #include <string>
-#include <tuple>
 
-#include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -47,10 +46,13 @@ extern const size_t kMaxPendingRemoteBoundWebRtcEventLogs;
 // Remote-bound log files' names will be of the format [prefix]_[log_id].[ext],
 // where |prefix| is equal to kRemoteBoundWebRtcEventLogFileNamePrefix,
 // |log_id| is composed of 32 random characters from '0'-'9' and 'A'-'F',
-// and |ext| is kRemoteBoundWebRtcEventLogExtension.
+// and |ext| is the extension determined by the used LogCompressor::Factory,
+// which will be either kWebRtcEventLogUncompressedExtension or
+// kWebRtcEventLogGzippedExtension.
+// TODO(crbug.com/775415): Add kWebRtcEventLogGzippedExtension.
 extern const base::FilePath::CharType
     kRemoteBoundWebRtcEventLogFileNamePrefix[];
-extern const base::FilePath::CharType kRemoteBoundWebRtcEventLogExtension[];
+extern const base::FilePath::CharType kWebRtcEventLogUncompressedExtension[];
 
 // Remote-bound event logs will not be uploaded if the time since their last
 // modification (meaning the time when they were completed) exceeds this value.
@@ -65,8 +67,8 @@ extern const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention;
 // These are made globally visible so that unit tests may check for them.
 extern const char kStartRemoteLoggingFailureFeatureDisabled[];
 extern const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[];
-extern const char kStartRemoteLoggingFailureMaxSizeTooLarge[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooSmall[];
+extern const char kStartRemoteLoggingFailureMaxSizeTooLarge[];
 extern const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[];
 extern const char kStartRemoteLoggingFailureAlreadyLogging[];
 extern const char kStartRemoteLoggingFailureGeneric[];
@@ -188,36 +190,72 @@ class WebRtcRemoteEventLogsObserver {
   virtual ~WebRtcRemoteEventLogsObserver() = default;
 };
 
-class LogFile {
+// Writes a log to a file while observing a maximum size.
+class LogFileWriter {
  public:
-  LogFile(const base::FilePath& path,
-          base::File file,
-          size_t max_file_size_bytes);
+  class Factory {
+   public:
+    virtual ~Factory() = default;
 
-  LogFile(LogFile&& other);
+    // The smallest size a log file of this type may assume.
+    virtual size_t MinFileSizeBytes() const = 0;
 
-  ~LogFile();
+    // The extension type associated with this type of log files.
+    virtual base::FilePath::StringPieceType Extension() const = 0;
 
-  bool MaxSizeReached() const;
+    // Instantiate and initialize a LogFileWriter.
+    // If creation or initialization fail, an empty unique_ptr will be returned,
+    // and it will be guaranteed that the file itself is not created. (If |path|
+    // had pointed to an existing file, that file will be deleted.)
+    // If !max_file_size_bytes.has_value(), the LogFileWriter is unlimited.
+    virtual std::unique_ptr<LogFileWriter> Create(
+        const base::FilePath& path,
+        base::Optional<size_t> max_file_size_bytes) const = 0;
+  };
 
-  // Writes to the log file, while respecting the file's size limit.
+  virtual ~LogFileWriter() = default;
+
+  // Init() must be called on each LogFileWriter exactly once, before it's used.
+  // If initialization fails, no further actions may be performed on the object
+  // other than Close() and Delete().
+  virtual bool Init() = 0;
+
+  // Getter for the path of the file |this| wraps.
+  virtual const base::FilePath& path() const = 0;
+
+  // Whether the maximum file size was reached.
+  virtual bool MaxSizeReached() const = 0;
+
+  // Writes to the log file while respecting the file's size limit.
   // True is returned if and only if the message was written to the file in
-  // it entirety.
-  // The function does *not* close the file, neither on errors nor when the
-  // maximum size is reached.
-  bool Write(const std::string& message);
+  // it entirety. That is, |false| is returned either if a genuine error
+  // occurs, or when the budget does not allow the next write.
+  // If |false| is ever returned, only Close() and Delete() may subsequently
+  // be called.
+  // The function does *not* close the file.
+  // The function may not be called if MaxSizeReached().
+  virtual bool Write(const std::string& input) = 0;
 
-  void Close();
+  // If the file was successfully closed, true is returned, and the file may
+  // now be used. Otherwise, the file is deleted, and false is returned.
+  virtual bool Close() = 0;
 
-  void Delete();
+  // Delete the file from disk.
+  virtual void Delete() = 0;
+};
 
-  const base::FilePath& path() const { return path_; }
+// Produces LogFileWriter instances that perform no compression.
+class BaseLogFileWriterFactory : public LogFileWriter::Factory {
+ public:
+  ~BaseLogFileWriterFactory() override = default;
 
- private:
-  const base::FilePath path_;
-  base::File file_;
-  const size_t max_file_size_bytes_;
-  size_t file_size_bytes_;
+  size_t MinFileSizeBytes() const override;
+
+  base::FilePath::StringPieceType Extension() const override;
+
+  std::unique_ptr<LogFileWriter> Create(
+      const base::FilePath& path,
+      base::Optional<size_t> max_file_size_bytes) const override;
 };
 
 // Translate a BrowserContext into an ID. This lets us associate PeerConnections

@@ -66,8 +66,6 @@ inline void MaybeReply(const base::Location& location,
 
 }  // namespace
 
-const size_t kWebRtcEventLogManagerUnlimitedFileSize = 0;
-
 WebRtcEventLogManager* WebRtcEventLogManager::g_webrtc_event_log_manager =
     nullptr;
 
@@ -386,6 +384,20 @@ bool WebRtcEventLogManager::IsRemoteLoggingEnabled() const {
   return enabled;
 }
 
+std::unique_ptr<LogFileWriter::Factory>
+WebRtcEventLogManager::CreateRemoteLogFileWriterFactory() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+  return nullptr;  // Appease compiler.
+#else
+  if (remote_log_file_writer_factory_for_testing_) {
+    return std::move(remote_log_file_writer_factory_for_testing_);
+  } else {
+    return std::make_unique<BaseLogFileWriterFactory>();
+  }
+#endif
+}
+
 void WebRtcEventLogManager::RenderProcessExited(
     RenderProcessHost* host,
     const content::ChildProcessTerminationInfo& info) {
@@ -508,6 +520,9 @@ void WebRtcEventLogManager::OnFirstBrowserContextLoaded() {
       g_browser_process->system_request_context();
   DCHECK(url_request_context_getter);
 
+  auto log_file_writer_factory = CreateRemoteLogFileWriterFactory();
+  DCHECK(log_file_writer_factory);
+
   // * |url_request_context_getter| is owned by IOThread. The internal task
   //   runner that uses it (|task_runner_|) stops before IOThread dies, so we
   //   can trust that |url_request_context_getter| will not be used after
@@ -520,18 +535,23 @@ void WebRtcEventLogManager::OnFirstBrowserContextLoaded() {
       base::BindOnce(
           &WebRtcEventLogManager::OnFirstBrowserContextLoadedInternal,
           base::Unretained(this), base::Unretained(network_connection_tracker),
-          base::Unretained(url_request_context_getter)));
+          base::Unretained(url_request_context_getter),
+          std::move(log_file_writer_factory)));
 }
 
 void WebRtcEventLogManager::OnFirstBrowserContextLoadedInternal(
     content::NetworkConnectionTracker* network_connection_tracker,
-    net::URLRequestContextGetter* url_request_context_getter) {
+    net::URLRequestContextGetter* url_request_context_getter,
+    std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(network_connection_tracker);
   DCHECK(url_request_context_getter);
+  DCHECK(log_file_writer_factory);
   DCHECK(remote_logs_manager_);
   remote_logs_manager_->SetNetworkConnectionTracker(network_connection_tracker);
   remote_logs_manager_->SetUrlRequestContextGetter(url_request_context_getter);
+  remote_logs_manager_->SetLogFileWriterFactory(
+      std::move(log_file_writer_factory));
 }
 
 void WebRtcEventLogManager::EnableForBrowserContextInternal(
@@ -761,6 +781,14 @@ void WebRtcEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                 std::move(uploader_factory), std::move(reply)));
+}
+
+void WebRtcEventLogManager::SetRemoteLogFileWriterFactoryForTesting(
+    std::unique_ptr<LogFileWriter::Factory> factory) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!first_browser_context_initializations_done_) << "Too late.";
+  DCHECK(!remote_log_file_writer_factory_for_testing_) << "Already called.";
+  remote_log_file_writer_factory_for_testing_ = std::move(factory);
 }
 
 void WebRtcEventLogManager::UploadConditionsHoldForTesting(

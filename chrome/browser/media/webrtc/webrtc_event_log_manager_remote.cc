@@ -8,7 +8,6 @@
 #include <iterator>
 #include <limits>
 
-#include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -16,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -34,23 +32,6 @@ const base::TimeDelta kDefaultProactivePruningDelta =
 
 const base::TimeDelta kDefaultWebRtcRemoteEventLogUploadDelay =
     base::TimeDelta::FromSeconds(30);
-
-bool AreLogParametersValid(size_t max_file_size_bytes,
-                           std::string* error_message) {
-  if (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize) {
-    LOG(WARNING) << "Unlimited file sizes not allowed for remote-bound logs.";
-    *error_message = kStartRemoteLoggingFailureUnlimitedSizeDisallowed;
-    return false;
-  }
-
-  if (max_file_size_bytes > kMaxRemoteLogFileSizeBytes) {
-    LOG(WARNING) << "File size exceeds maximum allowed.";
-    *error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
-    return false;
-  }
-
-  return true;
-}
 
 base::TimeDelta GetProactivePruningDelta() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -133,8 +114,6 @@ const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention =
 
 const base::FilePath::CharType kRemoteBoundWebRtcEventLogFileNamePrefix[] =
     FILE_PATH_LITERAL("webrtc_event_log_");
-const base::FilePath::CharType kRemoteBoundWebRtcEventLogExtension[] =
-    FILE_PATH_LITERAL("log");
 
 WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
     WebRtcRemoteEventLogsObserver* observer,
@@ -212,11 +191,22 @@ void WebRtcRemoteEventLogManager::SetUrlRequestContextGetter(
       std::make_unique<WebRtcEventLogUploaderImpl::Factory>(context_getter);
 }
 
+void WebRtcRemoteEventLogManager::SetLogFileWriterFactory(
+    std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(log_file_writer_factory);
+  DCHECK(!log_file_writer_factory_);
+  log_file_writer_factory_ = std::move(log_file_writer_factory);
+}
+
 void WebRtcRemoteEventLogManager::EnableForBrowserContext(
     BrowserContextId browser_context_id,
     const base::FilePath& browser_context_dir) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(network_connection_tracker_)
+      << "SetNetworkConnectionTracker not called.";
   DCHECK(uploader_factory_) << "SetUrlRequestContextGetter() not called.";
+  DCHECK(log_file_writer_factory_) << "SetLogFileWriterFactory() not called.";
   DCHECK(!BrowserContextEnabled(browser_context_id)) << "Already enabled.";
 
   const base::FilePath remote_bound_logs_dir =
@@ -344,8 +334,8 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   // May not restart active remote logs.
   auto it = active_logs_.find(key);
   if (it != active_logs_.end()) {
-    LOG(ERROR) << "Remote logging already underway for ("
-               << key.render_process_id << ", " << key.lid << ").";
+    LOG(ERROR) << "Remote logging already underway for " << peer_connection_id
+               << ".";
     *error_message = kStartRemoteLoggingFailureAlreadyLogging;
     return false;
   }
@@ -375,9 +365,9 @@ bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
     return false;
   }
 
-  const bool write_successful = it->second.Write(message);
-
-  if (!write_successful || it->second.MaxSizeReached()) {
+  const bool write_successful = it->second->Write(message);
+  if (!write_successful || it->second->MaxSizeReached()) {
+    // Note: If the file is invalid, CloseLogFile() will discard it.
     CloseLogFile(it, /*make_pending=*/true);
     ManageUploadSchedule();
   }
@@ -455,6 +445,32 @@ void WebRtcRemoteEventLogManager::UploadConditionsHoldForTesting(
       base::BindOnce(std::move(callback), UploadConditionsHold()));
 }
 
+bool WebRtcRemoteEventLogManager::AreLogParametersValid(
+    size_t max_file_size_bytes,
+    std::string* error_message) const {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  if (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize) {
+    LOG(WARNING) << "Unlimited file sizes not allowed for remote-bound logs.";
+    *error_message = kStartRemoteLoggingFailureUnlimitedSizeDisallowed;
+    return false;
+  }
+
+  if (max_file_size_bytes < log_file_writer_factory_->MinFileSizeBytes()) {
+    LOG(WARNING) << "File size below minimum allowed.";
+    *error_message = kStartRemoteLoggingFailureMaxSizeTooSmall;
+    return false;
+  }
+
+  if (max_file_size_bytes > kMaxRemoteLogFileSizeBytes) {
+    LOG(WARNING) << "File size exceeds maximum allowed.";
+    *error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
+    return false;
+  }
+
+  return true;
+}
+
 bool WebRtcRemoteEventLogManager::BrowserContextEnabled(
     BrowserContextId browser_context_id) const {
   const auto it = enabled_browser_contexts_.find(browser_context_id);
@@ -468,17 +484,24 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it,
 
   const PeerConnectionKey peer_connection = it->first;  // Copy, not reference.
 
-  it->second.Close();
+  bool valid_file = it->second->Close();  // !valid_file -> Close() deletes.
+  if (valid_file) {
+    if (make_pending) {
+      // The current time is a good enough approximation of the file's last
+      // modification time.
+      const base::Time last_modified = base::Time::Now();
 
-  if (make_pending) {
-    // The current time is a good enough approximation of the file's last
-    // modification time.
-    const base::Time last_modified = base::Time::Now();
-
-    // The stopped log becomes a pending log.
-    const auto emplace_result = pending_logs_.emplace(
-        peer_connection.browser_context_id, it->second.path(), last_modified);
-    DCHECK(emplace_result.second);  // No pre-existing entry.
+      // The stopped log becomes a pending log.
+      const auto emplace_result =
+          pending_logs_.emplace(peer_connection.browser_context_id,
+                                it->second->path(), last_modified);
+      DCHECK(emplace_result.second);  // No pre-existing entry.
+    } else {
+      const base::FilePath log_file_path = it->second->path();
+      if (!base::DeleteFile(log_file_path, /*recursive=*/false)) {
+        LOG(ERROR) << "Failed to delete " << log_file_path << ".";
+      }
+    }
   }
 
   it = active_logs_.erase(it);
@@ -515,8 +538,9 @@ void WebRtcRemoteEventLogManager::AddPendingLogs(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   base::FilePath::StringType pattern =
-      base::FilePath::StringType(FILE_PATH_LITERAL("*")) +
-      base::FilePath::kExtensionSeparator + kRemoteBoundWebRtcEventLogExtension;
+      base::FilePath(FILE_PATH_LITERAL("*"))
+          .AddExtension(log_file_writer_factory_->Extension())
+          .value();
   base::FileEnumerator enumerator(remote_bound_logs_dir,
                                   /*recursive=*/false,
                                   base::FileEnumerator::FILES, pattern);
@@ -549,27 +573,23 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
       GetRemoteBoundWebRtcEventLogsDir(browser_context_dir);
   const base::FilePath file_path =
       base_path.Append(kRemoteBoundWebRtcEventLogFileNamePrefix)
-          .InsertBeforeExtensionASCII(id)
-          .AddExtension(kRemoteBoundWebRtcEventLogExtension);
+          .AddExtension(log_file_writer_factory_->Extension())
+          .InsertBeforeExtensionASCII(id);
 
-  // Attempt to create the file.
-  constexpr int file_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE |
-                             base::File::FLAG_EXCLUSIVE_WRITE;
-  base::File file(file_path, file_flags);
-  if (!file.IsValid() || !file.created()) {
-    LOG(WARNING) << "Couldn't create and/or open remote WebRTC event log file.";
-    // Intentionally using a generic error; look for other places where it's
-    // set for an explanation why.
+  // The log is now ACTIVE.
+  DCHECK_NE(max_file_size_bytes, kWebRtcEventLogManagerUnlimitedFileSize);
+  auto log_file =
+      log_file_writer_factory_->Create(file_path, max_file_size_bytes);
+  if (!log_file) {
+    // TODO(crbug.com/775415): Add UMA for exact failure type.
+    LOG(WARNING) << "Failed to initialize remote-bound WebRTC event log file.";
     *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
-
-  // The log is now ACTIVE.
-  LogFile log_file(file_path, std::move(file), max_file_size_bytes);
   const auto it = active_logs_.emplace(key, std::move(log_file));
   DCHECK(it.second);
 
-  observer_->OnRemoteLogStarted(key, it.first->second.path());
+  observer_->OnRemoteLogStarted(key, it.first->second->path());
 
   *log_id = id;
   return true;
@@ -646,11 +666,7 @@ void WebRtcRemoteEventLogManager::MaybeCancelActiveLogs(
     // Since the file is active, assume it's still being modified.
     if (LogFileMatchesFilter(it->first.browser_context_id, base::Time::Now(),
                              browser_context_id, delete_begin, delete_end)) {
-      const base::FilePath log_file_path = it->second.path();
       it = CloseLogFile(it, /*make_pending=*/false);
-      if (!base::DeleteFile(log_file_path, /*recursive=*/false)) {
-        LOG(ERROR) << "Failed to delete " << log_file_path << ".";
-      }
     } else {
       ++it;
     }

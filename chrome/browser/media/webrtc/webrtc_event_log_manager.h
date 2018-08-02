@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <type_traits>
 #include <utility>
 
 #include "base/callback.h"
@@ -172,6 +171,10 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // Checks whether remote-bound logging is enabled.
   bool IsRemoteLoggingEnabled() const;
 
+  // Determines the exact subclass of LogFileWriter::Factory to be used for
+  // producing remote-bound logs.
+  std::unique_ptr<LogFileWriter::Factory> CreateRemoteLogFileWriterFactory();
+
   // RenderProcessHostObserver implementation.
   void RenderProcessExited(
       content::RenderProcessHost* host,
@@ -198,12 +201,15 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // network_connection_tracker() and system_request_context() are not available
   // during instantiation; we get them when the first profile is loaded, which
   // is also the earliest time when they could be needed.
+  // The LogFileWriter::Factory is similarly deferred, but for a different
+  // reason - it makes it easier to allow unit tests to inject their own.
   // OnFirstBrowserContextLoaded() is on the UI thread.
   // OnFirstBrowserContextLoadedInternal() is the task sent to |task_runner_|.
   void OnFirstBrowserContextLoaded();
   void OnFirstBrowserContextLoadedInternal(
       content::NetworkConnectionTracker* network_connection_tracker,
-      net::URLRequestContextGetter* url_request_context_getter);
+      net::URLRequestContextGetter* url_request_context_getter,
+      std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory);
 
   void EnableForBrowserContextInternal(
       BrowserContextId browser_context_id,
@@ -268,6 +274,13 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory,
       base::OnceClosure reply);
 
+  // Sets a LogFileWriter factory for remote-bound files.
+  // Only usable in tests.
+  // Must be called before the first browser context is enabled.
+  // Effective immediately.
+  void SetRemoteLogFileWriterFactoryForTesting(
+      std::unique_ptr<LogFileWriter::Factory> factory);
+
   // It is not always feasible to check in unit tests that uploads do not occur
   // at a certain time, because that's (sometimes) racy with the event that
   // suppresses the upload. We therefore allow unit tests to glimpse into the
@@ -299,6 +312,9 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   // Manages remote-bound logs - logs which will be sent to a remote server.
   // This is only possible when a command line flag is present.
+  // Creation and destruction (or reset) only on the UI thread, and therefore
+  // checking for emptiness allowed on the UI thread.
+  // Everything else (dereferencing and calling methods) only on |task_runner_|.
   // TODO(eladalon): Remove the command-line flag and the unique_ptr.
   // https://crbug.com/775415
   std::unique_ptr<WebRtcRemoteEventLogManager> remote_logs_manager_;
@@ -323,6 +339,11 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // sent down to |remote_logs_manager_| with the first enabled browser context.
   // This member must only be accessed on the UI thread.
   bool first_browser_context_initializations_done_;
+
+  // May only be set for tests, in which case, it will be passed to
+  // |remote_logs_manager_| when (and if) produced.
+  std::unique_ptr<LogFileWriter::Factory>
+      remote_log_file_writer_factory_for_testing_;
 
   // The main logic will run sequentially on this runner, on which blocking
   // tasks are allowed.
