@@ -1350,6 +1350,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_LOCATION_NO_AVAILABLE_LOCATIONS" desc="Text that indicates to the user that there are no download locations available.">
         No available download locations
       </message>
+      <message name="IDS_DOWNLOAD_SETTINGS_ENABLE_PREFETCH_TITLE" desc="Title for preference that allows the user to enable or disable the prefetching of articles. Please ensure the words 'articles for you' match the 'articles for you' in New Tab Page. ">
+        Download articles for you
+      </message>
+      <message name="IDS_DOWNLOAD_SETTINGS_ENABLE_PREFETCH_DESCRIPTION" desc="Description for preference that describes that prefetching of articles only happens when connected to Wi-Fi.">
+        Download occurs only on Wi-Fi
+      </message>
 
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">
