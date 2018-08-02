@@ -86,6 +86,7 @@ class MODULES_EXPORT InspectorIndexedDBAgent final
  private:
   Member<InspectedFrames> inspected_frames_;
   v8_inspector::V8InspectorSession* v8_session_;
+  InspectorAgentState::Boolean enabled_;
 };
 
 }  // namespace blink
