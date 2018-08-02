@@ -6,12 +6,12 @@
 #define COMPONENTS_UNIFIED_CONSENT_UNIFIED_CONSENT_SERVICE_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/unified_consent/unified_consent_service_client.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace user_prefs {
@@ -27,6 +27,9 @@ class SyncService;
 
 namespace unified_consent {
 
+using Service = UnifiedConsentServiceClient::Service;
+using ServiceState = UnifiedConsentServiceClient::ServiceState;
+
 enum class MigrationState : int {
   NOT_INITIALIZED = 0,
   IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP = 1,
@@ -34,11 +37,10 @@ enum class MigrationState : int {
   COMPLETED = 10,
 };
 
-class UnifiedConsentServiceClient;
-
 // A browser-context keyed service that is used to manage the user consent
 // when UnifiedConsent feature is enabled.
 class UnifiedConsentService : public KeyedService,
+                              public UnifiedConsentServiceClient::Observer,
                               public identity::IdentityManager::Observer,
                               public syncer::SyncServiceObserver {
  public:
@@ -70,11 +72,16 @@ class UnifiedConsentService : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
+  // UnifiedConsentServiceClient::Observer:
+  void OnServiceStateChanged(Service service) override;
+
   // IdentityManager::Observer:
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
 
  private:
+  friend class UnifiedConsentServiceTest;
+
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
 

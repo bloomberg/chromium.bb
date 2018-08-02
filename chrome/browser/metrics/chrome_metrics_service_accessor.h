@@ -139,6 +139,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
   friend class NavigationMetricsRecorder;
+  friend class ChromeUnifiedConsentServiceClient;
 
   // Testing related friends.
   friend class MetricsReportingStateTest;

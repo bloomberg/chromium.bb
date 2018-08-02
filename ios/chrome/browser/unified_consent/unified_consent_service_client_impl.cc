@@ -11,49 +11,76 @@
 
 UnifiedConsentServiceClientImpl::UnifiedConsentServiceClientImpl(
     PrefService* pref_service)
-    : pref_service_(pref_service) {}
-
-void UnifiedConsentServiceClientImpl::SetAlternateErrorPagesEnabled(
-    bool enabled) {
-  // Feature not available on iOS.
-  NOTIMPLEMENTED();
+    : pref_service_(pref_service) {
+  DCHECK(pref_service_);
+  ObserveServicePrefChange(Service::kMetricsReporting,
+                           metrics::prefs::kMetricsReportingEnabled,
+                           pref_service_);
+  ObserveServicePrefChange(Service::kNetworkPrediction,
+                           prefs::kNetworkPredictionEnabled, pref_service_);
+  ObserveServicePrefChange(Service::kSearchSuggest,
+                           prefs::kSearchSuggestEnabled, pref_service_);
 }
 
-void UnifiedConsentServiceClientImpl::SetMetricsReportingEnabled(bool enabled) {
-  BooleanPrefMember basePreference;
-  basePreference.Init(metrics::prefs::kMetricsReportingEnabled, pref_service_);
-  basePreference.SetValue(enabled);
-  BooleanPrefMember wifiPreference;
-  wifiPreference.Init(prefs::kMetricsReportingWifiOnly, pref_service_);
-  wifiPreference.SetValue(enabled);
+UnifiedConsentServiceClientImpl::ServiceState
+UnifiedConsentServiceClientImpl::GetServiceState(Service service) {
+  bool enabled;
+  switch (service) {
+    case Service::kMetricsReporting: {
+      BooleanPrefMember metrics_pref;
+      metrics_pref.Init(metrics::prefs::kMetricsReportingEnabled,
+                        pref_service_);
+      enabled = metrics_pref.GetValue();
+      break;
+    }
+    case Service::kNetworkPrediction: {
+      BooleanPrefMember network_pref;
+      network_pref.Init(prefs::kNetworkPredictionEnabled, pref_service_);
+      enabled = network_pref.GetValue();
+      break;
+    }
+    case Service::kSearchSuggest:
+      enabled = pref_service_->GetBoolean(prefs::kSearchSuggestEnabled);
+      break;
+    case Service::kAlternateErrorPages:
+    case Service::kSafeBrowsing:
+    case Service::kSafeBrowsingExtendedReporting:
+    case Service::kSpellCheck:
+      return ServiceState::kNotSupported;
+  }
+  return enabled ? ServiceState::kEnabled : ServiceState::kDisabled;
 }
 
-void UnifiedConsentServiceClientImpl::SetSearchSuggestEnabled(bool enabled) {
-  pref_service_->SetBoolean(prefs::kSearchSuggestEnabled, enabled);
-}
-
-void UnifiedConsentServiceClientImpl::SetSafeBrowsingEnabled(bool enabled) {
-  // Feature not available on iOS.
-  NOTIMPLEMENTED();
-}
-
-void UnifiedConsentServiceClientImpl::SetSafeBrowsingExtendedReportingEnabled(
-    bool enabled) {
-  // Feature not available on iOS.
-  NOTIMPLEMENTED();
-}
-
-void UnifiedConsentServiceClientImpl::SetNetworkPredictionEnabled(
-    bool enabled) {
-  BooleanPrefMember basePreference;
-  basePreference.Init(prefs::kNetworkPredictionEnabled, pref_service_);
-  basePreference.SetValue(enabled);
-  BooleanPrefMember wifiPreference;
-  wifiPreference.Init(prefs::kNetworkPredictionWifiOnly, pref_service_);
-  wifiPreference.SetValue(enabled);
-}
-
-void UnifiedConsentServiceClientImpl::SetSpellCheckEnabled(bool enabled) {
-  // Feature not available on iOS.
-  NOTIMPLEMENTED();
+void UnifiedConsentServiceClientImpl::SetServiceEnabled(Service service,
+                                                        bool enabled) {
+  switch (service) {
+    case Service::kMetricsReporting: {
+      BooleanPrefMember metrics_pref;
+      metrics_pref.Init(metrics::prefs::kMetricsReportingEnabled,
+                        pref_service_);
+      metrics_pref.SetValue(enabled);
+      BooleanPrefMember metrics_wifi_pref;
+      metrics_wifi_pref.Init(prefs::kMetricsReportingWifiOnly, pref_service_);
+      metrics_wifi_pref.SetValue(enabled);
+      break;
+    }
+    case Service::kNetworkPrediction: {
+      BooleanPrefMember network_pref;
+      network_pref.Init(prefs::kNetworkPredictionEnabled, pref_service_);
+      network_pref.SetValue(enabled);
+      BooleanPrefMember network_wifi_pref;
+      network_wifi_pref.Init(prefs::kNetworkPredictionWifiOnly, pref_service_);
+      network_wifi_pref.SetValue(enabled);
+      break;
+    }
+    case Service::kSearchSuggest:
+      pref_service_->SetBoolean(prefs::kSearchSuggestEnabled, enabled);
+      break;
+    case Service::kAlternateErrorPages:
+    case Service::kSafeBrowsing:
+    case Service::kSafeBrowsingExtendedReporting:
+    case Service::kSpellCheck:
+      NOTIMPLEMENTED() << "Feature not available on iOS";
+      break;
+  }
 }
