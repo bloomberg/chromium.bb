@@ -201,7 +201,7 @@ EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
           INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT;
   }
   NOTREACHED();
-  return ui::mojom::LatencyComponentType::LATENCY_COMPONENT_TYPE_LAST;
+  return ui::mojom::LatencyComponentType::kMaxValue;
 }
 
 // static
