@@ -16,6 +16,7 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -152,25 +153,47 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
       std::move(frame_sink_manager_client_request), resize_task_runner(),
       std::move(frame_sink_manager));
 
-  // Hop to the IO thread, then send the other side of interface to viz process.
-  auto connect_on_io_thread =
-      [](viz::mojom::FrameSinkManagerRequest request,
-         viz::mojom::FrameSinkManagerClientPtrInfo client) {
-        // There should always be a GpuProcessHost instance, and GPU process,
-        // for running the compositor thread. The exception is during shutdown
-        // the GPU process won't be restarted and GpuProcessHost::Get() can
-        // return null.
-        auto* gpu_process_host = GpuProcessHost::Get();
-        if (gpu_process_host) {
-          gpu_process_host->ConnectFrameSinkManager(std::move(request),
-                                                    std::move(client));
-        }
-      };
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(connect_on_io_thread,
-                     std::move(frame_sink_manager_request),
-                     frame_sink_manager_client.PassInterface()));
+  if (GpuDataManagerImpl::GetInstance()->GpuProcessStartAllowed()) {
+    // Hop to the IO thread, then send the other side of interface to viz
+    // process.
+    auto connect_on_io_thread =
+        [](viz::mojom::FrameSinkManagerRequest request,
+           viz::mojom::FrameSinkManagerClientPtrInfo client) {
+          // There should always be a GpuProcessHost instance, and GPU process,
+          // for running the compositor thread. The exception is during shutdown
+          // the GPU process won't be restarted and GpuProcessHost::Get() can
+          // return null.
+          auto* gpu_process_host = GpuProcessHost::Get();
+          if (gpu_process_host) {
+            gpu_process_host->ConnectFrameSinkManager(std::move(request),
+                                                      std::move(client));
+          }
+        };
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(connect_on_io_thread,
+                       std::move(frame_sink_manager_request),
+                       frame_sink_manager_client.PassInterface()));
+  } else {
+    DCHECK(!viz_compositor_thread_);
+
+    // GPU process access is disabled. Start a new thread to run the display
+    // compositor in-process and connect HostFrameSinkManager to it.
+    viz_compositor_thread_ = std::make_unique<viz::VizCompositorThreadRunner>();
+
+    viz::mojom::FrameSinkManagerParamsPtr params =
+        viz::mojom::FrameSinkManagerParams::New();
+    params->restart_id = viz::BeginFrameSource::kNotRestartableId;
+    base::Optional<uint32_t> activation_deadline_in_frames =
+        switches::GetDeadlineToSynchronizeSurfaces();
+    params->use_activation_deadline = activation_deadline_in_frames.has_value();
+    params->activation_deadline_in_frames =
+        activation_deadline_in_frames.value_or(0u);
+    params->frame_sink_manager = std::move(frame_sink_manager_request);
+    params->frame_sink_manager_client =
+        frame_sink_manager_client.PassInterface();
+    viz_compositor_thread_->CreateFrameSinkManager(std::move(params));
+  }
 }
 
 void VizProcessTransportFactory::CreateLayerTreeFrameSink(
