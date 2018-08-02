@@ -13,6 +13,10 @@
 
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace web_app {
 
 class PendingAppManager;
@@ -32,6 +36,8 @@ class WebAppProvider : public KeyedService {
   PendingAppManager& pending_app_manager() { return *pending_app_manager_; }
 
   ~WebAppProvider() override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   std::unique_ptr<PendingAppManager> pending_app_manager_;

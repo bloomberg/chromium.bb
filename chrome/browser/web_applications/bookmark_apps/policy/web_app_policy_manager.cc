@@ -10,6 +10,7 @@
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 
 namespace web_app {
@@ -21,6 +22,12 @@ WebAppPolicyManager::WebAppPolicyManager(PrefService* pref_service,
 }
 
 WebAppPolicyManager::~WebAppPolicyManager() = default;
+
+// static
+void WebAppPolicyManager::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kWebAppInstallForceList);
+}
 
 std::vector<PendingAppManager::AppInfo>
 WebAppPolicyManager::GetAppsToInstall() {
