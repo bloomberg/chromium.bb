@@ -111,16 +111,17 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   double expanded_amount_;
 
   // Unowned.
-  UnifiedSystemTrayController* controller_;
+  UnifiedSystemTrayController* const controller_;
 
   // Owned by views hierarchy.
-  UnifiedMessageCenterView* message_center_view_;
-  TopShortcutsView* top_shortcuts_view_;
-  FeaturePodsContainerView* feature_pods_container_;
-  UnifiedSlidersContainerView* sliders_container_;
-  UnifiedSystemInfoView* system_info_view_;
-  views::View* system_tray_container_;
-  views::View* detailed_view_container_;
+  UnifiedMessageCenterView* const message_center_view_;
+  views::View* const notification_hidden_view_;
+  TopShortcutsView* const top_shortcuts_view_;
+  FeaturePodsContainerView* const feature_pods_container_;
+  UnifiedSlidersContainerView* const sliders_container_;
+  UnifiedSystemInfoView* const system_info_view_;
+  views::View* const system_tray_container_;
+  views::View* const detailed_view_container_;
 
   const std::unique_ptr<FocusSearch> focus_search_;
   const std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;

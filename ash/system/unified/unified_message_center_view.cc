@@ -75,8 +75,10 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
 
   auto* clear_all_button = new RoundedLabelButton(
-      this, l10n_util::GetStringUTF16(
-                IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
+      this,
+      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL));
+  clear_all_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
   button_container->AddChildView(clear_all_button);
   scroller_contents->AddChildView(button_container);
 
