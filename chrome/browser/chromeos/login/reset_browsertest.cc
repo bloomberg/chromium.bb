@@ -216,7 +216,8 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RollbackUnavailable) {
   RegisterSomeUser();
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackUnavailable) {
+// Disabled due to flakiness (crbug.com/870284)
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_RollbackUnavailable) {
   update_engine_client_->set_can_rollback_check_result(false);
 
   InvokeResetScreen();
