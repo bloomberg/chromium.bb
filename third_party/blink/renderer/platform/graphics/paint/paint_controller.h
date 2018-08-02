@@ -157,7 +157,9 @@ class PLATFORM_EXPORT PaintController {
     DCHECK(skipping_cache_count_ > 0);
     --skipping_cache_count_;
   }
-  bool IsSkippingCache() const { return skipping_cache_count_; }
+  bool IsSkippingCache() const {
+    return usage_ == kTransient || skipping_cache_count_;
+  }
 
   // Must be called when a painting is finished. Updates the current paint
   // artifact with the new paintings.
