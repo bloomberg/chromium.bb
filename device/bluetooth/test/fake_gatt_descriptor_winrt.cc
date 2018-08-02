@@ -4,9 +4,6 @@
 
 #include "device/bluetooth/test/fake_gatt_descriptor_winrt.h"
 
-#include "base/strings/string_piece.h"
-#include "device/bluetooth/bluetooth_uuid.h"
-
 namespace device {
 
 namespace {
@@ -24,10 +21,7 @@ using ABI::Windows::Storage::Streams::IBuffer;
 
 }  // namespace
 
-FakeGattDescriptorWinrt::FakeGattDescriptorWinrt(base::StringPiece uuid,
-                                                 uint16_t attribute_handle)
-    : uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
-      attribute_handle_(attribute_handle) {}
+FakeGattDescriptorWinrt::FakeGattDescriptorWinrt() = default;
 
 FakeGattDescriptorWinrt::~FakeGattDescriptorWinrt() = default;
 
@@ -42,13 +36,11 @@ HRESULT FakeGattDescriptorWinrt::put_ProtectionLevel(
 }
 
 HRESULT FakeGattDescriptorWinrt::get_Uuid(GUID* value) {
-  *value = uuid_;
-  return S_OK;
+  return E_NOTIMPL;
 }
 
 HRESULT FakeGattDescriptorWinrt::get_AttributeHandle(uint16_t* value) {
-  *value = attribute_handle_;
-  return S_OK;
+  return E_NOTIMPL;
 }
 
 HRESULT FakeGattDescriptorWinrt::ReadValueAsync(

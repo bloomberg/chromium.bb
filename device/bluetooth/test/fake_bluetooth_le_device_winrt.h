@@ -112,8 +112,6 @@ class FakeBluetoothLEDeviceWinrt
   void SimulateGattCharacteristic(BluetoothRemoteGattService* service,
                                   const std::string& uuid,
                                   int properties);
-  void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
-                              const std::string& uuid);
   void SimulateGattServicesDiscoveryError();
 
  private:

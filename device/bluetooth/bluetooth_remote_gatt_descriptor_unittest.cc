@@ -22,12 +22,7 @@
 
 namespace device {
 
-class BluetoothRemoteGattDescriptorTest :
-#if defined(OS_WIN)
-    public BluetoothTestWinrt {
-#else
-    public BluetoothTest {
-#endif
+class BluetoothRemoteGattDescriptorTest : public BluetoothTest {
  public:
   // Creates adapter_, device_, service_, characteristic_,
   // descriptor1_, & descriptor2_.
@@ -64,21 +59,12 @@ class BluetoothRemoteGattDescriptorTest :
   BluetoothRemoteGattDescriptor* descriptor2_ = nullptr;
 };
 
-#if defined(OS_WIN)
-using BluetoothRemoteGattDescriptorTestWinrtOnly =
-    BluetoothRemoteGattDescriptorTest;
-#endif
-
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_GetIdentifier GetIdentifier
 #else
 #define MAYBE_GetIdentifier DISABLED_GetIdentifier
 #endif
-#if defined(OS_WIN)
-TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly, GetIdentifier) {
-#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetIdentifier) {
-#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -116,7 +102,6 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetIdentifier) {
   SimulateGattCharacteristic(service2, kTestUUIDDeviceName, /* properties */ 0);
   SimulateGattCharacteristic(service3, kTestUUIDDeviceName, /* properties */ 0);
   SimulateGattCharacteristic(service3, kTestUUIDDeviceName, /* properties */ 0);
-  base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattCharacteristic* char1 = service1->GetCharacteristics()[0];
   BluetoothRemoteGattCharacteristic* char2 = service1->GetCharacteristics()[1];
   BluetoothRemoteGattCharacteristic* char3 = service2->GetCharacteristics()[0];
@@ -132,7 +117,6 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetIdentifier) {
   SimulateGattDescriptor(char4, kTestUUIDCharacteristicUserDescription);
   SimulateGattDescriptor(char5, kTestUUIDCharacteristicUserDescription);
   SimulateGattDescriptor(char6, kTestUUIDCharacteristicUserDescription);
-  base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattDescriptor* desc1 = char1->GetDescriptors()[0];
   BluetoothRemoteGattDescriptor* desc2 = char2->GetDescriptors()[0];
   BluetoothRemoteGattDescriptor* desc3 = char3->GetDescriptors()[0];
@@ -167,11 +151,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetIdentifier) {
 #else
 #define MAYBE_GetUUID DISABLED_GetUUID
 #endif
-#if defined(OS_WIN)
-TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly, GetUUID) {
-#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetUUID) {
-#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -190,7 +170,6 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetUUID) {
 
   SimulateGattCharacteristic(service, kTestUUIDDeviceName,
                              /* properties */ 0);
-  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, service->GetCharacteristics().size());
   BluetoothRemoteGattCharacteristic* characteristic =
       service->GetCharacteristics()[0];
@@ -202,7 +181,6 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetUUID) {
                          kTestUUIDCharacteristicUserDescription);
   SimulateGattDescriptor(characteristic,
                          kTestUUIDClientCharacteristicConfiguration);
-  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(2u, characteristic->GetDescriptors().size());
   BluetoothRemoteGattDescriptor* descriptor1 =
       characteristic->GetDescriptors()[0];
@@ -925,12 +903,5 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_NSNumber) {
   EXPECT_EQ(test_vector, descriptor1_->GetValue());
 }
 #endif  // defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-INSTANTIATE_TEST_CASE_P(
-    /* no prefix */,
-    BluetoothRemoteGattDescriptorTestWinrtOnly,
-    ::testing::Values(true));
-#endif  // defined(OS_WIN)
 
 }  // namespace device
