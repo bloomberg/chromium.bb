@@ -34,7 +34,7 @@ void AlternateNavInfoBarDelegate::CreateForOmniboxNavigation(
       base::WrapUnique(new AlternateNavInfoBarDelegate(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
           std::make_unique<AutocompleteMatch>(match), match.destination_url,
-          search_url))));
+          search_url, base::OnceClosure()))));
 }
 
 // static
@@ -42,13 +42,15 @@ void AlternateNavInfoBarDelegate::CreateForIDNNavigation(
     content::WebContents* web_contents,
     const base::string16& text,
     const GURL& destination_url,
-    const GURL& original_url) {
+    const GURL& original_url,
+    base::OnceClosure link_clicked_callback) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(AlternateNavInfoBarDelegate::CreateInfoBar(
       base::WrapUnique(new AlternateNavInfoBarDelegate(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
-          nullptr, destination_url, original_url))));
+          nullptr, destination_url, original_url,
+          std::move(link_clicked_callback)))));
 }
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
@@ -56,13 +58,15 @@ AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
     const base::string16& text,
     std::unique_ptr<AutocompleteMatch> match,
     const GURL& destination_url,
-    const GURL& original_url)
+    const GURL& original_url,
+    base::OnceClosure link_clicked_callback)
     : infobars::InfoBarDelegate(),
       profile_(profile),
       text_(text),
       match_(std::move(match)),
       destination_url_(destination_url),
-      original_url_(original_url) {
+      original_url_(original_url),
+      link_clicked_callback_(std::move(link_clicked_callback)) {
   if (match_)
     DCHECK_EQ(destination_url_, match_->destination_url);
 
@@ -114,6 +118,8 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
       history_service->DeleteURL(original_url_);
   }
 
+  if (!link_clicked_callback_.is_null())
+    std::move(link_clicked_callback_).Run();
   // Pretend the user typed this URL, so that navigating to it will be the
   // default action when it's typed again in the future.
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(

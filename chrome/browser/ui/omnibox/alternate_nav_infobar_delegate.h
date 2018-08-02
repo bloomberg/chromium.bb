@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -39,7 +40,8 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
   static void CreateForIDNNavigation(content::WebContents* web_contents,
                                      const base::string16& text,
                                      const GURL& suggested_url,
-                                     const GURL& original_url);
+                                     const GURL& original_url,
+                                     base::OnceClosure link_clicked_callback);
   base::string16 GetMessageTextWithOffset(size_t* link_offset) const;
   base::string16 GetLinkText() const;
   GURL GetLinkURL() const;
@@ -50,7 +52,8 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
                               const base::string16& text,
                               std::unique_ptr<AutocompleteMatch> match,
                               const GURL& destination_url,
-                              const GURL& original_url);
+                              const GURL& original_url,
+                              base::OnceClosure link_clicked_callback);
 
   // Returns an alternate nav infobar that owns |delegate|.
   static std::unique_ptr<infobars::InfoBar> CreateInfoBar(
@@ -82,6 +85,8 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
   // For search navigations this is the search URL. For IDN navigations, this is
   // the URL that visually matches a top domain.
   const GURL original_url_;
+
+  base::OnceClosure link_clicked_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AlternateNavInfoBarDelegate);
 };
