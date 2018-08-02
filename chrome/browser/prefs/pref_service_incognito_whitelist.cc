@@ -27,7 +27,6 @@
 #include "components/rappor/rappor_prefs.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/startup_metric_utils/browser/pref_names.h"
 #include "components/suggestions/suggestions_pref_names.h"
@@ -470,11 +469,6 @@ const char* temporary_incognito_whitelist[] = {
 
     prefs::kGoogleServicesPasswordHash,
 
-#if !defined(OS_ANDROID)
-    prefs::kDiceSigninUserMenuPromoCount, prefs::kSignInPromoStartupCount,
-    prefs::kSignInPromoUserSkipped, prefs::kSignInPromoShowOnFirstRunAllowed,
-#endif
-
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     prefs::kCrossDevicePromoOptedOut, prefs::kCrossDevicePromoShouldBeShown,
     prefs::kCrossDevicePromoObservedSingleAccountCookie,
@@ -583,7 +577,7 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kDebuggingFeaturesRequested,
 
 #if defined(OS_CHROMEOS)
-    prefs::kSigninScreenTimezone, prefs::kResolveDeviceTimezoneByGeolocation,
+    prefs::kResolveDeviceTimezoneByGeolocation,
     prefs::kResolveDeviceTimezoneByGeolocationMethod,
     prefs::kSystemTimezoneAutomaticDetectionPolicy,
 #endif  // defined(OS_CHROMEOS)
@@ -639,7 +633,6 @@ const char* temporary_incognito_whitelist[] = {
 
     prefs::kQuickCheckEnabled, prefs::kPacHttpsUrlStrippingEnabled,
     prefs::kBrowserGuestModeEnabled, prefs::kBrowserAddPersonEnabled,
-    prefs::kForceBrowserSignin,
 
     prefs::kCryptAuthDeviceId, prefs::kEasyUnlockHardlockState,
     prefs::kEasyUnlockLocalStateTpmKeys, prefs::kEasyUnlockLocalStateUserPrefs,
@@ -883,23 +876,6 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kSyncedDefaultSearchProviderGUID,
     prefs::kDefaultSearchProviderEnabled, prefs::kSearchProviderOverrides,
     prefs::kSearchProviderOverridesVersion, prefs::kCountryIDAtInstall,
-
-// components/signin/core/browser/signin_pref_names.h
-#if defined(OS_CHROMEOS)
-    prefs::kAccountConsistencyMirrorRequired,
-#endif
-    prefs::kAccountIdMigrationState, prefs::kAutologinEnabled,
-    prefs::kGaiaCookieHash, prefs::kGaiaCookieChangedTime,
-    prefs::kGaiaCookiePeriodicReportTime, prefs::kGoogleServicesAccountId,
-    prefs::kGoogleServicesHostedDomain, prefs::kGoogleServicesLastAccountId,
-    prefs::kGoogleServicesLastUsername,
-    prefs::kGoogleServicesSigninScopedDeviceId,
-    prefs::kGoogleServicesUserAccountId, prefs::kGoogleServicesUsername,
-    prefs::kGoogleServicesUsernamePattern, prefs::kReverseAutologinEnabled,
-    prefs::kReverseAutologinRejectedEmailList, prefs::kSignedInTime,
-    prefs::kSigninAllowed, prefs::kTokenServiceDiceCompatible,
-    prefs::kTokenServiceExcludeAllSecondaryAccounts,
-    prefs::kTokenServiceExcludedSecondaryAccounts,
 
     // components/spellcheck/browser/pref_names.h
     spellcheck::prefs::kSpellCheckEnable,
