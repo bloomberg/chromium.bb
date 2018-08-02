@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#import "base/ios/block_types.h"
 #include "base/scoped_observer.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"

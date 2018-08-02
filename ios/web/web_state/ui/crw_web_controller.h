@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
-#import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_touch_tracking_recognizer.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 
@@ -60,7 +60,6 @@ class WebStateImpl;
 // Defaults to NO; this should be enabled before attempting to access the view.
 @property(nonatomic, assign) BOOL webUsageEnabled;
 
-@property(nonatomic, weak) id<CRWWebDelegate> delegate;
 @property(nonatomic, weak) id<CRWNativeContentProvider> nativeProvider;
 @property(nonatomic, weak) id<CRWSwipeRecognizerProvider>
     swipeRecognizerProvider;

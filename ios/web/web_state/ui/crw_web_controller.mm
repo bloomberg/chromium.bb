@@ -933,7 +933,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 @implementation CRWWebController
 
-@synthesize delegate = _delegate;
 @synthesize webUsageEnabled = _webUsageEnabled;
 @synthesize loadPhase = _loadPhase;
 @synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
@@ -1000,12 +999,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // is restructured so that subviews are not added during |layoutSubviews|.
   // DCHECK([contentView.scrollView isDescendantOfView:contentView]);
   [_containerView displayTransientContent:contentView];
-}
-
-- (void)setDelegate:(id<CRWWebDelegate>)delegate {
-  _delegate = delegate;
-  if ([self.nativeController respondsToSelector:@selector(setDelegate:)])
-    [self.nativeController setDelegate:self];
 }
 
 - (void)dealloc {
@@ -1132,9 +1125,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   self.swipeRecognizerProvider = nil;
   if ([self.nativeController respondsToSelector:@selector(close)])
     [self.nativeController close];
-
-  // Reset the delegate association.
-  _delegate = nil;
 
   if (!_isHalted) {
     [self terminateNetworkActivity];
