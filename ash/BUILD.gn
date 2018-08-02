@@ -397,8 +397,6 @@ component("ash") {
     "login/ui/note_action_launch_button.h",
     "login/ui/pin_keyboard_animation.cc",
     "login/ui/pin_keyboard_animation.h",
-    "login/ui/public_account_warning_dialog.cc",
-    "login/ui/public_account_warning_dialog.h",
     "login/ui/scrollable_users_list_view.cc",
     "login/ui/scrollable_users_list_view.h",
     "login/ui/user_switch_flip_animation.cc",

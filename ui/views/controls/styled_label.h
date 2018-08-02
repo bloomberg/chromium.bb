@@ -37,20 +37,6 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Internal class name.
   static const char kViewClassName[];
 
-  // TestApi is used for tests to get internal implementation details.
-  class VIEWS_EXPORT TestApi {
-   public:
-    explicit TestApi(StyledLabel* view);
-    ~TestApi();
-
-    const std::map<View*, gfx::Range>& link_targets();
-
-   private:
-    StyledLabel* const view_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
   // Parameters that define label style for a styled label's text range.
   struct VIEWS_EXPORT RangeStyleInfo {
     RangeStyleInfo();
