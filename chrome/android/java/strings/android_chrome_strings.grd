@@ -3662,6 +3662,11 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         Navigation panel closed
       </message>
 
+      <!-- Chrome Duet -->
+      <message name="IDS_IPH_DUET_ICONS_MOVED" desc="The in-product help message for the split toolbar experiment that explains that the user's icons (menu button, tab switcher button, and home button) have moved to the bottom of the screen.">
+        Your icons have moved to the bottom of the screen
+      </message>
+
       <!-- Photo picker -->
       <message name="IDS_PHOTO_PICKER_SELECT_IMAGES" desc="The label in the title bar of the Photo Picker dialog, suggesting which action the user should take.">
         Select images

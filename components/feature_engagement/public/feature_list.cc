@@ -21,6 +21,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDownloadHomeFeature,
     &kIPHDownloadPageFeature,
     &kIPHDownloadPageScreenshotFeature,
+    &kIPHChromeDuetFeature,
     &kIPHChromeHomeExpandFeature,
     &kIPHChromeHomePullToRefreshFeature,
     &kIPHMediaDownloadFeature,

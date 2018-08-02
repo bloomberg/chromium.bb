@@ -652,8 +652,31 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
     }
 
+    /** Record that the bottom toolbar was used for IPH reasons. */
+    private void recordBottomToolbarUseForIPH() {
+        if (mTabModelSelector != null && mTabModelSelector.getCurrentTab() != null) {
+            Tab tab = mTabModelSelector.getCurrentTab();
+            Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+            tracker.notifyEvent(EventConstants.CHROME_DUET_USED_BOTTOM_TOOLBAR);
+        }
+    }
+
+    /**
+     * Add bottom toolbar IPH tracking to an existing click listener.
+     * @param listener The listener to add bottom toolbar tracking to.
+     */
+    private OnClickListener wrapBottomToolbarClickListenerForIPH(OnClickListener listener) {
+        return (v) -> {
+            recordBottomToolbarUseForIPH();
+            listener.onClick(v);
+        };
+    }
+
     private ToolbarButtonData createHomeButton(Context context) {
-        final OnClickListener homeButtonListener = v -> openHomepage();
+        final OnClickListener homeButtonListener = v -> {
+            recordBottomToolbarUseForIPH();
+            openHomepage();
+        };
         return new ToolbarButtonData(R.drawable.btn_toolbar_home,
                 R.string.accessibility_toolbar_btn_home, homeButtonListener, true, context);
     }
@@ -666,6 +689,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     private ToolbarButtonData createSearchAccelerator(Context context) {
         final OnClickListener searchAcceleratorListener = v -> {
+            recordBottomToolbarUseForIPH();
             recordOmniboxFocusReason(OmniboxFocusReason.ACCELERATOR_TAP);
             ACCELERATOR_BUTTON_TAP_ACTION.record();
             setUrlBarFocus(true);
@@ -806,19 +830,45 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                                ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                     && PrefServiceBridge.getInstance().isIncognitoModeEnabled();
             final ToolbarButtonData secondSlotTabSwitcherButtonData = showIncognitoToggleButton
-                    ? createIncognitoToggleButton(incognitoClickHandler, mActivity)
+                    ? createIncognitoToggleButton(
+                              wrapBottomToolbarClickListenerForIPH(incognitoClickHandler),
+                              mActivity)
                     : null;
+            mAppMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
             mBottomToolbarCoordinator.initializeWithNative(
                     mActivity.getCompositorViewHolder().getResourceManager(),
-                    mActivity.getCompositorViewHolder().getLayoutManager(), tabSwitcherClickHandler,
+                    mActivity.getCompositorViewHolder().getLayoutManager(),
+                    wrapBottomToolbarClickListenerForIPH(tabSwitcherClickHandler),
                     mAppMenuButtonHelper, mTabModelSelector, mOverviewModeBehavior,
                     mActivity.getContextualSearchManager(), mActivity.getWindowAndroid(),
-                    createNewTabButton(newTabClickHandler, mActivity),
+                    createNewTabButton(
+                            wrapBottomToolbarClickListenerForIPH(newTabClickHandler), mActivity),
                     secondSlotTabSwitcherButtonData);
+
+            Tab currentTab = tabModelSelector.getCurrentTab();
+            maybeShowDuetHelpBubble(currentTab);
         }
 
         onNativeLibraryReady();
         mInitializedWithNative = true;
+    }
+
+    /**
+     * Maybe show the IPH bubble for Chrome Duet.
+     * @param tab The active tab.
+     */
+    private void maybeShowDuetHelpBubble(Tab tab) {
+        if (tab == null) return;
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+        if (tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_DUET_FEATURE)) {
+            ViewRectProvider provider = new ViewRectProvider(mToolbar);
+            TextBubble bubble = new TextBubble(mToolbar.getContext(), mToolbar,
+                    R.string.iph_duet_icons_moved, R.string.iph_duet_icons_moved, true, provider);
+            bubble.setDismissOnTouchInteraction(true);
+            bubble.addOnDismissListener(
+                    () -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE));
+            bubble.show();
+        }
     }
 
     /**

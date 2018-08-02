@@ -25,6 +25,8 @@ const base::Feature kIPHDownloadPageFeature{"IPH_DownloadPage",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadPageScreenshotFeature{
     "IPH_DownloadPageScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHChromeDuetFeature{"IPH_ChromeDuet",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHChromeHomeExpandFeature{
     "IPH_ChromeHomeExpand", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHChromeHomePullToRefreshFeature{

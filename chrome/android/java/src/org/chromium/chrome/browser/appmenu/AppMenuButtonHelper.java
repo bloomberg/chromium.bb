@@ -29,6 +29,7 @@ public class AppMenuButtonHelper extends AccessibilityDelegate implements OnTouc
     private boolean mIsTouchEventsBeingProcessed;
     private boolean mShowMenuOnUp;
     private boolean mMenuShowsFromBottom;
+    private Runnable mOnClickRunnable;
 
     /**
      * @param menuHandler MenuHandler implementation that can show and get the app menu.
@@ -109,6 +110,16 @@ public class AppMenuButtonHelper extends AccessibilityDelegate implements OnTouc
         view.setPressed(isActionDown);
     }
 
+    /**
+     * Set a runnable for click events on the menu button. This runnable is triggered with the down
+     * motion event rather than click specifically. This is primarily used to track interaction with
+     * the menu button.
+     * @param clickRunnable The {@link Runnable} to be executed on a down event.
+     */
+    public void setOnClickRunnable(Runnable clickRunnable) {
+        mOnClickRunnable = clickRunnable;
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent event) {
@@ -119,6 +130,7 @@ public class AppMenuButtonHelper extends AccessibilityDelegate implements OnTouc
                 if (!mShowMenuOnUp) {
                     isTouchEventConsumed |= true;
                     updateTouchEvent(view, true);
+                    if (mOnClickRunnable != null) mOnClickRunnable.run();
                     showAppMenu(view, true);
                 }
                 break;
