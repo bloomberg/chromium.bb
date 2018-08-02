@@ -105,4 +105,10 @@ void InspectorAgentState::InitFrom(InspectorSessionState* session_state) {
   for (Field* f : fields_)
     f->InitFrom(session_state);
 }
+
+void InspectorAgentState::Clear() {
+  for (Field* f : fields_)
+    f->Clear();
+}
+
 }  // namespace blink

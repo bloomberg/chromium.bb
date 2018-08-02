@@ -227,5 +227,33 @@ TEST(InspectorSessionStateTest, MultipleAgents) {
     keys.push_back(k);
 
   EXPECT_THAT(keys, UnorderedElementsAre("map_agents.1/Pi", "simple_agent.4/"));
+
+  {  // Renderer session, maps_agent clears its fields, and show that it will
+    // clear the agent's fields, but no other fields.
+    InspectorSessionState session_state(dev_tools_session.CloneCookie());
+    AgentWithSimpleFields simple_agent;
+    simple_agent.agent_state_.InitFrom(&session_state);
+    AgentWithMapFields maps_agent;
+    maps_agent.agent_state_.InitFrom(&session_state);
+    maps_agent.strings_.Set("foo", "bar");
+    maps_agent.agent_state_.Clear();
+
+    EXPECT_TRUE(maps_agent.doubles_.IsEmpty());
+    EXPECT_TRUE(maps_agent.strings_.IsEmpty());
+    EXPECT_FALSE(simple_agent.message_.Get().IsEmpty());  // other agent.
+
+    dev_tools_session.ApplyUpdates(session_state.TakeUpdates());
+  }
+
+  {  // Renderer session, this time the simple agent clears its fields and
+    // as a result the session has no more entries (both agents are cleared).
+    InspectorSessionState session_state(dev_tools_session.CloneCookie());
+    AgentWithSimpleFields simple_agent;
+    simple_agent.agent_state_.InitFrom(&session_state);
+    simple_agent.agent_state_.Clear();
+
+    dev_tools_session.ApplyUpdates(session_state.TakeUpdates());
+  }
+  EXPECT_TRUE(dev_tools_session.CloneCookie()->entries.IsEmpty());
 }
 }  // namespace blink
