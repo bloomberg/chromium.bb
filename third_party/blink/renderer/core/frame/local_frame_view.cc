@@ -108,6 +108,8 @@
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
+#include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -133,8 +135,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
-#include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/ukm_time_aggregator.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -1642,7 +1642,7 @@ void LocalFrameView::SetNeedsCompositingUpdate(
   }
 }
 
-PlatformChromeClient* LocalFrameView::GetChromeClient() const {
+ChromeClient* LocalFrameView::GetChromeClient() const {
   Page* page = GetFrame().GetPage();
   if (!page)
     return nullptr;
@@ -3450,7 +3450,7 @@ void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
 }
 
 void LocalFrameView::ScheduleAnimation() {
-  if (auto* client = ToChromeClient(GetChromeClient()))
+  if (auto* client = GetChromeClient())
     client->ScheduleAnimation(this);
 }
 
@@ -3734,7 +3734,7 @@ IntPoint LocalFrameView::FrameToViewport(const IntPoint& point_in_frame) const {
 }
 
 IntRect LocalFrameView::FrameToScreen(const IntRect& rect) const {
-  if (auto* client = ToChromeClient(GetChromeClient()))
+  if (auto* client = GetChromeClient())
     return client->ViewportToScreen(FrameToViewport(rect), this);
   return IntRect();
 }

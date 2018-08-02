@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -95,8 +94,19 @@ struct WebPoint;
 struct WebScreenInfo;
 struct WebWindowFeatures;
 
-class CORE_EXPORT ChromeClient : public PlatformChromeClient {
+class CORE_EXPORT ChromeClient
+    : public GarbageCollectedFinalized<ChromeClient> {
+  DISALLOW_COPY_AND_ASSIGN(ChromeClient);
+
  public:
+  virtual ~ChromeClient() = default;
+
+  // Converts the scalar value from the window coordinates to the viewport
+  // scale.
+  virtual float WindowToViewportScalar(const float) const = 0;
+
+  virtual bool IsPopup() { return false; }
+
   virtual void ChromeDestroyed() = 0;
 
   // Requests the host invalidate the contents.
@@ -184,10 +194,8 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   virtual WebViewImpl* GetWebView() const = 0;
 
-  // Methods used by PlatformChromeClient.
   virtual WebScreenInfo GetScreenInfo() const = 0;
   virtual void SetCursor(const Cursor&, LocalFrame* local_root) = 0;
-  // End methods used by PlatformChromeClient.
 
   virtual void SetCursorOverridden(bool) = 0;
 
@@ -361,10 +369,10 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
     std::move(callback).Run(false);
   }
 
-  void Trace(blink::Visitor*) override;
+  virtual void Trace(blink::Visitor*);
 
  protected:
-  ~ChromeClient() override = default;
+  ChromeClient() = default;
 
   virtual void ShowMouseOverURL(const HitTestResult&) = 0;
   virtual void SetWindowRect(const IntRect&, LocalFrame&) = 0;
@@ -390,12 +398,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);
 };
-
-inline ChromeClient* ToChromeClient(PlatformChromeClient* client) {
-  // In production code, a PlatformChromeClient instance is always a
-  // ChromeClient instance.
-  return static_cast<ChromeClient*>(client);
-}
 
 }  // namespace blink
 

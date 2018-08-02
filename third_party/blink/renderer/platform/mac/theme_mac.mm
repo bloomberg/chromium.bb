@@ -31,7 +31,6 @@
 #import "third_party/blink/renderer/platform/mac/local_current_graphics_context.h"
 #import "third_party/blink/renderer/platform/mac/version_util_mac.h"
 #import "third_party/blink/renderer/platform/mac/web_core_ns_cell_extras.h"
-#import "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 // This is a view whose sole purpose is to tell AppKit that it's flipped.

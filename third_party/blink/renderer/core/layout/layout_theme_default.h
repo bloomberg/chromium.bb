@@ -112,7 +112,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 
   // These methods define the padding for the MenuList's inner block.
   int PopupInternalPaddingStart(const ComputedStyle&) const override;
-  int PopupInternalPaddingEnd(const PlatformChromeClient*,
+  int PopupInternalPaddingEnd(const ChromeClient*,
                               const ComputedStyle&) const override;
   int PopupInternalPaddingTop(const ComputedStyle&) const override;
   int PopupInternalPaddingBottom(const ComputedStyle&) const override;
@@ -121,7 +121,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   // thickness, which is 3px or 4px, and we use the value from the default Aura
   // theme.
   int MenuListArrowWidthInDIP() const;
-  float ClampedMenuListArrowPaddingSize(const PlatformChromeClient*,
+  float ClampedMenuListArrowPaddingSize(const ChromeClient*,
                                         const ComputedStyle&) const;
 
   static void SetSelectionColors(unsigned active_background_color,
