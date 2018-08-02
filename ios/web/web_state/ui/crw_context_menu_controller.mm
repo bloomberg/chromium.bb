@@ -383,6 +383,7 @@ struct ContextMenuInfo {
 - (void)setDOMElementForLastTouch:(NSDictionary*)element {
   _contextMenuInfoForLastTouch.dom_element = [element copy];
   if (_contextMenuNeedsDisplay) {
+    _contextMenuNeedsDisplay = NO;
     UMA_HISTOGRAM_ENUMERATION(kContextMenuDelayedElementDetailsHistogram,
                               DelayedElementDetailsState::Show);
     [self processReceivedDOMElement];
