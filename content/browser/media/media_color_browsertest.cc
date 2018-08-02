@@ -77,9 +77,8 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuvj420pH264) {
 }
 
 // This fails on ChromeOS: http://crbug.com/647400,
-// Windows: http://crbug.com/647842, and Android: http://crbug.com/649199,
-// http://crbug.com/649185.
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_ANDROID)
+// and Android: http://crbug.com/649199, http://crbug.com/649185.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #define MAYBE_Yuv420pRec709H264 DISABLED_Yuv420pRec709H264
 #else
 #define MAYBE_Yuv420pRec709H264 Yuv420pRec709H264
