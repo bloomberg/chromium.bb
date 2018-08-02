@@ -67,6 +67,8 @@ class OneClickTestProfileSyncService
 
   bool IsSetupInProgress() const override { return setup_in_progress_; }
 
+  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
+
   State GetState() const override { return state_; }
 
   void set_first_setup_complete(bool complete) {

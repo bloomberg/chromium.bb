@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/syncable/directory.h"
 #include "sql/test/test_helpers.h"
@@ -75,6 +77,13 @@ class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
 
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                        StopThenDisableDeletesDirectory) {
+  // If SyncStandaloneTransport is enabled, then the sync service will
+  // immediately restart (and thus recreate directory files) after RequestStop.
+  // TODO(crbug.com/856179): Rewrite this test to pass with
+  // kSyncStandaloneTransport enabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(switches::kSyncStandaloneTransport);
+
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   FilePath directory_path = sync_service->GetSyncClient()

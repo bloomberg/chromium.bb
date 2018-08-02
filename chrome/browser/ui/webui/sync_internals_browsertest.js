@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "components/sync/driver/sync_driver_switches.h"');
+
 /**
  * Test fixture for sync internals WebUI testing.
  * @constructor
@@ -54,6 +56,22 @@ SyncInternalsWebUITest.prototype = {
     }
     return false;
   }
+};
+
+function SyncInternalsWebUITestWithStandaloneTransport() {}
+
+SyncInternalsWebUITestWithStandaloneTransport.prototype = {
+  __proto__: SyncInternalsWebUITest.prototype,
+
+  featureList: ['switches::kSyncStandaloneTransport', ''],
+};
+
+function SyncInternalsWebUITestWithoutStandaloneTransport() {}
+
+SyncInternalsWebUITestWithoutStandaloneTransport.prototype = {
+  __proto__: SyncInternalsWebUITest.prototype,
+
+  featureList: ['', 'switches::kSyncStandaloneTransport'],
 };
 
 /**
@@ -241,11 +259,18 @@ TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
 // On chromeos, browser tests are signed in by default.  On other platforms,
 // browser tests are signed out.
 GEN('#if defined(OS_CHROMEOS)');
-TEST_F('SyncInternalsWebUITest', 'SignedIn', function() {
+TEST_F('SyncInternalsWebUITestWithStandaloneTransport', 'SignedIn', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
-  expectTrue(this.hasInDetails(true, 'Summary', 'Waiting for start request'));
+  expectTrue(this.hasInDetails(true, 'Summary', 'Initializing'));
   expectTrue(this.hasInDetails(true, 'Username', 'stub-user@example.com'));
 });
+TEST_F(
+    'SyncInternalsWebUITestWithoutStandaloneTransport', 'SignedIn', function() {
+      assertNotEquals(null, chrome.sync.aboutInfo);
+      expectTrue(
+          this.hasInDetails(true, 'Summary', 'Waiting for start request'));
+      expectTrue(this.hasInDetails(true, 'Username', 'stub-user@example.com'));
+    });
 GEN('#else');
 TEST_F('SyncInternalsWebUITest', 'SignedOut', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
