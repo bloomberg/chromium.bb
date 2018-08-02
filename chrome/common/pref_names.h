@@ -282,6 +282,7 @@ extern const char kUsageTimeLimit[];
 extern const char kScreenTimeLastState[];
 extern const char kEnableSyncConsent[];
 extern const char kNetworkFileSharesAllowed[];
+extern const char kManagedSessionEnabled[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

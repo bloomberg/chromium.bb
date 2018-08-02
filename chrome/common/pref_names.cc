@@ -875,6 +875,11 @@ const char kEnableSyncConsent[] = "sync_consent.enabled";
 // Shares for Chrome OS feature.
 const char kNetworkFileSharesAllowed[] = "network_file_shares.allowed";
 
+// Boolean pref indicating whether the currently running public session runs in
+// the old standard "public session" mode (false), or in the new "managed
+// session" mode which has lifted restrictions (true).
+const char kManagedSessionEnabled[] = "managed_session.enabled";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

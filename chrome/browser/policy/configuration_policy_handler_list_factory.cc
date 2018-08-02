@@ -648,6 +648,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNetworkFileSharesAllowed,
     prefs::kNetworkFileSharesAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kDeviceLocalAccountManagedSessionEnabled,
+    prefs::kManagedSessionEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS
