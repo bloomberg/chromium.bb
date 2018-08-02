@@ -53,6 +53,9 @@ void UnifiedSliderBubbleController::CloseBubble() {
   slider_controller_.reset();
   if (!bubble_widget_)
     return;
+  // Ignore the request if the bubble is closing.
+  if (bubble_widget_->IsClosed())
+    return;
   bubble_widget_->Close();
   tray_->SetTrayBubbleHeight(0);
 }
@@ -103,6 +106,10 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
     tray_->EnsureBubbleExpanded();
     return;
   }
+
+  // Ignore the request if the bubble is closing.
+  if (bubble_widget_ && bubble_widget_->IsClosed())
+    return;
 
   // If the bubble already exists, update the content of the bubble and extend
   // the autoclose timer.
