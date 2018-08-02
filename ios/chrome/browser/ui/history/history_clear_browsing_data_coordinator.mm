@@ -24,13 +24,17 @@
 @interface HistoryClearBrowsingDataCoordinator ()<
     UIViewControllerTransitioningDelegate>
 
-// ViewController being managed by this Coordinator.
+// ViewControllers being managed by this Coordinator.
 @property(strong, nonatomic)
     TableViewNavigationController* historyClearBrowsingDataNavigationController;
+@property(strong, nonatomic)
+    ClearBrowsingDataTableViewController* clearBrowsingDataTableViewController;
 
 @end
 
 @implementation HistoryClearBrowsingDataCoordinator
+@synthesize clearBrowsingDataTableViewController =
+    _clearBrowsingDataTableViewController;
 @synthesize dispatcher = _dispatcher;
 @synthesize historyClearBrowsingDataNavigationController =
     _historyClearBrowsingDataNavigationController;
@@ -39,16 +43,17 @@
 @synthesize presentationDelegate = _presentationDelegate;
 
 - (void)start {
-  ClearBrowsingDataTableViewController* clearBrowsingDataTableViewController =
+  self.clearBrowsingDataTableViewController =
       [[ClearBrowsingDataTableViewController alloc]
           initWithBrowserState:self.browserState];
-  clearBrowsingDataTableViewController.extendedLayoutIncludesOpaqueBars = YES;
-  clearBrowsingDataTableViewController.localDispatcher = self;
-  clearBrowsingDataTableViewController.dispatcher = self.dispatcher;
+  self.clearBrowsingDataTableViewController.extendedLayoutIncludesOpaqueBars =
+      YES;
+  self.clearBrowsingDataTableViewController.localDispatcher = self;
+  self.clearBrowsingDataTableViewController.dispatcher = self.dispatcher;
   // Configure and present ClearBrowsingDataNavigationController.
   self.historyClearBrowsingDataNavigationController =
       [[TableViewNavigationController alloc]
-          initWithTable:clearBrowsingDataTableViewController];
+          initWithTable:self.clearBrowsingDataTableViewController];
   self.historyClearBrowsingDataNavigationController.toolbarHidden = YES;
   // Stacks on top of history "bubble" for non-compact devices.
   self.historyClearBrowsingDataNavigationController.transitioningDelegate =
@@ -65,10 +70,7 @@
 
 - (void)stopWithCompletion:(ProceduralBlock)completionHandler {
   if (self.historyClearBrowsingDataNavigationController) {
-    [self.historyClearBrowsingDataNavigationController
-        dismissViewControllerAnimated:YES
-                           completion:completionHandler];
-    self.historyClearBrowsingDataNavigationController = nil;
+    [self dismissClearBrowsingDataWithCompletion:completionHandler];
   } else if (completionHandler) {
     completionHandler();
   }
@@ -93,10 +95,18 @@
 
 - (void)dismissClearBrowsingDataWithCompletion:
     (ProceduralBlock)completionHandler {
+  DCHECK(self.historyClearBrowsingDataNavigationController);
+  [self.clearBrowsingDataTableViewController prepareForDismissal];
   [self.historyClearBrowsingDataNavigationController
       dismissViewControllerAnimated:YES
-                         completion:completionHandler];
-  self.historyClearBrowsingDataNavigationController = nil;
+                         completion:^() {
+                           if (completionHandler) {
+                             completionHandler();
+                           }
+                           self.clearBrowsingDataTableViewController = nil;
+                           self.historyClearBrowsingDataNavigationController =
+                               nil;
+                         }];
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate

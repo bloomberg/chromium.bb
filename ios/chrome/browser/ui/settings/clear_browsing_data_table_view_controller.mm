@@ -115,8 +115,21 @@ class ChromeBrowserState;
 }
 
 - (void)dismiss {
-  [self.alertCoordinator stop];
+  [self prepareForDismissal];
   [self.localDispatcher dismissClearBrowsingDataWithCompletion:nil];
+}
+
+#pragma mark - Public Methods
+
+- (void)prepareForDismissal {
+  if (self.actionSheetCoordinator) {
+    [self.actionSheetCoordinator stop];
+    self.actionSheetCoordinator = nil;
+  }
+  if (self.alertCoordinator) {
+    [self.alertCoordinator stop];
+    self.alertCoordinator = nil;
+  }
 }
 
 #pragma mark - UITableViewDataSource

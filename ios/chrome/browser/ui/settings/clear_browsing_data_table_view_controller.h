@@ -26,6 +26,10 @@ class ChromeBrowserState;
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
+// Prepares view controller so that -dismissViewControllerAnimated dismisses it.
+// Call this method before dismissing view controller.
+- (void)prepareForDismissal;
+
 // Local Dispatcher for this ClearBrowsingDataTableView.
 @property(nonatomic, weak) id<ClearBrowsingDataLocalCommands> localDispatcher;
 
