@@ -21,7 +21,7 @@ class HttpAgentFactory {
   virtual ~HttpAgentFactory();
 
   // Returns an HttpAgent instance.
-  virtual std::unique_ptr<chrome_cleaner::HttpAgent> CreateHttpAgent();
+  virtual std::unique_ptr<chrome_cleaner::HttpAgent> CreateHttpAgent() const;
 };
 
 }  // namespace chrome_cleaner

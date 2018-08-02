@@ -15,6 +15,7 @@ source_set("settings") {
   ]
 
   deps = [
+    ":settings_definitions",
     ":settings_types",
     "//base:base",
     "//chrome/chrome_cleaner/constants:common_strings",
@@ -25,6 +26,12 @@ source_set("settings") {
   public_deps = [
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
     "//mojo/public/cpp/platform",
+  ]
+}
+
+source_set("settings_definitions") {
+  sources = [
+    "settings_definitions.h",
   ]
 }
 
@@ -62,6 +69,7 @@ source_set("unittest_sources") {
 
   deps = [
     ":settings",
+    ":settings_definitions",
     "//base:base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:common_strings",

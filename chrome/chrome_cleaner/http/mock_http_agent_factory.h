@@ -126,7 +126,7 @@ class MockHttpAgentFactory : public HttpAgentFactory {
   explicit MockHttpAgentFactory(MockHttpAgentConfig* config);
 
   // HttpAgentFactory:
-  std::unique_ptr<chrome_cleaner::HttpAgent> CreateHttpAgent() override;
+  std::unique_ptr<chrome_cleaner::HttpAgent> CreateHttpAgent() const override;
 
  private:
   MockHttpAgentConfig* config_{nullptr};

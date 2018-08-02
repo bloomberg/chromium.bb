@@ -1,4 +1,6 @@
 include_rules = [
   "+sandbox/win/src",
   "+testing/gtest",
+  "+components/chrome_cleaner",
+  "+third_party/protobuf/src/google/protobuf",
 ]
