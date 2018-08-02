@@ -13,8 +13,13 @@ bool StructTraits<net::interfaces::IPAddressDataView, net::IPAddress>::Read(
   if (!data.ReadAddressBytes(&bytes))
     return false;
 
+  if (bytes.size() && bytes.size() != net::IPAddress::kIPv4AddressSize &&
+      bytes.size() != net::IPAddress::kIPv6AddressSize) {
+    return false;
+  }
+
   *out = net::IPAddress(bytes.data(), bytes.size());
-  return out->IsValid();
+  return true;
 }
 
 }  // namespace mojo

@@ -11,13 +11,15 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/p2p_socket_type.h"
+#include "base/threading/thread_checker.h"
 #include "content/renderer/p2p/socket_client.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/p2p_socket_type.h"
+#include "services/network/public/mojom/p2p.mojom.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class TimeTicks;
 }  // namespace base
 
@@ -25,36 +27,35 @@ namespace content {
 
 class P2PSocketDispatcher;
 
-// P2P socket that routes all calls over IPC.
+// P2P socket that routes all calls over Mojo.
 //
-// The object runs on two threads: IPC thread and delegate thread. The
-// IPC thread is used to interact with P2PSocketDispatcher. All
-// callbacks to the user of this class are called on the delegate
-// thread which is specified in Init().
-class P2PSocketClientImpl : public P2PSocketClient {
+// The object runs on the WebRTC worker thread.
+class P2PSocketClientImpl : public P2PSocketClient,
+                            public network::mojom::P2PSocketClient {
  public:
-  explicit P2PSocketClientImpl(
+  P2PSocketClientImpl(
       P2PSocketDispatcher* dispatcher,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  ~P2PSocketClientImpl() override;
 
   // Initialize socket of the specified |type| and connected to the
   // specified |address|. |address| matters only when |type| is set to
   // P2P_SOCKET_TCP_CLIENT.
-  virtual void Init(P2PSocketType type,
+  virtual void Init(network::P2PSocketType type,
                     const net::IPEndPoint& local_address,
                     uint16_t min_port,
                     uint16_t max_port,
-                    const P2PHostAndIPEndPoint& remote_address,
+                    const network::P2PHostAndIPEndPoint& remote_address,
                     P2PSocketClientDelegate* delegate);
 
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|. Return value is the unique packet_id for this packet.
   uint64_t Send(const net::IPEndPoint& address,
-                const std::vector<char>& data,
+                const std::vector<int8_t>& data,
                 const rtc::PacketOptions& options) override;
 
   // Setting socket options.
-  void SetOption(P2PSocketOption option, int value) override;
+  void SetOption(network::P2PSocketOption option, int value) override;
 
   // Must be called before the socket is destroyed. The delegate may
   // not be called after |closed_task| is executed.
@@ -75,53 +76,26 @@ class P2PSocketClientImpl : public P2PSocketClient {
 
   friend class P2PSocketDispatcher;
 
-  ~P2PSocketClientImpl() override;
-
-  // Message handlers that run on IPC thread.
-  void OnSocketCreated(const net::IPEndPoint& local_address,
-                       const net::IPEndPoint& remote_address);
-  void OnIncomingTcpConnection(const net::IPEndPoint& address);
-  void OnSendComplete(const P2PSendPacketMetrics& send_metrics);
-  void OnError();
-  void OnDataReceived(const net::IPEndPoint& address,
-                      const std::vector<char>& data,
-                      const base::TimeTicks& timestamp);
-
-  // Proxy methods that deliver messages to the delegate thread.
-  void DeliverOnSocketCreated(const net::IPEndPoint& local_address,
-                              const net::IPEndPoint& remote_address);
-  void DeliverOnIncomingTcpConnection(
-      const net::IPEndPoint& address,
-      scoped_refptr<P2PSocketClient> new_client);
-  void DeliverOnSendComplete(const P2PSendPacketMetrics& send_metrics);
-  void DeliverOnError();
-  void DeliverOnDataReceived(const net::IPEndPoint& address,
-                             const std::vector<char>& data,
-                             const base::TimeTicks& timestamp);
-
   // Helper function to be called by Send to handle different threading
   // condition.
   void SendWithPacketId(const net::IPEndPoint& address,
-                        const std::vector<char>& data,
+                        const std::vector<int8_t>& data,
                         const rtc::PacketOptions& options,
                         uint64_t packet_id);
 
-  // Scheduled on the IPC thread to finish initialization.
-  void DoInit(P2PSocketType type,
-              const net::IPEndPoint& local_address,
-              uint16_t min_port,
-              uint16_t max_port,
-              const P2PHostAndIPEndPoint& remote_address);
+  // network::mojom::P2PSocketClient interface.
+  void SocketCreated(const net::IPEndPoint& local_address,
+                     const net::IPEndPoint& remote_address) override;
+  void SendComplete(const network::P2PSendPacketMetrics& send_metrics) override;
+  void IncomingTcpConnection(const net::IPEndPoint& socket_address) override;
+  void DataReceived(const net::IPEndPoint& socket_address,
+                    const std::vector<int8_t>& data,
+                    base::TimeTicks timestamp) override;
 
-  // Scheduled on the IPC thread to finish closing the connection.
-  void DoClose();
-
-  // Called by the dispatcher when it is destroyed.
-  void Detach();
+  void OnConnectionError();
 
   P2PSocketDispatcher* dispatcher_;
-  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
+  base::ThreadChecker thread_checker_;
   int socket_id_;
   P2PSocketClientDelegate* delegate_;
   State state_;
@@ -130,6 +104,9 @@ class P2PSocketClientImpl : public P2PSocketClient {
   // These two fields are used to identify packets for tracing.
   uint32_t random_socket_id_;
   uint32_t next_packet_id_;
+
+  network::mojom::P2PSocketPtr socket_;
+  mojo::Binding<network::mojom::P2PSocketClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketClientImpl);
 };

@@ -7,9 +7,8 @@
 
 #include <vector>
 
-#include "base/memory/ref_counted.h"
-#include "content/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
+#include "services/network/public/cpp/p2p_socket_type.h"
 
 namespace content {
 
@@ -27,18 +26,20 @@ class P2PSocketClientDelegate {
 
   // For a socket that is listening on incoming TCP connectsion, this
   // function is called when a new client connects.
-  virtual void OnIncomingTcpConnection(const net::IPEndPoint& address,
-                                       P2PSocketClient* client) = 0;
+  virtual void OnIncomingTcpConnection(
+      const net::IPEndPoint& address,
+      std::unique_ptr<P2PSocketClient> client) = 0;
 
   // Called once for each Send() call after the send is complete.
-  virtual void OnSendComplete(const P2PSendPacketMetrics& send_metrics) = 0;
+  virtual void OnSendComplete(
+      const network::P2PSendPacketMetrics& send_metrics) = 0;
 
   // Called if an non-retryable error occurs.
   virtual void OnError() = 0;
 
   // Called when data is received on the socket.
   virtual void OnDataReceived(const net::IPEndPoint& address,
-                              const std::vector<char>& data,
+                              const std::vector<int8_t>& data,
                               const base::TimeTicks& timestamp) = 0;
 };
 
