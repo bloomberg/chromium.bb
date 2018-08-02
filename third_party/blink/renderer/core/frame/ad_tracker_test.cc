@@ -34,6 +34,11 @@ class TestAdTracker : public AdTracker {
     AdTracker::Trace(visitor);
   }
 
+  bool RequestWithUrlTaggedAsAd(const String& url) const {
+    DCHECK(is_ad_.Contains(url));
+    return is_ad_.at(url);
+  }
+
  protected:
   String ScriptAtTopOfStack(ExecutionContext* execution_context) override {
     if (script_at_top_.IsEmpty())
@@ -63,9 +68,12 @@ class TestAdTracker : public AdTracker {
     AdTracker::WillSendRequest(execution_context, identifier, document_loader,
                                resource_request, redirect_response,
                                fetch_initiator_info, resource_type);
+    is_ad_.insert(resource_request.Url().GetString(),
+                  resource_request.IsAdResource());
   }
 
  private:
+  HashMap<String, bool> is_ad_;
   String script_at_top_;
   Member<ExecutionContext> execution_context_;
   String ad_suffix_;
@@ -179,11 +187,12 @@ class AdTrackerSimTest : public SimTest {
   Persistent<TestAdTracker> ad_tracker_;
 };
 
-// Resources loaded by ad script are tagged as ads.
-TEST_F(AdTrackerSimTest, ResourceLoadedWhileExecutingAdScript) {
-  SimRequest ad_resource("https://example.com/ad_script.js", "text/javascript");
-  SimRequest vanilla_script("https://example.com/vanilla_script.js",
-                            "text/javascript");
+// Script loaded by ad script is tagged as ad.
+TEST_F(AdTrackerSimTest, ScriptLoadedWhileExecutingAdScript) {
+  const char kAdUrl[] = "https://example.com/ad_script.js";
+  const char kVanillaUrl[] = "https://example.com/vanilla_script.js";
+  SimRequest ad_resource(kAdUrl, "text/javascript");
+  SimRequest vanilla_script(kVanillaUrl, "text/javascript");
 
   ad_tracker_->SetAdSuffix("ad_script.js");
 
@@ -196,10 +205,57 @@ TEST_F(AdTrackerSimTest, ResourceLoadedWhileExecutingAdScript) {
     )SCRIPT");
   vanilla_script.Complete("");
 
-  EXPECT_TRUE(IsKnownAdScript(&GetDocument(),
-                              String("https://example.com/ad_script.js")));
-  EXPECT_TRUE(IsKnownAdScript(&GetDocument(),
-                              String("https://example.com/vanilla_script.js")));
+  EXPECT_TRUE(IsKnownAdScript(&GetDocument(), kAdUrl));
+  EXPECT_TRUE(IsKnownAdScript(&GetDocument(), kVanillaUrl));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaUrl));
+}
+
+// Image loaded by ad script is tagged as ad.
+TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScript) {
+  const char kAdUrl[] = "https://example.com/ad_script.js";
+  const char kVanillaUrl[] = "https://example.com/vanilla_image.jpg";
+  SimRequest ad_resource(kAdUrl, "text/javascript");
+  SimRequest vanilla_image(kVanillaUrl, "image/jpeg");
+
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  main_resource_->Complete("<body></body><script src=ad_script.js></script>");
+
+  ad_resource.Complete(R"SCRIPT(
+    image = document.createElement("img");
+    image.src = "vanilla_image.jpg";
+    document.body.appendChild(image);
+    )SCRIPT");
+  vanilla_image.Complete("");
+
+  EXPECT_TRUE(IsKnownAdScript(&GetDocument(), kAdUrl));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
+  // TODO(crbug.com/848916): Should be true.
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaUrl));
+}
+
+// Frame loaded by ad script is tagged as ad.
+TEST_F(AdTrackerSimTest, FrameLoadedWhileExecutingAdScript) {
+  const char kAdUrl[] = "https://example.com/ad_script.js";
+  const char kVanillaUrl[] = "https://example.com/vanilla_page.html";
+  SimRequest ad_resource(kAdUrl, "text/javascript");
+  SimRequest vanilla_page(kVanillaUrl, "text/html");
+
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  main_resource_->Complete("<body></body><script src=ad_script.js></script>");
+
+  ad_resource.Complete(R"SCRIPT(
+    iframe = document.createElement("iframe");
+    iframe.src = "vanilla_page.html";
+    document.body.appendChild(iframe);
+    )SCRIPT");
+  vanilla_page.Complete("");
+
+  EXPECT_TRUE(IsKnownAdScript(&GetDocument(), kAdUrl));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaUrl));
 }
 
 // A script tagged as an ad in one frame shouldn't cause it to be considered
