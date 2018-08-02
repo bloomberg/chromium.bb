@@ -11,6 +11,7 @@
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/events/event.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/mus_client_test_api.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/test/scoped_views_test_helper.h"
@@ -250,7 +251,7 @@ TEST_F(PointerWatcherEventRouterTest, SecondaryDisplay) {
   TestPointerWatcher watcher;
   pointer_watcher_event_router->AddPointerWatcher(&watcher, false);
 
-  ScreenMus* screen = MusClient::Get()->screen();
+  ScreenMus* screen = MusClientTestApi::screen();
   const uint64_t kFirstDisplayId = screen->GetPrimaryDisplay().id();
 
   // The first display is at 0,0.

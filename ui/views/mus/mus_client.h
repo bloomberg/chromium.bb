@@ -119,9 +119,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
 
   AXRemoteHost* ax_remote_host() { return ax_remote_host_.get(); }
 
-  // Getter for type safety. Most code can use display::Screen::GetScreen().
-  ScreenMus* screen() { return screen_.get(); }
-
   // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is
   // set as the factory function used for creating NativeWidgets when a
   //  NativeWidget has not been explicitly set.
