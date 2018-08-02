@@ -286,7 +286,6 @@ RootInlineBox* LayoutBlockFlow::ConstructLine(BidiRunList<BidiRun>& bidi_runs,
                                               const LineInfo& line_info) {
   DCHECK(bidi_runs.FirstRun());
 
-  bool root_has_selected_children = false;
   InlineFlowBox* parent_box = nullptr;
   int run_count = bidi_runs.RunCount() - line_info.RunsFromLeadingWhitespace();
   for (BidiRun* r = bidi_runs.FirstRun(); r; r = r->Next()) {
@@ -311,10 +310,6 @@ RootInlineBox* LayoutBlockFlow::ConstructLine(BidiRunList<BidiRun>& bidi_runs,
     DCHECK(box);
     if (!box)
       continue;
-
-    if (!root_has_selected_children &&
-        box->GetLineLayoutItem().GetSelectionState() != SelectionState::kNone)
-      root_has_selected_children = true;
 
     // If we have no parent box yet, or if the run is not simply a sibling,
     // then we need to construct inline boxes as necessary to properly enclose
