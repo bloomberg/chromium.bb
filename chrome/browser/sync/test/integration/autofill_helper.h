@@ -96,10 +96,10 @@ std::vector<autofill::AutofillProfile*> GetAllAutoFillProfiles(int profile)
 
 // Returns the number of autofill profiles contained by sync profile
 // |profile|.
-int GetProfileCount(int profile);
+size_t GetProfileCount(int profile);
 
 // Returns the number of autofill keys contained by sync profile |profile|.
-int GetKeyCount(int profile);
+size_t GetKeyCount(int profile);
 
 // Compares the Autofill profiles in the PersonalDataManagers of sync profiles
 // |profile_a| and |profile_b|. Returns true if they match.

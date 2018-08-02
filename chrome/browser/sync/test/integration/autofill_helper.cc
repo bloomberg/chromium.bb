@@ -341,11 +341,11 @@ std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   return pdm->GetProfiles();
 }
 
-int GetProfileCount(int profile) {
+size_t GetProfileCount(int profile) {
   return GetAllAutoFillProfiles(profile).size();
 }
 
-int GetKeyCount(int profile) {
+size_t GetKeyCount(int profile) {
   return GetAllKeys(profile).size();
 }
 
