@@ -13,7 +13,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
-#include "ui/message_center/ui_controller.h"
 
 namespace message_center {
 namespace {

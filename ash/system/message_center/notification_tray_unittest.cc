@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/message_center/message_center_bubble.h"
+#include "ash/message_center/message_center_ui_controller.h"
 #include "ash/message_center/message_center_view.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/config.h"
@@ -41,7 +42,6 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification_types.h"
-#include "ui/message_center/ui_controller.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"

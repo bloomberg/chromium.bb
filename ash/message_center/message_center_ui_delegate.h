@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_UI_DELEGATE_H_
-#define UI_MESSAGE_CENTER_UI_DELEGATE_H_
+#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_
+#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_
 
-#include "ui/message_center/message_center_export.h"
-
-namespace message_center {
+namespace ash {
 
 // A UiDelegate class is responsible for managing the various UI surfaces
 // (MessageCenter and popups) as notifications are added and updated.
 // Implementations are platform specific.
-class MESSAGE_CENTER_EXPORT UiDelegate {
+class MessageCenterUiDelegate {
  public:
-  virtual ~UiDelegate(){};
+  virtual ~MessageCenterUiDelegate(){};
 
   // Called whenever a change to the visible UI has occurred.
   virtual void OnMessageCenterContentsChanged() = 0;
@@ -39,6 +37,6 @@ class MESSAGE_CENTER_EXPORT UiDelegate {
   virtual bool ShowNotifierSettings() = 0;
 };
 
-}  // namespace message_center
+}  // namespace ash
 
-#endif  // UI_MESSAGE_CENTER_UI_DELEGATE_H_
+#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_

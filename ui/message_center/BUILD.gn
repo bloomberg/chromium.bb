@@ -107,15 +107,6 @@ jumbo_component("message_center") {
       ]
     }
 
-    # TODO(yoshiki): move the following files to ash/message_center.
-    if (is_chromeos) {
-      sources += [
-        "ui_controller.cc",
-        "ui_controller.h",
-        "ui_delegate.h",
-      ]
-    }
-
     # On Mac, toolkit-views builds still use the Cocoa UI. Keep this in sync
     # with message_center_unittests below.
     if (toolkit_views && !is_mac) {
@@ -239,12 +230,7 @@ if (enable_message_center) {
     ]
 
     if (is_chromeos) {
-      sources += [
-        "public/mojo/struct_traits_unittest.cc",
-
-        # TODO(yoshiki): move ui_controller_unittest.cc to ash/message_center.
-        "ui_controller_unittest.cc",
-      ]
+      sources += [ "public/mojo/struct_traits_unittest.cc" ]
 
       deps += [
         "//mojo/core/embedder",

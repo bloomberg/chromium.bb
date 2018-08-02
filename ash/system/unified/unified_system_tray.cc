@@ -5,6 +5,8 @@
 #include "ash/system/unified/unified_system_tray.h"
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/message_center/message_center_ui_controller.h"
+#include "ash/message_center/message_center_ui_delegate.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
@@ -27,18 +29,16 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/ui_controller.h"
-#include "ui/message_center/ui_delegate.h"
 #include "ui/message_center/views/message_popup_collection.h"
 
 namespace ash {
 
-class UnifiedSystemTray::UiDelegate : public message_center::UiDelegate {
+class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
  public:
   UiDelegate(UnifiedSystemTray* owner);
   ~UiDelegate() override;
 
-  // message_center::UiDelegate:
+  // MessageCenterUiDelegate:
   void OnMessageCenterContentsChanged() override;
   bool ShowPopups() override;
   void HidePopups() override;
@@ -46,14 +46,14 @@ class UnifiedSystemTray::UiDelegate : public message_center::UiDelegate {
   void HideMessageCenter() override;
   bool ShowNotifierSettings() override;
 
-  message_center::UiController* ui_controller() { return ui_controller_.get(); }
+  MessageCenterUiController* ui_controller() { return ui_controller_.get(); }
 
   void SetTrayBubbleHeight(int height) {
     popup_alignment_delegate_->SetTrayBubbleHeight(height);
   }
 
  private:
-  std::unique_ptr<message_center::UiController> ui_controller_;
+  std::unique_ptr<MessageCenterUiController> ui_controller_;
   std::unique_ptr<AshPopupAlignmentDelegate> popup_alignment_delegate_;
   std::unique_ptr<message_center::MessagePopupCollection>
       message_popup_collection_;
@@ -65,7 +65,7 @@ class UnifiedSystemTray::UiDelegate : public message_center::UiDelegate {
 
 UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
     : owner_(owner) {
-  ui_controller_ = std::make_unique<message_center::UiController>(this);
+  ui_controller_ = std::make_unique<MessageCenterUiController>(this);
   ui_controller_->set_hide_on_last_notification(false);
   popup_alignment_delegate_ =
       std::make_unique<AshPopupAlignmentDelegate>(owner->shelf());
