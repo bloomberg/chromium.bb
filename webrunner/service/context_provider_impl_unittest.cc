@@ -211,7 +211,7 @@ TEST_F(ContextProviderImplTest, WithProfileDir) {
       0);
 
   // Pass a handle data dir to the context.
-  create_params.dataDirectory.reset(
+  create_params.data_directory.reset(
       base::fuchsia::GetHandleFromFile(
           base::File(profile_temp_dir.GetPath(),
                      base::File::FLAG_OPEN | base::File::FLAG_READ))

@@ -67,22 +67,21 @@ void ContextProviderImpl::Create(
   // Context needs access to the read-only SSL root certificates list.
   launch_options.paths_to_clone.push_back(base::FilePath("/config/ssl"));
 
-  // The context process needs /svc to connect to environment services.
-  // TODO(https://crbug.com/869216): Don't clone /svc. Instead it should be
-  // passed in CreateContextParams.
-  launch_options.paths_to_clone.push_back(base::FilePath("/svc"));
-
   // Transfer the ContextRequest handle to a well-known location in the child
   // process' handle table.
   zx::channel context_handle(context_request.TakeChannel());
   launch_options.handles_to_transfer.push_back(
       {kContextRequestHandleId, context_handle.get()});
 
+  // Pass /svc directory specified by the caller.
+  launch_options.paths_to_transfer.push_back(base::PathToTransfer{
+      base::FilePath("/svc"), std::move(params.service_directory.release())});
+
   // Pass the data directory. If there is no data dir then --incognito flag is
   // added instead.
-  if (params.dataDirectory) {
+  if (params.data_directory) {
     launch_options.paths_to_transfer.push_back(base::PathToTransfer{
-        base::FilePath(kWebContextDataPath), params.dataDirectory.release()});
+        base::FilePath(kWebContextDataPath), params.data_directory.release()});
   } else {
     launch_command.AppendSwitch(kIncognitoSwitch);
   }

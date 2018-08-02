@@ -17,8 +17,13 @@ interface ContextProvider {
 };
 
 struct CreateContextParams {
+  // Service directory to be used by the context.
+  // TODO(https://crbug.com/870057): Document required and optional services
+  // that Context needs.
+  handle<channel> service_directory;
+
   // Handle to the directory that will contain the Context's
   // persistent data. If it is left unset, then the created Context will be
   // stateless, with all of its data discarded upon Context destruction.
-  handle<channel>? dataDirectory;
+  handle<channel>? data_directory;
 };
