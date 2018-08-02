@@ -7,19 +7,12 @@ PASS NetworkInformation interface: existence and properties of interface prototy
 PASS NetworkInformation interface: existence and properties of interface prototype object's "constructor" property
 PASS NetworkInformation interface: existence and properties of interface prototype object's @@unscopables property
 PASS NetworkInformation interface: attribute type
-PASS Unscopable handled correctly for type property on NetworkInformation
 PASS NetworkInformation interface: attribute effectiveType
-PASS Unscopable handled correctly for effectiveType property on NetworkInformation
 PASS NetworkInformation interface: attribute downlinkMax
-PASS Unscopable handled correctly for downlinkMax property on NetworkInformation
 PASS NetworkInformation interface: attribute downlink
-PASS Unscopable handled correctly for downlink property on NetworkInformation
 PASS NetworkInformation interface: attribute rtt
-PASS Unscopable handled correctly for rtt property on NetworkInformation
 PASS NetworkInformation interface: attribute saveData
-PASS Unscopable handled correctly for saveData property on NetworkInformation
 PASS NetworkInformation interface: attribute onchange
-PASS Unscopable handled correctly for onchange property on NetworkInformation
 PASS NetworkInformation must be primary interface of navigator.connection
 PASS Stringification of navigator.connection
 PASS NetworkInformation interface: navigator.connection must inherit property "type" with the proper type
@@ -32,6 +25,5 @@ PASS NetworkInformation interface: navigator.connection must inherit property "o
 PASS Navigator interface: existence and properties of interface object
 FAIL Navigator interface: navigator must not have property "connection" assert_false: expected false got true
 PASS WorkerNavigator interface: attribute connection
-PASS Unscopable handled correctly for connection property on WorkerNavigator
 Harness: the test ran to completion.
 

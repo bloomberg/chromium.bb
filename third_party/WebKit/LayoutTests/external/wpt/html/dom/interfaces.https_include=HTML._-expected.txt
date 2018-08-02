@@ -43,11 +43,8 @@ PASS HTMLAllCollection interface: existence and properties of interface prototyp
 PASS HTMLAllCollection interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLAllCollection interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLAllCollection interface: attribute length
-PASS Unscopable handled correctly for length property on HTMLAllCollection
 PASS HTMLAllCollection interface: operation namedItem(DOMString)
-PASS Unscopable handled correctly for namedItem(DOMString) on HTMLAllCollection
 PASS HTMLAllCollection interface: operation item(DOMString)
-PASS Unscopable handled correctly for item(DOMString) on HTMLAllCollection
 FAIL HTMLAllCollection must be primary interface of document.all assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL Stringification of document.all assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL HTMLAllCollection interface: document.all must inherit property "length" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
@@ -62,7 +59,6 @@ PASS HTMLFormControlsCollection interface: existence and properties of interface
 PASS HTMLFormControlsCollection interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLFormControlsCollection interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLFormControlsCollection interface: operation namedItem(DOMString)
-PASS Unscopable handled correctly for namedItem(DOMString) on HTMLFormControlsCollection
 PASS HTMLFormControlsCollection must be primary interface of document.createElement("form").elements
 PASS Stringification of document.createElement("form").elements
 PASS HTMLFormControlsCollection interface: document.createElement("form").elements must inherit property "namedItem(DOMString)" with the proper type
@@ -74,13 +70,9 @@ PASS HTMLOptionsCollection interface: existence and properties of interface prot
 PASS HTMLOptionsCollection interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLOptionsCollection interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLOptionsCollection interface: attribute length
-PASS Unscopable handled correctly for length property on HTMLOptionsCollection
 PASS HTMLOptionsCollection interface: operation add([object Object],[object Object], [object Object],[object Object])
-PASS Unscopable handled correctly for add([object Object],[object Object], [object Object],[object Object]) on HTMLOptionsCollection
 PASS HTMLOptionsCollection interface: operation remove(long)
-PASS Unscopable handled correctly for remove(long) on HTMLOptionsCollection
 PASS HTMLOptionsCollection interface: attribute selectedIndex
-PASS Unscopable handled correctly for selectedIndex property on HTMLOptionsCollection
 PASS HTMLOptionsCollection must be primary interface of document.createElement("select").options
 PASS Stringification of document.createElement("select").options
 PASS HTMLOptionsCollection interface: document.createElement("select").options must inherit property "length" with the proper type
@@ -96,173 +88,89 @@ PASS HTMLElement interface: existence and properties of interface prototype obje
 PASS HTMLElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLElement interface: attribute title
-PASS Unscopable handled correctly for title property on HTMLElement
 PASS HTMLElement interface: attribute lang
-PASS Unscopable handled correctly for lang property on HTMLElement
 PASS HTMLElement interface: attribute translate
-PASS Unscopable handled correctly for translate property on HTMLElement
 PASS HTMLElement interface: attribute dir
-PASS Unscopable handled correctly for dir property on HTMLElement
 PASS HTMLElement interface: attribute hidden
-PASS Unscopable handled correctly for hidden property on HTMLElement
 PASS HTMLElement interface: operation click()
-PASS Unscopable handled correctly for click() on HTMLElement
 PASS HTMLElement interface: attribute accessKey
-PASS Unscopable handled correctly for accessKey property on HTMLElement
 FAIL HTMLElement interface: attribute accessKeyLabel assert_true: The prototype object must have a property "accessKeyLabel" expected true got false
-PASS Unscopable handled correctly for accessKeyLabel property on HTMLElement
 PASS HTMLElement interface: attribute draggable
-PASS Unscopable handled correctly for draggable property on HTMLElement
 PASS HTMLElement interface: attribute spellcheck
-PASS Unscopable handled correctly for spellcheck property on HTMLElement
 PASS HTMLElement interface: attribute innerText
-PASS Unscopable handled correctly for innerText property on HTMLElement
 PASS HTMLElement interface: attribute onabort
-PASS Unscopable handled correctly for onabort property on HTMLElement
 PASS HTMLElement interface: attribute onauxclick
-PASS Unscopable handled correctly for onauxclick property on HTMLElement
 PASS HTMLElement interface: attribute onblur
-PASS Unscopable handled correctly for onblur property on HTMLElement
 PASS HTMLElement interface: attribute oncancel
-PASS Unscopable handled correctly for oncancel property on HTMLElement
 PASS HTMLElement interface: attribute oncanplay
-PASS Unscopable handled correctly for oncanplay property on HTMLElement
 PASS HTMLElement interface: attribute oncanplaythrough
-PASS Unscopable handled correctly for oncanplaythrough property on HTMLElement
 PASS HTMLElement interface: attribute onchange
-PASS Unscopable handled correctly for onchange property on HTMLElement
 PASS HTMLElement interface: attribute onclick
-PASS Unscopable handled correctly for onclick property on HTMLElement
 PASS HTMLElement interface: attribute onclose
-PASS Unscopable handled correctly for onclose property on HTMLElement
 PASS HTMLElement interface: attribute oncontextmenu
-PASS Unscopable handled correctly for oncontextmenu property on HTMLElement
 PASS HTMLElement interface: attribute oncuechange
-PASS Unscopable handled correctly for oncuechange property on HTMLElement
 PASS HTMLElement interface: attribute ondblclick
-PASS Unscopable handled correctly for ondblclick property on HTMLElement
 PASS HTMLElement interface: attribute ondrag
-PASS Unscopable handled correctly for ondrag property on HTMLElement
 PASS HTMLElement interface: attribute ondragend
-PASS Unscopable handled correctly for ondragend property on HTMLElement
 PASS HTMLElement interface: attribute ondragenter
-PASS Unscopable handled correctly for ondragenter property on HTMLElement
 FAIL HTMLElement interface: attribute ondragexit assert_true: The prototype object must have a property "ondragexit" expected true got false
-PASS Unscopable handled correctly for ondragexit property on HTMLElement
 PASS HTMLElement interface: attribute ondragleave
-PASS Unscopable handled correctly for ondragleave property on HTMLElement
 PASS HTMLElement interface: attribute ondragover
-PASS Unscopable handled correctly for ondragover property on HTMLElement
 PASS HTMLElement interface: attribute ondragstart
-PASS Unscopable handled correctly for ondragstart property on HTMLElement
 PASS HTMLElement interface: attribute ondrop
-PASS Unscopable handled correctly for ondrop property on HTMLElement
 PASS HTMLElement interface: attribute ondurationchange
-PASS Unscopable handled correctly for ondurationchange property on HTMLElement
 PASS HTMLElement interface: attribute onemptied
-PASS Unscopable handled correctly for onemptied property on HTMLElement
 PASS HTMLElement interface: attribute onended
-PASS Unscopable handled correctly for onended property on HTMLElement
 PASS HTMLElement interface: attribute onerror
-PASS Unscopable handled correctly for onerror property on HTMLElement
 PASS HTMLElement interface: attribute onfocus
-PASS Unscopable handled correctly for onfocus property on HTMLElement
 PASS HTMLElement interface: attribute oninput
-PASS Unscopable handled correctly for oninput property on HTMLElement
 PASS HTMLElement interface: attribute oninvalid
-PASS Unscopable handled correctly for oninvalid property on HTMLElement
 PASS HTMLElement interface: attribute onkeydown
-PASS Unscopable handled correctly for onkeydown property on HTMLElement
 PASS HTMLElement interface: attribute onkeypress
-PASS Unscopable handled correctly for onkeypress property on HTMLElement
 PASS HTMLElement interface: attribute onkeyup
-PASS Unscopable handled correctly for onkeyup property on HTMLElement
 PASS HTMLElement interface: attribute onload
-PASS Unscopable handled correctly for onload property on HTMLElement
 PASS HTMLElement interface: attribute onloadeddata
-PASS Unscopable handled correctly for onloadeddata property on HTMLElement
 PASS HTMLElement interface: attribute onloadedmetadata
-PASS Unscopable handled correctly for onloadedmetadata property on HTMLElement
 FAIL HTMLElement interface: attribute onloadend assert_true: The prototype object must have a property "onloadend" expected true got false
-PASS Unscopable handled correctly for onloadend property on HTMLElement
 PASS HTMLElement interface: attribute onloadstart
-PASS Unscopable handled correctly for onloadstart property on HTMLElement
 PASS HTMLElement interface: attribute onmousedown
-PASS Unscopable handled correctly for onmousedown property on HTMLElement
 PASS HTMLElement interface: attribute onmouseenter
-PASS Unscopable handled correctly for onmouseenter property on HTMLElement
 PASS HTMLElement interface: attribute onmouseleave
-PASS Unscopable handled correctly for onmouseleave property on HTMLElement
 PASS HTMLElement interface: attribute onmousemove
-PASS Unscopable handled correctly for onmousemove property on HTMLElement
 PASS HTMLElement interface: attribute onmouseout
-PASS Unscopable handled correctly for onmouseout property on HTMLElement
 PASS HTMLElement interface: attribute onmouseover
-PASS Unscopable handled correctly for onmouseover property on HTMLElement
 PASS HTMLElement interface: attribute onmouseup
-PASS Unscopable handled correctly for onmouseup property on HTMLElement
 PASS HTMLElement interface: attribute onwheel
-PASS Unscopable handled correctly for onwheel property on HTMLElement
 PASS HTMLElement interface: attribute onpause
-PASS Unscopable handled correctly for onpause property on HTMLElement
 PASS HTMLElement interface: attribute onplay
-PASS Unscopable handled correctly for onplay property on HTMLElement
 PASS HTMLElement interface: attribute onplaying
-PASS Unscopable handled correctly for onplaying property on HTMLElement
 PASS HTMLElement interface: attribute onprogress
-PASS Unscopable handled correctly for onprogress property on HTMLElement
 PASS HTMLElement interface: attribute onratechange
-PASS Unscopable handled correctly for onratechange property on HTMLElement
 PASS HTMLElement interface: attribute onreset
-PASS Unscopable handled correctly for onreset property on HTMLElement
 PASS HTMLElement interface: attribute onresize
-PASS Unscopable handled correctly for onresize property on HTMLElement
 PASS HTMLElement interface: attribute onscroll
-PASS Unscopable handled correctly for onscroll property on HTMLElement
 FAIL HTMLElement interface: attribute onsecuritypolicyviolation assert_true: The prototype object must have a property "onsecuritypolicyviolation" expected true got false
-PASS Unscopable handled correctly for onsecuritypolicyviolation property on HTMLElement
 PASS HTMLElement interface: attribute onseeked
-PASS Unscopable handled correctly for onseeked property on HTMLElement
 PASS HTMLElement interface: attribute onseeking
-PASS Unscopable handled correctly for onseeking property on HTMLElement
 PASS HTMLElement interface: attribute onselect
-PASS Unscopable handled correctly for onselect property on HTMLElement
 PASS HTMLElement interface: attribute onstalled
-PASS Unscopable handled correctly for onstalled property on HTMLElement
 PASS HTMLElement interface: attribute onsubmit
-PASS Unscopable handled correctly for onsubmit property on HTMLElement
 PASS HTMLElement interface: attribute onsuspend
-PASS Unscopable handled correctly for onsuspend property on HTMLElement
 PASS HTMLElement interface: attribute ontimeupdate
-PASS Unscopable handled correctly for ontimeupdate property on HTMLElement
 PASS HTMLElement interface: attribute ontoggle
-PASS Unscopable handled correctly for ontoggle property on HTMLElement
 PASS HTMLElement interface: attribute onvolumechange
-PASS Unscopable handled correctly for onvolumechange property on HTMLElement
 PASS HTMLElement interface: attribute onwaiting
-PASS Unscopable handled correctly for onwaiting property on HTMLElement
 FAIL HTMLElement interface: attribute oncopy assert_own_property: expected property "oncopy" missing
-PASS Unscopable handled correctly for oncopy property on HTMLElement
 FAIL HTMLElement interface: attribute oncut assert_own_property: expected property "oncut" missing
-PASS Unscopable handled correctly for oncut property on HTMLElement
 FAIL HTMLElement interface: attribute onpaste assert_own_property: expected property "onpaste" missing
-PASS Unscopable handled correctly for onpaste property on HTMLElement
 PASS HTMLElement interface: attribute contentEditable
-PASS Unscopable handled correctly for contentEditable property on HTMLElement
 PASS HTMLElement interface: attribute isContentEditable
-PASS Unscopable handled correctly for isContentEditable property on HTMLElement
 PASS HTMLElement interface: attribute inputMode
-PASS Unscopable handled correctly for inputMode property on HTMLElement
 PASS HTMLElement interface: attribute dataset
-PASS Unscopable handled correctly for dataset property on HTMLElement
 PASS HTMLElement interface: attribute nonce
-PASS Unscopable handled correctly for nonce property on HTMLElement
 PASS HTMLElement interface: attribute tabIndex
-PASS Unscopable handled correctly for tabIndex property on HTMLElement
 PASS HTMLElement interface: operation focus(FocusOptions)
-PASS Unscopable handled correctly for focus(FocusOptions) on HTMLElement
 PASS HTMLElement interface: operation blur()
-PASS Unscopable handled correctly for blur() on HTMLElement
 PASS HTMLElement must be primary interface of document.createElement("noscript")
 PASS Stringification of document.createElement("noscript")
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "title" with the proper type
@@ -365,7 +273,6 @@ PASS HTMLHtmlElement interface: existence and properties of interface prototype 
 PASS HTMLHtmlElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLHtmlElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLHtmlElement interface: attribute version
-PASS Unscopable handled correctly for version property on HTMLHtmlElement
 PASS HTMLHtmlElement must be primary interface of document.createElement("html")
 PASS Stringification of document.createElement("html")
 PASS HTMLHtmlElement interface: document.createElement("html") must inherit property "version" with the proper type
@@ -384,7 +291,6 @@ PASS HTMLTitleElement interface: existence and properties of interface prototype
 PASS HTMLTitleElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTitleElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTitleElement interface: attribute text
-PASS Unscopable handled correctly for text property on HTMLTitleElement
 PASS HTMLTitleElement must be primary interface of document.createElement("title")
 PASS Stringification of document.createElement("title")
 PASS HTMLTitleElement interface: document.createElement("title") must inherit property "text" with the proper type
@@ -395,9 +301,7 @@ PASS HTMLBaseElement interface: existence and properties of interface prototype 
 PASS HTMLBaseElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLBaseElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLBaseElement interface: attribute href
-PASS Unscopable handled correctly for href property on HTMLBaseElement
 PASS HTMLBaseElement interface: attribute target
-PASS Unscopable handled correctly for target property on HTMLBaseElement
 PASS HTMLBaseElement must be primary interface of document.createElement("base")
 PASS Stringification of document.createElement("base")
 PASS HTMLBaseElement interface: document.createElement("base") must inherit property "href" with the proper type
@@ -409,33 +313,19 @@ PASS HTMLLinkElement interface: existence and properties of interface prototype 
 PASS HTMLLinkElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLLinkElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLLinkElement interface: attribute href
-PASS Unscopable handled correctly for href property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute crossOrigin
-PASS Unscopable handled correctly for crossOrigin property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute rel
-PASS Unscopable handled correctly for rel property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute as
-PASS Unscopable handled correctly for as property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute relList
-PASS Unscopable handled correctly for relList property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute media
-PASS Unscopable handled correctly for media property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute integrity
-PASS Unscopable handled correctly for integrity property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute hreflang
-PASS Unscopable handled correctly for hreflang property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute sizes
-PASS Unscopable handled correctly for sizes property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute referrerPolicy
-PASS Unscopable handled correctly for referrerPolicy property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute charset
-PASS Unscopable handled correctly for charset property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute rev
-PASS Unscopable handled correctly for rev property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute target
-PASS Unscopable handled correctly for target property on HTMLLinkElement
 PASS HTMLLinkElement must be primary interface of document.createElement("link")
 PASS Stringification of document.createElement("link")
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "href" with the proper type
@@ -459,13 +349,9 @@ PASS HTMLMetaElement interface: existence and properties of interface prototype 
 PASS HTMLMetaElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLMetaElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLMetaElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLMetaElement
 PASS HTMLMetaElement interface: attribute httpEquiv
-PASS Unscopable handled correctly for httpEquiv property on HTMLMetaElement
 PASS HTMLMetaElement interface: attribute content
-PASS Unscopable handled correctly for content property on HTMLMetaElement
 PASS HTMLMetaElement interface: attribute scheme
-PASS Unscopable handled correctly for scheme property on HTMLMetaElement
 PASS HTMLMetaElement must be primary interface of document.createElement("meta")
 PASS Stringification of document.createElement("meta")
 PASS HTMLMetaElement interface: document.createElement("meta") must inherit property "name" with the proper type
@@ -479,9 +365,7 @@ PASS HTMLStyleElement interface: existence and properties of interface prototype
 PASS HTMLStyleElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLStyleElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLStyleElement interface: attribute media
-PASS Unscopable handled correctly for media property on HTMLStyleElement
 PASS HTMLStyleElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLStyleElement
 PASS HTMLStyleElement must be primary interface of document.createElement("style")
 PASS Stringification of document.createElement("style")
 PASS HTMLStyleElement interface: document.createElement("style") must inherit property "media" with the proper type
@@ -493,49 +377,27 @@ PASS HTMLBodyElement interface: existence and properties of interface prototype 
 PASS HTMLBodyElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLBodyElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLBodyElement interface: attribute text
-PASS Unscopable handled correctly for text property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute link
-PASS Unscopable handled correctly for link property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute vLink
-PASS Unscopable handled correctly for vLink property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute aLink
-PASS Unscopable handled correctly for aLink property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute bgColor
-PASS Unscopable handled correctly for bgColor property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute background
-PASS Unscopable handled correctly for background property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onafterprint
-PASS Unscopable handled correctly for onafterprint property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onbeforeprint
-PASS Unscopable handled correctly for onbeforeprint property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onbeforeunload
-PASS Unscopable handled correctly for onbeforeunload property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onhashchange
-PASS Unscopable handled correctly for onhashchange property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onlanguagechange
-PASS Unscopable handled correctly for onlanguagechange property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onmessage
-PASS Unscopable handled correctly for onmessage property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onmessageerror
-PASS Unscopable handled correctly for onmessageerror property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onoffline
-PASS Unscopable handled correctly for onoffline property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute ononline
-PASS Unscopable handled correctly for ononline property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onpagehide
-PASS Unscopable handled correctly for onpagehide property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onpageshow
-PASS Unscopable handled correctly for onpageshow property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onpopstate
-PASS Unscopable handled correctly for onpopstate property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onrejectionhandled
-PASS Unscopable handled correctly for onrejectionhandled property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onstorage
-PASS Unscopable handled correctly for onstorage property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onunhandledrejection
-PASS Unscopable handled correctly for onunhandledrejection property on HTMLBodyElement
 PASS HTMLBodyElement interface: attribute onunload
-PASS Unscopable handled correctly for onunload property on HTMLBodyElement
 PASS HTMLBodyElement must be primary interface of document.createElement("body")
 PASS Stringification of document.createElement("body")
 PASS HTMLBodyElement interface: document.createElement("body") must inherit property "text" with the proper type
@@ -567,7 +429,6 @@ PASS HTMLHeadingElement interface: existence and properties of interface prototy
 PASS HTMLHeadingElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLHeadingElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLHeadingElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLHeadingElement
 PASS HTMLHeadingElement must be primary interface of document.createElement("h1")
 PASS Stringification of document.createElement("h1")
 PASS HTMLHeadingElement interface: document.createElement("h1") must inherit property "align" with the proper type
@@ -578,7 +439,6 @@ PASS HTMLParagraphElement interface: existence and properties of interface proto
 PASS HTMLParagraphElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLParagraphElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLParagraphElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLParagraphElement
 PASS HTMLParagraphElement must be primary interface of document.createElement("p")
 PASS Stringification of document.createElement("p")
 PASS HTMLParagraphElement interface: document.createElement("p") must inherit property "align" with the proper type
@@ -589,15 +449,10 @@ PASS HTMLHRElement interface: existence and properties of interface prototype ob
 PASS HTMLHRElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLHRElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLHRElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLHRElement
 PASS HTMLHRElement interface: attribute color
-PASS Unscopable handled correctly for color property on HTMLHRElement
 PASS HTMLHRElement interface: attribute noShade
-PASS Unscopable handled correctly for noShade property on HTMLHRElement
 PASS HTMLHRElement interface: attribute size
-PASS Unscopable handled correctly for size property on HTMLHRElement
 PASS HTMLHRElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLHRElement
 PASS HTMLHRElement must be primary interface of document.createElement("hr")
 PASS Stringification of document.createElement("hr")
 PASS HTMLHRElement interface: document.createElement("hr") must inherit property "align" with the proper type
@@ -612,7 +467,6 @@ PASS HTMLPreElement interface: existence and properties of interface prototype o
 PASS HTMLPreElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLPreElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLPreElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLPreElement
 PASS HTMLPreElement must be primary interface of document.createElement("pre")
 PASS Stringification of document.createElement("pre")
 PASS HTMLPreElement interface: document.createElement("pre") must inherit property "width" with the proper type
@@ -629,7 +483,6 @@ PASS HTMLQuoteElement interface: existence and properties of interface prototype
 PASS HTMLQuoteElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLQuoteElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLQuoteElement interface: attribute cite
-PASS Unscopable handled correctly for cite property on HTMLQuoteElement
 PASS HTMLQuoteElement must be primary interface of document.createElement("blockquote")
 PASS Stringification of document.createElement("blockquote")
 PASS HTMLQuoteElement interface: document.createElement("blockquote") must inherit property "cite" with the proper type
@@ -643,13 +496,9 @@ PASS HTMLOListElement interface: existence and properties of interface prototype
 PASS HTMLOListElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLOListElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLOListElement interface: attribute reversed
-PASS Unscopable handled correctly for reversed property on HTMLOListElement
 PASS HTMLOListElement interface: attribute start
-PASS Unscopable handled correctly for start property on HTMLOListElement
 PASS HTMLOListElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLOListElement
 PASS HTMLOListElement interface: attribute compact
-PASS Unscopable handled correctly for compact property on HTMLOListElement
 PASS HTMLUListElement interface: existence and properties of interface object
 PASS HTMLUListElement interface object length
 PASS HTMLUListElement interface object name
@@ -657,9 +506,7 @@ PASS HTMLUListElement interface: existence and properties of interface prototype
 PASS HTMLUListElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLUListElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLUListElement interface: attribute compact
-PASS Unscopable handled correctly for compact property on HTMLUListElement
 PASS HTMLUListElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLUListElement
 PASS HTMLMenuElement interface: existence and properties of interface object
 PASS HTMLMenuElement interface object length
 PASS HTMLMenuElement interface object name
@@ -667,7 +514,6 @@ PASS HTMLMenuElement interface: existence and properties of interface prototype 
 PASS HTMLMenuElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLMenuElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLMenuElement interface: attribute compact
-PASS Unscopable handled correctly for compact property on HTMLMenuElement
 PASS HTMLMenuElement must be primary interface of document.createElement("menu")
 PASS Stringification of document.createElement("menu")
 PASS HTMLMenuElement interface: document.createElement("menu") must inherit property "compact" with the proper type
@@ -678,9 +524,7 @@ PASS HTMLLIElement interface: existence and properties of interface prototype ob
 PASS HTMLLIElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLLIElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLLIElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLLIElement
 PASS HTMLLIElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLLIElement
 PASS HTMLLIElement must be primary interface of document.createElement("li")
 PASS Stringification of document.createElement("li")
 PASS HTMLLIElement interface: document.createElement("li") must inherit property "value" with the proper type
@@ -692,7 +536,6 @@ PASS HTMLDListElement interface: existence and properties of interface prototype
 PASS HTMLDListElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLDListElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLDListElement interface: attribute compact
-PASS Unscopable handled correctly for compact property on HTMLDListElement
 PASS HTMLDivElement interface: existence and properties of interface object
 PASS HTMLDivElement interface object length
 PASS HTMLDivElement interface object name
@@ -700,7 +543,6 @@ PASS HTMLDivElement interface: existence and properties of interface prototype o
 PASS HTMLDivElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLDivElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLDivElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLDivElement
 PASS HTMLDivElement must be primary interface of document.createElement("div")
 PASS Stringification of document.createElement("div")
 PASS HTMLDivElement interface: document.createElement("div") must inherit property "align" with the proper type
@@ -711,56 +553,31 @@ PASS HTMLAnchorElement interface: existence and properties of interface prototyp
 PASS HTMLAnchorElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLAnchorElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLAnchorElement interface: attribute target
-PASS Unscopable handled correctly for target property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute download
-PASS Unscopable handled correctly for download property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute ping
-PASS Unscopable handled correctly for ping property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute rel
-PASS Unscopable handled correctly for rel property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute relList
-PASS Unscopable handled correctly for relList property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute hreflang
-PASS Unscopable handled correctly for hreflang property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute text
-PASS Unscopable handled correctly for text property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute referrerPolicy
-PASS Unscopable handled correctly for referrerPolicy property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute coords
-PASS Unscopable handled correctly for coords property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute charset
-PASS Unscopable handled correctly for charset property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute rev
-PASS Unscopable handled correctly for rev property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute shape
-PASS Unscopable handled correctly for shape property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute href
-PASS Unscopable handled correctly for href property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: stringifier
 PASS HTMLAnchorElement interface: attribute origin
-PASS Unscopable handled correctly for origin property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute protocol
-PASS Unscopable handled correctly for protocol property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute username
-PASS Unscopable handled correctly for username property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute password
-PASS Unscopable handled correctly for password property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute host
-PASS Unscopable handled correctly for host property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute hostname
-PASS Unscopable handled correctly for hostname property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute port
-PASS Unscopable handled correctly for port property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute pathname
-PASS Unscopable handled correctly for pathname property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute search
-PASS Unscopable handled correctly for search property on HTMLAnchorElement
 PASS HTMLAnchorElement interface: attribute hash
-PASS Unscopable handled correctly for hash property on HTMLAnchorElement
 PASS HTMLAnchorElement must be primary interface of document.createElement("a")
 PASS Stringification of document.createElement("a")
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "target" with the proper type
@@ -795,7 +612,6 @@ PASS HTMLDataElement interface: existence and properties of interface prototype 
 PASS HTMLDataElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLDataElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLDataElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLDataElement
 PASS HTMLDataElement must be primary interface of document.createElement("data")
 PASS Stringification of document.createElement("data")
 PASS HTMLDataElement interface: document.createElement("data") must inherit property "value" with the proper type
@@ -806,7 +622,6 @@ PASS HTMLTimeElement interface: existence and properties of interface prototype 
 PASS HTMLTimeElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTimeElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTimeElement interface: attribute dateTime
-PASS Unscopable handled correctly for dateTime property on HTMLTimeElement
 PASS HTMLTimeElement must be primary interface of document.createElement("time")
 PASS Stringification of document.createElement("time")
 PASS HTMLTimeElement interface: document.createElement("time") must inherit property "dateTime" with the proper type
@@ -825,7 +640,6 @@ PASS HTMLBRElement interface: existence and properties of interface prototype ob
 PASS HTMLBRElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLBRElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLBRElement interface: attribute clear
-PASS Unscopable handled correctly for clear property on HTMLBRElement
 PASS HTMLBRElement must be primary interface of document.createElement("br")
 PASS Stringification of document.createElement("br")
 PASS HTMLBRElement interface: document.createElement("br") must inherit property "clear" with the proper type
@@ -836,9 +650,7 @@ PASS HTMLModElement interface: existence and properties of interface prototype o
 PASS HTMLModElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLModElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLModElement interface: attribute cite
-PASS Unscopable handled correctly for cite property on HTMLModElement
 PASS HTMLModElement interface: attribute dateTime
-PASS Unscopable handled correctly for dateTime property on HTMLModElement
 PASS HTMLModElement must be primary interface of document.createElement("ins")
 PASS Stringification of document.createElement("ins")
 PASS HTMLModElement interface: document.createElement("ins") must inherit property "cite" with the proper type
@@ -862,15 +674,10 @@ PASS HTMLSourceElement interface: existence and properties of interface prototyp
 PASS HTMLSourceElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLSourceElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLSourceElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLSourceElement
 PASS HTMLSourceElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLSourceElement
 PASS HTMLSourceElement interface: attribute srcset
-PASS Unscopable handled correctly for srcset property on HTMLSourceElement
 PASS HTMLSourceElement interface: attribute sizes
-PASS Unscopable handled correctly for sizes property on HTMLSourceElement
 PASS HTMLSourceElement interface: attribute media
-PASS Unscopable handled correctly for media property on HTMLSourceElement
 PASS HTMLSourceElement must be primary interface of document.createElement("source")
 PASS Stringification of document.createElement("source")
 PASS HTMLSourceElement interface: document.createElement("source") must inherit property "src" with the proper type
@@ -885,49 +692,27 @@ PASS HTMLImageElement interface: existence and properties of interface prototype
 PASS HTMLImageElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLImageElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLImageElement interface: attribute alt
-PASS Unscopable handled correctly for alt property on HTMLImageElement
 PASS HTMLImageElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLImageElement
 PASS HTMLImageElement interface: attribute srcset
-PASS Unscopable handled correctly for srcset property on HTMLImageElement
 PASS HTMLImageElement interface: attribute sizes
-PASS Unscopable handled correctly for sizes property on HTMLImageElement
 PASS HTMLImageElement interface: attribute crossOrigin
-PASS Unscopable handled correctly for crossOrigin property on HTMLImageElement
 PASS HTMLImageElement interface: attribute useMap
-PASS Unscopable handled correctly for useMap property on HTMLImageElement
 PASS HTMLImageElement interface: attribute isMap
-PASS Unscopable handled correctly for isMap property on HTMLImageElement
 PASS HTMLImageElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLImageElement
 PASS HTMLImageElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLImageElement
 PASS HTMLImageElement interface: attribute naturalWidth
-PASS Unscopable handled correctly for naturalWidth property on HTMLImageElement
 PASS HTMLImageElement interface: attribute naturalHeight
-PASS Unscopable handled correctly for naturalHeight property on HTMLImageElement
 PASS HTMLImageElement interface: attribute complete
-PASS Unscopable handled correctly for complete property on HTMLImageElement
 PASS HTMLImageElement interface: attribute currentSrc
-PASS Unscopable handled correctly for currentSrc property on HTMLImageElement
 PASS HTMLImageElement interface: attribute referrerPolicy
-PASS Unscopable handled correctly for referrerPolicy property on HTMLImageElement
 PASS HTMLImageElement interface: operation decode()
-PASS Unscopable handled correctly for decode() on HTMLImageElement
 PASS HTMLImageElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLImageElement
 PASS HTMLImageElement interface: attribute lowsrc
-PASS Unscopable handled correctly for lowsrc property on HTMLImageElement
 PASS HTMLImageElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLImageElement
 PASS HTMLImageElement interface: attribute hspace
-PASS Unscopable handled correctly for hspace property on HTMLImageElement
 PASS HTMLImageElement interface: attribute vspace
-PASS Unscopable handled correctly for vspace property on HTMLImageElement
 PASS HTMLImageElement interface: attribute longDesc
-PASS Unscopable handled correctly for longDesc property on HTMLImageElement
 PASS HTMLImageElement interface: attribute border
-PASS Unscopable handled correctly for border property on HTMLImageElement
 PASS HTMLImageElement must be primary interface of document.createElement("img")
 PASS Stringification of document.createElement("img")
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "alt" with the proper type
@@ -983,45 +768,25 @@ PASS HTMLIFrameElement interface: existence and properties of interface prototyp
 PASS HTMLIFrameElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLIFrameElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLIFrameElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute srcdoc
-PASS Unscopable handled correctly for srcdoc property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute sandbox
-PASS Unscopable handled correctly for sandbox property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute allowFullscreen
-PASS Unscopable handled correctly for allowFullscreen property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute allowPaymentRequest
-PASS Unscopable handled correctly for allowPaymentRequest property on HTMLIFrameElement
 FAIL HTMLIFrameElement interface: attribute allowUserMedia assert_true: The prototype object must have a property "allowUserMedia" expected true got false
-PASS Unscopable handled correctly for allowUserMedia property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute referrerPolicy
-PASS Unscopable handled correctly for referrerPolicy property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute contentDocument
-PASS Unscopable handled correctly for contentDocument property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute contentWindow
-PASS Unscopable handled correctly for contentWindow property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: operation getSVGDocument()
-PASS Unscopable handled correctly for getSVGDocument() on HTMLIFrameElement
 FAIL HTMLIFrameElement interface: attribute delegateStickyUserActivation assert_true: The prototype object must have a property "delegateStickyUserActivation" expected true got false
-PASS Unscopable handled correctly for delegateStickyUserActivation property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute scrolling
-PASS Unscopable handled correctly for scrolling property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute frameBorder
-PASS Unscopable handled correctly for frameBorder property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute longDesc
-PASS Unscopable handled correctly for longDesc property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute marginHeight
-PASS Unscopable handled correctly for marginHeight property on HTMLIFrameElement
 PASS HTMLIFrameElement interface: attribute marginWidth
-PASS Unscopable handled correctly for marginWidth property on HTMLIFrameElement
 PASS HTMLEmbedElement interface: existence and properties of interface object
 PASS HTMLEmbedElement interface object length
 PASS HTMLEmbedElement interface object name
@@ -1029,19 +794,12 @@ PASS HTMLEmbedElement interface: existence and properties of interface prototype
 PASS HTMLEmbedElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLEmbedElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLEmbedElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLEmbedElement
 PASS HTMLEmbedElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLEmbedElement
 PASS HTMLEmbedElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLEmbedElement
 PASS HTMLEmbedElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLEmbedElement
 PASS HTMLEmbedElement interface: operation getSVGDocument()
-PASS Unscopable handled correctly for getSVGDocument() on HTMLEmbedElement
 PASS HTMLEmbedElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLEmbedElement
 PASS HTMLEmbedElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLEmbedElement
 PASS HTMLEmbedElement must be primary interface of document.createElement("embed")
 PASS Stringification of document.createElement("embed")
 PASS HTMLEmbedElement interface: document.createElement("embed") must inherit property "src" with the proper type
@@ -1058,59 +816,32 @@ PASS HTMLObjectElement interface: existence and properties of interface prototyp
 PASS HTMLObjectElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLObjectElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLObjectElement interface: attribute data
-PASS Unscopable handled correctly for data property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLObjectElement
 FAIL HTMLObjectElement interface: attribute typeMustMatch assert_true: The prototype object must have a property "typeMustMatch" expected true got false
-PASS Unscopable handled correctly for typeMustMatch property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute useMap
-PASS Unscopable handled correctly for useMap property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute contentDocument
-PASS Unscopable handled correctly for contentDocument property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute contentWindow
-PASS Unscopable handled correctly for contentWindow property on HTMLObjectElement
 PASS HTMLObjectElement interface: operation getSVGDocument()
-PASS Unscopable handled correctly for getSVGDocument() on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute willValidate
-PASS Unscopable handled correctly for willValidate property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute validity
-PASS Unscopable handled correctly for validity property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute validationMessage
-PASS Unscopable handled correctly for validationMessage property on HTMLObjectElement
 PASS HTMLObjectElement interface: operation checkValidity()
-PASS Unscopable handled correctly for checkValidity() on HTMLObjectElement
 PASS HTMLObjectElement interface: operation reportValidity()
-PASS Unscopable handled correctly for reportValidity() on HTMLObjectElement
 PASS HTMLObjectElement interface: operation setCustomValidity(DOMString)
-PASS Unscopable handled correctly for setCustomValidity(DOMString) on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute archive
-PASS Unscopable handled correctly for archive property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute code
-PASS Unscopable handled correctly for code property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute declare
-PASS Unscopable handled correctly for declare property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute hspace
-PASS Unscopable handled correctly for hspace property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute standby
-PASS Unscopable handled correctly for standby property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute vspace
-PASS Unscopable handled correctly for vspace property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute codeBase
-PASS Unscopable handled correctly for codeBase property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute codeType
-PASS Unscopable handled correctly for codeType property on HTMLObjectElement
 PASS HTMLObjectElement interface: attribute border
-PASS Unscopable handled correctly for border property on HTMLObjectElement
 PASS HTMLObjectElement must be primary interface of document.createElement("object")
 PASS Stringification of document.createElement("object")
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "data" with the proper type
@@ -1148,13 +879,9 @@ PASS HTMLParamElement interface: existence and properties of interface prototype
 PASS HTMLParamElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLParamElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLParamElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLParamElement
 PASS HTMLParamElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLParamElement
 PASS HTMLParamElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLParamElement
 PASS HTMLParamElement interface: attribute valueType
-PASS Unscopable handled correctly for valueType property on HTMLParamElement
 PASS HTMLParamElement must be primary interface of document.createElement("param")
 PASS Stringification of document.createElement("param")
 PASS HTMLParamElement interface: document.createElement("param") must inherit property "name" with the proper type
@@ -1168,17 +895,11 @@ PASS HTMLVideoElement interface: existence and properties of interface prototype
 PASS HTMLVideoElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLVideoElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLVideoElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLVideoElement
 PASS HTMLVideoElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLVideoElement
 PASS HTMLVideoElement interface: attribute videoWidth
-PASS Unscopable handled correctly for videoWidth property on HTMLVideoElement
 PASS HTMLVideoElement interface: attribute videoHeight
-PASS Unscopable handled correctly for videoHeight property on HTMLVideoElement
 PASS HTMLVideoElement interface: attribute poster
-PASS Unscopable handled correctly for poster property on HTMLVideoElement
 FAIL HTMLVideoElement interface: attribute playsInline assert_true: The prototype object must have a property "playsInline" expected true got false
-PASS Unscopable handled correctly for playsInline property on HTMLVideoElement
 PASS HTMLVideoElement must be primary interface of document.createElement("video")
 PASS Stringification of document.createElement("video")
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "width" with the proper type
@@ -1342,15 +1063,10 @@ PASS HTMLTrackElement interface: existence and properties of interface prototype
 PASS HTMLTrackElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTrackElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTrackElement interface: attribute kind
-PASS Unscopable handled correctly for kind property on HTMLTrackElement
 PASS HTMLTrackElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLTrackElement
 PASS HTMLTrackElement interface: attribute srclang
-PASS Unscopable handled correctly for srclang property on HTMLTrackElement
 PASS HTMLTrackElement interface: attribute label
-PASS Unscopable handled correctly for label property on HTMLTrackElement
 PASS HTMLTrackElement interface: attribute default
-PASS Unscopable handled correctly for default property on HTMLTrackElement
 PASS HTMLTrackElement interface: constant NONE on interface object
 PASS HTMLTrackElement interface: constant NONE on interface prototype object
 PASS HTMLTrackElement interface: constant LOADING on interface object
@@ -1360,9 +1076,7 @@ PASS HTMLTrackElement interface: constant LOADED on interface prototype object
 PASS HTMLTrackElement interface: constant ERROR on interface object
 PASS HTMLTrackElement interface: constant ERROR on interface prototype object
 PASS HTMLTrackElement interface: attribute readyState
-PASS Unscopable handled correctly for readyState property on HTMLTrackElement
 PASS HTMLTrackElement interface: attribute track
-PASS Unscopable handled correctly for track property on HTMLTrackElement
 PASS HTMLTrackElement must be primary interface of document.createElement("track")
 PASS Stringification of document.createElement("track")
 PASS HTMLTrackElement interface: document.createElement("track") must inherit property "kind" with the proper type
@@ -1383,15 +1097,10 @@ PASS HTMLMediaElement interface: existence and properties of interface prototype
 PASS HTMLMediaElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLMediaElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLMediaElement interface: attribute error
-PASS Unscopable handled correctly for error property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute srcObject
-PASS Unscopable handled correctly for srcObject property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute currentSrc
-PASS Unscopable handled correctly for currentSrc property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute crossOrigin
-PASS Unscopable handled correctly for crossOrigin property on HTMLMediaElement
 PASS HTMLMediaElement interface: constant NETWORK_EMPTY on interface object
 PASS HTMLMediaElement interface: constant NETWORK_EMPTY on interface prototype object
 PASS HTMLMediaElement interface: constant NETWORK_IDLE on interface object
@@ -1401,15 +1110,10 @@ PASS HTMLMediaElement interface: constant NETWORK_LOADING on interface prototype
 PASS HTMLMediaElement interface: constant NETWORK_NO_SOURCE on interface object
 PASS HTMLMediaElement interface: constant NETWORK_NO_SOURCE on interface prototype object
 PASS HTMLMediaElement interface: attribute networkState
-PASS Unscopable handled correctly for networkState property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute preload
-PASS Unscopable handled correctly for preload property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute buffered
-PASS Unscopable handled correctly for buffered property on HTMLMediaElement
 PASS HTMLMediaElement interface: operation load()
-PASS Unscopable handled correctly for load() on HTMLMediaElement
 PASS HTMLMediaElement interface: operation canPlayType(DOMString)
-PASS Unscopable handled correctly for canPlayType(DOMString) on HTMLMediaElement
 PASS HTMLMediaElement interface: constant HAVE_NOTHING on interface object
 PASS HTMLMediaElement interface: constant HAVE_NOTHING on interface prototype object
 PASS HTMLMediaElement interface: constant HAVE_METADATA on interface object
@@ -1421,53 +1125,29 @@ PASS HTMLMediaElement interface: constant HAVE_FUTURE_DATA on interface prototyp
 PASS HTMLMediaElement interface: constant HAVE_ENOUGH_DATA on interface object
 PASS HTMLMediaElement interface: constant HAVE_ENOUGH_DATA on interface prototype object
 PASS HTMLMediaElement interface: attribute readyState
-PASS Unscopable handled correctly for readyState property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute seeking
-PASS Unscopable handled correctly for seeking property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute currentTime
-PASS Unscopable handled correctly for currentTime property on HTMLMediaElement
 FAIL HTMLMediaElement interface: operation fastSeek(double) assert_own_property: interface prototype object missing non-static operation expected property "fastSeek" missing
-PASS Unscopable handled correctly for fastSeek(double) on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute duration
-PASS Unscopable handled correctly for duration property on HTMLMediaElement
 FAIL HTMLMediaElement interface: operation getStartDate() assert_own_property: interface prototype object missing non-static operation expected property "getStartDate" missing
-PASS Unscopable handled correctly for getStartDate() on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute paused
-PASS Unscopable handled correctly for paused property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute defaultPlaybackRate
-PASS Unscopable handled correctly for defaultPlaybackRate property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute playbackRate
-PASS Unscopable handled correctly for playbackRate property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute played
-PASS Unscopable handled correctly for played property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute seekable
-PASS Unscopable handled correctly for seekable property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute ended
-PASS Unscopable handled correctly for ended property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute autoplay
-PASS Unscopable handled correctly for autoplay property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute loop
-PASS Unscopable handled correctly for loop property on HTMLMediaElement
 PASS HTMLMediaElement interface: operation play()
-PASS Unscopable handled correctly for play() on HTMLMediaElement
 PASS HTMLMediaElement interface: operation pause()
-PASS Unscopable handled correctly for pause() on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute controls
-PASS Unscopable handled correctly for controls property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute volume
-PASS Unscopable handled correctly for volume property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute muted
-PASS Unscopable handled correctly for muted property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute defaultMuted
-PASS Unscopable handled correctly for defaultMuted property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute audioTracks
-PASS Unscopable handled correctly for audioTracks property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute videoTracks
-PASS Unscopable handled correctly for videoTracks property on HTMLMediaElement
 PASS HTMLMediaElement interface: attribute textTracks
-PASS Unscopable handled correctly for textTracks property on HTMLMediaElement
 PASS HTMLMediaElement interface: operation addTextTrack(TextTrackKind, DOMString, DOMString)
-PASS Unscopable handled correctly for addTextTrack(TextTrackKind, DOMString, DOMString) on HTMLMediaElement
 PASS HTMLMapElement interface: existence and properties of interface object
 PASS HTMLMapElement interface object length
 PASS HTMLMapElement interface object name
@@ -1475,9 +1155,7 @@ PASS HTMLMapElement interface: existence and properties of interface prototype o
 PASS HTMLMapElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLMapElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLMapElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLMapElement
 PASS HTMLMapElement interface: attribute areas
-PASS Unscopable handled correctly for areas property on HTMLMapElement
 PASS HTMLMapElement must be primary interface of document.createElement("map")
 PASS Stringification of document.createElement("map")
 PASS HTMLMapElement interface: document.createElement("map") must inherit property "name" with the proper type
@@ -1489,48 +1167,27 @@ PASS HTMLAreaElement interface: existence and properties of interface prototype 
 PASS HTMLAreaElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLAreaElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLAreaElement interface: attribute alt
-PASS Unscopable handled correctly for alt property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute coords
-PASS Unscopable handled correctly for coords property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute shape
-PASS Unscopable handled correctly for shape property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute target
-PASS Unscopable handled correctly for target property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute download
-PASS Unscopable handled correctly for download property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute ping
-PASS Unscopable handled correctly for ping property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute rel
-PASS Unscopable handled correctly for rel property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute relList
-PASS Unscopable handled correctly for relList property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute referrerPolicy
-PASS Unscopable handled correctly for referrerPolicy property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute noHref
-PASS Unscopable handled correctly for noHref property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute href
-PASS Unscopable handled correctly for href property on HTMLAreaElement
 PASS HTMLAreaElement interface: stringifier
 PASS HTMLAreaElement interface: attribute origin
-PASS Unscopable handled correctly for origin property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute protocol
-PASS Unscopable handled correctly for protocol property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute username
-PASS Unscopable handled correctly for username property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute password
-PASS Unscopable handled correctly for password property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute host
-PASS Unscopable handled correctly for host property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute hostname
-PASS Unscopable handled correctly for hostname property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute port
-PASS Unscopable handled correctly for port property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute pathname
-PASS Unscopable handled correctly for pathname property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute search
-PASS Unscopable handled correctly for search property on HTMLAreaElement
 PASS HTMLAreaElement interface: attribute hash
-PASS Unscopable handled correctly for hash property on HTMLAreaElement
 PASS HTMLAreaElement must be primary interface of document.createElement("area")
 PASS Stringification of document.createElement("area")
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "alt" with the proper type
@@ -1561,51 +1218,28 @@ PASS HTMLTableElement interface: existence and properties of interface prototype
 PASS HTMLTableElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTableElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTableElement interface: attribute caption
-PASS Unscopable handled correctly for caption property on HTMLTableElement
 PASS HTMLTableElement interface: operation createCaption()
-PASS Unscopable handled correctly for createCaption() on HTMLTableElement
 PASS HTMLTableElement interface: operation deleteCaption()
-PASS Unscopable handled correctly for deleteCaption() on HTMLTableElement
 PASS HTMLTableElement interface: attribute tHead
-PASS Unscopable handled correctly for tHead property on HTMLTableElement
 PASS HTMLTableElement interface: operation createTHead()
-PASS Unscopable handled correctly for createTHead() on HTMLTableElement
 PASS HTMLTableElement interface: operation deleteTHead()
-PASS Unscopable handled correctly for deleteTHead() on HTMLTableElement
 PASS HTMLTableElement interface: attribute tFoot
-PASS Unscopable handled correctly for tFoot property on HTMLTableElement
 PASS HTMLTableElement interface: operation createTFoot()
-PASS Unscopable handled correctly for createTFoot() on HTMLTableElement
 PASS HTMLTableElement interface: operation deleteTFoot()
-PASS Unscopable handled correctly for deleteTFoot() on HTMLTableElement
 PASS HTMLTableElement interface: attribute tBodies
-PASS Unscopable handled correctly for tBodies property on HTMLTableElement
 PASS HTMLTableElement interface: operation createTBody()
-PASS Unscopable handled correctly for createTBody() on HTMLTableElement
 PASS HTMLTableElement interface: attribute rows
-PASS Unscopable handled correctly for rows property on HTMLTableElement
 PASS HTMLTableElement interface: operation insertRow(long)
-PASS Unscopable handled correctly for insertRow(long) on HTMLTableElement
 PASS HTMLTableElement interface: operation deleteRow(long)
-PASS Unscopable handled correctly for deleteRow(long) on HTMLTableElement
 PASS HTMLTableElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLTableElement
 PASS HTMLTableElement interface: attribute border
-PASS Unscopable handled correctly for border property on HTMLTableElement
 PASS HTMLTableElement interface: attribute frame
-PASS Unscopable handled correctly for frame property on HTMLTableElement
 PASS HTMLTableElement interface: attribute rules
-PASS Unscopable handled correctly for rules property on HTMLTableElement
 PASS HTMLTableElement interface: attribute summary
-PASS Unscopable handled correctly for summary property on HTMLTableElement
 PASS HTMLTableElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLTableElement
 PASS HTMLTableElement interface: attribute bgColor
-PASS Unscopable handled correctly for bgColor property on HTMLTableElement
 PASS HTMLTableElement interface: attribute cellPadding
-PASS Unscopable handled correctly for cellPadding property on HTMLTableElement
 PASS HTMLTableElement interface: attribute cellSpacing
-PASS Unscopable handled correctly for cellSpacing property on HTMLTableElement
 PASS HTMLTableElement must be primary interface of document.createElement("table")
 PASS Stringification of document.createElement("table")
 PASS HTMLTableElement interface: document.createElement("table") must inherit property "caption" with the proper type
@@ -1640,7 +1274,6 @@ PASS HTMLTableCaptionElement interface: existence and properties of interface pr
 PASS HTMLTableCaptionElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTableCaptionElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTableCaptionElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLTableCaptionElement
 PASS HTMLTableCaptionElement must be primary interface of document.createElement("caption")
 PASS Stringification of document.createElement("caption")
 PASS HTMLTableCaptionElement interface: document.createElement("caption") must inherit property "align" with the proper type
@@ -1651,17 +1284,11 @@ PASS HTMLTableColElement interface: existence and properties of interface protot
 PASS HTMLTableColElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTableColElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTableColElement interface: attribute span
-PASS Unscopable handled correctly for span property on HTMLTableColElement
 PASS HTMLTableColElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLTableColElement
 PASS HTMLTableColElement interface: attribute ch
-PASS Unscopable handled correctly for ch property on HTMLTableColElement
 PASS HTMLTableColElement interface: attribute chOff
-PASS Unscopable handled correctly for chOff property on HTMLTableColElement
 PASS HTMLTableColElement interface: attribute vAlign
-PASS Unscopable handled correctly for vAlign property on HTMLTableColElement
 PASS HTMLTableColElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLTableColElement
 PASS HTMLTableColElement must be primary interface of document.createElement("colgroup")
 PASS Stringification of document.createElement("colgroup")
 PASS HTMLTableColElement interface: document.createElement("colgroup") must inherit property "span" with the proper type
@@ -1685,19 +1312,12 @@ PASS HTMLTableSectionElement interface: existence and properties of interface pr
 PASS HTMLTableSectionElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTableSectionElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTableSectionElement interface: attribute rows
-PASS Unscopable handled correctly for rows property on HTMLTableSectionElement
 PASS HTMLTableSectionElement interface: operation insertRow(long)
-PASS Unscopable handled correctly for insertRow(long) on HTMLTableSectionElement
 PASS HTMLTableSectionElement interface: operation deleteRow(long)
-PASS Unscopable handled correctly for deleteRow(long) on HTMLTableSectionElement
 PASS HTMLTableSectionElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLTableSectionElement
 PASS HTMLTableSectionElement interface: attribute ch
-PASS Unscopable handled correctly for ch property on HTMLTableSectionElement
 PASS HTMLTableSectionElement interface: attribute chOff
-PASS Unscopable handled correctly for chOff property on HTMLTableSectionElement
 PASS HTMLTableSectionElement interface: attribute vAlign
-PASS Unscopable handled correctly for vAlign property on HTMLTableSectionElement
 PASS HTMLTableSectionElement must be primary interface of document.createElement("tbody")
 PASS Stringification of document.createElement("tbody")
 PASS HTMLTableSectionElement interface: document.createElement("tbody") must inherit property "rows" with the proper type
@@ -1738,25 +1358,15 @@ PASS HTMLTableRowElement interface: existence and properties of interface protot
 PASS HTMLTableRowElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTableRowElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTableRowElement interface: attribute rowIndex
-PASS Unscopable handled correctly for rowIndex property on HTMLTableRowElement
 PASS HTMLTableRowElement interface: attribute sectionRowIndex
-PASS Unscopable handled correctly for sectionRowIndex property on HTMLTableRowElement
 PASS HTMLTableRowElement interface: attribute cells
-PASS Unscopable handled correctly for cells property on HTMLTableRowElement
 PASS HTMLTableRowElement interface: operation insertCell(long)
-PASS Unscopable handled correctly for insertCell(long) on HTMLTableRowElement
 PASS HTMLTableRowElement interface: operation deleteCell(long)
-PASS Unscopable handled correctly for deleteCell(long) on HTMLTableRowElement
 PASS HTMLTableRowElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLTableRowElement
 PASS HTMLTableRowElement interface: attribute ch
-PASS Unscopable handled correctly for ch property on HTMLTableRowElement
 PASS HTMLTableRowElement interface: attribute chOff
-PASS Unscopable handled correctly for chOff property on HTMLTableRowElement
 PASS HTMLTableRowElement interface: attribute vAlign
-PASS Unscopable handled correctly for vAlign property on HTMLTableRowElement
 PASS HTMLTableRowElement interface: attribute bgColor
-PASS Unscopable handled correctly for bgColor property on HTMLTableRowElement
 PASS HTMLTableRowElement must be primary interface of document.createElement("tr")
 PASS Stringification of document.createElement("tr")
 PASS HTMLTableRowElement interface: document.createElement("tr") must inherit property "rowIndex" with the proper type
@@ -1778,35 +1388,20 @@ PASS HTMLTableCellElement interface: existence and properties of interface proto
 PASS HTMLTableCellElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTableCellElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTableCellElement interface: attribute colSpan
-PASS Unscopable handled correctly for colSpan property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute rowSpan
-PASS Unscopable handled correctly for rowSpan property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute headers
-PASS Unscopable handled correctly for headers property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute cellIndex
-PASS Unscopable handled correctly for cellIndex property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute scope
-PASS Unscopable handled correctly for scope property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute abbr
-PASS Unscopable handled correctly for abbr property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute axis
-PASS Unscopable handled correctly for axis property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute ch
-PASS Unscopable handled correctly for ch property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute chOff
-PASS Unscopable handled correctly for chOff property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute noWrap
-PASS Unscopable handled correctly for noWrap property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute vAlign
-PASS Unscopable handled correctly for vAlign property on HTMLTableCellElement
 PASS HTMLTableCellElement interface: attribute bgColor
-PASS Unscopable handled correctly for bgColor property on HTMLTableCellElement
 PASS HTMLTableCellElement must be primary interface of document.createElement("td")
 PASS Stringification of document.createElement("td")
 PASS HTMLTableCellElement interface: document.createElement("td") must inherit property "colSpan" with the proper type
@@ -1848,35 +1443,20 @@ PASS HTMLFormElement interface: existence and properties of interface prototype 
 PASS HTMLFormElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLFormElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLFormElement interface: attribute acceptCharset
-PASS Unscopable handled correctly for acceptCharset property on HTMLFormElement
 PASS HTMLFormElement interface: attribute action
-PASS Unscopable handled correctly for action property on HTMLFormElement
 PASS HTMLFormElement interface: attribute autocomplete
-PASS Unscopable handled correctly for autocomplete property on HTMLFormElement
 PASS HTMLFormElement interface: attribute enctype
-PASS Unscopable handled correctly for enctype property on HTMLFormElement
 PASS HTMLFormElement interface: attribute encoding
-PASS Unscopable handled correctly for encoding property on HTMLFormElement
 PASS HTMLFormElement interface: attribute method
-PASS Unscopable handled correctly for method property on HTMLFormElement
 PASS HTMLFormElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLFormElement
 PASS HTMLFormElement interface: attribute noValidate
-PASS Unscopable handled correctly for noValidate property on HTMLFormElement
 PASS HTMLFormElement interface: attribute target
-PASS Unscopable handled correctly for target property on HTMLFormElement
 PASS HTMLFormElement interface: attribute elements
-PASS Unscopable handled correctly for elements property on HTMLFormElement
 PASS HTMLFormElement interface: attribute length
-PASS Unscopable handled correctly for length property on HTMLFormElement
 PASS HTMLFormElement interface: operation submit()
-PASS Unscopable handled correctly for submit() on HTMLFormElement
 PASS HTMLFormElement interface: operation reset()
-PASS Unscopable handled correctly for reset() on HTMLFormElement
 PASS HTMLFormElement interface: operation checkValidity()
-PASS Unscopable handled correctly for checkValidity() on HTMLFormElement
 PASS HTMLFormElement interface: operation reportValidity()
-PASS Unscopable handled correctly for reportValidity() on HTMLFormElement
 PASS HTMLFormElement must be primary interface of document.createElement("form")
 PASS Stringification of document.createElement("form")
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "acceptCharset" with the proper type
@@ -1901,11 +1481,8 @@ PASS HTMLLabelElement interface: existence and properties of interface prototype
 PASS HTMLLabelElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLLabelElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLLabelElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLLabelElement
 PASS HTMLLabelElement interface: attribute htmlFor
-PASS Unscopable handled correctly for htmlFor property on HTMLLabelElement
 PASS HTMLLabelElement interface: attribute control
-PASS Unscopable handled correctly for control property on HTMLLabelElement
 PASS HTMLLabelElement must be primary interface of document.createElement("label")
 PASS Stringification of document.createElement("label")
 PASS HTMLLabelElement interface: document.createElement("label") must inherit property "form" with the proper type
@@ -1918,115 +1495,60 @@ PASS HTMLInputElement interface: existence and properties of interface prototype
 PASS HTMLInputElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLInputElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLInputElement interface: attribute accept
-PASS Unscopable handled correctly for accept property on HTMLInputElement
 PASS HTMLInputElement interface: attribute alt
-PASS Unscopable handled correctly for alt property on HTMLInputElement
 PASS HTMLInputElement interface: attribute autocomplete
-PASS Unscopable handled correctly for autocomplete property on HTMLInputElement
 PASS HTMLInputElement interface: attribute autofocus
-PASS Unscopable handled correctly for autofocus property on HTMLInputElement
 PASS HTMLInputElement interface: attribute defaultChecked
-PASS Unscopable handled correctly for defaultChecked property on HTMLInputElement
 PASS HTMLInputElement interface: attribute checked
-PASS Unscopable handled correctly for checked property on HTMLInputElement
 PASS HTMLInputElement interface: attribute dirName
-PASS Unscopable handled correctly for dirName property on HTMLInputElement
 PASS HTMLInputElement interface: attribute disabled
-PASS Unscopable handled correctly for disabled property on HTMLInputElement
 PASS HTMLInputElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLInputElement
 PASS HTMLInputElement interface: attribute files
-PASS Unscopable handled correctly for files property on HTMLInputElement
 PASS HTMLInputElement interface: attribute formAction
-PASS Unscopable handled correctly for formAction property on HTMLInputElement
 PASS HTMLInputElement interface: attribute formEnctype
-PASS Unscopable handled correctly for formEnctype property on HTMLInputElement
 PASS HTMLInputElement interface: attribute formMethod
-PASS Unscopable handled correctly for formMethod property on HTMLInputElement
 PASS HTMLInputElement interface: attribute formNoValidate
-PASS Unscopable handled correctly for formNoValidate property on HTMLInputElement
 PASS HTMLInputElement interface: attribute formTarget
-PASS Unscopable handled correctly for formTarget property on HTMLInputElement
 PASS HTMLInputElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLInputElement
 PASS HTMLInputElement interface: attribute indeterminate
-PASS Unscopable handled correctly for indeterminate property on HTMLInputElement
 PASS HTMLInputElement interface: attribute list
-PASS Unscopable handled correctly for list property on HTMLInputElement
 PASS HTMLInputElement interface: attribute max
-PASS Unscopable handled correctly for max property on HTMLInputElement
 PASS HTMLInputElement interface: attribute maxLength
-PASS Unscopable handled correctly for maxLength property on HTMLInputElement
 PASS HTMLInputElement interface: attribute min
-PASS Unscopable handled correctly for min property on HTMLInputElement
 PASS HTMLInputElement interface: attribute minLength
-PASS Unscopable handled correctly for minLength property on HTMLInputElement
 PASS HTMLInputElement interface: attribute multiple
-PASS Unscopable handled correctly for multiple property on HTMLInputElement
 PASS HTMLInputElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLInputElement
 PASS HTMLInputElement interface: attribute pattern
-PASS Unscopable handled correctly for pattern property on HTMLInputElement
 PASS HTMLInputElement interface: attribute placeholder
-PASS Unscopable handled correctly for placeholder property on HTMLInputElement
 PASS HTMLInputElement interface: attribute readOnly
-PASS Unscopable handled correctly for readOnly property on HTMLInputElement
 PASS HTMLInputElement interface: attribute required
-PASS Unscopable handled correctly for required property on HTMLInputElement
 PASS HTMLInputElement interface: attribute size
-PASS Unscopable handled correctly for size property on HTMLInputElement
 PASS HTMLInputElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLInputElement
 PASS HTMLInputElement interface: attribute step
-PASS Unscopable handled correctly for step property on HTMLInputElement
 PASS HTMLInputElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLInputElement
 PASS HTMLInputElement interface: attribute defaultValue
-PASS Unscopable handled correctly for defaultValue property on HTMLInputElement
 PASS HTMLInputElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLInputElement
 PASS HTMLInputElement interface: attribute valueAsDate
-PASS Unscopable handled correctly for valueAsDate property on HTMLInputElement
 PASS HTMLInputElement interface: attribute valueAsNumber
-PASS Unscopable handled correctly for valueAsNumber property on HTMLInputElement
 PASS HTMLInputElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLInputElement
 PASS HTMLInputElement interface: operation stepUp(long)
-PASS Unscopable handled correctly for stepUp(long) on HTMLInputElement
 PASS HTMLInputElement interface: operation stepDown(long)
-PASS Unscopable handled correctly for stepDown(long) on HTMLInputElement
 PASS HTMLInputElement interface: attribute willValidate
-PASS Unscopable handled correctly for willValidate property on HTMLInputElement
 PASS HTMLInputElement interface: attribute validity
-PASS Unscopable handled correctly for validity property on HTMLInputElement
 PASS HTMLInputElement interface: attribute validationMessage
-PASS Unscopable handled correctly for validationMessage property on HTMLInputElement
 PASS HTMLInputElement interface: operation checkValidity()
-PASS Unscopable handled correctly for checkValidity() on HTMLInputElement
 PASS HTMLInputElement interface: operation reportValidity()
-PASS Unscopable handled correctly for reportValidity() on HTMLInputElement
 PASS HTMLInputElement interface: operation setCustomValidity(DOMString)
-PASS Unscopable handled correctly for setCustomValidity(DOMString) on HTMLInputElement
 PASS HTMLInputElement interface: attribute labels
-PASS Unscopable handled correctly for labels property on HTMLInputElement
 PASS HTMLInputElement interface: operation select()
-PASS Unscopable handled correctly for select() on HTMLInputElement
 PASS HTMLInputElement interface: attribute selectionStart
-PASS Unscopable handled correctly for selectionStart property on HTMLInputElement
 PASS HTMLInputElement interface: attribute selectionEnd
-PASS Unscopable handled correctly for selectionEnd property on HTMLInputElement
 PASS HTMLInputElement interface: attribute selectionDirection
-PASS Unscopable handled correctly for selectionDirection property on HTMLInputElement
 PASS HTMLInputElement interface: operation setRangeText(DOMString)
-PASS Unscopable handled correctly for setRangeText(DOMString) on HTMLInputElement
 PASS HTMLInputElement interface: operation setRangeText(DOMString, unsigned long, unsigned long, SelectionMode)
-PASS Unscopable handled correctly for setRangeText(DOMString, unsigned long, unsigned long, SelectionMode) on HTMLInputElement
 PASS HTMLInputElement interface: operation setSelectionRange(unsigned long, unsigned long, DOMString)
-PASS Unscopable handled correctly for setSelectionRange(unsigned long, unsigned long, DOMString) on HTMLInputElement
 PASS HTMLInputElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLInputElement
 PASS HTMLInputElement interface: attribute useMap
-PASS Unscopable handled correctly for useMap property on HTMLInputElement
 PASS HTMLInputElement must be primary interface of document.createElement("input")
 PASS Stringification of document.createElement("input")
 PASS HTMLInputElement interface: document.createElement("input") must inherit property "accept" with the proper type
@@ -3483,41 +3005,23 @@ PASS HTMLButtonElement interface: existence and properties of interface prototyp
 PASS HTMLButtonElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLButtonElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLButtonElement interface: attribute autofocus
-PASS Unscopable handled correctly for autofocus property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute disabled
-PASS Unscopable handled correctly for disabled property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute formAction
-PASS Unscopable handled correctly for formAction property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute formEnctype
-PASS Unscopable handled correctly for formEnctype property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute formMethod
-PASS Unscopable handled correctly for formMethod property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute formNoValidate
-PASS Unscopable handled correctly for formNoValidate property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute formTarget
-PASS Unscopable handled correctly for formTarget property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute willValidate
-PASS Unscopable handled correctly for willValidate property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute validity
-PASS Unscopable handled correctly for validity property on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute validationMessage
-PASS Unscopable handled correctly for validationMessage property on HTMLButtonElement
 PASS HTMLButtonElement interface: operation checkValidity()
-PASS Unscopable handled correctly for checkValidity() on HTMLButtonElement
 PASS HTMLButtonElement interface: operation reportValidity()
-PASS Unscopable handled correctly for reportValidity() on HTMLButtonElement
 PASS HTMLButtonElement interface: operation setCustomValidity(DOMString)
-PASS Unscopable handled correctly for setCustomValidity(DOMString) on HTMLButtonElement
 PASS HTMLButtonElement interface: attribute labels
-PASS Unscopable handled correctly for labels property on HTMLButtonElement
 PASS HTMLButtonElement must be primary interface of document.createElement("button")
 PASS Stringification of document.createElement("button")
 PASS HTMLButtonElement interface: document.createElement("button") must inherit property "autofocus" with the proper type
@@ -3546,57 +3050,31 @@ PASS HTMLSelectElement interface: existence and properties of interface prototyp
 PASS HTMLSelectElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLSelectElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLSelectElement interface: attribute autocomplete
-PASS Unscopable handled correctly for autocomplete property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute autofocus
-PASS Unscopable handled correctly for autofocus property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute disabled
-PASS Unscopable handled correctly for disabled property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute multiple
-PASS Unscopable handled correctly for multiple property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute required
-PASS Unscopable handled correctly for required property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute size
-PASS Unscopable handled correctly for size property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute options
-PASS Unscopable handled correctly for options property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute length
-PASS Unscopable handled correctly for length property on HTMLSelectElement
 PASS HTMLSelectElement interface: operation item(unsigned long)
-PASS Unscopable handled correctly for item(unsigned long) on HTMLSelectElement
 PASS HTMLSelectElement interface: operation namedItem(DOMString)
-PASS Unscopable handled correctly for namedItem(DOMString) on HTMLSelectElement
 PASS HTMLSelectElement interface: operation add([object Object],[object Object], [object Object],[object Object])
-PASS Unscopable handled correctly for add([object Object],[object Object], [object Object],[object Object]) on HTMLSelectElement
 PASS HTMLSelectElement interface: operation remove()
-PASS Unscopable handled correctly for remove() on HTMLSelectElement
 PASS HTMLSelectElement interface: operation remove(long)
-PASS Unscopable handled correctly for remove(long) on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute selectedOptions
-PASS Unscopable handled correctly for selectedOptions property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute selectedIndex
-PASS Unscopable handled correctly for selectedIndex property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute willValidate
-PASS Unscopable handled correctly for willValidate property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute validity
-PASS Unscopable handled correctly for validity property on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute validationMessage
-PASS Unscopable handled correctly for validationMessage property on HTMLSelectElement
 PASS HTMLSelectElement interface: operation checkValidity()
-PASS Unscopable handled correctly for checkValidity() on HTMLSelectElement
 PASS HTMLSelectElement interface: operation reportValidity()
-PASS Unscopable handled correctly for reportValidity() on HTMLSelectElement
 PASS HTMLSelectElement interface: operation setCustomValidity(DOMString)
-PASS Unscopable handled correctly for setCustomValidity(DOMString) on HTMLSelectElement
 PASS HTMLSelectElement interface: attribute labels
-PASS Unscopable handled correctly for labels property on HTMLSelectElement
 PASS HTMLSelectElement must be primary interface of document.createElement("select")
 PASS Stringification of document.createElement("select")
 PASS HTMLSelectElement interface: document.createElement("select") must inherit property "autocomplete" with the proper type
@@ -3637,7 +3115,6 @@ PASS HTMLDataListElement interface: existence and properties of interface protot
 PASS HTMLDataListElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLDataListElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLDataListElement interface: attribute options
-PASS Unscopable handled correctly for options property on HTMLDataListElement
 PASS HTMLDataListElement must be primary interface of document.createElement("datalist")
 PASS Stringification of document.createElement("datalist")
 PASS HTMLDataListElement interface: document.createElement("datalist") must inherit property "options" with the proper type
@@ -3648,9 +3125,7 @@ PASS HTMLOptGroupElement interface: existence and properties of interface protot
 PASS HTMLOptGroupElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLOptGroupElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLOptGroupElement interface: attribute disabled
-PASS Unscopable handled correctly for disabled property on HTMLOptGroupElement
 PASS HTMLOptGroupElement interface: attribute label
-PASS Unscopable handled correctly for label property on HTMLOptGroupElement
 PASS HTMLOptGroupElement must be primary interface of document.createElement("optgroup")
 PASS Stringification of document.createElement("optgroup")
 PASS HTMLOptGroupElement interface: document.createElement("optgroup") must inherit property "disabled" with the proper type
@@ -3662,21 +3137,13 @@ PASS HTMLOptionElement interface: existence and properties of interface prototyp
 PASS HTMLOptionElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLOptionElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLOptionElement interface: attribute disabled
-PASS Unscopable handled correctly for disabled property on HTMLOptionElement
 PASS HTMLOptionElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLOptionElement
 PASS HTMLOptionElement interface: attribute label
-PASS Unscopable handled correctly for label property on HTMLOptionElement
 PASS HTMLOptionElement interface: attribute defaultSelected
-PASS Unscopable handled correctly for defaultSelected property on HTMLOptionElement
 PASS HTMLOptionElement interface: attribute selected
-PASS Unscopable handled correctly for selected property on HTMLOptionElement
 PASS HTMLOptionElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLOptionElement
 PASS HTMLOptionElement interface: attribute text
-PASS Unscopable handled correctly for text property on HTMLOptionElement
 PASS HTMLOptionElement interface: attribute index
-PASS Unscopable handled correctly for index property on HTMLOptionElement
 PASS HTMLOptionElement must be primary interface of document.createElement("option")
 PASS Stringification of document.createElement("option")
 PASS HTMLOptionElement interface: document.createElement("option") must inherit property "disabled" with the proper type
@@ -3704,69 +3171,37 @@ PASS HTMLTextAreaElement interface: existence and properties of interface protot
 PASS HTMLTextAreaElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTextAreaElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTextAreaElement interface: attribute autocomplete
-PASS Unscopable handled correctly for autocomplete property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute autofocus
-PASS Unscopable handled correctly for autofocus property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute cols
-PASS Unscopable handled correctly for cols property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute dirName
-PASS Unscopable handled correctly for dirName property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute disabled
-PASS Unscopable handled correctly for disabled property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute maxLength
-PASS Unscopable handled correctly for maxLength property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute minLength
-PASS Unscopable handled correctly for minLength property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute placeholder
-PASS Unscopable handled correctly for placeholder property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute readOnly
-PASS Unscopable handled correctly for readOnly property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute required
-PASS Unscopable handled correctly for required property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute rows
-PASS Unscopable handled correctly for rows property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute wrap
-PASS Unscopable handled correctly for wrap property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute defaultValue
-PASS Unscopable handled correctly for defaultValue property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute textLength
-PASS Unscopable handled correctly for textLength property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute willValidate
-PASS Unscopable handled correctly for willValidate property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute validity
-PASS Unscopable handled correctly for validity property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute validationMessage
-PASS Unscopable handled correctly for validationMessage property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: operation checkValidity()
-PASS Unscopable handled correctly for checkValidity() on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: operation reportValidity()
-PASS Unscopable handled correctly for reportValidity() on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: operation setCustomValidity(DOMString)
-PASS Unscopable handled correctly for setCustomValidity(DOMString) on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute labels
-PASS Unscopable handled correctly for labels property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: operation select()
-PASS Unscopable handled correctly for select() on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute selectionStart
-PASS Unscopable handled correctly for selectionStart property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute selectionEnd
-PASS Unscopable handled correctly for selectionEnd property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: attribute selectionDirection
-PASS Unscopable handled correctly for selectionDirection property on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: operation setRangeText(DOMString)
-PASS Unscopable handled correctly for setRangeText(DOMString) on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: operation setRangeText(DOMString, unsigned long, unsigned long, SelectionMode)
-PASS Unscopable handled correctly for setRangeText(DOMString, unsigned long, unsigned long, SelectionMode) on HTMLTextAreaElement
 PASS HTMLTextAreaElement interface: operation setSelectionRange(unsigned long, unsigned long, DOMString)
-PASS Unscopable handled correctly for setSelectionRange(unsigned long, unsigned long, DOMString) on HTMLTextAreaElement
 PASS HTMLTextAreaElement must be primary interface of document.createElement("textarea")
 PASS Stringification of document.createElement("textarea")
 PASS HTMLTextAreaElement interface: document.createElement("textarea") must inherit property "autocomplete" with the proper type
@@ -3812,31 +3247,18 @@ PASS HTMLOutputElement interface: existence and properties of interface prototyp
 PASS HTMLOutputElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLOutputElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLOutputElement interface: attribute htmlFor
-PASS Unscopable handled correctly for htmlFor property on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute defaultValue
-PASS Unscopable handled correctly for defaultValue property on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute willValidate
-PASS Unscopable handled correctly for willValidate property on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute validity
-PASS Unscopable handled correctly for validity property on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute validationMessage
-PASS Unscopable handled correctly for validationMessage property on HTMLOutputElement
 PASS HTMLOutputElement interface: operation checkValidity()
-PASS Unscopable handled correctly for checkValidity() on HTMLOutputElement
 PASS HTMLOutputElement interface: operation reportValidity()
-PASS Unscopable handled correctly for reportValidity() on HTMLOutputElement
 PASS HTMLOutputElement interface: operation setCustomValidity(DOMString)
-PASS Unscopable handled correctly for setCustomValidity(DOMString) on HTMLOutputElement
 PASS HTMLOutputElement interface: attribute labels
-PASS Unscopable handled correctly for labels property on HTMLOutputElement
 PASS HTMLOutputElement must be primary interface of document.createElement("output")
 PASS Stringification of document.createElement("output")
 PASS HTMLOutputElement interface: document.createElement("output") must inherit property "htmlFor" with the proper type
@@ -3860,13 +3282,9 @@ PASS HTMLProgressElement interface: existence and properties of interface protot
 PASS HTMLProgressElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLProgressElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLProgressElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLProgressElement
 PASS HTMLProgressElement interface: attribute max
-PASS Unscopable handled correctly for max property on HTMLProgressElement
 PASS HTMLProgressElement interface: attribute position
-PASS Unscopable handled correctly for position property on HTMLProgressElement
 PASS HTMLProgressElement interface: attribute labels
-PASS Unscopable handled correctly for labels property on HTMLProgressElement
 PASS HTMLProgressElement must be primary interface of document.createElement("progress")
 PASS Stringification of document.createElement("progress")
 PASS HTMLProgressElement interface: document.createElement("progress") must inherit property "value" with the proper type
@@ -3880,19 +3298,12 @@ PASS HTMLMeterElement interface: existence and properties of interface prototype
 PASS HTMLMeterElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLMeterElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLMeterElement interface: attribute value
-PASS Unscopable handled correctly for value property on HTMLMeterElement
 PASS HTMLMeterElement interface: attribute min
-PASS Unscopable handled correctly for min property on HTMLMeterElement
 PASS HTMLMeterElement interface: attribute max
-PASS Unscopable handled correctly for max property on HTMLMeterElement
 PASS HTMLMeterElement interface: attribute low
-PASS Unscopable handled correctly for low property on HTMLMeterElement
 PASS HTMLMeterElement interface: attribute high
-PASS Unscopable handled correctly for high property on HTMLMeterElement
 PASS HTMLMeterElement interface: attribute optimum
-PASS Unscopable handled correctly for optimum property on HTMLMeterElement
 PASS HTMLMeterElement interface: attribute labels
-PASS Unscopable handled correctly for labels property on HTMLMeterElement
 PASS HTMLMeterElement must be primary interface of document.createElement("meter")
 PASS Stringification of document.createElement("meter")
 PASS HTMLMeterElement interface: document.createElement("meter") must inherit property "value" with the proper type
@@ -3909,27 +3320,16 @@ PASS HTMLFieldSetElement interface: existence and properties of interface protot
 PASS HTMLFieldSetElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLFieldSetElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLFieldSetElement interface: attribute disabled
-PASS Unscopable handled correctly for disabled property on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: attribute elements
-PASS Unscopable handled correctly for elements property on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: attribute willValidate
-PASS Unscopable handled correctly for willValidate property on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: attribute validity
-PASS Unscopable handled correctly for validity property on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: attribute validationMessage
-PASS Unscopable handled correctly for validationMessage property on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: operation checkValidity()
-PASS Unscopable handled correctly for checkValidity() on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: operation reportValidity()
-PASS Unscopable handled correctly for reportValidity() on HTMLFieldSetElement
 PASS HTMLFieldSetElement interface: operation setCustomValidity(DOMString)
-PASS Unscopable handled correctly for setCustomValidity(DOMString) on HTMLFieldSetElement
 PASS HTMLLegendElement interface: existence and properties of interface object
 PASS HTMLLegendElement interface object length
 PASS HTMLLegendElement interface object name
@@ -3937,9 +3337,7 @@ PASS HTMLLegendElement interface: existence and properties of interface prototyp
 PASS HTMLLegendElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLLegendElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLLegendElement interface: attribute form
-PASS Unscopable handled correctly for form property on HTMLLegendElement
 PASS HTMLLegendElement interface: attribute align
-PASS Unscopable handled correctly for align property on HTMLLegendElement
 PASS HTMLLegendElement must be primary interface of document.createElement("legend")
 PASS Stringification of document.createElement("legend")
 PASS HTMLLegendElement interface: document.createElement("legend") must inherit property "form" with the proper type
@@ -3951,7 +3349,6 @@ PASS HTMLDetailsElement interface: existence and properties of interface prototy
 PASS HTMLDetailsElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLDetailsElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLDetailsElement interface: attribute open
-PASS Unscopable handled correctly for open property on HTMLDetailsElement
 PASS HTMLDetailsElement must be primary interface of document.createElement("details")
 PASS Stringification of document.createElement("details")
 PASS HTMLDetailsElement interface: document.createElement("details") must inherit property "open" with the proper type
@@ -3962,15 +3359,10 @@ PASS HTMLDialogElement interface: existence and properties of interface prototyp
 PASS HTMLDialogElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLDialogElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLDialogElement interface: attribute open
-PASS Unscopable handled correctly for open property on HTMLDialogElement
 PASS HTMLDialogElement interface: attribute returnValue
-PASS Unscopable handled correctly for returnValue property on HTMLDialogElement
 PASS HTMLDialogElement interface: operation show()
-PASS Unscopable handled correctly for show() on HTMLDialogElement
 PASS HTMLDialogElement interface: operation showModal()
-PASS Unscopable handled correctly for showModal() on HTMLDialogElement
 PASS HTMLDialogElement interface: operation close(DOMString)
-PASS Unscopable handled correctly for close(DOMString) on HTMLDialogElement
 PASS HTMLScriptElement interface: existence and properties of interface object
 PASS HTMLScriptElement interface object length
 PASS HTMLScriptElement interface object name
@@ -3978,27 +3370,16 @@ PASS HTMLScriptElement interface: existence and properties of interface prototyp
 PASS HTMLScriptElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLScriptElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLScriptElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute type
-PASS Unscopable handled correctly for type property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute noModule
-PASS Unscopable handled correctly for noModule property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute async
-PASS Unscopable handled correctly for async property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute defer
-PASS Unscopable handled correctly for defer property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute crossOrigin
-PASS Unscopable handled correctly for crossOrigin property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute text
-PASS Unscopable handled correctly for text property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute integrity
-PASS Unscopable handled correctly for integrity property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute charset
-PASS Unscopable handled correctly for charset property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute event
-PASS Unscopable handled correctly for event property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute htmlFor
-PASS Unscopable handled correctly for htmlFor property on HTMLScriptElement
 PASS HTMLScriptElement must be primary interface of document.createElement("script")
 PASS Stringification of document.createElement("script")
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "src" with the proper type
@@ -4019,7 +3400,6 @@ PASS HTMLTemplateElement interface: existence and properties of interface protot
 PASS HTMLTemplateElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLTemplateElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLTemplateElement interface: attribute content
-PASS Unscopable handled correctly for content property on HTMLTemplateElement
 PASS HTMLTemplateElement must be primary interface of document.createElement("template")
 PASS Stringification of document.createElement("template")
 PASS HTMLTemplateElement interface: document.createElement("template") must inherit property "content" with the proper type
@@ -4030,11 +3410,8 @@ PASS HTMLSlotElement interface: existence and properties of interface prototype 
 PASS HTMLSlotElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLSlotElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLSlotElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLSlotElement
 PASS HTMLSlotElement interface: operation assignedNodes(AssignedNodesOptions)
-PASS Unscopable handled correctly for assignedNodes(AssignedNodesOptions) on HTMLSlotElement
 PASS HTMLSlotElement interface: operation assignedElements(AssignedNodesOptions)
-PASS Unscopable handled correctly for assignedElements(AssignedNodesOptions) on HTMLSlotElement
 PASS HTMLSlotElement must be primary interface of document.createElement("slot")
 PASS Stringification of document.createElement("slot")
 PASS HTMLSlotElement interface: document.createElement("slot") must inherit property "name" with the proper type
@@ -4049,17 +3426,11 @@ PASS HTMLCanvasElement interface: existence and properties of interface prototyp
 PASS HTMLCanvasElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLCanvasElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLCanvasElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLCanvasElement
 PASS HTMLCanvasElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLCanvasElement
 PASS HTMLCanvasElement interface: operation getContext(DOMString, any)
-PASS Unscopable handled correctly for getContext(DOMString, any) on HTMLCanvasElement
 PASS HTMLCanvasElement interface: operation toDataURL(DOMString, any)
-PASS Unscopable handled correctly for toDataURL(DOMString, any) on HTMLCanvasElement
 PASS HTMLCanvasElement interface: operation toBlob(BlobCallback, DOMString, any)
-PASS Unscopable handled correctly for toBlob(BlobCallback, DOMString, any) on HTMLCanvasElement
 PASS HTMLCanvasElement interface: operation transferControlToOffscreen()
-PASS Unscopable handled correctly for transferControlToOffscreen() on HTMLCanvasElement
 PASS HTMLCanvasElement must be primary interface of document.createElement("canvas")
 PASS Stringification of document.createElement("canvas")
 PASS HTMLCanvasElement interface: document.createElement("canvas") must inherit property "width" with the proper type
@@ -4078,37 +3449,21 @@ PASS HTMLMarqueeElement interface: existence and properties of interface prototy
 PASS HTMLMarqueeElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLMarqueeElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLMarqueeElement interface: attribute behavior
-PASS Unscopable handled correctly for behavior property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute bgColor
-PASS Unscopable handled correctly for bgColor property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute direction
-PASS Unscopable handled correctly for direction property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute height
-PASS Unscopable handled correctly for height property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute hspace
-PASS Unscopable handled correctly for hspace property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute loop
-PASS Unscopable handled correctly for loop property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute scrollAmount
-PASS Unscopable handled correctly for scrollAmount property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute scrollDelay
-PASS Unscopable handled correctly for scrollDelay property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute trueSpeed
-PASS Unscopable handled correctly for trueSpeed property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute vspace
-PASS Unscopable handled correctly for vspace property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: attribute width
-PASS Unscopable handled correctly for width property on HTMLMarqueeElement
 FAIL HTMLMarqueeElement interface: attribute onbounce assert_true: The prototype object must have a property "onbounce" expected true got false
-PASS Unscopable handled correctly for onbounce property on HTMLMarqueeElement
 FAIL HTMLMarqueeElement interface: attribute onfinish assert_true: The prototype object must have a property "onfinish" expected true got false
-PASS Unscopable handled correctly for onfinish property on HTMLMarqueeElement
 FAIL HTMLMarqueeElement interface: attribute onstart assert_true: The prototype object must have a property "onstart" expected true got false
-PASS Unscopable handled correctly for onstart property on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: operation start()
-PASS Unscopable handled correctly for start() on HTMLMarqueeElement
 PASS HTMLMarqueeElement interface: operation stop()
-PASS Unscopable handled correctly for stop() on HTMLMarqueeElement
 PASS HTMLMarqueeElement must be primary interface of document.createElement("marquee")
 PASS Stringification of document.createElement("marquee")
 PASS HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "behavior" with the proper type
@@ -4134,41 +3489,23 @@ PASS HTMLFrameSetElement interface: existence and properties of interface protot
 PASS HTMLFrameSetElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLFrameSetElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLFrameSetElement interface: attribute cols
-PASS Unscopable handled correctly for cols property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute rows
-PASS Unscopable handled correctly for rows property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onafterprint
-PASS Unscopable handled correctly for onafterprint property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onbeforeprint
-PASS Unscopable handled correctly for onbeforeprint property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onbeforeunload
-PASS Unscopable handled correctly for onbeforeunload property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onhashchange
-PASS Unscopable handled correctly for onhashchange property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onlanguagechange
-PASS Unscopable handled correctly for onlanguagechange property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onmessage
-PASS Unscopable handled correctly for onmessage property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onmessageerror
-PASS Unscopable handled correctly for onmessageerror property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onoffline
-PASS Unscopable handled correctly for onoffline property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute ononline
-PASS Unscopable handled correctly for ononline property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onpagehide
-PASS Unscopable handled correctly for onpagehide property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onpageshow
-PASS Unscopable handled correctly for onpageshow property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onpopstate
-PASS Unscopable handled correctly for onpopstate property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onrejectionhandled
-PASS Unscopable handled correctly for onrejectionhandled property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onstorage
-PASS Unscopable handled correctly for onstorage property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onunhandledrejection
-PASS Unscopable handled correctly for onunhandledrejection property on HTMLFrameSetElement
 PASS HTMLFrameSetElement interface: attribute onunload
-PASS Unscopable handled correctly for onunload property on HTMLFrameSetElement
 PASS HTMLFrameSetElement must be primary interface of document.createElement("frameset")
 PASS Stringification of document.createElement("frameset")
 PASS HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "cols" with the proper type
@@ -4196,25 +3533,15 @@ PASS HTMLFrameElement interface: existence and properties of interface prototype
 PASS HTMLFrameElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLFrameElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLFrameElement interface: attribute name
-PASS Unscopable handled correctly for name property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute scrolling
-PASS Unscopable handled correctly for scrolling property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute src
-PASS Unscopable handled correctly for src property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute frameBorder
-PASS Unscopable handled correctly for frameBorder property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute longDesc
-PASS Unscopable handled correctly for longDesc property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute noResize
-PASS Unscopable handled correctly for noResize property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute contentDocument
-PASS Unscopable handled correctly for contentDocument property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute contentWindow
-PASS Unscopable handled correctly for contentWindow property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute marginHeight
-PASS Unscopable handled correctly for marginHeight property on HTMLFrameElement
 PASS HTMLFrameElement interface: attribute marginWidth
-PASS Unscopable handled correctly for marginWidth property on HTMLFrameElement
 PASS HTMLFrameElement must be primary interface of document.createElement("frame")
 PASS Stringification of document.createElement("frame")
 PASS HTMLFrameElement interface: document.createElement("frame") must inherit property "name" with the proper type
@@ -4234,7 +3561,6 @@ PASS HTMLDirectoryElement interface: existence and properties of interface proto
 PASS HTMLDirectoryElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLDirectoryElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLDirectoryElement interface: attribute compact
-PASS Unscopable handled correctly for compact property on HTMLDirectoryElement
 PASS HTMLDirectoryElement must be primary interface of document.createElement("dir")
 PASS Stringification of document.createElement("dir")
 PASS HTMLDirectoryElement interface: document.createElement("dir") must inherit property "compact" with the proper type
@@ -4245,11 +3571,8 @@ PASS HTMLFontElement interface: existence and properties of interface prototype 
 PASS HTMLFontElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLFontElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLFontElement interface: attribute color
-PASS Unscopable handled correctly for color property on HTMLFontElement
 PASS HTMLFontElement interface: attribute face
-PASS Unscopable handled correctly for face property on HTMLFontElement
 PASS HTMLFontElement interface: attribute size
-PASS Unscopable handled correctly for size property on HTMLFontElement
 PASS HTMLFontElement must be primary interface of document.createElement("font")
 PASS Stringification of document.createElement("font")
 PASS HTMLFontElement interface: document.createElement("font") must inherit property "color" with the proper type

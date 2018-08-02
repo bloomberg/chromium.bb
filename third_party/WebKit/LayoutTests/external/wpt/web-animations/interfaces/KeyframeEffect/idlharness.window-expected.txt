@@ -7,15 +7,10 @@ PASS KeyframeEffect interface: existence and properties of interface prototype o
 PASS KeyframeEffect interface: existence and properties of interface prototype object's "constructor" property
 PASS KeyframeEffect interface: existence and properties of interface prototype object's @@unscopables property
 PASS KeyframeEffect interface: attribute target
-PASS Unscopable handled correctly for target property on KeyframeEffect
 FAIL KeyframeEffect interface: attribute iterationComposite assert_true: The prototype object must have a property "iterationComposite" expected true got false
-PASS Unscopable handled correctly for iterationComposite property on KeyframeEffect
 PASS KeyframeEffect interface: attribute composite
-PASS Unscopable handled correctly for composite property on KeyframeEffect
 PASS KeyframeEffect interface: operation getKeyframes()
-PASS Unscopable handled correctly for getKeyframes() on KeyframeEffect
 PASS KeyframeEffect interface: operation setKeyframes(object)
-PASS Unscopable handled correctly for setKeyframes(object) on KeyframeEffect
 PASS KeyframeEffect must be primary interface of new KeyframeEffect(null, null)
 PASS Stringification of new KeyframeEffect(null, null)
 FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "target" with the proper type Unrecognized type Element

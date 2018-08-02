@@ -9,11 +9,8 @@ PASS CSSGroupingRule interface: existence and properties of interface prototype 
 PASS CSSGroupingRule interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSGroupingRule interface: existence and properties of interface prototype object's @@unscopables property
 PASS CSSGroupingRule interface: attribute cssRules
-PASS Unscopable handled correctly for cssRules property on CSSGroupingRule
 PASS CSSGroupingRule interface: operation insertRule(CSSOMString, unsigned long)
-PASS Unscopable handled correctly for insertRule(CSSOMString, unsigned long) on CSSGroupingRule
 PASS CSSGroupingRule interface: operation deleteRule(unsigned long)
-PASS Unscopable handled correctly for deleteRule(unsigned long) on CSSGroupingRule
 PASS CSSConditionRule interface: existence and properties of interface object
 PASS CSSConditionRule interface object length
 PASS CSSConditionRule interface object name
@@ -21,7 +18,6 @@ PASS CSSConditionRule interface: existence and properties of interface prototype
 PASS CSSConditionRule interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSConditionRule interface: existence and properties of interface prototype object's @@unscopables property
 FAIL CSSConditionRule interface: attribute conditionText assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
-PASS Unscopable handled correctly for conditionText property on CSSConditionRule
 PASS CSSMediaRule interface: existence and properties of interface object
 PASS CSSMediaRule interface object length
 PASS CSSMediaRule interface object name
@@ -29,7 +25,6 @@ PASS CSSMediaRule interface: existence and properties of interface prototype obj
 PASS CSSMediaRule interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSMediaRule interface: existence and properties of interface prototype object's @@unscopables property
 PASS CSSMediaRule interface: attribute media
-PASS Unscopable handled correctly for media property on CSSMediaRule
 PASS CSSSupportsRule interface: existence and properties of interface object
 PASS CSSSupportsRule interface object length
 PASS CSSSupportsRule interface object name

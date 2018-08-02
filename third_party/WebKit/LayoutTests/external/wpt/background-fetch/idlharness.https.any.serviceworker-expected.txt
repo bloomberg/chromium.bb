@@ -9,11 +9,8 @@ PASS BackgroundFetchManager interface: existence and properties of interface pro
 PASS BackgroundFetchManager interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchManager interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchManager interface: operation fetch(DOMString, [object Object],[object Object], BackgroundFetchOptions)
-PASS Unscopable handled correctly for fetch(DOMString, [object Object],[object Object], BackgroundFetchOptions) on BackgroundFetchManager
 PASS BackgroundFetchManager interface: operation get(DOMString)
-PASS Unscopable handled correctly for get(DOMString) on BackgroundFetchManager
 PASS BackgroundFetchManager interface: operation getIds()
-PASS Unscopable handled correctly for getIds() on BackgroundFetchManager
 PASS BackgroundFetchRegistration interface: existence and properties of interface object
 PASS BackgroundFetchRegistration interface object length
 PASS BackgroundFetchRegistration interface object name
@@ -21,21 +18,13 @@ PASS BackgroundFetchRegistration interface: existence and properties of interfac
 PASS BackgroundFetchRegistration interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchRegistration interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchRegistration interface: attribute id
-PASS Unscopable handled correctly for id property on BackgroundFetchRegistration
 PASS BackgroundFetchRegistration interface: attribute uploadTotal
-PASS Unscopable handled correctly for uploadTotal property on BackgroundFetchRegistration
 PASS BackgroundFetchRegistration interface: attribute uploaded
-PASS Unscopable handled correctly for uploaded property on BackgroundFetchRegistration
 PASS BackgroundFetchRegistration interface: attribute downloadTotal
-PASS Unscopable handled correctly for downloadTotal property on BackgroundFetchRegistration
 PASS BackgroundFetchRegistration interface: attribute downloaded
-PASS Unscopable handled correctly for downloaded property on BackgroundFetchRegistration
 FAIL BackgroundFetchRegistration interface: attribute activeFetches assert_true: The prototype object must have a property "activeFetches" expected true got false
-PASS Unscopable handled correctly for activeFetches property on BackgroundFetchRegistration
 PASS BackgroundFetchRegistration interface: attribute onprogress
-PASS Unscopable handled correctly for onprogress property on BackgroundFetchRegistration
 PASS BackgroundFetchRegistration interface: operation abort()
-PASS Unscopable handled correctly for abort() on BackgroundFetchRegistration
 FAIL BackgroundFetchActiveFetches interface: existence and properties of interface object assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
 FAIL BackgroundFetchActiveFetches interface object length assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
 FAIL BackgroundFetchActiveFetches interface object name assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
@@ -43,11 +32,8 @@ FAIL BackgroundFetchActiveFetches interface: existence and properties of interfa
 FAIL BackgroundFetchActiveFetches interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
 FAIL BackgroundFetchActiveFetches interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
 FAIL BackgroundFetchActiveFetches interface: operation match(RequestInfo, CacheQueryOptions) assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-PASS Unscopable handled correctly for match(RequestInfo, CacheQueryOptions) on BackgroundFetchActiveFetches
 FAIL BackgroundFetchActiveFetches interface: operation matchAll(RequestInfo, CacheQueryOptions) assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-PASS Unscopable handled correctly for matchAll(RequestInfo, CacheQueryOptions) on BackgroundFetchActiveFetches
 FAIL BackgroundFetchActiveFetches interface: operation values() assert_own_property: self does not have own property "BackgroundFetchActiveFetches" expected property "BackgroundFetchActiveFetches" missing
-PASS Unscopable handled correctly for values() on BackgroundFetchActiveFetches
 FAIL BackgroundFetchActiveFetch interface: existence and properties of interface object assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
 FAIL BackgroundFetchActiveFetch interface object length assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
 FAIL BackgroundFetchActiveFetch interface object name assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
@@ -55,7 +41,6 @@ FAIL BackgroundFetchActiveFetch interface: existence and properties of interface
 FAIL BackgroundFetchActiveFetch interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
 FAIL BackgroundFetchActiveFetch interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
 FAIL BackgroundFetchActiveFetch interface: attribute responseReady assert_own_property: self does not have own property "BackgroundFetchActiveFetch" expected property "BackgroundFetchActiveFetch" missing
-PASS Unscopable handled correctly for responseReady property on BackgroundFetchActiveFetch
 PASS BackgroundFetchFetch interface: existence and properties of interface object
 PASS BackgroundFetchFetch interface object length
 PASS BackgroundFetchFetch interface object name
@@ -63,7 +48,6 @@ PASS BackgroundFetchFetch interface: existence and properties of interface proto
 PASS BackgroundFetchFetch interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchFetch interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchFetch interface: attribute request
-PASS Unscopable handled correctly for request property on BackgroundFetchFetch
 PASS BackgroundFetchEvent interface: existence and properties of interface object
 PASS BackgroundFetchEvent interface object length
 PASS BackgroundFetchEvent interface object name
@@ -71,7 +55,6 @@ PASS BackgroundFetchEvent interface: existence and properties of interface proto
 PASS BackgroundFetchEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchEvent interface: attribute id
-PASS Unscopable handled correctly for id property on BackgroundFetchEvent
 PASS BackgroundFetchSettledEvent interface: existence and properties of interface object
 PASS BackgroundFetchSettledEvent interface object length
 PASS BackgroundFetchSettledEvent interface object name
@@ -79,7 +62,6 @@ PASS BackgroundFetchSettledEvent interface: existence and properties of interfac
 PASS BackgroundFetchSettledEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchSettledEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchSettledEvent interface: attribute fetches
-PASS Unscopable handled correctly for fetches property on BackgroundFetchSettledEvent
 PASS BackgroundFetchSettledFetches interface: existence and properties of interface object
 PASS BackgroundFetchSettledFetches interface object length
 PASS BackgroundFetchSettledFetches interface object name
@@ -87,11 +69,8 @@ PASS BackgroundFetchSettledFetches interface: existence and properties of interf
 PASS BackgroundFetchSettledFetches interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchSettledFetches interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchSettledFetches interface: operation match(RequestInfo, CacheQueryOptions)
-PASS Unscopable handled correctly for match(RequestInfo, CacheQueryOptions) on BackgroundFetchSettledFetches
 FAIL BackgroundFetchSettledFetches interface: operation matchAll(RequestInfo, CacheQueryOptions) assert_own_property: interface prototype object missing non-static operation expected property "matchAll" missing
-PASS Unscopable handled correctly for matchAll(RequestInfo, CacheQueryOptions) on BackgroundFetchSettledFetches
 PASS BackgroundFetchSettledFetches interface: operation values()
-PASS Unscopable handled correctly for values() on BackgroundFetchSettledFetches
 PASS BackgroundFetchSettledFetch interface: existence and properties of interface object
 FAIL BackgroundFetchSettledFetch interface object length assert_equals: wrong value for BackgroundFetchSettledFetch.length expected 0 but got 2
 PASS BackgroundFetchSettledFetch interface object name
@@ -99,7 +78,6 @@ PASS BackgroundFetchSettledFetch interface: existence and properties of interfac
 PASS BackgroundFetchSettledFetch interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchSettledFetch interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchSettledFetch interface: attribute response
-PASS Unscopable handled correctly for response property on BackgroundFetchSettledFetch
 PASS BackgroundFetchUpdateEvent interface: existence and properties of interface object
 PASS BackgroundFetchUpdateEvent interface object length
 PASS BackgroundFetchUpdateEvent interface object name
@@ -107,7 +85,6 @@ PASS BackgroundFetchUpdateEvent interface: existence and properties of interface
 PASS BackgroundFetchUpdateEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchUpdateEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchUpdateEvent interface: operation updateUI(DOMString)
-PASS Unscopable handled correctly for updateUI(DOMString) on BackgroundFetchUpdateEvent
 PASS BackgroundFetchClickEvent interface: existence and properties of interface object
 PASS BackgroundFetchClickEvent interface object length
 PASS BackgroundFetchClickEvent interface object name
@@ -115,16 +92,10 @@ PASS BackgroundFetchClickEvent interface: existence and properties of interface 
 PASS BackgroundFetchClickEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchClickEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchClickEvent interface: attribute state
-PASS Unscopable handled correctly for state property on BackgroundFetchClickEvent
 PASS ServiceWorkerRegistration interface: attribute backgroundFetch
-PASS Unscopable handled correctly for backgroundFetch property on ServiceWorkerRegistration
 PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetched
-PASS Unscopable handled correctly for onbackgroundfetched property on ServiceWorkerGlobalScope
 PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetchfail
-PASS Unscopable handled correctly for onbackgroundfetchfail property on ServiceWorkerGlobalScope
 PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetchabort
-PASS Unscopable handled correctly for onbackgroundfetchabort property on ServiceWorkerGlobalScope
 PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetchclick
-PASS Unscopable handled correctly for onbackgroundfetchclick property on ServiceWorkerGlobalScope
 Harness: the test ran to completion.
 

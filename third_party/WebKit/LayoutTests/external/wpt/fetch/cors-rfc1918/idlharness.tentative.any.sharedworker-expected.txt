@@ -6,7 +6,6 @@ PASS HTMLElement interface: existence and properties of interface object
 PASS HTMLBodyElement interface: existence and properties of interface object
 PASS Window interface: existence and properties of interface object
 FAIL WorkerGlobalScope interface: attribute addressSpace assert_true: The prototype object must have a property "addressSpace" expected true got false
-PASS Unscopable handled correctly for addressSpace property on WorkerGlobalScope
 FAIL WorkerGlobalScope interface: self must inherit property "addressSpace" with the proper type assert_inherits: property "addressSpace" not found in prototype chain
 PASS HTMLFrameSetElement interface: existence and properties of interface object
 PASS Node interface: existence and properties of interface object

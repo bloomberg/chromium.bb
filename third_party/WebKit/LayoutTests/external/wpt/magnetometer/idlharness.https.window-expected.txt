@@ -7,11 +7,8 @@ PASS Magnetometer interface: existence and properties of interface prototype obj
 PASS Magnetometer interface: existence and properties of interface prototype object's "constructor" property
 PASS Magnetometer interface: existence and properties of interface prototype object's @@unscopables property
 PASS Magnetometer interface: attribute x
-PASS Unscopable handled correctly for x property on Magnetometer
 PASS Magnetometer interface: attribute y
-PASS Unscopable handled correctly for y property on Magnetometer
 PASS Magnetometer interface: attribute z
-PASS Unscopable handled correctly for z property on Magnetometer
 PASS Magnetometer must be primary interface of new Magnetometer();
 PASS Stringification of new Magnetometer();
 PASS Magnetometer interface: new Magnetometer(); must inherit property "x" with the proper type
@@ -24,17 +21,11 @@ FAIL UncalibratedMagnetometer interface: existence and properties of interface p
 FAIL UncalibratedMagnetometer interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "UncalibratedMagnetometer" expected property "UncalibratedMagnetometer" missing
 FAIL UncalibratedMagnetometer interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "UncalibratedMagnetometer" expected property "UncalibratedMagnetometer" missing
 FAIL UncalibratedMagnetometer interface: attribute x assert_own_property: self does not have own property "UncalibratedMagnetometer" expected property "UncalibratedMagnetometer" missing
-PASS Unscopable handled correctly for x property on UncalibratedMagnetometer
 FAIL UncalibratedMagnetometer interface: attribute y assert_own_property: self does not have own property "UncalibratedMagnetometer" expected property "UncalibratedMagnetometer" missing
-PASS Unscopable handled correctly for y property on UncalibratedMagnetometer
 FAIL UncalibratedMagnetometer interface: attribute z assert_own_property: self does not have own property "UncalibratedMagnetometer" expected property "UncalibratedMagnetometer" missing
-PASS Unscopable handled correctly for z property on UncalibratedMagnetometer
 FAIL UncalibratedMagnetometer interface: attribute xBias assert_own_property: self does not have own property "UncalibratedMagnetometer" expected property "UncalibratedMagnetometer" missing
-PASS Unscopable handled correctly for xBias property on UncalibratedMagnetometer
 FAIL UncalibratedMagnetometer interface: attribute yBias assert_own_property: self does not have own property "UncalibratedMagnetometer" expected property "UncalibratedMagnetometer" missing
-PASS Unscopable handled correctly for yBias property on UncalibratedMagnetometer
 FAIL UncalibratedMagnetometer interface: attribute zBias assert_own_property: self does not have own property "UncalibratedMagnetometer" expected property "UncalibratedMagnetometer" missing
-PASS Unscopable handled correctly for zBias property on UncalibratedMagnetometer
 FAIL UncalibratedMagnetometer must be primary interface of new UncalibratedMagnetometer(); assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
 FAIL Stringification of new UncalibratedMagnetometer(); assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
 FAIL UncalibratedMagnetometer interface: new UncalibratedMagnetometer(); must inherit property "x" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"

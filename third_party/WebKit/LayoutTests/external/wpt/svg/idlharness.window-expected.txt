@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1849 tests; 1721 PASS, 128 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1595 tests; 1467 PASS, 128 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS SVG interfaces
 PASS Partial interface Document: original interface defined
 PASS SVGElement interface: existence and properties of interface object
@@ -9,15 +9,10 @@ PASS SVGElement interface: existence and properties of interface prototype objec
 PASS SVGElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGElement interface: attribute className
-PASS Unscopable handled correctly for className property on SVGElement
 PASS SVGElement interface: attribute ownerSVGElement
-PASS Unscopable handled correctly for ownerSVGElement property on SVGElement
 PASS SVGElement interface: attribute viewportElement
-PASS Unscopable handled correctly for viewportElement property on SVGElement
 FAIL SVGElement interface: attribute correspondingElement assert_true: The prototype object must have a property "correspondingElement" expected true got false
-PASS Unscopable handled correctly for correspondingElement property on SVGElement
 FAIL SVGElement interface: attribute correspondingUseElement assert_true: The prototype object must have a property "correspondingUseElement" expected true got false
-PASS Unscopable handled correctly for correspondingUseElement property on SVGElement
 PASS SVGGraphicsElement interface: existence and properties of interface object
 PASS SVGGraphicsElement interface object length
 PASS SVGGraphicsElement interface object name
@@ -25,17 +20,11 @@ PASS SVGGraphicsElement interface: existence and properties of interface prototy
 PASS SVGGraphicsElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGGraphicsElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGGraphicsElement interface: attribute transform
-PASS Unscopable handled correctly for transform property on SVGGraphicsElement
 PASS SVGGraphicsElement interface: operation getBBox(SVGBoundingBoxOptions)
-PASS Unscopable handled correctly for getBBox(SVGBoundingBoxOptions) on SVGGraphicsElement
 PASS SVGGraphicsElement interface: operation getCTM()
-PASS Unscopable handled correctly for getCTM() on SVGGraphicsElement
 PASS SVGGraphicsElement interface: operation getScreenCTM()
-PASS Unscopable handled correctly for getScreenCTM() on SVGGraphicsElement
 PASS SVGGraphicsElement interface: attribute requiredExtensions
-PASS Unscopable handled correctly for requiredExtensions property on SVGGraphicsElement
 PASS SVGGraphicsElement interface: attribute systemLanguage
-PASS Unscopable handled correctly for systemLanguage property on SVGGraphicsElement
 PASS SVGGeometryElement interface: existence and properties of interface object
 PASS SVGGeometryElement interface object length
 PASS SVGGeometryElement interface object name
@@ -43,15 +32,10 @@ PASS SVGGeometryElement interface: existence and properties of interface prototy
 PASS SVGGeometryElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGGeometryElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGGeometryElement interface: attribute pathLength
-PASS Unscopable handled correctly for pathLength property on SVGGeometryElement
 FAIL SVGGeometryElement interface: operation isPointInFill(DOMPointInit) assert_equals: property has wrong .length expected 0 but got 1
-PASS Unscopable handled correctly for isPointInFill(DOMPointInit) on SVGGeometryElement
 FAIL SVGGeometryElement interface: operation isPointInStroke(DOMPointInit) assert_equals: property has wrong .length expected 0 but got 1
-PASS Unscopable handled correctly for isPointInStroke(DOMPointInit) on SVGGeometryElement
 PASS SVGGeometryElement interface: operation getTotalLength()
-PASS Unscopable handled correctly for getTotalLength() on SVGGeometryElement
 PASS SVGGeometryElement interface: operation getPointAtLength(float)
-PASS Unscopable handled correctly for getPointAtLength(float) on SVGGeometryElement
 PASS SVGNumber interface: existence and properties of interface object
 PASS SVGNumber interface object length
 PASS SVGNumber interface object name
@@ -59,7 +43,6 @@ PASS SVGNumber interface: existence and properties of interface prototype object
 PASS SVGNumber interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGNumber interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGNumber interface: attribute value
-PASS Unscopable handled correctly for value property on SVGNumber
 PASS SVGNumber must be primary interface of objects.svg.createSVGNumber()
 PASS Stringification of objects.svg.createSVGNumber()
 PASS SVGNumber interface: objects.svg.createSVGNumber() must inherit property "value" with the proper type
@@ -92,17 +75,11 @@ PASS SVGLength interface: constant SVG_LENGTHTYPE_PT on interface prototype obje
 PASS SVGLength interface: constant SVG_LENGTHTYPE_PC on interface object
 PASS SVGLength interface: constant SVG_LENGTHTYPE_PC on interface prototype object
 PASS SVGLength interface: attribute unitType
-PASS Unscopable handled correctly for unitType property on SVGLength
 PASS SVGLength interface: attribute value
-PASS Unscopable handled correctly for value property on SVGLength
 PASS SVGLength interface: attribute valueInSpecifiedUnits
-PASS Unscopable handled correctly for valueInSpecifiedUnits property on SVGLength
 PASS SVGLength interface: attribute valueAsString
-PASS Unscopable handled correctly for valueAsString property on SVGLength
 PASS SVGLength interface: operation newValueSpecifiedUnits(unsigned short, float)
-PASS Unscopable handled correctly for newValueSpecifiedUnits(unsigned short, float) on SVGLength
 PASS SVGLength interface: operation convertToSpecifiedUnits(unsigned short)
-PASS Unscopable handled correctly for convertToSpecifiedUnits(unsigned short) on SVGLength
 PASS SVGLength must be primary interface of objects.svg.createSVGLength()
 PASS Stringification of objects.svg.createSVGLength()
 PASS SVGLength interface: objects.svg.createSVGLength() must inherit property "SVG_LENGTHTYPE_UNKNOWN" with the proper type
@@ -141,17 +118,11 @@ PASS SVGAngle interface: constant SVG_ANGLETYPE_RAD on interface prototype objec
 PASS SVGAngle interface: constant SVG_ANGLETYPE_GRAD on interface object
 PASS SVGAngle interface: constant SVG_ANGLETYPE_GRAD on interface prototype object
 PASS SVGAngle interface: attribute unitType
-PASS Unscopable handled correctly for unitType property on SVGAngle
 PASS SVGAngle interface: attribute value
-PASS Unscopable handled correctly for value property on SVGAngle
 PASS SVGAngle interface: attribute valueInSpecifiedUnits
-PASS Unscopable handled correctly for valueInSpecifiedUnits property on SVGAngle
 PASS SVGAngle interface: attribute valueAsString
-PASS Unscopable handled correctly for valueAsString property on SVGAngle
 PASS SVGAngle interface: operation newValueSpecifiedUnits(unsigned short, float)
-PASS Unscopable handled correctly for newValueSpecifiedUnits(unsigned short, float) on SVGAngle
 PASS SVGAngle interface: operation convertToSpecifiedUnits(unsigned short)
-PASS Unscopable handled correctly for convertToSpecifiedUnits(unsigned short) on SVGAngle
 PASS SVGAngle must be primary interface of objects.svg.createSVGAngle()
 PASS Stringification of objects.svg.createSVGAngle()
 PASS SVGAngle interface: objects.svg.createSVGAngle() must inherit property "SVG_ANGLETYPE_UNKNOWN" with the proper type
@@ -174,23 +145,14 @@ PASS SVGNumberList interface: existence and properties of interface prototype ob
 PASS SVGNumberList interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGNumberList interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGNumberList interface: attribute length
-PASS Unscopable handled correctly for length property on SVGNumberList
 PASS SVGNumberList interface: attribute numberOfItems
-PASS Unscopable handled correctly for numberOfItems property on SVGNumberList
 PASS SVGNumberList interface: operation clear()
-PASS Unscopable handled correctly for clear() on SVGNumberList
 PASS SVGNumberList interface: operation initialize(SVGNumber)
-PASS Unscopable handled correctly for initialize(SVGNumber) on SVGNumberList
 PASS SVGNumberList interface: operation getItem(unsigned long)
-PASS Unscopable handled correctly for getItem(unsigned long) on SVGNumberList
 PASS SVGNumberList interface: operation insertItemBefore(SVGNumber, unsigned long)
-PASS Unscopable handled correctly for insertItemBefore(SVGNumber, unsigned long) on SVGNumberList
 PASS SVGNumberList interface: operation replaceItem(SVGNumber, unsigned long)
-PASS Unscopable handled correctly for replaceItem(SVGNumber, unsigned long) on SVGNumberList
 PASS SVGNumberList interface: operation removeItem(unsigned long)
-PASS Unscopable handled correctly for removeItem(unsigned long) on SVGNumberList
 PASS SVGNumberList interface: operation appendItem(SVGNumber)
-PASS Unscopable handled correctly for appendItem(SVGNumber) on SVGNumberList
 PASS SVGNumberList must be primary interface of objects.text.rotate.baseVal
 PASS Stringification of objects.text.rotate.baseVal
 PASS SVGNumberList interface: objects.text.rotate.baseVal must inherit property "length" with the proper type
@@ -215,23 +177,14 @@ PASS SVGLengthList interface: existence and properties of interface prototype ob
 PASS SVGLengthList interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGLengthList interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGLengthList interface: attribute length
-PASS Unscopable handled correctly for length property on SVGLengthList
 PASS SVGLengthList interface: attribute numberOfItems
-PASS Unscopable handled correctly for numberOfItems property on SVGLengthList
 PASS SVGLengthList interface: operation clear()
-PASS Unscopable handled correctly for clear() on SVGLengthList
 PASS SVGLengthList interface: operation initialize(SVGLength)
-PASS Unscopable handled correctly for initialize(SVGLength) on SVGLengthList
 PASS SVGLengthList interface: operation getItem(unsigned long)
-PASS Unscopable handled correctly for getItem(unsigned long) on SVGLengthList
 PASS SVGLengthList interface: operation insertItemBefore(SVGLength, unsigned long)
-PASS Unscopable handled correctly for insertItemBefore(SVGLength, unsigned long) on SVGLengthList
 PASS SVGLengthList interface: operation replaceItem(SVGLength, unsigned long)
-PASS Unscopable handled correctly for replaceItem(SVGLength, unsigned long) on SVGLengthList
 PASS SVGLengthList interface: operation removeItem(unsigned long)
-PASS Unscopable handled correctly for removeItem(unsigned long) on SVGLengthList
 PASS SVGLengthList interface: operation appendItem(SVGLength)
-PASS Unscopable handled correctly for appendItem(SVGLength) on SVGLengthList
 PASS SVGAnimatedBoolean interface: existence and properties of interface object
 PASS SVGAnimatedBoolean interface object length
 PASS SVGAnimatedBoolean interface object name
@@ -239,9 +192,7 @@ PASS SVGAnimatedBoolean interface: existence and properties of interface prototy
 PASS SVGAnimatedBoolean interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedBoolean interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedBoolean interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedBoolean
 PASS SVGAnimatedBoolean interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedBoolean
 PASS SVGAnimatedBoolean must be primary interface of objects.feConvolveMatrix.preserveAlpha
 PASS Stringification of objects.feConvolveMatrix.preserveAlpha
 PASS SVGAnimatedBoolean interface: objects.feConvolveMatrix.preserveAlpha must inherit property "baseVal" with the proper type
@@ -253,9 +204,7 @@ PASS SVGAnimatedEnumeration interface: existence and properties of interface pro
 PASS SVGAnimatedEnumeration interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedEnumeration interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedEnumeration interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedEnumeration
 PASS SVGAnimatedEnumeration interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedEnumeration
 PASS SVGAnimatedEnumeration must be primary interface of objects.text.lengthAdjust
 PASS Stringification of objects.text.lengthAdjust
 PASS SVGAnimatedEnumeration interface: objects.text.lengthAdjust must inherit property "baseVal" with the proper type
@@ -267,9 +216,7 @@ PASS SVGAnimatedInteger interface: existence and properties of interface prototy
 PASS SVGAnimatedInteger interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedInteger interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedInteger interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedInteger
 PASS SVGAnimatedInteger interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedInteger
 PASS SVGAnimatedInteger must be primary interface of objects.feConvolveMatrix.orderX
 PASS Stringification of objects.feConvolveMatrix.orderX
 PASS SVGAnimatedInteger interface: objects.feConvolveMatrix.orderX must inherit property "baseVal" with the proper type
@@ -281,9 +228,7 @@ PASS SVGAnimatedNumber interface: existence and properties of interface prototyp
 PASS SVGAnimatedNumber interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedNumber interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedNumber interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedNumber
 PASS SVGAnimatedNumber interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedNumber
 PASS SVGAnimatedNumber must be primary interface of objects.stop.offset
 PASS Stringification of objects.stop.offset
 PASS SVGAnimatedNumber interface: objects.stop.offset must inherit property "baseVal" with the proper type
@@ -295,9 +240,7 @@ PASS SVGAnimatedLength interface: existence and properties of interface prototyp
 PASS SVGAnimatedLength interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedLength interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedLength interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedLength
 PASS SVGAnimatedLength interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedLength
 PASS SVGAnimatedLength must be primary interface of objects.svg.x
 PASS Stringification of objects.svg.x
 PASS SVGAnimatedLength interface: objects.svg.x must inherit property "baseVal" with the proper type
@@ -309,9 +252,7 @@ PASS SVGAnimatedAngle interface: existence and properties of interface prototype
 PASS SVGAnimatedAngle interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedAngle interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedAngle interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedAngle
 PASS SVGAnimatedAngle interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedAngle
 PASS SVGAnimatedAngle must be primary interface of objects.marker.orientAngle
 PASS Stringification of objects.marker.orientAngle
 PASS SVGAnimatedAngle interface: objects.marker.orientAngle must inherit property "baseVal" with the proper type
@@ -323,9 +264,7 @@ PASS SVGAnimatedString interface: existence and properties of interface prototyp
 PASS SVGAnimatedString interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedString interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedString interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedString
 PASS SVGAnimatedString interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedString
 PASS SVGAnimatedString must be primary interface of objects.a.target
 PASS Stringification of objects.a.target
 PASS SVGAnimatedString interface: objects.a.target must inherit property "baseVal" with the proper type
@@ -337,9 +276,7 @@ PASS SVGAnimatedRect interface: existence and properties of interface prototype 
 PASS SVGAnimatedRect interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedRect interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedRect interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedRect
 PASS SVGAnimatedRect interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedRect
 PASS SVGAnimatedRect must be primary interface of objects.svg.viewBox
 PASS Stringification of objects.svg.viewBox
 FAIL SVGAnimatedRect interface: objects.svg.viewBox must inherit property "baseVal" with the proper type Unrecognized type DOMRect
@@ -351,9 +288,7 @@ PASS SVGAnimatedNumberList interface: existence and properties of interface prot
 PASS SVGAnimatedNumberList interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedNumberList interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedNumberList interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedNumberList
 PASS SVGAnimatedNumberList interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedNumberList
 PASS SVGAnimatedNumberList must be primary interface of objects.text.rotate
 PASS Stringification of objects.text.rotate
 PASS SVGAnimatedNumberList interface: objects.text.rotate must inherit property "baseVal" with the proper type
@@ -365,9 +300,7 @@ PASS SVGAnimatedLengthList interface: existence and properties of interface prot
 PASS SVGAnimatedLengthList interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedLengthList interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedLengthList interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedLengthList
 PASS SVGAnimatedLengthList interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedLengthList
 PASS SVGAnimatedLengthList must be primary interface of objects.text.x
 PASS Stringification of objects.text.x
 PASS SVGAnimatedLengthList interface: objects.text.x must inherit property "baseVal" with the proper type
@@ -379,23 +312,14 @@ PASS SVGStringList interface: existence and properties of interface prototype ob
 PASS SVGStringList interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGStringList interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGStringList interface: attribute length
-PASS Unscopable handled correctly for length property on SVGStringList
 PASS SVGStringList interface: attribute numberOfItems
-PASS Unscopable handled correctly for numberOfItems property on SVGStringList
 PASS SVGStringList interface: operation clear()
-PASS Unscopable handled correctly for clear() on SVGStringList
 PASS SVGStringList interface: operation initialize(DOMString)
-PASS Unscopable handled correctly for initialize(DOMString) on SVGStringList
 PASS SVGStringList interface: operation getItem(unsigned long)
-PASS Unscopable handled correctly for getItem(unsigned long) on SVGStringList
 PASS SVGStringList interface: operation insertItemBefore(DOMString, unsigned long)
-PASS Unscopable handled correctly for insertItemBefore(DOMString, unsigned long) on SVGStringList
 PASS SVGStringList interface: operation replaceItem(DOMString, unsigned long)
-PASS Unscopable handled correctly for replaceItem(DOMString, unsigned long) on SVGStringList
 PASS SVGStringList interface: operation removeItem(unsigned long)
-PASS Unscopable handled correctly for removeItem(unsigned long) on SVGStringList
 PASS SVGStringList interface: operation appendItem(DOMString)
-PASS Unscopable handled correctly for appendItem(DOMString) on SVGStringList
 PASS SVGStringList must be primary interface of objects.a.requiredExtensions
 PASS Stringification of objects.a.requiredExtensions
 PASS SVGStringList interface: objects.a.requiredExtensions must inherit property "length" with the proper type
@@ -432,57 +356,31 @@ PASS SVGSVGElement interface: existence and properties of interface prototype ob
 PASS SVGSVGElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGSVGElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGSVGElement interface: attribute x
-PASS Unscopable handled correctly for x property on SVGSVGElement
 PASS SVGSVGElement interface: attribute y
-PASS Unscopable handled correctly for y property on SVGSVGElement
 PASS SVGSVGElement interface: attribute width
-PASS Unscopable handled correctly for width property on SVGSVGElement
 PASS SVGSVGElement interface: attribute height
-PASS Unscopable handled correctly for height property on SVGSVGElement
 PASS SVGSVGElement interface: attribute currentScale
-PASS Unscopable handled correctly for currentScale property on SVGSVGElement
 PASS SVGSVGElement interface: attribute currentTranslate
-PASS Unscopable handled correctly for currentTranslate property on SVGSVGElement
 PASS SVGSVGElement interface: operation getIntersectionList(DOMRectReadOnly, SVGElement)
-PASS Unscopable handled correctly for getIntersectionList(DOMRectReadOnly, SVGElement) on SVGSVGElement
 PASS SVGSVGElement interface: operation getEnclosureList(DOMRectReadOnly, SVGElement)
-PASS Unscopable handled correctly for getEnclosureList(DOMRectReadOnly, SVGElement) on SVGSVGElement
 PASS SVGSVGElement interface: operation checkIntersection(SVGElement, DOMRectReadOnly)
-PASS Unscopable handled correctly for checkIntersection(SVGElement, DOMRectReadOnly) on SVGSVGElement
 PASS SVGSVGElement interface: operation checkEnclosure(SVGElement, DOMRectReadOnly)
-PASS Unscopable handled correctly for checkEnclosure(SVGElement, DOMRectReadOnly) on SVGSVGElement
 PASS SVGSVGElement interface: operation deselectAll()
-PASS Unscopable handled correctly for deselectAll() on SVGSVGElement
 PASS SVGSVGElement interface: operation createSVGNumber()
-PASS Unscopable handled correctly for createSVGNumber() on SVGSVGElement
 PASS SVGSVGElement interface: operation createSVGLength()
-PASS Unscopable handled correctly for createSVGLength() on SVGSVGElement
 PASS SVGSVGElement interface: operation createSVGAngle()
-PASS Unscopable handled correctly for createSVGAngle() on SVGSVGElement
 PASS SVGSVGElement interface: operation createSVGPoint()
-PASS Unscopable handled correctly for createSVGPoint() on SVGSVGElement
 PASS SVGSVGElement interface: operation createSVGMatrix()
-PASS Unscopable handled correctly for createSVGMatrix() on SVGSVGElement
 PASS SVGSVGElement interface: operation createSVGRect()
-PASS Unscopable handled correctly for createSVGRect() on SVGSVGElement
 PASS SVGSVGElement interface: operation createSVGTransform()
-PASS Unscopable handled correctly for createSVGTransform() on SVGSVGElement
 PASS SVGSVGElement interface: operation createSVGTransformFromMatrix(DOMMatrixReadOnly)
-PASS Unscopable handled correctly for createSVGTransformFromMatrix(DOMMatrixReadOnly) on SVGSVGElement
 PASS SVGSVGElement interface: operation getElementById(DOMString)
-PASS Unscopable handled correctly for getElementById(DOMString) on SVGSVGElement
 PASS SVGSVGElement interface: operation suspendRedraw(unsigned long)
-PASS Unscopable handled correctly for suspendRedraw(unsigned long) on SVGSVGElement
 PASS SVGSVGElement interface: operation unsuspendRedraw(unsigned long)
-PASS Unscopable handled correctly for unsuspendRedraw(unsigned long) on SVGSVGElement
 PASS SVGSVGElement interface: operation unsuspendRedrawAll()
-PASS Unscopable handled correctly for unsuspendRedrawAll() on SVGSVGElement
 PASS SVGSVGElement interface: operation forceRedraw()
-PASS Unscopable handled correctly for forceRedraw() on SVGSVGElement
 PASS SVGSVGElement interface: attribute viewBox
-PASS Unscopable handled correctly for viewBox property on SVGSVGElement
 PASS SVGSVGElement interface: attribute preserveAspectRatio
-PASS Unscopable handled correctly for preserveAspectRatio property on SVGSVGElement
 PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_UNKNOWN on interface object
 PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_UNKNOWN on interface prototype object
 PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_DISABLE on interface object
@@ -490,7 +388,6 @@ PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_DISABLE on interface proto
 PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_MAGNIFY on interface object
 PASS SVGSVGElement interface: constant SVG_ZOOMANDPAN_MAGNIFY on interface prototype object
 PASS SVGSVGElement interface: attribute zoomAndPan
-PASS Unscopable handled correctly for zoomAndPan property on SVGSVGElement
 PASS SVGSVGElement must be primary interface of objects.svg
 PASS Stringification of objects.svg
 PASS SVGSVGElement interface: objects.svg must inherit property "x" with the proper type
@@ -635,9 +532,7 @@ FAIL SVGSymbolElement interface: existence and properties of interface prototype
 PASS SVGSymbolElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGSymbolElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGSymbolElement interface: attribute viewBox
-PASS Unscopable handled correctly for viewBox property on SVGSymbolElement
 PASS SVGSymbolElement interface: attribute preserveAspectRatio
-PASS Unscopable handled correctly for preserveAspectRatio property on SVGSymbolElement
 PASS SVGSymbolElement must be primary interface of objects.symbol
 PASS Stringification of objects.symbol
 PASS SVGSymbolElement interface: objects.symbol must inherit property "viewBox" with the proper type
@@ -661,19 +556,12 @@ PASS SVGUseElement interface: existence and properties of interface prototype ob
 PASS SVGUseElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGUseElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGUseElement interface: attribute x
-PASS Unscopable handled correctly for x property on SVGUseElement
 PASS SVGUseElement interface: attribute y
-PASS Unscopable handled correctly for y property on SVGUseElement
 PASS SVGUseElement interface: attribute width
-PASS Unscopable handled correctly for width property on SVGUseElement
 PASS SVGUseElement interface: attribute height
-PASS Unscopable handled correctly for height property on SVGUseElement
 FAIL SVGUseElement interface: attribute instanceRoot assert_true: The prototype object must have a property "instanceRoot" expected true got false
-PASS Unscopable handled correctly for instanceRoot property on SVGUseElement
 FAIL SVGUseElement interface: attribute animatedInstanceRoot assert_true: The prototype object must have a property "animatedInstanceRoot" expected true got false
-PASS Unscopable handled correctly for animatedInstanceRoot property on SVGUseElement
 PASS SVGUseElement interface: attribute href
-PASS Unscopable handled correctly for href property on SVGUseElement
 PASS SVGUseElement must be primary interface of objects.use
 PASS Stringification of objects.use
 PASS SVGUseElement interface: objects.use must inherit property "x" with the proper type
@@ -708,7 +596,6 @@ FAIL ShadowAnimation interface: existence and properties of interface prototype 
 FAIL ShadowAnimation interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "ShadowAnimation" expected property "ShadowAnimation" missing
 FAIL ShadowAnimation interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "ShadowAnimation" expected property "ShadowAnimation" missing
 FAIL ShadowAnimation interface: attribute sourceAnimation assert_own_property: self does not have own property "ShadowAnimation" expected property "ShadowAnimation" missing
-PASS Unscopable handled correctly for sourceAnimation property on ShadowAnimation
 PASS SVGSwitchElement interface: existence and properties of interface object
 PASS SVGSwitchElement interface object length
 PASS SVGSwitchElement interface object name
@@ -736,11 +623,8 @@ PASS SVGStyleElement interface: existence and properties of interface prototype 
 PASS SVGStyleElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGStyleElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGStyleElement interface: attribute type
-PASS Unscopable handled correctly for type property on SVGStyleElement
 PASS SVGStyleElement interface: attribute media
-PASS Unscopable handled correctly for media property on SVGStyleElement
 PASS SVGStyleElement interface: attribute title
-PASS Unscopable handled correctly for title property on SVGStyleElement
 PASS SVGStyleElement must be primary interface of objects.style
 PASS Stringification of objects.style
 PASS SVGStyleElement interface: objects.style must inherit property "type" with the proper type
@@ -772,23 +656,14 @@ PASS SVGTransform interface: constant SVG_TRANSFORM_SKEWX on interface prototype
 PASS SVGTransform interface: constant SVG_TRANSFORM_SKEWY on interface object
 PASS SVGTransform interface: constant SVG_TRANSFORM_SKEWY on interface prototype object
 PASS SVGTransform interface: attribute type
-PASS Unscopable handled correctly for type property on SVGTransform
 PASS SVGTransform interface: attribute matrix
-PASS Unscopable handled correctly for matrix property on SVGTransform
 PASS SVGTransform interface: attribute angle
-PASS Unscopable handled correctly for angle property on SVGTransform
 PASS SVGTransform interface: operation setMatrix(DOMMatrixReadOnly)
-PASS Unscopable handled correctly for setMatrix(DOMMatrixReadOnly) on SVGTransform
 PASS SVGTransform interface: operation setTranslate(float, float)
-PASS Unscopable handled correctly for setTranslate(float, float) on SVGTransform
 PASS SVGTransform interface: operation setScale(float, float)
-PASS Unscopable handled correctly for setScale(float, float) on SVGTransform
 PASS SVGTransform interface: operation setRotate(float, float, float)
-PASS Unscopable handled correctly for setRotate(float, float, float) on SVGTransform
 PASS SVGTransform interface: operation setSkewX(float)
-PASS Unscopable handled correctly for setSkewX(float) on SVGTransform
 PASS SVGTransform interface: operation setSkewY(float)
-PASS Unscopable handled correctly for setSkewY(float) on SVGTransform
 PASS SVGTransform must be primary interface of objects.svg.createSVGTransform()
 PASS Stringification of objects.svg.createSVGTransform()
 PASS SVGTransform interface: objects.svg.createSVGTransform() must inherit property "SVG_TRANSFORM_UNKNOWN" with the proper type
@@ -820,27 +695,16 @@ PASS SVGTransformList interface: existence and properties of interface prototype
 PASS SVGTransformList interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGTransformList interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGTransformList interface: attribute length
-PASS Unscopable handled correctly for length property on SVGTransformList
 PASS SVGTransformList interface: attribute numberOfItems
-PASS Unscopable handled correctly for numberOfItems property on SVGTransformList
 PASS SVGTransformList interface: operation clear()
-PASS Unscopable handled correctly for clear() on SVGTransformList
 PASS SVGTransformList interface: operation initialize(SVGTransform)
-PASS Unscopable handled correctly for initialize(SVGTransform) on SVGTransformList
 PASS SVGTransformList interface: operation getItem(unsigned long)
-PASS Unscopable handled correctly for getItem(unsigned long) on SVGTransformList
 PASS SVGTransformList interface: operation insertItemBefore(SVGTransform, unsigned long)
-PASS Unscopable handled correctly for insertItemBefore(SVGTransform, unsigned long) on SVGTransformList
 PASS SVGTransformList interface: operation replaceItem(SVGTransform, unsigned long)
-PASS Unscopable handled correctly for replaceItem(SVGTransform, unsigned long) on SVGTransformList
 PASS SVGTransformList interface: operation removeItem(unsigned long)
-PASS Unscopable handled correctly for removeItem(unsigned long) on SVGTransformList
 PASS SVGTransformList interface: operation appendItem(SVGTransform)
-PASS Unscopable handled correctly for appendItem(SVGTransform) on SVGTransformList
 PASS SVGTransformList interface: operation createSVGTransformFromMatrix(DOMMatrixReadOnly)
-PASS Unscopable handled correctly for createSVGTransformFromMatrix(DOMMatrixReadOnly) on SVGTransformList
 PASS SVGTransformList interface: operation consolidate()
-PASS Unscopable handled correctly for consolidate() on SVGTransformList
 PASS SVGTransformList must be primary interface of objects.pattern.patternTransform.baseVal
 PASS Stringification of objects.pattern.patternTransform.baseVal
 PASS SVGTransformList interface: objects.pattern.patternTransform.baseVal must inherit property "length" with the proper type
@@ -868,9 +732,7 @@ PASS SVGAnimatedTransformList interface: existence and properties of interface p
 PASS SVGAnimatedTransformList interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedTransformList interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedTransformList interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedTransformList
 PASS SVGAnimatedTransformList interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedTransformList
 PASS SVGAnimatedTransformList must be primary interface of objects.pattern.patternTransform
 PASS Stringification of objects.pattern.patternTransform
 PASS SVGAnimatedTransformList interface: objects.pattern.patternTransform must inherit property "baseVal" with the proper type
@@ -910,9 +772,7 @@ PASS SVGPreserveAspectRatio interface: constant SVG_MEETORSLICE_MEET on interfac
 PASS SVGPreserveAspectRatio interface: constant SVG_MEETORSLICE_SLICE on interface object
 PASS SVGPreserveAspectRatio interface: constant SVG_MEETORSLICE_SLICE on interface prototype object
 PASS SVGPreserveAspectRatio interface: attribute align
-PASS Unscopable handled correctly for align property on SVGPreserveAspectRatio
 PASS SVGPreserveAspectRatio interface: attribute meetOrSlice
-PASS Unscopable handled correctly for meetOrSlice property on SVGPreserveAspectRatio
 PASS SVGPreserveAspectRatio must be primary interface of objects.image.preserveAspectRatio.baseVal
 PASS Stringification of objects.image.preserveAspectRatio.baseVal
 PASS SVGPreserveAspectRatio interface: objects.image.preserveAspectRatio.baseVal must inherit property "SVG_PRESERVEASPECTRATIO_UNKNOWN" with the proper type
@@ -938,9 +798,7 @@ PASS SVGAnimatedPreserveAspectRatio interface: existence and properties of inter
 PASS SVGAnimatedPreserveAspectRatio interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAnimatedPreserveAspectRatio interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAnimatedPreserveAspectRatio interface: attribute baseVal
-PASS Unscopable handled correctly for baseVal property on SVGAnimatedPreserveAspectRatio
 PASS SVGAnimatedPreserveAspectRatio interface: attribute animVal
-PASS Unscopable handled correctly for animVal property on SVGAnimatedPreserveAspectRatio
 PASS SVGAnimatedPreserveAspectRatio must be primary interface of objects.image.preserveAspectRatio
 PASS Stringification of objects.image.preserveAspectRatio
 PASS SVGAnimatedPreserveAspectRatio interface: objects.image.preserveAspectRatio must inherit property "baseVal" with the proper type
@@ -980,17 +838,11 @@ PASS SVGRectElement interface: existence and properties of interface prototype o
 PASS SVGRectElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGRectElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGRectElement interface: attribute x
-PASS Unscopable handled correctly for x property on SVGRectElement
 PASS SVGRectElement interface: attribute y
-PASS Unscopable handled correctly for y property on SVGRectElement
 PASS SVGRectElement interface: attribute width
-PASS Unscopable handled correctly for width property on SVGRectElement
 PASS SVGRectElement interface: attribute height
-PASS Unscopable handled correctly for height property on SVGRectElement
 PASS SVGRectElement interface: attribute rx
-PASS Unscopable handled correctly for rx property on SVGRectElement
 PASS SVGRectElement interface: attribute ry
-PASS Unscopable handled correctly for ry property on SVGRectElement
 PASS SVGRectElement must be primary interface of objects.rect
 PASS Stringification of objects.rect
 PASS SVGRectElement interface: objects.rect must inherit property "x" with the proper type
@@ -1026,11 +878,8 @@ PASS SVGCircleElement interface: existence and properties of interface prototype
 PASS SVGCircleElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGCircleElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGCircleElement interface: attribute cx
-PASS Unscopable handled correctly for cx property on SVGCircleElement
 PASS SVGCircleElement interface: attribute cy
-PASS Unscopable handled correctly for cy property on SVGCircleElement
 PASS SVGCircleElement interface: attribute r
-PASS Unscopable handled correctly for r property on SVGCircleElement
 PASS SVGCircleElement must be primary interface of objects.circle
 PASS Stringification of objects.circle
 PASS SVGCircleElement interface: objects.circle must inherit property "cx" with the proper type
@@ -1063,13 +912,9 @@ PASS SVGEllipseElement interface: existence and properties of interface prototyp
 PASS SVGEllipseElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGEllipseElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGEllipseElement interface: attribute cx
-PASS Unscopable handled correctly for cx property on SVGEllipseElement
 PASS SVGEllipseElement interface: attribute cy
-PASS Unscopable handled correctly for cy property on SVGEllipseElement
 PASS SVGEllipseElement interface: attribute rx
-PASS Unscopable handled correctly for rx property on SVGEllipseElement
 PASS SVGEllipseElement interface: attribute ry
-PASS Unscopable handled correctly for ry property on SVGEllipseElement
 PASS SVGEllipseElement must be primary interface of objects.ellipse
 PASS Stringification of objects.ellipse
 PASS SVGEllipseElement interface: objects.ellipse must inherit property "cx" with the proper type
@@ -1103,13 +948,9 @@ PASS SVGLineElement interface: existence and properties of interface prototype o
 PASS SVGLineElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGLineElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGLineElement interface: attribute x1
-PASS Unscopable handled correctly for x1 property on SVGLineElement
 PASS SVGLineElement interface: attribute y1
-PASS Unscopable handled correctly for y1 property on SVGLineElement
 PASS SVGLineElement interface: attribute x2
-PASS Unscopable handled correctly for x2 property on SVGLineElement
 PASS SVGLineElement interface: attribute y2
-PASS Unscopable handled correctly for y2 property on SVGLineElement
 PASS SVGLineElement must be primary interface of objects.line
 PASS Stringification of objects.line
 PASS SVGLineElement interface: objects.line must inherit property "x1" with the proper type
@@ -1143,23 +984,14 @@ PASS SVGPointList interface: existence and properties of interface prototype obj
 PASS SVGPointList interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGPointList interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGPointList interface: attribute length
-PASS Unscopable handled correctly for length property on SVGPointList
 PASS SVGPointList interface: attribute numberOfItems
-PASS Unscopable handled correctly for numberOfItems property on SVGPointList
 PASS SVGPointList interface: operation clear()
-PASS Unscopable handled correctly for clear() on SVGPointList
 PASS SVGPointList interface: operation initialize(DOMPoint)
-PASS Unscopable handled correctly for initialize(DOMPoint) on SVGPointList
 PASS SVGPointList interface: operation getItem(unsigned long)
-PASS Unscopable handled correctly for getItem(unsigned long) on SVGPointList
 PASS SVGPointList interface: operation insertItemBefore(DOMPoint, unsigned long)
-PASS Unscopable handled correctly for insertItemBefore(DOMPoint, unsigned long) on SVGPointList
 PASS SVGPointList interface: operation replaceItem(DOMPoint, unsigned long)
-PASS Unscopable handled correctly for replaceItem(DOMPoint, unsigned long) on SVGPointList
 PASS SVGPointList interface: operation removeItem(unsigned long)
-PASS Unscopable handled correctly for removeItem(unsigned long) on SVGPointList
 PASS SVGPointList interface: operation appendItem(DOMPoint)
-PASS Unscopable handled correctly for appendItem(DOMPoint) on SVGPointList
 PASS SVGPointList must be primary interface of objects.polygon.points
 PASS Stringification of objects.polygon.points
 PASS SVGPointList interface: objects.polygon.points must inherit property "length" with the proper type
@@ -1184,9 +1016,7 @@ PASS SVGPolylineElement interface: existence and properties of interface prototy
 PASS SVGPolylineElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGPolylineElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGPolylineElement interface: attribute points
-PASS Unscopable handled correctly for points property on SVGPolylineElement
 PASS SVGPolylineElement interface: attribute animatedPoints
-PASS Unscopable handled correctly for animatedPoints property on SVGPolylineElement
 PASS SVGPolylineElement must be primary interface of objects.polyline
 PASS Stringification of objects.polyline
 PASS SVGPolylineElement interface: objects.polyline must inherit property "points" with the proper type
@@ -1218,9 +1048,7 @@ PASS SVGPolygonElement interface: existence and properties of interface prototyp
 PASS SVGPolygonElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGPolygonElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGPolygonElement interface: attribute points
-PASS Unscopable handled correctly for points property on SVGPolygonElement
 PASS SVGPolygonElement interface: attribute animatedPoints
-PASS Unscopable handled correctly for animatedPoints property on SVGPolygonElement
 PASS SVGPolygonElement must be primary interface of objects.polygon
 PASS Stringification of objects.polygon
 PASS SVGPolygonElement interface: objects.polygon must inherit property "points" with the proper type
@@ -1258,27 +1086,16 @@ PASS SVGTextContentElement interface: constant LENGTHADJUST_SPACING on interface
 PASS SVGTextContentElement interface: constant LENGTHADJUST_SPACINGANDGLYPHS on interface object
 PASS SVGTextContentElement interface: constant LENGTHADJUST_SPACINGANDGLYPHS on interface prototype object
 PASS SVGTextContentElement interface: attribute textLength
-PASS Unscopable handled correctly for textLength property on SVGTextContentElement
 PASS SVGTextContentElement interface: attribute lengthAdjust
-PASS Unscopable handled correctly for lengthAdjust property on SVGTextContentElement
 PASS SVGTextContentElement interface: operation getNumberOfChars()
-PASS Unscopable handled correctly for getNumberOfChars() on SVGTextContentElement
 PASS SVGTextContentElement interface: operation getComputedTextLength()
-PASS Unscopable handled correctly for getComputedTextLength() on SVGTextContentElement
 PASS SVGTextContentElement interface: operation getSubStringLength(unsigned long, unsigned long)
-PASS Unscopable handled correctly for getSubStringLength(unsigned long, unsigned long) on SVGTextContentElement
 PASS SVGTextContentElement interface: operation getStartPositionOfChar(unsigned long)
-PASS Unscopable handled correctly for getStartPositionOfChar(unsigned long) on SVGTextContentElement
 PASS SVGTextContentElement interface: operation getEndPositionOfChar(unsigned long)
-PASS Unscopable handled correctly for getEndPositionOfChar(unsigned long) on SVGTextContentElement
 PASS SVGTextContentElement interface: operation getExtentOfChar(unsigned long)
-PASS Unscopable handled correctly for getExtentOfChar(unsigned long) on SVGTextContentElement
 PASS SVGTextContentElement interface: operation getRotationOfChar(unsigned long)
-PASS Unscopable handled correctly for getRotationOfChar(unsigned long) on SVGTextContentElement
 FAIL SVGTextContentElement interface: operation getCharNumAtPosition(DOMPointInit) assert_equals: property has wrong .length expected 0 but got 1
-PASS Unscopable handled correctly for getCharNumAtPosition(DOMPointInit) on SVGTextContentElement
 PASS SVGTextContentElement interface: operation selectSubString(unsigned long, unsigned long)
-PASS Unscopable handled correctly for selectSubString(unsigned long, unsigned long) on SVGTextContentElement
 PASS SVGTextPositioningElement interface: existence and properties of interface object
 PASS SVGTextPositioningElement interface object length
 PASS SVGTextPositioningElement interface object name
@@ -1286,15 +1103,10 @@ PASS SVGTextPositioningElement interface: existence and properties of interface 
 PASS SVGTextPositioningElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGTextPositioningElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGTextPositioningElement interface: attribute x
-PASS Unscopable handled correctly for x property on SVGTextPositioningElement
 PASS SVGTextPositioningElement interface: attribute y
-PASS Unscopable handled correctly for y property on SVGTextPositioningElement
 PASS SVGTextPositioningElement interface: attribute dx
-PASS Unscopable handled correctly for dx property on SVGTextPositioningElement
 PASS SVGTextPositioningElement interface: attribute dy
-PASS Unscopable handled correctly for dy property on SVGTextPositioningElement
 PASS SVGTextPositioningElement interface: attribute rotate
-PASS Unscopable handled correctly for rotate property on SVGTextPositioningElement
 PASS SVGTextElement interface: existence and properties of interface object
 PASS SVGTextElement interface object length
 PASS SVGTextElement interface object name
@@ -1406,13 +1218,9 @@ PASS SVGTextPathElement interface: constant TEXTPATH_SPACINGTYPE_AUTO on interfa
 PASS SVGTextPathElement interface: constant TEXTPATH_SPACINGTYPE_EXACT on interface object
 PASS SVGTextPathElement interface: constant TEXTPATH_SPACINGTYPE_EXACT on interface prototype object
 PASS SVGTextPathElement interface: attribute startOffset
-PASS Unscopable handled correctly for startOffset property on SVGTextPathElement
 PASS SVGTextPathElement interface: attribute method
-PASS Unscopable handled correctly for method property on SVGTextPathElement
 PASS SVGTextPathElement interface: attribute spacing
-PASS Unscopable handled correctly for spacing property on SVGTextPathElement
 PASS SVGTextPathElement interface: attribute href
-PASS Unscopable handled correctly for href property on SVGTextPathElement
 PASS SVGTextPathElement must be primary interface of objects.textPath
 PASS Stringification of objects.textPath
 PASS SVGTextPathElement interface: objects.textPath must inherit property "TEXTPATH_METHODTYPE_UNKNOWN" with the proper type
@@ -1465,19 +1273,12 @@ PASS SVGImageElement interface: existence and properties of interface prototype 
 PASS SVGImageElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGImageElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGImageElement interface: attribute x
-PASS Unscopable handled correctly for x property on SVGImageElement
 PASS SVGImageElement interface: attribute y
-PASS Unscopable handled correctly for y property on SVGImageElement
 PASS SVGImageElement interface: attribute width
-PASS Unscopable handled correctly for width property on SVGImageElement
 PASS SVGImageElement interface: attribute height
-PASS Unscopable handled correctly for height property on SVGImageElement
 PASS SVGImageElement interface: attribute preserveAspectRatio
-PASS Unscopable handled correctly for preserveAspectRatio property on SVGImageElement
 FAIL SVGImageElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
-PASS Unscopable handled correctly for crossOrigin property on SVGImageElement
 PASS SVGImageElement interface: attribute href
-PASS Unscopable handled correctly for href property on SVGImageElement
 PASS SVGImageElement must be primary interface of objects.image
 PASS Stringification of objects.image
 PASS SVGImageElement interface: objects.image must inherit property "x" with the proper type
@@ -1506,13 +1307,9 @@ PASS SVGForeignObjectElement interface: existence and properties of interface pr
 PASS SVGForeignObjectElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGForeignObjectElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGForeignObjectElement interface: attribute x
-PASS Unscopable handled correctly for x property on SVGForeignObjectElement
 PASS SVGForeignObjectElement interface: attribute y
-PASS Unscopable handled correctly for y property on SVGForeignObjectElement
 PASS SVGForeignObjectElement interface: attribute width
-PASS Unscopable handled correctly for width property on SVGForeignObjectElement
 PASS SVGForeignObjectElement interface: attribute height
-PASS Unscopable handled correctly for height property on SVGForeignObjectElement
 PASS SVGForeignObjectElement must be primary interface of objects.foreignObject
 PASS Stringification of objects.foreignObject
 PASS SVGForeignObjectElement interface: objects.foreignObject must inherit property "x" with the proper type
@@ -1550,29 +1347,17 @@ PASS SVGMarkerElement interface: constant SVG_MARKER_ORIENT_AUTO on interface pr
 PASS SVGMarkerElement interface: constant SVG_MARKER_ORIENT_ANGLE on interface object
 PASS SVGMarkerElement interface: constant SVG_MARKER_ORIENT_ANGLE on interface prototype object
 PASS SVGMarkerElement interface: attribute refX
-PASS Unscopable handled correctly for refX property on SVGMarkerElement
 PASS SVGMarkerElement interface: attribute refY
-PASS Unscopable handled correctly for refY property on SVGMarkerElement
 PASS SVGMarkerElement interface: attribute markerUnits
-PASS Unscopable handled correctly for markerUnits property on SVGMarkerElement
 PASS SVGMarkerElement interface: attribute markerWidth
-PASS Unscopable handled correctly for markerWidth property on SVGMarkerElement
 PASS SVGMarkerElement interface: attribute markerHeight
-PASS Unscopable handled correctly for markerHeight property on SVGMarkerElement
 PASS SVGMarkerElement interface: attribute orientType
-PASS Unscopable handled correctly for orientType property on SVGMarkerElement
 PASS SVGMarkerElement interface: attribute orientAngle
-PASS Unscopable handled correctly for orientAngle property on SVGMarkerElement
 FAIL SVGMarkerElement interface: attribute orient assert_true: The prototype object must have a property "orient" expected true got false
-PASS Unscopable handled correctly for orient property on SVGMarkerElement
 PASS SVGMarkerElement interface: operation setOrientToAuto()
-PASS Unscopable handled correctly for setOrientToAuto() on SVGMarkerElement
 PASS SVGMarkerElement interface: operation setOrientToAngle(SVGAngle)
-PASS Unscopable handled correctly for setOrientToAngle(SVGAngle) on SVGMarkerElement
 PASS SVGMarkerElement interface: attribute viewBox
-PASS Unscopable handled correctly for viewBox property on SVGMarkerElement
 PASS SVGMarkerElement interface: attribute preserveAspectRatio
-PASS Unscopable handled correctly for preserveAspectRatio property on SVGMarkerElement
 PASS SVGMarkerElement must be primary interface of objects.marker
 PASS Stringification of objects.marker
 PASS SVGMarkerElement interface: objects.marker must inherit property "SVG_MARKERUNITS_UNKNOWN" with the proper type
@@ -1614,13 +1399,9 @@ PASS SVGGradientElement interface: constant SVG_SPREADMETHOD_REFLECT on interfac
 PASS SVGGradientElement interface: constant SVG_SPREADMETHOD_REPEAT on interface object
 PASS SVGGradientElement interface: constant SVG_SPREADMETHOD_REPEAT on interface prototype object
 PASS SVGGradientElement interface: attribute gradientUnits
-PASS Unscopable handled correctly for gradientUnits property on SVGGradientElement
 PASS SVGGradientElement interface: attribute gradientTransform
-PASS Unscopable handled correctly for gradientTransform property on SVGGradientElement
 PASS SVGGradientElement interface: attribute spreadMethod
-PASS Unscopable handled correctly for spreadMethod property on SVGGradientElement
 PASS SVGGradientElement interface: attribute href
-PASS Unscopable handled correctly for href property on SVGGradientElement
 PASS SVGLinearGradientElement interface: existence and properties of interface object
 PASS SVGLinearGradientElement interface object length
 PASS SVGLinearGradientElement interface object name
@@ -1628,13 +1409,9 @@ PASS SVGLinearGradientElement interface: existence and properties of interface p
 PASS SVGLinearGradientElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGLinearGradientElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGLinearGradientElement interface: attribute x1
-PASS Unscopable handled correctly for x1 property on SVGLinearGradientElement
 PASS SVGLinearGradientElement interface: attribute y1
-PASS Unscopable handled correctly for y1 property on SVGLinearGradientElement
 PASS SVGLinearGradientElement interface: attribute x2
-PASS Unscopable handled correctly for x2 property on SVGLinearGradientElement
 PASS SVGLinearGradientElement interface: attribute y2
-PASS Unscopable handled correctly for y2 property on SVGLinearGradientElement
 PASS SVGLinearGradientElement must be primary interface of objects.linearGradient
 PASS Stringification of objects.linearGradient
 PASS SVGLinearGradientElement interface: objects.linearGradient must inherit property "x1" with the proper type
@@ -1661,17 +1438,11 @@ PASS SVGRadialGradientElement interface: existence and properties of interface p
 PASS SVGRadialGradientElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGRadialGradientElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGRadialGradientElement interface: attribute cx
-PASS Unscopable handled correctly for cx property on SVGRadialGradientElement
 PASS SVGRadialGradientElement interface: attribute cy
-PASS Unscopable handled correctly for cy property on SVGRadialGradientElement
 PASS SVGRadialGradientElement interface: attribute r
-PASS Unscopable handled correctly for r property on SVGRadialGradientElement
 PASS SVGRadialGradientElement interface: attribute fx
-PASS Unscopable handled correctly for fx property on SVGRadialGradientElement
 PASS SVGRadialGradientElement interface: attribute fy
-PASS Unscopable handled correctly for fy property on SVGRadialGradientElement
 PASS SVGRadialGradientElement interface: attribute fr
-PASS Unscopable handled correctly for fr property on SVGRadialGradientElement
 PASS SVGRadialGradientElement must be primary interface of objects.radialGradient
 PASS Stringification of objects.radialGradient
 PASS SVGRadialGradientElement interface: objects.radialGradient must inherit property "cx" with the proper type
@@ -1700,7 +1471,6 @@ PASS SVGStopElement interface: existence and properties of interface prototype o
 PASS SVGStopElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGStopElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGStopElement interface: attribute offset
-PASS Unscopable handled correctly for offset property on SVGStopElement
 PASS SVGStopElement must be primary interface of objects.stop
 PASS Stringification of objects.stop
 PASS SVGStopElement interface: objects.stop must inherit property "offset" with the proper type
@@ -1716,25 +1486,15 @@ PASS SVGPatternElement interface: existence and properties of interface prototyp
 PASS SVGPatternElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGPatternElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGPatternElement interface: attribute patternUnits
-PASS Unscopable handled correctly for patternUnits property on SVGPatternElement
 PASS SVGPatternElement interface: attribute patternContentUnits
-PASS Unscopable handled correctly for patternContentUnits property on SVGPatternElement
 PASS SVGPatternElement interface: attribute patternTransform
-PASS Unscopable handled correctly for patternTransform property on SVGPatternElement
 PASS SVGPatternElement interface: attribute x
-PASS Unscopable handled correctly for x property on SVGPatternElement
 PASS SVGPatternElement interface: attribute y
-PASS Unscopable handled correctly for y property on SVGPatternElement
 PASS SVGPatternElement interface: attribute width
-PASS Unscopable handled correctly for width property on SVGPatternElement
 PASS SVGPatternElement interface: attribute height
-PASS Unscopable handled correctly for height property on SVGPatternElement
 PASS SVGPatternElement interface: attribute viewBox
-PASS Unscopable handled correctly for viewBox property on SVGPatternElement
 PASS SVGPatternElement interface: attribute preserveAspectRatio
-PASS Unscopable handled correctly for preserveAspectRatio property on SVGPatternElement
 PASS SVGPatternElement interface: attribute href
-PASS Unscopable handled correctly for href property on SVGPatternElement
 PASS SVGPatternElement must be primary interface of objects.pattern
 PASS Stringification of objects.pattern
 PASS SVGPatternElement interface: objects.pattern must inherit property "patternUnits" with the proper type
@@ -1759,11 +1519,8 @@ PASS SVGScriptElement interface: existence and properties of interface prototype
 PASS SVGScriptElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGScriptElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGScriptElement interface: attribute type
-PASS Unscopable handled correctly for type property on SVGScriptElement
 FAIL SVGScriptElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
-PASS Unscopable handled correctly for crossOrigin property on SVGScriptElement
 PASS SVGScriptElement interface: attribute href
-PASS Unscopable handled correctly for href property on SVGScriptElement
 PASS SVGScriptElement must be primary interface of objects.script
 PASS Stringification of objects.script
 PASS SVGScriptElement interface: objects.script must inherit property "type" with the proper type
@@ -1781,19 +1538,12 @@ PASS SVGAElement interface: existence and properties of interface prototype obje
 PASS SVGAElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGAElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGAElement interface: attribute target
-PASS Unscopable handled correctly for target property on SVGAElement
 FAIL SVGAElement interface: attribute download assert_true: The prototype object must have a property "download" expected true got false
-PASS Unscopable handled correctly for download property on SVGAElement
 FAIL SVGAElement interface: attribute rel assert_true: The prototype object must have a property "rel" expected true got false
-PASS Unscopable handled correctly for rel property on SVGAElement
 FAIL SVGAElement interface: attribute relList assert_true: The prototype object must have a property "relList" expected true got false
-PASS Unscopable handled correctly for relList property on SVGAElement
 FAIL SVGAElement interface: attribute hreflang assert_true: The prototype object must have a property "hreflang" expected true got false
-PASS Unscopable handled correctly for hreflang property on SVGAElement
 FAIL SVGAElement interface: attribute type assert_true: The prototype object must have a property "type" expected true got false
-PASS Unscopable handled correctly for type property on SVGAElement
 PASS SVGAElement interface: attribute href
-PASS Unscopable handled correctly for href property on SVGAElement
 PASS SVGAElement must be primary interface of objects.a
 PASS Stringification of objects.a
 PASS SVGAElement interface: objects.a must inherit property "target" with the proper type
@@ -1822,9 +1572,7 @@ PASS SVGViewElement interface: existence and properties of interface prototype o
 PASS SVGViewElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGViewElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS SVGViewElement interface: attribute viewBox
-PASS Unscopable handled correctly for viewBox property on SVGViewElement
 PASS SVGViewElement interface: attribute preserveAspectRatio
-PASS Unscopable handled correctly for preserveAspectRatio property on SVGViewElement
 PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_UNKNOWN on interface object
 PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_UNKNOWN on interface prototype object
 PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_DISABLE on interface object
@@ -1832,7 +1580,6 @@ PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_DISABLE on interface prot
 PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_MAGNIFY on interface object
 PASS SVGViewElement interface: constant SVG_ZOOMANDPAN_MAGNIFY on interface prototype object
 PASS SVGViewElement interface: attribute zoomAndPan
-PASS Unscopable handled correctly for zoomAndPan property on SVGViewElement
 PASS SVGViewElement must be primary interface of objects.view
 PASS Stringification of objects.view
 PASS SVGViewElement interface: objects.view must inherit property "viewBox" with the proper type
@@ -1848,6 +1595,5 @@ FAIL SVGElement interface: objects.view must inherit property "correspondingElem
 FAIL SVGElement interface: objects.view must inherit property "correspondingUseElement" with the proper type assert_inherits: property "correspondingUseElement" not found in prototype chain
 PASS WorkerGlobalScope interface: existence and properties of interface object
 PASS Document interface: attribute rootElement
-PASS Unscopable handled correctly for rootElement property on Document
 Harness: the test ran to completion.
 

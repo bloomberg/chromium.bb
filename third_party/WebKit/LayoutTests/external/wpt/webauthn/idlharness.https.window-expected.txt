@@ -27,13 +27,9 @@ PASS PublicKeyCredential interface: existence and properties of interface protot
 PASS PublicKeyCredential interface: existence and properties of interface prototype object's "constructor" property
 PASS PublicKeyCredential interface: existence and properties of interface prototype object's @@unscopables property
 PASS PublicKeyCredential interface: attribute rawId
-PASS Unscopable handled correctly for rawId property on PublicKeyCredential
 PASS PublicKeyCredential interface: attribute response
-PASS Unscopable handled correctly for response property on PublicKeyCredential
 PASS PublicKeyCredential interface: operation getClientExtensionResults()
-PASS Unscopable handled correctly for getClientExtensionResults() on PublicKeyCredential
 PASS PublicKeyCredential interface: operation isUserVerifyingPlatformAuthenticatorAvailable()
-PASS Unscopable handled correctly for isUserVerifyingPlatformAuthenticatorAvailable() on PublicKeyCredential
 FAIL PublicKeyCredential must be primary interface of cred assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: cred is not defined"
 FAIL Stringification of cred assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: cred is not defined"
 FAIL PublicKeyCredential interface: cred must inherit property "rawId" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: cred is not defined"
@@ -47,7 +43,6 @@ PASS AuthenticatorResponse interface: existence and properties of interface prot
 PASS AuthenticatorResponse interface: existence and properties of interface prototype object's "constructor" property
 PASS AuthenticatorResponse interface: existence and properties of interface prototype object's @@unscopables property
 PASS AuthenticatorResponse interface: attribute clientDataJSON
-PASS Unscopable handled correctly for clientDataJSON property on AuthenticatorResponse
 PASS AuthenticatorAttestationResponse interface: existence and properties of interface object
 PASS AuthenticatorAttestationResponse interface object length
 PASS AuthenticatorAttestationResponse interface object name
@@ -55,7 +50,6 @@ PASS AuthenticatorAttestationResponse interface: existence and properties of int
 PASS AuthenticatorAttestationResponse interface: existence and properties of interface prototype object's "constructor" property
 PASS AuthenticatorAttestationResponse interface: existence and properties of interface prototype object's @@unscopables property
 PASS AuthenticatorAttestationResponse interface: attribute attestationObject
-PASS Unscopable handled correctly for attestationObject property on AuthenticatorAttestationResponse
 PASS AuthenticatorAssertionResponse interface: existence and properties of interface object
 PASS AuthenticatorAssertionResponse interface object length
 PASS AuthenticatorAssertionResponse interface object name
@@ -63,11 +57,8 @@ PASS AuthenticatorAssertionResponse interface: existence and properties of inter
 PASS AuthenticatorAssertionResponse interface: existence and properties of interface prototype object's "constructor" property
 PASS AuthenticatorAssertionResponse interface: existence and properties of interface prototype object's @@unscopables property
 PASS AuthenticatorAssertionResponse interface: attribute authenticatorData
-PASS Unscopable handled correctly for authenticatorData property on AuthenticatorAssertionResponse
 PASS AuthenticatorAssertionResponse interface: attribute signature
-PASS Unscopable handled correctly for signature property on AuthenticatorAssertionResponse
 PASS AuthenticatorAssertionResponse interface: attribute userHandle
-PASS Unscopable handled correctly for userHandle property on AuthenticatorAssertionResponse
 FAIL AuthenticatorAssertionResponse must be primary interface of assertionResponse assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: assertionResponse is not defined"
 FAIL Stringification of assertionResponse assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: assertionResponse is not defined"
 FAIL AuthenticatorAssertionResponse interface: assertionResponse must inherit property "authenticatorData" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: assertionResponse is not defined"

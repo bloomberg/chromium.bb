@@ -43,7 +43,6 @@ PASS RadioNodeList interface: existence and properties of interface prototype ob
 PASS RadioNodeList interface: existence and properties of interface prototype object's "constructor" property
 PASS RadioNodeList interface: existence and properties of interface prototype object's @@unscopables property
 PASS RadioNodeList interface: attribute value
-PASS Unscopable handled correctly for value property on RadioNodeList
 PASS DOMStringList interface: existence and properties of interface object
 PASS DOMStringList interface object length
 PASS DOMStringList interface object name
@@ -51,11 +50,8 @@ PASS DOMStringList interface: existence and properties of interface prototype ob
 PASS DOMStringList interface: existence and properties of interface prototype object's "constructor" property
 PASS DOMStringList interface: existence and properties of interface prototype object's @@unscopables property
 PASS DOMStringList interface: attribute length
-PASS Unscopable handled correctly for length property on DOMStringList
 PASS DOMStringList interface: operation item(unsigned long)
-PASS Unscopable handled correctly for item(unsigned long) on DOMStringList
 PASS DOMStringList interface: operation contains(DOMString)
-PASS Unscopable handled correctly for contains(DOMString) on DOMStringList
 PASS DOMStringMap interface: existence and properties of interface object
 PASS DOMStringMap interface object length
 PASS DOMStringMap interface object name
@@ -79,9 +75,7 @@ PASS MediaError interface: constant MEDIA_ERR_DECODE on interface prototype obje
 PASS MediaError interface: constant MEDIA_ERR_SRC_NOT_SUPPORTED on interface object
 PASS MediaError interface: constant MEDIA_ERR_SRC_NOT_SUPPORTED on interface prototype object
 PASS MediaError interface: attribute code
-PASS Unscopable handled correctly for code property on MediaError
 PASS MediaError interface: attribute message
-PASS Unscopable handled correctly for message property on MediaError
 PASS MediaError must be primary interface of errorVideo.error
 PASS Stringification of errorVideo.error
 PASS MediaError interface: errorVideo.error must inherit property "MEDIA_ERR_ABORTED" with the proper type
@@ -97,15 +91,10 @@ PASS AudioTrackList interface: existence and properties of interface prototype o
 PASS AudioTrackList interface: existence and properties of interface prototype object's "constructor" property
 PASS AudioTrackList interface: existence and properties of interface prototype object's @@unscopables property
 PASS AudioTrackList interface: attribute length
-PASS Unscopable handled correctly for length property on AudioTrackList
 PASS AudioTrackList interface: operation getTrackById(DOMString)
-PASS Unscopable handled correctly for getTrackById(DOMString) on AudioTrackList
 PASS AudioTrackList interface: attribute onchange
-PASS Unscopable handled correctly for onchange property on AudioTrackList
 PASS AudioTrackList interface: attribute onaddtrack
-PASS Unscopable handled correctly for onaddtrack property on AudioTrackList
 PASS AudioTrackList interface: attribute onremovetrack
-PASS Unscopable handled correctly for onremovetrack property on AudioTrackList
 PASS AudioTrack interface: existence and properties of interface object
 PASS AudioTrack interface object length
 PASS AudioTrack interface object name
@@ -113,15 +102,10 @@ PASS AudioTrack interface: existence and properties of interface prototype objec
 PASS AudioTrack interface: existence and properties of interface prototype object's "constructor" property
 PASS AudioTrack interface: existence and properties of interface prototype object's @@unscopables property
 PASS AudioTrack interface: attribute id
-PASS Unscopable handled correctly for id property on AudioTrack
 PASS AudioTrack interface: attribute kind
-PASS Unscopable handled correctly for kind property on AudioTrack
 PASS AudioTrack interface: attribute label
-PASS Unscopable handled correctly for label property on AudioTrack
 PASS AudioTrack interface: attribute language
-PASS Unscopable handled correctly for language property on AudioTrack
 PASS AudioTrack interface: attribute enabled
-PASS Unscopable handled correctly for enabled property on AudioTrack
 PASS VideoTrackList interface: existence and properties of interface object
 PASS VideoTrackList interface object length
 PASS VideoTrackList interface object name
@@ -129,17 +113,11 @@ PASS VideoTrackList interface: existence and properties of interface prototype o
 PASS VideoTrackList interface: existence and properties of interface prototype object's "constructor" property
 PASS VideoTrackList interface: existence and properties of interface prototype object's @@unscopables property
 PASS VideoTrackList interface: attribute length
-PASS Unscopable handled correctly for length property on VideoTrackList
 PASS VideoTrackList interface: operation getTrackById(DOMString)
-PASS Unscopable handled correctly for getTrackById(DOMString) on VideoTrackList
 PASS VideoTrackList interface: attribute selectedIndex
-PASS Unscopable handled correctly for selectedIndex property on VideoTrackList
 PASS VideoTrackList interface: attribute onchange
-PASS Unscopable handled correctly for onchange property on VideoTrackList
 PASS VideoTrackList interface: attribute onaddtrack
-PASS Unscopable handled correctly for onaddtrack property on VideoTrackList
 PASS VideoTrackList interface: attribute onremovetrack
-PASS Unscopable handled correctly for onremovetrack property on VideoTrackList
 PASS VideoTrack interface: existence and properties of interface object
 PASS VideoTrack interface object length
 PASS VideoTrack interface object name
@@ -147,15 +125,10 @@ PASS VideoTrack interface: existence and properties of interface prototype objec
 PASS VideoTrack interface: existence and properties of interface prototype object's "constructor" property
 PASS VideoTrack interface: existence and properties of interface prototype object's @@unscopables property
 PASS VideoTrack interface: attribute id
-PASS Unscopable handled correctly for id property on VideoTrack
 PASS VideoTrack interface: attribute kind
-PASS Unscopable handled correctly for kind property on VideoTrack
 PASS VideoTrack interface: attribute label
-PASS Unscopable handled correctly for label property on VideoTrack
 PASS VideoTrack interface: attribute language
-PASS Unscopable handled correctly for language property on VideoTrack
 PASS VideoTrack interface: attribute selected
-PASS Unscopable handled correctly for selected property on VideoTrack
 PASS TextTrackList interface: existence and properties of interface object
 PASS TextTrackList interface object length
 PASS TextTrackList interface object name
@@ -163,15 +136,10 @@ PASS TextTrackList interface: existence and properties of interface prototype ob
 PASS TextTrackList interface: existence and properties of interface prototype object's "constructor" property
 PASS TextTrackList interface: existence and properties of interface prototype object's @@unscopables property
 PASS TextTrackList interface: attribute length
-PASS Unscopable handled correctly for length property on TextTrackList
 PASS TextTrackList interface: operation getTrackById(DOMString)
-PASS Unscopable handled correctly for getTrackById(DOMString) on TextTrackList
 PASS TextTrackList interface: attribute onchange
-PASS Unscopable handled correctly for onchange property on TextTrackList
 PASS TextTrackList interface: attribute onaddtrack
-PASS Unscopable handled correctly for onaddtrack property on TextTrackList
 PASS TextTrackList interface: attribute onremovetrack
-PASS Unscopable handled correctly for onremovetrack property on TextTrackList
 PASS TextTrackList must be primary interface of document.createElement("video").textTracks
 PASS Stringification of document.createElement("video").textTracks
 PASS TextTrackList interface: document.createElement("video").textTracks must inherit property "length" with the proper type
@@ -187,27 +155,16 @@ PASS TextTrack interface: existence and properties of interface prototype object
 PASS TextTrack interface: existence and properties of interface prototype object's "constructor" property
 PASS TextTrack interface: existence and properties of interface prototype object's @@unscopables property
 PASS TextTrack interface: attribute kind
-PASS Unscopable handled correctly for kind property on TextTrack
 PASS TextTrack interface: attribute label
-PASS Unscopable handled correctly for label property on TextTrack
 PASS TextTrack interface: attribute language
-PASS Unscopable handled correctly for language property on TextTrack
 PASS TextTrack interface: attribute id
-PASS Unscopable handled correctly for id property on TextTrack
 FAIL TextTrack interface: attribute inBandMetadataTrackDispatchType assert_true: The prototype object must have a property "inBandMetadataTrackDispatchType" expected true got false
-PASS Unscopable handled correctly for inBandMetadataTrackDispatchType property on TextTrack
 PASS TextTrack interface: attribute mode
-PASS Unscopable handled correctly for mode property on TextTrack
 PASS TextTrack interface: attribute cues
-PASS Unscopable handled correctly for cues property on TextTrack
 PASS TextTrack interface: attribute activeCues
-PASS Unscopable handled correctly for activeCues property on TextTrack
 PASS TextTrack interface: operation addCue(TextTrackCue)
-PASS Unscopable handled correctly for addCue(TextTrackCue) on TextTrack
 PASS TextTrack interface: operation removeCue(TextTrackCue)
-PASS Unscopable handled correctly for removeCue(TextTrackCue) on TextTrack
 PASS TextTrack interface: attribute oncuechange
-PASS Unscopable handled correctly for oncuechange property on TextTrack
 PASS TextTrack must be primary interface of document.createElement("track").track
 PASS Stringification of document.createElement("track").track
 PASS TextTrack interface: document.createElement("track").track must inherit property "kind" with the proper type
@@ -230,9 +187,7 @@ PASS TextTrackCueList interface: existence and properties of interface prototype
 PASS TextTrackCueList interface: existence and properties of interface prototype object's "constructor" property
 PASS TextTrackCueList interface: existence and properties of interface prototype object's @@unscopables property
 PASS TextTrackCueList interface: attribute length
-PASS Unscopable handled correctly for length property on TextTrackCueList
 PASS TextTrackCueList interface: operation getCueById(DOMString)
-PASS Unscopable handled correctly for getCueById(DOMString) on TextTrackCueList
 PASS TextTrackCueList must be primary interface of document.createElement("video").addTextTrack("subtitles").cues
 PASS Stringification of document.createElement("video").addTextTrack("subtitles").cues
 PASS TextTrackCueList interface: document.createElement("video").addTextTrack("subtitles").cues must inherit property "length" with the proper type
@@ -245,19 +200,12 @@ PASS TextTrackCue interface: existence and properties of interface prototype obj
 PASS TextTrackCue interface: existence and properties of interface prototype object's "constructor" property
 PASS TextTrackCue interface: existence and properties of interface prototype object's @@unscopables property
 PASS TextTrackCue interface: attribute track
-PASS Unscopable handled correctly for track property on TextTrackCue
 PASS TextTrackCue interface: attribute id
-PASS Unscopable handled correctly for id property on TextTrackCue
 PASS TextTrackCue interface: attribute startTime
-PASS Unscopable handled correctly for startTime property on TextTrackCue
 PASS TextTrackCue interface: attribute endTime
-PASS Unscopable handled correctly for endTime property on TextTrackCue
 PASS TextTrackCue interface: attribute pauseOnExit
-PASS Unscopable handled correctly for pauseOnExit property on TextTrackCue
 PASS TextTrackCue interface: attribute onenter
-PASS Unscopable handled correctly for onenter property on TextTrackCue
 PASS TextTrackCue interface: attribute onexit
-PASS Unscopable handled correctly for onexit property on TextTrackCue
 PASS TimeRanges interface: existence and properties of interface object
 PASS TimeRanges interface object length
 PASS TimeRanges interface object name
@@ -265,11 +213,8 @@ PASS TimeRanges interface: existence and properties of interface prototype objec
 PASS TimeRanges interface: existence and properties of interface prototype object's "constructor" property
 PASS TimeRanges interface: existence and properties of interface prototype object's @@unscopables property
 PASS TimeRanges interface: attribute length
-PASS Unscopable handled correctly for length property on TimeRanges
 PASS TimeRanges interface: operation start(unsigned long)
-PASS Unscopable handled correctly for start(unsigned long) on TimeRanges
 PASS TimeRanges interface: operation end(unsigned long)
-PASS Unscopable handled correctly for end(unsigned long) on TimeRanges
 PASS TimeRanges must be primary interface of document.createElement("video").buffered
 PASS Stringification of document.createElement("video").buffered
 PASS TimeRanges interface: document.createElement("video").buffered must inherit property "length" with the proper type
@@ -284,7 +229,6 @@ PASS TrackEvent interface: existence and properties of interface prototype objec
 PASS TrackEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS TrackEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS TrackEvent interface: attribute track
-PASS Unscopable handled correctly for track property on TrackEvent
 PASS TrackEvent must be primary interface of new TrackEvent("addtrack", {track:document.createElement("track").track})
 PASS Stringification of new TrackEvent("addtrack", {track:document.createElement("track").track})
 PASS TrackEvent interface: new TrackEvent("addtrack", {track:document.createElement("track").track}) must inherit property "track" with the proper type
@@ -295,27 +239,16 @@ PASS ValidityState interface: existence and properties of interface prototype ob
 PASS ValidityState interface: existence and properties of interface prototype object's "constructor" property
 PASS ValidityState interface: existence and properties of interface prototype object's @@unscopables property
 PASS ValidityState interface: attribute valueMissing
-PASS Unscopable handled correctly for valueMissing property on ValidityState
 PASS ValidityState interface: attribute typeMismatch
-PASS Unscopable handled correctly for typeMismatch property on ValidityState
 PASS ValidityState interface: attribute patternMismatch
-PASS Unscopable handled correctly for patternMismatch property on ValidityState
 PASS ValidityState interface: attribute tooLong
-PASS Unscopable handled correctly for tooLong property on ValidityState
 PASS ValidityState interface: attribute tooShort
-PASS Unscopable handled correctly for tooShort property on ValidityState
 PASS ValidityState interface: attribute rangeUnderflow
-PASS Unscopable handled correctly for rangeUnderflow property on ValidityState
 PASS ValidityState interface: attribute rangeOverflow
-PASS Unscopable handled correctly for rangeOverflow property on ValidityState
 PASS ValidityState interface: attribute stepMismatch
-PASS Unscopable handled correctly for stepMismatch property on ValidityState
 PASS ValidityState interface: attribute badInput
-PASS Unscopable handled correctly for badInput property on ValidityState
 PASS ValidityState interface: attribute customError
-PASS Unscopable handled correctly for customError property on ValidityState
 PASS ValidityState interface: attribute valid
-PASS Unscopable handled correctly for valid property on ValidityState
 PASS ValidityState must be primary interface of document.createElement("input").validity
 PASS Stringification of document.createElement("input").validity
 PASS ValidityState interface: document.createElement("input").validity must inherit property "valueMissing" with the proper type
@@ -336,155 +269,80 @@ PASS CanvasRenderingContext2D interface: existence and properties of interface p
 PASS CanvasRenderingContext2D interface: existence and properties of interface prototype object's "constructor" property
 PASS CanvasRenderingContext2D interface: existence and properties of interface prototype object's @@unscopables property
 PASS CanvasRenderingContext2D interface: attribute canvas
-PASS Unscopable handled correctly for canvas property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation save()
-PASS Unscopable handled correctly for save() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation restore()
-PASS Unscopable handled correctly for restore() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation scale(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for scale(unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation rotate(unrestricted double)
-PASS Unscopable handled correctly for rotate(unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation translate(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for translate(unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation getTransform()
-PASS Unscopable handled correctly for getTransform() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation setTransform(DOMMatrix2DInit)
-PASS Unscopable handled correctly for setTransform(DOMMatrix2DInit) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation resetTransform()
-PASS Unscopable handled correctly for resetTransform() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute globalAlpha
-PASS Unscopable handled correctly for globalAlpha property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute globalCompositeOperation
-PASS Unscopable handled correctly for globalCompositeOperation property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute imageSmoothingEnabled
-PASS Unscopable handled correctly for imageSmoothingEnabled property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute imageSmoothingQuality
-PASS Unscopable handled correctly for imageSmoothingQuality property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute strokeStyle
-PASS Unscopable handled correctly for strokeStyle property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute fillStyle
-PASS Unscopable handled correctly for fillStyle property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation createLinearGradient(double, double, double, double)
-PASS Unscopable handled correctly for createLinearGradient(double, double, double, double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation createRadialGradient(double, double, double, double, double, double)
-PASS Unscopable handled correctly for createRadialGradient(double, double, double, double, double, double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation createPattern(CanvasImageSource, DOMString)
-PASS Unscopable handled correctly for createPattern(CanvasImageSource, DOMString) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute shadowOffsetX
-PASS Unscopable handled correctly for shadowOffsetX property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute shadowOffsetY
-PASS Unscopable handled correctly for shadowOffsetY property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute shadowBlur
-PASS Unscopable handled correctly for shadowBlur property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute shadowColor
-PASS Unscopable handled correctly for shadowColor property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute filter
-PASS Unscopable handled correctly for filter property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation clearRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for clearRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation fillRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for fillRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation strokeRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for strokeRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation beginPath()
-PASS Unscopable handled correctly for beginPath() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation fill(CanvasFillRule)
-PASS Unscopable handled correctly for fill(CanvasFillRule) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation fill(Path2D, CanvasFillRule)
-PASS Unscopable handled correctly for fill(Path2D, CanvasFillRule) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation stroke()
-PASS Unscopable handled correctly for stroke() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation stroke(Path2D)
-PASS Unscopable handled correctly for stroke(Path2D) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation clip(CanvasFillRule)
-PASS Unscopable handled correctly for clip(CanvasFillRule) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation clip(Path2D, CanvasFillRule)
-PASS Unscopable handled correctly for clip(Path2D, CanvasFillRule) on CanvasRenderingContext2D
 FAIL CanvasRenderingContext2D interface: operation resetClip() assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
-PASS Unscopable handled correctly for resetClip() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, CanvasFillRule)
-PASS Unscopable handled correctly for isPointInPath(unrestricted double, unrestricted double, CanvasFillRule) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule)
-PASS Unscopable handled correctly for isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation isPointInStroke(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for isPointInStroke(unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation isPointInStroke(Path2D, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for isPointInStroke(Path2D, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation drawFocusIfNeeded(Element)
-PASS Unscopable handled correctly for drawFocusIfNeeded(Element) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation drawFocusIfNeeded(Path2D, Element)
-PASS Unscopable handled correctly for drawFocusIfNeeded(Path2D, Element) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation scrollPathIntoView()
-PASS Unscopable handled correctly for scrollPathIntoView() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation scrollPathIntoView(Path2D)
-PASS Unscopable handled correctly for scrollPathIntoView(Path2D) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation fillText(DOMString, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for fillText(DOMString, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation strokeText(DOMString, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for strokeText(DOMString, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation measureText(DOMString)
-PASS Unscopable handled correctly for measureText(DOMString) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for drawImage(CanvasImageSource, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation createImageData(long, long)
-PASS Unscopable handled correctly for createImageData(long, long) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation createImageData(ImageData)
-PASS Unscopable handled correctly for createImageData(ImageData) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation getImageData(long, long, long, long)
-PASS Unscopable handled correctly for getImageData(long, long, long, long) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation putImageData(ImageData, long, long)
-PASS Unscopable handled correctly for putImageData(ImageData, long, long) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation putImageData(ImageData, long, long, long, long, long, long)
-PASS Unscopable handled correctly for putImageData(ImageData, long, long, long, long, long, long) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute lineWidth
-PASS Unscopable handled correctly for lineWidth property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute lineCap
-PASS Unscopable handled correctly for lineCap property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute lineJoin
-PASS Unscopable handled correctly for lineJoin property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute miterLimit
-PASS Unscopable handled correctly for miterLimit property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation setLineDash([object Object])
-PASS Unscopable handled correctly for setLineDash([object Object]) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation getLineDash()
-PASS Unscopable handled correctly for getLineDash() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute lineDashOffset
-PASS Unscopable handled correctly for lineDashOffset property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute font
-PASS Unscopable handled correctly for font property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute textAlign
-PASS Unscopable handled correctly for textAlign property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute textBaseline
-PASS Unscopable handled correctly for textBaseline property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: attribute direction
-PASS Unscopable handled correctly for direction property on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation closePath()
-PASS Unscopable handled correctly for closePath() on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation moveTo(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for moveTo(unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation lineTo(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for lineTo(unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
-PASS Unscopable handled correctly for arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
-PASS Unscopable handled correctly for ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D must be primary interface of document.createElement("canvas").getContext("2d")
 PASS Stringification of document.createElement("canvas").getContext("2d")
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "canvas" with the proper type
@@ -613,7 +471,6 @@ PASS CanvasGradient interface: existence and properties of interface prototype o
 PASS CanvasGradient interface: existence and properties of interface prototype object's "constructor" property
 PASS CanvasGradient interface: existence and properties of interface prototype object's @@unscopables property
 PASS CanvasGradient interface: operation addColorStop(double, DOMString)
-PASS Unscopable handled correctly for addColorStop(double, DOMString) on CanvasGradient
 PASS CanvasPattern interface: existence and properties of interface object
 PASS CanvasPattern interface object length
 PASS CanvasPattern interface object name
@@ -621,7 +478,6 @@ PASS CanvasPattern interface: existence and properties of interface prototype ob
 PASS CanvasPattern interface: existence and properties of interface prototype object's "constructor" property
 PASS CanvasPattern interface: existence and properties of interface prototype object's @@unscopables property
 PASS CanvasPattern interface: operation setTransform(DOMMatrix2DInit)
-PASS Unscopable handled correctly for setTransform(DOMMatrix2DInit) on CanvasPattern
 PASS TextMetrics interface: existence and properties of interface object
 PASS TextMetrics interface object length
 PASS TextMetrics interface object name
@@ -629,25 +485,15 @@ PASS TextMetrics interface: existence and properties of interface prototype obje
 PASS TextMetrics interface: existence and properties of interface prototype object's "constructor" property
 PASS TextMetrics interface: existence and properties of interface prototype object's @@unscopables property
 PASS TextMetrics interface: attribute width
-PASS Unscopable handled correctly for width property on TextMetrics
 PASS TextMetrics interface: attribute actualBoundingBoxLeft
-PASS Unscopable handled correctly for actualBoundingBoxLeft property on TextMetrics
 PASS TextMetrics interface: attribute actualBoundingBoxRight
-PASS Unscopable handled correctly for actualBoundingBoxRight property on TextMetrics
 PASS TextMetrics interface: attribute fontBoundingBoxAscent
-PASS Unscopable handled correctly for fontBoundingBoxAscent property on TextMetrics
 PASS TextMetrics interface: attribute fontBoundingBoxDescent
-PASS Unscopable handled correctly for fontBoundingBoxDescent property on TextMetrics
 PASS TextMetrics interface: attribute actualBoundingBoxAscent
-PASS Unscopable handled correctly for actualBoundingBoxAscent property on TextMetrics
 PASS TextMetrics interface: attribute actualBoundingBoxDescent
-PASS Unscopable handled correctly for actualBoundingBoxDescent property on TextMetrics
 PASS TextMetrics interface: attribute emHeightAscent
-PASS Unscopable handled correctly for emHeightAscent property on TextMetrics
 PASS TextMetrics interface: attribute emHeightDescent
-PASS Unscopable handled correctly for emHeightDescent property on TextMetrics
 PASS TextMetrics interface: operation getBaselines()
-PASS Unscopable handled correctly for getBaselines() on TextMetrics
 PASS ImageData interface: existence and properties of interface object
 PASS ImageData interface object length
 PASS ImageData interface object name
@@ -655,11 +501,8 @@ PASS ImageData interface: existence and properties of interface prototype object
 PASS ImageData interface: existence and properties of interface prototype object's "constructor" property
 PASS ImageData interface: existence and properties of interface prototype object's @@unscopables property
 PASS ImageData interface: attribute width
-PASS Unscopable handled correctly for width property on ImageData
 PASS ImageData interface: attribute height
-PASS Unscopable handled correctly for height property on ImageData
 PASS ImageData interface: attribute data
-PASS Unscopable handled correctly for data property on ImageData
 PASS Path2D interface: existence and properties of interface object
 PASS Path2D interface object length
 PASS Path2D interface object name
@@ -667,25 +510,15 @@ PASS Path2D interface: existence and properties of interface prototype object
 PASS Path2D interface: existence and properties of interface prototype object's "constructor" property
 PASS Path2D interface: existence and properties of interface prototype object's @@unscopables property
 PASS Path2D interface: operation addPath(Path2D, DOMMatrix2DInit)
-PASS Unscopable handled correctly for addPath(Path2D, DOMMatrix2DInit) on Path2D
 PASS Path2D interface: operation closePath()
-PASS Unscopable handled correctly for closePath() on Path2D
 PASS Path2D interface: operation moveTo(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for moveTo(unrestricted double, unrestricted double) on Path2D
 PASS Path2D interface: operation lineTo(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for lineTo(unrestricted double, unrestricted double) on Path2D
 PASS Path2D interface: operation quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on Path2D
 PASS Path2D interface: operation bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on Path2D
 PASS Path2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on Path2D
 PASS Path2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on Path2D
 PASS Path2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
-PASS Unscopable handled correctly for arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) on Path2D
 PASS Path2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
-PASS Unscopable handled correctly for ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) on Path2D
 PASS ImageBitmapRenderingContext interface: existence and properties of interface object
 PASS ImageBitmapRenderingContext interface object length
 PASS ImageBitmapRenderingContext interface object name
@@ -693,9 +526,7 @@ PASS ImageBitmapRenderingContext interface: existence and properties of interfac
 PASS ImageBitmapRenderingContext interface: existence and properties of interface prototype object's "constructor" property
 PASS ImageBitmapRenderingContext interface: existence and properties of interface prototype object's @@unscopables property
 PASS ImageBitmapRenderingContext interface: attribute canvas
-PASS Unscopable handled correctly for canvas property on ImageBitmapRenderingContext
 PASS ImageBitmapRenderingContext interface: operation transferFromImageBitmap(ImageBitmap)
-PASS Unscopable handled correctly for transferFromImageBitmap(ImageBitmap) on ImageBitmapRenderingContext
 PASS OffscreenCanvas interface: existence and properties of interface object
 PASS OffscreenCanvas interface object length
 PASS OffscreenCanvas interface object name
@@ -703,15 +534,10 @@ PASS OffscreenCanvas interface: existence and properties of interface prototype 
 PASS OffscreenCanvas interface: existence and properties of interface prototype object's "constructor" property
 PASS OffscreenCanvas interface: existence and properties of interface prototype object's @@unscopables property
 PASS OffscreenCanvas interface: attribute width
-PASS Unscopable handled correctly for width property on OffscreenCanvas
 PASS OffscreenCanvas interface: attribute height
-PASS Unscopable handled correctly for height property on OffscreenCanvas
 PASS OffscreenCanvas interface: operation getContext(OffscreenRenderingContextId, any)
-PASS Unscopable handled correctly for getContext(OffscreenRenderingContextId, any) on OffscreenCanvas
 PASS OffscreenCanvas interface: operation transferToImageBitmap()
-PASS Unscopable handled correctly for transferToImageBitmap() on OffscreenCanvas
 PASS OffscreenCanvas interface: operation convertToBlob(ImageEncodeOptions)
-PASS Unscopable handled correctly for convertToBlob(ImageEncodeOptions) on OffscreenCanvas
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface object
 PASS OffscreenCanvasRenderingContext2D interface object length
 PASS OffscreenCanvasRenderingContext2D interface object name
@@ -719,135 +545,70 @@ PASS OffscreenCanvasRenderingContext2D interface: existence and properties of in
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object's "constructor" property
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object's @@unscopables property
 PASS OffscreenCanvasRenderingContext2D interface: operation commit()
-PASS Unscopable handled correctly for commit() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute canvas
-PASS Unscopable handled correctly for canvas property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation save()
-PASS Unscopable handled correctly for save() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation restore()
-PASS Unscopable handled correctly for restore() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation scale(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for scale(unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation rotate(unrestricted double)
-PASS Unscopable handled correctly for rotate(unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation translate(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for translate(unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 FAIL OffscreenCanvasRenderingContext2D interface: operation getTransform() assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
-PASS Unscopable handled correctly for getTransform() on OffscreenCanvasRenderingContext2D
 FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 6
-PASS Unscopable handled correctly for setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrix2DInit) assert_equals: property has wrong .length expected 0 but got 6
-PASS Unscopable handled correctly for setTransform(DOMMatrix2DInit) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation resetTransform()
-PASS Unscopable handled correctly for resetTransform() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalAlpha
-PASS Unscopable handled correctly for globalAlpha property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalCompositeOperation
-PASS Unscopable handled correctly for globalCompositeOperation property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute imageSmoothingEnabled
-PASS Unscopable handled correctly for imageSmoothingEnabled property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute imageSmoothingQuality
-PASS Unscopable handled correctly for imageSmoothingQuality property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute strokeStyle
-PASS Unscopable handled correctly for strokeStyle property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute fillStyle
-PASS Unscopable handled correctly for fillStyle property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation createLinearGradient(double, double, double, double)
-PASS Unscopable handled correctly for createLinearGradient(double, double, double, double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation createRadialGradient(double, double, double, double, double, double)
-PASS Unscopable handled correctly for createRadialGradient(double, double, double, double, double, double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation createPattern(CanvasImageSource, DOMString)
-PASS Unscopable handled correctly for createPattern(CanvasImageSource, DOMString) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute shadowOffsetX
-PASS Unscopable handled correctly for shadowOffsetX property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute shadowOffsetY
-PASS Unscopable handled correctly for shadowOffsetY property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute shadowBlur
-PASS Unscopable handled correctly for shadowBlur property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute shadowColor
-PASS Unscopable handled correctly for shadowColor property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute filter
-PASS Unscopable handled correctly for filter property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation clearRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for clearRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation fillRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for fillRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation strokeRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for strokeRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation beginPath()
-PASS Unscopable handled correctly for beginPath() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation fill(CanvasFillRule)
-PASS Unscopable handled correctly for fill(CanvasFillRule) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation fill(Path2D, CanvasFillRule)
-PASS Unscopable handled correctly for fill(Path2D, CanvasFillRule) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation stroke()
-PASS Unscopable handled correctly for stroke() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation stroke(Path2D)
-PASS Unscopable handled correctly for stroke(Path2D) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation clip(CanvasFillRule)
-PASS Unscopable handled correctly for clip(CanvasFillRule) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation clip(Path2D, CanvasFillRule)
-PASS Unscopable handled correctly for clip(Path2D, CanvasFillRule) on OffscreenCanvasRenderingContext2D
 FAIL OffscreenCanvasRenderingContext2D interface: operation resetClip() assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
-PASS Unscopable handled correctly for resetClip() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, CanvasFillRule)
-PASS Unscopable handled correctly for isPointInPath(unrestricted double, unrestricted double, CanvasFillRule) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule)
-PASS Unscopable handled correctly for isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for isPointInStroke(unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(Path2D, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for isPointInStroke(Path2D, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for drawImage(CanvasImageSource, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation createImageData(long, long)
-PASS Unscopable handled correctly for createImageData(long, long) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation createImageData(ImageData)
-PASS Unscopable handled correctly for createImageData(ImageData) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation getImageData(long, long, long, long)
-PASS Unscopable handled correctly for getImageData(long, long, long, long) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation putImageData(ImageData, long, long)
-PASS Unscopable handled correctly for putImageData(ImageData, long, long) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation putImageData(ImageData, long, long, long, long, long, long)
-PASS Unscopable handled correctly for putImageData(ImageData, long, long, long, long, long, long) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute lineWidth
-PASS Unscopable handled correctly for lineWidth property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute lineCap
-PASS Unscopable handled correctly for lineCap property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute lineJoin
-PASS Unscopable handled correctly for lineJoin property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute miterLimit
-PASS Unscopable handled correctly for miterLimit property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation setLineDash([object Object])
-PASS Unscopable handled correctly for setLineDash([object Object]) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation getLineDash()
-PASS Unscopable handled correctly for getLineDash() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute lineDashOffset
-PASS Unscopable handled correctly for lineDashOffset property on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation closePath()
-PASS Unscopable handled correctly for closePath() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation moveTo(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for moveTo(unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation lineTo(unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for lineTo(unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Unscopable handled correctly for rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
-PASS Unscopable handled correctly for arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
-PASS Unscopable handled correctly for ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) on OffscreenCanvasRenderingContext2D
 PASS CustomElementRegistry interface: existence and properties of interface object
 PASS CustomElementRegistry interface object length
 PASS CustomElementRegistry interface object name
@@ -855,13 +616,9 @@ PASS CustomElementRegistry interface: existence and properties of interface prot
 PASS CustomElementRegistry interface: existence and properties of interface prototype object's "constructor" property
 PASS CustomElementRegistry interface: existence and properties of interface prototype object's @@unscopables property
 PASS CustomElementRegistry interface: operation define(DOMString, Function, ElementDefinitionOptions)
-PASS Unscopable handled correctly for define(DOMString, Function, ElementDefinitionOptions) on CustomElementRegistry
 PASS CustomElementRegistry interface: operation get(DOMString)
-PASS Unscopable handled correctly for get(DOMString) on CustomElementRegistry
 PASS CustomElementRegistry interface: operation whenDefined(DOMString)
-PASS Unscopable handled correctly for whenDefined(DOMString) on CustomElementRegistry
 PASS CustomElementRegistry interface: operation upgrade(Node)
-PASS Unscopable handled correctly for upgrade(Node) on CustomElementRegistry
 PASS DataTransfer interface: existence and properties of interface object
 PASS DataTransfer interface object length
 PASS DataTransfer interface object name
@@ -869,23 +626,14 @@ PASS DataTransfer interface: existence and properties of interface prototype obj
 PASS DataTransfer interface: existence and properties of interface prototype object's "constructor" property
 PASS DataTransfer interface: existence and properties of interface prototype object's @@unscopables property
 PASS DataTransfer interface: attribute dropEffect
-PASS Unscopable handled correctly for dropEffect property on DataTransfer
 PASS DataTransfer interface: attribute effectAllowed
-PASS Unscopable handled correctly for effectAllowed property on DataTransfer
 PASS DataTransfer interface: attribute items
-PASS Unscopable handled correctly for items property on DataTransfer
 PASS DataTransfer interface: operation setDragImage(Element, long, long)
-PASS Unscopable handled correctly for setDragImage(Element, long, long) on DataTransfer
 PASS DataTransfer interface: attribute types
-PASS Unscopable handled correctly for types property on DataTransfer
 PASS DataTransfer interface: operation getData(DOMString)
-PASS Unscopable handled correctly for getData(DOMString) on DataTransfer
 PASS DataTransfer interface: operation setData(DOMString, DOMString)
-PASS Unscopable handled correctly for setData(DOMString, DOMString) on DataTransfer
 PASS DataTransfer interface: operation clearData(DOMString)
-PASS Unscopable handled correctly for clearData(DOMString) on DataTransfer
 PASS DataTransfer interface: attribute files
-PASS Unscopable handled correctly for files property on DataTransfer
 PASS DataTransferItemList interface: existence and properties of interface object
 PASS DataTransferItemList interface object length
 PASS DataTransferItemList interface object name
@@ -893,15 +641,10 @@ PASS DataTransferItemList interface: existence and properties of interface proto
 PASS DataTransferItemList interface: existence and properties of interface prototype object's "constructor" property
 PASS DataTransferItemList interface: existence and properties of interface prototype object's @@unscopables property
 PASS DataTransferItemList interface: attribute length
-PASS Unscopable handled correctly for length property on DataTransferItemList
 PASS DataTransferItemList interface: operation add(DOMString, DOMString)
-PASS Unscopable handled correctly for add(DOMString, DOMString) on DataTransferItemList
 PASS DataTransferItemList interface: operation add(File)
-PASS Unscopable handled correctly for add(File) on DataTransferItemList
 PASS DataTransferItemList interface: operation remove(unsigned long)
-PASS Unscopable handled correctly for remove(unsigned long) on DataTransferItemList
 PASS DataTransferItemList interface: operation clear()
-PASS Unscopable handled correctly for clear() on DataTransferItemList
 PASS DataTransferItem interface: existence and properties of interface object
 PASS DataTransferItem interface object length
 PASS DataTransferItem interface object name
@@ -909,13 +652,9 @@ PASS DataTransferItem interface: existence and properties of interface prototype
 PASS DataTransferItem interface: existence and properties of interface prototype object's "constructor" property
 PASS DataTransferItem interface: existence and properties of interface prototype object's @@unscopables property
 PASS DataTransferItem interface: attribute kind
-PASS Unscopable handled correctly for kind property on DataTransferItem
 PASS DataTransferItem interface: attribute type
-PASS Unscopable handled correctly for type property on DataTransferItem
 PASS DataTransferItem interface: operation getAsString(FunctionStringCallback)
-PASS Unscopable handled correctly for getAsString(FunctionStringCallback) on DataTransferItem
 PASS DataTransferItem interface: operation getAsFile()
-PASS Unscopable handled correctly for getAsFile() on DataTransferItem
 PASS DragEvent interface: existence and properties of interface object
 PASS DragEvent interface object length
 PASS DragEvent interface object name
@@ -923,7 +662,6 @@ PASS DragEvent interface: existence and properties of interface prototype object
 PASS DragEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS DragEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS DragEvent interface: attribute dataTransfer
-PASS Unscopable handled correctly for dataTransfer property on DragEvent
 PASS BarProp interface: existence and properties of interface object
 PASS BarProp interface object length
 PASS BarProp interface object name
@@ -931,7 +669,6 @@ PASS BarProp interface: existence and properties of interface prototype object
 PASS BarProp interface: existence and properties of interface prototype object's "constructor" property
 PASS BarProp interface: existence and properties of interface prototype object's @@unscopables property
 PASS BarProp interface: attribute visible
-PASS Unscopable handled correctly for visible property on BarProp
 PASS History interface: existence and properties of interface object
 PASS History interface object length
 PASS History interface object name
@@ -939,23 +676,14 @@ PASS History interface: existence and properties of interface prototype object
 PASS History interface: existence and properties of interface prototype object's "constructor" property
 PASS History interface: existence and properties of interface prototype object's @@unscopables property
 FAIL History interface: attribute index assert_true: The prototype object must have a property "index" expected true got false
-PASS Unscopable handled correctly for index property on History
 PASS History interface: attribute length
-PASS Unscopable handled correctly for length property on History
 PASS History interface: attribute scrollRestoration
-PASS Unscopable handled correctly for scrollRestoration property on History
 PASS History interface: attribute state
-PASS Unscopable handled correctly for state property on History
 PASS History interface: operation go(long)
-PASS Unscopable handled correctly for go(long) on History
 PASS History interface: operation back()
-PASS Unscopable handled correctly for back() on History
 PASS History interface: operation forward()
-PASS Unscopable handled correctly for forward() on History
 PASS History interface: operation pushState(any, DOMString, USVString)
-PASS Unscopable handled correctly for pushState(any, DOMString, USVString) on History
 PASS History interface: operation replaceState(any, DOMString, USVString)
-PASS Unscopable handled correctly for replaceState(any, DOMString, USVString) on History
 PASS History must be primary interface of window.history
 PASS Stringification of window.history
 FAIL History interface: window.history must inherit property "index" with the proper type assert_inherits: property "index" not found in prototype chain
@@ -1001,7 +729,6 @@ PASS PopStateEvent interface: existence and properties of interface prototype ob
 PASS PopStateEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS PopStateEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS PopStateEvent interface: attribute state
-PASS Unscopable handled correctly for state property on PopStateEvent
 PASS PopStateEvent must be primary interface of new PopStateEvent("popstate", { data: {} })
 PASS Stringification of new PopStateEvent("popstate", { data: {} })
 PASS PopStateEvent interface: new PopStateEvent("popstate", { data: {} }) must inherit property "state" with the proper type
@@ -1012,9 +739,7 @@ PASS HashChangeEvent interface: existence and properties of interface prototype 
 PASS HashChangeEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS HashChangeEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS HashChangeEvent interface: attribute oldURL
-PASS Unscopable handled correctly for oldURL property on HashChangeEvent
 PASS HashChangeEvent interface: attribute newURL
-PASS Unscopable handled correctly for newURL property on HashChangeEvent
 PASS PageTransitionEvent interface: existence and properties of interface object
 PASS PageTransitionEvent interface object length
 PASS PageTransitionEvent interface object name
@@ -1022,7 +747,6 @@ PASS PageTransitionEvent interface: existence and properties of interface protot
 PASS PageTransitionEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS PageTransitionEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS PageTransitionEvent interface: attribute persisted
-PASS Unscopable handled correctly for persisted property on PageTransitionEvent
 PASS BeforeUnloadEvent interface: existence and properties of interface object
 PASS BeforeUnloadEvent interface object length
 PASS BeforeUnloadEvent interface object name
@@ -1030,7 +754,6 @@ PASS BeforeUnloadEvent interface: existence and properties of interface prototyp
 PASS BeforeUnloadEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS BeforeUnloadEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS BeforeUnloadEvent interface: attribute returnValue
-PASS Unscopable handled correctly for returnValue property on BeforeUnloadEvent
 PASS ApplicationCache interface: existence and properties of interface object
 PASS ApplicationCache interface object length
 PASS ApplicationCache interface object name
@@ -1050,29 +773,17 @@ PASS ApplicationCache interface: constant UPDATEREADY on interface prototype obj
 PASS ApplicationCache interface: constant OBSOLETE on interface object
 PASS ApplicationCache interface: constant OBSOLETE on interface prototype object
 PASS ApplicationCache interface: attribute status
-PASS Unscopable handled correctly for status property on ApplicationCache
 PASS ApplicationCache interface: operation update()
-PASS Unscopable handled correctly for update() on ApplicationCache
 PASS ApplicationCache interface: operation abort()
-PASS Unscopable handled correctly for abort() on ApplicationCache
 PASS ApplicationCache interface: operation swapCache()
-PASS Unscopable handled correctly for swapCache() on ApplicationCache
 PASS ApplicationCache interface: attribute onchecking
-PASS Unscopable handled correctly for onchecking property on ApplicationCache
 PASS ApplicationCache interface: attribute onerror
-PASS Unscopable handled correctly for onerror property on ApplicationCache
 PASS ApplicationCache interface: attribute onnoupdate
-PASS Unscopable handled correctly for onnoupdate property on ApplicationCache
 PASS ApplicationCache interface: attribute ondownloading
-PASS Unscopable handled correctly for ondownloading property on ApplicationCache
 PASS ApplicationCache interface: attribute onprogress
-PASS Unscopable handled correctly for onprogress property on ApplicationCache
 PASS ApplicationCache interface: attribute onupdateready
-PASS Unscopable handled correctly for onupdateready property on ApplicationCache
 PASS ApplicationCache interface: attribute oncached
-PASS Unscopable handled correctly for oncached property on ApplicationCache
 PASS ApplicationCache interface: attribute onobsolete
-PASS Unscopable handled correctly for onobsolete property on ApplicationCache
 PASS ApplicationCache must be primary interface of window.applicationCache
 PASS Stringification of window.applicationCache
 PASS ApplicationCache interface: window.applicationCache must inherit property "UNCACHED" with the proper type
@@ -1100,15 +811,10 @@ PASS ErrorEvent interface: existence and properties of interface prototype objec
 PASS ErrorEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS ErrorEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS ErrorEvent interface: attribute message
-PASS Unscopable handled correctly for message property on ErrorEvent
 PASS ErrorEvent interface: attribute filename
-PASS Unscopable handled correctly for filename property on ErrorEvent
 PASS ErrorEvent interface: attribute lineno
-PASS Unscopable handled correctly for lineno property on ErrorEvent
 PASS ErrorEvent interface: attribute colno
-PASS Unscopable handled correctly for colno property on ErrorEvent
 PASS ErrorEvent interface: attribute error
-PASS Unscopable handled correctly for error property on ErrorEvent
 PASS PromiseRejectionEvent interface: existence and properties of interface object
 PASS PromiseRejectionEvent interface object length
 PASS PromiseRejectionEvent interface object name
@@ -1116,9 +822,7 @@ PASS PromiseRejectionEvent interface: existence and properties of interface prot
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS PromiseRejectionEvent interface: attribute promise
-PASS Unscopable handled correctly for promise property on PromiseRejectionEvent
 PASS PromiseRejectionEvent interface: attribute reason
-PASS Unscopable handled correctly for reason property on PromiseRejectionEvent
 PASS Navigator interface: existence and properties of interface object
 PASS Navigator interface object length
 PASS Navigator interface object name
@@ -1126,47 +830,26 @@ PASS Navigator interface: existence and properties of interface prototype object
 PASS Navigator interface: existence and properties of interface prototype object's "constructor" property
 PASS Navigator interface: existence and properties of interface prototype object's @@unscopables property
 PASS Navigator interface: attribute appCodeName
-PASS Unscopable handled correctly for appCodeName property on Navigator
 PASS Navigator interface: attribute appName
-PASS Unscopable handled correctly for appName property on Navigator
 PASS Navigator interface: attribute appVersion
-PASS Unscopable handled correctly for appVersion property on Navigator
 PASS Navigator interface: attribute platform
-PASS Unscopable handled correctly for platform property on Navigator
 PASS Navigator interface: attribute product
-PASS Unscopable handled correctly for product property on Navigator
 PASS Navigator interface: attribute productSub
-PASS Unscopable handled correctly for productSub property on Navigator
 PASS Navigator interface: attribute userAgent
-PASS Unscopable handled correctly for userAgent property on Navigator
 PASS Navigator interface: attribute vendor
-PASS Unscopable handled correctly for vendor property on Navigator
 PASS Navigator interface: attribute vendorSub
-PASS Unscopable handled correctly for vendorSub property on Navigator
 FAIL Navigator interface: operation taintEnabled() assert_own_property: interface prototype object missing non-static operation expected property "taintEnabled" missing
-PASS Unscopable handled correctly for taintEnabled() on Navigator
 FAIL Navigator interface: attribute oscpu assert_true: The prototype object must have a property "oscpu" expected true got false
-PASS Unscopable handled correctly for oscpu property on Navigator
 PASS Navigator interface: attribute language
-PASS Unscopable handled correctly for language property on Navigator
 PASS Navigator interface: attribute languages
-PASS Unscopable handled correctly for languages property on Navigator
 PASS Navigator interface: attribute onLine
-PASS Unscopable handled correctly for onLine property on Navigator
 PASS Navigator interface: operation registerProtocolHandler(DOMString, USVString, DOMString)
-PASS Unscopable handled correctly for registerProtocolHandler(DOMString, USVString, DOMString) on Navigator
 PASS Navigator interface: operation unregisterProtocolHandler(DOMString, USVString)
-PASS Unscopable handled correctly for unregisterProtocolHandler(DOMString, USVString) on Navigator
 PASS Navigator interface: attribute cookieEnabled
-PASS Unscopable handled correctly for cookieEnabled property on Navigator
 PASS Navigator interface: attribute plugins
-PASS Unscopable handled correctly for plugins property on Navigator
 PASS Navigator interface: attribute mimeTypes
-PASS Unscopable handled correctly for mimeTypes property on Navigator
 PASS Navigator interface: operation javaEnabled()
-PASS Unscopable handled correctly for javaEnabled() on Navigator
 PASS Navigator interface: attribute hardwareConcurrency
-PASS Unscopable handled correctly for hardwareConcurrency property on Navigator
 PASS Navigator must be primary interface of window.navigator
 PASS Stringification of window.navigator
 PASS Navigator interface: window.navigator must inherit property "appCodeName" with the proper type
@@ -1199,13 +882,9 @@ PASS PluginArray interface: existence and properties of interface prototype obje
 PASS PluginArray interface: existence and properties of interface prototype object's "constructor" property
 PASS PluginArray interface: existence and properties of interface prototype object's @@unscopables property
 PASS PluginArray interface: operation refresh(boolean)
-PASS Unscopable handled correctly for refresh(boolean) on PluginArray
 PASS PluginArray interface: attribute length
-PASS Unscopable handled correctly for length property on PluginArray
 PASS PluginArray interface: operation item(unsigned long)
-PASS Unscopable handled correctly for item(unsigned long) on PluginArray
 PASS PluginArray interface: operation namedItem(DOMString)
-PASS Unscopable handled correctly for namedItem(DOMString) on PluginArray
 PASS MimeTypeArray interface: existence and properties of interface object
 PASS MimeTypeArray interface object length
 PASS MimeTypeArray interface object name
@@ -1213,11 +892,8 @@ PASS MimeTypeArray interface: existence and properties of interface prototype ob
 PASS MimeTypeArray interface: existence and properties of interface prototype object's "constructor" property
 PASS MimeTypeArray interface: existence and properties of interface prototype object's @@unscopables property
 PASS MimeTypeArray interface: attribute length
-PASS Unscopable handled correctly for length property on MimeTypeArray
 PASS MimeTypeArray interface: operation item(unsigned long)
-PASS Unscopable handled correctly for item(unsigned long) on MimeTypeArray
 PASS MimeTypeArray interface: operation namedItem(DOMString)
-PASS Unscopable handled correctly for namedItem(DOMString) on MimeTypeArray
 PASS Plugin interface: existence and properties of interface object
 PASS Plugin interface object length
 PASS Plugin interface object name
@@ -1225,17 +901,11 @@ PASS Plugin interface: existence and properties of interface prototype object
 PASS Plugin interface: existence and properties of interface prototype object's "constructor" property
 PASS Plugin interface: existence and properties of interface prototype object's @@unscopables property
 PASS Plugin interface: attribute name
-PASS Unscopable handled correctly for name property on Plugin
 PASS Plugin interface: attribute description
-PASS Unscopable handled correctly for description property on Plugin
 PASS Plugin interface: attribute filename
-PASS Unscopable handled correctly for filename property on Plugin
 PASS Plugin interface: attribute length
-PASS Unscopable handled correctly for length property on Plugin
 PASS Plugin interface: operation item(unsigned long)
-PASS Unscopable handled correctly for item(unsigned long) on Plugin
 PASS Plugin interface: operation namedItem(DOMString)
-PASS Unscopable handled correctly for namedItem(DOMString) on Plugin
 PASS MimeType interface: existence and properties of interface object
 PASS MimeType interface object length
 PASS MimeType interface object name
@@ -1243,13 +913,9 @@ PASS MimeType interface: existence and properties of interface prototype object
 PASS MimeType interface: existence and properties of interface prototype object's "constructor" property
 PASS MimeType interface: existence and properties of interface prototype object's @@unscopables property
 PASS MimeType interface: attribute type
-PASS Unscopable handled correctly for type property on MimeType
 PASS MimeType interface: attribute description
-PASS Unscopable handled correctly for description property on MimeType
 PASS MimeType interface: attribute suffixes
-PASS Unscopable handled correctly for suffixes property on MimeType
 PASS MimeType interface: attribute enabledPlugin
-PASS Unscopable handled correctly for enabledPlugin property on MimeType
 PASS ImageBitmap interface: existence and properties of interface object
 PASS ImageBitmap interface object length
 PASS ImageBitmap interface object name
@@ -1257,11 +923,8 @@ PASS ImageBitmap interface: existence and properties of interface prototype obje
 PASS ImageBitmap interface: existence and properties of interface prototype object's "constructor" property
 PASS ImageBitmap interface: existence and properties of interface prototype object's @@unscopables property
 PASS ImageBitmap interface: attribute width
-PASS Unscopable handled correctly for width property on ImageBitmap
 PASS ImageBitmap interface: attribute height
-PASS Unscopable handled correctly for height property on ImageBitmap
 PASS ImageBitmap interface: operation close()
-PASS Unscopable handled correctly for close() on ImageBitmap
 PASS MessageEvent interface: existence and properties of interface object
 PASS MessageEvent interface object length
 PASS MessageEvent interface object name
@@ -1269,17 +932,11 @@ PASS MessageEvent interface: existence and properties of interface prototype obj
 PASS MessageEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS MessageEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS MessageEvent interface: attribute data
-PASS Unscopable handled correctly for data property on MessageEvent
 PASS MessageEvent interface: attribute origin
-PASS Unscopable handled correctly for origin property on MessageEvent
 PASS MessageEvent interface: attribute lastEventId
-PASS Unscopable handled correctly for lastEventId property on MessageEvent
 PASS MessageEvent interface: attribute source
-PASS Unscopable handled correctly for source property on MessageEvent
 PASS MessageEvent interface: attribute ports
-PASS Unscopable handled correctly for ports property on MessageEvent
 PASS MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])
-PASS Unscopable handled correctly for initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on MessageEvent
 PASS MessageEvent must be primary interface of new MessageEvent("message", { data: 5 })
 PASS Stringification of new MessageEvent("message", { data: 5 })
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "data" with the proper type
@@ -1296,9 +953,7 @@ PASS EventSource interface: existence and properties of interface prototype obje
 PASS EventSource interface: existence and properties of interface prototype object's "constructor" property
 PASS EventSource interface: existence and properties of interface prototype object's @@unscopables property
 PASS EventSource interface: attribute url
-PASS Unscopable handled correctly for url property on EventSource
 PASS EventSource interface: attribute withCredentials
-PASS Unscopable handled correctly for withCredentials property on EventSource
 PASS EventSource interface: constant CONNECTING on interface object
 PASS EventSource interface: constant CONNECTING on interface prototype object
 PASS EventSource interface: constant OPEN on interface object
@@ -1306,15 +961,10 @@ PASS EventSource interface: constant OPEN on interface prototype object
 PASS EventSource interface: constant CLOSED on interface object
 PASS EventSource interface: constant CLOSED on interface prototype object
 PASS EventSource interface: attribute readyState
-PASS Unscopable handled correctly for readyState property on EventSource
 PASS EventSource interface: attribute onopen
-PASS Unscopable handled correctly for onopen property on EventSource
 PASS EventSource interface: attribute onmessage
-PASS Unscopable handled correctly for onmessage property on EventSource
 PASS EventSource interface: attribute onerror
-PASS Unscopable handled correctly for onerror property on EventSource
 PASS EventSource interface: operation close()
-PASS Unscopable handled correctly for close() on EventSource
 PASS WebSocket interface: existence and properties of interface object
 PASS WebSocket interface object length
 PASS WebSocket interface object name
@@ -1322,7 +972,6 @@ PASS WebSocket interface: existence and properties of interface prototype object
 PASS WebSocket interface: existence and properties of interface prototype object's "constructor" property
 PASS WebSocket interface: existence and properties of interface prototype object's @@unscopables property
 PASS WebSocket interface: attribute url
-PASS Unscopable handled correctly for url property on WebSocket
 PASS WebSocket interface: constant CONNECTING on interface object
 PASS WebSocket interface: constant CONNECTING on interface prototype object
 PASS WebSocket interface: constant OPEN on interface object
@@ -1332,33 +981,19 @@ PASS WebSocket interface: constant CLOSING on interface prototype object
 PASS WebSocket interface: constant CLOSED on interface object
 PASS WebSocket interface: constant CLOSED on interface prototype object
 PASS WebSocket interface: attribute readyState
-PASS Unscopable handled correctly for readyState property on WebSocket
 PASS WebSocket interface: attribute bufferedAmount
-PASS Unscopable handled correctly for bufferedAmount property on WebSocket
 PASS WebSocket interface: attribute onopen
-PASS Unscopable handled correctly for onopen property on WebSocket
 PASS WebSocket interface: attribute onerror
-PASS Unscopable handled correctly for onerror property on WebSocket
 PASS WebSocket interface: attribute onclose
-PASS Unscopable handled correctly for onclose property on WebSocket
 PASS WebSocket interface: attribute extensions
-PASS Unscopable handled correctly for extensions property on WebSocket
 PASS WebSocket interface: attribute protocol
-PASS Unscopable handled correctly for protocol property on WebSocket
 PASS WebSocket interface: operation close(unsigned short, USVString)
-PASS Unscopable handled correctly for close(unsigned short, USVString) on WebSocket
 PASS WebSocket interface: attribute onmessage
-PASS Unscopable handled correctly for onmessage property on WebSocket
 PASS WebSocket interface: attribute binaryType
-PASS Unscopable handled correctly for binaryType property on WebSocket
 PASS WebSocket interface: operation send(USVString)
-PASS Unscopable handled correctly for send(USVString) on WebSocket
 PASS WebSocket interface: operation send(Blob)
-PASS Unscopable handled correctly for send(Blob) on WebSocket
 PASS WebSocket interface: operation send(ArrayBuffer)
-PASS Unscopable handled correctly for send(ArrayBuffer) on WebSocket
 PASS WebSocket interface: operation send(ArrayBufferView)
-PASS Unscopable handled correctly for send(ArrayBufferView) on WebSocket
 PASS WebSocket must be primary interface of new WebSocket("wss://foo")
 PASS Stringification of new WebSocket("wss://foo")
 PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "url" with the proper type
@@ -1392,11 +1027,8 @@ PASS CloseEvent interface: existence and properties of interface prototype objec
 PASS CloseEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS CloseEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS CloseEvent interface: attribute wasClean
-PASS Unscopable handled correctly for wasClean property on CloseEvent
 PASS CloseEvent interface: attribute code
-PASS Unscopable handled correctly for code property on CloseEvent
 PASS CloseEvent interface: attribute reason
-PASS Unscopable handled correctly for reason property on CloseEvent
 PASS CloseEvent must be primary interface of new CloseEvent("close")
 PASS Stringification of new CloseEvent("close")
 PASS CloseEvent interface: new CloseEvent("close") must inherit property "wasClean" with the proper type
@@ -1409,9 +1041,7 @@ PASS MessageChannel interface: existence and properties of interface prototype o
 PASS MessageChannel interface: existence and properties of interface prototype object's "constructor" property
 PASS MessageChannel interface: existence and properties of interface prototype object's @@unscopables property
 PASS MessageChannel interface: attribute port1
-PASS Unscopable handled correctly for port1 property on MessageChannel
 PASS MessageChannel interface: attribute port2
-PASS Unscopable handled correctly for port2 property on MessageChannel
 PASS MessagePort interface: existence and properties of interface object
 PASS MessagePort interface object length
 PASS MessagePort interface object name
@@ -1419,15 +1049,10 @@ PASS MessagePort interface: existence and properties of interface prototype obje
 PASS MessagePort interface: existence and properties of interface prototype object's "constructor" property
 PASS MessagePort interface: existence and properties of interface prototype object's @@unscopables property
 PASS MessagePort interface: operation postMessage(any, [object Object])
-PASS Unscopable handled correctly for postMessage(any, [object Object]) on MessagePort
 PASS MessagePort interface: operation start()
-PASS Unscopable handled correctly for start() on MessagePort
 PASS MessagePort interface: operation close()
-PASS Unscopable handled correctly for close() on MessagePort
 PASS MessagePort interface: attribute onmessage
-PASS Unscopable handled correctly for onmessage property on MessagePort
 PASS MessagePort interface: attribute onmessageerror
-PASS Unscopable handled correctly for onmessageerror property on MessagePort
 PASS BroadcastChannel interface: existence and properties of interface object
 PASS BroadcastChannel interface object length
 PASS BroadcastChannel interface object name
@@ -1435,15 +1060,10 @@ PASS BroadcastChannel interface: existence and properties of interface prototype
 PASS BroadcastChannel interface: existence and properties of interface prototype object's "constructor" property
 PASS BroadcastChannel interface: existence and properties of interface prototype object's @@unscopables property
 PASS BroadcastChannel interface: attribute name
-PASS Unscopable handled correctly for name property on BroadcastChannel
 PASS BroadcastChannel interface: operation postMessage(any)
-PASS Unscopable handled correctly for postMessage(any) on BroadcastChannel
 PASS BroadcastChannel interface: operation close()
-PASS Unscopable handled correctly for close() on BroadcastChannel
 PASS BroadcastChannel interface: attribute onmessage
-PASS Unscopable handled correctly for onmessage property on BroadcastChannel
 PASS BroadcastChannel interface: attribute onmessageerror
-PASS Unscopable handled correctly for onmessageerror property on BroadcastChannel
 PASS WorkerGlobalScope interface: existence and properties of interface object
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface object
 PASS SharedWorkerGlobalScope interface: existence and properties of interface object
@@ -1454,15 +1074,10 @@ PASS Worker interface: existence and properties of interface prototype object
 PASS Worker interface: existence and properties of interface prototype object's "constructor" property
 PASS Worker interface: existence and properties of interface prototype object's @@unscopables property
 PASS Worker interface: operation terminate()
-PASS Unscopable handled correctly for terminate() on Worker
 PASS Worker interface: operation postMessage(any, [object Object])
-PASS Unscopable handled correctly for postMessage(any, [object Object]) on Worker
 PASS Worker interface: attribute onmessage
-PASS Unscopable handled correctly for onmessage property on Worker
 FAIL Worker interface: attribute onmessageerror assert_true: The prototype object must have a property "onmessageerror" expected true got false
-PASS Unscopable handled correctly for onmessageerror property on Worker
 PASS Worker interface: attribute onerror
-PASS Unscopable handled correctly for onerror property on Worker
 PASS SharedWorker interface: existence and properties of interface object
 PASS SharedWorker interface object length
 PASS SharedWorker interface object name
@@ -1470,9 +1085,7 @@ PASS SharedWorker interface: existence and properties of interface prototype obj
 PASS SharedWorker interface: existence and properties of interface prototype object's "constructor" property
 PASS SharedWorker interface: existence and properties of interface prototype object's @@unscopables property
 PASS SharedWorker interface: attribute port
-PASS Unscopable handled correctly for port property on SharedWorker
 PASS SharedWorker interface: attribute onerror
-PASS Unscopable handled correctly for onerror property on SharedWorker
 PASS WorkerNavigator interface: existence and properties of interface object
 PASS WorkerLocation interface: existence and properties of interface object
 PASS Storage interface: existence and properties of interface object
@@ -1482,17 +1095,11 @@ PASS Storage interface: existence and properties of interface prototype object
 PASS Storage interface: existence and properties of interface prototype object's "constructor" property
 PASS Storage interface: existence and properties of interface prototype object's @@unscopables property
 PASS Storage interface: attribute length
-PASS Unscopable handled correctly for length property on Storage
 PASS Storage interface: operation key(unsigned long)
-PASS Unscopable handled correctly for key(unsigned long) on Storage
 PASS Storage interface: operation getItem(DOMString)
-PASS Unscopable handled correctly for getItem(DOMString) on Storage
 PASS Storage interface: operation setItem(DOMString, DOMString)
-PASS Unscopable handled correctly for setItem(DOMString, DOMString) on Storage
 PASS Storage interface: operation removeItem(DOMString)
-PASS Unscopable handled correctly for removeItem(DOMString) on Storage
 PASS Storage interface: operation clear()
-PASS Unscopable handled correctly for clear() on Storage
 PASS StorageEvent interface: existence and properties of interface object
 PASS StorageEvent interface object length
 PASS StorageEvent interface object name
@@ -1500,157 +1107,82 @@ PASS StorageEvent interface: existence and properties of interface prototype obj
 PASS StorageEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS StorageEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS StorageEvent interface: attribute key
-PASS Unscopable handled correctly for key property on StorageEvent
 PASS StorageEvent interface: attribute oldValue
-PASS Unscopable handled correctly for oldValue property on StorageEvent
 PASS StorageEvent interface: attribute newValue
-PASS Unscopable handled correctly for newValue property on StorageEvent
 PASS StorageEvent interface: attribute url
-PASS Unscopable handled correctly for url property on StorageEvent
 PASS StorageEvent interface: attribute storageArea
-PASS Unscopable handled correctly for storageArea property on StorageEvent
 PASS Stringification of window.external
 PASS External interface: window.external must inherit property "AddSearchProvider()" with the proper type
 PASS External interface: window.external must inherit property "IsSearchProviderInstalled()" with the proper type
 PASS SVGElement interface: attribute onabort
-PASS Unscopable handled correctly for onabort property on SVGElement
 PASS SVGElement interface: attribute onauxclick
-PASS Unscopable handled correctly for onauxclick property on SVGElement
 PASS SVGElement interface: attribute onblur
-PASS Unscopable handled correctly for onblur property on SVGElement
 PASS SVGElement interface: attribute oncancel
-PASS Unscopable handled correctly for oncancel property on SVGElement
 PASS SVGElement interface: attribute oncanplay
-PASS Unscopable handled correctly for oncanplay property on SVGElement
 PASS SVGElement interface: attribute oncanplaythrough
-PASS Unscopable handled correctly for oncanplaythrough property on SVGElement
 PASS SVGElement interface: attribute onchange
-PASS Unscopable handled correctly for onchange property on SVGElement
 PASS SVGElement interface: attribute onclick
-PASS Unscopable handled correctly for onclick property on SVGElement
 PASS SVGElement interface: attribute onclose
-PASS Unscopable handled correctly for onclose property on SVGElement
 PASS SVGElement interface: attribute oncontextmenu
-PASS Unscopable handled correctly for oncontextmenu property on SVGElement
 PASS SVGElement interface: attribute oncuechange
-PASS Unscopable handled correctly for oncuechange property on SVGElement
 PASS SVGElement interface: attribute ondblclick
-PASS Unscopable handled correctly for ondblclick property on SVGElement
 PASS SVGElement interface: attribute ondrag
-PASS Unscopable handled correctly for ondrag property on SVGElement
 PASS SVGElement interface: attribute ondragend
-PASS Unscopable handled correctly for ondragend property on SVGElement
 PASS SVGElement interface: attribute ondragenter
-PASS Unscopable handled correctly for ondragenter property on SVGElement
 FAIL SVGElement interface: attribute ondragexit assert_true: The prototype object must have a property "ondragexit" expected true got false
-PASS Unscopable handled correctly for ondragexit property on SVGElement
 PASS SVGElement interface: attribute ondragleave
-PASS Unscopable handled correctly for ondragleave property on SVGElement
 PASS SVGElement interface: attribute ondragover
-PASS Unscopable handled correctly for ondragover property on SVGElement
 PASS SVGElement interface: attribute ondragstart
-PASS Unscopable handled correctly for ondragstart property on SVGElement
 PASS SVGElement interface: attribute ondrop
-PASS Unscopable handled correctly for ondrop property on SVGElement
 PASS SVGElement interface: attribute ondurationchange
-PASS Unscopable handled correctly for ondurationchange property on SVGElement
 PASS SVGElement interface: attribute onemptied
-PASS Unscopable handled correctly for onemptied property on SVGElement
 PASS SVGElement interface: attribute onended
-PASS Unscopable handled correctly for onended property on SVGElement
 PASS SVGElement interface: attribute onerror
-PASS Unscopable handled correctly for onerror property on SVGElement
 PASS SVGElement interface: attribute onfocus
-PASS Unscopable handled correctly for onfocus property on SVGElement
 PASS SVGElement interface: attribute oninput
-PASS Unscopable handled correctly for oninput property on SVGElement
 PASS SVGElement interface: attribute oninvalid
-PASS Unscopable handled correctly for oninvalid property on SVGElement
 PASS SVGElement interface: attribute onkeydown
-PASS Unscopable handled correctly for onkeydown property on SVGElement
 PASS SVGElement interface: attribute onkeypress
-PASS Unscopable handled correctly for onkeypress property on SVGElement
 PASS SVGElement interface: attribute onkeyup
-PASS Unscopable handled correctly for onkeyup property on SVGElement
 PASS SVGElement interface: attribute onload
-PASS Unscopable handled correctly for onload property on SVGElement
 PASS SVGElement interface: attribute onloadeddata
-PASS Unscopable handled correctly for onloadeddata property on SVGElement
 PASS SVGElement interface: attribute onloadedmetadata
-PASS Unscopable handled correctly for onloadedmetadata property on SVGElement
 FAIL SVGElement interface: attribute onloadend assert_true: The prototype object must have a property "onloadend" expected true got false
-PASS Unscopable handled correctly for onloadend property on SVGElement
 PASS SVGElement interface: attribute onloadstart
-PASS Unscopable handled correctly for onloadstart property on SVGElement
 PASS SVGElement interface: attribute onmousedown
-PASS Unscopable handled correctly for onmousedown property on SVGElement
 PASS SVGElement interface: attribute onmouseenter
-PASS Unscopable handled correctly for onmouseenter property on SVGElement
 PASS SVGElement interface: attribute onmouseleave
-PASS Unscopable handled correctly for onmouseleave property on SVGElement
 PASS SVGElement interface: attribute onmousemove
-PASS Unscopable handled correctly for onmousemove property on SVGElement
 PASS SVGElement interface: attribute onmouseout
-PASS Unscopable handled correctly for onmouseout property on SVGElement
 PASS SVGElement interface: attribute onmouseover
-PASS Unscopable handled correctly for onmouseover property on SVGElement
 PASS SVGElement interface: attribute onmouseup
-PASS Unscopable handled correctly for onmouseup property on SVGElement
 PASS SVGElement interface: attribute onwheel
-PASS Unscopable handled correctly for onwheel property on SVGElement
 PASS SVGElement interface: attribute onpause
-PASS Unscopable handled correctly for onpause property on SVGElement
 PASS SVGElement interface: attribute onplay
-PASS Unscopable handled correctly for onplay property on SVGElement
 PASS SVGElement interface: attribute onplaying
-PASS Unscopable handled correctly for onplaying property on SVGElement
 PASS SVGElement interface: attribute onprogress
-PASS Unscopable handled correctly for onprogress property on SVGElement
 PASS SVGElement interface: attribute onratechange
-PASS Unscopable handled correctly for onratechange property on SVGElement
 PASS SVGElement interface: attribute onreset
-PASS Unscopable handled correctly for onreset property on SVGElement
 PASS SVGElement interface: attribute onresize
-PASS Unscopable handled correctly for onresize property on SVGElement
 PASS SVGElement interface: attribute onscroll
-PASS Unscopable handled correctly for onscroll property on SVGElement
 FAIL SVGElement interface: attribute onsecuritypolicyviolation assert_true: The prototype object must have a property "onsecuritypolicyviolation" expected true got false
-PASS Unscopable handled correctly for onsecuritypolicyviolation property on SVGElement
 PASS SVGElement interface: attribute onseeked
-PASS Unscopable handled correctly for onseeked property on SVGElement
 PASS SVGElement interface: attribute onseeking
-PASS Unscopable handled correctly for onseeking property on SVGElement
 PASS SVGElement interface: attribute onselect
-PASS Unscopable handled correctly for onselect property on SVGElement
 PASS SVGElement interface: attribute onstalled
-PASS Unscopable handled correctly for onstalled property on SVGElement
 PASS SVGElement interface: attribute onsubmit
-PASS Unscopable handled correctly for onsubmit property on SVGElement
 PASS SVGElement interface: attribute onsuspend
-PASS Unscopable handled correctly for onsuspend property on SVGElement
 PASS SVGElement interface: attribute ontimeupdate
-PASS Unscopable handled correctly for ontimeupdate property on SVGElement
 PASS SVGElement interface: attribute ontoggle
-PASS Unscopable handled correctly for ontoggle property on SVGElement
 PASS SVGElement interface: attribute onvolumechange
-PASS Unscopable handled correctly for onvolumechange property on SVGElement
 PASS SVGElement interface: attribute onwaiting
-PASS Unscopable handled correctly for onwaiting property on SVGElement
 FAIL SVGElement interface: attribute oncopy assert_own_property: expected property "oncopy" missing
-PASS Unscopable handled correctly for oncopy property on SVGElement
 FAIL SVGElement interface: attribute oncut assert_own_property: expected property "oncut" missing
-PASS Unscopable handled correctly for oncut property on SVGElement
 FAIL SVGElement interface: attribute onpaste assert_own_property: expected property "onpaste" missing
-PASS Unscopable handled correctly for onpaste property on SVGElement
 PASS SVGElement interface: attribute dataset
-PASS Unscopable handled correctly for dataset property on SVGElement
 PASS SVGElement interface: attribute nonce
-PASS Unscopable handled correctly for nonce property on SVGElement
 PASS SVGElement interface: attribute tabIndex
-PASS Unscopable handled correctly for tabIndex property on SVGElement
 PASS SVGElement interface: operation focus(FocusOptions)
-PASS Unscopable handled correctly for focus(FocusOptions) on SVGElement
 PASS SVGElement interface: operation blur()
-PASS Unscopable handled correctly for blur() on SVGElement
 Harness: the test ran to completion.
 
