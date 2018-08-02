@@ -734,47 +734,35 @@ std::enable_if_t<!FunctorTraits<Functor>::is_nullable, bool> IsNull(
   return false;
 }
 
-// Used by ApplyCancellationTraits below.
+// Used by QueryCancellationTraits below.
 template <typename Functor, typename BoundArgsTuple, size_t... indices>
-bool ApplyCancellationTraitsIsCancelledImpl(const Functor& functor,
-                                            const BoundArgsTuple& bound_args,
-                                            std::index_sequence<indices...>) {
-  return CallbackCancellationTraits<Functor, BoundArgsTuple>::IsCancelled(
-      functor, std::get<indices>(bound_args)...);
+bool QueryCancellationTraitsImpl(BindStateBase::CancellationQueryMode mode,
+                                 const Functor& functor,
+                                 const BoundArgsTuple& bound_args,
+                                 std::index_sequence<indices...>) {
+  switch (mode) {
+    case BindStateBase::IS_CANCELLED:
+      return CallbackCancellationTraits<Functor, BoundArgsTuple>::IsCancelled(
+          functor, std::get<indices>(bound_args)...);
+    case BindStateBase::MAYBE_VALID:
+      return CallbackCancellationTraits<Functor, BoundArgsTuple>::MaybeValid(
+          functor, std::get<indices>(bound_args)...);
+  }
+  NOTREACHED();
 }
 
 // Relays |base| to corresponding CallbackCancellationTraits<>::Run(). Returns
 // true if the callback |base| represents is canceled.
 template <typename BindStateType>
-bool ApplyCancellationTraitsIsCancelled(const BindStateBase* base) {
+bool QueryCancellationTraits(const BindStateBase* base,
+                             BindStateBase::CancellationQueryMode mode) {
   const BindStateType* storage = static_cast<const BindStateType*>(base);
   static constexpr size_t num_bound_args =
       std::tuple_size<decltype(storage->bound_args_)>::value;
-  return ApplyCancellationTraitsIsCancelledImpl(
-      storage->functor_, storage->bound_args_,
+  return QueryCancellationTraitsImpl(
+      mode, storage->functor_, storage->bound_args_,
       std::make_index_sequence<num_bound_args>());
-};
-
-// Used by ApplyCancellationTraits below.
-template <typename Functor, typename BoundArgsTuple, size_t... indices>
-bool ApplyCancellationTraitsMaybeValidImpl(const Functor& functor,
-                                           const BoundArgsTuple& bound_args,
-                                           std::index_sequence<indices...>) {
-  return CallbackCancellationTraits<Functor, BoundArgsTuple>::MaybeValid(
-      functor, std::get<indices>(bound_args)...);
 }
-
-// Relays |base| to corresponding CallbackCancellationTraits<>::Run(). Returns
-// false if the callback |base| represents is guaranteed to be cancelled.
-template <typename BindStateType>
-bool ApplyCancellationTraitsMaybeValid(const BindStateBase* base) {
-  const BindStateType* storage = static_cast<const BindStateType*>(base);
-  static constexpr size_t num_bound_args =
-      std::tuple_size<decltype(storage->bound_args_)>::value;
-  return ApplyCancellationTraitsMaybeValidImpl(
-      storage->functor_, storage->bound_args_,
-      std::make_index_sequence<num_bound_args>());
-};
 
 // BindState<>
 //
@@ -809,8 +797,7 @@ struct BindState final : BindStateBase {
                      ForwardBoundArgs&&... bound_args)
       : BindStateBase(invoke_func,
                       &Destroy,
-                      &ApplyCancellationTraitsIsCancelled<BindState>,
-                      &ApplyCancellationTraitsMaybeValid<BindState>),
+                      &QueryCancellationTraits<BindState>),
         functor_(std::forward<ForwardFunctor>(functor)),
         bound_args_(std::forward<ForwardBoundArgs>(bound_args)...) {
     DCHECK(!IsNull(functor_));
