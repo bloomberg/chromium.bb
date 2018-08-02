@@ -4,57 +4,16 @@
 
 import boot_data
 import common
+import log_reader
 import logging
-import os
 import remote_cmd
-import subprocess
 import sys
-import tempfile
 import time
-import threading
-import Queue
+
 
 _SHUTDOWN_CMD = ['dm', 'poweroff']
 _ATTACH_MAX_RETRIES = 10
 _ATTACH_RETRY_INTERVAL = 1
-
-
-class LoglistenerReader(object):
-  """Helper class used to read loglistener output."""
-
-  def __init__(self, process):
-    self._process = process
-    self._queue = Queue.Queue()
-    self._thread = threading.Thread(target=self._read_thread)
-    self._thread.daemon = True
-    self._thread.start()
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, exception_type, exception_value, traceback):
-    self.close()
-
-  def _read_thread(self):
-    try:
-      while True:
-        line = self._process.stdout.readline()
-        if not line:
-            return
-        self._queue.put(line)
-    finally:
-      self._process.stdout.close()
-
-  def close(self):
-    self._process.kill()
-
-  def dump_logs(self):
-    while True:
-      try:
-        line = self._queue.get(block=False)
-        logging.info(line.strip())
-      except Queue.Empty:
-        return
 
 
 class FuchsiaTargetException(Exception):
@@ -70,6 +29,7 @@ class Target(object):
     self._started = False
     self._dry_run = False
     self._target_cpu = target_cpu
+    self._system_logs_reader = None
 
   # Functions used by the Python context manager for teardown.
   def __enter__(self):
@@ -185,19 +145,19 @@ class Target(object):
   def _AssertIsStarted(self):
     assert self.IsStarted()
 
+  def _SetSystemLogsReader(self, reader):
+    if self._system_logs_reader:
+      _system_logs_reader.Close()
+    self._system_logs_reader = reader
+
   def _WaitUntilReady(self, retries=_ATTACH_MAX_RETRIES):
     logging.info('Connecting to Fuchsia using SSH.')
-    loglistener_path = os.path.join(common.SDK_ROOT, 'tools', 'loglistener')
-    instance_id = boot_data.GetNodeName(self._output_dir)
-    process = subprocess.Popen([loglistener_path, instance_id],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT,
-                               stdin=open(os.devnull))
-    with LoglistenerReader(process) as loglistener_reader:
+
+    try:
       for retry in xrange(retries + 1):
-        if retry > 2:
-          # Log loglistener output after 2 failed SSH connection attempt.
-          loglistener_reader.dump_logs();
+        if retry == 2 and self._system_logs_reader:
+          # Log system logs after 2 failed SSH connection attempt.
+          self._system_logs_reader.RedirectTo(sys.stdout);
 
         host, port = self._GetEndpoint()
         if remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, ['true'],
@@ -206,7 +166,12 @@ class Target(object):
           self._started = True
           return True
         time.sleep(_ATTACH_RETRY_INTERVAL)
-      logging.error('Timeout limit reached.')
+    finally:
+      if self._system_logs_reader:
+        self._system_logs_reader.Close()
+        self._system_logs_reader = None
+
+    logging.error('Timeout limit reached.')
 
     raise FuchsiaTargetException('Couldn\'t connect using SSH.')
 

@@ -5,6 +5,7 @@
 """Implements commands for running and interacting with Fuchsia on QEMU."""
 
 import boot_data
+import log_reader
 import logging
 import target
 import os
@@ -60,6 +61,10 @@ class QemuTarget(target.Target):
     # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
     # noisy ANSI spew from the user's terminal emulator.
     kernel_args.append('TERM=dumb')
+
+    # Enable logging to the serial port. This is a temporary fix to investigate
+    # the root cause for https://crbug.com/869753 .
+    kernel_args.append('kernel.serial=legacy')
 
     qemu_command = [qemu_path,
         '-m', str(self._ram_size_mb),
@@ -133,10 +138,13 @@ class QemuTarget(target.Target):
     logging.debug('Launching QEMU.')
     logging.debug(' '.join(qemu_command))
 
-    stdio_flags = {'stdin': open(os.devnull),
-                   'stdout': open(os.devnull),
-                   'stderr': open(os.devnull)}
-    self._qemu_process = subprocess.Popen(qemu_command, **stdio_flags)
+    # QEMU stderr/stdout are redirected to LogReader to debug
+    # https://crbug.com/86975 .
+    self._qemu_process = subprocess.Popen(qemu_command, stdin=open(os.devnull),
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.STDOUT)
+    self._SetSystemLogsReader(
+        log_reader.LogReader(None, self._qemu_process.stdout))
     self._WaitUntilReady();
 
   def Shutdown(self):
