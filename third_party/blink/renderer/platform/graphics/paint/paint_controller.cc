@@ -211,10 +211,8 @@ const DisplayItem* PaintController::LastDisplayItem(unsigned offset) {
 void PaintController::ProcessNewItem(DisplayItem& display_item) {
   DCHECK(!construction_disabled_);
 
-  if (IsSkippingCache()) {
-    DCHECK_EQ(usage_, kMultiplePaints);
+  if (IsSkippingCache() && usage_ == kMultiplePaints)
     display_item.Client().Invalidate(PaintInvalidationReason::kUncacheable);
-  }
 
 #if DCHECK_IS_ON()
   bool chunk_added =
