@@ -17,6 +17,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -152,6 +153,53 @@ void SetDefaultContentSetting(ContentSetting setting,
                                    base::Value(setting), std::string(),
                                    false)});
 }
+
+// ProxyLookupClient that drives proxy lookups and can wait for the responses to
+// be received.
+class TestProxyLookupClient : public mojom::ProxyLookupClient {
+ public:
+  TestProxyLookupClient() : binding_(this) {}
+  ~TestProxyLookupClient() override = default;
+
+  void StartLookUpProxyForURL(const GURL& url,
+                              mojom::NetworkContext* network_context) {
+    // Make sure this method is called at most once.
+    EXPECT_FALSE(binding_.is_bound());
+
+    mojom::ProxyLookupClientPtr proxy_lookup_client;
+    binding_.Bind(mojo::MakeRequest(&proxy_lookup_client));
+    network_context->LookUpProxyForURL(url, std::move(proxy_lookup_client));
+  }
+
+  void WaitForResult() { run_loop_.Run(); }
+
+  // mojom::ProxyLookupClient implementation:
+  void OnProxyLookupComplete(
+      const base::Optional<net::ProxyInfo>& proxy_info) override {
+    EXPECT_FALSE(is_done_);
+    EXPECT_FALSE(proxy_info_);
+
+    is_done_ = true;
+    proxy_info_ = proxy_info;
+    binding_.Close();
+    run_loop_.Quit();
+  }
+
+  const base::Optional<net::ProxyInfo>& proxy_info() const {
+    return proxy_info_;
+  }
+  bool is_done() const { return is_done_; }
+
+ private:
+  mojo::Binding<mojom::ProxyLookupClient> binding_;
+
+  bool is_done_ = false;
+  base::Optional<net::ProxyInfo> proxy_info_;
+
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestProxyLookupClient);
+};
 
 class NetworkContextTest : public testing::Test,
                            public net::SSLConfigService::Observer {
@@ -1970,27 +2018,46 @@ TEST_F(NetworkContextTest, CookieManager) {
 }
 
 TEST_F(NetworkContextTest, ProxyConfig) {
-  // Create a bunch of proxy rules to switch between. All that matters is that
-  // they're all different. It's important that none of these configs require
+  // Each ProxyConfigSet consists of a net::ProxyConfig, and the net::ProxyInfos
+  // that it will result in for http and ftp URLs. All that matters is that each
+  // ProxyConfig is different. It's important that none of these configs require
   // fetching a PAC scripts, as this test checks
   // ProxyResolutionService::config(), which is only updated after fetching PAC
   // scripts (if applicable).
-  net::ProxyConfig proxy_configs[3];
-  proxy_configs[0].proxy_rules().ParseFromString("http=foopy:80");
-  proxy_configs[1].proxy_rules().ParseFromString("http=foopy:80;ftp=foopy2");
-  proxy_configs[2] = net::ProxyConfig::CreateDirect();
+  struct ProxyConfigSet {
+    net::ProxyConfig proxy_config;
+    net::ProxyInfo http_proxy_info;
+    net::ProxyInfo ftp_proxy_info;
+  } proxy_config_sets[3];
+
+  proxy_config_sets[0].proxy_config.proxy_rules().ParseFromString(
+      "http=foopy:80");
+  proxy_config_sets[0].http_proxy_info.UsePacString("PROXY foopy:80");
+  proxy_config_sets[0].ftp_proxy_info.UseDirect();
+
+  proxy_config_sets[1].proxy_config.proxy_rules().ParseFromString(
+      "http=foopy:80;ftp=foopy2");
+  proxy_config_sets[1].http_proxy_info.UsePacString("PROXY foopy:80");
+  proxy_config_sets[1].ftp_proxy_info.UsePacString("PROXY foopy2");
+
+  proxy_config_sets[2].proxy_config = net::ProxyConfig::CreateDirect();
+  proxy_config_sets[2].http_proxy_info.UseDirect();
+  proxy_config_sets[2].ftp_proxy_info.UseDirect();
 
   // Sanity check.
-  EXPECT_FALSE(proxy_configs[0].Equals(proxy_configs[1]));
-  EXPECT_FALSE(proxy_configs[0].Equals(proxy_configs[2]));
-  EXPECT_FALSE(proxy_configs[1].Equals(proxy_configs[2]));
+  EXPECT_FALSE(proxy_config_sets[0].proxy_config.Equals(
+      proxy_config_sets[1].proxy_config));
+  EXPECT_FALSE(proxy_config_sets[0].proxy_config.Equals(
+      proxy_config_sets[2].proxy_config));
+  EXPECT_FALSE(proxy_config_sets[1].proxy_config.Equals(
+      proxy_config_sets[2].proxy_config));
 
   // Try each proxy config as the initial config, to make sure setting the
   // initial config works.
-  for (const auto& initial_proxy_config : proxy_configs) {
+  for (const auto& initial_proxy_config_set : proxy_config_sets) {
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
-        initial_proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
+        initial_proxy_config_set.proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
     mojom::ProxyConfigClientPtr config_client;
     context_params->proxy_config_client_request =
         mojo::MakeRequest(&config_client);
@@ -1999,23 +2066,56 @@ TEST_F(NetworkContextTest, ProxyConfig) {
 
     net::ProxyResolutionService* proxy_resolution_service =
         network_context->url_request_context()->proxy_resolution_service();
-    // Kick the ProxyResolutionService into action, as it doesn't start updating
-    // its config until it's first used.
-    proxy_resolution_service->ForceReloadProxyConfig();
+    // Need to do proxy resolutions before can check the ProxyConfig, as the
+    // ProxyService doesn't start updating its config until it's first used.
+    // This also gives some test coverage of LookUpProxyForURL.
+    TestProxyLookupClient http_proxy_lookup_client;
+    http_proxy_lookup_client.StartLookUpProxyForURL(GURL("http://foo"),
+                                                    network_context.get());
+    http_proxy_lookup_client.WaitForResult();
+    ASSERT_TRUE(http_proxy_lookup_client.proxy_info());
+    EXPECT_EQ(initial_proxy_config_set.http_proxy_info.ToPacString(),
+              http_proxy_lookup_client.proxy_info()->ToPacString());
+
+    TestProxyLookupClient ftp_proxy_lookup_client;
+    ftp_proxy_lookup_client.StartLookUpProxyForURL(GURL("ftp://foo"),
+                                                   network_context.get());
+    ftp_proxy_lookup_client.WaitForResult();
+    ASSERT_TRUE(ftp_proxy_lookup_client.proxy_info());
+    EXPECT_EQ(initial_proxy_config_set.ftp_proxy_info.ToPacString(),
+              ftp_proxy_lookup_client.proxy_info()->ToPacString());
+
     EXPECT_TRUE(proxy_resolution_service->config());
     EXPECT_TRUE(proxy_resolution_service->config()->value().Equals(
-        initial_proxy_config));
+        initial_proxy_config_set.proxy_config));
 
     // Always go through the other configs in the same order. This has the
     // advantage of testing the case where there's no change, for
     // proxy_config[0].
-    for (const auto& proxy_config : proxy_configs) {
+    for (const auto& proxy_config_set : proxy_config_sets) {
       config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
-          proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
+          proxy_config_set.proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
       scoped_task_environment_.RunUntilIdle();
+
+      TestProxyLookupClient http_proxy_lookup_client2;
+      http_proxy_lookup_client2.StartLookUpProxyForURL(GURL("http://foo"),
+                                                       network_context.get());
+      http_proxy_lookup_client2.WaitForResult();
+      ASSERT_TRUE(http_proxy_lookup_client2.proxy_info());
+      EXPECT_EQ(proxy_config_set.http_proxy_info.ToPacString(),
+                http_proxy_lookup_client2.proxy_info()->ToPacString());
+
+      TestProxyLookupClient ftp_proxy_lookup_client2;
+      ftp_proxy_lookup_client2.StartLookUpProxyForURL(GURL("ftp://foo"),
+                                                      network_context.get());
+      ftp_proxy_lookup_client2.WaitForResult();
+      ASSERT_TRUE(ftp_proxy_lookup_client2.proxy_info());
+      EXPECT_EQ(proxy_config_set.ftp_proxy_info.ToPacString(),
+                ftp_proxy_lookup_client2.proxy_info()->ToPacString());
+
       EXPECT_TRUE(proxy_resolution_service->config());
-      EXPECT_TRUE(
-          proxy_resolution_service->config()->value().Equals(proxy_config));
+      EXPECT_TRUE(proxy_resolution_service->config()->value().Equals(
+          proxy_config_set.proxy_config));
     }
   }
 }
@@ -2055,26 +2155,88 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
   EXPECT_FALSE(proxy_resolution_service->fetched_config());
 
   // Before there's a proxy configuration, proxy requests should hang.
-  net::ProxyInfo proxy_info;
-  net::TestCompletionCallback test_callback;
-  std::unique_ptr<net::ProxyResolutionService::Request> request = nullptr;
-  ASSERT_EQ(net::ERR_IO_PENDING, proxy_resolution_service->ResolveProxy(
-                                     GURL("http://bar/"), "GET", &proxy_info,
-                                     test_callback.callback(), &request,
-                                     nullptr, net::NetLogWithSource()));
+  // Create two lookups, to make sure two simultaneous lookups can be handled at
+  // once.
+  TestProxyLookupClient http_proxy_lookup_client;
+  http_proxy_lookup_client.StartLookUpProxyForURL(GURL("http://foo/"),
+                                                  network_context.get());
+  TestProxyLookupClient ftp_proxy_lookup_client;
+  ftp_proxy_lookup_client.StartLookUpProxyForURL(GURL("ftp://foo/"),
+                                                 network_context.get());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(proxy_resolution_service->config());
   EXPECT_FALSE(proxy_resolution_service->fetched_config());
-  ASSERT_FALSE(test_callback.have_result());
+  EXPECT_FALSE(http_proxy_lookup_client.is_done());
+  EXPECT_FALSE(ftp_proxy_lookup_client.is_done());
+  EXPECT_EQ(2u, network_context->pending_proxy_lookup_requests_for_testing());
 
   net::ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString("http=foopy:80");
   config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
       proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
-  ASSERT_EQ(net::OK, test_callback.WaitForResult());
 
-  EXPECT_TRUE(proxy_info.is_http());
-  EXPECT_EQ("foopy", proxy_info.proxy_server().host_port_pair().host());
+  http_proxy_lookup_client.WaitForResult();
+  ASSERT_TRUE(http_proxy_lookup_client.proxy_info());
+  EXPECT_EQ("PROXY foopy:80",
+            http_proxy_lookup_client.proxy_info()->ToPacString());
+
+  ftp_proxy_lookup_client.WaitForResult();
+  ASSERT_TRUE(ftp_proxy_lookup_client.proxy_info());
+  EXPECT_EQ("DIRECT", ftp_proxy_lookup_client.proxy_info()->ToPacString());
+
+  EXPECT_EQ(0u, network_context->pending_proxy_lookup_requests_for_testing());
+}
+
+TEST_F(NetworkContextTest, DestroyedWithoutProxyConfig) {
+  // Create a NetworkContext without an initial proxy configuration.
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->initial_proxy_config.reset();
+  mojom::ProxyConfigClientPtr config_client;
+  context_params->proxy_config_client_request =
+      mojo::MakeRequest(&config_client);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  // Proxy requests should hang.
+  TestProxyLookupClient proxy_lookup_client;
+  proxy_lookup_client.StartLookUpProxyForURL(GURL("http://foo/"),
+                                             network_context.get());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1u, network_context->pending_proxy_lookup_requests_for_testing());
+  EXPECT_FALSE(proxy_lookup_client.is_done());
+
+  // Destroying the NetworkContext should cause the pending lookup to fail with
+  // ERR_ABORTED.
+  network_context.reset();
+  proxy_lookup_client.WaitForResult();
+  EXPECT_FALSE(proxy_lookup_client.proxy_info());
+}
+
+TEST_F(NetworkContextTest, CancelPendingProxyLookup) {
+  // Create a NetworkContext without an initial proxy configuration.
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->initial_proxy_config.reset();
+  mojom::ProxyConfigClientPtr config_client;
+  context_params->proxy_config_client_request =
+      mojo::MakeRequest(&config_client);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  // Proxy requests should hang.
+  std::unique_ptr<TestProxyLookupClient> proxy_lookup_client =
+      std::make_unique<TestProxyLookupClient>();
+  proxy_lookup_client->StartLookUpProxyForURL(GURL("http://foo/"),
+                                              network_context.get());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(proxy_lookup_client->is_done());
+  EXPECT_EQ(1u, network_context->pending_proxy_lookup_requests_for_testing());
+
+  // Cancelling the proxy lookup should cause the proxy lookup request objects
+  // to be deleted.
+  proxy_lookup_client.reset();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(0u, network_context->pending_proxy_lookup_requests_for_testing());
 }
 
 TEST_F(NetworkContextTest, PacQuickCheck) {

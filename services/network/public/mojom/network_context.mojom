@@ -16,6 +16,7 @@ import "services/network/public/mojom/ct_log_info.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/proxy_config_with_annotation.mojom";
+import "services/network/public/mojom/proxy_lookup_client.mojom";
 import "services/network/public/mojom/proxy_resolving_socket.mojom";
 import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
@@ -506,6 +507,10 @@ interface NetworkContext {
                   int32 render_frame_id,
                   url.mojom.Origin origin,
                   AuthenticationHandler? auth_handler);
+
+  // Looks up what proxy to use for a particular URL.
+  LookUpProxyForURL(url.mojom.Url url,
+                    ProxyLookupClient proxy_lookup_client);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.
   // Note that the log is generally global, including all NetworkContexts

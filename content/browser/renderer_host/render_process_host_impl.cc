@@ -1859,7 +1859,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(p2p_socket_dispatcher_host_.get());
 
   AddFilter(new TraceMessageFilter(GetID()));
-  AddFilter(new ResolveProxyMsgHelper(request_context.get()));
+  AddFilter(new ResolveProxyMsgHelper(GetID()));
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context(
       static_cast<ServiceWorkerContextWrapper*>(

@@ -64,6 +64,8 @@ component("network_service") {
     "network_usage_accumulator.h",
     "proxy_config_service_mojo.cc",
     "proxy_config_service_mojo.h",
+    "proxy_lookup_request.cc",
+    "proxy_lookup_request.h",
     "proxy_resolving_client_socket.cc",
     "proxy_resolving_client_socket.h",
     "proxy_resolving_client_socket_factory.cc",
