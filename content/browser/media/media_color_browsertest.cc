@@ -39,13 +39,7 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pTheora) {
 }
 #endif  // !defined(OS_ANDROID)
 
-// This fails on Linux: http://crbug.com/767926.
-#if defined(OS_LINUX)
-#define MAYBE_Yuv420pVp8 DISABLED_Yuv420pVp8
-#else
-#define MAYBE_Yuv420pVp8 Yuv420pVp8
-#endif
-IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pVp8) {
+IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pVp8) {
   RunColorTest("yuv420p.webm");
 }
 
