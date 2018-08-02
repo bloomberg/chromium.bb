@@ -48,9 +48,12 @@ void DisplayICCProfiles::UpdateIfNeeded() {
   error = CGGetActiveDisplayList(0, nullptr, &display_count);
   if (error != kCGErrorSuccess)
     return;
+  if (!display_count)
+    return;
 
   std::vector<CGDirectDisplayID> displays(display_count);
-  error = CGGetActiveDisplayList(displays.size(), &displays[0], &display_count);
+  error =
+      CGGetActiveDisplayList(displays.size(), displays.data(), &display_count);
   if (error != kCGErrorSuccess)
     return;
 
