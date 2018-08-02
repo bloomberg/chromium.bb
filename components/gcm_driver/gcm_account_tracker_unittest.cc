@@ -12,30 +12,16 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
 
 namespace {
-
-#if defined(OS_CHROMEOS)
-using SigninManagerForTest = FakeSigninManagerBase;
-#else
-using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
 
 const char kEmail1[] = "account_1@me.com";
 const char kEmail2[] = "account_2@me.com";
@@ -213,48 +199,18 @@ class GCMAccountTrackerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   net::TestURLFetcherFactory test_fetcher_factory_;
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  AccountTrackerService account_tracker_service_;
-  std::unique_ptr<TestSigninClient> test_signin_client_;
-  std::unique_ptr<SigninManagerForTest> fake_signin_manager_;
-  std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
-  std::unique_ptr<FakeGaiaCookieManagerService>
-      fake_gaia_cookie_manager_service_;
-  std::unique_ptr<identity::IdentityManager> identity_manager_;
+  identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<GCMAccountTracker> tracker_;
 };
 
 GCMAccountTrackerTest::GCMAccountTrackerTest() {
-  fake_token_service_.reset(new FakeProfileOAuth2TokenService());
-
-  test_signin_client_.reset(new TestSigninClient(&pref_service_));
-#if defined(OS_CHROMEOS)
-  fake_signin_manager_.reset(new SigninManagerForTest(
-      test_signin_client_.get(), &account_tracker_service_));
-#else
-  fake_signin_manager_.reset(new SigninManagerForTest(
-      test_signin_client_.get(), fake_token_service_.get(),
-      &account_tracker_service_, nullptr));
-#endif
-
-  fake_gaia_cookie_manager_service_.reset(new FakeGaiaCookieManagerService(
-      fake_token_service_.get(), "gcm_account_tracker_unittest",
-      test_signin_client_.get()));
-  AccountTrackerService::RegisterPrefs(pref_service_.registry());
-  SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
-  SigninManagerBase::RegisterPrefs(pref_service_.registry());
-  account_tracker_service_.Initialize(test_signin_client_.get());
-
-  identity_manager_ = std::make_unique<identity::IdentityManager>(
-      fake_signin_manager_.get(), fake_token_service_.get(),
-      &account_tracker_service_, fake_gaia_cookie_manager_service_.get());
-
   std::unique_ptr<AccountTracker> gaia_account_tracker(new AccountTracker(
-      identity_manager_.get(),
+      identity_test_env_.identity_manager(),
       new net::TestURLRequestContextGetter(message_loop_.task_runner())));
 
   tracker_.reset(new GCMAccountTracker(std::move(gaia_account_tracker),
-                                       identity_manager_.get(), &driver_));
+                                       identity_test_env_.identity_manager(),
+                                       &driver_));
 }
 
 GCMAccountTrackerTest::~GCMAccountTrackerTest() {
@@ -264,10 +220,7 @@ GCMAccountTrackerTest::~GCMAccountTrackerTest() {
 
 std::string GCMAccountTrackerTest::StartAccountAddition(
     const std::string& email) {
-  return identity::MakeAccountAvailable(&account_tracker_service_,
-                                        fake_token_service_.get(),
-                                        identity_manager_.get(), email)
-      .account_id;
+  return identity_test_env_.MakeAccountAvailable(email).account_id;
 }
 
 std::string GCMAccountTrackerTest::StartPrimaryAccountAddition(
@@ -279,10 +232,7 @@ std::string GCMAccountTrackerTest::StartPrimaryAccountAddition(
 // setting of the primary account is done afterward to check that the flow
 // that ensues from the GoogleSigninSucceeded callback firing works as
 // expected.
-return identity::MakePrimaryAccountAvailable(fake_signin_manager_.get(),
-                                             fake_token_service_.get(),
-                                             identity_manager_.get(), email)
-    .account_id;
+return identity_test_env_.MakePrimaryAccountAvailable(email).account_id;
 }
 
 void GCMAccountTrackerTest::FinishAccountAddition(
@@ -310,23 +260,22 @@ std::string GCMAccountTrackerTest::AddAccount(const std::string& email) {
 }
 
 void GCMAccountTrackerTest::RemoveAccount(const std::string& account_id) {
-  identity::RemoveRefreshTokenForAccount(fake_token_service_.get(),
-                                         identity_manager_.get(), account_id);
+  identity_test_env_.RemoveRefreshTokenForAccount(account_id);
 }
 
 void GCMAccountTrackerTest::IssueAccessToken(const std::string& account_id) {
-  fake_token_service_->IssueAllTokensForAccount(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       account_id, MakeAccessToken(account_id), base::Time::Max());
 }
 
 void GCMAccountTrackerTest::IssueExpiredAccessToken(
     const std::string& account_id) {
-  fake_token_service_->IssueAllTokensForAccount(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       account_id, MakeAccessToken(account_id), base::Time::Now());
 }
 
 void GCMAccountTrackerTest::IssueError(const std::string& account_id) {
-  fake_token_service_->IssueErrorForAllPendingRequestsForAccount(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
 }
