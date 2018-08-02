@@ -384,6 +384,30 @@ TEST_F(AccountTrackerTest, PrimaryLoginThenTokenAvailable) {
       observer()->CheckEvents(TrackingEvent(SIGN_IN, primary_account_id)));
 }
 
+TEST_F(AccountTrackerTest, PrimaryRevoke) {
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
+  NotifyTokenAvailable(primary_account_id);
+  ReturnOAuthUrlFetchSuccess(primary_account_id);
+  observer()->Clear();
+
+  NotifyTokenRevoked(primary_account_id);
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_OUT, primary_account_id)));
+}
+
+TEST_F(AccountTrackerTest, PrimaryRevokeThenTokenAvailable) {
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
+  NotifyTokenAvailable(primary_account_id);
+  ReturnOAuthUrlFetchSuccess(primary_account_id);
+  NotifyTokenRevoked(primary_account_id);
+  observer()->Clear();
+
+  NotifyTokenAvailable(primary_account_id);
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, primary_account_id)));
+}
+
+// These tests exercise true login/logout, which are not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
 TEST_F(AccountTrackerTest, PrimaryTokenAvailableThenLogin) {
   AddAccountWithToken(kPrimaryAccountEmail);
@@ -405,21 +429,7 @@ TEST_F(AccountTrackerTest, PrimaryTokenAvailableAndRevokedThenLogin) {
   SetActiveAccount(kPrimaryAccountEmail);
   EXPECT_TRUE(observer()->CheckEvents());
 }
-#endif
 
-TEST_F(AccountTrackerTest, PrimaryRevoke) {
-  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
-  NotifyTokenAvailable(primary_account_id);
-  ReturnOAuthUrlFetchSuccess(primary_account_id);
-  observer()->Clear();
-
-  NotifyTokenRevoked(primary_account_id);
-  EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(SIGN_OUT, primary_account_id)));
-}
-
-// This test uses a logout flow, not possible on ChromeOS.
-#if !defined(OS_CHROMEOS)
 TEST_F(AccountTrackerTest, PrimaryRevokeThenLogin) {
   std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
@@ -430,22 +440,7 @@ TEST_F(AccountTrackerTest, PrimaryRevokeThenLogin) {
   SetActiveAccount(kPrimaryAccountEmail);
   EXPECT_TRUE(observer()->CheckEvents());
 }
-#endif
 
-TEST_F(AccountTrackerTest, PrimaryRevokeThenTokenAvailable) {
-  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
-  NotifyTokenAvailable(primary_account_id);
-  ReturnOAuthUrlFetchSuccess(primary_account_id);
-  NotifyTokenRevoked(primary_account_id);
-  observer()->Clear();
-
-  NotifyTokenAvailable(primary_account_id);
-  EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(SIGN_IN, primary_account_id)));
-}
-
-// These tests exercise true login/logout, which are not possible on ChromeOS.
-#if !defined(OS_CHROMEOS)
 TEST_F(AccountTrackerTest, PrimaryLogoutThenRevoke) {
   std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
@@ -636,24 +631,6 @@ TEST_F(AccountTrackerTest, MultiNoEventsBeforeLogin) {
   EXPECT_TRUE(observer()->CheckEvents());
 }
 
-// This test exercises true login/logout, which are not possible on ChromeOS.
-#if !defined(OS_CHROMEOS)
-TEST_F(AccountTrackerTest, MultiLogoutRemovesAllAccounts) {
-  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
-  NotifyTokenAvailable(primary_account_id);
-  ReturnOAuthUrlFetchSuccess(primary_account_id);
-  std::string account_id = AddAccountWithToken("user@example.com");
-  ReturnOAuthUrlFetchSuccess(account_id);
-  observer()->Clear();
-
-  NotifyLogoutOfAllAccounts();
-  observer()->SortEventsByUser();
-  EXPECT_TRUE(
-      observer()->CheckEvents(TrackingEvent(SIGN_OUT, primary_account_id),
-                              TrackingEvent(SIGN_OUT, account_id)));
-}
-#endif
-
 TEST_F(AccountTrackerTest, MultiRevokePrimaryDoesNotRemoveAllAccounts) {
   std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
@@ -730,5 +707,23 @@ TEST_F(AccountTrackerTest, GetAccountsReturnNothingWhenPrimarySignedOut) {
   std::vector<AccountIds> ids = account_tracker()->GetAccounts();
   EXPECT_EQ(0ul, ids.size());
 }
+
+// This test exercises true login/logout, which are not possible on ChromeOS.
+#if !defined(OS_CHROMEOS)
+TEST_F(AccountTrackerTest, MultiLogoutRemovesAllAccounts) {
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
+  NotifyTokenAvailable(primary_account_id);
+  ReturnOAuthUrlFetchSuccess(primary_account_id);
+  std::string account_id = AddAccountWithToken("user@example.com");
+  ReturnOAuthUrlFetchSuccess(account_id);
+  observer()->Clear();
+
+  NotifyLogoutOfAllAccounts();
+  observer()->SortEventsByUser();
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_OUT, primary_account_id),
+                              TrackingEvent(SIGN_OUT, account_id)));
+}
+#endif
 
 }  // namespace gcm
