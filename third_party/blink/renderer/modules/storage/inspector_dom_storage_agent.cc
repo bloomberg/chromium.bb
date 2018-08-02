@@ -42,12 +42,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
-
 using protocol::Response;
-
-namespace DOMStorageAgentState {
-static const char kDomStorageAgentEnabled[] = "domStorageAgentEnabled";
-};
 
 static Response ToResponse(ExceptionState& exception_state) {
   if (!exception_state.HadException())
@@ -63,7 +58,8 @@ static Response ToResponse(ExceptionState& exception_state) {
 
 InspectorDOMStorageAgent::InspectorDOMStorageAgent(
     InspectedFrames* inspected_frames)
-    : inspected_frames_(inspected_frames), is_enabled_(false) {}
+    : inspected_frames_(inspected_frames),
+      enabled_(&agent_state_, /*default_value=*/false) {}
 
 InspectorDOMStorageAgent::~InspectorDOMStorageAgent() = default;
 
@@ -73,28 +69,28 @@ void InspectorDOMStorageAgent::Trace(blink::Visitor* visitor) {
 }
 
 void InspectorDOMStorageAgent::Restore() {
-  if (state_->booleanProperty(DOMStorageAgentState::kDomStorageAgentEnabled,
-                              false)) {
-    enable();
-  }
+  if (enabled_.Get())
+    InnerEnable();
 }
 
-Response InspectorDOMStorageAgent::enable() {
-  if (is_enabled_)
-    return Response::OK();
-  is_enabled_ = true;
-  state_->setBoolean(DOMStorageAgentState::kDomStorageAgentEnabled, true);
+void InspectorDOMStorageAgent::InnerEnable() {
   if (StorageNamespaceController* controller = StorageNamespaceController::From(
           inspected_frames_->Root()->GetPage()))
     controller->SetInspectorAgent(this);
+}
+
+Response InspectorDOMStorageAgent::enable() {
+  if (enabled_.Get())
+    return Response::OK();
+  enabled_.Set(true);
+  InnerEnable();
   return Response::OK();
 }
 
 Response InspectorDOMStorageAgent::disable() {
-  if (!is_enabled_)
+  if (!enabled_.Get())
     return Response::OK();
-  is_enabled_ = false;
-  state_->setBoolean(DOMStorageAgentState::kDomStorageAgentEnabled, false);
+  enabled_.Set(false);
   if (StorageNamespaceController* controller = StorageNamespaceController::From(
           inspected_frames_->Root()->GetPage()))
     controller->SetInspectorAgent(nullptr);

@@ -54,6 +54,7 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
                                   const SecurityOrigin*);
 
  private:
+  void InnerEnable();
 
   // InspectorBaseAgent overrides.
   void Restore() override;
@@ -84,7 +85,7 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
       bool is_local_storage);
 
   Member<InspectedFrames> inspected_frames_;
-  bool is_enabled_;
+  InspectorAgentState::Boolean enabled_;
 };
 
 }  // namespace blink
