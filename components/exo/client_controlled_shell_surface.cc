@@ -448,7 +448,8 @@ void ClientControlledShellSurface::SetCanMaximize(bool can_maximize) {
 void ClientControlledShellSurface::UpdateAutoHideFrame() {
   if (immersive_fullscreen_controller_) {
     bool enabled = (frame_type_ == SurfaceFrameType::AUTOHIDE &&
-                    GetWindowState()->IsMaximizedOrFullscreenOrPinned());
+                    (GetWindowState()->IsMaximizedOrFullscreenOrPinned() ||
+                     GetWindowState()->IsSnapped()));
     immersive_fullscreen_controller_->SetEnabled(
         ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enabled);
   }

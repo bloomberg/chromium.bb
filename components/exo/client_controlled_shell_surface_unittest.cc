@@ -1490,4 +1490,32 @@ TEST_F(ClientControlledShellSurfaceTest, AdjustBoundsLocally) {
   EXPECT_EQ(gfx::Rect(774, 0, 200, 300), requested_bounds);
 }
 
+TEST_F(ClientControlledShellSurfaceTest, SnappedInTabletMode) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+  auto* window = shell_surface->GetWidget()->GetNativeWindow();
+  auto* window_state = ash::wm::GetWindowState(window);
+
+  EnableTabletMode(true);
+
+  ash::wm::WMEvent event(ash::wm::WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&event);
+  EXPECT_EQ(window_state->GetStateType(),
+            ash::mojom::WindowStateType::LEFT_SNAPPED);
+
+  ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
+      shell_surface->GetWidget()->non_client_view()->frame_view());
+  // Snapped window can also use auto hide.
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetHeaderView()->in_immersive_mode());
+}
+
 }  // namespace exo
