@@ -255,7 +255,7 @@ TEST(NetworkContextCertTransparencyAuditingDisabledTest,
       0 /* options */, request, client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  client.RunUntilResponseReceived();
+  client.RunUntilComplete();
   EXPECT_TRUE(client.has_received_response());
   EXPECT_TRUE(client.has_received_completion());
 
@@ -390,7 +390,7 @@ TEST(NetworkContextCertTransparencyAuditingEnabledTest,
       0 /* options */, request, client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  client.RunUntilResponseReceived();
+  client.RunUntilComplete();
   EXPECT_TRUE(client.has_received_response());
   EXPECT_TRUE(client.has_received_completion());
 
