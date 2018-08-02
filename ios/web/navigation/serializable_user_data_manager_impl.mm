@@ -71,42 +71,14 @@ void SerializableUserDataImpl::Encode(NSCoder* coder) {
 }
 
 void SerializableUserDataImpl::Decode(NSCoder* coder) {
-  NSMutableDictionary<NSString*, id<NSCoding>>* data =
-      [[coder decodeObjectForKey:kSerializedUserDataKey] mutableCopy];
-  if (!data) {
-    // Sessions saved with version M-57 or earlier do not have a serialized
-    // user data. Ensure that |data| is non-null.
-    // TODO(crbug.com/661633): remove this once migration from version M-57
-    // or earlier is no longer supported.
-    data = [NSMutableDictionary dictionary];
+  data_ = [[coder decodeObjectForKey:kSerializedUserDataKey] mutableCopy];
+  if (!data_) {
+    // Ensure that there is always a dictionary even if there was no data
+    // loaded from the coder (this can happen during unit testing or when
+    // loading really old session).
+    data_ = [NSMutableDictionary dictionary];
   }
-  [data addEntriesFromDictionary:GetDecodedLegacyValues(coder)];
-  data_ = [data copy];
   DCHECK(data_);
-}
-
-// static
-NSDictionary<NSString*, NSString*>*
-SerializableUserDataImpl::GetLegacyKeyConversion() {
-  // TODO(crbug.com/661633): those mappings where introduced between M57 and
-  // M58, so remove them after M67 has shipped to stable.
-  return @{
-    @"openerNavigationIndex" : @"OpenerNavigationIndex",
-  };
-}
-
-NSDictionary<NSString*, id<NSCoding>>*
-SerializableUserDataImpl::GetDecodedLegacyValues(NSCoder* coder) {
-  NSMutableDictionary<NSString*, id<NSCoding>>* legacy_values =
-      [[NSMutableDictionary alloc] init];
-  NSDictionary<NSString*, NSString*>* legacy_key_conversion =
-      GetLegacyKeyConversion();
-  for (NSString* legacy_key in [legacy_key_conversion allKeys]) {
-    id<NSCoding> value = [coder decodeObjectForKey:legacy_key];
-    NSString* new_key = [legacy_key_conversion objectForKey:legacy_key];
-    legacy_values[new_key] = value;
-  }
-  return [legacy_values copy];
 }
 
 // static

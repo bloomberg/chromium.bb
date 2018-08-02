@@ -26,19 +26,7 @@ class SerializableUserDataImpl : public SerializableUserData {
   // Returns the serializable data.
   NSDictionary<NSString*, id<NSCoding>>* data() { return data_; }
 
-  // Returns the dictionary mapping the key of value that used to be persisted
-  // directly in CRWSessionStorate to the corresponding key when serialised in
-  // SerializableUserData.
-  // TODO(crbug.com/691800): Remove legacy support.
-  static NSDictionary<NSString*, NSString*>* GetLegacyKeyConversion();
-
  private:
-  // Decodes the values that were previously encoded using CRWSessionStorage's
-  // NSCoding implementation and returns an NSDictionary using the new
-  // serialization keys.
-  // TODO(crbug.com/691800): Remove legacy support.
-  NSDictionary<NSString*, id<NSCoding>>* GetDecodedLegacyValues(NSCoder* coder);
-
   // The dictionary passed on initialization.  After calling Decode(), this will
   // contain the data that is decoded from the NSCoder.
   NSDictionary<NSString*, id<NSCoding>>* data_;
