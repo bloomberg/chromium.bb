@@ -10,6 +10,7 @@ aggregate_vector_icons("ash_vector_icons") {
 
   icons = [
     "assistant.icon",
+    "auto_hide.icon",
     "captive_portal.icon",
     "check_circle.icon",
     "dictation_menu.icon",
@@ -101,6 +102,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "shelf_overflow.icon",
     "shelf_overflow_horizontal_dots.icon",
     "shelf_overview.icon",
+    "shelf_position.icon",
     "shelf_shutdown_button.icon",
     "shelf_sign_out_button.icon",
     "shelf_unlock_button.icon",
@@ -214,6 +216,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "unified_menu_volume_medium.icon",
     "unified_menu_volume_mute.icon",
     "unified_menu_vpn.icon",
+    "wallpaper.icon",
     "window_control_back.icon",
     "window_control_dezoom.icon",
     "window_control_menu.icon",
