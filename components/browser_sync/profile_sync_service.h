@@ -307,10 +307,11 @@ class ProfileSyncService : public syncer::SyncService,
   GetSessionSyncControllerDelegateOnUIThread();
 
   // Returns the ModelTypeControllerDelegate for syncer::DEVICE_INFO.
-  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetDeviceInfoSyncControllerDelegateOnUIThread();
 
   // Returns synced devices tracker.
+  // Virtual for testing.
   virtual syncer::DeviceInfoTracker* GetDeviceInfoTracker() const;
 
   // SyncEngineHost implementation.
@@ -368,7 +369,7 @@ class ProfileSyncService : public syncer::SyncService,
   // (i.e., only for reconfigurations). The reason we don't initialize the
   // engine is because if we had encountered an unrecoverable error we don't
   // want to startup once more.
-  virtual void ReconfigureDatatypeManager();
+  void ReconfigureDatatypeManager();
 
   syncer::PassphraseRequiredReason passphrase_required_reason_for_test() const {
     return crypto_->passphrase_required_reason();
@@ -387,6 +388,7 @@ class ProfileSyncService : public syncer::SyncService,
   // confirmation dialog hasn't been shown. Note that once the dialog is
   // showing (i.e. IsFirstSetupInProgress() is true), this will return false.
   // TODO(crbug.com/839834): This method is somewhat misnamed.
+  // Virtual for testing.
   virtual bool IsSyncConfirmationNeeded() const;
 
   // syncer::UnrecoverableErrorHandler implementation.
@@ -418,9 +420,11 @@ class ProfileSyncService : public syncer::SyncService,
   // should be advertised to the user).  These will typically only change
   // via a command-line option.  See class comment for more on what it means
   // for a datatype to be Registered.
+  // Virtual for testing.
   virtual syncer::ModelTypeSet GetRegisteredDataTypes() const;
 
   // See the SyncServiceCrypto header.
+  // Virtual for testing.
   virtual syncer::PassphraseType GetPassphraseType() const;
   virtual bool IsEncryptEverythingAllowed() const;
   virtual void SetEncryptEverythingAllowed(bool allowed);
@@ -448,6 +452,7 @@ class ProfileSyncService : public syncer::SyncService,
   void OverrideNetworkResourcesForTest(
       std::unique_ptr<syncer::NetworkResources> network_resources);
 
+  // Virtual for testing.
   virtual bool IsDataTypeControllerRunning(syncer::ModelType type) const;
 
   // This triggers a Directory::SaveChanges() call on the sync thread.
@@ -474,9 +479,12 @@ class ProfileSyncService : public syncer::SyncService,
   void ClearServerDataForTest(const base::Closure& callback);
 
  private:
+  // Virtual for testing.
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
+
   syncer::SyncEngine::HttpPostProviderFactoryGetter
   MakeHttpPostProviderFactoryGetter();
+
   syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
   GetUnrecoverableErrorHandler();
 
@@ -544,6 +552,7 @@ class ProfileSyncService : public syncer::SyncService,
   void ClearUnrecoverableError();
 
   // Kicks off asynchronous initialization of the SyncEngine.
+  // Virtual for testing.
   virtual void StartUpSlowEngineComponents();
 
   // Collects preferred sync data types from |preference_providers_|.
