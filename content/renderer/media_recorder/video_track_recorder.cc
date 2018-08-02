@@ -454,7 +454,7 @@ void VideoTrackRecorder::InitializeEncoder(
                                                     input_size.height())) {
     UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", true);
     const auto vea_profile = GetCodecEnumerator()->CodecIdToVEAProfile(codec);
-    encoder_ = new VEAEncoder(
+    encoder_ = VEAEncoder::Create(
         on_encoded_video_callback,
         media::BindToCurrentLoop(base::Bind(&VideoTrackRecorder::OnError,
                                             weak_ptr_factory_.GetWeakPtr())),
