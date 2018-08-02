@@ -26,50 +26,21 @@ using indexed_db::mojom::CursorAssociatedPtrInfo;
 
 namespace content {
 
-class WebIDBCursorImpl::IOThreadHelper {
- public:
-  explicit IOThreadHelper(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~IOThreadHelper();
-
-  void Bind(CursorAssociatedPtrInfo cursor_info);
-  void Advance(uint32_t count,
-               std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
-  void Continue(const IndexedDBKey& key,
-                const IndexedDBKey& primary_key,
-                std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
-  void Prefetch(int32_t count,
-                std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
-  void PrefetchReset(int32_t used_prefetches, int32_t unused_prefetches);
-
- private:
-  CallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
-
-  indexed_db::mojom::CursorAssociatedPtr cursor_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
-};
-
 WebIDBCursorImpl::WebIDBCursorImpl(
     indexed_db::mojom::CursorAssociatedPtrInfo cursor_info,
     int64_t transaction_id,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
     : transaction_id_(transaction_id),
-      helper_(new IOThreadHelper(io_runner)),
       io_runner_(std::move(io_runner)),
       callback_runner_(std::move(callback_runner)),
+      cursor_(std::move(cursor_info)),
       continue_count_(0),
       used_prefetches_(0),
       pending_onsuccess_callbacks_(0),
       prefetch_amount_(kMinPrefetchAmount),
       weak_factory_(this) {
   IndexedDBDispatcher::ThreadSpecificInstance()->RegisterCursor(this);
-  io_runner_->PostTask(FROM_HERE, base::BindOnce(&IOThreadHelper::Bind,
-                                                 base::Unretained(helper_),
-                                                 std::move(cursor_info)));
 }
 
 WebIDBCursorImpl::~WebIDBCursorImpl() {
@@ -78,7 +49,6 @@ WebIDBCursorImpl::~WebIDBCursorImpl() {
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
   IndexedDBDispatcher::ThreadSpecificInstance()->UnregisterCursor(this);
-  io_runner_->DeleteSoon(FROM_HERE, helper_);
 }
 
 void WebIDBCursorImpl::Advance(unsigned long count,
@@ -97,10 +67,7 @@ void WebIDBCursorImpl::Advance(unsigned long count,
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
       io_runner_, callback_runner_);
-  io_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IOThreadHelper::Advance, base::Unretained(helper_), count,
-                     std::move(callbacks_impl)));
+  cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
 void WebIDBCursorImpl::Continue(WebIDBKeyView key,
@@ -126,10 +93,8 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
       auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
           std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
           io_runner_, callback_runner_);
-      io_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&IOThreadHelper::Prefetch, base::Unretained(helper_),
-                         prefetch_amount_, std::move(callbacks_impl)));
+      cursor_->Prefetch(prefetch_amount_,
+                        GetCallbacksProxy(std::move(callbacks_impl)));
 
       // Increase prefetch_amount_ exponentially.
       prefetch_amount_ *= 2;
@@ -150,12 +115,9 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
       io_runner_, callback_runner_);
-  io_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IOThreadHelper::Continue, base::Unretained(helper_),
-                     IndexedDBKeyBuilder::Build(key),
-                     IndexedDBKeyBuilder::Build(primary_key),
-                     std::move(callbacks_impl)));
+  cursor_->Continue(IndexedDBKeyBuilder::Build(key),
+                    IndexedDBKeyBuilder::Build(primary_key),
+                    GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
 void WebIDBCursorImpl::PostSuccessHandlerCallback() {
@@ -239,10 +201,7 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   }
 
   // Reset the back-end cursor.
-  io_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IOThreadHelper::PrefetchReset, base::Unretained(helper_),
-                     used_prefetches_, prefetch_keys_.size()));
+  cursor_->PrefetchReset(used_prefetches_, prefetch_keys_.size());
 
   // Reset the prefetch cache.
   prefetch_keys_.clear();
@@ -252,43 +211,7 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   pending_onsuccess_callbacks_ = 0;
 }
 
-WebIDBCursorImpl::IOThreadHelper::IOThreadHelper(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)) {}
-
-WebIDBCursorImpl::IOThreadHelper::~IOThreadHelper() {}
-
-void WebIDBCursorImpl::IOThreadHelper::Bind(
-    CursorAssociatedPtrInfo cursor_info) {
-  cursor_.Bind(std::move(cursor_info), task_runner_);
-}
-
-void WebIDBCursorImpl::IOThreadHelper::Advance(
-    uint32_t count,
-    std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
-  cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks)));
-}
-
-void WebIDBCursorImpl::IOThreadHelper::Continue(
-    const IndexedDBKey& key,
-    const IndexedDBKey& primary_key,
-    std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
-  cursor_->Continue(key, primary_key, GetCallbacksProxy(std::move(callbacks)));
-}
-
-void WebIDBCursorImpl::IOThreadHelper::Prefetch(
-    int32_t count,
-    std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
-  cursor_->Prefetch(count, GetCallbacksProxy(std::move(callbacks)));
-}
-
-void WebIDBCursorImpl::IOThreadHelper::PrefetchReset(
-    int32_t used_prefetches,
-    int32_t unused_prefetches) {
-  cursor_->PrefetchReset(used_prefetches, unused_prefetches);
-}
-
-CallbacksAssociatedPtrInfo WebIDBCursorImpl::IOThreadHelper::GetCallbacksProxy(
+CallbacksAssociatedPtrInfo WebIDBCursorImpl::GetCallbacksProxy(
     std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
   CallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
