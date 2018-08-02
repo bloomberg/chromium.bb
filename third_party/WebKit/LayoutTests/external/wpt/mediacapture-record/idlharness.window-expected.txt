@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 87 tests; 77 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 67 tests; 57 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS mediastream-recording interfaces
 PASS MediaRecorder interface: existence and properties of interface object
 PASS MediaRecorder interface object length
@@ -8,39 +8,22 @@ PASS MediaRecorder interface: existence and properties of interface prototype ob
 PASS MediaRecorder interface: existence and properties of interface prototype object's "constructor" property
 PASS MediaRecorder interface: existence and properties of interface prototype object's @@unscopables property
 PASS MediaRecorder interface: attribute stream
-PASS Unscopable handled correctly for stream property on MediaRecorder
 PASS MediaRecorder interface: attribute mimeType
-PASS Unscopable handled correctly for mimeType property on MediaRecorder
 PASS MediaRecorder interface: attribute state
-PASS Unscopable handled correctly for state property on MediaRecorder
 PASS MediaRecorder interface: attribute onstart
-PASS Unscopable handled correctly for onstart property on MediaRecorder
 PASS MediaRecorder interface: attribute onstop
-PASS Unscopable handled correctly for onstop property on MediaRecorder
 PASS MediaRecorder interface: attribute ondataavailable
-PASS Unscopable handled correctly for ondataavailable property on MediaRecorder
 PASS MediaRecorder interface: attribute onpause
-PASS Unscopable handled correctly for onpause property on MediaRecorder
 PASS MediaRecorder interface: attribute onresume
-PASS Unscopable handled correctly for onresume property on MediaRecorder
 PASS MediaRecorder interface: attribute onerror
-PASS Unscopable handled correctly for onerror property on MediaRecorder
 PASS MediaRecorder interface: attribute videoBitsPerSecond
-PASS Unscopable handled correctly for videoBitsPerSecond property on MediaRecorder
 PASS MediaRecorder interface: attribute audioBitsPerSecond
-PASS Unscopable handled correctly for audioBitsPerSecond property on MediaRecorder
 PASS MediaRecorder interface: operation start(long)
-PASS Unscopable handled correctly for start(long) on MediaRecorder
 PASS MediaRecorder interface: operation stop()
-PASS Unscopable handled correctly for stop() on MediaRecorder
 PASS MediaRecorder interface: operation pause()
-PASS Unscopable handled correctly for pause() on MediaRecorder
 PASS MediaRecorder interface: operation resume()
-PASS Unscopable handled correctly for resume() on MediaRecorder
 PASS MediaRecorder interface: operation requestData()
-PASS Unscopable handled correctly for requestData() on MediaRecorder
 PASS MediaRecorder interface: operation isTypeSupported(DOMString)
-PASS Unscopable handled correctly for isTypeSupported(DOMString) on MediaRecorder
 PASS MediaRecorder must be primary interface of [object MediaRecorder]
 PASS Stringification of [object MediaRecorder]
 PASS MediaRecorder interface: [object MediaRecorder] must inherit property "stream" with the proper type
@@ -69,9 +52,7 @@ PASS BlobEvent interface: existence and properties of interface prototype object
 PASS BlobEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS BlobEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS BlobEvent interface: attribute data
-PASS Unscopable handled correctly for data property on BlobEvent
 PASS BlobEvent interface: attribute timecode
-PASS Unscopable handled correctly for timecode property on BlobEvent
 PASS BlobEvent must be primary interface of [object BlobEvent]
 PASS Stringification of [object BlobEvent]
 PASS BlobEvent interface: [object BlobEvent] must inherit property "data" with the proper type
@@ -83,7 +64,6 @@ FAIL MediaRecorderErrorEvent interface: existence and properties of interface pr
 FAIL MediaRecorderErrorEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "MediaRecorderErrorEvent" expected property "MediaRecorderErrorEvent" missing
 FAIL MediaRecorderErrorEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "MediaRecorderErrorEvent" expected property "MediaRecorderErrorEvent" missing
 FAIL MediaRecorderErrorEvent interface: attribute error assert_own_property: self does not have own property "MediaRecorderErrorEvent" expected property "MediaRecorderErrorEvent" missing
-PASS Unscopable handled correctly for error property on MediaRecorderErrorEvent
 FAIL MediaRecorderErrorEvent must be primary interface of undefined assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL Stringification of undefined assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL MediaRecorderErrorEvent interface: undefined must inherit property "error" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"

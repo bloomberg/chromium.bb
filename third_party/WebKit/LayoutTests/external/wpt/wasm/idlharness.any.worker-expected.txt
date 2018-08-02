@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 78 tests; 22 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 66 tests; 10 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS wasm-js-api interfaces.
 FAIL WebAssembly namespace: operation validate(BufferSource) assert_true: property should be enumerable expected true got false
 FAIL WebAssembly namespace: operation compile(BufferSource) assert_true: property should be enumerable expected true got false
@@ -12,11 +12,8 @@ FAIL Module interface: existence and properties of interface prototype object as
 FAIL Module interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "Module" expected property "Module" missing
 FAIL Module interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "Module" expected property "Module" missing
 FAIL Module interface: operation exports(Module) assert_own_property: self does not have own property "Module" expected property "Module" missing
-PASS Unscopable handled correctly for exports(Module) on Module
 FAIL Module interface: operation imports(Module) assert_own_property: self does not have own property "Module" expected property "Module" missing
-PASS Unscopable handled correctly for imports(Module) on Module
 FAIL Module interface: operation customSections(Module, USVString) assert_own_property: self does not have own property "Module" expected property "Module" missing
-PASS Unscopable handled correctly for customSections(Module, USVString) on Module
 FAIL Module must be primary interface of mod assert_own_property: self does not have own property "Module" expected property "Module" missing
 FAIL Stringification of mod assert_equals: class string of mod expected "[object Module]" but got "[object WebAssembly.Module]"
 PASS Module interface: mod must inherit property "exports(Module)" with the proper type
@@ -32,7 +29,6 @@ FAIL Instance interface: existence and properties of interface prototype object 
 FAIL Instance interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "Instance" expected property "Instance" missing
 FAIL Instance interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "Instance" expected property "Instance" missing
 FAIL Instance interface: attribute exports assert_own_property: self does not have own property "Instance" expected property "Instance" missing
-PASS Unscopable handled correctly for exports property on Instance
 FAIL Instance must be primary interface of instance assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: instance is not defined"
 FAIL Stringification of instance assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: instance is not defined"
 FAIL Instance interface: instance must inherit property "exports" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: instance is not defined"
@@ -43,9 +39,7 @@ FAIL Memory interface: existence and properties of interface prototype object as
 FAIL Memory interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "Memory" expected property "Memory" missing
 FAIL Memory interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "Memory" expected property "Memory" missing
 FAIL Memory interface: operation grow(unsigned long) assert_own_property: self does not have own property "Memory" expected property "Memory" missing
-PASS Unscopable handled correctly for grow(unsigned long) on Memory
 FAIL Memory interface: attribute buffer assert_own_property: self does not have own property "Memory" expected property "Memory" missing
-PASS Unscopable handled correctly for buffer property on Memory
 FAIL Memory must be primary interface of memory assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: memory is not defined"
 FAIL Stringification of memory assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: memory is not defined"
 FAIL Memory interface: memory must inherit property "grow(unsigned long)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: memory is not defined"
@@ -58,13 +52,9 @@ FAIL Table interface: existence and properties of interface prototype object ass
 FAIL Table interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "Table" expected property "Table" missing
 FAIL Table interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "Table" expected property "Table" missing
 FAIL Table interface: operation grow(unsigned long) assert_own_property: self does not have own property "Table" expected property "Table" missing
-PASS Unscopable handled correctly for grow(unsigned long) on Table
 FAIL Table interface: operation get(unsigned long) assert_own_property: self does not have own property "Table" expected property "Table" missing
-PASS Unscopable handled correctly for get(unsigned long) on Table
 FAIL Table interface: operation set(unsigned long, Function) assert_own_property: self does not have own property "Table" expected property "Table" missing
-PASS Unscopable handled correctly for set(unsigned long, Function) on Table
 FAIL Table interface: attribute length assert_own_property: self does not have own property "Table" expected property "Table" missing
-PASS Unscopable handled correctly for length property on Table
 FAIL Global interface: existence and properties of interface object assert_own_property: self does not have own property "Global" expected property "Global" missing
 FAIL Global interface object length assert_own_property: self does not have own property "Global" expected property "Global" missing
 FAIL Global interface object name assert_own_property: self does not have own property "Global" expected property "Global" missing
@@ -72,9 +62,7 @@ FAIL Global interface: existence and properties of interface prototype object as
 FAIL Global interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "Global" expected property "Global" missing
 FAIL Global interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "Global" expected property "Global" missing
 FAIL Global interface: operation valueOf() assert_own_property: self does not have own property "Global" expected property "Global" missing
-PASS Unscopable handled correctly for valueOf() on Global
 FAIL Global interface: attribute value assert_own_property: self does not have own property "Global" expected property "Global" missing
-PASS Unscopable handled correctly for value property on Global
 PASS CompileError interface: existence and properties of interface object
 PASS LinkError interface: existence and properties of interface object
 PASS RuntimeError interface: existence and properties of interface object

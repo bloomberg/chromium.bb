@@ -7,11 +7,8 @@ PASS Accelerometer interface: existence and properties of interface prototype ob
 PASS Accelerometer interface: existence and properties of interface prototype object's "constructor" property
 PASS Accelerometer interface: existence and properties of interface prototype object's @@unscopables property
 PASS Accelerometer interface: attribute x
-PASS Unscopable handled correctly for x property on Accelerometer
 PASS Accelerometer interface: attribute y
-PASS Unscopable handled correctly for y property on Accelerometer
 PASS Accelerometer interface: attribute z
-PASS Unscopable handled correctly for z property on Accelerometer
 PASS Accelerometer must be primary interface of new Accelerometer();
 PASS Stringification of new Accelerometer();
 PASS Accelerometer interface: new Accelerometer(); must inherit property "x" with the proper type

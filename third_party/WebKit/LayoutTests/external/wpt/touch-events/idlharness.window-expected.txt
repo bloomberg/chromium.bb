@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 144 tests; 128 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 106 tests; 90 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test IDL implementation of touch-events API
 PASS Partial interface GlobalEventHandlers: original interface defined
 PASS Partial interface Document: original interface defined
@@ -10,35 +10,20 @@ PASS Touch interface: existence and properties of interface prototype object
 PASS Touch interface: existence and properties of interface prototype object's "constructor" property
 PASS Touch interface: existence and properties of interface prototype object's @@unscopables property
 PASS Touch interface: attribute identifier
-PASS Unscopable handled correctly for identifier property on Touch
 PASS Touch interface: attribute target
-PASS Unscopable handled correctly for target property on Touch
 PASS Touch interface: attribute screenX
-PASS Unscopable handled correctly for screenX property on Touch
 PASS Touch interface: attribute screenY
-PASS Unscopable handled correctly for screenY property on Touch
 PASS Touch interface: attribute clientX
-PASS Unscopable handled correctly for clientX property on Touch
 PASS Touch interface: attribute clientY
-PASS Unscopable handled correctly for clientY property on Touch
 PASS Touch interface: attribute pageX
-PASS Unscopable handled correctly for pageX property on Touch
 PASS Touch interface: attribute pageY
-PASS Unscopable handled correctly for pageY property on Touch
 PASS Touch interface: attribute radiusX
-PASS Unscopable handled correctly for radiusX property on Touch
 PASS Touch interface: attribute radiusY
-PASS Unscopable handled correctly for radiusY property on Touch
 PASS Touch interface: attribute rotationAngle
-PASS Unscopable handled correctly for rotationAngle property on Touch
 PASS Touch interface: attribute force
-PASS Unscopable handled correctly for force property on Touch
 FAIL Touch interface: attribute altitudeAngle assert_true: The prototype object must have a property "altitudeAngle" expected true got false
-PASS Unscopable handled correctly for altitudeAngle property on Touch
 FAIL Touch interface: attribute azimuthAngle assert_true: The prototype object must have a property "azimuthAngle" expected true got false
-PASS Unscopable handled correctly for azimuthAngle property on Touch
 FAIL Touch interface: attribute touchType assert_true: The prototype object must have a property "touchType" expected true got false
-PASS Unscopable handled correctly for touchType property on Touch
 PASS Touch must be primary interface of new Touch({identifier: 1, target: document})
 PASS Stringification of new Touch({identifier: 1, target: document})
 PASS Touch interface: new Touch({identifier: 1, target: document}) must inherit property "identifier" with the proper type
@@ -63,9 +48,7 @@ PASS TouchList interface: existence and properties of interface prototype object
 PASS TouchList interface: existence and properties of interface prototype object's "constructor" property
 PASS TouchList interface: existence and properties of interface prototype object's @@unscopables property
 PASS TouchList interface: attribute length
-PASS Unscopable handled correctly for length property on TouchList
 PASS TouchList interface: operation item(unsigned long)
-PASS Unscopable handled correctly for item(unsigned long) on TouchList
 PASS TouchEvent interface: existence and properties of interface object
 PASS TouchEvent interface object length
 PASS TouchEvent interface object name
@@ -73,19 +56,12 @@ PASS TouchEvent interface: existence and properties of interface prototype objec
 PASS TouchEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS TouchEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS TouchEvent interface: attribute touches
-PASS Unscopable handled correctly for touches property on TouchEvent
 PASS TouchEvent interface: attribute targetTouches
-PASS Unscopable handled correctly for targetTouches property on TouchEvent
 PASS TouchEvent interface: attribute changedTouches
-PASS Unscopable handled correctly for changedTouches property on TouchEvent
 PASS TouchEvent interface: attribute altKey
-PASS Unscopable handled correctly for altKey property on TouchEvent
 PASS TouchEvent interface: attribute metaKey
-PASS Unscopable handled correctly for metaKey property on TouchEvent
 PASS TouchEvent interface: attribute ctrlKey
-PASS Unscopable handled correctly for ctrlKey property on TouchEvent
 PASS TouchEvent interface: attribute shiftKey
-PASS Unscopable handled correctly for shiftKey property on TouchEvent
 PASS TouchEvent must be primary interface of new TouchEvent("name")
 PASS Stringification of new TouchEvent("name")
 PASS TouchEvent interface: new TouchEvent("name") must inherit property "touches" with the proper type
@@ -96,17 +72,11 @@ PASS TouchEvent interface: new TouchEvent("name") must inherit property "metaKey
 PASS TouchEvent interface: new TouchEvent("name") must inherit property "ctrlKey" with the proper type
 PASS TouchEvent interface: new TouchEvent("name") must inherit property "shiftKey" with the proper type
 FAIL Document interface: operation createTouch(WindowProxy, EventTarget, long, double, double, double, double) assert_own_property: interface prototype object missing non-static operation expected property "createTouch" missing
-PASS Unscopable handled correctly for createTouch(WindowProxy, EventTarget, long, double, double, double, double) on Document
 FAIL Document interface: operation createTouchList(Touch) assert_own_property: interface prototype object missing non-static operation expected property "createTouchList" missing
-PASS Unscopable handled correctly for createTouchList(Touch) on Document
 PASS Document interface: attribute ontouchstart
-PASS Unscopable handled correctly for ontouchstart property on Document
 PASS Document interface: attribute ontouchend
-PASS Unscopable handled correctly for ontouchend property on Document
 PASS Document interface: attribute ontouchmove
-PASS Unscopable handled correctly for ontouchmove property on Document
 PASS Document interface: attribute ontouchcancel
-PASS Unscopable handled correctly for ontouchcancel property on Document
 FAIL Document interface: document must inherit property "createTouch(WindowProxy, EventTarget, long, double, double, double, double)" with the proper type assert_inherits: property "createTouch" not found in prototype chain
 FAIL Document interface: calling createTouch(WindowProxy, EventTarget, long, double, double, double, double) on document with too few arguments must throw TypeError assert_inherits: property "createTouch" not found in prototype chain
 FAIL Document interface: document must inherit property "createTouchList(Touch)" with the proper type assert_inherits: property "createTouchList" not found in prototype chain
@@ -116,21 +86,13 @@ PASS Document interface: document must inherit property "ontouchend" with the pr
 PASS Document interface: document must inherit property "ontouchmove" with the proper type
 PASS Document interface: document must inherit property "ontouchcancel" with the proper type
 PASS HTMLElement interface: attribute ontouchstart
-PASS Unscopable handled correctly for ontouchstart property on HTMLElement
 PASS HTMLElement interface: attribute ontouchend
-PASS Unscopable handled correctly for ontouchend property on HTMLElement
 PASS HTMLElement interface: attribute ontouchmove
-PASS Unscopable handled correctly for ontouchmove property on HTMLElement
 PASS HTMLElement interface: attribute ontouchcancel
-PASS Unscopable handled correctly for ontouchcancel property on HTMLElement
 PASS Window interface: attribute ontouchstart
-PASS Unscopable handled correctly for ontouchstart property on Window
 PASS Window interface: attribute ontouchend
-PASS Unscopable handled correctly for ontouchend property on Window
 PASS Window interface: attribute ontouchmove
-PASS Unscopable handled correctly for ontouchmove property on Window
 PASS Window interface: attribute ontouchcancel
-PASS Unscopable handled correctly for ontouchcancel property on Window
 FAIL GlobalEventHandlers interface: window must inherit property "ontouchstart" with the proper type assert_inherits: property "ontouchstart" found on object expected in prototype chain
 FAIL GlobalEventHandlers interface: window must inherit property "ontouchend" with the proper type assert_inherits: property "ontouchend" found on object expected in prototype chain
 FAIL GlobalEventHandlers interface: window must inherit property "ontouchmove" with the proper type assert_inherits: property "ontouchmove" found on object expected in prototype chain

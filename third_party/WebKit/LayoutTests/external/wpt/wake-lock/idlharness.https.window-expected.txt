@@ -8,13 +8,9 @@ FAIL WakeLock interface: existence and properties of interface prototype object 
 FAIL WakeLock interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
 FAIL WakeLock interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
 FAIL WakeLock interface: attribute type assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
-PASS Unscopable handled correctly for type property on WakeLock
 FAIL WakeLock interface: attribute active assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
-PASS Unscopable handled correctly for active property on WakeLock
 FAIL WakeLock interface: attribute onactivechange assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
-PASS Unscopable handled correctly for onactivechange property on WakeLock
 FAIL WakeLock interface: operation createRequest() assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
-PASS Unscopable handled correctly for createRequest() on WakeLock
 FAIL WakeLock must be primary interface of wakelock assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: wakelock is not defined"
 FAIL Stringification of wakelock assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: wakelock is not defined"
 FAIL WakeLock interface: wakelock must inherit property "type" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: wakelock is not defined"
@@ -28,12 +24,10 @@ FAIL WakeLockRequest interface: existence and properties of interface prototype 
 FAIL WakeLockRequest interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "WakeLockRequest" expected property "WakeLockRequest" missing
 FAIL WakeLockRequest interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "WakeLockRequest" expected property "WakeLockRequest" missing
 FAIL WakeLockRequest interface: operation cancel() assert_own_property: self does not have own property "WakeLockRequest" expected property "WakeLockRequest" missing
-PASS Unscopable handled correctly for cancel() on WakeLockRequest
 FAIL WakeLockRequest must be primary interface of request assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: request is not defined"
 FAIL Stringification of request assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: request is not defined"
 FAIL WakeLockRequest interface: request must inherit property "cancel()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: request is not defined"
 FAIL Navigator interface: operation getWakeLock(WakeLockType) assert_own_property: interface prototype object missing non-static operation expected property "getWakeLock" missing
-PASS Unscopable handled correctly for getWakeLock(WakeLockType) on Navigator
 FAIL Navigator interface: navigator must inherit property "getWakeLock(WakeLockType)" with the proper type assert_inherits: property "getWakeLock" not found in prototype chain
 FAIL Navigator interface: calling getWakeLock(WakeLockType) on navigator with too few arguments must throw TypeError assert_inherits: property "getWakeLock" not found in prototype chain
 PASS WorkerNavigator interface: existence and properties of interface object

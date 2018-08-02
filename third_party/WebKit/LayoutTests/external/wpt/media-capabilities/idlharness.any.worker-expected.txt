@@ -12,11 +12,8 @@ FAIL MediaCapabilitiesInfo interface: existence and properties of interface prot
 FAIL MediaCapabilitiesInfo interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
 FAIL MediaCapabilitiesInfo interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
 FAIL MediaCapabilitiesInfo interface: attribute supported assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-PASS Unscopable handled correctly for supported property on MediaCapabilitiesInfo
 FAIL MediaCapabilitiesInfo interface: attribute smooth assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-PASS Unscopable handled correctly for smooth property on MediaCapabilitiesInfo
 FAIL MediaCapabilitiesInfo interface: attribute powerEfficient assert_own_property: self does not have own property "MediaCapabilitiesInfo" expected property "MediaCapabilitiesInfo" missing
-PASS Unscopable handled correctly for powerEfficient property on MediaCapabilitiesInfo
 FAIL MediaCapabilities interface: existence and properties of interface object assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
 FAIL MediaCapabilities interface object length assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
 FAIL MediaCapabilities interface object name assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
@@ -24,14 +21,11 @@ FAIL MediaCapabilities interface: existence and properties of interface prototyp
 FAIL MediaCapabilities interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
 FAIL MediaCapabilities interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
 FAIL MediaCapabilities interface: operation decodingInfo(MediaDecodingConfiguration) assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
-PASS Unscopable handled correctly for decodingInfo(MediaDecodingConfiguration) on MediaCapabilities
 FAIL MediaCapabilities interface: operation encodingInfo(MediaEncodingConfiguration) assert_own_property: self does not have own property "MediaCapabilities" expected property "MediaCapabilities" missing
-PASS Unscopable handled correctly for encodingInfo(MediaEncodingConfiguration) on MediaCapabilities
 PASS ScreenLuminance interface: existence and properties of interface object
 PASS Navigator interface: existence and properties of interface object
 PASS Navigator interface: navigator must not have property "mediaCapabilities"
 FAIL WorkerNavigator interface: attribute mediaCapabilities assert_true: The prototype object must have a property "mediaCapabilities" expected true got false
-PASS Unscopable handled correctly for mediaCapabilities property on WorkerNavigator
 PASS Screen interface: existence and properties of interface object
 Harness: the test ran to completion.
 

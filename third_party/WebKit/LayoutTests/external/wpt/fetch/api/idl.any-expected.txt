@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 190 tests; 184 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 139 tests; 133 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Fetch Standard IDL
 PASS Partial interface mixin WindowOrWorkerGlobalScope: original interface mixin defined
 PASS Headers interface: existence and properties of interface object
@@ -9,25 +9,16 @@ PASS Headers interface: existence and properties of interface prototype object
 PASS Headers interface: existence and properties of interface prototype object's "constructor" property
 PASS Headers interface: existence and properties of interface prototype object's @@unscopables property
 PASS Headers interface: operation append(ByteString, ByteString)
-PASS Unscopable handled correctly for append(ByteString, ByteString) on Headers
 PASS Headers interface: operation delete(ByteString)
-PASS Unscopable handled correctly for delete(ByteString) on Headers
 PASS Headers interface: operation get(ByteString)
-PASS Unscopable handled correctly for get(ByteString) on Headers
 PASS Headers interface: operation has(ByteString)
-PASS Unscopable handled correctly for has(ByteString) on Headers
 PASS Headers interface: operation set(ByteString, ByteString)
-PASS Unscopable handled correctly for set(ByteString, ByteString) on Headers
 PASS Testing Symbol.iterator property of iterable interface Headers
 PASS Testing pair iterable interface Headers
 PASS Headers interface: operation entries()
-PASS Unscopable handled correctly for entries() on Headers
 PASS Headers interface: operation keys()
-PASS Unscopable handled correctly for keys() on Headers
 PASS Headers interface: operation values()
-PASS Unscopable handled correctly for values() on Headers
 PASS Headers interface: operation forEach(function, any)
-PASS Unscopable handled correctly for forEach(function, any) on Headers
 PASS Headers must be primary interface of new Headers()
 PASS Stringification of new Headers()
 PASS Headers interface: new Headers() must inherit property "append(ByteString, ByteString)" with the proper type
@@ -52,51 +43,28 @@ PASS Request interface: existence and properties of interface prototype object
 PASS Request interface: existence and properties of interface prototype object's "constructor" property
 PASS Request interface: existence and properties of interface prototype object's @@unscopables property
 PASS Request interface: attribute method
-PASS Unscopable handled correctly for method property on Request
 PASS Request interface: attribute url
-PASS Unscopable handled correctly for url property on Request
 PASS Request interface: attribute headers
-PASS Unscopable handled correctly for headers property on Request
 PASS Request interface: attribute destination
-PASS Unscopable handled correctly for destination property on Request
 PASS Request interface: attribute referrer
-PASS Unscopable handled correctly for referrer property on Request
 PASS Request interface: attribute referrerPolicy
-PASS Unscopable handled correctly for referrerPolicy property on Request
 PASS Request interface: attribute mode
-PASS Unscopable handled correctly for mode property on Request
 PASS Request interface: attribute credentials
-PASS Unscopable handled correctly for credentials property on Request
 PASS Request interface: attribute cache
-PASS Unscopable handled correctly for cache property on Request
 PASS Request interface: attribute redirect
-PASS Unscopable handled correctly for redirect property on Request
 PASS Request interface: attribute integrity
-PASS Unscopable handled correctly for integrity property on Request
 PASS Request interface: attribute keepalive
-PASS Unscopable handled correctly for keepalive property on Request
 FAIL Request interface: attribute isReloadNavigation assert_true: The prototype object must have a property "isReloadNavigation" expected true got false
-PASS Unscopable handled correctly for isReloadNavigation property on Request
 PASS Request interface: attribute isHistoryNavigation
-PASS Unscopable handled correctly for isHistoryNavigation property on Request
 PASS Request interface: attribute signal
-PASS Unscopable handled correctly for signal property on Request
 PASS Request interface: operation clone()
-PASS Unscopable handled correctly for clone() on Request
 FAIL Request interface: attribute body assert_true: The prototype object must have a property "body" expected true got false
-PASS Unscopable handled correctly for body property on Request
 PASS Request interface: attribute bodyUsed
-PASS Unscopable handled correctly for bodyUsed property on Request
 PASS Request interface: operation arrayBuffer()
-PASS Unscopable handled correctly for arrayBuffer() on Request
 PASS Request interface: operation blob()
-PASS Unscopable handled correctly for blob() on Request
 PASS Request interface: operation formData()
-PASS Unscopable handled correctly for formData() on Request
 PASS Request interface: operation json()
-PASS Unscopable handled correctly for json() on Request
 PASS Request interface: operation text()
-PASS Unscopable handled correctly for text() on Request
 PASS Request must be primary interface of new Request('about:blank')
 PASS Stringification of new Request('about:blank')
 PASS Request interface: new Request('about:blank') must inherit property "method" with the proper type
@@ -129,41 +97,23 @@ PASS Response interface: existence and properties of interface prototype object
 PASS Response interface: existence and properties of interface prototype object's "constructor" property
 PASS Response interface: existence and properties of interface prototype object's @@unscopables property
 PASS Response interface: operation error()
-PASS Unscopable handled correctly for error() on Response
 PASS Response interface: operation redirect(USVString, unsigned short)
-PASS Unscopable handled correctly for redirect(USVString, unsigned short) on Response
 PASS Response interface: attribute type
-PASS Unscopable handled correctly for type property on Response
 PASS Response interface: attribute url
-PASS Unscopable handled correctly for url property on Response
 PASS Response interface: attribute redirected
-PASS Unscopable handled correctly for redirected property on Response
 PASS Response interface: attribute status
-PASS Unscopable handled correctly for status property on Response
 PASS Response interface: attribute ok
-PASS Unscopable handled correctly for ok property on Response
 PASS Response interface: attribute statusText
-PASS Unscopable handled correctly for statusText property on Response
 PASS Response interface: attribute headers
-PASS Unscopable handled correctly for headers property on Response
 FAIL Response interface: attribute trailer assert_true: The prototype object must have a property "trailer" expected true got false
-PASS Unscopable handled correctly for trailer property on Response
 PASS Response interface: operation clone()
-PASS Unscopable handled correctly for clone() on Response
 PASS Response interface: attribute body
-PASS Unscopable handled correctly for body property on Response
 PASS Response interface: attribute bodyUsed
-PASS Unscopable handled correctly for bodyUsed property on Response
 PASS Response interface: operation arrayBuffer()
-PASS Unscopable handled correctly for arrayBuffer() on Response
 PASS Response interface: operation blob()
-PASS Unscopable handled correctly for blob() on Response
 PASS Response interface: operation formData()
-PASS Unscopable handled correctly for formData() on Response
 PASS Response interface: operation json()
-PASS Unscopable handled correctly for json() on Response
 PASS Response interface: operation text()
-PASS Unscopable handled correctly for text() on Response
 PASS Response must be primary interface of new Response()
 PASS Stringification of new Response()
 PASS Response interface: new Response() must inherit property "error()" with the proper type
@@ -186,7 +136,6 @@ PASS Response interface: new Response() must inherit property "formData()" with 
 PASS Response interface: new Response() must inherit property "json()" with the proper type
 PASS Response interface: new Response() must inherit property "text()" with the proper type
 PASS Window interface: operation fetch(RequestInfo, RequestInit)
-PASS Unscopable handled correctly for fetch(RequestInfo, RequestInit) on Window
 PASS Window interface: window must inherit property "fetch(RequestInfo, RequestInit)" with the proper type
 PASS Window interface: calling fetch(RequestInfo, RequestInit) on window with too few arguments must throw TypeError
 PASS WorkerGlobalScope interface: existence and properties of interface object

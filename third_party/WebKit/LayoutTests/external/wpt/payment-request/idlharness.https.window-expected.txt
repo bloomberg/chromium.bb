@@ -7,25 +7,15 @@ PASS PaymentRequest interface: existence and properties of interface prototype o
 PASS PaymentRequest interface: existence and properties of interface prototype object's "constructor" property
 PASS PaymentRequest interface: existence and properties of interface prototype object's @@unscopables property
 PASS PaymentRequest interface: operation show([object Object])
-PASS Unscopable handled correctly for show([object Object]) on PaymentRequest
 PASS PaymentRequest interface: operation abort()
-PASS Unscopable handled correctly for abort() on PaymentRequest
 PASS PaymentRequest interface: operation canMakePayment()
-PASS Unscopable handled correctly for canMakePayment() on PaymentRequest
 PASS PaymentRequest interface: attribute id
-PASS Unscopable handled correctly for id property on PaymentRequest
 PASS PaymentRequest interface: attribute shippingAddress
-PASS Unscopable handled correctly for shippingAddress property on PaymentRequest
 PASS PaymentRequest interface: attribute shippingOption
-PASS Unscopable handled correctly for shippingOption property on PaymentRequest
 PASS PaymentRequest interface: attribute shippingType
-PASS Unscopable handled correctly for shippingType property on PaymentRequest
 PASS PaymentRequest interface: attribute onshippingaddresschange
-PASS Unscopable handled correctly for onshippingaddresschange property on PaymentRequest
 PASS PaymentRequest interface: attribute onshippingoptionchange
-PASS Unscopable handled correctly for onshippingoptionchange property on PaymentRequest
 FAIL PaymentRequest interface: attribute onpaymentmethodchange assert_true: The prototype object must have a property "onpaymentmethodchange" expected true got false
-PASS Unscopable handled correctly for onpaymentmethodchange property on PaymentRequest
 PASS PaymentRequest must be primary interface of paymentRequest
 PASS Stringification of paymentRequest
 PASS PaymentRequest interface: paymentRequest must inherit property "show([object Object])" with the proper type
@@ -46,31 +36,18 @@ PASS PaymentAddress interface: existence and properties of interface prototype o
 PASS PaymentAddress interface: existence and properties of interface prototype object's "constructor" property
 PASS PaymentAddress interface: existence and properties of interface prototype object's @@unscopables property
 PASS PaymentAddress interface: operation toJSON()
-PASS Unscopable handled correctly for toJSON() on PaymentAddress
 PASS PaymentAddress interface: attribute city
-PASS Unscopable handled correctly for city property on PaymentAddress
 PASS PaymentAddress interface: attribute country
-PASS Unscopable handled correctly for country property on PaymentAddress
 PASS PaymentAddress interface: attribute dependentLocality
-PASS Unscopable handled correctly for dependentLocality property on PaymentAddress
 PASS PaymentAddress interface: attribute languageCode
-PASS Unscopable handled correctly for languageCode property on PaymentAddress
 PASS PaymentAddress interface: attribute organization
-PASS Unscopable handled correctly for organization property on PaymentAddress
 PASS PaymentAddress interface: attribute phone
-PASS Unscopable handled correctly for phone property on PaymentAddress
 PASS PaymentAddress interface: attribute postalCode
-PASS Unscopable handled correctly for postalCode property on PaymentAddress
 PASS PaymentAddress interface: attribute recipient
-PASS Unscopable handled correctly for recipient property on PaymentAddress
 PASS PaymentAddress interface: attribute region
-PASS Unscopable handled correctly for region property on PaymentAddress
 FAIL PaymentAddress interface: attribute regionCode assert_true: The prototype object must have a property "regionCode" expected true got false
-PASS Unscopable handled correctly for regionCode property on PaymentAddress
 PASS PaymentAddress interface: attribute sortingCode
-PASS Unscopable handled correctly for sortingCode property on PaymentAddress
 PASS PaymentAddress interface: attribute addressLine
-PASS Unscopable handled correctly for addressLine property on PaymentAddress
 FAIL PaymentResponse interface: existence and properties of interface object assert_equals: prototype of PaymentResponse is not EventTarget expected function "function EventTarget() { [native code] }" but got function "function () { [native code] }"
 PASS PaymentResponse interface object length
 PASS PaymentResponse interface object name
@@ -78,29 +55,17 @@ FAIL PaymentResponse interface: existence and properties of interface prototype 
 PASS PaymentResponse interface: existence and properties of interface prototype object's "constructor" property
 PASS PaymentResponse interface: existence and properties of interface prototype object's @@unscopables property
 PASS PaymentResponse interface: operation toJSON()
-PASS Unscopable handled correctly for toJSON() on PaymentResponse
 PASS PaymentResponse interface: attribute requestId
-PASS Unscopable handled correctly for requestId property on PaymentResponse
 PASS PaymentResponse interface: attribute methodName
-PASS Unscopable handled correctly for methodName property on PaymentResponse
 PASS PaymentResponse interface: attribute details
-PASS Unscopable handled correctly for details property on PaymentResponse
 PASS PaymentResponse interface: attribute shippingAddress
-PASS Unscopable handled correctly for shippingAddress property on PaymentResponse
 PASS PaymentResponse interface: attribute shippingOption
-PASS Unscopable handled correctly for shippingOption property on PaymentResponse
 PASS PaymentResponse interface: attribute payerName
-PASS Unscopable handled correctly for payerName property on PaymentResponse
 PASS PaymentResponse interface: attribute payerEmail
-PASS Unscopable handled correctly for payerEmail property on PaymentResponse
 PASS PaymentResponse interface: attribute payerPhone
-PASS Unscopable handled correctly for payerPhone property on PaymentResponse
 PASS PaymentResponse interface: operation complete(PaymentComplete)
-PASS Unscopable handled correctly for complete(PaymentComplete) on PaymentResponse
 PASS PaymentResponse interface: operation retry(PaymentValidationErrors)
-PASS Unscopable handled correctly for retry(PaymentValidationErrors) on PaymentResponse
 FAIL PaymentResponse interface: attribute onpayerdetailchange assert_true: The prototype object must have a property "onpayerdetailchange" expected true got false
-PASS Unscopable handled correctly for onpayerdetailchange property on PaymentResponse
 FAIL PaymentMethodChangeEvent interface: existence and properties of interface object assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
 FAIL PaymentMethodChangeEvent interface object length assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
 FAIL PaymentMethodChangeEvent interface object name assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
@@ -108,9 +73,7 @@ FAIL PaymentMethodChangeEvent interface: existence and properties of interface p
 FAIL PaymentMethodChangeEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
 FAIL PaymentMethodChangeEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
 FAIL PaymentMethodChangeEvent interface: attribute methodName assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
-PASS Unscopable handled correctly for methodName property on PaymentMethodChangeEvent
 FAIL PaymentMethodChangeEvent interface: attribute methodDetails assert_own_property: self does not have own property "PaymentMethodChangeEvent" expected property "PaymentMethodChangeEvent" missing
-PASS Unscopable handled correctly for methodDetails property on PaymentMethodChangeEvent
 FAIL PaymentMethodChangeEvent must be primary interface of new PaymentMethodChangeEvent("paymentmethodchange") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: PaymentMethodChangeEvent is not defined"
 FAIL Stringification of new PaymentMethodChangeEvent("paymentmethodchange") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: PaymentMethodChangeEvent is not defined"
 FAIL PaymentMethodChangeEvent interface: new PaymentMethodChangeEvent("paymentmethodchange") must inherit property "methodName" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: PaymentMethodChangeEvent is not defined"
@@ -124,7 +87,6 @@ PASS PaymentRequestUpdateEvent interface: existence and properties of interface 
 PASS PaymentRequestUpdateEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS PaymentRequestUpdateEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS PaymentRequestUpdateEvent interface: operation updateWith([object Object])
-PASS Unscopable handled correctly for updateWith([object Object]) on PaymentRequestUpdateEvent
 PASS PaymentRequestUpdateEvent must be primary interface of new PaymentRequestUpdateEvent("paymentrequestupdate")
 PASS Stringification of new PaymentRequestUpdateEvent("paymentrequestupdate")
 PASS PaymentRequestUpdateEvent interface: new PaymentRequestUpdateEvent("paymentrequestupdate") must inherit property "updateWith([object Object])" with the proper type

@@ -7,7 +7,6 @@ PASS FaceDetector interface: existence and properties of interface prototype obj
 PASS FaceDetector interface: existence and properties of interface prototype object's "constructor" property
 PASS FaceDetector interface: existence and properties of interface prototype object's @@unscopables property
 PASS FaceDetector interface: operation detect(ImageBitmapSource)
-PASS Unscopable handled correctly for detect(ImageBitmapSource) on FaceDetector
 FAIL DetectedFace interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function () { [native code] }" did not throw
 PASS DetectedFace interface object length
 PASS DetectedFace interface object name
@@ -15,9 +14,7 @@ PASS DetectedFace interface: existence and properties of interface prototype obj
 PASS DetectedFace interface: existence and properties of interface prototype object's "constructor" property
 PASS DetectedFace interface: existence and properties of interface prototype object's @@unscopables property
 PASS DetectedFace interface: attribute boundingBox
-PASS Unscopable handled correctly for boundingBox property on DetectedFace
 PASS DetectedFace interface: attribute landmarks
-PASS Unscopable handled correctly for landmarks property on DetectedFace
 PASS BarcodeDetector interface: existence and properties of interface object
 PASS BarcodeDetector interface object length
 PASS BarcodeDetector interface object name
@@ -25,9 +22,7 @@ PASS BarcodeDetector interface: existence and properties of interface prototype 
 PASS BarcodeDetector interface: existence and properties of interface prototype object's "constructor" property
 PASS BarcodeDetector interface: existence and properties of interface prototype object's @@unscopables property
 FAIL BarcodeDetector interface: attribute supportedFormats assert_true: The prototype object must have a property "supportedFormats" expected true got false
-PASS Unscopable handled correctly for supportedFormats property on BarcodeDetector
 PASS BarcodeDetector interface: operation detect(ImageBitmapSource)
-PASS Unscopable handled correctly for detect(ImageBitmapSource) on BarcodeDetector
 FAIL DetectedBarcode interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function () { [native code] }" did not throw
 PASS DetectedBarcode interface object length
 PASS DetectedBarcode interface object name
@@ -35,12 +30,8 @@ PASS DetectedBarcode interface: existence and properties of interface prototype 
 PASS DetectedBarcode interface: existence and properties of interface prototype object's "constructor" property
 PASS DetectedBarcode interface: existence and properties of interface prototype object's @@unscopables property
 PASS DetectedBarcode interface: attribute boundingBox
-PASS Unscopable handled correctly for boundingBox property on DetectedBarcode
 PASS DetectedBarcode interface: attribute rawValue
-PASS Unscopable handled correctly for rawValue property on DetectedBarcode
 FAIL DetectedBarcode interface: attribute format assert_true: The prototype object must have a property "format" expected true got false
-PASS Unscopable handled correctly for format property on DetectedBarcode
 PASS DetectedBarcode interface: attribute cornerPoints
-PASS Unscopable handled correctly for cornerPoints property on DetectedBarcode
 Harness: the test ran to completion.
 
