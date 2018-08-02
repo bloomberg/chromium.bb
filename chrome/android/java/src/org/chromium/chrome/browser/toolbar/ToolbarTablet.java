@@ -18,6 +18,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -103,7 +105,8 @@ public class ToolbarTablet
         mForwardButton = (TintedImageButton) findViewById(R.id.forward_button);
         mReloadButton = (TintedImageButton) findViewById(R.id.refresh_button);
         mSecurityButton = (TintedImageButton) findViewById(R.id.security_button);
-        mShowTabStack = AccessibilityUtil.isAccessibilityEnabled();
+        mShowTabStack = AccessibilityUtil.isAccessibilityEnabled()
+                && isAccessibilityTabSwitcherPreferenceEnabled();
 
         mTabSwitcherButtonDrawable =
                 TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
@@ -533,8 +536,8 @@ public class ToolbarTablet
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MEMEX)) {
             return;
         }
-        mShowTabStack = enabled;
-        updateSwitcherButtonVisibility(enabled);
+        mShowTabStack = enabled && isAccessibilityTabSwitcherPreferenceEnabled();
+        updateSwitcherButtonVisibility(mShowTabStack);
     }
 
     @Override
@@ -713,4 +716,10 @@ public class ToolbarTablet
         return set;
     }
 
+    private boolean isAccessibilityTabSwitcherPreferenceEnabled() {
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return ChromePreferenceManager.getInstance().readBoolean(
+                    ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER, true);
+        }
+    }
 }

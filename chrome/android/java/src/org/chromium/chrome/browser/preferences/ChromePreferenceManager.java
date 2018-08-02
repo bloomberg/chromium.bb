@@ -193,6 +193,13 @@ public class ChromePreferenceManager {
     public static final String SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP =
             "should_register_vr_assets_component_on_startup";
 
+    /*
+     * Whether the simplified tab switcher is enabled when accessibility mode is enabled. Keep in
+     * sync with accessibility_preferences.xml.
+     * Default value is true.
+     */
+    public static final String ACCESSIBILITY_TAB_SWITCHER = "accessibility_tab_switcher";
+
     /**
      * Deprecated keys for Chrome Home.
      */

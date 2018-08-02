@@ -130,6 +130,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.tasks.TasksUma;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -263,7 +264,7 @@ public class ChromeTabbedActivity
 
     private Boolean mMergeTabsOnResume;
 
-    private Boolean mIsAccessibilityEnabled;
+    private Boolean mIsAccessibilityTabSwitcherEnabled;
 
     private LocaleManager mLocaleManager;
 
@@ -905,6 +906,7 @@ public class ChromeTabbedActivity
             }
 
             mUIInitialized = true;
+            onAccessibilityTabSwitcherModeChanged();
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeUI");
         }
@@ -1151,14 +1153,30 @@ public class ChromeTabbedActivity
                 getCompositorViewHolder().onAccessibilityStatusChanged(enabled);
             }
         }
+
+        onAccessibilityTabSwitcherModeChanged();
+    }
+
+    private void onAccessibilityTabSwitcherModeChanged() {
+        if (!mUIInitialized) return;
+
+        boolean accessibilityTabSwitcherEnabled = DeviceClassManager.enableAccessibilityLayout();
         if (mLayoutManager != null && mLayoutManager.overviewVisible()
-                && mIsAccessibilityEnabled != enabled) {
+                && (mIsAccessibilityTabSwitcherEnabled == null
+                           || mIsAccessibilityTabSwitcherEnabled
+                                   != DeviceClassManager.enableAccessibilityLayout())) {
             mLayoutManager.hideOverview(false);
             if (getTabModelSelector().getCurrentModel().getCount() == 0) {
                 getCurrentTabCreator().launchNTP();
             }
         }
-        mIsAccessibilityEnabled = enabled;
+        mIsAccessibilityTabSwitcherEnabled = accessibilityTabSwitcherEnabled;
+
+        if (AccessibilityUtil.isAccessibilityEnabled()) {
+            RecordHistogram.recordBooleanHistogram(
+                    "Accessibility.Android.TabSwitcherPreferenceEnabled",
+                    mIsAccessibilityTabSwitcherEnabled);
+        }
     }
 
     /**
