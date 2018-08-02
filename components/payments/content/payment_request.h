@@ -66,6 +66,7 @@ class PaymentRequest : public mojom::PaymentRequest,
             mojom::PaymentDetailsPtr details,
             mojom::PaymentOptionsPtr options) override;
   void Show(bool is_user_gesture) override;
+  void Retry(mojom::PaymentValidationErrorsPtr errors) override;
   void UpdateWith(mojom::PaymentDetailsPtr details) override;
   void NoUpdatedPaymentDetails() override;
   void Abort() override;

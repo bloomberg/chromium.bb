@@ -44,3 +44,36 @@ struct PaymentCurrencyAmount {
   // digits. Separated by a dot.
   string value;
 };
+
+// The |PaymentValidationErrors| data structure that the renderer provides to
+// the browser process when calling retry() method in JavaScript. It contains
+// merchant-defined error message strings.
+struct PaymentValidationErrors {
+  PayerErrorFields payer;
+  AddressErrors shipping_address;
+};
+
+// The |PayerErrorFields| is used to represent validation errors with one or
+// more payer details.
+struct PayerErrorFields {
+  string email;
+  string name;
+  string phone;
+};
+
+// The |AddressErrors| is used to represent validation errors with specific
+// parts of a physical address.
+struct AddressErrors {
+  string address_line;
+  string city;
+  string country;
+  string dependent_locality;
+  string language_code;
+  string organization;
+  string phone;
+  string postal_code;
+  string recipient;
+  string region;
+  string region_code;
+  string sorting_code;
+};

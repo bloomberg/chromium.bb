@@ -205,6 +205,12 @@ interface PaymentRequest {
   // Closes the payment user interface.
   Complete(PaymentComplete result);
 
+  // Called when the merchant calls explicitly retry() method in JavaScript.
+  // The |errors| contains merchant-defined error message strings. They are
+  // used to indicate to the end-user that something is wrong with the data of
+  // the payment response.
+  Retry(PaymentValidationErrors errors);
+
   // Queries whether the user has a form of payment on file.
   CanMakePayment();
 };

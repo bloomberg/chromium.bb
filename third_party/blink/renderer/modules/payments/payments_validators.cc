@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
+#include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
@@ -122,6 +123,68 @@ bool PaymentsValidators::IsValidErrorMsgFormat(const String& error,
         "Error message should be at most 2048 characters long";
 
   return false;
+}
+
+// static
+bool PaymentsValidators::IsValidPaymentValidationErrorsFormat(
+    const PaymentValidationErrors& errors,
+    String* optional_error_message) {
+  if (errors.hasPayer()) {
+    if ((errors.payer().hasEmail() &&
+         !IsValidErrorMsgFormat(errors.payer().email(),
+                                optional_error_message)) ||
+        (errors.payer().hasName() &&
+         !IsValidErrorMsgFormat(errors.payer().name(),
+                                optional_error_message)) ||
+        (errors.payer().hasPhone() &&
+         !IsValidErrorMsgFormat(errors.payer().phone(),
+                                optional_error_message))) {
+      return false;
+    }
+  }
+
+  if (errors.hasShippingAddress()) {
+    if ((errors.shippingAddress().hasAddressLine() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().addressLine(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasCity() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().city(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasCountry() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().country(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasDependentLocality() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().dependentLocality(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasLanguageCode() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().languageCode(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasOrganization() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().organization(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasPhone() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().phone(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasPostalCode() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().postalCode(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasRecipient() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().recipient(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasRegion() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().region(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasRegionCode() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().regionCode(),
+                                optional_error_message)) ||
+        (errors.shippingAddress().hasSortingCode() &&
+         !IsValidErrorMsgFormat(errors.shippingAddress().sortingCode(),
+                                optional_error_message))) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace blink

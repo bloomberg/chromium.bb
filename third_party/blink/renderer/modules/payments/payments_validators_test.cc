@@ -6,6 +6,7 @@
 
 #include <ostream>  // NOLINT
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -23,11 +24,11 @@ struct CurrencyCodeTestCase {
 class PaymentsCurrencyValidatorTest
     : public testing::TestWithParam<CurrencyCodeTestCase> {};
 
-const char* LongString2048() {
-  static char long_string[2049];
-  for (int i = 0; i < 2048; i++)
+const char* LongString2049() {
+  static char long_string[2050];
+  for (int i = 0; i < 2049; i++)
     long_string[i] = 'a';
-  long_string[2048] = '\0';
+  long_string[2049] = '\0';
   return long_string;
 }
 
@@ -64,7 +65,7 @@ INSTANTIATE_TEST_CASE_P(
         CurrencyCodeTestCase("usd", true),
         CurrencyCodeTestCase("ANYSTRING", false),
         CurrencyCodeTestCase("", false),
-        CurrencyCodeTestCase(LongString2048(), false)));
+        CurrencyCodeTestCase(LongString2049(), false)));
 
 struct TestCase {
   TestCase(const char* input, bool expected_valid)
@@ -262,5 +263,152 @@ INSTANTIATE_TEST_CASE_P(
         ShippingAddressTestCase("US", "en", "InvalidScriptCode", false),
         ShippingAddressTestCase("US", "", "Latn", false)));
 
+struct ValidationErrorsTestCase {
+  ValidationErrorsTestCase(bool expected_valid)
+      : expected_valid(expected_valid) {}
+
+  const char* m_payer_email = "";
+  const char* m_payer_name = "";
+  const char* m_payer_phone = "";
+  const char* m_shipping_address_address_line = "";
+  const char* m_shipping_address_city = "";
+  const char* m_shipping_address_country = "";
+  const char* m_shipping_address_dependent_locality = "";
+  const char* m_shipping_address_language_code = "";
+  const char* m_shipping_address_organization = "";
+  const char* m_shipping_address_phone = "";
+  const char* m_shipping_address_postal_code = "";
+  const char* m_shipping_address_recipient = "";
+  const char* m_shipping_address_region = "";
+  const char* m_shipping_address_region_code = "";
+  const char* m_shipping_address_sorting_code = "";
+  bool expected_valid;
+};
+
+#define VALIDATION_ERRORS_TEST_CASE(field, value, expected_valid) \
+  ([]() {                                                         \
+    ValidationErrorsTestCase test_case(expected_valid);           \
+    test_case.m_##field = value;                                  \
+    return test_case;                                             \
+  })()
+
+PaymentValidationErrors toPaymentValidationErrors(
+    ValidationErrorsTestCase test_case) {
+  PaymentValidationErrors errors;
+
+  PayerErrorFields payer;
+  payer.setEmail(test_case.m_payer_email);
+  payer.setName(test_case.m_payer_name);
+  payer.setPhone(test_case.m_payer_phone);
+
+  AddressErrors shipping_address;
+  shipping_address.setAddressLine(test_case.m_shipping_address_address_line);
+  shipping_address.setCity(test_case.m_shipping_address_city);
+  shipping_address.setCountry(test_case.m_shipping_address_country);
+  shipping_address.setDependentLocality(
+      test_case.m_shipping_address_dependent_locality);
+  shipping_address.setLanguageCode(test_case.m_shipping_address_language_code);
+  shipping_address.setOrganization(test_case.m_shipping_address_organization);
+  shipping_address.setPhone(test_case.m_shipping_address_phone);
+  shipping_address.setPostalCode(test_case.m_shipping_address_postal_code);
+  shipping_address.setRecipient(test_case.m_shipping_address_recipient);
+  shipping_address.setRegion(test_case.m_shipping_address_region);
+  shipping_address.setRegionCode(test_case.m_shipping_address_region_code);
+  shipping_address.setSortingCode(test_case.m_shipping_address_sorting_code);
+
+  errors.setPayer(payer);
+  errors.setShippingAddress(shipping_address);
+
+  return errors;
+}
+
+class PaymentsErrorMessageValidatorTest
+    : public testing::TestWithParam<ValidationErrorsTestCase> {};
+
+TEST_P(PaymentsErrorMessageValidatorTest,
+       IsValidPaymentValidationErrorsFormat) {
+  PaymentValidationErrors errors = toPaymentValidationErrors(GetParam());
+
+  String error_message;
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidPaymentValidationErrorsFormat(
+                errors, &error_message))
+      << error_message;
+}
+
+INSTANTIATE_TEST_CASE_P(
+    PaymentValidationErrorss,
+    PaymentsErrorMessageValidatorTest,
+    testing::Values(
+        VALIDATION_ERRORS_TEST_CASE(payer_email, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(payer_name, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(payer_phone, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_city, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_address_line,
+                                    "test",
+                                    true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_city, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_country, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_dependent_locality,
+                                    "test",
+                                    true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_language_code,
+                                    "test",
+                                    true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_organization,
+                                    "test",
+                                    true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_phone, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_postal_code, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_recipient, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_region, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_region_code, "test", true),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_sorting_code,
+                                    "test",
+                                    true),
+        VALIDATION_ERRORS_TEST_CASE(payer_email, LongString2049(), false),
+        VALIDATION_ERRORS_TEST_CASE(payer_name, LongString2049(), false),
+        VALIDATION_ERRORS_TEST_CASE(payer_phone, LongString2049(), false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_city,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_address_line,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_city,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_country,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_dependent_locality,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_language_code,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_organization,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_phone,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_postal_code,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_recipient,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_region,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_region_code,
+                                    LongString2049(),
+                                    false),
+        VALIDATION_ERRORS_TEST_CASE(shipping_address_sorting_code,
+                                    LongString2049(),
+                                    false)));
+
 }  // namespace
+
 }  // namespace blink

@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class PaymentValidationErrors;
+
 class MODULES_EXPORT PaymentsValidators final {
   STATIC_ONLY(PaymentsValidators);
 
@@ -51,6 +53,12 @@ class MODULES_EXPORT PaymentsValidators final {
   // Returns false if |error| is too long (greater than 2048).
   static bool IsValidErrorMsgFormat(const String& code,
                                     String* optional_error_message);
+
+  // Returns false if |payment_validation_errors| has too long string (greater
+  // than 2048).
+  static bool IsValidPaymentValidationErrorsFormat(
+      const PaymentValidationErrors& errors,
+      String* optional_error_message);
 };
 
 }  // namespace blink

@@ -113,4 +113,41 @@ bool PaymentsValidators::IsValidErrorMsgFormat(
   return false;
 }
 
+// static
+bool PaymentsValidators::IsValidPaymentValidationErrorsFormat(
+    const mojom::PaymentValidationErrorsPtr& errors,
+    std::string* optional_error_message) {
+  if (!errors || !errors->payer || !errors->shipping_address)
+    return false;
+
+  return IsValidErrorMsgFormat(errors->payer->email, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->payer->email, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->payer->name, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->payer->phone, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->address_line,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->city,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->country,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->dependent_locality,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->language_code,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->organization,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->phone,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->postal_code,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->recipient,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->region,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->region_code,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->shipping_address->sorting_code,
+                               optional_error_message);
+}
+
 }  // namespace payments

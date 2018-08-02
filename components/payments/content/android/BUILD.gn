@@ -11,10 +11,10 @@ static_library("android") {
     "currency_formatter_android.cc",
     "currency_formatter_android.h",
     "origin_security_checker_android.cc",
-    "payment_details_validation_android.cc",
     "payment_manifest_downloader_android.cc",
     "payment_manifest_parser_android.cc",
     "payment_manifest_parser_android.h",
+    "payment_validator_android.cc",
   ]
   deps = [
     ":jni_headers",

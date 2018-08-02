@@ -33,6 +33,19 @@ PaymentResponse::PaymentResponse(
 
 PaymentResponse::~PaymentResponse() = default;
 
+void PaymentResponse::Update(
+    payments::mojom::blink::PaymentResponsePtr response,
+    PaymentAddress* shipping_address) {
+  DCHECK(response);
+  method_name_ = response->method_name;
+  stringified_details_ = response->stringified_details;
+  shipping_address_ = shipping_address;
+  shipping_option_ = response->shipping_option;
+  payer_name_ = response->payer_name;
+  payer_email_ = response->payer_email;
+  payer_phone_ = response->payer_phone;
+}
+
 ScriptValue PaymentResponse::toJSONForBinding(ScriptState* script_state) const {
   V8ObjectBuilder result(script_state);
   result.AddString("requestId", requestId());
