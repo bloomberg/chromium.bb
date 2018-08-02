@@ -15,24 +15,23 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
-#include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
 #include "components/viz/service/display_embedder/gl_output_surface_win.h"
 #include "components/viz/service/display_embedder/software_output_device_win.h"
+#include "ui/gfx/win/rendering_window_manager.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -58,40 +57,44 @@
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #endif
 
-namespace {
-
-gpu::ImageFactory* GetImageFactory(gpu::GpuChannelManager* channel_manager) {
-  auto* buffer_factory = channel_manager->gpu_memory_buffer_factory();
-  return buffer_factory ? buffer_factory->AsImageFactory() : nullptr;
-}
-
-}  // namespace
-
 namespace viz {
 
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
     GpuServiceImpl* gpu_service_impl,
     scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
-    gpu::GpuChannelManager* gpu_channel_manager,
+    gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
+    std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
+    gpu::ImageFactory* image_factory,
     ServerSharedBitmapManager* server_shared_bitmap_manager,
     bool headless,
     bool wait_for_all_pipeline_stages_before_draw)
     : restart_id_(restart_id),
       gpu_service_impl_(gpu_service_impl),
       task_executor_(std::move(task_executor)),
-      gpu_channel_manager_delegate_(gpu_channel_manager->delegate()),
-      gpu_memory_buffer_manager_(
-          std::make_unique<InProcessGpuMemoryBufferManager>(
-              gpu_channel_manager)),
-      image_factory_(GetImageFactory(gpu_channel_manager)),
+      gpu_channel_manager_delegate_(gpu_channel_manager_delegate),
+      gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
+      image_factory_(image_factory),
       server_shared_bitmap_manager_(server_shared_bitmap_manager),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       headless_(headless),
       wait_for_all_pipeline_stages_before_draw_(
-          wait_for_all_pipeline_stages_before_draw) {
-  DCHECK_NE(restart_id_, BeginFrameSource::kNotRestartableId);
-}
+          wait_for_all_pipeline_stages_before_draw) {}
+
+GpuDisplayProvider::GpuDisplayProvider(
+    uint32_t restart_id,
+    ServerSharedBitmapManager* server_shared_bitmap_manager,
+    bool headless,
+    bool wait_for_all_pipeline_stages_before_draw)
+    : GpuDisplayProvider(restart_id,
+                         /*gpu_service_impl=*/nullptr,
+                         /*task_executor=*/nullptr,
+                         /*gpu_channel_manager_delegate=*/nullptr,
+                         /*gpu_memory_buffer_manager=*/nullptr,
+                         /*image_factory=*/nullptr,
+                         server_shared_bitmap_manager,
+                         headless,
+                         wait_for_all_pipeline_stages_before_draw) {}
 
 GpuDisplayProvider::~GpuDisplayProvider() = default;
 
@@ -128,6 +131,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
   } else {
+    DCHECK(task_executor_);
+
     scoped_refptr<VizProcessContextProvider> context_provider;
 
     // Retry creating and binding |context_provider| on transient failures.
@@ -209,11 +214,19 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
   auto device = CreateSoftwareOutputDeviceWinGpu(
       surface_handle, &output_device_backing_, display_client, &child_hwnd);
 
-  // If |child_hwnd| isn't null then a new child HWND was created. Send an IPC
-  // to browser process for SetParent() syscall.
+  // If |child_hwnd| isn't null then a new child HWND was created.
   if (child_hwnd) {
-    gpu_channel_manager_delegate_->SendCreatedChildWindow(surface_handle,
-                                                          child_hwnd);
+    if (gpu_channel_manager_delegate_) {
+      // Send an IPC to browser process for SetParent().
+      gpu_channel_manager_delegate_->SendCreatedChildWindow(surface_handle,
+                                                            child_hwnd);
+    } else {
+      // We are already in the browser process.
+      if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(
+              surface_handle, child_hwnd)) {
+        LOG(ERROR) << "Bad parenting request.";
+      }
+    }
   }
 
   return device;
