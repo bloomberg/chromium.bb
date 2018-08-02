@@ -34,8 +34,6 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
@@ -46,7 +44,6 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -216,8 +213,6 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         chrome::GetChannel(),
         gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
         IdentityManagerFactory::GetForProfile(profile),
-        SigninManagerFactory::GetForProfile(profile),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         base::WrapUnique(new gcm::FakeGCMClientFactory(ui_thread, io_thread)),
         ui_thread, io_thread, blocking_task_runner);
   }

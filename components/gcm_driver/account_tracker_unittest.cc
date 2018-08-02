@@ -10,29 +10,17 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-#if defined(OS_CHROMEOS)
-using SigninManagerForTest = FakeSigninManagerBase;
-#else
-using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
-
 const char kPrimaryAccountEmail[] = "primary_account@example.com";
-const char kPrimaryAccountGaiaId[] = "primary_account";
 
 enum TrackingEventType { SIGN_IN, SIGN_OUT };
 
@@ -253,25 +241,8 @@ class AccountTrackerTest : public testing::Test {
   ~AccountTrackerTest() override {}
 
   void SetUp() override {
-    fake_oauth2_token_service_.reset(new FakeProfileOAuth2TokenService());
-
-    test_signin_client_.reset(new TestSigninClient(&pref_service_));
-#if defined(OS_CHROMEOS)
-    fake_signin_manager_.reset(new SigninManagerForTest(
-        test_signin_client_.get(), &account_tracker_service_));
-#else
-    fake_signin_manager_.reset(new SigninManagerForTest(
-        test_signin_client_.get(), fake_oauth2_token_service_.get(),
-        &account_tracker_service_, nullptr));
-#endif
-
-    AccountTrackerService::RegisterPrefs(pref_service_.registry());
-    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
-    SigninManagerBase::RegisterPrefs(pref_service_.registry());
-    account_tracker_service_.Initialize(test_signin_client_.get());
-
     account_tracker_.reset(new AccountTracker(
-        fake_signin_manager_.get(), fake_oauth2_token_service_.get(),
+        identity_test_env_.identity_manager(),
         new net::TestURLRequestContextGetter(message_loop_.task_runner())));
     account_tracker_->AddObserver(&observer_);
   }
@@ -287,68 +258,48 @@ class AccountTrackerTest : public testing::Test {
 
   // Helpers to pass fake events to the tracker.
 
-  // Sets the primary account info but carries no guarantee of firing the
-  // callback that signin occurred (see NotifyLogin() below if exercising a
-  // true signin flow in a non-ChromeOS context). Returns the account ID of the
+  // Sets the primary account info. Returns the account ID of the
   // newly-set account.
-  std::string SetActiveAccount(const std::string& gaia_id,
-                               const std::string& email) {
-#if defined(OS_CHROMEOS)
-    fake_signin_manager_->SignIn(email);
-#else
-    fake_signin_manager_->SignIn(gaia_id, email, "" /* password */);
-#endif
-
-    return fake_signin_manager_->GetAuthenticatedAccountId();
+  // NOTE: On ChromeOS, the login callback is never fired in production (since
+  // the underlying GoogleSigninSucceeded callback is never sent). Tests that
+  // exercise functionality dependent on that callback firing are not relevant
+  // on ChromeOS and should simply not run on that platform.
+  std::string SetActiveAccount(const std::string& email) {
+    return identity_test_env_.SetPrimaryAccount(email).account_id;
   }
 
-// NOTE: On ChromeOS, the login callback is never fired in production (since the
-// underlying GoogleSigninSucceeded callback is never sent). Tests that
-// exercise functionality dependent on that callback firing are not relevant
-// on ChromeOS and should simply not run on that platform.
+// Helpers that go through a logout flow.
+// NOTE: On ChromeOS, the logout callback is never fired in production (since
+// the underlying GoogleSignedOut callback is never sent). Tests that exercise
+// functionality dependent on that callback firing are not relevant on ChromeOS
+// and should simply not run on that platform.
 #if !defined(OS_CHROMEOS)
-  // Sets the primary account info and fires the callback that signin occurred.
-  // Returns the account ID of the newly-set account.
-  std::string NotifyLogin(const std::string& gaia_id,
-                          const std::string& email) {
-    fake_signin_manager_->SignIn(gaia_id, email, "" /* password */);
-    return fake_signin_manager_->GetAuthenticatedAccountId();
-  }
-
   void NotifyLogoutOfPrimaryAccountOnly() {
-    fake_signin_manager_->SignOutAndKeepAllAccounts(
-        signin_metrics::SIGNOUT_TEST,
-        signin_metrics::SignoutDelete::IGNORE_METRIC);
+    identity_test_env_.ClearPrimaryAccount(
+        identity::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
   }
 
   void NotifyLogoutOfAllAccounts() {
-    fake_signin_manager_->SignOutAndRemoveAllAccounts(
-        signin_metrics::SIGNOUT_TEST,
-        signin_metrics::SignoutDelete::IGNORE_METRIC);
+    identity_test_env_.ClearPrimaryAccount(
+        identity::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
   }
 #endif
 
-  std::string AddAccountWithToken(const std::string& gaia,
-                                  const std::string& email) {
-    std::string account_id =
-        account_tracker_service_.SeedAccountInfo(gaia, email);
-    fake_oauth2_token_service_->UpdateCredentials(account_id,
-                                                  "fake_refresh_token");
-    return account_id;
+  std::string AddAccountWithToken(const std::string& email) {
+    return identity_test_env_.MakeAccountAvailable(email).account_id;
   }
 
   void NotifyTokenAvailable(const std::string& account_id) {
-    fake_oauth2_token_service_->UpdateCredentials(account_id,
-                                                  "fake_refresh_token");
+    identity_test_env_.SetRefreshTokenForAccount(account_id);
   }
 
   void NotifyTokenRevoked(const std::string& account_id) {
-    fake_oauth2_token_service_->RevokeCredentials(account_id);
+    identity_test_env_.RemoveRefreshTokenForAccount(account_id);
   }
 
   // Helpers to fake access token and user info fetching
   void IssueAccessToken(const std::string& account_id) {
-    fake_oauth2_token_service_->IssueAllTokensForAccount(
+    identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         account_id, "access_token-" + account_id, base::Time::Max());
   }
 
@@ -366,8 +317,7 @@ class AccountTrackerTest : public testing::Test {
 
   std::string SetupPrimaryLogin() {
     // Initial setup for tests that start with a signed in profile.
-    std::string primary_account_id =
-        SetActiveAccount(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+    std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
     NotifyTokenAvailable(primary_account_id);
     ReturnOAuthUrlFetchSuccess(primary_account_id);
     observer()->Clear();
@@ -378,11 +328,7 @@ class AccountTrackerTest : public testing::Test {
  private:
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
   net::TestURLFetcherFactory test_fetcher_factory_;
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  AccountTrackerService account_tracker_service_;
-  std::unique_ptr<TestSigninClient> test_signin_client_;
-  std::unique_ptr<SigninManagerForTest> fake_signin_manager_;
-  std::unique_ptr<FakeProfileOAuth2TokenService> fake_oauth2_token_service_;
+  identity::IdentityTestEnvironment identity_test_env_;
 
   std::unique_ptr<AccountTracker> account_tracker_;
   AccountTrackerObserver observer_;
@@ -417,8 +363,8 @@ void AccountTrackerTest::ReturnOAuthUrlFetchFailure(
 // Primary tests just involve the Active account
 
 TEST_F(AccountTrackerTest, PrimaryNoEventsBeforeLogin) {
-  NotifyTokenAvailable("dummy_account_id");
-  NotifyTokenRevoked("dummy_account_id");
+  std::string account_id = AddAccountWithToken("me@dummy.com");
+  NotifyTokenRevoked(account_id);
 
 // Logout is not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
@@ -429,8 +375,7 @@ TEST_F(AccountTrackerTest, PrimaryNoEventsBeforeLogin) {
 }
 
 TEST_F(AccountTrackerTest, PrimaryLoginThenTokenAvailable) {
-  std::string primary_account_id =
-      SetActiveAccount(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   EXPECT_TRUE(observer()->CheckEvents());
 
@@ -441,32 +386,29 @@ TEST_F(AccountTrackerTest, PrimaryLoginThenTokenAvailable) {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(AccountTrackerTest, PrimaryTokenAvailableThenLogin) {
-  AddAccountWithToken(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  AddAccountWithToken(kPrimaryAccountEmail);
   EXPECT_TRUE(observer()->CheckEvents());
 
-  std::string primary_account_id =
-      NotifyLogin(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   ReturnOAuthUrlFetchSuccess(primary_account_id);
   EXPECT_TRUE(
       observer()->CheckEvents(TrackingEvent(SIGN_IN, primary_account_id)));
 }
 
 TEST_F(AccountTrackerTest, PrimaryTokenAvailableAndRevokedThenLogin) {
-  std::string primary_account_id =
-      AddAccountWithToken(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = AddAccountWithToken(kPrimaryAccountEmail);
   EXPECT_TRUE(observer()->CheckEvents());
 
   NotifyTokenRevoked(primary_account_id);
   EXPECT_TRUE(observer()->CheckEvents());
 
-  NotifyLogin(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  SetActiveAccount(kPrimaryAccountEmail);
   EXPECT_TRUE(observer()->CheckEvents());
 }
 #endif
 
 TEST_F(AccountTrackerTest, PrimaryRevoke) {
-  std::string primary_account_id =
-      SetActiveAccount(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   ReturnOAuthUrlFetchSuccess(primary_account_id);
   observer()->Clear();
@@ -476,21 +418,22 @@ TEST_F(AccountTrackerTest, PrimaryRevoke) {
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, primary_account_id)));
 }
 
+// This test uses a logout flow, not possible on ChromeOS.
+#if !defined(OS_CHROMEOS)
 TEST_F(AccountTrackerTest, PrimaryRevokeThenLogin) {
-  std::string primary_account_id =
-      SetActiveAccount(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   ReturnOAuthUrlFetchSuccess(primary_account_id);
-  NotifyTokenRevoked(primary_account_id);
+  NotifyLogoutOfAllAccounts();
   observer()->Clear();
 
-  SetActiveAccount(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  SetActiveAccount(kPrimaryAccountEmail);
   EXPECT_TRUE(observer()->CheckEvents());
 }
+#endif
 
 TEST_F(AccountTrackerTest, PrimaryRevokeThenTokenAvailable) {
-  std::string primary_account_id =
-      SetActiveAccount(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   ReturnOAuthUrlFetchSuccess(primary_account_id);
   NotifyTokenRevoked(primary_account_id);
@@ -504,8 +447,7 @@ TEST_F(AccountTrackerTest, PrimaryRevokeThenTokenAvailable) {
 // These tests exercise true login/logout, which are not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
 TEST_F(AccountTrackerTest, PrimaryLogoutThenRevoke) {
-  std::string primary_account_id =
-      NotifyLogin(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   ReturnOAuthUrlFetchSuccess(primary_account_id);
   observer()->Clear();
@@ -519,14 +461,13 @@ TEST_F(AccountTrackerTest, PrimaryLogoutThenRevoke) {
 }
 
 TEST_F(AccountTrackerTest, PrimaryLogoutFetchCancelAvailable) {
-  std::string primary_account_id =
-      NotifyLogin(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   // TokenAvailable kicks off a fetch. Logout without satisfying it.
   NotifyLogoutOfAllAccounts();
   EXPECT_TRUE(observer()->CheckEvents());
 
-  SetActiveAccount(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   ReturnOAuthUrlFetchSuccess(primary_account_id);
   EXPECT_TRUE(
@@ -539,7 +480,7 @@ TEST_F(AccountTrackerTest, PrimaryLogoutFetchCancelAvailable) {
 TEST_F(AccountTrackerTest, Available) {
   SetupPrimaryLogin();
 
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
+  std::string account_id = AddAccountWithToken("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents());
 
   ReturnOAuthUrlFetchSuccess(account_id);
@@ -549,7 +490,7 @@ TEST_F(AccountTrackerTest, Available) {
 TEST_F(AccountTrackerTest, AvailableRevokeAvailable) {
   SetupPrimaryLogin();
 
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
+  std::string account_id = AddAccountWithToken("user@example.com");
   ReturnOAuthUrlFetchSuccess(account_id);
   NotifyTokenRevoked(account_id);
   EXPECT_TRUE(observer()->CheckEvents(TrackingEvent(SIGN_IN, account_id),
@@ -562,7 +503,7 @@ TEST_F(AccountTrackerTest, AvailableRevokeAvailable) {
 TEST_F(AccountTrackerTest, AvailableRevokeAvailableWithPendingFetch) {
   SetupPrimaryLogin();
 
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
+  std::string account_id = AddAccountWithToken("user@example.com");
   NotifyTokenRevoked(account_id);
   EXPECT_TRUE(observer()->CheckEvents());
 
@@ -574,7 +515,7 @@ TEST_F(AccountTrackerTest, AvailableRevokeAvailableWithPendingFetch) {
 TEST_F(AccountTrackerTest, AvailableRevokeRevoke) {
   SetupPrimaryLogin();
 
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
+  std::string account_id = AddAccountWithToken("user@example.com");
   ReturnOAuthUrlFetchSuccess(account_id);
   NotifyTokenRevoked(account_id);
   EXPECT_TRUE(observer()->CheckEvents(TrackingEvent(SIGN_IN, account_id),
@@ -587,7 +528,7 @@ TEST_F(AccountTrackerTest, AvailableRevokeRevoke) {
 TEST_F(AccountTrackerTest, AvailableAvailable) {
   SetupPrimaryLogin();
 
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
+  std::string account_id = AddAccountWithToken("user@example.com");
   ReturnOAuthUrlFetchSuccess(account_id);
   EXPECT_TRUE(observer()->CheckEvents(TrackingEvent(SIGN_IN, account_id)));
 
@@ -598,13 +539,12 @@ TEST_F(AccountTrackerTest, AvailableAvailable) {
 TEST_F(AccountTrackerTest, TwoAccounts) {
   SetupPrimaryLogin();
 
-  std::string alpha_account_id =
-      AddAccountWithToken("alpha", "alpha@example.com");
+  std::string alpha_account_id = AddAccountWithToken("alpha@example.com");
   ReturnOAuthUrlFetchSuccess(alpha_account_id);
   EXPECT_TRUE(
       observer()->CheckEvents(TrackingEvent(SIGN_IN, alpha_account_id)));
 
-  std::string beta_account_id = AddAccountWithToken("beta", "beta@example.com");
+  std::string beta_account_id = AddAccountWithToken("beta@example.com");
   ReturnOAuthUrlFetchSuccess(beta_account_id);
   EXPECT_TRUE(observer()->CheckEvents(TrackingEvent(SIGN_IN, beta_account_id)));
 
@@ -620,7 +560,7 @@ TEST_F(AccountTrackerTest, TwoAccounts) {
 TEST_F(AccountTrackerTest, AvailableTokenFetchFailAvailable) {
   SetupPrimaryLogin();
 
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
+  std::string account_id = AddAccountWithToken("user@example.com");
   ReturnOAuthUrlFetchFailure(account_id);
   EXPECT_TRUE(observer()->CheckEvents());
 
@@ -634,10 +574,9 @@ TEST_F(AccountTrackerTest, AvailableTokenFetchFailAvailable) {
 TEST_F(AccountTrackerTest, MultiSignOutSignIn) {
   std::string primary_account_id = SetupPrimaryLogin();
 
-  std::string alpha_account_id =
-      AddAccountWithToken("alpha", "alpha@example.com");
+  std::string alpha_account_id = AddAccountWithToken("alpha@example.com");
   ReturnOAuthUrlFetchSuccess(alpha_account_id);
-  std::string beta_account_id = AddAccountWithToken("beta", "beta@example.com");
+  std::string beta_account_id = AddAccountWithToken("beta@example.com");
   ReturnOAuthUrlFetchSuccess(beta_account_id);
 
   observer()->SortEventsByUser();
@@ -655,12 +594,11 @@ TEST_F(AccountTrackerTest, MultiSignOutSignIn) {
 
   // No events fire at all while profile is signed out.
   NotifyTokenRevoked(alpha_account_id);
-  std::string gamma_account_id =
-      AddAccountWithToken("gamma", "gamma@example.com");
+  std::string gamma_account_id = AddAccountWithToken("gamma@example.com");
   EXPECT_TRUE(observer()->CheckEvents());
 
   // Signing the profile in again will resume tracking all accounts.
-  NotifyLogin(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   ReturnOAuthUrlFetchSuccess(beta_account_id);
   ReturnOAuthUrlFetchSuccess(gamma_account_id);
@@ -685,10 +623,10 @@ TEST_F(AccountTrackerTest, MultiSignOutSignIn) {
 // Primary/non-primary interactions
 
 TEST_F(AccountTrackerTest, MultiNoEventsBeforeLogin) {
-  NotifyTokenAvailable("dummy_account_id");
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
-  NotifyTokenRevoked(account_id);
-  NotifyTokenRevoked("dummy_account_id");
+  std::string account_id1 = AddAccountWithToken("user@example.com");
+  std::string account_id2 = AddAccountWithToken("user2@example.com");
+  NotifyTokenRevoked(account_id2);
+  NotifyTokenRevoked(account_id1);
 
 // Logout is not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
@@ -701,11 +639,10 @@ TEST_F(AccountTrackerTest, MultiNoEventsBeforeLogin) {
 // This test exercises true login/logout, which are not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
 TEST_F(AccountTrackerTest, MultiLogoutRemovesAllAccounts) {
-  std::string primary_account_id =
-      NotifyLogin(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   ReturnOAuthUrlFetchSuccess(primary_account_id);
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
+  std::string account_id = AddAccountWithToken("user@example.com");
   ReturnOAuthUrlFetchSuccess(account_id);
   observer()->Clear();
 
@@ -718,11 +655,10 @@ TEST_F(AccountTrackerTest, MultiLogoutRemovesAllAccounts) {
 #endif
 
 TEST_F(AccountTrackerTest, MultiRevokePrimaryDoesNotRemoveAllAccounts) {
-  std::string primary_account_id =
-      SetActiveAccount(kPrimaryAccountGaiaId, kPrimaryAccountEmail);
+  std::string primary_account_id = SetActiveAccount(kPrimaryAccountEmail);
   NotifyTokenAvailable(primary_account_id);
   ReturnOAuthUrlFetchSuccess(primary_account_id);
-  std::string account_id = AddAccountWithToken("user", "user@example.com");
+  std::string account_id = AddAccountWithToken("user@example.com");
   ReturnOAuthUrlFetchSuccess(account_id);
   observer()->Clear();
 
@@ -749,9 +685,8 @@ TEST_F(AccountTrackerTest, GetAccountsSignedOut) {
 TEST_F(AccountTrackerTest, GetAccountsOnlyReturnAccountsWithTokens) {
   std::string primary_account_id = SetupPrimaryLogin();
 
-  std::string alpha_account_id =
-      AddAccountWithToken("alpha", "alpha@example.com");
-  std::string beta_account_id = AddAccountWithToken("beta", "beta@example.com");
+  std::string alpha_account_id = AddAccountWithToken("alpha@example.com");
+  std::string beta_account_id = AddAccountWithToken("beta@example.com");
   ReturnOAuthUrlFetchSuccess(beta_account_id);
 
   std::vector<AccountIds> ids = account_tracker()->GetAccounts();
@@ -765,10 +700,9 @@ TEST_F(AccountTrackerTest, GetAccountsOnlyReturnAccountsWithTokens) {
 TEST_F(AccountTrackerTest, GetAccountsSortOrder) {
   std::string primary_account_id = SetupPrimaryLogin();
 
-  std::string zeta_account_id = AddAccountWithToken("zeta", "zeta@example.com");
+  std::string zeta_account_id = AddAccountWithToken("zeta@example.com");
   ReturnOAuthUrlFetchSuccess(zeta_account_id);
-  std::string alpha_account_id =
-      AddAccountWithToken("alpha", "alpha@example.com");
+  std::string alpha_account_id = AddAccountWithToken("alpha@example.com");
   ReturnOAuthUrlFetchSuccess(alpha_account_id);
 
   // The primary account will be first in the vector. Remaining accounts
@@ -786,10 +720,9 @@ TEST_F(AccountTrackerTest, GetAccountsSortOrder) {
 TEST_F(AccountTrackerTest, GetAccountsReturnNothingWhenPrimarySignedOut) {
   std::string primary_account_id = SetupPrimaryLogin();
 
-  std::string zeta_account_id = AddAccountWithToken("zeta", "zeta@example.com");
+  std::string zeta_account_id = AddAccountWithToken("zeta@example.com");
   ReturnOAuthUrlFetchSuccess(zeta_account_id);
-  std::string alpha_account_id =
-      AddAccountWithToken("alpha", "alpha@example.com");
+  std::string alpha_account_id = AddAccountWithToken("alpha@example.com");
   ReturnOAuthUrlFetchSuccess(alpha_account_id);
 
   NotifyTokenRevoked(primary_account_id);

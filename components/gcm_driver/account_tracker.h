@@ -11,12 +11,11 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class GoogleServiceAuthError;
-class ProfileOAuth2TokenService;
 
 namespace net {
 class URLRequestContextGetter;
@@ -41,11 +40,9 @@ class AccountIdFetcher;
 // 2. Add/Remove and SignIn/SignOut pairs are always generated in order.
 // 3. SignIn follows Add, and there will be a SignOut between SignIn & Remove.
 // 4. If there is no primary account, there are no other accounts.
-class AccountTracker : public OAuth2TokenService::Observer,
-                       public SigninManagerBase::Observer {
+class AccountTracker : public identity::IdentityManager::Observer {
  public:
-  AccountTracker(SigninManagerBase* signin_manager,
-                 ProfileOAuth2TokenService* token_service,
+  AccountTracker(identity::IdentityManager* identity_manager,
                  net::URLRequestContextGetter* request_context_getter);
   ~AccountTracker() override;
 
@@ -77,19 +74,18 @@ class AccountTracker : public OAuth2TokenService::Observer,
     bool is_signed_in;
   };
 
-  // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_key) override;
-  void OnRefreshTokenRevoked(const std::string& account_key) override;
+  // identity::IdentityManager::Observer implementation.
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
+  void OnRefreshTokenRemovedForAccount(
+      const AccountInfo& account_info) override;
 
   void OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,
                               const std::string& gaia_id);
   void OnUserInfoFetchFailure(AccountIdFetcher* fetcher);
-
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
 
   void NotifySignInChanged(const AccountState& account);
 
@@ -106,8 +102,7 @@ class AccountTracker : public OAuth2TokenService::Observer,
   void StartFetchingUserInfo(const std::string& account_key);
   void DeleteFetcher(AccountIdFetcher* fetcher);
 
-  SigninManagerBase* signin_manager_;
-  ProfileOAuth2TokenService* token_service_;
+  identity::IdentityManager* identity_manager_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::map<std::string, std::unique_ptr<AccountIdFetcher>> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
@@ -115,10 +110,9 @@ class AccountTracker : public OAuth2TokenService::Observer,
   bool shutdown_called_;
 };
 
-class AccountIdFetcher : public OAuth2TokenService::Consumer,
-                         public gaia::GaiaOAuthClient::Delegate {
+class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
  public:
-  AccountIdFetcher(OAuth2TokenService* token_service,
+  AccountIdFetcher(identity::IdentityManager* identity_manager,
                    net::URLRequestContextGetter* request_context_getter,
                    AccountTracker* tracker,
                    const std::string& account_key);
@@ -128,12 +122,8 @@ class AccountIdFetcher : public OAuth2TokenService::Consumer,
 
   void Start();
 
-  // OAuth2TokenService::Consumer implementation.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void AccessTokenFetched(GoogleServiceAuthError error,
+                          identity::AccessTokenInfo access_token_info);
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnGetUserIdResponse(const std::string& gaia_id) override;
@@ -141,12 +131,12 @@ class AccountIdFetcher : public OAuth2TokenService::Consumer,
   void OnNetworkError(int response_code) override;
 
  private:
-  OAuth2TokenService* token_service_;
+  identity::IdentityManager* identity_manager_;
   net::URLRequestContextGetter* request_context_getter_;
   AccountTracker* tracker_;
   const std::string account_key_;
 
-  std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 };
 

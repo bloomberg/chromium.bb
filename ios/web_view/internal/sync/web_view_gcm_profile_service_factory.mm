@@ -12,11 +12,8 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -48,8 +45,6 @@ WebViewGCMProfileServiceFactory::WebViewGCMProfileServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "GCMProfileService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(WebViewSigninManagerFactory::GetInstance());
-  DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());
   DependsOn(WebViewIdentityManagerFactory::GetInstance());
 }
 
@@ -72,8 +67,6 @@ WebViewGCMProfileServiceFactory::BuildServiceInstanceFor(
       browser_state->GetSharedURLLoaderFactory(),
       version_info::Channel::UNKNOWN, GetProductCategoryForSubtypes(),
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state),
-      WebViewSigninManagerFactory::GetForBrowserState(browser_state),
-      WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       base::WrapUnique(new gcm::GCMClientFactory),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
