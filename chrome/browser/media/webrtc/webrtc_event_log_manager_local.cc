@@ -90,7 +90,11 @@ bool WebRtcLocalEventLogManager::EnableLogging(const base::FilePath& base_path,
   DCHECK_EQ(log_files_.size(), 0u);
 
   base_path_ = base_path;
-  max_log_file_size_bytes_ = max_file_size_bytes;
+
+  max_log_file_size_bytes_ =
+      (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize)
+          ? base::Optional<size_t>()
+          : base::Optional<size_t>(max_file_size_bytes);
 
   for (const PeerConnectionKey& peer_connection : active_peer_connections_) {
     if (log_files_.size() >= kMaxNumberLocalWebRtcEventLogFiles) {
@@ -127,9 +131,9 @@ bool WebRtcLocalEventLogManager::EventLogWrite(const PeerConnectionKey& key,
     return false;
   }
 
-  const bool write_successful = it->second.Write(message);
+  const bool write_successful = it->second->Write(message);
 
-  if (!write_successful || it->second.MaxSizeReached()) {
+  if (!write_successful || it->second->MaxSizeReached()) {
     CloseLogFile(it);
   }
 
@@ -169,6 +173,7 @@ void WebRtcLocalEventLogManager::SetClockForTesting(base::Clock* clock) {
 
 void WebRtcLocalEventLogManager::StartLogFile(const PeerConnectionKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(log_files_.find(key) == log_files_.end());
 
   // Add some information to the name given by the caller.
   base::FilePath file_path = GetFilePath(base_path_, key);
@@ -182,30 +187,27 @@ void WebRtcLocalEventLogManager::StartLogFile(const PeerConnectionKey& key) {
     return;  // No available file path was found.
   } else if (unique_number != 0) {
     // The filename is taken, but a unique number was found.
-    // TODO(eladalon): Fix the way the unique number is used.
-    // https://crbug.com/785333
+    // TODO(crbug.com/785333): Fix the way the unique number is used.
     file_path = file_path.InsertBeforeExtension(FILE_PATH_LITERAL(" (") +
                                                 IntToStringType(unique_number) +
                                                 FILE_PATH_LITERAL(")"));
   }
 
-  // Attempt to create the file.
-  constexpr int file_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE |
-                             base::File::FLAG_EXCLUSIVE_WRITE;
-  base::File file(file_path, file_flags);
-  if (!file.IsValid() || !file.created()) {
+  auto log_file =
+      log_file_writer_factory_.Create(file_path, max_log_file_size_bytes_);
+  if (!log_file) {
     LOG(WARNING) << "Couldn't create and/or open local WebRTC event log file.";
     return;
   }
 
-  // If the file was successfully created, it's now ready to be written to.
-  DCHECK(log_files_.find(key) == log_files_.end());
-  log_files_.emplace(
-      key, LogFile(file_path, std::move(file), max_log_file_size_bytes_));
+  const auto it = log_files_.emplace(key, std::move(log_file));
+  DCHECK(it.second);
 
   // The observer needs to be able to run on any TaskQueue.
   if (observer_) {
-    observer_->OnLocalLogStarted(key, file_path);
+    LogFilesMap::iterator map_iter = it.first;
+    // map_iter->second is a std::unique_ptr<LogFileWriter>.
+    observer_->OnLocalLogStarted(key, map_iter->second->path());
   }
 }
 
@@ -215,7 +217,7 @@ WebRtcLocalEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
 
   const PeerConnectionKey peer_connection = it->first;
 
-  it->second.Close();
+  it->second->Close();
   it = log_files_.erase(it);
 
   if (observer_) {
@@ -237,7 +239,7 @@ base::FilePath WebRtcLocalEventLogManager::GetFilePath(
     base::Time::Now().LocalExplode(&now);
   }
 
-  // [user_defined]_[date]_[time]_[render_process_id]_[lid].log
+  // [user_defined]_[date]_[time]_[render_process_id]_[lid].[extension]
   char stamp[100];
   int written =
       base::snprintf(stamp, arraysize(stamp), "%04d%02d%02d_%02d%02d_%d_%d",
@@ -247,6 +249,6 @@ base::FilePath WebRtcLocalEventLogManager::GetFilePath(
   CHECK_LT(static_cast<size_t>(written), arraysize(stamp));
 
   return base_path.InsertBeforeExtension(FILE_PATH_LITERAL("_"))
-      .InsertBeforeExtensionASCII(base::StringPiece(stamp))
-      .AddExtension(FILE_PATH_LITERAL("log"));
+      .AddExtension(log_file_writer_factory_.Extension())
+      .InsertBeforeExtensionASCII(base::StringPiece(stamp));
 }

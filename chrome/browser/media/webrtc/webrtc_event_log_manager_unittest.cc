@@ -36,6 +36,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager_unittest_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -67,6 +68,8 @@ using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
 using MockRenderProcessHost = content::MockRenderProcessHost;
 using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 using RenderProcessHost = content::RenderProcessHost;
+
+using Compression = WebRtcEventLogCompression;
 
 namespace {
 
@@ -236,6 +239,25 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     SetLocalLogsObserver(&local_observer_);
     SetRemoteLogsObserver(&remote_observer_);
     LoadProfiles();
+  }
+
+  void CreateWebRtcEventLogManager(
+      base::Optional<Compression> remote = base::Optional<Compression>()) {
+    DCHECK(!event_log_manager_);
+
+    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+
+    local_log_extension_ = kWebRtcEventLogUncompressedExtension;
+
+    if (remote.has_value()) {
+      auto factory = CreateLogFileWriterFactory(remote.value());
+      remote_log_extension_ = factory->Extension();
+      event_log_manager_->SetRemoteLogFileWriterFactoryForTesting(
+          std::move(factory));
+    } else {
+      // TODO(crbug.com/775415): Add GZIP support and make it on by default.
+      remote_log_extension_ = kWebRtcEventLogUncompressedExtension;
+    }
   }
 
   void LoadProfiles() {
@@ -550,6 +572,9 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
                                 const std::string& expected_event_log) {
     std::string file_contents;
     ASSERT_TRUE(base::ReadFileToString(file_path, &file_contents));
+
+    // TODO(crbug.com/775415): Support compression.
+    DCHECK(remote_log_extension_ == kWebRtcEventLogUncompressedExtension);
     EXPECT_EQ(file_contents, expected_event_log);
   }
 
@@ -597,6 +622,11 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
 
   // Unit under test.
   std::unique_ptr<WebRtcEventLogManager> event_log_manager_;
+
+  // Extensions associated with local/remote-bound event logs. Depends on
+  // whether they're compressed.
+  base::FilePath::StringPieceType local_log_extension_;
+  base::FilePath::StringPieceType remote_log_extension_;
 
   // The directory which will contain all profiles.
   base::ScopedTempDir profiles_dir_;
@@ -664,14 +694,17 @@ class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase,
     // Use a low delay, or the tests would run for quite a long time.
     scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
         ::switches::kWebRtcRemoteEventLogUploadDelayMs, "100");
-
-    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
 
+  ~WebRtcEventLogManagerTest() override = default;
+
   void SetUp() override {
+    CreateWebRtcEventLogManager(Compression::NONE);
+
     auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
         true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
     WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
+
     SetWebRtcEventLogUploaderFactoryForTesting(
         std::make_unique<NullWebRtcEventLogUploader::Factory>(false));
   }
@@ -763,7 +796,7 @@ class WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled
       scoped_feature_list_.InitAndDisableFeature(
           features::kWebRtcRemoteEventLog);
     }
-    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+    CreateWebRtcEventLogManager();
   }
 
   ~WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled() override =
@@ -783,7 +816,7 @@ class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
     scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
         ::switches::kWebRtcRemoteEventLogUploadDelayMs, "100");
 
-    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+    CreateWebRtcEventLogManager();
   }
 
   ~WebRtcEventLogManagerTestUploadSuppressionDisablingFlag() override = default;
@@ -806,7 +839,7 @@ class WebRtcEventLogManagerTestForNetworkConnectivity
     scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
         ::switches::kWebRtcRemoteEventLogUploadDelayMs, "100");
 
-    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+    CreateWebRtcEventLogManager();
   }
 
   ~WebRtcEventLogManagerTestForNetworkConnectivity() override = default;
@@ -831,7 +864,7 @@ class WebRtcEventLogManagerTestForNetworkConnectivity
     const base::FilePath file_path =
         remote_logs_dir.Append(kRemoteBoundWebRtcEventLogFileNamePrefix)
             .InsertBeforeExtensionASCII("01234567890123456789012345678901")
-            .AddExtension(kRemoteBoundWebRtcEventLogExtension);
+            .AddExtension(remote_log_extension_);
     constexpr int file_flags = base::File::FLAG_CREATE |
                                base::File::FLAG_WRITE |
                                base::File::FLAG_EXCLUSIVE_WRITE;
@@ -867,7 +900,7 @@ class WebRtcEventLogManagerTestUploadDelay
         ::switches::kWebRtcRemoteEventLogUploadDelayMs,
         std::to_string(upload_delay_ms));
 
-    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+    CreateWebRtcEventLogManager();
 
     WebRtcEventLogManagerTestBase::SetUp();
   }
@@ -886,7 +919,6 @@ class WebRtcEventLogManagerTestUploadDelay
 };
 
 namespace {
-
 class PeerConnectionTrackerProxyForTesting
     : public WebRtcEventLogManager::PeerConnectionTrackerProxy {
  public:
@@ -905,23 +937,11 @@ class PeerConnectionTrackerProxyForTesting
   WebRtcEventLogManagerTestBase* const test_;
 };
 
-#if defined(OS_POSIX)
-void RemoveWritePermissionsFromDirectory(const base::FilePath& path) {
-  int permissions;
-  ASSERT_TRUE(base::GetPosixFilePermissions(path, &permissions));
-  constexpr int write_permissions = base::FILE_PERMISSION_WRITE_BY_USER |
-                                    base::FILE_PERMISSION_WRITE_BY_GROUP |
-                                    base::FILE_PERMISSION_WRITE_BY_OTHERS;
-  permissions &= ~write_permissions;
-  ASSERT_TRUE(base::SetPosixFilePermissions(path, permissions));
-}
-#endif  // defined(OS_POSIX)
-
-// The factory for the following fake uploader produces a sequence of uploaders
-// which fail the test if given a file other than that which they expect. The
-// factory itself likewise fails the test if destroyed before producing all
-// expected uploaders, or if it's asked for more uploaders than it expects to
-// create. This allows us to test for sequences of uploads.
+// The factory for the following fake uploader produces a sequence of
+// uploaders which fail the test if given a file other than that which they
+// expect. The factory itself likewise fails the test if destroyed before
+// producing all expected uploaders, or if it's asked for more uploaders than
+// it expects to create. This allows us to test for sequences of uploads.
 class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
  public:
   class Factory : public WebRtcEventLogUploader::Factory {
@@ -1470,7 +1490,7 @@ TEST_F(WebRtcEventLogManagerTest, LocalLogIllegalPath) {
 
 #if defined(OS_POSIX)
 TEST_F(WebRtcEventLogManagerTest, LocalLogLegalPathWithoutPermissionsSanity) {
-  RemoveWritePermissionsFromDirectory(local_logs_base_dir_.GetPath());
+  RemoveWritePermissions(local_logs_base_dir_.GetPath());
 
   // Since the log file won't be properly opened, these will not be called.
   EXPECT_CALL(local_observer_, OnLocalLogStarted(_, _)).Times(0);
@@ -1556,7 +1576,7 @@ TEST_F(WebRtcEventLogManagerTest, LocalLogFilenameMatchesExpectedFormat) {
   ASSERT_TRUE(file_path);
   ASSERT_FALSE(file_path->empty());
 
-  // [user_defined]_[date]_[time]_[render_process_id]_[lid].log
+  // [user_defined]_[date]_[time]_[render_process_id]_[lid].[extension]
   const StringType date = FILE_PATH_LITERAL("20170906");
   const StringType time = FILE_PATH_LITERAL("1043");
   base::FilePath expected_path = local_logs_base_path;
@@ -1564,7 +1584,7 @@ TEST_F(WebRtcEventLogManagerTest, LocalLogFilenameMatchesExpectedFormat) {
       FILE_PATH_LITERAL("_") + date + FILE_PATH_LITERAL("_") + time +
       FILE_PATH_LITERAL("_") + IntToStringType(rph_->GetID()) +
       FILE_PATH_LITERAL("_") + IntToStringType(kLid));
-  expected_path = expected_path.AddExtension(FILE_PATH_LITERAL("log"));
+  expected_path = expected_path.AddExtension(local_log_extension_);
 
   EXPECT_EQ(file_path, expected_path);
 }
@@ -1603,7 +1623,7 @@ TEST_F(WebRtcEventLogManagerTest,
   ASSERT_TRUE(file_path_1);
   ASSERT_FALSE(file_path_1->empty());
 
-  // [user_defined]_[date]_[time]_[render_process_id]_[lid].log
+  // [user_defined]_[date]_[time]_[render_process_id]_[lid].[extension]
   const StringType date = FILE_PATH_LITERAL("20170906");
   const StringType time = FILE_PATH_LITERAL("1043");
   base::FilePath expected_path_1 = local_logs_base_path;
@@ -1611,7 +1631,7 @@ TEST_F(WebRtcEventLogManagerTest,
       FILE_PATH_LITERAL("_") + date + FILE_PATH_LITERAL("_") + time +
       FILE_PATH_LITERAL("_") + IntToStringType(rph_->GetID()) +
       FILE_PATH_LITERAL("_") + IntToStringType(kLid));
-  expected_path_1 = expected_path_1.AddExtension(FILE_PATH_LITERAL("log"));
+  expected_path_1 = expected_path_1.AddExtension(local_log_extension_);
 
   ASSERT_EQ(file_path_1, expected_path_1);
 
@@ -1797,7 +1817,7 @@ TEST_F(WebRtcEventLogManagerTest,
   const base::FilePath expected_filename =
       base::FilePath(kRemoteBoundWebRtcEventLogFileNamePrefix)
           .InsertBeforeExtensionASCII(log_id)
-          .AddExtension(kRemoteBoundWebRtcEventLogExtension);
+          .AddExtension(remote_log_extension_);
   EXPECT_EQ(file_path->BaseName(), expected_filename);
 }
 
@@ -1810,6 +1830,9 @@ TEST_F(WebRtcEventLogManagerTest, StartRemoteLoggingCreatesEmptyFile) {
 
   ASSERT_TRUE(PeerConnectionAdded(rph_->GetID(), kLid));
   ASSERT_TRUE(StartRemoteLogging(rph_->GetID(), GetUniqueId(key)));
+
+  // Close file before examining its contents.
+  ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
 
   ExpectRemoteFileContents(*file_path, "");
 }
@@ -1894,6 +1917,9 @@ TEST_F(WebRtcEventLogManagerTest,
   const char* const log = "1 + 1 = 3";
   EXPECT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, log),
             std::make_pair(false, true));
+
+  // Close file before examining its contents.
+  ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
 
   ExpectRemoteFileContents(*file_path, log);
 }
@@ -2121,7 +2147,7 @@ TEST_F(WebRtcEventLogManagerTest,
   // permissions from it, thereby preventing it from being created again.
   UnloadProfiles();
   ASSERT_TRUE(base::DeleteFile(remote_logs_path, /*recursive=*/true));
-  RemoveWritePermissionsFromDirectory(browser_context_dir);
+  RemoveWritePermissions(browser_context_dir);
 
   // Graceful handling by BrowserContext::EnableForBrowserContext, despite
   // failing to create the remote logs' directory..
@@ -2161,7 +2187,7 @@ TEST_F(WebRtcEventLogManagerTest, GracefullyHandleFailureToStartRemoteLogFile) {
   // Remove write permissions from the directory.
   const base::FilePath remote_logs_path = RemoteBoundLogsDir(browser_context_);
   ASSERT_TRUE(base::DirectoryExists(remote_logs_path));
-  RemoveWritePermissionsFromDirectory(remote_logs_path);
+  RemoveWritePermissions(remote_logs_path);
 
   // StartRemoteLogging() will now fail.
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
@@ -2318,9 +2344,8 @@ TEST_F(WebRtcEventLogManagerTest,
   ASSERT_TRUE(CreateDirectory(remote_logs_dir));
 
   for (size_t i = 0; i < kMaxPendingRemoteBoundWebRtcEventLogs; ++i) {
-    const base::FilePath file_path =
-        remote_logs_dir.Append(IntToStringType(i))
-            .AddExtension(kRemoteBoundWebRtcEventLogExtension);
+    const base::FilePath file_path = remote_logs_dir.Append(IntToStringType(i))
+                                         .AddExtension(remote_log_extension_);
     constexpr int file_flags = base::File::FLAG_CREATE |
                                base::File::FLAG_WRITE |
                                base::File::FLAG_EXCLUSIVE_WRITE;
@@ -2460,7 +2485,7 @@ TEST_F(WebRtcEventLogManagerTest, UploadOrderDependsOnLastModificationTime) {
   for (size_t i = 0; i < kProfilesNum; ++i) {
     ASSERT_TRUE(base::DirectoryExists(remote_logs_dirs[i]));
     file_paths[i] = remote_logs_dirs[i].AppendASCII("file").AddExtension(
-        kRemoteBoundWebRtcEventLogExtension);
+        remote_log_extension_);
     ASSERT_TRUE(!base::PathExists(file_paths[i]));
     constexpr int file_flags = base::File::FLAG_CREATE |
                                base::File::FLAG_WRITE |
@@ -2522,7 +2547,7 @@ TEST_F(WebRtcEventLogManagerTest, ExpiredFilesArePrunedRatherThanUploaded) {
   base::FilePath file_paths[2];
   for (size_t i = 0; i < 2; ++i) {
     file_paths[i] = remote_logs_dir.Append(IntToStringType(i))
-                        .AddExtension(kRemoteBoundWebRtcEventLogExtension);
+                        .AddExtension(remote_log_extension_);
     constexpr int file_flags = base::File::FLAG_CREATE |
                                base::File::FLAG_WRITE |
                                base::File::FLAG_EXCLUSIVE_WRITE;
@@ -2609,7 +2634,7 @@ TEST_F(WebRtcEventLogManagerTest,
   const base::FilePath permissions_lacking_remote_logs_path =
       RemoteBoundLogsDir(browser_contexts[without_permissions]);
   ASSERT_TRUE(base::DirectoryExists(permissions_lacking_remote_logs_path));
-  RemoveWritePermissionsFromDirectory(permissions_lacking_remote_logs_path);
+  RemoveWritePermissions(permissions_lacking_remote_logs_path);
 
   // Fail to start a log associated with the permission-lacking directory.
   const auto without_permissions_key =
@@ -3597,7 +3622,7 @@ class WebRtcEventLogManagerTestOnMobileDevices
     // features::kWebRtcRemoteEventLog not defined on mobile, and can therefore
     // not be forced on. This test is here to make sure that when the feature
     // is changed to be on by default, it will still be off for mobile devices.
-    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+    CreateWebRtcEventLogManager();
   }
 };
 

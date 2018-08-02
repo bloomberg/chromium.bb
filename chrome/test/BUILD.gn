@@ -2986,6 +2986,8 @@ test("unit_tests") {
       "../browser/media/router/discovery/discovery_network_monitor_unittest.cc",
       "../browser/media/webrtc/tab_desktop_media_list_unittest.cc",
       "../browser/media/webrtc/webrtc_event_log_manager_unittest.cc",
+      "../browser/media/webrtc/webrtc_event_log_manager_unittest_helpers.cc",
+      "../browser/media/webrtc/webrtc_event_log_manager_unittest_helpers.h",
       "../browser/media/webrtc/webrtc_event_log_uploader_impl_unittest.cc",
       "../browser/media_galleries/fileapi/native_media_file_util_unittest.cc",
       "../browser/media_galleries/gallery_watch_manager_unittest.cc",

@@ -9,14 +9,15 @@
 #include <set>
 #include <string>
 
-#include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 
 class WebRtcLocalEventLogManager final {
-  using LogFilesMap = std::map<WebRtcEventLogPeerConnectionKey, LogFile>;
+  using LogFilesMap =
+      std::map<WebRtcEventLogPeerConnectionKey, std::unique_ptr<LogFileWriter>>;
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
  public:
@@ -48,13 +49,16 @@ class WebRtcLocalEventLogManager final {
   LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it);
 
   // Derives the name of a local log file. The format is:
-  // [user_defined]_[date]_[time]_[render_process_id]_[lid].log
+  // [user_defined]_[date]_[time]_[render_process_id]_[lid].[extension]
   base::FilePath GetFilePath(const base::FilePath& base_path,
                              const PeerConnectionKey& key) const;
 
   // This object is expected to be created and destroyed on the UI thread,
   // but live on its owner's internal, IO-capable task queue.
   SEQUENCE_CHECKER(io_task_sequence_checker_);
+
+  // Produces LogFileWriter instances, for writing the logs to files.
+  BaseLogFileWriterFactory log_file_writer_factory_;
 
   // Observer which will be informed whenever a local log file is started or
   // stopped. Through this, the owning WebRtcEventLogManager can be informed,
@@ -80,10 +84,9 @@ class WebRtcLocalEventLogManager final {
   // to this directory.
   base::FilePath base_path_;
 
-  // The maximum size for local logs, in bytes. Note that
-  // kWebRtcEventLogManagerUnlimitedFileSize is a sentinel value (with a
-  // self-explanatory name).
-  size_t max_log_file_size_bytes_;
+  // The maximum size for local logs, in bytes.
+  // If !has_value(), the value is unlimited.
+  base::Optional<size_t> max_log_file_size_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalEventLogManager);
 };
