@@ -47,17 +47,18 @@ void DesktopLinuxBrowserFrameViewLayout::LayoutNewStyleAvatar(
       new_avatar_button_->GetPreferredSize(),
       delegate_->GetTopAreaHeight() - TitlebarTopThickness(), &button_size,
       &button_spacing);
-  int extra_offset = has_trailing_buttons()
-                         ? nav_button_provider_->GetInterNavButtonSpacing()
-                         : 0;
+  const int extra_offset =
+      has_trailing_buttons() ? nav_button_provider_->GetInterNavButtonSpacing()
+                             : 0;
 
-  int total_width = button_size.width() + button_spacing.right() + extra_offset;
+  const int total_width =
+      button_size.width() + button_spacing.right() + extra_offset;
 
-  int button_x = host->width() - trailing_button_start_ - total_width;
-  int button_y = button_spacing.top() + TitlebarTopThickness();
+  const int button_x = available_space_trailing_x_ - total_width;
+  const int button_y = button_spacing.top() + TitlebarTopThickness();
 
   minimum_size_for_buttons_ += total_width;
-  trailing_button_start_ += total_width;
+  available_space_trailing_x_ -= total_width;
 
   new_avatar_button_->SetBounds(button_x, button_y, button_size.width(),
                                 button_size.height());

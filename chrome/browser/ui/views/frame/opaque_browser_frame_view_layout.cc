@@ -67,8 +67,8 @@ const int OpaqueBrowserFrameViewLayout::kNewTabCaptionCondensedSpacing = 16;
 
 OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout()
     : new_avatar_button_(nullptr),
-      leading_button_start_(0),
-      trailing_button_start_(0),
+      available_space_leading_x_(0),
+      available_space_trailing_x_(0),
       minimum_size_for_buttons_(0),
       has_leading_buttons_(false),
       has_trailing_buttons_(false),
@@ -96,9 +96,10 @@ void OpaqueBrowserFrameViewLayout::SetButtonOrdering(
 
 gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
     const gfx::Size& tabstrip_preferred_size,
-    int available_width) const {
+    int total_width) const {
   const int x = GetTabStripLeftInset();
-  available_width -= x + TabStripCaptionSpacing() + trailing_button_start_;
+  const int available_width =
+      available_space_trailing_x_ - x - TabStripCaptionSpacing();
   return gfx::Rect(x, GetTabStripInsetsTop(false), std::max(0, available_width),
                    tabstrip_preferred_size.height());
 }
@@ -126,7 +127,8 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
 }
 
 int OpaqueBrowserFrameViewLayout::GetTabStripLeftInset() const {
-  return leading_button_start_ + OpaqueBrowserFrameView::GetTabstripPadding();
+  return available_space_leading_x_ +
+         OpaqueBrowserFrameView::GetTabstripPadding();
 }
 
 gfx::Rect OpaqueBrowserFrameViewLayout::GetWindowBoundsForClientBounds(
@@ -289,22 +291,21 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
   if (!new_avatar_button_)
     return;
 
-  int button_width = new_avatar_button_->GetPreferredSize().width();
+  const int button_width = new_avatar_button_->GetPreferredSize().width();
   int button_width_with_offset = button_width;
   if (!trailing_buttons_.empty())
     button_width_with_offset += kCaptionSpacing;
 
-  int button_x =
-      host->width() - trailing_button_start_ - button_width_with_offset;
-  int button_y = DefaultCaptionButtonY(!IsTitleBarCondensed());
+  const int button_x = available_space_trailing_x_ - button_width_with_offset;
+  const int button_y = DefaultCaptionButtonY(!IsTitleBarCondensed());
 
   minimum_size_for_buttons_ += button_width_with_offset;
-  trailing_button_start_ += button_width_with_offset;
+  available_space_trailing_x_ -= button_width_with_offset;
 
   // In non-maximized mode, allow the new tab button to completely slide under
   // the avatar button.
   if (!IsTitleBarCondensed()) {
-    trailing_button_start_ -=
+    available_space_trailing_x_ +=
         delegate_->GetNewTabButtonPreferredSize().width() + kCaptionSpacing;
   }
 
@@ -395,9 +396,9 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
     const int y =
         unavailable_px_at_top + (NonClientTopHeight(false) - icon_height) / 2;
 
-    window_icon_bounds_ = gfx::Rect(leading_button_start_ + kIconLeftSpacing, y,
-                                    size, size);
-    leading_button_start_ += size + kIconLeftSpacing;
+    window_icon_bounds_ =
+        gfx::Rect(available_space_leading_x_ + kIconLeftSpacing, y, size, size);
+    available_space_leading_x_ += size + kIconLeftSpacing;
     minimum_size_for_buttons_ += size + kIconLeftSpacing;
   }
 
@@ -409,13 +410,13 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
     if (should_show_title) {
       window_title_->SetText(delegate_->GetWindowTitle());
 
-      int text_width = std::max(
-          0, host->width() - trailing_button_start_ - kCaptionSpacing -
-          leading_button_start_ - kIconTitleSpacing);
-      window_title_->SetBounds(leading_button_start_ + kIconTitleSpacing,
-                               window_icon_bounds_.y(),
-                               text_width, window_icon_bounds_.height());
-      leading_button_start_ += text_width + kIconTitleSpacing;
+      int text_width =
+          std::max(0, available_space_trailing_x_ - kCaptionSpacing -
+                          available_space_leading_x_ - kIconTitleSpacing);
+      window_title_->SetBounds(available_space_leading_x_ + kIconTitleSpacing,
+                               window_icon_bounds_.y(), text_width,
+                               window_icon_bounds_.height());
+      available_space_leading_x_ += text_width + kIconTitleSpacing;
     }
   }
 
@@ -435,15 +436,18 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
-  const int old_button_size = leading_button_start_ + trailing_button_start_;
+  const int old_button_size =
+      available_space_leading_x_ + host->width() - available_space_trailing_x_;
 
   // Any buttons/icon/title were laid out based on the frame border thickness,
   // but the tabstrip bounds need to be based on the non-client border thickness
   // on any side where there aren't other buttons forcing a larger inset.
   int min_button_width = NonClientBorderThickness();
-  leading_button_start_ = std::max(leading_button_start_, min_button_width);
+  available_space_leading_x_ =
+      std::max(available_space_leading_x_, min_button_width);
   // The trailing corner is a mirror of the leading one.
-  trailing_button_start_ = std::max(trailing_button_start_, min_button_width);
+  available_space_trailing_x_ =
+      std::min(available_space_trailing_x_, host->width() - min_button_width);
 
   if (incognito_icon_) {
     const int pad = OpaqueBrowserFrameView::GetAvatarIconPadding();
@@ -451,11 +455,11 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
     const int incognito_width = pad + size.width();
     int x;
     if (ShouldIncognitoIconBeOnRight()) {
-      trailing_button_start_ += incognito_width;
-      x = host->width() - trailing_button_start_;
+      available_space_trailing_x_ -= incognito_width;
+      x = available_space_trailing_x_;
     } else {
-      x = leading_button_start_ + pad;
-      leading_button_start_ += incognito_width;
+      x = available_space_leading_x_ + pad;
+      available_space_leading_x_ += incognito_width;
     }
     const int bottom =
         GetTabStripInsetsTop(false) + delegate_->GetTabStripHeight() - pad;
@@ -463,8 +467,8 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
                                size.height());
   }
 
-  minimum_size_for_buttons_ +=
-      (leading_button_start_ + trailing_button_start_ - old_button_size);
+  minimum_size_for_buttons_ += (available_space_leading_x_ + host->width() -
+                                available_space_trailing_x_ - old_button_size);
 }
 
 void OpaqueBrowserFrameViewLayout::ConfigureButton(views::View* host,
@@ -545,16 +549,16 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       int button_start_spacing =
           GetWindowCaptionSpacing(button_id, true, !has_leading_buttons_);
 
-      leading_button_start_ += button_start_spacing;
+      available_space_leading_x_ += button_start_spacing;
       minimum_size_for_buttons_ += button_start_spacing;
 
       bool top_spacing_clickable = title_bar_condensed;
       bool start_spacing_clickable =
           title_bar_condensed && !has_leading_buttons_;
       button->SetBounds(
-          leading_button_start_ - (start_spacing_clickable
-                                       ? button_start_spacing + extra_width
-                                       : 0),
+          available_space_leading_x_ - (start_spacing_clickable
+                                            ? button_start_spacing + extra_width
+                                            : 0),
           top_spacing_clickable ? 0 : caption_y,
           button_size.width() + (start_spacing_clickable
                                      ? button_start_spacing + extra_width
@@ -563,7 +567,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
 
       int button_end_spacing =
           GetWindowCaptionSpacing(button_id, false, !has_leading_buttons_);
-      leading_button_start_ += button_size.width() + button_end_spacing;
+      available_space_leading_x_ += button_size.width() + button_end_spacing;
       minimum_size_for_buttons_ += button_size.width() + button_end_spacing;
       has_leading_buttons_ = true;
       break;
@@ -572,14 +576,14 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       int button_start_spacing =
           GetWindowCaptionSpacing(button_id, true, !has_trailing_buttons_);
 
-      trailing_button_start_ += button_start_spacing;
+      available_space_trailing_x_ -= button_start_spacing;
       minimum_size_for_buttons_ += button_start_spacing;
 
       bool top_spacing_clickable = title_bar_condensed;
       bool start_spacing_clickable =
           title_bar_condensed && !has_trailing_buttons_;
       button->SetBounds(
-          host->width() - trailing_button_start_ - button_size.width(),
+          available_space_trailing_x_ - button_size.width(),
           top_spacing_clickable ? 0 : caption_y,
           button_size.width() + (start_spacing_clickable
                                      ? button_start_spacing + extra_width
@@ -588,7 +592,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
 
       int button_end_spacing =
           GetWindowCaptionSpacing(button_id, false, !has_trailing_buttons_);
-      trailing_button_start_ += button_size.width() + button_end_spacing;
+      available_space_trailing_x_ -= button_size.width() + button_end_spacing;
       minimum_size_for_buttons_ += button_size.width() + button_end_spacing;
       has_trailing_buttons_ = true;
       break;
@@ -659,9 +663,10 @@ void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
   TRACE_EVENT0("views.frame", "OpaqueBrowserFrameViewLayout::Layout");
   // Reset all our data so that everything is invisible.
   int top_area_padding = TopAreaPadding();
-  leading_button_start_ = top_area_padding;
-  trailing_button_start_ = top_area_padding;
-  minimum_size_for_buttons_ = leading_button_start_ + trailing_button_start_;
+  available_space_leading_x_ = top_area_padding;
+  available_space_trailing_x_ = host->width() - top_area_padding;
+  minimum_size_for_buttons_ =
+      available_space_leading_x_ + host->width() - available_space_trailing_x_;
   has_leading_buttons_ = false;
   has_trailing_buttons_ = false;
 
