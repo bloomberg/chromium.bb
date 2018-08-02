@@ -81,6 +81,8 @@ typedef unsigned PaintLayerFlags;
 
 struct PaintLayerPaintingInfo {
   STACK_ALLOCATED();
+
+ public:
   PaintLayerPaintingInfo(PaintLayer* in_root_layer,
                          const LayoutRect& in_dirty_rect,
                          GlobalPaintFlags global_paint_flags,

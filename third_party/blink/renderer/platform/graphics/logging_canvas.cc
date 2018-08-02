@@ -53,6 +53,8 @@ namespace {
 
 struct VerbParams {
   STACK_ALLOCATED();
+
+ public:
   String name;
   unsigned point_count;
   unsigned point_offset;

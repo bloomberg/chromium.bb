@@ -179,6 +179,8 @@ class CORE_EXPORT StyleResolver final
 
   struct CacheSuccess {
     STACK_ALLOCATED();
+
+   public:
     bool is_inherited_cache_hit;
     bool is_non_inherited_cache_hit;
     unsigned cache_hash;

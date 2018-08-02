@@ -47,6 +47,8 @@ using VTTRegionMap = HeapHashMap<String, Member<VTTRegion>>;
 
 struct VTTDisplayParameters {
   STACK_ALLOCATED();
+
+ public:
   VTTDisplayParameters();
 
   FloatPoint position;

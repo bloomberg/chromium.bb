@@ -74,6 +74,8 @@ class SVGPaintServer {
 // is set to a fallback color.
 struct SVGPaintDescription {
   STACK_ALLOCATED();
+
+ public:
   SVGPaintDescription()
       : resource(nullptr), is_valid(false), has_fallback(false) {}
   SVGPaintDescription(Color color)

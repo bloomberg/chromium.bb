@@ -82,6 +82,8 @@ class CORE_EXPORT ApplicationCacheHost final
 
   struct CacheInfo {
     STACK_ALLOCATED();
+
+   public:
     CacheInfo(const KURL& manifest,
               double creation_time,
               double update_time,

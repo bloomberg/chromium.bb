@@ -129,6 +129,8 @@ class ListHashSet {
 
   struct AddResult final {
     STACK_ALLOCATED();
+
+   public:
     friend class ListHashSet<ValueArg, inlineCapacity, HashArg, AllocatorArg>;
     AddResult(Node* node, bool is_new_entry)
         : stored_value(&node->value_),

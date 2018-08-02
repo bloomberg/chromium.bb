@@ -132,6 +132,8 @@ class SelectorChecker {
 
   struct MatchResult {
     STACK_ALLOCATED();
+
+   public:
     MatchResult() : dynamic_pseudo(kPseudoIdNone), specificity(0) {}
 
     PseudoId dynamic_pseudo;

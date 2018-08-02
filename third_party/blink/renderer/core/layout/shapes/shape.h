@@ -44,6 +44,8 @@ class FloatRoundedRect;
 
 struct LineSegment {
   STACK_ALLOCATED();
+
+ public:
   LineSegment() : logical_left(0), logical_right(0), is_valid(false) {}
 
   LineSegment(float logical_left, float logical_right)
@@ -68,6 +70,8 @@ class CORE_EXPORT Shape {
  public:
   struct DisplayPaths {
     STACK_ALLOCATED();
+
+   public:
     Path shape;
     Path margin_shape;
   };

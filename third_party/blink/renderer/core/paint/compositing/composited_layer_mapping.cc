@@ -2380,6 +2380,8 @@ void CompositedLayerMapping::UpdateShouldFlattenTransform() {
 
 struct AnimatingData {
   STACK_ALLOCATED();
+
+ public:
   Persistent<Node> owning_node = nullptr;
   Persistent<Element> animating_element = nullptr;
   const ComputedStyle* animating_style = nullptr;

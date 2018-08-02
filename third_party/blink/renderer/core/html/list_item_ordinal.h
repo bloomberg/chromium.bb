@@ -89,6 +89,8 @@ class CORE_EXPORT ListItemOrdinal {
   static Node* EnclosingList(const Node*);
   struct NodeAndOrdinal {
     STACK_ALLOCATED();
+
+   public:
     Persistent<const Node> node;
     ListItemOrdinal* ordinal = nullptr;
     operator bool() const { return node; }

@@ -27,6 +27,7 @@ struct CORE_EXPORT NGPaintFragmentWithContainerOffset {
 struct CORE_EXPORT NGPaintFragmentTraversalContext {
   STACK_ALLOCATED();
 
+ public:
   static NGPaintFragmentTraversalContext Create(const NGPaintFragment*);
 
   bool IsNull() const { return !parent; }

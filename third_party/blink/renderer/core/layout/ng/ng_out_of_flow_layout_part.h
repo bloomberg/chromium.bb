@@ -59,6 +59,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   //    Inline containing block is positioned wrt default containing block.
   struct ContainingBlockInfo {
     STACK_ALLOCATED();
+
+   public:
     // Containing block style.
     const ComputedStyle* style;
     // Logical in containing block coordinates.

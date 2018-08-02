@@ -113,13 +113,15 @@ class CORE_EXPORT SerializedScriptValue
   };
 
   struct SerializeOptions {
+    STACK_ALLOCATED();
+
+   public:
     enum WasmSerializationPolicy {
       kUnspecified,  // Invalid value, used as default initializer.
       kTransfer,     // In-memory transfer without (necessarily) serializing.
       kSerialize,    // Serialize to a byte stream.
       kBlockedInNonSecureContext  // Block transfer or serialization.
     };
-    STACK_ALLOCATED();
 
     SerializeOptions() = default;
     explicit SerializeOptions(StoragePolicy for_storage)
@@ -159,6 +161,8 @@ class CORE_EXPORT SerializedScriptValue
   // case of failure.
   struct DeserializeOptions {
     STACK_ALLOCATED();
+
+   public:
     MessagePortArray* message_ports = nullptr;
     const WebBlobInfoArray* blob_info = nullptr;
     bool read_wasm_from_stream = false;

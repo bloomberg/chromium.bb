@@ -102,6 +102,7 @@ EphemeralRangeInFlatTree ComputeRangeSurroundingCaret(
 struct SuggestionInfosWithNodeAndHighlightColor {
   STACK_ALLOCATED();
 
+ public:
   Persistent<Node> text_node;
   Color highlight_color;
   Vector<TextSuggestionInfo> suggestion_infos;

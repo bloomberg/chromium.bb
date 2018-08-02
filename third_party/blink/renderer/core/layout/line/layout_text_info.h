@@ -33,6 +33,8 @@ class Font;
 
 struct LayoutTextInfo {
   STACK_ALLOCATED();
+
+ public:
   LayoutTextInfo() : text_(nullptr), font_(nullptr) {}
 
   LineLayoutText text_;

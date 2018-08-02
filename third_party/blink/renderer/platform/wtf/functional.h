@@ -208,7 +208,9 @@ struct CheckGCedTypeRestriction {
                 "WrapWeakPersistent, WrapCrossThreadPersistent or "
                 "WrapCrossThreadWeakPersistent.");
   static_assert(!WTF::IsGarbageCollectedType<T>::value,
-                "GCed type is forbidden as a bound parameters.");
+                "GCed types are forbidden as bound parameters.");
+  static_assert(!WTF::IsStackAllocatedType<T>::value,
+                "Stack allocated types are forbidden as bound parameters.");
 };
 
 template <typename Index, typename... Args>

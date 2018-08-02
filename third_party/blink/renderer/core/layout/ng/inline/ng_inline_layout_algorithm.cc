@@ -36,6 +36,8 @@ namespace {
 // Represents a data struct that are needed for 'text-align' and justifications.
 struct NGLineAlign {
   STACK_ALLOCATED();
+
+ public:
   NGLineAlign(const NGLineInfo&);
   NGLineAlign() = delete;
 

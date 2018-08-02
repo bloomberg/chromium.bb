@@ -121,6 +121,7 @@ enum class NamedItemType {
 struct FocusParams {
   STACK_ALLOCATED();
 
+ public:
   FocusParams() = default;
   FocusParams(SelectionBehaviorOnFocus selection,
               WebFocusType focus_type,
@@ -421,6 +422,8 @@ class CORE_EXPORT Element : public ContainerNode {
   enum class AttributeModificationReason { kDirectly, kByParser, kByCloning };
   struct AttributeModificationParams {
     STACK_ALLOCATED();
+
+   public:
     AttributeModificationParams(const QualifiedName& qname,
                                 const AtomicString& old_value,
                                 const AtomicString& new_value,
