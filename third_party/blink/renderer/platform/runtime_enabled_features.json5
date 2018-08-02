@@ -556,6 +556,10 @@
       status: "experimental",
     },
     {
+      name: "GamepadButtonAxisEvents",
+      status: "experimental",
+    },
+    {
       name: "GamepadExtensions",
       status: "experimental",
     },
