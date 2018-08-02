@@ -1802,7 +1802,7 @@ TEST_P(QuicStreamFactoryTest,
   Initialize();
   // Use unmocked crypto stream to do crypto connect.
   crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -1863,7 +1863,7 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
   Initialize();
   // Use unmocked crypto stream to do crypto connect.
   crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -2188,12 +2188,12 @@ void QuicStreamFactoryTestBase::TestMigrationOnNetworkMadeDefault(
   // The response to the earlier request is read on the new socket.
   MockQuicData quic_data2;
   // Connectivity probe to be sent on the new path.
-  quic_data2.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(3, true, 1338));
+  quic_data2.AddWrite(SYNCHRONOUS,
+                      client_maker_.MakeConnectivityProbingPacket(3, true));
   quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
   // Connectivity probe to receive from the server.
-  quic_data2.AddRead(
-      ASYNC, server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  quic_data2.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(1, false));
   // Ping packet to send after migration is completed.
   quic_data2.AddWrite(ASYNC,
                       client_maker_.MakeAckAndPingPacket(4, false, 1, 1, 1));
@@ -2360,16 +2360,16 @@ TEST_P(QuicStreamFactoryTest, MigratedToBlockedSocketAfterProbing) {
   // The response to the earlier request is read on the new socket.
   MockQuicData quic_data2;
   // First connectivity probe to be sent on the new path.
-  quic_data2.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(3, true, 1338));
+  quic_data2.AddWrite(SYNCHRONOUS,
+                      client_maker_.MakeConnectivityProbingPacket(3, true));
   quic_data2.AddRead(ASYNC,
                      ERR_IO_PENDING);  // Pause so that we can control time.
   // Connectivity probe to receive from the server.
-  quic_data2.AddRead(
-      ASYNC, server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  quic_data2.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(1, false));
   // Second connectivity probe which will complete asynchronously.
-  quic_data2.AddWrite(
-      ASYNC, client_maker_.MakeConnectivityProbingPacket(4, true, 1338));
+  quic_data2.AddWrite(ASYNC,
+                      client_maker_.MakeConnectivityProbingPacket(4, true));
   quic_data2.AddRead(
       ASYNC, ConstructOkResponsePacket(2, GetNthClientInitiatedStreamId(0),
                                        false, false));
@@ -2596,12 +2596,12 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   // Set up the second socket data provider that is used for probing.
   MockQuicData quic_data1;
   // Connectivity probe to be sent on the new path.
-  quic_data1.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(2, true, 1338));
+  quic_data1.AddWrite(SYNCHRONOUS,
+                      client_maker_.MakeConnectivityProbingPacket(2, true));
   quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
   // Connectivity probe to receive from the server.
-  quic_data1.AddRead(
-      ASYNC, server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  quic_data1.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(1, false));
   quic_data1.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -3199,11 +3199,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
   MockQuicData quic_data2;
   // Connectivity probe to be sent on the new path.
   quic_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(
-                                       packet_number++, true, 1338));
+                                       packet_number++, true));
   quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
   // Connectivity probe to receive from the server.
-  quic_data2.AddRead(
-      ASYNC, server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  quic_data2.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(1, false));
   // Ping packet to send after migration is completed.
   quic_data2.AddWrite(ASYNC, client_maker_.MakeAckAndPingPacket(
                                  packet_number++, false, 1, 1, 1));
@@ -3476,11 +3476,11 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
   MockQuicData quic_data2;
   // Connectivity probe to be sent on the new path.
   quic_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(
-                                       packet_number++, false, 1338));
+                                       packet_number++, false));
   quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
   // Connectivity probe to receive from the server.
-  quic_data2.AddRead(
-      ASYNC, server_maker_.MakeConnectivityProbingPacket(3, false, 1338));
+  quic_data2.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(3, false));
   // Ping packet to send after migration is completed.
   quic_data2.AddWrite(
       write_mode_for_queued_packet,
@@ -3632,12 +3632,12 @@ TEST_P(QuicStreamFactoryTest, MigrateOnNewNetworkConnectAfterPathDegrading) {
   // The response to the earlier request is read on the new socket.
   MockQuicData quic_data2;
   // Connectivity probe to be sent on the new path.
-  quic_data2.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(3, true, 1338));
+  quic_data2.AddWrite(SYNCHRONOUS,
+                      client_maker_.MakeConnectivityProbingPacket(3, true));
   quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
   // Connectivity probe to receive from the server.
-  quic_data2.AddRead(
-      ASYNC, server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  quic_data2.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(1, false));
   // Ping packet to send after migration is completed.
   quic_data2.AddWrite(ASYNC,
                       client_maker_.MakeAckAndPingPacket(4, false, 1, 1, 1));
@@ -3982,12 +3982,12 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   // Set up the second socket data provider that is used for probing.
   MockQuicData quic_data1;
   // Connectivity probe to be sent on the new path.
-  quic_data1.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(2, true, 1338));
+  quic_data1.AddWrite(SYNCHRONOUS,
+                      client_maker_.MakeConnectivityProbingPacket(2, true));
   quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
   // Connectivity probe to receive from the server.
-  quic_data1.AddRead(
-      ASYNC, server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  quic_data1.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(1, false));
   quic_data1.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -4344,11 +4344,11 @@ TEST_P(QuicStreamFactoryTest, MigrateBackToDefaultPostMigrationOnWriteError) {
   // Set up the third socket data provider for migrate back to default network.
   MockQuicData quic_data3;
   // Connectivity probe to be sent on the new path.
-  quic_data3.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(3, false, 1338));
+  quic_data3.AddWrite(SYNCHRONOUS,
+                      client_maker_.MakeConnectivityProbingPacket(3, false));
   // Connectivity probe to receive from the server.
-  quic_data3.AddRead(
-      ASYNC, server_maker_.MakeConnectivityProbingPacket(2, false, 1338));
+  quic_data3.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(2, false));
   quic_data3.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   quic_data3.AddWrite(ASYNC, client_maker_.MakeAckPacket(4, 1, 2, 1, 1, true));
   quic_data3.AddWrite(
@@ -4391,7 +4391,7 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
 
   // Use unmocked crypto stream to do crypto connect.
   crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -5327,15 +5327,13 @@ TEST_P(QuicStreamFactoryTest, NoMigrationBeforeHandshakeOnNetworkDisconnected) {
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
 
-  // Use unmocked crypto stream to do crypto connect.
+  // Use cold start mode to do crypto connect, and send CHLO packet on wire.
   crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
 
-  // Add hanging socket data so that handshake is not confirmed when
-  // OnNetworkDisconnected is delivered.
   MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);   // Hanging read.
-  socket_data.AddWrite(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging write.
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ASYNC, client_maker_.MakeInitialDummyCHLOPacket());
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.

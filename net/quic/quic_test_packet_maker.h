@@ -50,11 +50,11 @@ class QuicTestPacketMaker {
   void set_hostname(const std::string& host);
   std::unique_ptr<quic::QuicReceivedPacket> MakeConnectivityProbingPacket(
       quic::QuicPacketNumber num,
-      bool include_version,
-      quic::QuicByteCount packet_length);
+      bool include_version);
   std::unique_ptr<quic::QuicReceivedPacket> MakePingPacket(
       quic::QuicPacketNumber num,
       bool include_version);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeInitialDummyCHLOPacket();
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndPingPacket(
       quic::QuicPacketNumber num,
       bool include_version,
