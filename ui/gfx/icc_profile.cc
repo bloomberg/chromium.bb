@@ -22,22 +22,6 @@ namespace {
 
 static const size_t kMaxCachedICCProfiles = 16;
 
-// An MRU cache mapping ColorSpace objects to the ICCProfile that created them.
-// This cache is necessary only on macOS, for power consumption reasons. In
-// particular:
-//  * IOSurfaces specify their output color space by raw ICC profile data.
-//  * If the IOSurface ICC profile does not exactly match the output monitor's
-//    ICC profile, there is a substantial power cost.
-//  * This structure allows us to retrieve the exact ICC profile data that
-//    produced a given ColorSpace.
-using SpaceToProfileCacheBase = base::MRUCache<ColorSpace, ICCProfile>;
-class SpaceToProfileCache : public SpaceToProfileCacheBase {
- public:
-  SpaceToProfileCache() : SpaceToProfileCacheBase(kMaxCachedICCProfiles) {}
-};
-base::LazyInstance<SpaceToProfileCache>::Leaky g_space_to_profile_cache_mac =
-    LAZY_INSTANCE_INITIALIZER;
-
 // An MRU cache mapping data to ICCProfile objects, to avoid re-parsing
 // profiles every time they are read.
 using DataToProfileCacheBase = base::MRUCache<std::vector<char>, ICCProfile>;
@@ -63,8 +47,7 @@ base::LazyInstance<IdToProfileCache>::Leaky g_id_to_profile_cache =
 // The next id to assign to a color profile.
 uint64_t g_next_unused_id = 1;
 
-// Lock that must be held to access |g_space_to_profile_cache_mac| and
-// |g_next_unused_id|.
+// Lock that must be held to access |g_next_unused_id|.
 base::LazyInstance<base::Lock>::Leaky g_icc_profile_lock =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -181,8 +164,6 @@ ICCProfile ICCProfile::FromDataWithId(const void* data_as_void,
 
   // Insert the profile into all caches.
   ColorSpace color_space = icc_profile.GetColorSpace();
-  if (color_space.IsValid())
-    g_space_to_profile_cache_mac.Get().Put(color_space, icc_profile);
   if (icc_profile.internals_->id_)
     g_id_to_profile_cache.Get().Put(icc_profile.internals_->id_, icc_profile);
   g_data_to_profile_cache.Get().Put(icc_profile.internals_->data_, icc_profile);
@@ -239,19 +220,6 @@ ICCProfile ICCProfile::FromParametricColorSpace(const ColorSpace& color_space) {
     return ICCProfile();
   }
   return FromDataWithId(data->data(), data->size(), 0);
-}
-
-// static
-ICCProfile ICCProfile::FromCacheMac(const ColorSpace& color_space) {
-  base::AutoLock lock(g_icc_profile_lock.Get());
-  auto found_by_space = g_space_to_profile_cache_mac.Get().Get(color_space);
-  if (found_by_space != g_space_to_profile_cache_mac.Get().end())
-    return found_by_space->second;
-
-  if (color_space.icc_profile_id_) {
-    DLOG(ERROR) << "Failed to find id-based ColorSpace in ICCProfile cache";
-  }
-  return ICCProfile();
 }
 
 // static

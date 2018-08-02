@@ -28,15 +28,6 @@ struct CONTENT_EXPORT ScreenInfo {
     // The color space of the output display.
     gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
-#if defined(OS_MACOSX)
-    // The ICC profile from which |color_space| was derived, if any. This is
-    // used only on macOS, to ensure that the color profile set on an IOSurface
-    // exactly match that of the display, when possible (because that has
-    // significant power implications).
-    // https://crbug.com/766736#c1
-    gfx::ICCProfile icc_profile;
-#endif
-
     // The screen depth in bits per pixel
     uint32_t depth = 0;
 

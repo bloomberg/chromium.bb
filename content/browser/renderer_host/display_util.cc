@@ -21,10 +21,6 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
   screen_info->available_rect = display.work_area();
   screen_info->device_scale_factor = display.device_scale_factor();
   screen_info->color_space = display.color_space();
-#if defined(OS_MACOSX)
-  screen_info->icc_profile =
-      gfx::ICCProfile::FromCacheMac(display.color_space());
-#endif
   screen_info->depth = display.color_depth();
   screen_info->depth_per_component = display.depth_per_component();
   screen_info->is_monochrome = display.is_monochrome();

@@ -11,7 +11,6 @@ typemaps = [
   "//ui/gfx/mojo/color_space.typemap",
   "//ui/gfx/mojo/font_render_params.typemap",
   "//ui/gfx/mojo/gpu_fence_handle.typemap",
-  "//ui/gfx/mojo/icc_profile.typemap",
   "//ui/gfx/mojo/overlay_transform.typemap",
   "//ui/gfx/mojo/presentation_feedback.typemap",
   "//ui/gfx/mojo/selection_bound.typemap",

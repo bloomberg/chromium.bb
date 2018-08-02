@@ -60,37 +60,6 @@ void ParamTraits<gfx::ColorSpace>::Log(const gfx::ColorSpace& p,
   l->append("<gfx::ColorSpace>");
 }
 
-void ParamTraits<gfx::ICCProfile>::Write(base::Pickle* m,
-                                         const gfx::ICCProfile& p) {
-  if (p.internals_) {
-    WriteParam(m, p.internals_->id_);
-    WriteParam(m, p.internals_->data_);
-  } else {
-    uint64_t id = 0;
-    std::vector<char> data;
-    WriteParam(m, id);
-    WriteParam(m, data);
-  }
-}
-
-bool ParamTraits<gfx::ICCProfile>::Read(const base::Pickle* m,
-                                        base::PickleIterator* iter,
-                                        gfx::ICCProfile* r) {
-  uint64_t id;
-  std::vector<char> data;
-  if (!ReadParam(m, iter, &id))
-    return false;
-  if (!ReadParam(m, iter, &data))
-    return false;
-  *r = gfx::ICCProfile::FromDataWithId(data.data(), data.size(), id);
-  return true;
-}
-
-void ParamTraits<gfx::ICCProfile>::Log(const gfx::ICCProfile& p,
-                                       std::string* l) {
-  l->append("<gfx::ICCProfile>");
-}
-
 }  // namespace IPC
 
 // Generate param traits write methods.
