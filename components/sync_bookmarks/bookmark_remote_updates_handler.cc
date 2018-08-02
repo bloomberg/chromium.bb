@@ -10,11 +10,11 @@
 #include <utility>
 
 #include "base/strings/string_piece.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/protocol/unique_position.pb.h"
+#include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 
 namespace sync_bookmarks {
 
@@ -43,74 +43,6 @@ const char kOtherBookmarksTag[] = "other_bookmarks";
 // similar to LookbackServerEntity::CreateId() that uses
 // GetSpecificsFieldNumberFromModelType() to compute the field number.
 const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
-
-// |sync_entity| must contain a bookmark specifics.
-// Metainfo entries must have unique keys.
-bookmarks::BookmarkNode::MetaInfoMap GetBookmarkMetaInfo(
-    const syncer::EntityData& sync_entity) {
-  const sync_pb::BookmarkSpecifics& specifics =
-      sync_entity.specifics.bookmark();
-  bookmarks::BookmarkNode::MetaInfoMap meta_info_map;
-  for (const sync_pb::MetaInfo& meta_info : specifics.meta_info()) {
-    meta_info_map[meta_info.key()] = meta_info.value();
-  }
-  DCHECK_EQ(static_cast<size_t>(specifics.meta_info_size()),
-            meta_info_map.size());
-  return meta_info_map;
-}
-
-// Creates a bookmark node under the given parent node from the given sync node.
-// Returns the newly created node. |sync_entity| must contain a bookmark
-// specifics with Metainfo entries having unique keys.
-const bookmarks::BookmarkNode* CreateBookmarkNode(
-    const syncer::EntityData& sync_entity,
-    const bookmarks::BookmarkNode* parent,
-    bookmarks::BookmarkModel* model,
-    int index) {
-  DCHECK(parent);
-  DCHECK(model);
-
-  const sync_pb::BookmarkSpecifics& specifics =
-      sync_entity.specifics.bookmark();
-  bookmarks::BookmarkNode::MetaInfoMap metainfo =
-      GetBookmarkMetaInfo(sync_entity);
-  if (sync_entity.is_folder) {
-    return model->AddFolderWithMetaInfo(
-        parent, index, base::UTF8ToUTF16(specifics.title()), &metainfo);
-  }
-  // 'creation_time_us' was added in M24. Assume a time of 0 means now.
-  const int64_t create_time_us = specifics.creation_time_us();
-  base::Time create_time =
-      (create_time_us == 0)
-          ? base::Time::Now()
-          : base::Time::FromDeltaSinceWindowsEpoch(
-                // Use FromDeltaSinceWindowsEpoch because create_time_us has
-                // always used the Windows epoch.
-                base::TimeDelta::FromMicroseconds(create_time_us));
-  return model->AddURLWithCreationTimeAndMetaInfo(
-      parent, index, base::UTF8ToUTF16(specifics.title()),
-      GURL(specifics.url()), create_time, &metainfo);
-  // TODO(crbug.com/516866): Add the favicon related code.
-}
-
-// Check whether an incoming specifics represent a valid bookmark or not.
-// |is_folder| is whether this specifics is for a folder or not.
-// Folders and tomstones entail different validation conditions.
-bool IsValidBookmark(const sync_pb::BookmarkSpecifics& specifics,
-                     bool is_folder) {
-  if (specifics.ByteSize() == 0) {
-    DLOG(ERROR) << "Invalid bookmark: empty specifics.";
-    return false;
-  }
-  if (is_folder) {
-    return true;
-  }
-  if (!GURL(specifics.url()).is_valid()) {
-    DLOG(ERROR) << "Invalid bookmark: invalid url in the specifics.";
-    return false;
-  }
-  return true;
-}
 
 // Recursive method to traverse a forest created by ReorderUpdates() to to
 // emit updates in top-down order. |ordered_updates| must not be null because
@@ -297,8 +229,8 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteCreate(
     AssociatePermanentFolder(update);
     return;
   }
-  if (!IsValidBookmark(update_entity.specifics.bookmark(),
-                       update_entity.is_folder)) {
+  if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
+                                update_entity.is_folder)) {
     // Ignore creations with invalid specifics.
     DLOG(ERROR) << "Couldn't add bookmark with an invalid specifics.";
     return;
@@ -311,10 +243,12 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteCreate(
                 << ", parent id = " << update_entity.parent_id;
     return;
   }
-  const bookmarks::BookmarkNode* bookmark_node = CreateBookmarkNode(
-      update_entity, parent_node, bookmark_model_,
-      ComputeChildNodeIndex(parent_node, update_entity.unique_position,
-                            bookmark_tracker_));
+  const bookmarks::BookmarkNode* bookmark_node =
+      CreateBookmarkNodeFromSpecifics(
+          update_entity.specifics.bookmark(), parent_node,
+          ComputeChildNodeIndex(parent_node, update_entity.unique_position,
+                                bookmark_tracker_),
+          update_entity.is_folder, bookmark_model_);
   if (!bookmark_node) {
     // We ignore bookmarks we can't add.
     DLOG(ERROR) << "Failed to create bookmark node with title "
@@ -338,8 +272,8 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
             bookmark_tracker_->GetEntityForSyncId(update_entity.id));
   // Must not be a deletion.
   DCHECK(!update_entity.is_deleted());
-  if (!IsValidBookmark(update_entity.specifics.bookmark(),
-                       update_entity.is_folder)) {
+  if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
+                                update_entity.is_folder)) {
     // Ignore updates with invalid specifics.
     DLOG(ERROR) << "Couldn't update bookmark with an invalid specifics.";
     return;
@@ -385,15 +319,8 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
                 << (node->is_folder() ? "folder" : "bookmark");
     return;
   }
-  const sync_pb::BookmarkSpecifics& specifics =
-      update_entity.specifics.bookmark();
-  if (!update_entity.is_folder) {
-    bookmark_model_->SetURL(node, GURL(specifics.url()));
-  }
-
-  bookmark_model_->SetTitle(node, base::UTF8ToUTF16(specifics.title()));
-  // TODO(crbug.com/516866): Add the favicon related code.
-  bookmark_model_->SetNodeMetaInfoMap(node, GetBookmarkMetaInfo(update_entity));
+  UpdateBookmarkNodeFromSpecifics(update_entity.specifics.bookmark(), node,
+                                  bookmark_model_);
   // Compute index information before updating the |bookmark_tracker_|.
   const int old_index = old_parent->GetIndexOf(node);
   const int new_index = ComputeChildNodeIndex(

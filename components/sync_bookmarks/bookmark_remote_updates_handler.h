@@ -23,7 +23,7 @@ namespace sync_bookmarks {
 // server.
 class BookmarkRemoteUpdatesHandler {
  public:
-  // |bookmark_model| and |bookmark_tracker| must not be null and most outlive
+  // |bookmark_model| and |bookmark_tracker| must not be null and must outlive
   // this object.
   BookmarkRemoteUpdatesHandler(bookmarks::BookmarkModel* bookmark_model,
                                SyncedBookmarkTracker* bookmark_tracker);
