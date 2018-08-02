@@ -401,6 +401,16 @@ class VR_UI_EXPORT UiElement : public cc::AnimationTarget {
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                 int target_property_id,
                                 cc::KeyframeModel* keyframe_model) override;
+  void NotifyClientFilterAnimated(const cc::FilterOperations& filter,
+                                  int target_property_id,
+                                  cc::KeyframeModel* keyframe_model) override {}
+  void NotifyClientColorAnimated(SkColor color,
+                                 int target_property_id,
+                                 cc::KeyframeModel* keyframe_model) override {}
+  void NotifyClientScrollOffsetAnimated(
+      const gfx::ScrollOffset& scroll_offset,
+      int target_property_id,
+      cc::KeyframeModel* keyframe_model) override {}
 
   void SetTransitionedProperties(const std::set<TargetProperty>& properties);
   void SetTransitionDuration(base::TimeDelta delta);
