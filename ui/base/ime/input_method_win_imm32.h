@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_INPUT_METHOD_WIN_H_
-#define UI_BASE_IME_INPUT_METHOD_WIN_H_
+#ifndef UI_BASE_IME_INPUT_METHOD_WIN_IMM32_H_
+#define UI_BASE_IME_INPUT_METHOD_WIN_IMM32_H_
 
 #include <windows.h>
 
@@ -17,11 +17,11 @@
 namespace ui {
 
 // A common InputMethod implementation based on IMM32.
-class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodWinBase {
+class UI_BASE_IME_EXPORT InputMethodWinImm32 : public InputMethodWinBase {
  public:
-  InputMethodWin(internal::InputMethodDelegate* delegate,
-                 HWND toplevel_window_handle);
-  ~InputMethodWin() override;
+  InputMethodWinImm32(internal::InputMethodDelegate* delegate,
+                      HWND toplevel_window_handle);
+  ~InputMethodWinImm32() override;
 
   // Overridden from InputMethodBase:
   void OnFocus() override;
@@ -109,11 +109,11 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodWinBase {
   HWND composing_window_handle_;
 
   // Used for making callbacks.
-  base::WeakPtrFactory<InputMethodWin> weak_ptr_factory_;
+  base::WeakPtrFactory<InputMethodWinImm32> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputMethodWin);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodWinImm32);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_INPUT_METHOD_WIN_H_
+#endif  // UI_BASE_IME_INPUT_METHOD_WIN_IMM32_H_
