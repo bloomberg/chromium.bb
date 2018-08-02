@@ -207,8 +207,8 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
     base::OnceClosure completed_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(peter): Should we do permission checks prior to forwarding to the
-  // NotificationEventDispatcher?
+  // TODO(https://crbug.com/870255): If permission is revoked, don't dispatch
+  // an event (still need to remove notification from database though).
 
   // If we programatically closed this notification, don't dispatch any event.
   if (closed_notifications_.erase(notification_id) != 0) {
