@@ -400,8 +400,6 @@ base::Time NotificationChannelsProviderAndroid::GetWebsiteSettingLastModified(
 void NotificationChannelsProviderAndroid::CreateChannelIfRequired(
     const std::string& origin_string,
     NotificationChannelStatus new_channel_status) {
-  // TODO(awdf): Maybe check cached incognito status here to make sure
-  // channels are never created in incognito mode.
   auto channel_entry = cached_channels_.find(origin_string);
   if (channel_entry == cached_channels_.end()) {
     base::Time timestamp = clock_->Now();
