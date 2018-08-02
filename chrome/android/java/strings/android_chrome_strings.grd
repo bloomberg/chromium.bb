@@ -2588,6 +2588,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Choose an account
       </message>
       <!-- Consent bump screen strings -->
+      <message name="IDS_CONSENT_BUMP_MORE_OPTIONS" desc="Text for the button in the basic consent bump screen that opens the advanced consent bump screen. The advanced consent bump screen lets the user select from several options to enable or customize personalized and non-personalized services. [CHAR-LIMIT=20]">
+        More options
+      </message>
       <message name="IDS_CONSENT_BUMP_TITLE" desc="Text for the title of the consent bump screen with advanced options. This screen lets user select from several options to enable or customize personalized and non-personalized services.">
         Control sync, personalization, and more
       </message>

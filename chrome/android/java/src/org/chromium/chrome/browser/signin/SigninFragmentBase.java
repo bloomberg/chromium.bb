@@ -74,13 +74,14 @@ public abstract class SigninFragmentBase
     private static final int ADD_ACCOUNT_REQUEST_CODE = 1;
 
     @IntDef({SigninFlowType.DEFAULT, SigninFlowType.FORCED, SigninFlowType.CHOOSE_ACCOUNT,
-            SigninFlowType.ADD_ACCOUNT})
+            SigninFlowType.ADD_ACCOUNT, SigninFlowType.CONSENT_BUMP})
     @Retention(RetentionPolicy.SOURCE)
     @interface SigninFlowType {
         int DEFAULT = 0;
         int FORCED = 1;
         int CHOOSE_ACCOUNT = 2;
         int ADD_ACCOUNT = 3;
+        int CONSENT_BUMP = 4;
     }
 
     private @SigninFlowType int mSigninFlowType;
@@ -153,6 +154,13 @@ public abstract class SigninFragmentBase
         result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SigninFlowType.FORCED);
         result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
         result.putInt(ARGUMENT_CHILD_ACCOUNT_STATUS, childAccountStatus);
+        return result;
+    }
+
+    /** Creates an argument bundle for the consent bump screen. */
+    protected static Bundle createArgumentsForConsentBumpFlow() {
+        Bundle result = new Bundle();
+        result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SigninFlowType.CONSENT_BUMP);
         return result;
     }
 
@@ -262,10 +270,12 @@ public abstract class SigninFragmentBase
         mView.getDetailsDescriptionView().setMovementMethod(LinkMovementMethod.getInstance());
 
         final Drawable endImageViewDrawable;
-        if (isForcedSignin()) {
+        if (mSigninFlowType == SigninFlowType.FORCED) {
             endImageViewDrawable = SigninView.getCheckmarkDrawable(getContext());
             mView.getRefuseButton().setVisibility(View.GONE);
             mView.getAcceptButtonEndPadding().setVisibility(View.INVISIBLE);
+        } else if (mSigninFlowType == SigninFlowType.CONSENT_BUMP) {
+            endImageViewDrawable = SigninView.getCheckmarkDrawable(getContext());
         } else {
             endImageViewDrawable = SigninView.getExpandArrowDrawable(getContext());
         }
