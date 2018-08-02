@@ -72,6 +72,13 @@ TEST_F(ClippingTextFieldContainerTest, DoesntClipWhenEntireURLFits) {
 }
 
 TEST_F(ClippingTextFieldContainerTest, ClipsLongPrefix) {
+  // TODO(crbug.com/860790) : remove this condition after fix.
+  if (@available(iOS 12, *)) {
+    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
+    // rendered when the backing layer is large (approx. 915 characters with
+    // current font).
+    return;
+  }
   NSString* text = @"http://verylongprefixwaymorethan200pts.google.com";
   [textField_ setText:text];
 
@@ -83,6 +90,14 @@ TEST_F(ClippingTextFieldContainerTest, ClipsLongPrefix) {
 }
 
 TEST_F(ClippingTextFieldContainerTest, ClipsLongSuffix) {
+  // TODO(crbug.com/860790) : remove this condition after fix.
+  if (@available(iOS 12, *)) {
+    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
+    // rendered when the backing layer is large (approx. 915 characters with
+    // current font).
+    return;
+  }
+
   NSString* text = @"http://www.google.com/verylongsuffixwaymorethan200pts";
   [textField_ setText:text];
 
@@ -93,6 +108,13 @@ TEST_F(ClippingTextFieldContainerTest, ClipsLongSuffix) {
 }
 
 TEST_F(ClippingTextFieldContainerTest, ClipsPrefixAndSuffix) {
+  // TODO(crbug.com/860790) : remove this condition after fix.
+  if (@available(iOS 12, *)) {
+    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
+    // rendered when the backing layer is large (approx. 915 characters with
+    // current font).
+    return;
+  }
   NSString* text =
       @"http://verylongprefixwaymorethan200pts.google.com/"
       @"verylongsuffixwaymorethan200pts";
@@ -109,6 +131,13 @@ TEST_F(ClippingTextFieldContainerTest, ClipsPrefixAndSuffix) {
 }
 
 TEST_F(ClippingTextFieldContainerTest, NoScheme) {
+  // TODO(crbug.com/860790) : remove this condition after fix.
+  if (@available(iOS 12, *)) {
+    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
+    // rendered when the backing layer is large (approx. 915 characters with
+    // current font).
+    return;
+  }
   NSString* text = @"www.google.com";
   [textField_ setText:text];
 
@@ -126,6 +155,13 @@ TEST_F(ClippingTextFieldContainerTest, NoScheme) {
 }
 
 TEST_F(ClippingTextFieldContainerTest, NoHost) {
+  // TODO(crbug.com/860790) : remove this condition after fix.
+  if (@available(iOS 12, *)) {
+    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
+    // rendered when the backing layer is large (approx. 915 characters with
+    // current font).
+    return;
+  }
   NSString* text = @"http://";
   [textField_ setText:text];
 
@@ -143,6 +179,13 @@ TEST_F(ClippingTextFieldContainerTest, NoHost) {
 }
 
 TEST_F(ClippingTextFieldContainerTest, DoesntClipWhenFocused) {
+  // TODO(crbug.com/860790) : remove this condition after fix.
+  if (@available(iOS 12, *)) {
+    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
+    // rendered when the backing layer is large (approx. 915 characters with
+    // current font).
+    return;
+  }
   NSString* text =
       @"http://verylongprefixwaymorethan200pts.google.com/"
       @"verylongsuffixwaymorethan200pts";
@@ -173,6 +216,13 @@ TEST_F(ClippingTextFieldContainerTest, DoesntClipWhenFocused) {
 }
 
 TEST_F(ClippingTextFieldContainerTest, ShowsDecorationsWhenClipping) {
+  // TODO(crbug.com/860790) : remove this condition after fix.
+  if (@available(iOS 12, *)) {
+    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
+    // rendered when the backing layer is large (approx. 915 characters with
+    // current font).
+    return;
+  }
   NSString* text =
       @"http://verylongprefixwaymorethan200pts.google.com/"
       @"verylongsuffixwaymorethan200pts";
