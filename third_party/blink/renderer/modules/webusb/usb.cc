@@ -276,12 +276,9 @@ bool USB::IsContextSupported() const {
   if (!context)
     return false;
 
-  DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope() ||
-         context->IsSharedWorkerGlobalScope());
+  DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope());
   DCHECK(!context->IsDedicatedWorkerGlobalScope() ||
          RuntimeEnabledFeatures::WebUSBOnDedicatedWorkersEnabled());
-  DCHECK(!context->IsSharedWorkerGlobalScope() ||
-         RuntimeEnabledFeatures::WebUSBOnSharedWorkersEnabled());
 
   return true;
 }
@@ -289,15 +286,7 @@ bool USB::IsContextSupported() const {
 bool USB::IsFeatureEnabled() const {
   ExecutionContext* context = GetExecutionContext();
   FeaturePolicy* policy = context->GetSecurityContext().GetFeaturePolicy();
-  // Feature policy is not yet supported in all contexts.
-  if (policy)
-    return policy->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb);
-
-  // TODO(https://crbug.com/843780): Enable this check for shared workers.
-  if (context->IsSharedWorkerGlobalScope())
-    return true;
-
-  return false;
+  return policy->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb);
 }
 
 void USB::Trace(blink::Visitor* visitor) {

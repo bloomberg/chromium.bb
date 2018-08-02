@@ -5,7 +5,7 @@
 // https://wicg.github.io/webusb/#usb
 
 [
-    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB),
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, Window WebUSB),
     SecureContext
 ] interface USB : EventTarget {
     attribute EventHandler onconnect;

@@ -42,11 +42,8 @@ USB* WorkerNavigatorUSB::usb(ScriptState* script_state) {
     bool isDedicatedWorkerAndEnabled =
         context->IsDedicatedWorkerGlobalScope() &&
         RuntimeEnabledFeatures::WebUSBOnDedicatedWorkersEnabled();
-    bool isSharedWorkerAndEnabled =
-        context->IsSharedWorkerGlobalScope() &&
-        RuntimeEnabledFeatures::WebUSBOnSharedWorkersEnabled();
 
-    if (isDedicatedWorkerAndEnabled || isSharedWorkerAndEnabled) {
+    if (isDedicatedWorkerAndEnabled) {
       usb_ = USB::Create(*context);
     }
   }
