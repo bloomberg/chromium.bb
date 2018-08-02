@@ -5,8 +5,10 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -16,16 +18,42 @@
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
 namespace {
+
+// Create a view to show the message that notifications are hidden. Shown when
+// screen is locked.
+views::View* CreateNotificationHiddenView() {
+  auto* label = new views::Label;
+  label->SetEnabledColor(kUnifiedMenuTextColor);
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetText(
+      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_UNIFIED));
+  label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  label->SetLineHeight(kUnifiedNotificationHiddenLineHeight);
+  label->SetBorder(views::CreateEmptyBorder(kUnifiedNotificationHiddenPadding));
+  label->SetBackground(views::CreateBackgroundFromPainter(
+      views::Painter::CreateSolidRoundRectPainter(kUnifiedMenuButtonColor,
+                                                  kUnifiedTrayCornerRadius)));
+
+  auto* view = new views::View;
+  view->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kUnifiedNotificationCenterSpacing)));
+  view->SetLayoutManager(std::make_unique<views::FillLayout>());
+  view->AddChildView(label);
+  return view;
+}
 
 std::unique_ptr<views::Background> CreateUnifiedBackground() {
   return views::CreateBackgroundFromPainter(
@@ -168,6 +196,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       message_center_view_(
           new UnifiedMessageCenterView(controller,
                                        message_center::MessageCenter::Get())),
+      notification_hidden_view_(CreateNotificationHiddenView()),
       top_shortcuts_view_(new TopShortcutsView(controller_)),
       feature_pods_container_(new FeaturePodsContainerView(initially_expanded)),
       sliders_container_(new UnifiedSlidersContainerView(initially_expanded)),
@@ -186,11 +215,19 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  SessionController* session_controller = Shell::Get()->session_controller();
+
   message_center_view_->SetVisible(
-      Shell::Get()->session_controller()->ShouldShowNotificationTray() &&
-      !Shell::Get()->session_controller()->IsScreenLocked());
+      session_controller->ShouldShowNotificationTray() &&
+      !session_controller->IsScreenLocked());
   AddChildView(message_center_view_);
   layout->SetFlexForView(message_center_view_, 1);
+
+  notification_hidden_view_->SetVisible(
+      session_controller->GetUserSession(0) &&
+      session_controller->IsScreenLocked() &&
+      !features::IsLockScreenNotificationsEnabled());
+  AddChildView(notification_hidden_view_);
 
   AddChildView(system_tray_container_);
 
