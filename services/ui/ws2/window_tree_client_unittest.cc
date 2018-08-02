@@ -488,11 +488,11 @@ class WindowTreeClientFactory {
 
 }  // namespace
 
-class WindowTreeClientTest2 : public WindowServerServiceTestBase {
+class WindowTreeClientTest : public WindowServerServiceTestBase {
  public:
-  WindowTreeClientTest2() : root_window_id_(0) {}
+  WindowTreeClientTest() : root_window_id_(0) {}
 
-  ~WindowTreeClientTest2() override {}
+  ~WindowTreeClientTest() override {}
 
  protected:
   // Returns the changes from the various clients.
@@ -647,11 +647,11 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
   Id root_window_id_;
   service_manager::BinderRegistry registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientTest2);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientTest);
 };
 
 // Verifies two clients get different ids.
-TEST_F(WindowTreeClientTest2, TwoClientsGetDifferentClientIds) {
+TEST_F(WindowTreeClientTest, TwoClientsGetDifferentClientIds) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
 
   ASSERT_EQ(1u, changes2()->size());
@@ -659,7 +659,7 @@ TEST_F(WindowTreeClientTest2, TwoClientsGetDifferentClientIds) {
 }
 
 // Verifies when Embed() is invoked any child windows are removed.
-TEST_F(WindowTreeClientTest2, WindowsRemovedWhenEmbedding) {
+TEST_F(WindowTreeClientTest, WindowsRemovedWhenEmbedding) {
   // Two windows 1 and 2. 2 is parented to 1.
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
@@ -732,7 +732,7 @@ TEST_F(WindowTreeClientTest2, WindowsRemovedWhenEmbedding) {
 
 // Verifies once Embed() has been invoked the parent client can't see any
 // children.
-TEST_F(WindowTreeClientTest2, CantAccessChildrenOfEmbeddedWindow) {
+TEST_F(WindowTreeClientTest, CantAccessChildrenOfEmbeddedWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
 
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
@@ -776,7 +776,7 @@ TEST_F(WindowTreeClientTest2, CantAccessChildrenOfEmbeddedWindow) {
 }
 
 // Verifies once Embed() has been invoked the parent can't mutate the children.
-TEST_F(WindowTreeClientTest2, CantModifyChildrenOfEmbeddedWindow) {
+TEST_F(WindowTreeClientTest, CantModifyChildrenOfEmbeddedWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
 
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
@@ -805,7 +805,7 @@ TEST_F(WindowTreeClientTest2, CantModifyChildrenOfEmbeddedWindow) {
 }
 
 // Verifies client gets a valid id.
-TEST_F(WindowTreeClientTest2, NewWindow) {
+TEST_F(WindowTreeClientTest, NewWindow) {
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
   EXPECT_TRUE(changes1()->empty());
@@ -821,7 +821,7 @@ TEST_F(WindowTreeClientTest2, NewWindow) {
 }
 
 // Verifies AddWindow fails when window is already in position.
-TEST_F(WindowTreeClientTest2, AddWindowWithNoChange) {
+TEST_F(WindowTreeClientTest, AddWindowWithNoChange) {
   // Create the embed point now so that the ids line up.
   ASSERT_TRUE(wt_client1()->NewWindow(1));
   Id window_1_21 = wt_client1()->NewWindow(21);
@@ -839,7 +839,7 @@ TEST_F(WindowTreeClientTest2, AddWindowWithNoChange) {
 }
 
 // Verifies AddWindow fails when window is already in position.
-TEST_F(WindowTreeClientTest2, AddAncestorFails) {
+TEST_F(WindowTreeClientTest, AddAncestorFails) {
   // Create the embed point now so that the ids line up.
   ASSERT_TRUE(wt_client1()->NewWindow(1));
   Id window_1_21 = wt_client1()->NewWindow(21);
@@ -857,7 +857,7 @@ TEST_F(WindowTreeClientTest2, AddAncestorFails) {
 }
 
 // Assertions around adding windows to the root.
-TEST_F(WindowTreeClientTest2, AddToRoot) {
+TEST_F(WindowTreeClientTest, AddToRoot) {
   // Create the embed point now so that the ids line up.
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
@@ -876,7 +876,7 @@ TEST_F(WindowTreeClientTest2, AddToRoot) {
   EXPECT_FALSE(wt_client1()->AddWindow(window_1_1, window_1_21));
 }
 
-TEST_F(WindowTreeClientTest2,
+TEST_F(WindowTreeClientTest,
        DISABLED_WindowHierarchyChangedAddingKnownToUnknown) {
   // Create the following structure: root -> 1 -> 11 and 2->21 (2 has no
   // parent).
@@ -932,7 +932,7 @@ TEST_F(WindowTreeClientTest2,
   }
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_ReorderWindow) {
+TEST_F(WindowTreeClientTest, DISABLED_ReorderWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
 
   Id window_2_1 = wt_client2()->NewWindow(1);
@@ -1017,7 +1017,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_ReorderWindow) {
 }
 
 // Verifies DeleteWindow works.
-TEST_F(WindowTreeClientTest2, DISABLED_DeleteWindow) {
+TEST_F(WindowTreeClientTest, DISABLED_DeleteWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
   Id window_2_1 = wt_client2()->NewWindow(1);
@@ -1052,7 +1052,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_DeleteWindow) {
 }
 
 // Verifies DeleteWindow() on the root suceeds.
-TEST_F(WindowTreeClientTest2, DeleteRoot) {
+TEST_F(WindowTreeClientTest, DeleteRoot) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
   EXPECT_TRUE(wt_client2()->DeleteWindow(window_1_1));
@@ -1072,7 +1072,7 @@ TEST_F(WindowTreeClientTest2, DeleteRoot) {
 }
 
 // Verifies DeleteWindow() on the root suceeds.
-TEST_F(WindowTreeClientTest2, DeleteRootWithChildren) {
+TEST_F(WindowTreeClientTest, DeleteRootWithChildren) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
   Id window_2_1 = wt_client2()->NewWindow(1);
@@ -1090,7 +1090,7 @@ TEST_F(WindowTreeClientTest2, DeleteRootWithChildren) {
 }
 
 // Verifies DeleteWindow isn't allowed from a separate client.
-TEST_F(WindowTreeClientTest2, DeleteWindowFromAnotherClientDisallowed) {
+TEST_F(WindowTreeClientTest, DeleteWindowFromAnotherClientDisallowed) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   // This id is unknown, so deletion should fail.
   EXPECT_FALSE(wt_client2()->DeleteWindow(BuildWindowId(client_id_1(), 2)));
@@ -1098,7 +1098,7 @@ TEST_F(WindowTreeClientTest2, DeleteWindowFromAnotherClientDisallowed) {
 
 // Verifies if a window was deleted and then reused that other clients are
 // properly notified.
-TEST_F(WindowTreeClientTest2, DISABLED_ReuseDeletedWindowId) {
+TEST_F(WindowTreeClientTest, DISABLED_ReuseDeletedWindowId) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
   Id window_2_1 = wt_client2()->NewWindow(1);
@@ -1152,7 +1152,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_ReuseDeletedWindowId) {
 }
 
 // Assertions for GetWindowTree.
-TEST_F(WindowTreeClientTest2, DISABLED_GetWindowTree) {
+TEST_F(WindowTreeClientTest, DISABLED_GetWindowTree) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
 
@@ -1218,7 +1218,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_GetWindowTree) {
   }
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_SetWindowBounds) {
+TEST_F(WindowTreeClientTest, DISABLED_SetWindowBounds) {
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
   ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window_1_1));
@@ -1252,7 +1252,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetWindowBounds) {
 }
 
 // Verify AddWindow fails when trying to manipulate windows in other roots.
-TEST_F(WindowTreeClientTest2, CantMoveWindowsFromOtherRoot) {
+TEST_F(WindowTreeClientTest, CantMoveWindowsFromOtherRoot) {
   // Create 1 and 2 in the first client.
   Id window_1_1 = wt_client1()->NewWindow(1);
   Id window_1_2 = wt_client1()->NewWindow(2);
@@ -1272,7 +1272,7 @@ TEST_F(WindowTreeClientTest2, CantMoveWindowsFromOtherRoot) {
 
 // Verify RemoveWindowFromParent fails for windows that are descendants of the
 // roots.
-TEST_F(WindowTreeClientTest2, CantRemoveWindowsInOtherRoots) {
+TEST_F(WindowTreeClientTest, CantRemoveWindowsInOtherRoots) {
   // Create 1 and 2 in the first client and parent both to the root.
   Id window_1_1 = wt_client1()->NewWindow(1);
   Id window_1_2 = wt_client1()->NewWindow(2);
@@ -1315,7 +1315,7 @@ TEST_F(WindowTreeClientTest2, CantRemoveWindowsInOtherRoots) {
 }
 
 // Verify GetWindowTree fails for windows that are not descendants of the roots.
-TEST_F(WindowTreeClientTest2, CantGetWindowTreeOfOtherRoots) {
+TEST_F(WindowTreeClientTest, CantGetWindowTreeOfOtherRoots) {
   // Create 1 and 2 in the first client and parent both to the root.
   Id window_1_1 = wt_client1()->NewWindow(1);
   Id window_1_2 = wt_client1()->NewWindow(2);
@@ -1346,7 +1346,7 @@ TEST_F(WindowTreeClientTest2, CantGetWindowTreeOfOtherRoots) {
             windows[0].ToString());
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_EmbedWithSameWindowId) {
+TEST_F(WindowTreeClientTest, DISABLED_EmbedWithSameWindowId) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   changes2()->clear();
 
@@ -1370,7 +1370,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedWithSameWindowId) {
   }
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_EmbedWithSameWindowId2) {
+TEST_F(WindowTreeClientTest, DISABLED_EmbedWithSameWindowId2) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
   changes2()->clear();
@@ -1452,7 +1452,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedWithSameWindowId2) {
 }
 
 // Assertions for SetWindowVisibility.
-TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibility) {
+TEST_F(WindowTreeClientTest, DISABLED_SetWindowVisibility) {
   // Create 1 and 2 in the first client and parent both to the root.
   Id window_1_1 = wt_client1()->NewWindow(1);
   Id window_1_2 = wt_client1()->NewWindow(2);
@@ -1526,7 +1526,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibility) {
 }
 
 // Test that we hear the cursor change in other clients.
-TEST_F(WindowTreeClientTest2, DISABLED_SetCursor) {
+TEST_F(WindowTreeClientTest, DISABLED_SetCursor) {
   // Get a second client to listen in.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
@@ -1541,7 +1541,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetCursor) {
 }
 
 // Assertions for SetWindowVisibility sending notifications.
-TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibilityNotifications) {
+TEST_F(WindowTreeClientTest, DISABLED_SetWindowVisibilityNotifications) {
   // Create client_id_1(),1 and client_id_1(),2. client_id_1(),2 is made a child
   // of client_id_1(),1 and client_id_1(),1 a child of the root.
   Id window_1_1 = wt_client1()->NewWindow(1);
@@ -1646,7 +1646,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibilityNotifications) {
 }
 
 // Assertions for SetWindowVisibility sending notifications.
-TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibilityNotifications2) {
+TEST_F(WindowTreeClientTest, DISABLED_SetWindowVisibilityNotifications2) {
   // Create client_id_1(),1 and client_id_1(),2. client_id_1(),2 is made a child
   // of client_id_1(),1 and client_id_1(),1 a child of the root.
   Id window_1_1 = wt_client1()->NewWindow(1);
@@ -1676,7 +1676,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibilityNotifications2) {
 }
 
 // Assertions for SetWindowVisibility sending notifications.
-TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibilityNotifications3) {
+TEST_F(WindowTreeClientTest, DISABLED_SetWindowVisibilityNotifications3) {
   // Create client_id_1(),1 and client_id_1(),2. client_id_1(),2 is made a child
   // of client_id_1(),1 and client_id_1(),1 a child of the root.
   Id window_1_1 = wt_client1()->NewWindow(1);
@@ -1721,7 +1721,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibilityNotifications3) {
 // Tests that when opacity is set on a window, that the calling client is not
 // notified, however children are. Also that setting the same opacity is
 // rejected and no one is notified.
-TEST_F(WindowTreeClientTest2, DISABLED_SetOpacityNotifications) {
+TEST_F(WindowTreeClientTest, DISABLED_SetOpacityNotifications) {
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
 
@@ -1753,7 +1753,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetOpacityNotifications) {
   EXPECT_TRUE(changes2()->empty());
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_SetWindowProperty) {
+TEST_F(WindowTreeClientTest, DISABLED_SetWindowProperty) {
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
 
@@ -1804,7 +1804,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetWindowProperty) {
   }
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_OnEmbeddedAppDisconnected) {
+TEST_F(WindowTreeClientTest, DISABLED_OnEmbeddedAppDisconnected) {
   // Create client 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
@@ -1833,7 +1833,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_OnEmbeddedAppDisconnected) {
 
 // Verifies when the parent of an Embed() is destroyed the embedded app gets
 // a WindowDeleted (and doesn't trigger a DCHECK).
-TEST_F(WindowTreeClientTest2, DISABLED_OnParentOfEmbedDisconnects) {
+TEST_F(WindowTreeClientTest, DISABLED_OnParentOfEmbedDisconnects) {
   // Create client 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
@@ -1860,7 +1860,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_OnParentOfEmbedDisconnects) {
 
 // Verifies WindowTreeImpl doesn't incorrectly erase from its internal
 // map when a window from another client with the same window_id is removed.
-TEST_F(WindowTreeClientTest2, DISABLED_DontCleanMapOnDestroy) {
+TEST_F(WindowTreeClientTest, DISABLED_DontCleanMapOnDestroy) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
   ASSERT_TRUE(wt_client2()->NewWindow(1));
@@ -1877,7 +1877,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_DontCleanMapOnDestroy) {
 }
 
 // Verifies Embed() works when supplying a WindowTreeClient.
-TEST_F(WindowTreeClientTest2, EmbedSupplyingWindowTreeClient) {
+TEST_F(WindowTreeClientTest, EmbedSupplyingWindowTreeClient) {
   ASSERT_TRUE(wt_client1()->NewWindow(1));
 
   TestWindowTreeClient2 client2;
@@ -1891,7 +1891,7 @@ TEST_F(WindowTreeClientTest2, EmbedSupplyingWindowTreeClient) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingToken) {
+TEST_F(WindowTreeClientTest, DISABLED_EmbedUsingToken) {
   // Embed client2.
   ASSERT_TRUE(wt_client1()->NewWindow(1));
   TestWindowTreeClient2 client2;
@@ -1931,7 +1931,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingToken) {
                                base::UnguessableToken::Create()));
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingTokenFailsWithInvalidWindow) {
+TEST_F(WindowTreeClientTest, DISABLED_EmbedUsingTokenFailsWithInvalidWindow) {
   // Embed client2.
   ASSERT_TRUE(wt_client1()->NewWindow(1));
   TestWindowTreeClient2 client2;
@@ -1957,7 +1957,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedUsingTokenFailsWithInvalidWindow) {
                                BuildWindowId(client_id_2(), 121), token));
 }
 
-TEST_F(WindowTreeClientTest2, EmbedFailsFromOtherClient) {
+TEST_F(WindowTreeClientTest, EmbedFailsFromOtherClient) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
 
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
@@ -1980,7 +1980,7 @@ TEST_F(WindowTreeClientTest2, EmbedFailsFromOtherClient) {
 }
 
 // Verifies Embed() from window manager on another clients window works.
-TEST_F(WindowTreeClientTest2, DISABLED_EmbedFromOtherClient) {
+TEST_F(WindowTreeClientTest, DISABLED_EmbedFromOtherClient) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
 
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
@@ -2000,7 +2000,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_EmbedFromOtherClient) {
   EXPECT_EQ(std::string(), SingleChangeToDescription(*changes2()));
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_CantEmbedFromClientRoot) {
+TEST_F(WindowTreeClientTest, DISABLED_CantEmbedFromClientRoot) {
   // Shouldn't be able to embed into the root.
   ASSERT_FALSE(EmbedUrl(connector(), wt1(), test_name(), root_window_id()));
 
@@ -2031,7 +2031,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_CantEmbedFromClientRoot) {
 }
 
 // Verifies that a transient window tracks its parent's lifetime.
-TEST_F(WindowTreeClientTest2,
+TEST_F(WindowTreeClientTest,
        DISABLED_TransientWindowTracksTransientParentLifetime) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
@@ -2085,7 +2085,7 @@ TEST_F(WindowTreeClientTest2,
             ChangesToDescription1(*changes1())[1]);
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_Ids) {
+TEST_F(WindowTreeClientTest, DISABLED_Ids) {
   const Id window_1_100 = wt_client1()->NewWindow(100);
   ASSERT_TRUE(window_1_100);
   ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window_1_100));
@@ -2132,7 +2132,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_Ids) {
 
 // Tests that setting capture fails when no input event has occurred, and there
 // is no notification of lost capture.
-TEST_F(WindowTreeClientTest2, ExplicitCaptureWithoutInput) {
+TEST_F(WindowTreeClientTest, ExplicitCaptureWithoutInput) {
   Id window_1_1 = wt_client1()->NewWindow(1);
 
   // Add the window to the root, so that they have a Display to handle input
@@ -2154,7 +2154,7 @@ TEST_F(WindowTreeClientTest2, ExplicitCaptureWithoutInput) {
 
 // TODO(jonross): Enable this once apptests can send input events to the server.
 // Enabling capture requires that the client be processing events.
-TEST_F(WindowTreeClientTest2, DISABLED_ExplicitCapturePropagation) {
+TEST_F(WindowTreeClientTest, DISABLED_ExplicitCapturePropagation) {
   Id window_1_1 = wt_client1()->NewWindow(1);
   Id window_1_2 = wt_client1()->NewWindow(2);
 
@@ -2181,7 +2181,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_ExplicitCapturePropagation) {
   EXPECT_TRUE(changes1()->empty());
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_SurfaceIdPropagation) {
+TEST_F(WindowTreeClientTest, DISABLED_SurfaceIdPropagation) {
   const Id window_1_100 = wt_client1()->NewWindow(100);
   ASSERT_TRUE(window_1_100);
   ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window_1_100));
@@ -2269,7 +2269,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SurfaceIdPropagation) {
 
 // Verifies when an unknown window with a known child is added to a hierarchy
 // the known child is identified in the WindowData.
-TEST_F(WindowTreeClientTest2, DISABLED_AddUnknownWindowKnownParent) {
+TEST_F(WindowTreeClientTest, DISABLED_AddUnknownWindowKnownParent) {
   const Id window_1_100 = wt_client1()->NewWindow(100);
   ASSERT_TRUE(window_1_100);
   ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window_1_100));
@@ -2300,7 +2300,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_AddUnknownWindowKnownParent) {
             ChangeWindowDescription(*changes1()));
 }
 
-TEST_F(WindowTreeClientTest2, DISABLED_Transform) {
+TEST_F(WindowTreeClientTest, DISABLED_Transform) {
   const Id window1 = wt_client1()->NewWindow(100);
   ASSERT_TRUE(window1);
   ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window1));
