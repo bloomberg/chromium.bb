@@ -103,8 +103,9 @@ void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
   // TODO(hcarmona): Any advice here would be helpful.
 
   // Show bookmark bubble.
-  ShowPromoDelegate::CreatePromoDelegate()->ShowForNode(
-      bookmark_model_->bookmark_bar_node()->GetChild(0));
+  ShowPromoDelegate::CreatePromoDelegate(
+      IDS_NUX_GOOGLE_APPS_DESCRIPTION_PROMO_BUBBLE)
+      ->ShowForNode(bookmark_model_->bookmark_bar_node()->GetChild(0));
 
   UMA_HISTOGRAM_ENUMERATION(kGoogleAppsInteractionHistogram,
                             GoogleAppsInteraction::kGetStarted,

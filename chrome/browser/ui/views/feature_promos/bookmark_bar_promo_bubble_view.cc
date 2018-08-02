@@ -11,23 +11,25 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 
-std::unique_ptr<ShowPromoDelegate> ShowPromoDelegate::CreatePromoDelegate() {
-  return std::make_unique<BookmarkBarPromoBubbleView>();
+std::unique_ptr<ShowPromoDelegate> ShowPromoDelegate::CreatePromoDelegate(
+    int string_specifier) {
+  return std::make_unique<BookmarkBarPromoBubbleView>(string_specifier);
 }
 
 struct BookmarkBarPromoBubbleView::BubbleImpl : public FeaturePromoBubbleView {
   // Anchors the BookmarkBarPromoBubbleView to |anchor_view|.
   // The bubble widget and promo are owned by their native widget.
-  explicit BubbleImpl(views::View* anchor_view)
+  explicit BubbleImpl(views::View* anchor_view, int string_specifier)
       : FeaturePromoBubbleView(anchor_view,
                                views::BubbleBorder::TOP_LEFT,
-                               IDS_BOOKMARK_BAR_PROMO_DEFAULT,
+                               string_specifier,
                                ActivationAction::DO_NOT_ACTIVATE) {}
 
   ~BubbleImpl() override = default;
 };
 
-BookmarkBarPromoBubbleView::BookmarkBarPromoBubbleView() = default;
+BookmarkBarPromoBubbleView::BookmarkBarPromoBubbleView(int string_specifier)
+    : string_specifier(string_specifier) {}
 
 void BookmarkBarPromoBubbleView::ShowForNode(
     const bookmarks::BookmarkNode* node) {
@@ -36,5 +38,5 @@ void BookmarkBarPromoBubbleView::ShowForNode(
           BrowserList::GetInstance()->GetLastActive())
           ->bookmark_bar()
           ->GetBookmarkButtonForNode(node);
-  new BookmarkBarPromoBubbleView::BubbleImpl(anchor_view);
+  new BookmarkBarPromoBubbleView::BubbleImpl(anchor_view, string_specifier);
 }
