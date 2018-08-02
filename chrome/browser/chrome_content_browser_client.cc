@@ -4532,6 +4532,13 @@ ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
       render_frame_host);
 }
 
+#if defined(OS_MACOSX)
+bool ChromeContentBrowserClient::
+    IsWebAuthenticationTouchIdAuthenticatorSupported() {
+  return true;
+}
+#endif
+
 std::unique_ptr<net::ClientCertStore>
 ChromeContentBrowserClient::CreateClientCertStore(
     content::ResourceContext* resource_context) {
