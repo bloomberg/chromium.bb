@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/vector_icons/vector_icons.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
@@ -226,8 +227,14 @@ ImageType ImageTypeForNetwork(const NetworkState* network, IconType icon_type) {
 }
 
 gfx::Size GetSizeForIconType(IconType icon_type) {
-  int side = icon_type == ICON_TYPE_TRAY ? kTrayIconSize : kMenuIconSize;
-  return gfx::Size(side, side);
+  int size = kMenuIconSize;
+  if (icon_type == ICON_TYPE_TRAY) {
+    size = kTrayIconSize;
+  } else if (features::IsSystemTrayUnifiedEnabled() &&
+             icon_type == ICON_TYPE_DEFAULT_VIEW) {
+    size = kUnifiedFeaturePodVectorIconSize;
+  }
+  return gfx::Size(size, size);
 }
 
 gfx::ImageSkia GetImageForIndex(ImageType image_type,
@@ -335,7 +342,9 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
                        IconType icon_type,
                        int strength_index) {
   if (network->Matches(NetworkTypePattern::Ethernet())) {
-    return gfx::CreateVectorIcon(kNetworkEthernetIcon,
+    return gfx::CreateVectorIcon(features::IsSystemTrayUnifiedEnabled()
+                                     ? vector_icons::kEthernetIcon
+                                     : kNetworkEthernetIcon,
                                  GetDefaultColorForIconType(icon_type));
   }
   if (network->Matches(NetworkTypePattern::Wireless())) {
