@@ -2079,6 +2079,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
         !command_line->HasSwitch(switches::kDisableBreakpad))
       command_line->AppendSwitch(switches::kDisableBreakpad);
+    static const char* const kSwitchNames[] = {
+        switches::kProfilingAtStart, switches::kProfilingFile,
+        switches::kProfilingFlush,
+    };
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                                   base::size(kSwitchNames));
   }
 
   StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(

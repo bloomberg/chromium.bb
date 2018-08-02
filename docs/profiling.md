@@ -52,6 +52,13 @@ To profile, e.g., every renderer process, add the following argument to your chr
 
     --enable-profiling --profiling-at-start=renderer --no-sandbox
 
+To profile the gpu process, add the following argument to your chrome invocation:
+
+    --enable-profiling --profiling-at-start=gpu-process --no-sandbox --profiling-flush
+
+The gpu process does not shut down cleanly and so requires periodic flushing to
+write the profile to disk.
+
 *** promo
 The --no-sandbox argument is required to allow the renderer process to write the profiling output to the file system.
 ***
