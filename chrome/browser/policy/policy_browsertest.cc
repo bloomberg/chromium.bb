@@ -37,6 +37,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -108,6 +109,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
+#include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_application_info.h"
@@ -190,6 +192,7 @@
 #include "content/public/test/network_service_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "extensions/browser/api/messaging/messaging_delegate.h"
@@ -970,22 +973,86 @@ class PolicyTest : public InProcessBrowserTest {
     UpdateProviderPolicy(policies);
   }
 
-  void CheckSafeSearch(bool expect_safe_search) {
+  static GURL GetExpectedSearchURL(bool expect_safe_search) {
+    std::string expected_url("http://google.com/");
+    if (expect_safe_search) {
+      expected_url += "?" +
+                      std::string(safe_search_util::kSafeSearchSafeParameter) +
+                      "&" + safe_search_util::kSafeSearchSsuiParameter;
+    }
+    return GURL(expected_url);
+  }
+
+  static void CheckSafeSearch(Browser* browser, bool expect_safe_search) {
     content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
+        browser->tab_strip_model()->GetActiveWebContents();
     content::TestNavigationObserver observer(web_contents);
-    LocationBar* location_bar = browser()->window()->GetLocationBar();
+    LocationBar* location_bar = browser->window()->GetLocationBar();
     ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
     OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
     observer.Wait();
     EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
+    EXPECT_EQ(GetExpectedSearchURL(expect_safe_search), web_contents->GetURL());
+  }
 
-    std::string expected_url("http://google.com/");
-    if (expect_safe_search) {
-      expected_url += "?" + std::string(chrome::kSafeSearchSafeParameter) +
-                      "&" + chrome::kSafeSearchSsuiParameter;
+  static void CheckYouTubeRestricted(
+      int youtube_restrict_mode,
+      const std::map<GURL, net::HttpRequestHeaders>& urls_requested,
+      const GURL& url) {
+    auto iter = urls_requested.find(url);
+    ASSERT_TRUE(iter != urls_requested.end());
+    std::string header;
+    iter->second.GetHeader(safe_search_util::kYouTubeRestrictHeaderName,
+                           &header);
+    if (youtube_restrict_mode == safe_search_util::YOUTUBE_RESTRICT_OFF) {
+      EXPECT_TRUE(header.empty());
+    } else if (youtube_restrict_mode ==
+               safe_search_util::YOUTUBE_RESTRICT_MODERATE) {
+      EXPECT_EQ(header, safe_search_util::kYouTubeRestrictHeaderValueModerate);
+    } else if (youtube_restrict_mode ==
+               safe_search_util::YOUTUBE_RESTRICT_STRICT) {
+      EXPECT_EQ(header, safe_search_util::kYouTubeRestrictHeaderValueStrict);
     }
-    EXPECT_EQ(GURL(expected_url), web_contents->GetURL());
+  }
+
+  static void CheckAllowedDomainsHeader(
+      const std::string& allowed_domain,
+      const std::map<GURL, net::HttpRequestHeaders>& urls_requested,
+      const GURL& url) {
+    auto iter = urls_requested.find(url);
+    ASSERT_TRUE(iter != urls_requested.end());
+    if (allowed_domain.empty()) {
+      EXPECT_TRUE(
+          !iter->second.HasHeader(safe_search_util::kGoogleAppsAllowedDomains));
+      return;
+    }
+
+    std::string header;
+    iter->second.GetHeader(safe_search_util::kGoogleAppsAllowedDomains,
+                           &header);
+    EXPECT_EQ(header, allowed_domain);
+  }
+
+  static bool FetchSubresource(content::WebContents* web_contents,
+                               const GURL& url) {
+    std::string script(
+        "var xhr = new XMLHttpRequest();"
+        "xhr.open('GET', '");
+    script += url.spec() +
+              "', true);"
+              "xhr.onload = function (e) {"
+              "  if (xhr.readyState === 4) {"
+              "    window.domAutomationController.send(xhr.status === 200);"
+              "  }"
+              "};"
+              "xhr.onerror = function () {"
+              "  window.domAutomationController.send(false);"
+              "};"
+              "xhr.send(null)";
+    bool xhr_result = false;
+    bool execute_result =
+        content::ExecuteScriptAndExtractBool(web_contents, script, &xhr_result);
+    return xhr_result && execute_result;
   }
 
   MockConfigurationPolicyProvider provider_;
@@ -1576,14 +1643,24 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, LegacySafeSearch) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
-  // Makes the requests fail since all we want to check is that the redirection
-  // is done properly.
-  MakeRequestFail make_request_fail("google.com");
+  base::Lock lock;
+  std::set<GURL> google_urls_requested;
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
+        if (params->url_request.url.host() != "google.com")
+          return false;
+        base::AutoLock auto_lock(lock);
+        google_urls_requested.insert(params->url_request.url);
+        std::string relative_path("chrome/test/data/simple.html");
+        content::URLLoaderInterceptor::WriteResponse(relative_path,
+                                                     params->client.get());
+        return true;
+      }));
 
   // Verifies that requests to Google Search engine with the SafeSearch
   // enabled set the safe=active&ssui=on parameters at the end of the query.
   // First check that nothing happens.
-  CheckSafeSearch(false);
+  CheckSafeSearch(browser(), false);
 
   // Go over all combinations of (undefined, true, false) for the
   // ForceGoogleSafeSearch policy.
@@ -1603,7 +1680,128 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
               prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
 
     // Verify that safe search actually works.
-    CheckSafeSearch(safe_search == 1);
+    CheckSafeSearch(browser(), safe_search == 1);
+
+    GURL google_url(GetExpectedSearchURL(safe_search == 1));
+
+    {
+      // Verify that the network request is what we expect.
+      base::AutoLock auto_lock(lock);
+      ASSERT_TRUE(google_urls_requested.find(google_url) !=
+                  google_urls_requested.end());
+      google_urls_requested.clear();
+    }
+
+    {
+      // Now check subresource loads.
+      FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
+                       GURL("http://google.com/"));
+
+      base::AutoLock auto_lock(lock);
+      ASSERT_TRUE(google_urls_requested.find(google_url) !=
+                  google_urls_requested.end());
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ForceYouTubeRestrict) {
+  base::Lock lock;
+  std::map<GURL, net::HttpRequestHeaders> urls_requested;
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
+        if (params->url_request.url.host() != "youtube.com")
+          return false;
+
+        base::AutoLock auto_lock(lock);
+        urls_requested[params->url_request.url] = params->url_request.headers;
+
+        std::string relative_path("chrome/test/data/simple.html");
+        content::URLLoaderInterceptor::WriteResponse(relative_path,
+                                                     params->client.get());
+        return true;
+      }));
+
+  for (int youtube_restrict_mode = safe_search_util::YOUTUBE_RESTRICT_OFF;
+       youtube_restrict_mode < safe_search_util::YOUTUBE_RESTRICT_COUNT;
+       ++youtube_restrict_mode) {
+    ApplySafeSearchPolicy(nullptr,  // ForceSafeSearch
+                          nullptr,  // ForceGoogleSafeSearch
+                          nullptr,  // ForceYouTubeSafetyMode
+                          std::make_unique<base::Value>(youtube_restrict_mode));
+    {
+      // First check frame requests.
+      GURL youtube_url("http://youtube.com");
+      ui_test_utils::NavigateToURL(browser(), youtube_url);
+
+      base::AutoLock auto_lock(lock);
+      CheckYouTubeRestricted(youtube_restrict_mode, urls_requested,
+                             youtube_url);
+    }
+
+    {
+      // Now check subresource loads.
+      GURL youtube_script("http://youtube.com/foo.js");
+      FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
+                       youtube_script);
+
+      base::AutoLock auto_lock(lock);
+      CheckYouTubeRestricted(youtube_restrict_mode, urls_requested,
+                             youtube_script);
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, AllowedDomainsForApps) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::Lock lock;
+  std::map<GURL, net::HttpRequestHeaders> urls_requested;
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
+        base::AutoLock auto_lock(lock);
+        urls_requested[params->url_request.url] = params->url_request.headers;
+        return false;
+      }));
+
+  for (int allowed_domains = 0; allowed_domains < 2; ++allowed_domains) {
+    std::string allowed_domain;
+    if (allowed_domains) {
+      PolicyMap policies;
+      allowed_domain = "foo.com";
+      SetPolicy(&policies, key::kAllowedDomainsForApps,
+                std::make_unique<base::Value>(allowed_domain));
+      UpdateProviderPolicy(policies);
+    }
+
+    {
+      // First check frame requests.
+      GURL google_url =
+          embedded_test_server()->GetURL("google.com", "/empty.html");
+      ui_test_utils::NavigateToURL(browser(), google_url);
+
+      base::AutoLock auto_lock(lock);
+      CheckAllowedDomainsHeader(allowed_domain, urls_requested, google_url);
+    }
+
+    {
+      // Now check subresource loads.
+      GURL google_script =
+          embedded_test_server()->GetURL("google.com", "/result_queue.js");
+
+      FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
+                       google_script);
+
+      base::AutoLock auto_lock(lock);
+      CheckAllowedDomainsHeader(allowed_domain, urls_requested, google_script);
+    }
+
+    {
+      // Double check that a frame to a non-Google url doesn't have the header.
+      GURL non_google_url = embedded_test_server()->GetURL("/empty.html");
+      ui_test_utils::NavigateToURL(browser(), non_google_url);
+
+      base::AutoLock auto_lock(lock);
+      CheckAllowedDomainsHeader(std::string(), urls_requested, non_google_url);
+    }
   }
 }
 
