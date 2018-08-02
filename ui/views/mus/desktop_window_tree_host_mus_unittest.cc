@@ -22,6 +22,7 @@
 #include "ui/events/event.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/mus_client_test_api.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/test/views_test_base.h"
@@ -402,7 +403,7 @@ TEST_F(DesktopWindowTreeHostMusTest, CreateFullscreenWidget) {
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, GetWindowBoundsInScreen) {
-  ScreenMus* screen = MusClient::Get()->screen();
+  ScreenMus* screen = MusClientTestApi::screen();
 
   // Add a second display to the right of the primary.
   const int64_t kSecondDisplayId = 222;

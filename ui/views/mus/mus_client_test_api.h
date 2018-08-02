@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/mus/mus_client.h"
 
 namespace views {
@@ -20,6 +21,8 @@ class MusClientTestApi {
   static void SetAXRemoteHost(std::unique_ptr<AXRemoteHost> client) {
     MusClient::Get()->ax_remote_host_ = std::move(client);
   }
+
+  static ScreenMus* screen() { return MusClient::Get()->screen_.get(); }
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MusClientTestApi);
