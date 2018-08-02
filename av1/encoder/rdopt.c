@@ -1804,8 +1804,6 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
 
-  x->pred_sse[ref] = 0;
-
   for (plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -2584,8 +2582,6 @@ static void model_rd_for_sb_with_dnn(
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
 
-  x->pred_sse[ref] = 0;
-
   aom_clear_system_state();
   for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -2684,8 +2680,6 @@ static void model_rd_for_sb_with_surffit(
   int64_t rate_sum = 0;
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
-
-  x->pred_sse[ref] = 0;
 
   aom_clear_system_state();
   for (int plane = plane_from; plane <= plane_to; ++plane) {
@@ -2787,8 +2781,6 @@ static void model_rd_for_sb_with_curvfit(
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
 
-  x->pred_sse[ref] = 0;
-
   aom_clear_system_state();
   for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -2830,8 +2822,6 @@ static void model_rd_for_sb_with_fullrdy(
   int64_t rate_sum = 0;
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
-
-  x->pred_sse[ref] = 0;
 
   for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
@@ -8123,6 +8113,7 @@ static int64_t interpolation_filter_search(
   int64_t tmp_dist[2] = { 0, 0 };
   int best_skip_txfm_sb[2] = { 1, 1 };
   int64_t best_skip_sse_sb[2] = { 0, 0 };
+  const int ref_frame = xd->mi[0]->ref_frame[0];
 
   (void)single_filter;
   int match_found = -1;
@@ -8164,6 +8155,7 @@ static int64_t interpolation_filter_search(
   *rd = RDCOST(x->rdmult, (*switchable_rate + tmp_rate[1]), tmp_dist[1]);
   *skip_txfm_sb = best_skip_txfm_sb[1];
   *skip_sse_sb = best_skip_sse_sb[1];
+  x->pred_sse[ref_frame] = (unsigned int)(best_skip_sse_sb[0] >> 4);
 
   if (assign_filter != SWITCHABLE || match_found != -1) {
     return 0;
@@ -8292,6 +8284,8 @@ static int64_t interpolation_filter_search(
   }
   *skip_txfm_sb = best_skip_txfm_sb[1];
   *skip_sse_sb = best_skip_sse_sb[1];
+  x->pred_sse[ref_frame] = (unsigned int)(best_skip_sse_sb[0] >> 4);
+
   // save search results
   if (cpi->sf.skip_repeat_interpolation_filter_search) {
     assert(match_found == -1);
