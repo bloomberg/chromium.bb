@@ -1369,29 +1369,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // Transfer time is registered so that further transitions within the time
   // envelope are not also registered as links.
   _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
-  bool redirect = transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK;
-  if (!redirect) {
-    // Before changing phases, the delegate should be informed that any existing
-    // request is being cancelled before completion.
-    [self loadCancelled];
-    DCHECK(_loadPhase == web::PAGE_LOADED);
-  }
 
-  _loadPhase = web::LOAD_REQUESTED;
-
-  // Record the state of outgoing web view. Do nothing if native controller
-  // exists, because in that case recordStateInHistory will record the state
-  // of incoming page as native controller is already inserted.
-  // TODO(crbug.com/811770) Don't record state under WKBasedNavigationManager
-  // because it may incorrectly clobber the incoming page if this is a
-  // back/forward navigation. WKWebView restores page scroll state for web view
-  // pages anyways so this only impacts user if WKWebView is deleted.
-  if (!redirect && !self.nativeController &&
-      !web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [self recordStateInHistory];
-  }
-
-  // Add or update pending url.
+  // Add or update pending item before any WebStateObserver callbacks.
+  // See https://crbug.com/842151 for a scenario where this is important.
   web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
   if (item) {
     // Update the existing pending entry.
@@ -1412,6 +1392,28 @@ registerLoadRequestForURL:(const GURL&)requestURL
         web::NavigationInitiationType::RENDERER_INITIATED,
         NavigationManager::UserAgentOverrideOption::INHERIT);
     item = self.navigationManagerImpl->GetPendingItem();
+  }
+
+  bool redirect = transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK;
+  if (!redirect) {
+    // Before changing phases, the delegate should be informed that any existing
+    // request is being cancelled before completion.
+    [self loadCancelled];
+    DCHECK(_loadPhase == web::PAGE_LOADED);
+  }
+
+  _loadPhase = web::LOAD_REQUESTED;
+
+  // Record the state of outgoing web view. Do nothing if native controller
+  // exists, because in that case recordStateInHistory will record the state
+  // of incoming page as native controller is already inserted.
+  // TODO(crbug.com/811770) Don't record state under WKBasedNavigationManager
+  // because it may incorrectly clobber the incoming page if this is a
+  // back/forward navigation. WKWebView restores page scroll state for web view
+  // pages anyways so this only impacts user if WKWebView is deleted.
+  if (!redirect && !self.nativeController &&
+      !web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [self recordStateInHistory];
   }
 
   bool isRendererInitiated =
