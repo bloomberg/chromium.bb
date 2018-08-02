@@ -828,11 +828,9 @@ def UpdateClang(args):
       RunCommand(['ninja', 'asan', 'ubsan', 'profile'])
 
       # And copy them into the main build tree.
-      want_archs = '{aarch64,arm}'
       want = [
-          'lib/linux/libclang_rt.asan-%s-android.so' % want_archs,
-          'lib/linux/libclang_rt.ubsan_standalone-%s-android.so' % want_archs,
-          'lib/linux/libclang_rt.profile-%s-android.a' % want_archs,
+          'lib/linux/*.so',  # ASan and UBSan shared libraries only.
+          'lib/linux/*profile*',  # Static profile libraries.
       ]
       for p in want:
         for f in glob.glob(os.path.join(build_dir, p)):
