@@ -410,17 +410,33 @@ CrostiniManager::CrostiniManager() : weak_ptr_factory_(this) {
 
 CrostiniManager::~CrostiniManager() {}
 
-// static
 bool CrostiniManager::IsCrosTerminaInstalled() {
-  // |component_manager| can be nullptr in tests.
-  auto* component_manager =
-      g_browser_process->platform_part()->cros_component_manager();
-  return component_manager &&
-         component_manager->IsRegistered(imageloader::kTerminaComponentName);
+  return is_cros_termina_registered_;
 }
 
 void CrostiniManager::MaybeUpgradeCrostini(Profile* profile) {
-  if (!IsCrostiniAllowedForProfile(profile) || !IsCrosTerminaInstalled()) {
+  if (!IsCrostiniAllowedForProfile(profile)) {
+    return;
+  }
+  auto* component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  if (!component_manager) {
+    // |component_manager| may be nullptr in unit tests.
+    return;
+  }
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&component_updater::CrOSComponentManager::IsRegistered,
+                     base::Unretained(component_manager),
+                     imageloader::kTerminaComponentName),
+      base::BindOnce(&CrostiniManager::MaybeUpgradeCrostiniAfterTerminaCheck,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniManager::MaybeUpgradeCrostiniAfterTerminaCheck(
+    bool is_registered) {
+  is_cros_termina_registered_ = is_registered;
+  if (!is_cros_termina_registered_) {
     return;
   }
   termina_update_check_needed_ = true;
@@ -469,7 +485,7 @@ void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
   DCHECK(cros_component_manager);
 
   bool major_update_required =
-      IsCrosTerminaInstalled() &&
+      is_cros_termina_registered_ &&
       cros_component_manager
           ->GetCompatiblePath(imageloader::kTerminaComponentName)
           .empty();
