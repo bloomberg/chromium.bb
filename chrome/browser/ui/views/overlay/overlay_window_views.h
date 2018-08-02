@@ -92,11 +92,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Updates the bounds of the controls.
   void UpdateControlsBounds();
 
-  // Update the size of |close_controls_view_| as the size of the window
-  // changes. This will scale to one of three sizes, based off the current width
-  // of the window.
-  void UpdateCloseControlsSize();
-
   // Update the size of |play_pause_controls_view_| as the size of the window
   // changes.
   void UpdatePlayPauseControlsSize();
@@ -125,8 +120,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Size min_size_;
   gfx::Size max_size_;
 
-  // Current sizes of |close_controls_view_| and |play_pause_controls_view_|.
-  gfx::Size close_button_size_;
+  // Current size of |play_pause_controls_view_|.
   gfx::Size play_pause_button_size_;
 
   // Current bounds of the Picture-in-Picture window.

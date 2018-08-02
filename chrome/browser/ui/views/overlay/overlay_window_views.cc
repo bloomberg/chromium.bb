@@ -40,6 +40,7 @@ const int kOverlayBorderThickness = 5;
 const float kPlayPauseControlRatioToWindow = 0.3;
 
 const int kCloseButtonMargin = 8;
+const int kCloseButtonSize = 24;
 
 const int kMinPlayPauseButtonSize = 48;
 
@@ -129,7 +130,6 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
 OverlayWindowViews::OverlayWindowViews(
     content::PictureInPictureWindowController* controller)
     : controller_(controller),
-      close_button_size_(gfx::Size()),
       play_pause_button_size_(gfx::Size()),
       window_background_view_(new views::View()),
       video_view_(new views::View()),
@@ -224,7 +224,16 @@ void OverlayWindowViews::SetUpViews() {
                                           views::ImageButton::ALIGN_MIDDLE);
   close_controls_view_->SetBackgroundImageAlignment(
       views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_TOP);
-  UpdateCloseControlsSize();
+  close_controls_view_->SetSize(gfx::Size(kCloseButtonSize, kCloseButtonSize));
+  close_controls_view_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(views::kIcCloseIcon,
+                            std::round(kCloseButtonSize * 2.0 / 3.0),
+                            kControlIconColor));
+  const gfx::ImageSkia close_background = gfx::CreateVectorIcon(
+      kPictureInPictureControlBackgroundIcon, kCloseButtonSize, kBgColor);
+  close_controls_view_->SetBackgroundImage(kBgColor, &close_background,
+                                           &close_background);
 
   // Accessibility.
   close_controls_view_->SetFocusForPlatform();  // Make button focusable.
@@ -311,44 +320,15 @@ void OverlayWindowViews::UpdateControlsBounds() {
   controls_background_view_->SetBoundsRect(
       gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
 
-  close_controls_view_->SetBoundsRect(
-      gfx::Rect(gfx::Point(GetBounds().size().width() -
-                               close_button_size_.width() - kCloseButtonMargin,
-                           kCloseButtonMargin),
-                close_button_size_));
+  close_controls_view_->SetPosition(gfx::Point(
+      GetBounds().size().width() - kCloseButtonSize - kCloseButtonMargin,
+      kCloseButtonMargin));
 
   play_pause_controls_view_->SetBoundsRect(gfx::Rect(
       gfx::Point(
           (GetBounds().size().width() - play_pause_button_size_.width()) / 2,
           (GetBounds().size().height() - play_pause_button_size_.height()) / 2),
       play_pause_button_size_));
-}
-
-void OverlayWindowViews::UpdateCloseControlsSize() {
-  const gfx::Size window_size = GetBounds().size();
-
-  // |close_button_size_| can only be three sizes, dependent on the width of
-  // |this|.
-  int new_close_button_dimension = 24;
-  if (window_size.width() > 640 && window_size.width() <= 1440) {
-    new_close_button_dimension = 48;
-  } else if (window_size.width() > 1440) {
-    new_close_button_dimension = 72;
-  }
-
-  close_button_size_.SetSize(new_close_button_dimension,
-                             new_close_button_dimension);
-  close_controls_view_->SetSize(close_button_size_);
-  close_controls_view_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon,
-                            std::round(close_button_size_.width() * 2.0 / 3.0),
-                            kControlIconColor));
-  const gfx::ImageSkia close_background =
-      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
-                            close_button_size_.width(), kBgColor);
-  close_controls_view_->SetBackgroundImage(kBgColor, &close_background,
-                                           &close_background);
 }
 
 void OverlayWindowViews::UpdatePlayPauseControlsSize() {
@@ -587,7 +567,6 @@ void OverlayWindowViews::OnNativeWidgetMove() {
 
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   // Update the view layers to scale to |new_size|.
-  UpdateCloseControlsSize();
   UpdatePlayPauseControlsSize();
   UpdateVideoLayerSizeWithAspectRatio(new_size);
 
