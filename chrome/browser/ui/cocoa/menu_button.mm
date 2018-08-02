@@ -184,18 +184,13 @@
   // However, using a pulldown has the benefit that Cocoa automatically places
   // the menu correctly even when we're at the edge of the screen (including
   // "dragging upwards" when the button is close to the bottom of the screen).
-  // A |scoped_nsobject| local variable cannot be used here because
-  // Accessibility on 10.5 grabs the NSPopUpButtonCell without retaining it, and
-  // uses it later. (This is fixed in 10.6.)
-  if (!popUpCell_.get()) {
-    popUpCell_.reset([[NSPopUpButtonCell alloc] initTextCell:@""
-                                                   pullsDown:YES]);
-  }
-  DCHECK(popUpCell_.get());
-  [popUpCell_ setMenu:[self attachedMenu]];
-  [popUpCell_ selectItem:nil];
-  [popUpCell_ attachPopUpWithFrame:frame inView:self];
-  [popUpCell_ performClickWithFrame:frame inView:self];
+  base::scoped_nsobject<NSPopUpButtonCell> popUpCell(
+      [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:YES]);
+
+  [popUpCell setMenu:[self attachedMenu]];
+  [popUpCell selectItem:nil];
+  [popUpCell attachPopUpWithFrame:frame inView:self];
+  [popUpCell performClickWithFrame:frame inView:self];
 
   // Once the menu is dismissed send a mouseExited event if necessary. If the
   // menu action caused the super view to resize then we won't automatically
