@@ -90,29 +90,14 @@ using GetResponseBodyCallback =
     protocol::Network::Backend::GetResponseBodyCallback;
 using protocol::Response;
 
-namespace NetworkAgentState {
-static const char kNetworkAgentEnabled[] = "networkAgentEnabled";
-static const char kExtraRequestHeaders[] = "extraRequestHeaders";
-static const char kCacheDisabled[] = "cacheDisabled";
-static const char kBypassServiceWorker[] = "bypassServiceWorker";
-static const char kBlockedURLs[] = "blockedURLs";
-static const char kTotalBufferSize[] = "totalBufferSize";
-static const char kResourceBufferSize[] = "resourceBufferSize";
-static const char kMaxPostDataSize[] = "maxPostBodySize";
-}  // namespace NetworkAgentState
-
 namespace {
 
 #if defined(OS_ANDROID)
-// 10MB
-static size_t g_maximum_total_buffer_size = 10 * 1000 * 1000;
-// 5MB
-static size_t g_maximum_resource_buffer_size = 5 * 1000 * 1000;
+constexpr int kDefaultTotalBufferSize = 10 * 1000 * 1000;    // 10 MB
+constexpr int kDefaultResourceBufferSize = 5 * 1000 * 1000;  // 5 MB
 #else
-// 100MB
-static size_t g_maximum_total_buffer_size = 100 * 1000 * 1000;
-// 10MB
-static size_t g_maximum_resource_buffer_size = 10 * 1000 * 1000;
+constexpr int kDefaultTotalBufferSize = 100 * 1000 * 1000;    // 100 MB
+constexpr int kDefaultResourceBufferSize = 10 * 1000 * 1000;  // 10 MB
 #endif
 
 // Pattern may contain stars ('*') which match to any (possibly empty) string.
@@ -427,13 +412,8 @@ String GetReferrerPolicy(ReferrerPolicy policy) {
 }  // namespace
 
 void InspectorNetworkAgent::Restore() {
-  if (state_->booleanProperty(NetworkAgentState::kNetworkAgentEnabled, false)) {
-    Enable(state_->integerProperty(NetworkAgentState::kTotalBufferSize,
-                                   g_maximum_total_buffer_size),
-           state_->integerProperty(NetworkAgentState::kResourceBufferSize,
-                                   g_maximum_resource_buffer_size),
-           state_->integerProperty(NetworkAgentState::kMaxPostDataSize, 0));
-  }
+  if (enabled_.Get())
+    Enable();
 }
 
 static std::unique_ptr<protocol::Network::ResourceTiming> BuildObjectForTiming(
@@ -692,25 +672,21 @@ void InspectorNetworkAgent::Trace(blink::Visitor* visitor) {
 }
 
 void InspectorNetworkAgent::ShouldBlockRequest(const KURL& url, bool* result) {
-  protocol::DictionaryValue* blocked_urls =
-      state_->getObject(NetworkAgentState::kBlockedURLs);
-  if (!blocked_urls)
+  if (blocked_urls_.IsEmpty())
     return;
 
   String url_string = url.GetString();
-  for (size_t i = 0; i < blocked_urls->size(); ++i) {
-    auto entry = blocked_urls->at(i);
-    if (Matches(url_string, entry.first)) {
+  for (const String& blocked : blocked_urls_.Keys()) {
+    if (Matches(url_string, blocked)) {
       *result = true;
       return;
     }
   }
-  return;
 }
 
 void InspectorNetworkAgent::ShouldBypassServiceWorker(bool* result) {
-  *result =
-      state_->booleanProperty(NetworkAgentState::kBypassServiceWorker, false);
+  if (bypass_service_worker_.Get())
+    *result = true;
 }
 
 void InspectorNetworkAgent::DidBlockRequest(
@@ -793,7 +769,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
                            initiator_info);
 
   std::unique_ptr<protocol::Network::Request> request_info(
-      BuildObjectForResourceRequest(request, max_post_data_size_));
+      BuildObjectForResourceRequest(request, max_post_data_size_.Get()));
 
   // |loader| is null while inspecting worker.
   // TODO(horo): Refactor MixedContentChecker and set mixed content type even if
@@ -848,15 +824,10 @@ void InspectorNetworkAgent::WillSendRequest(
       loader->GetSubstituteData().IsValid())
     return;
 
-  protocol::DictionaryValue* headers =
-      state_->getObject(NetworkAgentState::kExtraRequestHeaders);
-  if (headers) {
-    for (size_t i = 0; i < headers->size(); ++i) {
-      auto header = headers->at(i);
-      AtomicString header_name = AtomicString(header.first);
-      String value;
-      if (!header.second->asString(&value))
-        continue;
+  if (!extra_request_headers_.IsEmpty()) {
+    for (const WTF::String& key : extra_request_headers_.Keys()) {
+      const WTF::String& value = extra_request_headers_.Get(key);
+      AtomicString header_name = AtomicString(key);
       // When overriding referer, also override referrer policy
       // for this request to assure the request will be allowed.
       // TODO(domfarolino): Stop setting the HTTPReferrer header, and instead
@@ -874,7 +845,7 @@ void InspectorNetworkAgent::WillSendRequest(
 
   request.SetDevToolsToken(devtools_token_);
 
-  if (state_->booleanProperty(NetworkAgentState::kCacheDisabled, false)) {
+  if (cache_disabled_.Get()) {
     if (LoadsFromCacheOnly(request) &&
         request.GetRequestContext() != WebURLRequest::kRequestContextInternal) {
       request.SetCacheMode(mojom::FetchCacheMode::kUnspecifiedForceCacheMiss);
@@ -883,7 +854,7 @@ void InspectorNetworkAgent::WillSendRequest(
     }
     request.SetShouldResetAppCache(true);
   }
-  if (state_->booleanProperty(NetworkAgentState::kBypassServiceWorker, false))
+  if (bypass_service_worker_.Get())
     request.SetSkipServiceWorker(true);
 
   InspectorPageAgent::ResourceType type =
@@ -1332,31 +1303,26 @@ void InspectorNetworkAgent::DidReceiveWebSocketFrameError(
 Response InspectorNetworkAgent::enable(Maybe<int> total_buffer_size,
                                        Maybe<int> resource_buffer_size,
                                        Maybe<int> max_post_data_size) {
-  Enable(total_buffer_size.fromMaybe(g_maximum_total_buffer_size),
-         resource_buffer_size.fromMaybe(g_maximum_resource_buffer_size),
-         max_post_data_size.fromMaybe(0));
+  total_buffer_size_.Set(total_buffer_size.fromMaybe(kDefaultTotalBufferSize));
+  resource_buffer_size_.Set(
+      resource_buffer_size.fromMaybe(kDefaultResourceBufferSize));
+  max_post_data_size_.Set(max_post_data_size.fromMaybe(0));
+  Enable();
   return Response::OK();
 }
 
-void InspectorNetworkAgent::Enable(int total_buffer_size,
-                                   int resource_buffer_size,
-                                   int max_post_data_size) {
+void InspectorNetworkAgent::Enable() {
   if (!GetFrontend())
     return;
-  resources_data_->SetResourcesDataSizeLimits(total_buffer_size,
-                                              resource_buffer_size);
-  state_->setBoolean(NetworkAgentState::kNetworkAgentEnabled, true);
-  state_->setInteger(NetworkAgentState::kTotalBufferSize, total_buffer_size);
-  state_->setInteger(NetworkAgentState::kResourceBufferSize,
-                     resource_buffer_size);
-  state_->setInteger(NetworkAgentState::kMaxPostDataSize, max_post_data_size);
-  max_post_data_size_ = max_post_data_size;
+  enabled_.Set(true);
+  resources_data_->SetResourcesDataSizeLimits(total_buffer_size_.Get(),
+                                              resource_buffer_size_.Get());
   instrumenting_agents_->addInspectorNetworkAgent(this);
 }
 
 Response InspectorNetworkAgent::disable() {
   DCHECK(!pending_request_);
-  state_->setBoolean(NetworkAgentState::kNetworkAgentEnabled, false);
+  enabled_.Set(false);
   instrumenting_agents_->removeInspectorNetworkAgent(this);
   resources_data_->Clear();
   return Response::OK();
@@ -1364,8 +1330,14 @@ Response InspectorNetworkAgent::disable() {
 
 Response InspectorNetworkAgent::setExtraHTTPHeaders(
     std::unique_ptr<protocol::Network::Headers> headers) {
-  state_->setObject(NetworkAgentState::kExtraRequestHeaders,
-                    headers->toValue());
+  extra_request_headers_.ClearAll();
+  std::unique_ptr<protocol::DictionaryValue> in = headers->toValue();
+  for (size_t i = 0; i < in->size(); ++i) {
+    const auto& entry = in->at(i);
+    String value;
+    if (entry.second && entry.second->asString(&value))
+      extra_request_headers_.Set(entry.first, value);
+  }
   return Response::OK();
 }
 
@@ -1417,11 +1389,9 @@ void InspectorNetworkAgent::getResponseBody(
 
 Response InspectorNetworkAgent::setBlockedURLs(
     std::unique_ptr<protocol::Array<String>> urls) {
-  std::unique_ptr<protocol::DictionaryValue> new_list =
-      protocol::DictionaryValue::create();
+  blocked_urls_.ClearAll();
   for (size_t i = 0; i < urls->length(); i++)
-    new_list->setBoolean(urls->get(i), true);
-  state_->setObject(NetworkAgentState::kBlockedURLs, std::move(new_list));
+    blocked_urls_.Set(urls->get(i), true);
   return Response::OK();
 }
 
@@ -1499,14 +1469,14 @@ Response InspectorNetworkAgent::setCacheDisabled(bool cache_disabled) {
   // TODO(ananta)
   // We should extract network cache state into a global entity which can be
   // queried from FrameLoader and other places.
-  state_->setBoolean(NetworkAgentState::kCacheDisabled, cache_disabled);
+  cache_disabled_.Set(cache_disabled);
   if (cache_disabled && IsMainThread())
     GetMemoryCache()->EvictResources();
   return Response::OK();
 }
 
 Response InspectorNetworkAgent::setBypassServiceWorker(bool bypass) {
-  state_->setBoolean(NetworkAgentState::kBypassServiceWorker, bypass);
+  bypass_service_worker_.Set(bypass);
   return Response::OK();
 }
 
@@ -1541,7 +1511,7 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
   if (loader->GetFrame() != inspected_frames_->Root())
     return;
 
-  if (state_->booleanProperty(NetworkAgentState::kCacheDisabled, false))
+  if (cache_disabled_.Get())
     GetMemoryCache()->EvictResources();
 
   resources_data_->Clear(IdentifiersFactory::LoaderId(loader));
@@ -1671,7 +1641,7 @@ bool InspectorNetworkAgent::FetchResourceContent(Document* document,
 }
 
 String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
-  if (!state_->booleanProperty(NetworkAgentState::kNetworkAgentEnabled, false))
+  if (!enabled_.Get())
     return String();
   FrameNavigationInitiatorMap::iterator it =
       frame_navigation_initiator_map_.find(IdentifiersFactory::FrameId(frame));
@@ -1692,9 +1662,8 @@ InspectorNetworkAgent::InspectorNetworkAgent(
     : inspected_frames_(inspected_frames),
       worker_global_scope_(worker_global_scope),
       v8_session_(v8_session),
-      resources_data_(
-          NetworkResourcesData::Create(g_maximum_total_buffer_size,
-                                       g_maximum_resource_buffer_size)),
+      resources_data_(NetworkResourcesData::Create(kDefaultTotalBufferSize,
+                                                   kDefaultResourceBufferSize)),
       devtools_token_(worker_global_scope_
                           ? worker_global_scope_->GetParentDevToolsToken()
                           : inspected_frames->Root()->GetDevToolsFrameToken()),
@@ -1706,13 +1675,22 @@ InspectorNetworkAgent::InspectorNetworkAgent(
                     TaskType::kInternalLoading),
           this,
           &InspectorNetworkAgent::RemoveFinishedReplayXHRFired),
-      max_post_data_size_(0) {
+      enabled_(&agent_state_, /*default_value=*/false),
+      cache_disabled_(&agent_state_, /*default_value=*/false),
+      bypass_service_worker_(&agent_state_, /*default_value=*/false),
+      blocked_urls_(&agent_state_, /*default_value=*/false),
+      extra_request_headers_(&agent_state_, /*default_value=*/WTF::String()),
+      total_buffer_size_(&agent_state_,
+                         /*default_value=*/kDefaultTotalBufferSize),
+      resource_buffer_size_(&agent_state_,
+                            /*default_value=*/kDefaultResourceBufferSize),
+      max_post_data_size_(&agent_state_, /*default_value=*/0) {
   DCHECK((IsMainThread() && !worker_global_scope_) ||
          (!IsMainThread() && worker_global_scope_));
 }
 
 void InspectorNetworkAgent::ShouldForceCORSPreflight(bool* result) {
-  if (state_->booleanProperty(NetworkAgentState::kCacheDisabled, false))
+  if (cache_disabled_.Get())
     *result = true;
 }
 
