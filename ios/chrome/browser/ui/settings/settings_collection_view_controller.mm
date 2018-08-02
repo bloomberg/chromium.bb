@@ -95,6 +95,7 @@ const CGFloat kAccountProfilePhotoDimension = 40.0f;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSignIn = kSectionIdentifierEnumZero,
+  SectionIdentifierAccount,
   SectionIdentifierBasics,
   SectionIdentifierAdvanced,
   SectionIdentifierInfo,
@@ -350,11 +351,11 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   CollectionViewModel* model = self.collectionViewModel;
 
-  // Sign in/Account section
-  [model addSectionWithIdentifier:SectionIdentifierSignIn];
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
   if (!authService->IsAuthenticated()) {
+    // Sign in section
+    [model addSectionWithIdentifier:SectionIdentifierSignIn];
     if ([SigninPromoViewMediator
             shouldDisplaySigninPromoViewWithAccessPoint:
                 signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
@@ -374,15 +375,22 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     [model addItem:[self signInTextItem]
         toSectionWithIdentifier:SectionIdentifierSignIn];
   } else {
+    // Account section
+    [model addSectionWithIdentifier:SectionIdentifierAccount];
     _hasRecordedSigninImpression = NO;
     [_signinPromoViewMediator signinPromoViewRemoved];
     _signinPromoViewMediator = nil;
     [model addItem:[self accountCellItem]
-        toSectionWithIdentifier:SectionIdentifierSignIn];
+        toSectionWithIdentifier:SectionIdentifierAccount];
   }
   if (IsUnifiedConsentEnabled()) {
+    if (![model hasSectionForSectionIdentifier:SectionIdentifierAccount]) {
+      // Add the Account section for the Google services cell, if the user is
+      // signed-out.
+      [model addSectionWithIdentifier:SectionIdentifierAccount];
+    }
     [model addItem:[self googleServicesCellItem]
-        toSectionWithIdentifier:SectionIdentifierSignIn];
+        toSectionWithIdentifier:SectionIdentifierAccount];
   }
 
   // Basics section
@@ -1052,12 +1060,12 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 - (void)reloadAccountCell {
   if (![self.collectionViewModel hasItemForItemType:ItemTypeAccount
-                                  sectionIdentifier:SectionIdentifierSignIn]) {
+                                  sectionIdentifier:SectionIdentifierAccount]) {
     return;
   }
   NSIndexPath* accountCellIndexPath =
       [self.collectionViewModel indexPathForItemType:ItemTypeAccount
-                                   sectionIdentifier:SectionIdentifierSignIn];
+                                   sectionIdentifier:SectionIdentifierAccount];
   CollectionViewAccountItem* identityAccountItem =
       base::mac::ObjCCast<CollectionViewAccountItem>(
           [self.collectionViewModel itemAtIndexPath:accountCellIndexPath]);
