@@ -269,6 +269,8 @@
 #define glFramebufferParameteri GLES2_GET_FUN(FramebufferParameteri)
 #define glBindImageTexture GLES2_GET_FUN(BindImageTexture)
 #define glDispatchCompute GLES2_GET_FUN(DispatchCompute)
+#define glMemoryBarrierEXT GLES2_GET_FUN(MemoryBarrierEXT)
+#define glMemoryBarrierByRegion GLES2_GET_FUN(MemoryBarrierByRegion)
 #define glSwapBuffers GLES2_GET_FUN(SwapBuffers)
 #define glGetMaxValueInBufferCHROMIUM GLES2_GET_FUN(GetMaxValueInBufferCHROMIUM)
 #define glEnableFeatureCHROMIUM GLES2_GET_FUN(EnableFeatureCHROMIUM)

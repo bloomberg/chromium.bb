@@ -607,6 +607,8 @@ void BindImageTexture(GLuint unit,
 void DispatchCompute(GLuint num_groups_x,
                      GLuint num_groups_y,
                      GLuint num_groups_z) override;
+void MemoryBarrierEXT(GLbitfield barriers) override;
+void MemoryBarrierByRegion(GLbitfield barriers) override;
 void SwapBuffers(GLuint64 swap_id, GLbitfield flags) override;
 GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                    GLsizei count,

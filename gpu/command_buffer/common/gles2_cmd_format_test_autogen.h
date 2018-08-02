@@ -3984,6 +3984,27 @@ TEST_F(GLES2FormatTest, DispatchCompute) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, MemoryBarrierEXT) {
+  cmds::MemoryBarrierEXT& cmd = *GetBufferAs<cmds::MemoryBarrierEXT>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLbitfield>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MemoryBarrierEXT::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLbitfield>(11), cmd.barriers);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, MemoryBarrierByRegion) {
+  cmds::MemoryBarrierByRegion& cmd =
+      *GetBufferAs<cmds::MemoryBarrierByRegion>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLbitfield>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MemoryBarrierByRegion::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLbitfield>(11), cmd.barriers);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, SwapBuffers) {
   cmds::SwapBuffers& cmd = *GetBufferAs<cmds::SwapBuffers>();
   void* next_cmd =

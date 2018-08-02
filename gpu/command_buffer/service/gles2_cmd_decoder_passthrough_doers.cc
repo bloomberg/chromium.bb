@@ -2097,6 +2097,18 @@ error::Error GLES2DecoderPassthroughImpl::DoLinkProgram(GLuint program) {
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoMemoryBarrierEXT(
+    GLbitfield barriers) {
+  api()->glMemoryBarrierEXTFn(barriers);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoMemoryBarrierByRegion(
+    GLbitfield barriers) {
+  api()->glMemoryBarrierByRegionFn(barriers);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoPauseTransformFeedback() {
   api()->glPauseTransformFeedbackFn();
   return error::kNoError;

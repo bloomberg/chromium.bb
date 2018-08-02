@@ -4537,6 +4537,18 @@ error::Error GLES2DecoderImpl::HandleDispatchCompute(
   return error::kUnknownCommand;
 }
 
+error::Error GLES2DecoderImpl::HandleMemoryBarrierEXT(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
+error::Error GLES2DecoderImpl::HandleMemoryBarrierByRegion(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
 error::Error GLES2DecoderImpl::HandleSwapBuffers(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

@@ -3965,6 +3965,37 @@ error::Error GLES2DecoderPassthroughImpl::HandleDispatchCompute(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleMemoryBarrierEXT(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2ComputeContext())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::MemoryBarrierEXT& c =
+      *static_cast<const volatile gles2::cmds::MemoryBarrierEXT*>(cmd_data);
+  GLbitfield barriers = static_cast<GLbitfield>(c.barriers);
+  error::Error error = DoMemoryBarrierEXT(barriers);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleMemoryBarrierByRegion(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2ComputeContext())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::MemoryBarrierByRegion& c =
+      *static_cast<const volatile gles2::cmds::MemoryBarrierByRegion*>(
+          cmd_data);
+  GLbitfield barriers = static_cast<GLbitfield>(c.barriers);
+  error::Error error = DoMemoryBarrierByRegion(barriers);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleSwapBuffers(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

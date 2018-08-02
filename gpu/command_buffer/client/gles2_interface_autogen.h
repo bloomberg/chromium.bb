@@ -630,6 +630,8 @@ virtual void BindImageTexture(GLuint unit,
 virtual void DispatchCompute(GLuint num_groups_x,
                              GLuint num_groups_y,
                              GLuint num_groups_z) = 0;
+virtual void MemoryBarrierEXT(GLbitfield barriers) = 0;
+virtual void MemoryBarrierByRegion(GLbitfield barriers) = 0;
 virtual void SwapBuffers(GLuint64 swap_id, GLbitfield flags = 0) = 0;
 virtual GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                            GLsizei count,

@@ -2393,6 +2393,22 @@ void DispatchCompute(GLuint num_groups_x,
   }
 }
 
+void MemoryBarrierEXT(GLbitfield barriers) {
+  gles2::cmds::MemoryBarrierEXT* c =
+      GetCmdSpace<gles2::cmds::MemoryBarrierEXT>();
+  if (c) {
+    c->Init(barriers);
+  }
+}
+
+void MemoryBarrierByRegion(GLbitfield barriers) {
+  gles2::cmds::MemoryBarrierByRegion* c =
+      GetCmdSpace<gles2::cmds::MemoryBarrierByRegion>();
+  if (c) {
+    c->Init(barriers);
+  }
+}
+
 void SwapBuffers(GLuint64 swap_id, GLbitfield flags) {
   gles2::cmds::SwapBuffers* c = GetCmdSpace<gles2::cmds::SwapBuffers>();
   if (c) {
