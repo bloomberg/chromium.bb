@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #import "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_util.h"
@@ -211,6 +212,13 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
     } else {
       [self showAlertIfNeededAndLaunchMailtoURL:URL];
     }
+    return YES;
+  }
+
+  if (base::FeatureList::IsEnabled(kAppLauncherRefresh)) {
+    [[UIApplication sharedApplication] openURL:net::NSURLWithGURL(URL)
+                                       options:@{}
+                             completionHandler:nil];
     return YES;
   }
 

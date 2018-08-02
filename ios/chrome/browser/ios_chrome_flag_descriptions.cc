@@ -43,6 +43,12 @@ const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";
 
+const char kAppLauncherRefreshName[] = "Enable the new AppLauncher logic";
+const char kAppLauncherRefreshDescription[] =
+    "AppLauncher will always prompt if there is no direct link navigation, "
+    "also Apps will launch asynchronously and there will be no logic that"
+    "depends on the success or the failure of launching an app.";
+
 const char kAutofillDynamicFormsName[] = "Autofill dynamic forms";
 const char kAutofillDynamicFormsDescription[] =
     "Refills forms that dynamically change after an initial fill";

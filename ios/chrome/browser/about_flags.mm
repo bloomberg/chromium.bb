@@ -41,6 +41,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/unified_consent/feature.h"
+#include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
@@ -371,6 +372,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewPasswordFormParsingName,
      flag_descriptions::kNewPasswordFormParsingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kNewPasswordFormParsing)},
+    {"app-launcher-refresh", flag_descriptions::kAppLauncherRefreshName,
+     flag_descriptions::kAppLauncherRefreshDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kAppLauncherRefresh)},
 };
 
 // Add all switches from experimental flags to |command_line|.

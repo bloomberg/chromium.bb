@@ -36,6 +36,10 @@ extern const char kSyncSandboxDescription[];
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 
+// Title and description for the flag to control the new app launcher.
+extern const char kAppLauncherRefreshName[];
+extern const char kAppLauncherRefreshDescription[];
+
 // Title and description for the flag to control the dynamic autofill.
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];
