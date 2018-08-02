@@ -33,7 +33,6 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
  public:
   WebIDBCursorImpl(indexed_db::mojom::CursorAssociatedPtrInfo cursor,
                    int64_t transaction_id,
-                   scoped_refptr<base::SingleThreadTaskRunner> io_runner,
                    scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   ~WebIDBCursorImpl() override;
 
@@ -72,7 +71,6 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
 
   int64_t transaction_id_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
   indexed_db::mojom::CursorAssociatedPtr cursor_;
 

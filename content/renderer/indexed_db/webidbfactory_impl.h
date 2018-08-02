@@ -23,8 +23,7 @@ namespace content {
 
 class WebIDBFactoryImpl : public blink::WebIDBFactory {
  public:
-  WebIDBFactoryImpl(indexed_db::mojom::FactoryPtrInfo factory_info,
-                    scoped_refptr<base::SingleThreadTaskRunner> io_runner);
+  explicit WebIDBFactoryImpl(indexed_db::mojom::FactoryPtrInfo factory_info);
   ~WebIDBFactoryImpl() override;
 
   // See WebIDBFactory.h for documentation on these functions.
@@ -53,7 +52,6 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
   GetDatabaseCallbacksProxy(
       std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   indexed_db::mojom::FactoryPtr factory_;
 };
 

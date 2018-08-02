@@ -64,10 +64,8 @@ std::vector<content::IndexedDBIndexKeys> ConvertWebIndexKeys(
 
 WebIDBDatabaseImpl::WebIDBDatabaseImpl(
     DatabaseAssociatedPtrInfo database_info,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
-    : io_runner_(std::move(io_runner)),
-      callback_runner_(std::move(callback_runner)),
+    : callback_runner_(std::move(callback_runner)),
       database_(std::move(database_info)) {}
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;
@@ -143,8 +141,7 @@ void WebIDBDatabaseImpl::Get(long long transaction_id,
       transaction_id, nullptr);
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      callback_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, callback_runner_);
   database_->Get(transaction_id, object_store_id, index_id,
                  IndexedDBKeyRangeBuilder::Build(key_range), key_only,
                  GetCallbacksProxy(std::move(callbacks_impl)));
@@ -161,8 +158,7 @@ void WebIDBDatabaseImpl::GetAll(long long transaction_id,
       transaction_id, nullptr);
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      callback_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, callback_runner_);
   database_->GetAll(transaction_id, object_store_id, index_id,
                     IndexedDBKeyRangeBuilder::Build(key_range), key_only,
                     max_count, GetCallbacksProxy(std::move(callbacks_impl)));
@@ -220,8 +216,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   }
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      callback_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, callback_runner_);
   database_->Put(transaction_id, object_store_id, std::move(mojo_value), key,
                  put_mode, ConvertWebIndexKeys(index_ids, index_keys),
                  GetCallbacksProxy(std::move(callbacks_impl)));
@@ -260,8 +255,7 @@ void WebIDBDatabaseImpl::OpenCursor(long long transaction_id,
       transaction_id, nullptr);
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      callback_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, callback_runner_);
   database_->OpenCursor(transaction_id, object_store_id, index_id,
                         IndexedDBKeyRangeBuilder::Build(key_range), direction,
                         key_only, task_type,
@@ -277,8 +271,7 @@ void WebIDBDatabaseImpl::Count(long long transaction_id,
       transaction_id, nullptr);
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      callback_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, callback_runner_);
   database_->Count(transaction_id, object_store_id, index_id,
                    IndexedDBKeyRangeBuilder::Build(key_range),
                    GetCallbacksProxy(std::move(callbacks_impl)));
@@ -292,8 +285,7 @@ void WebIDBDatabaseImpl::Delete(long long transaction_id,
       transaction_id, nullptr);
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      callback_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, callback_runner_);
   database_->DeleteRange(transaction_id, object_store_id,
                          IndexedDBKeyRangeBuilder::Build(primary_key),
                          GetCallbacksProxy(std::move(callbacks_impl)));
@@ -307,8 +299,7 @@ void WebIDBDatabaseImpl::DeleteRange(long long transaction_id,
       transaction_id, nullptr);
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      callback_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, callback_runner_);
   database_->DeleteRange(transaction_id, object_store_id,
                          IndexedDBKeyRangeBuilder::Build(key_range),
                          GetCallbacksProxy(std::move(callbacks_impl)));
@@ -321,8 +312,7 @@ void WebIDBDatabaseImpl::Clear(long long transaction_id,
       transaction_id, nullptr);
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      callback_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, callback_runner_);
   database_->Clear(transaction_id, object_store_id,
                    GetCallbacksProxy(std::move(callbacks_impl)));
 }
