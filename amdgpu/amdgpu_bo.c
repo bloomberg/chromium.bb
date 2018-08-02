@@ -87,6 +87,10 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
 
 	bo->handle = args.out.handle;
 
+	pthread_mutex_lock(&bo->dev->bo_table_mutex);
+	r = handle_table_insert(&bo->dev->bo_handles, bo->handle, bo);
+	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
+
 	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
 
 	if (r)
@@ -171,13 +175,6 @@ int amdgpu_bo_query_info(amdgpu_bo_handle bo,
 	return 0;
 }
 
-static void amdgpu_add_handle_to_table(amdgpu_bo_handle bo)
-{
-	pthread_mutex_lock(&bo->dev->bo_table_mutex);
-	handle_table_insert(&bo->dev->bo_handles, bo->handle, bo);
-	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
-}
-
 static int amdgpu_bo_export_flink(amdgpu_bo_handle bo)
 {
 	struct drm_gem_flink flink;
@@ -240,14 +237,11 @@ int amdgpu_bo_export(amdgpu_bo_handle bo,
 		return 0;
 
 	case amdgpu_bo_handle_type_kms:
-		amdgpu_add_handle_to_table(bo);
-		/* fall through */
 	case amdgpu_bo_handle_type_kms_noimport:
 		*shared_handle = bo->handle;
 		return 0;
 
 	case amdgpu_bo_handle_type_dma_buf_fd:
-		amdgpu_add_handle_to_table(bo);
 		return drmPrimeHandleToFD(bo->dev->fd, bo->handle,
 					  DRM_CLOEXEC | DRM_RDWR,
 					  (int*)shared_handle);
