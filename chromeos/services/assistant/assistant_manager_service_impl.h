@@ -135,7 +135,7 @@ class AssistantManagerServiceImpl
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
-  void OnVoiceInteractionSetupCompleted(bool completed) override;
+  void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
 
@@ -149,12 +149,8 @@ class AssistantManagerServiceImpl
 
   std::string BuildUserAgent(const std::string& arc_version) const;
 
-  // Update device id, type, and call |UpdateDeviceLocale| when assistant
-  // service starts.
+  // Update device id, type and locale
   void UpdateDeviceSettings();
-
-  // Update device locale if |is_setup_completed| is true;
-  void UpdateDeviceLocale(bool is_setup_completed);
 
   void HandleGetSettingsResponse(
       base::RepeatingCallback<void(const std::string&)> callback,
