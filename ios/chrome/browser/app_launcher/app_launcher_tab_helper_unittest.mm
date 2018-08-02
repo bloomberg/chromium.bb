@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #import "ios/chrome/browser/chrome_url_util.h"
-#import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"

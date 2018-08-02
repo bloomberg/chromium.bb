@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/web/app_launching_state.h"
+#import "ios/chrome/browser/app_launcher/app_launching_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

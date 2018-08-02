@@ -7,9 +7,13 @@ import("//build/config/ios/rules.gni")
 source_set("app_launcher") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "app_launcher_abuse_detector.h",
+    "app_launcher_abuse_detector.mm",
     "app_launcher_tab_helper.h",
     "app_launcher_tab_helper.mm",
     "app_launcher_tab_helper_delegate.h",
+    "app_launching_state.h",
+    "app_launching_state.mm",
   ]
   deps = [
     "//base",
@@ -17,7 +21,6 @@ source_set("app_launcher") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/web:web_internal",
     "//ios/web/public",
     "//url",
   ]
@@ -27,11 +30,14 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "app_launcher_abuse_detector_unittest.mm",
     "app_launcher_tab_helper_unittest.mm",
+    "app_launching_state_unittest.mm",
   ]
   deps = [
     ":app_launcher",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/browser",
     "//ios/chrome/browser/web:web_internal",
     "//ios/web/public/test/fakes",

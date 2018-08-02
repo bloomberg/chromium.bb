@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_WEB_APP_LAUNCHER_ABUSE_DETECTOR_H_
-#define IOS_CHROME_BROWSER_WEB_APP_LAUNCHER_ABUSE_DETECTOR_H_
+#ifndef IOS_CHROME_BROWSER_APP_LAUNCHER_APP_LAUNCHER_ABUSE_DETECTOR_H_
+#define IOS_CHROME_BROWSER_APP_LAUNCHER_APP_LAUNCHER_ABUSE_DETECTOR_H_
 
 #import <Foundation/Foundation.h>
 
@@ -46,4 +46,4 @@ extern const int kMaxAllowedConsecutiveExternalAppLaunches;
            fromSourcePageURL:(const GURL&)sourcePageURL;
 @end
 
-#endif  // IOS_CHROME_BROWSER_WEB_APP_LAUNCHER_ABUSE_DETECTOR_H_
+#endif  // IOS_CHROME_BROWSER_APP_LAUNCHER_APP_LAUNCHER_ABUSE_DETECTOR_H_
