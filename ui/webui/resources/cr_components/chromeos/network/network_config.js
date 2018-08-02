@@ -875,6 +875,9 @@ Polymer({
 
   /** @private */
   updateVpnType_: function() {
+    if (this.configProperties_ === undefined)
+      return;
+
     var vpn = this.configProperties_.VPN;
     if (!vpn) {
       this.showVpn_ = null;

@@ -238,6 +238,9 @@ Polymer({
 
   /** @private */
   pairingChanged_: function() {
+    if (this.pairingDevice === undefined)
+      return;
+
     // Auto-close the dialog when pairing completes.
     if (this.pairingDevice.paired && !this.pairingDevice.connecting &&
         this.pairingDevice.connected) {
