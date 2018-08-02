@@ -716,13 +716,6 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
   builder.SetBlockSize(box_size.block_size);
   builder.SetPadding(ComputePadding(constraint_space, box_->StyleRef()));
 
-  // For now we copy the exclusion space straight through, this is incorrect
-  // but needed as not all elements which participate in a BFC are switched
-  // over to LayoutNG yet.
-  // TODO(ikilpatrick): Remove this once the above isn't true.
-  builder.SetExclusionSpace(
-      std::make_unique<NGExclusionSpace>(constraint_space.ExclusionSpace()));
-
   CopyBaselinesFromOldLayout(constraint_space, &builder);
   UpdateShapeOutsideInfoIfNeeded(
       constraint_space.PercentageResolutionSize().inline_size);

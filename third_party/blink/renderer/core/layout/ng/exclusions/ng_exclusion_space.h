@@ -59,6 +59,8 @@ class CORE_EXPORT NGExclusionSpace {
     return GetDerivedGeometry().LastFloatBlockStart();
   }
 
+  bool IsEmpty() const { return !num_exclusions_; }
+
   bool operator==(const NGExclusionSpace& other) const;
   bool operator!=(const NGExclusionSpace& other) const {
     return !(*this == other);
