@@ -30,7 +30,6 @@
   BOOL openMenuOnClick_;
   BOOL openMenuOnRightClick_;
   BOOL openMenuOnClickHold_;
-  base::scoped_nsobject<NSPopUpButtonCell> popUpCell_;
 }
 
 // The menu to display. Note that it should have no (i.e., a blank) title and
