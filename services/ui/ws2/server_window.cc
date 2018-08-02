@@ -182,6 +182,11 @@ class ServerWindowEventHandler : public ui::EventHandler {
  protected:
   // Returns true if the event should be ignored (not forwarded to the client).
   bool ShouldIgnoreEvent(const ui::Event& event) {
+    // It's assumed clients do their own gesture recognizition, which means
+    // GestureEvents should not be forwarded to clients.
+    if (event.IsGestureEvent())
+      return true;
+
     if (static_cast<aura::Window*>(event.target()) != window()) {
       // As ServerWindow is a EP_PRETARGET EventHandler it gets events *before*
       // descendants. Ignore all such events, and only process when
@@ -323,8 +328,7 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
       return;
     }
 
-    // Gestures are always handled locally.
-    if (ShouldIgnoreEvent(*event) || event->IsGestureEvent())
+    if (ShouldIgnoreEvent(*event))
       return;
 
     // If there is capture, send the event to the client that owns it. A null
@@ -339,8 +343,8 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
       return;
     }
 
-    // This code does has two specific behaviors. It's used to ensure events
-    // go to the right target (either local, or the remote client).
+    // This code has two specific behaviors. It's used to ensure events go to
+    // the right target (either local, or the remote client).
     // . a press-release sequence targets only one. If in non-client area then
     //   local, otherwise remote client.
     // . mouse-moves (not drags) go to both targets.

@@ -144,6 +144,11 @@ void WindowTree::InitFromFactory() {
 }
 
 void WindowTree::SendEventToClient(aura::Window* window, const Event& event) {
+  // As gesture recognition runs in the client, GestureEvents should not be
+  // forwarded. ServerWindow's event processing should ensure no GestureEvents
+  // are sent.
+  DCHECK(!event.IsGestureEvent());
+
   const uint32_t event_id = GenerateEventAckId();
   std::unique_ptr<InFlightEvent> in_flight_event =
       std::make_unique<InFlightEvent>();

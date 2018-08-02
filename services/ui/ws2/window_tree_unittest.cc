@@ -1698,6 +1698,36 @@ TEST(WindowTreeTest, DsfChanges) {
   EXPECT_NE(*top_level_server_window->local_surface_id(), *initial_surface_id);
 }
 
+TEST(WindowTreeTest, DontSendGestures) {
+  // Create a top-level and a child window.
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
+  top_level->Show();
+  aura::Window* child_window = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(child_window);
+  top_level->AddChild(child_window);
+  child_window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child_window->Show();
+
+  test::EventGenerator event_generator(setup.root());
+  // GestureTapAt() generates a touch down/up, and should not generate a gesture
+  // because the Window Service consumes touch events (consuming touch events
+  // results in no GestureEvents being generated). Additionally, gestures should
+  // never be forwared to the client, as it's assumed the client runs its own
+  // gesture recognizer.
+  event_generator.GestureTapAt(gfx::Point(10, 10));
+  EXPECT_EQ("POINTER_DOWN",
+            EventToEventType(
+                setup.window_tree_client()->PopInputEvent().event.get()));
+  EXPECT_EQ("POINTER_UP",
+            EventToEventType(
+                setup.window_tree_client()->PopInputEvent().event.get()));
+  EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
+}
+
 }  // namespace
 }  // namespace ws2
 }  // namespace ui
