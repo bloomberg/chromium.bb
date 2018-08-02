@@ -191,10 +191,10 @@ jumbo_component("ime") {
                             # uninteresting.
 
     sources += [
-      "input_method_win.cc",
-      "input_method_win.h",
       "input_method_win_base.cc",
       "input_method_win_base.h",
+      "input_method_win_imm32.cc",
+      "input_method_win_imm32.h",
       "input_method_win_tsf.cc",
       "input_method_win_tsf.h",
     ]
