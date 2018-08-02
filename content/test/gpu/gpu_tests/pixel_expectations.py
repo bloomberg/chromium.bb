@@ -118,3 +118,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
               ['android', 'nvidia'], bug=868596)
+
+    # Failing on FYI Nexus 5: crbug.com/870023
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_Alpha',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=870023)
+    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=870023)
