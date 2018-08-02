@@ -21,7 +21,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/two_step_edge_cycler.h"
@@ -69,8 +68,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled()) {
     // We still don't allow any dragging or resizing happening on the area other
-    // then caption area. Only allow dragging that happends on the tab(s).
-    if (window_component != HTCAPTION || !wm::IsDraggingTabs(window))
+    // then caption area.
+    if (window_component != HTCAPTION)
       return nullptr;
 
     window_state->CreateDragDetails(point_in_parent, window_component, source);

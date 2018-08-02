@@ -141,8 +141,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Ends the split view mode.
   void EndSplitView();
 
-  // Called when a window's tab(s) start/end being dragged around or other
-  // non-browser windows start/end being dragged from the top of the display.
+  // Called when a window (either it's browser window or an app window) start/
+  // end being dragged.
   void OnWindowDragStarted(aura::Window* dragged_window);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          SnapPosition desired_snap_position,

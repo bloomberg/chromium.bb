@@ -138,8 +138,10 @@ class ASH_EXPORT ShelfLayoutManager
   // be processed any further, false otherwise.
   bool ProcessGestureEvent(const ui::GestureEvent& event_in_screen);
 
-  // Returns true if a window is being dragged from the top of the display.
-  bool IsDraggingWindowFromTopOfDisplay() const;
+  // Returns true if a maximized or fullscreen window is being dragged from the
+  // top of the display or from the caption area. Note currently for this case
+  // it's only allowed in tablet mode, not in laptop mode.
+  bool IsDraggingWindowFromTopOrCaptionArea() const;
 
   // Overridden from wm::WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
