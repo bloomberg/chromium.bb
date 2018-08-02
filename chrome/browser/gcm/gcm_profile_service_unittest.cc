@@ -16,8 +16,6 @@
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/gcm_profile_service.h"
@@ -31,7 +29,6 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -59,8 +56,6 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       IdentityManagerFactory::GetForProfile(profile),
-      SigninManagerFactory::GetForProfile(profile),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       std::unique_ptr<gcm::GCMClientFactory>(new gcm::FakeGCMClientFactory(
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::UI),

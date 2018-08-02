@@ -15,8 +15,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -48,8 +46,6 @@ IOSChromeGCMProfileServiceFactory::IOSChromeGCMProfileServiceFactory()
           "GCMProfileService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(ios::SigninManagerFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 IOSChromeGCMProfileServiceFactory::~IOSChromeGCMProfileServiceFactory() {}
@@ -71,8 +67,6 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
       browser_state->GetSharedURLLoaderFactory(), ::GetChannel(),
       GetProductCategoryForSubtypes(),
       IdentityManagerFactory::GetForBrowserState(browser_state),
-      ios::SigninManagerFactory::GetForBrowserState(browser_state),
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       base::WrapUnique(new gcm::GCMClientFactory),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),

@@ -57,7 +57,6 @@ static_library("gcm_driver") {
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/signin/core/browser",
     "//components/sync",
     "//components/version_info",
     "//google_apis",

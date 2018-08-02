@@ -250,7 +250,7 @@ GCMAccountTrackerTest::GCMAccountTrackerTest() {
       &account_tracker_service_, fake_gaia_cookie_manager_service_.get());
 
   std::unique_ptr<AccountTracker> gaia_account_tracker(new AccountTracker(
-      fake_signin_manager_.get(), fake_token_service_.get(),
+      identity_manager_.get(),
       new net::TestURLRequestContextGetter(message_loop_.task_runner())));
 
   tracker_.reset(new GCMAccountTracker(std::move(gaia_account_tracker),

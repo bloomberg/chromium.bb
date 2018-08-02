@@ -16,8 +16,6 @@
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_buildflags.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 
 class PrefService;
@@ -59,8 +57,6 @@ class GCMProfileService : public KeyedService {
       version_info::Channel channel,
       const std::string& product_category_for_subtypes,
       identity::IdentityManager* identity_manager,
-      SigninManagerBase* signin_manager,
-      ProfileOAuth2TokenService* token_service,
       std::unique_ptr<GCMClientFactory> gcm_client_factory,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
@@ -88,8 +84,6 @@ class GCMProfileService : public KeyedService {
 
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   identity::IdentityManager* identity_manager_;
-  SigninManagerBase* signin_manager_;
-  ProfileOAuth2TokenService* token_service_;
 
   net::URLRequestContextGetter* request_context_ = nullptr;
 
