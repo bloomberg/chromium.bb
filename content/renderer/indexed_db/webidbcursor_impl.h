@@ -27,6 +27,8 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
+class IndexedDBCallbacksImpl;
+
 class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
  public:
   WebIDBCursorImpl(indexed_db::mojom::CursorAssociatedPtrInfo cursor,
@@ -54,13 +56,14 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
   int64_t transaction_id() const { return transaction_id_; }
 
  private:
+  indexed_db::mojom::CallbacksAssociatedPtrInfo GetCallbacksProxy(
+      std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
+
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorTransactionId);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, AdvancePrefetchTest);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchReset);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
-
-  class IOThreadHelper;
 
   enum { kInvalidCursorId = -1 };
   enum { kPrefetchContinueThreshold = 2 };
@@ -69,9 +72,9 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
 
   int64_t transaction_id_;
 
-  IOThreadHelper* helper_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
+  indexed_db::mojom::CursorAssociatedPtr cursor_;
 
   // Prefetch cache.
   base::circular_deque<IndexedDBKey> prefetch_keys_;

@@ -26,6 +26,8 @@ class WebString;
 
 namespace content {
 
+class IndexedDBCallbacksImpl;
+
 class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
   WebIDBDatabaseImpl(
@@ -134,10 +136,11 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   void Commit(long long transaction_id) override;
 
  private:
+  indexed_db::mojom::CallbacksAssociatedPtrInfo GetCallbacksProxy(
+      std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
+
   FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, ValueSizeTest);
   FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, KeyAndValueSizeTest);
-
-  class IOThreadHelper;
 
   // Maximum size (in bytes) of value/key pair allowed for put requests. Any
   // requests larger than this size will be rejected.
@@ -145,10 +148,10 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   // of memory.
   size_t max_put_value_size_ = kMaxIDBMessageSizeInBytes;
 
-  IOThreadHelper* helper_;
   std::set<int32_t> observer_ids_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
+  indexed_db::mojom::DatabaseAssociatedPtr database_;
 };
 
 }  // namespace content

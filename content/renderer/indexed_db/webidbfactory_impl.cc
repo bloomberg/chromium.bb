@@ -28,9 +28,7 @@ namespace content {
 WebIDBFactoryImpl::WebIDBFactoryImpl(
     FactoryPtrInfo factory_info,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner)
-    : io_runner_(std::move(io_runner)) {
-  factory_.Bind(std::move(factory_info));
-}
+    : io_runner_(std::move(io_runner)), factory_(std::move(factory_info)) {}
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
 
