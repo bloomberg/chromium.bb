@@ -21,6 +21,10 @@ bool RefCountedThreadSafeBase::HasOneRef() const {
   return ref_count_.IsOne();
 }
 
+bool RefCountedThreadSafeBase::HasAtLeastOneRef() const {
+  return !ref_count_.IsZero();
+}
+
 #if DCHECK_IS_ON()
 RefCountedThreadSafeBase::~RefCountedThreadSafeBase() {
   DCHECK(in_dtor_) << "RefCountedThreadSafe object deleted without "

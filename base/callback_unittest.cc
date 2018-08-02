@@ -220,7 +220,10 @@ TEST_F(CallbackTest, MaybeValidInvalidateWeakPtrsOnOtherSequence) {
 class CallbackOwner : public base::RefCounted<CallbackOwner> {
  public:
   explicit CallbackOwner(bool* deleted) {
-    callback_ = Bind(&CallbackOwner::Unused, this);
+    // WrapRefCounted() here is needed to avoid the check failure in the Bind
+    // implementation, that refuses to create the first reference to ref-counted
+    // objects.
+    callback_ = Bind(&CallbackOwner::Unused, WrapRefCounted(this));
     deleted_ = deleted;
   }
   void Reset() {
