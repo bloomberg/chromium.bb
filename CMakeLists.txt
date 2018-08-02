@@ -513,9 +513,7 @@ endif()
 
 if(HAVE_PTHREAD_H AND CONFIG_MULTITHREAD)
   find_package(Threads)
-  foreach(app_target ${AOM_APP_TARGETS})
-    target_link_libraries(${app_target} ${AOM_LIB_LINK_TYPE} Threads::Threads)
-  endforeach()
+  target_link_libraries(aom ${AOM_LIB_LINK_TYPE} Threads::Threads)
 endif()
 
 if(XCODE)
