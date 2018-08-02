@@ -660,6 +660,8 @@ test("browser_tests") {
       "../browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/security_state_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/page_load_metrics_browsertest.cc",
+      "../browser/page_load_metrics/page_load_metrics_test_waiter.cc",
+      "../browser/page_load_metrics/page_load_metrics_test_waiter.h",
       "../browser/password_manager/credential_manager_browsertest.cc",
       "../browser/password_manager/password_manager_browsertest.cc",
       "../browser/pdf/pdf_extension_test.cc",
