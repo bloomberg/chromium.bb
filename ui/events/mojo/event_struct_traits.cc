@@ -76,6 +76,36 @@ bool ReadPointerDetails(ui::mojom::EventType event_type,
   return false;
 }
 
+bool ReadScrollData(ui::mojom::EventDataView* event,
+                    base::TimeTicks time_stamp,
+                    EventUniquePtr* out) {
+  ui::mojom::ScrollDataPtr scroll_data;
+  if (!event->ReadScrollData<ui::mojom::ScrollDataPtr>(&scroll_data))
+    return false;
+
+  *out = std::make_unique<ui::ScrollEvent>(
+      mojo::ConvertTo<ui::EventType>(event->action()),
+      gfx::Point(scroll_data->location->x, scroll_data->location->y),
+      time_stamp, event->flags(), scroll_data->x_offset, scroll_data->y_offset,
+      scroll_data->x_offset_ordinal, scroll_data->y_offset_ordinal,
+      scroll_data->finger_count, scroll_data->momentum_phase);
+  return true;
+}
+
+bool ReadGestureData(ui::mojom::EventDataView* event,
+                     base::TimeTicks time_stamp,
+                     EventUniquePtr* out) {
+  ui::mojom::GestureDataPtr gesture_data;
+  if (!event->ReadGestureData<ui::mojom::GestureDataPtr>(&gesture_data))
+    return false;
+
+  *out = std::make_unique<ui::GestureEvent>(
+      gesture_data->location->x, gesture_data->location->y, event->flags(),
+      time_stamp,
+      ui::GestureEventDetails(ConvertTo<ui::EventType>(event->action())));
+  return true;
+}
+
 }  // namespace
 
 static_assert(ui::mojom::kEventFlagNone == static_cast<int32_t>(ui::EF_NONE),
@@ -421,32 +451,25 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
           pointer_details, time_stamp);
       break;
     }
-    case ui::mojom::EventType::GESTURE_TAP: {
-      ui::mojom::GestureDataPtr gesture_data;
-      if (!event.ReadGestureData<ui::mojom::GestureDataPtr>(&gesture_data))
+    case ui::mojom::EventType::GESTURE_TAP:
+      if (!ReadGestureData(&event, time_stamp, out))
         return false;
-
-      *out = std::make_unique<ui::GestureEvent>(
-          gesture_data->location->x, gesture_data->location->y, event.flags(),
-          time_stamp, ui::GestureEventDetails(ui::ET_GESTURE_TAP));
       break;
-    }
     case ui::mojom::EventType::SCROLL:
-    case ui::mojom::EventType::SCROLL_FLING_START:
-    case ui::mojom::EventType::SCROLL_FLING_CANCEL: {
-      ui::mojom::ScrollDataPtr scroll_data;
-      if (!event.ReadScrollData<ui::mojom::ScrollDataPtr>(&scroll_data))
+      if (!ReadScrollData(&event, time_stamp, out))
         return false;
-
-      *out = std::make_unique<ui::ScrollEvent>(
-          mojo::ConvertTo<ui::EventType>(event.action()),
-          gfx::Point(scroll_data->location->x, scroll_data->location->y),
-          time_stamp, event.flags(), scroll_data->x_offset,
-          scroll_data->y_offset, scroll_data->x_offset_ordinal,
-          scroll_data->y_offset_ordinal, scroll_data->finger_count,
-          scroll_data->momentum_phase);
       break;
-    }
+    case ui::mojom::EventType::SCROLL_FLING_START:
+    case ui::mojom::EventType::SCROLL_FLING_CANCEL:
+      // SCROLL_FLING_START/CANCEL is represented by a GestureEvent if
+      // EF_FROM_TOUCH is set.
+      if ((event.flags() & ui::EF_FROM_TOUCH) != 0) {
+        if (!ReadGestureData(&event, time_stamp, out))
+          return false;
+      } else if (!ReadScrollData(&event, time_stamp, out)) {
+        return false;
+      }
+      break;
     case ui::mojom::EventType::CANCEL_MODE:
       *out = std::make_unique<ui::CancelModeEvent>();
       break;

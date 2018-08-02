@@ -242,6 +242,9 @@ TEST_F(StructTraitsTest, GestureEvent) {
   GestureEvent kTestData[] = {
       {10, 20, EF_NONE,
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
+       GestureEventDetails(ET_SCROLL_FLING_START)},
+      {10, 20, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
        GestureEventDetails(ET_GESTURE_TAP)},
   };
 
