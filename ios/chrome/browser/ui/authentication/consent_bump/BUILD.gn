@@ -11,6 +11,18 @@ source_set("consent_bump") {
     "consent_bump_coordinator.mm",
     "consent_bump_personalization_coordinator.h",
     "consent_bump_personalization_coordinator.mm",
+  ]
+  deps = [
+    ":consent_bump_ui",
+    "//base",
+    "//ios/chrome/browser/ui/authentication/unified_consent",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+  ]
+}
+
+source_set("consent_bump_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
     "consent_bump_personalization_view_controller.h",
     "consent_bump_personalization_view_controller.mm",
     "consent_bump_view_controller.h",
@@ -19,8 +31,10 @@ source_set("consent_bump") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/authentication/unified_consent",
-    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/authentication:authentication_constants",
     "//ios/chrome/common/ui_util",
+    "//ui/base",
   ]
 }
