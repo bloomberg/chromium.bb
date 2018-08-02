@@ -201,16 +201,6 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kRestoreOnStartup, prefs::kSessionExitedCleanly,
     prefs::kSessionExitType, prefs::kObservedSessionTime,
     prefs::kRecurrentSSLInterstitial, prefs::kSiteEngagementLastUpdateTime,
-    prefs::kSupervisedUserApprovedExtensions,
-    prefs::kSupervisedUserCustodianEmail, prefs::kSupervisedUserCustodianName,
-    prefs::kSupervisedUserCustodianProfileImageURL,
-    prefs::kSupervisedUserCustodianProfileURL,
-    prefs::kSupervisedUserManualHosts, prefs::kSupervisedUserManualURLs,
-    prefs::kSupervisedUserSafeSites, prefs::kSupervisedUserSecondCustodianEmail,
-    prefs::kSupervisedUserSecondCustodianName,
-    prefs::kSupervisedUserSecondCustodianProfileImageURL,
-    prefs::kSupervisedUserSecondCustodianProfileURL,
-    prefs::kSupervisedUserSharedSettings, prefs::kSupervisedUserWhitelists,
     prefs::kURLsToRestoreOnStartup,
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -348,7 +338,7 @@ const char* temporary_incognito_whitelist[] = {
 
     prefs::kProfileAvatarIndex, prefs::kProfileUsingDefaultName,
     prefs::kProfileName, prefs::kProfileUsingDefaultAvatar,
-    prefs::kProfileUsingGAIAAvatar, prefs::kSupervisedUserId,
+    prefs::kProfileUsingGAIAAvatar,
 
     prefs::kProfileGAIAInfoUpdateTime, prefs::kProfileGAIAInfoPictureURL,
 
@@ -371,10 +361,6 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kRecommendedNativePrintersWhitelist,
     prefs::kUserNativePrintersAllowed,
 #endif  // OS_CHROMEOS
-
-    prefs::kDefaultSupervisedUserFilteringBehavior,
-
-    prefs::kSupervisedUserCreationAllowed, prefs::kSupervisedUsers,
 
     prefs::kMessageCenterDisabledExtensionIds,
     prefs::kMessageCenterDisabledSystemComponentIds,
@@ -659,9 +645,6 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kEasyUnlockLocalStateTpmKeys, prefs::kEasyUnlockLocalStateUserPrefs,
 
     prefs::kRecoveryComponentNeedsElevation,
-
-    prefs::kRegisteredSupervisedUserWhitelists,
-
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 // prefs::kRestartInBackground,
 #endif
