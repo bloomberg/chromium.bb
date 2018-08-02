@@ -9,7 +9,6 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ui/events/event_handler.h"
-#include "ui/views/controls/styled_label.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -17,7 +16,6 @@ namespace ash {
 class ArrowButtonView;
 class LoginUserView;
 class RightPaneView;
-class PublicAccountWarningDialog;
 
 // Implements an expanded view for the public acount user to select language
 // and keyboard options.
@@ -32,8 +30,6 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
     views::View* advanced_view_button();
     ArrowButtonView* submit_button();
     views::View* advanced_view();
-    PublicAccountWarningDialog* warning_dialog();
-    views::StyledLabel* learn_more_label();
 
    private:
     LoginExpandedPublicAccountView* const view_;
@@ -48,8 +44,6 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
   void UpdateForUser(const mojom::LoginUserInfoPtr& user);
   const mojom::LoginUserInfoPtr& current_user() const;
   void Hide();
-  void ShowWarningDialog();
-  void OnWarningDialogClosed();
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -63,9 +57,6 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
   LoginUserView* user_view_ = nullptr;
   RightPaneView* right_pane_ = nullptr;
   OnPublicSessionViewDismissed on_dismissed_;
-  PublicAccountWarningDialog* warning_dialog_ = nullptr;
-
-  base::WeakPtrFactory<LoginExpandedPublicAccountView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginExpandedPublicAccountView);
 };

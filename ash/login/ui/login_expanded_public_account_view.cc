@@ -14,7 +14,6 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_menu_view.h"
 #include "ash/login/ui/login_user_view.h"
-#include "ash/login/ui/public_account_warning_dialog.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -26,6 +25,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -217,10 +217,9 @@ class RightPaneView : public NonAccessibleView,
                       public views::ButtonListener,
                       public views::StyledLabelListener {
  public:
-  explicit RightPaneView(const base::RepeatingClosure& on_learn_more_tapped)
+  RightPaneView()
       : language_menu_(std::make_unique<LoginBubble>()),
         keyboard_menu_(std::make_unique<LoginBubble>()),
-        on_learn_more_tapped_(on_learn_more_tapped),
         weak_factory_(this) {
     SetPreferredSize(
         gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
@@ -239,22 +238,21 @@ class RightPaneView : public NonAccessibleView,
     size_t offset;
     const base::string16 text = l10n_util::GetStringFUTF16(
         IDS_ASH_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER, link, &offset);
-    learn_more_label_ = new views::StyledLabel(text, this);
+    views::StyledLabel* bottom_label = new views::StyledLabel(text, this);
 
     views::StyledLabel::RangeStyleInfo style;
-    style.custom_font = learn_more_label_->GetDefaultFontList().Derive(
+    style.custom_font = bottom_label->GetDefaultFontList().Derive(
         0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL);
     style.override_color = SK_ColorWHITE;
-    learn_more_label_->AddStyleRange(gfx::Range(0, offset), style);
+    bottom_label->AddStyleRange(gfx::Range(0, offset), style);
 
     views::StyledLabel::RangeStyleInfo link_style =
         views::StyledLabel::RangeStyleInfo::CreateForLink();
     link_style.override_color = kPublicSessionBlueColor;
-    learn_more_label_->AddStyleRange(gfx::Range(offset, offset + link.length()),
-                                     link_style);
-    learn_more_label_->set_auto_color_readability_enabled(false);
-
-    labels_view_->AddChildView(learn_more_label_);
+    bottom_label->AddStyleRange(gfx::Range(offset, offset + link.length()),
+                                link_style);
+    bottom_label->set_auto_color_readability_enabled(false);
+    labels_view_->AddChildView(bottom_label);
 
     // Create button to show/hide advanced view.
     advanced_view_button_ = new SelectionButtonView(
@@ -396,7 +394,7 @@ class RightPaneView : public NonAccessibleView,
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override {
-    on_learn_more_tapped_.Run();
+    NOTIMPLEMENTED();
   }
 
   void UpdateForUser(const mojom::LoginUserInfoPtr& user) {
@@ -496,9 +494,11 @@ class RightPaneView : public NonAccessibleView,
     language_changed_by_user_ = false;
   }
 
- private:
-  friend class LoginExpandedPublicAccountView::TestApi;
+  SelectionButtonView* advanced_view_button() { return advanced_view_button_; }
+  ArrowButtonView* submit_button() { return submit_button_; }
+  views::View* advanced_view() { return advanced_view_; }
 
+ private:
   bool show_advanced_view_ = false;
   mojom::LoginUserInfoPtr current_user_;
 
@@ -508,7 +508,6 @@ class RightPaneView : public NonAccessibleView,
   SelectionButtonView* language_selection_ = nullptr;
   SelectionButtonView* keyboard_selection_ = nullptr;
   ArrowButtonView* submit_button_ = nullptr;
-  views::StyledLabel* learn_more_label_ = nullptr;
 
   std::unique_ptr<LoginBubble> language_menu_;
   std::unique_ptr<LoginBubble> keyboard_menu_;
@@ -526,8 +525,6 @@ class RightPaneView : public NonAccessibleView,
   bool show_advanced_changed_by_user_ = false;
   bool language_changed_by_user_ = false;
 
-  base::RepeatingClosure on_learn_more_tapped_;
-
   base::WeakPtrFactory<RightPaneView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RightPaneView);
@@ -540,32 +537,21 @@ LoginExpandedPublicAccountView::TestApi::TestApi(
 LoginExpandedPublicAccountView::TestApi::~TestApi() = default;
 
 views::View* LoginExpandedPublicAccountView::TestApi::advanced_view_button() {
-  return view_->right_pane_->advanced_view_button_;
+  return view_->right_pane_->advanced_view_button();
 }
 
 ArrowButtonView* LoginExpandedPublicAccountView::TestApi::submit_button() {
-  return view_->right_pane_->submit_button_;
+  return view_->right_pane_->submit_button();
 }
 
 views::View* LoginExpandedPublicAccountView::TestApi::advanced_view() {
-  return view_->right_pane_->advanced_view_;
-}
-
-PublicAccountWarningDialog*
-LoginExpandedPublicAccountView::TestApi::warning_dialog() {
-  return view_->warning_dialog_;
-}
-
-views::StyledLabel*
-LoginExpandedPublicAccountView::TestApi::learn_more_label() {
-  return view_->right_pane_->learn_more_label_;
+  return view_->right_pane_->advanced_view();
 }
 
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
     const OnPublicSessionViewDismissed& on_dismissed)
     : NonAccessibleView(kLoginExpandedPublicAccountViewClassName),
-      on_dismissed_(on_dismissed),
-      weak_factory_(this) {
+      on_dismissed_(on_dismissed) {
   Shell::Get()->AddPreTargetHandler(this);
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
@@ -592,9 +578,7 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
   left_pane->SetBorder(
       views::CreateSolidSidedBorder(0, 0, 0, kBorderThicknessDp, kBorderColor));
 
-  right_pane_ = new RightPaneView(
-      base::BindRepeating(&LoginExpandedPublicAccountView::ShowWarningDialog,
-                          base::Unretained(this)));
+  right_pane_ = new RightPaneView();
   AddChildView(right_pane_);
 }
 
@@ -605,10 +589,6 @@ LoginExpandedPublicAccountView::~LoginExpandedPublicAccountView() {
 void LoginExpandedPublicAccountView::ProcessPressedEvent(
     const ui::LocatedEvent* event) {
   if (!visible())
-    return;
-
-  // Keep this view to be visible until warning dialog is dismissed.
-  if (warning_dialog_ && warning_dialog_->IsVisible())
     return;
 
   if (GetBoundsInScreen().Contains(event->root_location()))
@@ -651,16 +631,6 @@ void LoginExpandedPublicAccountView::Hide() {
   on_dismissed_.Run();
 }
 
-void LoginExpandedPublicAccountView::ShowWarningDialog() {
-  DCHECK(!warning_dialog_);
-  warning_dialog_ = new PublicAccountWarningDialog(weak_factory_.GetWeakPtr());
-  warning_dialog_->Show();
-}
-
-void LoginExpandedPublicAccountView::OnWarningDialogClosed() {
-  warning_dialog_ = nullptr;
-}
-
 void LoginExpandedPublicAccountView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
@@ -685,10 +655,6 @@ void LoginExpandedPublicAccountView::OnGestureEvent(ui::GestureEvent* event) {
 
 void LoginExpandedPublicAccountView::OnKeyEvent(ui::KeyEvent* event) {
   if (!visible() || event->type() != ui::ET_KEY_PRESSED)
-    return;
-
-  // Give warning dialog a chance to handle key event.
-  if (warning_dialog_ && warning_dialog_->IsVisible())
     return;
 
   if (event->key_code() == ui::KeyboardCode::VKEY_ESCAPE) {
