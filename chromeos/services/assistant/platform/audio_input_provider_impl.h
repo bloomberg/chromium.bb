@@ -49,9 +49,16 @@ class AudioInputBufferImpl : public assistant_client::AudioBuffer {
 class AudioInputImpl : public assistant_client::AudioInput,
                        public media::AudioCapturerSource::CaptureCallback {
  public:
-  AudioInputImpl(std::unique_ptr<service_manager::Connector> connector,
-                 bool default_on);
+  AudioInputImpl(service_manager::Connector* connector, bool default_on);
   ~AudioInputImpl() override;
+
+  class HotwordStateManager {
+   public:
+    virtual ~HotwordStateManager() = default;
+    virtual void OnConversationTurnStarted() = 0;
+    virtual void OnConversationTurnFinished() = 0;
+    virtual void OnCaptureDataArrived() = 0;
+  };
 
   // media::AudioCapturerSource::CaptureCallback overrides:
   void Capture(const media::AudioBus* audio_source,
@@ -71,6 +78,10 @@ class AudioInputImpl : public assistant_client::AudioInput,
 
   // Called when the mic state associated with the interaction is changed.
   void SetMicState(bool mic_open);
+  void OnConversationTurnStarted();
+  void OnConversationTurnFinished();
+
+  void RecreateAudioInputStream(bool hotword);
 
   // Called when hotword enabled status changed.
   void OnHotwordEnabled(bool enable);
@@ -93,7 +104,11 @@ class AudioInputImpl : public assistant_client::AudioInput,
   // sequence.
   SEQUENCE_CHECKER(observer_sequence_checker_);
 
+  service_manager::Connector* connector_;
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  std::unique_ptr<HotwordStateManager> state_manager_;
 
   base::WeakPtrFactory<AudioInputImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AudioInputImpl);
@@ -106,7 +121,7 @@ class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
   ~AudioInputProviderImpl() override;
 
   // assistant_client::AudioInputProvider overrides:
-  assistant_client::AudioInput& GetAudioInput() override;
+  AudioInputImpl& GetAudioInput() override;
   int64_t GetCurrentAudioTime() override;
 
   // Called when the mic state associated with the interaction is changed.

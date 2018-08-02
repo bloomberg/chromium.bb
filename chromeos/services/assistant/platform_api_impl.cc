@@ -81,7 +81,7 @@ PlatformApiImpl::PlatformApiImpl(
 
 PlatformApiImpl::~PlatformApiImpl() = default;
 
-AudioInputProvider& PlatformApiImpl::GetAudioInputProvider() {
+AudioInputProviderImpl& PlatformApiImpl::GetAudioInputProvider() {
   return audio_input_provider_;
 }
 

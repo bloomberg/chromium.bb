@@ -27,6 +27,7 @@ source_set("lib") {
     "//build/util:webkit_version",
     "//chromeos",
     "//chromeos/assistant:buildflags",
+    "//chromeos/services/assistant/public/cpp:cpp",
     "//chromeos/services/assistant/public/mojom",
     "//components/account_id",
     "//services/device/public/mojom",
