@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_piece.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -22,6 +23,21 @@ TestWebUI::~TestWebUI() {
 
 void TestWebUI::ClearTrackedCalls() {
   call_data_.clear();
+}
+
+void TestWebUI::HandleReceivedMessage(const std::string& handler_name,
+                                      const base::ListValue* args) {
+  const auto callbacks_map_it = message_callbacks_.find(handler_name);
+
+  if (callbacks_map_it == message_callbacks_.end())
+    return;
+
+  // Create a copy of the callbacks before running them. Without this, it could
+  // be possible for the callback's handler to register a new message handler
+  // during iteration of the vector, resulting in undefined behavior.
+  std::vector<MessageCallback> callbacks_to_run = callbacks_map_it->second;
+  for (auto& callback : callbacks_to_run)
+    callback.Run(args);
 }
 
 WebContents* TestWebUI::GetWebContents() const {
@@ -55,6 +71,11 @@ void TestWebUI::SetBindings(int bindings) {
 void TestWebUI::AddMessageHandler(
     std::unique_ptr<WebUIMessageHandler> handler) {
   handlers_.push_back(std::move(handler));
+}
+
+void TestWebUI::RegisterMessageCallback(base::StringPiece message,
+                                        const MessageCallback& callback) {
+  message_callbacks_[message.as_string()].push_back(callback);
 }
 
 bool TestWebUI::CanCallJavascript() {

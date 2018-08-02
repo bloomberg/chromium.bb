@@ -82,7 +82,7 @@ let RemoteDevice;
  *
  * @typedef {{
  *   mode: !settings.MultiDeviceSettingsMode,
- *   hostDevice: (?RemoteDevice|undefined)
+ *   hostDevice: (RemoteDevice|undefined)
  * }}
  */
 let MultiDevicePageContentData;
