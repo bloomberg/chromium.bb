@@ -132,7 +132,8 @@ public class UpdateMenuItemHelper {
                 activity.onCheckForUpdate(mUpdateAvailable);
                 recordUpdateHistogram();
             }
-        }.execute();
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
