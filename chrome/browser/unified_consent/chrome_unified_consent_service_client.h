@@ -14,15 +14,11 @@ class ChromeUnifiedConsentServiceClient
     : public unified_consent::UnifiedConsentServiceClient {
  public:
   explicit ChromeUnifiedConsentServiceClient(PrefService* pref_service);
-  ~ChromeUnifiedConsentServiceClient() override = default;
+  ~ChromeUnifiedConsentServiceClient() override;
 
-  void SetAlternateErrorPagesEnabled(bool enabled) override;
-  void SetMetricsReportingEnabled(bool enabled) override;
-  void SetSearchSuggestEnabled(bool enabled) override;
-  void SetSafeBrowsingEnabled(bool enabled) override;
-  void SetSafeBrowsingExtendedReportingEnabled(bool enabled) override;
-  void SetNetworkPredictionEnabled(bool enabled) override;
-  void SetSpellCheckEnabled(bool enabled) override;
+  // unified_consent::UnifiedConsentServiceClient:
+  ServiceState GetServiceState(Service service) override;
+  void SetServiceEnabled(Service service, bool enabled) override;
 
  private:
   PrefService* pref_service_;

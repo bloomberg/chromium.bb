@@ -26,14 +26,17 @@ UnifiedConsentService::UnifiedConsentService(
       pref_service_(pref_service),
       identity_manager_(identity_manager),
       sync_service_(sync_service) {
+  DCHECK(service_client_);
   DCHECK(pref_service_);
   DCHECK(identity_manager_);
   DCHECK(sync_service_);
-  identity_manager_->AddObserver(this);
-  sync_service_->AddObserver(this);
 
   if (GetMigrationState() == MigrationState::NOT_INITIALIZED)
     MigrateProfileToUnifiedConsent();
+
+  service_client_->AddObserver(this);
+  identity_manager_->AddObserver(this);
+  sync_service_->AddObserver(this);
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(pref_service);
@@ -85,8 +88,16 @@ void UnifiedConsentService::MarkMigrationComplete() {
 }
 
 void UnifiedConsentService::Shutdown() {
+  service_client_->RemoveObserver(this);
   identity_manager_->RemoveObserver(this);
   sync_service_->RemoveObserver(this);
+}
+
+void UnifiedConsentService::OnServiceStateChanged(Service service) {
+  // Unified consent is disabled when any of its dependent services gets
+  // disabled.
+  if (service_client_->GetServiceState(service) == ServiceState::kDisabled)
+    SetUnifiedConsentGiven(false);
 }
 
 void UnifiedConsentService::OnPrimaryAccountCleared(
@@ -98,8 +109,9 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
   // services.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             false);
-  service_client_->SetSafeBrowsingExtendedReportingEnabled(false);
-  service_client_->SetSpellCheckEnabled(false);
+  service_client_->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
+                                     false);
+  service_client_->SetServiceEnabled(Service::kSpellCheck, false);
 
   switch (GetMigrationState()) {
     case MigrationState::NOT_INITIALIZED:
@@ -155,15 +167,14 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   // Enable all non-personalized services.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             true);
-
   // Inform client to enable non-personalized services.
-  service_client_->SetAlternateErrorPagesEnabled(true);
-  service_client_->SetMetricsReportingEnabled(true);
-  service_client_->SetSearchSuggestEnabled(true);
-  service_client_->SetSafeBrowsingEnabled(true);
-  service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
-  service_client_->SetNetworkPredictionEnabled(true);
-  service_client_->SetSpellCheckEnabled(true);
+  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
+    Service service = static_cast<Service>(i);
+    if (service_client_->GetServiceState(service) !=
+        ServiceState::kNotSupported) {
+      service_client_->SetServiceEnabled(service, true);
+    }
+  }
 }
 
 void UnifiedConsentService::SetSyncEverythingIfPossible(bool sync_everything) {

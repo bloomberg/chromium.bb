@@ -10,6 +10,7 @@ static_library("unified_consent") {
     "pref_names.h",
     "unified_consent_service.cc",
     "unified_consent_service.h",
+    "unified_consent_service_client.cc",
     "unified_consent_service_client.h",
     "url_keyed_data_collection_consent_helper.cc",
     "url_keyed_data_collection_consent_helper.h",

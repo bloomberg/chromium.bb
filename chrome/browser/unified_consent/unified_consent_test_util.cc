@@ -14,6 +14,9 @@
 
 namespace {
 
+using Service = unified_consent::UnifiedConsentServiceClient::Service;
+using ServiceState = unified_consent::UnifiedConsentServiceClient::ServiceState;
+
 class FakeUnifiedConsentServiceClient
     : public unified_consent::UnifiedConsentServiceClient {
  public:
@@ -21,13 +24,10 @@ class FakeUnifiedConsentServiceClient
   ~FakeUnifiedConsentServiceClient() override = default;
 
   // UnifiedConsentServiceClient:
-  void SetAlternateErrorPagesEnabled(bool enabled) override {}
-  void SetMetricsReportingEnabled(bool enabled) override {}
-  void SetSearchSuggestEnabled(bool enabled) override {}
-  void SetSafeBrowsingEnabled(bool enabled) override {}
-  void SetSafeBrowsingExtendedReportingEnabled(bool enabled) override {}
-  void SetNetworkPredictionEnabled(bool enabled) override {}
-  void SetSpellCheckEnabled(bool enabled) override {}
+  ServiceState GetServiceState(Service service) override {
+    return ServiceState::kNotSupported;
+  }
+  void SetServiceEnabled(Service service, bool enabled) override {}
 };
 
 }  // namespace

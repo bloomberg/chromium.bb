@@ -17,13 +17,9 @@ class UnifiedConsentServiceClientImpl
   explicit UnifiedConsentServiceClientImpl(PrefService* pref_service);
   ~UnifiedConsentServiceClientImpl() override = default;
 
-  void SetAlternateErrorPagesEnabled(bool enabled) override;
-  void SetMetricsReportingEnabled(bool enabled) override;
-  void SetSearchSuggestEnabled(bool enabled) override;
-  void SetSafeBrowsingEnabled(bool enabled) override;
-  void SetSafeBrowsingExtendedReportingEnabled(bool enabled) override;
-  void SetNetworkPredictionEnabled(bool enabled) override;
-  void SetSpellCheckEnabled(bool enabled) override;
+  // unified_consent::UnifiedConsentServiceClient overrides:
+  ServiceState GetServiceState(Service service) override;
+  void SetServiceEnabled(Service service, bool enabled) override;
 
  private:
   PrefService* pref_service_;
