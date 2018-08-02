@@ -33,6 +33,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
@@ -77,7 +78,11 @@ bool IsInLoginOrLockScreen() {
 
 // Returns true if the current input context type is password.
 bool IsInPasswordInputContext() {
-  return ui::IMEBridge::Get()->GetCurrentInputContext().type ==
+  // Avoid getting IMEBridge instance if ash is not in browser.
+  // This is to temporarily mute the crash (http://crbug.com/867084).
+  // TODO(shuchen): This will be eventually be solved by the Mojo-based IMF.
+  return features::IsAshInBrowserProcess() &&
+         ui::IMEBridge::Get()->GetCurrentInputContext().type ==
          ui::TEXT_INPUT_TYPE_PASSWORD;
 }
 
