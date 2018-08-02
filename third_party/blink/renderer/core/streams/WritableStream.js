@@ -1035,33 +1035,29 @@
 
   // TODO(ricea): Exports to Blink
 
-  // Exports for ReadableStream
-  binding.AcquireWritableStreamDefaultWriter =
-      AcquireWritableStreamDefaultWriter;
-  binding.IsWritableStream = IsWritableStream;
-  binding.isWritableStreamClosingOrClosed = isWritableStreamClosingOrClosed;
-  binding.isWritableStreamErrored = isWritableStreamErrored;
-  binding.IsWritableStreamLocked = IsWritableStreamLocked;
-  binding.WritableStreamAbort = WritableStreamAbort;
-  binding.WritableStreamDefaultWriterCloseWithErrorPropagation =
-      WritableStreamDefaultWriterCloseWithErrorPropagation;
-  binding.getWritableStreamDefaultWriterClosedPromise =
-      getWritableStreamDefaultWriterClosedPromise;
-  binding.WritableStreamDefaultWriterGetDesiredSize =
-      WritableStreamDefaultWriterGetDesiredSize;
-  binding.getWritableStreamDefaultWriterReadyPromise =
-      getWritableStreamDefaultWriterReadyPromise;
-  binding.WritableStreamDefaultWriterRelease =
-      WritableStreamDefaultWriterRelease;
-  binding.WritableStreamDefaultWriterWrite = WritableStreamDefaultWriterWrite;
-  binding.getWritableStreamStoredError = getWritableStreamStoredError;
+  Object.assign(binding, {
+    // Exports for ReadableStream
+    AcquireWritableStreamDefaultWriter,
+    IsWritableStream,
+    isWritableStreamClosingOrClosed,
+    isWritableStreamErrored,
+    isWritableStreamWritable,
+    IsWritableStreamLocked,
+    WritableStreamAbort,
+    WritableStreamCloseQueuedOrInFlight,
+    WritableStreamDefaultWriterCloseWithErrorPropagation,
+    getWritableStreamDefaultWriterClosedPromise,
+    WritableStreamDefaultWriterGetDesiredSize,
+    getWritableStreamDefaultWriterReadyPromise,
+    WritableStreamDefaultWriterRelease,
+    WritableStreamDefaultWriterWrite,
+    getWritableStreamStoredError,
 
-  // Exports for TransformStream
-  binding.CreateWritableStream = CreateWritableStream;
-  binding.WritableStream = WritableStream;
-  binding.WritableStreamDefaultControllerErrorIfNeeded =
-      WritableStreamDefaultControllerErrorIfNeeded;
-  binding.isWritableStreamWritable = isWritableStreamWritable;
-  binding.isWritableStreamErroring = isWritableStreamErroring;
-  binding.getWritableStreamController = getWritableStreamController;
+    // Additional exports for TransformStream
+    CreateWritableStream,
+    WritableStream,
+    WritableStreamDefaultControllerErrorIfNeeded,
+    isWritableStreamErroring,
+    getWritableStreamController,
+  });
 });

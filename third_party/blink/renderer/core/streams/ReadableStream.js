@@ -147,9 +147,9 @@
       }
 
       InitializeReadableStream(this);
-      const type = underlyingSource.type;
       const size = strategy.size;
       let highWaterMark = strategy.highWaterMark;
+      const type = underlyingSource.type;
       const typeString = String(type);
 
       if (typeString === 'bytes') {
@@ -160,12 +160,13 @@
         throw new RangeError(streamErrors.invalidType);
       }
 
+      const sizeAlgorithm = MakeSizeAlgorithmFromSizeFunction(size);
+
       if (highWaterMark === undefined) {
         highWaterMark = 1;
       }
 
       highWaterMark = ValidateAndNormalizeHighWaterMark(highWaterMark);
-      const sizeAlgorithm = MakeSizeAlgorithmFromSizeFunction(size);
       SetUpReadableStreamDefaultControllerFromUnderlyingSource(
           this, underlyingSource, highWaterMark, sizeAlgorithm,
           enableBlinkLockNotifications);
@@ -277,6 +278,7 @@
     let shuttingDown = false;
     const promise = v8.createPromise();
     let reading = false;
+    let lastWrite;
 
     if (checkInitialState()) {
       // Need to detect closing and error when we are not reading.
@@ -340,21 +342,18 @@
         return;
       }
       reading = true;
-      // TODO(ricea): Delay reads heuristically when desiredSize is low.
       thenPromise(
           ReadableStreamDefaultReaderRead(reader), readFulfilled, readRejected);
     }
 
     function readFulfilled({value, done}) {
       reading = false;
-      if (shuttingDown) {
-        return;
-      }
       if (done) {
         readableClosed();
         return;
       }
       const write = binding.WritableStreamDefaultWriterWrite(writer, value);
+      lastWrite = write;
       thenPromise(write, undefined, writableError);
       pump();
     }
@@ -421,7 +420,13 @@
         return;
       }
       shuttingDown = true;
-      const p = applyFunction(action, undefined, args);
+      let p;
+      if (shouldWriteQueuedChunks()) {
+        p = thenPromise(writeQueuedChunks(),
+                        () => applyFunction(action, undefined, args));
+      } else {
+        p = applyFunction(action, undefined, args);
+      }
       thenPromise(
           p, () => finalize(originalError, errorGiven),
           newError => finalize(newError, true));
@@ -432,7 +437,11 @@
         return;
       }
       shuttingDown = true;
-      finalize(error, errorGiven);
+      if (shouldWriteQueuedChunks()) {
+        thenPromise(writeQueuedChunks(), () => finalize(error, errorGiven));
+      } else {
+        finalize(error, errorGiven);
+      }
     }
 
     function finalize(error, errorGiven) {
@@ -443,6 +452,22 @@
       } else {
         resolvePromise(promise, undefined);
       }
+    }
+
+    function shouldWriteQueuedChunks() {
+      return binding.isWritableStreamWritable(dest) &&
+          !binding.WritableStreamCloseQueuedOrInFlight(dest);
+    }
+
+    function writeQueuedChunks() {
+      if (lastWrite) {
+        // "Wait until every chunk that has been read has been written (i.e.
+        // the corresponding promises have settled)"
+        // This implies that we behave the same whether the promise fulfills or
+        // rejects.
+        return thenPromise(lastWrite, () => undefined, () => undefined);
+      }
+      return Promise_resolve(undefined);
     }
 
     return promise;
@@ -590,9 +615,9 @@
   // Abstract Operations Used By Controllers
   //
 
-  function ReadableStreamAddReadRequest(stream) {
+  function ReadableStreamAddReadRequest(stream, forAuthorCode) {
     const promise = v8.createPromise();
-    stream[_reader][_readRequests].push(promise);
+    stream[_reader][_readRequests].push({promise, forAuthorCode});
     return promise;
   }
 
@@ -625,11 +650,25 @@
     if (IsReadableStreamDefaultReader(reader) === true) {
       reader[_readRequests].forEach(
           request =>
-            resolvePromise(request, CreateIterResultObject(undefined, true)));
+            resolvePromise(
+                request.promise,
+                ReadableStreamCreateReadResult(undefined, true,
+                                               request.forAuthorCode)));
       reader[_readRequests] = new binding.SimpleQueue();
     }
 
     resolvePromise(reader[_closedPromise], undefined);
+  }
+
+  function ReadableStreamCreateReadResult(value, done, forAuthorCode) {
+    // assert(typeof done === 'boolean', 'Type(_done_) is Boolean.');
+    if (forAuthorCode) {
+      return {value, done};
+    }
+    const obj = ObjectCreate(null);
+    obj.value = value;
+    obj.done = done;
+    return obj;
   }
 
   function ReadableStreamError(stream, e) {
@@ -642,7 +681,8 @@
     }
 
     if (IsReadableStreamDefaultReader(reader) === true) {
-      reader[_readRequests].forEach(request => rejectPromise(request, e));
+      reader[_readRequests].forEach(request =>
+                                    rejectPromise(request.promise, e));
       reader[_readRequests] = new binding.SimpleQueue();
     }
 
@@ -652,7 +692,9 @@
 
   function ReadableStreamFulfillReadRequest(stream, chunk, done) {
     const readRequest = stream[_reader][_readRequests].shift();
-    resolvePromise(readRequest, CreateIterResultObject(chunk, done));
+    resolvePromise(readRequest.promise,
+                   ReadableStreamCreateReadResult(chunk, done,
+                                                  readRequest.forAuthorCode));
   }
 
   function ReadableStreamGetNumReadRequests(stream) {
@@ -708,7 +750,7 @@
         return Promise_reject(new TypeError(errReadReleasedReader));
       }
 
-      return ReadableStreamDefaultReaderRead(this);
+      return ReadableStreamDefaultReaderRead(this, true);
     }
 
     releaseLock() {
@@ -796,19 +838,21 @@
     reader[_ownerReadableStream] = undefined;
   }
 
-  function ReadableStreamDefaultReaderRead(reader) {
+  function ReadableStreamDefaultReaderRead(reader, forAuthorCode = false) {
     const stream = reader[_ownerReadableStream];
     stream[_readableStreamBits] |= DISTURBED;
 
     switch (ReadableStreamGetState(stream)) {
       case STATE_CLOSED:
-        return Promise_resolve(CreateIterResultObject(undefined, true));
+        return Promise_resolve(ReadableStreamCreateReadResult(undefined, true,
+                                                              forAuthorCode));
 
       case STATE_ERRORED:
         return Promise_reject(stream[_storedError]);
 
       default:
-        return ReadableStreamDefaultControllerPull(stream[_controller]);
+        return ReadableStreamDefaultControllerPull(stream[_controller],
+                                                   forAuthorCode);
     }
   }
 
@@ -888,7 +932,7 @@
   }
 
   // [[PullSteps]] in the standard.
-  function ReadableStreamDefaultControllerPull(controller) {
+  function ReadableStreamDefaultControllerPull(controller, forAuthorCode) {
     const stream = controller[_controlledReadableStream];
 
     if (controller[_queue].length > 0) {
@@ -902,10 +946,11 @@
         ReadableStreamDefaultControllerCallPullIfNeeded(controller);
       }
 
-      return Promise_resolve(CreateIterResultObject(chunk, false));
+      return Promise_resolve(ReadableStreamCreateReadResult(chunk, false,
+                                                            forAuthorCode));
     }
 
-    const pendingPromise = ReadableStreamAddReadRequest(stream);
+    const pendingPromise = ReadableStreamAddReadRequest(stream, forAuthorCode);
     ReadableStreamDefaultControllerCallPullIfNeeded(controller);
     return pendingPromise;
   }
@@ -963,6 +1008,7 @@
 
     const desiredSize =
           ReadableStreamDefaultControllerGetDesiredSize(controller);
+    // assert(desiredSize !== null, '_desiredSize_ is not *null*.');
     return desiredSize > 0;
   }
 
@@ -1124,14 +1170,6 @@
   }
 
   //
-  // Other helpers
-  //
-
-  function CreateIterResultObject(value, done) {
-    return {value, done};
-  }
-
-  //
   // Accessors used by TransformStream
   //
 
@@ -1147,6 +1185,14 @@
     return stream[_storedError];
   }
 
+  // TODO(ricea): Remove this once the C++ code switches to calling
+  // CreateReadableStream().
+  function createReadableStreamWithExternalController(underlyingSource,
+                                                      strategy) {
+    return new ReadableStream(
+        underlyingSource, strategy, createWithExternalControllerSentinel);
+  }
+
   //
   // Additions to the global
   //
@@ -1158,49 +1204,40 @@
     writable: true
   });
 
-  //
-  // Exports to Blink
-  //
 
-  binding.AcquireReadableStreamDefaultReader =
-      AcquireReadableStreamDefaultReader;
-  binding.IsReadableStream = IsReadableStream;
-  binding.IsReadableStreamDisturbed = IsReadableStreamDisturbed;
-  binding.IsReadableStreamLocked = IsReadableStreamLocked;
-  binding.IsReadableStreamReadable = IsReadableStreamReadable;
-  binding.IsReadableStreamClosed = IsReadableStreamClosed;
-  binding.IsReadableStreamErrored = IsReadableStreamErrored;
-  binding.IsReadableStreamDefaultReader = IsReadableStreamDefaultReader;
-  binding.ReadableStreamDefaultReaderRead = ReadableStreamDefaultReaderRead;
-  binding.ReadableStreamTee = ReadableStreamTee;
+  Object.assign(binding, {
+    //
+    // ReadableStream exports to Blink C++
+    //
+    AcquireReadableStreamDefaultReader,
+    createReadableStreamWithExternalController,
+    IsReadableStream,
+    IsReadableStreamDisturbed,
+    IsReadableStreamLocked,
+    IsReadableStreamReadable,
+    IsReadableStreamClosed,
+    IsReadableStreamErrored,
+    IsReadableStreamDefaultReader,
+    ReadableStreamDefaultReaderRead,
+    ReadableStreamTee,
 
-  binding.ReadableStreamDefaultControllerClose =
-      ReadableStreamDefaultControllerClose;
-  binding.ReadableStreamDefaultControllerGetDesiredSize =
-      ReadableStreamDefaultControllerGetDesiredSize;
-  binding.ReadableStreamDefaultControllerEnqueue =
-      ReadableStreamDefaultControllerEnqueue;
-  binding.ReadableStreamDefaultControllerError =
-      ReadableStreamDefaultControllerError;
+    //
+    // Controller exports to Blink C++
+    //
+    ReadableStreamDefaultControllerClose,
+    ReadableStreamDefaultControllerGetDesiredSize,
+    ReadableStreamDefaultControllerEnqueue,
+    ReadableStreamDefaultControllerError,
 
-  // TODO(ricea): Remove this once the C++ code switches to calling
-  // CreateReadableStream().
-  binding.createReadableStreamWithExternalController =
-      (underlyingSource, strategy) => {
-        return new ReadableStream(
-            underlyingSource, strategy, createWithExternalControllerSentinel);
-      };
+    //
+    // Exports to TransformStream
+    //
+    CreateReadableStream,
+    ReadableStreamDefaultControllerCanCloseOrEnqueue,
+    ReadableStreamDefaultControllerHasBackpressure,
 
-  //
-  // Exports to TransformStream
-  //
-  binding.CreateReadableStream = CreateReadableStream;
-  binding.ReadableStreamDefaultControllerCanCloseOrEnqueue =
-      ReadableStreamDefaultControllerCanCloseOrEnqueue;
-  binding.ReadableStreamDefaultControllerHasBackpressure =
-      ReadableStreamDefaultControllerHasBackpressure;
-
-  binding.getReadableStreamEnqueueError = getReadableStreamEnqueueError;
-  binding.getReadableStreamController = getReadableStreamController;
-  binding.getReadableStreamStoredError = getReadableStreamStoredError;
+    getReadableStreamEnqueueError,
+    getReadableStreamController,
+    getReadableStreamStoredError,
+  });
 });
