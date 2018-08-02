@@ -4,6 +4,7 @@
 
 #include "services/network/public/cpp/network_quality_tracker.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/logging.h"
@@ -14,7 +15,7 @@ NetworkQualityTracker::NetworkQualityTracker(
     base::RepeatingCallback<network::mojom::NetworkService*()> callback)
     : get_network_service_callback_(callback),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      downlink_bandwidth_kbps_(INT32_MAX),
+      downlink_bandwidth_kbps_(std::numeric_limits<int32_t>::max()),
       binding_(this) {
   InitializeMojoChannel();
   DCHECK(binding_.is_bound());
@@ -57,6 +58,20 @@ void NetworkQualityTracker::RemoveEffectiveConnectionTypeObserver(
   effective_connection_type_observer_list_.RemoveObserver(observer);
 }
 
+void NetworkQualityTracker::AddRTTAndThroughputEstimatesObserver(
+    RTTAndThroughputEstimatesObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  rtt_and_throughput_observer_list_.AddObserver(observer);
+  observer->OnRTTOrThroughputEstimatesComputed(http_rtt_, transport_rtt_,
+                                               downlink_bandwidth_kbps_);
+}
+
+void NetworkQualityTracker::RemoveRTTAndThroughputEstimatesObserver(
+    RTTAndThroughputEstimatesObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  rtt_and_throughput_observer_list_.RemoveObserver(observer);
+}
+
 void NetworkQualityTracker::OnNetworkQualityChanged(
     net::EffectiveConnectionType effective_connection_type,
     base::TimeDelta http_rtt,
@@ -64,15 +79,23 @@ void NetworkQualityTracker::OnNetworkQualityChanged(
     int32_t bandwidth_kbps) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  http_rtt_ = http_rtt;
-  transport_rtt_ = transport_rtt;
-  downlink_bandwidth_kbps_ = bandwidth_kbps;
+  if (http_rtt_ != http_rtt || transport_rtt_ != transport_rtt ||
+      downlink_bandwidth_kbps_ != bandwidth_kbps) {
+    http_rtt_ = http_rtt;
+    transport_rtt_ = transport_rtt;
+    downlink_bandwidth_kbps_ = bandwidth_kbps;
 
-  if (effective_connection_type == effective_connection_type_)
-    return;
-  effective_connection_type_ = effective_connection_type;
-  for (auto& observer : effective_connection_type_observer_list_)
-    observer.OnEffectiveConnectionTypeChanged(effective_connection_type_);
+    for (auto& observer : rtt_and_throughput_observer_list_) {
+      observer.OnRTTOrThroughputEstimatesComputed(http_rtt_, transport_rtt_,
+                                                  downlink_bandwidth_kbps_);
+    }
+  }
+
+  if (effective_connection_type != effective_connection_type_) {
+    effective_connection_type_ = effective_connection_type;
+    for (auto& observer : effective_connection_type_observer_list_)
+      observer.OnEffectiveConnectionTypeChanged(effective_connection_type_);
+  }
 }
 
 void NetworkQualityTracker::InitializeMojoChannel() {
