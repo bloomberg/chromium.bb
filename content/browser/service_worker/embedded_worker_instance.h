@@ -78,11 +78,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     STARTING_PHASE_MAX_VALUE,
   };
 
-  using ProviderInfoGetter =
-      base::OnceCallback<mojom::ServiceWorkerProviderInfoForStartWorkerPtr(
-          int /* process_id */,
-          scoped_refptr<network::SharedURLLoaderFactory>)>;
-
   class Listener {
    public:
     virtual ~Listener() {}
@@ -137,11 +132,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // the callback is invoked with kOk status, the service worker has not yet
   // finished starting. Observe OnStarted()/OnStopped() for when start completed
   // or failed.
-  //
-  // |provider_info_getter| is called when this instance
-  // allocates a process and is ready to send a StartWorker message.
   void Start(mojom::EmbeddedWorkerStartParamsPtr params,
-             ProviderInfoGetter provider_info_getter,
              StatusCallback sent_start_callback);
 
   // Stops the worker. It is invalid to call this when the worker is not in
@@ -316,9 +307,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Binding for EmbeddedWorkerInstanceHost, runs on IO thread.
   mojo::AssociatedBinding<EmbeddedWorkerInstanceHost> instance_host_binding_;
-
-  // This is set at Start and used on SendStartWorker.
-  ProviderInfoGetter provider_info_getter_;
 
   // Whether devtools is attached or not.
   bool devtools_attached_;

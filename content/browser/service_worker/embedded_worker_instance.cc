@@ -565,7 +565,6 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
 }
 
 void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
-                                   ProviderInfoGetter provider_info_getter,
                                    StatusCallback callback) {
   DCHECK(context_);
   restart_count_++;
@@ -579,7 +578,6 @@ void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
   status_ = EmbeddedWorkerStatus::STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
-  provider_info_getter_ = std::move(provider_info_getter);
 
   for (auto& observer : listener_list_)
     observer.OnStarting();
@@ -708,9 +706,14 @@ void EmbeddedWorkerInstance::SendStartWorker(
 
   const bool is_script_streaming = !params->installed_scripts_info.is_null();
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
+
+  // The host must be alive as long as |params->provider_info| is alive.
+  DCHECK(owner_version_->provider_host());
   params->provider_info =
-      std::move(provider_info_getter_).Run(process_id(), std::move(factory));
+      owner_version_->provider_host()->CompleteStartWorkerPreparation(
+          process_id(), std::move(factory), std::move(params->provider_info));
   params->provider_info->cache_storage = std::move(cache_storage);
+
   client_->StartWorker(std::move(params));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
 

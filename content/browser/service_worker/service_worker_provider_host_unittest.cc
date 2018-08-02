@@ -564,7 +564,7 @@ TEST_P(ServiceWorkerProviderHostTest, AllowsServiceWorker) {
   registration1_->SetActiveVersion(version);
 
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host =
+  base::WeakPtr<ServiceWorkerProviderHost> host =
       CreateProviderHostForServiceWorkerContext(
           helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
           version.get(), helper_->context()->AsWeakPtr(), &remote_endpoint);

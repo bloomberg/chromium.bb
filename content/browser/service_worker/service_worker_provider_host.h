@@ -146,11 +146,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       bool are_ancestors_secure,
       const WebContentsGetter& web_contents_getter);
 
-  // Creates a ServiceWorkerProviderHost for a service worker execution context.
-  // Information about this provider host is passed down to the service worker
-  // via StartWorker message.
-  static std::unique_ptr<ServiceWorkerProviderHost> PreCreateForController(
-      base::WeakPtr<ServiceWorkerContextCore> context);
+  // Used for starting a service worker. Returns a provider host for the service
+  // worker and partially fills |out_provider_info|.  The host stays alive as
+  // long as this info stays alive (namely, as long as
+  // |out_provider_info->host_ptr_info| stays alive).
+  // CompleteStartWorkerPreparation() must be called later to get a full info to
+  // send to the renderer.
+  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForController(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      scoped_refptr<ServiceWorkerVersion> version,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr* out_provider_info);
 
   // S13nServiceWorker:
   // Used for starting a shared worker. Returns a provider host for the shared
@@ -373,9 +378,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
   // the worker. Returns the info needed for creating a provider on the renderer
-  // which will be connected to this provider host. This instance will take the
-  // reference to |hosted_version|, so be careful not to create a reference
-  // cycle.
+  // which will be connected to this provider host.
+  //
+  // |provider_info| should be the info returned by PreCreateForController(),
+  // which is partially filled out. This function returns it after
+  // filling it out completely.
   //
   // S13nServiceWorker:
   // |loader_factory| is the factory to use for "network" requests for the
@@ -385,8 +392,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr
   CompleteStartWorkerPreparation(
       int process_id,
-      scoped_refptr<ServiceWorkerVersion> hosted_version,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info);
 
   // Called when the shared worker main script resource has finished loading.
   // After this is called, is_execution_ready() returns true.
@@ -653,9 +660,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool allow_set_controller_registration_ = true;
 
   // For service worker execution contexts. The ServiceWorkerVersion of the
-  // service worker this is a provider for. This is nullptr if the service
-  // worker is still being started up (until CompleteStartWorkerPreparation() is
-  // called).
+  // service worker this is a provider for.
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
 
   base::WeakPtr<ServiceWorkerContextCore> context_;

@@ -294,13 +294,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   base::WeakPtr<ServiceWorkerProviderHost> CreateHostForVersion(
       int process_id,
       const scoped_refptr<ServiceWorkerVersion>& version) {
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForServiceWorkerContext(
-            process_id, true /* is_parent_frame_secure */, version.get(),
-            context()->AsWeakPtr(), &remote_endpoint_);
-    base::WeakPtr<ServiceWorkerProviderHost> host_weakptr = host->AsWeakPtr();
-    context()->AddProviderHost(std::move(host));
-    return host_weakptr;
+    return CreateProviderHostForServiceWorkerContext(
+        process_id, true /* is_parent_frame_secure */, version.get(),
+        context()->AsWeakPtr(), &remote_endpoint_);
   }
 
   void SetUpScriptRequest(int process_id, int provider_id) {

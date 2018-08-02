@@ -673,7 +673,7 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
           GURL("https://another-origin.example.net/test/script_url"),
           1L /* version_id */, helper_->context()->AsWeakPtr());
   remote_endpoints.emplace_back();
-  std::unique_ptr<ServiceWorkerProviderHost> host4 =
+  base::WeakPtr<ServiceWorkerProviderHost> host4 =
       CreateProviderHostForServiceWorkerContext(
           kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
           context()->AsWeakPtr(), &remote_endpoints.back());
@@ -687,7 +687,9 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   context()->AddProviderHost(std::move(host1));
   context()->AddProviderHost(std::move(host2));
   context()->AddProviderHost(std::move(host3));
-  context()->AddProviderHost(std::move(host4));
+  // host4 is already included because CreateProviderHostForServiceWorkerContext
+  // adds it.
+  DCHECK(context()->GetProviderHost(host4->process_id(), host4->provider_id()));
 
   // Iterate over the client provider hosts that belong to kOrigin1.
   std::set<ServiceWorkerProviderHost*> results;

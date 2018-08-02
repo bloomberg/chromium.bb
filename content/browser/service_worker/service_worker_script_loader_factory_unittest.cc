@@ -98,13 +98,9 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
         registration_.get(), GURL("https://host/script.js"),
         context->storage()->NewVersionId(), context->AsWeakPtr());
 
-    std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-        CreateProviderHostForServiceWorkerContext(
-            helper_->mock_render_process_id(),
-            true /* is_parent_frame_secure */, version_.get(),
-            context->AsWeakPtr(), &remote_endpoint_);
-    provider_host_ = provider_host->AsWeakPtr();
-    context->AddProviderHost(std::move(provider_host));
+    provider_host_ = CreateProviderHostForServiceWorkerContext(
+        helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
+        version_.get(), context->AsWeakPtr(), &remote_endpoint_);
 
     network_loader_factory_ = std::make_unique<MockNetworkURLLoaderFactory>();
     helper_->SetNetworkFactory(network_loader_factory_.get());

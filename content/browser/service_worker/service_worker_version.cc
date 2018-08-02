@@ -144,24 +144,6 @@ void OnConnectionError(base::WeakPtr<EmbeddedWorkerInstance> embedded_worker) {
   }
 }
 
-// In S13nServiceWorker, |loader_factory| is the factory to use loading new
-// scripts from network (or other sources, e.g., for chrome-extension:// URLs).
-mojom::ServiceWorkerProviderInfoForStartWorkerPtr
-CompleteProviderHostPreparation(
-    ServiceWorkerVersion* version,
-    std::unique_ptr<ServiceWorkerProviderHost> provider_host,
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    int process_id,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
-  // Caller should ensure |context| is alive when completing StartWorker
-  // preparation.
-  DCHECK(context);
-  auto info = provider_host->CompleteStartWorkerPreparation(
-      process_id, version, std::move(loader_factory));
-  context->AddProviderHost(std::move(provider_host));
-  return info;
-}
-
 void OnOpenWindowFinished(
     blink::mojom::ServiceWorkerHost::OpenNewTabCallback callback,
     blink::ServiceWorkerStatusCode status,
@@ -1506,9 +1488,9 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   StartTimeoutTimer();
   idle_timer_fired_in_renderer_ = false;
 
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-      ServiceWorkerProviderHost::PreCreateForController(context());
-  provider_host_ = provider_host->AsWeakPtr();
+  auto provider_info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
+  provider_host_ = ServiceWorkerProviderHost::PreCreateForController(
+      context(), base::WrapRefCounted(this), &provider_info);
 
   auto params = mojom::EmbeddedWorkerStartParams::New();
   params->service_worker_version_id = version_id_;
@@ -1538,11 +1520,11 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   ServiceWorkerRegistration* registration =
       context_->GetLiveRegistration(registration_id_);
   DCHECK(registration);
-  provider_host->SetDocumentUrl(script_url());
+  provider_host_->SetDocumentUrl(script_url());
   service_worker_ptr_->InitializeGlobalScope(
       std::move(service_worker_host),
-      provider_host->CreateServiceWorkerRegistrationObjectInfo(
-          scoped_refptr<ServiceWorkerRegistration>(registration)));
+      provider_host_->CreateServiceWorkerRegistrationObjectInfo(
+          base::WrapRefCounted(registration)));
 
   // S13nServiceWorker:
   if (!controller_request_.is_pending()) {
@@ -1551,12 +1533,10 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   }
   params->controller_request = std::move(controller_request_);
 
+  params->provider_info = std::move(provider_info);
+
   embedded_worker_->Start(
       std::move(params),
-      // Unretained is used here because the callback will be owned by
-      // |embedded_worker_| whose owner is |this|.
-      base::BindOnce(&CompleteProviderHostPreparation, base::Unretained(this),
-                     std::move(provider_host), context()),
       base::BindOnce(&ServiceWorkerVersion::OnStartSent,
                      weak_factory_.GetWeakPtr()));
 }
