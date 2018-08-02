@@ -132,12 +132,4 @@ void WebStateDelegateBridge::CommitPreviewingViewController(
   }
 }
 
-bool WebStateDelegateBridge::ShouldAllowAppLaunching(WebState* source) {
-  if ([delegate_
-          respondsToSelector:@selector(isAppLaunchingAllowedForWebState:)]) {
-    return [delegate_ isAppLaunchingAllowedForWebState:source];
-  }
-  return false;
-}
-
 }  // web

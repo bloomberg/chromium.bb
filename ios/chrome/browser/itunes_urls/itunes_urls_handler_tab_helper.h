@@ -39,6 +39,10 @@ class ITunesUrlsHandlerTabHelper
  public:
   ~ITunesUrlsHandlerTabHelper() override;
   explicit ITunesUrlsHandlerTabHelper(web::WebState* web_state);
+
+  // Returns true, if ITunesUrlsHandlerTabHelper can handle the given |url|.
+  static bool CanHandleUrl(const GURL& url);
+
   // web::WebStatePolicyDecider implementation
   bool ShouldAllowRequest(
       NSURLRequest* request,

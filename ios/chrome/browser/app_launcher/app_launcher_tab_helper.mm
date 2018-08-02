@@ -95,6 +95,13 @@ AppLauncherTabHelper::AppLauncherTabHelper(
 
 AppLauncherTabHelper::~AppLauncherTabHelper() = default;
 
+// static
+bool AppLauncherTabHelper::IsAppUrl(const GURL& url) {
+  return !(web::UrlHasWebScheme(url) ||
+           web::GetWebClient()->IsAppSpecificURL(url) ||
+           url.SchemeIs(url::kFileScheme) || url.SchemeIs(url::kAboutScheme));
+}
+
 bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
                                               const GURL& source_page_url,
                                               bool link_tapped) {
@@ -156,10 +163,7 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
   GURL request_url = net::GURLWithNSURL(request.URL);
-  if (web::UrlHasWebScheme(request_url) ||
-      web::GetWebClient()->IsAppSpecificURL(request_url) ||
-      request_url.SchemeIs(url::kFileScheme) ||
-      request_url.SchemeIs(url::kAboutScheme)) {
+  if (!IsAppUrl(request_url)) {
     // This URL can be handled by the WebState and doesn't require App launcher
     // handling.
     return true;

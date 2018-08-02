@@ -216,17 +216,4 @@ TEST_F(WebStateDelegateBridgeTest, CommitPreviewingViewController) {
   EXPECT_EQ(previewing_view_controller, delegate_.previewingViewController);
 }
 
-// Tests |ShouldAllowAppLaunching| forwarding.
-TEST_F(WebStateDelegateBridgeTest, ShouldAllowAppLaunching) {
-  EXPECT_FALSE(delegate_.webState);
-
-  delegate_.isAppLaunchingAllowedForWebStateReturnValue = YES;
-  EXPECT_TRUE(bridge_->ShouldAllowAppLaunching(&test_web_state_));
-  EXPECT_EQ(&test_web_state_, delegate_.webState);
-
-  delegate_.isAppLaunchingAllowedForWebStateReturnValue = NO;
-  EXPECT_FALSE(bridge_->ShouldAllowAppLaunching(&test_web_state_));
-  EXPECT_EQ(&test_web_state_, delegate_.webState);
-}
-
 }  // namespace web

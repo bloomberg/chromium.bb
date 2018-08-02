@@ -78,9 +78,6 @@
 - (void)webState:(web::WebState*)webState
     commitPreviewingViewController:(UIViewController*)previewingViewController;
 
-// Determines whether external applications launching is allowed or not.
-- (BOOL)isAppLaunchingAllowedForWebState:(web::WebState*)webState;
-
 @end
 
 namespace web {
@@ -116,7 +113,6 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
   void CommitPreviewingViewController(
       WebState* source,
       UIViewController* previewing_view_controller) override;
-  bool ShouldAllowAppLaunching(WebState* web_state) override;
 
  private:
   // CRWWebStateDelegate which receives forwarded calls.

@@ -2915,9 +2915,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // handled by the embedder. In that case, update the web controller to
   // correctly reflect the current state.
   if (![CRWWebController webControllerCanShow:requestURL]) {
-    if (!_webStateImpl->ShouldAllowAppLaunching()) {
-      return NO;
-    }
     // Stop load if navigation is believed to be happening on the main frame.
     if ([self isMainFrameNavigationAction:action])
       [self stopLoading];
@@ -2927,6 +2924,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // loaded using Go Back or Go Forward navigation (in which case document URL
     // will point to the previous page).  If this is the first load for a
     // NavigationManager, there will be no last committed item, so check here.
+    // TODO(crbug.com/850760): Check if this code is still needed. The current
+    // implementation doesn't put external apps URLs in the history, so they
+    // shouldn't be accessable by Go Back or Go Forward navigation.
     web::NavigationItem* lastCommittedItem =
         self.webState->GetNavigationManager()->GetLastCommittedItem();
     if (lastCommittedItem) {

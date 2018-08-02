@@ -28,6 +28,10 @@ class AppLauncherTabHelper
                                 AppLauncherAbuseDetector* abuse_detector,
                                 id<AppLauncherTabHelperDelegate> delegate);
 
+  // Returns true, if the |url| has a scheme for an external application
+  // (eg. twitter:// , calshow://).
+  static bool IsAppUrl(const GURL& url);
+
   // Requests to open the application with |url|.
   // The method checks if the application for |url| has been opened repeatedly
   // by the |source_page_url| page in a short time frame, in that case a prompt

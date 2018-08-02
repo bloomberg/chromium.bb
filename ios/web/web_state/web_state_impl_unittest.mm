@@ -636,12 +636,6 @@ TEST_P(WebStateImplTest, DelegateTest) {
   web_state_->CommitPreviewingViewController(previewing_view_controller);
   EXPECT_EQ(previewing_view_controller,
             delegate.last_previewing_view_controller());
-
-  // Test that ShouldAllowAppLaunching() is delegated correctly.
-  delegate.SetShouldAllowAppLaunching(true);
-  EXPECT_TRUE(web_state_->ShouldAllowAppLaunching());
-  delegate.SetShouldAllowAppLaunching(false);
-  EXPECT_FALSE(web_state_->ShouldAllowAppLaunching());
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.

@@ -127,10 +127,6 @@ bool TestWebStateDelegate::ShouldPreviewLink(WebState* source,
   return should_preview_link_;
 }
 
-bool TestWebStateDelegate::ShouldAllowAppLaunching(WebState* source) {
-  return should_allow_app_launching_;
-}
-
 UIViewController* TestWebStateDelegate::GetPreviewingViewController(
     WebState* source,
     const GURL& link_url) {
