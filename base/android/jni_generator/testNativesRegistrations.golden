@@ -19,7 +19,7 @@
 // Step 1: Forward declarations (classes).
 
 extern const char kClassPath_org_chromium_TestJni[];
-extern base::subtle::AtomicWord g_org_chromium_TestJni_clazz;
+extern std::atomic<jclass> g_org_chromium_TestJni_clazz;
 #ifndef org_chromium_TestJni_clazz_defined
 #define org_chromium_TestJni_clazz_defined
 inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {

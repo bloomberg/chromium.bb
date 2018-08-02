@@ -143,25 +143,20 @@ ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env, const char* class_name) {
 jclass LazyGetClass(
     JNIEnv* env,
     const char* class_name,
-    base::subtle::AtomicWord* atomic_class_id) {
-  static_assert(sizeof(subtle::AtomicWord) >= sizeof(jclass),
-                "AtomicWord can't be smaller than jclass");
-  subtle::AtomicWord value = base::subtle::Acquire_Load(atomic_class_id);
+    std::atomic<jclass>* atomic_class_id) {
+  const jclass value = std::atomic_load(atomic_class_id);
   if (value)
-    return reinterpret_cast<jclass>(value);
+    return value;
   ScopedJavaGlobalRef<jclass> clazz;
   clazz.Reset(GetClass(env, class_name));
-  subtle::AtomicWord null_aw = reinterpret_cast<subtle::AtomicWord>(NULL);
-  subtle::AtomicWord cas_result = base::subtle::Release_CompareAndSwap(
-      atomic_class_id,
-      null_aw,
-      reinterpret_cast<subtle::AtomicWord>(clazz.obj()));
-  if (cas_result == null_aw) {
+  jclass cas_result = nullptr;
+  if (std::atomic_compare_exchange_strong(atomic_class_id, &cas_result,
+                                          clazz.obj())) {
     // We intentionally leak the global ref since we now storing it as a raw
     // pointer in |atomic_class_id|.
     return clazz.Release();
   } else {
-    return reinterpret_cast<jclass>(cas_result);
+    return cas_result;
   }
 }
 
@@ -170,9 +165,10 @@ jmethodID MethodID::Get(JNIEnv* env,
                         jclass clazz,
                         const char* method_name,
                         const char* jni_signature) {
-  jmethodID id = type == TYPE_STATIC ?
-      env->GetStaticMethodID(clazz, method_name, jni_signature) :
-      env->GetMethodID(clazz, method_name, jni_signature);
+  auto get_method_ptr = type == MethodID::TYPE_STATIC ?
+      &JNIEnv::GetStaticMethodID :
+      &JNIEnv::GetMethodID;
+  jmethodID id = (env->*get_method_ptr)(clazz, method_name, jni_signature);
   if (base::android::ClearException(env) || !id) {
     LOG(FATAL) << "Failed to find " <<
         (type == TYPE_STATIC ? "static " : "") <<
@@ -189,15 +185,12 @@ jmethodID MethodID::LazyGet(JNIEnv* env,
                             jclass clazz,
                             const char* method_name,
                             const char* jni_signature,
-                            base::subtle::AtomicWord* atomic_method_id) {
-  static_assert(sizeof(subtle::AtomicWord) >= sizeof(jmethodID),
-                "AtomicWord can't be smaller than jMethodID");
-  subtle::AtomicWord value = base::subtle::Acquire_Load(atomic_method_id);
+                            std::atomic<jmethodID>* atomic_method_id) {
+  const jmethodID value = std::atomic_load(atomic_method_id);
   if (value)
-    return reinterpret_cast<jmethodID>(value);
+    return value;
   jmethodID id = MethodID::Get<type>(env, clazz, method_name, jni_signature);
-  base::subtle::Release_Store(
-      atomic_method_id, reinterpret_cast<subtle::AtomicWord>(id));
+  std::atomic_store(atomic_method_id, id);
   return id;
 }
 
@@ -212,11 +205,11 @@ template jmethodID MethodID::Get<MethodID::TYPE_INSTANCE>(
 
 template jmethodID MethodID::LazyGet<MethodID::TYPE_STATIC>(
     JNIEnv* env, jclass clazz, const char* method_name,
-    const char* jni_signature, base::subtle::AtomicWord* atomic_method_id);
+    const char* jni_signature, std::atomic<jmethodID>* atomic_method_id);
 
 template jmethodID MethodID::LazyGet<MethodID::TYPE_INSTANCE>(
     JNIEnv* env, jclass clazz, const char* method_name,
-    const char* jni_signature, base::subtle::AtomicWord* atomic_method_id);
+    const char* jni_signature, std::atomic<jmethodID>* atomic_method_id);
 
 bool HasException(JNIEnv* env) {
   return env->ExceptionCheck() != JNI_FALSE;

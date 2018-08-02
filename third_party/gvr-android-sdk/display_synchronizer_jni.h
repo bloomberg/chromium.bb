@@ -21,6 +21,7 @@
 // Native JNI methods
 // ----------------------------------------------------------------------------
 #include <jni.h>
+#include <atomic>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
@@ -32,8 +33,8 @@ namespace {
 const char kDisplaySynchronizerClassPath[] =
     "com/google/vr/cardboard/DisplaySynchronizer";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-base::subtle::AtomicWord g_DisplaySynchronizer_clazz __attribute__((unused)) =
-    0;
+std::atomic<jclass> g_DisplaySynchronizer_clazz __attribute__((unused))
+    (nullptr);
 #define DisplaySynchronizer_clazz(env)                            \
   base::android::LazyGetClass(env, kDisplaySynchronizerClassPath, \
                               &g_DisplaySynchronizer_clazz)

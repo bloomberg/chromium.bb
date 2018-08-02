@@ -21,7 +21,7 @@
 extern const char kClassPath_org_chromium_TestJni_00024MyOtherInnerClass[];
 
 extern const char kClassPath_org_chromium_TestJni[];
-extern base::subtle::AtomicWord g_org_chromium_TestJni_00024MyOtherInnerClass_clazz;
+extern std::atomic<jclass> g_org_chromium_TestJni_00024MyOtherInnerClass_clazz;
 #ifndef org_chromium_TestJni_00024MyOtherInnerClass_clazz_defined
 #define org_chromium_TestJni_00024MyOtherInnerClass_clazz_defined
 inline jclass org_chromium_TestJni_00024MyOtherInnerClass_clazz(JNIEnv* env) {
@@ -29,7 +29,7 @@ inline jclass org_chromium_TestJni_00024MyOtherInnerClass_clazz(JNIEnv* env) {
       &g_org_chromium_TestJni_00024MyOtherInnerClass_clazz);
 }
 #endif
-extern base::subtle::AtomicWord g_org_chromium_TestJni_clazz;
+extern std::atomic<jclass> g_org_chromium_TestJni_clazz;
 #ifndef org_chromium_TestJni_clazz_defined
 #define org_chromium_TestJni_clazz_defined
 inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {
