@@ -1135,6 +1135,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  FlushNetworkInterface();
   SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
 
   EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
@@ -1157,6 +1158,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
   // Set default setting to allow, cookies should be set now.
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
+  FlushNetworkInterface();
   SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
 
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
