@@ -12,6 +12,7 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/animation_timelines_test_common.h"
 #include "cc/test/mock_layer_tree_mutator.h"
+#include "cc/trees/scroll_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -236,6 +237,96 @@ TEST_F(AnimationHostTest, LayerTreeMutatorsIsMutatedOnlyWhenInputChanges) {
   // Ticking animations again should not result in mutator being asked to
   // mutate.
   TickAnimationsTransferEvents(time, 0u);
+}
+
+class MockAnimation : public Animation {
+ public:
+  explicit MockAnimation(int id) : Animation(id) {}
+  MOCK_METHOD1(Tick, void(base::TimeTicks monotonic_time));
+
+ private:
+  ~MockAnimation() {}
+};
+
+bool Animation1TimeEquals20(MutatorInputState* input) {
+  std::unique_ptr<AnimationWorkletInput> in = input->TakeWorkletState(333);
+  return in && in->added_and_updated_animations.size() == 1 &&
+         in->added_and_updated_animations[0]
+                 .worklet_animation_id.animation_id == 22 &&
+         in->added_and_updated_animations[0].current_time == 20;
+}
+
+void CreateScrollingNodeForElement(ElementId element_id,
+                                   PropertyTrees* property_trees) {
+  ScrollNode node;
+  node.scrollable = true;
+  // Setup scroll dimention to be 100x100.
+  node.bounds = gfx::Size(200, 200);
+  node.container_bounds = gfx::Size(100, 100);
+
+  int node_id = property_trees->scroll_tree.Insert(node, 0);
+  property_trees->element_id_to_scroll_node_index[element_id] = node_id;
+}
+
+TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
+  ElementId element_id = element_id_;
+  int animation_id1 = 11;
+  int animation_id2 = 12;
+  WorkletAnimationId worklet_animation_id{333, 22};
+
+  client_.RegisterElement(element_id, ElementListType::ACTIVE);
+  client_impl_.RegisterElement(element_id, ElementListType::PENDING);
+  client_impl_.RegisterElement(element_id, ElementListType::ACTIVE);
+  host_impl_->AddAnimationTimeline(timeline_);
+
+  PropertyTrees property_trees;
+  property_trees.is_main_thread = false;
+  CreateScrollingNodeForElement(element_id, &property_trees);
+
+  ScrollTree& scroll_tree = property_trees.scroll_tree;
+  // Set an initial scroll value.
+  scroll_tree.SetScrollOffsetDeltaForTesting(element_id,
+                                             gfx::Vector2dF(10, 10));
+
+  scoped_refptr<MockAnimation> mock_scroll_animation(
+      new MockAnimation(animation_id1));
+  EXPECT_CALL(*mock_scroll_animation, Tick(_))
+      .WillOnce(InvokeWithoutArgs([&]() {
+        // Scroll to 20% of the max value.
+        scroll_tree.SetScrollOffsetDeltaForTesting(element_id,
+                                                   gfx::Vector2dF(20, 20));
+      }));
+
+  // Ensure scroll animation is ticking.
+  timeline_->AttachAnimation(mock_scroll_animation);
+  host_impl_->AddToTicking(mock_scroll_animation);
+
+  // Create scroll timeline that links scroll animation and worklet animation
+  // together. Use timerange so that we have 1:1 time & scroll mapping.
+  auto scroll_timeline = std::make_unique<ScrollTimeline>(
+      element_id, ScrollTimeline::Vertical, 100);
+
+  // Create a worklet animation that is bound to the scroll timeline.
+  scoped_refptr<WorkletAnimation> worklet_animation(
+      new WorkletAnimation(animation_id2, worklet_animation_id, "test_name",
+                           std::move(scroll_timeline), nullptr, true));
+  worklet_animation->AttachElement(element_id);
+  timeline_->AttachAnimation(worklet_animation);
+
+  AddOpacityTransitionToAnimation(worklet_animation.get(), 1, .7f, .3f, true);
+
+  MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
+  host_impl_->SetLayerTreeMutator(
+      base::WrapUnique<LayerTreeMutator>(mock_mutator));
+  ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
+  EXPECT_CALL(*mock_mutator,
+              MutateRef(::testing::Truly(Animation1TimeEquals20)))
+      .Times(1);
+
+  // Ticking host should cause scroll animation to scroll which should also be
+  // reflected in the input of the layer tree mutator in the same animation
+  // frame.
+  host_impl_->TickAnimations(base::TimeTicks(), scroll_tree, false);
 }
 
 }  // namespace
