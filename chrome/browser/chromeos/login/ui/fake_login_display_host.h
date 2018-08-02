@@ -66,6 +66,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void ResyncUserData() override;
   void ShowFeedback() override;
   void ShowResetScreen() override;
+  void ShowAccountAccessHelpApp() override;
   void ShowDialogForCaptivePortal() override;
   void HideDialogForCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;

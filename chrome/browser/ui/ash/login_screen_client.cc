@@ -166,6 +166,10 @@ void LoginScreenClient::ShowResetScreen() {
   chromeos::LoginDisplayHost::default_host()->ShowResetScreen();
 }
 
+void LoginScreenClient::ShowAccountAccessHelpApp() {
+  chromeos::LoginDisplayHost::default_host()->ShowAccountAccessHelpApp();
+}
+
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 }

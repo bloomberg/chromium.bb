@@ -128,7 +128,7 @@ class AuthErrorLearnMoreButton : public views::Button,
   }
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
-    // TODO(qnnguyen): Launch the help app for signin trouble.
+    Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp();
   }
 };
 

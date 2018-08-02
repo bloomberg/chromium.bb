@@ -93,6 +93,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnCancelPasswordChangedFlow() override;
   void ShowFeedback() override;
   void ShowResetScreen() override;
+  void ShowAccountAccessHelpApp() override;
   void ShowDialogForCaptivePortal() override;
   void HideDialogForCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
