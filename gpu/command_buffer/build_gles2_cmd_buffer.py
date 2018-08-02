@@ -2830,6 +2830,20 @@ _FUNCTION_INFO = {
     'result': ['uint32_t'],
     'trace_level': 1,
   },
+  # MemoryBarrierEXT is in order to avoid the conflicting MemoryBarrier macro
+  # in windows.
+  'MemoryBarrierEXT': {
+    'cmd_args': 'GLbitfield barriers',
+    'unit_test': False,
+    'trace_level': 2,
+    'es31': True
+  },
+  'MemoryBarrierByRegion': {
+    'cmd_args': 'GLbitfield barriers',
+    'unit_test': False,
+    'trace_level': 2,
+    'es31': True
+  },
   'OverlayPromotionHintCHROMIUM': {
     'decoder_func': 'DoOverlayPromotionHintCHROMIUM',
     'extension': "CHROMIUM_uniform_stream_texture_matrix",

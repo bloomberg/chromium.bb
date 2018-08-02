@@ -428,6 +428,8 @@ error::Error DoIsTexture(GLuint texture, uint32_t* result);
 error::Error DoIsTransformFeedback(GLuint transformfeedback, uint32_t* result);
 error::Error DoLineWidth(GLfloat width);
 error::Error DoLinkProgram(GLuint program);
+error::Error DoMemoryBarrierEXT(GLbitfield barriers);
+error::Error DoMemoryBarrierByRegion(GLbitfield barriers);
 error::Error DoPauseTransformFeedback();
 error::Error DoPixelStorei(GLenum pname, GLint param);
 error::Error DoPolygonOffset(GLfloat factor, GLfloat units);

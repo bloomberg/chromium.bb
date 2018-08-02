@@ -47,13 +47,12 @@ void WebGL2ComputeRenderingContextBase::bindImageTexture(GLuint unit,
 }
 
 void WebGL2ComputeRenderingContextBase::memoryBarrier(GLbitfield barriers) {
-  SynthesizeGLError(GL_INVALID_OPERATION, "memoryBarrier", "UNIMPLEMENTED");
+  ContextGL()->MemoryBarrierEXT(barriers);
 }
 
 void WebGL2ComputeRenderingContextBase::memoryBarrierByRegion(
     GLbitfield barriers) {
-  SynthesizeGLError(GL_INVALID_OPERATION, "memoryBarrierByRegion",
-                    "UNIMPLEMENTED");
+  ContextGL()->MemoryBarrierByRegion(barriers);
 }
 
 void WebGL2ComputeRenderingContextBase::Trace(blink::Visitor* visitor) {

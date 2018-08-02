@@ -2712,6 +2712,28 @@ TEST_F(GLES2ImplementationTest, DispatchCompute) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, MemoryBarrierEXT) {
+  struct Cmds {
+    cmds::MemoryBarrierEXT cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->MemoryBarrierEXT(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, MemoryBarrierByRegion) {
+  struct Cmds {
+    cmds::MemoryBarrierByRegion cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->MemoryBarrierByRegion(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, FlushMappedBufferRange) {
   struct Cmds {
     cmds::FlushMappedBufferRange cmd;

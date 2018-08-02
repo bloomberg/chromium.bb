@@ -257,6 +257,8 @@ GL_APICALL void         GL_APIENTRY glFramebufferParameteri (GLenumFramebufferTa
 
 GL_APICALL void         GL_APIENTRY glBindImageTexture (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 GL_APICALL void         GL_APIENTRY glDispatchCompute (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+GL_APICALL void         GL_APIENTRY glMemoryBarrierEXT (GLbitfield barriers);
+GL_APICALL void         GL_APIENTRY glMemoryBarrierByRegion (GLbitfield barriers);
 
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (GLuint64 swap_id, GLbitfieldSwapBuffersFlags flags = 0);

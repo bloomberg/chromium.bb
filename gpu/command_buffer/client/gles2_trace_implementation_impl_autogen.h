@@ -1788,6 +1788,16 @@ void GLES2TraceImplementation::DispatchCompute(GLuint num_groups_x,
   gl_->DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 }
 
+void GLES2TraceImplementation::MemoryBarrierEXT(GLbitfield barriers) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MemoryBarrierEXT");
+  gl_->MemoryBarrierEXT(barriers);
+}
+
+void GLES2TraceImplementation::MemoryBarrierByRegion(GLbitfield barriers) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MemoryBarrierByRegion");
+  gl_->MemoryBarrierByRegion(barriers);
+}
+
 void GLES2TraceImplementation::SwapBuffers(GLuint64 swap_id, GLbitfield flags) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SwapBuffers");
   gl_->SwapBuffers(swap_id, flags);

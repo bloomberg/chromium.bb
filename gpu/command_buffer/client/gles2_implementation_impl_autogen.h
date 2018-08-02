@@ -3066,6 +3066,22 @@ void GLES2Implementation::DispatchCompute(GLuint num_groups_x,
   CheckGLError();
 }
 
+void GLES2Implementation::MemoryBarrierEXT(GLbitfield barriers) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMemoryBarrierEXT(" << barriers
+                     << ")");
+  helper_->MemoryBarrierEXT(barriers);
+  CheckGLError();
+}
+
+void GLES2Implementation::MemoryBarrierByRegion(GLbitfield barriers) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMemoryBarrierByRegion("
+                     << barriers << ")");
+  helper_->MemoryBarrierByRegion(barriers);
+  CheckGLError();
+}
+
 void GLES2Implementation::FlushMappedBufferRange(GLenum target,
                                                  GLintptr offset,
                                                  GLsizeiptr size) {

@@ -11893,6 +11893,72 @@ static_assert(offsetof(DispatchCompute, num_groups_y) == 8,
 static_assert(offsetof(DispatchCompute, num_groups_z) == 12,
               "offset of DispatchCompute num_groups_z should be 12");
 
+struct MemoryBarrierEXT {
+  typedef MemoryBarrierEXT ValueType;
+  static const CommandId kCmdId = kMemoryBarrierEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLbitfield _barriers) {
+    SetHeader();
+    barriers = _barriers;
+  }
+
+  void* Set(void* cmd, GLbitfield _barriers) {
+    static_cast<ValueType*>(cmd)->Init(_barriers);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t barriers;
+};
+
+static_assert(sizeof(MemoryBarrierEXT) == 8,
+              "size of MemoryBarrierEXT should be 8");
+static_assert(offsetof(MemoryBarrierEXT, header) == 0,
+              "offset of MemoryBarrierEXT header should be 0");
+static_assert(offsetof(MemoryBarrierEXT, barriers) == 4,
+              "offset of MemoryBarrierEXT barriers should be 4");
+
+struct MemoryBarrierByRegion {
+  typedef MemoryBarrierByRegion ValueType;
+  static const CommandId kCmdId = kMemoryBarrierByRegion;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLbitfield _barriers) {
+    SetHeader();
+    barriers = _barriers;
+  }
+
+  void* Set(void* cmd, GLbitfield _barriers) {
+    static_cast<ValueType*>(cmd)->Init(_barriers);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t barriers;
+};
+
+static_assert(sizeof(MemoryBarrierByRegion) == 8,
+              "size of MemoryBarrierByRegion should be 8");
+static_assert(offsetof(MemoryBarrierByRegion, header) == 0,
+              "offset of MemoryBarrierByRegion header should be 0");
+static_assert(offsetof(MemoryBarrierByRegion, barriers) == 4,
+              "offset of MemoryBarrierByRegion barriers should be 4");
+
 struct SwapBuffers {
   typedef SwapBuffers ValueType;
   static const CommandId kCmdId = kSwapBuffers;
