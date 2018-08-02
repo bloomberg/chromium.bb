@@ -62,6 +62,25 @@ void ControllerDelegateForTesting::QueueControllerActionForTesting(
       controller_model_queue_.push(controller_model);
       break;
     case VrControllerTestAction::kHover:
+      FALLTHROUGH;
+    case VrControllerTestAction::kClickUp:
+      controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
+      controller_model_queue_.push(controller_model);
+      break;
+    case VrControllerTestAction::kClickDown:
+      controller_model.touchpad_button_state =
+          UiInputManager::ButtonState::DOWN;
+      controller_model_queue_.push(controller_model);
+      break;
+    case VrControllerTestAction::kMove:
+      // Use whatever the last button state is.
+      if (!IsQueueEmpty()) {
+        controller_model.touchpad_button_state =
+            controller_model_queue_.back().touchpad_button_state;
+      } else {
+        controller_model.touchpad_button_state =
+            cached_controller_model_.touchpad_button_state;
+      }
       controller_model_queue_.push(controller_model);
       break;
     default:

@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
+import android.graphics.PointF;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -26,6 +27,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -273,5 +275,41 @@ public class VrBrowserControllerInputTest {
                 "Page did not exit fullscreen after app button was pressed", POLL_TIMEOUT_LONG_MS,
                 POLL_CHECK_INTERVAL_LONG_MS);
         mVrBrowserTestFramework.assertNoJavaScriptErrors();
+    }
+
+    /**
+     * Verifies that clicking and dragging down while at the top of the page triggers a page
+     * refresh. Automation of a manual test case from https://crbug.com/861949.
+     */
+    @Test
+    @MediumTest
+    public void testDragRefresh() throws InterruptedException, TimeoutException {
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
+                PAGE_LOAD_TIMEOUT_S);
+        waitForPageToBeScrollable(RenderCoordinates.fromWebContents(mVrTestRule.getWebContents()));
+        // The navigationStart time should change anytime we refresh, so save the value and compare
+        // later.
+        // Use a double because apparently returning Unix timestamps as floating point is a logical
+        // thing for JavaScript to do and Long.valueOf is afraid of decimal points.
+        String navStart = "window.performance.timing.navigationStart";
+        final double navigationTimestamp =
+                Double.valueOf(mVrBrowserTestFramework.runJavaScriptOrFail(
+                                       navStart, POLL_TIMEOUT_SHORT_MS))
+                        .doubleValue();
+
+        // Click and drag from near the top center of the page to near the top bottom.
+        // Use the NativeUiUtils approach to controller input since we shouldn't be missing anything
+        // by bypassing VrCore for this test.
+        NativeUiUtils.clickAndDragElement(UserFriendlyElementName.CONTENT_QUAD, new PointF(0, 0.4f),
+                new PointF(0, -0.4f), 10 /* numInterpolatedSteps */);
+
+        // Wait for the navigationStart time to be newer than our saved time.
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return Double.valueOf(mVrBrowserTestFramework.runJavaScriptOrFail(
+                                          navStart, POLL_TIMEOUT_SHORT_MS))
+                           .doubleValue()
+                    > navigationTimestamp;
+        });
     }
 }
