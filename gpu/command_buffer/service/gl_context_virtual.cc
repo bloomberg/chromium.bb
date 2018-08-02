@@ -110,6 +110,10 @@ uint64_t GLContextVirtual::BackpressureFenceCreate() {
 void GLContextVirtual::BackpressureFenceWait(uint64_t fence) {
   shared_context_->BackpressureFenceWait(fence);
 }
+
+void GLContextVirtual::FlushForDebugging() {
+  shared_context_->FlushForDebugging();
+}
 #endif
 
 GLContextVirtual::~GLContextVirtual() {

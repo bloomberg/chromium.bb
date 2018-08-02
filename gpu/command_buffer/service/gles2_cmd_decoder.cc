@@ -24,6 +24,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -5617,6 +5618,14 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
   int process_pos = 0;
   unsigned int command = 0;
 
+// Instrumentation for https://crbug.com/863817. Keep a list of all commands
+// that are flushed, to see what calls may be the culprit.
+#if defined(OS_MACOSX)
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "mac_gl_commands_in_flush", base::debug::CrashKeySize::Size256);
+  std::string crash_info;
+#endif
+
   while (process_pos < num_entries && result == error::kNoError &&
          commands_to_process_--) {
     const unsigned int size = cmd_data->value_header.size;
@@ -5631,6 +5640,19 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
       result = error::kOutOfBounds;
       break;
     }
+
+// Continued instrumentation for https://crbug.com/863817. If we run out of
+// buffer space then flush.
+#if defined(OS_MACOSX)
+    std::string command_name = GetCommandName(command);
+    if (!crash_info.empty() && crash_info.size() + command_name.size() > 256) {
+      TRACE_EVENT0("gpu", "Egregious Flush");
+      context_->FlushForDebugging();
+      crash_info = "";
+    }
+    crash_info += command_name + ",";
+    base::debug::SetCrashKeyString(crash_key, crash_info);
+#endif
 
     if (DebugImpl && log_commands()) {
       LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]"
@@ -5689,6 +5711,15 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
       cmd_data += size;
     }
   }
+
+// Continued instrumentation for https://crbug.com/863817
+#if defined(OS_MACOSX)
+  {
+    TRACE_EVENT0("gpu", "Egregious Flush");
+    context_->FlushForDebugging();
+    base::debug::ClearCrashKeyString(crash_key);
+  }
+#endif
 
   *entries_processed = process_pos;
 

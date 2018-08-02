@@ -286,6 +286,12 @@ void GLContextCGL::BackpressureFenceWait(uint64_t fence_id) {
     backpressure_fences_.erase(backpressure_fences_.begin());
 }
 
+void GLContextCGL::FlushForDebugging() {
+  if (!context_ || CGLGetCurrentContext() != context_)
+    return;
+  glFlush();
+}
+
 bool GLContextCGL::MakeCurrent(GLSurface* surface) {
   DCHECK(context_);
 

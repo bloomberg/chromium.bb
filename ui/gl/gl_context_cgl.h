@@ -38,6 +38,7 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
       const gfx::ColorSpace& color_space) override;
   uint64_t BackpressureFenceCreate() override;
   void BackpressureFenceWait(uint64_t fence) override;
+  void FlushForDebugging() override;
 
  protected:
   ~GLContextCGL() override;
