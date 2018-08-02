@@ -1778,6 +1778,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
   if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
+  rate_sum = AOMMIN(rate_sum, INT_MAX);
   *out_rate_sum = (int)rate_sum;
   *out_dist_sum = dist_sum;
 }
@@ -8031,7 +8032,9 @@ static int64_t interpolation_filter_search(
                     &tmp_dist[1], &best_skip_txfm_sb[1], &best_skip_sse_sb[1],
                     NULL, NULL, NULL);
 #endif  // DNN_BASED_RD_INTERP_FILTER
-  tmp_rate[1] = tmp_rate[0] + tmp_rate[1];
+  tmp_rate[1] =
+      (int)AOMMIN((int64_t)tmp_rate[0] + (int64_t)tmp_rate[1], INT_MAX);
+  assert(tmp_rate[1] >= 0);
   tmp_dist[1] = tmp_dist[0] + tmp_dist[1];
   best_skip_txfm_sb[1] = best_skip_txfm_sb[0] & best_skip_txfm_sb[1];
   best_skip_sse_sb[1] = best_skip_sse_sb[0] + best_skip_sse_sb[1];
