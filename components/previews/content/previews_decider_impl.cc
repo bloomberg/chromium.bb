@@ -47,6 +47,7 @@ bool AllowedOnReload(PreviewsType type) {
   switch (type) {
     // These types return new content on refresh.
     case PreviewsType::LITE_PAGE:
+    case PreviewsType::LITE_PAGE_REDIRECT:
     case PreviewsType::LOFI:
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
@@ -69,6 +70,8 @@ bool IsServerWhitelistedType(PreviewsType type) {
     // These types check server whitelist, if available.
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
+    // TODO(crbug.com/864640): Move to false when bug is fixed.
+    case PreviewsType::LITE_PAGE_REDIRECT:
       return true;
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:

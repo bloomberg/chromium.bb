@@ -41,9 +41,12 @@ enum class PreviewsType {
   // Request that resource loading hints be used during pageload.
   RESOURCE_LOADING_HINTS = 7,
 
+  // Allows the browser to redirect navigations to a Lite Page server.
+  LITE_PAGE_REDIRECT = 8,
+
   // Insert new enum values here. Keep values sequential to allow looping from
   // NONE+1 to LAST-1. Also add the enum to Previews.Types histogram suffix.
-  LAST = 8,
+  LAST = 9,
 };
 
 typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
@@ -103,6 +106,7 @@ bool IsLitePageServerPreviewsEnabled();
 // The blacklist version for each preview type.
 int OfflinePreviewsVersion();
 int ClientLoFiVersion();
+int LitePageServerPreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
 
