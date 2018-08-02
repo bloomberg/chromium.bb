@@ -222,6 +222,8 @@ jumbo_component("capture_lib") {
     sources += [
       "video/linux/camera_config_chromeos.cc",
       "video/linux/camera_config_chromeos.h",
+      "video/linux/scoped_v4l2_device_fd.cc",
+      "video/linux/scoped_v4l2_device_fd.h",
       "video/linux/v4l2_capture_delegate.cc",
       "video/linux/v4l2_capture_delegate.h",
       "video/linux/v4l2_capture_device.h",

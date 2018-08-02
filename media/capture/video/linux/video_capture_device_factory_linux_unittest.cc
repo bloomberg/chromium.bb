@@ -6,10 +6,12 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/capture/video/linux/fake_v4l2_impl.h"
+#include "media/capture/video/mock_video_capture_device_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::InvokeWithoutArgs;
 
 namespace media {
 
@@ -102,6 +104,43 @@ TEST_F(VideoCaptureDeviceFactoryLinuxTest, EnumerateSingleFakeV4L2Device) {
   ASSERT_EQ(1u, descriptors.size());
   ASSERT_EQ(stub_device_id, descriptors[0].device_id);
   ASSERT_EQ(stub_display_name, descriptors[0].display_name());
+}
+
+TEST_F(VideoCaptureDeviceFactoryLinuxTest,
+       ReceiveFramesFromSinglePlaneFakeDevice) {
+  // Setup
+  const std::string stub_display_name = "Fake Device 0";
+  const std::string stub_device_id = "/dev/video0";
+  VideoCaptureDeviceDescriptor descriptor(
+      stub_display_name, stub_device_id,
+      VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE);
+  fake_device_provider_->AddDevice(descriptor);
+  fake_v4l2_->AddDevice(stub_device_id, FakeV4L2DeviceConfig(descriptor));
+
+  // Exercise
+  auto device = factory_->CreateDevice(descriptor);
+  VideoCaptureParams arbitrary_params;
+  arbitrary_params.requested_format.frame_size = gfx::Size(1280, 720);
+  arbitrary_params.requested_format.frame_rate = 30.0f;
+  arbitrary_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
+  auto client = std::make_unique<MockVideoCaptureDeviceClient>();
+  MockVideoCaptureDeviceClient* client_ptr = client.get();
+
+  base::RunLoop wait_loop;
+  static const int kFrameToReceive = 3;
+  EXPECT_CALL(*client_ptr, OnIncomingCapturedData(_, _, _, _, _, _, _))
+      .WillRepeatedly(InvokeWithoutArgs([&wait_loop]() {
+        static int received_frame_count = 0;
+        received_frame_count++;
+        if (received_frame_count == kFrameToReceive) {
+          wait_loop.Quit();
+        }
+      }));
+
+  device->AllocateAndStart(arbitrary_params, std::move(client));
+  wait_loop.Run();
+
+  device->StopAndDeAllocate();
 }
 
 };  // namespace media
