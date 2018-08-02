@@ -35,6 +35,6 @@ FAIL checkStopAfterSetLocalAnswer promise_test: Unhandled rejection with value: 
 FAIL checkStopAfterClose assert_equals: Stopping a transceiver on a closed PC should throw. throws InvalidStateError expected "InvalidStateError" but got "TypeError"
 FAIL checkLocalRollback assert_equals: expected "[{currentDirection:null,direction:\"sendrecv\",receiver:{track:{kind:\"audio\"}},sender:{track:{}},stopped:false}]" but got "[]"
 FAIL checkRemoteRollback promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': The provided value 'rollback' is not a valid enum value of type RTCSdpType."
-FAIL checkMsectionReuse promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'stop' of undefined"
+FAIL checkMsectionReuse promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'mid' of undefined"
 Harness: the test ran to completion.
 

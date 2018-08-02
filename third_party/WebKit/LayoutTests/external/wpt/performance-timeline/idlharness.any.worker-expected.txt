@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 81 tests; 74 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 67 tests; 60 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idlharness
 PASS Test IDL implementation of performance-timeline API
 PASS Partial interface Performance: original interface defined
@@ -10,15 +10,10 @@ PASS PerformanceEntry interface: existence and properties of interface prototype
 PASS PerformanceEntry interface: existence and properties of interface prototype object's "constructor" property
 PASS PerformanceEntry interface: existence and properties of interface prototype object's @@unscopables property
 PASS PerformanceEntry interface: attribute name
-PASS Unscopable handled correctly for name property on PerformanceEntry
 PASS PerformanceEntry interface: attribute entryType
-PASS Unscopable handled correctly for entryType property on PerformanceEntry
 PASS PerformanceEntry interface: attribute startTime
-PASS Unscopable handled correctly for startTime property on PerformanceEntry
 PASS PerformanceEntry interface: attribute duration
-PASS Unscopable handled correctly for duration property on PerformanceEntry
 PASS PerformanceEntry interface: operation toJSON()
-PASS Unscopable handled correctly for toJSON() on PerformanceEntry
 PASS PerformanceObserver interface: existence and properties of interface object
 PASS PerformanceObserver interface object length
 PASS PerformanceObserver interface object name
@@ -26,11 +21,8 @@ PASS PerformanceObserver interface: existence and properties of interface protot
 PASS PerformanceObserver interface: existence and properties of interface prototype object's "constructor" property
 PASS PerformanceObserver interface: existence and properties of interface prototype object's @@unscopables property
 PASS PerformanceObserver interface: operation observe(PerformanceObserverInit)
-PASS Unscopable handled correctly for observe(PerformanceObserverInit) on PerformanceObserver
 PASS PerformanceObserver interface: operation disconnect()
-PASS Unscopable handled correctly for disconnect() on PerformanceObserver
 PASS PerformanceObserver interface: operation takeRecords()
-PASS Unscopable handled correctly for takeRecords() on PerformanceObserver
 PASS PerformanceObserver must be primary interface of observer
 PASS Stringification of observer
 PASS PerformanceObserver interface: observer must inherit property "observe(PerformanceObserverInit)" with the proper type
@@ -44,11 +36,8 @@ PASS PerformanceObserverEntryList interface: existence and properties of interfa
 PASS PerformanceObserverEntryList interface: existence and properties of interface prototype object's "constructor" property
 PASS PerformanceObserverEntryList interface: existence and properties of interface prototype object's @@unscopables property
 PASS PerformanceObserverEntryList interface: operation getEntries()
-PASS Unscopable handled correctly for getEntries() on PerformanceObserverEntryList
 PASS PerformanceObserverEntryList interface: operation getEntriesByType(DOMString)
-PASS Unscopable handled correctly for getEntriesByType(DOMString) on PerformanceObserverEntryList
 PASS PerformanceObserverEntryList interface: operation getEntriesByName(DOMString, DOMString)
-PASS Unscopable handled correctly for getEntriesByName(DOMString, DOMString) on PerformanceObserverEntryList
 PASS PerformanceObserverEntryList must be primary interface of entryList
 PASS Stringification of entryList
 PASS PerformanceObserverEntryList interface: entryList must inherit property "getEntries()" with the proper type
@@ -57,11 +46,8 @@ PASS PerformanceObserverEntryList interface: calling getEntriesByType(DOMString)
 PASS PerformanceObserverEntryList interface: entryList must inherit property "getEntriesByName(DOMString, DOMString)" with the proper type
 PASS PerformanceObserverEntryList interface: calling getEntriesByName(DOMString, DOMString) on entryList with too few arguments must throw TypeError
 PASS Performance interface: operation getEntries()
-PASS Unscopable handled correctly for getEntries() on Performance
 PASS Performance interface: operation getEntriesByType(DOMString)
-PASS Unscopable handled correctly for getEntriesByType(DOMString) on Performance
 PASS Performance interface: operation getEntriesByName(DOMString, DOMString)
-PASS Unscopable handled correctly for getEntriesByName(DOMString, DOMString) on Performance
 PASS Performance interface: performance must inherit property "getEntries()" with the proper type
 PASS Performance interface: performance must inherit property "getEntriesByType(DOMString)" with the proper type
 PASS Performance interface: calling getEntriesByType(DOMString) on performance with too few arguments must throw TypeError
