@@ -4066,25 +4066,6 @@
             ]
         }
     ],
-    "SupervisedUserCommittedInterstitials": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "SupervisedUserCommittedInterstitialsEnabled",
-                    "enable_features": [
-                        "SupervisedUserCommittedInterstitials"
-                    ]
-                }
-            ]
-        }
-    ],
     "TLS13Variant": [
         {
             "platforms": [
