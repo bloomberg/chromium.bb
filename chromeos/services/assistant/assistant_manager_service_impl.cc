@@ -57,6 +57,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       background_thread_("background thread"),
       weak_factory_(this) {
   background_thread_.Start();
+  background_thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&AssistantManagerServiceImpl::SetVolumeHack,
+                                base::Unretained(this)));
   connector->BindInterface(ash::mojom::kServiceName,
                            &voice_interaction_controller_);
 
@@ -757,6 +760,11 @@ void AssistantManagerServiceImpl::SendContextQueryAndRunCallback(
           CreateContextProto(assistant_screenshot_)});
   assistant_screenshot_.clear();
   std::move(callback).Run();
+}
+
+void AssistantManagerServiceImpl::SetVolumeHack() {
+  DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
+  platform_api_.GetFileProvider().WriteFile("assistant/volume/system", "1.0");
 }
 
 }  // namespace assistant
