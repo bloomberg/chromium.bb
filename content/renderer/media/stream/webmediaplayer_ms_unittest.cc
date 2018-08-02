@@ -1110,7 +1110,8 @@ TEST_F(WebMediaPlayerMSTest, FrameSizeChange) {
 }
 
 // Tests that GpuMemoryBufferVideoFramePool is called in the expected sequence.
-TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
+// TODO(https://crbug.com/831327): Flaky under load / CPU scheduling delays.
+TEST_F(WebMediaPlayerMSTest, DISABLED_CreateHardwareFrames) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
   SetGpuMemoryBufferVideoForTesting();
 
@@ -1145,7 +1146,9 @@ TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
 // cover that, see HiddenPlayerTests for specifics.
 #if !defined(OS_ANDROID)
 // Tests that GpuMemoryBufferVideoFramePool is not called when page is hidden.
-TEST_F(WebMediaPlayerMSTest, StopsCreatingHardwareFramesWhenHiddenOrClosed) {
+// TODO(https://crbug.com/831327): Flaky under load / CPU scheduling delays.
+TEST_F(WebMediaPlayerMSTest,
+       DISABLED_StopsCreatingHardwareFramesWhenHiddenOrClosed) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
   SetGpuMemoryBufferVideoForTesting();
 
