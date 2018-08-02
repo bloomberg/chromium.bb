@@ -321,13 +321,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/filtered")) << message_;
 }
 
-// Flaky on Windows. See http://crbug.com/662160.
-#if defined(OS_WIN)
-#define MAYBE_UserAction DISABLED_UserAction
-#else
-#define MAYBE_UserAction UserAction
-#endif
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
   content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -346,7 +340,16 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
   GURL url = extension->GetResourceURL(
       "a.html?" + base::IntToString(embedded_test_server()->port()));
 
+  // Register an observer for the navigation in the subframe, so the test
+  // can wait until it is fully complete. Otherwise the context menu
+  // navigation is non-deterministic on which process it will get associated
+  // with, leading to test flakiness.
+  content::TestNavigationManager nav_manager(
+      tab, embedded_test_server()->GetURL(
+               "/extensions/api_test/webnavigation/userAction/subframe.html"));
   ui_test_utils::NavigateToURL(browser(), url);
+  nav_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(nav_manager.was_successful());
 
   // This corresponds to "Open link in new tab".
   content::ContextMenuParams params;

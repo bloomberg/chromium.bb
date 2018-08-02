@@ -88,7 +88,7 @@ onload = function() {
             { label: "b-onCreatedNavigationTarget",
               event: "onCreatedNavigationTarget",
               details: { sourceFrameId: 1,
-                         sourceProcessId: 0,
+                         sourceProcessId: 1,
                          sourceTabId: 0,
                          tabId: 1,
                          timeStamp: 0,
