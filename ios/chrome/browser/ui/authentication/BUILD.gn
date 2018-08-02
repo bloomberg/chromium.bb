@@ -114,6 +114,15 @@ source_set("authentication_ui") {
   libs = [ "UIKit.framework" ]
 }
 
+source_set("authentication_constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "authentication_constants.h",
+    "authentication_constants.mm",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
