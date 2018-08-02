@@ -67,6 +67,7 @@ void ReloadWithoutPreviews(previews::PreviewsType previews_type,
                            content::WebContents* web_contents) {
   switch (previews_type) {
     case previews::PreviewsType::LITE_PAGE:
+    case previews::PreviewsType::LITE_PAGE_REDIRECT:
     case previews::PreviewsType::OFFLINE:
     case previews::PreviewsType::NOSCRIPT:
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:

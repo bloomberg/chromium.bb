@@ -36,6 +36,8 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
       return previews::params::IsOfflinePreviewsEnabled();
     case previews::PreviewsType::LOFI:
       return server_previews_enabled || previews::params::IsClientLoFiEnabled();
+    case previews::PreviewsType::LITE_PAGE_REDIRECT:
+      return previews::params::IsLitePageServerPreviewsEnabled();
     case previews::PreviewsType::LITE_PAGE:
       return server_previews_enabled;
     case previews::PreviewsType::NOSCRIPT:
@@ -65,6 +67,8 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
       return previews::params::ClientLoFiVersion();
     case previews::PreviewsType::LITE_PAGE:
       return data_reduction_proxy::params::LitePageVersion();
+    case previews::PreviewsType::LITE_PAGE_REDIRECT:
+      return previews::params::LitePageServerPreviewsVersion();
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::NoScriptPreviewsVersion();
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:

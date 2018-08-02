@@ -74,6 +74,8 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
       return params::IsNoScriptPreviewsEnabled();
     case PreviewsType::RESOURCE_LOADING_HINTS:
       return params::IsResourceLoadingHintsEnabled();
+    case previews::PreviewsType::LITE_PAGE_REDIRECT:
+      return params::IsLitePageServerPreviewsEnabled();
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::LAST:

@@ -134,6 +134,7 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
   switch (type) {
     case PreviewsType::OFFLINE:
     case PreviewsType::NOSCRIPT:
+    case PreviewsType::LITE_PAGE_REDIRECT:
       return GetParamValueAsECT(kClientSidePreviewsFieldTrial,
                                 kEffectiveConnectionTypeThreshold,
                                 net::EFFECTIVE_CONNECTION_TYPE_2G);
@@ -191,6 +192,11 @@ int ClientLoFiVersion() {
                                                 0);
 }
 
+int LitePageServerPreviewsVersion() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, kVersion, 0);
+}
+
 int NoScriptPreviewsVersion() {
   return GetFieldTrialParamByFeatureAsInt(features::kNoScriptPreviews, kVersion,
                                           0);
@@ -245,6 +251,8 @@ std::string GetStringNameForType(PreviewsType type) {
       return "LoFi";
     case PreviewsType::LITE_PAGE:
       return "LitePage";
+    case PreviewsType::LITE_PAGE_REDIRECT:
+      return "LitePageRedirect";
     case PreviewsType::NOSCRIPT:
       return "NoScript";
     case PreviewsType::UNSPECIFIED:

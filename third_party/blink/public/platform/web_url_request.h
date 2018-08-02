@@ -141,7 +141,9 @@ class WebURLRequest {
     kResourceLoadingHintsOn = 1 << 7,  // Request that resource loading hints be
                                        // used during pageload.
     kOfflinePageOn = 1 << 8,
-    kPreviewsStateLast = kOfflinePageOn
+    kLitePageRedirectOn = 1 << 9,  // Allow the browser to redirect the resource
+                                   // to a Lite Page server.
+    kPreviewsStateLast = kLitePageRedirectOn
   };
 
   class ExtraData {
