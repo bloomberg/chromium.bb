@@ -167,6 +167,9 @@ void ContextualSearchDelegate::ResolveSearchTermFromContext() {
 
   SetDiscourseContextAndAddToHeader(*context_);
 
+  // Disable cookies for this request.
+  search_term_fetcher_->SetAllowCredentials(false);
+
   search_term_fetcher_->Start();
 }
 
@@ -382,18 +385,17 @@ bool ContextualSearchDelegate::CanSendPageURL(
   if (!sync_service)
     return false;
 
-  // Check whether the user has enabled *personalized* URL-keyed data collection
+  // Check whether the user has enabled anonymous URL-keyed data collection
   // from the unified consent service.
-  bool is_unified_consent_enabled = IsUnifiedConsentEnabled(profile);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
-      personalized_unified_consent_url_helper =
+      anonymized_unified_consent_url_helper =
           UrlKeyedDataCollectionConsentHelper::
-              NewPersonalizedDataCollectionConsentHelper(
-                  is_unified_consent_enabled, sync_service);
-  // TODO(donnd): if not enabled, check if *anonymous* URL-keyed data collection
-  // is enabled and do what's needed to send it but not logging it.
-  // See https://crbug.com.com/865104 for details.
-  return personalized_unified_consent_url_helper->IsEnabled();
+              NewAnonymizedDataCollectionConsentHelper(
+                  IsUnifiedConsentEnabled(profile),
+                  ProfileManager::GetActiveUserProfile()->GetPrefs(),
+                  sync_service);
+  // If they have, then allow sending of the URL.
+  return anonymized_unified_consent_url_helper->IsEnabled();
 }
 
 // Gets the target language from the translate service using the user's profile.
