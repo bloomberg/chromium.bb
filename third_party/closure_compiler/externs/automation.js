@@ -176,6 +176,7 @@ chrome.automation.RoleType = {
   IMAGE_MAP: 'imageMap',
   INLINE_TEXT_BOX: 'inlineTextBox',
   INPUT_TIME: 'inputTime',
+  KEYBOARD: 'keyboard',
   LABEL_TEXT: 'labelText',
   LAYOUT_TABLE: 'layoutTable',
   LAYOUT_TABLE_CELL: 'layoutTableCell',
@@ -1580,6 +1581,7 @@ chrome.automation.AutomationNode.prototype.matches = function(params) {};
  * @see https://developer.chrome.com/extensions/automation#method-getNextTextMatch
  */
 chrome.automation.AutomationNode.prototype.getNextTextMatch = function(searchStr, backward) {};
+
 
 /**
  * Get the automation tree for the tab with the given tabId, or the current tab

@@ -175,6 +175,7 @@
     imageMap,
     inlineTextBox,
     inputTime,
+    keyboard,
     labelText,
     layoutTable,
     layoutTableCell,

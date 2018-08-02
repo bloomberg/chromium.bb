@@ -419,6 +419,8 @@ const char* ToString(ax::mojom::Role role) {
       return "inlineTextBox";
     case ax::mojom::Role::kInputTime:
       return "inputTime";
+    case ax::mojom::Role::kKeyboard:
+      return "keyboard";
     case ax::mojom::Role::kLabelText:
       return "labelText";
     case ax::mojom::Role::kLayoutTable:

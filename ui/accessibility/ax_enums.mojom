@@ -197,6 +197,7 @@ enum Role {
   kImageMap,
   kInlineTextBox,
   kInputTime,
+  kKeyboard,
   kLabelText,
   kLayoutTable,
   kLayoutTableCell,

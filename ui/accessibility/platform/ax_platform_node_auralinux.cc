@@ -1304,6 +1304,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kFooter:
       return ATK_ROLE_FOOTER;
+    case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kPresentational:
     case ax::mojom::Role::kUnknown:
