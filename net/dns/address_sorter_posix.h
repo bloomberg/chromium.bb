@@ -63,8 +63,7 @@ class NET_EXPORT_PRIVATE AddressSorterPosix
   ~AddressSorterPosix() override;
 
   // AddressSorter:
-  void Sort(const AddressList& list,
-            const CallbackType& callback) const override;
+  void Sort(const AddressList& list, CallbackType callback) const override;
 
  private:
   friend class AddressSorterPosixTest;

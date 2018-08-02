@@ -1288,8 +1288,8 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         addr_list_[0].GetFamily() == ADDRESS_FAMILY_IPV6) {
       // Sort addresses if needed.  Sort could complete synchronously.
       client_->GetAddressSorter()->Sort(
-          addr_list_, base::Bind(&DnsTask::OnSortComplete, AsWeakPtr(),
-                                 tick_clock_->NowTicks()));
+          addr_list_, base::BindOnce(&DnsTask::OnSortComplete, AsWeakPtr(),
+                                     tick_clock_->NowTicks()));
     } else {
       OnSuccess(addr_list_);
     }

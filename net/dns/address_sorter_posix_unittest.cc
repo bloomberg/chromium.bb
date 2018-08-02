@@ -227,8 +227,8 @@ class AddressSorterPosixTest : public testing::Test {
 
     AddressList result;
     TestCompletionCallback callback;
-    sorter_.Sort(list, base::Bind(&OnSortComplete, &result,
-                                  callback.callback()));
+    sorter_.Sort(list,
+                 base::BindOnce(&OnSortComplete, &result, callback.callback()));
     callback.WaitForResult();
 
     for (size_t i = 0; (i < result.size()) || (order[i] >= 0); ++i) {
