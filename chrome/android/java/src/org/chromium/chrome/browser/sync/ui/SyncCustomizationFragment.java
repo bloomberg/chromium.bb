@@ -436,8 +436,10 @@ public class SyncCustomizationFragment extends PreferenceFragment
      */
     @Override
     public boolean onPassphraseEntered(String passphrase) {
-        if (!mProfileSyncService.isEngineInitialized()) {
-            // If the engine was shut down since the dialog was opened, do nothing.
+        if (!mProfileSyncService.isEngineInitialized()
+                || !mProfileSyncService.isPassphraseRequiredForDecryption()) {
+            // If the engine was shut down since the dialog was opened, or the passphrase isn't
+            // required anymore, do nothing.
             return false;
         }
         return handleDecryption(passphrase);
