@@ -23,6 +23,7 @@
 namespace device {
 
 class BluetoothRemoteGattDescriptor;
+class BluetoothGattDiscovererWinrt;
 class BluetoothRemoteGattService;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
@@ -50,6 +51,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
   bool WriteWithoutResponse(base::span<const uint8_t> value) override;
+
+  void UpdateDescriptors(BluetoothGattDiscovererWinrt* gatt_discoverer);
 
   ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
       IGattCharacteristic*
@@ -107,6 +110,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
       characteristic_;
   BluetoothUUID uuid_;
   Properties properties_;
+  uint16_t attribute_handle_;
   std::string identifier_;
   std::vector<uint8_t> value_;
   std::unique_ptr<PendingReadCallbacks> pending_read_callbacks_;
