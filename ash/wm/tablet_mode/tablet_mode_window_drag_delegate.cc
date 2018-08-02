@@ -14,6 +14,9 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
+#include "ui/gfx/transform_util.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -52,6 +55,23 @@ gfx::Rect GetNewSelectorItemBounds(aura::Window* dragged_window) {
     return gfx::Rect();
 
   return last_item->target_bounds();
+}
+
+// Set |transform| to |window| and its transient child windows. |transform| is
+// the transform that applies to |window| and needes to be adjusted for the
+// transient child windows.
+void SetTransform(aura::Window* window, const gfx::Transform& transform) {
+  gfx::Point target_origin(window->GetTargetBounds().origin());
+  for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
+    aura::Window* parent_window = window_iter->parent();
+    gfx::Rect original_bounds(window_iter->GetTargetBounds());
+    ::wm::ConvertRectToScreen(parent_window, &original_bounds);
+    gfx::Transform new_transform =
+        TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
+                                       target_origin.y() - original_bounds.y()),
+                            transform);
+    window_iter->SetTransform(new_transform);
+  }
 }
 
 }  // namespace
@@ -163,7 +183,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   if (!dragged_window_->layer()->GetTargetTransform().IsIdentity() &&
       (!GetWindowSelector() ||
        !GetWindowSelector()->IsWindowInOverview(dragged_window_))) {
-    dragged_window_->SetTransform(gfx::Transform());
+    SetTransform(dragged_window_, gfx::Transform());
   }
 
   dragged_window_ = nullptr;
@@ -309,7 +329,7 @@ void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
       (location_in_screen.y() - window_bounds.y()) -
           (initial_location_in_screen_.y() - window_bounds.y()) * scale);
   transform.Scale(scale, scale);
-  dragged_window_->SetTransform(transform);
+  SetTransform(dragged_window_, transform);
 }
 
 }  // namespace ash
