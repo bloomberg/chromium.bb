@@ -22,7 +22,6 @@ include_rules = [
   "+components/policy/throttle/",
   "+content/public/browser",
   "+content/public/common",
-  "+content/test",
   "+courgette",
   "+device/base",
   "+device/bluetooth",

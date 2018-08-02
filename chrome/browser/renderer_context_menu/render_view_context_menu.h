@@ -81,8 +81,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
  protected:
   Profile* GetProfile() const;
-
-  // This may return nullptr (e.g. for WebUI dialogs).
   Browser* GetBrowser() const;
 
   // Returns a (possibly truncated) version of the current selection text
