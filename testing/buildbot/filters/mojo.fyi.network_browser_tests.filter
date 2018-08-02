@@ -18,21 +18,9 @@
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -WebViewTest.WebViewInBackgroundPage
 
-# A large number of Cloud Print files use URLFetchers.
-# A few of the bugs:
-# https://crbug.com/844950
-# https://crbug.com/844951
-# https://crbug.com/844952
--ComponentCloudPolicyTest.FetchExtensionPolicy
--ComponentCloudPolicyTest.InstallNewExtension
--ComponentCloudPolicyTest.SignOutAndBackIn
--ComponentCloudPolicyTest.UpdateExtensionPolicy
--KeyRotationComponentCloudPolicyTest.Basic
-
 # These tests uses net::URLRequestFilter (through TestRequestInterceptor) to
 # mock out network responses. Unclear if the code being tested uses
 # SimpleURLLoader or URLFetcher.
--ComponentUpdaterPolicyTest.EnabledComponentUpdates
 -PolicyTest.ExtensionInstallBlacklistSharedModules
 -PolicyTest.ExtensionInstallForcelist
 -PolicyTest.ExtensionInstallForcelist_DefaultedUpdateUrl
