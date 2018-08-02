@@ -35,9 +35,18 @@ class VIZ_COMMON_EXPORT SurfaceRange {
 
   bool operator<(const SurfaceRange& other) const;
 
-  // Check if |surface_id| is in the surface range and match the frame sink id
-  // of start and end.
+  // Check if |surface_id| falls within |this| SurfaceRange but is neither the
+  // start nor end of the range. The FrameSinkId of |surface_id| must match
+  // either the start or end of the range.
   bool IsInRangeExclusive(const SurfaceId& surface_id) const;
+
+  // Check if |surface_id| falls within |this| SurfaceRange inclusive of the
+  // start and end of the range. The FrameSinkId of |surface_id| must match
+  // either the start or end of the range.
+  bool IsInRangeInclusive(const SurfaceId& surface_id) const;
+
+  // Returns whether the start and end of the range have differing FrameSinkIds.
+  bool HasDifferentFrameSinkIds() const;
 
   bool IsValid() const;
 
