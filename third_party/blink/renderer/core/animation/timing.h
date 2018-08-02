@@ -62,7 +62,6 @@ struct Timing {
         iteration_start(0),
         iteration_count(1),
         iteration_duration(std::numeric_limits<double>::quiet_NaN()),
-        playback_rate(1),
         direction(PlaybackDirection::NORMAL),
         timing_function(LinearTimingFunction::Shared()) {}
 
@@ -73,7 +72,6 @@ struct Timing {
     DCHECK_GE(iteration_start, 0);
     DCHECK_GE(iteration_count, 0);
     DCHECK(std::isnan(iteration_duration) || iteration_duration >= 0);
-    DCHECK(std::isfinite(playback_rate));
     DCHECK(timing_function);
   }
 
@@ -85,7 +83,6 @@ struct Timing {
            ((std::isnan(iteration_duration) &&
              std::isnan(other.iteration_duration)) ||
             iteration_duration == other.iteration_duration) &&
-           playback_rate == other.playback_rate &&
            direction == other.direction &&
            DataEquivalent(timing_function.get(), other.timing_function.get());
   }
@@ -99,8 +96,6 @@ struct Timing {
   double iteration_count;
   double iteration_duration;
 
-  // TODO(crbug.com/630915) Remove playbackRate
-  double playback_rate;
   PlaybackDirection direction;
   scoped_refptr<TimingFunction> timing_function;
 };

@@ -451,7 +451,6 @@ TEST_F(AnimationTimingInputTest, TimingInputEmpty) {
   EXPECT_EQ(control_timing.iteration_start, updated_timing.iteration_start);
   EXPECT_EQ(control_timing.iteration_count, updated_timing.iteration_count);
   EXPECT_TRUE(std::isnan(updated_timing.iteration_duration));
-  EXPECT_EQ(control_timing.playback_rate, updated_timing.playback_rate);
   EXPECT_EQ(control_timing.direction, updated_timing.direction);
   EXPECT_EQ(*control_timing.timing_function, *updated_timing.timing_function);
 }
@@ -471,7 +470,6 @@ TEST_F(AnimationTimingInputTest, TimingInputEmptyKeyframeAnimationOptions) {
   EXPECT_EQ(control_timing.iteration_start, updated_timing.iteration_start);
   EXPECT_EQ(control_timing.iteration_count, updated_timing.iteration_count);
   EXPECT_TRUE(std::isnan(updated_timing.iteration_duration));
-  EXPECT_EQ(control_timing.playback_rate, updated_timing.playback_rate);
   EXPECT_EQ(control_timing.direction, updated_timing.direction);
   EXPECT_EQ(*control_timing.timing_function, *updated_timing.timing_function);
 }

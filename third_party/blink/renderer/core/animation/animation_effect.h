@@ -113,7 +113,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   }
 
   double IterationDuration() const;
-  double ActiveDurationInternal() const;
+  double RepeatedDuration() const;
   double EndTimeInternal() const;
 
   const Timing& SpecifiedTiming() const { return timing_; }
@@ -151,8 +151,6 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     return event_delegate_ && event_delegate_->RequiresIterationEvents(*this);
   }
   void ClearEventDelegate() { event_delegate_ = nullptr; }
-
-  double RepeatedDuration() const;
 
   virtual void UpdateChildrenAndEffects() const = 0;
   virtual double IntrinsicIterationDuration() const { return 0; }
