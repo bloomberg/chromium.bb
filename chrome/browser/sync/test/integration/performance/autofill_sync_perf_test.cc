@@ -36,8 +36,8 @@ using sync_timing_helper::TimeMutualSyncCycle;
 //
 // TODO(akalin): If this works, decomp the magic number calculation
 // into a macro and have all the perf tests use it.
-static const int kNumKeys = 163;
-static const int kNumProfiles = 163;
+constexpr size_t kNumKeys = 163;
+constexpr size_t kNumProfiles = 163;
 
 std::string IntToName(int n) {
   return base::StringPrintf("Name%d", n);
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_P(AutofillProfileSyncPerfTest, P0) {
 
   RemoveProfiles(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(0, GetProfileCount(1));
+  ASSERT_EQ(0U, GetProfileCount(1));
   PrintResult("autofill", "delete_autofill_profiles", dt);
 }
 
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteSyncPerfTest, P0) {
   // TODO(lipalani): fix this. The following line is added to force sync.
   ForceSync(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(0, GetKeyCount(1));
+  ASSERT_EQ(0U, GetKeyCount(1));
   PrintResult("autofill", "delete_autofill_keys", dt);
 }
 

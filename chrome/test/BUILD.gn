@@ -5441,6 +5441,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
       "../browser/sync/test/integration/two_client_apps_sync_test.cc",
       "../browser/sync/test/integration/two_client_arc_package_sync_test.cc",
+      "../browser/sync/test/integration/two_client_autocomplete_sync_test.cc",
       "../browser/sync/test/integration/two_client_autofill_sync_test.cc",
       "../browser/sync/test/integration/two_client_bookmarks_sync_test.cc",
       "../browser/sync/test/integration/two_client_dictionary_sync_test.cc",
