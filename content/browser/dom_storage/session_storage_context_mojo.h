@@ -23,6 +23,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
@@ -83,6 +84,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void OpenSessionStorage(int process_id,
                           const std::string& namespace_id,
+                          mojo::ReportBadMessageCallback bad_message_callback,
                           blink::mojom::SessionStorageNamespaceRequest request);
 
   void CreateSessionNamespace(const std::string& namespace_id);
