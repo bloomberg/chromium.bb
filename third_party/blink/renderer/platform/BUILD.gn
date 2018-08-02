@@ -1173,9 +1173,6 @@ jumbo_component("platform") {
     "mac/graphics_context_canvas.mm",
     "mac/local_current_graphics_context.h",
     "mac/local_current_graphics_context.mm",
-    "mac/ns_scroller_imp_details.h",
-    "mac/scroll_animator_mac.h",
-    "mac/scroll_animator_mac.mm",
     "mac/theme_mac.h",
     "mac/theme_mac.mm",
     "mac/version_util_mac.h",
@@ -1225,7 +1222,6 @@ jumbo_component("platform") {
     "peerconnection/rtc_stats_request.h",
     "peerconnection/rtc_stats_response_base.h",
     "peerconnection/rtc_void_request.h",
-    "platform_chrome_client.h",
     "plugins/plugin_data.cc",
     "plugins/plugin_data.h",
     "plugins/plugin_script_forbidden_scope.cc",
@@ -1246,43 +1242,10 @@ jumbo_component("platform") {
     "scoped_orientation_change_indicator.cc",
     "scoped_orientation_change_indicator.h",
     "scroll/main_thread_scrolling_reason.h",
-    "scroll/programmatic_scroll_animator.cc",
-    "scroll/programmatic_scroll_animator.h",
     "scroll/scroll_alignment.cc",
     "scroll/scroll_alignment.h",
-    "scroll/scroll_animator.cc",
-    "scroll/scroll_animator.h",
-    "scroll/scroll_animator_base.cc",
-    "scroll/scroll_animator_base.h",
-    "scroll/scroll_animator_compositor_coordinator.cc",
-    "scroll/scroll_animator_compositor_coordinator.h",
-    "scroll/scroll_customization.cc",
-    "scroll/scroll_customization.h",
     "scroll/scroll_snap_data.h",
-    "scroll/scroll_state_data.h",
     "scroll/scroll_types.h",
-    "scroll/scrollable_area.cc",
-    "scroll/scrollable_area.h",
-    "scroll/scrollbar.cc",
-    "scroll/scrollbar.h",
-    "scroll/scrollbar_layer_delegate.cc",
-    "scroll/scrollbar_layer_delegate.h",
-    "scroll/scrollbar_theme.cc",
-    "scroll/scrollbar_theme.h",
-    "scroll/scrollbar_theme_android.cc",
-    "scroll/scrollbar_theme_aura.cc",
-    "scroll/scrollbar_theme_aura.h",
-    "scroll/scrollbar_theme_mac.h",
-    "scroll/scrollbar_theme_mac.mm",
-    "scroll/scrollbar_theme_mock.cc",
-    "scroll/scrollbar_theme_mock.h",
-    "scroll/scrollbar_theme_overlay.cc",
-    "scroll/scrollbar_theme_overlay.h",
-    "scroll/scrollbar_theme_overlay_mock.h",
-    "scroll/smooth_scroll_sequencer.cc",
-    "scroll/smooth_scroll_sequencer.h",
-    "scroll/web_scroll_into_view_params.cc",
-    "scroll/web_scrollbar_theme.mm",
     "scroll/web_scrollbar_theme_client.h",
     "serialized_resource.h",
     "shared_buffer.cc",
@@ -1516,8 +1479,6 @@ jumbo_component("platform") {
     sources -= [
       "fonts/skia/font_cache_skia.cc",
       "fonts/web_font_render_style.cc",
-      "scroll/scroll_animator.cc",
-      "scroll/scroll_animator.h",
 
       # Uses LocaleMac instead.
       "text/locale_icu.cc",
@@ -1572,13 +1533,6 @@ jumbo_component("platform") {
     ]
   }
 
-  if (!use_default_render_theme) {
-    sources -= [
-      "scroll/scrollbar_theme_aura.cc",
-      "scroll/scrollbar_theme_aura.h",
-    ]
-  }
-
   if (current_cpu == "arm") {
     deps += [ ":blink_arm_neon" ]
   }
@@ -1613,7 +1567,6 @@ jumbo_static_library("test_support") {
 
   sources = [
     "graphics/gpu/drawing_buffer_test_helpers.h",
-    "scroll/scrollbar_test_suite.h",
     "testing/compositor_test.cc",
     "testing/compositor_test.h",
     "testing/empty_web_media_player.cc",
@@ -1653,7 +1606,6 @@ jumbo_static_library("test_support") {
     "testing/unit_test_helpers.h",
     "testing/url_test_helpers.cc",
     "testing/url_test_helpers.h",
-    "testing/use_mock_scrollbar_settings.h",
     "testing/viewport_layers_setup.cc",
     "testing/viewport_layers_setup.h",
     "testing/weburl_loader_mock.cc",
@@ -1838,8 +1790,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "pod_interval_tree_test.cc",
     "pod_red_black_tree_test.cc",
     "scoped_orientation_change_indicator_test.cc",
-    "scroll/scrollable_area_test.cc",
-    "scroll/scrollbar_theme_overlay_test.cc",
     "shared_buffer_test.cc",
     "testing/arena_test_helpers.h",
     "testing/tree_test_helpers.cc",
@@ -1888,14 +1838,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     sources += [ "text/locale_mac_test.cc" ]
   } else if (is_posix || is_fuchsia) {
     sources += [ "text/locale_icu_test.cc" ]
-  }
-
-  if (!is_mac) {
-    sources += [ "scroll/scroll_animator_test.cc" ]
-  }
-
-  if (use_default_render_theme) {
-    sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
   }
 
   sources += [ "testing/run_all_tests.cc" ]

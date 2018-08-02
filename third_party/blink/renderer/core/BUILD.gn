@@ -206,6 +206,7 @@ component("core") {
     "//third_party/blink/renderer/core/probe",
     "//third_party/blink/renderer/core/resize_observer",
     "//third_party/blink/renderer/core/script",
+    "//third_party/blink/renderer/core/scroll",
     "//third_party/blink/renderer/core/streams",
     "//third_party/blink/renderer/core/style:rendering",
     "//third_party/blink/renderer/core/style:svg_style",
@@ -2083,6 +2084,8 @@ jumbo_source_set("unit_tests") {
     "script/module_map_test.cc",
     "script/script_module_resolver_impl_test.cc",
     "script/script_runner_test.cc",
+    "scroll/scrollable_area_test.cc",
+    "scroll/scrollbar_theme_overlay_test.cc",
     "streams/readable_stream_operations_test.cc",
     "style/border_value_test.cc",
     "style/computed_style_test.cc",
@@ -2147,6 +2150,14 @@ jumbo_source_set("unit_tests") {
   # crbug.com/741925
   if (!is_android) {
     deps += [ "//third_party/blink/renderer/core/mojo:unit_tests" ]
+  }
+
+  if (!is_mac) {
+    sources += [ "scroll/scroll_animator_test.cc" ]
+  }
+
+  if (use_default_render_theme) {
+    sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
   }
 }
 

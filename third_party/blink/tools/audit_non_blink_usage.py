@@ -28,7 +28,6 @@ _CONFIG = [
             'gfx::CubicBezier',
             'gfx::ICCProfile',
             'gfx::RadToDeg',
-            'gfx::ScrollOffset',
 
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
@@ -196,6 +195,12 @@ _CONFIG = [
             'cc::BrowserControlsState',
             'cc::EventListenerClass',
             'cc::EventListenerProperties',
+
+            # Scrolling
+            'cc::ScrollOffsetAnimationCurve',
+            'cc::ScrollStateData',
+            'gfx::RectToSkRect',
+            'gfx::ScrollOffset',
 
             # Standalone utility libraries that only depend on //base
             'skia::.+',

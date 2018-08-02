@@ -37,7 +37,7 @@ struct WebScrollIntoViewParams {
   struct Alignment {
     Alignment() = default;
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT Alignment(const ScrollAlignment&);
+    BLINK_EXPORT Alignment(const ScrollAlignment&);
 #endif
     AlignmentBehavior rect_visible = kNoScroll;
     AlignmentBehavior rect_hidden = kCenter;
@@ -89,7 +89,7 @@ struct WebScrollIntoViewParams {
 
   WebScrollIntoViewParams() = default;
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebScrollIntoViewParams(
+  BLINK_EXPORT WebScrollIntoViewParams(
       ScrollAlignment,
       ScrollAlignment,
       ScrollType scroll_type = kProgrammaticScroll,
@@ -98,13 +98,13 @@ struct WebScrollIntoViewParams {
       bool is_for_scroll_sequence = false,
       bool zoom_into_rect = false);
 
-  BLINK_PLATFORM_EXPORT ScrollAlignment GetScrollAlignmentX() const;
+  BLINK_EXPORT ScrollAlignment GetScrollAlignmentX() const;
 
-  BLINK_PLATFORM_EXPORT ScrollAlignment GetScrollAlignmentY() const;
+  BLINK_EXPORT ScrollAlignment GetScrollAlignmentY() const;
 
-  BLINK_PLATFORM_EXPORT ScrollType GetScrollType() const;
+  BLINK_EXPORT ScrollType GetScrollType() const;
 
-  BLINK_PLATFORM_EXPORT ScrollBehavior GetScrollBehavior() const;
+  BLINK_EXPORT ScrollBehavior GetScrollBehavior() const;
 #endif
 };
 

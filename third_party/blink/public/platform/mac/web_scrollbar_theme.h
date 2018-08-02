@@ -61,14 +61,14 @@ class WebScrollbarTheme {
       bool redraw,
       bool jump_on_track_click);
 
+// Registered clients will receive a callback whenever
+// UpdateScrollbarsWithNSDefaults is called.
+#if INSIDE_BLINK
   static float InitialButtonDelay();
   static float AutoscrollButtonDelay();
   static ScrollerStyle PreferredScrollerStyle();
   static bool JumpOnTrackClick();
 
-// Registered clients will receive a callback whenever
-// UpdateScrollbarsWithNSDefaults is called.
-#if INSIDE_BLINK
   static void RegisterClient(WebScrollbarThemeClient& client);
   static void UnregisterClient(WebScrollbarThemeClient& client);
 #endif

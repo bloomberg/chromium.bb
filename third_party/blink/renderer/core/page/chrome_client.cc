@@ -41,7 +41,6 @@ namespace blink {
 
 void ChromeClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(last_mouse_over_node_);
-  PlatformChromeClient::Trace(visitor);
 }
 
 void ChromeClient::InstallSupplements(LocalFrame& frame) {
