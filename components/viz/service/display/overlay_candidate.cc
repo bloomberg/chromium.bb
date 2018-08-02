@@ -211,8 +211,9 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
     return false;
   // We support only kSrc (no blending) and kSrcOver (blending with premul).
   if (!(quad->shared_quad_state->blend_mode == SkBlendMode::kSrc ||
-        quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver))
+        quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver)) {
     return false;
+  }
 
   switch (quad->material) {
     case DrawQuad::TEXTURE_CONTENT:
@@ -237,13 +238,12 @@ bool OverlayCandidate::IsInvisibleQuad(const DrawQuad* quad) {
   float opacity = quad->shared_quad_state->opacity;
   if (opacity < std::numeric_limits<float>::epsilon())
     return true;
-  if (quad->material == DrawQuad::SOLID_COLOR) {
-    SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
-    float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
-    return quad->ShouldDrawWithBlending() &&
-           alpha < std::numeric_limits<float>::epsilon();
-  }
-  return false;
+  if (quad->material != DrawQuad::SOLID_COLOR)
+    return false;
+  const SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
+  const float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
+  return quad->ShouldDrawWithBlending() &&
+         alpha < std::numeric_limits<float>::epsilon();
 }
 
 // static
@@ -257,8 +257,9 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
         overlap_iter->shared_quad_state->quad_to_target_transform,
         gfx::RectF(overlap_iter->rect));
     if (candidate.display_rect.Intersects(overlap_rect) &&
-        !OverlayCandidate::IsInvisibleQuad(*overlap_iter))
+        !OverlayCandidate::IsInvisibleQuad(*overlap_iter)) {
       return true;
+    }
   }
   return false;
 }
@@ -274,8 +275,7 @@ bool OverlayCandidate::FromDrawQuadResource(
     return false;
 
   candidate->format = resource_provider->GetBufferFormat(resource_id);
-  if (std::find(std::begin(kOverlayFormats), std::end(kOverlayFormats),
-                candidate->format) == std::end(kOverlayFormats))
+  if (!base::ContainsValue(kOverlayFormats, candidate->format))
     return false;
 
   gfx::OverlayTransform overlay_transform = GetOverlayTransform(
