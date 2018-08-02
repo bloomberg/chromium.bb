@@ -591,8 +591,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
   forward_view_list.push_back(contents_view()
                                   ->search_result_answer_card_view_for_test()
                                   ->GetSearchAnswerContainerViewForTest());
-  SearchResultListView* list_view =
-      contents_view()->search_result_list_view_for_test();
+  SearchResultListView* list_view = contents_view()->search_result_list_view();
   for (int i = 0; i < kListResults; ++i)
     forward_view_list.push_back(list_view->GetResultViewAt(i));
   forward_view_list.push_back(search_box_view()->search_box());
@@ -744,8 +743,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
   forward_view_list.push_back(contents_view()
                                   ->search_result_answer_card_view_for_test()
                                   ->GetSearchAnswerContainerViewForTest());
-  SearchResultListView* list_view =
-      contents_view()->search_result_list_view_for_test();
+  SearchResultListView* list_view = contents_view()->search_result_list_view();
   for (int i = 0; i < kListResults; ++i)
     forward_view_list.push_back(list_view->GetResultViewAt(i));
   forward_view_list.push_back(search_box_view()->search_box());
@@ -1031,8 +1029,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test"));
   const int kListResults = 2;
   SetUpSearchResults(0, kListResults, false);
-  SearchResultListView* list_view =
-      contents_view()->search_result_list_view_for_test();
+  SearchResultListView* list_view = contents_view()->search_result_list_view();
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(list_view->GetResultViewAt(0),
             contents_view()->search_results_page_view()->first_result_view());
@@ -1075,8 +1072,7 @@ TEST_F(AppListViewFocusTest, FirstResultNotSelectedAfterQuicklyHittingTab) {
   search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test1"));
   const int kListResults = 2;
   SetUpSearchResults(0, kListResults, false);
-  SearchResultListView* list_view =
-      contents_view()->search_result_list_view_for_test();
+  SearchResultListView* list_view = contents_view()->search_result_list_view();
   SearchResultBaseView* first_result_view =
       contents_view()->search_results_page_view()->first_result_view();
   EXPECT_EQ(search_box_view()->search_box(), focused_view());

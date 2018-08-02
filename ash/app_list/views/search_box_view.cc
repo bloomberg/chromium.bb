@@ -298,6 +298,43 @@ void SearchBoxView::ShowZeroStateSuggestions() {
   ContentsChanged(search_box(), empty_query);
 }
 
+void SearchBoxView::OnWallpaperColorsChanged() {
+  GetWallpaperProminentColors(
+      base::BindOnce(&SearchBoxView::OnWallpaperProminentColorsReceived,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SearchBoxView::ProcessAutocomplete(bool is_search_result_list_view_first) {
+  if (!is_search_result_list_view_first || last_key_pressed_ == ui::VKEY_BACK ||
+      search_model_->results()->item_count() == 0) {
+    // No first result exists, backspace was pressed, or no results exist.
+    ClearAutocompleteText();
+    return;
+  }
+
+  const base::string16& current_text = search_box()->text();
+  const base::string16& details =
+      search_model_->results()->GetItemAt(0)->details();
+  const base::string16& search_text =
+      search_model_->results()->GetItemAt(0)->title();
+  if (base::StartsWith(details, current_text,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    // Current text in the search_box matches the first result's url.
+    SetAutocompleteText(details);
+    return;
+  }
+  if (base::StartsWith(search_text, current_text,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    // Current text in the search_box matches the first result's search result
+    // text.
+    SetAutocompleteText(search_text);
+    return;
+  }
+  // Current text in the search_box does not match the first result's url or
+  // search result text.
+  ClearAutocompleteText();
+}
+
 void SearchBoxView::GetWallpaperProminentColors(
     AppListViewDelegate::GetWallpaperProminentColorsCallback callback) {
   view_delegate_->GetWallpaperProminentColors(std::move(callback));
@@ -322,15 +359,86 @@ void SearchBoxView::OnWallpaperProminentColorsReceived(
   SchedulePaint();
 }
 
+void SearchBoxView::AcceptAutocompleteText() {
+  if (highlight_range_.start() != search_box()->text().length())
+    ContentsChanged(search_box(), search_box()->text());
+}
+
+void SearchBoxView::AcceptOneCharInAutocompleteText() {
+  highlight_range_.set_start(highlight_range_.start() + 1);
+  highlight_range_.set_end(search_box()->text().length());
+  const base::string16 original_text = search_box()->text();
+  search_box()->SetText(
+      search_box()->text().substr(0, highlight_range_.start()));
+  ContentsChanged(search_box(), search_box()->text());
+  search_box()->SetText(original_text);
+  search_box()->SetSelectionRange(highlight_range_);
+}
+
+void SearchBoxView::ClearAutocompleteText() {
+  search_box()->SetText(
+      search_box()->text().substr(0, highlight_range_.start()));
+}
+
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const base::string16& new_contents) {
+  // Update autocomplete text highlight range to track user typed text.
+  highlight_range_.set_start(search_box()->text().length());
   search_box::SearchBoxViewBase::ContentsChanged(sender, new_contents);
   app_list_view_->SetStateFromSearchBoxView(
       IsSearchBoxTrimmedQueryEmpty(), true /*triggered_by_contents_change*/);
 }
 
+void SearchBoxView::SetAutocompleteText(
+    const base::string16& autocomplete_text) {
+  const base::string16& current_text = search_box()->text();
+  // Currrent text is a prefix of autocomplete text.
+  DCHECK(base::StartsWith(autocomplete_text, current_text,
+                          base::CompareCase::INSENSITIVE_ASCII));
+  // Don't set autocomplete text if it's the same as current search box text.
+  if (autocomplete_text.length() == current_text.length())
+    return;
+
+  search_box()->SetText(autocomplete_text);
+  highlight_range_.set_end(autocomplete_text.length());
+  search_box()->SelectRange(highlight_range_);
+}
+
+void SearchBoxView::UpdateAutocompleteSelectionRange(uint32_t start,
+                                                     uint32_t end) {
+  highlight_range_.set_start(start);
+  highlight_range_.set_end(end);
+}
+
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
+  if (search_box()->HasFocus() && is_search_box_active() &&
+      !search_box()->text().empty()) {
+    // If the search box has no text in it currently, autocomplete should not
+    // work.
+    last_key_pressed_ = key_event.key_code();
+    if (key_event.type() == ui::ET_KEY_PRESSED &&
+        key_event.key_code() != ui::VKEY_BACK) {
+      if (key_event.key_code() == ui::VKEY_RIGHT ||
+          key_event.key_code() == ui::VKEY_LEFT ||
+          key_event.key_code() == ui::VKEY_DOWN ||
+          key_event.key_code() == ui::VKEY_UP ||
+          key_event.key_code() == ui::VKEY_TAB) {
+        AcceptAutocompleteText();
+      } else {
+        const base::string16 pending_text = search_box()->GetSelectedText();
+        // Hitting the next key in the autocompete suggestion continues
+        // autocomplete suggestion. If the selected range doesn't match the
+        // recorded highlight range, the selection should be overwritten.
+        if (!pending_text.empty() &&
+            key_event.GetCharacter() == pending_text[0] &&
+            pending_text.length() == highlight_range_.length()) {
+          AcceptOneCharInAutocompleteText();
+          return true;
+        }
+      }
+    }
+  }
   if (key_event.type() == ui::ET_KEY_PRESSED &&
       key_event.key_code() == ui::VKEY_RETURN) {
     if (!IsSearchBoxTrimmedQueryEmpty()) {
@@ -399,12 +507,6 @@ void SearchBoxView::Update() {
 
 void SearchBoxView::SearchEngineChanged() {
   UpdateSearchIcon();
-}
-
-void SearchBoxView::OnWallpaperColorsChanged() {
-  GetWallpaperProminentColors(
-      base::BindOnce(&SearchBoxView::OnWallpaperProminentColorsReceived,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace app_list
