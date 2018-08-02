@@ -180,8 +180,12 @@ void StorageMonitorCros::OnBootDeviceDiskEvent(
       break;
     }
     case DiskMountManager::DiskEvent::DISK_CHANGED: {
-      NOTREACHED() << "DiskMountManager::DiskEvent::DISK_CHANGED should not "
-                      "occur for disks on boot device";
+      // Although boot disks never change, this event is fired when the device
+      // is woken from suspend and re-enumerates the set of disks. The event
+      // could be changed to only fire when an actual change occurs, but that's
+      // not currently possible because the "re-enumerate on wake" behaviour is
+      // relied on to re-mount external media that was unmounted when the system
+      // was suspended.
       break;
     }
   }
