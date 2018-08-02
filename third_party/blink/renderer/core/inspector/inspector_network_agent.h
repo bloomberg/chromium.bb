@@ -234,9 +234,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   String NavigationInitiatorInfo(LocalFrame*);
 
  private:
-  void Enable(int total_buffer_size,
-              int resource_buffer_size,
-              int max_post_data_size);
+  void Enable();
   void WillSendRequestInternal(ExecutionContext*,
                                unsigned long identifier,
                                DocumentLoader*,
@@ -286,7 +284,14 @@ class CORE_EXPORT InspectorNetworkAgent final
   HeapHashSet<Member<XMLHttpRequest>> replay_xhrs_;
   HeapHashSet<Member<XMLHttpRequest>> replay_xhrs_to_be_deleted_;
   TaskRunnerTimer<InspectorNetworkAgent> remove_finished_replay_xhr_timer_;
-  int max_post_data_size_;
+  InspectorAgentState::Boolean enabled_;
+  InspectorAgentState::Boolean cache_disabled_;
+  InspectorAgentState::Boolean bypass_service_worker_;
+  InspectorAgentState::BooleanMap blocked_urls_;
+  InspectorAgentState::StringMap extra_request_headers_;
+  InspectorAgentState::Integer total_buffer_size_;
+  InspectorAgentState::Integer resource_buffer_size_;
+  InspectorAgentState::Integer max_post_data_size_;
 };
 
 }  // namespace blink
