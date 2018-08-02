@@ -564,6 +564,11 @@ viz::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
 void RenderWidgetHostViewBase::ProcessMouseEvent(
     const blink::WebMouseEvent& event,
     const ui::LatencyInfo& latency) {
+  // TODO(crbug.com/814674): Figure out the reason |host| is null here in all
+  // Process* functions.
+  if (!host())
+    return;
+
   PreProcessMouseEvent(event);
   host()->ForwardMouseEventWithLatencyInfo(event, latency);
 }
@@ -571,12 +576,17 @@ void RenderWidgetHostViewBase::ProcessMouseEvent(
 void RenderWidgetHostViewBase::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event,
     const ui::LatencyInfo& latency) {
+  if (!host())
+    return;
   host()->ForwardWheelEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewBase::ProcessTouchEvent(
     const blink::WebTouchEvent& event,
     const ui::LatencyInfo& latency) {
+  if (!host())
+    return;
+
   PreProcessTouchEvent(event);
   host()->ForwardTouchEventWithLatencyInfo(event, latency);
 }
@@ -584,6 +594,8 @@ void RenderWidgetHostViewBase::ProcessTouchEvent(
 void RenderWidgetHostViewBase::ProcessGestureEvent(
     const blink::WebGestureEvent& event,
     const ui::LatencyInfo& latency) {
+  if (!host())
+    return;
   host()->ForwardGestureEventWithLatencyInfo(event, latency);
 }
 
