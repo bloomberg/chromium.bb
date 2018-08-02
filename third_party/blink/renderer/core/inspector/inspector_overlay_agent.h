@@ -190,8 +190,6 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
-  bool enabled_;
-  String paused_in_debugger_message_;
   Member<Node> highlight_node_;
   Member<Node> event_target_node_;
   InspectorHighlightConfig node_highlight_config_;
@@ -201,11 +199,9 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<InspectorOverlayHost> overlay_host_;
   Color quad_content_color_;
   Color quad_content_outline_color_;
-  bool draw_view_size_;
   bool resize_timer_active_;
   bool omit_tooltip_;
   TaskRunnerTimer<InspectorOverlayAgent> timer_;
-  bool suspended_;
   bool disposed_;
   bool in_layout_;
   bool needs_update_;
@@ -220,6 +216,14 @@ class CORE_EXPORT InspectorOverlayAgent final
   bool screenshot_mode_ = false;
   IntPoint screenshot_anchor_;
   IntPoint screenshot_position_;
+  InspectorAgentState::Boolean enabled_;
+  InspectorAgentState::Boolean suspended_;
+  InspectorAgentState::Boolean show_debug_borders_;
+  InspectorAgentState::Boolean show_fps_counter_;
+  InspectorAgentState::Boolean show_paint_rects_;
+  InspectorAgentState::Boolean show_scroll_bottleneck_rects_;
+  InspectorAgentState::Boolean show_size_on_resize_;
+  InspectorAgentState::String paused_in_debugger_message_;
   DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);
 };
 
