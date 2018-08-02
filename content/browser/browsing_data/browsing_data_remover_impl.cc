@@ -227,7 +227,8 @@ void BrowsingDataRemoverImpl::RemoveInternal(
 
 void BrowsingDataRemoverImpl::RunNextTask() {
   DCHECK(!task_queue_.empty());
-  const RemovalTask& removal_task = task_queue_.front();
+  RemovalTask& removal_task = task_queue_.front();
+  removal_task.task_started = base::Time::Now();
 
   RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
              removal_task.remove_mask, *removal_task.filter_builder,
@@ -550,9 +551,22 @@ void BrowsingDataRemoverImpl::Notify() {
   // itself in the meantime.
   DCHECK(!task_queue_.empty());
 
-  if (task_queue_.front().observer != nullptr &&
-      observer_list_.HasObserver(task_queue_.front().observer)) {
-    task_queue_.front().observer->OnBrowsingDataRemoverDone();
+  const RemovalTask& task = task_queue_.front();
+  if (task.observer != nullptr && observer_list_.HasObserver(task.observer)) {
+    task.observer->OnBrowsingDataRemoverDone();
+  }
+  if (task.filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+    base::TimeDelta delta = base::Time::Now() - task.task_started;
+    // Full and partial deletions are often implemented differently, so
+    // we track them in seperate metrics.
+    if (task.delete_begin.is_null() && task.delete_end.is_max() &&
+        task.filter_builder->IsEmptyBlacklist()) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "History.ClearBrowsingData.Duration.FullDeletion", delta);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "History.ClearBrowsingData.Duration.PartialDeletion", delta);
+    }
   }
 
   task_queue_.pop();
