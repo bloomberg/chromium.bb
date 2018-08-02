@@ -250,6 +250,7 @@ void MimeSniffingResourceHandler::OnReadCompleted(
   // the mime type. However, even if it returns false, it returns a new type
   // that is probably better than the current one.
   response_->head.mime_type.assign(new_type);
+  response_->head.did_mime_sniff = true;
 
   if (!made_final_decision && (bytes_read > 0)) {
     controller->Resume();
