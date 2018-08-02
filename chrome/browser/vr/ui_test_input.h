@@ -45,6 +45,9 @@ enum class VrControllerTestAction : int {
   kClick,
   kHover,
   kRevertToRealController,
+  kClickDown,
+  kClickUp,
+  kMove,
 };
 
 // Holds all information necessary to perform a simulated controller action on

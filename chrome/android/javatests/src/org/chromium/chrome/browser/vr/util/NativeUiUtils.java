@@ -71,6 +71,38 @@ public class NativeUiUtils {
     }
 
     /**
+     * Clicks and drags within a single UI element.
+     *
+     * @param elementName The UserFriendlyElementName that will be clicked and dragged in.
+     * @param positionStart The PointF specifying where on the element to start the click/drag
+     *        relative to a unit square centered at (0, 0).
+     * @param positionEnd The PointF specifying where on the element to end the click/drag relative
+     *        to a unit square centered at (0, 0);
+     * @param numInterpolatedSteps How many steps to interpolate the drag between the provided
+     *        start and end positions.
+     */
+    public static void clickAndDragElement(
+            int elementName, PointF positionStart, PointF positionEnd, int numInterpolatedSteps) {
+        Assert.assertTrue(
+                "Given a negative number of steps to interpolate", numInterpolatedSteps >= 0);
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.CLICK_DOWN, positionStart);
+        PointF stepOffset =
+                new PointF((positionEnd.x - positionStart.x) / (numInterpolatedSteps + 1),
+                        (positionEnd.y - positionStart.y) / (numInterpolatedSteps + 1));
+        PointF currentPosition = positionStart;
+        for (int i = 0; i < numInterpolatedSteps; i++) {
+            currentPosition.offset(stepOffset.x, stepOffset.y);
+            TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                    elementName, VrControllerTestAction.MOVE, currentPosition);
+        }
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.MOVE, positionEnd);
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.CLICK_UP, positionEnd);
+    }
+
+    /**
      * Sets the native code to start using the real controller data again instead of fake testing
      * data.
      */
