@@ -441,7 +441,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_newText(IA2TextSegment* new_text) {
   if (!old_win_attributes_)
     return E_FAIL;
 
-  int start, old_len, new_len;
+  size_t start, old_len, new_len;
   ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
   if (new_len == 0)
     return E_FAIL;
@@ -465,7 +465,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_oldText(IA2TextSegment* old_text) {
   if (!old_win_attributes_)
     return E_FAIL;
 
-  int start, old_len, new_len;
+  size_t start, old_len, new_len;
   ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
   if (old_len == 0)
     return E_FAIL;
@@ -1790,7 +1790,7 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     // they are providing redundant information and will lead to duplicate
     // announcements.
     if (!did_fire_namechange) {
-      int start, old_len, new_len;
+      size_t start, old_len, new_len;
       ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
       if (old_len > 0) {
         // In-process screen readers may call IAccessibleText::get_oldText

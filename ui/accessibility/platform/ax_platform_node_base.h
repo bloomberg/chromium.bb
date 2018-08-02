@@ -6,6 +6,7 @@
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_BASE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/accessibility/ax_enums.mojom.h"

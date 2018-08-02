@@ -7,6 +7,10 @@
 #include <wrl/client.h>
 
 #include <algorithm>
+#include <map>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -638,7 +642,6 @@ STDMETHODIMP AXPlatformNodeWin::accNavigate(
 
   IAccessible* result = nullptr;
   switch (nav_dir) {
-
     case NAVDIR_FIRSTCHILD:
       if (delegate_->GetChildCount() > 0)
         result = delegate_->ChildAtIndex(0);
@@ -1764,7 +1767,7 @@ STDMETHODIMP AXPlatformNodeWin::GetSelection(SAFEARRAY** result) {
   COM_OBJECT_VALIDATE_1_ARG(result);
   int child_count = delegate_->GetChildCount();
   *result = SafeArrayCreateVector(VT_UNKNOWN, 0, child_count);
-  for (long i = 0; i < child_count; ++i) {
+  for (LONG i = 0; i < child_count; ++i) {
     auto* child = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
     DCHECK(child);
@@ -4863,7 +4866,7 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
   return result;
 }
 
-long AXPlatformNodeWin::ComputeUIAControlType() {
+LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
   // If this is a web area for a presentational iframe, give it a role of
   // something other than document so that the fact that it's a separate doc
   // is not exposed to AT.
@@ -5701,7 +5704,7 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
 
 TextBoundaryType AXPlatformNodeWin::IA2TextBoundaryToTextBoundary(
     IA2TextBoundaryType ia2_boundary) {
-  switch(ia2_boundary) {
+  switch (ia2_boundary) {
     case IA2_TEXT_BOUNDARY_CHAR:
       return CHAR_BOUNDARY;
     case IA2_TEXT_BOUNDARY_WORD:
@@ -6035,9 +6038,9 @@ bool AXPlatformNodeWin::IsText(const base::string16& text,
   return ch != kEmbeddedCharacter;
 }
 
-void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(int* start,
-                                                           int* old_len,
-                                                           int* new_len) {
+void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(size_t* start,
+                                                           size_t* old_len,
+                                                           size_t* new_len) {
   *start = 0;
   *old_len = 0;
   *new_len = 0;
@@ -6091,9 +6094,9 @@ void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(int* start,
     }
   }
 
-  *start = (int)common_prefix;
-  *old_len = (int)(old_text.size() - common_prefix - common_suffix);
-  *new_len = (int)(new_text.size() - common_prefix - common_suffix);
+  *start = common_prefix;
+  *old_len = old_text.size() - common_prefix - common_suffix;
+  *new_len = new_text.size() - common_prefix - common_suffix;
 }
 
 int AXPlatformNodeWin::GetSelectionAnchor() {
