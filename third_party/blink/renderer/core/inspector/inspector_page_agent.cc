@@ -1259,6 +1259,10 @@ void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
     return;
   if (url.IsEmpty())
     return;
+  String url_string = url.GetString();
+  auto it = compilation_cache_.find(url_string);
+  if (it != compilation_cache_.end())
+    return;
   static const int kMinimalCodeLength = 1024;
   if (source.Source().length() < kMinimalCodeLength)
     return;
@@ -1267,7 +1271,7 @@ void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
   if (cached_data) {
     String base64data = Base64Encode(
         reinterpret_cast<const char*>(cached_data->data), cached_data->length);
-    GetFrontend()->compilationCacheProduced(url, base64data);
+    GetFrontend()->compilationCacheProduced(url_string, base64data);
   }
 }
 
