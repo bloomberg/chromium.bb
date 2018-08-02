@@ -62,7 +62,13 @@ class DocumentProvider : public AutocompleteProvider {
                            CheckFeaturePrerequisiteClientSettingOff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteDefaultSearch);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           CheckFeaturePrerequisiteServerBackoff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, ParseDocumentSearchResults);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           ParseDocumentSearchResultsWithBackoff);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           ParseDocumentSearchResultsWithIneligibleFlag);
   DocumentProvider(AutocompleteProviderClient* client,
                    AutocompleteProviderListener* listener);
 
@@ -90,8 +96,13 @@ class DocumentProvider : public AutocompleteProvider {
       std::unique_ptr<network::SimpleURLLoader> loader);
 
   // Parses document search result JSON.
+  // Returns true if |matches| was populated with fresh suggestions.
   bool ParseDocumentSearchResults(const base::Value& root_val,
                                   ACMatches* matches);
+
+  // Whether the server has instructed us to backoff for this session (in
+  // cases where the corpus is uninteresting).
+  bool backoff_for_session_;
 
   // Client for accessing TemplateUrlService, prefs, etc.
   AutocompleteProviderClient* client_;

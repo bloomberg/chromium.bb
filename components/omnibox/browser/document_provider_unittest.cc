@@ -166,6 +166,25 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteDefaultSearch) {
   template_url_service->Remove(new_default_provider);
 }
 
+TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteServerBackoff) {
+  PrefService* fake_prefs = client_->GetPrefs();
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
+  bool is_incognito = false;
+  bool is_authenticated = true;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+
+  // Feature starts enabled.
+  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
+      fake_prefs, is_incognito, is_authenticated, template_url_service));
+
+  // Server setting backoff flag disables it.
+  provider_->backoff_for_session_ = true;
+  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
+      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  provider_->backoff_for_session_ = false;
+}
+
 TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   const char kGoodJSONResponse[] = R"({
       "results": [
@@ -193,4 +212,73 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
   EXPECT_EQ(matches[1].destination_url,
             GURL("https://documentprovider.tld/doc?id=2"));
+  ASSERT_FALSE(provider_->backoff_for_session_);
+}
+
+TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithBackoff) {
+  // Response where the server wishes to trigger backoff.
+  const char kBackoffJSONResponse[] = R"({
+      "error": {
+        "code": 503,
+        "message": "Not eligible to query, see retry info.",
+        "status": "UNAVAILABLE",
+        "details": [
+          {
+            "@type": "type.googleapis.com/google.rpc.RetryInfo",
+            "retryDelay": "100000s"
+          },
+        ]
+      }
+    })";
+
+  ASSERT_FALSE(provider_->backoff_for_session_);
+  std::unique_ptr<base::DictionaryValue> backoff_response =
+      base::DictionaryValue::From(base::JSONReader::Read(
+          kBackoffJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS));
+  ASSERT_TRUE(backoff_response != nullptr);
+
+  ACMatches matches;
+  provider_->ParseDocumentSearchResults(*backoff_response, &matches);
+  ASSERT_TRUE(provider_->backoff_for_session_);
+}
+
+TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
+  // Response where the server wishes to trigger backoff.
+  const char kIneligibleJSONResponse[] = R"({
+      "error": {
+        "code": 403,
+        "message": "Not eligible to query due to admin disabled Chrome search settings.",
+        "status": "PERMISSION_DENIED",
+      }
+    })";
+
+  // Same as above, but the message doesn't match. We should accept this
+  // response, but it isn't expected to trigger backoff.
+  const char kMismatchedMessageJSON[] = R"({
+      "error": {
+        "code": 403,
+        "message": "Some other thing went wrong.",
+        "status": "PERMISSION_DENIED",
+      }
+    })";
+
+  ACMatches matches;
+  ASSERT_FALSE(provider_->backoff_for_session_);
+
+  // First, parse an invalid response - shouldn't prohibit future requests
+  // from working but also shouldn't trigger backoff.
+  std::unique_ptr<base::DictionaryValue> bad_response =
+      base::DictionaryValue::From(base::JSONReader::Read(
+          kMismatchedMessageJSON, base::JSON_ALLOW_TRAILING_COMMAS));
+  ASSERT_TRUE(bad_response != nullptr);
+  provider_->ParseDocumentSearchResults(*bad_response, &matches);
+  ASSERT_FALSE(provider_->backoff_for_session_);
+
+  // Now parse a response that does trigger backoff.
+  std::unique_ptr<base::DictionaryValue> backoff_response =
+      base::DictionaryValue::From(base::JSONReader::Read(
+          kIneligibleJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS));
+  ASSERT_TRUE(backoff_response != nullptr);
+  provider_->ParseDocumentSearchResults(*backoff_response, &matches);
+  ASSERT_TRUE(provider_->backoff_for_session_);
 }

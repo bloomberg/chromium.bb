@@ -50,6 +50,39 @@ void LogOmniboxDocumentRequest(DocumentRequestsHistogramValue request_value) {
                             DOCUMENT_MAX_REQUEST_HISTOGRAM_VALUE);
 }
 
+const char kErrorMessageAdminDisabled[] =
+    "Not eligible to query due to admin disabled Chrome search settings.";
+const char kErrorMessageRetryLater[] = "Not eligible to query, see retry info.";
+bool ResponseContainsBackoffSignal(const base::DictionaryValue* root_dict) {
+  const base::DictionaryValue* error_info;
+  if (!root_dict->GetDictionary("error", &error_info)) {
+    return false;
+  }
+  int code;
+  std::string status;
+  std::string message;
+  if (!error_info->GetInteger("code", &code) ||
+      !error_info->GetString("status", &status) ||
+      !error_info->GetString("message", &message)) {
+    return false;
+  }
+
+  // 403/PERMISSION_DENIED: Account is currently ineligible to receive results.
+  if (code == 403 && status == "PERMISSION_DENIED" &&
+      message == kErrorMessageAdminDisabled) {
+    return true;
+  }
+
+  // 503/UNAVAILABLE: Uninteresting set of results, or another server request to
+  // backoff.
+  if (code == 503 && status == "UNAVAILABLE" &&
+      message == kErrorMessageRetryLater) {
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -86,6 +119,11 @@ bool DocumentProvider::IsDocumentProviderAllowed(
   if (!is_authenticated)
     return false;
 
+  // We haven't received a server backoff signal.
+  if (backoff_for_session_) {
+    return false;
+  }
+
   // Google must be set as default search provider; we mix results which may
   // change placement.
   if (template_url_service == nullptr)
@@ -102,10 +140,8 @@ void DocumentProvider::Start(const AutocompleteInput& input,
   TRACE_EVENT0("omnibox", "DocumentProvider::Start");
   matches_.clear();
 
-  // TODO(skare): get from identitymanager, to short-circuit sooner.
-  bool is_authenticated = true;
   if (!IsDocumentProviderAllowed(client_->GetPrefs(), client_->IsOffTheRecord(),
-                                 is_authenticated,
+                                 client_->IsAuthenticated(),
                                  client_->GetTemplateURLService())) {
     return;
   }
@@ -176,6 +212,7 @@ void DocumentProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
                                    AutocompleteProviderListener* listener)
     : AutocompleteProvider(AutocompleteProvider::TYPE_DOCUMENT),
+      backoff_for_session_(false),
       client_(client),
       listener_(listener),
       weak_ptr_factory_(this) {}
@@ -202,8 +239,8 @@ void DocumentProvider::OnURLLoadComplete(
 }
 
 bool DocumentProvider::UpdateResults(const std::string& json_data) {
-  std::unique_ptr<base::DictionaryValue> response =
-      base::DictionaryValue::From(base::JSONReader::Read(json_data));
+  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
+      base::JSONReader::Read(json_data, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!response)
     return false;
 
@@ -223,6 +260,16 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   if (!root_val.GetAsDictionary(&root_dict)) {
     return false;
   }
+
+  // The server may ask the client to back off, in which case we back off for
+  // the session.
+  // TODO(skare): Respect retryDelay if provided, ideally by calling via gRPC.
+  if (ResponseContainsBackoffSignal(root_dict)) {
+    backoff_for_session_ = true;
+    return false;
+  }
+
+  // Otherwise parse the results.
   if (!root_dict->GetList("results", &results_list)) {
     return false;
   }
