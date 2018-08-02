@@ -240,6 +240,11 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 const base::Feature kMemoryCoordinator{"MemoryCoordinator",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Instead of BrowserPlugin or GuestViews, MimeHandlerView will use a cross
+// process frame to render its handler.
+const base::Feature kMimeHandlerViewInCrossProcessFrame{
+    "MimeHandlerViewInCrossProcessFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // ES6 Modules dynamic imports.
 const base::Feature kModuleScriptsDynamicImport{
     "ModuleScriptsDynamicImport", base::FEATURE_ENABLED_BY_DEFAULT};

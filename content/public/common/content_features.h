@@ -62,6 +62,7 @@ CONTENT_EXPORT extern const base::Feature kLazyParseCSS;
 CONTENT_EXPORT extern const base::Feature kLowPriorityIframes;
 CONTENT_EXPORT extern const base::Feature kMediaDevicesSystemMonitorCache;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
+CONTENT_EXPORT extern const base::Feature kMimeHandlerViewInCrossProcessFrame;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsImportMetaUrl;
 CONTENT_EXPORT extern const base::Feature kMojoSessionStorage;
