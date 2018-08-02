@@ -110,9 +110,11 @@
       self.historyNavigationController = nil;
     };
     if (self.historyClearBrowsingDataCoordinator) {
-      [self.historyClearBrowsingDataCoordinator
-          stopWithCompletion:dismissHistoryNavigation];
-      self.historyClearBrowsingDataCoordinator = nil;
+      [self.historyClearBrowsingDataCoordinator stopWithCompletion:^() {
+        dismissHistoryNavigation();
+        self.historyClearBrowsingDataCoordinator = nil;
+      }];
+
     } else {
       dismissHistoryNavigation();
     }
