@@ -519,6 +519,9 @@ class FileURLLoader : public network::mojom::URLLoader {
 
     size_t first_byte_to_send = 0;
     size_t total_bytes_to_send = static_cast<size_t>(info.size);
+
+    total_bytes_written_ = static_cast<size_t>(info.size);
+
     if (byte_range.IsValid()) {
       first_byte_to_send =
           static_cast<size_t>(byte_range.first_byte_position());
@@ -607,10 +610,15 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (observer)
       observer->OnDoneReading();
 
-    if (result == MOJO_RESULT_OK)
-      client_->OnComplete(network::URLLoaderCompletionStatus(net::OK));
-    else
+    if (result == MOJO_RESULT_OK) {
+      network::URLLoaderCompletionStatus status(net::OK);
+      status.encoded_data_length = total_bytes_written_;
+      status.encoded_body_length = total_bytes_written_;
+      status.decoded_body_length = total_bytes_written_;
+      client_->OnComplete(status);
+    } else {
       client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+    }
     client_.reset();
     MaybeDeleteSelf();
   }
@@ -618,6 +626,11 @@ class FileURLLoader : public network::mojom::URLLoader {
   std::unique_ptr<mojo::FileDataPipeProducer> data_producer_;
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
+
+  // In case of successful loads, this holds the total of bytes written.
+  // It is used to set some of the URLLoaderCompletionStatus data passed back
+  // to the URLLoaderClients (eg SimpleURLLoader).
+  size_t total_bytes_written_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FileURLLoader);
 };
