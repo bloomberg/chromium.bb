@@ -28,6 +28,7 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/ApiHelperForN.java",
     "java/src/com/android/webview/chromium/ApiHelperForO.java",
     "java/src/com/android/webview/chromium/ApiHelperForOMR1.java",
+    "java/src/com/android/webview/chromium/ApiHelperForP.java",
     "java/src/com/android/webview/chromium/SharedStatics.java",
     "java/src/com/android/webview/chromium/CallbackConverter.java",
     "java/src/com/android/webview/chromium/ContentSettingsAdapter.java",
