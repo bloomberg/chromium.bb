@@ -1,8 +1,7 @@
 {
   "comments": [
     "Run tests on iOS12beta track on 64-bit iOS 12 simulators.",
-    "Note: Xcode 10 requires a minimum of OSX 10.13.4 so .5 is specified for",
-    "'host os'."
+    "Note: Xcode 10 requires OSX 10.13.4 hence 'host os'"
   ],
   "xcode build version": "9C40b",
   "gn_args": [
@@ -20,91 +19,91 @@
       "include": "common_tests.json",
       "device type": "iPhone X",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone 6 Plus",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone 5s",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Pro",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone 6 Plus",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "eg_tests.json",
       "device type": "iPad Air",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone 5s",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone X",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 5s",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
       "os": "12.0",
-      "xcode build version": "10l213o",
+      "xcode build version": "10L221o",
       "host os": "Mac-10.13.5"
     }
   ]
