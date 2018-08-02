@@ -209,6 +209,7 @@ void MessageCenterNotificationManager::CancelAll() {
 void MessageCenterNotificationManager::StartShutdown() {
   is_shutdown_started_ = true;
   CancelAll();
+  popups_only_ui_controller_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

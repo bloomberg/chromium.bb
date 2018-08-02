@@ -72,17 +72,19 @@ void MessagePopupCollection::Update() {
 void MessagePopupCollection::MarkAllPopupsShown() {
   if (is_updating_)
     return;
-  base::AutoReset<bool> reset(&is_updating_, true);
+  {
+    base::AutoReset<bool> reset(&is_updating_, true);
 
-  for (const auto& item : popup_items_) {
-    item.popup->Close();
-    MessageCenter::Get()->MarkSinglePopupAsShown(item.id, false);
+    for (const auto& item : popup_items_)
+      MessageCenter::Get()->MarkSinglePopupAsShown(item.id, false);
+
+    ResetHotMode();
+    state_ = State::IDLE;
+    animation_->End();
   }
-  popup_items_.clear();
 
-  ResetHotMode();
-  state_ = State::IDLE;
-  animation_->End();
+  // Restart animation for FADE_OUT.
+  Update();
 }
 
 void MessagePopupCollection::ResetBounds() {

@@ -390,6 +390,7 @@ TEST_F(MessagePopupCollectionTest, MarkAllPopupsShown) {
   EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
 
   popup_collection()->MarkAllPopupsShown();
+  AnimateUntilIdle();
 
   EXPECT_EQ(0u, GetPopupCounts());
   EXPECT_EQ(0u, MessageCenter::Get()->GetPopupNotifications().size());
