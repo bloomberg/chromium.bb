@@ -682,8 +682,11 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   PropagateBaselinesFromChildren();
 
-  DCHECK(exclusion_space_);
-  container_builder_.SetExclusionSpace(std::move(exclusion_space_));
+  // An exclusion space is confined to nodes within the same formatting context.
+  if (!ConstraintSpace().IsNewFormattingContext()) {
+    DCHECK(exclusion_space_);
+    container_builder_.SetExclusionSpace(std::move(exclusion_space_));
+  }
 
   if (ConstraintSpace().UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
@@ -1045,8 +1048,17 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
         child_available_size_.block_size};
     auto child_space =
         CreateConstraintSpaceForChild(child, child_data, child_available_size);
+
+    // All formatting context roots (like this child) should start with an empty
+    // exclusion space.
+    DCHECK(child_space->ExclusionSpace().IsEmpty());
+
     scoped_refptr<NGLayoutResult> layout_result =
         child.Layout(*child_space, child_break_token);
+
+    // Since this child establishes a new formatting context, no exclusion space
+    // should be returned.
+    DCHECK(!layout_result->ExclusionSpace());
 
     DCHECK(layout_result->PhysicalFragment());
     NGFragment fragment(ConstraintSpace().GetWritingMode(),
