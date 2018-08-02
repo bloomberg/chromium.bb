@@ -39,9 +39,9 @@ namespace viz {
 
 namespace {
 
-gpu::ContextCreationAttribs CreateAttributes() {
+gpu::ContextCreationAttribs CreateAttributes(bool requires_alpha_channel) {
   gpu::ContextCreationAttribs attributes;
-  attributes.alpha_size = -1;
+  attributes.alpha_size = requires_alpha_channel ? 8 : -1;
   attributes.depth_size = 0;
 #if defined(OS_CHROMEOS)
   // Chrome OS uses surfaceless when running on a real device and stencil
@@ -73,8 +73,9 @@ VizProcessContextProvider::VizProcessContextProvider(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-    const gpu::SharedMemoryLimits& limits)
-    : attributes_(CreateAttributes()),
+    const gpu::SharedMemoryLimits& limits,
+    bool requires_alpha_channel)
+    : attributes_(CreateAttributes(requires_alpha_channel)),
       context_(std::make_unique<gpu::GLInProcessContext>()),
       context_result_(
           context_->Initialize(std::move(task_executor),

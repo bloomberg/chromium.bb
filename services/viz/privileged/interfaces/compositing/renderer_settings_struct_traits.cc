@@ -28,6 +28,7 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->use_skia_renderer = data.use_skia_renderer();
   out->use_skia_deferred_display_list = data.use_skia_deferred_display_list();
   out->allow_overlays = data.allow_overlays();
+  out->requires_alpha_channel = data.requires_alpha_channel();
   return true;
 }
 

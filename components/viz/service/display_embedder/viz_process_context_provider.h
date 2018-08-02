@@ -48,7 +48,8 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-      const gpu::SharedMemoryLimits& limits);
+      const gpu::SharedMemoryLimits& limits,
+      bool requires_alpha_channel);
 
   // ContextProvider implementation.
   void AddRef() const override;

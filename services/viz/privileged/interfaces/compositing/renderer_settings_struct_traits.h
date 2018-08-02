@@ -76,6 +76,10 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.allow_overlays;
   }
 
+  static bool requires_alpha_channel(const viz::RendererSettings& input) {
+    return input.requires_alpha_channel;
+  }
+
   static bool Read(viz::mojom::RendererSettingsDataView data,
                    viz::RendererSettings* out);
 };
