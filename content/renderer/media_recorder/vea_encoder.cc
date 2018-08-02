@@ -34,6 +34,23 @@ const uint32_t kMaxKeyframeInterval = 100;
 
 }  // anonymous namespace
 
+scoped_refptr<VEAEncoder> VEAEncoder::Create(
+    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
+    const VideoTrackRecorder::OnErrorCB& on_error_callback,
+    int32_t bits_per_second,
+    media::VideoCodecProfile codec,
+    const gfx::Size& size,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  auto encoder = base::WrapRefCounted(
+      new VEAEncoder(on_encoded_video_callback, on_error_callback,
+                     bits_per_second, codec, size, std::move(task_runner)));
+  encoder->encoding_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner, encoder,
+                     size));
+  return encoder;
+}
+
 VEAEncoder::VEAEncoder(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
     const VideoTrackRecorder::OnErrorCB& on_error_callback,
@@ -55,11 +72,6 @@ VEAEncoder::VEAEncoder(
   DCHECK(gpu_factories_);
   DCHECK_GE(size.width(), kVEAEncoderMinResolutionWidth);
   DCHECK_GE(size.height(), kVEAEncoderMinResolutionHeight);
-
-  encoding_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner, this,
-                     size));
 }
 
 VEAEncoder::~VEAEncoder() {
