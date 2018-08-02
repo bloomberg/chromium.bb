@@ -6611,6 +6611,25 @@
       If this policy is set to False, an error message will be displayed instead of the network configuration prompt.'''
     },
     {
+      'name': 'DeviceLocalAccountManagedSessionEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:70-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 463,
+      'caption': '''Allow managed session on device''',
+      'tags': [],
+      'desc': '''If this policy is set to false or left unset, managed guest session will behave as documented in https://support.google.com/chrome/a/answer/3017014 - the standard "Public Session".
+
+      If this policy is set to true, managed guest session will take on "Managed Session" behaviour which lifts many of the restrictions that are in place for regular "Public Sessions".
+
+      If this policy is set, the user cannot change or override it.''',
+    },
+    {
       'name': 'DeviceBlockDevmode',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -12727,5 +12746,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 462
+  'highest_id_currently_used': 463
 }
