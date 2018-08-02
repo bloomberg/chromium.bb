@@ -3,7 +3,7 @@
         "Facebook": {
             "DEFAULT": "top_10_001.wprgo"
         },
-        "http://en.wikipedia.org/wiki/Wikipedia": {
+        "Wikipedia": {
             "DEFAULT": "top_10_000.wprgo"
         },
         "http://www.amazon.com": {
