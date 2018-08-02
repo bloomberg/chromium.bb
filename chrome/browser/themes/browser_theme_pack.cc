@@ -51,7 +51,7 @@ constexpr int kTallestTabHeight = 41;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 53;
+const int kThemePackVersion = 54;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -496,16 +496,22 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
   void Draw(gfx::Canvas* canvas) override {
     canvas->DrawColor(background_color_);
 
+    // Begin with the frame background image, if any.  Since the frame and tabs
+    // have grown taller and changed alignment over time, not all themes have a
+    // sufficiently tall image; tiling by vertically mirroring in this case is
+    // the least-glitchy-looking option.  Note that the behavior here needs to
+    // stay in sync with how the browser frame will actually be drawn.
     if (!image_to_tint_.isNull()) {
       gfx::ImageSkia bg_tint = gfx::ImageSkiaOperations::CreateHSLShiftedImage(
           image_to_tint_, hsl_shift_);
       canvas->TileImageInt(bg_tint, 0, vertical_offset_, 0, 0, size().width(),
-                           size().height());
+                           size().height(), 1.0f, SkShader::kRepeat_TileMode,
+                           SkShader::kMirror_TileMode);
     }
 
-    // If they've provided a custom image, overlay it.  Since tabs have grown
-    // taller over time, not all themes have a sufficiently tall image; tiling
-    // by vertically mirroring in this case is the least-glitchy-looking option.
+    // If the theme has a custom tab background image, overlay it.  Vertical
+    // mirroring is used for the same reason as above.  This behavior needs to
+    // stay in sync with how tabs are drawn.
     if (!overlay_.isNull()) {
       canvas->TileImageInt(overlay_, 0, 0, 0, 0, size().width(),
                            size().height(), 1.0f, SkShader::kRepeat_TileMode,

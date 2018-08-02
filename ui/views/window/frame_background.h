@@ -81,11 +81,8 @@ class VIEWS_EXPORT FrameBackground {
   void PaintMaximized(gfx::Canvas* canvas, const View* view) const;
 
  private:
-  // Fills the frame area with the frame color.
-  void PaintFrameColor(gfx::Canvas* canvas, const View* view) const;
-
-  // Paints the background of the tab strip.
-  void PaintFrameTopArea(gfx::Canvas* canvas, const View* view) const;
+  // Fills the frame side and bottom borders with the frame color.
+  void FillFrameBorders(gfx::Canvas* canvas, const View* view) const;
 
   SkColor frame_color_;
   bool use_custom_frame_;

@@ -4,6 +4,7 @@
 
 #include "ui/views/window/frame_background.h"
 
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/theme_provider.h"
@@ -54,17 +55,12 @@ void FrameBackground::SetCornerImages(const gfx::ImageSkia* top_left,
 
 void FrameBackground::PaintRestored(gfx::Canvas* canvas,
                                     const View* view) const {
-  // Fill with the frame color first so we have a constant background for
-  // areas not covered by the theme image.
-  PaintFrameColor(canvas, view);
+  // Restored window painting is a superset of maximized window painting; let
+  // the maximized code paint the frame color and images.
+  PaintMaximized(canvas, view);
 
-  // Draw the theme frame and overlay, if available.
-  if (!theme_image_.isNull()) {
-    canvas->TileImageInt(theme_image_, 0, 0, view->width(),
-                         theme_image_.height());
-  }
-  if (!theme_overlay_image_.isNull())
-    canvas->DrawImageInt(theme_overlay_image_, 0, 0);
+  // Fill the frame borders with the frame color before drawing the edge images.
+  FillFrameBorders(canvas, view);
 
   // Draw the top corners and edge, scaling the corner images down if they
   // are too big and relative to the vertical space available.
@@ -123,30 +119,37 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas,
 
 void FrameBackground::PaintMaximized(gfx::Canvas* canvas,
                                      const View* view) const {
-  // We will be painting from -|maximized_top_inset_| to
-  // -|maximized_top_inset_| + |theme_image_|.height(). If this is less than
-  // |top_area_height_|, we need to paint the frame color to fill in the area
-  // beneath the image.
-  int theme_frame_bottom = -maximized_top_inset_ +
-                           (theme_image_.isNull() ? 0 : theme_image_.height());
-  if (top_area_height_ > theme_frame_bottom)
-    PaintFrameTopArea(canvas, view);
+// Fill the top with the frame color first so we have a constant background
+// for areas not covered by the theme image.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  auto* native_theme = view->GetNativeTheme();
+  ui::NativeTheme::ExtraParams params;
+  params.frame_top_area.use_custom_frame = use_custom_frame_;
+  params.frame_top_area.is_active = is_active_;
+  params.frame_top_area.incognito = incognito_;
+  params.frame_top_area.default_background_color = frame_color_;
+  native_theme->Paint(canvas->sk_canvas(), ui::NativeTheme::kFrameTopArea,
+                      ui::NativeTheme::kNormal,
+                      gfx::Rect(0, 0, view->width(), top_area_height_), params);
+#else
+  canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
+                   frame_color_);
+#endif
 
-  // Draw the theme frame.
+  // Draw the theme frame and overlay, if available.
   if (!theme_image_.isNull()) {
-    canvas->TileImageInt(theme_image_, 0, -maximized_top_inset_, view->width(),
-                         theme_image_.height());
+    canvas->TileImageInt(theme_image_, 0, 0, 0, -maximized_top_inset_,
+                         view->width(), top_area_height_, 1.0f,
+                         SkShader::kRepeat_TileMode,
+                         SkShader::kMirror_TileMode);
   }
-  // Draw the theme frame overlay, if available.
   if (!theme_overlay_image_.isNull())
     canvas->DrawImageInt(theme_overlay_image_, 0, -maximized_top_inset_);
 }
 
-void FrameBackground::PaintFrameColor(gfx::Canvas* canvas,
-                                      const View* view) const {
-  PaintFrameTopArea(canvas, view);
-
-  // If the window is very short, we're done.
+void FrameBackground::FillFrameBorders(gfx::Canvas* canvas,
+                                       const View* view) const {
+  // If the window is very short, we don't need to fill any borders.
   int remaining_height = view->height() - top_area_height_;
   if (remaining_height <= 0)
     return;
@@ -169,24 +172,6 @@ void FrameBackground::PaintFrameColor(gfx::Canvas* canvas,
                              view->height() - bottom_edge_->height(),
                              center_width, bottom_edge_->height()),
                              frame_color_);
-}
-
-void FrameBackground::PaintFrameTopArea(gfx::Canvas* canvas,
-                                        const View* view) const {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  auto* native_theme = view->GetNativeTheme();
-  ui::NativeTheme::ExtraParams params;
-  params.frame_top_area.use_custom_frame = use_custom_frame_;
-  params.frame_top_area.is_active = is_active_;
-  params.frame_top_area.incognito = incognito_;
-  params.frame_top_area.default_background_color = frame_color_;
-  native_theme->Paint(canvas->sk_canvas(), ui::NativeTheme::kFrameTopArea,
-                      ui::NativeTheme::kNormal,
-                      gfx::Rect(0, 0, view->width(), top_area_height_), params);
-#else
-  canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
-                   frame_color_);
-#endif
 }
 
 }  // namespace views
