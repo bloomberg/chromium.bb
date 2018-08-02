@@ -484,11 +484,6 @@ void AssistantManagerServiceImpl::OnVoiceInteractionHotwordEnabled(
   platform_api_.OnHotwordEnabled(enabled);
 }
 
-void AssistantManagerServiceImpl::OnVoiceInteractionSetupCompleted(
-    bool completed) {
-  UpdateDeviceLocale(completed);
-}
-
 void AssistantManagerServiceImpl::StartAssistantInternal(
     const std::string& access_token,
     const std::string& arc_version) {
@@ -566,27 +561,8 @@ void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   device_settings_update->set_assistant_device_type(
       assistant::AssistantDevice::CROS);
 
-  // Device settings update result is not handled because it is not included in
-  // the SettingsUiUpdateResult.
-  SendUpdateSettingsUiRequest(update.SerializeAsString(), base::DoNothing());
-
-  // Update device locale if voice interaction setup is completed.
-  AssistantManagerServiceImpl::IsVoiceInteractionSetupCompleted(
-      base::BindOnce(&AssistantManagerServiceImpl::UpdateDeviceLocale,
-                     weak_factory_.GetWeakPtr()));
-}
-
-void AssistantManagerServiceImpl::UpdateDeviceLocale(bool is_setup_completed) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
-  if (!is_setup_completed)
-    return;
-
-  // Update device locale.
-  assistant::SettingsUiUpdate update;
-  assistant::AssistantDeviceSettingsUpdate* device_settings_update =
-      update.mutable_assistant_device_settings_update()
-          ->add_assistant_device_settings_update();
+  VLOG(1) << "Update assistant device locale: "
+          << base::i18n::GetConfiguredLocale();
   device_settings_update->mutable_device_settings()->set_locale(
       base::i18n::GetConfiguredLocale());
 
