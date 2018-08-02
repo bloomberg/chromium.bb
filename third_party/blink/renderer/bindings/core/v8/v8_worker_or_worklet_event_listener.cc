@@ -90,24 +90,4 @@ v8::Local<v8::Value> V8WorkerOrWorkletEventListener::CallListenerFunction(
   return result;
 }
 
-// FIXME: Remove getReceiverObject().
-// This is almost identical to V8AbstractEventListener::getReceiverObject().
-v8::Local<v8::Object> V8WorkerOrWorkletEventListener::GetReceiverObject(
-    ScriptState* script_state,
-    Event* event) {
-  v8::Local<v8::Object> listener =
-      GetListenerObject(ExecutionContext::From(script_state));
-
-  if (!listener.IsEmpty() && !listener->IsFunction())
-    return listener;
-
-  EventTarget* target = event->currentTarget();
-  v8::Local<v8::Value> value =
-      ToV8(target, script_state->GetContext()->Global(), GetIsolate());
-  if (value.IsEmpty())
-    return v8::Local<v8::Object>();
-  return v8::Local<v8::Object>::New(GetIsolate(),
-                                    v8::Local<v8::Object>::Cast(value));
-}
-
 }  // namespace blink

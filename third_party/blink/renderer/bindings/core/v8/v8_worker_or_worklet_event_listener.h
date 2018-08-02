@@ -61,7 +61,6 @@ class V8WorkerOrWorkletEventListener final : public V8EventListener {
   v8::Local<v8::Value> CallListenerFunction(ScriptState*,
                                             v8::Local<v8::Value>,
                                             Event*) override;
-  v8::Local<v8::Object> GetReceiverObject(ScriptState*, Event*);
 };
 
 }  // namespace blink
