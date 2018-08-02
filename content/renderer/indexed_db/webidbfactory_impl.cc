@@ -25,10 +25,8 @@ using indexed_db::mojom::FactoryPtrInfo;
 
 namespace content {
 
-WebIDBFactoryImpl::WebIDBFactoryImpl(
-    FactoryPtrInfo factory_info,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner)
-    : io_runner_(std::move(io_runner)), factory_(std::move(factory_info)) {}
+WebIDBFactoryImpl::WebIDBFactoryImpl(FactoryPtrInfo factory_info)
+    : factory_(std::move(factory_info)) {}
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
 
@@ -38,7 +36,7 @@ void WebIDBFactoryImpl::GetDatabaseNames(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      nullptr, io_runner_, std::move(task_runner));
+      nullptr, std::move(task_runner));
   factory_->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks_impl)),
                              url::Origin(origin));
 }
@@ -52,8 +50,7 @@ void WebIDBFactoryImpl::Open(
     const WebSecurityOrigin& origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
-      task_runner);
+      base::WrapUnique(callbacks), transaction_id, nullptr, task_runner);
   auto database_callbacks_impl =
       std::make_unique<IndexedDBDatabaseCallbacksImpl>(
           base::WrapUnique(database_callbacks), std::move(task_runner));
@@ -70,7 +67,7 @@ void WebIDBFactoryImpl::DeleteDatabase(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      nullptr, io_runner_, std::move(task_runner));
+      nullptr, std::move(task_runner));
   factory_->DeleteDatabase(GetCallbacksProxy(std::move(callbacks_impl)),
                            url::Origin(origin), name.Utf16(), force_close);
 }

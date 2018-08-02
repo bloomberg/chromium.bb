@@ -32,7 +32,6 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
   WebIDBDatabaseImpl(
       indexed_db::mojom::DatabaseAssociatedPtrInfo database,
-      scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   ~WebIDBDatabaseImpl() override;
 
@@ -149,7 +148,6 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   size_t max_put_value_size_ = kMaxIDBMessageSizeInBytes;
 
   std::set<int32_t> observer_ids_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
   indexed_db::mojom::DatabaseAssociatedPtr database_;
 };

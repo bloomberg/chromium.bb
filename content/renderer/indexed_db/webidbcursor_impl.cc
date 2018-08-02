@@ -29,10 +29,8 @@ namespace content {
 WebIDBCursorImpl::WebIDBCursorImpl(
     indexed_db::mojom::CursorAssociatedPtrInfo cursor_info,
     int64_t transaction_id,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
     : transaction_id_(transaction_id),
-      io_runner_(std::move(io_runner)),
       callback_runner_(std::move(callback_runner)),
       cursor_(std::move(cursor_info)),
       continue_count_(0),
@@ -66,7 +64,7 @@ void WebIDBCursorImpl::Advance(unsigned long count,
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
-      io_runner_, callback_runner_);
+      callback_runner_);
   cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
@@ -92,7 +90,7 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
 
       auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
           std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
-          io_runner_, callback_runner_);
+          callback_runner_);
       cursor_->Prefetch(prefetch_amount_,
                         GetCallbacksProxy(std::move(callbacks_impl)));
 
@@ -114,7 +112,7 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
-      io_runner_, callback_runner_);
+      callback_runner_);
   cursor_->Continue(IndexedDBKeyBuilder::Build(key),
                     IndexedDBKeyBuilder::Build(primary_key),
                     GetCallbacksProxy(std::move(callbacks_impl)));

@@ -566,16 +566,11 @@ void RendererBlinkPlatformImpl::CloneSessionStorageNamespace(
 
 std::unique_ptr<blink::WebIDBFactory>
 RendererBlinkPlatformImpl::CreateIdbFactory() {
-  // If running in a test context, RenderThread may not exist on init, which
-  // would lead to |io_runner_| being null.
-  if (!io_runner_)
-    return nullptr;
   indexed_db::mojom::FactoryPtrInfo web_idb_factory_host_info;
   GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&web_idb_factory_host_info));
   return std::make_unique<WebIDBFactoryImpl>(
-      std::move(web_idb_factory_host_info),
-      io_runner_);
+      std::move(web_idb_factory_host_info));
 }
 
 //------------------------------------------------------------------------------
