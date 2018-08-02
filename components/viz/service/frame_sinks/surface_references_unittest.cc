@@ -101,9 +101,10 @@ class SurfaceReferencesTest : public testing::Test {
   }
 
   // Returns all the references where |surface_id| is the child.
-  const base::flat_set<SurfaceId>& GetReferencesFor(
+  const base::flat_set<SurfaceId> GetReferencesFor(
       const SurfaceId& surface_id) {
-    return GetSurfaceManager().GetSurfacesThatReferenceChild(surface_id);
+    return GetSurfaceManager().GetSurfacesThatReferenceChildForTesting(
+        surface_id);
   }
 
   // Temporary references are stored as a map in SurfaceManager. This method

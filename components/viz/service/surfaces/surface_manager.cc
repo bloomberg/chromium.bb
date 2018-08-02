@@ -40,10 +40,6 @@ const char kUmaRemovedTemporaryReference[] =
 
 }  // namespace
 
-SurfaceManager::SurfaceReferenceInfo::SurfaceReferenceInfo() = default;
-
-SurfaceManager::SurfaceReferenceInfo::~SurfaceReferenceInfo() = default;
-
 SurfaceManager::TemporaryReferenceData::TemporaryReferenceData() = default;
 
 SurfaceManager::TemporaryReferenceData::~TemporaryReferenceData() = default;
@@ -263,15 +259,19 @@ const base::flat_set<SurfaceId>& SurfaceManager::GetSurfacesReferencedByParent(
   auto iter = references_.find(surface_id);
   if (iter == references_.end())
     return empty_surface_id_set_;
-  return iter->second.children;
+  return iter->second;
 }
 
-const base::flat_set<SurfaceId>& SurfaceManager::GetSurfacesThatReferenceChild(
+base::flat_set<SurfaceId>
+SurfaceManager::GetSurfacesThatReferenceChildForTesting(
     const SurfaceId& surface_id) const {
-  auto iter = references_.find(surface_id);
-  if (iter == references_.end())
-    return empty_surface_id_set_;
-  return iter->second.parents;
+  base::flat_set<SurfaceId> parents;
+
+  for (auto& parent : references_) {
+    if (parent.second.find(surface_id) != parent.second.end())
+      parents.insert(parent.first);
+  }
+  return parents;
 }
 
 SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForReferences() {
@@ -329,8 +329,7 @@ void SurfaceManager::AddSurfaceReferenceImpl(
     return;
   }
 
-  references_[parent_id].children.insert(child_id);
-  references_[child_id].parents.insert(parent_id);
+  references_[parent_id].insert(child_id);
 
   for (auto& observer : observer_list_)
     observer.OnAddedSurfaceReference(parent_id, child_id);
@@ -345,32 +344,19 @@ void SurfaceManager::RemoveSurfaceReferenceImpl(
   const SurfaceId& child_id = reference.child_id();
 
   auto iter_parent = references_.find(parent_id);
-  auto iter_child = references_.find(child_id);
-  if (iter_parent == references_.end() || iter_child == references_.end())
+  if (iter_parent == references_.end())
+    return;
+
+  auto child_iter = iter_parent->second.find(child_id);
+  if (child_iter == iter_parent->second.end())
     return;
 
   for (auto& observer : observer_list_)
     observer.OnRemovedSurfaceReference(parent_id, child_id);
 
-  iter_parent->second.children.erase(child_id);
-  iter_child->second.parents.erase(parent_id);
-}
-
-void SurfaceManager::RemoveAllSurfaceReferences(const SurfaceId& surface_id) {
-  DCHECK(!HasTemporaryReference(surface_id));
-
-  auto iter = references_.find(surface_id);
-  if (iter != references_.end()) {
-    // Remove all references from |surface_id| to a child surface.
-    for (const SurfaceId& child_id : iter->second.children)
-      references_[child_id].parents.erase(surface_id);
-
-    // Remove all reference from parent surface to |surface_id|.
-    for (const SurfaceId& parent_id : iter->second.parents)
-      references_[parent_id].children.erase(surface_id);
-
-    references_.erase(iter);
-  }
+  iter_parent->second.erase(child_iter);
+  if (iter_parent->second.empty())
+    references_.erase(iter_parent);
 }
 
 bool SurfaceManager::HasTemporaryReference(const SurfaceId& surface_id) const {
@@ -588,7 +574,7 @@ void SurfaceManager::DestroySurfaceInternal(const SurfaceId& surface_id) {
   // and that's not desirable.
   std::unique_ptr<Surface> doomed = std::move(it->second);
   surface_map_.erase(it);
-  RemoveAllSurfaceReferences(surface_id);
+  references_.erase(surface_id);
 }
 
 #if DCHECK_IS_ON()

@@ -182,7 +182,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   // Returns all surfaces that have a reference to child |surface_id|. Will
   // return an empty set if |surface_id| is unknown or has no references to it.
-  const base::flat_set<SurfaceId>& GetSurfacesThatReferenceChild(
+  base::flat_set<SurfaceId> GetSurfacesThatReferenceChildForTesting(
       const SurfaceId& surface_id) const;
 
   // Returns the most recent surface associated with the |fallback_surface_id|'s
@@ -211,17 +211,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
     COUNT
   };
 
-  struct SurfaceReferenceInfo {
-    SurfaceReferenceInfo();
-    ~SurfaceReferenceInfo();
-
-    // Surfaces that have references to this surface.
-    base::flat_set<SurfaceId> parents;
-
-    // Surfaces that are referenced from this surface.
-    base::flat_set<SurfaceId> children;
-  };
-
   struct TemporaryReferenceData {
     TemporaryReferenceData();
     ~TemporaryReferenceData();
@@ -247,10 +236,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   // Removes a reference from a |parent_id| to |child_id|.
   void RemoveSurfaceReferenceImpl(const SurfaceReference& reference);
-
-  // Removes all surface references to or from |surface_id|. Used when the
-  // surface is about to be deleted.
-  void RemoveAllSurfaceReferences(const SurfaceId& surface_id);
 
   bool HasTemporaryReference(const SurfaceId& surface_id) const;
 
@@ -305,9 +290,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   const base::TickClock* tick_clock_;
 
   // Keeps track of surface references for a surface. The graph of references is
-  // stored in both directions, so we know the parents and children for each
-  // surface.
-  std::unordered_map<SurfaceId, SurfaceReferenceInfo, SurfaceIdHash>
+  // stored in parent to child direction. i.e the map stores all direct children
+  // of the surface specified by |SurfaceId|.
+  std::unordered_map<SurfaceId, base::flat_set<SurfaceId>, SurfaceIdHash>
       references_;
 
   // A map of surfaces that have temporary references.
