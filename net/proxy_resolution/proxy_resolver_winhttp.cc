@@ -94,6 +94,20 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
   if (!session_handle_ && !OpenWinHttpSession())
     return ERR_FAILED;
 
+  // Windows' system resolver does not support WebSocket URLs in proxy.pac. This
+  // was tested in version 10.0.16299, and is also implied by the description of
+  // the ERROR_WINHTTP_UNRECOGNIZED_SCHEME error code in the Microsoft
+  // documentation at
+  // https://docs.microsoft.com/en-us/windows/desktop/api/winhttp/nf-winhttp-winhttpgetproxyforurl.
+  // See https://crbug.com/862121.
+  GURL mutable_query_url = query_url;
+  if (query_url.SchemeIsWSOrWSS()) {
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr(query_url.SchemeIsCryptographic() ? "https"
+                                                                : "http");
+    mutable_query_url = query_url.ReplaceComponents(replacements);
+  }
+
   // If we have been given an empty PAC url, then use auto-detection.
   //
   // NOTE: We just use DNS-based auto-detection here like Firefox.  We do this
@@ -114,14 +128,14 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
   // Otherwise, we fail over to trying it with a value of true.  This way we
   // get good performance in the case where WinHTTP uses an out-of-process
   // resolver.  This is important for Vista and Win2k3.
-  BOOL ok = WinHttpGetProxyForUrl(session_handle_,
-                                  base::ASCIIToUTF16(query_url.spec()).c_str(),
-                                  &options, &info);
+  BOOL ok = WinHttpGetProxyForUrl(
+      session_handle_, base::ASCIIToUTF16(mutable_query_url.spec()).c_str(),
+      &options, &info);
   if (!ok) {
     if (ERROR_WINHTTP_LOGIN_FAILURE == GetLastError()) {
       options.fAutoLogonIfChallenged = TRUE;
       ok = WinHttpGetProxyForUrl(
-          session_handle_, base::ASCIIToUTF16(query_url.spec()).c_str(),
+          session_handle_, base::ASCIIToUTF16(mutable_query_url.spec()).c_str(),
           &options, &info);
     }
     if (!ok) {

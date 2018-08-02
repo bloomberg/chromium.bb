@@ -47,6 +47,7 @@ class BaseTestServer {
     TYPE_WSS,
     TYPE_TCP_ECHO,
     TYPE_UDP_ECHO,
+    TYPE_PROXY,
   };
 
   // Container for various options to control how the HTTPS or WSS server is
