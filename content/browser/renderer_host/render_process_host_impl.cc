@@ -701,12 +701,6 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     }
   }
 
-  // RenderProcessHostObserver::RenderProcessWillExit is not overriden because:
-  // 1. This simplifies reasoning when Cleanup can be called.
-  // 2. In practice the spare shouldn't go through graceful shutdown.
-  // 3. Handling RenderProcessExited and RenderProcessHostDestroyed is
-  //    sufficient from correctness perspective.
-
   void RenderProcessExited(RenderProcessHost* host,
                            const ChildProcessTerminationInfo& info) override {
     if (host == spare_render_process_host_)
@@ -4042,11 +4036,6 @@ void RenderProcessHostImpl::ShutdownRequest() {
     return;
   }
 
-  // Notify any contents that might have swapped out renderers from this
-  // process. They should not attempt to swap them back in.
-  for (auto& observer : observers_) {
-    observer.RenderProcessWillExit(this);
-  }
   child_control_interface_->ProcessShutdown();
 }
 

@@ -836,6 +836,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            ActiveSandboxFlagsRetainedAfterSwapOut);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            LastCommittedURLRetainedAfterSwapOut);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           RenderFrameProxyNotRecreatedDuringProcessShutdown);
   FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
                            AttemptDuplicateRenderViewHost);
 

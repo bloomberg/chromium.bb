@@ -229,7 +229,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
-  void RenderProcessWillExit(RenderProcessHost* host) override;
   void RenderProcessExited(RenderProcessHost* host,
                            const ChildProcessTerminationInfo& info) override;
 
