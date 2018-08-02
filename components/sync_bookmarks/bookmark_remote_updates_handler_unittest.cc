@@ -16,6 +16,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/protocol/unique_position.pb.h"
+#include "components/sync_bookmarks/bookmark_model_merger.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -198,6 +199,12 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       bookmarks::TestBookmarkClient::CreateModel();
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
+  const syncer::UpdateResponseDataList bookmark_bar_updates = {
+      CreateBookmarkBarNodeUpdateData()};
+  // TODO(crbug.com/516866): Create a test fixture that would encapsulate
+  // the merge functionality for all relevant tests.
+  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(), &tracker)
+      .Merge();
 
   const std::string kId0 = "id0";
   const std::string kId1 = "id1";
@@ -205,7 +212,6 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
 
   // Constuct the updates list to have creations randomly ordered.
   syncer::UpdateResponseDataList updates;
-  updates.push_back(CreateBookmarkBarNodeUpdateData());
   updates.push_back(CreateUpdateResponseData(/*server_id=*/kId2,
                                              /*parent_id=*/kId1,
                                              /*is_deletion=*/false));
@@ -307,6 +313,10 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       bookmarks::TestBookmarkClient::CreateModel();
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
+  const syncer::UpdateResponseDataList bookmark_bar_updates = {
+      CreateBookmarkBarNodeUpdateData()};
+  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(), &tracker)
+      .Merge();
 
   const std::string kId0 = "id0";
   const std::string kId1 = "id1";

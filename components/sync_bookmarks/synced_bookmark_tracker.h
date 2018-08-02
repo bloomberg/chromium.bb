@@ -146,6 +146,9 @@ class SyncedBookmarkTracker {
                                 int64_t acked_sequence_number,
                                 int64_t server_version);
 
+  // Whether the tracker is empty or not.
+  bool IsEmpty() const;
+
   // Returns number of tracked entities. Used only in test.
   std::size_t TrackedEntitiesCountForTest() const;
 

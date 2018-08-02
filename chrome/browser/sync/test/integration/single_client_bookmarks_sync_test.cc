@@ -113,17 +113,6 @@ class SingleClientBookmarksSyncTestIncludingUssTests
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests, Sanity) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  // TODO(crbug.com/516866): Move the following block after adding the bookmark
-  // nodes to the model upon implementing the merge logic in USS. This is here
-  // to make sure that when sync starts, the model is completely empty and
-  // doesn't require any merge logic which isn't the general case obviously.
-
-  // Setup sync, wait for its completion, and make sure changes were synced.
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(
-      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
-  ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
-
   // Starting state:
   // other_node
   //    -> top
@@ -152,8 +141,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests, Sanity) {
       kSingleProfileIndex, tier1_b, 0, "tier1_b_url0",
       GURL("http://www.nhl.com"));
 
-  // TODO(crbug.com/516866): Call SetupSync() here upon implementing the merge
-  // logic in USS. Refer the TODO above for details.
+  // Setup sync, wait for its completion, and make sure changes were synced.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+  ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   //  Ultimately we want to end up with the following model; but this test is
   //  more about the journey than the destination.
