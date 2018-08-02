@@ -53,4 +53,5 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
 
       self._RunStage(firmware_stages.FirmwareArchiveStage,
                      build_root=workspace_dir,
-                     board=board)
+                     board=board,
+                     workspace_branch=firmware_branch)
