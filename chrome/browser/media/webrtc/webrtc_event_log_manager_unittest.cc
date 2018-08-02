@@ -21,10 +21,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -48,6 +48,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 // TODO(crbug.com/775415): Add unit tests for incognito mode.
 // TODO(crbug.com/775415): Migrate to being based on Profiles rather than on
@@ -255,8 +256,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
       event_log_manager_->SetRemoteLogFileWriterFactoryForTesting(
           std::move(factory));
     } else {
-      // TODO(crbug.com/775415): Add GZIP support and make it on by default.
-      remote_log_extension_ = kWebRtcEventLogUncompressedExtension;
+      // kWebRtcRemoteEventLogGzipped is turned on by default.
+      remote_log_extension_ = kWebRtcEventLogGzippedExtension;
     }
   }
 
@@ -573,9 +574,16 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     std::string file_contents;
     ASSERT_TRUE(base::ReadFileToString(file_path, &file_contents));
 
-    // TODO(crbug.com/775415): Support compression.
-    DCHECK(remote_log_extension_ == kWebRtcEventLogUncompressedExtension);
-    EXPECT_EQ(file_contents, expected_event_log);
+    if (remote_log_extension_ == kWebRtcEventLogUncompressedExtension) {
+      EXPECT_EQ(file_contents, expected_event_log);
+    } else if (remote_log_extension_ == kWebRtcEventLogGzippedExtension) {
+      std::string uncompressed_log;
+      ASSERT_TRUE(
+          compression::GzipUncompress(file_contents, &uncompressed_log));
+      EXPECT_EQ(uncompressed_log, expected_event_log);
+    } else {
+      NOTREACHED();
+    }
   }
 
   // When the peer connection's ID is not the focus of the test, this allows
@@ -699,7 +707,7 @@ class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase,
   ~WebRtcEventLogManagerTest() override = default;
 
   void SetUp() override {
-    CreateWebRtcEventLogManager(Compression::NONE);
+    CreateWebRtcEventLogManager(Compression::GZIP_PERFECT_ESTIMATION);
 
     auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
         true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
@@ -918,7 +926,35 @@ class WebRtcEventLogManagerTestUploadDelay
   static const size_t kIntentionallyExcessiveDelayMs = 1000 * 1000 * 1000;
 };
 
+// For testing compression issues.
+class WebRtcEventLogManagerTestCompression
+    : public WebRtcEventLogManagerTestBase {
+ public:
+  WebRtcEventLogManagerTestCompression() {
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
+        ::switches::kWebRtcRemoteEventLogUploadDelayMs, "0");
+  }
+
+  ~WebRtcEventLogManagerTestCompression() override = default;
+
+  void SetUp() override {
+    // Defer until Init(), which will allow the test body more control.
+  }
+
+  void Init(base::Optional<WebRtcEventLogCompression> remote_compression =
+                base::Optional<WebRtcEventLogCompression>()) {
+    CreateWebRtcEventLogManager(remote_compression);
+
+    auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+        true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
+    WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
+  }
+};
+
 namespace {
+
 class PeerConnectionTrackerProxyForTesting
     : public WebRtcEventLogManager::PeerConnectionTrackerProxy {
  public:
@@ -1750,6 +1786,21 @@ TEST_F(WebRtcEventLogManagerTest,
 }
 
 TEST_F(WebRtcEventLogManagerTest,
+       StartRemoteLoggingReturnsFalseIfFileSizeToSmall) {
+  const size_t min_size =
+      CreateLogFileWriterFactory(Compression::GZIP_NULL_ESTIMATION)
+          ->MinFileSizeBytes();
+
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  const std::string id = "id";  // For explicitness' sake.
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid, id));
+  std::string error_message;
+  EXPECT_FALSE(StartRemoteLogging(key.render_process_id, id, min_size - 1,
+                                  nullptr, &error_message));
+  EXPECT_EQ(error_message, kStartRemoteLoggingFailureMaxSizeTooSmall);
+}
+
+TEST_F(WebRtcEventLogManagerTest,
        StartRemoteLoggingReturnsFalseIfExcessivelyLargeFileSize) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   const std::string id = "id";  // For explicitness' sake.
@@ -1865,7 +1916,7 @@ TEST_F(WebRtcEventLogManagerTest, RemoteLogFileCreatedInCorrectDirectory) {
   }
 
   // All log files must be created in their own context's directory.
-  for (size_t i = 0; i < arraysize(browser_contexts); ++i) {
+  for (size_t i = 0; i < base::size(browser_contexts); ++i) {
     ASSERT_TRUE(file_paths[i]);
     EXPECT_TRUE(browser_contexts[i]->GetPath().IsParent(*file_paths[i]));
   }
@@ -1983,18 +2034,18 @@ TEST_F(WebRtcEventLogManagerTest, MultipleWritesToSameRemoteBoundLogfile) {
       std::accumulate(std::begin(logs), std::end(logs), std::string()));
 }
 
-TEST_F(WebRtcEventLogManagerTest, RemoteLogFileSizeLimitNotExceeded) {
+TEST_F(WebRtcEventLogManagerTest,
+       RemoteLogFileSizeLimitNotExceededSingleWrite) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   base::Optional<base::FilePath> file_path;
   ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
       .WillByDefault(Invoke(SaveFilePathTo(&file_path)));
 
   const std::string log = "tpyo";
-  const size_t file_size_limit_bytes = log.length() / 2;
 
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
   ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key),
-                                 file_size_limit_bytes));
+                                 GzippedSize(log) - 1));
 
   // Failure is reported, because not everything could be written. The file
   // will also be closed.
@@ -2002,11 +2053,38 @@ TEST_F(WebRtcEventLogManagerTest, RemoteLogFileSizeLimitNotExceeded) {
   ASSERT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, log),
             std::make_pair(false, false));
 
-  // Additional calls to Write() have no effect.
-  ASSERT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, "ignored"),
+  // Make sure the file would be closed, so that we could safely read it.
+  ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
+
+  // No partial writes occurred.
+  ExpectRemoteFileContents(*file_path, "");
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       RemoteLogFileSizeLimitNotExceededMultipleWrites) {
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  base::Optional<base::FilePath> file_path;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&file_path)));
+
+  const std::string log1 = "abcabc";
+  const std::string log2 = "defghijklmnopqrstuvwxyz";
+
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key),
+                                 1 + GzippedSize(log1)));
+
+  // First write works.
+  ASSERT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, log1),
+            std::make_pair(false, true));
+
+  // On the second write, failure is reported, because not everything could be
+  // written. The file will also be closed.
+  EXPECT_CALL(remote_observer_, OnRemoteLogStopped(key)).Times(1);
+  ASSERT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, log2),
             std::make_pair(false, false));
 
-  ExpectRemoteFileContents(*file_path, "");
+  ExpectRemoteFileContents(*file_path, log1);
 }
 
 TEST_F(WebRtcEventLogManagerTest,
@@ -2091,9 +2169,9 @@ TEST_F(WebRtcEventLogManagerTest,
 
 TEST_F(WebRtcEventLogManagerTest, DifferentRemoteLogsMayHaveDifferentMaximums) {
   const std::string logs[2] = {"abra", "cadabra"};
-  std::vector<base::Optional<base::FilePath>> file_paths(arraysize(logs));
+  std::vector<base::Optional<base::FilePath>> file_paths(base::size(logs));
   std::vector<PeerConnectionKey> keys;
-  for (size_t i = 0; i < arraysize(logs); ++i) {
+  for (size_t i = 0; i < base::size(logs); ++i) {
     keys.push_back(GetPeerConnectionKey(rph_.get(), i));
     ON_CALL(remote_observer_, OnRemoteLogStarted(keys[i], _))
         .WillByDefault(Invoke(SaveFilePathTo(&file_paths[i])));
@@ -2102,7 +2180,7 @@ TEST_F(WebRtcEventLogManagerTest, DifferentRemoteLogsMayHaveDifferentMaximums) {
   for (size_t i = 0; i < keys.size(); ++i) {
     ASSERT_TRUE(PeerConnectionAdded(keys[i].render_process_id, keys[i].lid));
     ASSERT_TRUE(StartRemoteLogging(keys[i].render_process_id,
-                                   GetUniqueId(keys[i]), logs[i].length()));
+                                   GetUniqueId(keys[i]), GzippedSize(logs[i])));
   }
 
   for (size_t i = 0; i < keys.size(); ++i) {
@@ -2127,7 +2205,7 @@ TEST_F(WebRtcEventLogManagerTest, RemoteLogFileClosedWhenCapacityReached) {
 
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
   ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key),
-                                 log.length()));
+                                 GzippedSize(log)));
   ASSERT_TRUE(file_path);
 
   EXPECT_CALL(remote_observer_, OnRemoteLogStopped(key)).Times(1);
@@ -2229,7 +2307,7 @@ TEST_F(WebRtcEventLogManagerTest,
     ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
     EXPECT_CALL(remote_observer_, OnRemoteLogStarted(key, _)).Times(1);
     ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key),
-                                   log.length()));
+                                   GzippedSize(log)));
   }
 
   // By writing to one of the logs until it reaches capacity, we fill it,
@@ -2346,6 +2424,53 @@ TEST_F(WebRtcEventLogManagerTest,
   for (size_t i = 0; i < kMaxPendingRemoteBoundWebRtcEventLogs; ++i) {
     const base::FilePath file_path = remote_logs_dir.Append(IntToStringType(i))
                                          .AddExtension(remote_log_extension_);
+    constexpr int file_flags = base::File::FLAG_CREATE |
+                               base::File::FLAG_WRITE |
+                               base::File::FLAG_EXCLUSIVE_WRITE;
+    base::File file(file_path, file_flags);
+    ASSERT_TRUE(file.IsValid() && file.created());
+    expected_files.emplace_back(browser_context_id_, file_path,
+                                GetLastModificationTime(file_path));
+  }
+
+  // This factory enforces the expectation that the files will be uploaded,
+  // all of them, only them, and in the order expected.
+  base::RunLoop run_loop;
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &expected_files, true, &run_loop));
+
+  LoadProfiles();
+  ASSERT_EQ(browser_context_->GetPath(), browser_context_path);
+
+  WaitForPendingTasks(&run_loop);
+}
+
+// It is possible for remote-bound logs to be compressed or uncompressed.
+// We show that logs from a previous session are captured even if they are
+// different, with regards to compression, compared to last time.
+TEST_F(WebRtcEventLogManagerTest,
+       LogsCapturedPreviouslyMadePendingEvenIfDifferentExtensionUsed) {
+  // Unload the profile, but remember where it stores its files.
+  const base::FilePath browser_context_path = browser_context_->GetPath();
+  const base::FilePath remote_logs_dir = RemoteBoundLogsDir(browser_context_);
+  UnloadProfiles();
+
+  // Seed the remote logs' directory with log files, simulating the
+  // creation of logs in a previous session.
+  std::list<WebRtcLogFileInfo> expected_files;
+  ASSERT_TRUE(CreateDirectory(remote_logs_dir));
+
+  base::FilePath::StringPieceType extensions[] = {
+      kWebRtcEventLogUncompressedExtension, kWebRtcEventLogGzippedExtension};
+  ASSERT_LE(base::size(extensions), kMaxPendingRemoteBoundWebRtcEventLogs)
+      << "Lacking test coverage.";
+
+  for (size_t i = 0, ext = 0; i < kMaxPendingRemoteBoundWebRtcEventLogs; ++i) {
+    const auto& extension = extensions[ext];
+    ext = (ext + 1) % base::size(extensions);
+    const base::FilePath file_path =
+        remote_logs_dir.Append(IntToStringType(i)).AddExtension(extension);
     constexpr int file_flags = base::File::FLAG_CREATE |
                                base::File::FLAG_WRITE |
                                base::File::FLAG_EXCLUSIVE_WRITE;
@@ -3609,6 +3734,42 @@ TEST_F(WebRtcEventLogManagerTestUploadDelay,
   ClearCacheForBrowserContext(browser_context_, base::Time::Min(),
                               base::Time::Max());
   EXPECT_FALSE(UploadConditionsHold());
+
+  WaitForPendingTasks(&run_loop);
+}
+
+TEST_F(WebRtcEventLogManagerTestCompression,
+       ErroredFilesDueToBadEstimationDeletedRatherThanUploaded) {
+  Init(Compression::GZIP_NULL_ESTIMATION);
+
+  const std::string log = "It's better than bad; it's good.";
+
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key),
+                                 GzippedSize(log) - 1));
+  ASSERT_TRUE(log_file);
+
+  std::list<WebRtcLogFileInfo> empty_list;
+  base::RunLoop run_loop;
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &empty_list, true, &run_loop));
+
+  // Writing fails because the budget is exceeded.
+  EXPECT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, log),
+            std::make_pair(false, false));
+
+  // The file was deleted due to the error we've instigated (by using an
+  // intentionally over-optimistic estimation).
+  EXPECT_FALSE(base::PathExists(*log_file));
+
+  // If the file is incorrectly still eligible for an upload, this will trigger
+  // the upload (which will be a test failure).
+  ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
 
   WaitForPendingTasks(&run_loop);
 }

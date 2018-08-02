@@ -340,7 +340,6 @@ class WebRtcRemoteEventLogManager final
   std::map<PeerConnectionKey, const std::string> active_peer_connections_;
 
   // Creates LogFileWriter instances (compressed/uncompressed, etc.).
-  // TODO(crbug.com/775415): Add support for compressed version using GZIP.
   std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory_;
 
   // Remote-bound logs which we're currently in the process of writing to disk.

@@ -14,8 +14,15 @@ std::unique_ptr<LogFileWriter::Factory> CreateLogFileWriterFactory(
   switch (compression) {
     case WebRtcEventLogCompression::NONE:
       return std::make_unique<BaseLogFileWriterFactory>();
+    case WebRtcEventLogCompression::GZIP_NULL_ESTIMATION:
+      return std::make_unique<GzippedLogFileWriterFactory>(
+          std::make_unique<GzipLogCompressorFactory>(
+              std::make_unique<NullEstimator::Factory>()));
+    case WebRtcEventLogCompression::GZIP_PERFECT_ESTIMATION:
+      return std::make_unique<GzippedLogFileWriterFactory>(
+          std::make_unique<GzipLogCompressorFactory>(
+              std::make_unique<PerfectGzipEstimator::Factory>()));
   }
-
   NOTREACHED();
   return nullptr;  // Appease compiler.
 }
@@ -31,3 +38,57 @@ void RemoveWritePermissions(const base::FilePath& path) {
   ASSERT_TRUE(base::SetPosixFilePermissions(path, permissions));
 }
 #endif  // defined(OS_POSIX)
+
+std::unique_ptr<CompressedSizeEstimator> NullEstimator::Factory::Create()
+    const {
+  return std::make_unique<NullEstimator>();
+}
+
+size_t NullEstimator::EstimateCompressedSize(const std::string& input) const {
+  return 0;
+}
+
+std::unique_ptr<CompressedSizeEstimator> PerfectGzipEstimator::Factory::Create()
+    const {
+  return std::make_unique<PerfectGzipEstimator>();
+}
+
+PerfectGzipEstimator::PerfectGzipEstimator() {
+  // This factory will produce an optimistic compressor that will always
+  // think it can compress additional inputs, which will therefore allow
+  // us to find out what the real compressed size it, since compression
+  // will never be suppressed.
+  GzipLogCompressorFactory factory(std::make_unique<NullEstimator::Factory>());
+
+  compressor_ = factory.Create(base::Optional<size_t>());
+  DCHECK(compressor_);
+
+  std::string ignored;
+  compressor_->CreateHeader(&ignored);
+}
+
+PerfectGzipEstimator::~PerfectGzipEstimator() = default;
+
+size_t PerfectGzipEstimator::EstimateCompressedSize(
+    const std::string& input) const {
+  std::string output;
+  EXPECT_EQ(compressor_->Compress(input, &output), LogCompressor::Result::OK);
+  return output.length();
+}
+
+size_t GzippedSize(const std::string& uncompressed) {
+  PerfectGzipEstimator perfect_estimator;
+  return kGzipOverheadBytes +
+         perfect_estimator.EstimateCompressedSize(uncompressed);
+}
+
+size_t GzippedSize(const std::vector<std::string>& uncompressed) {
+  PerfectGzipEstimator perfect_estimator;
+
+  size_t result = kGzipOverheadBytes;
+  for (const std::string& str : uncompressed) {
+    result += perfect_estimator.EstimateCompressedSize(str);
+  }
+
+  return result;
+}

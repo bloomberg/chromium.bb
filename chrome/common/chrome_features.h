@@ -355,6 +355,7 @@ extern const base::Feature kMachineLearningService;
 
 #if !defined(OS_ANDROID)
 extern const base::Feature kWebRtcRemoteEventLog;
+extern const base::Feature kWebRtcRemoteEventLogGzipped;
 #endif
 
 #if defined(OS_WIN)

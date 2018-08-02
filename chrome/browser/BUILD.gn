@@ -1640,7 +1640,7 @@ jumbo_split_static_library("browser") {
     "//build/config/compiler:wexit_time_destructors",
     "//build/config:precompiled_headers",
   ]
-  defines = []
+  defines = [ "ZLIB_CONST" ]
   libs = []
   ldflags = []
 

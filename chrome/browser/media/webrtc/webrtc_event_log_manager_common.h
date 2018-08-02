@@ -43,16 +43,19 @@ extern const size_t kMaxActiveRemoteBoundWebRtcEventLogs;
 // limit is applied per browser context.
 extern const size_t kMaxPendingRemoteBoundWebRtcEventLogs;
 
+// Overhead incurred by GZIP due to its header and footer.
+extern const size_t kGzipOverheadBytes;
+
 // Remote-bound log files' names will be of the format [prefix]_[log_id].[ext],
 // where |prefix| is equal to kRemoteBoundWebRtcEventLogFileNamePrefix,
 // |log_id| is composed of 32 random characters from '0'-'9' and 'A'-'F',
 // and |ext| is the extension determined by the used LogCompressor::Factory,
 // which will be either kWebRtcEventLogUncompressedExtension or
 // kWebRtcEventLogGzippedExtension.
-// TODO(crbug.com/775415): Add kWebRtcEventLogGzippedExtension.
 extern const base::FilePath::CharType
     kRemoteBoundWebRtcEventLogFileNamePrefix[];
 extern const base::FilePath::CharType kWebRtcEventLogUncompressedExtension[];
+extern const base::FilePath::CharType kWebRtcEventLogGzippedExtension[];
 
 // Remote-bound event logs will not be uploaded if the time since their last
 // modification (meaning the time when they were completed) exceeds this value.
@@ -256,6 +259,148 @@ class BaseLogFileWriterFactory : public LogFileWriter::Factory {
   std::unique_ptr<LogFileWriter> Create(
       const base::FilePath& path,
       base::Optional<size_t> max_file_size_bytes) const override;
+};
+
+// Interface for a class that provides compression of a stream, while attempting
+// to observe a limit on the size.
+//
+// One should note that:
+// * For compressors that use a footer, to guarantee proper decompression,
+//   the footer must be written to the file.
+// * In such a case, usually, nothing can be omitted from the file, or the
+//   footer's CRC (if used) would be wrong.
+// * Determining a string's size pre-compression, without performing the actual
+//   compression, is heuristic in nature.
+//
+// Therefore, compression might terminate (FULL) earlier than it
+// must, or even in theory (which we attempt to avoid in practice) exceed the
+// size allowed it, in which case the file will be discarded (ERROR).
+class LogCompressor {
+ public:
+  // By subclassing this factory, concrete implementations of LogCompressor can
+  // be produced by unit tests, while keeping their definition in the .cc file.
+  // (Only the factory needs to be declared in the header.)
+  class Factory {
+   public:
+    virtual ~Factory() = default;
+
+    // The smallest size a log file of this type may assume.
+    virtual size_t MinSizeBytes() const = 0;
+
+    // Returns a LogCompressor if the parameters are valid and all
+    // initializations are successful; en empty unique_ptr otherwise.
+    // If !max_size_bytes.has_value(), an unlimited compressor is created.
+    virtual std::unique_ptr<LogCompressor> Create(
+        base::Optional<size_t> max_size_bytes) const = 0;
+  };
+
+  // Result of a call to Compress().
+  // * OK and ERROR_ENCOUNTERED are self-explanatory.
+  // * DISALLOWED means that, due to budget constraints, the input could
+  //   not be compressed. The stream is still in a legal state, but only
+  //   a call to CreateFooter() is now allowed.
+  enum class Result { OK, DISALLOWED, ERROR_ENCOUNTERED };
+
+  virtual ~LogCompressor() = default;
+
+  // Produces a compression header and writes it to |output|.
+  // The size does not count towards the max size limit.
+  // Guaranteed not to fail (nothing can realistically go wrong).
+  virtual void CreateHeader(std::string* output) = 0;
+
+  // Compresses |input| into |output|.
+  // * If compression succeeded, and the budget was observed, OK is returned.
+  // * If the compressor thinks the string, once compressed, will exceed the
+  //   maximum size (when combined with previously compressed strings),
+  //   compression will not be done, and DISALLOWED will be returned.
+  //   This allows producing a valid footer without exceeding the size limit.
+  // * Unexpected errors in the underlying compressor (e.g. zlib, etc.),
+  //   or unexpectedly getting a compressed string which exceeds the budget,
+  //   will return ERROR_ENCOUNTERED.
+  // This function may not be called again if DISALLOWED or ERROR_ENCOUNTERED
+  // were ever returned before, or after CreateFooter() was called.
+  virtual Result Compress(const std::string& input, std::string* output) = 0;
+
+  // Produces a compression footer and writes it to |output|.
+  // The footer does not count towards the max size limit.
+  // May not be called more than once, or if Compress() returned ERROR.
+  virtual bool CreateFooter(std::string* output) = 0;
+};
+
+// Estimates the compressed size, without performing compression (except in
+// unit tests, where performance is of lesser importance).
+// This interface allows unit tests to simulate specific cases, such as
+// over/under-estimation, and show that the code using the LogCompressor
+// deals with them correctly. (E.g., if the estimation expects the compression
+// to not go over-budget, but then it does.)
+// The estimator is expected to be stateful. That is, the order of calls to
+// EstimateCompressedSize() should correspond to the order of calls
+// to Compress().
+class CompressedSizeEstimator {
+ public:
+  class Factory {
+   public:
+    virtual ~Factory() = default;
+    virtual std::unique_ptr<CompressedSizeEstimator> Create() const = 0;
+  };
+
+  virtual ~CompressedSizeEstimator() = default;
+
+  virtual size_t EstimateCompressedSize(const std::string& input) const = 0;
+};
+
+// Provides a conservative estimation of the number of bytes required to
+// compress a string using GZIP. This estimation is not expected to ever
+// be overly optimistic, but the code using it should nevertheless be prepared
+// to deal with that theoretical possibility.
+class DefaultGzippedSizeEstimator : public CompressedSizeEstimator {
+ public:
+  class Factory : public CompressedSizeEstimator::Factory {
+   public:
+    ~Factory() override = default;
+
+    std::unique_ptr<CompressedSizeEstimator> Create() const override;
+  };
+
+  ~DefaultGzippedSizeEstimator() override = default;
+
+  size_t EstimateCompressedSize(const std::string& input) const override;
+};
+
+// Interface for producing LogCompressorGzip objects.
+class GzipLogCompressorFactory : public LogCompressor::Factory {
+ public:
+  explicit GzipLogCompressorFactory(
+      std::unique_ptr<CompressedSizeEstimator::Factory> estimator_factory);
+  ~GzipLogCompressorFactory() override;
+
+  size_t MinSizeBytes() const override;
+
+  std::unique_ptr<LogCompressor> Create(
+      base::Optional<size_t> max_size_bytes) const override;
+
+ private:
+  std::unique_ptr<CompressedSizeEstimator::Factory> estimator_factory_;
+};
+
+// Produces LogFileWriter instances that perform compression using GZIP.
+class GzippedLogFileWriterFactory : public LogFileWriter::Factory {
+ public:
+  explicit GzippedLogFileWriterFactory(
+      std::unique_ptr<GzipLogCompressorFactory> gzip_compressor_factory);
+
+  ~GzippedLogFileWriterFactory() override;
+
+  size_t MinFileSizeBytes() const override;
+
+  base::FilePath::StringPieceType Extension() const override;
+
+  std::unique_ptr<LogFileWriter> Create(
+      const base::FilePath& path,
+      base::Optional<size_t> max_file_size_bytes) const override;
+
+ private:
+  std::unique_ptr<GzipLogCompressorFactory> gzip_compressor_factory_;
 };
 
 // Translate a BrowserContext into an ID. This lets us associate PeerConnections
