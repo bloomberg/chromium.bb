@@ -326,7 +326,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // blink::mojom::AppBannerService overrides.
   // Called when Blink has prevented a banner from being shown, and is now
   // requesting that it be shown later.
-  void DisplayAppBanner(bool user_gesture) override;
+  void DisplayAppBanner() override;
 
   // Returns an InstallableStatusCode indicating whether a banner should be
   // shown.

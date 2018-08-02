@@ -1184,7 +1184,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="29" label="Service worker not offline capable"/>
   <int value="30" label="Waiting for manifest to be fetched"/>
   <int value="31" label="Waiting for installability check"/>
-  <int value="32" label="No gesture associated with call to prompt"/>
+  <int value="32"
+      label="No gesture associated with call to prompt (removed Aug 2018)"/>
   <int value="33" label="Waiting for native data"/>
   <int value="34" label="App install dialog shown"/>
 </enum>
