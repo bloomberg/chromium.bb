@@ -31,7 +31,13 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ArcPlayTermsOfServiceConsent =
+    sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent;
+using sync_pb::UserConsentTypes;
+using testing::_;
 
 namespace arc {
 namespace {
@@ -168,6 +174,20 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, RemoveDataDir_Managed) {
 }
 
 TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, PrefChangeRevokesConsent) {
+  consent_auditor::FakeConsentAuditor* auditor = consent_auditor();
+
+  ArcPlayTermsOfServiceConsent play_consent;
+  play_consent.set_status(UserConsentTypes::NOT_GIVEN);
+  play_consent.set_confirmation_grd_id(
+      IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE);
+  play_consent.add_description_grd_ids(
+      IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE);
+  play_consent.set_consent_flow(
+      UserConsentTypes::ArcPlayTermsOfServiceConsent::SETTING_CHANGE);
+  EXPECT_CALL(*auditor, RecordArcPlayConsent(
+                            GetAuthenticatedAccountId(),
+                            consent_auditor::ArcPlayConsentEq(play_consent)));
+
   ASSERT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
@@ -179,23 +199,6 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, PrefChangeRevokesConsent) {
             arc_session_manager()->state());
 
   SetArcPlayStoreEnabledForProfile(profile(), false);
-
-  // Make sure consent auditing is recording the expected revocation of consent.
-  const std::vector<int> tos_consent = {
-      IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE};
-  const std::vector<std::vector<int>> description_ids = {tos_consent};
-  const std::vector<int> confirmation_ids = {
-      IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE};
-  const std::vector<consent_auditor::Feature> features = {
-      consent_auditor::Feature::PLAY_STORE};
-  const std::vector<consent_auditor::ConsentStatus> statuses = {
-      consent_auditor::ConsentStatus::NOT_GIVEN};
-
-  EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
-  EXPECT_EQ(consent_auditor()->recorded_confirmation_ids(), confirmation_ids);
-  EXPECT_EQ(consent_auditor()->recorded_id_vectors(), description_ids);
-  EXPECT_EQ(consent_auditor()->recorded_features(), features);
-  EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
 }
 
 }  // namespace

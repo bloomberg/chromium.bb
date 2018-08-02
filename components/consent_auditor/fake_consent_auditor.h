@@ -5,13 +5,17 @@
 #ifndef COMPONENTS_CONSENT_AUDITOR_FAKE_CONSENT_AUDITOR_H_
 #define COMPONENTS_CONSENT_AUDITOR_FAKE_CONSENT_AUDITOR_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using ::testing::Matcher;
 
 namespace consent_auditor {
-
+// TODO(markusheintz): Rename to MockConsentAuditor
 class FakeConsentAuditor : public ConsentAuditor {
  public:
   FakeConsentAuditor();
@@ -21,31 +25,22 @@ class FakeConsentAuditor : public ConsentAuditor {
   void RecordSyncConsent(
       const std::string& account_id,
       const sync_pb::UserConsentTypes::SyncConsent& consent) override;
-
-  void RecordArcPlayConsent(
-      const std::string& account_id,
-      const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent& consent)
-      override;
-
-  void RecordArcGoogleLocationServiceConsent(
-      const std::string& account_id,
-      const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent& consent)
-      override;
-
-  void RecordArcBackupAndRestoreConsent(
-      const std::string& account_id,
-      const sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent& consent)
-      override;
-
+  MOCK_METHOD2(
+      RecordArcPlayConsent,
+      void(const std::string&,
+           const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent&));
+  MOCK_METHOD2(
+      RecordArcBackupAndRestoreConsent,
+      void(const std::string&,
+           const sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent&));
+  MOCK_METHOD2(
+      RecordArcGoogleLocationServiceConsent,
+      void(const std::string&,
+           const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent&));
   void RecordUnifiedConsent(
       const std::string& account_id,
       const sync_pb::UserConsentTypes::UnifiedConsent& consent) override;
 
-  void RecordGaiaConsent(const std::string& account_id,
-                         consent_auditor::Feature feature,
-                         const std::vector<int>& description_grd_ids,
-                         int confirmation_grd_id,
-                         consent_auditor::ConsentStatus status) override;
   void RecordLocalConsent(const std::string& feature,
                           const std::string& description_text,
                           const std::string& confirmation_text) override;
@@ -53,10 +48,22 @@ class FakeConsentAuditor : public ConsentAuditor {
   GetControllerDelegateOnUIThread() override;
 
   // Methods for fake.
+  // TODO(markusheintz): Replace the usage of this methods in all tests.
+  void RecordGaiaConsent(const std::string& account_id,
+                         consent_auditor::Feature feature,
+                         const std::vector<int>& description_grd_ids,
+                         int confirmation_grd_id,
+                         consent_auditor::ConsentStatus status);
+
   const std::string& account_id() const { return account_id_; }
 
   const sync_pb::UserConsentTypes::SyncConsent& recorded_sync_consent() const {
     return recorded_sync_consent_;
+  }
+
+  const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent&
+  recorded_play_consent() const {
+    return recorded_play_consent_;
   }
 
   const std::vector<std::vector<int>>& recorded_id_vectors() {
@@ -73,9 +80,11 @@ class FakeConsentAuditor : public ConsentAuditor {
     return recorded_statuses_;
   }
 
+ private:
   std::string account_id_;
 
   sync_pb::UserConsentTypes::SyncConsent recorded_sync_consent_;
+  sync_pb::UserConsentTypes_ArcPlayTermsOfServiceConsent recorded_play_consent_;
 
   std::vector<std::vector<int>> recorded_id_vectors_;
   std::vector<int> recorded_confirmation_ids_;
@@ -84,6 +93,38 @@ class FakeConsentAuditor : public ConsentAuditor {
 
   DISALLOW_COPY_AND_ASSIGN(FakeConsentAuditor);
 };
+
+MATCHER_P(ArcPlayConsentEq, expected_consent, "") {
+  const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent&
+      actual_consent = arg;
+
+  if (actual_consent.SerializeAsString() ==
+      expected_consent.SerializeAsString())
+    return true;
+
+  LOG(ERROR) << "ERROR: actual proto does not match the expected proto";
+  return false;
+}
+
+MATCHER_P(ArcGoogleLocationServiceConsentEq, expected_consent, "") {
+  const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent&
+      actual_consent = arg;
+
+  if (actual_consent.SerializeAsString() ==
+      expected_consent.SerializeAsString())
+    return true;
+
+  LOG(ERROR) << "ERROR: actual proto does not match the expected proto";
+  return false;
+}
+
+MATCHER_P(ArcBackupAndRestoreConsentEq, expected_consent, "") {
+  if (arg.SerializeAsString() == expected_consent.SerializeAsString())
+    return true;
+
+  LOG(ERROR) << "ERROR: actual proto does not match the expected proto";
+  return false;
+}
 
 }  // namespace consent_auditor
 

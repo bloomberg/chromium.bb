@@ -7,8 +7,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/weak_ptr.h"
+#include "base/sha1.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/default_clock.h"
@@ -19,8 +21,12 @@
 #include "components/sync/user_events/fake_user_event_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ArcPlayTermsOfServiceConsent =
+    sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent;
+using SyncConsent = sync_pb::UserConsentTypes::SyncConsent;
 using sync_pb::UserConsentSpecifics;
 using sync_pb::UserEventSpecifics;
+using sync_pb::UserConsentTypes;
 
 namespace consent_auditor {
 
@@ -250,9 +256,8 @@ TEST_F(ConsentAuditorImplTest, RecordingEnabled) {
   SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
   BuildConsentAuditorImpl();
 
-  sync_pb::UserConsentTypes::SyncConsent sync_consent;
-  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
-                              UserConsentTypes_ConsentStatus_GIVEN);
+  SyncConsent sync_consent;
+  sync_consent.set_status(UserConsentTypes::GIVEN);
 
   consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
   auto& events = user_event_service()->GetRecordedUserEvents();
@@ -267,9 +272,8 @@ TEST_F(ConsentAuditorImplTest, RecordingDisabled) {
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(switches::kSyncUserConsentEvents);
-  sync_pb::UserConsentTypes::SyncConsent sync_consent;
-  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
-                              UserConsentTypes_ConsentStatus_GIVEN);
+  SyncConsent sync_consent;
+  sync_consent.set_status(UserConsentTypes::GIVEN);
   consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(0U, events.size());
@@ -293,9 +297,8 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserEvent) {
   ASSERT_TRUE(base::Time::FromUTCString("2017-11-14T15:15:38Z", &now));
   test_clock.SetNow(now);
 
-  sync_pb::UserConsentTypes::SyncConsent sync_consent;
-  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
-                              UserConsentTypes_ConsentStatus_GIVEN);
+  SyncConsent sync_consent;
+  sync_consent.set_status(UserConsentTypes::GIVEN);
   sync_consent.set_confirmation_grd_id(kConfirmationMessageId);
   for (int id : kDescriptionMessageIds) {
     sync_consent.add_description_grd_ids(id);
@@ -339,9 +342,8 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
   ASSERT_TRUE(base::Time::FromUTCString("2017-11-14T15:15:38Z", &now));
   test_clock.SetNow(now);
 
-  sync_pb::UserConsentTypes::SyncConsent sync_consent;
-  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
-                              UserConsentTypes_ConsentStatus_GIVEN);
+  SyncConsent sync_consent;
+  sync_consent.set_status(UserConsentTypes::GIVEN);
   sync_consent.set_confirmation_grd_id(kConfirmationMessageId);
   for (int id : kDescriptionMessageIds) {
     sync_consent.add_description_grd_ids(id);
@@ -361,6 +363,107 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
   EXPECT_EQ(kDescriptionMessageIds[0], consent.description_grd_ids(0));
   EXPECT_EQ(kDescriptionMessageIds[1], consent.description_grd_ids(1));
   EXPECT_EQ(kDescriptionMessageIds[2], consent.description_grd_ids(2));
+  EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
+  EXPECT_EQ(kCurrentAppLocale, consent.locale());
+}
+
+TEST_F(ConsentAuditorImplTest, RecordArcPlayConsentRevocation) {
+  SetIsSeparateConsentTypeEnabledFeature(true);
+
+  auto wrapped_fake_bridge = std::make_unique<FakeConsentSyncBridge>();
+  FakeConsentSyncBridge* fake_bridge = wrapped_fake_bridge.get();
+  base::SimpleTestClock test_clock;
+
+  SetConsentSyncBridge(std::move(wrapped_fake_bridge));
+  SetUserEventService(nullptr);
+  SetAppVersion(kCurrentAppVersion);
+  SetAppLocale(kCurrentAppLocale);
+  SetClock(&test_clock);
+  BuildConsentAuditorImpl();
+
+  std::vector<int> kDescriptionMessageIds = {12, 37, 42};
+  int kConfirmationMessageId = 47;
+
+  base::Time now;
+  ASSERT_TRUE(base::Time::FromUTCString("2017-11-14T15:15:38Z", &now));
+  test_clock.SetNow(now);
+
+  ArcPlayTermsOfServiceConsent play_consent;
+  play_consent.set_status(UserConsentTypes::NOT_GIVEN);
+  play_consent.set_confirmation_grd_id(kConfirmationMessageId);
+  for (int id : kDescriptionMessageIds) {
+    play_consent.add_description_grd_ids(id);
+  }
+  play_consent.set_consent_flow(ArcPlayTermsOfServiceConsent::SETTING_CHANGE);
+  consent_auditor()->RecordArcPlayConsent(kAccountId, play_consent);
+
+  std::vector<UserConsentSpecifics> consents =
+      fake_bridge->GetRecordedUserConsents();
+  ASSERT_EQ(1U, consents.size());
+  UserConsentSpecifics consent = consents[0];
+
+  EXPECT_EQ(kAccountId, consent.account_id());
+  EXPECT_EQ(UserConsentTypes::NOT_GIVEN, consent.status());
+  EXPECT_EQ(UserConsentSpecifics::PLAY_STORE, consent.feature());
+  EXPECT_EQ(3, consent.description_grd_ids_size());
+  EXPECT_EQ(kDescriptionMessageIds[0], consent.description_grd_ids(0));
+  EXPECT_EQ(kDescriptionMessageIds[1], consent.description_grd_ids(1));
+  EXPECT_EQ(kDescriptionMessageIds[2], consent.description_grd_ids(2));
+  EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
+  EXPECT_EQ(kCurrentAppLocale, consent.locale());
+}
+
+TEST_F(ConsentAuditorImplTest, RecordArcPlayConsent) {
+  SetIsSeparateConsentTypeEnabledFeature(true);
+
+  auto wrapped_fake_bridge = std::make_unique<FakeConsentSyncBridge>();
+  FakeConsentSyncBridge* fake_bridge = wrapped_fake_bridge.get();
+  base::SimpleTestClock test_clock;
+
+  SetConsentSyncBridge(std::move(wrapped_fake_bridge));
+  SetUserEventService(nullptr);
+  SetAppVersion(kCurrentAppVersion);
+  SetAppLocale(kCurrentAppLocale);
+  SetClock(&test_clock);
+  BuildConsentAuditorImpl();
+
+  int kConfirmationMessageId = 47;
+
+  base::Time now;
+  ASSERT_TRUE(base::Time::FromUTCString("2017-11-14T15:15:38Z", &now));
+  test_clock.SetNow(now);
+
+  ArcPlayTermsOfServiceConsent play_consent;
+  play_consent.set_status(UserConsentTypes::GIVEN);
+  play_consent.set_confirmation_grd_id(kConfirmationMessageId);
+  play_consent.set_consent_flow(ArcPlayTermsOfServiceConsent::SETUP);
+
+  // Verify the hash: 2fd4e1c6 7a2d28fc ed849ee1 bb76e739 1b93eb12.
+  const char play_tos_hash[] = {0x2f, 0xd4, 0xe1, 0xc6, 0x7a, 0x2d, 0x28,
+                                0xfc, 0xed, 0x84, 0x9e, 0xe1, 0xbb, 0x76,
+                                0xe7, 0x39, 0x1b, 0x93, 0xeb, 0x12};
+  play_consent.set_play_terms_of_service_hash(
+      std::string(play_tos_hash, base::kSHA1Length));
+  play_consent.set_play_terms_of_service_text_length(7);
+
+  consent_auditor()->RecordArcPlayConsent(kAccountId, play_consent);
+
+  std::vector<UserConsentSpecifics> consents =
+      fake_bridge->GetRecordedUserConsents();
+  ASSERT_EQ(1U, consents.size());
+  UserConsentSpecifics consent = consents[0];
+
+  EXPECT_EQ(kAccountId, consent.account_id());
+  EXPECT_EQ(UserConsentSpecifics::PLAY_STORE, consent.feature());
+
+  EXPECT_EQ(6, consent.description_grd_ids_size());
+  EXPECT_EQ(7, consent.description_grd_ids(0));
+  EXPECT_EQ(static_cast<int>(0x2fd4e1c6), consent.description_grd_ids(1));
+  EXPECT_EQ(static_cast<int>(0x7a2d28fc), consent.description_grd_ids(2));
+  EXPECT_EQ(static_cast<int>(0xed849ee1), consent.description_grd_ids(3));
+  EXPECT_EQ(static_cast<int>(0xbb76e739), consent.description_grd_ids(4));
+  EXPECT_EQ(static_cast<int>(0x1b93eb12), consent.description_grd_ids(5));
+
   EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 }
@@ -394,35 +497,6 @@ TEST_F(ConsentAuditorImplTest, ShouldReturnSyncDelegateWhenBridgePresent) {
   // there should be a delegate as well.
   EXPECT_EQ(expected_delegate_ptr.get(),
             consent_auditor()->GetControllerDelegateOnUIThread().get());
-}
-
-// Test that RecordSyncConsent and RecordGaiaConsent record an identical user
-// consent proto with the user event service. This test ensures that the two
-// methods don't diverge during the migration to the new dedicated protos for
-// user events.
-TEST_F(ConsentAuditorImplTest, RecordGaiaUserRecordSyncConsentEquivalence) {
-  SetIsSeparateConsentTypeEnabledFeature(false);
-  SetConsentSyncBridge(nullptr);
-  SetUserEventService(std::make_unique<syncer::FakeUserEventService>());
-  BuildConsentAuditorImpl();
-
-  sync_pb::UserConsentTypes::SyncConsent sync_consent;
-  sync_consent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
-                              UserConsentTypes_ConsentStatus_GIVEN);
-  sync_consent.set_confirmation_grd_id(21);
-  sync_consent.add_description_grd_ids(1);
-  sync_consent.add_description_grd_ids(2);
-  sync_consent.add_description_grd_ids(3);
-
-  consent_auditor()->RecordSyncConsent(kAccountId, sync_consent);
-  consent_auditor()->RecordGaiaConsent(
-      kAccountId, consent_auditor::Feature::CHROME_SYNC, {1, 2, 3}, 21,
-      consent_auditor::ConsentStatus::GIVEN);
-
-  auto& events = user_event_service()->GetRecordedUserEvents();
-  EXPECT_EQ(2U, events.size());
-  EXPECT_EQ(events.at(0).user_consent().SerializeAsString(),
-            events.at(1).user_consent().SerializeAsString());
 }
 
 }  // namespace consent_auditor

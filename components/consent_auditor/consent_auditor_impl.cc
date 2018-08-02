@@ -5,6 +5,7 @@
 #include "components/consent_auditor/consent_auditor_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
@@ -17,6 +18,8 @@
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/user_events/user_event_service.h"
 
+using ArcPlayTermsOfServiceConsent =
+    sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent;
 using sync_pb::UserConsentTypes;
 using sync_pb::UserConsentSpecifics;
 using sync_pb::UserEventSpecifics;
@@ -218,20 +221,26 @@ ConsentAuditorImpl::ConstructUserConsentSpecifics(
 
 void ConsentAuditorImpl::RecordArcPlayConsent(
     const std::string& account_id,
-    const UserConsentTypes::ArcPlayTermsOfServiceConsent& consent) {
+    const ArcPlayTermsOfServiceConsent& consent) {
   std::vector<int> description_grd_ids;
-  description_grd_ids.push_back(consent.play_terms_of_service_text_length());
+  if (consent.consent_flow() == ArcPlayTermsOfServiceConsent::SETTING_CHANGE) {
+    for (int grd_id : consent.description_grd_ids()) {
+      description_grd_ids.push_back(grd_id);
+    }
+  } else {
+    description_grd_ids.push_back(consent.play_terms_of_service_text_length());
 
-  // TODO(markusheintz): The code below is a copy from the ARC code base. This
-  // will go away when the consent proto is set on the user consent specifics
-  // proto.
-  const std::string& hash_str = consent.play_terms_of_service_hash();
-  DCHECK_EQ(base::kSHA1Length, hash_str.size());
-  const uint8_t* hash = reinterpret_cast<const uint8_t*>(hash_str.data());
-  for (size_t i = 0; i < base::kSHA1Length; i += 4) {
-    uint32_t acc =
-        hash[i] << 24 | hash[i + 1] << 16 | hash[i + 2] << 8 | hash[i + 3];
-    description_grd_ids.push_back(static_cast<int>(acc));
+    // TODO(markusheintz): The code below is a copy from the ARC code base. This
+    // will go away when the consent proto is set on the user consent specifics
+    // proto.
+    const std::string& hash_str = consent.play_terms_of_service_hash();
+    DCHECK_EQ(base::kSHA1Length, hash_str.size());
+    const uint8_t* hash = reinterpret_cast<const uint8_t*>(hash_str.data());
+    for (size_t i = 0; i < base::kSHA1Length; i += 4) {
+      uint32_t acc =
+          hash[i] << 24 | hash[i + 1] << 16 | hash[i + 2] << 8 | hash[i + 3];
+      description_grd_ids.push_back(static_cast<int>(acc));
+    }
   }
 
   RecordGaiaConsent(account_id, Feature::PLAY_STORE, description_grd_ids,

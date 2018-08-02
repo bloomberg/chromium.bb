@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/timezone.h"
+#include "base/sha1.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
@@ -31,6 +32,15 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using ArcBackupAndRestoreConsent =
+    sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent;
+using ArcGoogleLocationServiceConsent =
+    sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent;
+using ArcPlayTermsOfServiceConsent =
+    sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent;
+
+using sync_pb::UserConsentTypes;
 
 namespace {
 
@@ -296,32 +306,44 @@ void ArcTermsOfServiceScreenHandler::RecordConsents(
   DCHECK(signin_manager->IsAuthenticated());
   const std::string account_id = signin_manager->GetAuthenticatedAccountId();
 
-  // TODO(jhorwich): Replace this approach when passing |is_managed| boolean is
-  // supported by the underlying consent protos.
-  const std::vector<int> consent_ids = ArcSupportHost::ComputePlayToSConsentIds(
-      record_tos_content ? tos_content : "");
-
-  consent_auditor->RecordGaiaConsent(
-      account_id, consent_auditor::Feature::PLAY_STORE, consent_ids,
-      IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
-      tos_accepted ? consent_auditor::ConsentStatus::GIVEN
-                   : consent_auditor::ConsentStatus::NOT_GIVEN);
+  ArcPlayTermsOfServiceConsent play_consent;
+  play_consent.set_status(tos_accepted ? UserConsentTypes::GIVEN
+                                       : UserConsentTypes::NOT_GIVEN);
+  play_consent.set_confirmation_grd_id(IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT);
+  play_consent.set_consent_flow(ArcPlayTermsOfServiceConsent::SETUP);
+  if (record_tos_content) {
+    play_consent.set_play_terms_of_service_text_length(tos_content.length());
+    play_consent.set_play_terms_of_service_hash(
+        base::SHA1HashString(tos_content));
+  }
+  consent_auditor->RecordArcPlayConsent(account_id, play_consent);
 
   if (record_backup_consent) {
-    consent_auditor->RecordGaiaConsent(
-        account_id, consent_auditor::Feature::BACKUP_AND_RESTORE,
-        {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE},
-        IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
-        backup_accepted ? consent_auditor::ConsentStatus::GIVEN
-                        : consent_auditor::ConsentStatus::NOT_GIVEN);
+    ArcBackupAndRestoreConsent backup_and_restore_consent;
+    backup_and_restore_consent.set_confirmation_grd_id(
+        IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT);
+    backup_and_restore_consent.add_description_grd_ids(
+        IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE);
+    backup_and_restore_consent.set_status(backup_accepted
+                                              ? UserConsentTypes::GIVEN
+                                              : UserConsentTypes::NOT_GIVEN);
+
+    consent_auditor->RecordArcBackupAndRestoreConsent(
+        account_id, backup_and_restore_consent);
   }
 
   if (record_location_consent) {
-    consent_auditor->RecordGaiaConsent(
-        account_id, consent_auditor::Feature::GOOGLE_LOCATION_SERVICE,
-        {IDS_ARC_OPT_IN_LOCATION_SETTING}, IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
-        location_accepted ? consent_auditor::ConsentStatus::GIVEN
-                          : consent_auditor::ConsentStatus::NOT_GIVEN);
+    ArcGoogleLocationServiceConsent location_service_consent;
+    location_service_consent.set_confirmation_grd_id(
+        IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT);
+    location_service_consent.add_description_grd_ids(
+        IDS_ARC_OPT_IN_LOCATION_SETTING);
+    location_service_consent.set_status(location_accepted
+                                            ? UserConsentTypes::GIVEN
+                                            : UserConsentTypes::NOT_GIVEN);
+
+    consent_auditor->RecordArcGoogleLocationServiceConsent(
+        account_id, location_service_consent);
   }
 }
 

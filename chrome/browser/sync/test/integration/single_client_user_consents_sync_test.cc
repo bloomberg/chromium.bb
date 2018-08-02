@@ -20,6 +20,8 @@ using consent_auditor::Feature;
 using fake_server::FakeServer;
 using sync_pb::SyncEntity;
 using sync_pb::UserConsentSpecifics;
+using sync_pb::UserConsentTypes;
+using SyncConsent = sync_pb::UserConsentTypes::SyncConsent;
 
 namespace {
 
@@ -68,7 +70,7 @@ class UserConsentEqualityChecker : public SingleClientStatusChangeChecker {
       EXPECT_TRUE(expected_specifics_.end() != iter);
       if (expected_specifics_.end() == iter) {
         return false;
-      };
+      }
       EXPECT_EQ(iter->second.account_id(), server_specifics.account_id());
       expected_specifics_.erase(iter);
     }
@@ -122,9 +124,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
   UserConsentSpecifics specifics;
   specifics.set_confirmation_grd_id(1);
   specifics.set_account_id(GetAccountId());
-  consent_service->RecordGaiaConsent(
-      GetAccountId(), Feature::CHROME_SYNC, /*description_grd_ids=*/{},
-      /*confirmation_grd_id=*/1, ConsentStatus::GIVEN);
+
+  SyncConsent sync_consent;
+  sync_consent.set_confirmation_grd_id(1);
+  sync_consent.set_status(UserConsentTypes::GIVEN);
+
+  consent_service->RecordSyncConsent(GetAccountId(), sync_consent);
   EXPECT_TRUE(ExpectUserConsents({specifics}));
 }
 
@@ -142,9 +147,11 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(SetupSync());
   consent_auditor::ConsentAuditor* consent_service =
       ConsentAuditorFactory::GetForProfile(GetProfile(0));
-  consent_service->RecordGaiaConsent(
-      GetAccountId(), Feature::CHROME_SYNC, /*description_grd_ids=*/{},
-      /*confirmation_grd_id=*/1, ConsentStatus::GIVEN);
+
+  SyncConsent sync_consent;
+  sync_consent.set_confirmation_grd_id(1);
+  sync_consent.set_status(UserConsentTypes::GIVEN);
+  consent_service->RecordSyncConsent(GetAccountId(), sync_consent);
 
   GetClient(0)->StopSyncService(syncer::SyncService::CLEAR_DATA);
   ASSERT_TRUE(GetClient(0)->StartSyncService());
