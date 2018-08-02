@@ -27,7 +27,6 @@
 #include "components/rappor/rappor_prefs.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/spellcheck/browser/pref_names.h"
 #include "components/startup_metric_utils/browser/pref_names.h"
 #include "components/suggestions/suggestions_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
@@ -876,13 +875,6 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kSyncedDefaultSearchProviderGUID,
     prefs::kDefaultSearchProviderEnabled, prefs::kSearchProviderOverrides,
     prefs::kSearchProviderOverridesVersion, prefs::kCountryIDAtInstall,
-
-    // components/spellcheck/browser/pref_names.h
-    spellcheck::prefs::kSpellCheckEnable,
-    spellcheck::prefs::kSpellCheckDictionaries,
-    spellcheck::prefs::kSpellCheckForcedDictionaries,
-    spellcheck::prefs::kSpellCheckDictionary,
-    spellcheck::prefs::kSpellCheckUseSpellingService,
 
     // components/startup_metric_utils/browser/pref_names.h
     startup_metric_utils::prefs::kLastStartupTimestamp,
