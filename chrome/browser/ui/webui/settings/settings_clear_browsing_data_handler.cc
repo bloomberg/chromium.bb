@@ -18,7 +18,7 @@
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -28,11 +28,11 @@
 #include "components/feature_engagement/buildflags.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/text/bytes_formatting.h"
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
@@ -327,10 +327,11 @@ void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {
 }
 
 void ClearBrowsingDataHandler::UpdateSyncState() {
-  auto* signin_manager = SigninManagerFactory::GetForProfile(profile_);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("update-sync-state"),
-      base::Value(signin_manager && signin_manager->IsAuthenticated()),
+      base::Value(identity_manager && identity_manager->HasPrimaryAccount()),
       base::Value(sync_service_ && sync_service_->IsSyncActive() &&
                   sync_service_->GetActiveDataTypes().Has(
                       syncer::HISTORY_DELETE_DIRECTIVES)),
