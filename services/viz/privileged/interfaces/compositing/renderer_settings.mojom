@@ -20,4 +20,5 @@ struct RendererSettings {
   bool use_skia_renderer;
   bool use_skia_deferred_display_list;
   bool allow_overlays;
+  bool requires_alpha_channel;
 };

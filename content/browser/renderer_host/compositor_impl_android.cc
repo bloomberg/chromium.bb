@@ -1295,6 +1295,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   viz::RendererSettings renderer_settings;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
+  renderer_settings.requires_alpha_channel = requires_alpha_channel_;
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;
   root_params->gpu_compositing = true;

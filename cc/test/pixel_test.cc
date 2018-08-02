@@ -312,7 +312,8 @@ void PixelTest::SetUpSkiaRendererDDL() {
       base::MakeRefCounted<viz::VizProcessContextProvider>(
           task_executor_, gpu::kNullSurfaceHandle,
           gpu_memory_buffer_manager_.get(), image_factory,
-          gpu_channel_manager_delegate, gpu::SharedMemoryLimits());
+          gpu_channel_manager_delegate, gpu::SharedMemoryLimits(),
+          false /* requires_alpha_channel */);
   child_context_provider_->BindToCurrentThread();
   child_resource_provider_ =
       std::make_unique<viz::ClientResourceProvider>(true);
