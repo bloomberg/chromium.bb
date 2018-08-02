@@ -20,6 +20,7 @@
 #include "components/payments/core/payment_details_validation.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/payments/core/payments_validators.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/elide_url.h"
@@ -184,6 +185,21 @@ void PaymentRequest::Show(bool is_user_gesture) {
   state_->AreRequestedMethodsSupported(
       base::BindOnce(&PaymentRequest::AreRequestedMethodsSupportedCallback,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PaymentRequest::Retry(mojom::PaymentValidationErrorsPtr errors) {
+  std::string error;
+  if (!PaymentsValidators::IsValidPaymentValidationErrorsFormat(errors,
+                                                                &error)) {
+    DLOG(ERROR) << error;
+    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+    OnConnectionTerminated();
+    return;
+  }
+
+  // TODO(zino): Should implement this method (including updating UI part).
+  // Please see https://crbug.com/861704
+  NOTIMPLEMENTED();
 }
 
 void PaymentRequest::AreRequestedMethodsSupportedCallback(

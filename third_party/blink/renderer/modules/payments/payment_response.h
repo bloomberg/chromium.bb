@@ -34,6 +34,8 @@ class MODULES_EXPORT PaymentResponse final : public ScriptWrappable {
                   const String& requestId);
   ~PaymentResponse() override;
 
+  void Update(payments::mojom::blink::PaymentResponsePtr, PaymentAddress*);
+
   ScriptValue toJSONForBinding(ScriptState*) const;
 
   const String& requestId() const { return requestId_; }

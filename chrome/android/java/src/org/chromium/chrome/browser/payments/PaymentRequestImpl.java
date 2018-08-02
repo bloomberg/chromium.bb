@@ -70,6 +70,7 @@ import org.chromium.payments.mojom.PaymentRequestClient;
 import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.payments.mojom.PaymentShippingType;
+import org.chromium.payments.mojom.PaymentValidationErrors;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -1476,6 +1477,20 @@ public class PaymentRequestImpl
                 selectedPaymentMethod.getIdentifier(), System.currentTimeMillis());
 
         closeUIAndDestroyNativeObjects(/*immediateClose=*/PaymentComplete.FAIL != result);
+    }
+
+    @Override
+    public void retry(PaymentValidationErrors errors) {
+        if (mClient == null) return;
+
+        if (!PaymentValidator.validatePaymentValidationErrors(errors)) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Invalid payment validation errors");
+            return;
+        }
+
+        // TODO(zino): Should implement this method (including updating UI part).
+        // Please see https://crbug.com/861704
     }
 
     @Override
