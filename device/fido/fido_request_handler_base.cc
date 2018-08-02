@@ -140,11 +140,11 @@ void FidoRequestHandlerBase::AddAuthenticator(
   active_authenticators_.emplace(authenticator->GetId(),
                                  std::move(authenticator));
 
-  if (!ShouldDeferRequestDispatchToUi(*authenticator.get()))
+  if (!ShouldDeferRequestDispatchToUi(*authenticator_ptr))
     DispatchRequest(authenticator_ptr);
 
   if (observer_)
-    observer_->FidoAuthenticatorAdded(*authenticator);
+    observer_->FidoAuthenticatorAdded(*authenticator_ptr);
 }
 
 }  // namespace device
