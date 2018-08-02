@@ -97,7 +97,7 @@ class TestSyncServiceObserver : public syncer::SyncServiceObserver {
 };
 
 // A variant of the FakeSyncEngine that won't automatically call back when asked
-// to initialized. Allows us to test things that could happen while backend init
+// to initialize. Allows us to test things that could happen while backend init
 // is in progress.
 class FakeSyncEngineNoReturn : public syncer::FakeSyncEngine {
   void Initialize(InitParams params) override {}
@@ -150,6 +150,10 @@ class FakeSyncEngineCaptureClearServerData : public syncer::FakeSyncEngine {
 
 ACTION(ReturnNewFakeSyncEngine) {
   return std::make_unique<syncer::FakeSyncEngine>();
+}
+
+ACTION(ReturnNewFakeSyncEngineNoReturn) {
+  return std::make_unique<FakeSyncEngineNoReturn>();
 }
 
 void OnClearServerDataCalled(base::Closure* captured_callback,
@@ -448,8 +452,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   CreateService(ProfileSyncService::AUTO_START);
   ON_CALL(*component_factory(), CreateSyncEngine(_, _, _, _))
-      .WillByDefault(
-          Return(ByMove(std::make_unique<FakeSyncEngineNoReturn>())));
+      .WillByDefault(ReturnNewFakeSyncEngineNoReturn());
 
   SignIn();
   InitializeForNthSync();
@@ -461,20 +464,24 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 // Test RequestStop() before we've initialized the backend.
 TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
   CreateService(ProfileSyncService::AUTO_START);
+  // Set up a fake sync engine that will not immediately finish initialization.
+  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _, _))
+      .WillOnce(ReturnNewFakeSyncEngineNoReturn());
   SignIn();
+  InitializeForNthSync();
 
+  ASSERT_EQ(syncer::SyncService::State::INITIALIZING, service()->GetState());
+
+  // Request stop. Sync should get disabled.
   service()->RequestStop(ProfileSyncService::KEEP_DATA);
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::State::DISABLED, service()->GetState());
 
-  // Because sync is not requested, this should fail.
-  InitializeForNthSync();
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
-            service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::State::DISABLED, service()->GetState());
-
-  // Request start. This should be enough to allow init to happen.
+  // Request start again, this time with an engine that does get initialized.
+  // Sync should become active.
+  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _, _))
+      .WillOnce(ReturnNewFakeSyncEngine());
   service()->RequestStart();
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
