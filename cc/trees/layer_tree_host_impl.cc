@@ -5292,9 +5292,6 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
       property_trees->element_id_to_scroll_node_index[element_id];
   property_trees->scroll_tree.OnScrollOffsetAnimated(
       element_id, scroll_node_index, scroll_offset, tree);
-  // Run animations which need to respond to updated scroll offset.
-  mutator_host_->TickScrollAnimations(CurrentBeginFrameArgs().frame_time,
-                                      property_trees->scroll_tree);
 }
 
 void LayerTreeHostImpl::SetNeedUpdateGpuRasterizationStatus() {

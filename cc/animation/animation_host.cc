@@ -287,7 +287,6 @@ bool AnimationHost::TickMutator(base::TimeTicks monotonic_time,
     return false;
 
   mutator_->Mutate(std::move(state));
-
   return true;
 }
 
@@ -303,22 +302,40 @@ bool AnimationHost::ActivateAnimations() {
   return true;
 }
 
+void TickAnimationsIf(AnimationHost::AnimationsList animations,
+                      base::TimeTicks monotonic_time,
+                      bool (*predicate)(const Animation&)) {
+  for (auto& it : animations) {
+    if (predicate(*it))
+      it->Tick(monotonic_time);
+  }
+}
+
 bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
                                    const ScrollTree& scroll_tree,
                                    bool is_active_tree) {
   TRACE_EVENT0("cc", "AnimationHost::TickAnimations");
-  // Notes on ordering between a) ticking mutator b) ticking animations: Since
-  // (a) is currently synchronous by doing a, b in that order we ensure worklet
-  // animation output state is up-to-date before having that output actually
-  // take effect in (b). This gaurantees worklet animation output takes effect
+  // We tick animations in the following order:
+  // 1. regular animations 2. mutator 3. worklet animations
+  //
+  // Mutator may depend on scroll offset as its time input e.g., when there is
+  // a worklet animation attached to a scroll timeline.
+  // This ordering ensures we use the latest scroll offset as the input to the
+  // mutator even if there are active scroll animations. Furthermore ticking
+  // worklet animations at the end gaurantees that mutator output takes effect
   // in the same impl frame that it was mutated.
-  // TODO(crbug.com/834452): We will need a different approach when we make (a)
-  // asynchronous but until then this simple ordering is sufficient.
 
   if (!NeedsTickAnimations())
     return false;
 
   TRACE_EVENT_INSTANT0("cc", "NeedsTickAnimations", TRACE_EVENT_SCOPE_THREAD);
+
+  // Worklet animations are ticked at a later stage. See above comment for
+  // details.
+  TickAnimationsIf(ticking_animations_, monotonic_time,
+                   [](const Animation& animation) {
+                     return !animation.IsWorkletAnimation();
+                   });
 
   // TODO(majidvp): At the moment we call this for both active and pending
   // trees similar to other animations. However our final goal is to only call
@@ -326,10 +343,13 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
   // to an active timeline has changed. http://crbug.com/767210
   TickMutator(monotonic_time, scroll_tree, is_active_tree);
 
-  AnimationsList ticking_animations_copy = ticking_animations_;
-  for (auto& it : ticking_animations_copy)
-    it->Tick(monotonic_time);
-
+  // TODO(crbug.com/834452): This works because at the moment the above call is
+  // synchronous. We will need a different approach once it becomes asynchronous
+  // but until then this simple ordering is sufficient.
+  TickAnimationsIf(ticking_animations_, monotonic_time,
+                   [](const Animation& animation) {
+                     return animation.IsWorkletAnimation();
+                   });
   return true;
 }
 
