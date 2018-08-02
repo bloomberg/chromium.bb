@@ -31434,6 +31434,12 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Exceeded Cache Size"/>
 </enum>
 
+<enum name="MemoryMeasurementOutcome">
+  <int value="0" label="kMeasurementSuccess"/>
+  <int value="1" label="kMeasurementPartialSuccess"/>
+  <int value="2" label="kMeasurementFailure"/>
+</enum>
+
 <enum name="MemoryPressureLevel">
   <int value="0" label="No memory pressure"/>
   <int value="1" label="Moderate memory pressure"/>
