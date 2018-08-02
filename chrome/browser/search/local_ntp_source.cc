@@ -189,6 +189,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_BG_BACK_LABEL);
     AddString(translated_strings.get(), "photoLabel",
               IDS_NTP_CUSTOM_BG_GOOGLE_PHOTO_LABEL);
+    AddString(translated_strings.get(), "selectedLabel",
+              IDS_NTP_CUSTOM_BG_PHOTO_SELECTED);
 
     // Custom Links
     AddString(translated_strings.get(), "addLink",
