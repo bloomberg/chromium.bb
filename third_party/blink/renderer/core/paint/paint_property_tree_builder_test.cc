@@ -5632,4 +5632,31 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
   }
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SubpixelPositionedScrollNode) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #scroller {
+        position: relative;
+        top: 0.5625px;
+        width: 200px;
+        height: 200.8125px;
+        overflow: auto;
+      }
+      #space {
+        width: 1000px;
+        height: 200.8125px;
+      }
+    </style>
+    <div id="scroller">
+      <div id="space"></div>
+    </div>
+  )HTML");
+
+  const auto* properties = PaintPropertiesForElement("scroller");
+  const auto* scroll_node = properties->ScrollTranslation()->ScrollNode();
+  EXPECT_EQ(IntRect(0, 0, 200, 200), scroll_node->ContainerRect());
+  EXPECT_EQ(IntRect(0, 0, 1000, 200), scroll_node->ContentsRect());
+}
+
 }  // namespace blink
