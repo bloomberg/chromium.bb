@@ -293,7 +293,8 @@ int64_t av1_lowbd_pixel_proj_error_avx2(
       sum64 = _mm256_add_epi64(sum64, sum64_1);
     }
   } else if (params->r[0] > 0) {
-    __m256i xq_coeff = pair_set_epi16(xq[0], -(xq[0] << SGRPROJ_RST_BITS));
+    __m256i xq_coeff =
+        pair_set_epi16(xq[0], (-xq[0] * (1 << SGRPROJ_RST_BITS)));
     for (i = 0; i < height; ++i) {
       __m256i sum32 = _mm256_setzero_si256();
       for (j = 0; j <= width - 16; j += 16) {
