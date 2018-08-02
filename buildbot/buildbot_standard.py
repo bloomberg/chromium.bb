@@ -78,15 +78,6 @@ def ArchiveCoverage(context):
   print '@@@STEP_LINK@view@%s@@@' % link_url
 
 
-def CommandGclientRunhooks(context):
-  if context.Windows():
-    gclient = 'gclient.bat'
-  else:
-    gclient = 'gclient'
-  print 'Running gclient runhooks...'
-  Command(context, cmd=[gclient, 'runhooks', '--force'])
-
-
 def DoGNBuild(status, context, force_clang=False, force_arch=None):
   if context['no_gn']:
     return False
@@ -326,12 +317,6 @@ def BuildScript(status, context):
       subprocess.call(
           "find /var/folders -name '.com.google.Chrome*' -exec rm -rfv '{}' ';'",
           shell=True)
-
-  # Skip over hooks when run inside the toolchain build because
-  # package_version would overwrite the toolchain build.
-  if not inside_toolchain:
-    with Step('gclient_runhooks', status):
-      CommandGclientRunhooks(context)
 
   # Always update Clang.  On Linux and Mac, it's the default for the GN build.
   # It's also used for the Linux Breakpad build. On Windows, we do a second
