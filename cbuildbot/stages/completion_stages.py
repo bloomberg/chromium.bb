@@ -529,37 +529,6 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
     tree_status.SendHealthAlert(self._run, 'Canary builder failures', msg,
                                 extra_fields=extra_fields)
 
-  def _ComposeTreeStatusMessage(self, failing, inflight, no_stat):
-    """Composes a tres status message.
-
-    Args:
-      failing: Names of the builders that failed.
-      inflight: Names of the builders that timed out.
-      no_stat: Set of builder names of slave builders that had status None.
-
-    Returns:
-      A string.
-    """
-    slave_status_list = [
-        ('did not start', list(no_stat)),
-        ('timed out', list(inflight)),
-        ('failed', list(failing)),]
-    # Print maximum 2 slaves for each category to not clutter the
-    # message.
-    max_num = 2
-    messages = []
-    for status, slaves in slave_status_list:
-      if not slaves:
-        continue
-      slaves_str = ','.join(slaves[:max_num])
-      if len(slaves) <= max_num:
-        messages.append('%s %s' % (slaves_str, status))
-      else:
-        messages.append('%s and %d others %s' % (slaves_str,
-                                                 len(slaves) - max_num,
-                                                 status))
-    return '; '.join(messages)
-
   def CanaryMasterHandleFailure(self, failing, inflight, no_stat):
     """Handles the failure by sending out an alert email.
 
