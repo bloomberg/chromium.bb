@@ -24,7 +24,7 @@ class PrefService;
 
 namespace metrics {
 class MetricsServiceClient;
-class UkmBrowserTest;
+class UkmBrowserTestBase;
 class UkmEGTestHelper;
 }
 
@@ -81,7 +81,7 @@ class UkmService : public UkmRecorderImpl {
   int32_t report_count() const { return report_count_; }
 
  private:
-  friend ::metrics::UkmBrowserTest;
+  friend ::metrics::UkmBrowserTestBase;
   friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmUtilsForTest;

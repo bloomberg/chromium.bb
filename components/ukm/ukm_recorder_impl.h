@@ -21,7 +21,7 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
 namespace metrics {
-class UkmBrowserTest;
+class UkmBrowserTestBase;
 class UkmEGTestHelper;
 }
 
@@ -90,7 +90,7 @@ class UkmRecorderImpl : public UkmRecorder {
   virtual bool ShouldRestrictToWhitelistedEntries() const;
 
  private:
-  friend ::metrics::UkmBrowserTest;
+  friend ::metrics::UkmBrowserTestBase;
   friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmUtilsForTest;
