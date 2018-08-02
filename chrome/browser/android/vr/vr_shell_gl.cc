@@ -336,7 +336,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   if (reinitializing && mailbox_bridge_) {
     mailbox_bridge_ = nullptr;
-    mailbox_bridge_ready_ = false;
+    webxr_->set_mailbox_bridge_ready(false);
     CreateOrResizeWebVRSurface(webvr_surface_size_);
   }
 
@@ -345,45 +345,14 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     OnVSync(base::TimeTicks::Now());
 }
 
-bool VrShellGl::WebVrCanProcessFrame() {
-  if (!mailbox_bridge_ready_) {
-    // Can't copy onto the transfer surface without mailbox_bridge_.
-    DVLOG(2) << __FUNCTION__ << ": waiting for mailbox bridge";
-    return false;
-  }
-
-  if (webxr_->HaveProcessingFrame()) {
-    DVLOG(2) << __FUNCTION__ << ": waiting for previous processing frame";
-    return false;
-  }
-
-  return true;
-}
-
-void VrShellGl::WebVrTryDeferredProcessing() {
-  if (!webxr_->HaveAnimatingFrame())
-    return;
-
-  WebXrFrame* animating_frame = webxr_->GetAnimatingFrame();
-  if (!animating_frame || !animating_frame->deferred_start_processing ||
-      !WebVrCanProcessFrame()) {
-    return;
-  }
-
-  DVLOG(2) << "Running deferred SubmitFrame";
-  // Run synchronously, not via PostTask, to ensure we don't
-  // get a new SendVSync scheduling in between.
-  base::ResetAndReturn(&animating_frame->deferred_start_processing).Run();
-}
-
 void VrShellGl::OnGpuProcessConnectionReady() {
   DVLOG(1) << __FUNCTION__;
   CHECK(mailbox_bridge_);
 
-  mailbox_bridge_ready_ = true;
+  webxr_->set_mailbox_bridge_ready(true);
   // We might have a deferred submit that was waiting for
-  // mailbox_bridge_ready_.
-  WebVrTryDeferredProcessing();
+  // mailbox_bridge_ready.
+  webxr_->TryDeferredProcessing();
 
   // See if we can send a VSync.
   WebVrTryStartAnimatingFrame(false);
@@ -391,7 +360,7 @@ void VrShellGl::OnGpuProcessConnectionReady() {
 
 void VrShellGl::CreateSurfaceBridge(gl::SurfaceTexture* surface_texture) {
   DCHECK(!mailbox_bridge_);
-  mailbox_bridge_ready_ = false;
+  webxr_->set_mailbox_bridge_ready(false);
   mailbox_bridge_ = std::make_unique<MailboxToSurfaceBridge>();
   if (surface_texture) {
     mailbox_bridge_->CreateSurface(surface_texture);
@@ -486,7 +455,7 @@ void VrShellGl::WebVrPrepareSharedBuffer(const gfx::Size& size) {
   TRACE_EVENT0("gpu", __FUNCTION__);
 
   DVLOG(2) << __FUNCTION__ << ": size=" << size.width() << "x" << size.height();
-  CHECK(mailbox_bridge_ready_);
+  CHECK(webxr_->mailbox_bridge_ready());
   CHECK(webxr_->HaveAnimatingFrame());
 
   WebXrSharedBuffer* buffer;
@@ -575,7 +544,7 @@ void VrShellGl::SubmitFrameMissing(int16_t frame_index,
   // Renderer didn't submit a frame. Wait for the sync token to ensure
   // that any mailbox_bridge_ operations for the next frame happen after
   // whatever drawing the Renderer may have done before exiting.
-  if (mailbox_bridge_ready_)
+  if (webxr_->mailbox_bridge_ready())
     mailbox_bridge_->WaitSyncToken(sync_token);
 
   DVLOG(2) << __FUNCTION__ << ": recycle unused animating frame";
@@ -628,22 +597,14 @@ void VrShellGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
   if (!SubmitFrameCommon(frame_index, time_waited))
     return;
 
-  if (WebVrCanProcessFrame()) {
-    ProcessWebVrFrameFromGMB(frame_index, sync_token);
-  } else {
-    DVLOG(2) << "Deferring processing frame, not ready";
-    WebXrFrame* animating_frame = webxr_->GetAnimatingFrame();
-    DCHECK(!animating_frame->deferred_start_processing);
-    animating_frame->deferred_start_processing =
-        base::BindOnce(&VrShellGl::ProcessWebVrFrameFromGMB,
-                       weak_ptr_factory_.GetWeakPtr(), frame_index, sync_token);
-  }
+  webxr_->ProcessOrDefer(base::BindOnce(&VrShellGl::ProcessWebVrFrameFromGMB,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        frame_index, sync_token));
 }
 
 void VrShellGl::ProcessWebVrFrameFromGMB(int16_t frame_index,
                                          const gpu::SyncToken& sync_token) {
   TRACE_EVENT0("gpu", __FUNCTION__);
-  webxr_->TransitionFrameAnimatingToProcessing();
 
   mailbox_bridge_->CreateGpuFence(
       sync_token, base::BindOnce(&VrShellGl::OnWebVRTokenSignaled,
@@ -660,23 +621,15 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
   if (!SubmitFrameCommon(frame_index, time_waited))
     return;
 
-  if (WebVrCanProcessFrame()) {
-    ProcessWebVrFrameFromMailbox(frame_index, mailbox);
-  } else {
-    DVLOG(2) << "Deferring processing frame, not ready";
-    WebXrFrame* animating_frame = webxr_->GetAnimatingFrame();
-    DCHECK(!animating_frame->deferred_start_processing);
-    animating_frame->deferred_start_processing =
-        base::BindOnce(&VrShellGl::ProcessWebVrFrameFromMailbox,
-                       weak_ptr_factory_.GetWeakPtr(), frame_index, mailbox);
-  }
+  webxr_->ProcessOrDefer(
+      base::BindOnce(&VrShellGl::ProcessWebVrFrameFromMailbox,
+                     weak_ptr_factory_.GetWeakPtr(), frame_index, mailbox));
 }
 
 void VrShellGl::ProcessWebVrFrameFromMailbox(
     int16_t frame_index,
     const gpu::MailboxHolder& mailbox) {
   TRACE_EVENT0("gpu", __FUNCTION__);
-  webxr_->TransitionFrameAnimatingToProcessing();
 
   // LIFECYCLE: pending_frames_ should be empty when there's no processing
   // frame. It gets one element here, and then is emptied again before leaving
@@ -686,7 +639,7 @@ void VrShellGl::ProcessWebVrFrameFromMailbox(
   DCHECK(pending_frames_.empty());
 
   // LIFECYCLE: We shouldn't have gotten here unless mailbox_bridge_ is ready.
-  DCHECK(mailbox_bridge_ready_);
+  DCHECK(webxr_->mailbox_bridge_ready());
 
   // Don't allow any state changes for this processing frame until it
   // arrives on the Surface. See OnWebVRFrameAvailable.
@@ -897,9 +850,8 @@ void VrShellGl::OnWebVRFrameAvailable() {
     DVLOG(1) << __FUNCTION__ << ": discarding frame, "
              << (web_vr_mode_ ? "UI is active" : "not presenting");
     WebVrCancelProcessingFrameAfterTransfer();
-    // We're no longer in processing state, unblock WebVrCanProcessFrame which
-    // may be waiting for this.
-    WebVrTryDeferredProcessing();
+    // We're no longer in processing state, unblock pending processing frames.
+    webxr_->TryDeferredProcessing();
   }
 }
 
@@ -1544,7 +1496,7 @@ void VrShellGl::DrawFrameSubmitWhenReady(
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrameSubmitWhenReady", "frame",
                frame_index);
   DVLOG(2) << __FUNCTION__ << ": frame=" << static_cast<int>(frame_index);
-  bool use_polling = mailbox_bridge_ready_ &&
+  bool use_polling = webxr_->mailbox_bridge_ready() &&
                      mailbox_bridge_->IsGpuWorkaroundEnabled(
                          gpu::DONT_USE_EGLCLIENTWAITSYNC_WITH_TIMEOUT);
   if (fence) {
@@ -1709,7 +1661,7 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
   if (is_webvr_frame) {
     // We finished processing a frame, this may make pending WebVR
     // work eligible to proceed.
-    WebVrTryDeferredProcessing();
+    webxr_->TryDeferredProcessing();
   }
 
   if (ShouldDrawWebVr()) {
@@ -1916,11 +1868,11 @@ bool VrShellGl::WebVrCanAnimateFrame(bool is_from_onvsync) {
     return false;
   }
 
-  if (webxr_use_shared_buffer_draw_ && !mailbox_bridge_ready_) {
+  if (webxr_use_shared_buffer_draw_ && !webxr_->mailbox_bridge_ready()) {
     // For exclusive scheduling, we need the mailbox bridge before the first
     // frame so that we can place a sync token. For shared buffer draw, we
     // need it to set up buffers before starting client rendering.
-    DVLOG(2) << __FUNCTION__ << ": waiting for mailbox_bridge_ready_";
+    DVLOG(2) << __FUNCTION__ << ": waiting for mailbox_bridge_ready";
     return false;
   }
 
@@ -2187,7 +2139,7 @@ void VrShellGl::SendVSync() {
   }
 
   if (webxr_use_shared_buffer_draw_) {
-    CHECK(mailbox_bridge_ready_);
+    CHECK(webxr_->mailbox_bridge_ready());
     CHECK(webxr_->HaveAnimatingFrame());
     WebXrSharedBuffer* buffer =
         webxr_->GetAnimatingFrame()->shared_buffer.get();

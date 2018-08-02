@@ -259,13 +259,6 @@ class VrShellGl : public RenderLoop,
   // becoming true.
   void WebVrTryStartAnimatingFrame(bool is_from_onvsync);
 
-  // Checks if we're in a valid state for processing the current animating
-  // frame. Invalid states include mailbox_bridge_ready_ being false, or an
-  // already existing processing frame that's not done yet.
-  bool WebVrCanProcessFrame();
-  // Call this after state changes that could result in WebVrCanProcessFrame
-  // becoming true.
-  void WebVrTryDeferredProcessing();
   // Transition a frame from animating to processing.
   void ProcessWebVrFrameFromGMB(int16_t frame_index,
                                 const gpu::SyncToken& sync_token);
@@ -325,7 +318,6 @@ class VrShellGl : public RenderLoop,
       WebVrBounds(gfx::RectF(), gfx::RectF(), gfx::Size());
   base::queue<uint16_t> pending_frames_;
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
-  bool mailbox_bridge_ready_ = false;
 
   // A fence used to avoid overstuffed GVR buffers in WebVR mode.
   std::unique_ptr<gl::GLFenceAndroidNativeFenceSync>
