@@ -62,7 +62,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/test_web_contents.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -1243,19 +1242,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
   EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_PICTUREINPICTURE));
   EXPECT_TRUE(menu.IsItemChecked(IDC_CONTENT_CONTEXT_PICTUREINPICTURE));
-}
-
-// This test checks that we don't crash when creating a context menu for a
-// WebContents with no Browser.
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, BrowserlessWebContentsCrash) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
-  std::unique_ptr<content::TestWebContents> web_contents =
-      content::TestWebContents::Create(browser()->profile(), nullptr);
-  CreateContextMenuInWebContents(
-      web_contents.get(), GURL("http://www.google.com/"),
-      GURL("http://www.google.com/"), base::ASCIIToUTF16("Google"),
-      blink::WebContextMenuData::kMediaTypeNone, ui::MENU_SOURCE_MOUSE);
 }
 
 }  // namespace
