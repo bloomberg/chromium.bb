@@ -72,6 +72,9 @@ class CORE_EXPORT InspectorAgentState {
       Decode();
     }
 
+    // Clears the field to its default or to the empty map if it's a map field.
+    virtual void Clear() = 0;
+
    protected:
     virtual void Decode() = 0;
 
@@ -122,7 +125,7 @@ class CORE_EXPORT InspectorAgentState {
     }
 
     // Clears the field to its default.
-    void Clear() {
+    void Clear() override {
       if (default_value_ == value_)
         return;
       value_ = default_value_;
@@ -209,8 +212,12 @@ class CORE_EXPORT InspectorAgentState {
       session_state_->EnqueueUpdate(prefix_key_ + key, WTF::String());
     }
 
+    // TODO(johannes): Remove this method after callers are migrated to
+    // ::Clear().
+    void ClearAll() { Clear(); }
+
     // Clears the entire field.
-    void ClearAll() {
+    void Clear() override {
       // TODO(johannes): Handle this in a single update.
       for (const WTF::String& key : map_.Keys())
         session_state_->EnqueueUpdate(prefix_key_ + key, WTF::String());
@@ -261,6 +268,9 @@ class CORE_EXPORT InspectorAgentState {
   // InspectorAgentState. Usually, the fact that fields are registered in
   // the constructors / initializers of agents takes care of it.
   void InitFrom(InspectorSessionState* session_state);
+
+  // Clears all fields registered with this InspectorAgentState instance.
+  void Clear();
 
  private:
   const WTF::String domain_name_;
