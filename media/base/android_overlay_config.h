@@ -65,8 +65,14 @@ struct MEDIA_EXPORT AndroidOverlayConfig {
   bool power_efficient = false;
 
   // Convenient helpers since the syntax is weird.
-  void is_ready(AndroidOverlay* overlay) { std::move(ready_cb).Run(overlay); }
-  void is_failed(AndroidOverlay* overlay) { std::move(failed_cb).Run(overlay); }
+  void is_ready(AndroidOverlay* overlay) {
+    if (ready_cb)
+      std::move(ready_cb).Run(overlay);
+  }
+  void is_failed(AndroidOverlay* overlay) {
+    if (failed_cb)
+      std::move(failed_cb).Run(overlay);
+  }
 
   ReadyCB ready_cb;
   FailedCB failed_cb;
