@@ -29,7 +29,7 @@ MediaMetricsProvider::~MediaMetricsProvider() {
   if (!ukm_recorder || !initialized_)
     return;
 
-  const int32_t source_id = ukm_recorder->GetNewSourceID();
+  const ukm::SourceId source_id = ukm_recorder->GetNewSourceID();
 
   // TODO(crbug.com/787209): Stop getting origin from the renderer.
   ukm_recorder->UpdateSourceURL(source_id, untrusted_top_origin_.GetURL());

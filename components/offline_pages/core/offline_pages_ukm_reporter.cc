@@ -17,7 +17,7 @@ void OfflinePagesUkmReporter::ReportUrlOfflineRequest(const GURL& gurl,
     return;
 
   // This unique ID represents this whole navigation.
-  int32_t source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
 
   // Associate the URL with this navigation.
   // TODO(petewil): re-enable once crbug/792197 is addressed.

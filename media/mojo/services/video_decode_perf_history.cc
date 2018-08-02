@@ -282,7 +282,7 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
   if (!ukm_recorder)
     return;
 
-  const int32_t source_id = ukm_recorder->GetNewSourceID();
+  const ukm::SourceId source_id = ukm_recorder->GetNewSourceID();
   ukm::builders::Media_VideoDecodePerfRecord builder(source_id);
 
   // TODO(crbug.com/787209): Stop getting origin from the renderer.
