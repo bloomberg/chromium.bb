@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -66,10 +67,8 @@ const BluetoothDevice::UUIDSet& BluetoothDevice::DeviceUUIDs::GetUUIDs() const {
 }
 
 void BluetoothDevice::DeviceUUIDs::UpdateDeviceUUIDs() {
-  device_uuids_.clear();
-  std::set_union(advertised_uuids_.begin(), advertised_uuids_.end(),
-                 service_uuids_.begin(), service_uuids_.end(),
-                 std::inserter(device_uuids_, device_uuids_.begin()));
+  device_uuids_ = base::STLSetUnion<BluetoothDevice::UUIDSet>(advertised_uuids_,
+                                                              service_uuids_);
 }
 
 BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
