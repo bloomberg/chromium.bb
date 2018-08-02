@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui.h"
 
@@ -21,6 +22,8 @@ class TestWebUI : public WebUI {
   ~TestWebUI() override;
 
   void ClearTrackedCalls();
+  void HandleReceivedMessage(const std::string& handler_name,
+                             const base::ListValue* args);
   void set_web_contents(WebContents* web_contents) {
     web_contents_ = web_contents;
   }
@@ -36,7 +39,7 @@ class TestWebUI : public WebUI {
   void SetBindings(int bindings) override;
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(base::StringPiece message,
-                               const MessageCallback& callback) override {}
+                               const MessageCallback& callback) override;
   void ProcessWebUIMessage(const GURL& source_url,
                            const std::string& message,
                            const base::ListValue& args) override {}
@@ -91,6 +94,7 @@ class TestWebUI : public WebUI {
   }
 
  private:
+  base::flat_map<std::string, std::vector<MessageCallback>> message_callbacks_;
   std::vector<std::unique_ptr<CallData>> call_data_;
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;
   int bindings_ = 0;
