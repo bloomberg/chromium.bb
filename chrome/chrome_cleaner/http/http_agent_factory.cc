@@ -15,7 +15,8 @@ namespace chrome_cleaner {
 
 HttpAgentFactory::~HttpAgentFactory() = default;
 
-std::unique_ptr<chrome_cleaner::HttpAgent> HttpAgentFactory::CreateHttpAgent() {
+std::unique_ptr<chrome_cleaner::HttpAgent> HttpAgentFactory::CreateHttpAgent()
+    const {
   std::unique_ptr<FileVersionInfo> file_version_info(
       FileVersionInfo::CreateFileVersionInfoForModule(CURRENT_MODULE()));
 
