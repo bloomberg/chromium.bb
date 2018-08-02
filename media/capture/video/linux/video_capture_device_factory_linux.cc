@@ -11,7 +11,6 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +26,8 @@
 #include "media/capture/video/linux/camera_config_chromeos.h"
 #include "media/capture/video/linux/video_capture_device_chromeos.h"
 #endif
+
+#include "media/capture/video/linux/scoped_v4l2_device_fd.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
 namespace media {
@@ -174,8 +175,9 @@ VideoCaptureDeviceFactoryLinux::CreateDevice(
   // Test opening the device driver. This is to make sure it is available.
   // We will reopen it again in our worker thread when someone
   // allocates the camera.
-  base::ScopedFD fd(
-      HANDLE_EINTR(open(device_descriptor.device_id.c_str(), O_RDONLY)));
+  ScopedV4L2DeviceFD fd(
+      v4l2_.get(),
+      HANDLE_EINTR(v4l2_->open(device_descriptor.device_id.c_str(), O_RDONLY)));
   if (!fd.is_valid()) {
     DLOG(ERROR) << "Cannot open device";
     delete self;
@@ -192,8 +194,8 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
   std::vector<std::string> filepaths;
   device_provider_->GetDeviceIds(&filepaths);
   for (auto& unique_id : filepaths) {
-    const base::ScopedFD fd(
-        HANDLE_EINTR(v4l2_->open(unique_id.c_str(), O_RDONLY)));
+    const ScopedV4L2DeviceFD fd(
+        v4l2_.get(), HANDLE_EINTR(v4l2_->open(unique_id.c_str(), O_RDONLY)));
     if (!fd.is_valid()) {
       DLOG(ERROR) << "Couldn't open " << unique_id;
       continue;
@@ -238,8 +240,8 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormats(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device.device_id.empty())
     return;
-  base::ScopedFD fd(
-      HANDLE_EINTR(v4l2_->open(device.device_id.c_str(), O_RDONLY)));
+  ScopedV4L2DeviceFD fd(v4l2_.get(), HANDLE_EINTR(v4l2_->open(
+                                         device.device_id.c_str(), O_RDONLY)));
   if (!fd.is_valid())  // Failed to open this device.
     return;
   supported_formats->clear();

@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+#include <linux/videodev2.h>
+
 #include "media/capture/capture_export.h"
 #include "media/capture/video/linux/v4l2_capture_device.h"
 #include "media/capture/video/video_capture_device_descriptor.h"

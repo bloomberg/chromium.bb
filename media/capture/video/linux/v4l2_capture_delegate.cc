@@ -55,9 +55,8 @@ const int kMjpegHeight = 480;
 // Typical framerate, in fps
 const int kTypicalFramerate = 30;
 
-// V4L2CaptureDevice color formats supported by V4L2CaptureDelegate derived
-// classes. This list is ordered by precedence of use -- but see caveats for
-// MJPEG.
+// V4L2 color formats supported by V4L2CaptureDelegate derived classes.
+// This list is ordered by precedence of use -- but see caveats for MJPEG.
 static struct {
   uint32_t fourcc;
   VideoPixelFormat pixel_format;
@@ -166,8 +165,8 @@ static bool IsBlacklistedControl(int control_id) {
   return false;
 }
 
-// Class keeping track of a SPLANE V4L2CaptureDevice buffer, mmap()ed on
-// construction and munmap()ed on destruction.
+// Class keeping track of a SPLANE V4L2 buffer, mmap()ed on construction and
+// munmap()ed on destruction.
 class V4L2CaptureDelegate::BufferTracker
     : public base::RefCounted<BufferTracker> {
  public:
@@ -230,29 +229,6 @@ std::list<uint32_t> V4L2CaptureDelegate::GetListOfUsableFourCcs(
   return supported_formats;
 }
 
-V4L2CaptureDelegate::ScopedV4L2DeviceFD::ScopedV4L2DeviceFD(
-    V4L2CaptureDevice* v4l2)
-    : device_fd_(kInvalidId), v4l2_(v4l2) {}
-
-V4L2CaptureDelegate::ScopedV4L2DeviceFD::~ScopedV4L2DeviceFD() {
-  if (is_valid())
-    reset();
-}
-
-int V4L2CaptureDelegate::ScopedV4L2DeviceFD::get() {
-  return device_fd_;
-}
-
-void V4L2CaptureDelegate::ScopedV4L2DeviceFD::reset(int fd /*= kInvalidId*/) {
-  if (is_valid())
-    v4l2_->close(device_fd_);
-  device_fd_ = fd;
-}
-
-bool V4L2CaptureDelegate::ScopedV4L2DeviceFD::is_valid() {
-  return device_fd_ != kInvalidId;
-}
-
 V4L2CaptureDelegate::V4L2CaptureDelegate(
     V4L2CaptureDevice* v4l2,
     const VideoCaptureDeviceDescriptor& device_descriptor,
@@ -281,8 +257,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
   device_fd_.reset(
       HANDLE_EINTR(v4l2_->open(device_descriptor_.device_id.c_str(), O_RDWR)));
   if (!device_fd_.is_valid()) {
-    SetErrorState(FROM_HERE,
-                  "Failed to open V4L2CaptureDevice device driver file.");
+    SetErrorState(FROM_HERE, "Failed to open V4L2 device driver file.");
     return;
   }
 
@@ -294,8 +269,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
         ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
          !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)))) {
     device_fd_.reset();
-    SetErrorState(FROM_HERE,
-                  "This is not a V4L2CaptureDevice video capture device");
+    SetErrorState(FROM_HERE, "This is not a V4L2 video capture device");
     return;
   }
 
@@ -382,8 +356,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
   FillV4L2RequestBuffer(&r_buffer, kNumVideoBuffers);
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) <
       0) {
-    SetErrorState(FROM_HERE,
-                  "Error requesting MMAP buffers from V4L2CaptureDevice");
+    SetErrorState(FROM_HERE, "Error requesting MMAP buffers from V4L2");
     return;
   }
   for (unsigned int i = 0; i < r_buffer.count; ++i) {
@@ -671,7 +644,7 @@ bool V4L2CaptureDelegate::RunIoctl(int fd, int request, void* argp) {
        ++num_retries) {
     DPLOG(WARNING) << "ioctl";
   }
-  DPLOG_IF(ERROR, num_retries != kMaxIOCtrlRetries);
+  DPLOG_IF(ERROR, num_retries == kMaxIOCtrlRetries);
   return num_retries != kMaxIOCtrlRetries;
 }
 
@@ -811,7 +784,7 @@ bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
 
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_QUERYBUF, &buffer)) <
       0) {
-    DLOG(ERROR) << "Error querying status of a MMAP V4L2CaptureDevice buffer";
+    DLOG(ERROR) << "Error querying status of a MMAP V4L2 buffer";
     return false;
   }
 
@@ -824,8 +797,7 @@ bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
 
   // Enqueue the buffer in the drivers incoming queue.
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) < 0) {
-    DLOG(ERROR)
-        << "Error enqueuing a V4L2CaptureDevice buffer back into the driver";
+    DLOG(ERROR) << "Error enqueuing a V4L2 buffer back into the driver";
     return false;
   }
   return true;
@@ -839,12 +811,14 @@ void V4L2CaptureDelegate::DoCapture() {
   pollfd device_pfd = {};
   device_pfd.fd = device_fd_.get();
   device_pfd.events = POLLIN;
+
   const int result =
       HANDLE_EINTR(v4l2_->poll(&device_pfd, 1, kCaptureTimeoutMs));
   if (result < 0) {
     SetErrorState(FROM_HERE, "Poll failed");
     return;
   }
+
   // Check if poll() timed out; track the amount of times it did in a row and
   // throw an error if it times out too many times.
   if (result == 0) {
@@ -936,7 +910,7 @@ V4L2CaptureDelegate::BufferTracker::~BufferTracker() {
   if (start_ == nullptr)
     return;
   const int result = v4l2_->munmap(start_, length_);
-  PLOG_IF(ERROR, result < 0) << "Error munmap()ing V4L2CaptureDevice buffer";
+  PLOG_IF(ERROR, result < 0) << "Error munmap()ing V4L2 buffer";
 }
 
 bool V4L2CaptureDelegate::BufferTracker::Init(int fd,
@@ -946,7 +920,7 @@ bool V4L2CaptureDelegate::BufferTracker::Init(int fd,
   void* const start = v4l2_->mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
                                   MAP_SHARED, fd, buffer.m.offset);
   if (start == MAP_FAILED) {
-    DLOG(ERROR) << "Error mmap()ing a V4L2CaptureDevice buffer into userspace";
+    DLOG(ERROR) << "Error mmap()ing a V4L2 buffer into userspace";
     return false;
   }
   start_ = static_cast<uint8_t*>(start);

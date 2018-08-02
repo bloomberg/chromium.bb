@@ -12,6 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "media/capture/video/linux/scoped_v4l2_device_fd.h"
 #include "media/capture/video/linux/v4l2_capture_device_impl.h"
 #include "media/capture/video/video_capture_device.h"
 
@@ -27,10 +28,9 @@ class Location;
 
 namespace media {
 
-// Class doing the actual Linux capture using V4L2CaptureDevice API.
-// V4L2CaptureDevice SPLANE/MPLANE capture specifics are implemented in derived
-// classes. Created on the owner's thread, otherwise living, operating and
-// destroyed on |v4l2_task_runner_|.
+// Class doing the actual Linux capture using V4L2 API. V4L2 SPLANE/MPLANE
+// capture specifics are implemented in derived classes. Created on the owner's
+// thread, otherwise living, operating and destroyed on |v4l2_task_runner_|.
 class CAPTURE_EXPORT V4L2CaptureDelegate final {
  public:
   // Retrieves the #planes for a given |fourcc|, or 0 if unknown.
@@ -71,19 +71,6 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
   friend class V4L2CaptureDelegateTest;
 
   class BufferTracker;
-  class ScopedV4L2DeviceFD {
-   public:
-    static constexpr int kInvalidId = -1;
-    ScopedV4L2DeviceFD(V4L2CaptureDevice* v4l2);
-    ~ScopedV4L2DeviceFD();
-    int get();
-    void reset(int fd = kInvalidId);
-    bool is_valid();
-
-   private:
-    int device_fd_;
-    V4L2CaptureDevice* const v4l2_;
-  };
 
   bool RunIoctl(int fd, int request, void* argp);
   mojom::RangePtr RetrieveUserControlRange(int device_fd, int control_id);
@@ -91,8 +78,8 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
 
   // void CloseDevice();
 
-  // VIDIOC_QUERYBUFs a buffer from V4L2CaptureDevice, creates a BufferTracker
-  // for it and enqueues it (VIDIOC_QBUF) back into V4L2CaptureDevice.
+  // VIDIOC_QUERYBUFs a buffer from V4L2, creates a BufferTracker for it and
+  // enqueues it (VIDIOC_QBUF) back into V4L2.
   bool MapAndQueueBuffer(int index);
 
   void DoCapture();
