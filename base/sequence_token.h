@@ -80,7 +80,6 @@ class BASE_EXPORT TaskToken {
 
  private:
   friend class ScopedSetSequenceTokenForCurrentThread;
-  friend class ScopedSetNestedSequenceTokenForDestructorForCurrentThread;
 
   explicit TaskToken(int token) : token_(token) {}
 
@@ -109,26 +108,6 @@ class BASE_EXPORT ScopedSetSequenceTokenForCurrentThread {
   const TaskToken task_token_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSetSequenceTokenForCurrentThread);
-};
-
-// Instantiate this in the scope where it is necessary to temporarily pretend to
-// be running on another sequence to run its clean-up tasks.
-class BASE_EXPORT ScopedSetNestedSequenceTokenForDestructorForCurrentThread {
- public:
-  // Identical to ScopedSetSequenceTokenForCurrentThread but allows nesting.
-  ScopedSetNestedSequenceTokenForDestructorForCurrentThread(
-      const SequenceToken& sequence_token);
-  ~ScopedSetNestedSequenceTokenForDestructorForCurrentThread();
-
- private:
-  const SequenceToken* const original_sequence_token_;
-  const TaskToken* const original_task_token_;
-
-  const SequenceToken sequence_token_;
-  const TaskToken task_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      ScopedSetNestedSequenceTokenForDestructorForCurrentThread);
 };
 
 }  // namespace base

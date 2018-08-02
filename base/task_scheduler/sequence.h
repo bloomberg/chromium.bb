@@ -71,7 +71,7 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
   const SequenceToken& token() const { return token_; }
 
   SequenceLocalStorageMap* sequence_local_storage() {
-    return &sequence_local_storage_.value();
+    return &sequence_local_storage_;
   }
 
  private:
@@ -91,9 +91,7 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
       {};
 
   // Holds data stored through the SequenceLocalStorageSlot API.
-  // Valid throughout this Sequence's lifetime (Optional so it can be released
-  // in a custom scope in the destructor).
-  base::Optional<SequenceLocalStorageMap> sequence_local_storage_;
+  SequenceLocalStorageMap sequence_local_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(Sequence);
 };
