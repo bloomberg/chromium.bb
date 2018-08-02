@@ -208,89 +208,86 @@ const char* CreditCard::GetCardNetwork(const base::string16& number) {
   // MIR                    2200-2204                                  16
   // UnionPay               62                                         16-19
 
-  // Check for prefixes of length 1.
-  if (number.empty())
-    return kGenericCard;
-
-  if (number[0] == '4')
-    return kVisaCard;
-
-  // Check for prefixes of length 2.
-  if (number.size() < 2)
-    return kGenericCard;
-
-  int first_two_digits = 0;
-  if (!base::StringToInt(number.substr(0, 2), &first_two_digits))
-    return kGenericCard;
-
-  if (first_two_digits == 34 || first_two_digits == 37)
-    return kAmericanExpressCard;
-
-  if (first_two_digits == 36 ||
-      first_two_digits == 38 ||
-      first_two_digits == 39)
-    return kDinersCard;
-
-  if (first_two_digits >= 51 && first_two_digits <= 55)
-    return kMasterCard;
-
-  if (first_two_digits == 62)
-    return kUnionPay;
-
-  if (first_two_digits == 65)
-    return kDiscoverCard;
-
-  // Check for prefixes of length 3.
-  if (number.size() < 3)
-    return kGenericCard;
-
-  int first_three_digits = 0;
-  if (!base::StringToInt(number.substr(0, 3), &first_three_digits))
-    return kGenericCard;
-
-  if ((first_three_digits >= 300 && first_three_digits <= 305) ||
-      first_three_digits == 309)
-    return kDinersCard;
-
-  if (first_three_digits >= 644 && first_three_digits <= 649)
-    return kDiscoverCard;
-
-  // Check for prefixes of length 4.
-  if (number.size() < 4)
-    return kGenericCard;
-
-  int first_four_digits = 0;
-  if (!base::StringToInt(number.substr(0, 4), &first_four_digits))
-    return kGenericCard;
-
-  if (first_four_digits >= 2200 && first_four_digits <= 2204)
-    return kMirCard;
-
-  if (first_four_digits >= 2221 && first_four_digits <= 2720)
-    return kMasterCard;
-
-  if (first_four_digits >= 3528 && first_four_digits <= 3589)
-    return kJCBCard;
-
-  if (first_four_digits == 5067 || first_four_digits == 5090)
-    return kEloCard;
-
-  if (first_four_digits == 6011)
-    return kDiscoverCard;
+  // Determine the network for the given |number| by going from the longest
+  // (most specific) prefix to the shortest (most general) prefix.
+  base::string16 stripped_number = CreditCard::StripSeparators(number);
 
   // Check for prefixes of length 6.
-  if (number.size() < 6)
+  if (stripped_number.size() >= 6) {
+    int first_six_digits = 0;
+    if (!base::StringToInt(stripped_number.substr(0, 6), &first_six_digits))
+      return kGenericCard;
+
+    if (first_six_digits == 431274 || first_six_digits == 451416 ||
+        first_six_digits == 627780 || first_six_digits == 636297)
+      return kEloCard;
+  }
+
+  // Check for prefixes of length 4.
+  if (stripped_number.size() >= 4) {
+    int first_four_digits = 0;
+    if (!base::StringToInt(stripped_number.substr(0, 4), &first_four_digits))
+      return kGenericCard;
+
+    if (first_four_digits >= 2200 && first_four_digits <= 2204)
+      return kMirCard;
+
+    if (first_four_digits >= 2221 && first_four_digits <= 2720)
+      return kMasterCard;
+
+    if (first_four_digits >= 3528 && first_four_digits <= 3589)
+      return kJCBCard;
+
+    if (first_four_digits == 5067 || first_four_digits == 5090)
+      return kEloCard;
+
+    if (first_four_digits == 6011)
+      return kDiscoverCard;
+  }
+
+  // Check for prefixes of length 3.
+  if (stripped_number.size() >= 3) {
+    int first_three_digits = 0;
+    if (!base::StringToInt(stripped_number.substr(0, 3), &first_three_digits))
+      return kGenericCard;
+
+    if ((first_three_digits >= 300 && first_three_digits <= 305) ||
+        first_three_digits == 309)
+      return kDinersCard;
+
+    if (first_three_digits >= 644 && first_three_digits <= 649)
+      return kDiscoverCard;
+  }
+
+  // Check for prefixes of length 2.
+  if (stripped_number.size() >= 2) {
+    int first_two_digits = 0;
+    if (!base::StringToInt(stripped_number.substr(0, 2), &first_two_digits))
+      return kGenericCard;
+
+    if (first_two_digits == 34 || first_two_digits == 37)
+      return kAmericanExpressCard;
+
+    if (first_two_digits == 36 || first_two_digits == 38 ||
+        first_two_digits == 39)
+      return kDinersCard;
+
+    if (first_two_digits >= 51 && first_two_digits <= 55)
+      return kMasterCard;
+
+    if (first_two_digits == 62)
+      return kUnionPay;
+
+    if (first_two_digits == 65)
+      return kDiscoverCard;
+  }
+
+  // Check for prefixes of length 1.
+  if (stripped_number.empty())
     return kGenericCard;
 
-  int first_six_digits = 0;
-  if (!base::StringToInt(number.substr(0, 6), &first_six_digits))
-    return kGenericCard;
-
-  if (first_six_digits == 431274 ||
-      first_six_digits == 451416 ||
-      first_six_digits == 627780 ||
-      first_six_digits == 636297)
-    return kEloCard;
+  if (stripped_number[0] == '4')
+    return kVisaCard;
 
   return kGenericCard;
 }

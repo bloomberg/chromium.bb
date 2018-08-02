@@ -884,25 +884,7 @@ INSTANTIATE_TEST_CASE_P(
         GetCardNetworkTestCase{"622384452162063648", kUnionPay, true},
         GetCardNetworkTestCase{"2204883716636153", kMirCard, true},
         GetCardNetworkTestCase{"2200111234567898", kMirCard, true},
-        GetCardNetworkTestCase{"2200481349288130", kMirCard, true},
-
-        // The relevant sample numbers from
-        // https://www.bincodes.com/bank-creditcard-generator/ and
-        // https://www.ebanx.com/business/en/developers/integrations/testing/credit-card-test-numbers
-        GetCardNetworkTestCase{"5067001446391275", kEloCard, true},
-        GetCardNetworkTestCase{"6362970000457013", kEloCard, true},
-
-        // Empty string
-        GetCardNetworkTestCase{"", kGenericCard, false},
-
-        // Non-numeric
-        GetCardNetworkTestCase{"garbage", kGenericCard, false},
-        GetCardNetworkTestCase{"4garbage", kVisaCard, false},
-
-        // Fails Luhn check.
-        GetCardNetworkTestCase{"4111111111111112", kVisaCard, false},
-        GetCardNetworkTestCase{"6247130048162413", kUnionPay, false},
-        GetCardNetworkTestCase{"2204883716636154", kMirCard, false}));
+        GetCardNetworkTestCase{"2200481349288130", kMirCard, true}));
 
 class GetCardNetworkTestBatch2
     : public testing::TestWithParam<GetCardNetworkTestCase> {};
@@ -919,61 +901,43 @@ INSTANTIATE_TEST_CASE_P(
     CreditCardTest,
     GetCardNetworkTestBatch2,
     testing::Values(
+        // The relevant sample numbers from
+        // https://www.bincodes.com/bank-creditcard-generator/ and
+        // https://www.ebanx.com/business/en/developers/integrations/testing/credit-card-test-numbers
+        GetCardNetworkTestCase{"5067001446391275", kEloCard, true},
+        GetCardNetworkTestCase{"6362970000457013", kEloCard, true},
+
+        // These sample numbers were created by taking the expected card prefix,
+        // filling out the required number of digits, and editing the last digit
+        // so that the full number passes a Luhn check.
+        GetCardNetworkTestCase{"4312741111111112", kEloCard, true},
+        GetCardNetworkTestCase{"4514161111111119", kEloCard, true},
+        GetCardNetworkTestCase{"5090111111111113", kEloCard, true},
+        GetCardNetworkTestCase{"6277801111111112", kEloCard, true},
+
+        // Existence of separators should not change the result, especially for
+        // prefixes that go past the first separator.
+        GetCardNetworkTestCase{"4111 1111 1111 1111", kVisaCard, true},
+        GetCardNetworkTestCase{"4111-1111-1111-1111", kVisaCard, true},
+        GetCardNetworkTestCase{"4312 7411 1111 1112", kEloCard, true},
+        GetCardNetworkTestCase{"4312-7411-1111-1112", kEloCard, true},
+
+        // Empty string
+        GetCardNetworkTestCase{"", kGenericCard, false},
+
+        // Non-numeric
+        GetCardNetworkTestCase{"garbage", kGenericCard, false},
+        GetCardNetworkTestCase{"4garbage", kGenericCard, false},
+
+        // Fails Luhn check.
+        GetCardNetworkTestCase{"4111111111111112", kVisaCard, false},
+        GetCardNetworkTestCase{"6247130048162413", kUnionPay, false},
+        GetCardNetworkTestCase{"2204883716636154", kMirCard, false},
+
         // Invalid length.
         GetCardNetworkTestCase{"3434343434343434", kAmericanExpressCard, false},
         GetCardNetworkTestCase{"411111111111116", kVisaCard, false},
-        GetCardNetworkTestCase{"220011123456783", kMirCard, false},
-
-        // Issuer Identification Numbers (IINs) that Chrome recognizes.
-        GetCardNetworkTestCase{"4", kVisaCard, false},
-        GetCardNetworkTestCase{"2200", kMirCard, false},
-        GetCardNetworkTestCase{"2202", kMirCard, false},
-        GetCardNetworkTestCase{"2204", kMirCard, false},
-        GetCardNetworkTestCase{"2221", kMasterCard, false},
-        GetCardNetworkTestCase{"2720", kMasterCard, false},
-        GetCardNetworkTestCase{"34", kAmericanExpressCard, false},
-        GetCardNetworkTestCase{"37", kAmericanExpressCard, false},
-        GetCardNetworkTestCase{"300", kDinersCard, false},
-        GetCardNetworkTestCase{"301", kDinersCard, false},
-        GetCardNetworkTestCase{"302", kDinersCard, false},
-        GetCardNetworkTestCase{"303", kDinersCard, false},
-        GetCardNetworkTestCase{"304", kDinersCard, false},
-        GetCardNetworkTestCase{"305", kDinersCard, false},
-        GetCardNetworkTestCase{"309", kDinersCard, false},
-        GetCardNetworkTestCase{"36", kDinersCard, false},
-        GetCardNetworkTestCase{"38", kDinersCard, false},
-        GetCardNetworkTestCase{"39", kDinersCard, false},
-        GetCardNetworkTestCase{"6011", kDiscoverCard, false},
-        GetCardNetworkTestCase{"644", kDiscoverCard, false},
-        GetCardNetworkTestCase{"645", kDiscoverCard, false},
-        GetCardNetworkTestCase{"646", kDiscoverCard, false},
-        GetCardNetworkTestCase{"647", kDiscoverCard, false},
-        GetCardNetworkTestCase{"648", kDiscoverCard, false},
-        GetCardNetworkTestCase{"649", kDiscoverCard, false},
-        GetCardNetworkTestCase{"65", kDiscoverCard, false},
-        GetCardNetworkTestCase{"5067", kEloCard, false},
-        GetCardNetworkTestCase{"5090", kEloCard, false},
-        GetCardNetworkTestCase{"636297", kEloCard, false},
-        GetCardNetworkTestCase{"3528", kJCBCard, false},
-        GetCardNetworkTestCase{"3531", kJCBCard, false},
-        GetCardNetworkTestCase{"3589", kJCBCard, false},
-        GetCardNetworkTestCase{"51", kMasterCard, false},
-        GetCardNetworkTestCase{"52", kMasterCard, false},
-        GetCardNetworkTestCase{"53", kMasterCard, false},
-        GetCardNetworkTestCase{"54", kMasterCard, false},
-        GetCardNetworkTestCase{"55", kMasterCard, false},
-        GetCardNetworkTestCase{"62", kUnionPay, false},
-
-        // Not enough data to determine an IIN uniquely.
-        GetCardNetworkTestCase{"2", kGenericCard, false},
-        GetCardNetworkTestCase{"3", kGenericCard, false},
-        GetCardNetworkTestCase{"30", kGenericCard, false},
-        GetCardNetworkTestCase{"35", kGenericCard, false},
-        GetCardNetworkTestCase{"5", kGenericCard, false},
-        GetCardNetworkTestCase{"6", kGenericCard, false},
-        GetCardNetworkTestCase{"60", kGenericCard, false},
-        GetCardNetworkTestCase{"601", kGenericCard, false},
-        GetCardNetworkTestCase{"64", kGenericCard, false}));
+        GetCardNetworkTestCase{"220011123456783", kMirCard, false}));
 
 class GetCardNetworkTestBatch3
     : public testing::TestWithParam<GetCardNetworkTestCase> {};
@@ -990,6 +954,77 @@ INSTANTIATE_TEST_CASE_P(
     CreditCardTest,
     GetCardNetworkTestBatch3,
     testing::Values(
+        // Issuer Identification Numbers (IINs) that Chrome recognizes.
+        GetCardNetworkTestCase{"2200", kMirCard, false},
+        GetCardNetworkTestCase{"2201", kMirCard, false},
+        GetCardNetworkTestCase{"2202", kMirCard, false},
+        GetCardNetworkTestCase{"2203", kMirCard, false},
+        GetCardNetworkTestCase{"2204", kMirCard, false},
+        GetCardNetworkTestCase{"2221", kMasterCard, false},
+        GetCardNetworkTestCase{"2720", kMasterCard, false},
+        GetCardNetworkTestCase{"300", kDinersCard, false},
+        GetCardNetworkTestCase{"301", kDinersCard, false},
+        GetCardNetworkTestCase{"302", kDinersCard, false},
+        GetCardNetworkTestCase{"303", kDinersCard, false},
+        GetCardNetworkTestCase{"304", kDinersCard, false},
+        GetCardNetworkTestCase{"305", kDinersCard, false},
+        GetCardNetworkTestCase{"309", kDinersCard, false},
+        GetCardNetworkTestCase{"34", kAmericanExpressCard, false},
+        GetCardNetworkTestCase{"3528", kJCBCard, false},
+        GetCardNetworkTestCase{"3531", kJCBCard, false},
+        GetCardNetworkTestCase{"3589", kJCBCard, false},
+        GetCardNetworkTestCase{"36", kDinersCard, false},
+        GetCardNetworkTestCase{"37", kAmericanExpressCard, false},
+        GetCardNetworkTestCase{"38", kDinersCard, false},
+        GetCardNetworkTestCase{"39", kDinersCard, false},
+        GetCardNetworkTestCase{"4", kVisaCard, false},
+        GetCardNetworkTestCase{"431274", kEloCard, false},
+        GetCardNetworkTestCase{"451416", kEloCard, false},
+        GetCardNetworkTestCase{"5067", kEloCard, false},
+        GetCardNetworkTestCase{"5090", kEloCard, false},
+        GetCardNetworkTestCase{"51", kMasterCard, false},
+        GetCardNetworkTestCase{"52", kMasterCard, false},
+        GetCardNetworkTestCase{"53", kMasterCard, false},
+        GetCardNetworkTestCase{"54", kMasterCard, false},
+        GetCardNetworkTestCase{"55", kMasterCard, false},
+        GetCardNetworkTestCase{"6011", kDiscoverCard, false},
+        GetCardNetworkTestCase{"62", kUnionPay, false},
+        GetCardNetworkTestCase{"627780", kEloCard, false},
+        GetCardNetworkTestCase{"636297", kEloCard, false},
+        GetCardNetworkTestCase{"644", kDiscoverCard, false},
+        GetCardNetworkTestCase{"645", kDiscoverCard, false},
+        GetCardNetworkTestCase{"646", kDiscoverCard, false},
+        GetCardNetworkTestCase{"647", kDiscoverCard, false},
+        GetCardNetworkTestCase{"648", kDiscoverCard, false},
+        GetCardNetworkTestCase{"649", kDiscoverCard, false},
+        GetCardNetworkTestCase{"65", kDiscoverCard, false}));
+
+class GetCardNetworkTestBatch4
+    : public testing::TestWithParam<GetCardNetworkTestCase> {};
+
+TEST_P(GetCardNetworkTestBatch4, GetCardNetwork) {
+  auto test_case = GetParam();
+  base::string16 card_number = ASCIIToUTF16(test_case.card_number);
+  SCOPED_TRACE(card_number);
+  EXPECT_EQ(test_case.issuer_network, CreditCard::GetCardNetwork(card_number));
+  EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    CreditCardTest,
+    GetCardNetworkTestBatch4,
+    testing::Values(
+        // Not enough data to determine an IIN uniquely.
+        GetCardNetworkTestCase{"2", kGenericCard, false},
+        GetCardNetworkTestCase{"3", kGenericCard, false},
+        GetCardNetworkTestCase{"30", kGenericCard, false},
+        GetCardNetworkTestCase{"35", kGenericCard, false},
+        GetCardNetworkTestCase{"5", kGenericCard, false},
+        GetCardNetworkTestCase{"6", kGenericCard, false},
+        GetCardNetworkTestCase{"60", kGenericCard, false},
+        GetCardNetworkTestCase{"601", kGenericCard, false},
+        GetCardNetworkTestCase{"64", kGenericCard, false},
+
         // Unknown IINs.
         GetCardNetworkTestCase{"0", kGenericCard, false},
         GetCardNetworkTestCase{"1", kGenericCard, false},
