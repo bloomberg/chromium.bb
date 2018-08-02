@@ -38,12 +38,7 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
                         ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
         dialogView.setBackgroundResource(R.drawable.popup_bg);
         container.addView(dialogView, params);
-        if (getModalDialog().getCancelOnTouchOutside()) {
-            mDialog.setCanceledOnTouchOutside(true);
-            // The dialog container covers the entire screen. To achieve the cancel on touch outside
-            // behavior cancel the dialog if the container is touched.
-            container.setOnClickListener((v) -> mDialog.cancel());
-        }
+        mDialog.setCanceledOnTouchOutside(getModalDialog().getCancelOnTouchOutside());
         mDialog.show();
     }
 
