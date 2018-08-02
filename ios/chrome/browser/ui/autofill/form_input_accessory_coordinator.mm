@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/form_input_accessory_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
