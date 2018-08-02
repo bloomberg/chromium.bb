@@ -246,6 +246,10 @@ bool IsProfileSignedOut(Profile* profile) {
 // Given |webContents|, extracts a GURL to be used for Handoff. This may return
 // the empty GURL.
 - (GURL)handoffURLFromWebContents:(content::WebContents*)webContents;
+
+// Return false if Chrome startup is paused by dialog and AppController is
+// called without any initialized Profile.
+- (BOOL)isProfileReady;
 @end
 
 class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
@@ -433,6 +437,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (void)applicationWillHide:(NSNotification*)notification {
+  if (![self isProfileReady])
+    return;
   apps::ExtensionAppShimHandler::OnChromeWillHide();
 }
 
@@ -613,7 +619,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (void)windowDidResignMain:(NSNotification*)notify {
-  if (chrome::GetTotalBrowserCount() == 0) {
+  if (chrome::GetTotalBrowserCount() == 0 && [self isProfileReady]) {
     [self windowChangedToProfile:
         g_browser_process->profile_manager()->GetLastUsedProfile()];
   }
@@ -1012,7 +1018,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // Ignore commands during session restore's browser creation.  It uses a
   // nested run loop and commands dispatched during this operation cause
   // havoc.
-  if (SessionRestore::IsRestoring(lastProfile) &&
+  if (lastProfile && SessionRestore::IsRestoring(lastProfile) &&
       base::RunLoop::IsNestedOnCurrentThread()) {
     return;
   }
@@ -1322,16 +1328,20 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   [app registerServicesMenuSendTypes:types returnTypes:types];
 }
 
+// Return null if Chrome is not ready or there is no ProfileManager.
 - (Profile*)lastProfile {
   // Return the profile of the last-used Browser, if available.
   if (lastProfile_)
     return lastProfile_;
 
+  if (![self isProfileReady])
+    return nullptr;
+
   // On first launch, use the logic that ChromeBrowserMain uses to determine
   // the initial profile.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)
-    return NULL;
+    return nullptr;
 
   return profile_manager->GetProfile(
       GetStartupProfilePath(profile_manager->user_data_dir(),
@@ -1340,6 +1350,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 - (Profile*)safeLastProfileForNewWindows {
   Profile* profile = [self lastProfile];
+
+  if (!profile)
+    return nullptr;
 
   // Guest sessions must always be OffTheRecord. Use that when opening windows.
   if (profile->IsGuestSession())
@@ -1703,6 +1716,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     return GURL();
 
   return webContents->GetVisibleURL();
+}
+
+- (BOOL)isProfileReady {
+  return !g_browser_process->browser_policy_connector()
+              ->machine_level_user_cloud_policy_controller()
+              ->IsEnterpriseStartupDialogShowing();
 }
 
 #pragma mark - HandoffActiveURLObserverBridgeDelegate

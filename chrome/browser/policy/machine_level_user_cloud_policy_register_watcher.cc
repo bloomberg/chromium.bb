@@ -83,7 +83,7 @@ RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
 }
 
 bool MachineLevelUserCloudPolicyRegisterWatcher::IsDialogShowing() {
-  return dialog_ && dialog_->IsShowing();
+  return (dialog_ && dialog_->IsShowing()) || run_loop_.running();
 }
 
 void MachineLevelUserCloudPolicyRegisterWatcher::

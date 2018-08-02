@@ -17,6 +17,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -41,6 +43,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.h"
+#endif
 
 using testing::DoAll;
 using testing::Invoke;
@@ -65,6 +71,10 @@ class MachineLevelUserCloudPolicyControllerObserver
  public:
   void OnPolicyRegisterFinished(bool succeeded) override {
     if (!succeeded) {
+      EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+#if defined(OS_MACOSX)
+      PostAppControllerNSNotifications();
+#endif
       // Close the error dialog.
       ASSERT_EQ(1u, views::test::WidgetTest::GetAllWidgets().size());
       (*views::test::WidgetTest::GetAllWidgets().begin())->Close();
@@ -424,6 +434,7 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
                                         : std::string(),
             BrowserDMTokenStorage::Get()->RetrieveDMToken());
 
+  // Verify the enrollment result.
   MachineLevelUserCloudPolicyEnrollmentResult expected_result;
   if (is_enrollment_token_valid() && storage_enabled()) {
     expected_result = MachineLevelUserCloudPolicyEnrollmentResult::kSuccess;
@@ -434,6 +445,8 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
     expected_result =
         MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch;
   }
+
+  // Verify the metrics.
   histogram_tester_.ExpectBucketCount(kEnrollmentResultMetrics, expected_result,
                                       1);
   histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 1);
