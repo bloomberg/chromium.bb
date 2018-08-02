@@ -45,12 +45,14 @@ class BluetoothRemoteGattDescriptorTest :
     ASSERT_EQ(1u, device_->GetGattServices().size());
     service_ = device_->GetGattServices()[0];
     SimulateGattCharacteristic(service_, kTestUUIDDeviceName, 0);
+    base::RunLoop().RunUntilIdle();
     ASSERT_EQ(1u, service_->GetCharacteristics().size());
     characteristic_ = service_->GetCharacteristics()[0];
     SimulateGattDescriptor(characteristic_,
                            kTestUUIDCharacteristicUserDescription);
     SimulateGattDescriptor(characteristic_,
                            kTestUUIDClientCharacteristicConfiguration);
+    base::RunLoop().RunUntilIdle();
     ASSERT_EQ(2u, characteristic_->GetDescriptors().size());
     descriptor1_ = characteristic_->GetDescriptors()[0];
     descriptor2_ = characteristic_->GetDescriptors()[1];
@@ -223,7 +225,11 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetUUID) {
 #define MAYBE_ReadRemoteDescriptor_Empty DISABLED_ReadRemoteDescriptor_Empty
 #endif
 // Tests ReadRemoteDescriptor and GetValue with empty value buffer.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly, ReadRemoteDescriptor_Empty) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor_Empty) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -251,7 +257,12 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor_Empty) {
 #define MAYBE_WriteRemoteDescriptor_Empty DISABLED_WriteRemoteDescriptor_Empty
 #endif
 // Tests WriteRemoteDescriptor with empty value buffer.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly,
+       WriteRemoteDescriptor_Empty) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor_Empty) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -340,7 +351,11 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
 #define MAYBE_ReadRemoteDescriptor DISABLED_ReadRemoteDescriptor
 #endif
 // Tests ReadRemoteDescriptor and GetValue with non-empty value buffer.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly, ReadRemoteDescriptor) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -371,7 +386,11 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor) {
 #define MAYBE_WriteRemoteDescriptor DISABLED_WriteRemoteDescriptor
 #endif
 // Tests WriteRemoteDescriptor with non-empty value buffer.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly, WriteRemoteDescriptor) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -396,7 +415,11 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor) {
 #define MAYBE_ReadRemoteDescriptor_Twice DISABLED_ReadRemoteDescriptor_Twice
 #endif
 // Tests ReadRemoteDescriptor and GetValue multiple times.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly, ReadRemoteDescriptor_Twice) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor_Twice) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -436,7 +459,12 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor_Twice) {
 #define MAYBE_WriteRemoteDescriptor_Twice DISABLED_WriteRemoteDescriptor_Twice
 #endif
 // Tests WriteRemoteDescriptor multiple times.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly,
+       WriteRemoteDescriptor_Twice) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor_Twice) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -476,8 +504,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor_Twice) {
   DISABLED_ReadRemoteDescriptor_MultipleDescriptors
 #endif
 // Tests ReadRemoteDescriptor on two descriptors.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly,
+       ReadRemoteDescriptor_MultipleDescriptors) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest,
        MAYBE_ReadRemoteDescriptor_MultipleDescriptors) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -518,8 +551,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   DISABLED_WriteRemoteDescriptor_MultipleDescriptors
 #endif
 // Tests WriteRemoteDescriptor on two descriptors.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly,
+       WriteRemoteDescriptor_MultipleDescriptors) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest,
        MAYBE_WriteRemoteDescriptor_MultipleDescriptors) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -556,7 +594,11 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
 #define MAYBE_ReadError DISABLED_ReadError
 #endif
 // Tests ReadRemoteDescriptor asynchronous error.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly, ReadError) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadError) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -580,7 +622,11 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadError) {
 #define MAYBE_WriteError DISABLED_WriteError
 #endif
 // Tests WriteRemoteDescriptor asynchronous error.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly, WriteError) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteError) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -683,8 +729,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteSynchronousError) {
   DISABLED_ReadRemoteDescriptor_ReadPending
 #endif
 // Tests ReadRemoteDescriptor error with a pending read operation.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly,
+       ReadRemoteDescriptor_ReadPending) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest,
        MAYBE_ReadRemoteDescriptor_ReadPending) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -720,8 +771,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   DISABLED_WriteRemoteDescriptor_WritePending
 #endif
 // Tests WriteRemoteDescriptor error with a pending write operation.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly,
+       WriteRemoteDescriptor_WritePending) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest,
        MAYBE_WriteRemoteDescriptor_WritePending) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -758,8 +814,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   DISABLED_ReadRemoteDescriptor_WritePending
 #endif
 // Tests ReadRemoteDescriptor error with a pending write operation.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly,
+       ReadRemoteDescriptor_WritePending) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest,
        MAYBE_ReadRemoteDescriptor_WritePending) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -795,8 +856,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   DISABLED_WriteRemoteDescriptor_ReadPending
 #endif
 // Tests WriteRemoteDescriptor error with a pending Read operation.
+#if defined(OS_WIN)
+TEST_P(BluetoothRemoteGattDescriptorTestWinrtOnly,
+       WriteRemoteDescriptor_ReadPending) {
+#else
 TEST_F(BluetoothRemoteGattDescriptorTest,
        MAYBE_WriteRemoteDescriptor_ReadPending) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
