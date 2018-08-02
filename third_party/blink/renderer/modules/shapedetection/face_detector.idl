@@ -9,7 +9,7 @@
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     MeasureAs=ShapeDetection_FaceDetectorConstructor,
-    RuntimeEnabled=ShapeDetection
+    OriginTrialEnabled=ShapeDetection
 ] interface FaceDetector {
     [CallWith=ScriptState] Promise<sequence<DetectedFace>> detect(ImageBitmapSource image);
 };
