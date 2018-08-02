@@ -764,6 +764,56 @@ bool QueryCancellationTraits(const BindStateBase* base,
       std::make_index_sequence<num_bound_args>());
 }
 
+// The base case of BanUnconstructedRefCountedReceiver that checks nothing.
+template <typename Functor, typename Receiver, typename... Unused>
+std::enable_if_t<
+    !(MakeFunctorTraits<Functor>::is_method &&
+      std::is_pointer<std::decay_t<Receiver>>::value &&
+      IsRefCountedType<std::remove_pointer_t<std::decay_t<Receiver>>>::value)>
+BanUnconstructedRefCountedReceiver(const Receiver& receiver, Unused&&...) {}
+
+template <typename Functor>
+void BanUnconstructedRefCountedReceiver() {}
+
+// Asserts that Callback is not the first owner of a ref-counted receiver.
+template <typename Functor, typename Receiver, typename... Unused>
+std::enable_if_t<
+    MakeFunctorTraits<Functor>::is_method &&
+    std::is_pointer<std::decay_t<Receiver>>::value &&
+    IsRefCountedType<std::remove_pointer_t<std::decay_t<Receiver>>>::value>
+BanUnconstructedRefCountedReceiver(const Receiver& receiver, Unused&&...) {
+  DCHECK(receiver);
+
+  // It's error prone to make the implicit first reference to ref-counted types.
+  // In the example below, base::BindOnce() makes the implicit first reference
+  // to the ref-counted Foo. If PostTask() failed or the posted task ran fast
+  // enough, the newly created instance can be destroyed before |oo| makes
+  // another reference.
+  //   Foo::Foo() {
+  //     base::PostTask(FROM_HERE, base::BindOnce(&Foo::Bar, this));
+  //   }
+  //
+  //   scoped_refptr<Foo> oo = new Foo();
+  //
+  // Instead of doing like above, please consider adding a static constructor,
+  // and keep the first reference alive explicitly.
+  //   // static
+  //   scoped_refptr<Foo> Foo::Create() {
+  //     auto foo = base::WrapRefCounted(new Foo());
+  //     base::PostTask(FROM_HERE, base::BindOnce(&Foo::Bar, foo));
+  //     return foo;
+  //   }
+  //
+  //   Foo::Foo() {}
+  //
+  //   scoped_refptr<Foo> oo = Foo::Create();
+  DCHECK(receiver->HasAtLeastOneRef())
+      << "base::Bind() refuses to create the first reference to ref-counted "
+         "objects. That is typically happens around PostTask() in their "
+         "constructor, and such objects can be destroyed before `new` returns "
+         "if the task resolves fast enough.";
+}
+
 // BindState<>
 //
 // This stores all the state passed into Bind().
@@ -775,16 +825,20 @@ struct BindState final : BindStateBase {
                                  std::tuple<BoundArgs...>>::is_cancellable>;
 
   template <typename ForwardFunctor, typename... ForwardBoundArgs>
-  explicit BindState(BindStateBase::InvokeFuncStorage invoke_func,
-                     ForwardFunctor&& functor,
-                     ForwardBoundArgs&&... bound_args)
-      // IsCancellable is std::false_type if
-      // CallbackCancellationTraits<>::IsCancelled returns always false.
-      // Otherwise, it's std::true_type.
-      : BindState(IsCancellable{},
-                  invoke_func,
-                  std::forward<ForwardFunctor>(functor),
-                  std::forward<ForwardBoundArgs>(bound_args)...) {}
+  static BindState* Create(BindStateBase::InvokeFuncStorage invoke_func,
+                           ForwardFunctor&& functor,
+                           ForwardBoundArgs&&... bound_args) {
+    // Ban ref counted receivers that were not yet fully constructed to avoid
+    // a common pattern of racy situation.
+    BanUnconstructedRefCountedReceiver<ForwardFunctor>(bound_args...);
+
+    // IsCancellable is std::false_type if
+    // CallbackCancellationTraits<>::IsCancelled returns always false.
+    // Otherwise, it's std::true_type.
+    return new BindState(IsCancellable{}, invoke_func,
+                         std::forward<ForwardFunctor>(functor),
+                         std::forward<ForwardBoundArgs>(bound_args)...);
+  }
 
   Functor functor_;
   std::tuple<BoundArgs...> bound_args_;

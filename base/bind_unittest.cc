@@ -19,11 +19,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
-using ::testing::Mock;
+using ::testing::AnyNumber;
 using ::testing::ByMove;
+using ::testing::Mock;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::_;
 
 namespace base {
 namespace {
@@ -54,6 +55,7 @@ class HasRef : public NoRef {
 
   MOCK_CONST_METHOD0(AddRef, void());
   MOCK_CONST_METHOD0(Release, bool());
+  MOCK_CONST_METHOD0(HasAtLeastOneRef, bool());
 
  private:
   // Particularly important in this test to ensure no copies are made.
@@ -72,6 +74,7 @@ class Parent {
  public:
   void AddRef() const {}
   void Release() const {}
+  bool HasAtLeastOneRef() const { return true; }
   virtual void VirtualSet() { value = kParentValue; }
   void NonVirtualSet() { value = kParentValue; }
   int value;
@@ -443,6 +446,7 @@ TEST_F(BindTest, IgnoreResultForRepeating) {
   EXPECT_CALL(static_func_mock_, IntMethod0()).WillOnce(Return(1337));
   EXPECT_CALL(has_ref_, AddRef()).Times(2);
   EXPECT_CALL(has_ref_, Release()).Times(2);
+  EXPECT_CALL(has_ref_, HasAtLeastOneRef()).WillRepeatedly(Return(true));
   EXPECT_CALL(has_ref_, IntMethod0()).WillOnce(Return(10));
   EXPECT_CALL(has_ref_, IntConstMethod0()).WillOnce(Return(11));
   EXPECT_CALL(no_ref_, IntMethod0()).WillOnce(Return(12));
@@ -481,6 +485,7 @@ TEST_F(BindTest, IgnoreResultForOnce) {
   EXPECT_CALL(static_func_mock_, IntMethod0()).WillOnce(Return(1337));
   EXPECT_CALL(has_ref_, AddRef()).Times(2);
   EXPECT_CALL(has_ref_, Release()).Times(2);
+  EXPECT_CALL(has_ref_, HasAtLeastOneRef()).WillRepeatedly(Return(true));
   EXPECT_CALL(has_ref_, IntMethod0()).WillOnce(Return(10));
   EXPECT_CALL(has_ref_, IntConstMethod0()).WillOnce(Return(11));
 
@@ -796,6 +801,7 @@ TYPED_TEST(BindVariantsTest, FunctionTypeSupport) {
   EXPECT_CALL(static_func_mock, VoidMethod0());
   EXPECT_CALL(has_ref, AddRef()).Times(4);
   EXPECT_CALL(has_ref, Release()).Times(4);
+  EXPECT_CALL(has_ref, HasAtLeastOneRef()).WillRepeatedly(Return(true));
   EXPECT_CALL(has_ref, VoidMethod0()).Times(2);
   EXPECT_CALL(has_ref, VoidConstMethod0()).Times(2);
 
@@ -844,6 +850,7 @@ TYPED_TEST(BindVariantsTest, ReturnValues) {
   EXPECT_CALL(static_func_mock, IntMethod0()).WillOnce(Return(1337));
   EXPECT_CALL(has_ref, AddRef()).Times(4);
   EXPECT_CALL(has_ref, Release()).Times(4);
+  EXPECT_CALL(has_ref, HasAtLeastOneRef()).WillRepeatedly(Return(true));
   EXPECT_CALL(has_ref, IntMethod0()).WillOnce(Return(31337));
   EXPECT_CALL(has_ref, IntConstMethod0())
       .WillOnce(Return(41337))
@@ -964,6 +971,7 @@ TYPED_TEST(BindVariantsTest, ScopedRefptr) {
   StrictMock<HasRef> has_ref;
   EXPECT_CALL(has_ref, AddRef()).Times(1);
   EXPECT_CALL(has_ref, Release()).Times(1);
+  EXPECT_CALL(has_ref, HasAtLeastOneRef()).WillRepeatedly(Return(true));
 
   const scoped_refptr<HasRef> refptr(&has_ref);
   CallbackType<TypeParam, int()> scoped_refptr_const_ref_cb =
@@ -1490,6 +1498,14 @@ TEST(BindDeathTest, NullCallback) {
   base::Callback<void(int)> null_cb;
   ASSERT_TRUE(null_cb.is_null());
   EXPECT_DCHECK_DEATH(base::Bind(null_cb, 42));
+}
+
+TEST(BindDeathTest, BanFirstOwnerOfRefCountedType) {
+  StrictMock<HasRef> has_ref;
+  EXPECT_DCHECK_DEATH({
+    EXPECT_CALL(has_ref, HasAtLeastOneRef()).WillOnce(Return(false));
+    base::BindOnce(&HasRef::VoidMethod0, &has_ref);
+  });
 }
 
 }  // namespace

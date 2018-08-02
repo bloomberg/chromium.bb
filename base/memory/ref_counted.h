@@ -25,6 +25,7 @@ namespace subtle {
 class BASE_EXPORT RefCountedBase {
  public:
   bool HasOneRef() const { return ref_count_ == 1; }
+  bool HasAtLeastOneRef() const { return ref_count_ >= 1; }
 
  protected:
   explicit RefCountedBase(StartRefCountFromZeroTag) {
@@ -146,6 +147,7 @@ class BASE_EXPORT RefCountedBase {
 class BASE_EXPORT RefCountedThreadSafeBase {
  public:
   bool HasOneRef() const;
+  bool HasAtLeastOneRef() const;
 
  protected:
   explicit constexpr RefCountedThreadSafeBase(StartRefCountFromZeroTag) {}

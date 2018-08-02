@@ -216,10 +216,9 @@ BindOnce(Functor&& functor, Args&&... args) {
   PolymorphicInvoke invoke_func = &Invoker::RunOnce;
 
   using InvokeFuncStorage = internal::BindStateBase::InvokeFuncStorage;
-  return CallbackType(new BindState(
+  return CallbackType(BindState::Create(
       reinterpret_cast<InvokeFuncStorage>(invoke_func),
-      std::forward<Functor>(functor),
-      std::forward<Args>(args)...));
+      std::forward<Functor>(functor), std::forward<Args>(args)...));
 }
 
 // Bind as RepeatingCallback.
@@ -257,10 +256,9 @@ BindRepeating(Functor&& functor, Args&&... args) {
   PolymorphicInvoke invoke_func = &Invoker::Run;
 
   using InvokeFuncStorage = internal::BindStateBase::InvokeFuncStorage;
-  return CallbackType(new BindState(
+  return CallbackType(BindState::Create(
       reinterpret_cast<InvokeFuncStorage>(invoke_func),
-      std::forward<Functor>(functor),
-      std::forward<Args>(args)...));
+      std::forward<Functor>(functor), std::forward<Args>(args)...));
 }
 
 // Unannotated Bind.
