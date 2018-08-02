@@ -360,6 +360,30 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="157" label="UMA_API_UNSELECT_ROW">unselectRow</int>
 </enum>
 
+<enum name="AccessoryAction">
+  <int value="0" label="Automatic password generation selected"/>
+  <int value="1" label="'Manage all passwords' link selected"/>
+</enum>
+
+<enum name="AccessoryBarContents">
+  <int value="0" label="Without contents (should never be logged)"/>
+  <int value="1" label="With any content (should always be logged)"/>
+  <int value="2" label="With Tabs"/>
+  <int value="3" label="With Actions"/>
+  <int value="4" label="With Autofill Suggestions"/>
+</enum>
+
+<enum name="AccessorySheetTrigger">
+  <int value="0" label="Sheet was closed (user-triggered or automatic)"/>
+  <int value="1" label="User closed an accessory sheet"/>
+  <int value="2" label="User opened an accessory sheet"/>
+</enum>
+
+<enum name="AccessorySuggestionType">
+  <int value="0" label="USERNAME"/>
+  <int value="1" label="PASSWORD"/>
+</enum>
+
 <enum name="AccessPasswordInSettingsEvent">
   <int value="0" label="Viewed"/>
   <int value="1" label="Copied"/>

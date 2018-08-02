@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_CLOSE;
@@ -112,7 +113,7 @@ public class ManualFillingControllerTest {
 
         assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
         mController.getMediatorForTesting().addTab(
-                new KeyboardAccessoryData.Tab(null, null, 0, null));
+                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
 
         verify(mMockTabListObserver).onItemRangeInserted(keyboardAccessoryModel.getTabList(), 0, 1);
         verify(mMockTabListObserver).onItemRangeInserted(accessorySheetModel.getTabList(), 0, 1);
@@ -186,7 +187,8 @@ public class ManualFillingControllerTest {
         // Simulate opening a new tab which automatically triggers the registration:
         Tab firstTab = addTab(mediator, 1111, null);
         mController.registerActionProvider(firstTabProvider);
-        firstTabProvider.notifyObservers(new Action[] {new Action("Generate Password", p -> {})});
+        firstTabProvider.notifyObservers(new Action[] {
+                new Action("Generate Password", GENERATE_PASSWORD_AUTOMATIC, p -> {})});
         mMockItemListObserver.onItemRangeInserted(keyboardActions, 0, 1);
         assertThat(keyboardActions.get(0).getCaption(), is("Generate Password"));
 
@@ -274,7 +276,8 @@ public class ManualFillingControllerTest {
         Tab secondTab = addTab(mediator, 1111, tab);
         PropertyProvider<Action> provider = new PropertyProvider<>();
         mController.registerActionProvider(provider);
-        provider.notifyObservers(new Action[] {new Action("Test Action", (action) -> {})});
+        provider.notifyObservers(new Action[] {
+                new Action("Test Action", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
         assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
 
         switchTab(mediator, secondTab, tab);

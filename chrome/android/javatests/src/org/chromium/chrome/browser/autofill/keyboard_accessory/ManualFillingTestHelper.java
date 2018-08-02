@@ -104,7 +104,8 @@ public class ManualFillingTestHelper {
                 new KeyboardAccessoryData.Tab(
                         AppCompatResources.getDrawable(InstrumentationRegistry.getContext(),
                                 android.R.drawable.ic_lock_lock),
-                        "TestTabDescription", R.layout.empty_accessory_sheet, null));
+                        "TestTabDescription", R.layout.empty_accessory_sheet, AccessoryTabType.ALL,
+                        null));
     }
 
     /**

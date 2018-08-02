@@ -9,16 +9,19 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryS
 import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.modelutil.PropertyObservable;
 
 /**
  * Contains the controller logic of the AccessorySheet component.
  * It communicates with data providers and native backends to update a {@link AccessorySheetModel}.
  */
-class AccessorySheetMediator {
+class AccessorySheetMediator
+        implements PropertyObservable.PropertyObserver<AccessorySheetModel.PropertyKey> {
     private final AccessorySheetModel mModel;
 
     AccessorySheetMediator(AccessorySheetModel model) {
         mModel = model;
+        mModel.addObserver(this);
     }
 
     @Nullable
@@ -90,5 +93,20 @@ class AccessorySheetMediator {
         // If there are items left, take the first one.
         int itemCountAfterDeletion = mModel.getTabList().size() - 1;
         return itemCountAfterDeletion > 0 ? 0 : NO_ACTIVE_TAB;
+    }
+
+    @Override
+    public void onPropertyChanged(PropertyObservable<AccessorySheetModel.PropertyKey> source,
+            @Nullable AccessorySheetModel.PropertyKey propertyKey) {
+        if (propertyKey == AccessorySheetModel.PropertyKey.VISIBLE) {
+            if (mModel.isVisible() && getTab() != null && getTab().getListener() != null) {
+                getTab().getListener().onTabShown();
+            }
+            return;
+        }
+        if (propertyKey == AccessorySheetModel.PropertyKey.ACTIVE_TAB_INDEX) {
+            return;
+        }
+        assert false : "Every property update needs to be handled explicitly!";
     }
 }

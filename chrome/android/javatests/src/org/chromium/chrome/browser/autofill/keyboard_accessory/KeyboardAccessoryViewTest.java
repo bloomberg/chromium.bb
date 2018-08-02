@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
@@ -68,6 +69,7 @@ public class KeyboardAccessoryViewTest {
                         android.R.drawable.ic_lock_lock), // Unused.
                 contentDescription,
                 R.layout.empty_accessory_sheet, // Unused.
+                AccessoryTabType.ALL,
                 null); // Unused.
     }
 
@@ -114,8 +116,8 @@ public class KeyboardAccessoryViewTest {
     @MediumTest
     public void testClickableActionAddedWhenChangingModel() {
         final AtomicReference<Boolean> buttonClicked = new AtomicReference<>();
-        final KeyboardAccessoryData.Action testAction =
-                new KeyboardAccessoryData.Action("Test Button", action -> buttonClicked.set(true));
+        final KeyboardAccessoryData.Action testAction = new KeyboardAccessoryData.Action(
+                "Test Button", GENERATE_PASSWORD_AUTOMATIC, action -> buttonClicked.set(true));
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.setVisible(true);
@@ -134,8 +136,10 @@ public class KeyboardAccessoryViewTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.setVisible(true);
             mModel.getActionList().set(new KeyboardAccessoryData.Action[] {
-                    new KeyboardAccessoryData.Action("First", action -> {}),
-                    new KeyboardAccessoryData.Action("Second", action -> {})});
+                    new KeyboardAccessoryData.Action(
+                            "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
+                    new KeyboardAccessoryData.Action(
+                            "Second", GENERATE_PASSWORD_AUTOMATIC, action -> {})});
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));
@@ -144,8 +148,8 @@ public class KeyboardAccessoryViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mModel.getActionList().add(
-                                new KeyboardAccessoryData.Action("Third", action -> {})));
+                        -> mModel.getActionList().add(new KeyboardAccessoryData.Action(
+                                "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})));
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Third")));
         onView(withText("First")).check(matches(isDisplayed()));
@@ -159,9 +163,12 @@ public class KeyboardAccessoryViewTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.setVisible(true);
             mModel.getActionList().set(new KeyboardAccessoryData.Action[] {
-                    new KeyboardAccessoryData.Action("First", action -> {}),
-                    new KeyboardAccessoryData.Action("Second", action -> {}),
-                    new KeyboardAccessoryData.Action("Third", action -> {})});
+                    new KeyboardAccessoryData.Action(
+                            "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
+                    new KeyboardAccessoryData.Action(
+                            "Second", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
+                    new KeyboardAccessoryData.Action(
+                            "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})});
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));

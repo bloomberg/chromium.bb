@@ -61,6 +61,7 @@ public class KeyboardAccessoryData {
         private final Drawable mIcon;
         private final String mContentDescription;
         private final int mTabLayout;
+        private final @AccessoryTabType int mRecordingType;
         private final @Nullable Listener mListener;
 
         /**
@@ -72,14 +73,20 @@ public class KeyboardAccessoryData {
              * @param view The newly created accessory sheet of the tab.
              */
             void onTabCreated(ViewGroup view);
+
+            /**
+             * Triggered when the tab becomes visible to the user.
+             */
+            void onTabShown();
         }
 
         public Tab(Drawable icon, String contentDescription, @LayoutRes int tabLayout,
-                @Nullable Listener listener) {
+                @AccessoryTabType int recordingType, @Nullable Listener listener) {
             mIcon = icon;
             mContentDescription = contentDescription;
             mTabLayout = tabLayout;
             mListener = listener;
+            mRecordingType = recordingType;
         }
 
         /**
@@ -96,6 +103,14 @@ public class KeyboardAccessoryData {
          */
         public String getContentDescription() {
             return mContentDescription;
+        }
+
+        /**
+         * The description for this tab. It will become the content description of the icon.
+         * @return A short string describing the task of this tab.
+         */
+        public @AccessoryTabType int getRecordingType() {
+            return mRecordingType;
         }
 
         /**
@@ -122,10 +137,12 @@ public class KeyboardAccessoryData {
     public static final class Action {
         private final String mCaption;
         private final Callback<Action> mActionCallback;
+        private @AccessoryAction int mType;
 
-        public Action(String caption, Callback<Action> actionCallback) {
+        public Action(String caption, @AccessoryAction int type, Callback<Action> actionCallback) {
             mCaption = caption;
             mActionCallback = actionCallback;
+            mType = type;
         }
 
         public String getCaption() {
@@ -134,6 +151,10 @@ public class KeyboardAccessoryData {
 
         public Callback<Action> getCallback() {
             return mActionCallback;
+        }
+
+        public @AccessoryAction int getActionType() {
+            return mType;
         }
     }
 

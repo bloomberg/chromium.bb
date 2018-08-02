@@ -53,11 +53,15 @@ class PasswordAccessoryBridge {
             String caption = useLongString
                     ? mActivity.getString(R.string.password_generation_accessory_button)
                     : mActivity.getString(R.string.password_generation_accessory_button_short);
-            generationAction = new Action[] {new Action(caption, (action) -> {
-                assert mNativeView
-                        != 0 : "Controller has been destroyed but the bridge wasn't cleaned up!";
-                nativeOnGenerationRequested(mNativeView);
-            })};
+            generationAction = new Action[] {
+                    new Action(caption, AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, (action) -> {
+                        assert mNativeView
+                                != 0
+                            : "Controller has been destroyed but the bridge wasn't cleaned up!";
+                        KeyboardAccessoryMetricsRecorder.recordActionSelected(
+                                AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
+                        nativeOnGenerationRequested(mNativeView);
+                    })};
         } else {
             generationAction = new Action[0];
         }
@@ -93,6 +97,9 @@ class PasswordAccessoryBridge {
                             text[i], description[i], isPassword[i] == 1, (item) -> {
                                 assert mNativeView
                                         != 0 : "Controller was destroyed but the bridge wasn't!";
+                                KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
+                                        item.isPassword() ? AccessorySuggestionType.PASSWORD
+                                                          : AccessorySuggestionType.USERNAME);
                                 nativeOnFillingTriggered(
                                         mNativeView, item.isPassword(), item.getCaption());
                             }, this::fetchFavicon);
