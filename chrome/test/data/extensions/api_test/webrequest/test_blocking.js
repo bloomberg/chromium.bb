@@ -9,12 +9,12 @@ function getURLEchoUserAgent() {
   return getServerURL('echoheader?User-Agent');
 }
 
-function getURLSetCookie() {
-  return getServerURL('set-cookie?Foo=Bar');
+function getURLSetHeader() {
+  return getServerURL('set-header?Foo:%20Bar');
 }
 
-function getURLNonUTF8SetCookie() {
-  return getServerURL('set-header?Set-Cookie%3A%20Foo%3D%FE%D1');
+function getURLNonUTF8SetHeader() {
+  return getServerURL('set-header?Foo%3A%20Bar%3D%FE%D1');
 }
 
 function getURLHttpSimpleLoad() {
@@ -534,51 +534,89 @@ runTests([
     });
   },
 
-  // Loads a testserver page that sets a cookie "Foo=Bar" but removes
-  // the cookies from the response headers so that they are not set.
+  // Loads a testserver page that sets a header "Foo: Bar" but removes the
+  // header from the response headers so that it is not set.
   function modifyResponseHeaders() {
     expect(
       [  // events
-        { label: "onBeforeRequest",
+        { label: "a-onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            type: "main_frame",
-            url: getURLSetCookie(),
-            frameUrl: getURLSetCookie(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            url: getURL("simpleLoad/a.html"),
+            frameUrl: getURL("simpleLoad/a.html"),
+            initiator: getDomain(initiators.BROWSER_INITIATED)
           }
         },
-        { label: "onBeforeSendHeaders",
+        { label: "a-onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            initiator: getDomain(initiators.BROWSER_INITIATED),
+            responseHeadersExist: true
+          }
+        },
+        { label: "a-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            initiator: getDomain(initiators.BROWSER_INITIATED),
+            responseHeadersExist: true
+          }
+        },
+        {
+          label: "x-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLSetHeader(),
+            tabId: 1,
+            type: "xmlhttprequest",
+            frameUrl: "unknown frame URL",
+            initiator: getDomain(initiators.WEB_INITIATED)
+          }
+        },
+        {
+          label: "x-onBeforeSendHeaders",
           event: "onBeforeSendHeaders",
           details: {
-            url: getURLSetCookie(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
-            // Note: no requestHeaders because we don't ask for them.
-          },
-        },
-        { label: "onSendHeaders",
-          event: "onSendHeaders",
-          details: {
-            url: getURLSetCookie(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            url: getURLSetHeader(),
+            tabId: 1,
+            type: "xmlhttprequest",
+            initiator: getDomain(initiators.WEB_INITIATED)
           }
         },
-        { label: "onHeadersReceived",
+        { label: "x-onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLSetHeader(),
+            tabId: 1,
+            type: "xmlhttprequest",
+            initiator: getDomain(initiators.WEB_INITIATED)
+          }
+        },
+        {
+          label: "x-onHeadersReceived",
           event: "onHeadersReceived",
           details: {
-            url: getURLSetCookie(),
+            url: getURLSetHeader(),
+            tabId: 1,
+            type: "xmlhttprequest",
             statusLine: "HTTP/1.1 200 OK",
             statusCode: 200,
             responseHeadersExist: true,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            initiator: getDomain(initiators.WEB_INITIATED)
           },
           retval_function: function(name, details) {
             responseHeaders = details.responseHeaders;
             var found = false;
             for (var i = 0; i < responseHeaders.length; ++i) {
-              if (responseHeaders[i].name === "Set-Cookie" &&
-                  responseHeaders[i].value.indexOf("Foo") != -1) {
+              if (responseHeaders[i].name === "Foo" &&
+                  responseHeaders[i].value.indexOf("Bar") != -1) {
                 found = true;
                 responseHeaders.splice(i);
                 break;
@@ -588,100 +626,146 @@ runTests([
             return {responseHeaders: responseHeaders};
           }
         },
-        { label: "onResponseStarted",
+        { label: "x-onResponseStarted",
           event: "onResponseStarted",
           details: {
-            url: getURLSetCookie(),
-            fromCache: false,
+            url: getURLSetHeader(),
             statusCode: 200,
+            fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
+            tabId: 1,
+            type: "xmlhttprequest",
             ip: "127.0.0.1",
-            responseHeadersExist: true,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            initiator: getDomain(initiators.WEB_INITIATED),
+            responseHeadersExist: true
           }
         },
-        { label: "onCompleted",
+        { label: "x-onCompleted",
           event: "onCompleted",
           details: {
-            url: getURLSetCookie(),
-            fromCache: false,
+            url: getURLSetHeader(),
             statusCode: 200,
+            fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
+            tabId: 1,
+            type: "xmlhttprequest",
             ip: "127.0.0.1",
-            responseHeadersExist: true,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            initiator: getDomain(initiators.WEB_INITIATED),
+            responseHeadersExist: true
           }
         },
       ],
       [  // event order
-        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
-         "onHeadersReceived", "onResponseStarted", "onCompleted"]
+        ["a-onBeforeRequest", "a-onResponseStarted", "a-onCompleted",
+         "x-onBeforeRequest", "x-onBeforeSendHeaders", "x-onSendHeaders",
+         "x-onHeadersReceived", "x-onResponseStarted", "x-onCompleted"],
       ],
       {urls: ["<all_urls>"]}, ["blocking", "responseHeaders"]);
-    // Check that the cookie was really removed.
-    navigateAndWait(getURLSetCookie(), function() {
-      chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
-        chrome.test.assertTrue(request.pass, "Cookie was not removed.");
+    navigateAndWait(getURL("simpleLoad/a.html"), function() {
+      // Check that the header will be removed from the XMLHttpRequest.
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", getURLSetHeader(), true);
+      xhr.onload = pass(function() {
+        chrome.test.assertTrue(xhr.getResponseHeader('Foo') == null,
+            'Header was not removed.');
       });
-      chrome.tabs.executeScript(tabId,
-      { code: "chrome.extension.sendRequest(" +
-            "{pass: document.cookie.indexOf('Foo') == -1});"
-        });
+      xhr.onerror = function() {
+        chrome.test.fail();
+      }
+      xhr.send();
     });
   },
 
-  // Loads a testserver page that sets a cookie "Foo=U+FDD1" which is not a
+  // Loads a testserver page that sets a header "Foo: BarU+FDD1" which is not a
   // valid UTF-8 code point. Therefore, it cannot be passed to JavaScript
   // as a normal string.
   function handleNonUTF8InModifyResponseHeaders() {
     expect(
       [  // events
-        { label: "onBeforeRequest",
+        { label: "a-onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            type: "main_frame",
-            url: getURLNonUTF8SetCookie(),
-            frameUrl: getURLNonUTF8SetCookie(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            url: getURL("simpleLoad/a.html"),
+            frameUrl: getURL("simpleLoad/a.html"),
+            initiator: getDomain(initiators.BROWSER_INITIATED)
           }
         },
-        { label: "onBeforeSendHeaders",
+        { label: "a-onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            initiator: getDomain(initiators.BROWSER_INITIATED),
+            responseHeadersExist: true
+          }
+        },
+        { label: "a-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            initiator: getDomain(initiators.BROWSER_INITIATED),
+            responseHeadersExist: true
+          }
+        },
+        {
+          label: "x-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLNonUTF8SetHeader(),
+            tabId: 1,
+            type: "xmlhttprequest",
+            frameUrl: "unknown frame URL",
+            initiator: getDomain(initiators.WEB_INITIATED)
+          }
+        },
+        {
+          label: "x-onBeforeSendHeaders",
           event: "onBeforeSendHeaders",
           details: {
-            url: getURLNonUTF8SetCookie(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
-            // Note: no requestHeaders because we don't ask for them.
-          },
-        },
-        { label: "onSendHeaders",
-          event: "onSendHeaders",
-          details: {
-            url: getURLNonUTF8SetCookie(),
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            url: getURLNonUTF8SetHeader(),
+            tabId: 1,
+            type: "xmlhttprequest",
+            initiator: getDomain(initiators.WEB_INITIATED)
           }
         },
-        { label: "onHeadersReceived",
+        { label: "x-onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLNonUTF8SetHeader(),
+            tabId: 1,
+            type: "xmlhttprequest",
+            initiator: getDomain(initiators.WEB_INITIATED)
+          }
+        },
+        {
+          label: "x-onHeadersReceived",
           event: "onHeadersReceived",
           details: {
-            url: getURLNonUTF8SetCookie(),
+            url: getURLNonUTF8SetHeader(),
+            tabId: 1,
+            type: "xmlhttprequest",
             statusLine: "HTTP/1.1 200 OK",
             statusCode: 200,
             responseHeadersExist: true,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            initiator: getDomain(initiators.WEB_INITIATED)
           },
           retval_function: function(name, details) {
             responseHeaders = details.responseHeaders;
             var found = false;
             var expectedValue = [
-              "F".charCodeAt(0),
-              "o".charCodeAt(0),
-              "o".charCodeAt(0),
+              "B".charCodeAt(0),
+              "a".charCodeAt(0),
+              "r".charCodeAt(0),
               0x3D, 0xFE, 0xD1
               ];
 
             for (var i = 0; i < responseHeaders.length; ++i) {
-              if (responseHeaders[i].name === "Set-Cookie" &&
+              if (responseHeaders[i].name === "Foo" &&
                   deepEq(responseHeaders[i].binaryValue, expectedValue)) {
                 found = true;
                 responseHeaders.splice(i);
@@ -692,45 +776,53 @@ runTests([
             return {responseHeaders: responseHeaders};
           }
         },
-        { label: "onResponseStarted",
+        { label: "x-onResponseStarted",
           event: "onResponseStarted",
           details: {
-            url: getURLNonUTF8SetCookie(),
-            fromCache: false,
+            url: getURLNonUTF8SetHeader(),
             statusCode: 200,
+            fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
+            tabId: 1,
+            type: "xmlhttprequest",
             ip: "127.0.0.1",
-            responseHeadersExist: true,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            initiator: getDomain(initiators.WEB_INITIATED),
+            responseHeadersExist: true
           }
         },
-        { label: "onCompleted",
+        { label: "x-onCompleted",
           event: "onCompleted",
           details: {
-            url: getURLNonUTF8SetCookie(),
-            fromCache: false,
+            url: getURLNonUTF8SetHeader(),
             statusCode: 200,
+            fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
+            tabId: 1,
+            type: "xmlhttprequest",
             ip: "127.0.0.1",
-            responseHeadersExist: true,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+            initiator: getDomain(initiators.WEB_INITIATED),
+            responseHeadersExist: true
           }
         },
       ],
       [  // event order
-        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
-         "onHeadersReceived", "onResponseStarted", "onCompleted"]
+        ["a-onBeforeRequest", "a-onResponseStarted", "a-onCompleted",
+         "x-onBeforeRequest", "x-onBeforeSendHeaders", "x-onSendHeaders",
+         "x-onHeadersReceived", "x-onResponseStarted", "x-onCompleted"],
       ],
       {urls: ["<all_urls>"]}, ["blocking", "responseHeaders"]);
-    // Check that the cookie was really removed.
-    navigateAndWait(getURLNonUTF8SetCookie(), function() {
-      chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
-        chrome.test.assertTrue(request.pass, "Cookie was not removed.");
+    navigateAndWait(getURL("simpleLoad/a.html"), function() {
+      // Check that the header will be removed from the XMLHttpRequest.
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", getURLNonUTF8SetHeader(), true);
+      xhr.onload = pass(function() {
+        chrome.test.assertTrue(xhr.getResponseHeader('Foo') == null,
+            'Header was not removed.');
       });
-      chrome.tabs.executeScript(tabId,
-      { code: "chrome.extension.sendRequest(" +
-            "{pass: document.cookie.indexOf('Foo') == -1});"
-        });
+      xhr.onerror = function() {
+        chrome.test.fail();
+      }
+      xhr.send();
     });
   },
 
