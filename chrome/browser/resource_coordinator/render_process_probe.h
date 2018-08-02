@@ -52,6 +52,16 @@ class RenderProcessProbeImpl : public RenderProcessProbe {
   void StartSingleGather() override;
 
  protected:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class MeasurementOutcome {
+    kMeasurementSuccess = 0,
+    kMeasurementPartialSuccess = 1,
+    kMeasurementFailure = 2,
+
+    kMaxValue = kMeasurementFailure,
+  };
+
   static constexpr base::TimeDelta kUninitializedCPUTime =
       base::TimeDelta::FromMicroseconds(-1);
 
@@ -84,8 +94,14 @@ class RenderProcessProbeImpl : public RenderProcessProbe {
   // (4) Initiate the next render process metrics collection cycle if the
   // cycle has been started and |restart_cycle| is true, which consists of a
   // delayed call to perform (1) via a timer.
-  // Virtual for testing.
-  virtual void FinishCollectionOnUIThread(bool restart_cycle);
+  void FinishCollectionOnUIThread(bool restart_cycle);
+
+  // Test seams.
+  virtual void AfterFinishCollectionOnUIThread() {}
+  virtual void RegisterRenderProcesses();
+  virtual void StartMemoryMeasurement(base::TimeTicks collection_start_time);
+  virtual base::ProcessId GetProcessId(int host_id,
+                                       const RenderProcessInfo& info);
 
   // Allows FieldTrial parameters to override defaults.
   void UpdateWithFieldTrialParams();

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -92,34 +93,7 @@ void RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread() {
 
   ++current_gather_cycle_;
 
-  for (content::RenderProcessHost::iterator rph_iter =
-           content::RenderProcessHost::AllHostsIterator();
-       !rph_iter.IsAtEnd(); rph_iter.Advance()) {
-    content::RenderProcessHost* host = rph_iter.GetCurrentValue();
-    // Process may not be valid yet.
-    if (!host->GetProcess().IsValid()) {
-      continue;
-    }
-
-    auto& render_process_info = render_process_info_map_[host->GetID()];
-    render_process_info.last_gather_cycle_active = current_gather_cycle_;
-    if (render_process_info.metrics.get() == nullptr) {
-      DCHECK(!render_process_info.process.IsValid());
-
-      // Duplicate the process to retain ownership of it through the thread
-      // bouncing.
-      render_process_info.process = host->GetProcess().Duplicate();
-
-#if defined(OS_MACOSX)
-      render_process_info.metrics = base::ProcessMetrics::CreateProcessMetrics(
-          render_process_info.process.Handle(),
-          content::BrowserChildProcessHost::GetPortProvider());
-#else
-      render_process_info.metrics = base::ProcessMetrics::CreateProcessMetrics(
-          render_process_info.process.Handle());
-#endif
-    }
-  }
+  RegisterRenderProcesses();
 
   is_gathering_ = true;
 
@@ -138,13 +112,7 @@ void RenderProcessProbeImpl::
 
   base::TimeTicks collection_start_time = base::TimeTicks::Now();
 
-  // Dispatch the memory collection request.
-  memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestPrivateMemoryFootprint(
-          base::kNullProcessId,
-          base::BindRepeating(&RenderProcessProbeImpl::
-                                  ProcessGlobalMemoryDumpAndDispatchOnIOThread,
-                              base::Unretained(this), collection_start_time));
+  StartMemoryMeasurement(collection_start_time);
 
   RenderProcessInfoMap::iterator iter = render_process_info_map_.begin();
   while (iter != render_process_info_map_.end()) {
@@ -181,11 +149,22 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
     mojom::ProcessResourceMeasurementPtr measurement =
         mojom::ProcessResourceMeasurement::New();
 
-    measurement->pid = render_process_info.process.Pid();
+    measurement->pid =
+        GetProcessId(render_process_info_map_entry.first, render_process_info);
     measurement->cpu_usage = render_process_info.cpu_usage;
 
     batch->measurements.push_back(std::move(measurement));
   }
+
+  // Record the overall outcome of the measurement.
+  MeasurementOutcome outcome = MeasurementOutcome::kMeasurementSuccess;
+  if (!global_success)
+    outcome = MeasurementOutcome::kMeasurementPartialSuccess;
+  if (!dump)
+    outcome = MeasurementOutcome::kMeasurementFailure;
+
+  UMA_HISTOGRAM_ENUMERATION("ResourceCoordinator.Measurement.Memory.Outcome",
+                            outcome);
 
   if (dump) {
     // Then amend the ones we have memory metrics for with their private
@@ -195,21 +174,50 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
     // This may happen due to the inherent race between the request and
     // starting/stopping renderers, or because of other failures
     // This may therefore provide incomplete information.
+    size_t num_non_measured_processes = batch->measurements.size();
+    size_t num_unexpected_processes = 0;
     for (const auto& dump_entry : dump->process_dumps()) {
       base::ProcessId pid = dump_entry.pid();
 
+      bool used_entry = false;
       for (const auto& measurement : batch->measurements) {
-        if (measurement->pid == pid) {
-          measurement->private_footprint_kb =
-              dump_entry.os_dump().private_footprint_kb;
-          break;
-        }
+        if (measurement->pid != pid)
+          continue;
+
+        used_entry = true;
+
+        // The only way this could fail is if there are multiple measurements
+        // for the same PID in the memory dump.
+        DCHECK_LT(0u, num_non_measured_processes);
+        --num_non_measured_processes;
+
+        measurement->private_footprint_kb =
+            dump_entry.os_dump().private_footprint_kb;
+        break;
       }
+
+      if (!used_entry)
+        ++num_unexpected_processes;
     }
+
+    // Record the number of processes we unexpectedly did or didn't get memory
+    // measurements for.
+    UMA_HISTOGRAM_COUNTS_1000(
+        "ResourceCoordinator.Measurement.Memory.UnmeasuredProcesses",
+        num_non_measured_processes);
+    // TODO(siggi): will this count extension/utility/background worker
+    //     processes?
+    UMA_HISTOGRAM_COUNTS_1000(
+        "ResourceCoordinator.Measurement.Memory.ExtraProcesses",
+        num_unexpected_processes);
   } else {
     // We should only get a nullptr in case of failure.
     DCHECK(!global_success);
   }
+
+  // Record the number of processes encountered.
+  UMA_HISTOGRAM_COUNTS_1000("ResourceCoordinator.Measurement.TotalProcesses",
+                            batch->measurements.size());
 
   // TODO(siggi): Because memory dump requests may be combined with earlier,
   //     in-progress requests, this is an upper bound for the start time.
@@ -218,6 +226,11 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
   batch->batch_started_time = collection_start_time;
   batch->batch_ended_time = base::TimeTicks::Now();
 
+  // Record the duration of the measurement process.
+  UMA_HISTOGRAM_TIMES("ResourceCoordinator.Measurement.Duration",
+                      batch->batch_ended_time - batch->batch_started_time);
+
+  // TODO(siggi): UMA record measurement time.
   bool should_restart = DispatchMetrics(std::move(batch));
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -237,6 +250,56 @@ void RenderProcessProbeImpl::FinishCollectionOnUIThread(bool restart_cycle) {
   } else {
     is_gather_cycle_started_ = false;
   }
+
+  AfterFinishCollectionOnUIThread();
+}
+
+void RenderProcessProbeImpl::RegisterRenderProcesses() {
+  for (content::RenderProcessHost::iterator rph_iter =
+           content::RenderProcessHost::AllHostsIterator();
+       !rph_iter.IsAtEnd(); rph_iter.Advance()) {
+    content::RenderProcessHost* host = rph_iter.GetCurrentValue();
+    // Process may not be valid yet.
+    if (!host->GetProcess().IsValid()) {
+      continue;
+    }
+
+    auto& render_process_info = render_process_info_map_[host->GetID()];
+    render_process_info.last_gather_cycle_active = current_gather_cycle_;
+    if (render_process_info.metrics.get() == nullptr) {
+      DCHECK(!render_process_info.process.IsValid());
+
+      // Duplicate the process to retain ownership of it through the thread
+      // bouncing.
+      render_process_info.process = host->GetProcess().Duplicate();
+    }
+
+#if defined(OS_MACOSX)
+    render_process_info.metrics = base::ProcessMetrics::CreateProcessMetrics(
+        render_process_info.process.Handle(),
+        content::BrowserChildProcessHost::GetPortProvider());
+#else
+    render_process_info.metrics = base::ProcessMetrics::CreateProcessMetrics(
+        render_process_info.process.Handle());
+#endif
+  }
+}
+
+void RenderProcessProbeImpl::StartMemoryMeasurement(
+    base::TimeTicks collection_start_time) {
+  // Dispatch the memory collection request.
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestPrivateMemoryFootprint(
+          base::kNullProcessId,
+          base::BindRepeating(&RenderProcessProbeImpl::
+                                  ProcessGlobalMemoryDumpAndDispatchOnIOThread,
+                              base::Unretained(this), collection_start_time));
+}
+
+base::ProcessId RenderProcessProbeImpl::GetProcessId(
+    int /*host_id*/,
+    const RenderProcessInfo& info) {
+  return info.process.Pid();
 }
 
 void RenderProcessProbeImpl::UpdateWithFieldTrialParams() {

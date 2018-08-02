@@ -23,6 +23,7 @@
 #include "url/gurl.h"
 
 namespace resource_coordinator {
+namespace {
 
 class TestingRenderProcessProbe : public RenderProcessProbeImpl {
  public:
@@ -40,9 +41,7 @@ class TestingRenderProcessProbe : public RenderProcessProbeImpl {
     return false;
   }
 
-  void FinishCollectionOnUIThread(bool restart_cycle) override {
-    RenderProcessProbeImpl::FinishCollectionOnUIThread(restart_cycle);
-
+  void AfterFinishCollectionOnUIThread() override {
     current_run_loop_->QuitWhenIdle();
   }
 
@@ -93,6 +92,8 @@ class TestingRenderProcessProbe : public RenderProcessProbeImpl {
 
   DISALLOW_COPY_AND_ASSIGN(TestingRenderProcessProbe);
 };
+
+}  // namespace
 
 class RenderProcessProbeBrowserTest : public InProcessBrowserTest {
  public:

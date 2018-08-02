@@ -3026,6 +3026,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/local_site_characteristics_webcontents_observer_unittest.cc",
       "../browser/resource_coordinator/page_signal_receiver_unittest.cc",
       "../browser/resource_coordinator/performance_measurement_manager_unittest.cc",
+      "../browser/resource_coordinator/render_process_probe_unittest.cc",
       "../browser/resource_coordinator/session_restore_policy_unittest.cc",
       "../browser/resource_coordinator/tab_activity_watcher_unittest.cc",
       "../browser/resource_coordinator/tab_lifecycle_unit_source_unittest.cc",
