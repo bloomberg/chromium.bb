@@ -7,12 +7,15 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "device/fido/fido_request_handler_base.h"
+#include "device/fido/fido_transport_protocol.h"
 
 class Profile;
 
@@ -49,6 +52,7 @@ class ChromeAuthenticatorRequestDelegate
       const override;
 #endif  // defined(OS_MACOSX)
 
+  base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
   base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
 
  private:
@@ -69,6 +73,8 @@ class ChromeAuthenticatorRequestDelegate
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
+  void UpdateLastTransportUsed(
+      device::FidoTransportProtocol transport) override;
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;
