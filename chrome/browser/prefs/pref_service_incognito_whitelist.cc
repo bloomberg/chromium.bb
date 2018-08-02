@@ -84,13 +84,57 @@ const char* persistent_pref_names[] = {
     ash::prefs::kAccessibilitySelectToSpeakEnabled,
     ash::prefs::kAccessibilitySwitchAccessEnabled,
     ash::prefs::kAccessibilityDictationEnabled,
-    ash::prefs::kDockedMagnifierEnabled,
-    ash::prefs::kDockedMagnifierScale,
+    ash::prefs::kDockedMagnifierEnabled, ash::prefs::kDockedMagnifierScale,
     ash::prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
     ash::prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
     ash::prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
-    ash::prefs::kShouldAlwaysShowAccessibilityMenu
+    ash::prefs::kShouldAlwaysShowAccessibilityMenu,
 #endif  // defined(OS_CHROMEOS)
+
+    // Metrics preferences are out of profile scope and are merged between
+    // incognito and regular modes.
+    metrics::prefs::kInstallDate, metrics::prefs::kMetricsClientID,
+    metrics::prefs::kMetricsDefaultOptIn, metrics::prefs::kMetricsInitialLogs,
+    metrics::prefs::kMetricsLowEntropySource, metrics::prefs::kMetricsMachineId,
+    metrics::prefs::kMetricsOngoingLogs, metrics::prefs::kMetricsResetIds,
+
+    metrics::prefs::kMetricsReportingEnabled,
+    metrics::prefs::kMetricsReportingEnabledTimestamp,
+    metrics::prefs::kMetricsSessionID, metrics::prefs::kMetricsLastSeenPrefix,
+    metrics::prefs::kStabilityBreakpadRegistrationFail,
+    metrics::prefs::kStabilityBreakpadRegistrationSuccess,
+    metrics::prefs::kStabilityBrowserLastLiveTimeStamp,
+    metrics::prefs::kStabilityChildProcessCrashCount,
+    metrics::prefs::kStabilityCrashCount,
+    metrics::prefs::kStabilityCrashCountWithoutGmsCoreUpdate,
+    metrics::prefs::kStabilityDebuggerNotPresent,
+    metrics::prefs::kStabilityDebuggerPresent,
+    metrics::prefs::kStabilityDeferredCount,
+    metrics::prefs::kStabilityDiscardCount,
+    metrics::prefs::kStabilityExecutionPhase,
+    metrics::prefs::kStabilityExitedCleanly,
+    metrics::prefs::kStabilityExtensionRendererCrashCount,
+    metrics::prefs::kStabilityExtensionRendererFailedLaunchCount,
+    metrics::prefs::kStabilityExtensionRendererLaunchCount,
+    metrics::prefs::kStabilityGmsCoreVersion,
+    metrics::prefs::kStabilityIncompleteSessionEndCount,
+    metrics::prefs::kStabilityLaunchCount,
+    metrics::prefs::kStabilityPageLoadCount,
+    metrics::prefs::kStabilityRendererCrashCount,
+    metrics::prefs::kStabilityRendererFailedLaunchCount,
+    metrics::prefs::kStabilityRendererHangCount,
+    metrics::prefs::kStabilityRendererLaunchCount,
+    metrics::prefs::kStabilitySavedSystemProfile,
+    metrics::prefs::kStabilitySavedSystemProfileHash,
+    metrics::prefs::kStabilitySessionEndCompleted,
+    metrics::prefs::kStabilityStatsBuildTime,
+    metrics::prefs::kStabilityStatsVersion,
+    metrics::prefs::kStabilitySystemCrashCount,
+    metrics::prefs::kStabilityVersionMismatchCount,
+    metrics::prefs::kUninstallLaunchCount,
+    metrics::prefs::kUninstallMetricsPageLoadCount,
+    metrics::prefs::kUninstallMetricsUptimeSec, metrics::prefs::kUkmCellDataUse,
+    metrics::prefs::kUmaCellDataUse, metrics::prefs::kUserCellDataUse,
 };
 
 // TODO(https://crbug.com/861722): Remove this list.
@@ -821,59 +865,6 @@ const char* temporary_incognito_whitelist[] = {
     // components/language/core/browser/pref_names.h
     language::prefs::kApplicationLocale, language::prefs::kUserLanguageProfile,
 
-    // components/metrics/metrics_pref_names.h
-    // metrics::prefs::kDeprecatedMetricsInitialLogs,
-    // metrics::prefs::kDeprecatedMetricsOngoingLogs,
-    metrics::prefs::kInstallDate, metrics::prefs::kMetricsClientID,
-    metrics::prefs::kMetricsDefaultOptIn, metrics::prefs::kMetricsInitialLogs,
-    metrics::prefs::kMetricsLowEntropySource, metrics::prefs::kMetricsMachineId,
-    metrics::prefs::kMetricsOngoingLogs, metrics::prefs::kMetricsResetIds,
-
-    metrics::prefs::kMetricsReportingEnabled,
-    metrics::prefs::kMetricsReportingEnabledTimestamp,
-    metrics::prefs::kMetricsSessionID, metrics::prefs::kMetricsLastSeenPrefix,
-
-    // Preferences for recording stability logs.
-    metrics::prefs::kStabilityBreakpadRegistrationFail,
-    metrics::prefs::kStabilityBreakpadRegistrationSuccess,
-    metrics::prefs::kStabilityBrowserLastLiveTimeStamp,
-    metrics::prefs::kStabilityChildProcessCrashCount,
-    metrics::prefs::kStabilityCrashCount,
-    metrics::prefs::kStabilityCrashCountWithoutGmsCoreUpdate,
-    metrics::prefs::kStabilityDebuggerNotPresent,
-    metrics::prefs::kStabilityDebuggerPresent,
-    metrics::prefs::kStabilityDeferredCount,
-    metrics::prefs::kStabilityDiscardCount,
-    metrics::prefs::kStabilityExecutionPhase,
-    metrics::prefs::kStabilityExitedCleanly,
-    metrics::prefs::kStabilityExtensionRendererCrashCount,
-    metrics::prefs::kStabilityExtensionRendererFailedLaunchCount,
-    metrics::prefs::kStabilityExtensionRendererLaunchCount,
-    metrics::prefs::kStabilityGmsCoreVersion,
-    metrics::prefs::kStabilityIncompleteSessionEndCount,
-    metrics::prefs::kStabilityLaunchCount,
-    metrics::prefs::kStabilityPageLoadCount,
-    metrics::prefs::kStabilityRendererCrashCount,
-    metrics::prefs::kStabilityRendererFailedLaunchCount,
-    metrics::prefs::kStabilityRendererHangCount,
-    metrics::prefs::kStabilityRendererLaunchCount,
-    metrics::prefs::kStabilitySavedSystemProfile,
-    metrics::prefs::kStabilitySavedSystemProfileHash,
-    metrics::prefs::kStabilitySessionEndCompleted,
-    metrics::prefs::kStabilityStatsBuildTime,
-    metrics::prefs::kStabilityStatsVersion,
-    metrics::prefs::kStabilitySystemCrashCount,
-    metrics::prefs::kStabilityVersionMismatchCount,
-
-    // Preferences for generating metrics at uninstall time.
-    metrics::prefs::kUninstallLaunchCount,
-    metrics::prefs::kUninstallMetricsPageLoadCount,
-    metrics::prefs::kUninstallMetricsUptimeSec,
-
-    // For measuring data use for throttling UMA log uploads on cellular.
-    metrics::prefs::kUkmCellDataUse, metrics::prefs::kUmaCellDataUse,
-    metrics::prefs::kUserCellDataUse,
-
     // components/network_time/network_time_pref_names.h
     network_time::prefs::kNetworkTimeMapping,
     network_time::prefs::kNetworkTimeQueriesEnabled,
@@ -1003,11 +994,8 @@ namespace prefs {
 
 std::vector<const char*> GetIncognitoPersistentPrefsWhitelist() {
   std::vector<const char*> whitelist;
-  // TODO(https://crbug.com/861722): Change to base::size when the list is non-
-  // empty for all platforms.
-  whitelist.insert(
-      whitelist.end(), persistent_pref_names,
-      persistent_pref_names + sizeof(persistent_pref_names) / sizeof(char*));
+  whitelist.insert(whitelist.end(), persistent_pref_names,
+                   persistent_pref_names + base::size(persistent_pref_names));
 
   // TODO(https://crbug.com/861722): Remove after the list is audited and
   // emptied.
