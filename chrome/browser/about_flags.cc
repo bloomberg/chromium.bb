@@ -144,6 +144,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/new_net_error_page_feature.h"
+#include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "ui/message_center/public/cpp/features.h"
@@ -1206,6 +1207,12 @@ const FeatureEntry::FeatureVariation kNewNetErrorPageUIVariations[] = {
     {"Content Preview", &kNewNetErrorPageUIContentPreview, 1, nullptr},
     {"Content Preview + Auto download", &kNewNetErrorPageUIContentPreviewAutoDL,
      1, nullptr}};
+
+const FeatureEntry::FeatureParam kExploreSitesExperimental = {
+    chrome::android::explore_sites::kExploreSitesVariationParameterName,
+    chrome::android::explore_sites::kExploreSitesVariationExperimental};
+const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
+    {"Experimental", &kExploreSitesExperimental, 1, nullptr}};
 #endif  // defined(OS_ANDROID)
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -1380,7 +1387,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchUnityIntegration)},
     {"explore-sites", flag_descriptions::kExploreSitesName,
      flag_descriptions::kExploreSitesDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kExploreSites)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kExploreSites,
+                                    kExploreSitesVariations,
+                                    "ExploreSites")},
 #endif  // OS_ANDROID
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
