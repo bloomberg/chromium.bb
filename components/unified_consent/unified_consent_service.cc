@@ -178,15 +178,23 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
 }
 
 void UnifiedConsentService::SetSyncEverythingIfPossible(bool sync_everything) {
+  syncer::SyncPrefs sync_prefs(pref_service_);
+  if (sync_everything == sync_prefs.HasKeepEverythingSynced())
+    return;
+
   if (!sync_service_->IsEngineInitialized())
     return;
 
   if (sync_everything) {
     pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
                               true);
+    sync_service_->OnUserChoseDatatypes(sync_everything,
+                                        syncer::UserSelectableTypes());
+  } else {
+    syncer::ModelTypeSet preferred = sync_service_->GetPreferredDataTypes();
+    preferred.RetainAll(syncer::UserSelectableTypes());
+    sync_service_->OnUserChoseDatatypes(false, preferred);
   }
-  sync_service_->OnUserChoseDatatypes(sync_everything,
-                                      syncer::UserSelectableTypes());
 }
 
 void UnifiedConsentService::MigrateProfileToUnifiedConsent() {

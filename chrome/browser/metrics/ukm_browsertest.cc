@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -13,10 +16,12 @@
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/testing/metrics_reporting_pref_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -24,6 +29,7 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/ukm_service.h"
 #include "components/ukm/ukm_source.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -33,6 +39,10 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 #include "third_party/zlib/google/compression_utils.h"
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/signin/scoped_account_consistency.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -105,9 +115,20 @@ class MetricsConsentOverride {
 };
 
 // Test fixture that provides access to some UKM internals.
-class UkmBrowserTest : public SyncTest {
+class UkmBrowserTestBase : public SyncTest {
  public:
-  UkmBrowserTest() : SyncTest(SINGLE_CLIENT) {}
+  explicit UkmBrowserTestBase(bool is_unified_consent_enabled)
+      : SyncTest(SINGLE_CLIENT),
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+        scoped_dice_(is_unified_consent_enabled
+                         ? std::make_unique<ScopedAccountConsistencyDice>()
+                         : nullptr),
+#endif
+        scoped_unified_consent_(
+            is_unified_consent_enabled
+                ? unified_consent::UnifiedConsentFeatureState::kEnabledNoBump
+                : unified_consent::UnifiedConsentFeatureState::kDisabled) {
+  }
 
   void SetUp() override {
     // Explicitly enable UKM and disable the MetricsReporting (which should
@@ -174,6 +195,7 @@ class UkmBrowserTest : public SyncTest {
  protected:
   std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
       Profile* profile) {
+    UnifiedConsentServiceFactory::GetForProfile(profile);
     browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
@@ -223,16 +245,42 @@ class UkmBrowserTest : public SyncTest {
     return g_browser_process->GetMetricsServicesManager()->GetUkmService();
   }
   base::test::ScopedFeatureList scoped_feature_list_;
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // ScopedAccountConsistencyDice is required for unified consent to be enabled.
+  // Note that it uses forced field trials to enable DICE which disable metrics
+  // which are required by UkmConsentParamBrowserTest (see
+  // |IsMetricsReportingEnabledForOfficialBuild|).
+  const std::unique_ptr<ScopedAccountConsistencyDice> scoped_dice_;
+#endif
+  const unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
+  DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestBase);
+};
+
+class UkmBrowserTestUnifiedConsentDisabled : public UkmBrowserTestBase {
+ public:
+  UkmBrowserTestUnifiedConsentDisabled() : UkmBrowserTestBase(false) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestUnifiedConsentDisabled);
+};
+
+class UkmBrowserTest : public UkmBrowserTestBase,
+                       public testing::WithParamInterface<bool> {
+ public:
+  UkmBrowserTest() : UkmBrowserTestBase(GetParam()) {}
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(UkmBrowserTest);
 };
 
 // This tests if UKM service is enabled/disabled appropriately based on an
 // input bool param. The bool reflects if metrics reporting state is
 // enabled/disabled via prefs.
-class UkmConsentParamBrowserTest : public UkmBrowserTest,
+class UkmConsentParamBrowserTest : public UkmBrowserTestBase,
                                    public testing::WithParamInterface<bool> {
  public:
-  UkmConsentParamBrowserTest() {}
+  UkmConsentParamBrowserTest()
+      : UkmBrowserTestBase(/*is_unified_consent=*/false) {}
 
   static bool IsMetricsAndCrashReportingEnabled() {
     return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
@@ -262,7 +310,7 @@ class UkmConsentParamBrowserTest : public UkmBrowserTest,
 
 class UkmEnabledChecker : public SingleClientStatusChangeChecker {
  public:
-  UkmEnabledChecker(UkmBrowserTest* test,
+  UkmEnabledChecker(UkmBrowserTestBase* test,
                     browser_sync::ProfileSyncService* service,
                     bool want_enabled)
       : SingleClientStatusChangeChecker(service),
@@ -279,7 +327,7 @@ class UkmEnabledChecker : public SingleClientStatusChangeChecker {
   }
 
  private:
-  UkmBrowserTest* const test_;
+  UkmBrowserTestBase* const test_;
   const bool want_enabled_;
   DISALLOW_COPY_AND_ASSIGN(UkmEnabledChecker);
 };
@@ -288,7 +336,7 @@ class UkmEnabledChecker : public SingleClientStatusChangeChecker {
 // Keep in sync with UkmTest.testRegularPlusIncognitoCheck in
 // chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
 // UkmTest.java.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, RegularPlusIncognitoCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -327,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
 // Keep in sync with UkmTest.testIncognitoPlusRegularCheck in
 // chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
 // UkmTest.java.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, IncognitoPlusRegularCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -348,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
 }
 
 // Make sure that UKM is disabled while a guest profile's window is open.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusGuestCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, RegularPlusGuestCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -376,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusGuestCheck) {
 }
 
 // Make sure that UKM is disabled while an non-sync profile's window is open.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, OpenNonSyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -407,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
 // chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsConsentCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -437,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   CloseBrowserSynchronously(sync_browser);
 }
 
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogProtoData) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -479,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
 // Keep in sync with UkmTest.consentAddedButNoSyncCheck in
 // chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
   MetricsConsentOverride metrics_consent(false);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -502,7 +550,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
 // Keep in sync with UkmTest.singleDisableHistorySyncCheck in
 // chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableHistorySyncCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -515,19 +563,25 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   EXPECT_NE(0U, original_client_id);
 
   harness->DisableSyncForDatatype(syncer::TYPED_URLS);
-  EXPECT_FALSE(ukm_enabled());
+  if (IsUnifiedConsentEnabled(profile)) {
+    // Disable history sync does not disable UKM when unified consent is
+    // enabled.
+    EXPECT_TRUE(ukm_enabled());
+  } else {
+    EXPECT_FALSE(ukm_enabled());
 
-  harness->EnableSyncForDatatype(syncer::TYPED_URLS);
-  EXPECT_TRUE(ukm_enabled());
-  // Client ID should be reset.
-  EXPECT_NE(original_client_id, client_id());
+    harness->EnableSyncForDatatype(syncer::TYPED_URLS);
+    EXPECT_TRUE(ukm_enabled());
+    // Client ID should be reset.
+    EXPECT_NE(original_client_id, client_id());
+  }
 
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
 }
 
 // Make sure that UKM is disabled when any open sync window disables history.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableHistorySyncCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableHistorySyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
@@ -547,10 +601,16 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableHistorySyncCheck) {
   EXPECT_EQ(original_client_id, client_id());
 
   harness2->DisableSyncForDatatype(syncer::TYPED_URLS);
-  EXPECT_FALSE(ukm_enabled());
-  EXPECT_NE(original_client_id, client_id());
-  original_client_id = client_id();
-  EXPECT_NE(0U, original_client_id);
+  if (IsUnifiedConsentEnabled(profile2)) {
+    // Disable history sync does not disable UKM when unified consent is
+    // enabled.
+    EXPECT_TRUE(ukm_enabled());
+  } else {
+    EXPECT_FALSE(ukm_enabled());
+    EXPECT_NE(original_client_id, client_id());
+    original_client_id = client_id();
+    EXPECT_NE(0U, original_client_id);
+  }
 
   harness2->EnableSyncForDatatype(syncer::TYPED_URLS);
   EXPECT_TRUE(ukm_enabled());
@@ -566,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableHistorySyncCheck) {
 
 // Make sure that extension URLs are disabled when an open sync window
 // disables it.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -579,11 +639,11 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
   uint64_t original_client_id = client_id();
   EXPECT_NE(0U, original_client_id);
 
-  harness->DisableSyncForDatatype(syncer::EXTENSIONS);
+  ASSERT_TRUE(harness->DisableSyncForDatatype(syncer::EXTENSIONS));
   EXPECT_TRUE(ukm_enabled());
   EXPECT_FALSE(ukm_extensions_enabled());
 
-  harness->EnableSyncForDatatype(syncer::EXTENSIONS);
+  ASSERT_TRUE(harness->EnableSyncForDatatype(syncer::EXTENSIONS));
   EXPECT_TRUE(ukm_enabled());
   EXPECT_TRUE(ukm_extensions_enabled());
   // Client ID should not be reset.
@@ -595,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
 
 // Make sure that extension URLs are disabled when any open sync window
 // disables it.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
@@ -636,7 +696,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
 // Keep in sync with UkmTest.secondaryPassphraseCheck in
 // chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SecondaryPassphraseCheck) {
+IN_PROC_BROWSER_TEST_F(UkmBrowserTestUnifiedConsentDisabled,
+                       SecondaryPassphraseCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -670,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SecondaryPassphraseCheck) {
 // Keep in sync with UkmTest.singleSyncSignoutCheck in
 // chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleSyncSignoutCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -695,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
 // there.
 #if !defined(OS_CHROMEOS)
 // Make sure that UKM is disabled when any profile signs out of Sync.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiSyncSignoutCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
@@ -729,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
 
 // Make sure that if history/sync services weren't available when we tried to
 // attach listeners, UKM is not enabled.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ServiceListenerInitFailedCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, ServiceListenerInitFailedCheck) {
   MetricsConsentOverride metrics_consent(true);
   ChromeMetricsServiceClient::SetNotificationListenerSetupFailedForTesting(
       true);
@@ -745,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ServiceListenerInitFailedCheck) {
 }
 
 // Make sure that UKM is not affected by MetricsReporting Feature (sampling).
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsReportingCheck) {
   // Need to set the Metrics Default to OPT_OUT to trigger MetricsReporting.
   DCHECK(g_browser_process);
   PrefService* local_state = g_browser_process->local_state();
@@ -773,7 +834,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
 // Keep in sync with UkmTest.testHistoryDeleteCheck in
 // chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
 // UkmTest.java.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, HistoryDeleteCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -800,6 +861,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
 }
+
+// Run UKM browser test suite with Unified Consent enabled and disabled.
+INSTANTIATE_TEST_CASE_P(, UkmBrowserTest, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
   // Note we are not using the synthetic MetricsConsentOverride since we are

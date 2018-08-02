@@ -47434,6 +47434,7 @@ Full version information for the fingerprint enum values:
   <int value="14" label="Disabled by initialized, connected, passphrase"/>
   <int value="15"
       label="Disabled by history, initialized, connected, passphrase"/>
+  <int value="16" label="Disabled by URL-keyed anonymized data collection"/>
 </enum>
 
 <enum name="UmaCleanExitConsistency">
