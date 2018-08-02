@@ -1233,6 +1233,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(RenderFrameHost* render_frame_host);
 
+#if defined(OS_MACOSX)
+  // Returns whether WebAuthn supports the built-in Touch ID platform
+  // authenticator. If true, the embedder must supply a configuration in
+  // |AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig|.
+  virtual bool IsWebAuthenticationTouchIdAuthenticatorSupported();
+#endif
+
   // Get platform ClientCertStore. May return nullptr.
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       ResourceContext* resource_context);

@@ -18,6 +18,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/cbor/cbor_reader.h"
 #include "components/cbor/cbor_values.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
@@ -195,6 +196,7 @@ constexpr OriginClaimedAuthorityPair kInvalidRelyingPartyTestCases[] = {
     {"https://com", "https://www.gstatic.com/securitykey/origins.json"},
 };
 
+using TestIsUvpaaCallback = device::test::ValueCallbackReceiver<bool>;
 using TestMakeCredentialCallback = device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     MakeCredentialAuthenticatorResponsePtr>;
@@ -1102,6 +1104,14 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
         individual_attestation, attestation_consent, is_focused);
   }
 
+#if defined(OS_MACOSX)
+  bool IsWebAuthenticationTouchIdAuthenticatorSupported() override {
+    return supports_touch_id;
+  }
+
+  bool supports_touch_id = true;
+#endif
+
   // If set, this closure will be called when the subsequently constructed
   // delegate is informed that the request has started.
   base::OnceClosure request_started_callback;
@@ -1495,6 +1505,20 @@ TEST_F(AuthenticatorContentBrowserClientTest,
     EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, cb.status());
   }
 }
+
+#if defined(OS_MACOSX)
+TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalseWithoutTouchId) {
+  test_client_.supports_touch_id = false;
+
+  NavigateAndCommit(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  TestIsUvpaaCallback cb;
+  authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+  cb.WaitForCallback();
+  EXPECT_FALSE(cb.value());
+}
+#endif
 
 class MockAuthenticatorRequestDelegateObserver
     : public TestAuthenticatorRequestDelegate {

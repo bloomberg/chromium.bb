@@ -608,15 +608,17 @@ void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
 
 bool AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailableImpl() {
 #if defined(OS_MACOSX)
-  if (browser_context()->IsOffTheRecord()) {
+  // Touch ID is disabled, regardless of hardware support, if the embedder
+  // doesn't support it or if this is an Incognito session. N.B.
+  // request_delegate_ may be nullptr at this point.
+  if (!GetContentClient()
+           ->browser()
+           ->IsWebAuthenticationTouchIdAuthenticatorSupported() ||
+      browser_context()->IsOffTheRecord()) {
     return false;
   }
 
-  // Check whether Touch ID is supported by the hardware and enrolled in the
-  // OS. Also check whether the (embedder-specific) request delegate provides a
-  // Touch ID authenticator config.
-  return device::fido::mac::TouchIdAuthenticator::IsAvailable() &&
-         request_delegate_->GetTouchIdAuthenticatorConfig();
+  return device::fido::mac::TouchIdAuthenticator::IsAvailable();
 #else
   return false;
 #endif
