@@ -346,9 +346,10 @@ base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
 
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
-  // Ignore the event if tiles provided by the Suggestions Service, which take
-  // precedence.
-  if (mv_source_ == TileSource::SUGGESTIONS_SERVICE) {
+  // Ignore the event if tiles are provided by the Suggestions Service or custom
+  // links, which take precedence.
+  if ((custom_links_ && custom_links_->IsInitialized()) ||
+      mv_source_ == TileSource::SUGGESTIONS_SERVICE) {
     return;
   }
 
@@ -380,8 +381,11 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
 
 void MostVisitedSites::OnSuggestionsProfileChanged(
     const SuggestionsProfile& suggestions_profile) {
-  if (suggestions_profile.suggestions_size() == 0 &&
-      mv_source_ != TileSource::SUGGESTIONS_SERVICE) {
+  // Ignore the event if tiles are provided by custom links, which take
+  // precedence.
+  if ((custom_links_ && custom_links_->IsInitialized()) ||
+      (suggestions_profile.suggestions_size() == 0 &&
+       mv_source_ != TileSource::SUGGESTIONS_SERVICE)) {
     return;
   }
 
