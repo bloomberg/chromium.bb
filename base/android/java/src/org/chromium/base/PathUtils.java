@@ -20,6 +20,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,9 +37,9 @@ public abstract class PathUtils {
     private static final int CACHE_DIRECTORY = 2;
     private static final int NUM_DIRECTORIES = 3;
     private static final AtomicBoolean sInitializationStarted = new AtomicBoolean();
-    private static AsyncTask<Void, Void, String[]> sDirPathFetchTask;
+    private static FutureTask<String[]> sDirPathFetchTask;
 
-    // If the AsyncTask started in setPrivateDataDirectorySuffix() fails to complete by the time we
+    // If the FutureTask started in setPrivateDataDirectorySuffix() fails to complete by the time we
     // need the values, we will need the suffix so that we can restart the task synchronously on
     // the UI thread.
     private static String sDataDirectorySuffix;
@@ -102,8 +103,8 @@ public abstract class PathUtils {
 
     /**
      * Fetch the path of the directory where private data is to be stored by the application. This
-     * is meant to be called in an AsyncTask in setPrivateDataDirectorySuffix(), but if we need the
-     * result before the AsyncTask has had a chance to finish, then it's best to cancel the task
+     * is meant to be called in an FutureTask in setPrivateDataDirectorySuffix(), but if we need the
+     * result before the FutureTask has had a chance to finish, then it's best to cancel the task
      * and run it on the UI thread instead, inside getOrComputeDirectoryPaths().
      *
      * @see Context#getDir(String, int)
@@ -148,12 +149,12 @@ public abstract class PathUtils {
             assert ContextUtils.getApplicationContext() != null;
             sDataDirectorySuffix = suffix;
             sCacheSubDirectory = cacheSubDir;
-            sDirPathFetchTask = new AsyncTask<Void, Void, String[]>() {
-                @Override
-                protected String[] doInBackground(Void... unused) {
-                    return PathUtils.setPrivateDataDirectorySuffixInternal();
-                }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            // We don't use an AsyncTask because this function is called in early Webview startup
+            // and it won't always have a UI thread available. Thus, we can't use
+            // AsyncTask which inherently posts to the UI thread for onPostExecute().
+            sDirPathFetchTask = new FutureTask<>(PathUtils::setPrivateDataDirectorySuffixInternal);
+            AsyncTask.THREAD_POOL_EXECUTOR.execute(sDirPathFetchTask);
         }
     }
 
