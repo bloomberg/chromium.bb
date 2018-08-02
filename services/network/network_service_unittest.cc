@@ -991,6 +991,10 @@ TEST_F(NetworkServiceTestWithService,
                                          CreateContextParams());
   network_context.set_connection_error_handler(run_loop.QuitClosure());
 
+  // Wait until the new NetworkContext has been created, so it's not created
+  // after the primary NetworkContext is destroyed.
+  network_service_.FlushForTesting();
+
   // Destroying |cert_validating_network_context| should result in destroying
   // |network_context| as well.
   cert_validating_network_context.reset();
