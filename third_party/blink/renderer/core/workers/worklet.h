@@ -66,7 +66,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
 
  private:
   virtual void FetchAndInvokeScript(const KURL& module_url_record,
-                                    const WorkletOptions&,
+                                    const String& credentials,
                                     WorkletPendingTasks*);
 
   // Returns true if there are no global scopes or additional global scopes are
