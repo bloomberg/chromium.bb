@@ -18,8 +18,14 @@ namespace syncer {
 // controllers, which for USS datatypes propagate analogous information to the
 // processor/bridge via DataTypeActivationRequest.
 struct ConfigureContext {
+  enum StorageOption {
+    STORAGE_ON_DISK,
+    STORAGE_IN_MEMORY,
+  };
+
   std::string authenticated_account_id;
   std::string cache_guid;
+  StorageOption storage_option = STORAGE_ON_DISK;
   ConfigureReason reason = CONFIGURE_REASON_UNKNOWN;
   // TODO(mastiz): Consider adding |requested_types| here, but currently there
   // are subtle differences across layers (e.g. where control types are
