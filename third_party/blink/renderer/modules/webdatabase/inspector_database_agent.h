@@ -74,6 +74,7 @@ class MODULES_EXPORT InspectorDatabaseAgent final
 
  private:
   explicit InspectorDatabaseAgent(Page*);
+  void InnerEnable();
   void RegisterDatabaseOnCreation(blink::Database*);
 
   blink::Database* DatabaseForId(const String& database_id);
@@ -83,7 +84,7 @@ class MODULES_EXPORT InspectorDatabaseAgent final
   typedef HeapHashMap<String, Member<InspectorDatabaseResource>>
       DatabaseResourcesHeapMap;
   DatabaseResourcesHeapMap resources_;
-  bool enabled_;
+  InspectorAgentState::Boolean enabled_;
 };
 
 }  // namespace blink
