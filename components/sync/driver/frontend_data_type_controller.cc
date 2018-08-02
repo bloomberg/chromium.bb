@@ -10,6 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/model_associator.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
@@ -34,6 +35,9 @@ void FrontendDataTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(configure_context.storage_option,
+            ConfigureContext::STORAGE_ON_DISK);
+
   model_load_callback_ = model_load_callback;
 
   if (state_ != NOT_RUNNING) {

@@ -295,4 +295,71 @@ TEST_F(ModelTypeControllerTest, StopBeforeLoadModels) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
 }
 
+// Tests that StorageOption is honored when the controller has been constructed
+// with two delegates.
+TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
+  base::MessageLoop message_loop;
+  NiceMock<MockDelegate> delegate_on_disk;
+  NiceMock<MockDelegate> delegate_in_memory;
+
+  ModelTypeController controller(
+      kTestModelType,
+      std::make_unique<ForwardingModelTypeControllerDelegate>(
+          &delegate_on_disk),
+      std::make_unique<ForwardingModelTypeControllerDelegate>(
+          &delegate_in_memory));
+
+  ConfigureContext context;
+  context.authenticated_account_id = kAccountId;
+  context.cache_guid = kCacheGuid;
+
+  ModelTypeControllerDelegate::StartCallback start_callback;
+
+  // Start sync with STORAGE_IN_MEMORY.
+  EXPECT_CALL(delegate_on_disk, OnSyncStarting(_, _)).Times(0);
+  EXPECT_CALL(delegate_in_memory, OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        start_callback = std::move(callback);
+      });
+  context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+  controller.LoadModels(context, base::DoNothing());
+
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller.state());
+  ASSERT_TRUE(start_callback);
+
+  // Mimic completion for OnSyncStarting().
+  std::move(start_callback).Run(std::make_unique<DataTypeActivationResponse>());
+  ASSERT_EQ(DataTypeController::MODEL_LOADED, controller.state());
+
+  // Stop sync.
+  EXPECT_CALL(delegate_on_disk, OnSyncStopping(_)).Times(0);
+  EXPECT_CALL(delegate_in_memory, OnSyncStopping(_));
+  controller.Stop(CLEAR_METADATA, base::DoNothing());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING, controller.state());
+
+  // Start sync with STORAGE_ON_DISK.
+  EXPECT_CALL(delegate_in_memory, OnSyncStarting(_, _)).Times(0);
+  EXPECT_CALL(delegate_on_disk, OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        start_callback = std::move(callback);
+      });
+  context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+  controller.LoadModels(context, base::DoNothing());
+
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller.state());
+  ASSERT_TRUE(start_callback);
+
+  // Mimic completion for OnSyncStarting().
+  std::move(start_callback).Run(std::make_unique<DataTypeActivationResponse>());
+  ASSERT_EQ(DataTypeController::MODEL_LOADED, controller.state());
+
+  // Stop sync.
+  EXPECT_CALL(delegate_in_memory, OnSyncStopping(_)).Times(0);
+  EXPECT_CALL(delegate_on_disk, OnSyncStopping(_));
+  controller.Stop(CLEAR_METADATA, base::DoNothing());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING, controller.state());
+}
+
 }  // namespace syncer

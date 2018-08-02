@@ -1537,6 +1537,7 @@ void ProfileSyncService::ConfigureDataTypeManager(
   configure_context.authenticated_account_id =
       GetAuthenticatedAccountInfo().account_id;
   configure_context.cache_guid = local_device_->GetLocalSyncCacheGUID();
+  configure_context.storage_option = syncer::ConfigureContext::STORAGE_ON_DISK;
   configure_context.reason = reason;
 
   if (!migrator_) {

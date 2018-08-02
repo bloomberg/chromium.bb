@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/values.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/sync_merge_result.h"
@@ -38,6 +39,8 @@ void ProxyDataTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(configure_context.storage_option,
+            ConfigureContext::STORAGE_ON_DISK);
   state_ = MODEL_LOADED;
   model_load_callback.Run(type(), SyncError());
 }

@@ -49,10 +49,20 @@ SyncStopMetadataFate TakeStrictestMetadataFate(SyncStopMetadataFate fate1,
 
 ModelTypeController::ModelTypeController(
     ModelType type,
-    std::unique_ptr<ModelTypeControllerDelegate> delegate)
-    : DataTypeController(type),
-      delegate_(std::move(delegate)),
-      state_(NOT_RUNNING) {}
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk)
+    : DataTypeController(type), state_(NOT_RUNNING) {
+  delegate_map_.emplace(ConfigureContext::STORAGE_ON_DISK,
+                        std::move(delegate_on_disk));
+}
+
+ModelTypeController::ModelTypeController(
+    ModelType type,
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk,
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_in_memory)
+    : ModelTypeController(type, std::move(delegate_on_disk)) {
+  delegate_map_.emplace(ConfigureContext::STORAGE_IN_MEMORY,
+                        std::move(delegate_in_memory));
+}
 
 ModelTypeController::~ModelTypeController() {}
 
@@ -69,10 +79,13 @@ void ModelTypeController::LoadModels(
   DCHECK(!model_load_callback.is_null());
   DCHECK_EQ(NOT_RUNNING, state_);
 
-  model_load_callback_ = model_load_callback;
+  auto it = delegate_map_.find(configure_context.storage_option);
+  DCHECK(it != delegate_map_.end());
+  delegate_ = it->second.get();
 
   DVLOG(1) << "Sync starting for " << ModelTypeToString(type());
   state_ = MODEL_STARTING;
+  model_load_callback_ = model_load_callback;
 
   DataTypeActivationRequest request;
   request.error_handler = base::BindRepeating(
@@ -114,6 +127,7 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
     DCHECK(model_stop_callbacks_.empty());
 
     delegate_->OnSyncStopping(model_stop_metadata_fate_);
+    delegate_ = nullptr;
 
     for (StopCallback& stop_callback : model_stop_callbacks) {
       std::move(stop_callback).Run();
@@ -238,6 +252,7 @@ void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate,
       DVLOG(1) << "Stopping sync for " << ModelTypeToString(type());
       state_ = NOT_RUNNING;
       delegate_->OnSyncStopping(metadata_fate);
+      delegate_ = nullptr;
       std::move(callback).Run();
       break;
   }
@@ -248,15 +263,18 @@ DataTypeController::State ModelTypeController::state() const {
 }
 
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
+  DCHECK(delegate_);
   delegate_->GetAllNodesForDebugging(callback);
 }
 
 void ModelTypeController::GetStatusCounters(
     const StatusCountersCallback& callback) {
+  DCHECK(delegate_);
   delegate_->GetStatusCountersForDebugging(callback);
 }
 
 void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {
+  DCHECK(delegate_);
   delegate_->RecordMemoryUsageAndCountsHistograms();
 }
 

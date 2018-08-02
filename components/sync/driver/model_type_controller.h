@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_controller_delegate.h"
@@ -25,8 +27,14 @@ struct DataTypeActivationResponse;
 // DataTypeController implementation for Unified Sync and Storage model types.
 class ModelTypeController : public DataTypeController {
  public:
-  ModelTypeController(ModelType type,
-                      std::unique_ptr<ModelTypeControllerDelegate> delegate);
+  ModelTypeController(
+      ModelType type,
+      std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk);
+  // For datatypes that have support for STORAGE_IN_MEMORY.
+  ModelTypeController(
+      ModelType type,
+      std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk,
+      std::unique_ptr<ModelTypeControllerDelegate> delegate_in_memory);
   ~ModelTypeController() override;
 
   // DataTypeController implementation.
@@ -63,10 +71,15 @@ class ModelTypeController : public DataTypeController {
   void OnProcessorStarted(
       std::unique_ptr<DataTypeActivationResponse> activation_response);
 
-  const std::unique_ptr<ModelTypeControllerDelegate> delegate_;
+  base::flat_map<ConfigureContext::StorageOption,
+                 std::unique_ptr<ModelTypeControllerDelegate>>
+      delegate_map_;
 
   // State of this datatype controller.
   State state_;
+
+  // Owned by |delegate_map_|. Null while NOT_RUNNING.
+  ModelTypeControllerDelegate* delegate_;
 
   // Callback for use when starting the datatype (usually MODEL_STARTING, but
   // STOPPING if abort requested while starting).
