@@ -579,8 +579,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
                   ElementsAre(Bucket(12, 1), Bucket(29, 1), Bucket(68, 1))));
 }
 
-// Flaky on Windows and Mac. crbug.com/671891
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// Flaky on Windows, Mac and ChromeOS. crbug.com/671891
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_IsolateExtensions DISABLED_IsolateExtensions
 #else
 #define MAYBE_IsolateExtensions IsolateExtensions

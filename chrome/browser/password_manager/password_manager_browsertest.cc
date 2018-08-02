@@ -807,8 +807,16 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
+// Flaky on chromeos: http://crbug.com/870372
+#if defined(OS_CHROMEOS)
+#define MAYBE_PromptForFetchSubmitWithoutNavigation \
+  DISABLED_PromptForFetchSubmitWithoutNavigation
+#else
+#define MAYBE_PromptForFetchSubmitWithoutNavigation \
+  PromptForFetchSubmitWithoutNavigation
+#endif
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
-                       PromptForFetchSubmitWithoutNavigation) {
+                       MAYBE_PromptForFetchSubmitWithoutNavigation) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Need to pay attention for a message that XHR has finished since there
