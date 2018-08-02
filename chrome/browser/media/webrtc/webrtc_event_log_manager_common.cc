@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "third_party/zlib/zlib.h"
 
 using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
 
@@ -33,6 +34,11 @@ const BrowserContextId kNullBrowserContextId =
     reinterpret_cast<BrowserContextId>(nullptr);
 
 namespace {
+
+constexpr int kDefaultMemLevel = 8;
+
+constexpr size_t kGzipHeaderBytes = 15;
+constexpr size_t kGzipFooterBytes = 10;
 
 // Tracks budget over a resource (such as bytes allowed in a file, etc.).
 // Allows an unlimited budget.
@@ -193,7 +199,6 @@ const base::FilePath& BaseLogFileWriter::path() const {
 
 bool BaseLogFileWriter::MaxSizeReached() const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  // Well-behaved code wouldn't check otherwise.
   DCHECK_EQ(state(), State::ACTIVE);
   return !WithinBudget(1);
 }
@@ -212,11 +217,11 @@ bool BaseLogFileWriter::Write(const std::string& input) {
     return false;
   }
 
-  const bool written = WriteInternal(input, /*metadata=*/false);
-  if (!written) {
+  const bool did_write = WriteInternal(input, /*metadata=*/false);
+  if (!did_write) {
     SetState(State::ERRORED);
   }
-  return written;
+  return did_write;
 }
 
 bool BaseLogFileWriter::Close() {
@@ -296,10 +301,385 @@ bool BaseLogFileWriter::Finalize() {
   return true;
 }
 
+// Writes a GZIP-compressed log to a file while observing a maximum size.
+class GzippedLogFileWriter : public BaseLogFileWriter {
+ public:
+  GzippedLogFileWriter(const base::FilePath& path,
+                       base::Optional<size_t> max_file_size_bytes,
+                       std::unique_ptr<LogCompressor> compressor);
+
+  ~GzippedLogFileWriter() override = default;
+
+  bool Init() override;
+
+  bool MaxSizeReached() const override;
+
+  bool Write(const std::string& input) override;
+
+ protected:
+  bool Finalize() override;
+
+ private:
+  std::unique_ptr<LogCompressor> compressor_;
+};
+
+GzippedLogFileWriter::GzippedLogFileWriter(
+    const base::FilePath& path,
+    base::Optional<size_t> max_file_size_bytes,
+    std::unique_ptr<LogCompressor> compressor)
+    : BaseLogFileWriter(path, max_file_size_bytes),
+      compressor_(std::move(compressor)) {
+  // Factory validates size before instantiation.
+  DCHECK(!max_file_size_bytes.has_value() ||
+         max_file_size_bytes.value() >= kGzipOverheadBytes);
+}
+
+bool GzippedLogFileWriter::Init() {
+  if (!BaseLogFileWriter::Init()) {
+    // Super-class should SetState on its own.
+    return false;
+  }
+
+  std::string header;
+  compressor_->CreateHeader(&header);
+
+  const bool result = WriteInternal(header, /*metadata=*/true);
+  if (!result) {
+    SetState(State::ERRORED);
+  }
+
+  return result;
+}
+
+bool GzippedLogFileWriter::MaxSizeReached() const {
+  DCHECK_EQ(state(), State::ACTIVE);
+
+  // Note that the overhead used (footer only) assumes state() is State::ACTIVE,
+  // as DCHECKed above.
+  return !WithinBudget(1 + kGzipFooterBytes);
+}
+
+bool GzippedLogFileWriter::Write(const std::string& input) {
+  DCHECK_EQ(state(), State::ACTIVE);
+  DCHECK(!MaxSizeReached());
+
+  if (input.empty()) {
+    return true;
+  }
+
+  std::string compressed_input;
+  const auto result = compressor_->Compress(input, &compressed_input);
+
+  switch (result) {
+    case LogCompressor::Result::OK: {
+      // |compressor_| guarantees |compressed_input| is within-budget.
+      bool did_write = WriteInternal(compressed_input, /*metadata=*/false);
+      if (!did_write) {
+        SetState(State::ERRORED);
+      }
+      return did_write;
+    }
+    case LogCompressor::Result::DISALLOWED: {
+      SetState(State::FULL);
+      return false;
+    }
+    case LogCompressor::Result::ERROR_ENCOUNTERED: {
+      SetState(State::ERRORED);
+      return false;
+    }
+  }
+
+  NOTREACHED();
+  return false;  // Appease compiler.
+}
+
+bool GzippedLogFileWriter::Finalize() {
+  DCHECK_NE(state(), State::CLOSED);
+  DCHECK_NE(state(), State::DELETED);
+  DCHECK_NE(state(), State::ERRORED);
+
+  std::string footer;
+  if (!compressor_->CreateFooter(&footer)) {
+    LOG(WARNING) << "Compression footer could not be produced.";
+    SetState(State::ERRORED);
+    return false;
+  }
+
+  // |compressor_| guarantees |footer| is within-budget.
+  if (!WriteInternal(footer, /*metadata=*/true)) {
+    LOG(WARNING) << "Footer could not be written.";
+    SetState(State::ERRORED);
+    return false;
+  }
+
+  return true;
+}
+
+// Concrete implementation of LogCompressor using GZIP.
+class GzipLogCompressor : public LogCompressor {
+ public:
+  GzipLogCompressor(
+      base::Optional<size_t> max_size_bytes,
+      std::unique_ptr<CompressedSizeEstimator> compressed_size_estimator);
+
+  ~GzipLogCompressor() override;
+
+  void CreateHeader(std::string* output) override;
+
+  Result Compress(const std::string& input, std::string* output) override;
+
+  bool CreateFooter(std::string* output) override;
+
+ private:
+  // * A compressed log starts out empty (PRE_HEADER).
+  // * Once the header is produced, the stream is ACTIVE.
+  // * If it is ever detected that compressing the next input would exceed the
+  //   budget, that input is NOT compressed, and the state becomes FULL, from
+  //   which only writing the footer or discarding the file are allowed.
+  // * Writing the footer is allowed on an ACTIVE or FULL stream. Then, the
+  //   stream is effectively closed.
+  // * Any error puts the stream into ERRORED. An errored stream can only
+  //   be discarded.
+  enum class State { PRE_HEADER, ACTIVE, FULL, POST_FOOTER, ERRORED };
+
+  // Returns the budget left after reserving the GZIP overhead.
+  // Optionals without a value, both in the parameters as well as in the
+  // return value of the function, signal an unlimited amount.
+  static base::Optional<size_t> SizeAfterOverheadReservation(
+      base::Optional<size_t> max_size_bytes);
+
+  // Compresses |input| into |output|, while observing the budget (unless
+  // !budgeted). If |last|, also closes the stream.
+  Result CompressInternal(const std::string& input,
+                          std::string* output,
+                          bool budgeted,
+                          bool last);
+
+  // Compresses the input data already in |stream_| into |output|.
+  bool Deflate(int flush, std::string* output);
+
+  State state_;
+  Budget budget_;
+  std::unique_ptr<CompressedSizeEstimator> compressed_size_estimator_;
+  z_stream stream_;
+};
+
+GzipLogCompressor::GzipLogCompressor(
+    base::Optional<size_t> max_size_bytes,
+    std::unique_ptr<CompressedSizeEstimator> compressed_size_estimator)
+    : state_(State::PRE_HEADER),
+      budget_(SizeAfterOverheadReservation(max_size_bytes)),
+      compressed_size_estimator_(std::move(compressed_size_estimator)) {
+  memset(&stream_, 0, sizeof(z_stream));
+  // Using (MAX_WBITS + 16) triggers the creation of a GZIP header.
+  const int result =
+      deflateInit2(&stream_, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16,
+                   kDefaultMemLevel, Z_DEFAULT_STRATEGY);
+  DCHECK_EQ(result, Z_OK);
+}
+
+GzipLogCompressor::~GzipLogCompressor() {
+  const int result = deflateEnd(&stream_);
+  // Z_DATA_ERROR reports that the stream was not properly terminated,
+  // but nevertheless correctly released. That happens when we don't
+  // write the footer.
+  DCHECK(result == Z_OK ||
+         (result == Z_DATA_ERROR && state_ != State::POST_FOOTER));
+}
+
+void GzipLogCompressor::CreateHeader(std::string* output) {
+  DCHECK(output);
+  DCHECK(output->empty());
+  DCHECK_EQ(state_, State::PRE_HEADER);
+
+  const Result result =
+      CompressInternal("", output, /*budgeted=*/false, /*last=*/false);
+  DCHECK_EQ(result, Result::OK);
+  DCHECK_EQ(output->size(), kGzipHeaderBytes);
+
+  state_ = State::ACTIVE;
+}
+
+LogCompressor::Result GzipLogCompressor::Compress(const std::string& input,
+                                                  std::string* output) {
+  DCHECK_EQ(state_, State::ACTIVE);
+
+  if (input.empty()) {
+    return Result::OK;
+  }
+
+  const auto result =
+      CompressInternal(input, output, /*budgeted=*/true, /*last=*/false);
+
+  switch (result) {
+    case Result::OK:
+      return result;
+    case Result::DISALLOWED:
+      state_ = State::FULL;
+      return result;
+    case Result::ERROR_ENCOUNTERED:
+      state_ = State::ERRORED;
+      return result;
+  }
+
+  NOTREACHED();
+  return Result::ERROR_ENCOUNTERED;  // Appease compiler.
+}
+
+bool GzipLogCompressor::CreateFooter(std::string* output) {
+  DCHECK(output);
+  DCHECK(output->empty());
+  DCHECK(state_ == State::ACTIVE || state_ == State::FULL);
+
+  const Result result =
+      CompressInternal("", output, /*budgeted=*/false, /*last=*/true);
+  if (result != Result::OK) {  // !budgeted -> Result::DISALLOWED impossible.
+    DCHECK_EQ(result, Result::ERROR_ENCOUNTERED);
+    // An error message was logged by CompressInternal().
+    state_ = State::ERRORED;
+    return false;
+  }
+
+  if (output->length() != kGzipFooterBytes) {
+    LOG(ERROR) << "Incorrect footer size (" << output->length() << ").";
+    state_ = State::ERRORED;
+    return false;
+  }
+
+  state_ = State::POST_FOOTER;
+
+  return true;
+}
+
+base::Optional<size_t> GzipLogCompressor::SizeAfterOverheadReservation(
+    base::Optional<size_t> max_size_bytes) {
+  if (!max_size_bytes.has_value()) {
+    return base::Optional<size_t>();
+  } else {
+    DCHECK_GE(max_size_bytes.value(), kGzipHeaderBytes + kGzipFooterBytes);
+    return max_size_bytes.value() - (kGzipHeaderBytes + kGzipFooterBytes);
+  }
+}
+
+LogCompressor::Result GzipLogCompressor::CompressInternal(
+    const std::string& input,
+    std::string* output,
+    bool budgeted,
+    bool last) {
+  DCHECK(output);
+  DCHECK(output->empty());
+  DCHECK(state_ == State::PRE_HEADER || state_ == State::ACTIVE ||
+         (!budgeted && state_ == State::FULL));
+
+  // Avoid writing to |output| unless the return value is OK.
+  std::string temp_output;
+
+  if (budgeted) {
+    const size_t estimated_compressed_size =
+        compressed_size_estimator_->EstimateCompressedSize(input);
+    if (!budget_.ConsumeAllowed(estimated_compressed_size)) {
+      return Result::DISALLOWED;
+    }
+  }
+
+  if (last) {
+    DCHECK(input.empty());
+    stream_.next_in = nullptr;
+  } else {
+    stream_.next_in = reinterpret_cast<z_const Bytef*>(input.c_str());
+  }
+
+  DCHECK_LE(input.length(),
+            static_cast<size_t>(std::numeric_limits<uInt>::max()));
+  stream_.avail_in = static_cast<uInt>(input.length());
+
+  const bool result = Deflate(last ? Z_FINISH : Z_SYNC_FLUSH, &temp_output);
+
+  stream_.next_in = nullptr;  // Avoid dangling pointers.
+
+  if (!result) {
+    // An error message was logged by Deflate().
+    return Result::ERROR_ENCOUNTERED;
+  }
+
+  if (budgeted) {
+    if (!budget_.ConsumeAllowed(temp_output.length())) {
+      LOG(WARNING) << "Compressed size was above estimate and unexpectedly "
+                      "exceeded the budget.";
+      return Result::ERROR_ENCOUNTERED;
+    }
+    budget_.Consume(temp_output.length());
+  }
+
+  std::swap(*output, temp_output);
+  return Result::OK;
+}
+
+bool GzipLogCompressor::Deflate(int flush, std::string* output) {
+  DCHECK((flush != Z_FINISH && stream_.next_in != nullptr) ||
+         (flush == Z_FINISH && stream_.next_in == nullptr));
+  DCHECK(output->empty());
+
+  bool success = true;  // Result of this method.
+  int z_result;         // Result of the zlib function.
+
+  size_t total_compressed_size = 0;
+
+  do {
+    // Allocate some additional buffer.
+    constexpr uInt kCompressionBuffer = 4 * 1024;
+    output->resize(total_compressed_size + kCompressionBuffer);
+
+    // This iteration should write directly beyond previous iterations' last
+    // written byte.
+    stream_.next_out =
+        reinterpret_cast<uint8_t*>(&((*output)[total_compressed_size]));
+    stream_.avail_out = kCompressionBuffer;
+
+    z_result = deflate(&stream_, flush);
+
+    DCHECK_GE(kCompressionBuffer, stream_.avail_out);
+    const size_t compressed_size = kCompressionBuffer - stream_.avail_out;
+
+    if (flush != Z_FINISH) {
+      if (z_result != Z_OK) {
+        LOG(ERROR) << "Compression failed (" << z_result << ").";
+        success = false;
+        break;
+      }
+    } else {  // flush == Z_FINISH
+      // End of the stream; we expect the footer to be exactly the size which
+      // we've set aside for it.
+      if (z_result != Z_STREAM_END || compressed_size != kGzipFooterBytes) {
+        LOG(ERROR) << "Compression failed (" << z_result << ", "
+                   << compressed_size << ").";
+        success = false;
+        break;
+      }
+    }
+
+    total_compressed_size += compressed_size;
+  } while (stream_.avail_out == 0 && z_result != Z_STREAM_END);
+
+  stream_.next_out = nullptr;  // Avoid dangling pointers.
+
+  if (success) {
+    output->resize(total_compressed_size);
+  } else {
+    output->clear();
+  }
+
+  return success;
+}
+
 }  // namespace
+
+const size_t kGzipOverheadBytes = kGzipHeaderBytes + kGzipFooterBytes;
 
 const base::FilePath::CharType kWebRtcEventLogUncompressedExtension[] =
     FILE_PATH_LITERAL("log");
+const base::FilePath::CharType kWebRtcEventLogGzippedExtension[] =
+    FILE_PATH_LITERAL("log.gz");
 
 size_t BaseLogFileWriterFactory::MinFileSizeBytes() const {
   // No overhead incurred; data written straight to the file without metadata.
@@ -321,6 +701,82 @@ std::unique_ptr<LogFileWriter> BaseLogFileWriterFactory::Create(
   }
 
   auto result = std::make_unique<BaseLogFileWriter>(path, max_file_size_bytes);
+
+  if (!result->Init()) {
+    // Error logged by Init.
+    result.reset();  // Destructor deletes errored files.
+  }
+
+  return result;
+}
+
+std::unique_ptr<CompressedSizeEstimator>
+DefaultGzippedSizeEstimator::Factory::Create() const {
+  return std::make_unique<DefaultGzippedSizeEstimator>();
+}
+
+size_t DefaultGzippedSizeEstimator::EstimateCompressedSize(
+    const std::string& input) const {
+  // This estimation is not tight. Since we expect to produce logs of
+  // several MBs, overshooting the estimation by one KB should be
+  // very safe and still relatively efficient.
+  constexpr size_t kOverheadOverUncompressedSizeBytes = 1000;
+  return input.length() + kOverheadOverUncompressedSizeBytes;
+}
+
+GzipLogCompressorFactory::GzipLogCompressorFactory(
+    std::unique_ptr<CompressedSizeEstimator::Factory> estimator_factory)
+    : estimator_factory_(std::move(estimator_factory)) {}
+
+GzipLogCompressorFactory::~GzipLogCompressorFactory() = default;
+
+size_t GzipLogCompressorFactory::MinSizeBytes() const {
+  return kGzipOverheadBytes;
+}
+
+std::unique_ptr<LogCompressor> GzipLogCompressorFactory::Create(
+    base::Optional<size_t> max_size_bytes) const {
+  if (max_size_bytes.has_value() && max_size_bytes.value() < MinSizeBytes()) {
+    LOG(WARNING) << "Max size (" << max_size_bytes.value()
+                 << ") below minimum size (" << MinSizeBytes() << ").";
+    return nullptr;
+  }
+  return std::make_unique<GzipLogCompressor>(max_size_bytes,
+                                             estimator_factory_->Create());
+}
+
+GzippedLogFileWriterFactory::GzippedLogFileWriterFactory(
+    std::unique_ptr<GzipLogCompressorFactory> gzip_compressor_factory)
+    : gzip_compressor_factory_(std::move(gzip_compressor_factory)) {}
+
+GzippedLogFileWriterFactory::~GzippedLogFileWriterFactory() = default;
+
+size_t GzippedLogFileWriterFactory::MinFileSizeBytes() const {
+  // Only the compression's own overhead is incurred.
+  return gzip_compressor_factory_->MinSizeBytes();
+}
+
+base::FilePath::StringPieceType GzippedLogFileWriterFactory::Extension() const {
+  return kWebRtcEventLogGzippedExtension;
+}
+
+std::unique_ptr<LogFileWriter> GzippedLogFileWriterFactory::Create(
+    const base::FilePath& path,
+    base::Optional<size_t> max_file_size_bytes) const {
+  if (max_file_size_bytes.has_value() &&
+      max_file_size_bytes.value() < MinFileSizeBytes()) {
+    LOG(WARNING) << "Size below allowed minimum.";
+    return nullptr;
+  }
+
+  auto gzip_compressor = gzip_compressor_factory_->Create(max_file_size_bytes);
+  if (!gzip_compressor) {
+    // The factory itself will have logged an error.
+    return nullptr;
+  }
+
+  auto result = std::make_unique<GzippedLogFileWriter>(
+      path, max_file_size_bytes, std::move(gzip_compressor));
 
   if (!result->Init()) {
     // Error logged by Init.

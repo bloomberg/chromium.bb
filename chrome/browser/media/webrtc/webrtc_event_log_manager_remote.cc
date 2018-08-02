@@ -537,15 +537,19 @@ void WebRtcRemoteEventLogManager::AddPendingLogs(
     const base::FilePath& remote_bound_logs_dir) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  base::FilePath::StringType pattern =
-      base::FilePath(FILE_PATH_LITERAL("*"))
-          .AddExtension(log_file_writer_factory_->Extension())
-          .value();
   base::FileEnumerator enumerator(remote_bound_logs_dir,
                                   /*recursive=*/false,
-                                  base::FileEnumerator::FILES, pattern);
+                                  base::FileEnumerator::FILES);
 
   for (auto path = enumerator.Next(); !path.empty(); path = enumerator.Next()) {
+    const base::FileEnumerator::FileInfo info = enumerator.GetInfo();
+    const base::FilePath::StringType extension = info.GetName().Extension();
+    const auto separator =
+        base::FilePath::StringType(1, base::FilePath::kExtensionSeparator);
+    if (extension != separator + kWebRtcEventLogUncompressedExtension &&
+        extension != separator + kWebRtcEventLogGzippedExtension) {
+      continue;
+    }
     const auto last_modified = enumerator.GetInfo().GetLastModifiedTime();
     auto it = pending_logs_.emplace(browser_context_id, path, last_modified);
     DCHECK(it.second);  // No pre-existing entry.

@@ -392,6 +392,11 @@ WebRtcEventLogManager::CreateRemoteLogFileWriterFactory() {
 #else
   if (remote_log_file_writer_factory_for_testing_) {
     return std::move(remote_log_file_writer_factory_for_testing_);
+  } else if (base::FeatureList::IsEnabled(
+                 features::kWebRtcRemoteEventLogGzipped)) {
+    return std::make_unique<GzippedLogFileWriterFactory>(
+        std::make_unique<GzipLogCompressorFactory>(
+            std::make_unique<DefaultGzippedSizeEstimator::Factory>()));
   } else {
     return std::make_unique<BaseLogFileWriterFactory>();
   }
