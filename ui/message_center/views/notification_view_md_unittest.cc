@@ -42,30 +42,35 @@ class NotificationTestDelegate : public NotificationDelegate {
 
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
-    if (!button_index)
-      return;
-
-    if (!reply && !expecting_button_click_)
+    if (!button_index && !reply && !expecting_click_)
       ADD_FAILURE() << "Click should not be invoked with a button index.";
-    if (reply && !expecting_reply_submission_)
+    if (button_index && !reply && !expecting_button_click_)
+      ADD_FAILURE() << "Click should not be invoked with a button index.";
+    if (button_index && reply && !expecting_reply_submission_)
       ADD_FAILURE() << "Click should not be invoked with a reply.";
+    if (!button_index && reply)
+      FAIL();
 
-    clicked_button_index_ = *button_index;
+    clicked_ = true;
+    clicked_button_index_ = button_index.value_or(false);
     submitted_reply_string_ = reply.value_or(base::string16());
   }
 
   void Reset() {
+    clicked_ = false;
     clicked_button_index_ = -1;
     submitted_reply_string_.clear();
   }
 
   void DisableNotification() override { disable_notification_called_ = true; }
 
+  bool clicked() const { return clicked_; }
   int clicked_button_index() const { return clicked_button_index_; }
   const base::string16& submitted_reply_string() const {
     return submitted_reply_string_;
   }
   bool disable_notification_called() { return disable_notification_called_; }
+  void set_expecting_click(bool expecting) { expecting_click_ = expecting; }
   void set_expecting_button_click(bool expecting) {
     expecting_button_click_ = expecting;
   }
@@ -76,8 +81,10 @@ class NotificationTestDelegate : public NotificationDelegate {
  private:
   ~NotificationTestDelegate() override = default;
 
+  bool clicked_ = false;
   int clicked_button_index_ = -1;
   base::string16 submitted_reply_string_;
+  bool expecting_click_ = false;
   bool expecting_button_click_ = false;
   bool expecting_reply_submission_ = false;
   bool disable_notification_called_ = false;
@@ -891,6 +898,54 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
 
   EXPECT_FALSE(notification_view()->settings_row_->visible());
   EXPECT_TRUE(delegate_->disable_notification_called());
+}
+
+TEST_F(NotificationViewMDTest, TestClick) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  delegate_->set_expecting_click(true);
+
+  UpdateNotificationViews(*notification);
+  widget()->Show();
+
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+
+  // Collapse the notification if it's expanded.
+  if (notification_view()->expanded_)
+    notification_view()->ToggleExpanded();
+  EXPECT_FALSE(notification_view()->actions_row_->visible());
+
+  // Now construct a mouse click event 2 pixel inside from the bottom.
+  gfx::Point cursor_location(notification_view()->size().width() / 2,
+                             notification_view()->size().height() - 2);
+  views::View::ConvertPointToScreen(notification_view(), &cursor_location);
+  generator.MoveMouseTo(cursor_location);
+  generator.ClickLeftButton();
+
+  EXPECT_TRUE(delegate_->clicked());
+}
+
+TEST_F(NotificationViewMDTest, TestClickExpanded) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  delegate_->set_expecting_click(true);
+
+  UpdateNotificationViews(*notification);
+  widget()->Show();
+
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+
+  // Expand the notification if it's collapsed.
+  if (!notification_view()->expanded_)
+    notification_view()->ToggleExpanded();
+  EXPECT_FALSE(notification_view()->actions_row_->visible());
+
+  // Now construct a mouse click event 2 pixel inside from the bottom.
+  gfx::Point cursor_location(notification_view()->size().width() / 2,
+                             notification_view()->size().height() - 2);
+  views::View::ConvertPointToScreen(notification_view(), &cursor_location);
+  generator.MoveMouseTo(cursor_location);
+  generator.ClickLeftButton();
+
+  EXPECT_TRUE(delegate_->clicked());
 }
 
 }  // namespace message_center
