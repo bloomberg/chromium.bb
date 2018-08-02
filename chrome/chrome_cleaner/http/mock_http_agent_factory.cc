@@ -208,7 +208,7 @@ MockHttpAgentFactory::MockHttpAgentFactory(MockHttpAgentConfig* config)
 }
 
 std::unique_ptr<chrome_cleaner::HttpAgent>
-MockHttpAgentFactory::CreateHttpAgent() const {
+MockHttpAgentFactory::CreateHttpAgent() {
   // Set the configuration index to the next one (one per HttpAgent).
   if (config_->current_index_ == MockHttpAgentConfig::kInvalidIndex)
     config_->current_index_ = 0;

@@ -65,10 +65,6 @@ source_set("test_util") {
     "test_name_helper.h",
     "test_registry_util.cc",
     "test_registry_util.h",
-    "test_settings_util.cc",
-    "test_settings_util.h",
-    "test_task_scheduler.cc",
-    "test_task_scheduler.h",
     "test_util.cc",
     "test_util.h",
   ]
@@ -82,7 +78,6 @@ source_set("test_util") {
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
-    "//chrome/chrome_cleaner/settings:settings",
     "//chrome/chrome_cleaner/strings",
     "//components/chrome_cleaner/public/constants:constants",
     "//sandbox/win:sandbox",
@@ -170,7 +165,6 @@ executable("test_process") {
   testonly = true
 
   sources = [
-    "//chrome/chrome_cleaner/engines/dummy_engine_resources.cc",
     "test_process_main.cc",
   ]
 
@@ -180,8 +174,6 @@ executable("test_process") {
     "//base:base",
     "//base/test:test_support",
     "//build/win:default_exe_manifest",
-    "//chrome/chrome_cleaner:other_executable_definitions",
-    "//chrome/chrome_cleaner/engines:resources",
     "//chrome/chrome_cleaner/os:common_os",
   ]
 }

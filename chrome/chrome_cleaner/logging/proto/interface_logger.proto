@@ -14,7 +14,7 @@ package chrome_cleaner;
 message APICall {
   string file_name = 1;
   string function_name = 2;
-  int64 microseconds_since_start = 3;
+  int64 time_called_ticks = 3;
   map<string, string> parameters = 4;
 }
 
