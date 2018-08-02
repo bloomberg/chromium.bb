@@ -90,11 +90,6 @@ typedef blink::protocol::IndexedDB::Backend::DeleteDatabaseCallback
     DeleteDatabaseCallback;
 
 namespace blink {
-
-namespace IndexedDBAgentState {
-static const char kIndexedDBAgentEnabled[] = "indexedDBAgentEnabled";
-};
-
 namespace {
 
 const char kIndexedDBObjectGroup[] = "indexeddb";
@@ -754,15 +749,15 @@ class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
 InspectorIndexedDBAgent::InspectorIndexedDBAgent(
     InspectedFrames* inspected_frames,
     v8_inspector::V8InspectorSession* v8_session)
-    : inspected_frames_(inspected_frames), v8_session_(v8_session) {}
+    : inspected_frames_(inspected_frames),
+      v8_session_(v8_session),
+      enabled_(&agent_state_, /*default_value=*/false) {}
 
 InspectorIndexedDBAgent::~InspectorIndexedDBAgent() = default;
 
 void InspectorIndexedDBAgent::Restore() {
-  if (state_->booleanProperty(IndexedDBAgentState::kIndexedDBAgentEnabled,
-                              false)) {
+  if (enabled_.Get())
     enable();
-  }
 }
 
 void InspectorIndexedDBAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
@@ -773,12 +768,12 @@ void InspectorIndexedDBAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
 }
 
 Response InspectorIndexedDBAgent::enable() {
-  state_->setBoolean(IndexedDBAgentState::kIndexedDBAgentEnabled, true);
+  enabled_.Set(true);
   return Response::OK();
 }
 
 Response InspectorIndexedDBAgent::disable() {
-  state_->setBoolean(IndexedDBAgentState::kIndexedDBAgentEnabled, false);
+  enabled_.Clear();
   v8_session_->releaseObjectGroup(
       ToV8InspectorStringView(kIndexedDBObjectGroup));
   return Response::OK();
