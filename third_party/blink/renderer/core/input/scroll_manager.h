@@ -27,7 +27,6 @@ class LocalFrame;
 class PaintLayer;
 class PaintLayerScrollableArea;
 class Page;
-class ScrollableArea;
 class Scrollbar;
 class ScrollState;
 class WebGestureEvent;
@@ -140,7 +139,6 @@ class CORE_EXPORT ScrollManager
   void NotifyScrollPhaseEndForCustomizedScroll();
 
   LayoutBox* LayoutBoxForSnapping() const;
-  ScrollableArea* ScrollableAreaForSnapping() const;
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |ScrollManager::clear()|.

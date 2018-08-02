@@ -57,6 +57,15 @@ SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
           .event_time = event.TimeStamp()};
 }
 
+ScrollableArea* ScrollableAreaForSnapping(LayoutBox* layout_box) {
+  if (!layout_box)
+    return nullptr;
+
+  return layout_box->IsLayoutView()
+             ? layout_box->GetFrameView()->GetScrollableArea()
+             : layout_box->GetScrollableArea();
+}
+
 }  // namespace
 
 ScrollManager::ScrollManager(LocalFrame& frame) : frame_(frame) {
@@ -608,18 +617,12 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
 }
 
 LayoutBox* ScrollManager::LayoutBoxForSnapping() const {
+  if (!previous_gesture_scrolled_element_)
+    return nullptr;
   Element* document_element = frame_->GetDocument()->documentElement();
   return previous_gesture_scrolled_element_ == document_element
              ? frame_->GetDocument()->GetLayoutView()
              : previous_gesture_scrolled_element_->GetLayoutBox();
-}
-
-ScrollableArea* ScrollManager::ScrollableAreaForSnapping() const {
-  Element* document_element = frame_->GetDocument()->documentElement();
-  return previous_gesture_scrolled_element_ == document_element
-             ? frame_->View()->GetScrollableArea()
-             : previous_gesture_scrolled_element_->GetLayoutBox()
-                   ->GetScrollableArea();
 }
 
 void ScrollManager::SnapAtGestureScrollEnd() {
@@ -654,7 +657,11 @@ bool ScrollManager::GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
 
 gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
     const gfx::Vector2dF& delta) {
-  DCHECK(previous_gesture_scrolled_element_);
+  ScrollableArea* scrollable_area =
+      ScrollableAreaForSnapping(LayoutBoxForSnapping());
+  if (!scrollable_area)
+    return gfx::Vector2dF();
+
   std::unique_ptr<ScrollStateData> scroll_state_data =
       std::make_unique<ScrollStateData>();
 
@@ -672,13 +679,16 @@ gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
       previous_gesture_scrolled_element_);
 
   CustomizedScroll(*scroll_state);
-
-  ScrollableArea* scrollable_area = ScrollableAreaForSnapping();
   FloatPoint end_position = scrollable_area->ScrollPosition();
   return gfx::Vector2dF(end_position.X(), end_position.Y());
 }
 
 void ScrollManager::ScrollEndForSnapFling() {
+  if (current_scroll_chain_.empty()) {
+    NotifyScrollPhaseEndForCustomizedScroll();
+    ClearGestureScrollState();
+    return;
+  }
   std::unique_ptr<ScrollStateData> scroll_state_data =
       std::make_unique<ScrollStateData>();
   scroll_state_data->is_ending = true;
