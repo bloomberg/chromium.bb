@@ -142,8 +142,16 @@ IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
   ASSERT_EQ(base::UTF16ToUTF8(child->children[0]->text), "1");
 }
 
+// Flaky on chromeos: http://crbug.com/870319
+#if defined(OS_CHROMEOS)
+#define MAYBE_VoiceInteractionStructureMultipleSelectionTest \
+  DISABLED_VoiceInteractionStructureMultipleSelectionTest
+#else
+#define MAYBE_VoiceInteractionStructureMultipleSelectionTest \
+  VoiceInteractionStructureMultipleSelectionTest
+#endif
 IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
-                       VoiceInteractionStructureMultipleSelectionTest) {
+                       MAYBE_VoiceInteractionStructureMultipleSelectionTest) {
   auto result = GetVoiceInteractionStructure(
       "<html>"
       "  <body>"

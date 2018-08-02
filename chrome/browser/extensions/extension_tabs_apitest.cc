@@ -50,7 +50,13 @@ class ExtensionApiNewTabTest : public ExtensionApiTabTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiNewTabTest, Tabs) {
+// Flaky on chromeos: http://crbug.com/870322
+#if defined(OS_CHROMEOS)
+#define MAYBE_Tabs DISABLED_Tabs
+#else
+#define MAYBE_Tabs Tabs
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiNewTabTest, MAYBE_Tabs) {
   // The test creates a tab and checks that the URL of the new tab
   // is that of the new tab page.  Make sure the pref that controls
   // this is set.
