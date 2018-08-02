@@ -1411,42 +1411,6 @@ std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
   return submitted_form;
 }
 
-bool AutofillManager::GetCachedFormAndField(const FormData& form,
-                                            const FormFieldData& field,
-                                            FormStructure** form_structure,
-                                            AutofillField** autofill_field) {
-  // Find the FormStructure that corresponds to |form|.
-  // If we do not have this form in our cache but it is parseable, we'll add it
-  // in the call to |UpdateCachedForm()|.
-  if (!FindCachedForm(form, form_structure) &&
-      !FormStructure(form).ShouldBeParsed()) {
-    return false;
-  }
-
-  // Update the cached form to reflect any dynamic changes to the form data, if
-  // necessary.
-  if (!UpdateCachedForm(form, *form_structure, form_structure))
-    return false;
-
-  // No data to return if there are no auto-fillable fields.
-  if (!(*form_structure)->autofill_count())
-    return false;
-
-  // Find the AutofillField that corresponds to |field|.
-  *autofill_field = nullptr;
-  for (const auto& current : **form_structure) {
-    if (current->SameFieldAs(field)) {
-      *autofill_field = current.get();
-      break;
-    }
-  }
-
-  // Even though we always update the cache, the field might not exist if the
-  // website disables autocomplete while the user is interacting with the form.
-  // See http://crbug.com/160476
-  return *autofill_field != nullptr;
-}
-
 AutofillField* AutofillManager::GetAutofillField(const FormData& form,
                                                  const FormFieldData& field) {
   if (!personal_data_)
@@ -1473,29 +1437,6 @@ bool AutofillManager::FormHasAddressField(const FormData& form) {
   }
 
   return false;
-}
-
-bool AutofillManager::UpdateCachedForm(const FormData& live_form,
-                                       const FormStructure* cached_form,
-                                       FormStructure** updated_form) {
-  bool needs_update =
-      (!cached_form || live_form.fields.size() != cached_form->field_count());
-  for (size_t i = 0; !needs_update && i < cached_form->field_count(); ++i)
-    needs_update = !cached_form->field(i)->SameFieldAs(live_form.fields[i]);
-
-  if (!needs_update)
-    return true;
-
-  // Note: We _must not_ remove the original version of the cached form from
-  // the list of |form_structures_|. Otherwise, we break parsing of the
-  // crowdsourcing server's response to our query.
-  if (!ParseForm(live_form, cached_form, updated_form))
-    return false;
-
-  // Annotate the updated form with its predicted types.
-  driver()->SendAutofillTypePredictionsToRenderer({*updated_form});
-
-  return true;
 }
 
 std::vector<Suggestion> AutofillManager::GetProfileSuggestions(

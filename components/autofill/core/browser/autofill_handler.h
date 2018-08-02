@@ -21,6 +21,7 @@ class RectF;
 
 namespace autofill {
 
+class AutofillField;
 struct FormData;
 struct FormFieldData;
 class FormStructure;
@@ -159,6 +160,23 @@ class AutofillHandler {
                              const base::TimeTicks timestamp) = 0;
 
   AutofillDriver* driver() { return driver_; }
+
+  // Fills |form_structure| and |autofill_field| with the cached elements
+  // corresponding to |form| and |field|.  This might have the side-effect of
+  // updating the cache.  Returns false if the |form| is not autofillable, or if
+  // it is not already present in the cache and the cache is full.
+  bool GetCachedFormAndField(const FormData& form,
+                             const FormFieldData& field,
+                             FormStructure** form_structure,
+                             AutofillField** autofill_field) WARN_UNUSED_RESULT;
+
+  // Re-parses |live_form| and adds the result to |form_structures_|.
+  // |cached_form| should be a pointer to the existing version of the form, or
+  // NULL if no cached version exists.  The updated form is then written into
+  // |updated_form|.  Returns false if the cache could not be updated.
+  bool UpdateCachedForm(const FormData& live_form,
+                        const FormStructure* cached_form,
+                        FormStructure** updated_form) WARN_UNUSED_RESULT;
 
   // Fills |form_structure| cached element corresponding to |form|.
   // Returns false if the cached element was not found.
