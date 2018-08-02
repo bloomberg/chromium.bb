@@ -15,6 +15,5 @@ dictionary CookieStoreSetOptions {
   USVString? domain = null;
   USVString path = "/";
   boolean secure = true;
-  boolean httpOnly = false;
   CookieSameSite sameSite = "strict";
 };

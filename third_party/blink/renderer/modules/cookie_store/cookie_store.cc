@@ -127,7 +127,7 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
 
   return WebCanonicalCookie::Create(
       name, value, domain, options.path(), WTF::Time() /*creation*/, expires,
-      WTF::Time() /*last_access*/, secure, options.httpOnly(), same_site,
+      WTF::Time() /*last_access*/, secure, false /*http_only*/, same_site,
       WebCanonicalCookie::kDefaultPriority);
 }
 
@@ -273,7 +273,6 @@ ScriptPromise CookieStore::set(ScriptState* script_state,
   set_options.setDomain(options.domain());
   set_options.setPath(options.path());
   set_options.setSecure(options.secure());
-  set_options.setHttpOnly(options.httpOnly());
   set_options.setSameSite(options.sameSite());
   return set(script_state, set_options, exception_state);
 }
