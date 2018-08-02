@@ -24,7 +24,8 @@ class TestNetworkConnectionObserver
   explicit TestNetworkConnectionObserver(NetworkConnectionTracker* tracker)
       : num_notifications_(0),
         tracker_(tracker),
-        run_loop_(std::make_unique<base::RunLoop>()),
+        expected_connection_type_(
+            network::mojom::ConnectionType::CONNECTION_UNKNOWN),
         connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN) {
     tracker_->AddNetworkConnectionObserver(this);
   }
@@ -52,13 +53,22 @@ class TestNetworkConnectionObserver
 
     num_notifications_++;
     connection_type_ = type;
-    run_loop_->Quit();
+    if (run_loop_ && expected_connection_type_ == type)
+      run_loop_->Quit();
   }
 
   size_t num_notifications() const { return num_notifications_; }
-  void WaitForNotification() {
+  void WaitForNotification(
+      network::mojom::ConnectionType expected_connection_type) {
+    expected_connection_type_ = expected_connection_type;
+
+    if (connection_type_ == expected_connection_type)
+      return;
+    // WaitForNotification() should not be called twice.
+    EXPECT_EQ(nullptr, run_loop_);
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
-    run_loop_.reset(new base::RunLoop());
+    run_loop_.reset();
   }
 
   network::mojom::ConnectionType connection_type() const {
@@ -75,7 +85,9 @@ class TestNetworkConnectionObserver
 
   size_t num_notifications_;
   NetworkConnectionTracker* tracker_;
+  // May be null.
   std::unique_ptr<base::RunLoop> run_loop_;
+  network::mojom::ConnectionType expected_connection_type_;
   network::mojom::ConnectionType connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkConnectionObserver);
@@ -217,7 +229,8 @@ TEST_F(NetworkConnectionTrackerTest, ObserverNotified) {
   SimulateConnectionTypeChange(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
 
-  network_connection_observer()->WaitForNotification();
+  network_connection_observer()->WaitForNotification(
+      network::mojom::ConnectionType::CONNECTION_3G);
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_3G,
             network_connection_observer()->connection_type());
   base::RunLoop().RunUntilIdle();
@@ -234,10 +247,12 @@ TEST_F(NetworkConnectionTrackerTest, UnregisteredObserverNotNotified) {
   SimulateConnectionTypeChange(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
 
-  network_connection_observer2->WaitForNotification();
+  network_connection_observer2->WaitForNotification(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_WIFI,
             network_connection_observer2->connection_type());
-  network_connection_observer()->WaitForNotification();
+  network_connection_observer()->WaitForNotification(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_WIFI,
             network_connection_observer()->connection_type());
   base::RunLoop().RunUntilIdle();
@@ -247,7 +262,8 @@ TEST_F(NetworkConnectionTrackerTest, UnregisteredObserverNotNotified) {
   // Simulate an another network change.
   SimulateConnectionTypeChange(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_2G);
-  network_connection_observer()->WaitForNotification();
+  network_connection_observer()->WaitForNotification(
+      network::mojom::ConnectionType::CONNECTION_2G);
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_2G,
             network_connection_observer()->connection_type());
   EXPECT_EQ(2u, network_connection_observer()->num_notifications());

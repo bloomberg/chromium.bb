@@ -41,6 +41,28 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
     DISALLOW_COPY_AND_ASSIGN(EffectiveConnectionTypeObserver);
   };
 
+  // Observes changes in the HTTP RTT, transport RTT or downstream throughput
+  // estimates.
+  class COMPONENT_EXPORT(NETWORK_CPP) RTTAndThroughputEstimatesObserver {
+   public:
+    // Called when there is a substantial change in either HTTP RTT, transport
+    // RTT or downstream estimate. If either of the RTT estimates are
+    // unavailable, then the value of that estimate is set to base::TimeDelta().
+    // If downstream estimate is unavailable, its value is set to INT32_MAX.
+    virtual void OnRTTOrThroughputEstimatesComputed(
+        base::TimeDelta http_rtt,
+        base::TimeDelta transport_rtt,
+        int32_t downstream_throughput_kbps) = 0;
+
+    virtual ~RTTAndThroughputEstimatesObserver() {}
+
+   protected:
+    RTTAndThroughputEstimatesObserver() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(RTTAndThroughputEstimatesObserver);
+  };
+
   // Running the |callback| returns the network service in use.
   // NetworkQualityTracker does not need to be destroyed before the network
   // service.
@@ -76,11 +98,29 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
   void AddEffectiveConnectionTypeObserver(
       EffectiveConnectionTypeObserver* observer);
 
-  // Unregisters |observer| from receiving notifications.  This must be called
+  // Unregisters |observer| from receiving notifications. This must be called
   // on the same thread on which AddObserver() was called.
   // All observers must be unregistered before |this| is destroyed.
   void RemoveEffectiveConnectionTypeObserver(
       EffectiveConnectionTypeObserver* observer);
+
+  // Registers |observer| to receive notifications of RTT or throughput changes.
+  // This should be called on the same thread as the thread on which |this| is
+  // created. The |observer| would be called back with notifications on that
+  // same thread. The |observer| is notified of the current HTTP RTT, transport
+  // RTT and downstrean bandwidth estimates on the same thread. If either of the
+  // RTT estimate are unavailable, then the value of that estimate is set to
+  // base::TimeDelta(). If downstream estimate is unavailable, its value is set
+  // to INT32_MAX. The |observer| is notified of the current RTT and
+  // throughput estimates synchronously when this method is invoked.
+  void AddRTTAndThroughputEstimatesObserver(
+      RTTAndThroughputEstimatesObserver* observer);
+
+  // Unregisters |observer| from receiving notifications. This must be called
+  // on the same thread on which AddObserver() was called.
+  // All observers must be unregistered before |this| is destroyed.
+  void RemoveRTTAndThroughputEstimatesObserver(
+      RTTAndThroughputEstimatesObserver* observer);
 
  protected:
   // NetworkQualityEstimatorManagerClient implementation. Protected for testing.
@@ -111,6 +151,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
 
   base::ObserverList<EffectiveConnectionTypeObserver>
       effective_connection_type_observer_list_;
+
+  base::ObserverList<RTTAndThroughputEstimatesObserver>
+      rtt_and_throughput_observer_list_;
 
   mojo::Binding<network::mojom::NetworkQualityEstimatorManagerClient> binding_;
 
