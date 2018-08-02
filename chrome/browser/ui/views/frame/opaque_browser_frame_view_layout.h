@@ -49,9 +49,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
       const std::vector<views::FrameButton>& leading_buttons,
       const std::vector<views::FrameButton>& trailing_buttons);
 
-  gfx::Rect GetBoundsForTabStrip(
-      const gfx::Size& tabstrip_preferred_size,
-      int available_width) const;
+  gfx::Rect GetBoundsForTabStrip(const gfx::Size& tabstrip_preferred_size,
+                                 int total_width) const;
 
   gfx::Size GetMinimumSize(int available_width) const;
 
@@ -165,10 +164,10 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   views::View* new_avatar_button_;
 
-  // How far from the leading/trailing edge of the view the next window control
-  // should be placed.
-  int leading_button_start_;
-  int trailing_button_start_;
+  // The leading and trailing x positions of the empty space available for
+  // laying out titlebar elements.
+  int available_space_leading_x_;
+  int available_space_trailing_x_;
 
   // The size of the window buttons, and the avatar menu item (if any). This
   // does not count labels or other elements that should be counted in a
