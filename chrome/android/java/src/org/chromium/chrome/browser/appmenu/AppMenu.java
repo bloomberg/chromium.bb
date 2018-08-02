@@ -59,6 +59,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     private final int mItemDividerHeight;
     private final int mVerticalFadeDistance;
     private final int mNegativeSoftwareVerticalOffset;
+    private final int mNegativeVerticalOffsetNotTopAnchored;
     private final int[] mTempLocation;
 
     private PopupWindow mPopup;
@@ -95,6 +96,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mNegativeSoftwareVerticalOffset =
                 res.getDimensionPixelSize(R.dimen.menu_negative_software_vertical_offset);
         mVerticalFadeDistance = res.getDimensionPixelSize(R.dimen.menu_vertical_fade_distance);
+        mNegativeVerticalOffsetNotTopAnchored =
+                res.getDimensionPixelSize(R.dimen.menu_negative_vertical_offset_not_top_anchored);
 
         mTempLocation = new int[2];
     }
@@ -256,7 +259,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         int popupHeight = setMenuHeight(menuItems.size(), visibleDisplayFrame, screenHeight,
                 sizingPadding, footerHeight, headerHeight, anchorView);
         int[] popupPosition = getPopupPosition(mCurrentScreenRotation, visibleDisplayFrame,
-                sizingPadding, anchorView, popupWidth, popupHeight);
+                sizingPadding, anchorView, popupWidth, popupHeight, showFromBottom);
 
         mPopup.setContentView(contentView);
         mPopup.showAtLocation(
@@ -295,7 +298,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     }
 
     private int[] getPopupPosition(int screenRotation, Rect appRect, Rect padding, View anchorView,
-            int popupWidth, int popupHeight) {
+            int popupWidth, int popupHeight, boolean isAnchorAtBottom) {
         anchorView.getLocationInWindow(mTempLocation);
         int anchorViewX = mTempLocation[0];
         int anchorViewY = mTempLocation[1];
@@ -325,6 +328,18 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             offsets[1] = -padding.bottom;
         } else {
             offsets[1] = -mNegativeSoftwareVerticalOffset;
+
+            // If the anchor is at the bottom of the screen, align the popup with the bottom of the
+            // anchor. The anchor may not be fully visible, so
+            // (appRect.bottom - anchorViewLocationOnScreenY) is used to determine the visible
+            // bottom edge of the anchor view.
+            if (isAnchorAtBottom) {
+                anchorView.getLocationOnScreen(mTempLocation);
+                int anchorViewLocationOnScreenY = mTempLocation[1];
+                offsets[1] += appRect.bottom - anchorViewLocationOnScreenY - popupHeight;
+                offsets[1] -= mNegativeVerticalOffsetNotTopAnchored;
+                if (!mIsByPermanentButton) offsets[1] += padding.bottom;
+            }
 
             if (!ApiCompatibilityUtils.isLayoutRtl(anchorView.getRootView())) {
                 offsets[0] = anchorView.getWidth() - popupWidth;
