@@ -23,6 +23,7 @@
 // Native JNI methods
 // ----------------------------------------------------------------------------
 #include <jni.h>
+#include <atomic>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
@@ -32,7 +33,7 @@
 namespace {
 const char kGvrApiClassPath[] = "com/google/vr/ndk/base/GvrApi";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-base::subtle::AtomicWord g_GvrApi_clazz __attribute__((unused)) = 0;
+std::atomic<jclass> g_GvrApi_clazz __attribute__((unused)) (nullptr);
 #define GvrApi_clazz(env) \
   base::android::LazyGetClass(env, kGvrApiClassPath, &g_GvrApi_clazz)
 

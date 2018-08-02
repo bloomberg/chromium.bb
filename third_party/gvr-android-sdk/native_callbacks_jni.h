@@ -26,6 +26,7 @@
 // Native JNI methods
 // ----------------------------------------------------------------------------
 #include <jni.h>
+#include <atomic>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
@@ -36,7 +37,7 @@ namespace {
 const char kNativeCallbacksClassPath[] =
     "com/google/vr/internal/controller/NativeCallbacks";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-base::subtle::AtomicWord g_NativeCallbacks_clazz __attribute__((unused)) = 0;
+std::atomic<jclass> g_NativeCallbacks_clazz __attribute__((unused)) (nullptr);
 #define NativeCallbacks_clazz(env)                            \
   base::android::LazyGetClass(env, kNativeCallbacksClassPath, \
                               &g_NativeCallbacks_clazz)

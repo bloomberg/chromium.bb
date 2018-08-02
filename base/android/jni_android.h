@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <sys/types.h>
 
+#include <atomic>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
@@ -106,7 +107,7 @@ BASE_EXPORT ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env,
 BASE_EXPORT jclass LazyGetClass(
     JNIEnv* env,
     const char* class_name,
-    base::subtle::AtomicWord* atomic_class_id);
+    std::atomic<jclass>* atomic_class_id);
 
 // This class is a wrapper for JNIEnv Get(Static)MethodID.
 class BASE_EXPORT MethodID {
@@ -132,7 +133,7 @@ class BASE_EXPORT MethodID {
                            jclass clazz,
                            const char* method_name,
                            const char* jni_signature,
-                           base::subtle::AtomicWord* atomic_method_id);
+                           std::atomic<jmethodID>* atomic_method_id);
 };
 
 // Returns true if an exception is pending in the provided JNIEnv*.

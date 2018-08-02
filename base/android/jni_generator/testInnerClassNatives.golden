@@ -25,7 +25,7 @@ JNI_REGISTRATION_EXPORT extern const char kClassPath_org_chromium_TestJni_00024M
 const char kClassPath_org_chromium_TestJni_00024MyInnerClass[] =
     "org/chromium/TestJni$MyInnerClass";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-JNI_REGISTRATION_EXPORT base::subtle::AtomicWord g_org_chromium_TestJni_clazz = 0;
+JNI_REGISTRATION_EXPORT std::atomic<jclass> g_org_chromium_TestJni_clazz(nullptr);
 #ifndef org_chromium_TestJni_clazz_defined
 #define org_chromium_TestJni_clazz_defined
 inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {
@@ -34,7 +34,7 @@ inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {
 }
 #endif
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-JNI_REGISTRATION_EXPORT base::subtle::AtomicWord g_org_chromium_TestJni_00024MyInnerClass_clazz = 0;
+JNI_REGISTRATION_EXPORT std::atomic<jclass> g_org_chromium_TestJni_00024MyInnerClass_clazz(nullptr);
 #ifndef org_chromium_TestJni_00024MyInnerClass_clazz_defined
 #define org_chromium_TestJni_00024MyInnerClass_clazz_defined
 inline jclass org_chromium_TestJni_00024MyInnerClass_clazz(JNIEnv* env) {
