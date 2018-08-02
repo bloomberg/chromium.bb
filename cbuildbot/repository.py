@@ -131,28 +131,6 @@ def CloneWorkingRepo(dest, url, reference, branch=None, single_branch=False):
     shutil.copystat(name, newname)
 
 
-def UpdateGitRepo(working_dir, repo_url, **kwargs):
-  """Update the given git repo, blowing away any local changes.
-
-  If the repo does not exist, clone it from scratch.
-
-  Args:
-    working_dir: location where it should be cloned to
-    repo_url: git repo to clone
-    **kwargs: See CloneGitRepo.
-  """
-  assert not kwargs.get('bare'), 'Bare checkouts are not supported'
-  if git.IsGitRepo(working_dir):
-    try:
-      git.CleanAndCheckoutUpstream(working_dir)
-    except cros_build_lib.RunCommandError:
-      logging.warning('Could not update %s', working_dir, exc_info=True)
-      shutil.rmtree(working_dir)
-      CloneGitRepo(working_dir, repo_url, **kwargs)
-  else:
-    CloneGitRepo(working_dir, repo_url, **kwargs)
-
-
 def ClearBuildRoot(buildroot, preserve_paths=()):
   """Remove all files in the buildroot not preserved.
 
