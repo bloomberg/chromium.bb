@@ -875,6 +875,11 @@ namespace networking.onc {
     // be added or configured. Defaults to false.
     boolean? AllowOnlyPolicyNetworksToConnect;
 
+    // If true and a managed network is available in the visible network list,
+    // only policy networks may be connected to and no new networks may be added
+    // or configured. Defaults to false.
+    boolean? AllowOnlyPolicyNetworksToConnectIfAvailable;
+
     // List of blacklisted networks. Connections to blacklisted networks are
     // prohibited. Networks can be whitelisted again by specifying an explicit
     // network configuration. Defaults to an empty list.

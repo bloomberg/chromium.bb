@@ -37,7 +37,8 @@
             device-states="{{deviceStates}}"
             networking-private="[[networkingPrivate]]">
         </network-summary>
-        <template is="dom-if" if="[[allowAddConnection_(globalPolicy_)]]">
+        <template is="dom-if" if="[[allowAddConnection_(globalPolicy_,
+            managedNetworkAvailable)]]">
           <div actionable class="settings-box two-line"
               on-click="onExpandAddConnectionsTap_">
             <div class="start layout horizontal center">
@@ -88,7 +89,8 @@
             </div>
           </template>
         </template>
-        <template is="dom-if" if="[[!allowAddConnection_(globalPolicy_)]]">
+        <template is="dom-if" if="[[!allowAddConnection_(globalPolicy_,
+            managedNetworkAvailable)]]">
           <div class="settings-box">
             <iron-icon class="policy" icon="cr20:domain"></iron-icon>
             <div>$i18n{internetAddConnectionNotAllowed}</div>
@@ -101,7 +103,8 @@
           <settings-internet-detail-page prefs="{{prefs}}"
               default-network="[[defaultNetwork]]"
               global-policy="[[globalPolicy_]]"
-              networking-private="[[networkingPrivate]]">
+              networking-private="[[networkingPrivate]]"
+              managed-network-available="[[managedNetworkAvailable]]">
           </settings-internet-detail-page>
         </settings-subpage>
       </template>

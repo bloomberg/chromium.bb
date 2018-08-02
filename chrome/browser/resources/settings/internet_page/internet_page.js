@@ -39,6 +39,7 @@ Polymer({
     deviceStates: {
       type: Object,
       notify: true,
+      observer: 'onDeviceStatesChanged_',
     },
 
     /**
@@ -78,7 +79,18 @@ Polymer({
     },
 
     /** @private {!chrome.networkingPrivate.GlobalPolicy|undefined} */
-    globalPolicy_: Object,
+    globalPolicy_: {
+      type: Object,
+      value: null,
+    },
+
+    /** Whether a managed network is available in the visible network list.
+     * @private {boolean}
+     */
+    managedNetworkAvailable: {
+      type: Boolean,
+      value: false,
+    },
 
     /** Overridden from NetworkListenerBehavior. */
     networkListChangeSubscriberSelectors_: {
@@ -355,6 +367,21 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.DeviceStateProperties|undefined} newValue
+   * @param {!CrOnc.DeviceStateProperties|undefined} oldValue
+   * @private
+   */
+  onDeviceStatesChanged_: function(newValue, oldValue) {
+    let wifiDeviceState = this.getDeviceState_(CrOnc.Type.WI_FI, newValue);
+    let managedNetworkAvailable = false;
+    if (!!wifiDeviceState)
+      managedNetworkAvailable = !!wifiDeviceState.ManagedNetworkAvailable;
+
+    if (this.managedNetworkAvailable != managedNetworkAvailable)
+      this.managedNetworkAvailable = managedNetworkAvailable;
+  },
+
+  /**
    * @param {!{detail: {type: string}}} event
    * @private
    */
@@ -518,10 +545,16 @@ Polymer({
 
   /**
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    */
-  allowAddConnection_: function(globalPolicy) {
-    return !globalPolicy.AllowOnlyPolicyNetworksToConnect;
+  allowAddConnection_: function(globalPolicy, managedNetworkAvailable) {
+    if (!globalPolicy)
+      return true;
+
+    return !globalPolicy.AllowOnlyPolicyNetworksToConnect &&
+        (!globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable ||
+         !managedNetworkAvailable);
   },
 
   /**
