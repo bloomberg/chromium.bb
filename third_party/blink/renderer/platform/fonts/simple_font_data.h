@@ -54,6 +54,8 @@ namespace blink {
 // character.
 struct GlyphData {
   STACK_ALLOCATED();
+
+ public:
   GlyphData(
       Glyph g = 0,
       const SimpleFontData* f = nullptr,

@@ -71,6 +71,8 @@ class CORE_EXPORT NinePieceImageGrid {
 
   struct CORE_EXPORT NinePieceDrawInfo {
     STACK_ALLOCATED();
+
+   public:
     bool is_drawable;
     bool is_corner_piece;
     FloatRect destination;

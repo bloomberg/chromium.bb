@@ -170,6 +170,7 @@ struct GradientStop {
 struct CSSGradientValue::GradientDesc {
   STACK_ALLOCATED();
 
+ public:
   GradientDesc(const FloatPoint& p0,
                const FloatPoint& p1,
                GradientSpreadMethod spread_method)

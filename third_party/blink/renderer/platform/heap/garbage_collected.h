@@ -49,6 +49,8 @@ struct IsGarbageCollectedMixin {
 
 struct TraceDescriptor {
   STACK_ALLOCATED();
+
+ public:
   void* base_object_payload;
   TraceCallback callback;
   bool can_trace_eagerly;

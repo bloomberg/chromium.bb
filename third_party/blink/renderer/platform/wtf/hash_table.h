@@ -607,6 +607,8 @@ class IdentityHashTranslator {
 template <typename HashTableType, typename ValueType>
 struct HashTableAddResult final {
   STACK_ALLOCATED();
+
+ public:
   HashTableAddResult(const HashTableType* container,
                      ValueType* stored_value,
                      bool is_new_entry)
@@ -2166,6 +2168,8 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 template <typename HashTableType, typename Traits>
 struct HashTableConstIteratorAdapter {
   STACK_ALLOCATED();
+
+ public:
   HashTableConstIteratorAdapter() = default;
   HashTableConstIteratorAdapter(
       const typename HashTableType::const_iterator& impl)

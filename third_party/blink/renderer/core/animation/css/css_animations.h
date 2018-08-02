@@ -165,6 +165,8 @@ class CSSAnimations final {
 
   struct TransitionUpdateState {
     STACK_ALLOCATED();
+
+   public:
     CSSAnimationUpdate& update;
     Member<const Element> animating_element;
     const ComputedStyle& old_style;

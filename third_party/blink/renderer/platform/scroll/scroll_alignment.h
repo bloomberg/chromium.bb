@@ -64,6 +64,8 @@ class LayoutRect;
 
 struct PLATFORM_EXPORT ScrollAlignment {
   STACK_ALLOCATED();
+
+ public:
   static ScrollAlignmentBehavior GetVisibleBehavior(const ScrollAlignment& s) {
     return s.rect_visible_;
   }

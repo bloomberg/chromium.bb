@@ -45,6 +45,8 @@ namespace blink {
 
 struct AlgorithmError {
   STACK_ALLOCATED();
+
+ public:
   WebCryptoErrorType error_type;
   WebString error_details;
 };

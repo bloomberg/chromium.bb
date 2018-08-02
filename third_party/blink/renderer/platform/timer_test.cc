@@ -119,8 +119,9 @@ class OnHeapTimerOwner final
 };
 
 class GCForbiddenScope final {
- public:
   STACK_ALLOCATED();
+
+ public:
   GCForbiddenScope() { ThreadState::Current()->EnterGCForbiddenScope(); }
   ~GCForbiddenScope() { ThreadState::Current()->LeaveGCForbiddenScope(); }
 };

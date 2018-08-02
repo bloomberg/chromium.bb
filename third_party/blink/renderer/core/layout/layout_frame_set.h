@@ -41,6 +41,8 @@ enum FrameEdge {
 
 struct FrameEdgeInfo {
   STACK_ALLOCATED();
+
+ public:
   FrameEdgeInfo(bool prevent_resize = false, bool allow_border = true)
       : prevent_resize_(4), allow_border_(4) {
     prevent_resize_.Fill(prevent_resize);

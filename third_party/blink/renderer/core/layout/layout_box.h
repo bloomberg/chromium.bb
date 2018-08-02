@@ -734,6 +734,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // block-flow and inline-direction axis.
   struct LogicalExtentComputedValues {
     STACK_ALLOCATED();
+
+   public:
     LogicalExtentComputedValues() = default;
 
     // This is the dimension in the measured direction

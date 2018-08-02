@@ -466,6 +466,8 @@ class PLATFORM_EXPORT ThreadState final
 
   struct GCSnapshotInfo {
     STACK_ALLOCATED();
+
+   public:
     GCSnapshotInfo(size_t num_object_types);
 
     // Map from gcInfoIndex (vector-index) to count/size.

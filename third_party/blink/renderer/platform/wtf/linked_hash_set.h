@@ -195,6 +195,8 @@ class LinkedHashSet {
 
   struct AddResult final {
     STACK_ALLOCATED();
+
+   public:
     AddResult(const typename ImplType::AddResult& hash_table_add_result)
         : stored_value(&hash_table_add_result.stored_value->value_),
           is_new_entry(hash_table_add_result.is_new_entry) {}

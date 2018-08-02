@@ -111,6 +111,8 @@ using SelectedLayoutObjects = HashSet<LayoutObject*>;
 // (LayoutObject, offset).
 struct SelectionPaintRange {
   STACK_ALLOCATED();
+
+ public:
   bool IsNull() const { return !start_layout_object; }
   LayoutObject* start_layout_object = nullptr;
   base::Optional<unsigned> start_offset = base::nullopt;
@@ -122,6 +124,8 @@ struct SelectionPaintRange {
 // current SelectionState which is kStart, kEnd, kStartAndEnd or kInside.
 struct OldSelectedLayoutObjects {
   STACK_ALLOCATED();
+
+ public:
   OldSelectedLayoutObjects() = default;
   OldSelectedLayoutObjects(OldSelectedLayoutObjects&& other) {
     paint_range = other.paint_range;
@@ -142,6 +146,7 @@ std::ostream& operator<<(std::ostream&, const OldSelectedLayoutObjects&);
 struct NewPaintRangeAndSelectedLayoutObjects {
   STACK_ALLOCATED();
 
+ public:
   NewPaintRangeAndSelectedLayoutObjects() = default;
   NewPaintRangeAndSelectedLayoutObjects(
       SelectionPaintRange passed_paint_range,
@@ -478,6 +483,8 @@ static NewPaintRangeAndSelectedLayoutObjects MarkStartAndEndInOneNode(
 // LayoutObjectAndOffset represents start or end of SelectionPaintRange.
 struct LayoutObjectAndOffset {
   STACK_ALLOCATED();
+
+ public:
   LayoutObject* layout_object;
   base::Optional<unsigned> offset;
 

@@ -45,6 +45,8 @@ class XSSAuditorDelegate;
 
 struct FilterTokenRequest {
   STACK_ALLOCATED();
+
+ public:
   FilterTokenRequest(HTMLToken& token,
                      HTMLSourceTracker& source_tracker,
                      bool should_allow_cdata)

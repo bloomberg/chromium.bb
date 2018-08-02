@@ -213,6 +213,8 @@ enum ScrollBehavior {
 // by scrolling.
 struct ScrollResult {
   STACK_ALLOCATED();
+
+ public:
   explicit ScrollResult()
       : did_scroll_x(false),
         did_scroll_y(false),

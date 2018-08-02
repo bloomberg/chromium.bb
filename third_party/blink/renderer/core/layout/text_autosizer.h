@@ -212,6 +212,8 @@ class CORE_EXPORT TextAutosizer final
 
   struct FingerprintSourceData {
     STACK_ALLOCATED();
+
+   public:
     FingerprintSourceData()
         : parent_hash_(0),
           qualified_name_hash_(0),

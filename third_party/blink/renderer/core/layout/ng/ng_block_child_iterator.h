@@ -47,6 +47,7 @@ class CORE_EXPORT NGBlockChildIterator {
 struct NGBlockChildIterator::Entry {
   STACK_ALLOCATED();
 
+ public:
   Entry(NGLayoutInputNode node, NGBreakToken* token)
       : node(node), token(token) {}
 

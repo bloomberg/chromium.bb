@@ -17,6 +17,7 @@ class LayoutObject;
 struct LocalCaretRect {
   STACK_ALLOCATED();
 
+ public:
   const LayoutObject* layout_object = nullptr;
   LayoutRect rect;
 

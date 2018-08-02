@@ -46,6 +46,8 @@ class Parser;
 
 struct Token {
   STACK_ALLOCATED();
+
+ public:
   int type;
   String str;
   Step::Axis axis;

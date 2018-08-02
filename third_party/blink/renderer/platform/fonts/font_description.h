@@ -100,6 +100,8 @@ class PLATFORM_EXPORT FontDescription {
 
   struct VariantLigatures {
     STACK_ALLOCATED();
+
+   public:
     VariantLigatures(LigaturesState state = kNormalLigaturesState)
         : common(state),
           discretionary(state),
@@ -116,6 +118,8 @@ class PLATFORM_EXPORT FontDescription {
 
   struct Size {
     STACK_ALLOCATED();
+
+   public:
     Size(unsigned keyword, float value, bool is_absolute)
         : keyword(keyword), is_absolute(is_absolute), value(value) {}
 
@@ -128,6 +132,8 @@ class PLATFORM_EXPORT FontDescription {
 
   struct FamilyDescription {
     STACK_ALLOCATED();
+
+   public:
     FamilyDescription(GenericFamilyType generic_family)
         : generic_family(generic_family) {}
     FamilyDescription(GenericFamilyType generic_family,

@@ -114,6 +114,8 @@ const WrapperTypeInfo* FieldTypeToWrapperTypeInfo(InternalFieldType type) {
 
 struct DataForDeserializer {
   STACK_ALLOCATED();
+
+ public:
   Member<Document> document;
 };
 

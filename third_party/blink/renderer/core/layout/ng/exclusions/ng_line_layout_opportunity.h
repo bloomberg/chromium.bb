@@ -16,6 +16,7 @@ namespace blink {
 struct CORE_EXPORT NGLineLayoutOpportunity {
   STACK_ALLOCATED();
 
+ public:
   NGLineLayoutOpportunity() {}
   NGLineLayoutOpportunity(LayoutUnit inline_size)
       : line_right_offset(inline_size), float_line_right_offset(inline_size) {}

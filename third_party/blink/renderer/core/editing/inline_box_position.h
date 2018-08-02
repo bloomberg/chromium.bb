@@ -43,6 +43,7 @@ enum class UnicodeBidi : unsigned;
 struct InlineBoxPosition {
   STACK_ALLOCATED();
 
+ public:
   const InlineBox* const inline_box;
   const int offset_in_box;
 

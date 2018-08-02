@@ -77,6 +77,7 @@ enum class SelectSoftLineBreak { kNotSelected, kSelected };
 struct LayoutSelectionStatus {
   STACK_ALLOCATED();
 
+ public:
   LayoutSelectionStatus(unsigned passed_start,
                         unsigned passed_end,
                         SelectSoftLineBreak passed_line_break)

@@ -23,6 +23,7 @@ enum class ResolvedUnderlinePosition { kRoman, kUnder, kOver };
 struct DecorationInfo final {
   STACK_ALLOCATED();
 
+ public:
   LayoutUnit width;
   FloatPoint local_origin;
   bool antialias;

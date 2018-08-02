@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <type_traits>
 #include <utility>
+#include "base/template_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 
@@ -261,6 +262,14 @@ class IsPointerToGarbageCollectedType<T*, false> {
  public:
   static const bool value = IsGarbageCollectedType<T>::value;
 };
+
+template <typename T, typename = void>
+struct IsStackAllocatedType : std::false_type {};
+
+template <typename T>
+struct IsStackAllocatedType<
+    T,
+    base::void_t<typename T::IsStackAllocatedTypeMarker>> : std::true_type {};
 
 }  // namespace WTF
 

@@ -290,6 +290,8 @@ class DateTimeYearFieldElement final : public DateTimeNumericFieldElement {
  public:
   struct Parameters {
     STACK_ALLOCATED();
+
+   public:
     int minimum_year;
     int maximum_year;
     bool min_is_specified;

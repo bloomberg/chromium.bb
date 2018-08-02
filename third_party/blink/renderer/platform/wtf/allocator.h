@@ -72,6 +72,10 @@ class __thisIsHereToForceASemicolonAfterThisMacro;
 
 #if defined(__clang__)
 #define STACK_ALLOCATED()                                                \
+ public:                                                                 \
+  using IsStackAllocatedTypeMarker[[maybe_unused]] = int;                \
+                                                                         \
+ private:                                                                \
   __attribute__((annotate("blink_stack_allocated"))) void* operator new( \
       size_t) = delete;                                                  \
   void* operator new(size_t, NotNullTag, void*) = delete;                \

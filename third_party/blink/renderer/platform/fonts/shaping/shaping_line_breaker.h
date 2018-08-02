@@ -53,6 +53,7 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   struct Result {
     STACK_ALLOCATED();
 
+   public:
     // Indicates the resulting break offset.
     unsigned break_offset;
 
@@ -97,6 +98,7 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   struct BreakOpportunity {
     STACK_ALLOCATED();
 
+   public:
     unsigned offset;
     bool is_hyphenated;
   };
