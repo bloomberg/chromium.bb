@@ -616,10 +616,16 @@ void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
   interaction_subscribers_.ForAllPtrs([is_mic_open](auto* ptr) {
     ptr->OnInteractionStarted(/*is_voice_interaction=*/is_mic_open);
   });
+  platform_api_.GetAudioInputProvider()
+      .GetAudioInput()
+      .OnConversationTurnStarted();
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
-    Resolution resolution) {
+    assistant_client::ConversationStateListener::Resolution resolution) {
+  platform_api_.GetAudioInputProvider()
+      .GetAudioInput()
+      .OnConversationTurnFinished();
   switch (resolution) {
     // Interaction ended normally.
     // Note that TIMEOUT here does not refer to server timeout, but rather mic

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
@@ -22,6 +23,72 @@ namespace {
 // This format should match //c/b/c/assistant/platform_audio_input_host.cc.
 constexpr assistant_client::BufferFormat kFormat{
     16000 /* sample_rate */, assistant_client::INTERLEAVED_S32, 1 /* channels */
+};
+
+class DefaultHotwordStateManager : public AudioInputImpl::HotwordStateManager {
+ public:
+  DefaultHotwordStateManager() = default;
+  ~DefaultHotwordStateManager() override = default;
+
+  void OnConversationTurnStarted() override {}
+  void OnConversationTurnFinished() override {}
+  void OnCaptureDataArrived() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultHotwordStateManager);
+};
+
+class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
+ public:
+  DspHotwordStateManager(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                         AudioInputImpl* input)
+      : task_runner_(task_runner), input_(input) {
+    second_phase_timer_.SetTaskRunner(task_runner_);
+  }
+
+  // HotwordStateManager overrides:
+  void OnConversationTurnStarted() override {
+    if (second_phase_timer_.IsRunning()) {
+      DCHECK(stream_state_ == StreamState::HOTWORD);
+      second_phase_timer_.Stop();
+      stream_state_ = StreamState::NORMAL;
+    } else {
+      // Handles user click on mic button.
+      input_->RecreateAudioInputStream(false /* hotword */);
+    }
+  }
+
+  void OnConversationTurnFinished() override {
+    input_->RecreateAudioInputStream(true /* hotword */);
+    stream_state_ = StreamState::HOTWORD;
+  }
+
+  void OnCaptureDataArrived() override {
+    if (stream_state_ == StreamState::HOTWORD &&
+        !second_phase_timer_.IsRunning()) {
+      // 1s from now, if OnConversationTurnStarted is not called, we assume that
+      // libassistant has rejected the hotword supplied by DSP. Thus, we reset
+      // and reopen the device on hotword state.
+      second_phase_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(1),
+          base::BindRepeating(
+              &DspHotwordStateManager::OnConversationTurnFinished,
+              base::Unretained(this)));
+    }
+  }
+
+ private:
+  enum class StreamState {
+    HOTWORD,
+    NORMAL,
+  };
+
+  StreamState stream_state_ = StreamState::HOTWORD;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::OneShotTimer second_phase_timer_;
+  AudioInputImpl* input_;
+
+  DISALLOW_COPY_AND_ASSIGN(DspHotwordStateManager);
 };
 
 }  // namespace
@@ -49,28 +116,24 @@ int AudioInputBufferImpl::GetFrameCount() const {
   return frame_count_;
 }
 
-AudioInputImpl::AudioInputImpl(
-    std::unique_ptr<service_manager::Connector> connector,
-    bool default_on)
-    : source_(audio::CreateInputDevice(
-          std::move(connector),
-          media::AudioDeviceDescription::kDefaultDeviceId)),
-      default_on_(default_on),
+AudioInputImpl::AudioInputImpl(service_manager::Connector* connector,
+                               bool default_on)
+    : default_on_(default_on),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(observer_sequence_checker_);
-  // AUDIO_PCM_LINEAR and AUDIO_PCM_LOW_LATENCY are the same on CRAS.
-  source_->Initialize(
-      media::AudioParameters(
-          media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-          media::CHANNEL_LAYOUT_MONO, kFormat.sample_rate,
-          kFormat.sample_rate / 10 /* buffer size for 100 ms */),
-      this);
+
+  if (IsDspHotwordEnabled()) {
+    state_manager_ =
+        std::make_unique<DspHotwordStateManager>(task_runner_, this);
+  } else {
+    state_manager_ = std::make_unique<DefaultHotwordStateManager>();
+  }
 }
 
 AudioInputImpl::~AudioInputImpl() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  source_->Stop();
+  source_.reset();
 }
 
 void AudioInputImpl::Capture(const media::AudioBus* audio_source,
@@ -78,6 +141,9 @@ void AudioInputImpl::Capture(const media::AudioBus* audio_source,
                              double volume,
                              bool key_pressed) {
   DCHECK_EQ(kFormat.num_channels, audio_source->channels());
+
+  state_manager_->OnCaptureDataArrived();
+
   std::vector<int32_t> buffer(kFormat.num_channels * audio_source->frames());
   audio_source->ToInterleaved<media::SignedInt32SampleTypeTraits>(
       audio_source->frames(), buffer.data());
@@ -150,6 +216,16 @@ void AudioInputImpl::SetMicState(bool mic_open) {
   }
 }
 
+void AudioInputImpl::OnConversationTurnStarted() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  state_manager_->OnConversationTurnStarted();
+}
+
+void AudioInputImpl::OnConversationTurnFinished() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  state_manager_->OnConversationTurnFinished();
+}
+
 void AudioInputImpl::OnHotwordEnabled(bool enable) {
   default_on_ = enable;
   if (default_on_)
@@ -160,22 +236,44 @@ void AudioInputImpl::OnHotwordEnabled(bool enable) {
 
 void AudioInputImpl::StartRecording() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  source_->Start();
+  DCHECK(!source_);
+  RecreateAudioInputStream(IsDspHotwordEnabled());
 }
 
 void AudioInputImpl::StopRecording() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  source_->Stop();
+  if (source_) {
+    source_->Stop();
+    source_.reset();
+  }
+}
+
+void AudioInputImpl::RecreateAudioInputStream(bool hotword) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  StopRecording();
+
+  source_ = audio::CreateInputDevice(
+      connector_->Clone(), media::AudioDeviceDescription::kDefaultDeviceId);
+  // AUDIO_PCM_LINEAR and AUDIO_PCM_LOW_LATENCY are the same on CRAS.
+  auto param = media::AudioParameters(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
+      kFormat.sample_rate,
+      kFormat.sample_rate / 10 /* buffer size for 100 ms */);
+  if (hotword) {
+    param.set_effects(media::AudioParameters::PlatformEffectsMask::HOTWORD);
+  }
+  source_->Initialize(param, this);
+  source_->Start();
 }
 
 AudioInputProviderImpl::AudioInputProviderImpl(
     service_manager::Connector* connector,
     bool default_on)
-    : audio_input_(connector->Clone(), default_on) {}
+    : audio_input_(connector, default_on) {}
 
 AudioInputProviderImpl::~AudioInputProviderImpl() = default;
 
-assistant_client::AudioInput& AudioInputProviderImpl::GetAudioInput() {
+AudioInputImpl& AudioInputProviderImpl::GetAudioInput() {
   return audio_input_;
 }
 
