@@ -139,8 +139,10 @@ void Surface::RejectCompositorFramesToFallbackSurfaces() {
     // A misbehaving client may report a non-existent surface ID as a
     // |referenced_surface|. In that case, |surface| would be nullptr, and
     // there is nothing to do here.
-    if (fallback_surface)
+    if (fallback_surface &&
+        fallback_surface->surface_id() != surface_range.end()) {
       fallback_surface->Close();
+    }
   }
 }
 
