@@ -191,6 +191,7 @@ fuchsia_sdk_fidl_pkg("input") {
   namespace = "fuchsia.ui"
   namespace_path = "fuchsia/ui"
   sources = [
+    "commands.fidl",
     "ime_service.fidl",
     "input_connection.fidl",
     "input_device_registry.fidl",
