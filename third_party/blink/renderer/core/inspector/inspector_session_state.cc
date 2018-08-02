@@ -106,7 +106,7 @@ void InspectorAgentState::InitFrom(InspectorSessionState* session_state) {
     f->InitFrom(session_state);
 }
 
-void InspectorAgentState::Clear() {
+void InspectorAgentState::ClearAllFields() {
   for (Field* f : fields_)
     f->Clear();
 }

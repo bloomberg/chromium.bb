@@ -270,7 +270,7 @@ class CORE_EXPORT InspectorAgentState {
   void InitFrom(InspectorSessionState* session_state);
 
   // Clears all fields registered with this InspectorAgentState instance.
-  void Clear();
+  void ClearAllFields();
 
  private:
   const WTF::String domain_name_;

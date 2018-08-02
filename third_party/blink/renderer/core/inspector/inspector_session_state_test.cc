@@ -236,7 +236,7 @@ TEST(InspectorSessionStateTest, MultipleAgents) {
     AgentWithMapFields maps_agent;
     maps_agent.agent_state_.InitFrom(&session_state);
     maps_agent.strings_.Set("foo", "bar");
-    maps_agent.agent_state_.Clear();
+    maps_agent.agent_state_.ClearAllFields();
 
     EXPECT_TRUE(maps_agent.doubles_.IsEmpty());
     EXPECT_TRUE(maps_agent.strings_.IsEmpty());
@@ -250,7 +250,7 @@ TEST(InspectorSessionStateTest, MultipleAgents) {
     InspectorSessionState session_state(dev_tools_session.CloneCookie());
     AgentWithSimpleFields simple_agent;
     simple_agent.agent_state_.InitFrom(&session_state);
-    simple_agent.agent_state_.Clear();
+    simple_agent.agent_state_.ClearAllFields();
 
     dev_tools_session.ApplyUpdates(session_state.TakeUpdates());
   }
