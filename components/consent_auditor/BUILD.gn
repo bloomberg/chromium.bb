@@ -44,6 +44,7 @@ source_set("test_support") {
   deps = [
     ":consent_auditor",
     "//components/sync",
+    "//testing/gmock",
   ]
 }
 

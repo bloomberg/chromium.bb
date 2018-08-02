@@ -50,12 +50,6 @@ class ConsentAuditorImpl : public ConsentAuditor {
   // Registers the preferences needed by this service.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Consent auditor implementation.
-  void RecordGaiaConsent(const std::string& account_id,
-                         Feature feature,
-                         const std::vector<int>& description_grd_ids,
-                         int confirmation_grd_id,
-                         ConsentStatus status) override;
   void RecordArcPlayConsent(
       const std::string& account_id,
       const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent& consent)
@@ -81,6 +75,17 @@ class ConsentAuditorImpl : public ConsentAuditor {
   GetControllerDelegateOnUIThread() override;
 
  private:
+  // Records a consent for |feature| for the signed-in GAIA account with
+  // the ID |account_id| (as defined in AccountInfo).
+  // Consent text consisted of strings with |consent_grd_ids|, and the UI
+  // element the user clicked had the ID |confirmation_grd_id|.
+  // Whether the consent was GIVEN or NOT_GIVEN is passed as |status|.
+  void RecordGaiaConsent(const std::string& account_id,
+                         Feature feature,
+                         const std::vector<int>& description_grd_ids,
+                         int confirmation_grd_id,
+                         ConsentStatus status);
+
   std::unique_ptr<sync_pb::UserEventSpecifics> ConstructUserEventSpecifics(
       const std::string& account_id,
       Feature feature,

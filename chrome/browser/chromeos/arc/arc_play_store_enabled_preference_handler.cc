@@ -25,6 +25,8 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
+using sync_pb::UserConsentTypes;
+
 namespace arc {
 
 ArcPlayStoreEnabledPreferenceHandler::ArcPlayStoreEnabledPreferenceHandler(
@@ -125,11 +127,17 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
       if (signin_manager->IsAuthenticated()) {
         const std::string account_id =
             signin_manager->GetAuthenticatedAccountId();
-        ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
-            account_id, consent_auditor::Feature::PLAY_STORE,
-            {IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE},
-            IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE,
-            consent_auditor::ConsentStatus::NOT_GIVEN);
+
+        UserConsentTypes::ArcPlayTermsOfServiceConsent play_consent;
+        play_consent.set_status(UserConsentTypes::NOT_GIVEN);
+        play_consent.set_confirmation_grd_id(
+            IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE);
+        play_consent.add_description_grd_ids(
+            IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE);
+        play_consent.set_consent_flow(
+            UserConsentTypes::ArcPlayTermsOfServiceConsent::SETTING_CHANGE);
+        ConsentAuditorFactory::GetForProfile(profile_)->RecordArcPlayConsent(
+            account_id, play_consent);
       }
     }
   }

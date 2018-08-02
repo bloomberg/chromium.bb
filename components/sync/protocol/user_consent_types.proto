@@ -75,14 +75,32 @@ message UserConsentTypes {
     // The length of the UTF-8 encoded string of the Play Terms of Service
     // text. The length is given in number of bytes.
     optional int32 play_terms_of_service_text_length = 1;
+
     // The SHA1 hash of UTF-8 encoded string of the Play Terms of Service
     // displayed to the user.
     optional bytes play_terms_of_service_hash = 2;
+
+    // GRD Ids of the strings on the consent UI that was shown to the user.
+    repeated int32 description_grd_ids = 5;
+
     // Id of the string of the UI element the user clicked when consenting.
     optional int32 confirmation_grd_id = 3;
+
     // The status of the Play Terms of Service consent. This specifies whether
     // the consent was given or not given/revoked.
     optional ConsentStatus status = 4;
+
+    // Enum describing different user flow during which the ARC Play Terms of
+    // service consent can be recorded.
+    enum ConsentFlow {
+      // The ARC setup flow on a CROS device.
+      SETUP = 1;
+      // The user flow for changing the ARC setting on a CROS device.
+      SETTING_CHANGE = 2;
+    }
+    // The user flow during which the consent was recorded. This is necessary in
+    // order to create the correct UI context and Event for the backend.
+    optional ConsentFlow consent_flow = 6;
   }
 
   // The User Consent for Chrome Sync is determined by the user action on the

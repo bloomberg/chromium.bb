@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <utility>
 
 #include "components/consent_auditor/consent_auditor.h"
@@ -40,24 +41,6 @@ void FakeConsentAuditor::RecordSyncConsent(
   RecordGaiaConsent(account_id, Feature::CHROME_SYNC, description_grd_ids,
                     consent.confirmation_grd_id(),
                     ConvertConsentStatus(consent.status()));
-}
-
-void FakeConsentAuditor::RecordArcPlayConsent(
-    const std::string& account_id,
-    const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent& consent) {
-  NOTIMPLEMENTED();
-}
-
-void FakeConsentAuditor::RecordArcGoogleLocationServiceConsent(
-    const std::string& account_id,
-    const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent& consent) {
-  NOTIMPLEMENTED();
-}
-
-void FakeConsentAuditor::RecordArcBackupAndRestoreConsent(
-    const std::string& account_id,
-    const sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent& consent) {
-  NOTIMPLEMENTED();
 }
 
 void FakeConsentAuditor::RecordUnifiedConsent(
