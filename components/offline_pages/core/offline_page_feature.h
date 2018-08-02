@@ -21,7 +21,6 @@ extern const base::Feature kOfflinePagesLoadSignalCollectingFeature;
 extern const base::Feature kOfflinePagesCTV2Feature;
 extern const base::Feature kOfflinePagesRenovationsFeature;
 extern const base::Feature kOfflinePagesResourceBasedSnapshotFeature;
-extern const base::Feature kOfflinePagesPrefetchingUIFeature;
 extern const base::Feature kOfflinePagesLimitlessPrefetchingFeature;
 extern const base::Feature kOfflinePagesDescriptivePendingStatusFeature;
 extern const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature;
@@ -55,9 +54,6 @@ bool IsOfflinePagesSvelteConcurrentLoadingEnabled();
 
 // Returns true if prefetching offline pages is enabled.
 bool IsPrefetchingOfflinePagesEnabled();
-
-// Returns true if we should show UI for prefetched pages.
-bool IsOfflinePagesPrefetchingUIEnabled();
 
 // Returns true if prefetching offline pages should ignore its normal resource
 // usage limits.

@@ -18,7 +18,7 @@ int kFreshOfflineContentObserverUserDataKey;
 // static
 void FreshOfflineContentObserver::AttachToOfflinePageModel(
     OfflinePageModel* model) {
-  if (!IsOfflinePagesPrefetchingUIEnabled())
+  if (!IsPrefetchingOfflinePagesEnabled())
     return;
   auto observer = std::make_unique<FreshOfflineContentObserver>();
   model->AddObserver(observer.get());
