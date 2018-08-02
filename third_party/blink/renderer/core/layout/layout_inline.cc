@@ -1585,18 +1585,24 @@ void LayoutInline::AddOutlineRectsForContinuations(
     const LayoutPoint& additional_offset,
     IncludeBlockVisualOverflowOrNot include_block_overflows) const {
   if (LayoutBoxModelObject* continuation = Continuation()) {
+    if (continuation->NeedsLayout()) {
+      // TODO(mstensho): Prevent this from happening. Before we can get the
+      // outlines of an object, we obviously need to have laid it out. We may
+      // currently end up in a situation where the continuation's layout isn't
+      // up-to-date here. This happens when calculating the overflow rectangle
+      // while laying out one of the earlier anonymous blocks that form the
+      // continuation chain. The outlines from the continuations should probably
+      // not be part of the overflow rectangle of that anonymous block at
+      // all. Yet, here we are. Bail.
+      return;
+    }
+    LayoutPoint offset = additional_offset;
     if (continuation->IsInline())
-      continuation->AddOutlineRects(
-          rects,
-          additional_offset + (continuation->ContainingBlock()->Location() -
-                               ContainingBlock()->Location()),
-          include_block_overflows);
+      offset += continuation->ContainingBlock()->Location();
     else
-      continuation->AddOutlineRects(
-          rects,
-          additional_offset + (ToLayoutBox(continuation)->Location() -
-                               ContainingBlock()->Location()),
-          include_block_overflows);
+      offset += ToLayoutBox(continuation)->Location();
+    offset -= ContainingBlock()->Location();
+    continuation->AddOutlineRects(rects, offset, include_block_overflows);
   }
 }
 
