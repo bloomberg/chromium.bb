@@ -65,9 +65,9 @@ class CORE_EXPORT InspectorPerformanceAgent final
   explicit InspectorPerformanceAgent(InspectedFrames*);
   void ScriptStarts();
   void ScriptEnds();
+  void InnerEnable();
 
   Member<InspectedFrames> inspected_frames_;
-  bool enabled_ = false;
   TimeDelta layout_duration_;
   TimeTicks layout_start_ticks_;
   TimeDelta recalc_style_duration_;
@@ -80,7 +80,7 @@ class CORE_EXPORT InspectorPerformanceAgent final
   unsigned long long recalc_style_count_ = 0;
   int script_call_depth_ = 0;
   int layout_depth_ = 0;
-
+  InspectorAgentState::Boolean enabled_;
   DISALLOW_COPY_AND_ASSIGN(InspectorPerformanceAgent);
 };
 
