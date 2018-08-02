@@ -265,12 +265,12 @@ void RenderMessageFilter::FetchCachedCode(const GURL& url,
   // If the url isn't valid then render process may not be locked to an origin
   // yet so we don't allow fetches from code cache.
   if (!requesting_url.is_valid() || !url.is_valid()) {
-    std::move(callback).Run(std::vector<uint8_t>());
+    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
 
   url::Origin requesting_origin = url::Origin::Create(requesting_url);
-  base::RepeatingCallback<void(scoped_refptr<net::IOBufferWithSize>)>
+  base::RepeatingCallback<void(const base::Time&, const std::vector<uint8_t>&)>
       read_callback = base::BindRepeating(
           &RenderMessageFilter::OnReceiveCachedCode,
           weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback));
@@ -280,15 +280,11 @@ void RenderMessageFilter::FetchCachedCode(const GURL& url,
 
 void RenderMessageFilter::OnReceiveCachedCode(
     FetchCachedCodeCallback callback,
-    scoped_refptr<net::IOBufferWithSize> buffer) {
-  if (!buffer) {
-    std::move(callback).Run(std::vector<uint8_t>());
-    return;
-  }
+    const base::Time& response_time,
+    const std::vector<uint8_t>& data) {
   // TODO(crbug.com/867848): Pass the data as a mojo data pipe instead
   // of vector<uint8>
-  std::vector<uint8_t> data(buffer->data(), buffer->data() + buffer->size());
-  std::move(callback).Run(data);
+  std::move(callback).Run(response_time, data);
 }
 
 void RenderMessageFilter::DidGenerateCacheableMetadataInCacheStorage(

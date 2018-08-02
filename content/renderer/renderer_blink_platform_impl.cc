@@ -460,7 +460,8 @@ void RendererBlinkPlatformImpl::CacheMetadata(const blink::WebURL& url,
 
 void RendererBlinkPlatformImpl::FetchCachedCode(
     const blink::WebURL& url,
-    base::OnceCallback<void(const std::vector<uint8_t>&)> callback) {
+    base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>
+        callback) {
   RenderThreadImpl::current()->render_message_filter()->FetchCachedCode(
       url, std::move(callback));
 }

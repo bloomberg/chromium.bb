@@ -32,7 +32,8 @@ namespace content {
 class CONTENT_EXPORT GeneratedCodeCache {
  public:
   using ReadDataCallback =
-      base::RepeatingCallback<void(scoped_refptr<net::IOBufferWithSize>)>;
+      base::RepeatingCallback<void(const base::Time&,
+                                   const std::vector<uint8_t>&)>;
   static const int kResponseTimeSizeInBytes = sizeof(int64_t);
 
   // Creates a GeneratedCodeCache with the specified path and the maximum size.

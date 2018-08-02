@@ -126,7 +126,8 @@ class CONTENT_EXPORT RenderMessageFilter
 #endif
 
   void OnReceiveCachedCode(FetchCachedCodeCallback callback,
-                           scoped_refptr<net::IOBufferWithSize> buffer);
+                           const base::Time& response_time,
+                           const std::vector<uint8_t>& data);
   void OnCacheStorageOpenCallback(const GURL& url,
                                   base::Time expected_response_time,
                                   scoped_refptr<net::IOBuffer> buf,

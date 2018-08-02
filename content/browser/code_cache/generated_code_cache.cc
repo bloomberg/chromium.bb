@@ -193,14 +193,14 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
                                     ReadDataCallback read_data_callback) {
   if (backend_state_ == kFailed) {
     // Silently ignore the requests.
-    std::move(read_data_callback).Run(scoped_refptr<net::IOBufferWithSize>());
+    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
 
   // If the url is invalid or if it is from a unique origin, we should not
   // cache the code.
   if (!IsAllowedToCache(url, origin)) {
-    std::move(read_data_callback).Run(scoped_refptr<net::IOBufferWithSize>());
+    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
 
@@ -378,7 +378,7 @@ void GeneratedCodeCache::CreateCompleteForWriteData(
 void GeneratedCodeCache::FetchEntryImpl(const std::string& key,
                                         ReadDataCallback read_data_callback) {
   if (backend_state_ != kInitialized) {
-    std::move(read_data_callback).Run(scoped_refptr<net::IOBufferWithSize>());
+    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
 
@@ -402,7 +402,7 @@ void GeneratedCodeCache::OpenCompleteForReadData(
     scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
     int rv) {
   if (rv != net::OK) {
-    std::move(read_data_callback).Run(scoped_refptr<net::IOBufferWithSize>());
+    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
 
@@ -427,9 +427,14 @@ void GeneratedCodeCache::ReadDataComplete(
     scoped_refptr<net::IOBufferWithSize> buffer,
     int rv) {
   if (rv != buffer->size()) {
-    std::move(callback).Run(scoped_refptr<net::IOBufferWithSize>());
+    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
   } else {
-    std::move(callback).Run(buffer);
+    int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
+    base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(raw_response_time));
+    std::vector<uint8_t> data(buffer->data() + kResponseTimeSizeInBytes,
+                              buffer->data() + buffer->size());
+    std::move(callback).Run(response_time, data);
   }
 }
 
