@@ -560,6 +560,7 @@ class FileURLLoader : public network::mojom::URLLoader {
               ? net::ForceSniffFileUrlsForHtml::kEnabled
               : net::ForceSniffFileUrlsForHtml::kDisabled,
           &head.mime_type);
+      head.did_mime_sniff = true;
     }
     if (head.headers) {
       head.headers->AddHeader(

@@ -83,3 +83,8 @@ include_rules = [
   "+third_party/blink/public/web/web_triggering_event_info.h",
   "+third_party/blink/public/web/win/web_font_rendering.h",
 ]
+specific_include_rules = {
+  '.*_unittest.*': [
+    "+services/network/test",
+  ]
+}

@@ -2012,6 +2012,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
 
   client.RunUntilResponseReceived();
   EXPECT_EQ("text/html", client.response_head().mime_type);
+  EXPECT_TRUE(client.response_head().did_mime_sniff);
 }
 
 // Tests that we don't sniff the mime type when the server provides one.
@@ -2033,6 +2034,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
 
   client.RunUntilResponseReceived();
   EXPECT_EQ("image/jpeg", client.response_head().mime_type);
+  EXPECT_FALSE(client.response_head().did_mime_sniff);
 }
 
 // Tests that we don't sniff the mime type when there is no message body.

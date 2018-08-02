@@ -522,6 +522,7 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
         SniffMimeType(file_data_->data(), result, url_.ToGURL(), type_hint,
                       net::ForceSniffFileUrlsForHtml::kDisabled,
                       &head_.mime_type);
+        head_.did_mime_sniff = true;
       }
 
       client_->OnReceiveResponse(head_);
