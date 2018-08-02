@@ -91,8 +91,6 @@ SerializableUserDataImpl::GetLegacyKeyConversion() {
   // TODO(crbug.com/661633): those mappings where introduced between M57 and
   // M58, so remove them after M67 has shipped to stable.
   return @{
-    @"tabId" : @"TabID",
-    @"openerId" : @"OpenerID",
     @"openerNavigationIndex" : @"OpenerNavigationIndex",
   };
 }
