@@ -170,10 +170,6 @@ void ImmersiveModeControllerAsh::OnFindBarVisibleBoundsChanged(
 }
 
 bool ImmersiveModeControllerAsh::ShouldStayImmersiveAfterExitingFullscreen() {
-  // TODO(crbug.com/760811): Support tablet mode in mash.
-  if (!features::IsAshInBrowserProcess())
-    return false;
-
   return !browser_view_->IsBrowserTypeNormal() &&
          TabletModeClient::Get()->tablet_mode_enabled();
 }
@@ -188,11 +184,8 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
   if (browser_view_->IsBrowserTypeNormal())
     return;
 
-  // TODO(crbug.com/760811): Support tablet mode in mash.
-  if (!features::IsAshInBrowserProcess() ||
-      !TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (!TabletModeClient::Get()->tablet_mode_enabled())
     return;
-  }
 
   // Enable immersive mode if the widget is activated. Do not disable immersive
   // mode if the widget deactivates, but is not minimized.

@@ -139,6 +139,9 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
   browser_view()->browser()->command_controller()->RemoveCommandObserver(
       IDC_BACK, this);
 
+  if (TabletModeClient::Get())
+    TabletModeClient::Get()->RemoveObserver(this);
+
   // As with Init(), some of this may need porting to Mash.
   if (IsMash())
     return;
@@ -150,8 +153,6 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 
   window_observer_.RemoveAll();
 
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
 }
 
@@ -194,6 +195,10 @@ void BrowserNonClientFrameViewAsh::Init() {
   if (browser->profile()->IsOffTheRecord())
     window->SetProperty(ash::kBlockedForAssistantSnapshotKey, true);
 
+  // TabletModeClient may not be initialized during unit tests.
+  if (TabletModeClient::Get())
+    TabletModeClient::Get()->AddObserver(this);
+
   // TODO(estade): how much of the rest of this needs porting to Mash?
   if (IsMash()) {
     window->SetProperty(ash::kFrameTextColorKey, GetTitleColor());
@@ -208,10 +213,6 @@ void BrowserNonClientFrameViewAsh::Init() {
   }
 
   frame_header_ = CreateFrameHeader();
-
-  // TabletModeClient may not be initialized during unit tests.
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->AddObserver(this);
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
 
@@ -691,18 +692,17 @@ void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
 
 void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
   // TODO(estade): handle in Mash?
-  if (IsMash())
-    return;
+  if (!IsMash()) {
+    if (!enabled && browser_view()->immersive_mode_controller()->IsRevealed()) {
+      // Before updating the caption buttons state below (which triggers a
+      // relayout), we want to move the caption buttons from the
+      // TopContainerView back to this view.
+      OnImmersiveRevealEnded();
+    }
 
-  if (!enabled && browser_view()->immersive_mode_controller()->IsRevealed()) {
-    // Before updating the caption buttons state below (which triggers a
-    // relayout), we want to move the caption buttons from the TopContainerView
-    // back to this view.
-    OnImmersiveRevealEnded();
+    caption_button_container_->SetVisible(ShouldShowCaptionButtons());
+    caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
   }
-
-  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
-  caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
 
   if (enabled) {
     // Enter immersive mode if the feature is enabled and the widget is not
