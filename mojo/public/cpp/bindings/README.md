@@ -669,7 +669,7 @@ For example, consider the following Mojom definitions:
 ```cpp
 union Value {
   int64 int_value;
-  float32 float_value;
+  float float_value;
   string string_value;
 };
 
@@ -678,12 +678,17 @@ interface Dictionary {
 };
 ```
 
-This generates a the following C++ interface:
+This generates the following C++ interface:
 
 ```cpp
 class Value {
  public:
-  virtual ~Value() {}
+  ~Value() {}
+};
+
+class Dictionary {
+ public:
+  virtual ~Dictionary() {}
 
   virtual void AddValue(const std::string& key, ValuePtr value) = 0;
 };

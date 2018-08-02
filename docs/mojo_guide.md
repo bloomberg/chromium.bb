@@ -15,7 +15,7 @@ that message on the other endpoint. Message pipes are thus bidirectional.
 A **mojom** file describes **interfaces** which describe strongly typed message
 structures, similar to proto files.
 
-Given a **mojom interface** and a **message pipe**, the two **message pipes**
+Given a **mojom interface** and a **message pipe**, the two **endpoints**
 can be given the labels **InterfacePtr** and **Binding**. This now describes a
 strongly typed **message pipe** which transports messages described by the
 **mojom interface**. The **InterfacePtr** is the **endpoint** which "sends"
