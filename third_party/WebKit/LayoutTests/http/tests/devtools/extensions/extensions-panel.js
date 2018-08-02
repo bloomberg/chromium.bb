@@ -294,7 +294,7 @@
         testPanel.onShown.removeListener(onPanelShown);
         output("Panel shown, now toggling console...");
         panelWindow.addEventListener("resize", onPanelResized);
-        dispatchKeydownEvent({ key: "Escape" });
+        dispatchKeydownEvent({ key: "Escape", keyCode: 27 });
       }
       function onPanelResized() {
         panelWindow.removeEventListener("resize", onPanelResized);
