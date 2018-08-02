@@ -14,8 +14,6 @@ import android.widget.RemoteViews;
 
 /**
  * Abstraction over Notification.Builder and NotificationCompat.Builder interfaces.
- *
- * TODO(awdf) Remove this once we've updated to revision 26 of the support library.
  */
 public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setAutoCancel(boolean autoCancel);
