@@ -5,11 +5,8 @@
 #include "content/common/throttling_url_loader.h"
 
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "net/http/http_status_code.h"
-#include "net/http/http_util.h"
 
 namespace content {
 
@@ -182,19 +179,6 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
 
 void ThrottlingURLLoader::FollowRedirect(
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
-  if (!throttle_redirect_url_.is_empty()) {
-    throttle_redirect_url_ = GURL();
-    // This is a synthesized redirect, so no need to tell the URLLoader.
-    DCHECK(!modified_request_headers.has_value())
-        << "ThrottlingURLLoader doesn't support modified_request_headers for "
-           "synthesized requests.";
-    auto start_info = std::move(start_info_);
-    StartNow(start_info->url_loader_factory.get(), start_info->routing_id,
-             start_info->request_id, start_info->options,
-             &start_info->url_request, std::move(start_info->task_runner));
-    return;
-  }
-
   if (url_loader_) {
     if (to_be_removed_request_headers_.empty()) {
       url_loader_->FollowRedirect(base::nullopt, modified_request_headers);
@@ -257,28 +241,10 @@ void ThrottlingURLLoader::Start(
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
-      GURL original_url = url_request->url;
       throttle->WillStartRequest(url_request, &throttle_deferred);
-      if (original_url != url_request->url) {
-        DCHECK(throttle_redirect_url_.is_empty())
-            << "ThrottlingURLLoader doesn't support multiple throttles "
-               "changing the URL.";
-        CHECK_EQ(original_url.GetOrigin(), url_request->url.GetOrigin())
-            << "ThrottlingURLLoader doesn't support a throttle making a "
-            << "cross-origin redirect.";
-        throttle_redirect_url_ = url_request->url;
-        // Restore the original URL so that all throttles see the same original
-        // URL.
-        url_request->url = original_url;
-      }
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
     }
-
-    // If a throttle had changed the URL, set it in the ResourceRequest struct
-    // so that it is the URL that's requested.
-    if (!throttle_redirect_url_.is_empty())
-      url_request->url = throttle_redirect_url_;
 
     if (deferred) {
       deferred_stage_ = DEFERRED_START;
@@ -294,36 +260,12 @@ void ThrottlingURLLoader::Start(
 }
 
 void ThrottlingURLLoader::StartNow(
-    scoped_refptr<network::SharedURLLoaderFactory> factory,
+    network::SharedURLLoaderFactory* factory,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     network::ResourceRequest* url_request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (!throttle_redirect_url_.is_empty()) {
-    start_info_ = std::make_unique<StartInfo>(std::move(factory), routing_id,
-                                              request_id, options, url_request,
-                                              std::move(task_runner));
-
-    net::RedirectInfo redirect_info;
-    redirect_info.status_code = net::HTTP_TEMPORARY_REDIRECT;
-    redirect_info.new_method = url_request->method;
-    redirect_info.new_url = throttle_redirect_url_;
-    redirect_info.new_site_for_cookies = throttle_redirect_url_;
-
-    network::ResourceResponseHead response_head;
-    std::string header_string = base::StringPrintf(
-        "HTTP/1.1 %i Internal Redirect\n"
-        "Location: %s\n",
-        net::HTTP_TEMPORARY_REDIRECT, throttle_redirect_url_.spec().c_str());
-    response_head.headers =
-        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-            header_string.c_str(), header_string.length()));
-    response_head.encoded_data_length = header_string.size();
-    OnReceiveRedirect(redirect_info, response_head);
-    return;
-  }
-
   network::mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
   client_binding_.set_connection_error_handler(base::BindOnce(
@@ -515,10 +457,9 @@ void ThrottlingURLLoader::Resume() {
   deferred_stage_ = DEFERRED_NONE;
   switch (prev_deferred_stage) {
     case DEFERRED_START: {
-      auto start_info = std::move(start_info_);
-      StartNow(start_info->url_loader_factory.get(), start_info->routing_id,
-               start_info->request_id, start_info->options,
-               &start_info->url_request, std::move(start_info->task_runner));
+      StartNow(start_info_->url_loader_factory.get(), start_info_->routing_id,
+               start_info_->request_id, start_info_->options,
+               &start_info_->url_request, std::move(start_info_->task_runner));
       break;
     }
     case DEFERRED_REDIRECT: {

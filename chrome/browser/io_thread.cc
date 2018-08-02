@@ -279,6 +279,11 @@ IOThread::IOThread(
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  ChromeNetworkDelegate::InitializePrefsOnUIThread(
+      nullptr,
+      nullptr,
+      nullptr,
+      local_state);
 
   BrowserThread::SetIOThreadDelegate(this);
 

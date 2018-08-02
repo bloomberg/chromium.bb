@@ -9,9 +9,9 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop_current.h"
-#include "chrome/common/google_url_loader_throttle.h"
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
+#include "chrome/common/variations_header_url_loader_throttle.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
@@ -243,12 +243,10 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
     throttles.push_back(std::move(ad_throttle));
   }
 
-  throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
-      ChromeRenderThreadObserver::is_incognito_process(),
-      ChromeRenderThreadObserver::is_signed_in(),
-      ChromeRenderThreadObserver::force_safe_search(),
-      ChromeRenderThreadObserver::youtube_restrict(),
-      ChromeRenderThreadObserver::allowed_domains_for_apps()));
+  bool is_off_the_record = ChromeRenderThreadObserver::is_incognito_process();
+  bool is_signed_in = ChromeRenderThreadObserver::is_signed_in();
+  throttles.push_back(std::make_unique<VariationsHeaderURLLoaderThrottle>(
+      is_off_the_record, is_signed_in));
 
   return throttles;
 }

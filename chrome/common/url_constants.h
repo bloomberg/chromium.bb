@@ -162,6 +162,10 @@ extern const char kRemoveNonCWSExtensionURL[];
 // "Learn more" URL for resetting profile preferences.
 extern const char kResetProfileSettingsLearnMoreURL[];
 
+// Parameters that get appended to force SafeSearch.
+extern const char kSafeSearchSafeParameter[];
+extern const char kSafeSearchSsuiParameter[];
+
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];
 
