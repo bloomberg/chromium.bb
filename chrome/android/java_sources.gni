@@ -500,6 +500,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/toolbar/DownloadHomeToolbar.java",
   "java/src/org/chromium/chrome/browser/download/home/snackbars/DeleteUndoCoordinator.java",
   "java/src/org/chromium/chrome/browser/download/home/snackbars/UndoUiUtils.java",
+  "java/src/org/chromium/chrome/browser/download/home/view/SelectionView.java",
   "java/src/org/chromium/chrome/browser/download/items/DownloadBlockedOfflineContentProvider.java",
   "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",
   "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorNotificationBridgeUi.java",

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.download.home.list;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
@@ -41,6 +40,8 @@ public class ListPropertyModel extends PropertyObservable<ListPropertyModel.Prop
         static final PropertyKey CALLBACK_CANCEL = new PropertyKey();
         static final PropertyKey CALLBACK_SHARE = new PropertyKey();
         static final PropertyKey CALLBACK_REMOVE = new PropertyKey();
+        static final PropertyKey CALLBACK_SELECTION = new PropertyKey();
+        static final PropertyKey SELECTION_MODE_ACTIVE = new PropertyKey();
 
         // Utility properties.
         static final PropertyKey PROVIDER_VISUALS = new PropertyKey();
@@ -49,14 +50,15 @@ public class ListPropertyModel extends PropertyObservable<ListPropertyModel.Prop
     }
 
     private boolean mEnableItemAnimations;
+    private boolean mSelectionModeActive;
     private Callback<OfflineItem> mOpenCallback;
     private Callback<OfflineItem> mPauseCallback;
     private Callback<OfflineItem> mResumeCallback;
     private Callback<OfflineItem> mCancelCallback;
     private Callback<OfflineItem> mShareCallback;
     private Callback<OfflineItem> mRemoveCallback;
+    private Callback<ListItem> mSelectionCallback;
     private VisualsProvider mVisualsProvider;
-    private SelectionDelegate<ListItem> mSelectionDelegate;
 
     /** Sets whether or not item animations should be enabled. */
     public void setEnableItemAnimations(boolean enableItemAnimations) {
@@ -68,6 +70,18 @@ public class ListPropertyModel extends PropertyObservable<ListPropertyModel.Prop
     /** @return Whether or not item animations should be enabled. */
     public boolean getEnableItemAnimations() {
         return mEnableItemAnimations;
+    }
+
+    /** Sets whether or not selection mode is currently active. */
+    public void setSelectionModeActive(boolean selectionModeActive) {
+        if (mSelectionModeActive == selectionModeActive) return;
+        mSelectionModeActive = selectionModeActive;
+        notifyPropertyChanged(PropertyKey.SELECTION_MODE_ACTIVE);
+    }
+
+    /** @return Whether or not selection mode is currently active. */
+    public boolean getSelectionModeActive() {
+        return mSelectionModeActive;
     }
 
     /** Sets the callback for when a UI action should open a {@link OfflineItem}. */
@@ -154,13 +168,15 @@ public class ListPropertyModel extends PropertyObservable<ListPropertyModel.Prop
         return mVisualsProvider;
     }
 
-    /** Sets the selection delegate to handle selection of list items. */
-    public void setSelectionDelegate(SelectionDelegate<ListItem> selectionDelegate) {
-        mSelectionDelegate = selectionDelegate;
+    /** Sets the callback for when an {@link ListItem} is selected or deselected on the UI. */
+    public void setSelectionCallback(Callback<ListItem> callback) {
+        if (mSelectionCallback == callback) return;
+        mSelectionCallback = callback;
+        notifyPropertyChanged(PropertyKey.CALLBACK_SELECTION);
     }
 
-    /** @return The selection delegate to handle multiple item selections. */
-    public SelectionDelegate<ListItem> getSelectionDelegate() {
-        return mSelectionDelegate;
+    /** @return The callback to trigger when a UI action selects or deselects a {@link ListItem}. */
+    public Callback<ListItem> getSelectionCallback() {
+        return mSelectionCallback;
     }
 }

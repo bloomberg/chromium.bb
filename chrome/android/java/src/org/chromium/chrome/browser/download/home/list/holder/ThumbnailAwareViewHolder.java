@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
+import org.chromium.chrome.browser.download.home.view.SelectionView;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
@@ -22,6 +23,7 @@ import org.chromium.components.offline_items_collection.VisualsCallback;
  */
 abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements VisualsCallback {
     private final ImageView mThumbnail;
+    private final SelectionView mSelectionView;
 
     /**
      * The {@link ContentId} of the associated thumbnail/request if any.
@@ -58,6 +60,7 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
         super(view);
 
         mThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+        mSelectionView = itemView.findViewById(R.id.selection);
         mWidthPx = thumbnailWidthPx;
         mHeightPx = thumbnailHeightPx;
     }
@@ -73,9 +76,27 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
         OfflineItem offlineItem = ((ListItem.OfflineItemListItem) item).item;
 
         // If we're rebinding the same item, ignore the bind.
-        if (offlineItem.id.equals(mId)) return;
+        if (offlineItem.id.equals(mId) && !selectionStateHasChanged(properties, item)) {
+            return;
+        }
 
-        // TODO(shaktisahu): Add callbacks for selection and open.
+        if (mSelectionView != null) {
+            mSelectionView.setSelectionState(
+                    item.selected, properties.getSelectionModeActive(), item.showSelectedAnimation);
+        }
+
+        itemView.setOnLongClickListener(v -> {
+            properties.getSelectionCallback().onResult(item);
+            return true;
+        });
+
+        itemView.setOnClickListener(v -> {
+            if (mSelectionView != null && mSelectionView.isInSelectionMode()) {
+                properties.getSelectionCallback().onResult(item);
+            } else {
+                properties.getOpenCallback().onResult(offlineItem);
+            }
+        });
 
         // Clear any associated bitmap from the thumbnail.
         if (mId != null) onVisualsChanged(mThumbnail, null);
@@ -90,6 +111,13 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
 
         // Make sure to update our state properly if we got a synchronous response.
         if (!mIsRequesting) mCancellable = null;
+    }
+
+    private boolean selectionStateHasChanged(ListPropertyModel properties, ListItem item) {
+        if (mSelectionView == null) return false;
+
+        return mSelectionView.isSelected() != item.selected
+                || mSelectionView.isInSelectionMode() != properties.getSelectionModeActive();
     }
 
     // VisualsCallback implementation.

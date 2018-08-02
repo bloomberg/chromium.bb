@@ -37,6 +37,7 @@ class MoreButtonViewHolder extends ListItemViewHolder implements ListMenuButton.
         ListItem.OfflineItemListItem offlineItem = (ListItem.OfflineItemListItem) item;
         mShareCallback = () -> properties.getShareCallback().onResult(offlineItem.item);
         mDeleteCallback = () -> properties.getRemoveCallback().onResult(offlineItem.item);
+        if (mMore != null) mMore.setClickable(!properties.getSelectionModeActive());
     }
 
     // ListMenuButton.Delegate implementation.
