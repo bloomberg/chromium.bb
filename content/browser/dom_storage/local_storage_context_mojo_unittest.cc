@@ -1081,7 +1081,6 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
     area1->Put(key, value, base::nullopt, "source",
                base::BindLambdaForTesting([&](bool success) {
                  EXPECT_TRUE(success);
-                 put_loop.Quit();
                }));
     put_loop.RunUntilIdle();
     values_written++;
@@ -1093,6 +1092,7 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   // Make sure all messages to the DB have been processed (Flush above merely
   // schedules a commit, but there is no guarantee about those having been
   // processed yet).
+  mock_leveldb_service.FlushBindingsForTesting();
   if (mock_db)
     mock_db->FlushForTesting();
   // At this point enough commit failures should have happened to cause the
