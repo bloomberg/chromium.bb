@@ -11,8 +11,13 @@
 #include "base/macros.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if BUILDFLAG(USE_ATK)
+#include <atk/atk.h>
+#endif
 
 namespace ui {
 
@@ -194,10 +199,15 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Sets the text selection in this object if possible.
   bool SetTextSelection(int start_offset, int end_offset);
 
+#if BUILDFLAG(USE_ATK)
+  using PlatformAttributeList = AtkAttributeSet*;
+#else
+  using PlatformAttributeList = std::vector<base::string16>;
+#endif
+
   // Compute the attributes exposed via platform accessibility objects and put
   // them into an attribute list, |attributes|. Currently only used by
-  // IAccessible2 on Windows, but will soon be shared with other ports.
-  using PlatformAttributeList = std::vector<base::string16>;
+  // IAccessible2 on Windows and ATK on Aura Linux.
   void ComputeAttributes(PlatformAttributeList* attributes);
 
   // If the string attribute |attribute| is present, add its value as an

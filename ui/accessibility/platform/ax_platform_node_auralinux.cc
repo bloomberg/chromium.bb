@@ -1591,13 +1591,10 @@ const gchar* AXPlatformNodeAuraLinux::GetDefaultActionName() {
   ATK_AURALINUX_RETURN_STRING(base::UTF16ToUTF8(action_verb));
 }
 
-AtkAttributeSet* AXPlatformNodeAuraLinux::GetAtkAttributes() const {
-  AtkAttributeSet* atk_attributes = nullptr;
-
-  atk_attributes = AddIntAttributeToAtkAttributeSet(
-      atk_attributes, ax::mojom::IntAttribute::kHierarchicalLevel, "level");
-
-  return atk_attributes;
+AtkAttributeSet* AXPlatformNodeAuraLinux::GetAtkAttributes() {
+  AtkAttributeSet* attribute_list = nullptr;
+  ComputeAttributes(&attribute_list);
+  return attribute_list;
 }
 
 // AtkDocumentHelpers
@@ -1617,9 +1614,9 @@ const gchar* AXPlatformNodeAuraLinux::GetDocumentAttributeValue(
 }
 
 static AtkAttributeSet* PrependAtkAttributeToAtkAttributeSet(
-    AtkAttributeSet* attribute_set,
     const char* name,
-    const char* value) {
+    const char* value,
+    AtkAttributeSet* attribute_set) {
   AtkAttribute* attribute =
       static_cast<AtkAttribute*>(g_malloc(sizeof(AtkAttribute)));
   attribute->name = g_strdup(name);
@@ -1636,7 +1633,7 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetDocumentAttributes() const {
     value = GetDocumentAttributeValue(doc_attributes[i]);
     if (value) {
       attribute_set = PrependAtkAttributeToAtkAttributeSet(
-          attribute_set, doc_attributes[i], value);
+          doc_attributes[i], value, attribute_set);
     }
   }
 
@@ -1676,24 +1673,10 @@ void AXPlatformNodeAuraLinux::GetFloatAttributeInGValue(
   }
 }
 
-AtkAttributeSet* AXPlatformNodeAuraLinux::AddIntAttributeToAtkAttributeSet(
-    AtkAttributeSet* attributes,
-    ax::mojom::IntAttribute attribute,
-    const char* atk_attribute) const {
-  int value;
-  if (GetIntAttribute(attribute, &value)) {
-    attributes = PrependAtkAttributeToAtkAttributeSet(
-        attributes, atk_attribute, base::IntToString(value).c_str());
-  }
-
-  return attributes;
-}
-
-void AXPlatformNodeAuraLinux::AddAttributeToList(
-    const char* name,
-    const char* value,
-    PlatformAttributeList* attributes) {
-  NOTREACHED();
+void AXPlatformNodeAuraLinux::AddAttributeToList(const char* name,
+                                                 const char* value,
+                                                 AtkAttributeSet** attributes) {
+  *attributes = PrependAtkAttributeToAtkAttributeSet(name, value, *attributes);
 }
 
 }  // namespace ui
