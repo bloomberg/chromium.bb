@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -809,7 +810,68 @@ TEST(DOMWebSocketTest, sendArrayBufferSuccess) {
 // FIXME: We should have Blob tests here.
 // We can't create a Blob because the blob registration cannot be mocked yet.
 
-// FIXME: We should add tests for bufferedAmount.
+TEST(DOMWebSocketTest, bufferedAmountUpdated) {
+  V8TestingScope scope;
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
+  {
+    InSequence s;
+    EXPECT_CALL(websocket_scope.Channel(),
+                Connect(KURL("ws://example.com/"), String()))
+        .WillOnce(Return(true));
+    EXPECT_CALL(websocket_scope.Channel(), Send(CString("hello")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(CString("world")));
+  }
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
+
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+
+  websocket_scope.Socket().DidConnect("", "");
+  websocket_scope.Socket().send("hello", scope.GetExceptionState());
+  EXPECT_EQ(websocket_scope.Socket().bufferedAmount(), 5u);
+  websocket_scope.Socket().send("world", scope.GetExceptionState());
+  EXPECT_EQ(websocket_scope.Socket().bufferedAmount(), 10u);
+  websocket_scope.Socket().DidConsumeBufferedAmount(5);
+  websocket_scope.Socket().DidConsumeBufferedAmount(5);
+  EXPECT_EQ(websocket_scope.Socket().bufferedAmount(), 10u);
+  blink::test::RunPendingTasks();
+  EXPECT_EQ(websocket_scope.Socket().bufferedAmount(), 0u);
+
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+}
+
+TEST(DOMWebSocketTest, bufferedAmountUpdatedBeforeOnMessage) {
+  V8TestingScope scope;
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
+  {
+    InSequence s;
+    EXPECT_CALL(websocket_scope.Channel(),
+                Connect(KURL("ws://example.com/"), String()))
+        .WillOnce(Return(true));
+    EXPECT_CALL(websocket_scope.Channel(), Send(CString("hello")));
+  }
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
+
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+
+  websocket_scope.Socket().DidConnect("", "");
+  // send() is called from onopen
+  websocket_scope.Socket().send("hello", scope.GetExceptionState());
+  // (return to event loop)
+  websocket_scope.Socket().DidConsumeBufferedAmount(5);
+  EXPECT_EQ(websocket_scope.Socket().bufferedAmount(), 5ul);
+  // New message was already queued, is processed before task posted from
+  // DidConsumeBufferedAmount().
+  websocket_scope.Socket().DidReceiveTextMessage("hello");
+  // bufferedAmount is observed inside onmessage event handler.
+  EXPECT_EQ(websocket_scope.Socket().bufferedAmount(), 0ul);
+
+  blink::test::RunPendingTasks();
+  EXPECT_EQ(websocket_scope.Socket().bufferedAmount(), 0ul);
+
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+}
 
 // FIXME: We should add tests for data receiving.
 
