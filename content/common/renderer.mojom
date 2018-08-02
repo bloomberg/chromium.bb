@@ -13,7 +13,6 @@ import "services/network/public/mojom/network_types.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/service_manager/public/mojom/service.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "ui/gfx/mojo/icc_profile.mojom";
 
 struct CreateViewParams {
   // Renderer-wide preferences.

@@ -12,7 +12,6 @@ mojom("mojo") {
     "color_space.mojom",
     "font_render_params.mojom",
     "gpu_fence_handle.mojom",
-    "icc_profile.mojom",
     "overlay_transform.mojom",
     "presentation_feedback.mojom",
     "selection_bound.mojom",

@@ -49,16 +49,6 @@ TEST(ICCProfile, Equality) {
   EXPECT_FALSE(spin_space == adobe_space);
   EXPECT_TRUE(spin_space != adobe_space);
 
-  ICCProfile temp = ICCProfile::FromCacheMac(spin_space);
-  EXPECT_TRUE(temp.IsValid());
-  EXPECT_TRUE(spin_profile == temp);
-  EXPECT_FALSE(spin_profile != temp);
-
-  temp = ICCProfile::FromCacheMac(adobe_space);
-  EXPECT_TRUE(temp.IsValid());
-  EXPECT_FALSE(spin_profile == temp);
-  EXPECT_TRUE(spin_profile != temp);
-
   EXPECT_TRUE(!!spin_space.ToSkColorSpace());
   EXPECT_TRUE(!!adobe_space.ToSkColorSpace());
   EXPECT_FALSE(SkColorSpace::Equals(
@@ -74,12 +64,8 @@ TEST(ICCProfile, ParametricVersusExactInaccurate) {
   ICCProfile multi_tr_fn = ICCProfileForTestingNoAnalyticTrFn();
   EXPECT_TRUE(multi_tr_fn.GetColorSpace().IsParametricAccurate());
 
-  ICCProfile profile;
-  profile = ICCProfile::FromCacheMac(multi_tr_fn.GetColorSpace());
-  EXPECT_TRUE(profile.IsValid());
-  EXPECT_EQ(profile, multi_tr_fn);
-
   // We are capable of generating a parametric approximation.
+  ICCProfile profile;
   profile = ICCProfile::FromParametricColorSpace(multi_tr_fn.GetColorSpace());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_NE(profile, multi_tr_fn);
@@ -92,10 +78,6 @@ TEST(ICCProfile, ParametricVersusExactOvershoot) {
   EXPECT_TRUE(overshoot.GetColorSpace().IsParametricAccurate());
 
   ICCProfile profile;
-  profile = ICCProfile::FromCacheMac(overshoot.GetColorSpace());
-  EXPECT_TRUE(profile.IsValid());
-  EXPECT_EQ(profile, overshoot);
-
   profile = ICCProfile::FromParametricColorSpace(overshoot.GetColorSpace());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_NE(profile, overshoot);
@@ -107,10 +89,6 @@ TEST(ICCProfile, ParametricVersusExactAdobe) {
   EXPECT_TRUE(accurate.GetColorSpace().IsParametricAccurate());
 
   ICCProfile profile;
-  profile = ICCProfile::FromCacheMac(accurate.GetColorSpace());
-  EXPECT_TRUE(profile.IsValid());
-  EXPECT_EQ(profile, accurate);
-
   profile = ICCProfile::FromParametricColorSpace(accurate.GetColorSpace());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_NE(profile, accurate);

@@ -46,11 +46,6 @@ class COLOR_SPACE_EXPORT ICCProfile {
   static ICCProfile FromParametricColorSpace(
       const gfx::ColorSpace& color_space);
 
-  // Return the ICCProfile that was used to create the specified ColorSpace, if
-  // available. Otherwise, return an invalid profile. This is used on macOS for
-  // power reasons.
-  static ICCProfile FromCacheMac(const gfx::ColorSpace& color_space);
-
   // Return a ColorSpace that references this ICCProfile. ColorTransforms
   // created using this ColorSpace will match this ICCProfile precisely.
   ColorSpace GetColorSpace() const;

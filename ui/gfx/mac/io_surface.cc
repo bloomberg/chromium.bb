@@ -210,46 +210,44 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size,
 
 void IOSurfaceSetColorSpace(IOSurfaceRef io_surface,
                             const ColorSpace& color_space) {
-  // Retrieve the ICC profile data that created this profile, if it exists.
-  ICCProfile icc_profile = ICCProfile::FromCacheMac(color_space);
+  // Special-case sRGB.
+  if (color_space == ColorSpace::CreateSRGB()) {
+    base::ScopedCFTypeRef<CFDataRef> srgb_icc(
+        CGColorSpaceCopyICCProfile(base::mac::GetSRGBColorSpace()));
+    IOSurfaceSetValue(io_surface, CFSTR("IOSurfaceColorSpace"), srgb_icc);
+    return;
+  }
 
-  // If that fails, generate parametric data.
-  if (!icc_profile.IsValid()) {
-    if (color_space == ColorSpace::CreateSRGB()) {
-      base::ScopedCFTypeRef<CFDataRef> srgb_icc(
-          CGColorSpaceCopyICCProfile(base::mac::GetSRGBColorSpace()));
-      IOSurfaceSetValue(io_surface, CFSTR("IOSurfaceColorSpace"), srgb_icc);
+  // Special-case BT2020_NCL.
+  if (__builtin_available(macos 10.12, *)) {
+    const ColorSpace kBt2020(
+        ColorSpace::PrimaryID::BT2020, ColorSpace::TransferID::SMPTEST2084,
+        ColorSpace::MatrixID::BT2020_NCL, ColorSpace::RangeID::LIMITED);
+    if (color_space == kBt2020) {
+      base::ScopedCFTypeRef<CGColorSpaceRef> cg_color_space(
+          CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020));
+      DCHECK(cg_color_space);
+
+      base::ScopedCFTypeRef<CFDataRef> cf_data_icc_profile(
+          CGColorSpaceCopyICCData(cg_color_space));
+      DCHECK(cf_data_icc_profile);
+      IOSurfaceSetValue(io_surface, CFSTR("IOSurfaceColorSpace"),
+                        cf_data_icc_profile);
       return;
     }
-    icc_profile =
-        ICCProfile::FromParametricColorSpace(color_space.GetAsFullRangeRGB());
   }
-  if (!icc_profile.IsValid()) {
-    if (__builtin_available(macos 10.12, *)) {
-      static const ColorSpace kBt2020(ColorSpace::PrimaryID::BT2020,
-                                      ColorSpace::TransferID::SMPTEST2084,
-                                      ColorSpace::MatrixID::BT2020_NCL,
-                                      ColorSpace::RangeID::LIMITED);
-      if (color_space == kBt2020) {
-        base::ScopedCFTypeRef<CGColorSpaceRef> cg_color_space(
-            CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020));
-        DCHECK(cg_color_space);
 
-        base::ScopedCFTypeRef<CFDataRef> cf_data_icc_profile(
-            CGColorSpaceCopyICCData(cg_color_space));
-        DCHECK(cf_data_icc_profile);
-        IOSurfaceSetValue(io_surface, CFSTR("IOSurfaceColorSpace"),
-                          cf_data_icc_profile);
-        return;
-      }
-    }
+  // Generate an ICCProfile from the parametric color space.
+  ICCProfile icc_profile =
+      ICCProfile::FromParametricColorSpace(color_space.GetAsFullRangeRGB());
+  if (!icc_profile.IsValid()) {
     DLOG(ERROR) << "Failed to set color space for IOSurface: no ICC profile: "
                 << color_space.ToString();
     return;
   }
-  std::vector<char> icc_profile_data = icc_profile.GetData();
 
   // Package it as a CFDataRef and send it to the IOSurface.
+  std::vector<char> icc_profile_data = icc_profile.GetData();
   base::ScopedCFTypeRef<CFDataRef> cf_data_icc_profile(CFDataCreate(
       nullptr, reinterpret_cast<const UInt8*>(icc_profile_data.data()),
       icc_profile_data.size()));

@@ -141,6 +141,11 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
                                     backing_->image_id);
       gl->BindTexImage2DCHROMIUM(backing_->texture_target, backing_->image_id);
     }
+    if (resource_color_space_.IsValid()) {
+      gl->SetColorSpaceMetadataCHROMIUM(
+          backing_->texture_id,
+          reinterpret_cast<GLColorSpace>(&resource_color_space_));
+    }
     gl->BindTexture(backing_->texture_target, 0);
 
     backing_->mailbox_sync_token =
@@ -162,10 +167,10 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
       gpu_memory_buffer_ = gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
           resource_size_, viz::BufferFormat(resource_format_), kBufferUsage,
           gpu::kNullSurfaceHandle);
-      // GpuMemoryBuffer allocation can fail (https://crbug.com/554541).
+      // Note that GpuMemoryBuffer allocation can fail.
+      // https://crbug.com/554541
       if (!gpu_memory_buffer_)
         return;
-      gpu_memory_buffer_->SetColorSpace(resource_color_space_);
     }
 
     DCHECK_EQ(1u, gfx::NumberOfPlanesForBufferFormat(
