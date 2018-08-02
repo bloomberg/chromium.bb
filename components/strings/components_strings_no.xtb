@@ -583,7 +583,7 @@
 <translation id="5089810972385038852">Fylke / delstat</translation>
 <translation id="5094747076828555589">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chromium. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="5095208057601539847">Provins</translation>
-<translation id="5098332213681597508">Dette navnet er for Google-kontoen din.</translation>
+<translation id="5098332213681597508">Dette navnet er fra Google-kontoen din.</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5121084798328133320">Etter at du har bekreftet, deles kortopplysningene fra Google Payments-kontoen med dette nettstedet.</translation>
 <translation id="5128122789703661928">Økten med dette navnet er ikke gyldig for sletting.</translation>
@@ -669,7 +669,6 @@
 <translation id="5633066919399395251">Angripere som for øyeblikket er på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, kan prøve å installere farlige programmer på datamaskinen du bruker, for å stjele eller slette informasjonen din (for eksempel bilder, passord, meldinger og kredittkortinformasjon). <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Villedende innhold er blokkert.</translation>
 <translation id="5659593005791499971">E-post</translation>
-<translation id="5666899935841546222">Vil du ha alle kortene dine på ett sted?</translation>
 <translation id="5675650730144413517">Denne siden fungerer ikke</translation>
 <translation id="5685654322157854305">Legg til leveringsadresse</translation>
 <translation id="5689199277474810259">Eksportér til JSON</translation>

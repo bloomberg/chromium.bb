@@ -286,6 +286,11 @@
       Si no s'especifica un paràmetre, s'utilitza un valor predeterminat.
 
       Si no es defineix aquesta política, s'utilitzen els valors predeterminats per a tots els paràmetres.</translation>
+<translation id="1958138414749279167">Activa la funció Emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin la informació d'adreces automàticament als formularis web amb dades emmagatzemades anteriorment.
+
+      Si es desactiva aquesta opció de configuració, Emplenament automàtic mai no suggerirà ni emplenarà la informació d'adreces, i tampoc no desarà la informació addicional d'adreces que l'usuari enviï mentre navega pel web.
+
+      Si s'activa aquesta opció de configuració o no s'hi estableix cap valor, l'usuari podrà controlar el funcionament d'Emplenament automàtic per a les adreces a la IU.</translation>
 <translation id="1960840544413786116">Si es permeten certificats emesos per ancoratges de confiança locals que no tinguin l'extensió subjectAlternativeName</translation>
 <translation id="1964634611280150550">Mode d'incògnit desactivat</translation>
 <translation id="1964802606569741174">Aquesta política no té cap efecte a l'aplicació YouTube per a Android. Per forçar l'ús del mode de seguretat de YouTube, s'ha de denegar la instal·lació d'aquesta aplicació.</translation>
@@ -1824,6 +1829,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6440051664870270040">Permet que els llocs web naveguin i obrin finestres emergents simultàniament</translation>
 <translation id="6447948611083700881">Còpia de seguretat i restauració desactivades</translation>
 <translation id="645425387487868471">Permet l'inici de sessió forçat a <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Activa la funció Emplenament automàtic per a les adreces</translation>
 <translation id="6473623140202114570">Configura la llista de dominis en què Navegació segura no activarà advertiments.</translation>
 <translation id="6491139795995924304">Permet el Bluetooth al dispositiu</translation>
 <translation id="6520802717075138474">Importació dels motors de cerca des del navegador predeterminat en la primera execució</translation>

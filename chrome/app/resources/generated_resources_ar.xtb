@@ -318,7 +318,7 @@
 <translation id="1465827627707997754">شريحة بيتزا</translation>
 <translation id="1467432559032391204">اليسار</translation>
 <translation id="1468571364034902819">يتعذّر استخدام هذا الملف الشخصي</translation>
-<translation id="1470533772306424441">‏سوف نثبّت هذه التطبيقات من أجلك. يمكنك العثور على المزيد من التطبيقات لجهازك في متجر Play.</translation>
+<translation id="1470533772306424441">‏سوف نثبّت لك هذه التطبيقات. يمكنك العثور على المزيد من التطبيقات لجهازك في متجرPlay .</translation>
 <translation id="1470811252759861213">للحصول على الإضافات على جميع أجهزة الكمبيوتر، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1474339897586437869">‏لم يتم تحميل "<ph name="FILENAME" />". حيث لا توجد لديك مساحة فارغة كافية في Google Drive.</translation>
 <translation id="1475502736924165259">لديك شهادات في الملف لا تندرج تحت أي فئة من الفئات الأخرى</translation>
@@ -1563,7 +1563,7 @@
 <translation id="3360297538363969800">تعذّرت الطباعة. يُرجى التحقق من الطابعة وإعادة المحاولة.</translation>
 <translation id="3364721542077212959">أدوات قلم الشاشة</translation>
 <translation id="3365598184818502391">‏يرجى استخدام مفتاح واحد فقط: Ctrl أو Alt.</translation>
-<translation id="3367047597842238025">يمكنك إعداد جهاز <ph name="DEVICE_TYPE" /> كما تريد تمامًا واكتشاف جميع الإمكانيات المذهلة في متناول يدك.</translation>
+<translation id="3367047597842238025">يمكنك إعداد جهاز <ph name="DEVICE_TYPE" /> كما تريد تمامًا واكتشاف جميع الإمكانيات المذهلة المتاحة لك.</translation>
 <translation id="3368922792935385530">متصل</translation>
 <translation id="3369624026883419694">إثبات هوية المضيف...</translation>
 <translation id="337286756654493126">قراءة المجلدات التي تفتحها في التطبيق</translation>
@@ -1577,7 +1577,7 @@
 <translation id="3389312115541230716">انقر بزر الماوس الأيمن على رمز <ph name="SMALL_PRODUCT_LOGO" /> في شريط المهام</translation>
 <translation id="3391716558283801616">علامة التبويب 7</translation>
 <translation id="3396331542604645348">الطابعة المحددة غير متاحة أو لم يتم تثبيتها بشكل صحيح. تحقق من الطابعة أو جرّب تحديد طابعة أخرى.</translation>
-<translation id="3396800784455899911">‏بالنقر على الزر "قبول ومتابعة"، أنك توافق على المعالجة الموضّحة أعلاه لخدمات Google هذه.</translation>
+<translation id="3396800784455899911">‏بالنقر على الزر "قبول ومتابعة"، فأنت توافق على المعالجة الموضّحة أعلاه لخدمات Google هذه.</translation>
 <translation id="3399432415385675819">سيتم إيقاف الإشعارات</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />، <ph name="TIME_LEFT" /></translation>
 <translation id="3404065873681873169">لم يتم حفظ أي كلمات مرور لهذا الموقع</translation>
@@ -1598,7 +1598,6 @@
 <translation id="3428419049384081277">تم تسجيل دخولك!</translation>
 <translation id="3429275422858276529">ضَع إشارة على هذه الصفحة لسهولة العثور عليها لاحقًا</translation>
 <translation id="3429599832623003132">$1 من العناصر</translation>
-<translation id="3431019676184503003">العناوين وطرق الدفع</translation>
 <translation id="3432227430032737297">إزالة كل العناصر المعروضة</translation>
 <translation id="3432757130254800023">إرسال الإعدادات الصوتية والفيديو لشاشات العرض على الشبكة المحلية</translation>
 <translation id="3432762828853624962">العمال المشتركون</translation>
@@ -2989,7 +2988,6 @@
 <translation id="55601339223879446">ضبط الحدود لسطح المكتب ضمن الشاشة</translation>
 <translation id="5562781907504170924">علامة التبويب هذه متصلة بجهاز بلوتوث.</translation>
 <translation id="5563234215388768762">‏البحث في Google أو كتابة عنوان URL</translation>
-<translation id="5565871407246142825">بطاقات ائتمان</translation>
 <translation id="5567989639534621706">ذاكرة التخزين المؤقت للتطبيقات</translation>
 <translation id="5568069709869097550">تعذّر الدخول</translation>
 <translation id="5568144734023334204">‏سعة تخزين Android</translation>
@@ -3462,7 +3460,7 @@
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{طابعة جديدة على شبكتك}zero{طابعات جديدة على شبكتك}two{طابعتان جديدتان على شبكتك}few{طابعات جديدة على شبكتك}many{طابعات جديدة على شبكتك}other{طابعات جديدة على شبكتك}}</translation>
 <translation id="6286708577777130801">تفاصيل كلمة المرور المحفوظة</translation>
 <translation id="6287852322318138013">حدد تطبيقًا لفتح هذا الملف من خلاله</translation>
-<translation id="6289452883081499048">‏خدمات Google المُخصَّصة مثل Google Play</translation>
+<translation id="6289452883081499048">‏الاستفادة من خدمات Google المخصّصة مثل Google Play</translation>
 <translation id="6290556621549272952">‏يمكنك استخدام هذه الميزة لعرض المحتوى من Chromium على التلفزيون أو غيره من الأجهزة.</translation>
 <translation id="6291949900244949761">‏طلب الإذن في حال محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
 <translation id="6291953229176937411">إ&amp;ظهار في الباحث</translation>
@@ -3594,7 +3592,6 @@
 <translation id="648637985389593741">أجل، أريد تفعيل ميزات المزامنة والتخصيص</translation>
 <translation id="6488384360522318064">تحديد لغة</translation>
 <translation id="648927581764831596">ليست هناك وسائط متوفرة</translation>
-<translation id="6490936204492416398">تثبيت الجديد من السوق الإلكتروني</translation>
 <translation id="6491376743066338510">تعذّر التفويض</translation>
 <translation id="6492313032770352219">الحجم المتوفر على القرص:</translation>
 <translation id="6494445798847293442">ليست مرجعًا مصدقًا</translation>
@@ -4032,6 +4029,7 @@
 <translation id="7175353351958621980">تم التحميل من:</translation>
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7180865173735832675">تخصيص</translation>
+<translation id="7182359331070524176">‏اختيار ألبوم صور Google</translation>
 <translation id="7186088072322679094">البقاء مثبتًا في شريط الأدوات</translation>
 <translation id="7187428571767585875">إدخالات قاعدة بيانات المسجّلين التي ستتم إزالتها أو تغييرها:</translation>
 <translation id="7189234443051076392">التأكد من توفر مساحة كافية على جهازك</translation>
@@ -4207,7 +4205,7 @@
 <translation id="7469406957790636836">لتفعيل هذا الإعداد، يُرجى أولاً تفعيل "التدقيق الإملائي" في <ph name="BEGIN_LINK" />اللغات والإدخال<ph name="END_LINK" /></translation>
 <translation id="7469894403370665791">الاتصال بهذه الشبكة تلقائيًا</translation>
 <translation id="747114903913869239">خطأ: تعذر فك تشفير الإضافة</translation>
-<translation id="7473753388963818366">لنبدأ بإعداد الجهاز <ph name="DEVICE_TYPE" /> من أجلك</translation>
+<translation id="7473753388963818366">لنبدأ بإعداد الجهاز <ph name="DEVICE_TYPE" /> لك</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="747459581954555080">استرداد الكل</translation>
 <translation id="7475671414023905704">‏عنوان URL لكلمة المرور المفقودة في Netscape</translation>
@@ -4485,7 +4483,7 @@
 <translation id="7857949311770343000">هل هذه هي صفحة علامة التبويب الجديدة التي كنت تتوقع ظهورها؟</translation>
 <translation id="786073089922909430">الخدمة: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">ال&amp;تنزيلات</translation>
-<translation id="7868378670806575181">{NUM_COOKIES,plural, =1{ملف تعريف ارتباط واحد}zero{# ملف تعريف ارتباط}two{ملفي تعريف ارتباط (#)}few{# ملفات تعريف ارتباط}many{# ملف تعريف ارتباط}other{# ملف تعريف ارتباط}}</translation>
+<translation id="7868378670806575181">{NUM_COOKIES,plural, =1{ملف تعريف ارتباط واحد}zero{# ملف تعريف ارتباط}two{# ملفا تعريف ارتباط }few{# ملفات تعريف ارتباط}many{# ملف تعريف ارتباط}other{# ملف تعريف ارتباط}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - تم الإقران</translation>
 <translation id="7870730066603611552">مراجعة خيارات المزامنة بعد الإعداد</translation>
 <translation id="7870790288828963061">‏لا توجد إصدارات أحدث لتطبيق Kiosk. لا يوجد شيء لتحديثه. يُرجى إزالة جهاز USB.</translation>
@@ -5139,7 +5137,6 @@
 <translation id="8877448029301136595">[الدليل الأصل]</translation>
 <translation id="8879284080359814990">إ&amp;ظهار كعلامة تبويب</translation>
 <translation id="8883847527783433352">المزامنة مع حساب آخر</translation>
-<translation id="8884961208881553398">إضافة خدمات جديدة</translation>
 <translation id="8885197664446363138">‏Smart Lock غير متاح</translation>
 <translation id="8888432776533519951">اللون:</translation>
 <translation id="8890516388109605451">المصادر</translation>

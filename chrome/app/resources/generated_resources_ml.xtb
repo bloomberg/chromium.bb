@@ -1597,7 +1597,6 @@
 <translation id="3428419049384081277">നിങ്ങൾ സൈൻ ഇൻ ചെയ്‌തു!</translation>
 <translation id="3429275422858276529">പിന്നീട് ഈ പേജ് എളുപ്പത്തിൽ കണ്ടെത്താൻ ബുക്ക്‌മാർക്ക് ചെയ്യുക</translation>
 <translation id="3429599832623003132">$1 ഇനങ്ങൾ</translation>
-<translation id="3431019676184503003">വിലാസങ്ങളും പേയ്മെന്റ് രീതികളും</translation>
 <translation id="3432227430032737297">ദൃശ്യമാക്കിയിരിക്കുന്നതെല്ലാം നീക്കംചെയ്യുക</translation>
 <translation id="3432757130254800023">പ്രാദേശിക നെറ്റ്‌വർക്കിലെ ഡിസ്‌പ്ലേകളിലേക്ക് ഓഡിയോയും വീഡിയോയും അയയ്‌ക്കുക</translation>
 <translation id="3432762828853624962">പങ്കിട്ട വർക്കർമാർ</translation>
@@ -2991,7 +2990,6 @@
 <translation id="55601339223879446">ഡിസ്‌പ്ലേയിൽ നിങ്ങളുടെ ഡെസ്‌ക്‌ടോപ്പിന്റെ ബൗണ്ടറികൾ ക്രമീകരിക്കുക</translation>
 <translation id="5562781907504170924">ഈ ടാബ് ഒരു Bluetooth ഉപകരണവുമായി കണക്‌റ്റുചെയ്‌തിരിക്കുന്നു.</translation>
 <translation id="5563234215388768762">Google-ൽ തിരയുക അല്ലെങ്കിൽ URL ടൈപ്പ് ചെയ്യുക</translation>
-<translation id="5565871407246142825">ക്രെഡിറ്റ് കാര്‍ഡുകള്‍</translation>
 <translation id="5567989639534621706">അപ്ലിക്കേഷന്‍‌ കാഷെകള്‍‌</translation>
 <translation id="5568069709869097550">പ്രവേശിക്കാന്‍ കഴിയില്ല</translation>
 <translation id="5568144734023334204">Android സ്‌റ്റോറേജ്</translation>
@@ -3596,7 +3594,6 @@
 <translation id="648637985389593741">മുന്നോട്ട് പോയി സമന്വയിപ്പിക്കൽ, വ്യക്തിഗതമാക്കൽ ഫീച്ചറുകൾ ഓണാക്കുക</translation>
 <translation id="6488384360522318064">ഭാഷ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="648927581764831596">ഒന്നും ലഭ്യമല്ല</translation>
-<translation id="6490936204492416398">വെബ്‌സ്റ്റോറിൽ നിന്ന് പുതിയത് ഇൻസ്റ്റാൾ ചെയ്യുക</translation>
 <translation id="6491376743066338510">അംഗീകാരം നൽകാനായില്ല</translation>
 <translation id="6492313032770352219">ഡിസ്‌കിലെ വലുപ്പം:</translation>
 <translation id="6494445798847293442">ഒരു സര്‍ട്ടിഫിക്കേഷന്‍ അതോറിറ്റിയല്ല</translation>
@@ -4035,6 +4032,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7175353351958621980">ഇതില്‍നിന്ന് ലോഡ് ചെയ്തത്:</translation>
 <translation id="7180611975245234373">പുതുക്കുക</translation>
 <translation id="7180865173735832675">ഇച്ഛാനുസൃതമാക്കുക</translation>
+<translation id="7182359331070524176">Google Photos ആൽബം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7186088072322679094">ടൂൾബാറിൽ സൂക്ഷിക്കുക</translation>
 <translation id="7187428571767585875">നീക്കം ചെയ്യേണ്ടതോ മാറ്റേണ്ടതോ ആയ രജിസ്ട്രി എൻട്രികൾ:</translation>
 <translation id="7189234443051076392">നിങ്ങളുടെ ഉപകരണത്തിൽ ആവശ്യമായ ഇടം ഉണ്ടെന്ന് ഉറപ്പാക്കുക</translation>
@@ -5141,7 +5139,6 @@ Linux ഫയലുകൾ ഫോൾഡറിലേക്ക് പകർത്ത
 <translation id="8877448029301136595">[രക്ഷാകര്‍തൃ ഡയറക്ടറി]</translation>
 <translation id="8879284080359814990">&amp;ടാബായി കാണിക്കുക</translation>
 <translation id="8883847527783433352">മറ്റൊരു അക്കൗണ്ടിലേക്ക് സമന്വയിപ്പിക്കുക</translation>
-<translation id="8884961208881553398">പുതിയ സേവനങ്ങൾ ചേർക്കുക</translation>
 <translation id="8885197664446363138">Smart Lock ലഭ്യമല്ല</translation>
 <translation id="8888432776533519951">വർണ്ണം:</translation>
 <translation id="8890516388109605451">ഉറവിടങ്ങള്‍</translation>

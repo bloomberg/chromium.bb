@@ -1597,7 +1597,6 @@
 <translation id="3428419049384081277">Влязохте в профила си!</translation>
 <translation id="3429275422858276529">Запазете отметка към тази страница, за да я намирате лесно по-късно</translation>
 <translation id="3429599832623003132">$1 елемента</translation>
-<translation id="3431019676184503003">Адреси и начини на плащане</translation>
 <translation id="3432227430032737297">Премахване на всички показани</translation>
 <translation id="3432757130254800023">Изпращане на аудио и видео до дисплеи в локалната мрежа</translation>
 <translation id="3432762828853624962">Споделени изпълнители</translation>
@@ -2994,7 +2993,6 @@
 <translation id="55601339223879446">Коригиране на границите на работния плот в рамките на екрана</translation>
 <translation id="5562781907504170924">Този раздел е свързан с устройство с Bluetooth.</translation>
 <translation id="5563234215388768762">Търсете с Google или въведете URL адрес</translation>
-<translation id="5565871407246142825">Кредитни карти</translation>
 <translation id="5567989639534621706">Кешове на приложения</translation>
 <translation id="5568069709869097550">Не може да се влезе</translation>
 <translation id="5568144734023334204">Хранилище за Android</translation>
@@ -3599,7 +3597,6 @@
 <translation id="648637985389593741">Включване на функциите за синхронизиране и персонализиране</translation>
 <translation id="6488384360522318064">Изберете език</translation>
 <translation id="648927581764831596">Няма</translation>
-<translation id="6490936204492416398">Инсталиране на нови от уеб магазина</translation>
 <translation id="6491376743066338510">Упълномощаването не бе успешно</translation>
 <translation id="6492313032770352219">Размер на диска:</translation>
 <translation id="6494445798847293442">Не е сертифициращ орган</translation>
@@ -4037,6 +4034,7 @@
 <translation id="7175353351958621980">Заредено от:</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7180865173735832675">Персонализиране</translation>
+<translation id="7182359331070524176">Избиране на албум от Google Снимки</translation>
 <translation id="7186088072322679094">Запазване в лентата с инструменти</translation>
 <translation id="7187428571767585875">Записи в системния регистър, които ще бъдат премахнати или променени:</translation>
 <translation id="7189234443051076392">Уверете се, че има достатъчно място на устройството ви.</translation>
@@ -5143,7 +5141,6 @@
 <translation id="8877448029301136595">[главна директория]</translation>
 <translation id="8879284080359814990">&amp;Показване като раздел</translation>
 <translation id="8883847527783433352">Синхронизиране с друг профил</translation>
-<translation id="8884961208881553398">Добавяне на нови услуги</translation>
 <translation id="8885197664446363138">Няма достъп до Smart Lock</translation>
 <translation id="8888432776533519951">Цвят:</translation>
 <translation id="8890516388109605451">Източници</translation>

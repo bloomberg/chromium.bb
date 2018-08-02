@@ -425,7 +425,7 @@
 <translation id="1627408615528139100">이미 다운로드됨</translation>
 <translation id="1632803087685957583">키보드 반복 속도, 단어 예측 등을 조정할 수 있습니다.</translation>
 <translation id="1635033183663317347">관리자가 설치함</translation>
-<translation id="1635885551358739414">Google에서 Chrome 및 번역, Google 검색과 같은 기타 Google 서비스 및 광고를 맞춤설정하기 위해 사용자가 방문한 사이트의 콘텐츠, 브라우저 활동 및 상호작용 기록을 사용할 수 있습니다. 이는 설정에서 변경할 수 있습니다.</translation>
+<translation id="1635885551358739414">Google에서 Chrome을 비롯한 번역, Google 검색과 같은 기타 Google 서비스 및 광고를 맞춤설정하기 위해 사용자가 방문한 사이트의 콘텐츠, 브라우저 활동 및 상호작용 기록을 사용할 수 있습니다. 이는 설정에서 변경할 수 있습니다.</translation>
 <translation id="1637224376458524414">iPhone에서 이 북마크 이용하기</translation>
 <translation id="1637765355341780467">프로필을 여는 동안 문제가 발생했습니다. 일부 기능을 사용할 수 없습니다.</translation>
 <translation id="1639239467298939599">로드 중</translation>
@@ -1600,7 +1600,6 @@
 <translation id="3428419049384081277">로그인되었습니다</translation>
 <translation id="3429275422858276529">이 페이지를 북마크에 추가하여 나중에 쉽게 찾으세요.</translation>
 <translation id="3429599832623003132">$1 항목</translation>
-<translation id="3431019676184503003">주소 및 결제 수단</translation>
 <translation id="3432227430032737297">표시된 항목 모두 삭제</translation>
 <translation id="3432757130254800023">로컬 네트워크의 디스플레이로 오디오 및 동영상 전송</translation>
 <translation id="3432762828853624962">공유 작업자</translation>
@@ -2993,7 +2992,6 @@
 <translation id="55601339223879446">디스플레이에서 바탕화면 경계를 조정합니다.</translation>
 <translation id="5562781907504170924">이 탭이 블루투스 기기에 연결되었습니다.</translation>
 <translation id="5563234215388768762">Google 검색 또는 URL 입력</translation>
-<translation id="5565871407246142825">신용카드</translation>
 <translation id="5567989639534621706">애플리케이션 캐시</translation>
 <translation id="5568069709869097550">로그인할 수 없음</translation>
 <translation id="5568144734023334204">Android 저장용량</translation>
@@ -3597,7 +3595,6 @@
 <translation id="648637985389593741">동기화 및 맞춤설정 기능 사용 설정</translation>
 <translation id="6488384360522318064">언어 선택</translation>
 <translation id="648927581764831596">사용할 수 없음</translation>
-<translation id="6490936204492416398">웹스토어에서 새 항목 설치</translation>
 <translation id="6491376743066338510">승인에 실패했습니다.</translation>
 <translation id="6492313032770352219">디스크 크기:</translation>
 <translation id="6494445798847293442">인증 기관이 아닙니다.</translation>
@@ -4035,6 +4032,7 @@
 <translation id="7175353351958621980">로드 위치:</translation>
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7180865173735832675">맞춤설정</translation>
+<translation id="7182359331070524176">Google 포토 앨범 선택</translation>
 <translation id="7186088072322679094">툴바에 보관</translation>
 <translation id="7187428571767585875">삭제 또는 변경할 레지스트리 항목:</translation>
 <translation id="7189234443051076392">기기 저장용량이 충분한지 확인합니다.</translation>
@@ -5141,7 +5139,6 @@
 <translation id="8877448029301136595">[상위 디렉토리]</translation>
 <translation id="8879284080359814990">탭으로 표시(&amp;S)</translation>
 <translation id="8883847527783433352">다른 계정에 동기화</translation>
-<translation id="8884961208881553398">새로운 서비스 추가</translation>
 <translation id="8885197664446363138">Smart Lock을 사용할 수 없음</translation>
 <translation id="8888432776533519951">색상:</translation>
 <translation id="8890516388109605451">소스</translation>

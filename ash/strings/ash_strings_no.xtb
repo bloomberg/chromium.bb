@@ -193,7 +193,7 @@
 <translation id="4544944664594876241">Snarveien for å låse skjermen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Skrifttypetjeneste</translation>
 <translation id="4570957409596482333">Tekstopplesingsknapp</translation>
-<translation id="4585337515783392668">Slutt å caste på en ukjent mottaker</translation>
+<translation id="4585337515783392668">Stopp casting på en ukjent mottaker</translation>
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox er slått på</translation>
 <translation id="4734965478015604180">Horisontal</translation>
@@ -379,7 +379,7 @@
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupe for hele skjermen</translation>
-<translation id="8427213022735114808">Diktat sender stemmen din til Google for å tillate stemmestyrt skriving i hvilket som helst tekstfelt.</translation>
+<translation id="8427213022735114808">Diktat sender stemmen din til Google for å muliggjøre stemmestyrt skriving i alle tekstfelt.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8431190899827883166">Vis trykk</translation>
 <translation id="8433186206711564395">Nettverksinnstillinger</translation>

@@ -302,6 +302,11 @@
       설정이 지정되지 않은 경우 기본값이 사용됩니다.
 
       이 정책이 설정되지 않은 경우 모든 설정에 기본값이 사용됩니다.</translation>
+<translation id="1958138414749279167"><ph name="PRODUCT_NAME" />의 자동 완성 기능을 사용 설정하면 사용자가 이전에 저장된 정보를 사용하여 웹 양식에서 주소 정보를 자동으로 입력할 수 있습니다.
+
+      설정이 사용 중지되면 주소 정보 자동 완성이 제안되거나 실행되지 않으며, 사용자가 웹 탐색 중에 제출하는 주소 정보가 추가로 저장되지도 않습니다.
+
+      설정이 사용되거나 값이 지정되지 않으면 사용자가 UI에서 주소 정보 자동 완성 기능을 관리할 수 있게 됩니다.</translation>
 <translation id="1960840544413786116">subjectAlternativeName 확장 필드가 누락되었으나 로컬 트러스트 앵커에서 발급된 인증서 허용 여부</translation>
 <translation id="1964634611280150550">시크릿 모드 사용이 중지됨</translation>
 <translation id="1964802606569741174">이 정책은 Android YouTube 앱에 아무런 영향도 미치지 않습니다. YouTube의 안전 모드를 실행해야 하는 경우 Android YouTube 앱 설치를 허용하지 않아야 합니다.</translation>
@@ -1917,6 +1922,7 @@
 <translation id="6440051664870270040">사이트에서 동시에 팝업을 탐색하고 열도록 허용</translation>
 <translation id="6447948611083700881">백업 및 복원이 사용 중지됨</translation>
 <translation id="645425387487868471"><ph name="PRODUCT_NAME" /> 강제 로그인 사용</translation>
+<translation id="6464074037294098618">주소 자동 완성 사용</translation>
 <translation id="6473623140202114570">세이프 브라우징에서 경고를 표시하지 않는 도메인의 목록을 설정합니다.</translation>
 <translation id="6491139795995924304">기기에서 블루투스 허용</translation>
 <translation id="6520802717075138474">처음 실행 시 기본 브라우저에서 검색엔진 가져오기</translation>

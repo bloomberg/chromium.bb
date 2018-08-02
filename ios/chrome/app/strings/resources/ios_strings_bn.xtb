@@ -23,6 +23,7 @@
 <translation id="127138278192656016">সিঙ্ক এবং সমস্ত পরিষেবা ব্যবহার করুন</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="1323735185997015385">মুছুন</translation>
+<translation id="132390688737681464">অ্যাড্রেসগুলি পূরণ করে সেভ করুন</translation>
 <translation id="132683371494960526">মূল ফোল্ডার পরিবর্তন করতে দুবার আলতো চাপুন।</translation>
 <translation id="1340643665687018190">মেনু বন্ধ করুন</translation>
 <translation id="1375321115329958930">সংরক্ষিত পাসওয়ার্ড</translation>
@@ -38,6 +39,7 @@
 <translation id="152234381334907219">কখনও সংরক্ষিত হয়নি</translation>
 <translation id="1540800554400757039">ঠিকানা ১</translation>
 <translation id="1545749641540134597">QR কোড স্ক্যান করুন</translation>
+<translation id="1558704936695638228">আরও ট্যাব বিকল্পগুলির জন্য বোতাম প্রেস করে ধরে রাখুন</translation>
 <translation id="1580783302095112590">মেল পাঠানো হয়েছে৷</translation>
 <translation id="1582732959743469162">এর ফলে আপনি এখন যা ডাউনলোড করছেন সেগুলি সব বন্ধ হয়ে যাবে।</translation>
 <translation id="1605658421715042784">ছবি কপি করুন</translation>
@@ -89,7 +91,7 @@
 <translation id="2386793615875593361">১টি নির্বাচিত</translation>
 <translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
 <translation id="2481538920734869610">অ্যাকাউন্ট যোগ করুন</translation>
-<translation id="2523184218357549926">যে পৃষ্ঠাগুলি আপনি দেখেন তাদের ইউআরএলগুলি Google-কে পাঠায়</translation>
+<translation id="2523184218357549926">আপনার দেখা পৃষ্ঠাগুলির ইউআরএল Google-এ পাঠায়</translation>
 <translation id="2523363575747517183">এই ওয়েবসাইটটি ক্রমাগত অন্য অ্যাপ্লিকেশন খোলার চেষ্টা করছে।</translation>
 <translation id="2529021024822217800">সবকটি খুলুন</translation>
 <translation id="2572712655377361602">একটি ডিভাইস নীতি আপনার ফটোতে অ্যাক্সেস অবরুদ্ধ করেছে</translation>
@@ -225,12 +227,12 @@
 <translation id="4860895144060829044">কল করুন</translation>
 <translation id="4875622588773761625">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড আপডেট করুক?</translation>
 <translation id="4881695831933465202">খুলুন</translation>
-<translation id="4882831918239250449">সার্চ, বিজ্ঞাপন সহ আরও অনেক কিছু ব্যক্তিগতকৃত করার জন্য আপনার ব্রাউজিং ইতিহাস কিভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করে</translation>
+<translation id="4882831918239250449">সার্চ, বিজ্ঞাপনসহ আরও অনেক কিছু ব্যক্তিগতকৃত করার জন্য আপনার ব্রাউজিং ইতিহাস কিভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করুন</translation>
 <translation id="4904877109095351937">পঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="4930268273022498155">বিদ্যমান ডেটা মুছুন। আপনি <ph name="USER_EMAIL1" /> এ ফিরে গিয়ে এটি পুনরুদ্ধার করতে পারেন।</translation>
 <translation id="4941089862236492464">দুঃখিত, আপনার জিনিস শেয়ার করার সময় একটা সমস্যা ছিল।</translation>
 <translation id="4979397965658815378">আপনার সকল ডিভাইসে আপনার বুকমার্ক, পাসওয়ার্ড, ইতিহাস এবং অন্যান্য সেটিংস পেতে আপনার Google অ্যাকাউন্টে প্রবেশ করুন</translation>
-<translation id="5004416275253351869">Google অ্যাক্টিভিটির নিয়ন্ত্রণগুলি</translation>
+<translation id="5004416275253351869">Google অ্যাক্টিভিটির নিয়ন্ত্রণ</translation>
 <translation id="5005498671520578047">পাসওয়ার্ড কপি করুন</translation>
 <translation id="5010803260590204777">ব্যক্তিগতভাবে ওয়েব ব্রাউজ করার জন্য একটি ছদ্মবেশী ট্যাব খুলুন।</translation>
 <translation id="5011684439661633295">হেলো, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -238,6 +240,7 @@
 <translation id="5062321486222145940">Google ড্রাইভ ইনস্টল করুন</translation>
 <translation id="5083464117946352670">ফাইলের আকার নির্ধারণ করা যাচ্ছে না।</translation>
 <translation id="5094827893301452931">Tweet সম্পূর্ণ হয়েছে৷</translation>
+<translation id="5123982333065001601">ক্রেডিট কার্ডগুলি পূরণ করে সেভ করুন</translation>
 <translation id="5173593619615111996">সমস্ত ছদ্মবেশী ট্যাব বন্ধ করুন</translation>
 <translation id="5181140330217080051">ডাউনলোড হচ্ছে</translation>
 <translation id="5186185447130319458">ব্যক্তিগত</translation>
@@ -425,7 +428,7 @@
 <translation id="842017693807136194">এটি দিয়ে সাইন-ইন করেছেন</translation>
 <translation id="8428045167754449968">নগর / ছোট শহর</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
-<translation id="8438566539970814960">সার্চ এবং ব্রাউজিংকে আরও উন্নত করুন</translation>
+<translation id="8438566539970814960">সার্চ এবং ব্রাউজিং অভিজ্ঞতা আরও উন্নত করুন</translation>
 <translation id="8458397775385147834">১টি আইটেম মোছা হয়েছে</translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8503813439785031346">ইউজারনেম</translation>
