@@ -58,7 +58,7 @@ bool IsIPhoneX() {
 }
 
 bool IsRefreshInfobarEnabled() {
-  return base::FeatureList::IsEnabled(kInfobarsUIReboot);
+  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
 bool IsRefreshLocationBarEnabled() {
