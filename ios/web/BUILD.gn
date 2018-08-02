@@ -409,6 +409,7 @@ source_set("ios_web_web_state_unittests") {
     "web_state/web_state_delegate_bridge_unittest.mm",
     "web_state/web_state_impl_unittest.mm",
     "web_state/web_state_observer_bridge_unittest.mm",
+    "web_state/web_state_policy_decider_bridge_unittest.mm",
     "web_state/web_state_unittest.mm",
     "web_state/web_view_internal_creation_util_unittest.mm",
     "web_state/wk_web_view_security_util_unittest.mm",
