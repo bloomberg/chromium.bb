@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
@@ -78,7 +79,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   };
 
   DriveFsHost(const base::FilePath& profile_path,
-              Delegate* delegate);
+              Delegate* delegate,
+              std::unique_ptr<base::OneShotTimer> timer);
   ~DriveFsHost() override;
 
   void AddObserver(DriveFsHostObserver* observer);
@@ -117,6 +119,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   const base::FilePath profile_path_;
 
   Delegate* const delegate_;
+
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   // State specific to the current mount, or null if not mounted.
   std::unique_ptr<MountState> mount_state_;

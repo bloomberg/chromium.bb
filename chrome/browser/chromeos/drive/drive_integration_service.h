@@ -233,6 +233,8 @@ class DriveIntegrationService : public KeyedService,
       profile_notification_registrar_;
 
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
+  int drivefs_total_failures_count_ = 0;
+  int drivefs_consecutive_failures_count_ = 0;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
