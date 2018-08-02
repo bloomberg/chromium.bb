@@ -154,7 +154,8 @@ TEST_F(FlingControllerTest,
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
 }
 
-TEST_F(FlingControllerTest, ControllerHandlesTouchpadGestureFling) {
+// TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
+TEST_F(FlingControllerTest, DISABLED_ControllerHandlesTouchpadGestureFling) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
