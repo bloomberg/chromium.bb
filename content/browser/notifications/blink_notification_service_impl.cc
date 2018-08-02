@@ -171,7 +171,8 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotificationOnIOThread(
     DisplayPersistentNotificationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(awdf): Necessary to validate resources here?
+  // TODO(https://crbug.com/870258): Validate resources are not too big (either
+  // here or in the mojo struct traits).
 
   NotificationDatabaseData database_data;
   database_data.origin = origin_.GetURL();
