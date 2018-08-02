@@ -17,6 +17,7 @@ js_type_check("closure_compile") {
     ":image_editor_prompt",
     ":image_editor_toolbar",
     ":image_encoder",
+    ":image_encoder_unittest",
     ":image_loader",
     ":image_resize",
     ":image_transform",
@@ -41,6 +42,7 @@ js_library("closure_compile_externs") {
     "../../../externs/background/volume_manager_factory.js",
     "../../../externs/entry_location.js",
     "../../../externs/exif_entry.js",
+    "../../../externs/metadata_worker_window.js",
     "../../../externs/paper_elements.js",
     "../../../externs/platform.js",
     "../../../externs/volume_info.js",
@@ -129,6 +131,14 @@ js_library("image_encoder") {
     ":image_util",
     "../../../file_manager/foreground/js/metadata:metadata_item",
     "//ui/webui/resources/js:assert",
+  ]
+}
+
+js_library("image_encoder_unittest") {
+  deps = [
+    ":image_encoder",
+    "../../../file_manager/common/js:unittest_util",
+    "../../../file_manager/foreground/js/metadata:metadata_parser",
   ]
 }
 

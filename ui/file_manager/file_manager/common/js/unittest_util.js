@@ -95,7 +95,7 @@ function assertFileEntryPathsEqual(expectedPaths, fileEntries) {
  * @constructor
  */
 function TestCallRecorder() {
-  /** @private {!Array<!Argument>} */
+  /** @private {!Array<!Arguments>} */
   this.calls_ = [];
 
   /**
@@ -188,7 +188,7 @@ MockAPIEvent.prototype.dispatch = function(var_args) {
 
 /**
  * Stubs the chrome.storage API.
- * @construct
+ * @constructor
  * @struct
  */
 function MockChromeStorageAPI() {
@@ -196,7 +196,9 @@ function MockChromeStorageAPI() {
   this.state = {};
 
   window.chrome = window.chrome || {};
+  /** @suppress {const} */
   window.chrome.runtime = window.chrome.runtime || {};  // For lastError.
+  /** @suppress {checkTypes} */
   window.chrome.storage = {
     local: {
       get: this.get_.bind(this),
@@ -241,9 +243,11 @@ MockChromeStorageAPI.prototype.set_ = function(values, opt_callback) {
 function MockCommandLinePrivate() {
   this.flags_ = {};
   if (!chrome) {
+    /** @suppress {const|checkTypes} */
     chrome = {};
   }
   if (!chrome.commandLinePrivate) {
+    /** @suppress {checkTypes} */
     chrome.commandLinePrivate = {};
   }
   chrome.commandLinePrivate.hasSwitch = function(name, callback) {

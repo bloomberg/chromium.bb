@@ -83,12 +83,13 @@ function testWebpImage(callback) {
 function testWithBrokenMetadata() {
   var canvas = getSampleCanvas();
 
-  var metadata = {
-    // No mimetype field.
-  };
+  var metadata = /** @type {!MetadataItem} */ ({
+      // No mimetype field.
+  });
 
   // An exception should be thrown if metadata is broken.
+  const quality = 0.5;
   assertThrows(function() {
-    var encoder = ImageEncoder.encodeMetadata(metadata, canvas);
+    var encoder = ImageEncoder.encodeMetadata(metadata, canvas, quality);
   });
 }

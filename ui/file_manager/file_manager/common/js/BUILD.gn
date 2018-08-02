@@ -18,6 +18,7 @@ js_type_check("closure_compile") {
     ":metrics_events",
     ":mock_entry",
     ":progress_center_common",
+    ":unittest_util",
     ":util",
     ":volume_manager_common",
   ]
@@ -87,6 +88,12 @@ js_library("mock_entry") {
 }
 
 js_library("progress_center_common") {
+}
+
+js_library("unittest_util") {
+  deps = [
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
 }
 
 js_library("util") {
