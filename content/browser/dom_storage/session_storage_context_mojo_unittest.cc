@@ -663,7 +663,6 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
     area1->Put(leveldb::StringPieceToUint8Vector("key"), value, base::nullopt,
                "source", base::BindLambdaForTesting([&](bool success) {
                  EXPECT_TRUE(success);
-                 put_loop.Quit();
                }));
     area1.FlushForTesting();
     put_loop.RunUntilIdle();
@@ -674,6 +673,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   // Make sure all messages to the DB have been processed (Flush above merely
   // schedules a commit, but there is no guarantee about those having been
   // processed yet).
+  fake_leveldb_service.FlushBindingsForTesting();
   if (mock_db)
     mock_db->FlushForTesting();
   // At this point enough commit failures should have happened to cause the

@@ -278,6 +278,8 @@ class StorageAreaImplTest : public testing::Test,
       area->ScheduleImmediateCommit();
       loop.Run();
     }
+
+    db_.FlushBindingsForTesting();
   }
 
   const std::vector<Observation>& observations() { return observations_; }

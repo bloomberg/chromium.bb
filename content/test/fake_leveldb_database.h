@@ -62,6 +62,8 @@ class FakeLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
   void IteratorPrev(const base::UnguessableToken& iterator,
                     IteratorPrevCallback callback) override;
 
+  void FlushBindingsForTesting();
+
  private:
   std::vector<std::pair<std::vector<uint8_t>, std::vector<uint8_t>>>
   CopyPrefixedHelper(const std::vector<uint8_t>& source_key_prefix,

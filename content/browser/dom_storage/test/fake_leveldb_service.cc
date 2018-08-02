@@ -79,5 +79,9 @@ void FakeLevelDBService::Bind(
       this, leveldb::mojom::LevelDBServiceRequest(std::move(interface_pipe)));
 }
 
+void FakeLevelDBService::FlushBindingsForTesting() {
+  bindings_.FlushForTesting();
+}
+
 }  // namespace test
 }  // namespace content

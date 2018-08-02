@@ -86,6 +86,8 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
             mojo::ScopedMessagePipeHandle interface_pipe,
             const service_manager::BindSourceInfo& source_info);
 
+  void FlushBindingsForTesting();
+
  private:
   mojo::BindingSet<leveldb::mojom::LevelDBService> bindings_;
 

@@ -236,6 +236,10 @@ void FakeLevelDBDatabase::IteratorPrev(const base::UnguessableToken& iterator,
   NOTREACHED();
 }
 
+void FakeLevelDBDatabase::FlushBindingsForTesting() {
+  bindings_.FlushForTesting();
+}
+
 std::vector<std::pair<std::vector<uint8_t>, std::vector<uint8_t>>>
 FakeLevelDBDatabase::CopyPrefixedHelper(
     const std::vector<uint8_t>& source_key_prefix,
