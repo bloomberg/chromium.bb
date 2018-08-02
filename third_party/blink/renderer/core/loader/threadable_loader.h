@@ -260,11 +260,8 @@ class CORE_EXPORT ThreadableLoader final
   TaskRunnerTimer<ThreadableLoader> timeout_timer_;
   TimeTicks request_started_;  // Time an asynchronous fetch request is started
 
-  // Max number of times that this ThreadableLoader can follow
-  // cross-origin redirects. This is used to limit the number of redirects. But
-  // this value is not the max number of total redirects allowed, because
-  // same-origin redirects are not counted here.
-  int cors_redirect_limit_;
+  // Max number of times that this ThreadableLoader can follow.
+  int redirect_limit_;
 
   network::mojom::FetchRedirectMode redirect_mode_;
 

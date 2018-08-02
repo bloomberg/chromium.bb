@@ -40,11 +40,8 @@ var TEST_TARGETS = [
             19,
             OTHER_BASE_URL + '&ACAOrigin=*'))],
    [methodIsGET, authCheckNone]],
-  // FIXME: due to the current implementation of Chromium,
-  // Count=21 is resolved, Count=22 is rejected.
-  // https://crbug.com/353768
   [REDIRECT_LOOP_URL + encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=*') +
-   '&Count=22&mode=cors&credentials=same-origin&method=GET',
+   '&Count=21&mode=cors&credentials=same-origin&method=GET',
    [fetchRejected]],
 
   // Redirect loop: other origin -> same origin
