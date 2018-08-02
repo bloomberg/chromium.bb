@@ -1638,6 +1638,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest,
                       AGGREGATED_REQUEST_RESULT_MAX);
 }
 
+// TODO(https://crbug.com/830282): Flaky on "Marshmallow Phone Tester (rel)".
 TYPED_TEST(OfflinePageRequestHandlerTest,
            DISABLED_LoadMostRecentlyCreatedOfflinePage) {
   this->SimulateHasNetworkConnectivity(false);
@@ -1703,6 +1704,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest, FailToLoadByOfflineIDOnUrlMismatch) {
                       PAGE_NOT_FOUND_ON_CONNECTED_NETWORK);
 }
 
+// TODO(https://crbug.com/830282): Flaky on "Marshmallow Phone Tester (rel)".
 TYPED_TEST(OfflinePageRequestHandlerTest,
            DISABLED_LoadOfflinePageForUrlWithFragment) {
   this->SimulateHasNetworkConnectivity(false);
