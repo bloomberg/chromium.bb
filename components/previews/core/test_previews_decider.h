@@ -26,6 +26,7 @@ class TestPreviewsDecider : public previews::PreviewsDecider {
                           previews::PreviewsType type) const override;
   bool IsURLAllowedForPreview(const net::URLRequest& request,
                               PreviewsType type) const override;
+  void LoadResourceHints(const net::URLRequest& request) override;
 
  private:
   bool allow_previews_;

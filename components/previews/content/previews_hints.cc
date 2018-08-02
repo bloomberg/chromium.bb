@@ -276,13 +276,15 @@ bool PreviewsHints::IsWhitelisted(const GURL& url,
   return false;
 }
 
-bool PreviewsHints::MaybeLoadOptimizationHints(const GURL& url) const {
+bool PreviewsHints::MaybeLoadOptimizationHints(
+    const GURL& url,
+    HintLoadedCallback callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!hint_cache_ || !url.has_host())
     return false;
 
-  // TODO(dougarnett): Request loading of hints if not cached in memory.
+  hint_cache_->LoadHint(url.host(), std::move(callback));
   return hint_cache_->HasHint(url.host());
 }
 

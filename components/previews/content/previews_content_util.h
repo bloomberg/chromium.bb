@@ -19,7 +19,7 @@ bool HasEnabledPreviews(content::PreviewsState previews_state);
 // definitions for content::PreviewsState.
 content::PreviewsState DetermineEnabledClientPreviewsState(
     const net::URLRequest& url_request,
-    const previews::PreviewsDecider* previews_decider);
+    previews::PreviewsDecider* previews_decider);
 
 // Returns an updated PreviewsState given |previews_state| that has already
 // been updated wrt server previews. This should be called at Navigation Commit

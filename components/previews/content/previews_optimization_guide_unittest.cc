@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -86,12 +87,26 @@ class PreviewsOptimizationGuideTest : public testing::Test {
                                   TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
+  void MaybeLoadOptimizationHintsCallback(
+      const GURL& document_gurl,
+      const std::vector<std::string>& resource_patterns) {
+    loaded_hints_document_gurl_ = document_gurl;
+    loaded_hints_resource_patterns_ = resource_patterns;
+  }
+
   void ResetGuide() {
     guide_.reset();
     RunUntilIdle();
   }
 
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
+
+  const GURL& loaded_hints_document_gurl() const {
+    return loaded_hints_document_gurl_;
+  }
+  const std::vector<std::string>& loaded_hints_resource_patterns() const {
+    return loaded_hints_resource_patterns_;
+  }
 
  protected:
   void RunUntilIdle() {
@@ -112,6 +127,9 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
 
   net::TestURLRequestContext context_;
+
+  GURL loaded_hints_document_gurl_;
+  std::vector<std::string> loaded_hints_resource_patterns_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideTest);
 };
@@ -586,12 +604,32 @@ void PreviewsOptimizationGuideTest::InitializeResourceLoadingHints() {
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Page hint for "/news/"
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/news/");
   optimization_guide::proto::Optimization* optimization1 =
-      hint1->add_whitelisted_optimizations();
+      page_hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint1 =
+      optimization1->add_resource_loading_hints();
+  resource_loading_hint1->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_loading_hint1->set_resource_pattern("news_cruft.js");
+
+  // Page hint for "football"
+  optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
+  page_hint2->set_page_pattern("football");
+  optimization_guide::proto::Optimization* optimization2 =
+      page_hint2->add_whitelisted_optimizations();
+  optimization2->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint2 =
+      optimization2->add_resource_loading_hints();
+  resource_loading_hint2->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_loading_hint2->set_resource_pattern("football_cruft.js");
   ProcessHints(config, "2.0.0");
 
   RunUntilIdle();
@@ -604,11 +642,24 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
   InitializeResourceLoadingHints();
 
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      *CreateRequestWithURL(GURL("https://somedomain.org/"))));
+      *CreateRequestWithURL(GURL("https://somedomain.org/")),
+      base::DoNothing()));
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      *CreateRequestWithURL(GURL("https://www.somedomain.org"))));
+      *CreateRequestWithURL(GURL("https://www.somedomain.org/news/football")),
+      base::BindOnce(
+          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
+          base::Unretained(this))));
   EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      *CreateRequestWithURL(GURL("https://www.unknown.com"))));
+      *CreateRequestWithURL(GURL("https://www.unknown.com")),
+      base::DoNothing()));
+
+  RunUntilIdle();
+
+  // Verify loaded hint data for www.somedomain.org
+  EXPECT_EQ(GURL("https://www.somedomain.org/news/football"),
+            loaded_hints_document_gurl());
+  EXPECT_EQ(1ul, loaded_hints_resource_patterns().size());
+  EXPECT_EQ("news_cruft.js", loaded_hints_resource_patterns().front());
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
@@ -621,7 +672,8 @@ TEST_F(PreviewsOptimizationGuideTest,
   InitializeResourceLoadingHints();
 
   EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      *CreateRequestWithURL(GURL("https://www.somedomain.org"))));
+      *CreateRequestWithURL(GURL("https://www.somedomain.org")),
+      base::DoNothing()));
 }
 
 TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {

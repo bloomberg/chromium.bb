@@ -10,11 +10,15 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
 namespace previews {
+
+using HintLoadedCallback =
+    base::OnceCallback<void(const optimization_guide::proto::Hint&)>;
 
 // Holds a set of optimization hints received from the Cacao service.
 // This may include hints received from the ComponentUpdater and hints
@@ -31,8 +35,10 @@ class HintCache {
   // in memory or persisted on disk).
   bool HasHint(const std::string& host) const;
 
-  // Requests that hint data for |host| be loaded from disk.
-  void LoadHint(const std::string& host);
+  // Requests that hint data for |host| be loaded asynchronously and passed to
+  // |callback| if/when loaded. |callback| will not be called if no hint data
+  // is found for |host|.
+  void LoadHint(const std::string& host, HintLoadedCallback callback);
 
   // Returns whether there is hint data available for |host| in memory.
   bool IsHintLoaded(const std::string& host);

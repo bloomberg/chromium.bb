@@ -46,8 +46,10 @@ class PreviewsHints {
                      int* out_inflation_percent);
 
   // Returns whether |url| may have PageHints and triggers asynchronous load
-  // of such hints are not currently available synchronously.
-  bool MaybeLoadOptimizationHints(const GURL& url) const;
+  // of such hints are not currently available synchronously. |callback| is
+  // called if any applicable hint data is loaded and available for |url|.
+  bool MaybeLoadOptimizationHints(const GURL& url,
+                                  HintLoadedCallback callback) const;
 
  private:
   PreviewsHints();

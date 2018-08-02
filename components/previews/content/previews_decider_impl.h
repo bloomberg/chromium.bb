@@ -25,8 +25,7 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
 #include "net/nqe/effective_connection_type.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace base {
 class Clock;
@@ -122,6 +121,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   bool IsURLAllowedForPreview(const net::URLRequest& request,
                               PreviewsType type) const override;
 
+  void LoadResourceHints(const net::URLRequest& request) override;
+
   // Generates a page ID that is guaranteed to be unique from any other page ID
   // generated in this browser session. Also, guaranteed to be non-zero.
   uint64_t GeneratePageId();
@@ -132,6 +133,11 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   virtual void InitializeOnIOThread(
       std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews);
+
+  // Posts a task to deliver the resource patterns to the PreviewsUIService.
+  void OnResourceLoadingHints(
+      const GURL& document_gurl,
+      const std::vector<std::string>& patterns_to_block);
 
   // Sets a blacklist for testing.
   void SetPreviewsBlacklistForTesting(

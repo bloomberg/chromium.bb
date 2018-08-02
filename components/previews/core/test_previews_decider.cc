@@ -31,4 +31,6 @@ bool TestPreviewsDecider::IsURLAllowedForPreview(const net::URLRequest& request,
   return allow_previews_;
 }
 
+void TestPreviewsDecider::LoadResourceHints(const net::URLRequest& request) {}
+
 }  // namespace previews

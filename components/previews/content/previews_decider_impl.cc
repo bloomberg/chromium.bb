@@ -26,7 +26,6 @@
 #include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "url/gurl.h"
 
 namespace previews {
 
@@ -160,6 +159,17 @@ void PreviewsDeciderImpl::InitializeOnIOThread(
       FROM_HERE,
       base::BindOnce(&PreviewsUIService::SetIOData, previews_ui_service_,
                      weak_factory_.GetWeakPtr()));
+}
+
+void PreviewsDeciderImpl::OnResourceLoadingHints(
+    const GURL& document_gurl,
+    const std::vector<std::string>& patterns_to_block) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &PreviewsUIService::SetResourceLoadingHintsResourcePatternsToBlock,
+          previews_ui_service_, document_gurl, patterns_to_block));
 }
 
 void PreviewsDeciderImpl::SetPreviewsBlacklistForTesting(
@@ -383,6 +393,13 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
                          clock_->Now(), type, std::move(passed_reasons),
                          page_id);
   return true;
+}
+
+void PreviewsDeciderImpl::LoadResourceHints(const net::URLRequest& request) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  previews_opt_guide_->MaybeLoadOptimizationHints(
+      request, base::BindOnce(&PreviewsDeciderImpl::OnResourceLoadingHints,
+                              weak_factory_.GetWeakPtr()));
 }
 
 bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
