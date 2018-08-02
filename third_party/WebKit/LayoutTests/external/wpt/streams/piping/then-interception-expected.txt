@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL piping should not be observable promise_test: Unhandled rejection with value: undefined
-FAIL tee should not be observable promise_test: Unhandled rejection with value: object "TypeError: Assignment to constant variable."
-Harness: the test ran to completion.
-
