@@ -569,6 +569,15 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   double GetPendingPageZoomLevel() const override { return zoom_level_; }
 
+  void FocusOwningWebContents(
+      RenderWidgetHostImpl* render_widget_host) override {
+    focus_owning_web_contents_call_count++;
+  }
+
+  int GetFocusOwningWebContentsCallCount() const {
+    return focus_owning_web_contents_call_count;
+  }
+
   RenderViewHostDelegateView* GetDelegateView() override {
     return mock_delegate_view();
   }
@@ -628,6 +637,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
       render_view_host_delegate_view_;
 
   double zoom_level_ = 0;
+
+  int focus_owning_web_contents_call_count = 0;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -1401,6 +1412,27 @@ TEST_F(RenderWidgetHostTest, HandleWheelEvent) {
 
   // and that it suppressed the unhandled wheel event handler.
   EXPECT_EQ(0, view_->unhandled_wheel_event_count());
+}
+
+TEST_F(RenderWidgetHostTest, EventsCausingFocus) {
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  EXPECT_EQ(1, delegate_->GetFocusOwningWebContentsCallCount());
+
+  PressTouchPoint(0, 1);
+  SendTouchEvent();
+  EXPECT_EQ(2, delegate_->GetFocusOwningWebContentsCallCount());
+
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(2, delegate_->GetFocusOwningWebContentsCallCount());
+
+  SimulateGestureEvent(WebInputEvent::kGestureTapDown,
+                       blink::kWebGestureDeviceTouchscreen);
+  EXPECT_EQ(2, delegate_->GetFocusOwningWebContentsCallCount());
+
+  SimulateGestureEvent(WebInputEvent::kGestureTap,
+                       blink::kWebGestureDeviceTouchscreen);
+  EXPECT_EQ(3, delegate_->GetFocusOwningWebContentsCallCount());
 }
 
 TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
