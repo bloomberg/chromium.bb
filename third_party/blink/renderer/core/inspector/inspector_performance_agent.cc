@@ -22,9 +22,6 @@ namespace blink {
 using protocol::Response;
 
 namespace {
-
-static const char kPerformanceAgentEnabled[] = "PerformanceAgentEnabled";
-
 constexpr bool isPlural(const char* str, int len) {
   return len > 1 && str[len - 2] == 's';
 }
@@ -40,34 +37,37 @@ static constexpr const char* kInstanceCounterNames[] = {
 
 InspectorPerformanceAgent::InspectorPerformanceAgent(
     InspectedFrames* inspected_frames)
-    : inspected_frames_(inspected_frames) {}
+    : inspected_frames_(inspected_frames),
+      enabled_(&agent_state_, /*default_value=*/false) {}
 
 InspectorPerformanceAgent::~InspectorPerformanceAgent() = default;
 
 void InspectorPerformanceAgent::Restore() {
-  if (state_->booleanProperty(kPerformanceAgentEnabled, false))
-    enable();
+  if (enabled_.Get())
+    InnerEnable();
 }
 
-protocol::Response InspectorPerformanceAgent::enable() {
-  if (enabled_)
-    return Response::OK();
-  enabled_ = true;
-  state_->setBoolean(kPerformanceAgentEnabled, true);
+void InspectorPerformanceAgent::InnerEnable() {
   instrumenting_agents_->addInspectorPerformanceAgent(this);
   Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
   layout_start_ticks_ = TimeTicks();
   recalc_style_start_ticks_ = TimeTicks();
   task_start_ticks_ = TimeTicks();
   script_start_ticks_ = TimeTicks();
+}
+
+protocol::Response InspectorPerformanceAgent::enable() {
+  if (enabled_.Get())
+    return Response::OK();
+  enabled_.Set(true);
+  InnerEnable();
   return Response::OK();
 }
 
 protocol::Response InspectorPerformanceAgent::disable() {
-  if (!enabled_)
+  if (!enabled_.Get())
     return Response::OK();
-  enabled_ = false;
-  state_->setBoolean(kPerformanceAgentEnabled, false);
+  enabled_.Clear();
   instrumenting_agents_->removeInspectorPerformanceAgent(this);
   Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
   return Response::OK();
@@ -87,7 +87,7 @@ void AppendMetric(protocol::Array<protocol::Performance::Metric>* container,
 Response InspectorPerformanceAgent::getMetrics(
     std::unique_ptr<protocol::Array<protocol::Performance::Metric>>*
         out_result) {
-  if (!enabled_) {
+  if (!enabled_.Get()) {
     *out_result = protocol::Array<protocol::Performance::Metric>::create();
     return Response::OK();
   }
@@ -148,7 +148,7 @@ Response InspectorPerformanceAgent::getMetrics(
 }
 
 void InspectorPerformanceAgent::ConsoleTimeStamp(const String& title) {
-  if (!enabled_)
+  if (!enabled_.Get())
     return;
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> metrics;
   getMetrics(&metrics);
