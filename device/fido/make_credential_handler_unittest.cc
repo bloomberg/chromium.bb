@@ -20,6 +20,7 @@
 #include "device/fido/make_credential_request_handler.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
+#include "device/fido/virtual_ctap2_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -291,6 +292,50 @@ TEST_F(FidoMakeCredentialHandlerTest, IncorrectRpIdHash) {
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorMakeCredential,
       test_data::kTestMakeCredentialResponseWithIncorrectRpIdHash);
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
+// Tests that only authenticators with resident key support will successfully
+// process MakeCredential request when the relying party requires using resident
+// keys in AuthenicatorSelectionCriteria.
+TEST_F(FidoMakeCredentialHandlerTest,
+       SuccessfulMakeCredentialWithResidentKeyOption) {
+  auto device = std::make_unique<VirtualCtap2Device>();
+  AuthenticatorSupportedOptions option;
+  option.SetSupportsResidentKey(true);
+  device->SetAuthenticatorSupportedOptions(std::move(option));
+
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              true /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+}
+
+// Tests that MakeCredential request fails when asking to use resident keys with
+// authenticators that do not support resident key.
+TEST_F(FidoMakeCredentialHandlerTest,
+       MakeCredentialFailsForIncompatibleResidentKeyOption) {
+  auto device = std::make_unique<VirtualCtap2Device>();
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              true /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+
+  discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->AddDevice(std::move(device));
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();

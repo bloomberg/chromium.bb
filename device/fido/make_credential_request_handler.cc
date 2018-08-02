@@ -73,6 +73,8 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
       !options.supports_resident_key()) {
     return false;
   }
+  request->SetResidentKeySupported(
+      authenticator_selection_criteria.require_resident_key());
 
   const auto& user_verification_requirement =
       authenticator_selection_criteria.user_verification_requirement();
