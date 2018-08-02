@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -113,6 +114,10 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       !parent_layout_object->BehavesLikeBlockContainer())
     return nullptr;
 
+  LayoutObject* marker =
+      parent_layout_object->IsLayoutNGListItem()
+          ? ToLayoutNGListItem(parent_layout_object)->Marker()
+          : nullptr;
   // Drill down into our children and look for our first text child.
   LayoutObject* first_letter_text_layout_object =
       parent_layout_object->SlowFirstChild();
@@ -139,7 +144,8 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
         break;
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
-    } else if (first_letter_text_layout_object->IsListMarker()) {
+    } else if (first_letter_text_layout_object->IsListMarker() ||
+               first_letter_text_layout_object == marker) {
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
     } else if (first_letter_text_layout_object
@@ -170,6 +176,9 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       // setting up the first letter then.
       return nullptr;
     } else {
+      if (first_letter_text_layout_object->IsLayoutNGListItem())
+        marker = ToLayoutNGListItem(first_letter_text_layout_object)->Marker();
+
       first_letter_text_layout_object =
           first_letter_text_layout_object->SlowFirstChild();
     }
