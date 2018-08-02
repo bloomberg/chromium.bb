@@ -181,15 +181,19 @@ std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
                                            std::move(context));
 }
 
-std::unique_ptr<ServiceWorkerProviderHost>
+base::WeakPtr<ServiceWorkerProviderHost>
 CreateProviderHostForServiceWorkerContext(
     int process_id,
     bool is_parent_frame_secure,
     ServiceWorkerVersion* hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
-  std::unique_ptr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateForController(std::move(context));
+  auto provider_info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateForController(
+          std::move(context), base::WrapRefCounted(hosted_version),
+          &provider_info);
+
   host->SetDocumentUrl(hosted_version->script_url());
 
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory;
@@ -198,9 +202,8 @@ CreateProviderHostForServiceWorkerContext(
         std::make_unique<MockSharedURLLoaderFactoryInfo>());
   }
 
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
-      host->CompleteStartWorkerPreparation(process_id, hosted_version,
-                                           loader_factory);
+  provider_info = host->CompleteStartWorkerPreparation(
+      process_id, loader_factory, std::move(provider_info));
   output_endpoint->BindWithProviderInfo(std::move(provider_info));
   return host;
 }

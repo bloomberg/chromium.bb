@@ -100,13 +100,9 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
   ServiceWorkerContextCore* context() const { return helper_->context(); }
 
   void SetUpProvider() {
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForServiceWorkerContext(
-            helper_->mock_render_process_id(),
-            true /* is_parent_frame_secure */, version_.get(),
-            context()->AsWeakPtr(), &remote_endpoint_);
-    provider_host_ = host->AsWeakPtr();
-    context()->AddProviderHost(std::move(host));
+    provider_host_ = CreateProviderHostForServiceWorkerContext(
+        helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
+        version_.get(), context()->AsWeakPtr(), &remote_endpoint_);
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(const GURL& url) {

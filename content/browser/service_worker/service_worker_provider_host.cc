@@ -205,9 +205,11 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
 }
 
 // static
-std::unique_ptr<ServiceWorkerProviderHost>
+base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PreCreateForController(
-    base::WeakPtr<ServiceWorkerContextCore> context) {
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    scoped_refptr<ServiceWorkerVersion> version,
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr* out_provider_info) {
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID,
       mojom::ServiceWorkerProviderHostInfo::New(
@@ -215,8 +217,20 @@ ServiceWorkerProviderHost::PreCreateForController(
           blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
           true /* is_parent_frame_secure */, nullptr /* host_request */,
           nullptr /* client_ptr_info */),
-      std::move(context)));
-  return host;
+      context));
+  host->running_hosted_version_ = std::move(version);
+
+  (*out_provider_info)->provider_id = host->provider_id();
+  (*out_provider_info)->client_request = mojo::MakeRequest(&host->container_);
+  host->binding_.Bind(
+      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)));
+  host->binding_.set_connection_error_handler(
+      base::BindOnce(&RemoveProviderHost, context,
+                     ChildProcessHost::kInvalidUniqueID, host->provider_id()));
+
+  auto weak_ptr = host->AsWeakPtr();
+  context->AddProviderHost(std::move(host));
+  return weak_ptr;
 }
 
 // static
@@ -284,8 +298,10 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
   // |client_| and |binding_| will be bound on CompleteNavigationInitialized
-  // (providers created for navigation) or on
-  // CompleteStartWorkerPreparation (providers for service workers).
+  // (providers created for navigation) or in
+  // PreCreateForController (providers for service workers).
+  // TODO(falken): All provider types should just set the bindings here for
+  // consistency.
   if (!info_->client_ptr_info.is_valid() && !info_->host_request.is_pending())
     return;
 
@@ -751,30 +767,21 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
 mojom::ServiceWorkerProviderInfoForStartWorkerPtr
 ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     int process_id,
-    scoped_refptr<ServiceWorkerVersion> hosted_version,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info) {
   DCHECK(context_);
   DCHECK_EQ(kInvalidEmbeddedWorkerThreadId, render_thread_id_);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
             provider_type());
-  DCHECK(!running_hosted_version_);
+  DCHECK_EQ(provider_info->provider_id, provider_id());
 
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
-
-  running_hosted_version_ = std::move(hosted_version);
-
   render_process_id_ = process_id;
 
-  // Initialize provider_info.
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
-      mojom::ServiceWorkerProviderInfoForStartWorker::New();
-  provider_info->provider_id = provider_id();
-  provider_info->client_request = mojo::MakeRequest(&container_);
-
-  network::mojom::URLLoaderFactoryAssociatedPtrInfo
-      script_loader_factory_ptr_info;
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    network::mojom::URLLoaderFactoryAssociatedPtrInfo
+        script_loader_factory_ptr_info;
     mojo::MakeStrongAssociatedBinding(
         std::make_unique<ServiceWorkerScriptLoaderFactory>(
             context_, AsWeakPtr(), std::move(loader_factory)),
@@ -782,10 +789,6 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     provider_info->script_loader_factory_ptr_info =
         std::move(script_loader_factory_ptr_info);
   }
-
-  binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&RemoveProviderHost, context_, process_id, provider_id()));
 
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
       mojom::kNavigation_ServiceWorkerSpec, process_id,
