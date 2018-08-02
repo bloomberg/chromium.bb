@@ -71,15 +71,14 @@ TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanging) {
   // Activate keyboard. This triggers keyboard listeners to be registered.
   controller->ActivateKeyboard(keyboard_controller);
 
-  // Mock a keyboard appearing.
-  aura::Window* contents_window =
-      keyboard_controller->ui()->GetKeyboardWindow();
+  // Show the keyboard.
+  keyboard_controller->ShowKeyboard(false /* locked */);
   const int kKeyboardHeight = 200;
   gfx::Rect keyboard_bounds = keyboard::KeyboardBoundsFromRootBounds(
       root_window->bounds(), kKeyboardHeight);
-  contents_window->SetBounds(keyboard_bounds);
-  contents_window->Show();
-  keyboard_controller->NotifyKeyboardBoundsChanging(keyboard_bounds);
+  keyboard_controller->GetKeyboardWindow()->SetBounds(keyboard_bounds);
+  keyboard_controller->NotifyKeyboardWindowLoaded();
+
   // Verify that test manager was notified of bounds change.
   ASSERT_TRUE(manager->keyboard_bounds_changed());
 }

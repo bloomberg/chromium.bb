@@ -799,9 +799,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   gfx::Rect before =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
-  // Notify keyboard bounds changing.
-  controller->NotifyKeyboardBoundsChanging(keyboard_container->bounds());
-
   if (!keyboard::IsKeyboardOverscrollEnabled()) {
     gfx::Rect after =
         display::Screen::GetScreen()->GetPrimaryDisplay().work_area();

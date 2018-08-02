@@ -107,10 +107,6 @@ class KEYBOARD_EXPORT KeyboardController
   // loaded yet.
   void Reload();
 
-  // Notifies observers that the visual or occluded bounds of the keyboard
-  // window are changing.
-  void NotifyKeyboardBoundsChanging(const gfx::Rect& new_bounds);
-
   // Management of the observer list.
   void AddObserver(KeyboardControllerObserver* observer);
   bool HasObserver(KeyboardControllerObserver* observer) const;
@@ -307,6 +303,10 @@ class KEYBOARD_EXPORT KeyboardController
   // Notifies keyboard config change to the observers.
   // Only called from |UpdateKeyboardConfig| in keyboard_util.
   void NotifyKeyboardConfigChanged();
+
+  // Notifies observers that the visual or occluded bounds of the keyboard
+  // window are changing.
+  void NotifyKeyboardBoundsChanging(const gfx::Rect& new_bounds);
 
   // Validates the state transition. Called from ChangeState.
   void CheckStateTransition(KeyboardControllerState prev,
