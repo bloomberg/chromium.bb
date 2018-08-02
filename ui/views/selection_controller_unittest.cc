@@ -168,17 +168,21 @@ TEST_F(SelectionControllerTest, RightClickWhenUnfocused) {
     EXPECT_EQ("", GetSelectedText());
 }
 
-// This tests the current incorrect behavior. When the behavior is fixed this
-// test can be updated.
-// TODO(ellyjones): Do that - https://crbug.com/856609
-TEST_F(SelectionControllerTest, RightClickPastEndSelectsLastWord) {
+TEST_F(SelectionControllerTest, RightClickSelectsWord) {
   SetText("abc def");
-
-  RightMouseDown(CenterRight(BoundsOfChar(6)), true);
+  RightMouseDown(CenterRight(BoundsOfChar(5)), true);
   if (PlatformStyle::kSelectWordOnRightClick)
     EXPECT_EQ("def", GetSelectedText());
   else
     EXPECT_EQ("", GetSelectedText());
+}
+
+// Regression test for https://crbug.com/856609
+TEST_F(SelectionControllerTest, RightClickPastEndDoesntSelectLastWord) {
+  SetText("abc def");
+
+  RightMouseDown(CenterRight(BoundsOfChar(6)), true);
+  EXPECT_EQ("", GetSelectedText());
 }
 
 }  // namespace
