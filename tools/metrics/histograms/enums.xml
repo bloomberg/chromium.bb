@@ -27647,9 +27647,11 @@ from previous Chrome versions.
   <int value="-1961497025" label="tint-gl-composited-content"/>
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
+  <int value="-1958315092" label="EnableGamepadButtonAxisEvents:disabled"/>
   <int value="-1957328398" label="MacSystemShareMenu:disabled"/>
   <int value="-1956747298" label="LayeredAPI:enabled"/>
   <int value="-1956349722" label="disable-smooth-scrolling"/>
+  <int value="-1955923385" label="EnableGamepadButtonAxisEvents:enabled"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>

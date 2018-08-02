@@ -9,9 +9,11 @@
 
 namespace features {
 
+extern const base::Feature kEnableGamepadButtonAxisEvents;
 extern const base::Feature kGamepadPollingInterval;
 extern const char kGamepadPollingIntervalParamKey[];
 
+bool AreGamepadButtonAxisEventsEnabled();
 size_t GetGamepadPollingInterval();
 
 }  // namespace features

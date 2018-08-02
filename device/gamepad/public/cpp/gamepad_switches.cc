@@ -6,6 +6,11 @@
 
 namespace switches {
 
+// Enables gamepadbuttondown, gamepadbuttonup, gamepadbuttonchange,
+// gamepadaxismove non-standard gamepad events.
+const char kEnableGamepadButtonAxisEvents[] =
+    "enable-gamepad-button-axis-events";
+
 // Overrides the gamepad polling interval. Decreasing the interval improves
 // input latency of buttons and axes but may negatively affect performance due
 // to more CPU time spent in the input polling thread.
