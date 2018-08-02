@@ -22,7 +22,6 @@
 namespace device {
 
 class BluetoothTestWinrt;
-class FakeGattDescriptorWinrt;
 
 class FakeGattCharacteristicWinrt
     : public Microsoft::WRL::RuntimeClass<
@@ -153,7 +152,6 @@ class FakeGattCharacteristicWinrt
   void SimulateGattCharacteristicWrite();
   void SimulateGattCharacteristicWriteError(
       BluetoothGattService::GattErrorCode error_code);
-  void SimulateGattDescriptor(base::StringPiece uuid);
 
  private:
   BluetoothTestWinrt* bluetooth_test_winrt_;
@@ -170,10 +168,6 @@ class FakeGattCharacteristicWinrt
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
                                  GenericAttributeProfile::IGattWriteResult>)>
       write_value_callback_;
-
-  std::vector<Microsoft::WRL::ComPtr<FakeGattDescriptorWinrt>>
-      fake_descriptors_;
-  uint16_t last_descriptor_attribute_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGattCharacteristicWinrt);
 };

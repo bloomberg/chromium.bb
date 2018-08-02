@@ -169,10 +169,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   virtual bool WriteWithoutResponse(base::span<const uint8_t> value);
 
  protected:
-  using DescriptorMap =
-      base::flat_map<std::string,
-                     std::unique_ptr<BluetoothRemoteGattDescriptor>>;
-
   BluetoothRemoteGattCharacteristic();
 
   // Writes to the Client Characteristic Configuration descriptor to enable
@@ -210,7 +206,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
 
   // Descriptors owned by the chracteristic. The descriptors' identifiers serve
   // as keys.
-  DescriptorMap descriptors_;
+  base::flat_map<std::string, std::unique_ptr<BluetoothRemoteGattDescriptor>>
+      descriptors_;
 
  private:
   friend class BluetoothGattNotifySession;
