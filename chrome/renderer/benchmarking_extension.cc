@@ -53,9 +53,11 @@ class BenchmarkingWrapper : public v8::Extension {
   v8::Local<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
       v8::Local<v8::String> name) override {
-    if (name->Equals(v8::String::NewFromUtf8(isolate, "IsSingleProcess"))) {
+    if (name->StringEquals(
+            v8::String::NewFromUtf8(isolate, "IsSingleProcess"))) {
       return v8::FunctionTemplate::New(isolate, IsSingleProcess);
-    } else if (name->Equals(v8::String::NewFromUtf8(isolate, "HiResTime"))) {
+    } else if (name->StringEquals(
+                   v8::String::NewFromUtf8(isolate, "HiResTime"))) {
       return v8::FunctionTemplate::New(isolate, HiResTime);
     }
 
