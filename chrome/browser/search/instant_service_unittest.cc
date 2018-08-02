@@ -8,7 +8,9 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/search/instant_unittest_base.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
@@ -18,6 +20,19 @@
 #include "url/gurl.h"
 
 using InstantServiceTest = InstantUnitTestBase;
+
+class InstantServiceTestCustomBackgroundsEnabled : public InstantServiceTest {
+ public:
+  InstantServiceTestCustomBackgroundsEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(features::kNtpBackgrounds);
+  }
+  ~InstantServiceTestCustomBackgroundsEnabled() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstantServiceTestCustomBackgroundsEnabled);
+};
 
 TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
   ntp_tiles::NTPTile some_tile;
@@ -36,7 +51,7 @@ TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
   EXPECT_EQ(ntp_tiles::TileTitleSource::TITLE_TAG, items[0].title_source);
 }
 
-TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
+TEST_F(InstantServiceTestCustomBackgroundsEnabled, SetCustomBackgroundURL) {
   const GURL kUrl("https://www.foo.com");
   instant_service_->SetCustomBackgroundURL(kUrl);
 
@@ -44,7 +59,16 @@ TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
 }
 
-TEST_F(InstantServiceTest, SetCustomBackgroundURLInvalidURL) {
+TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
+  const GURL kUrl("https://www.foo.com");
+  instant_service_->SetCustomBackgroundURL(kUrl);
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(GURL(), theme_info->custom_background_url);
+}
+
+TEST_F(InstantServiceTestCustomBackgroundsEnabled,
+       SetCustomBackgroundURLInvalidURL) {
   const GURL kUrl("foo");
   instant_service_->SetCustomBackgroundURL(kUrl);
 
@@ -52,7 +76,8 @@ TEST_F(InstantServiceTest, SetCustomBackgroundURLInvalidURL) {
   EXPECT_EQ(std::string(), theme_info->custom_background_url.spec());
 }
 
-TEST_F(InstantServiceTest, SetCustomBackgroundURLWithAttributions) {
+TEST_F(InstantServiceTestCustomBackgroundsEnabled,
+       SetCustomBackgroundURLWithAttributions) {
   const GURL kUrl("https://www.foo.com");
   const std::string kAttributionLine1 = "foo";
   const std::string kAttributionLine2 = "bar";
@@ -69,7 +94,8 @@ TEST_F(InstantServiceTest, SetCustomBackgroundURLWithAttributions) {
   EXPECT_EQ(kActionUrl, theme_info->custom_background_attribution_action_url);
 }
 
-TEST_F(InstantServiceTest, ChangingSearchProviderClearsThemeInfoAndPref) {
+TEST_F(InstantServiceTestCustomBackgroundsEnabled,
+       ChangingSearchProviderClearsThemeInfoAndPref) {
   const GURL kUrl("https://www.foo.com");
   const std::string kAttributionLine1 = "foo";
   const std::string kAttributionLine2 = "bar";
@@ -106,7 +132,7 @@ TEST_F(InstantServiceTest, ChangingSearchProviderClearsThemeInfoAndPref) {
   EXPECT_EQ(GURL(), theme_info->custom_background_attribution_action_url);
 }
 
-TEST_F(InstantServiceTest,
+TEST_F(InstantServiceTestCustomBackgroundsEnabled,
        ChangingSearchProviderRemovesLocalBackgroundImageCopy) {
   base::FilePath user_data_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -125,7 +151,8 @@ TEST_F(InstantServiceTest,
   EXPECT_EQ(false, file_exists);
 }
 
-TEST_F(InstantServiceTest, CustomBackgroundAttributionActionUrlReset) {
+TEST_F(InstantServiceTestCustomBackgroundsEnabled,
+       CustomBackgroundAttributionActionUrlReset) {
   const GURL kUrl("https://www.foo.com");
   const std::string kAttributionLine1 = "foo";
   const std::string kAttributionLine2 = "bar";

@@ -504,6 +504,12 @@ void InstantService::BuildThemeInfo() {
 // TODO(crbug.com/863942): Should switching default search provider retain the
 // copy of user uploaded photos?
 void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
+  // Reset the pref if the feature is disabled.
+  if (!features::IsCustomBackgroundsEnabled()) {
+    ResetCustomBackgroundThemeInfo();
+    return;
+  }
+
   // Custom backgrounds for non-Google search providers are not supported.
   if (!search::DefaultSearchProviderIsGoogle(profile_)) {
     ResetCustomBackgroundThemeInfo();
