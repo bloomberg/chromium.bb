@@ -7,6 +7,7 @@
 #include <list>
 #include <utility>
 
+#include "net/quic/mock_crypto_client_stream.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_utils.h"
@@ -54,10 +55,8 @@ void QuicTestPacketMaker::set_hostname(const std::string& host) {
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeConnectivityProbingPacket(
-    quic::QuicPacketNumber num,
-    bool include_version,
-    quic::QuicByteCount packet_length) {
+QuicTestPacketMaker::MakeConnectivityProbingPacket(quic::QuicPacketNumber num,
+                                                   bool include_version) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
   header.destination_connection_id_length = GetDestinationConnectionIdLength();
@@ -72,15 +71,16 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
                           clock_->Now(), perspective_);
-
-  char buffer[quic::kMaxPacketSize];
+  size_t max_plaintext_size =
+      framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
+  char buffer[quic::kDefaultMaxPacketSize];
   size_t length =
-      framer.BuildConnectivityProbingPacket(header, buffer, packet_length);
+      framer.BuildConnectivityProbingPacket(header, buffer, max_plaintext_size);
   size_t encrypted_size = framer.EncryptInPlace(
       quic::ENCRYPTION_NONE, header.packet_number,
       GetStartOfEncryptedData(framer.transport_version(), header), length,
-      quic::kMaxPacketSize, buffer);
-  EXPECT_NE(0u, encrypted_size);
+      quic::kDefaultMaxPacketSize, buffer);
+  EXPECT_EQ(quic::kDefaultMaxPacketSize, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);
   return encrypted.Clone();
@@ -102,6 +102,45 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
 
   quic::QuicPingFrame ping;
   return MakePacket(header, quic::QuicFrame(ping));
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeInitialDummyCHLOPacket() {
+  encryption_level_ = quic::ENCRYPTION_NONE;
+  SetLongHeaderType(quic::INITIAL);
+  InitializeHeader(/*packet_number=*/1, /*include_version=*/true);
+
+  quic::CryptoHandshakeMessage message =
+      MockCryptoClientStream::GetDummyCHLOMessage();
+  const quic::QuicData& data =
+      message.GetSerialized(quic::Perspective::IS_CLIENT);
+
+  quic::QuicFrames frames;
+  quic::QuicStreamFrame frame(
+      quic::kCryptoStreamId, /*fin=*/false, /*offset=*/0,
+      quic::QuicStringPiece(data.data(), data.length()));
+  frames.push_back(quic::QuicFrame(&frame));
+  DVLOG(1) << "Adding frame: " << frames.back();
+  quic::QuicPaddingFrame padding;
+  frames.push_back(quic::QuicFrame(padding));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
+                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
+                          clock_->Now(), perspective_);
+  size_t max_plaintext_size =
+      framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
+  std::unique_ptr<quic::QuicPacket> packet(quic::test::BuildUnsizedDataPacket(
+      &framer, header_, frames, max_plaintext_size));
+
+  char buffer[quic::kDefaultMaxPacketSize];
+  size_t encrypted_size =
+      framer.EncryptPayload(quic::ENCRYPTION_NONE, header_.packet_number,
+                            *packet, buffer, quic::kDefaultMaxPacketSize);
+  EXPECT_EQ(quic::kDefaultMaxPacketSize, encrypted_size);
+  quic::QuicReceivedPacket encrypted(buffer, encrypted_size,
+                                     quic::QuicTime::Zero(), false);
+  return encrypted.Clone();
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>

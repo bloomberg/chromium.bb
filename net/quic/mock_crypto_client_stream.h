@@ -21,8 +21,6 @@ namespace net {
 class MockCryptoClientStream : public quic::QuicCryptoClientStream,
                                public quic::QuicCryptoHandshaker {
  public:
-  // TODO(zhongyi): might consider move HandshakeMode up to
-  // MockCryptoClientStreamFactory.
   // HandshakeMode enumerates the handshake mode MockCryptoClientStream should
   // mock in CryptoConnect.
   enum HandshakeMode {
@@ -36,13 +34,14 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
     ZERO_RTT,
 
     // COLD_START indicates that CryptoConnect will neither establish encryption
-    // nor confirm the handshake
+    // nor confirm the handshake.
     COLD_START,
 
-    // USE_DEFAULT_CRYPTO_STREAM indicates that MockCryptoClientStreamFactory
-    // will create a QuicCryptoClientStream instead of a
-    // MockCryptoClientStream.
-    USE_DEFAULT_CRYPTO_STREAM,
+    // COLD_START_WITH_CHLO_SENT indicates that CryptoConnection will attempt to
+    // establish encryption by sending the initial CHLO packet on wire, which
+    // contains an empty CryptoHandshakeMessage. It will not confirm the
+    // hanshake though.
+    COLD_START_WITH_CHLO_SENT,
   };
 
   MockCryptoClientStream(
@@ -72,13 +71,15 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
   void SendOnCryptoHandshakeEvent(
       quic::QuicSession::CryptoHandshakeEvent event);
 
-  HandshakeMode handshake_mode_;
+  static quic::CryptoHandshakeMessage GetDummyCHLOMessage();
 
  protected:
   using quic::QuicCryptoClientStream::session;
 
  private:
   void SetConfigNegotiated();
+
+  HandshakeMode handshake_mode_;
   bool encryption_established_;
   bool handshake_confirmed_;
   quic::QuicReferenceCountedPointer<quic::QuicCryptoNegotiatedParameters>

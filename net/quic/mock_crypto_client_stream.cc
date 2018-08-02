@@ -43,6 +43,7 @@ using quic::QuicServerId;
 using quic::QuicSession;
 using quic::QuicSpdyClientSessionBase;
 using quic::QuicString;
+using quic::QuicStringPiece;
 using quic::QuicTagVector;
 using quic::QuicTime;
 
@@ -163,8 +164,19 @@ bool MockCryptoClientStream::CryptoConnect() {
       break;
     }
 
-    case USE_DEFAULT_CRYPTO_STREAM: {
-      NOTREACHED();
+    case COLD_START_WITH_CHLO_SENT: {
+      handshake_confirmed_ = false;
+      encryption_established_ = false;
+
+      CryptoHandshakeMessage message = GetDummyCHLOMessage();
+      QUIC_DVLOG(1) << "Sending "
+                    << message.DebugString(session()->perspective());
+      session()->NeuterUnencryptedData();
+      session()->OnCryptoHandshakeMessageSent(message);
+      const quic::QuicData& data =
+          message.GetSerialized(session()->perspective());
+      WriteOrBufferData(QuicStringPiece(data.data(), data.length()), false,
+                        nullptr);
       break;
     }
   }
@@ -214,6 +226,13 @@ void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
         ENCRYPTION_FORWARD_SECURE);
   }
   session()->OnCryptoHandshakeEvent(event);
+}
+
+// static
+CryptoHandshakeMessage MockCryptoClientStream::GetDummyCHLOMessage() {
+  CryptoHandshakeMessage message;
+  message.set_tag(quic::kCHLO);
+  return message;
 }
 
 void MockCryptoClientStream::SetConfigNegotiated() {
