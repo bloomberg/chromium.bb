@@ -16,6 +16,7 @@
 #include "device/bluetooth/test/fake_gatt_descriptor_winrt.h"
 #include "device/bluetooth/test/fake_gatt_descriptors_result_winrt.h"
 #include "device/bluetooth/test/fake_gatt_read_result_winrt.h"
+#include "device/bluetooth/test/fake_gatt_value_changed_event_args_winrt.h"
 #include "device/bluetooth/test/fake_gatt_write_result_winrt.h"
 
 namespace device {
@@ -166,12 +167,14 @@ HRESULT FakeGattCharacteristicWinrt::add_ValueChanged(
     ITypedEventHandler<GattCharacteristic*, GattValueChangedEventArgs*>*
         value_changed_handler,
     EventRegistrationToken* value_changed_event_cookie) {
-  return E_NOTIMPL;
+  value_changed_handler_ = value_changed_handler;
+  return S_OK;
 }
 
 HRESULT FakeGattCharacteristicWinrt::remove_ValueChanged(
     EventRegistrationToken value_changed_event_cookie) {
-  return E_NOTIMPL;
+  value_changed_handler_.Reset();
+  return S_OK;
 }
 
 HRESULT FakeGattCharacteristicWinrt::GetDescriptorsAsync(
@@ -237,7 +240,13 @@ HRESULT FakeGattCharacteristicWinrt::
         GattClientCharacteristicConfigurationDescriptorValue
             client_characteristic_configuration_descriptor_value,
         IAsyncOperation<GattWriteResult*>** operation) {
-  return E_NOTIMPL;
+  bluetooth_test_winrt_->OnFakeBluetoothGattSetCharacteristicNotification(
+      static_cast<BluetoothTestBase::NotifyValueState>(
+          client_characteristic_configuration_descriptor_value));
+  auto async_op = Make<base::win::AsyncOperation<GattWriteResult*>>();
+  notify_session_callback_ = async_op->callback();
+  *operation = async_op.Detach();
+  return S_OK;
 }
 
 void FakeGattCharacteristicWinrt::SimulateGattCharacteristicRead(
@@ -271,6 +280,33 @@ void FakeGattCharacteristicWinrt::SimulateGattDescriptor(
     base::StringPiece uuid) {
   fake_descriptors_.push_back(Make<FakeGattDescriptorWinrt>(
       bluetooth_test_winrt_, uuid, ++last_descriptor_attribute_handle_));
+}
+
+void FakeGattCharacteristicWinrt::SimulateGattNotifySessionStarted() {
+  std::move(notify_session_callback_).Run(Make<FakeGattWriteResultWinrt>());
+}
+
+void FakeGattCharacteristicWinrt::SimulateGattNotifySessionStartError(
+    BluetoothGattService::GattErrorCode error_code) {
+  std::move(notify_session_callback_)
+      .Run(Make<FakeGattWriteResultWinrt>(error_code));
+}
+
+void FakeGattCharacteristicWinrt::SimulateGattNotifySessionStopped() {
+  std::move(notify_session_callback_).Run(Make<FakeGattWriteResultWinrt>());
+}
+
+void FakeGattCharacteristicWinrt::SimulateGattNotifySessionStopError(
+    BluetoothGattService::GattErrorCode error_code) {
+  std::move(notify_session_callback_)
+      .Run(Make<FakeGattWriteResultWinrt>(error_code));
+}
+
+void FakeGattCharacteristicWinrt::SimulateGattCharacteristicChanged(
+    const std::vector<uint8_t>& value) {
+  DCHECK(value_changed_handler_);
+  value_changed_handler_->Invoke(
+      this, Make<FakeGattValueChangedEventArgsWinrt>(value).Get());
 }
 
 }  // namespace device

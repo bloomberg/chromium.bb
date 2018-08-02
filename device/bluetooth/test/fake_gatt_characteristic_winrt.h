@@ -154,6 +154,13 @@ class FakeGattCharacteristicWinrt
   void SimulateGattCharacteristicWriteError(
       BluetoothGattService::GattErrorCode error_code);
   void SimulateGattDescriptor(base::StringPiece uuid);
+  void SimulateGattNotifySessionStarted();
+  void SimulateGattNotifySessionStartError(
+      BluetoothGattService::GattErrorCode error_code);
+  void SimulateGattNotifySessionStopped();
+  void SimulateGattNotifySessionStopError(
+      BluetoothGattService::GattErrorCode error_code);
+  void SimulateGattCharacteristicChanged(const std::vector<uint8_t>& value);
 
  private:
   BluetoothTestWinrt* bluetooth_test_winrt_;
@@ -161,6 +168,13 @@ class FakeGattCharacteristicWinrt
       GattCharacteristicProperties properties_;
   GUID uuid_;
   uint16_t attribute_handle_;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+          GattCharacteristic*,
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+          GattValueChangedEventArgs*>>
+      value_changed_handler_;
 
   base::OnceCallback<void(
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
@@ -170,6 +184,10 @@ class FakeGattCharacteristicWinrt
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
                                  GenericAttributeProfile::IGattWriteResult>)>
       write_value_callback_;
+  base::OnceCallback<void(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattWriteResult>)>
+      notify_session_callback_;
 
   std::vector<Microsoft::WRL::ComPtr<FakeGattDescriptorWinrt>>
       fake_descriptors_;
