@@ -446,6 +446,11 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
   const SurfaceId& primary_surface_id = surface_range.end();
   const base::Optional<SurfaceId>& fallback_surface_id = surface_range.start();
 
+  // If primary exists, we return it.
+  Surface* primary_surface = GetSurfaceForId(primary_surface_id);
+  if (primary_surface && primary_surface->HasActiveFrame())
+    return primary_surface;
+
   if (!fallback_surface_id)
     return nullptr;
 
@@ -461,8 +466,7 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
   const std::vector<LocalSurfaceId>& temp_surfaces = it->second;
   for (const LocalSurfaceId& local_surface_id : base::Reversed(temp_surfaces)) {
     // The in-flight surface must be older than the primary surface ID.
-    if (local_surface_id == primary_surface_id.local_surface_id() ||
-        local_surface_id.parent_sequence_number() >
+    if (local_surface_id.parent_sequence_number() >
             primary_surface_id.local_surface_id().parent_sequence_number() ||
         local_surface_id.child_sequence_number() >
             primary_surface_id.local_surface_id().child_sequence_number()) {

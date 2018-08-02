@@ -200,59 +200,47 @@ void SurfaceAggregator::HandleSurfaceQuad(
     gfx::Rect* damage_rect_in_quad_space,
     bool* damage_rect_in_quad_space_valid) {
   SurfaceId primary_surface_id = surface_quad->surface_range.end();
-  Surface* primary_surface = manager_->GetSurfaceForId(primary_surface_id);
-  if (primary_surface && primary_surface->HasActiveFrame()) {
-    EmitSurfaceContent(primary_surface, parent_device_scale_factor,
-                       surface_quad->shared_quad_state, surface_quad->rect,
-                       surface_quad->visible_rect, target_transform, clip_rect,
-                       surface_quad->stretch_content_to_fill_bounds, dest_pass,
-                       ignore_undamaged, damage_rect_in_quad_space,
-                       damage_rect_in_quad_space_valid);
-    return;
-  }
-
-  Surface* latest_surface = nullptr;
-  if (surface_quad->surface_range.start()) {
-    latest_surface =
-        manager_->GetLatestInFlightSurface(surface_quad->surface_range);
-  }
 
   // If there's no fallback surface ID available, then simply emit a
   // SolidColorDrawQuad with the provided default background color. This
   // can happen after a Viz process crash.
+  Surface* latest_surface =
+      manager_->GetLatestInFlightSurface(surface_quad->surface_range);
   if (!latest_surface || !latest_surface->HasActiveFrame()) {
     EmitDefaultBackgroundColorQuad(surface_quad, target_transform, clip_rect,
                                    dest_pass);
     return;
   }
 
-  if (primary_surface_id.frame_sink_id() ==
-          latest_surface->surface_id().frame_sink_id() &&
-      primary_surface_id.local_surface_id().embed_token() ==
-          latest_surface->surface_id().local_surface_id().embed_token()) {
-    UMA_HISTOGRAM_COUNTS_100(
-        kUmaManhattanDistanceToPrimary,
-        latest_surface->surface_id().ManhattanDistanceTo(primary_surface_id));
+  if (latest_surface->surface_id() != primary_surface_id) {
+    if (primary_surface_id.frame_sink_id() ==
+            latest_surface->surface_id().frame_sink_id() &&
+        primary_surface_id.local_surface_id().embed_token() ==
+            latest_surface->surface_id().local_surface_id().embed_token()) {
+      UMA_HISTOGRAM_COUNTS_100(
+          kUmaManhattanDistanceToPrimary,
+          latest_surface->surface_id().ManhattanDistanceTo(primary_surface_id));
+    }
+
+    if (!surface_quad->stretch_content_to_fill_bounds) {
+      const CompositorFrame& fallback_frame = latest_surface->GetActiveFrame();
+
+      gfx::Rect fallback_rect(
+          latest_surface->GetActiveFrame().size_in_pixels());
+
+      float scale_ratio =
+          parent_device_scale_factor / fallback_frame.device_scale_factor();
+      fallback_rect =
+          gfx::ScaleToEnclosingRect(fallback_rect, scale_ratio, scale_ratio);
+      fallback_rect = gfx::IntersectRects(fallback_rect, surface_quad->rect);
+
+      EmitGutterQuadsIfNecessary(
+          surface_quad->rect, fallback_rect, surface_quad->shared_quad_state,
+          target_transform, clip_rect,
+          fallback_frame.metadata.root_background_color, dest_pass);
+    }
+    ++uma_stats_.using_fallback_surface;
   }
-
-  if (!surface_quad->stretch_content_to_fill_bounds) {
-    const CompositorFrame& fallback_frame = latest_surface->GetActiveFrame();
-
-    gfx::Rect fallback_rect(latest_surface->GetActiveFrame().size_in_pixels());
-
-    float scale_ratio =
-        parent_device_scale_factor / fallback_frame.device_scale_factor();
-    fallback_rect =
-        gfx::ScaleToEnclosingRect(fallback_rect, scale_ratio, scale_ratio);
-    fallback_rect = gfx::IntersectRects(fallback_rect, surface_quad->rect);
-
-    EmitGutterQuadsIfNecessary(
-        surface_quad->rect, fallback_rect, surface_quad->shared_quad_state,
-        target_transform, clip_rect,
-        fallback_frame.metadata.root_background_color, dest_pass);
-  }
-
-  ++uma_stats_.using_fallback_surface;
 
   EmitSurfaceContent(latest_surface, parent_device_scale_factor,
                      surface_quad->shared_quad_state, surface_quad->rect,
@@ -997,22 +985,19 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
                 surface_info.surface_range.end().local_surface_id());
       }
     }
+
+    // TODO(fsamuel): Consider caching this value somewhere so that
+    // HandleSurfaceQuad doesn't need to call it again.
     Surface* child_surface =
-        manager_->GetSurfaceForId(surface_info.surface_range.end());
+        manager_->GetLatestInFlightSurface(surface_info.surface_range);
+
+    // If the primary surface is not available then we assume the damage is
+    // the full size of the SurfaceDrawQuad because we might need to introduce
+    // gutter.
     gfx::Rect surface_damage;
-    if (!child_surface || !child_surface->HasActiveFrame()) {
-      // If the primary surface is not available then we assume the damage is
-      // the full size of the SurfaceDrawQuad because we might need to introduce
-      // gutter.
+    if (!child_surface ||
+        child_surface->surface_id() != surface_info.surface_range.end()) {
       surface_damage = surface_info.quad_rect;
-      if (surface_info.surface_range.start()) {
-        // TODO(fsamuel): Consider caching this value somewhere so that
-        // HandleSurfaceQuad doesn't need to call it again.
-        Surface* fallback_surface =
-            manager_->GetLatestInFlightSurface(surface_info.surface_range);
-        if (fallback_surface && fallback_surface->HasActiveFrame())
-          child_surface = fallback_surface;
-      }
     }
 
     if (child_surface) {
