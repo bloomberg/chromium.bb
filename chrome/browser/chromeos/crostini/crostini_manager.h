@@ -145,7 +145,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   };
 
   // Checks if the cros-termina component is installed.
-  static bool IsCrosTerminaInstalled();
+  bool IsCrosTerminaInstalled();
 
   // Generate the URL for Crostini terminal application.
   static GURL GenerateVshInCroshUrl(
@@ -427,6 +427,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       GetContainerSshKeysCallback callback,
       base::Optional<vm_tools::concierge::ContainerSshKeysResponse> reply);
 
+  // Helper for CrostiniManager::MaybeUpgradeCrostini. Separated because the
+  // checking registration code may block.
+  void MaybeUpgradeCrostiniAfterTerminaCheck(bool is_registered);
+
   // Helper for CrostiniManager::CreateDiskImage. Separated so it can be run
   // off the main thread.
   void CreateDiskImageAfterSizeCheck(
@@ -435,6 +439,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       int64_t free_disk_size);
 
   bool skip_restart_for_testing_ = false;
+  bool is_cros_termina_registered_ = false;
   bool termina_update_check_needed_ = false;
 
   // Pending StartContainer callbacks are keyed by <owner_id, vm_name,
