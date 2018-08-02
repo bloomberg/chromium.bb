@@ -349,7 +349,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // A request to fetch contents associated with this URL from metadata cache.
   virtual void FetchCachedCode(
       const WebURL&,
-      base::OnceCallback<void(const std::vector<uint8_t>&)>) {}
+      base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>) {}
 
   // A suggestion to cache this metadata in association with this URL which
   // resource is in CacheStorage.

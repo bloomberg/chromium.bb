@@ -33,7 +33,8 @@ interface RenderMessageFilter {
 
   // TODO(crbug.com/867848) Pass the data as mojo data_pipe instead of
   // array<unit8>.
-  FetchCachedCode(url.mojom.Url url) => (array<uint8> data);
+  FetchCachedCode(url.mojom.Url url) => (mojo_base.mojom.Time response_time,
+                                         array<uint8> data);
 
   // Requests that the browser cache |data| for the specified CacheStorage entry.
   DidGenerateCacheableMetadataInCacheStorage(
