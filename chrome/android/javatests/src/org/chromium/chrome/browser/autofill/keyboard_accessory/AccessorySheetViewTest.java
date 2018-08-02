@@ -95,14 +95,21 @@ public class AccessorySheetViewTest {
     @MediumTest
     public void testAddingTabToModelRendersTabsView() {
         final String kSampleAction = "Some Action";
-        mModel.getTabList().add(new Tab(null, null, R.layout.empty_accessory_sheet, view -> {
-            assertNotNull("The tab must have been created!", view);
-            assertTrue("Empty tab is a layout.", view instanceof LinearLayout);
-            LinearLayout baseLayout = (LinearLayout) view;
-            TextView sampleTextView = new TextView(mActivityTestRule.getActivity());
-            sampleTextView.setText(kSampleAction);
-            baseLayout.addView(sampleTextView);
-        }));
+        mModel.getTabList().add(new Tab(null, null, R.layout.empty_accessory_sheet,
+                AccessoryTabType.PASSWORDS, new Tab.Listener() {
+                    @Override
+                    public void onTabCreated(ViewGroup view) {
+                        assertNotNull("The tab must have been created!", view);
+                        assertTrue("Empty tab is a layout.", view instanceof LinearLayout);
+                        LinearLayout baseLayout = (LinearLayout) view;
+                        TextView sampleTextView = new TextView(mActivityTestRule.getActivity());
+                        sampleTextView.setText(kSampleAction);
+                        baseLayout.addView(sampleTextView);
+                    }
+
+                    @Override
+                    public void onTabShown() {}
+                }));
         mModel.setActiveTabIndex(0);
         // Shouldn't cause the view to be inflated.
         assertNull(mStubHolder.getView());
@@ -173,10 +180,17 @@ public class AccessorySheetViewTest {
     }
 
     private Tab createTestTabWithTextView(String textViewCaption) {
-        return new Tab(null, null, R.layout.empty_accessory_sheet, view -> {
-            TextView sampleTextView = new TextView(mActivityTestRule.getActivity());
-            sampleTextView.setText(textViewCaption);
-            view.addView(sampleTextView);
-        });
+        return new Tab(null, null, R.layout.empty_accessory_sheet, AccessoryTabType.PASSWORDS,
+                new Tab.Listener() {
+                    @Override
+                    public void onTabCreated(ViewGroup view) {
+                        TextView sampleTextView = new TextView(mActivityTestRule.getActivity());
+                        sampleTextView.setText(textViewCaption);
+                        view.addView(sampleTextView);
+                    }
+
+                    @Override
+                    public void onTabShown() {}
+                });
     }
 }

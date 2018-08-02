@@ -22,7 +22,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.asynctask.CustomShadowAsyncTask;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetModel.PropertyKey;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -32,7 +35,8 @@ import org.chromium.chrome.browser.modelutil.PropertyObservable;
  * Controller tests for the keyboard accessory bottom sheet component.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE,
+        shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
 public class AccessorySheetControllerTest {
     @Mock
     private PropertyObservable.PropertyObserver<PropertyKey> mMockPropertyObserver;
@@ -44,8 +48,8 @@ public class AccessorySheetControllerTest {
     private ViewPager mMockView;
 
     private final Tab[] mTabs =
-            new Tab[] {new Tab(null, null, 0, null), new Tab(null, null, 0, null),
-                    new Tab(null, null, 0, null), new Tab(null, null, 0, null)};
+            new Tab[] {new Tab(null, null, 0, 0, null), new Tab(null, null, 0, 0, null),
+                    new Tab(null, null, 0, 0, null), new Tab(null, null, 0, 0, null)};
 
     private AccessorySheetCoordinator mCoordinator;
     private AccessorySheetMediator mMediator;
@@ -53,6 +57,7 @@ public class AccessorySheetControllerTest {
 
     @Before
     public void setUp() {
+        ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         when(mMockViewStub.inflate()).thenReturn(mMockView);
         mCoordinator = new AccessorySheetCoordinator(mMockViewStub, /*unused*/ () -> null);
@@ -188,5 +193,28 @@ public class AccessorySheetControllerTest {
 
         assertThat(mModel.getTabList().size(), is(3));
         assertThat(mModel.getActiveTabIndex(), is(2));
+    }
+
+    @Test
+    public void testRecordsSheetClosure() {
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED),
+                is(0));
+
+        // Although sheets must be opened manually as of now, don't assume that every opened sheet
+        // in the future will be manually opened. Closing is the only thing to be tested here.
+        mCoordinator.show();
+        mCoordinator.hide();
+        assertThat(getTriggerMetricsCount(AccessorySheetTrigger.ANY_CLOSE), is(1));
+
+        // Log closing every time it happens.
+        mCoordinator.show();
+        mCoordinator.hide();
+        assertThat(getTriggerMetricsCount(AccessorySheetTrigger.ANY_CLOSE), is(2));
+    }
+
+    private int getTriggerMetricsCount(@AccessorySheetTrigger int bucket) {
+        return RecordHistogram.getHistogramValueCountForTesting(
+                KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED, bucket);
     }
 }

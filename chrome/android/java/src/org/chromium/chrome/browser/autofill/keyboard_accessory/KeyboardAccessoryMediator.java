@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger.MANUAL_CLOSE;
+
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 
@@ -165,6 +167,8 @@ class KeyboardAccessoryMediator
         if (mModel.activeTab() == null) {
             mModel.setActiveTab(tab.getPosition());
         } else {
+            KeyboardAccessoryMetricsRecorder.recordSheetTrigger(
+                    mModel.getTabList().get(mModel.activeTab()).getRecordingType(), MANUAL_CLOSE);
             mModel.setActiveTab(null);
             mVisibilityDelegate.onOpenKeyboard();
         }

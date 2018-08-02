@@ -7,9 +7,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/password_manager/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -257,6 +259,9 @@ void PasswordAccessoryController::OnOptionSelected(
   if (selectedOption ==
       l10n_util::GetStringUTF16(
           IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK)) {
+    UMA_HISTOGRAM_ENUMERATION("KeyboardAccessory.AccessoryActionSelected",
+                              metrics::AccessoryAction::MANAGE_PASSWORDS,
+                              metrics::AccessoryAction::COUNT);
     chrome::android::PreferencesLauncher::ShowPasswordSettings();
   }
 }

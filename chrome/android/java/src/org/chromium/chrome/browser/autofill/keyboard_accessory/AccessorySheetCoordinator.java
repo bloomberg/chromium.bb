@@ -40,6 +40,7 @@ public class AccessorySheetCoordinator {
         model.addObserver(new PropertyModelChangeProcessor<>(model, stubHolder,
                 new LazyViewBinderAdapter<>(
                         new AccessorySheetViewBinder(), this::onViewInflated)));
+        KeyboardAccessoryMetricsRecorder.recordModelChanges(model);
         mMediator = new AccessorySheetMediator(model);
     }
 

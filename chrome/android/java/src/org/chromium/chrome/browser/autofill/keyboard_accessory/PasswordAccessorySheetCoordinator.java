@@ -10,7 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
  * This component is a tab that can be added to the {@link ManualFillingCoordinator} which shows it
  * as bottom sheet below the keyboard accessory.
  */
-public class PasswordAccessorySheetCoordinator {
+public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.Tab.Listener {
     private final Context mContext;
     private final SimpleListObservable<Item> mModel = new SimpleListObservable<>();
     private final KeyboardAccessoryData.Observer<Item> mMediator = mModel::set;
@@ -71,11 +71,18 @@ public class PasswordAccessorySheetCoordinator {
         mContext = context;
         mTab = new KeyboardAccessoryData.Tab(IconProvider.getInstance().getIcon(mContext),
                 null, // TODO(fhorschig): Load from strings or native side.
-                R.layout.password_accessory_sheet, this::onTabCreated);
+                R.layout.password_accessory_sheet, AccessoryTabType.PASSWORDS, this);
     }
 
-    private void onTabCreated(View view) {
+    @Override
+    public void onTabCreated(ViewGroup view) {
         PasswordAccessorySheetViewBinder.initializeView((RecyclerView) view, createAdapter(mModel));
+    }
+
+    @Override
+    public void onTabShown() {
+        KeyboardAccessoryMetricsRecorder.recordActionImpression(AccessoryAction.MANAGE_PASSWORDS);
+        KeyboardAccessoryMetricsRecorder.recordSheetSuggestions(AccessoryTabType.PASSWORDS, mModel);
     }
 
     /**

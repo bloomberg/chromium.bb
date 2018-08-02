@@ -36,6 +36,18 @@ public class ShadowRecordHistogram {
     }
 
     @Implementation
+    public static void recordCount100Histogram(String name, int sample) {
+        Pair<String, Integer> key = Pair.create(name, sample);
+        incrementSampleCount(key);
+    }
+
+    @Implementation
+    public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
+        assert sample < boundary : "Sample " + sample + " is not within boundary " + boundary + "!";
+        incrementSampleCount(Pair.create(name, sample));
+    }
+
+    @Implementation
     public static void recordLongTimesHistogram100(String name, long duration, TimeUnit timeUnit) {
         Pair<String, Integer> key = Pair.create(name, (int) timeUnit.toMillis(duration));
         incrementSampleCount(key);

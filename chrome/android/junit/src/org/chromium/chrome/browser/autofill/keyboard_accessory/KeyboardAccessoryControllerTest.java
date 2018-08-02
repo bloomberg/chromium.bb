@@ -24,7 +24,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.asynctask.CustomShadowAsyncTask;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
@@ -36,7 +39,8 @@ import org.chromium.ui.base.WindowAndroid;
  * Controller tests for the keyboard accessory component.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE,
+        shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
 public class KeyboardAccessoryControllerTest {
     @Mock
     private PropertyObserver<KeyboardAccessoryModel.PropertyKey> mMockPropertyObserver;
@@ -54,7 +58,7 @@ public class KeyboardAccessoryControllerTest {
     private KeyboardAccessoryView mMockView;
 
     private final KeyboardAccessoryData.Tab mTestTab =
-            new KeyboardAccessoryData.Tab(null, null, 0, null);
+            new KeyboardAccessoryData.Tab(null, null, 0, 0, null);
 
     private KeyboardAccessoryCoordinator mCoordinator;
     private KeyboardAccessoryModel mModel;
@@ -62,6 +66,7 @@ public class KeyboardAccessoryControllerTest {
 
     @Before
     public void setUp() {
+        ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         when(mMockViewStub.inflate()).thenReturn(mMockView);
         mCoordinator = new KeyboardAccessoryCoordinator(
@@ -114,7 +119,7 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
         final PropertyProvider<Action> testProvider = new PropertyProvider<>();
-        final Action testAction = new Action(null, null);
+        final Action testAction = new Action(null, 0, null);
 
         mModel.addActionListObserver(mMockActionListObserver);
         mCoordinator.registerActionListProvider(testProvider);
@@ -199,7 +204,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(mModel.isVisible(), is(false));
 
         // Adding actions while the keyboard is visible triggers the accessory.
-        mModel.getActionList().add(new Action(null, null));
+        mModel.getActionList().add(new Action(null, 0, null));
         assertThat(mModel.isVisible(), is(true));
     }
 
@@ -207,7 +212,7 @@ public class KeyboardAccessoryControllerTest {
     public void testActionsRemovedWhenNotVisible() {
         // Make the accessory visible and add an action to it.
         mMediator.keyboardVisibilityChanged(true);
-        mModel.getActionList().add(new Action(null, null));
+        mModel.getActionList().add(new Action(null, 0, null));
 
         // Hiding the accessory should also remove actions.
         mMediator.keyboardVisibilityChanged(false);
@@ -247,5 +252,77 @@ public class KeyboardAccessoryControllerTest {
 
         mCoordinator.closeActiveTab();
         verifyNoMoreInteractions(mMockPropertyObserver, mMockVisibilityDelegate);
+    }
+
+    @Test
+    public void testRecordsOneImpressionForEveryInitialContentOnVisibilityChange() {
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_BAR_SHOWN),
+                is(0));
+
+        // Adding a tab contributes to the tabs and the total bucket.
+        mCoordinator.addTab(mTestTab);
+        mMediator.keyboardVisibilityChanged(true);
+
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
+
+        // Adding an action contributes to the actions bucket. Tabs and total are logged again.
+        mMediator.keyboardVisibilityChanged(false); // Hide, so it's brought up again.
+        mModel.getActionList().add(new Action(null, 0, null));
+        mMediator.keyboardVisibilityChanged(true);
+
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(2));
+        assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(2));
+
+        // Adding suggestions adds to the suggestions bucket - and again to tabs and total.
+        mMediator.keyboardVisibilityChanged(false); // Hide, so it's brought up again.
+        mMediator.setSuggestions(mock(AutofillKeyboardSuggestions.class));
+        mMediator.keyboardVisibilityChanged(true);
+
+        // Hiding the keyboard clears actions, so don't log more actions from here on out.
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(3));
+        assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(3));
+
+        // Removing suggestions adds to everything but the suggestions bucket. The value remains.
+        mMediator.keyboardVisibilityChanged(false); // Hide, so it's brought up again.
+        mMediator.setSuggestions(null);
+        mMediator.keyboardVisibilityChanged(true);
+
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(4));
+        assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(4));
+    }
+
+    @Test
+    public void testRecordsContentImpressionsOnlyOnInitialShowing() {
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_BAR_SHOWN),
+                is(0));
+
+        // First showing contains actions only.
+        mModel.getActionList().add(new Action(null, 0, null));
+        mMediator.keyboardVisibilityChanged(true);
+
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
+
+        // Adding a tabs or suggestions now doesn't change the impression count
+        mCoordinator.addTab(mTestTab);
+        mMediator.setSuggestions(mock(AutofillKeyboardSuggestions.class));
+        mMediator.keyboardVisibilityChanged(true);
+
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(0));
+        assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
+        assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
+    }
+
+    private int getShownMetricsCount(@AccessoryBarContents int bucket) {
+        return RecordHistogram.getHistogramValueCountForTesting(
+                KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_BAR_SHOWN, bucket);
     }
 }

@@ -13,6 +13,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.junit.After;
@@ -67,7 +68,8 @@ public class PasswordAccessorySheetViewTest {
                     @Override
                     public void onPageScrollStateChanged(int i) {}
                 });
-        accessorySheet.addTab(new KeyboardAccessoryData.Tab(null, null, layout, listener));
+        accessorySheet.addTab(
+                new KeyboardAccessoryData.Tab(null, null, layout, AccessoryTabType.ALL, listener));
         ThreadUtils.runOnUiThreadBlocking(accessorySheet::show);
     }
 
@@ -75,12 +77,20 @@ public class PasswordAccessorySheetViewTest {
     public void setUp() throws InterruptedException {
         mModel = new SimpleListObservable<>();
         mActivityTestRule.startMainActivityOnBlankPage();
-        openLayoutInAccessorySheet(R.layout.password_accessory_sheet, view -> {
-            mView.set((RecyclerView) view);
-            // Reuse coordinator code to create and wire the adapter. No mediator involved.
-            PasswordAccessorySheetViewBinder.initializeView(
-                    mView.get(), PasswordAccessorySheetCoordinator.createAdapter(mModel));
-        });
+        openLayoutInAccessorySheet(
+                R.layout.password_accessory_sheet, new KeyboardAccessoryData.Tab.Listener() {
+                    @Override
+                    public void onTabCreated(ViewGroup view) {
+                        mView.set((RecyclerView) view);
+                        // Reuse coordinator code to create and wire the adapter. No mediator
+                        // involved.
+                        PasswordAccessorySheetViewBinder.initializeView(mView.get(),
+                                PasswordAccessorySheetCoordinator.createAdapter(mModel));
+                    }
+
+                    @Override
+                    public void onTabShown() {}
+                });
         CriteriaHelper.pollUiThread(Criteria.equals(true, () -> mView.get() != null));
     }
 
