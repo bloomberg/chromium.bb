@@ -157,7 +157,7 @@ PasswordProtectionService::GetCachedVerdict(
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 
-  if (!url.is_valid())
+  if (!url.is_valid() || !CanGetReputationOfURL(url))
     return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
 
   GURL hostname = GetHostNameWithHTTPScheme(url);
@@ -230,6 +230,10 @@ void PasswordProtectionService::CacheVerdict(
   DCHECK(content_settings_);
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
+
+  if (!CanGetReputationOfURL(url)) {
+    return;
+  }
 
   GURL hostname = GetHostNameWithHTTPScheme(url);
   int* stored_verdict_count =
