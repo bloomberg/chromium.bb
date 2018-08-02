@@ -42,7 +42,7 @@ blink::mojom::blink::BackgroundFetchOptionsPtr TypeConverter<
 
   mojo_options->icons = std::move(mojo_icons);
   mojo_options->download_total = options.downloadTotal();
-  mojo_options->title = options.title();
+  mojo_options->title = options.hasTitle() ? options.title() : "";
 
   return mojo_options;
 }

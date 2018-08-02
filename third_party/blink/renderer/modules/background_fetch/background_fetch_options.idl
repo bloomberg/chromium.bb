@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/background-fetch/#background-fetch-manager
+// https://wicg.github.io/background-fetch/#dictdef-backgroundfetchoptions
 
-dictionary BackgroundFetchOptions {
-    sequence<ImageResource> icons = [];
-    DOMString title = "";
-    [ImplementedAs=downloadTotal] unsigned long long totalDownloadSize = 0;
+dictionary BackgroundFetchOptions : BackgroundFetchUIOptions  {
     unsigned long long downloadTotal = 0;
 };
