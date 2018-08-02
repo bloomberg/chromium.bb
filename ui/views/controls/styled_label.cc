@@ -82,6 +82,16 @@ int HorizontalAdjustment(int used_width,
 
 }  // namespace
 
+// StyledLabel::TestApi ------------------------------------------------
+
+StyledLabel::TestApi::TestApi(StyledLabel* view) : view_(view) {}
+
+StyledLabel::TestApi::~TestApi() = default;
+
+const std::map<View*, gfx::Range>& StyledLabel::TestApi::link_targets() {
+  return view_->link_targets_;
+}
+
 // StyledLabel::RangeStyleInfo ------------------------------------------------
 
 StyledLabel::RangeStyleInfo::RangeStyleInfo() = default;

@@ -5,6 +5,7 @@
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
+#include "ash/login/ui/public_account_warning_dialog.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/layout/box_layout.h"
@@ -29,21 +30,25 @@ class LoginExpandedPublicAccountViewTest : public LoginTestBase {
     LoginTestBase::SetUp();
 
     user_ = CreatePublicAccountUser("user@domain.com");
-    view_ = new LoginExpandedPublicAccountView(base::DoNothing());
-    view_->UpdateForUser(user_);
+    public_account_ = new LoginExpandedPublicAccountView(base::DoNothing());
+    public_account_->UpdateForUser(user_);
+
+    other_view_ = new views::View();
 
     container_ = new views::View();
     container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
-    container_->AddChildView(view_);
+    container_->AddChildView(public_account_);
+    container_->AddChildView(other_view_);
     SetWidget(CreateWidgetWithContent(container_));
   }
 
   mojom::LoginUserInfoPtr user_;
+
   // Owned by test widget view hierarchy.
   views::View* container_ = nullptr;
-  // Owned by test widget view hierarchy
-  LoginExpandedPublicAccountView* view_ = nullptr;
+  LoginExpandedPublicAccountView* public_account_ = nullptr;
+  views::View* other_view_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginExpandedPublicAccountViewTest);
@@ -53,22 +58,22 @@ class LoginExpandedPublicAccountViewTest : public LoginTestBase {
 
 // Verifies toggle advanced view will update the layout correctly.
 TEST_F(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
-  view_->SizeToPreferredSize();
-  EXPECT_EQ(view_->width(), kBubbleTotalWidthDp);
-  EXPECT_EQ(view_->height(), kBubbleTotalHeightDp);
+  public_account_->SizeToPreferredSize();
+  EXPECT_EQ(public_account_->width(), kBubbleTotalWidthDp);
+  EXPECT_EQ(public_account_->height(), kBubbleTotalHeightDp);
 
-  LoginExpandedPublicAccountView::TestApi test_api(view_);
+  LoginExpandedPublicAccountView::TestApi test_api(public_account_);
   EXPECT_FALSE(user_->public_account_info->show_advanced_view);
   EXPECT_FALSE(test_api.advanced_view()->visible());
 
   // Toggle show_advanced_view.
   user_->public_account_info->show_advanced_view = true;
-  view_->UpdateForUser(user_);
+  public_account_->UpdateForUser(user_);
 
   // Advanced view is shown and the overall size does not change.
   EXPECT_TRUE(test_api.advanced_view()->visible());
-  EXPECT_EQ(view_->width(), kBubbleTotalWidthDp);
-  EXPECT_EQ(view_->height(), kBubbleTotalHeightDp);
+  EXPECT_EQ(public_account_->width(), kBubbleTotalWidthDp);
+  EXPECT_EQ(public_account_->height(), kBubbleTotalHeightDp);
 
   // Click on the show advanced button.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -78,8 +83,44 @@ TEST_F(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
 
   // Advanced view is hidden and the overall size does not change.
   EXPECT_FALSE(test_api.advanced_view()->visible());
-  EXPECT_EQ(view_->width(), kBubbleTotalWidthDp);
-  EXPECT_EQ(view_->height(), kBubbleTotalHeightDp);
+  EXPECT_EQ(public_account_->width(), kBubbleTotalWidthDp);
+  EXPECT_EQ(public_account_->height(), kBubbleTotalHeightDp);
+}
+
+// Verifies warning dialog shows up correctly.
+TEST_F(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
+  LoginExpandedPublicAccountView::TestApi test_api(public_account_);
+  views::StyledLabel::TestApi styled_label_test(test_api.learn_more_label());
+  EXPECT_EQ(test_api.warning_dialog(), nullptr);
+  EXPECT_EQ(styled_label_test.link_targets().size(), 1U);
+
+  // Tap on the learn more link.
+  views::View* link_view = styled_label_test.link_targets().begin()->first;
+  GetEventGenerator()->MoveMouseTo(
+      link_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_NE(test_api.warning_dialog(), nullptr);
+  EXPECT_TRUE(test_api.warning_dialog()->IsVisible());
+
+  // When warning dialog is shown, tap outside of public account expanded view
+  // should not hide it.
+  GetEventGenerator()->MoveMouseTo(
+      other_view_->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_TRUE(public_account_->visible());
+  EXPECT_NE(test_api.warning_dialog(), nullptr);
+  EXPECT_TRUE(test_api.warning_dialog()->IsVisible());
+
+  // If the warning dialog is shown, escape key should close the waring dialog,
+  // but not the public account view.
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(test_api.warning_dialog(), nullptr);
+  EXPECT_TRUE(public_account_->visible());
+
+  // Press escape again should hide the public account expanded view.
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
+  EXPECT_FALSE(public_account_->visible());
 }
 
 }  // namespace ash
