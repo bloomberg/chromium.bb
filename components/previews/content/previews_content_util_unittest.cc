@@ -50,6 +50,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     return IsEnabled(type);
   }
 
+  void LoadResourceHints(const net::URLRequest& request) override {}
+
  private:
   bool IsEnabled(PreviewsType type) const {
     switch (type) {

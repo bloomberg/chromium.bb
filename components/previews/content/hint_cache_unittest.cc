@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "components/previews/core/previews_experiments.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,17 @@ class HintCacheTest : public testing::Test {
   HintCacheTest() {}
 
   ~HintCacheTest() override {}
+
+  void LoadCallback(const optimization_guide::proto::Hint& hint) {
+    loaded_hint_ = std::make_unique<optimization_guide::proto::Hint>(hint);
+  }
+
+  const optimization_guide::proto::Hint* GetLoadedHint() const {
+    return loaded_hint_.get();
+  }
+
+ private:
+  std::unique_ptr<optimization_guide::proto::Hint> loaded_hint_;
 
   DISALLOW_COPY_AND_ASSIGN(HintCacheTest);
 };
@@ -63,6 +75,23 @@ TEST_F(HintCacheTest, TestMemoryCache) {
             hint_cache.GetHint("otherhost.subdomain.domain.org")->key());
   EXPECT_EQ(hint1.key(),
             hint_cache.GetHint("host.subdomain.domain.org")->key());
+}
+
+TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
+  HintCache hint_cache;
+
+  optimization_guide::proto::Hint hint1;
+  hint1.set_key("subdomain.domain.org");
+  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint_cache.AddHint(hint1);
+
+  EXPECT_TRUE(hint_cache.IsHintLoaded("host.subdomain.domain.org"));
+  hint_cache.LoadHint(
+      "host.subdomain.domain.org",
+      base::BindOnce(&HintCacheTest::LoadCallback, base::Unretained(this)));
+
+  EXPECT_TRUE(GetLoadedHint());
+  EXPECT_EQ(hint1.key(), GetLoadedHint()->key());
 }
 
 }  // namespace

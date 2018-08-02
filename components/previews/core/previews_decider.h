@@ -45,6 +45,9 @@ class PreviewsDecider {
   virtual bool IsURLAllowedForPreview(const net::URLRequest& request,
                                       PreviewsType type) const = 0;
 
+  // Requests that any applicable detailed resource hints be loaded.
+  virtual void LoadResourceHints(const net::URLRequest& request) = 0;
+
  protected:
   PreviewsDecider() {}
   virtual ~PreviewsDecider() {}

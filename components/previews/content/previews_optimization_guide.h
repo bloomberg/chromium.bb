@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_OPTIMIZATION_GUIDE_H_
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_OPTIMIZATION_GUIDE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -14,6 +17,7 @@
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_experiments.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequest;
@@ -28,6 +32,10 @@ class Configuration;
 namespace previews {
 
 class PreviewsHints;
+
+using ResourceLoadingHintsCallback = base::OnceCallback<void(
+    const GURL& document_gurl,
+    const std::vector<std::string>& resource_patterns_to_block)>;
 
 // A Previews optimization guide that makes decisions guided by hints received
 // from the OptimizationGuideService.
@@ -50,7 +58,8 @@ class PreviewsOptimizationGuide
   // (specifically, PageHints). If so, but the hints are not available
   // synchronously, this method will request that they be loaded (from disk or
   // network).
-  bool MaybeLoadOptimizationHints(const net::URLRequest& request) const;
+  bool MaybeLoadOptimizationHints(const net::URLRequest& request,
+                                  ResourceLoadingHintsCallback callback);
 
   // optimization_guide::OptimizationGuideServiceObserver implementation:
   void OnHintsProcessed(
@@ -60,6 +69,14 @@ class PreviewsOptimizationGuide
  private:
   // Updates the hints to the latest hints sent by the Component Updater.
   void UpdateHints(std::unique_ptr<PreviewsHints> hints);
+
+  // Handles a loaded hint. It checks if the |loaded_hint| has any page hint
+  // that apply to |doucment_url|. If so, it looks for any applicable resource
+  // loading hints and will call |callback| with the applicable resource loading
+  // details if found.
+  void OnLoadedHint(ResourceLoadingHintsCallback callback,
+                    const GURL& document_url,
+                    const optimization_guide::proto::Hint& loaded_hint) const;
 
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* optimization_guide_service_;

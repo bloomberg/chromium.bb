@@ -18,7 +18,7 @@ bool HasEnabledPreviews(content::PreviewsState previews_state) {
 
 content::PreviewsState DetermineEnabledClientPreviewsState(
     const net::URLRequest& url_request,
-    const previews::PreviewsDecider* previews_decider) {
+    previews::PreviewsDecider* previews_decider) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
 
   if (!previews::params::ArePreviewsAllowed()) {
@@ -32,6 +32,8 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
   if (previews_decider->ShouldAllowPreview(
           url_request, previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
+    // Initiate load of any applicable hint details.
+    previews_decider->LoadResourceHints(url_request);
   }
 
   if (previews_decider->ShouldAllowPreview(url_request,
@@ -100,7 +102,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // decided at Commit time.
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON) {
     // Resource loading hints was chosen for the original URL but only continue
-    //  with it if the committed URL has HTTPS scheme and is allowed by decider.
+    // with it if the committed URL has HTTPS scheme and is allowed by decider.
     if (is_https && previews_decider &&
         previews_decider->IsURLAllowedForPreview(
             url_request, previews::PreviewsType::RESOURCE_LOADING_HINTS)) {

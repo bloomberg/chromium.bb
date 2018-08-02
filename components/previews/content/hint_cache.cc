@@ -22,8 +22,13 @@ bool HintCache::HasHint(const std::string& host) const {
   return !DetermineHostSuffix(host).empty();
 }
 
-void HintCache::LoadHint(const std::string& host) {
+void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const optimization_guide::proto::Hint* hint = GetHint(host);
+  if (hint) {
+    // Hint already loaded in memory.
+    std::move(callback).Run(*hint);
+  }
   // TODO(dougarnett): Add backing store support to load from.
 }
 
