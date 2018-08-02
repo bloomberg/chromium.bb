@@ -94,6 +94,8 @@ void FakeConciergeClient::GetContainerSshKeys(
     const vm_tools::concierge::ContainerSshKeysRequest& request,
     DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
         callback) {
+  get_container_ssh_keys_called_ = true;
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), container_ssh_keys_response_));
