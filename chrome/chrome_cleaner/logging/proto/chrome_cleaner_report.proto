@@ -136,6 +136,9 @@ message ChromeCleanerReport {
     reserved 10;
     // Deprecated AntiVirusProduct field that stopped being sent after 29.157.
     reserved 11;
+    // Deprecated incomplete_uws_matches that stopped being sent after
+    // 31.164.200
+    reserved 15;
 
     // Information about modules loaded into selected processes.
     // Next tag: 4.
@@ -220,10 +223,6 @@ message ChromeCleanerReport {
     repeated InstalledExtension installed_extensions = 12;
   }
   optional SystemReport system_report = 14;
-
-  // Information found by Chrome Cleaner while running custom UwS matchers
-  // with incomplete matching results.
-  repeated IncompleteUwSMatch incomplete_uws_matches = 15;
 
   // Information about Chrome Cleaner processes and their resource usage.
   repeated ProcessInformation process_information = 19;
