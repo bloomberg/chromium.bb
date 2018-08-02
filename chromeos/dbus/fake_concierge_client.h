@@ -95,6 +95,10 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool stop_vm_called() const { return stop_vm_called_; }
   // Indicates whether StartContainer has been called
   bool start_container_called() const { return start_container_called_; }
+  // Indicates whether GetContainerSshKeys has been called
+  bool get_container_ssh_keys_called() const {
+    return get_container_ssh_keys_called_;
+  }
   // Set ContainerStartupFailedSignalConnected state
   void set_container_startup_failed_signal_connected(bool connected) {
     is_container_startup_failed_signal_connected_ = connected;
@@ -145,6 +149,7 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
   bool start_container_called_ = false;
+  bool get_container_ssh_keys_called_ = false;
   bool is_container_startup_failed_signal_connected_ = true;
 
   vm_tools::concierge::CreateDiskImageResponse create_disk_image_response_;
