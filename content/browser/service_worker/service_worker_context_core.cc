@@ -34,6 +34,7 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -328,6 +329,9 @@ void ServiceWorkerContextCore::AddProviderHost(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int process_id = host->process_id();
   int provider_id = host->provider_id();
+  // Precreated hosts are stored in the same map regardless of process.
+  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id))
+    process_id = ChildProcessHost::kInvalidUniqueID;
   ProviderMap* map = GetProviderMapForProcess(process_id);
   if (!map) {
     providers_->AddWithID(std::make_unique<ProviderMap>(), process_id);
@@ -336,22 +340,13 @@ void ServiceWorkerContextCore::AddProviderHost(
   map->AddWithID(std::move(host), provider_id);
 }
 
-std::unique_ptr<ServiceWorkerProviderHost>
-ServiceWorkerContextCore::ReleaseProviderHost(int process_id, int provider_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProviderMap* map = GetProviderMapForProcess(process_id);
-  if (!map || !map->Lookup(provider_id))
-    return nullptr;
-  std::unique_ptr<ServiceWorkerProviderHost> host =
-      map->Replace(provider_id, nullptr);
-  map->Remove(provider_id);
-  return host;
-}
-
 ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
     int process_id,
     int provider_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Precreated hosts are stored in the same map regardless of process.
+  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id))
+    process_id = ChildProcessHost::kInvalidUniqueID;
   ProviderMap* map = GetProviderMapForProcess(process_id);
   if (!map)
     return nullptr;
@@ -361,6 +356,9 @@ ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
 void ServiceWorkerContextCore::RemoveProviderHost(
     int process_id, int provider_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Precreated hosts are stored in the same map regardless of process.
+  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id))
+    process_id = ChildProcessHost::kInvalidUniqueID;
   ProviderMap* map = GetProviderMapForProcess(process_id);
   DCHECK(map);
   map->Remove(provider_id);
@@ -371,6 +369,10 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (providers_->Lookup(process_id))
     providers_->Remove(process_id);
+  // This function is used to prevent <process_id, provider_id> collisions when
+  // a render process host is reused with the same process id. Don't bother
+  // removing the providers in this process with browser-assigned ids, which
+  // live in a different map, since they have unique ids.
 }
 
 std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>

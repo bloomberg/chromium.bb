@@ -56,10 +56,6 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
   ServiceWorkerContextCore* context = context_wrapper_->context();
   if (!context)
     return;
-  if (context->GetProviderHost(render_process_id_, info->provider_id)) {
-    bindings_.ReportBadMessage("SWDH_PROVIDER_CREATED_DUPLICATE_ID");
-    return;
-  }
 
   // Provider hosts for navigations are precreated on the browser process with a
   // browser-assigned id. The renderer process calls OnProviderCreated once it
@@ -72,9 +68,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     }
 
     // Retrieve the provider host pre-created for the navigation.
-    std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-        context->ReleaseProviderHost(ChildProcessHost::kInvalidUniqueID,
-                                     info->provider_id);
+    ServiceWorkerProviderHost* provider_host = context->GetProviderHost(
+        ChildProcessHost::kInvalidUniqueID, info->provider_id);
     // If no host is found, create one.
     // TODO(crbug.com/789111#c14): This is probably not right, see bug.
     if (!provider_host) {
@@ -84,9 +79,12 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     }
 
     // Otherwise, complete initialization of the pre-created host.
+    if (provider_host->process_id() != ChildProcessHost::kInvalidUniqueID) {
+      bindings_.ReportBadMessage("SWDH_PRECREATED_PROVIDER_RESUED");
+      return;
+    }
     provider_host->CompleteNavigationInitialized(render_process_id_,
                                                  std::move(info));
-    context->AddProviderHost(std::move(provider_host));
     return;
   }
 
@@ -100,6 +98,10 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     return;
   }
 
+  if (context->GetProviderHost(render_process_id_, info->provider_id)) {
+    bindings_.ReportBadMessage("SWDH_PROVIDER_CREATED_DUPLICATE_ID");
+    return;
+  }
   context->AddProviderHost(ServiceWorkerProviderHost::Create(
       render_process_id_, std::move(info), context->AsWeakPtr()));
 }
