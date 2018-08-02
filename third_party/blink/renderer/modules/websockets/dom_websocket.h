@@ -168,6 +168,8 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
     void Unpause();
     void ContextDestroyed();
 
+    bool IsPaused();
+
     void Trace(blink::Visitor*);
 
    private:
@@ -225,7 +227,17 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   // Updates |buffered_amount_after_close_| given the amount of data passed to
   // send() method after the state changed to CLOSING or CLOSED.
   void UpdateBufferedAmountAfterClose(uint64_t);
+
+  // Causes |buffered_amount_| to be updated asynchronously after returning to
+  // the event loop. Uses |buffered_amount_update_task_pending_| to avoid
+  // posting multiple tasks simultaneously.
+  void PostBufferedAmountUpdateTask();
+
+  // Updates |buffered_amount_| and resets
+  // |buffered_amount_update_task_pending_|.
   void BufferedAmountUpdateTask();
+
+  // Updates |buffered_amount_| provided the object is not currently paused.
   void ReflectBufferedAmountConsumption();
 
   void ReleaseChannel();

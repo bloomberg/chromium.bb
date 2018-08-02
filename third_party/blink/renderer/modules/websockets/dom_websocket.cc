@@ -100,7 +100,7 @@ bool DOMWebSocket::EventQueue::IsEmpty() const {
 }
 
 void DOMWebSocket::EventQueue::Pause() {
-  if (state_ != kActive && state_ != kUnpausePosted)
+  if (state_ == kStopped || state_ == kPaused)
     return;
 
   state_ = kPaused;
@@ -123,6 +123,10 @@ void DOMWebSocket::EventQueue::ContextDestroyed() {
 
   state_ = kStopped;
   events_.clear();
+}
+
+bool DOMWebSocket::EventQueue::IsPaused() {
+  return state_ == kPaused || state_ == kUnpausePosted;
 }
 
 void DOMWebSocket::EventQueue::DispatchQueuedEvents() {
@@ -391,15 +395,25 @@ void DOMWebSocket::UpdateBufferedAmountAfterClose(uint64_t payload_size) {
   LogError("WebSocket is already in CLOSING or CLOSED state.");
 }
 
+void DOMWebSocket::PostBufferedAmountUpdateTask() {
+  if (buffered_amount_update_task_pending_)
+    return;
+  buffered_amount_update_task_pending_ = true;
+  GetExecutionContext()
+      ->GetTaskRunner(TaskType::kWebSocket)
+      ->PostTask(FROM_HERE, WTF::Bind(&DOMWebSocket::BufferedAmountUpdateTask,
+                                      WrapWeakPersistent(this)));
+}
+
 void DOMWebSocket::BufferedAmountUpdateTask() {
   buffered_amount_update_task_pending_ = false;
   ReflectBufferedAmountConsumption();
 }
 
 void DOMWebSocket::ReflectBufferedAmountConsumption() {
+  if (event_queue_->IsPaused())
+    return;
   DCHECK_GE(buffered_amount_, consumed_buffered_amount_);
-  // Cast to unsigned long long is required since clang doesn't accept
-  // combination of %llu and uint64_t (known as unsigned long).
   NETWORK_DVLOG(1) << "WebSocket " << this
                    << " reflectBufferedAmountConsumption() " << buffered_amount_
                    << " => " << (buffered_amount_ - consumed_buffered_amount_);
@@ -653,6 +667,11 @@ void DOMWebSocket::Pause() {
 
 void DOMWebSocket::Unpause() {
   event_queue_->Unpause();
+
+  // If |consumed_buffered_amount_| was updated while the object was paused then
+  // the changes to |buffered_amount_| will not yet have been applied. Post
+  // another task to update it.
+  PostBufferedAmountUpdateTask();
 }
 
 void DOMWebSocket::DidConnect(const String& subprotocol,
@@ -669,7 +688,7 @@ void DOMWebSocket::DidConnect(const String& subprotocol,
 void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
   NETWORK_DVLOG(1) << "WebSocket " << this
                    << " DidReceiveTextMessage() Text message " << msg;
-
+  ReflectBufferedAmountConsumption();
   DCHECK_NE(state_, kConnecting);
   if (state_ != kOpen)
     return;
@@ -683,7 +702,7 @@ void DOMWebSocket::DidReceiveBinaryMessage(
     std::unique_ptr<Vector<char>> binary_data) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidReceiveBinaryMessage() "
                    << binary_data->size() << " byte binary message";
-
+  ReflectBufferedAmountConsumption();
   DCHECK(!origin_string_.IsNull());
 
   DCHECK_NE(state_, kConnecting);
@@ -719,6 +738,7 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 
 void DOMWebSocket::DidError() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidError()";
+  ReflectBufferedAmountConsumption();
   state_ = kClosed;
   event_queue_->Dispatch(Event::Create(EventTypeNames::error));
 }
@@ -730,16 +750,12 @@ void DOMWebSocket::DidConsumeBufferedAmount(uint64_t consumed) {
   if (state_ == kClosed)
     return;
   consumed_buffered_amount_ += consumed;
-  if (buffered_amount_update_task_pending_)
-    return;
-  GetExecutionContext()
-      ->GetTaskRunner(TaskType::kWebSocket)
-      ->PostTask(FROM_HERE, WTF::Bind(&DOMWebSocket::BufferedAmountUpdateTask,
-                                      WrapWeakPersistent(this)));
+  PostBufferedAmountUpdateTask();
 }
 
 void DOMWebSocket::DidStartClosingHandshake() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidStartClosingHandshake()";
+  ReflectBufferedAmountConsumption();
   state_ = kClosing;
 }
 
@@ -748,6 +764,7 @@ void DOMWebSocket::DidClose(
     unsigned short code,
     const String& reason) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidClose()";
+  ReflectBufferedAmountConsumption();
   if (!channel_)
     return;
   bool all_data_has_been_consumed =
