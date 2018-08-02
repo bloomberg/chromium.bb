@@ -84,7 +84,7 @@ void EmbedUsingTokenCallback(bool* was_called,
   *result_value = actual_result;
 }
 
-TEST(WindowTreeTest2, NewWindow) {
+TEST(WindowTreeTest, NewWindow) {
   WindowServiceTestSetup setup;
   EXPECT_TRUE(setup.changes()->empty());
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
@@ -93,7 +93,7 @@ TEST(WindowTreeTest2, NewWindow) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, NewWindowWithProperties) {
+TEST(WindowTreeTest, NewWindowWithProperties) {
   WindowServiceTestSetup setup;
   EXPECT_TRUE(setup.changes()->empty());
   aura::PropertyConverter::PrimitiveType value = true;
@@ -106,7 +106,7 @@ TEST(WindowTreeTest2, NewWindowWithProperties) {
   EXPECT_TRUE(window->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
-TEST(WindowTreeTest2, NewTopLevelWindow) {
+TEST(WindowTreeTest, NewTopLevelWindow) {
   WindowServiceTestSetup setup;
   EXPECT_TRUE(setup.changes()->empty());
   aura::Window* top_level =
@@ -116,7 +116,7 @@ TEST(WindowTreeTest2, NewTopLevelWindow) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, NewTopLevelWindowWithProperties) {
+TEST(WindowTreeTest, NewTopLevelWindowWithProperties) {
   WindowServiceTestSetup setup;
   EXPECT_TRUE(setup.changes()->empty());
   aura::PropertyConverter::PrimitiveType value = true;
@@ -129,7 +129,7 @@ TEST(WindowTreeTest2, NewTopLevelWindowWithProperties) {
   EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
-TEST(WindowTreeTest2, SetTopLevelWindowBounds) {
+TEST(WindowTreeTest, SetTopLevelWindowBounds) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -180,7 +180,7 @@ TEST(WindowTreeTest2, SetTopLevelWindowBounds) {
             ChangeToDescription((*setup.changes())[1]));
 }
 
-TEST(WindowTreeTest2, SetTopLevelWindowBoundsFailsForSameSize) {
+TEST(WindowTreeTest, SetTopLevelWindowBoundsFailsForSameSize) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -188,7 +188,7 @@ TEST(WindowTreeTest2, SetTopLevelWindowBoundsFailsForSameSize) {
   const gfx::Rect bounds = gfx::Rect(1, 2, 300, 400);
   top_level->SetBounds(bounds);
   setup.changes()->clear();
-  // WindowTreeTest2Helper::SetWindowBounds() uses a null LocalSurfaceId, which
+  // WindowTreeTestHelper::SetWindowBounds() uses a null LocalSurfaceId, which
   // differs from the current LocalSurfaceId (assigned by ClientRoot). Because
   // of this, the LocalSurfaceIds differ and the call returns false.
   EXPECT_FALSE(
@@ -196,7 +196,7 @@ TEST(WindowTreeTest2, SetTopLevelWindowBoundsFailsForSameSize) {
   EXPECT_TRUE(setup.changes()->empty());
 }
 
-TEST(WindowTreeTest2, SetChildWindowBounds) {
+TEST(WindowTreeTest, SetChildWindowBounds) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(window);
@@ -209,7 +209,7 @@ TEST(WindowTreeTest2, SetChildWindowBounds) {
   EXPECT_EQ(bounds, window->bounds());
 }
 
-TEST(WindowTreeTest2, SetBoundsAtEmbedWindow) {
+TEST(WindowTreeTest, SetBoundsAtEmbedWindow) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(window);
@@ -247,7 +247,7 @@ TEST(WindowTreeTest2, SetBoundsAtEmbedWindow) {
 }
 
 // Tests the ability of the client to change properties on the server.
-TEST(WindowTreeTest2, SetTopLevelWindowProperty) {
+TEST(WindowTreeTest, SetTopLevelWindowProperty) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -272,7 +272,7 @@ TEST(WindowTreeTest2, SetTopLevelWindowProperty) {
       SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, WindowToWindowData) {
+TEST(WindowTreeTest, WindowToWindowData) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   setup.changes()->clear();
@@ -292,7 +292,7 @@ TEST(WindowTreeTest2, WindowToWindowData) {
           data->properties[ui::mojom::WindowManager::kAlwaysOnTop_Property]));
 }
 
-TEST(WindowTreeTest2, MovePressDragRelease) {
+TEST(WindowTreeTest, MovePressDragRelease) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   aura::Window* top_level =
@@ -325,7 +325,7 @@ TEST(WindowTreeTest2, MovePressDragRelease) {
 }
 
 // Used to verify destruction with a touch pointer down doesn't crash.
-TEST(WindowTreeTest2, ShutdownWithTouchDown) {
+TEST(WindowTreeTest, ShutdownWithTouchDown) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -338,7 +338,7 @@ TEST(WindowTreeTest2, ShutdownWithTouchDown) {
   event_generator.PressTouch();
 }
 
-TEST(WindowTreeTest2, TouchPressDragRelease) {
+TEST(WindowTreeTest, TouchPressDragRelease) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   aura::Window* top_level =
@@ -396,7 +396,7 @@ class EventRecordingWindowDelegate : public aura::test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(EventRecordingWindowDelegate);
 };
 
-TEST(WindowTreeTest2, MoveFromClientToNonClient) {
+TEST(WindowTreeTest, MoveFromClientToNonClient) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
@@ -474,7 +474,7 @@ TEST(WindowTreeTest2, MoveFromClientToNonClient) {
   ASSERT_FALSE(window_delegate.PopEvent().get());
 }
 
-TEST(WindowTreeTest2, MouseDownInNonClientWithChildWindow) {
+TEST(WindowTreeTest, MouseDownInNonClientWithChildWindow) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
@@ -517,7 +517,7 @@ TEST(WindowTreeTest2, MouseDownInNonClientWithChildWindow) {
                                      window_delegate.PopEvent().get()));
 }
 
-TEST(WindowTreeTest2, MouseDownInNonClientDragToClientWithChildWindow) {
+TEST(WindowTreeTest, MouseDownInNonClientDragToClientWithChildWindow) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
   setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
@@ -552,7 +552,7 @@ TEST(WindowTreeTest2, MouseDownInNonClientDragToClientWithChildWindow) {
   EXPECT_TRUE(window_tree_client->input_events().empty());
 }
 
-TEST(WindowTreeTest2, PointerWatcher) {
+TEST(WindowTreeTest, PointerWatcher) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   aura::Window* top_level =
@@ -599,7 +599,7 @@ TEST(WindowTreeTest2, PointerWatcher) {
                 window_tree_client->PopObservedPointerEvent().event.get()));
 }
 
-TEST(WindowTreeTest2, MatchesPointerWatcherSet) {
+TEST(WindowTreeTest, MatchesPointerWatcherSet) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   aura::Window* top_level =
@@ -629,7 +629,7 @@ TEST(WindowTreeTest2, MatchesPointerWatcherSet) {
   EXPECT_TRUE(window_tree_client->observed_pointer_events().empty());
 }
 
-TEST(WindowTreeTest2, Capture) {
+TEST(WindowTreeTest, Capture) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
 
@@ -652,7 +652,7 @@ TEST(WindowTreeTest2, Capture) {
   EXPECT_TRUE(setup.window_tree_test_helper()->ReleaseCapture(window));
 }
 
-TEST(WindowTreeTest2, TransferCaptureToClient) {
+TEST(WindowTreeTest, TransferCaptureToClient) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
   setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
@@ -688,7 +688,7 @@ TEST(WindowTreeTest2, TransferCaptureToClient) {
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
 }
 
-TEST(WindowTreeTest2, TransferCaptureBetweenParentAndChild) {
+TEST(WindowTreeTest, TransferCaptureBetweenParentAndChild) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
   setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
@@ -734,7 +734,7 @@ TEST(WindowTreeTest2, TransferCaptureBetweenParentAndChild) {
   EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
 }
 
-TEST(WindowTreeTest2, CaptureNotification) {
+TEST(WindowTreeTest, CaptureNotification) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   aura::Window* top_level =
@@ -752,7 +752,7 @@ TEST(WindowTreeTest2, CaptureNotification) {
             SingleChangeToDescription(*(setup.changes())));
 }
 
-TEST(WindowTreeTest2, CaptureNotificationForEmbedRoot) {
+TEST(WindowTreeTest, CaptureNotificationForEmbedRoot) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   aura::Window* top_level =
@@ -795,7 +795,7 @@ TEST(WindowTreeTest2, CaptureNotificationForEmbedRoot) {
   EXPECT_TRUE(embedding_helper->changes()->empty());
 }
 
-TEST(WindowTreeTest2, CaptureNotificationForTopLevel) {
+TEST(WindowTreeTest, CaptureNotificationForTopLevel) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow(11);
@@ -826,7 +826,7 @@ TEST(WindowTreeTest2, CaptureNotificationForTopLevel) {
             SingleChangeToDescription(*(setup.changes())));
 }
 
-TEST(WindowTreeTest2, EventsGoToCaptureWindow) {
+TEST(WindowTreeTest, EventsGoToCaptureWindow) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   aura::Window* top_level =
@@ -856,7 +856,7 @@ TEST(WindowTreeTest2, EventsGoToCaptureWindow) {
             LocatedEventToEventTypeAndLocation(drag_event.event.get()));
 }
 
-TEST(WindowTreeTest2, InterceptEventsOnEmbeddedWindowWithCapture) {
+TEST(WindowTreeTest, InterceptEventsOnEmbeddedWindowWithCapture) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
@@ -902,7 +902,7 @@ TEST(WindowTreeTest2, InterceptEventsOnEmbeddedWindowWithCapture) {
   EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
 }
 
-TEST(WindowTreeTest2, PointerDownResetOnCaptureChange) {
+TEST(WindowTreeTest, PointerDownResetOnCaptureChange) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(window);
@@ -934,7 +934,7 @@ TEST(WindowTreeTest2, PointerDownResetOnCaptureChange) {
       MouseEvent::kMousePointerId));
 }
 
-TEST(WindowTreeTest2, PointerDownResetOnHide) {
+TEST(WindowTreeTest, PointerDownResetOnHide) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -960,7 +960,7 @@ TEST(WindowTreeTest2, PointerDownResetOnHide) {
       MouseEvent::kMousePointerId));
 }
 
-TEST(WindowTreeTest2, DeleteWindow) {
+TEST(WindowTreeTest, DeleteWindow) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(window);
@@ -973,7 +973,7 @@ TEST(WindowTreeTest2, DeleteWindow) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, DeleteTopLevel) {
+TEST(WindowTreeTest, DeleteTopLevel) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -996,7 +996,7 @@ TEST(WindowTreeTest2, DeleteTopLevel) {
       setup.window_tree_test_helper()->GetWindowByClientId(top_level_id));
 }
 
-TEST(WindowTreeTest2, ExternalDeleteWindow) {
+TEST(WindowTreeTest, ExternalDeleteWindow) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(window);
@@ -1006,7 +1006,7 @@ TEST(WindowTreeTest2, ExternalDeleteWindow) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, Embed) {
+TEST(WindowTreeTest, Embed) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
@@ -1128,7 +1128,7 @@ TEST_F(WindowTreeScheduleEmbedTest, ScheduleEmbed) {
             SingleChangeToDescription(*embed_client_.tracker()->changes()));
 }
 
-TEST(WindowTreeTest2, ScheduleEmbedForExistingClient) {
+TEST(WindowTreeTest, ScheduleEmbedForExistingClient) {
   WindowServiceTestSetup setup;
   // Schedule an embed in the tree created by |setup|.
   base::UnguessableToken token;
@@ -1168,7 +1168,7 @@ TEST(WindowTreeTest2, ScheduleEmbedForExistingClient) {
       setup.window_tree_test_helper()->TransportIdForWindow(window_in_parent));
 }
 
-TEST(WindowTreeTest2, DeleteRootOfEmbeddingFromScheduleEmbedForExistingClient) {
+TEST(WindowTreeTest, DeleteRootOfEmbeddingFromScheduleEmbedForExistingClient) {
   WindowServiceTestSetup setup;
   aura::Window* window_in_parent = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(window_in_parent);
@@ -1208,7 +1208,7 @@ TEST(WindowTreeTest2, DeleteRootOfEmbeddingFromScheduleEmbedForExistingClient) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
-TEST(WindowTreeTest2, StackAtTop) {
+TEST(WindowTreeTest, StackAtTop) {
   WindowServiceTestSetup setup;
   aura::Window* top_level1 =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1239,7 +1239,7 @@ TEST(WindowTreeTest2, StackAtTop) {
       setup.window_tree_test_helper()->StackAtTop(non_top_level_window));
 }
 
-TEST(WindowTreeTest2, OnUnhandledKeyEvent) {
+TEST(WindowTreeTest, OnUnhandledKeyEvent) {
   // Create a top-level, show it and give it focus.
   WindowServiceTestSetup setup;
   aura::Window* top_level =
@@ -1273,7 +1273,7 @@ TEST(WindowTreeTest2, OnUnhandledKeyEvent) {
   EXPECT_TRUE(setup.delegate()->unhandled_key_events()->empty());
 }
 
-TEST(WindowTreeTest2, ReorderWindow) {
+TEST(WindowTreeTest, ReorderWindow) {
   // Create a top-level and two child windows.
   WindowServiceTestSetup setup;
   aura::Window* top_level =
@@ -1322,7 +1322,7 @@ TEST(WindowTreeTest2, ReorderWindow) {
       top_level, window2, mojom::OrderDirection::ABOVE));
 }
 
-TEST(WindowTreeTest2, StackAbove) {
+TEST(WindowTreeTest, StackAbove) {
   // Create two top-levels.
   WindowServiceTestSetup setup;
   aura::Window* top_level1 =
@@ -1381,7 +1381,7 @@ TEST(WindowTreeTest2, StackAbove) {
       top_level1, non_top_level_window));
 }
 
-TEST(WindowTreeTest2, RunMoveLoopTouch) {
+TEST(WindowTreeTest, RunMoveLoopTouch) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1426,7 +1426,7 @@ TEST(WindowTreeTest2, RunMoveLoopTouch) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, RunMoveLoopMouse) {
+TEST(WindowTreeTest, RunMoveLoopMouse) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1461,7 +1461,7 @@ TEST(WindowTreeTest2, RunMoveLoopMouse) {
   setup.changes()->clear();
 }
 
-TEST(WindowTreeTest2, CancelMoveLoop) {
+TEST(WindowTreeTest, CancelMoveLoop) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1500,7 +1500,7 @@ TEST(WindowTreeTest2, CancelMoveLoop) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, CancelMode) {
+TEST(WindowTreeTest, CancelMode) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1514,7 +1514,7 @@ TEST(WindowTreeTest2, CancelMode) {
                 setup.window_tree_client()->PopInputEvent().event.get()));
 }
 
-TEST(WindowTreeTest2, PerformDragDrop) {
+TEST(WindowTreeTest, PerformDragDrop) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1559,7 +1559,7 @@ TEST(WindowTreeTest2, PerformDragDrop) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, PerformDragDropBeforePreviousOneFinish) {
+TEST(WindowTreeTest, PerformDragDropBeforePreviousOneFinish) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1606,7 +1606,7 @@ TEST(WindowTreeTest2, PerformDragDropBeforePreviousOneFinish) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, CancelDragDrop) {
+TEST(WindowTreeTest, CancelDragDrop) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1649,7 +1649,7 @@ TEST(WindowTreeTest2, CancelDragDrop) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, CancelDragDropBeforeDragLoopRun) {
+TEST(WindowTreeTest, CancelDragDropBeforeDragLoopRun) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -1681,7 +1681,7 @@ TEST(WindowTreeTest2, CancelDragDropBeforeDragLoopRun) {
             SingleChangeToDescription(*setup.changes()));
 }
 
-TEST(WindowTreeTest2, DsfChanges) {
+TEST(WindowTreeTest, DsfChanges) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
