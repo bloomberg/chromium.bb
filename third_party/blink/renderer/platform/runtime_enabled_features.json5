@@ -1401,11 +1401,6 @@
       depends_on: ["WebUSB"],
     },
     {
-      name: "WebUSBOnSharedWorkers",
-      status: "test",
-      depends_on: ["WebUSB"],
-    },
-    {
       name: "WebVR",
       status: "experimental",
     },

@@ -6,7 +6,7 @@
 
 [
     Constructor(sequence<USBIsochronousOutTransferPacket> packets),
-    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB),
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, Window WebUSB),
     SecureContext
 ] interface USBIsochronousOutTransferResult {
     readonly attribute FrozenArray<USBIsochronousOutTransferPacket> packets;

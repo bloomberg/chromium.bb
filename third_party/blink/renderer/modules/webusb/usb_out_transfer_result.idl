@@ -5,7 +5,7 @@
 // https://wicg.github.io/webusb/#usbouttransferresult
 
 [
-    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB),
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, Window WebUSB),
     Constructor(USBTransferStatus status, optional unsigned long bytesWritten = 0),
     SecureContext
 ] interface USBOutTransferResult {
