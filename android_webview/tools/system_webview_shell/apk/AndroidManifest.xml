@@ -115,6 +115,13 @@
             android:exported="true">
         </activity>
 
+        <activity
+            android:name="org.chromium.webview_shell.WebViewTracingActivity"
+            android:label="@string/title_activity_telemetry"
+            android:noHistory="true"
+            android:exported="true">
+        </activity>
+
         <uses-library android:name="android.test.runner" />
     </application>
 </manifest>
