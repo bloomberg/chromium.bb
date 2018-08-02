@@ -12,36 +12,21 @@
 namespace vr {
 
 // Proj matrix as used on a Pixel phone with the Daydream headset.
-static const gfx::Transform kPixelDaydreamProjMatrix(1.03317f,
-                                                     0.0f,
-                                                     0.271253f,
-                                                     0.0f,
-                                                     0.0f,
-                                                     0.862458f,
-                                                     -0.0314586f,
-                                                     0.0f,
-                                                     0.0f,
-                                                     0.0f,
-                                                     -1.002f,
-                                                     -0.2002f,
-                                                     0.0f,
-                                                     0.0f,
-                                                     -1.0f,
-                                                     0.0f);
-static const gfx::Transform kStartHeadPose;
-static const gfx::Vector3dF kStartControllerPosition(0.3, -0.3, -0.3);
-static const gfx::Vector3dF kForwardVector(0.0f, 0.0f, -1.0f);
-static const gfx::Vector3dF kBackwardVector(0.0f, 0.0f, 1.0f);
+gfx::Transform GetPixelDaydreamProjMatrix();
+static constexpr gfx::Transform kStartHeadPose;
+static constexpr gfx::Vector3dF kStartControllerPosition(0.3, -0.3, -0.3);
+static constexpr gfx::Vector3dF kForwardVector(0.0f, 0.0f, -1.0f);
+static constexpr gfx::Vector3dF kBackwardVector(0.0f, 0.0f, 1.0f);
 
-constexpr float kEpsilon = 1e-5f;
+static constexpr float kEpsilon = 1e-5f;
 
 // Resolution of Pixel Phone for one eye.
-static const gfx::Size kPixelHalfScreen(960, 1080);
+static constexpr gfx::Size kPixelHalfScreen(960, 1080);
 
-static const char* kLoremIpsum100Chars =
+static constexpr const char* kLoremIpsum100Chars =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis erat nisl, "
     "tempus nec neque at nullam.";
-static const char* kLoremIpsum700Chars =
+static constexpr const char* kLoremIpsum700Chars =
     "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo "
     "ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis "
     "dis parturient montes, nascetur ridiculus mus. Donec quam felis, "

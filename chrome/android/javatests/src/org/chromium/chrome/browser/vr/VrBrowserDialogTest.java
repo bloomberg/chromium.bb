@@ -138,11 +138,6 @@ public class VrBrowserDialogTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         Thread.sleep(VR_ENTRY_SLEEP_MS);
         NativeUiUtils.clickElementAndWaitForUiQuiescence(elementName, new PointF(0, 0));
-        // Technically not necessary, but clicking on native elements causes the laser to originate
-        // from the head, not the controller, which looks strange. Since the point of most of these
-        // tests is to verify that things look correct, better to have the laser in a normal
-        // position before taking screenshots.
-        NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
     }
 
     /**
@@ -259,7 +254,6 @@ public class VrBrowserDialogTest {
         captureScreen("JavaScriptConfirm_Visible");
 
         NativeUiUtils.clickFallbackUiNegativeButton();
-        NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
         // Ensure the cancel button was clicked.
         Assert.assertTrue("JavaScript Confirm's cancel button was not clicked",
                 mVrBrowserTestFramework.runJavaScriptOrFail("c", POLL_TIMEOUT_SHORT_MS)
@@ -284,7 +278,6 @@ public class VrBrowserDialogTest {
         // Capture image
         captureScreen("JavaScriptPrompt_Visible");
         NativeUiUtils.clickFallbackUiPositiveButton();
-        NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
         // This JavaScript will only run once the prompt has been dismissed, and the return value
         // will only be what we expect if the positive button was actually clicked (as opposed to
         // canceled).

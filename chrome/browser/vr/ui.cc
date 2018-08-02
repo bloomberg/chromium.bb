@@ -559,43 +559,23 @@ void Ui::AcceptDoffPromptForTesting() {
   button->OnHoverLeave(base::TimeTicks::Now());
 }
 
-void Ui::PerformControllerActionForTesting(
-    ControllerTestInput controller_input,
-    std::queue<ControllerModel>& controller_model_queue) {
+gfx::Point3F Ui::GetTargetPointForTesting(UserFriendlyElementName element_name,
+                                          const gfx::PointF& position) {
   auto* target_element = scene()->GetUiElementByName(
-      UserFriendlyElementNameToUiElementName(controller_input.element_name));
+      UserFriendlyElementNameToUiElementName(element_name));
   DCHECK(target_element) << "Unsupported test element";
   // The position to click is provided for a unit square, so scale it to match
   // the actual element.
-  controller_input.position.Scale(target_element->size().width(),
-                                  target_element->size().height());
-  auto target = gfx::Point3F(controller_input.position.x(),
-                             controller_input.position.y(), 0.0f);
+  auto scaled_position = ScalePoint(position, target_element->size().width(),
+                                    target_element->size().height());
+  gfx::Point3F target(scaled_position.x(), scaled_position.y(), 0.0f);
   target_element->ComputeTargetWorldSpaceTransform().TransformPoint(&target);
-  gfx::Point3F origin;
-  gfx::Vector3dF direction(target - origin);
+  // We do hit testing with respect to the eye position (world origin), so we
+  // need to project the target point into the background.
+  gfx::Vector3dF direction = target - kOrigin;
   direction.GetNormalized(&direction);
-  ControllerModel controller_model;
-  controller_model.laser_direction = direction;
-  controller_model.laser_origin = origin;
-
-  switch (controller_input.action) {
-    case VrControllerTestAction::kClick:
-      // Add in the button down action
-      controller_model.touchpad_button_state =
-          UiInputManager::ButtonState::DOWN;
-      controller_model_queue.push(controller_model);
-      // Add in the button up action
-      controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
-      controller_model_queue.push(controller_model);
-      break;
-    case VrControllerTestAction::kHover:
-      controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
-      controller_model_queue.push(controller_model);
-      break;
-    default:
-      NOTREACHED() << "Given unsupported controller action";
-  }
+  return kOrigin +
+         gfx::ScaleVector3d(direction, scene()->background_distance());
 }
 
 ContentElement* Ui::GetContentElement() {
