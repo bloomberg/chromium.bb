@@ -180,7 +180,6 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     timing.iteration_start = 0;
     timing.iteration_count = 1;
     timing.iteration_duration = 1.0;
-    timing.playback_rate = 1.0;
     timing.direction = Timing::PlaybackDirection::NORMAL;
     timing.timing_function = linear_timing_function_;
     return timing;
@@ -498,21 +497,6 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   timing_.start_delay = 21.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
-}
-
-TEST_F(AnimationCompositorAnimationsTest,
-       ConvertTimingForCompositorPlaybackRate) {
-  timing_.playback_rate = 1.0;
-  EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
-  EXPECT_DOUBLE_EQ(1.0, compositor_timing_.playback_rate);
-
-  timing_.playback_rate = -2.3;
-  EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
-  EXPECT_DOUBLE_EQ(-2.3, compositor_timing_.playback_rate);
-
-  timing_.playback_rate = 1.6;
-  EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
-  EXPECT_DOUBLE_EQ(1.6, compositor_timing_.playback_rate);
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirection) {
@@ -842,10 +826,9 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   timing_.iteration_count = 5;
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
-  timing_.playback_rate = 2.0;
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-      ConvertToCompositorAnimation(*effect);
+      ConvertToCompositorAnimation(*effect, 2.0);
   EXPECT_EQ(CompositorTargetProperty::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(5.0, keyframe_model->Iterations());
@@ -1054,37 +1037,6 @@ TEST_F(AnimationCompositorAnimationsTest,
   EXPECT_EQ(CompositorKeyframeModel::Direction::ALTERNATE_REVERSE,
             keyframe_model->GetDirection());
   EXPECT_EQ(1.0, keyframe_model->PlaybackRate());
-
-  std::unique_ptr<CompositorFloatAnimationCurve> keyframed_float_curve =
-      keyframe_model->FloatCurveForTesting();
-
-  CompositorFloatAnimationCurve::Keyframes keyframes =
-      keyframed_float_curve->KeyframesForTesting();
-  ASSERT_EQ(2UL, keyframes.size());
-}
-
-TEST_F(AnimationCompositorAnimationsTest,
-       createSimpleOpacityAnimationPlaybackRates) {
-  // KeyframeEffect to convert
-  StringKeyframeEffectModel* effect = CreateKeyframeEffectModel(
-      CreateReplaceOpKeyframe(CSSPropertyOpacity, "0.2", 0),
-      CreateReplaceOpKeyframe(CSSPropertyOpacity, "0.5", 1.0));
-
-  const double kPlaybackRate = 2;
-  const double kAnimationPlaybackRate = -1.5;
-
-  timing_.playback_rate = kPlaybackRate;
-
-  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-      ConvertToCompositorAnimation(*effect, kAnimationPlaybackRate);
-  EXPECT_EQ(CompositorTargetProperty::OPACITY,
-            keyframe_model->TargetProperty());
-  EXPECT_EQ(1.0, keyframe_model->Iterations());
-  EXPECT_EQ(0, keyframe_model->TimeOffset());
-  EXPECT_EQ(CompositorKeyframeModel::Direction::NORMAL,
-            keyframe_model->GetDirection());
-  EXPECT_EQ(kPlaybackRate * kAnimationPlaybackRate,
-            keyframe_model->PlaybackRate());
 
   std::unique_ptr<CompositorFloatAnimationCurve> keyframed_float_curve =
       keyframe_model->FloatCurveForTesting();

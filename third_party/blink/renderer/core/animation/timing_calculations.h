@@ -110,10 +110,9 @@ static inline double CalculateActiveTime(double active_duration,
   }
 }
 
-static inline double CalculateScaledActiveTime(double active_duration,
+static inline double CalculateOffsetActiveTime(double active_duration,
                                                double active_time,
-                                               double start_offset,
-                                               const Timing& specified) {
+                                               double start_offset) {
   DCHECK_GE(active_duration, 0);
   DCHECK_GE(start_offset, 0);
 
@@ -122,17 +121,10 @@ static inline double CalculateScaledActiveTime(double active_duration,
 
   DCHECK(active_time >= 0 && active_time <= active_duration);
 
-  if (specified.playback_rate == 0)
-    return start_offset;
-
   if (!std::isfinite(active_time))
     return std::numeric_limits<double>::infinity();
 
-  return MultiplyZeroAlwaysGivesZero(specified.playback_rate < 0
-                                         ? active_time - active_duration
-                                         : active_time,
-                                     specified.playback_rate) +
-         start_offset;
+  return active_time + start_offset;
 }
 
 static inline bool EndsOnIterationBoundary(double iteration_count,
@@ -145,7 +137,7 @@ static inline bool EndsOnIterationBoundary(double iteration_count,
 // text.
 static inline double CalculateIterationTime(double iteration_duration,
                                             double repeated_duration,
-                                            double scaled_active_time,
+                                            double offset_active_time,
                                             double start_offset,
                                             AnimationEffect::Phase phase,
                                             const Timing& specified) {
@@ -154,26 +146,26 @@ static inline double CalculateIterationTime(double iteration_duration,
             MultiplyZeroAlwaysGivesZero(iteration_duration,
                                         specified.iteration_count));
 
-  if (IsNull(scaled_active_time))
+  if (IsNull(offset_active_time))
     return NullValue();
 
-  DCHECK_GE(scaled_active_time, 0);
-  DCHECK_LE(scaled_active_time, repeated_duration + start_offset);
+  DCHECK_GE(offset_active_time, 0);
+  DCHECK_LE(offset_active_time, repeated_duration + start_offset);
 
-  if (!std::isfinite(scaled_active_time) ||
-      (scaled_active_time - start_offset == repeated_duration &&
+  if (!std::isfinite(offset_active_time) ||
+      (offset_active_time - start_offset == repeated_duration &&
        specified.iteration_count &&
        EndsOnIterationBoundary(specified.iteration_count,
                                specified.iteration_start)))
     return iteration_duration;
 
-  DCHECK(std::isfinite(scaled_active_time));
-  double iteration_time = fmod(scaled_active_time, iteration_duration);
+  DCHECK(std::isfinite(offset_active_time));
+  double iteration_time = fmod(offset_active_time, iteration_duration);
 
   // This implements step 3 of
   // https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration-progress
   if (iteration_time == 0 && phase == AnimationEffect::kPhaseAfter &&
-      repeated_duration != 0 && scaled_active_time != 0)
+      repeated_duration != 0 && offset_active_time != 0)
     return iteration_duration;
 
   return iteration_time;
@@ -181,25 +173,25 @@ static inline double CalculateIterationTime(double iteration_duration,
 
 static inline double CalculateCurrentIteration(double iteration_duration,
                                                double iteration_time,
-                                               double scaled_active_time,
+                                               double offset_active_time,
                                                const Timing& specified) {
   DCHECK_GT(iteration_duration, 0);
   DCHECK(IsNull(iteration_time) || iteration_time >= 0);
 
-  if (IsNull(scaled_active_time))
+  if (IsNull(offset_active_time))
     return NullValue();
 
   DCHECK_GE(iteration_time, 0);
   DCHECK_LE(iteration_time, iteration_duration);
-  DCHECK_GE(scaled_active_time, 0);
+  DCHECK_GE(offset_active_time, 0);
 
-  if (!scaled_active_time)
+  if (!offset_active_time)
     return 0;
 
   if (iteration_time == iteration_duration)
     return specified.iteration_start + specified.iteration_count - 1;
 
-  return floor(scaled_active_time / iteration_duration);
+  return floor(offset_active_time / iteration_duration);
 }
 
 static inline double CalculateDirectedTime(double current_iteration,

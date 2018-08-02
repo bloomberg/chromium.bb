@@ -1173,9 +1173,10 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
   }
 
   if (current_phase == AnimationEffect::kPhaseAfter &&
-      previous_phase_ != AnimationEffect::kPhaseAfter)
+      previous_phase_ != AnimationEffect::kPhaseAfter) {
     MaybeDispatch(Document::kAnimationEndListener, EventTypeNames::animationend,
-                  animation_node.ActiveDurationInternal());
+                  animation_node.RepeatedDuration());
+  }
 
   previous_phase_ = current_phase;
   previous_iteration_ = current_iteration;

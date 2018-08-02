@@ -36,7 +36,6 @@ KeyframeEffectModelBase* CreateEffectModel() {
 KeyframeEffect* CreateKeyframeEffect(Element* element) {
   Timing timing;
   timing.iteration_duration = 30;
-  timing.playback_rate = 1;
   return KeyframeEffect::Create(element, CreateEffectModel(), timing);
 }
 

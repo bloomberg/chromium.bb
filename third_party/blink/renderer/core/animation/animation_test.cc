@@ -115,11 +115,9 @@ class AnimationAnimationTest : public RenderingTest {
     return StringKeyframeEffectModel::Create(StringKeyframeVector());
   }
 
-  KeyframeEffect* MakeAnimation(double duration = 30,
-                                double playback_rate = 1) {
+  KeyframeEffect* MakeAnimation(double duration = 30) {
     Timing timing;
     timing.iteration_duration = duration;
-    timing.playback_rate = playback_rate;
     return KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
   }
 
@@ -860,7 +858,6 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
 
   Timing timing;
   timing.iteration_duration = 30;
-  timing.playback_rate = 1;
   KeyframeEffect* keyframe_effect_composited = KeyframeEffect::Create(
       ToElement(object_composited->GetNode()), MakeEmptyEffectModel(), timing);
   Animation* animation_composited = timeline->Play(keyframe_effect_composited);

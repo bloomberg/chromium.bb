@@ -437,7 +437,7 @@ double KeyframeEffect::CalculateTimeToEffectChange(
     double local_time,
     double time_to_next_iteration) const {
   const double start_time = SpecifiedTiming().start_delay;
-  const double end_time_minus_end_delay = start_time + ActiveDurationInternal();
+  const double end_time_minus_end_delay = start_time + RepeatedDuration();
   const double end_time =
       end_time_minus_end_delay + SpecifiedTiming().end_delay;
   const double after_time = std::min(end_time_minus_end_delay, end_time);

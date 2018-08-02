@@ -475,7 +475,7 @@ bool CompositorAnimations::ConvertTimingForCompositor(
   // Compositor's time offset is positive for seeking into the animation.
   out.scaled_time_offset =
       -timing.start_delay / animation_playback_rate + time_offset;
-  out.playback_rate = timing.playback_rate * animation_playback_rate;
+  out.playback_rate = animation_playback_rate;
   out.fill_mode = timing.fill_mode == Timing::FillMode::AUTO
                       ? Timing::FillMode::NONE
                       : timing.fill_mode;

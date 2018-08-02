@@ -98,39 +98,18 @@ TEST(AnimationTimingCalculationsTest, ActiveTime) {
       AnimationEffect::kPhaseNone, timing)));
 }
 
-TEST(AnimationTimingCalculationsTest, ScaledActiveTime) {
-  Timing timing;
-
-  // calculateScaledActiveTime(activeDuration, activeTime, startOffset, timing)
-
+TEST(AnimationTimingCalculationsTest, OffsetActiveTime) {
   // if the active time is null
-  EXPECT_TRUE(IsNull(CalculateScaledActiveTime(4, NullValue(), 5, timing)));
+  EXPECT_TRUE(IsNull(CalculateOffsetActiveTime(4, NullValue(), 5)));
 
-  // if the playback rate is negative
-  timing.playback_rate = -1;
-  EXPECT_EQ(35, CalculateScaledActiveTime(40, 10, 5, timing));
-
-  // otherwise
-  timing.playback_rate = 0;
-  EXPECT_EQ(5, CalculateScaledActiveTime(40, 10, 5, timing));
-  timing.playback_rate = 1;
-  EXPECT_EQ(15, CalculateScaledActiveTime(40, 10, 5, timing));
+  // normal case
+  EXPECT_EQ(15, CalculateOffsetActiveTime(40, 10, 5));
 
   // infinte activeTime
-  timing.playback_rate = 0;
-  EXPECT_EQ(0, CalculateScaledActiveTime(
-                   std::numeric_limits<double>::infinity(),
-                   std::numeric_limits<double>::infinity(), 0, timing));
-  timing.playback_rate = 1;
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            CalculateScaledActiveTime(std::numeric_limits<double>::infinity(),
-                                      std::numeric_limits<double>::infinity(),
-                                      0, timing));
-  timing.playback_rate = -1;
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            CalculateScaledActiveTime(std::numeric_limits<double>::infinity(),
-                                      std::numeric_limits<double>::infinity(),
-                                      0, timing));
+  EXPECT_EQ(
+      std::numeric_limits<double>::infinity(),
+      CalculateOffsetActiveTime(std::numeric_limits<double>::infinity(),
+                                std::numeric_limits<double>::infinity(), 0));
 }
 
 TEST(AnimationTimingCalculationsTest, IterationTime) {

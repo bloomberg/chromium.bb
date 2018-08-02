@@ -79,20 +79,11 @@ double AnimationEffect::RepeatedDuration() const {
   return result;
 }
 
-double AnimationEffect::ActiveDurationInternal() const {
-  const double result =
-      timing_.playback_rate
-          ? RepeatedDuration() / std::abs(timing_.playback_rate)
-          : std::numeric_limits<double>::infinity();
-  DCHECK_GE(result, 0);
-  return result;
-}
-
 double AnimationEffect::EndTimeInternal() const {
   // Per the spec, the end time has a lower bound of 0.0:
   // https://drafts.csswg.org/web-animations-1/#end-time
-  return std::max(
-      timing_.start_delay + ActiveDurationInternal() + timing_.end_delay, 0.0);
+  return std::max(timing_.start_delay + RepeatedDuration() + timing_.end_delay,
+                  0.0);
 }
 
 void AnimationEffect::UpdateSpecifiedTiming(const Timing& timing) {
@@ -129,7 +120,7 @@ void AnimationEffect::getComputedTiming(
     ComputedEffectTiming& computed_timing) const {
   // ComputedEffectTiming members.
   computed_timing.setEndTime(EndTimeInternal() * 1000);
-  computed_timing.setActiveDuration(ActiveDurationInternal() * 1000);
+  computed_timing.setActiveDuration(RepeatedDuration() * 1000);
 
   if (IsNull(EnsureCalculated().local_time)) {
     computed_timing.setLocalTimeToNull();
@@ -193,7 +184,7 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
   const double local_time = inherited_time;
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   if (needs_update) {
-    const double active_duration = this->ActiveDurationInternal();
+    const double active_duration = RepeatedDuration();
 
     const Phase current_phase =
         CalculatePhase(active_duration, local_time, timing_);
@@ -210,14 +201,14 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
       const double start_offset = MultiplyZeroAlwaysGivesZero(
           timing_.iteration_start, iteration_duration);
       DCHECK_GE(start_offset, 0);
-      const double scaled_active_time = CalculateScaledActiveTime(
-          active_duration, active_time, start_offset, timing_);
+      const double offset_active_time =
+          CalculateOffsetActiveTime(active_duration, active_time, start_offset);
       const double iteration_time = CalculateIterationTime(
-          iteration_duration, RepeatedDuration(), scaled_active_time,
-          start_offset, current_phase, timing_);
+          iteration_duration, active_duration, offset_active_time, start_offset,
+          current_phase, timing_);
 
       current_iteration = CalculateCurrentIteration(
-          iteration_duration, iteration_time, scaled_active_time, timing_);
+          iteration_duration, iteration_time, offset_active_time, timing_);
       const base::Optional<double> transformed_time = CalculateTransformedTime(
           current_iteration, iteration_duration, iteration_time, timing_);
 
@@ -231,20 +222,14 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
         progress = transformed_time.value() / iteration_duration;
 
       if (!IsNull(iteration_time)) {
-        time_to_next_iteration = (iteration_duration - iteration_time) /
-                                 std::abs(timing_.playback_rate);
+        time_to_next_iteration = iteration_duration - iteration_time;
         if (active_duration - active_time < time_to_next_iteration)
           time_to_next_iteration = std::numeric_limits<double>::infinity();
       }
     } else {
       const double kLocalIterationDuration = 1;
-      const double local_repeated_duration =
-          kLocalIterationDuration * timing_.iteration_count;
-      DCHECK_GE(local_repeated_duration, 0);
       const double local_active_duration =
-          timing_.playback_rate
-              ? local_repeated_duration / std::abs(timing_.playback_rate)
-              : std::numeric_limits<double>::infinity();
+          kLocalIterationDuration * timing_.iteration_count;
       DCHECK_GE(local_active_duration, 0);
       const double local_local_time =
           local_time < timing_.start_delay
@@ -259,14 +244,14 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
       const double start_offset =
           timing_.iteration_start * kLocalIterationDuration;
       DCHECK_GE(start_offset, 0);
-      const double scaled_active_time = CalculateScaledActiveTime(
-          local_active_duration, local_active_time, start_offset, timing_);
+      const double offset_active_time = CalculateOffsetActiveTime(
+          local_active_duration, local_active_time, start_offset);
       const double iteration_time = CalculateIterationTime(
-          kLocalIterationDuration, local_repeated_duration, scaled_active_time,
+          kLocalIterationDuration, local_active_duration, offset_active_time,
           start_offset, current_phase, timing_);
 
       current_iteration = CalculateCurrentIteration(
-          kLocalIterationDuration, iteration_time, scaled_active_time, timing_);
+          kLocalIterationDuration, iteration_time, offset_active_time, timing_);
       progress = CalculateTransformedTime(
           current_iteration, kLocalIterationDuration, iteration_time, timing_);
     }
