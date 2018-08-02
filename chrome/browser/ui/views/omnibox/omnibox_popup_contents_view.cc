@@ -476,6 +476,11 @@ void OmniboxPopupContentsView::OnDragCanceled() {
   SetMouseHandler(nullptr);
 }
 
+void OmniboxPopupContentsView::ProvideButtonFocusHint(size_t line) {
+  OmniboxResultView* result = result_view_at(line);
+  result->ProvideButtonFocusHint();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, views::View overrides:
 

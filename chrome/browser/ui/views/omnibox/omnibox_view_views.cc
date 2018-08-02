@@ -482,6 +482,8 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
           OmniboxPopupModel::NORMAL &&
       !event.IsShiftDown()) {
     model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+    popup_view_->ProvideButtonFocusHint(
+        model()->popup_model()->selected_line());
     return true;
   }
 
@@ -506,6 +508,8 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   if (event.IsShiftDown() &&
       model()->popup_model()->SelectedLineHasTabMatch()) {
     model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+    popup_view_->ProvideButtonFocusHint(
+        model()->popup_model()->selected_line());
   }
 
   return true;

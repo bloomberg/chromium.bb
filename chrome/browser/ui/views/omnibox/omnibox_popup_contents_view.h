@@ -58,6 +58,9 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   // Called by the active result view to inform model (due to mouse event).
   void UnselectButton();
 
+  // Called to inform result view of button focus.
+  void ProvideButtonFocusHint(size_t line);
+
   // OmniboxPopupView:
   bool IsOpen() const override;
   void InvalidateLine(size_t line) override;

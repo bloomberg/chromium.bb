@@ -143,6 +143,10 @@ void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
   }
 }
 
+void OmniboxTabSwitchButton::ProvideFocusHint() {
+  NotifyAccessibilityEvent(ax::mojom::Event::kHover, true);
+}
+
 bool OmniboxTabSwitchButton::IsSelected() const {
   return model_->IsButtonSelected();
 }
