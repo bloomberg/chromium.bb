@@ -3,6 +3,20 @@
 // found in the LICENSE file.
 
 /**
+ * The different types of power consumer types. Should be kept in sync with the
+ * PowerConsumerType in ProcessDataCollector.
+ * @enum {number}
+ */
+const PowerConsumerType = {
+  SCREEN: 0,
+  KEYBOARD: 1,
+  CROSTINI: 2,
+  ARC: 3,
+  CHROME: 4,
+  SYSTEM: 5
+};
+
+/**
  * Plot a line graph of data versus time on a HTML canvas element.
  *
  * @param {HTMLCanvasElement} plotCanvas The canvas on which the line graph is
@@ -763,6 +777,11 @@ function showCpuFreqData(freqStateData, systemResumedArray) {
       'frequencyStateOccupancyPercentageHeader', 'MHz', 'cpu-freq-plots-div');
 }
 
+function showProcessUsageData(processUsageData) {
+  // TODO(crbug.com/851767): Add the code to create a suitable UI for this
+  // information.
+}
+
 function requestBatteryChargeData() {
   chrome.send('requestBatteryChargeData');
 }
@@ -773,6 +792,10 @@ function requestCpuIdleData() {
 
 function requestCpuFreqData() {
   chrome.send('requestCpuFreqData');
+}
+
+function requestProcessUsageData() {
+  cr.sendWithPromise('requestProcessUsageData').then(showProcessUsageData);
 }
 
 /**

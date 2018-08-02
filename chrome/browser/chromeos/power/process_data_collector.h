@@ -37,14 +37,15 @@ namespace chromeos {
 // and is implemented as a global singleton.
 class CHROMEOS_EXPORT ProcessDataCollector {
  public:
-  // The different sources of power consumption being tracked.
+  // The different sources of power consumption being tracked. This should be
+  // kept in sync with the |PowerConsumerType| in power.js.
   enum class PowerConsumerType {
-    SCREEN,
-    KEYBOARD,
-    CROSTINI,
-    ARC,
-    CHROME,
-    SYSTEM
+    SCREEN = 0,
+    KEYBOARD = 1,
+    CROSTINI = 2,
+    ARC = 3,
+    CHROME = 4,
+    SYSTEM = 5
   };
 
   // Contains basic information about a process like its PID, its name, etc. The
