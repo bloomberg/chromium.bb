@@ -56,8 +56,6 @@ enum LatencyComponentType {
   // Timestamp when the frame is swapped (i.e. when the rendering caused by
   // input event actually takes effect).
   INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
-  LATENCY_COMPONENT_TYPE_LAST =
-      INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
 };
 
 enum SourceEventType {
@@ -70,7 +68,6 @@ enum SourceEventType {
   TOUCHPAD,
   FRAME,
   OTHER,
-  SOURCE_EVENT_TYPE_LAST = OTHER,
 };
 
 // See ui/latency/latency_info.h
