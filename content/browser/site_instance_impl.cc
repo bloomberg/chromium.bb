@@ -569,13 +569,6 @@ void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
   process_ = nullptr;
 }
 
-void SiteInstanceImpl::RenderProcessWillExit(RenderProcessHost* host) {
-  // TODO(nick): http://crbug.com/575400 - RenderProcessWillExit might not serve
-  // any purpose here.
-  for (auto& observer : observers_)
-    observer.RenderProcessGone(this);
-}
-
 void SiteInstanceImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {

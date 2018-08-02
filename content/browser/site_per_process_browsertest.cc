@@ -7446,8 +7446,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(rvh->is_swapped_out_);
 }
 
-// Helper class to wait for a ShutdownRequest message to arrive, in response to
-// which RenderProcessWillExit is called on observers by RenderProcessHost.
+// Helper class to wait for a ShutdownRequest message to arrive.
 class ShutdownObserver : public RenderProcessHostObserver {
  public:
   ShutdownObserver() : message_loop_runner_(new MessageLoopRunner) {}
@@ -12921,6 +12920,83 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_NE(
       subframe->current_frame_host()->GetSiteInstance()->GetSiteURL(),
       popup_subframe->current_frame_host()->GetSiteInstance()->GetSiteURL());
+}
+
+// Ensure that when a process is about to be destroyed after the last active
+// frame in it goes away, an attempt to reuse a proxy in that process doesn't
+// result in a crash.  See https://crbug.com/794625.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RenderFrameProxyNotRecreatedDuringProcessShutdown) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  GURL popup_url(embedded_test_server()->GetURL(
+      "b.com", "/title1.html"));
+  Shell* new_shell = OpenPopup(root, popup_url, "foo");
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  auto* rfh = popup_root->current_frame_host();
+
+  // Disable the swapout timer to prevent flakiness.
+  rfh->DisableSwapOutTimerForTesting();
+
+  // This will be used to monitor that b.com process exits cleanly.
+  RenderProcessHostWatcher b_process_observer(
+      popup_root->current_frame_host()->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+
+  // In the first tab, install a postMessage handler to navigate the popup to a
+  // hung b.com URL once the first message is received.
+  GURL hung_b_url(embedded_test_server()->GetURL("b.com", "/hung"));
+  TestNavigationManager manager(new_shell->web_contents(), hung_b_url);
+  EXPECT_TRUE(ExecuteScript(shell(), base::StringPrintf(R"(
+      window.done = false;
+      window.onmessage = () => {
+        if (!window.done) {
+          window.open('%s', 'foo');
+          window.done = true;
+        }
+      };)", hung_b_url.spec().c_str())));
+
+  // In the popup, install an unload handler to send a lot of postMessages to
+  // the opener.  This keeps the MessageLoop in the b.com process busy after
+  // navigating away from the current document.  In https://crbug.com/794625,
+  // this was needed so that a subsequent IPC to recreate a proxy arrives
+  // before the process fully shuts down.
+  EXPECT_TRUE(ExecuteScript(new_shell, R"(
+      window.onunload = () => {
+        for (var i=0; i<10000; i++)
+          opener.postMessage('hi','*');
+      })"));
+
+  // Navigate popup to a.com.  This swaps out the last active frame in the
+  // b.com process, and hence initiates process shutdown.
+  TestFrameNavigationObserver commit_observer(popup_root);
+  GURL another_a_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
+  EXPECT_TRUE(ExecuteScript(
+      new_shell,
+      base::StringPrintf("location = '%s';", another_a_url.spec().c_str())));
+  commit_observer.WaitForCommit();
+
+  // At this point, popup's original RFH is pending deletion.
+  EXPECT_FALSE(rfh->is_active());
+
+  // When the opener receives a postMessage from the popup's unload handler, it
+  // should start a navigation back to b.com.  Wait for it.  This navigation
+  // creates a speculative RFH which reuses the proxy that was created as part
+  // of swapping out from |popup_url| to |another_a_url|.
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // Cancel the started navigation (to /hung) in the popup and make sure the
+  // b.com renderer process exits cleanly without a crash.  In
+  // https://crbug.com/794625, the crash was caused by trying to recreate the
+  // reused proxy, which had been incorrectly set as non-live.
+  popup_root->ResetNavigationRequest(false, false);
+  b_process_observer.Wait();
+  EXPECT_TRUE(b_process_observer.did_exit_normally());
 }
 
 }  // namespace content
