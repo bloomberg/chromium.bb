@@ -648,14 +648,9 @@ content::WebContents* TabManager::DiscardTabImpl(DiscardReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (LifecycleUnit* lifecycle_unit : GetSortedLifecycleUnits()) {
-    // TODO(chrisha): Report decision details!
-    auto old_state = lifecycle_unit->GetState();
     DecisionDetails decision_details;
     if (lifecycle_unit->CanDiscard(reason, &decision_details) &&
         lifecycle_unit->Discard(reason)) {
-      // TODO(chrisha): Move this into a LifecycleUnitObserver.
-      TabManagerStatsCollector::RecordDiscardDecision(
-          lifecycle_unit, decision_details, old_state, reason);
       TabLifecycleUnitExternal* tab_lifecycle_unit_external =
           lifecycle_unit->AsTabLifecycleUnitExternal();
       // For now, all LifecycleUnits are TabLifecycleUnitExternals.
@@ -960,7 +955,6 @@ void TabManager::PerformStateTransitions() {
   base::TimeTicks next_state_transition_time = base::TimeTicks::Max();
   const base::TimeTicks now = NowTicks();
   LifecycleUnit* oldest_discardable_lifecycle_unit = nullptr;
-  DecisionDetails oldest_discardable_lifecycle_unit_decision_details;
   LifecycleUnit* oldest_frozen_lifecycle_unit = nullptr;
 
   for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
@@ -979,8 +973,6 @@ void TabManager::PerformStateTransitions() {
               oldest_discardable_lifecycle_unit
                   ->GetChromeUsageTimeWhenHidden()) {
         oldest_discardable_lifecycle_unit = lifecycle_unit;
-        oldest_discardable_lifecycle_unit_decision_details =
-            std::move(discard_details);
       }
     }
 
@@ -1016,11 +1008,9 @@ void TabManager::PerformStateTransitions() {
   // PerformStateTransitions() is scheduled immediately to check if another
   // discard should happen.
   if (oldest_discardable_lifecycle_unit && ShouldProactivelyDiscardTabs()) {
-    next_state_transition_time =
-        std::min(MaybeDiscardLifecycleUnit(
-                     oldest_discardable_lifecycle_unit,
-                     oldest_discardable_lifecycle_unit_decision_details, now),
-                 next_state_transition_time);
+    next_state_transition_time = std::min(
+        MaybeDiscardLifecycleUnit(oldest_discardable_lifecycle_unit, now),
+        next_state_transition_time);
   }
 
   // Schedule the next call to PerformStateTransitions().
@@ -1044,12 +1034,7 @@ base::TimeTicks TabManager::MaybeFreezeLifecycleUnit(
                    proactive_freeze_discard_params_.refreeze_timeout);
 
   if (now >= freeze_time) {
-    auto old_state = lifecycle_unit->GetState();
-    if (lifecycle_unit->Freeze()) {
-      // TODO(chrisha): Move this logging to an observer.
-      TabManagerStatsCollector::RecordFreezeDecision(lifecycle_unit,
-                                                     freeze_details, old_state);
-    }
+    lifecycle_unit->Freeze();
     return base::TimeTicks::Max();
   }
 
@@ -1077,7 +1062,6 @@ base::TimeTicks TabManager::MaybeUnfreezeLifecycleUnit(
 
 base::TimeTicks TabManager::MaybeDiscardLifecycleUnit(
     LifecycleUnit* lifecycle_unit,
-    const DecisionDetails& decision_details,
     base::TimeTicks now) {
   const base::TimeDelta usage_time_not_visible =
       usage_clock_.GetTotalUsageTime() -
@@ -1086,13 +1070,7 @@ base::TimeTicks TabManager::MaybeDiscardLifecycleUnit(
       GetTimeInBackgroundBeforeProactiveDiscard() - usage_time_not_visible;
 
   if (time_until_discard <= base::TimeDelta()) {
-    auto old_state = lifecycle_unit->GetState();
-    if (lifecycle_unit->Discard(DiscardReason::kProactive)) {
-      // TODO(chrisha): Move this into a LifecycleUnitObserver.
-      TabManagerStatsCollector::RecordDiscardDecision(
-          lifecycle_unit, decision_details, old_state,
-          DiscardReason::kProactive);
-    }
+    lifecycle_unit->Discard(DiscardReason::kProactive);
     // Request another call to check if another discard should happen.
     return base::TimeTicks();
   }

@@ -11,14 +11,22 @@
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,9 +45,20 @@ constexpr TabLoadTracker::LoadingState UNLOADED = LoadingState::UNLOADED;
 constexpr TabLoadTracker::LoadingState LOADING = LoadingState::LOADING;
 constexpr TabLoadTracker::LoadingState LOADED = LoadingState::LOADED;
 
-class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
+class TabManagerStatsCollectorTest
+    : public testing::ChromeTestHarnessWithLocalDB {
  protected:
-  TabManagerStatsCollectorTest() = default;
+  TabManagerStatsCollectorTest()
+      : scoped_context_(
+            std::make_unique<base::TestMockTimeTaskRunner::ScopedContext>(
+                task_runner_)),
+        scoped_set_tick_clock_for_testing_(task_runner_->GetMockTickClock()) {
+    base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner_);
+
+    // Start with a non-zero time.
+    task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(42));
+  }
+
   ~TabManagerStatsCollectorTest() override = default;
 
   TabManagerStatsCollector* tab_manager_stats_collector() {
@@ -73,7 +92,16 @@ class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
+    ChromeTestHarnessWithLocalDB::SetUp();
+
+    // Call the tab manager so that it is created right away.
+    tab_manager();
+  }
+
+  void TearDown() override {
+    task_runner_->RunUntilIdle();
+    scoped_context_.reset();
+    ChromeTestHarnessWithLocalDB::TearDown();
   }
 
   std::unique_ptr<WebContents> CreateWebContentsForUKM(ukm::SourceId id) {
@@ -84,6 +112,28 @@ class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
     return contents;
   }
 
+  std::unique_ptr<WebContents> CreateDiscardableWebContents(ukm::SourceId id) {
+    std::unique_ptr<WebContents> web_contents = CreateWebContentsForUKM(id);
+
+    // Commit an URL and mark the tab as "loaded" to allow discarding.
+    content::WebContentsTester::For(web_contents.get())
+        ->NavigateAndCommit(GURL("https://www.example.com"));
+    TabLoadTracker::Get()->TransitionStateForTesting(web_contents.get(),
+                                                     LoadingState::LOADED);
+
+    base::RepeatingClosure run_loop_cb = base::BindRepeating(
+        &base::TestMockTimeTaskRunner::RunUntilIdle, task_runner_);
+
+    testing::WaitForLocalDBEntryToBeInitialized(web_contents.get(),
+                                                run_loop_cb);
+    testing::ExpireLocalDBObservationWindows(web_contents.get());
+    return web_contents;
+  }
+
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_ =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  std::unique_ptr<base::TestMockTimeTaskRunner::ScopedContext> scoped_context_;
+  ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 
@@ -95,7 +145,7 @@ class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
 
 class TabManagerStatsCollectorParameterizedTest
     : public TabManagerStatsCollectorTest,
-      public testing::WithParamInterface<
+      public ::testing::WithParamInterface<
           std::pair<bool,   // should_test_session_restore
                     bool>>  // should_test_background_tab_opening
 {
@@ -566,6 +616,31 @@ TEST_F(TabManagerStatsCollectorTest,
 
   test_ukm_recorder_.Purge();
   EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
+}
+
+TEST_F(TabManagerStatsCollectorTest, PeriodicSamplingWorks) {
+  using UkmEntry = ukm::builders::TabManager_LifecycleStateChange;
+
+  // Create a window, browser and a tab strip. The tabs need to be added to a
+  // tab strip in order to be tracked by the TabManager.
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  tab_strip->AppendWebContents(CreateDiscardableWebContents(1),
+                               true /* foreground */);
+  tab_strip->AppendWebContents(CreateDiscardableWebContents(2), false);
+  tab_strip->AppendWebContents(CreateDiscardableWebContents(3), false);
+
+  tab_manager_stats_collector()->PerformPeriodicSample();
+
+  // Expect two entries per tab (freezing and discard decisions).
+  EXPECT_EQ(6u,
+            test_ukm_recorder_.GetEntriesByName(UkmEntry::kEntryName).size());
+
+  tab_strip->CloseAllTabs();
 }
 
 }  // namespace resource_coordinator

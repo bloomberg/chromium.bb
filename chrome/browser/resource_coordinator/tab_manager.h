@@ -447,16 +447,13 @@ class TabManager : public LifecycleUnitObserver,
                                              base::TimeTicks now);
 
   // If enough Chrome usage time has elapsed since |lifecycle_unit| was hidden,
-  // proactively discards it. |lifecycle_unit| must be discardable.
-  // |decision_details| is the result of calling CanDiscard() on it. Returns the
+  // proactively discards it. |lifecycle_unit| must be discardable. Returns the
   // time at which this should be called again, or TimeTicks::Max() if no
   // further call is needed. Always returns a zero TimeTicks when a discard
   // happen, to check immediately if another discard should happen. |now| is the
   // current time.
-  base::TimeTicks MaybeDiscardLifecycleUnit(
-      LifecycleUnit* lifecycle_unit,
-      const DecisionDetails& decision_details,
-      base::TimeTicks now);
+  base::TimeTicks MaybeDiscardLifecycleUnit(LifecycleUnit* lifecycle_unit,
+                                            base::TimeTicks now);
 
   // LifecycleUnitObserver:
   void OnLifecycleUnitVisibilityChanged(
