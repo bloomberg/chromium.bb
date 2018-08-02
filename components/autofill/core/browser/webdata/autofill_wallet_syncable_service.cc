@@ -18,16 +18,13 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace autofill {
 
 namespace {
-
-// The length of the GUIDs used for local autofill data. It is different than
-// the length used for server autofill data.
-const int kLocalGuidSize = 36;
 
 void* UserDataKey() {
   // Use the address of a static so that COMDAT folding won't ever fold
