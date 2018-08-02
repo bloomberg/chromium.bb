@@ -21,11 +21,6 @@ import zipfile
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
-# Files that can't be processed by zap_timestamp.exe.
-_ZAP_TIMESTAMP_BLACKLIST = {
-  'mini_installer.exe',
-}
-
 
 def build_bitness(build_dir):
   # This function checks whether the target (not host) word size is 64-bits.
@@ -58,7 +53,7 @@ def build_bitness(build_dir):
 def get_files_to_clean(build_dir, recursive=False):
   """Get the list of files to clean."""
   allowed = frozenset(
-      ('', '.app', '.dll', '.dylib', '.exe', '.nexe', '.so'))
+      ('', '.app', '.dylib', '.nexe', '.so'))
   non_x_ok_exts = frozenset(('.isolated', '.jar'))
   min_timestamp = 0
   if os.path.exists(os.path.join(build_dir, 'build.ninja')):
@@ -79,32 +74,6 @@ def get_files_to_clean(build_dir, recursive=False):
     for f in (f for f in files if check(os.path.join(root, f))):
       ret_files.add(os.path.relpath(os.path.join(root, f), build_dir))
   return ret_files
-
-
-def run_zap_timestamp(filepath):
-  """Run zap_timestamp.exe on a PE binary."""
-  assert sys.platform == 'win32'
-  syzygy_dir = os.path.join(
-      SRC_DIR, 'third_party', 'syzygy', 'binaries', 'exe')
-  zap_timestamp_exe = os.path.join(syzygy_dir, 'zap_timestamp.exe')
-  sys.stdout.write('Processing: %s\n' % os.path.basename(filepath))
-  proc = subprocess.Popen(
-      [zap_timestamp_exe, '--input-image=%s' % filepath, '--overwrite'],
-      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  log, _ = proc.communicate()
-  if proc.returncode != 0:
-    sys.stderr.write('%s failed:\n%s\n' % (os.path.basename(filepath), log))
-  return proc.returncode
-
-
-def remove_pe_metadata(filename, bitness):
-  """Remove the build metadata from a PE file."""
-  # Only run zap_timestamp on the 32-bit PE files for which we have a PDB.
-  ret = 0
-  if ((not os.path.basename(filename) in _ZAP_TIMESTAMP_BLACKLIST) and
-      os.path.exists(filename + '.pdb') and bitness != 64):
-    ret = run_zap_timestamp(filename)
-  return ret
 
 
 def remove_zip_timestamps(filename):
@@ -133,10 +102,7 @@ def remove_metadata_worker(file_queue, failed_queue, build_dir, bitness):
   """Worker thread for the remove_metadata function."""
   while True:
     f = file_queue.get()
-    if f.endswith(('.dll', '.exe')):
-      if remove_pe_metadata(os.path.join(build_dir, f), bitness):
-        failed_queue.put(f)
-    elif f.endswith('.jar'):
+    if f.endswith('.jar'):
       remove_zip_timestamps(os.path.join(build_dir, f))
     file_queue.task_done()
 
