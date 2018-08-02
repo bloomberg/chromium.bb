@@ -20,6 +20,7 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
 
 skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && enable_basic_printing
+skia_support_skottie = true
 
 declare_args() {
   skia_whitelist_serialized_typefaces = false
@@ -111,6 +112,10 @@ config("skia_config") {
 
   if (skia_whitelist_serialized_typefaces) {
     defines += [ "SK_WHITELIST_SERIALIZED_TYPEFACES" ]
+  }
+
+  if (skia_support_skottie) {
+    include_dirs += [ "//third_party/skia/modules/skottie/include" ]
   }
 }
 
@@ -225,6 +230,10 @@ config("skia_library_config") {
 
       "/wd4800",  # forcing value to bool 'true/false'(assigning int to bool).
     ]
+  }
+
+  if (skia_support_skottie) {
+    include_dirs += [ "//third_party/skia/modules/sksg/include" ]
   }
 }
 
@@ -393,7 +402,6 @@ component("skia") {
     "//third_party/skia/src/utils/SkCamera.cpp",
     "//third_party/skia/src/utils/SkFrontBufferedStream.cpp",
     "//third_party/skia/src/utils/SkInterpolator.cpp",
-    "//third_party/skia/src/utils/SkOSPath.cpp",
     "//third_party/skia/src/utils/SkParsePath.cpp",
   ]
 
@@ -562,6 +570,12 @@ component("skia") {
     sources += skia_pdf_sources
   } else {
     sources += [ "//third_party/skia/src/pdf/SkDocument_PDF_None.cpp" ]
+  }
+
+  if (skia_support_skottie) {
+    import("//third_party/skia/modules/skottie/skottie.gni")
+    import("//third_party/skia/modules/sksg/sksg.gni")
+    sources += skia_skottie_sources + skia_skottie_public + skia_sksg_sources
   }
 
   if (!is_debug) {
@@ -818,6 +832,10 @@ test("skia_unittests") {
     data_deps = [
       "//third_party/test_fonts",
     ]
+  }
+
+  if (skia_support_skottie) {
+    sources += [ "ext/skottie_unittest.cc" ]
   }
 }
 
