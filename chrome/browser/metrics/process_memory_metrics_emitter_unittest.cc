@@ -7,6 +7,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -661,4 +662,32 @@ TEST_F(ProcessMemoryMetricsEmitterTest, ProcessInfoHasTwoURLs) {
   EXPECT_EQ(4u, entries.size());
   EXPECT_EQ(1, total_memory_entries);
   EXPECT_EQ(1, entries_with_urls);
+}
+
+TEST_F(ProcessMemoryMetricsEmitterTest,
+       CheckForRendererPrivateMemoryFootprint) {
+  GlobalMemoryDumpPtr global_dump(
+      memory_instrumentation::mojom::GlobalMemoryDump::New());
+  base::flat_map<const char*, int64_t> expected_metrics =
+      GetExpectedRendererMetrics();
+  PopulateRendererMetrics(global_dump, expected_metrics, 201);
+
+  // Take a snapshot of the current state of the histograms.
+  base::HistogramTester sentinel;
+  auto samples = sentinel.GetHistogramSamplesSinceCreation(
+      "Memory.Total.RendererPrivateMemoryFootprint");
+  EXPECT_EQ(0, samples->TotalCount());
+  samples.reset();
+
+  // Simulate some metrics emission.
+  scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
+      new ProcessMemoryMetricsEmitterFake(test_ukm_recorder_));
+  emitter->ReceivedMemoryDump(
+      true, GlobalMemoryDump::MoveFrom(std::move(global_dump)));
+  emitter->ReceivedProcessInfos(GetProcessInfo(test_ukm_recorder_));
+
+  // Check that the RendererPrivateMemoryFootprint histogram got written to.
+  samples = sentinel.GetHistogramSamplesSinceCreation(
+      "Memory.Total.RendererPrivateMemoryFootprint");
+  EXPECT_EQ(1, samples->TotalCount());
 }
