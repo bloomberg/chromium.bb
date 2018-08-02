@@ -16,6 +16,12 @@ import java.util.Date;
 public abstract class ListItem {
     public final long stableId;
 
+    /** Indicates that we are in multi-select mode and the item is currently selected. */
+    public boolean selected;
+
+    /** Whether animation should be shown for the recent change in selection state for this item. */
+    public boolean showSelectedAnimation;
+
     /** Creates a {@link ListItem} instance. */
     ListItem(long stableId) {
         this.stableId = stableId;

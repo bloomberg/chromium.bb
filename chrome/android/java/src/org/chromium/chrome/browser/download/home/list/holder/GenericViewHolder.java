@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
-import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.content.res.AppCompatResources;
@@ -19,10 +17,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
+import org.chromium.chrome.browser.download.home.view.SelectionView;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 
@@ -30,9 +28,6 @@ import org.chromium.components.offline_items_collection.OfflineItemVisuals;
  */
 public class GenericViewHolder extends ThumbnailAwareViewHolder {
     private static final int INVALID_ID = -1;
-
-    private final ColorStateList mCheckedIconForegroundColorList;
-    private final AnimatedVectorDrawableCompat mCheckDrawable;
 
     private final TextView mTitle;
     private final TextView mCaption;
@@ -61,11 +56,6 @@ public class GenericViewHolder extends ThumbnailAwareViewHolder {
         mTitle = (TextView) itemView.findViewById(R.id.title);
         mCaption = (TextView) itemView.findViewById(R.id.caption);
         mThumbnailView = (TintedImageView) itemView.findViewById(R.id.thumbnail);
-
-        mCheckDrawable = AnimatedVectorDrawableCompat.create(
-                itemView.getContext(), R.drawable.ic_check_googblue_24dp_animated);
-        mCheckedIconForegroundColorList =
-                DownloadUtils.getIconForegroundColorList(itemView.getContext());
     }
 
     // ListItemViewHolder implementation.
@@ -89,18 +79,9 @@ public class GenericViewHolder extends ThumbnailAwareViewHolder {
 
     private void updateThumbnailView() {
         Resources resources = itemView.getContext().getResources();
-
-        // TODO(shaktisahu): Pass the appropriate value of selection.
-        boolean selected = false;
-        if (selected) {
-            mThumbnailView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
-            mThumbnailView.getBackground().setLevel(
-                    resources.getInteger(R.integer.list_item_level_selected));
-
-            mThumbnailView.setImageDrawable(mCheckDrawable);
-            mThumbnailView.setTint(mCheckedIconForegroundColorList);
-            mCheckDrawable.start();
-        } else if (mThumbnailBitmap != null) {
+        SelectionView selectionView = itemView.findViewById(R.id.selection);
+        mThumbnailView.setVisibility(selectionView.isSelected() ? View.GONE : View.VISIBLE);
+        if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
 
             mThumbnailView.setBackground(null);

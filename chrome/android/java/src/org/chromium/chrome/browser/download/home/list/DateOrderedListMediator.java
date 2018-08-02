@@ -46,11 +46,38 @@ class DateOrderedListMediator {
     private final OfflineItemSource mSource;
     private final DateOrderedListMutator mListMutator;
     private final ThumbnailProvider mThumbnailProvider;
+    private final MediatorSelectionObserver mSelectionObserver;
 
     private final OffTheRecordOfflineItemFilter mOffTheRecordFilter;
     private final DeleteUndoOfflineItemFilter mDeleteUndoFilter;
     private final TypeOfflineItemFilter mTypeFilter;
     private final SearchOfflineItemFilter mSearchFilter;
+
+    /**
+     * A selection observer that correctly updates the selection state for each item in the list.
+     */
+    private class MediatorSelectionObserver
+            implements SelectionDelegate.SelectionObserver<ListItem> {
+        private final SelectionDelegate<ListItem> mSelectionDelegate;
+
+        public MediatorSelectionObserver(SelectionDelegate<ListItem> delegate) {
+            mSelectionDelegate = delegate;
+            mSelectionDelegate.addObserver(this);
+        }
+
+        @Override
+        public void onSelectionStateChange(List<ListItem> selectedItems) {
+            for (int i = 0; i < mModel.size(); i++) {
+                ListItem item = mModel.get(i);
+                boolean selected = mSelectionDelegate.isItemSelected(item);
+                item.showSelectedAnimation = selected && !item.selected;
+                item.selected = selected;
+                mModel.setItem(i, item);
+            }
+            mModel.dispatchLastEvent();
+            mModel.getProperties().setSelectionModeActive(mSelectionDelegate.isSelectionEnabled());
+        }
+    }
 
     /**
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
@@ -86,6 +113,7 @@ class DateOrderedListMediator {
 
         mThumbnailProvider = new ThumbnailProviderImpl(
                 ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool());
+        mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
 
         mModel.getProperties().setEnableItemAnimations(true);
         mModel.getProperties().setOpenCallback(mProvider::openItem);
@@ -95,7 +123,7 @@ class DateOrderedListMediator {
         mModel.getProperties().setShareCallback(item -> {});
         mModel.getProperties().setRemoveCallback(this::onDeleteItem);
         mModel.getProperties().setVisualsProvider(this::getVisuals);
-        mModel.getProperties().setSelectionDelegate(selectionDelegate);
+        mModel.getProperties().setSelectionCallback(selectionDelegate::toggleSelectionForItem);
     }
 
     /** Tears down this mediator. */
