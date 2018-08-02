@@ -7,18 +7,18 @@
 
 from __future__ import print_function
 
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 
 
 # firewall:!:236:236:firewall daemon:/dev/null:/bin/false
-UserEntry = cros_build_lib.Collection('UserEntry',
-                                      user=None, encpasswd='!',
-                                      uid=None, gid=None,
-                                      home='/dev/null', shell='/bin/false')
+UserEntry = cros_collections.Collection('UserEntry',
+                                        user=None, encpasswd='!',
+                                        uid=None, gid=None,
+                                        home='/dev/null', shell='/bin/false')
 
 # tty:!:5:xorg,power,brltty
-GroupEntry = cros_build_lib.Collection('GroupEntry', group=None, encpasswd='!',
-                                       gid=None, users=set())
+GroupEntry = cros_collections.Collection('GroupEntry', group=None,
+                                         encpasswd='!', gid=None, users=set())
 
 # For users that we allow to login to the system, whitelist a number of
 # alternative shells.  These are equivalent from a security POV.

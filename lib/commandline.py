@@ -25,6 +25,7 @@ import urlparse
 # lib shouldn't have to import from buildbot like this.
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -174,7 +175,7 @@ def NormalizeUri(value):
 # For now this is a superset of all information for USB, SSH, or file devices.
 # If functionality diverges based on type, it may be useful to split this into
 # separate device classes instead.
-Device = cros_build_lib.Collection(
+Device = cros_collections.Collection(
     'Device', scheme=None, username=None, hostname=None, port=None, path=None,
     raw=None)
 
