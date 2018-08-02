@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/signin_manager.h"
 
 class Profile;
@@ -32,6 +30,9 @@ class RendererUpdater : public KeyedService,
   void InitializeRenderer(content::RenderProcessHost* render_process_host);
 
  private:
+  // Update the signin state for all renderers due to a signin notification.
+  void UpdateRenderersSignin();
+
   std::vector<chrome::mojom::RendererConfigurationAssociatedPtr>
   GetRendererConfigurations();
 
@@ -42,21 +43,8 @@ class RendererUpdater : public KeyedService,
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
 
-  // Update all renderers due to a configuration change.
-  void UpdateAllRenderers();
-
-  // Update the given renderer due to a configuration change.
-  void UpdateRenderer(chrome::mojom::RendererConfigurationAssociatedPtr*
-                          renderer_configuration);
-
   Profile* profile_;
-  PrefChangeRegistrar pref_change_registrar_;
   SigninManagerBase* signin_manager_;
-
-  // Prefs that we sync to the renderers.
-  BooleanPrefMember force_google_safesearch_;
-  IntegerPrefMember force_youtube_restrict_;
-  StringPrefMember allowed_domains_for_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererUpdater);
 };

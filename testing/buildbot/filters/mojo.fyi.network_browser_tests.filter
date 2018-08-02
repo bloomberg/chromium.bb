@@ -168,6 +168,7 @@
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/0
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/1
 -PolicyTest.ExtensionInstallSources
+-PolicyTest.ForceGoogleSafeSearch
 
 # crbug.com/859594 Migrate storage::FileWriterDelegate to use SimpleURLLoader
 -SBNavigationObserverBrowserTest.DownloadViaHTML5FileApi

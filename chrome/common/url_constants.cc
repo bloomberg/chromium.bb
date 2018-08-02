@@ -189,6 +189,9 @@ const char kRemoveNonCWSExtensionURL[] =
 const char kResetProfileSettingsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_reset_settings";
 
+const char kSafeSearchSafeParameter[] = "safe=active";
+const char kSafeSearchSsuiParameter[] = "ssui=on";
+
 const char kSettingsSearchHelpURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_search_help";

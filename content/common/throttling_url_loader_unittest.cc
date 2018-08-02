@@ -230,10 +230,6 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
     will_process_response_callback_ = callback;
   }
 
-  void set_modify_url_in_will_start(const GURL& url) {
-    modify_url_in_will_start_ = url;
-  }
-
   Delegate* delegate() const { return delegate_; }
 
  private:
@@ -241,9 +237,6 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override {
     will_start_request_called_++;
-    if (!modify_url_in_will_start_.is_empty())
-      request->url = modify_url_in_will_start_;
-
     if (will_start_request_callback_)
       will_start_request_callback_.Run(delegate_, defer);
   }
@@ -276,8 +269,6 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
   ThrottleCallback will_start_request_callback_;
   ThrottleCallback will_redirect_request_callback_;
   ThrottleCallback will_process_response_callback_;
-
-  GURL modify_url_in_will_start_;
 
   base::Closure destruction_notifier_;
 
@@ -409,15 +400,6 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeStart) {
   EXPECT_EQ(1u, client_.on_received_response_called());
   EXPECT_EQ(0u, client_.on_received_redirect_called());
   EXPECT_EQ(1u, client_.on_complete_called());
-}
-
-TEST_F(ThrottlingURLLoaderTest, ModifyURLBeforeStart) {
-  throttle_->set_modify_url_in_will_start(GURL("http://example.org/foo"));
-
-  CreateLoaderAndStart();
-
-  EXPECT_EQ(1u, throttle_->will_start_request_called());
-  EXPECT_EQ(1u, throttle_->will_redirect_request_called());
 }
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {

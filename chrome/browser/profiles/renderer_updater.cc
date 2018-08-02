@@ -7,14 +7,12 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/buildflags/buildflags.h"
-#include "services/network/public/cpp/features.h"
 
 namespace {
 
@@ -53,25 +51,6 @@ void GetGuestViewDefaultContentSettingRules(
 RendererUpdater::RendererUpdater(Profile* profile) : profile_(profile) {
   signin_manager_ = SigninManagerFactory::GetForProfile(profile_);
   signin_manager_->AddObserver(this);
-
-  PrefService* pref_service = profile->GetPrefs();
-  force_google_safesearch_.Init(prefs::kForceGoogleSafeSearch, pref_service);
-  force_youtube_restrict_.Init(prefs::kForceYouTubeRestrict, pref_service);
-  allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
-
-  pref_change_registrar_.Init(pref_service);
-  pref_change_registrar_.Add(
-      prefs::kForceGoogleSafeSearch,
-      base::BindRepeating(&RendererUpdater::UpdateAllRenderers,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kForceYouTubeRestrict,
-      base::BindRepeating(&RendererUpdater::UpdateAllRenderers,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kAllowedDomainsForApps,
-      base::BindRepeating(&RendererUpdater::UpdateAllRenderers,
-                          base::Unretained(this)));
 }
 
 RendererUpdater::~RendererUpdater() {
@@ -92,7 +71,7 @@ void RendererUpdater::InitializeRenderer(
   bool is_incognito_process = profile->IsOffTheRecord();
 
   renderer_configuration->SetInitialConfiguration(is_incognito_process);
-  UpdateRenderer(&renderer_configuration);
+  renderer_configuration->SetIsSignedIn(signin_manager_->IsAuthenticated());
 
   RendererContentSettingRules rules;
   if (render_process_host->IsForGuestsOnly()) {
@@ -108,16 +87,22 @@ void RendererUpdater::InitializeRenderer(
   renderer_configuration->SetContentSettingRules(rules);
 }
 
+void RendererUpdater::UpdateRenderersSignin() {
+  bool is_signed_in = signin_manager_->IsAuthenticated();
+  auto renderer_configurations = GetRendererConfigurations();
+  for (auto& renderer_configuration : renderer_configurations)
+    renderer_configuration->SetIsSignedIn(is_signed_in);
+}
+
 std::vector<chrome::mojom::RendererConfigurationAssociatedPtr>
 RendererUpdater::GetRendererConfigurations() {
   std::vector<chrome::mojom::RendererConfigurationAssociatedPtr> rv;
   for (content::RenderProcessHost::iterator it(
            content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    Profile* renderer_profile =
-        static_cast<Profile*>(it.GetCurrentValue()->GetBrowserContext());
-    if (renderer_profile == profile_ ||
-        renderer_profile->GetOriginalProfile() == profile_) {
+    if (it.GetCurrentValue()->GetBrowserContext() == profile_ ||
+        it.GetCurrentValue()->GetBrowserContext() ==
+            profile_->GetOffTheRecordProfile()) {
       auto renderer_configuration =
           GetRendererConfiguration(it.GetCurrentValue());
       if (renderer_configuration)
@@ -140,24 +125,9 @@ RendererUpdater::GetRendererConfiguration(
 }
 
 void RendererUpdater::GoogleSigninSucceeded(const AccountInfo& account_info) {
-  UpdateAllRenderers();
+  UpdateRenderersSignin();
 }
 
 void RendererUpdater::GoogleSignedOut(const AccountInfo& account_info) {
-  UpdateAllRenderers();
-}
-
-void RendererUpdater::UpdateAllRenderers() {
-  auto renderer_configurations = GetRendererConfigurations();
-  for (auto& renderer_configuration : renderer_configurations)
-    UpdateRenderer(&renderer_configuration);
-}
-
-void RendererUpdater::UpdateRenderer(
-    chrome::mojom::RendererConfigurationAssociatedPtr* renderer_configuration) {
-  (*renderer_configuration)
-      ->SetConfiguration(signin_manager_->IsAuthenticated(),
-                         force_google_safesearch_.GetValue(),
-                         force_youtube_restrict_.GetValue(),
-                         allowed_domains_for_apps_.GetValue());
+  UpdateRenderersSignin();
 }

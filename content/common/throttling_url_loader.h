@@ -80,7 +80,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
              network::ResourceRequest* url_request,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  void StartNow(scoped_refptr<network::SharedURLLoaderFactory> factory,
+  void StartNow(network::SharedURLLoaderFactory* factory,
                 int32_t routing_id,
                 int32_t request_id,
                 uint32_t options,
@@ -221,9 +221,6 @@ class CONTENT_EXPORT ThrottlingURLLoader
   };
   // Set if request is deferred and SetPriority() is called.
   std::unique_ptr<PriorityInfo> priority_info_;
-
-  // Set if a throttle changed the URL in WillStartRequest.
-  GURL throttle_redirect_url_;
 
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 

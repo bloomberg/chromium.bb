@@ -35,10 +35,10 @@ namespace variations {
 // There are three cases:
 // 1. Subresources request in renderer, it is implemented
 // in URLLoaderThrottleProviderImpl::CreateThrottles() by adding a
-// GoogleURLLoaderThrottle to a content::URLLoaderThrottle vector.
+// VariationsHeaderURLLoaderThrottle to a content::URLLoaderThrottle vector.
 // 2. Navigations/Downloads request in browser, it is implemented in
 // ChromeContentBrowserClient::CreateURLLoaderThrottles() by also adding a
-// GoogleURLLoaderThrottle to a content::URLLoaderThrottle vector.
+// VariationsHeaderURLLoaderThrottle to a content::URLLoaderThrottle vector.
 // 3. SimpleURLLoader in browser, it is implemented in a SimpleURLLoader wrapper
 // function variations::CreateSimpleURLLoaderWithVariationsHeaders().
 

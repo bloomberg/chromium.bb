@@ -8,14 +8,12 @@ import "components/content_settings/core/common/content_settings.mojom";
 
 // Configures the renderer.
 interface RendererConfiguration {
-  // Configures the renderer with settings that won't change.
+  // Configures the renderer, queued to send when the render process will
+  // launch.
   SetInitialConfiguration(bool is_incognito_process);
 
-  // Update renderer configuration with settings that can change.
-  SetConfiguration(bool is_signed_in,
-                   bool force_safe_search,
-                   int32 youtube_restrict,
-                   string allowed_domains_for_apps);
+  // Set the |is_signed_in| stored by the renderer.
+  SetIsSignedIn(bool is_signed_in);
 
   // Set the content setting rules stored by the renderer.
   SetContentSettingRules(

@@ -18,10 +18,17 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/reporting_permissions_checker.h"
+#include "chrome/browser/net/safe_search_util.h"
 #include "components/domain_reliability/monitor.h"
+#include "components/prefs/pref_member.h"
 #include "net/base/network_delegate_impl.h"
 
 class ChromeExtensionsNetworkDelegate;
+class PrefService;
+
+template<class T> class PrefMember;
+
+typedef PrefMember<bool> BooleanPrefMember;
 
 namespace content_settings {
 class CookieSettings;
@@ -44,6 +51,9 @@ class URLRequest;
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
  public:
+  // All optional PrefMembers should be initialized on the UI thread (see below)
+  // before first use. This object's owner is responsible for cleaning them up
+  // at shutdown.
   explicit ChromeNetworkDelegate(
       extensions::EventRouterForwarder* event_router);
   ~ChromeNetworkDelegate() override;
@@ -69,6 +79,21 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // the header file. Here we just forward-declare it.
   void set_cookie_settings(content_settings::CookieSettings* cookie_settings);
 
+  void set_force_google_safe_search(
+      BooleanPrefMember* force_google_safe_search) {
+    force_google_safe_search_ = force_google_safe_search;
+  }
+
+  void set_force_youtube_restrict(
+      IntegerPrefMember* force_youtube_restrict) {
+    force_youtube_restrict_ = force_youtube_restrict;
+  }
+
+  void set_allowed_domains_for_apps(
+      StringPrefMember* allowed_domains_for_apps) {
+    allowed_domains_for_apps_ = allowed_domains_for_apps;
+  }
+
   void set_domain_reliability_monitor(
       std::unique_ptr<domain_reliability::DomainReliabilityMonitor> monitor) {
     domain_reliability_monitor_ = std::move(monitor);
@@ -87,6 +112,15 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   ReportingPermissionsChecker* reporting_permissions_checker() {
     return reporting_permissions_checker_.get();
   }
+
+  // Binds the pref members to |pref_service| and moves them to the IO thread.
+  // All arguments can be nullptr. This method should be called on the UI
+  // thread.
+  static void InitializePrefsOnUIThread(
+      BooleanPrefMember* force_google_safe_search,
+      IntegerPrefMember* force_youtube_restrict,
+      StringPrefMember* allowed_domains_for_apps,
+      PrefService* pref_service);
 
   // Returns true if access to |path| is allowed. |profile_path| is used to
   // locate certain paths on Chrome OS. See set_profile_path() for details.
@@ -166,6 +200,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   void* profile_;
   base::FilePath profile_path_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+
+  // Weak, owned by our owner.
+  BooleanPrefMember* force_google_safe_search_;
+  IntegerPrefMember* force_youtube_restrict_;
+  StringPrefMember* allowed_domains_for_apps_;
 
   // Weak, owned by our owner.
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>

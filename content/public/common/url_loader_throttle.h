@@ -82,12 +82,6 @@ class CONTENT_EXPORT URLLoaderThrottle {
   virtual void DetachFromCurrentSequence();
 
   // Called before the resource request is started.
-  // |request| needs to be modified before the callback return (i.e.
-  // asynchronously touching the pointer in defer case is not valid)
-  // When |request->url| is modified it will make an internal redirect, which
-  // might have some side-effects: drop upload streams data might be dropped,
-  // redirect count may be reached, and cross-origin redirect are not supported
-  // (at least until we have the demand).
   virtual void WillStartRequest(network::ResourceRequest* request, bool* defer);
 
   // Called when the request was redirected.  |redirect_info| contains the
