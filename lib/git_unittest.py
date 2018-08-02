@@ -104,6 +104,29 @@ class NormalizeRefTest(cros_test_lib.TestCase):
     self._TestNormalize(functor, tests)
 
 
+class RunRepoTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Tests for RunRepo."""
+
+  def setUp(self):
+    self.fake_repo_root = os.path.join(self.tempdir, 'foo/bar')
+    self.fake_repo_subdir = os.path.join(self.fake_repo_root, 'baz')
+    repo_dir = os.path.join(self.fake_repo_root, '.repo')
+    osutils.SafeMakedirs(repo_dir)
+    self.fake_repo_script = os.path.join(repo_dir, 'repo', 'repo')
+
+  def testSimple(self):
+    git.RunRepo(self.fake_repo_subdir, ['sync', '-l'])
+    self.assertCommandContains([self.fake_repo_script, 'sync', '-l'],
+                               cwd=self.fake_repo_subdir)
+
+  def testInitOutsideCheckout(self):
+    git.RunRepo(self.tempdir, ['init'])
+    self.assertCommandContains(['repo', 'init'])
+
+  def testFailOutsideCheckout(self):
+    self.assertRaises(OSError, git.RunRepo, self.tempdir, ['sync'])
+
+
 class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
   """Tests for small git wrappers"""
 
