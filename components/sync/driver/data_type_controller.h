@@ -168,8 +168,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
   virtual void GetAllNodes(const AllNodesCallback& callback) = 0;
 
-  // Collects StatusCounters for this datatype and passes them to |callback|,
-  // which should be wrapped with syncer::BindToCurrentThread already.
+  // Collects StatusCounters for this datatype and passes them to |callback|.
   // Used to display entity counts in chrome://sync-internals.
   virtual void GetStatusCounters(const StatusCountersCallback& callback) = 0;
 

@@ -26,7 +26,6 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
@@ -1659,15 +1658,14 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
 
     const auto& dtc_iter = data_type_controllers_.find(type);
     if (dtc_iter != data_type_controllers_.end()) {
-      // OnDatatypeStatusCounterUpdated that posts back to the UI thread so that
-      // real results can't get overwritten by the empty counters set at the end
-      // of this method.
-      dtc_iter->second->GetStatusCounters(
-          BindToCurrentSequence(base::BindRepeating(
-              &ProfileSyncService::OnDatatypeStatusCounterUpdated,
-              base::Unretained(this))));
       type_status->SetString("state", DataTypeController::StateToString(
                                           dtc_iter->second->state()));
+      if (dtc_iter->second->state() !=
+          syncer::DataTypeController::NOT_RUNNING) {
+        dtc_iter->second->GetStatusCounters(base::BindRepeating(
+            &ProfileSyncService::OnDatatypeStatusCounterUpdated,
+            base::Unretained(this)));
+      }
     }
 
     result->Append(std::move(type_status));
