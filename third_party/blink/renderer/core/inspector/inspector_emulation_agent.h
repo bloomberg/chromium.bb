@@ -123,6 +123,15 @@ class CORE_EXPORT InspectorEmulationAgent final
   bool enabled_ = false;
 
   InspectorAgentState::String default_background_color_override_rgba_;
+  InspectorAgentState::Boolean script_execution_disabled_;
+  InspectorAgentState::Boolean scrollbars_hidden_;
+  InspectorAgentState::Boolean document_cookie_disabled_;
+  InspectorAgentState::Boolean touch_event_emulation_enabled_;
+  InspectorAgentState::Integer max_touch_points_;
+  InspectorAgentState::String emulated_media_;
+  InspectorAgentState::String navigator_platform_override_;
+  InspectorAgentState::String user_agent_override_;
+  InspectorAgentState::String accept_language_override_;
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };
 
