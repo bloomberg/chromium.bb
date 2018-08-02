@@ -24,9 +24,6 @@ const NSTimeInterval kBubbleVisibilityDuration = 5.0;
 // after the bubble first becomes visible.
 const NSTimeInterval kBubbleEngagementDuration = 30.0;
 
-// Delay before posting the VoiceOver notification.
-const CGFloat kVoiceOverAnnouncementDelay = 1;
-
 // The name for the histogram that tracks why a bubble was dismissed.
 const char kBubbleDismissalHistogramName[] = "IOS.IPHBubbleDismissalReason";
 
@@ -186,21 +183,8 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
                                       repeats:NO];
 
   if (self.voiceOverAnnouncement) {
-    // The VoiceOverAnnouncement should be dispatched after a delay to account
-    // the fact that it can be presented right after a screen change (for
-    // example when the application or a new tab is opened). This screen change
-    // is changing the VoiceOver focus to focus a newly visible element. If this
-    // announcement is currently being read, it is cancelled. The added delay
-    // allows the announcement to be posted after the element is focused, so it
-    // is not cancelled.
-    dispatch_after(
-        dispatch_time(DISPATCH_TIME_NOW,
-                      (int64_t)(kVoiceOverAnnouncementDelay * NSEC_PER_SEC)),
-        dispatch_get_main_queue(), ^{
-          UIAccessibilityPostNotification(
-              UIAccessibilityAnnouncementNotification,
-              self.voiceOverAnnouncement);
-        });
+    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
+                                    self.voiceOverAnnouncement);
   }
 }
 
