@@ -6,7 +6,9 @@
 #include <lib/fidl/cpp/binding.h>
 #include <utility>
 
+#include "base/files/file.h"
 #include "base/fuchsia/component_context.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
@@ -22,7 +24,15 @@ chromium::web::ContextPtr CreateContext() {
   auto web_context_provider =
       base::fuchsia::ComponentContext::GetDefault()
           ->ConnectToService<chromium::web::ContextProvider>();
+
   chromium::web::CreateContextParams create_params;
+
+  // Clone /svc to the context.
+  create_params.service_directory =
+      zx::channel(base::fuchsia::GetHandleFromFile(
+          base::File(base::FilePath("/svc"),
+                     base::File::FLAG_OPEN | base::File::FLAG_READ)));
+
   chromium::web::ContextPtr web_context;
   web_context_provider->Create(std::move(create_params),
                                web_context.NewRequest());
