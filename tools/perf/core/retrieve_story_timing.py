@@ -28,33 +28,25 @@ ORDER BY
 QUERY_LAST_RUNS = """
 SELECT
   name,
-  ROUND(AVG(time)) AS duration
+  ROUND(AVG(time)) AS duration,
 FROM (
   SELECT
-    name,
+    run.name AS name,
     start_time,
-    time,
-    ROW_NUMBER() OVER (PARTITION BY name ORDER BY start_time DESC)
-      AS row_num
-  FROM (
-    SELECT
-      run.name AS name,
-      start_time,
-      AVG(run.times) AS time
-    FROM
-      [test-results-hrd:events.test_results]
-    WHERE
-      buildbot_info.builder_name IN ({configuration_names})
-      AND run.time IS NOT NULL
-      AND run.time != 0
-      AND run.is_unexpected IS FALSE
-    GROUP BY
-      name,
-      start_time
-    ORDER BY
-      start_time DESC ))
-WHERE
-  row_num < {num_last_builds}
+    AVG(run.times) AS time
+  FROM
+    [test-results-hrd:events.test_results]
+  WHERE
+    buildbot_info.builder_name IN ({configuration_names})
+    AND run.time IS NOT NULL
+    AND run.time != 0
+    AND run.is_unexpected IS FALSE
+    AND DATEDIFF(CURRENT_DATE(), DATE(start_time)) < {num_last_days}
+  GROUP BY
+    name,
+    start_time
+  ORDER BY
+    start_time DESC)
 GROUP BY
   name
 ORDER BY
@@ -64,14 +56,15 @@ ORDER BY
 
 def _run_query(query):
   args = ["bq", "query", "--format=json", "--max_rows=100000", query]
+
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  if p.wait() == 0:
-    json_result = p.stdout.read().strip()
-    return json.loads(json_result)
+  stdout, stderr = p.communicate()
+  if p.returncode == 0:
+    return json.loads(stdout)
   else:
     raise RuntimeError(
         'Error generating authentication token.\nStdout: %s\nStder:%s' %
-        (p.stdout.read(), p.stderr.read()))
+        (stdout, stderr))
 
 
 def FetchStoryTimingDataForSingleBuild(configurations, build_number):
@@ -79,9 +72,9 @@ def FetchStoryTimingDataForSingleBuild(configurations, build_number):
       configurations, build_number))
 
 
-def FetchAverageStortyTimingData(configurations, num_last_builds):
+def FetchAverageStortyTimingData(configurations, num_last_days):
   return _run_query(QUERY_LAST_RUNS.format(
-      configuration_names=configurations, num_last_builds=num_last_builds))
+      configuration_names=configurations, num_last_days=num_last_days))
 
 
 def main(args):
@@ -115,7 +108,7 @@ def main(args):
     data = FetchStoryTimingDataForSingleBuild(configurations,
         opts.build_number)
   else:
-    data = FetchAverageStortyTimingData(configurations, num_last_builds=10)
+    data = FetchAverageStortyTimingData(configurations, num_last_days=5)
 
   with open(opts.output_file, 'w') as output_file:
     json.dump(data, output_file, indent = 4, separators=(',', ': '))
