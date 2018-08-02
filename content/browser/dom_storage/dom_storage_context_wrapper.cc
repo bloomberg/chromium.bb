@@ -396,6 +396,7 @@ void DOMStorageContextWrapper::OpenLocalStorage(
 void DOMStorageContextWrapper::OpenSessionStorage(
     int process_id,
     const std::string& namespace_id,
+    mojo::ReportBadMessageCallback bad_message_callback,
     blink::mojom::SessionStorageNamespaceRequest request) {
   if (!mojo_session_state_)
     return;
@@ -404,9 +405,11 @@ void DOMStorageContextWrapper::OpenSessionStorage(
   // as soon as that task is posted, mojo_state_ is set to null, preventing
   // further tasks from being queued.
   mojo_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
-                                base::Unretained(mojo_session_state_),
-                                process_id, namespace_id, std::move(request)));
+      FROM_HERE,
+      base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
+                     base::Unretained(mojo_session_state_), process_id,
+                     namespace_id, std::move(bad_message_callback),
+                     std::move(request)));
 }
 
 void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(

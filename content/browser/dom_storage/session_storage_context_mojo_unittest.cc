@@ -72,6 +72,11 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
         mojo::core::ProcessErrorCallback());
   }
 
+  mojo::ReportBadMessageCallback GetBadMessageCallback() {
+    return base::BindOnce(&SessionStorageContextMojoTest::OnBadMessage,
+                          base::Unretained(this));
+  }
+
   void OnBadMessage(const std::string& reason) { bad_message_called_ = true; }
 
   void SetBackingMode(SessionStorageContextMojo::BackingMode backing_mode) {
@@ -111,6 +116,7 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
     context()->CreateSessionNamespace(namespace_id);
     blink::mojom::SessionStorageNamespacePtr ss_namespace;
     context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                  GetBadMessageCallback(),
                                   mojo::MakeRequest(&ss_namespace));
     blink::mojom::StorageAreaAssociatedPtr leveldb;
     ss_namespace->OpenArea(origin, mojo::MakeRequest(&leveldb));
@@ -127,6 +133,7 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
     context()->CreateSessionNamespace(namespace_id);
     blink::mojom::SessionStorageNamespacePtr ss_namespace;
     context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                  GetBadMessageCallback(),
                                   mojo::MakeRequest(&ss_namespace));
     blink::mojom::StorageAreaAssociatedPtr leveldb;
     ss_namespace->OpenArea(origin, mojo::MakeRequest(&leveldb));
@@ -188,9 +195,11 @@ TEST_F(SessionStorageContextMojoTest, MigrationV0ToV1) {
 
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::SessionStorageNamespacePtr ss_namespace2;
   context()->OpenSessionStorage(kTestProcessId, namespace_id2,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace2));
 
   blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
@@ -220,6 +229,7 @@ TEST_F(SessionStorageContextMojoTest, StartupShutdownSave) {
 
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
 
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
@@ -247,6 +257,7 @@ TEST_F(SessionStorageContextMojoTest, StartupShutdownSave) {
   // This will re-open the context, and load the persisted namespace.
   context()->CreateSessionNamespace(namespace_id1);
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
 
@@ -261,6 +272,7 @@ TEST_F(SessionStorageContextMojoTest, StartupShutdownSave) {
   // This will re-open the context, and the namespace should be empty.
   context()->CreateSessionNamespace(namespace_id1);
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
 
@@ -276,6 +288,7 @@ TEST_F(SessionStorageContextMojoTest, CloneBeforeBrowserClone) {
   context()->CreateSessionNamespace(namespace_id1);
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
@@ -296,6 +309,7 @@ TEST_F(SessionStorageContextMojoTest, CloneBeforeBrowserClone) {
   // Open the second namespace.
   blink::mojom::SessionStorageNamespacePtr ss_namespace2;
   context()->OpenSessionStorage(kTestProcessId, namespace_id2,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace2));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
   ss_namespace2->OpenArea(origin1, mojo::MakeRequest(&leveldb_n2_o1));
@@ -313,6 +327,7 @@ TEST_F(SessionStorageContextMojoTest, Cloning) {
   context()->CreateSessionNamespace(namespace_id1);
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
@@ -334,6 +349,7 @@ TEST_F(SessionStorageContextMojoTest, Cloning) {
   // Open the second namespace.
   blink::mojom::SessionStorageNamespacePtr ss_namespace2;
   context()->OpenSessionStorage(kTestProcessId, namespace_id2,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace2));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
   ss_namespace2->OpenArea(origin1, mojo::MakeRequest(&leveldb_n2_o1));
@@ -358,6 +374,7 @@ TEST_F(SessionStorageContextMojoTest, Cloning) {
   // Re-open namespace 1, check that we don't have the extra data.
   context()->CreateSessionNamespace(namespace_id1);
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
 
@@ -374,6 +391,7 @@ TEST_F(SessionStorageContextMojoTest, ImmediateCloning) {
   context()->CreateSessionNamespace(namespace_id1);
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
@@ -387,6 +405,7 @@ TEST_F(SessionStorageContextMojoTest, ImmediateCloning) {
   {
     blink::mojom::SessionStorageNamespacePtr ss_namespace2;
     context()->OpenSessionStorage(kTestProcessId, namespace_id2,
+                                  GetBadMessageCallback(),
                                   mojo::MakeRequest(&ss_namespace2));
     blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
     ss_namespace2->OpenArea(origin1, mojo::MakeRequest(&leveldb_n2_o1));
@@ -411,6 +430,7 @@ TEST_F(SessionStorageContextMojoTest, ImmediateCloning) {
   {
     blink::mojom::SessionStorageNamespacePtr ss_namespace2;
     context()->OpenSessionStorage(kTestProcessId, namespace_id2,
+                                  GetBadMessageCallback(),
                                   mojo::MakeRequest(&ss_namespace2));
     blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
     ss_namespace2->OpenArea(origin1, mojo::MakeRequest(&leveldb_n2_o1));
@@ -457,6 +477,7 @@ TEST_F(SessionStorageContextMojoTest, Scavenging) {
 
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
@@ -490,6 +511,7 @@ TEST_F(SessionStorageContextMojoTest, Scavenging) {
   // data.
   context()->CreateSessionNamespace(namespace_id1);
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
   std::vector<blink::mojom::KeyValuePtr> data;
@@ -509,6 +531,7 @@ TEST_F(SessionStorageContextMojoTest, Scavenging) {
   }
   context()->CreateSessionNamespace(namespace_id1);
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
   EXPECT_TRUE(test::GetAllSync(leveldb_n1_o1.get(), &data));
@@ -616,6 +639,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
     base::RunLoop loop;
     fake_leveldb_service.SetOnOpenCallback(loop.QuitClosure());
     context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                  GetBadMessageCallback(),
                                   mojo::MakeRequest(&ss_namespace));
     ss_namespace->OpenArea(origin1, mojo::MakeRequest(&area1));
     ss_namespace->OpenArea(origin2, mojo::MakeRequest(&area2));
@@ -689,6 +713,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
 
   // Reconnect area1 to the database, and try to read a value.
   context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace));
   ss_namespace->OpenArea(origin1, mojo::MakeRequest(&area1));
 
@@ -751,6 +776,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
     base::RunLoop loop;
     fake_leveldb_service.SetOnOpenCallback(loop.QuitClosure());
     context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                  GetBadMessageCallback(),
                                   mojo::MakeRequest(&ss_namespace));
     ss_namespace->OpenArea(origin1, mojo::MakeRequest(&area));
     loop.Run();
@@ -822,6 +848,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   // This time all should just keep getting written, and commit errors are
   // getting ignored.
   context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace));
   ss_namespace->OpenArea(origin1, mojo::MakeRequest(&area));
   old_value = base::nullopt;
@@ -861,10 +888,10 @@ TEST_F(SessionStorageContextMojoTest, GetUsage) {
   context()->CreateSessionNamespace(namespace_id1);
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
-
   // Put some data.
   EXPECT_TRUE(test::PutSync(
       leveldb_n1_o1.get(), leveldb::StringPieceToUint8Vector("key1"),
@@ -889,6 +916,7 @@ TEST_F(SessionStorageContextMojoTest, DeleteStorage) {
   context()->CreateSessionNamespace(namespace_id1);
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
@@ -919,6 +947,7 @@ TEST_F(SessionStorageContextMojoTest, DeleteStorage) {
 
   context()->CreateSessionNamespace(namespace_id1);
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
   data.clear();
@@ -934,6 +963,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
   context()->CreateSessionNamespace(namespace_id1);
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb;
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb));
@@ -961,6 +991,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
   for (int i = 1; i <= 100; ++i) {
     blink::mojom::SessionStorageNamespacePtr ss_namespace1;
     context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                  GetBadMessageCallback(),
                                   mojo::MakeRequest(&ss_namespace1));
     blink::mojom::StorageAreaAssociatedPtr leveldb;
     ss_namespace1->OpenArea(url::Origin::Create(GURL(base::StringPrintf(
@@ -973,6 +1004,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
 
   // And make sure caches were actually cleared.
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb));
   std::vector<blink::mojom::KeyValuePtr> data;
@@ -988,6 +1020,7 @@ TEST_F(SessionStorageContextMojoTest, ClearDiskState) {
 
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
 
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
@@ -1012,6 +1045,7 @@ TEST_F(SessionStorageContextMojoTest, ClearDiskState) {
   // should have been deleted due to our backing mode.
   context()->CreateSessionNamespace(namespace_id1);
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
 
@@ -1031,6 +1065,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeMemoryDoesNotCrashOrHang) {
   context()->CreateSessionNamespace(namespace_id1);
   blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
@@ -1038,6 +1073,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeMemoryDoesNotCrashOrHang) {
   context()->CreateSessionNamespace(namespace_id2);
   blink::mojom::SessionStorageNamespacePtr ss_namespace2;
   context()->OpenSessionStorage(kTestProcessId, namespace_id2,
+                                GetBadMessageCallback(),
                                 mojo::MakeRequest(&ss_namespace2));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
   ss_namespace2->OpenArea(origin1, mojo::MakeRequest(&leveldb_n2_o1));

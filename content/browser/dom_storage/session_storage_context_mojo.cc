@@ -121,17 +121,18 @@ SessionStorageContextMojo::~SessionStorageContextMojo() {
 void SessionStorageContextMojo::OpenSessionStorage(
     int process_id,
     const std::string& namespace_id,
+    mojo::ReportBadMessageCallback bad_message_callback,
     blink::mojom::SessionStorageNamespaceRequest request) {
   if (connection_state_ != CONNECTION_FINISHED) {
     RunWhenConnected(
         base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
                        weak_ptr_factory_.GetWeakPtr(), process_id, namespace_id,
-                       std::move(request)));
+                       std::move(bad_message_callback), std::move(request)));
     return;
   }
   auto found = namespaces_.find(namespace_id);
   if (found == namespaces_.end()) {
-    mojo::ReportBadMessage("Namespace not found: " + namespace_id);
+    std::move(bad_message_callback).Run("Namespace not found: " + namespace_id);
     return;
   }
 
@@ -533,6 +534,7 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
   if (it != namespaces_.end()) {
     found = true;
     if (it->second->IsPopulated()) {
+      // Assumes this method is called on a stack handling a mojo message.
       mojo::ReportBadMessage("Cannot clone to already populated namespace");
       return;
     }

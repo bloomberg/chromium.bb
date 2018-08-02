@@ -18,6 +18,7 @@
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
@@ -83,6 +84,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
                         blink::mojom::StorageAreaRequest request);
   void OpenSessionStorage(int process_id,
                           const std::string& namespace_id,
+                          mojo::ReportBadMessageCallback bad_message_callback,
                           blink::mojom::SessionStorageNamespaceRequest request);
 
   void SetLocalStorageDatabaseForTesting(
