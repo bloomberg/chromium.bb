@@ -4839,6 +4839,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
     web::NavigationItemImpl* item = web::GetItemWithUniqueID(
         self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+    if (!IsWKInternalUrl(currentWKItemURL) && currentWKItemURL == webViewURL &&
+        currentWKItemURL != context->GetUrl()) {
+      // WKWebView sometimes changes URL on the same navigation, likely due to
+      // location.replace() in onload handler that only changes page fragment.
+      // It's safe to update |item| and |context| URL because they are both
+      // associated to WKNavigation*, which is a stable ID for the navigation.
+      // See https://crbug.com/869540 for a real-world case.
+      DCHECK(item->GetURL().EqualsIgnoringRef(currentWKItemURL));
+      item->SetURL(currentWKItemURL);
+      context->SetUrl(currentWKItemURL);
+    }
 
     if (IsPlaceholderUrl(webViewURL)) {
       GURL originalURL = ExtractUrlFromPlaceholderUrl(webViewURL);
