@@ -29,7 +29,6 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.graphics.drawable.DrawableWrapper;
 import android.text.TextUtils;
@@ -45,7 +44,6 @@ import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
@@ -495,21 +493,6 @@ public class ToolbarPhone extends ToolbarLayout
                     TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), true);
             mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
             mTabSwitcherModeViews.add(mNewTabButton);
-
-            // Ensure that the new tab button will not draw over the toolbar buttons if the
-            // translated string is long.  Set a margin to the size of the toolbar button container
-            // for the new tab button.
-            WindowManager wm =
-                    (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-            Point screenSize = new Point();
-            wm.getDefaultDisplay().getSize(screenSize);
-
-            mToolbarButtonsContainer.measure(
-                    MeasureSpec.makeMeasureSpec(screenSize.x, MeasureSpec.AT_MOST),
-                    MeasureSpec.makeMeasureSpec(screenSize.y, MeasureSpec.AT_MOST));
-
-            MarginLayoutParamsCompat.setMarginEnd(getFrameLayoutParams(mNewTabButton),
-                    mToolbarButtonsContainer.getMeasuredWidth());
         }
     }
 
