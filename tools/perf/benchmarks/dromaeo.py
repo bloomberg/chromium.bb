@@ -85,31 +85,10 @@ class _DromaeoMeasurement(legacy_page_test.LegacyPageTest):
       AddResult(key, math.exp(value['sum'] / value['count']))
 
 
-class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
-  """A base class for Dromaeo benchmarks."""
-  test = _DromaeoMeasurement
-
-  def CreateStorySet(self, options):
-    """Makes a PageSet for Dromaeo benchmarks."""
-    # Subclasses are expected to define class members called query_param and
-    # tag.
-    if not hasattr(self, 'query_param') or not hasattr(self, 'tag'):
-      raise NotImplementedError('query_param or tag not in Dromaeo benchmark.')
-    archive_data_file = '../page_sets/data/dromaeo.%s.json' % self.tag
-    ps = story.StorySet(
-        archive_data_file=archive_data_file,
-        base_dir=os.path.dirname(os.path.abspath(__file__)),
-        cloud_storage_bucket=story.PUBLIC_BUCKET)
-    url = 'http://dromaeo.com?%s' % self.query_param
-    ps.AddStory(page_module.Page(
-        url, ps, ps.base_dir, make_javascript_deterministic=False, name=url))
-    return ps
-
-
 @benchmark.Info(emails=['jbroman@chromium.org',
                          'yukishiino@chromium.org',
                          'haraken@chromium.org'])
-class DromaeoBenchmark(_DromaeoBenchmark):
+class DromaeoBenchmark(perf_benchmark.PerfBenchmark):
 
   test = _DromaeoMeasurement
 
