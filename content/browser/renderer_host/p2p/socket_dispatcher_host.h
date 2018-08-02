@@ -7,25 +7,27 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
-#include "content/common/p2p_socket_type.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/p2p_socket_type.h"
+#include "services/network/public/mojom/p2p.mojom.h"
 
 namespace net {
-struct MutableNetworkTrafficAnnotationTag;
 class URLRequestContextGetter;
 }
 
@@ -38,17 +40,15 @@ namespace content {
 class P2PSocketHost;
 
 class P2PSocketDispatcherHost
-    : public content::BrowserMessageFilter,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+    : public base::RefCountedThreadSafe<P2PSocketDispatcherHost,
+                                        BrowserThread::DeleteOnIOThread>,
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public network::mojom::P2PSocketManager {
  public:
-  explicit P2PSocketDispatcherHost(net::URLRequestContextGetter* url_context);
+  P2PSocketDispatcherHost(int render_process_id,
+                          net::URLRequestContextGetter* url_context);
 
-  // content::BrowserMessageFilter overrides.
-  void OnChannelClosing() override;
-  void OnDestruct() const override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  // net::NetworkChangeNotifier::NetworkChangeObserver interface.
+  // net::NetworkChangeNotifier::NetworkChangeObserver overrides.
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
   // Starts the RTP packet header dumping. Must be called on the IO thread.
@@ -60,63 +60,60 @@ class P2PSocketDispatcherHost
   // Stops the RTP packet header dumping. Must be Called on the UI thread.
   void StopRtpDumpOnUIThread(bool incoming, bool outgoing);
 
- protected:
-  ~P2PSocketDispatcherHost() override;
+  void BindRequest(network::mojom::P2PSocketManagerRequest request);
+
+  void AddAcceptedConnection(
+      std::unique_ptr<P2PSocketHost> accepted_connection);
+  void SocketDestroyed(P2PSocketHost* socket);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class base::RefCountedThreadSafe<P2PSocketDispatcherHost>;
   friend class base::DeleteHelper<P2PSocketDispatcherHost>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
-  typedef std::map<int, std::unique_ptr<P2PSocketHost>> SocketsMap;
+  ~P2PSocketDispatcherHost() override;
 
   class DnsRequest;
-
-  P2PSocketHost* LookupSocket(int socket_id);
-
-  // Handlers for the messages coming from the renderer.
-  void OnStartNetworkNotifications();
-  void OnStopNetworkNotifications();
-  void OnGetHostAddress(const std::string& host_name, int32_t request_id);
-
-  void OnCreateSocket(P2PSocketType type,
-                      int socket_id,
-                      const net::IPEndPoint& local_address,
-                      const P2PPortRange& port_range,
-                      const P2PHostAndIPEndPoint& remote_address);
-  void OnAcceptIncomingTcpConnection(int listen_socket_id,
-                                     const net::IPEndPoint& remote_address,
-                                     int connected_socket_id);
-  void OnSend(
-      int socket_id,
-      const std::vector<char>& data,
-      const P2PPacketInfo& packet_info,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
-  void OnSetOption(int socket_id, P2PSocketOption option, int value);
-  void OnDestroySocket(int socket_id);
 
   void DoGetNetworkList();
   void SendNetworkList(const net::NetworkInterfaceList& list,
                        const net::IPAddress& default_ipv4_local_address,
                        const net::IPAddress& default_ipv6_local_address);
 
+  // network::mojom::P2PSocketManager overrides:
+  void StartNetworkNotifications(
+      network::mojom::P2PNetworkNotificationClientPtr client) override;
+  void GetHostAddress(const std::string& host_name,
+                      network::mojom::P2PSocketManager::GetHostAddressCallback
+                          callback) override;
+  void CreateSocket(network::P2PSocketType type,
+                    const net::IPEndPoint& local_address,
+                    const network::P2PPortRange& port_range,
+                    const network::P2PHostAndIPEndPoint& remote_address,
+                    network::mojom::P2PSocketClientPtr client,
+                    network::mojom::P2PSocketRequest request) override;
+
+  void NetworkNotificationClientConnectionError();
+
   // This connects a UDP socket to a public IP address and gets local
   // address. Since it binds to the "any" address (0.0.0.0 or ::) internally, it
   // retrieves the default local address.
   net::IPAddress GetDefaultLocalAddress(int family);
 
-  void OnAddressResolved(DnsRequest* request,
-                         const net::IPAddressList& addresses);
+  void OnAddressResolved(
+      DnsRequest* request,
+      network::mojom::P2PSocketManager::GetHostAddressCallback callback,
+      const net::IPAddressList& addresses);
 
   void StopRtpDumpOnIOThread(bool incoming, bool outgoing);
 
+  int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   // Initialized on browser IO thread.
   std::unique_ptr<network::ProxyResolvingClientSocketFactory>
       proxy_resolving_socket_factory_;
 
-  SocketsMap sockets_;
-
-  bool monitoring_networks_;
+  base::flat_map<P2PSocketHost*, std::unique_ptr<P2PSocketHost>> sockets_;
 
   std::set<std::unique_ptr<DnsRequest>> dns_requests_;
   P2PMessageThrottler throttler_;
@@ -131,6 +128,10 @@ class P2PSocketDispatcherHost
   // Used to call DoGetNetworkList, which may briefly block since getting the
   // default local address involves creating a dummy socket.
   const scoped_refptr<base::SequencedTaskRunner> network_list_task_runner_;
+
+  mojo::Binding<network::mojom::P2PSocketManager> binding_;
+
+  network::mojom::P2PNetworkNotificationClientPtr network_notification_client_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcherHost);
 };

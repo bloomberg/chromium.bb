@@ -16,9 +16,6 @@ bool StructTraits<net::interfaces::IPEndPointDataView, net::IPEndPoint>::Read(
   if (!data.ReadAddress(&address))
     return false;
 
-  if (!address.IsValid())
-    return false;
-
   *out = net::IPEndPoint(address, data.port());
   return true;
 }
