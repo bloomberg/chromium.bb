@@ -52,6 +52,12 @@ std::string GetCrostiniMountPointName(Profile* profile);
 // The actual directory the crostini "Linux Files" folder is mounted.
 base::FilePath GetCrostiniMountDirectory(Profile* profile);
 
+// The sshfs mount options for crostini "Linux Files" mount.
+std::vector<std::string> GetCrostiniMountOptions(
+    const std::string& hostname,
+    const std::string& host_private_key,
+    const std::string& container_public_key);
+
 // Convert a cracked url to a path inside the Crostini VM.
 std::string ConvertFileSystemURLToPathInsideCrostini(
     Profile* profile,
