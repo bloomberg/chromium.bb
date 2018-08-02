@@ -5677,6 +5677,8 @@ if (!is_android && !is_fuchsia) {
       "../browser/autofill/autofill_uitest.h",
       "../browser/autofill/autofill_uitest_util.cc",
       "../browser/autofill/autofill_uitest_util.h",
+      "../browser/autofill/captured_sites_test_utils.cc",
+      "../browser/autofill/captured_sites_test_utils.h",
       "base/interactive_test_utils.cc",
       "base/interactive_test_utils.h",
       "base/interactive_test_utils_common_views.cc",
