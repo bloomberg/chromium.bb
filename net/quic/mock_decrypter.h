@@ -15,34 +15,35 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace quic {
+namespace net {
 
 // A MockDecrypter is a QuicDecrypter that does no validation of
 // the given ciphertext and returns it untouched, ignoring the
 // associated data. This is used to allow fuzzing to mutate
 // plaintext packets.
-class MockDecrypter : public QuicDecrypter {
+class MockDecrypter : public quic::QuicDecrypter {
  public:
-  explicit MockDecrypter(Perspective perspective);
+  explicit MockDecrypter(quic::Perspective perspective);
   ~MockDecrypter() override {}
 
   // QuicDecrypter implementation
-  bool SetKey(QuicStringPiece key) override;
-  bool SetNoncePrefix(QuicStringPiece nonce_prefix) override;
-  bool SetIV(QuicStringPiece iv) override;
-  bool SetPreliminaryKey(QuicStringPiece key) override;
-  bool SetDiversificationNonce(const DiversificationNonce& nonce) override;
-  bool DecryptPacket(QuicTransportVersion version,
-                     QuicPacketNumber packet_number,
-                     QuicStringPiece associated_data,
-                     QuicStringPiece ciphertext,
+  bool SetKey(quic::QuicStringPiece key) override;
+  bool SetNoncePrefix(quic::QuicStringPiece nonce_prefix) override;
+  bool SetIV(quic::QuicStringPiece iv) override;
+  bool SetPreliminaryKey(quic::QuicStringPiece key) override;
+  bool SetDiversificationNonce(
+      const quic::DiversificationNonce& nonce) override;
+  bool DecryptPacket(quic::QuicTransportVersion version,
+                     quic::QuicPacketNumber packet_number,
+                     quic::QuicStringPiece associated_data,
+                     quic::QuicStringPiece ciphertext,
                      char* output,
                      size_t* output_length,
                      size_t max_output_length) override;
   size_t GetKeySize() const override;
   size_t GetIVSize() const override;
-  QuicStringPiece GetKey() const override;
-  QuicStringPiece GetNoncePrefix() const override;
+  quic::QuicStringPiece GetKey() const override;
+  quic::QuicStringPiece GetNoncePrefix() const override;
 
   uint32_t cipher_id() const override;
 
@@ -50,6 +51,6 @@ class MockDecrypter : public QuicDecrypter {
   DISALLOW_COPY_AND_ASSIGN(MockDecrypter);
 };
 
-}  // namespace quic
+}  // namespace net
 
 #endif  // NET_QUIC_MOCK_DECRYPTER_H_

@@ -16,10 +16,10 @@
 #include "net/third_party/quic/core/quic_server_id.h"
 #include "net/third_party/quic/core/quic_session.h"
 
-namespace quic {
+namespace net {
 
-class MockCryptoClientStream : public QuicCryptoClientStream,
-                               public QuicCryptoHandshaker {
+class MockCryptoClientStream : public quic::QuicCryptoClientStream,
+                               public quic::QuicCryptoHandshaker {
  public:
   // TODO(zhongyi): might consider move HandshakeMode up to
   // MockCryptoClientStreamFactory.
@@ -46,52 +46,53 @@ class MockCryptoClientStream : public QuicCryptoClientStream,
   };
 
   MockCryptoClientStream(
-      const QuicServerId& server_id,
-      QuicSpdyClientSessionBase* session,
-      std::unique_ptr<ProofVerifyContext> verify_context,
-      const QuicConfig& config,
-      QuicCryptoClientConfig* crypto_config,
+      const quic::QuicServerId& server_id,
+      quic::QuicSpdyClientSessionBase* session,
+      std::unique_ptr<quic::ProofVerifyContext> verify_context,
+      const quic::QuicConfig& config,
+      quic::QuicCryptoClientConfig* crypto_config,
       HandshakeMode handshake_mode,
       const net::ProofVerifyDetailsChromium* proof_verify_details_,
       bool use_mock_crypter);
   ~MockCryptoClientStream() override;
 
   // CryptoFramerVisitorInterface implementation.
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
+  void OnHandshakeMessage(const quic::CryptoHandshakeMessage& message) override;
 
   // QuicCryptoClientStream implementation.
   bool CryptoConnect() override;
   bool encryption_established() const override;
   bool handshake_confirmed() const override;
-  const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
+  const quic::QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
-  CryptoMessageParser* crypto_message_parser() override;
+  quic::CryptoMessageParser* crypto_message_parser() override;
 
   // Invokes the sessions's CryptoHandshakeEvent method with the specified
   // event.
-  void SendOnCryptoHandshakeEvent(QuicSession::CryptoHandshakeEvent event);
+  void SendOnCryptoHandshakeEvent(
+      quic::QuicSession::CryptoHandshakeEvent event);
 
   HandshakeMode handshake_mode_;
 
  protected:
-  using QuicCryptoClientStream::session;
+  using quic::QuicCryptoClientStream::session;
 
  private:
   void SetConfigNegotiated();
   bool encryption_established_;
   bool handshake_confirmed_;
-  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>
+  quic::QuicReferenceCountedPointer<quic::QuicCryptoNegotiatedParameters>
       crypto_negotiated_params_;
-  CryptoFramer crypto_framer_;
+  quic::CryptoFramer crypto_framer_;
   bool use_mock_crypter_;
 
-  const QuicServerId server_id_;
+  const quic::QuicServerId server_id_;
   const net::ProofVerifyDetailsChromium* proof_verify_details_;
-  const QuicConfig config_;
+  const quic::QuicConfig config_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCryptoClientStream);
 };
 
-}  // namespace quic
+}  // namespace net
 
 #endif  // NET_QUIC_MOCK_CRYPTO_CLIENT_STREAM_H_

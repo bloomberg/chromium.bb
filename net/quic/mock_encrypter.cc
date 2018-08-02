@@ -7,7 +7,13 @@
 #include "net/third_party/quic/core/quic_data_writer.h"
 #include "net/third_party/quic/core/quic_utils.h"
 
-namespace quic {
+using quic::DiversificationNonce;
+using quic::Perspective;
+using quic::QuicPacketNumber;
+using quic::QuicStringPiece;
+using quic::QuicTransportVersion;
+
+namespace net {
 
 MockEncrypter::MockEncrypter(Perspective perspective) {}
 
@@ -66,4 +72,4 @@ QuicStringPiece MockEncrypter::GetNoncePrefix() const {
   return QuicStringPiece();
 }
 
-}  // namespace quic
+}  // namespace net

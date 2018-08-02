@@ -16,24 +16,17 @@
 #include "net/third_party/quic/core/quic_server_id.h"
 #include "net/third_party/quic/core/quic_time.h"
 
+namespace quic {
+class QuicAlarmFactory;
+class QuicClientPushPromiseIndex;
+class QuicConfig;
+class QuicCryptoClientConfig;
+}  // namespace quic
+
 namespace net {
 
 class NetLogWithSource;
-}  // namespace net
-namespace quic {
-class QuicAlarmFactory;
-}  // namespace quic
-namespace net {
 class QuicChromiumClientSession;
-}  // namespace net
-namespace quic {
-class QuicClientPushPromiseIndex;
-
-class QuicConfig;
-
-class QuicCryptoClientConfig;
-}  // namespace quic
-namespace net {
 class QuicStreamFactory;
 
 namespace test {

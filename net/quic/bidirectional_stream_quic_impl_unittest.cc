@@ -467,7 +467,7 @@ class BidirectionalStreamQuicImplTest
   // Configures the test fixture to use the list of expected writes.
   void Initialize() {
     crypto_client_stream_factory_.set_handshake_mode(
-        quic::MockCryptoClientStream::ZERO_RTT);
+        MockCryptoClientStream::ZERO_RTT);
     mock_writes_.reset(new MockWrite[writes_.size()]);
     for (size_t i = 0; i < writes_.size(); i++) {
       if (writes_[i].packet == nullptr) {

@@ -7,7 +7,13 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 
-namespace quic {
+using quic::DiversificationNonce;
+using quic::Perspective;
+using quic::QuicPacketNumber;
+using quic::QuicStringPiece;
+using quic::QuicTransportVersion;
+
+namespace net {
 
 MockDecrypter::MockDecrypter(Perspective perspective) {}
 
@@ -69,4 +75,4 @@ uint32_t MockDecrypter::cipher_id() const {
   return 0;
 }
 
-}  // namespace quic
+}  // namespace net

@@ -570,7 +570,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
     crypto_client_stream_factory_.set_handshake_mode(
-        quic::MockCryptoClientStream::ZERO_RTT);
+        MockCryptoClientStream::ZERO_RTT);
     const quic::QuicConfig* config =
         QuicStreamFactoryPeer::GetConfig(factory_.get());
     EXPECT_EQ(500, config->IdleNetworkTimeout().ToSeconds());
@@ -922,7 +922,7 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -991,7 +991,7 @@ TEST_P(QuicStreamFactoryTest, FactoryDestroyedWhenJobPending) {
 
 TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -1030,7 +1030,7 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
 
 TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -1612,7 +1612,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<std::unique_ptr<HttpStream>> streams;
-  // The quic::MockCryptoClientStream sets max_open_streams to be
+  // The MockCryptoClientStream sets max_open_streams to be
   // quic::kDefaultMaxStreamsPerConnection / 2.
   for (size_t i = 0; i < quic::kDefaultMaxStreamsPerConnection / 2; i++) {
     QuicStreamRequest request(factory_.get());
@@ -1802,7 +1802,7 @@ TEST_P(QuicStreamFactoryTest,
   Initialize();
   // Use unmocked crypto stream to do crypto connect.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+      MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -1823,7 +1823,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Verify new requests can be sent normally without hanging.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   MockQuicData socket_data2;
@@ -1863,7 +1863,7 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
   Initialize();
   // Use unmocked crypto stream to do crypto connect.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+      MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -1887,7 +1887,7 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
 
   // Verify new requests can be sent normally without hanging.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   MockQuicData socket_data2;
@@ -4391,7 +4391,7 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
 
   // Use unmocked crypto stream to do crypto connect.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+      MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -4412,7 +4412,7 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
 
   // Verify new requests can be sent normally.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::COLD_START);
+      MockCryptoClientStream::COLD_START);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   MockQuicData socket_data2;
@@ -5329,7 +5329,7 @@ TEST_P(QuicStreamFactoryTest, NoMigrationBeforeHandshakeOnNetworkDisconnected) {
 
   // Use unmocked crypto stream to do crypto connect.
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
+      MockCryptoClientStream::USE_DEFAULT_CRYPTO_STREAM);
 
   // Add hanging socket data so that handshake is not confirmed when
   // OnNetworkDisconnected is delivered.
@@ -6773,7 +6773,7 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -6817,7 +6817,7 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -6970,7 +6970,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -7017,7 +7017,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
@@ -7710,7 +7710,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterHostResolutionCallbackAsyncAsync) {
 
   host_resolver_.set_ondemand_mode(true);
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
   factory_->set_require_confirmation(true);
 
   MockQuicData socket_data;
@@ -7797,7 +7797,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterHostResolutionCallbackSyncAsync) {
   // will fail asynchronously.
   host_resolver_.set_synchronous_mode(true);
   crypto_client_stream_factory_.set_handshake_mode(
-      quic::MockCryptoClientStream::ZERO_RTT);
+      MockCryptoClientStream::ZERO_RTT);
   factory_->set_require_confirmation(true);
 
   MockQuicData socket_data;
