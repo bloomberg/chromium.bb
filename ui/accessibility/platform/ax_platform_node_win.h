@@ -13,6 +13,8 @@
 #include <uiautomation.h>
 #include <wrl/client.h>
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -851,7 +853,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   base::string16 ComputeUIAProperties();
 
-  long ComputeUIAControlType();
+  LONG ComputeUIAControlType();
 
   AXHypertext ComputeHypertext();
 
@@ -914,9 +916,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   int GetHypertextOffsetFromEndpoint(AXPlatformNodeWin* endpoint_object,
                                      int endpoint_offset);
   bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
-  void ComputeHypertextRemovedAndInserted(int* start,
-                                          int* old_len,
-                                          int* new_len);
+  void ComputeHypertextRemovedAndInserted(size_t* start,
+                                          size_t* old_len,
+                                          size_t* new_len);
 
   // If offset is a member of IA2TextSpecialOffsets this function updates the
   // value of offset and returns, otherwise offset remains unchanged.
