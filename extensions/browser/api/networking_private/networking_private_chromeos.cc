@@ -160,6 +160,10 @@ void AppendDeviceState(
       properties->sim_lock_status = std::move(sim_lock_status);
     }
   }
+  if (device && type == ::onc::network_config::kWiFi) {
+    properties->managed_network_available = std::make_unique<bool>(
+        GetStateHandler()->GetAvailableManagedWifiNetwork());
+  }
   device_state_list->push_back(std::move(properties));
 }
 

@@ -498,7 +498,8 @@ var availableTests = [
     chrome.networkingPrivate.getDeviceStates(callbackPass(function(result) {
       assertEq([
         {Scanning: false, State: 'Enabled', Type: 'Ethernet'},
-        {Scanning: false, State: 'Enabled', Type: 'WiFi'},
+        {Scanning: false, State: 'Enabled', Type: 'WiFi',
+         ManagedNetworkAvailable: false},
         {State: 'Uninitialized', SIMPresent: true,
          SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3},
          Type: 'Cellular' },

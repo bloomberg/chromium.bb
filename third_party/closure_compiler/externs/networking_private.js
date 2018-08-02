@@ -956,7 +956,8 @@ chrome.networkingPrivate.NetworkStateProperties;
  *   SIMLockStatus: (!chrome.networkingPrivate.SIMLockStatus|undefined),
  *   SIMPresent: (boolean|undefined),
  *   State: !chrome.networkingPrivate.DeviceStateType,
- *   Type: !chrome.networkingPrivate.NetworkType
+ *   Type: !chrome.networkingPrivate.NetworkType,
+ *   ManagedNetworkAvailable: (boolean|undefined)
  * }}
  */
 chrome.networkingPrivate.DeviceStateProperties;
@@ -989,6 +990,7 @@ chrome.networkingPrivate.NetworkFilter;
  * @typedef {{
  *   AllowOnlyPolicyNetworksToAutoconnect: (boolean|undefined),
  *   AllowOnlyPolicyNetworksToConnect: (boolean|undefined),
+ *   AllowOnlyPolicyNetworksToConnectIfAvailable: (boolean|undefined),
  *   BlacklistedHexSSIDs: (!Array<string>|undefined)
  * }}
  */

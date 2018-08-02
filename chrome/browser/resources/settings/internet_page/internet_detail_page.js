@@ -90,6 +90,14 @@ Polymer({
       value: null,
     },
 
+    /** Whether a managed network is available in the visible network list.
+     * @private {boolean}
+     */
+    managedNetworkAvailable: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Interface for networkingPrivate calls, passed from internet_page.
      * @type {NetworkingPrivate}
@@ -137,7 +145,7 @@ Polymer({
 
   listeners: {
     'network-list-changed': 'checkNetworkExists_',
-    'networks-changed': 'updateNetworkDetails_',
+    'networks-changed': 'updateNetworkDetails_'
   },
 
   /** @private {boolean} */
@@ -468,30 +476,36 @@ Polymer({
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
-  isBlockedByPolicy_: function(networkProperties, globalPolicy) {
+  isBlockedByPolicy_: function(
+      networkProperties, globalPolicy, managedNetworkAvailable) {
     if (networkProperties.Type != CrOnc.Type.WI_FI ||
-        this.isPolicySource(networkProperties.Source)) {
+        this.isPolicySource(networkProperties.Source) || !globalPolicy) {
       return false;
     }
-    return !!globalPolicy &&
-        (!!globalPolicy.AllowOnlyPolicyNetworksToConnect ||
-         (!!networkProperties.WiFi && !!networkProperties.WiFi.HexSSID &&
-          !!globalPolicy.BlacklistedHexSSIDs &&
-          globalPolicy.BlacklistedHexSSIDs.includes(
-              CrOnc.getStateOrActiveString(networkProperties.WiFi.HexSSID))));
+    return !!globalPolicy.AllowOnlyPolicyNetworksToConnect ||
+        (!!globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable &&
+         !!managedNetworkAvailable) ||
+        (!!networkProperties.WiFi && !!networkProperties.WiFi.HexSSID &&
+         !!globalPolicy.BlacklistedHexSSIDs &&
+         globalPolicy.BlacklistedHexSSIDs.includes(
+             CrOnc.getStateOrActiveString(networkProperties.WiFi.HexSSID)));
   },
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
-  showConnect_: function(networkProperties, globalPolicy) {
-    if (this.isBlockedByPolicy_(networkProperties, globalPolicy))
+  showConnect_: function(
+      networkProperties, globalPolicy, managedNetworkAvailable) {
+    if (this.isBlockedByPolicy_(
+            networkProperties, globalPolicy, managedNetworkAvailable))
       return false;
     // TODO(lgcheng@) support connect Arc VPN from UI once Android support API
     // to initiate a VPN session.
@@ -549,13 +563,16 @@ Polymer({
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
-  showConfigure_: function(networkProperties, globalPolicy) {
+  showConfigure_: function(
+      networkProperties, globalPolicy, managedNetworkAvailable) {
     if (this.isSecondaryUser_)
       return false;
-    if (this.isBlockedByPolicy_(networkProperties, globalPolicy))
+    if (this.isBlockedByPolicy_(
+            networkProperties, globalPolicy, managedNetworkAvailable))
       return false;
     const type = networkProperties.Type;
     if (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER)
@@ -621,13 +638,15 @@ Polymer({
    * @param {boolean} networkPropertiesReceived
    * @param {boolean} outOfRange
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
   enableConnect_: function(
       networkProperties, defaultNetwork, networkPropertiesReceived, outOfRange,
-      globalPolicy) {
-    if (!this.showConnect_(networkProperties, globalPolicy))
+      globalPolicy, managedNetworkAvailable) {
+    if (!this.showConnect_(
+            networkProperties, globalPolicy, managedNetworkAvailable))
       return false;
     if (!networkPropertiesReceived || outOfRange)
       return false;
@@ -880,26 +899,32 @@ Polymer({
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the shared message should be shown.
    * @private
    */
-  showShared_: function(networkProperties, globalPolicy) {
+  showShared_: function(
+      networkProperties, globalPolicy, managedNetworkAvailable) {
     return (networkProperties.Source == 'Device' ||
             networkProperties.Source == 'DevicePolicy') &&
-        !this.isBlockedByPolicy_(networkProperties, globalPolicy);
+        !this.isBlockedByPolicy_(
+            networkProperties, globalPolicy, managedNetworkAvailable);
   },
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the AutoConnect checkbox should be shown.
    * @private
    */
-  showAutoConnect_: function(networkProperties, globalPolicy) {
+  showAutoConnect_: function(
+      networkProperties, globalPolicy, managedNetworkAvailable) {
     return networkProperties.Type != CrOnc.Type.ETHERNET &&
         this.isRemembered_(networkProperties) &&
         !this.isArcVpn_(networkProperties) &&
-        !this.isBlockedByPolicy_(networkProperties, globalPolicy);
+        !this.isBlockedByPolicy_(
+            networkProperties, globalPolicy, managedNetworkAvailable);
   },
 
   /**
@@ -930,15 +955,18 @@ Polymer({
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the prefer network checkbox should be shown.
    * @private
    */
-  showPreferNetwork_: function(networkProperties, globalPolicy) {
+  showPreferNetwork_: function(
+      networkProperties, globalPolicy, managedNetworkAvailable) {
     // TODO(stevenjb): Resolve whether or not we want to allow "preferred" for
     // networkProperties.Type == CrOnc.Type.ETHERNET.
     return this.isRemembered_(networkProperties) &&
         !this.isArcVpn_(networkProperties) &&
-        !this.isBlockedByPolicy_(networkProperties, globalPolicy);
+        !this.isBlockedByPolicy_(
+            networkProperties, globalPolicy, managedNetworkAvailable);
   },
 
   /**
@@ -1109,16 +1137,19 @@ Polymer({
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
-  hasNetworkSection_: function(networkProperties, globalPolicy) {
+  hasNetworkSection_: function(
+      networkProperties, globalPolicy, managedNetworkAvailable) {
     if (networkProperties.Type == CrOnc.Type.TETHER) {
       // These settings apply to the underlying WiFi network, not the Tether
       // network.
       return false;
     }
-    if (this.isBlockedByPolicy_(networkProperties, globalPolicy))
+    if (this.isBlockedByPolicy_(
+            networkProperties, globalPolicy, managedNetworkAvailable))
       return false;
     if (networkProperties.Type == CrOnc.Type.CELLULAR)
       return true;
@@ -1128,16 +1159,19 @@ Polymer({
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
-  hasProxySection_: function(networkProperties, globalPolicy) {
+  hasProxySection_: function(
+      networkProperties, globalPolicy, managedNetworkAvailable) {
     if (networkProperties.Type == CrOnc.Type.TETHER) {
       // Proxy settings apply to the underlying WiFi network, not the Tether
       // network.
       return false;
     }
-    if (this.isBlockedByPolicy_(networkProperties, globalPolicy))
+    if (this.isBlockedByPolicy_(
+            networkProperties, globalPolicy, managedNetworkAvailable))
       return false;
     return this.isRememberedOrConnected_(networkProperties);
   },
