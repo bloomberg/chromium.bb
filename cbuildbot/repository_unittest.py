@@ -148,52 +148,6 @@ class RepoInitChromeBotTests(RepoInitTests):
     os.putenv('GIT_AUTHOR_EMAIL', 'chrome-bot@chromium.org')
 
 
-class PrepManifestForRepoTests(cros_test_lib.TempDirTestCase):
-  """Tests for our ability to init from a local repository."""
-
-  def testCreateManifestRepo(self):
-    """Test we can create a local git repository with a local manifest."""
-    CONTENTS = 'manifest contents'
-
-    src_manifest = os.path.join(self.tempdir, 'src_manifest')
-    git_repo = os.path.join(self.tempdir, 'git_repo')
-    dst_manifest = os.path.join(git_repo, 'default.xml')
-
-    osutils.WriteFile(src_manifest, CONTENTS)
-    repository.PrepManifestForRepo(git_repo, src_manifest)
-
-    self.assertEqual(CONTENTS, osutils.ReadFile(dst_manifest))
-
-    # This should fail if we don't have a valid Git repo. Not a perfect test.
-    git.GetGitRepoRevision(git_repo)
-
-  def testUpdatingManifestRepo(self):
-    """Test we can update manifest in a local git repository."""
-    CONTENTS = 'manifest contents'
-    CONTENTS2 = 'manifest contents - PART 2'
-
-    src_manifest = os.path.join(self.tempdir, 'src_manifest')
-    git_repo = os.path.join(self.tempdir, 'git_repo')
-    dst_manifest = os.path.join(git_repo, 'default.xml')
-
-    # Do/verify initial repo setup.
-    osutils.WriteFile(src_manifest, CONTENTS)
-    repository.PrepManifestForRepo(git_repo, src_manifest)
-
-    self.assertEqual(CONTENTS, osutils.ReadFile(dst_manifest))
-
-    # Update it.
-    osutils.WriteFile(src_manifest, CONTENTS2)
-    repository.PrepManifestForRepo(git_repo, src_manifest)
-
-    self.assertEqual(CONTENTS2, osutils.ReadFile(dst_manifest))
-
-    # Update it again with same manifest.
-    repository.PrepManifestForRepo(git_repo, src_manifest)
-
-    self.assertEqual(CONTENTS2, osutils.ReadFile(dst_manifest))
-
-
 class RepoSyncTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
   """Test cases related to repository Sync"""
 
