@@ -36,6 +36,11 @@ const char kSyncShortNudgeDelayForTest[] = "sync-short-nudge-delay-for-test";
 const base::Feature kSyncClearDataOnPassphraseEncryption{
     "ClearSyncDataOnPassphraseEncryption", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, allows the Sync machinery ("transport layer") to start
+// independently of Sync-the-feature.
+const base::Feature kSyncStandaloneTransport{"SyncStandaloneTransport",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Gates registration and construction of user events machinery. Enabled by
 // default as each use case should have their own gating feature as well.
 const base::Feature kSyncUserEvents{"SyncUserEvents",

@@ -65,6 +65,10 @@ class TestSyncService : public browser_sync::TestProfileSyncService {
 
   State GetState() const override { return state_; }
 
+  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
+
+  bool IsFirstSetupComplete() const override { return true; }
+
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     return syncer::ModelTypeSet::All();
   }

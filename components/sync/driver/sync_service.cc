@@ -13,6 +13,10 @@ SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
   on_destroy_.Run();
 }
 
+bool SyncService::IsSyncFeatureEnabled() const {
+  return GetDisableReasons() == DISABLE_REASON_NONE && IsFirstSetupComplete();
+}
+
 bool SyncService::CanSyncStart() const {
   return GetDisableReasons() == DISABLE_REASON_NONE;
 }
@@ -34,6 +38,9 @@ bool SyncService::IsEngineInitialized() const {
 }
 
 bool SyncService::IsSyncActive() const {
+  if (!IsSyncFeatureEnabled()) {
+    return false;
+  }
   switch (GetState()) {
     case State::DISABLED:
     case State::WAITING_FOR_START_REQUEST:

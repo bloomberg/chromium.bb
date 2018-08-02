@@ -159,6 +159,10 @@ DataTypeController::TypeMap BuildDataTypeControllerMap(
   return type_map;
 }
 
+bool IsStandaloneTransportEnabled() {
+  return base::FeatureList::IsEnabled(switches::kSyncStandaloneTransport);
+}
+
 }  // namespace
 
 ProfileSyncService::InitParams::InitParams() = default;
@@ -245,7 +249,7 @@ void ProfileSyncService::Initialize() {
   startup_controller_ = std::make_unique<syncer::StartupController>(
       base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
                           base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::ShouldSyncStart,
+      base::BindRepeating(&ProfileSyncService::ShouldStartEngine,
                           base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
                           base::Unretained(this)));
@@ -428,7 +432,7 @@ void ProfileSyncService::AccountStateChanged() {
     DCHECK(!engine_);
   } else {
     DCHECK(!engine_);
-    startup_controller_->TryStart(IsSetupInProgress());
+    startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
   }
 }
 
@@ -448,10 +452,34 @@ void ProfileSyncService::CredentialsChanged() {
   NotifyObservers();
 }
 
-bool ProfileSyncService::ShouldSyncStart(bool bypass_first_setup_check) {
-  if (!CanSyncStart()) {
+bool ProfileSyncService::IsEngineAllowedToStart() const {
+  int disable_reasons = GetDisableReasons();
+  if (IsStandaloneTransportEnabled()) {
+    // USER_CHOICE (i.e. the Sync feature toggle) and PLATFORM_OVERRIDE (i.e.
+    // Android's "MasterSync" toggle) do not prevent starting up the Sync
+    // transport.
+    const int kDisableReasonMask =
+        ~(DISABLE_REASON_USER_CHOICE | DISABLE_REASON_PLATFORM_OVERRIDE);
+    disable_reasons &= kDisableReasonMask;
+  }
+  return disable_reasons == DISABLE_REASON_NONE;
+}
+
+bool ProfileSyncService::ShouldStartEngine(
+    bool bypass_first_setup_check) const {
+  if (!IsEngineAllowedToStart()) {
     return false;
   }
+  // If standalone transport is enabled, we always start the engine as soon as
+  // we can.
+  if (IsStandaloneTransportEnabled()) {
+    return true;
+  }
+  // Without standalone transport, we generally wait for first-time setup to be
+  // complete before starting the engine (because if it isn't, we can't
+  // configure the DataTypeManager anyway). Note that if a setup is currently in
+  // progress (which requires the engine to be initialized), then
+  // |bypass_first_setup_check| will be set to true.
   return bypass_first_setup_check || IsFirstSetupComplete();
 }
 
@@ -535,7 +563,7 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
 }
 
 void ProfileSyncService::StartUpSlowEngineComponents() {
-  DCHECK(CanSyncStart());
+  DCHECK(IsEngineAllowedToStart());
 
   engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
       debug_identifier_, sync_client_->GetInvalidationService(),
@@ -763,7 +791,7 @@ int ProfileSyncService::GetDisableReasons() const {
 syncer::SyncService::State ProfileSyncService::GetState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (GetDisableReasons() != DISABLE_REASON_NONE) {
+  if (!IsEngineAllowedToStart()) {
     // We shouldn't have an engine while in a disabled state, with one
     // exception: When encountering an unrecoverable error, we post a task to
     // shut down instead of doing it immediately, so there's a brief timeframe
@@ -774,9 +802,6 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
     DCHECK(HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR) || !engine_);
     return State::DISABLED;
   }
-
-  // Since there is no disable reason, Sync can start in principle.
-  DCHECK(CanSyncStart());
 
   // Typically, Sync won't start until the initial setup is at least in
   // progress. StartupController::TryStartImmediately bypasses the first setup
@@ -809,9 +834,10 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
     return State::PENDING_DESIRED_CONFIGURATION;
   }
 
-  // The DataTypeManager shouldn't get configured (i.e. leave the STOPPED state)
-  // before the initial setup is complete.
-  DCHECK(IsFirstSetupComplete());
+  // Unless standalone transport is enabled, the DataTypeManager shouldn't get
+  // configured (i.e. leave the STOPPED state) before the initial setup is
+  // complete.
+  DCHECK(IsStandaloneTransportEnabled() || IsFirstSetupComplete());
 
   // Note that if a setup is started after the data types have been configured,
   // then they'll stay configured even though CanConfigureDataTypes will be
@@ -1296,7 +1322,13 @@ const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
 }
 
 bool ProfileSyncService::CanConfigureDataTypes() const {
-  return data_type_manager_ && IsFirstSetupComplete() && !IsSetupInProgress();
+  // TODO(crbug.com/856179): Arguably, IsSetupInProgress() shouldn't prevent
+  // configuring data types in transport mode, but at least for now, it's
+  // easier to keep it like this. Changing this will likely require changes to
+  // the setup UI flow.
+  return data_type_manager_ &&
+         (IsFirstSetupComplete() || IsStandaloneTransportEnabled()) &&
+         !IsSetupInProgress();
 }
 
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
@@ -1562,7 +1594,15 @@ void ProfileSyncService::ConfigureDataTypeManager(
   DCHECK(!configure_context.cache_guid.empty());
   DCHECK_NE(configure_context.reason, syncer::CONFIGURE_REASON_UNKNOWN);
 
-  data_type_manager_->Configure(GetPreferredDataTypes(), configure_context);
+  syncer::ModelTypeSet types = GetPreferredDataTypes();
+  // If Sync-the-feature isn't fully enabled, then only a subset of data types
+  // is supported.
+  if (!IsSyncFeatureEnabled()) {
+    DCHECK(IsStandaloneTransportEnabled());
+    const syncer::ModelTypeSet allowed_types = {syncer::USER_CONSENTS};
+    types = Intersection(types, allowed_types);
+  }
+  data_type_manager_->Configure(types, configure_context);
 }
 
 syncer::UserShare* ProfileSyncService::GetUserShare() const {
@@ -1739,6 +1779,7 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
     StopImpl(CLEAR_DATA);
   } else {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
+    DCHECK(!engine_);
     startup_controller_->TryStart(IsSetupInProgress());
   }
 }
@@ -1966,6 +2007,14 @@ void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_prefs_.SetSyncRequested(false);
   StopImpl(data_fate);
+
+  // TODO(crbug.com/856179): Evaluate whether we can get away without a full
+  // restart (i.e. just reconfigure plus whatever cleanup is necessary).
+  // Especially in the CLEAR_DATA case, StopImpl does a lot of cleanup that
+  // might still be required.
+  if (IsStandaloneTransportEnabled()) {
+    startup_controller_->TryStart(/*force_immediate=*/false);
+  }
 }
 
 void ProfileSyncService::RequestStart() {
@@ -1980,7 +2029,12 @@ void ProfileSyncService::RequestStart() {
     sync_prefs_.SetSyncRequested(true);
     NotifyObservers();
   }
-  startup_controller_->TryStart(/*force_immediate=*/true);
+  // If Sync-the-transport was already running, just reconfigure.
+  if (IsStandaloneTransportEnabled() && engine_initialized_) {
+    ReconfigureDatatypeManager();
+  } else {
+    startup_controller_->TryStart(/*force_immediate=*/true);
+  }
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager() {

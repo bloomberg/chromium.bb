@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
@@ -30,12 +31,25 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
   explicit SyncDisabledChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
+  SyncDisabledChecker(ProfileSyncService* service,
+                      base::OnceClosure condition_satisfied_callback)
+      : SingleClientStatusChangeChecker(service),
+        condition_satisfied_callback_(std::move(condition_satisfied_callback)) {
+  }
+
   bool IsExitConditionSatisfied() override {
-    return !service()->IsSetupInProgress() &&
-           !service()->IsFirstSetupComplete();
+    bool satisfied =
+        !service()->IsSetupInProgress() && !service()->IsFirstSetupComplete();
+    if (satisfied && condition_satisfied_callback_) {
+      std::move(condition_satisfied_callback_).Run();
+    }
+    return satisfied;
   }
 
   std::string GetDebugMessage() const override { return "Sync Disabled"; }
+
+ private:
+  base::OnceClosure condition_satisfied_callback_;
 };
 
 class SyncEngineStoppedChecker : public SingleClientStatusChangeChecker {
@@ -188,22 +202,31 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
 
   std::string description = "Not My Fault";
   std::string url = "www.google.com";
-  EXPECT_TRUE(GetFakeServer()->TriggerActionableError(
-      sync_pb::SyncEnums::NOT_MY_BIRTHDAY,
-      description,
-      url,
+  ASSERT_TRUE(GetFakeServer()->TriggerActionableError(
+      sync_pb::SyncEnums::NOT_MY_BIRTHDAY, description, url,
       sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT));
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
-  ASSERT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
-  syncer::SyncStatus status;
-  GetSyncService(0)->QueryDetailedSyncStatus(&status);
-  ASSERT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
-  ASSERT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
-  ASSERT_EQ(status.sync_protocol_error.url, url);
-  ASSERT_EQ(status.sync_protocol_error.error_description, description);
+
+  auto condition = base::BindLambdaForTesting([&]() {
+    syncer::SyncStatus status;
+    GetSyncService(0)->QueryDetailedSyncStatus(&status);
+
+    // Note: If SyncStandaloneTransport is enabled, then on
+    // receiving the error, the SyncService will immediately
+    // start up again in transport mode, which resets the
+    // status. So query the status that the checker recorded at
+    // the time Sync was off. syncer::SyncStatus status =
+    // checker.GetSyncStatusAtExit();
+    EXPECT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
+    EXPECT_EQ(status.sync_protocol_error.action,
+              syncer::DISABLE_SYNC_ON_CLIENT);
+    EXPECT_EQ(status.sync_protocol_error.url, url);
+    EXPECT_EQ(status.sync_protocol_error.error_description, description);
+  });
+  EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0), condition).Wait());
 }
 
 // Tests that on receiving CLIENT_DATA_OBSOLETE sync engine gets restarted and

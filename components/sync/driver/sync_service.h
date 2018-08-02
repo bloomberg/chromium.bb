@@ -85,9 +85,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   // The overall state of the SyncService, in ascending order of "activeness".
   enum class State {
-    // Sync is disabled, e.g. due to enterprise policy, or because the user has
-    // disabled it, or simply because there is no authenticated user. Call
-    // GetDisableReasons to figure out which of these it is.
+    // Sync is inactive, e.g. due to enterprise policy, or simply because there
+    // is no authenticated user.
     DISABLED,
     // Sync can start in principle, but nothing has prodded it to actually do it
     // yet. Note that during subsequent browser startups, Sync starts
@@ -144,6 +143,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   // Returns the set of reasons that are keeping Sync disabled, as a bitmask of
   // DisableReason enum entries.
+  // Note: This refers to Sync-the-feature. Sync-the-transport may be running
+  // even in the presence of disable reasons.
   virtual int GetDisableReasons() const = 0;
   // Helper that returns whether GetDisableReasons() contains the given |reason|
   // (possibly among others).
@@ -153,6 +154,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   // Returns the overall state of the SyncService. See the enum definition for
   // what the individual states mean.
+  // Note: This refers to Sync-the-transport, which may be active even if
+  // Sync-the-feature is disabled by the user, by enterprise policy, etc.
   // Note: If your question is "Are we actually sending this data to Google?" or
   // "Am I allowed to send this type of data to Google?", you probably want
   // syncer::GetUploadToGoogleState instead of this.
@@ -177,6 +180,13 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // DERIVED STATE ACCESS
   //////////////////////////////////////////////////////////////////////////////
 
+  // Returns whether all conditions are satisfied for Sync-the-feature to start.
+  // This means that there are no disable reasons, and first-time Sync setup has
+  // been completed by the user.
+  // Note: This does not imply that Sync is actually running. Check GetState to
+  // get the current state of Sync-the-transport.
+  bool IsSyncFeatureEnabled() const;
+
   // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
   // Equivalent to "HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)".
   bool HasUnrecoverableError() const;
@@ -184,16 +194,23 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // DEPRECATED! Use GetState instead. Equivalent to
   // "GetState() == State::PENDING_DESIRED_CONFIGURATION ||
   // GetState() == State::CONFIGURING || GetState() == State::ACTIVE".
+  // Note: This refers to Sync-the-transport, which may be active even if
+  // Sync-the-feature is disabled by the user, by enterprise policy, etc.
   bool IsEngineInitialized() const;
 
   // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
   // Equivalent to having no disable reasons, i.e.
   // "GetDisableReasons() == DISABLE_REASON_NONE".
+  // Note: This refers to Sync-the-feature. Sync-the-transport may be running
+  // even if this is false.
   bool CanSyncStart() const;
 
-  // DEPRECATED! Use GetState instead. Equivalent to
-  // "GetState() == State::CONFIGURING || GetState() == State::ACTIVE".
+  // Returns whether Sync-the-feature is active, which means GetState() is
+  // either State::CONFIGURING or State::ACTIVE and IsSyncFeatureEnabled() is
+  // true.
   // To see which datatypes are actually syncing, see GetActiveDataTypes().
+  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
+  // even if this is false.
   bool IsSyncActive() const;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -204,15 +221,21 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // if the user is customizing sync after already completing setup once).
   // SyncService uses this to determine if it's OK to start syncing, or if the
   // user is still setting up the initial sync configuration.
+  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
+  // independent of first-setup state.
   bool IsFirstSetupInProgress() const;
 
   // Whether the user has completed the initial Sync setup. This does not mean
   // that sync is currently running (due to delayed startup, unrecoverable
   // errors, or shutdown). If you want to know whether Sync is actually running,
   // use GetState instead.
+  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
+  // independent of first-setup state.
   virtual bool IsFirstSetupComplete() const = 0;
 
   // Called when Sync has been setup by the user and can be started.
+  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
+  // independent of first-setup state.
   virtual void SetFirstSetupComplete() = 0;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -262,6 +285,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // engine should clear its data directory when it shuts down. Generally
   // KEEP_DATA is used when the user just stops sync, and CLEAR_DATA is used
   // when they sign out of the profile entirely.
+  // Note: This refers to Sync-the-feature. Sync-the-transport may remain active
+  // after calling this.
   virtual void RequestStop(SyncStopDataFate data_fate) = 0;
 
   // Called when a datatype (SyncableService) has a need for sync to start
