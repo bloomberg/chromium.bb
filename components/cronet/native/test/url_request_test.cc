@@ -145,28 +145,46 @@ TEST_F(UrlRequestTest, InitChecks) {
                 request, engine, /* url = */ nullptr,
                 /* request_params = */ nullptr, /* callback = */ nullptr,
                 /* executor = */ nullptr));
+  Cronet_UrlRequest_Destroy(request);
+
+  request = Cronet_UrlRequest_Create();
   EXPECT_EQ(Cronet_RESULT_NULL_POINTER_PARAMS,
             Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                              /* request_params = */ nullptr,
                                              /* callback = */ nullptr,
                                              /* executor = */ nullptr));
+  Cronet_UrlRequest_Destroy(request);
+
+  request = Cronet_UrlRequest_Create();
   EXPECT_EQ(Cronet_RESULT_NULL_POINTER_CALLBACK,
             Cronet_UrlRequest_InitWithParams(
                 request, engine, url.c_str(), request_params,
                 /* callback = */ nullptr, /* executor = */ nullptr));
+  Cronet_UrlRequest_Destroy(request);
+
+  request = Cronet_UrlRequest_Create();
   EXPECT_EQ(Cronet_RESULT_NULL_POINTER_EXECUTOR,
             Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                              request_params, callback,
                                              /* executor = */ nullptr));
+  Cronet_UrlRequest_Destroy(request);
+
+  request = Cronet_UrlRequest_Create();
   EXPECT_EQ(Cronet_RESULT_NULL_POINTER_EXECUTOR,
             Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                              request_params, callback,
                                              /* executor = */ nullptr));
+  Cronet_UrlRequest_Destroy(request);
+
+  request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParams_http_method_set(request_params, "bad:method");
   EXPECT_EQ(
       Cronet_RESULT_ILLEGAL_ARGUMENT_INVALID_HTTP_METHOD,
       Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                        request_params, callback, executor));
+  Cronet_UrlRequest_Destroy(request);
+
+  request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParams_http_method_set(request_params, "HEAD");
   // Check header validation
   Cronet_HttpHeaderPtr http_header = Cronet_HttpHeader_Create();
@@ -176,7 +194,9 @@ TEST_F(UrlRequestTest, InitChecks) {
       Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                        request_params, callback, executor));
   Cronet_UrlRequestParams_request_headers_clear(request_params);
+  Cronet_UrlRequest_Destroy(request);
 
+  request = Cronet_UrlRequest_Create();
   Cronet_HttpHeader_name_set(http_header, "bad:name");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(
@@ -184,7 +204,9 @@ TEST_F(UrlRequestTest, InitChecks) {
       Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                        request_params, callback, executor));
   Cronet_UrlRequestParams_request_headers_clear(request_params);
+  Cronet_UrlRequest_Destroy(request);
 
+  request = Cronet_UrlRequest_Create();
   Cronet_HttpHeader_value_set(http_header, "header value");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(
@@ -192,11 +214,17 @@ TEST_F(UrlRequestTest, InitChecks) {
       Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                        request_params, callback, executor));
   Cronet_UrlRequestParams_request_headers_clear(request_params);
+  Cronet_UrlRequest_Destroy(request);
 
+  request = Cronet_UrlRequest_Create();
   Cronet_HttpHeader_name_set(http_header, "header-name");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(Cronet_RESULT_SUCCESS, Cronet_UrlRequest_InitWithParams(
                                        request, engine, url.c_str(),
+                                       request_params, callback, executor));
+  EXPECT_EQ(
+      Cronet_RESULT_ILLEGAL_STATE_REQUEST_ALREADY_INITIALIZED,
+      Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                        request_params, callback, executor));
   Cronet_HttpHeader_Destroy(http_header);
   Cronet_UrlRequest_Destroy(request);

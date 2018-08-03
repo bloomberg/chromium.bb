@@ -232,13 +232,10 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
 
   VLOG(1) << "New Cronet_UrlRequest: " << url;
 
-  // Tests call InitWithParams() repeatedly on the same Cronet_UrlRequestPtr,
-  // rather than Destroy()ing and creating a new one, so ensure that any prior
-  // |request_| is not leaked (see https://crbug.com/829077).
-  {
-    base::AutoLock lock(lock_);
-    if (request_)
-      request_->Destroy(false);
+  base::AutoLock lock(lock_);
+  if (request_) {
+    return engine_->CheckResult(
+        Cronet_RESULT_ILLEGAL_STATE_REQUEST_ALREADY_INITIALIZED);
   }
 
   request_ = new CronetURLRequest(
