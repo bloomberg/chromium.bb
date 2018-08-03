@@ -87,6 +87,9 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     MirrorOwnedProperty(window, root_window, kFrameImageOverlayActiveKey);
   } else if (key == kFrameImageOverlayInactiveKey) {
     MirrorOwnedProperty(window, root_window, kFrameImageOverlayInactiveKey);
+  } else if (key == kFrameImageYInsetKey) {
+    root_window->SetProperty(kFrameImageYInsetKey,
+                             window->GetProperty(kFrameImageYInsetKey));
   } else if (key == kFrameIsThemedByHostedAppKey) {
     root_window->SetProperty(kFrameIsThemedByHostedAppKey,
                              window->GetProperty(kFrameIsThemedByHostedAppKey));

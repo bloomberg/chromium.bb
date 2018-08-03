@@ -256,7 +256,7 @@ class Tab : public gfx::AnimationDelegate,
   void PaintTabBackground(gfx::Canvas* canvas,
                           bool active,
                           int fill_id,
-                          int y_offset,
+                          int y_inset,
                           const gfx::Path* clip);
 
   // Helper methods for PaintTabBackground.
@@ -267,7 +267,7 @@ class Tab : public gfx::AnimationDelegate,
                               SkColor active_color,
                               SkColor inactive_color,
                               int fill_id,
-                              int y_offset);
+                              int y_inset);
   void PaintTabBackgroundStroke(gfx::Canvas* canvas,
                                 const gfx::Path& fill_path,
                                 const gfx::Path& stroke_path,

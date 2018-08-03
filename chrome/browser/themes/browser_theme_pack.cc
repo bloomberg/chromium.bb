@@ -51,7 +51,7 @@ constexpr int kTallestTabHeight = 41;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 54;
+const int kThemePackVersion = 55;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -1386,21 +1386,10 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
       if (tab_it != images->end())
         overlay = tab_it->second.AsImageSkia();
 
-      // The height of the frame above the tabstrip in restored mode.
-      // Offsetting by this allows using semitransparent tab background images
-      // that will appear to overlay the frame at the correct position.
-      // Offsetting in all cases, and not just when there is an overlay, allows
-      // the tab painting code to avoid conditional positioning.
-      // TODO(pkasting): https://crbug.com/866671  For backwards-compat with
-      // existing themes, we should probably force this to 16 and update the
-      // frame and tab drawing code to match.  This might make themes with art
-      // right at the top of the frame look bad, though.
-      constexpr int kRestoredTabVerticalOffset = 8;
-
       auto source = std::make_unique<TabBackgroundImageSource>(
           frame_color, image_to_tint, overlay,
           GetTintInternal(ThemeProperties::TINT_BACKGROUND_TAB),
-          kRestoredTabVerticalOffset);
+          ThemeProperties::kFrameHeightAboveTabs);
       gfx::Size dest_size = image_to_tint.size();
       dest_size.SetToMax(gfx::Size(0, kTallestTabHeight));
       const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));

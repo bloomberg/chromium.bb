@@ -171,6 +171,15 @@ class ThemeProperties {
 #endif  // OS_WIN
   };
 
+  // Themes are hardcoded to draw frame images as if they start this many DIPs
+  // above the top of the tabstrip, no matter how much space actually exists.
+  // This aids with backwards compatibility (for some themes; Chrome's behavior
+  // has been inconsistent over time), provides a consistent alignment point for
+  // theme authors, and ensures the frame image won't need to be mirrored above
+  // the tabs in Refresh (since frame heights above the tabs are never greater
+  // than this).
+  static constexpr int kFrameHeightAboveTabs = 16;
+
   // Used by the browser theme pack to parse alignments from something like
   // "top left" into a bitmask of Alignment.
   static int StringToAlignment(const std::string& alignment);

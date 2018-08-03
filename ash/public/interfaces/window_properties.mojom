@@ -31,6 +31,9 @@ const string kFrameImageOverlayActive_Property =
 const string kFrameImageOverlayInactive_Property =
     "ash:frame-image-overlay-inactive";
 
+// A property that controls where a themed window's image is painted.
+const string kFrameImageYInset_Property = "ash:frame-image-y-inset";
+
 // A boolean that tells Ash whether the frame's colors come from a PWA manifest.
 const string kFrameIsThemedByHostedApp_Property =
     "ash:frame-is-themed-by-hosted-app";
