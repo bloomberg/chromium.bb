@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "content/public/browser/redirect_checker.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -46,6 +47,26 @@ class WebRequestProxyingURLLoaderFactory
     : public WebRequestAPI::Proxy,
       public network::mojom::URLLoaderFactory {
  public:
+  // Class to allow redirects from the web request API.
+  class AllowUnsafeRedirectChecker : public content::RedirectChecker {
+   public:
+    AllowUnsafeRedirectChecker();
+
+    // content::RedirectChecker implementation:
+    bool ShouldAllowRedirect(int32_t request_id,
+                             const net::RedirectInfo& redirect_info) override;
+
+    void set_proxy(base::WeakPtr<WebRequestProxyingURLLoaderFactory> proxy) {
+      proxy_ = std::move(proxy);
+    }
+
+   protected:
+    ~AllowUnsafeRedirectChecker() override;
+
+   private:
+    base::WeakPtr<WebRequestProxyingURLLoaderFactory> proxy_;
+  };
+
   class InProgressRequest : public network::mojom::URLLoader,
                             public network::mojom::URLLoaderClient {
    public:
@@ -93,6 +114,8 @@ class WebRequestProxyingURLLoaderFactory
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         WebRequestAPI::AuthRequestCallback callback);
 
+    const GURL& redirect_url() const { return redirect_url_; }
+
    private:
     void ContinueToBeforeSendHeaders(int error_code);
     void ContinueToSendHeaders(int error_code);
@@ -135,15 +158,10 @@ class WebRequestProxyingURLLoaderFactory
     network::ResourceResponseHead current_response_;
     scoped_refptr<net::HttpResponseHeaders> override_headers_;
     GURL redirect_url_;
-    GURL allowed_unsafe_redirect_url_;
 
     // Holds any provided auth credentials through the extent of the request's
     // lifetime.
     base::Optional<net::AuthCredentials> auth_credentials_;
-
-    // Iff |true| we will ignore the next incoming |FollowRedirect()| call from
-    // our client.
-    bool ignore_next_follow_redirect_ = false;
 
     base::WeakPtrFactory<InProgressRequest> weak_factory_;
 
@@ -159,7 +177,8 @@ class WebRequestProxyingURLLoaderFactory
       InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      WebRequestAPI::ProxySet* proxies);
+      WebRequestAPI::ProxySet* proxies,
+      scoped_refptr<AllowUnsafeRedirectChecker> redirect_checker);
 
   ~WebRequestProxyingURLLoaderFactory() override;
 
@@ -172,7 +191,8 @@ class WebRequestProxyingURLLoaderFactory
       InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      scoped_refptr<WebRequestAPI::ProxySet> proxies);
+      scoped_refptr<WebRequestAPI::ProxySet> proxies,
+      scoped_refptr<AllowUnsafeRedirectChecker> redirect_checker);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,
@@ -215,6 +235,13 @@ class WebRequestProxyingURLLoaderFactory
   // A mapping from the network stack's notion of request ID to our own
   // internally generated request ID for the same request.
   std::map<int32_t, uint64_t> network_request_id_to_web_request_id_;
+
+  // Class used to check if a redirect came from the web request API and should
+  // be considered safe. A reference to this should be passed to the target
+  // URLLoader, so it can skip redirect safety checks if necessary.
+  scoped_refptr<AllowUnsafeRedirectChecker> redirect_checker_;
+
+  base::WeakPtrFactory<WebRequestProxyingURLLoaderFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestProxyingURLLoaderFactory);
 };
