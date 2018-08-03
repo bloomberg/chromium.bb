@@ -69,7 +69,6 @@ class PointerLockController;
 class ScopedPagePauser;
 class ScrollingCoordinator;
 class ScrollbarTheme;
-class SmoothScrollSequencer;
 class Settings;
 class ConsoleMessageStorage;
 class TopDocumentRootScrollerController;
@@ -186,8 +185,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void SetValidationMessageClient(ValidationMessageClient*);
 
   ScrollingCoordinator* GetScrollingCoordinator();
-
-  SmoothScrollSequencer* GetSmoothScrollSequencer();
 
   DOMRectList* NonFastScrollableRectsForTesting(const LocalFrame*);
 
@@ -357,7 +354,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const std::unique_ptr<PageScaleConstraintsSet> page_scale_constraints_set_;
   const Member<PointerLockController> pointer_lock_controller_;
   Member<ScrollingCoordinator> scrolling_coordinator_;
-  Member<SmoothScrollSequencer> smooth_scroll_sequencer_;
   const Member<BrowserControls> browser_controls_;
   const Member<ConsoleMessageStorage> console_message_storage_;
   const Member<TopDocumentRootScrollerController>

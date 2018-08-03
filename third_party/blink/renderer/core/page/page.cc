@@ -217,13 +217,6 @@ PageScaleConstraintsSet& Page::GetPageScaleConstraintsSet() {
   return *page_scale_constraints_set_;
 }
 
-SmoothScrollSequencer* Page::GetSmoothScrollSequencer() {
-  if (!smooth_scroll_sequencer_)
-    smooth_scroll_sequencer_ = new SmoothScrollSequencer();
-
-  return smooth_scroll_sequencer_.Get();
-}
-
 const PageScaleConstraintsSet& Page::GetPageScaleConstraintsSet() const {
   return *page_scale_constraints_set_;
 }
@@ -726,7 +719,6 @@ void Page::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_menu_controller_);
   visitor->Trace(pointer_lock_controller_);
   visitor->Trace(scrolling_coordinator_);
-  visitor->Trace(smooth_scroll_sequencer_);
   visitor->Trace(browser_controls_);
   visitor->Trace(console_message_storage_);
   visitor->Trace(global_root_scroller_controller_);

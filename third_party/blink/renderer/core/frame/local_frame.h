@@ -96,6 +96,7 @@ class PerformanceMonitor;
 class PluginData;
 class ScriptController;
 class SharedBuffer;
+class SmoothScrollSequencer;
 class SpellChecker;
 class TextSuggestionController;
 class WebComputedAXTree;
@@ -366,6 +367,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void BindPreviewsResourceLoadingHintsRequest(
       blink::mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request);
 
+  SmoothScrollSequencer& GetSmoothScrollSequencer();
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -449,6 +452,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<AdTracker> ad_tracker_;
   Member<IdlenessDetector> idleness_detector_;
   Member<InspectorTraceEvents> inspector_trace_events_;
+  // SmoothScrollSequencer is only populated for local roots; all local frames
+  // use the instance owned by their local root.
+  Member<SmoothScrollSequencer> smooth_scroll_sequencer_;
 
   InterfaceRegistry* const interface_registry_;
 

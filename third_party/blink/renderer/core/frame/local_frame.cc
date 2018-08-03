@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -300,6 +301,7 @@ void LocalFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_method_controller_);
   visitor->Trace(text_suggestion_controller_);
   visitor->Trace(computed_node_mapping_);
+  visitor->Trace(smooth_scroll_sequencer_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -1450,6 +1452,14 @@ void LocalFrame::BindPreviewsResourceLoadingHintsRequest(
   previews_resource_loading_hints_receiver_ =
       std::make_unique<PreviewsResourceLoadingHintsReceiverImpl>(
           std::move(request), GetDocument());
+}
+
+SmoothScrollSequencer& LocalFrame::GetSmoothScrollSequencer() {
+  if (!IsLocalRoot())
+    return LocalFrameRoot().GetSmoothScrollSequencer();
+  if (!smooth_scroll_sequencer_)
+    smooth_scroll_sequencer_ = new SmoothScrollSequencer();
+  return *smooth_scroll_sequencer_;
 }
 
 ukm::UkmRecorder* LocalFrame::GetUkmRecorder() {
