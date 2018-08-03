@@ -722,30 +722,13 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 }
 
-static void read_intra_frame_mode_info(AV1_COMMON *const cm,
-                                       MACROBLOCKD *const xd, int mi_row,
-                                       int mi_col, aom_reader *r) {
-  MB_MODE_INFO *const mbmi = xd->mi[0];
-  const MB_MODE_INFO *above_mi = xd->above_mbmi;
-  const MB_MODE_INFO *left_mi = xd->left_mbmi;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  struct segmentation *const seg = &cm->seg;
-
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-
-  if (seg->segid_preskip)
-    mbmi->segment_id =
-        read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, 0);
-
-  mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
-
-  if (!seg->segid_preskip)
-    mbmi->segment_id =
-        read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, mbmi->skip);
-
-  read_cdef(cm, r, xd, mi_col, mi_row);
-
+// If delta q is present, reads delta_q index.
+// Also reads delta_q loop filter levels, if present.
+static void read_delta_q_params(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+                                const int mi_row, const int mi_col,
+                                aom_reader *r) {
   if (cm->delta_q_present_flag) {
+    MB_MODE_INFO *const mbmi = xd->mi[0];
     xd->current_qindex +=
         read_delta_qindex(cm, xd, r, mbmi, mi_col, mi_row) * cm->delta_q_res;
     /* Normative: Clamp to [1,MAXQ] to not interfere with lossless mode */
@@ -772,6 +755,32 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
       }
     }
   }
+}
+
+static void read_intra_frame_mode_info(AV1_COMMON *const cm,
+                                       MACROBLOCKD *const xd, int mi_row,
+                                       int mi_col, aom_reader *r) {
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  const MB_MODE_INFO *above_mi = xd->above_mbmi;
+  const MB_MODE_INFO *left_mi = xd->left_mbmi;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  struct segmentation *const seg = &cm->seg;
+
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+
+  if (seg->segid_preskip)
+    mbmi->segment_id =
+        read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, 0);
+
+  mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+
+  if (!seg->segid_preskip)
+    mbmi->segment_id =
+        read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, mbmi->skip);
+
+  read_cdef(cm, r, xd, mi_col, mi_row);
+
+  read_delta_q_params(cm, xd, mi_row, mi_col, r);
 
   mbmi->current_qindex = xd->current_qindex;
 
@@ -1514,33 +1523,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
   read_cdef(cm, r, xd, mi_col, mi_row);
 
-  if (cm->delta_q_present_flag) {
-    xd->current_qindex +=
-        read_delta_qindex(cm, xd, r, mbmi, mi_col, mi_row) * cm->delta_q_res;
-    /* Normative: Clamp to [1,MAXQ] to not interfere with lossless mode */
-    xd->current_qindex = clamp(xd->current_qindex, 1, MAXQ);
-    if (cm->delta_lf_present_flag) {
-      if (cm->delta_lf_multi) {
-        const int frame_lf_count =
-            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-        for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
-          const int tmp_lvl =
-              xd->delta_lf[lf_id] +
-              read_delta_lflevel(cm, xd, r, lf_id, mbmi, mi_col, mi_row) *
-                  cm->delta_lf_res;
-          mbmi->delta_lf[lf_id] = xd->delta_lf[lf_id] =
-              clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
-        }
-      } else {
-        const int tmp_lvl =
-            xd->delta_lf_from_base +
-            read_delta_lflevel(cm, xd, r, -1, mbmi, mi_col, mi_row) *
-                cm->delta_lf_res;
-        mbmi->delta_lf_from_base = xd->delta_lf_from_base =
-            clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
-      }
-    }
-  }
+  read_delta_q_params(cm, xd, mi_row, mi_col, r);
 
   if (!mbmi->skip_mode)
     inter_block = read_is_inter_block(cm, xd, mbmi->segment_id, r);
