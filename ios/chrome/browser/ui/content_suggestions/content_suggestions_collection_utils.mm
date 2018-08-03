@@ -260,7 +260,7 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
   UIImage* micImage =
       IsUIRefreshPhase1Enabled()
           ? [[UIImage imageNamed:@"location_bar_voice"]
-                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+                imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
           : [UIImage imageNamed:@"voice_icon"];
   [voiceSearchButton setImage:micImage forState:UIControlStateNormal];
   if (IsUIRefreshPhase1Enabled()) {
