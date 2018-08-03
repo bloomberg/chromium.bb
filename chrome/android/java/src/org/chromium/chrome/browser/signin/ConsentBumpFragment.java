@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.signin;
 
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.StringRes;
+import android.support.v4.app.FragmentTransaction;
+import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 
@@ -29,7 +32,14 @@ public class ConsentBumpFragment extends SigninFragmentBase {
 
     @Override
     protected void onSigninRefused() {
-        // TODO(https://crbug.com/869426): Show ConsentBumpMoreOptionsFragment.
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left,
+                android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+        // Get the id of the view that contains this fragment and replace the fragment.
+        @IdRes int containerId = ((ViewGroup) getView().getParent()).getId();
+        transaction.replace(containerId, new ConsentBumpMoreOptionsFragment());
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     @Override
