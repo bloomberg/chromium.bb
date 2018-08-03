@@ -66,6 +66,9 @@ constexpr int kSearchBoxFocusBorderCornerRadius = 28;
 constexpr float kOpacityStartFraction = 0.1f;
 constexpr float kOpacityEndFraction = 0.6f;
 
+// Minimum amount of characters required to enable autocomplete.
+constexpr int kMinimumLengthToAutocomplete = 2;
+
 // Gets the box layout inset horizontal padding for the state of AppListModel.
 int GetBoxLayoutPaddingForState(ash::AppListState state) {
   if (state == ash::AppListState::kStateSearchResults)
@@ -325,26 +328,30 @@ void SearchBoxView::OnWallpaperColorsChanged() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SearchBoxView::ProcessAutocomplete(bool is_search_result_list_view_first) {
-  if (!is_search_result_list_view_first || last_key_pressed_ == ui::VKEY_BACK ||
-      search_model_->results()->item_count() == 0) {
-    // No first result exists, backspace was pressed, or no results exist.
+void SearchBoxView::ProcessAutocomplete() {
+  // Current non-autocompleted text.
+  const base::string16& user_typed_text =
+      search_box()->text().substr(0, highlight_range_.start());
+  if (last_key_pressed_ == ui::VKEY_BACK ||
+      search_model_->results()->item_count() == 0 ||
+      user_typed_text.length() < kMinimumLengthToAutocomplete) {
+    // Backspace was pressed, or no results exist, or current text is too short
+    // for a confident autocomplete suggestion.
     ClearAutocompleteText();
     return;
   }
 
-  const base::string16& current_text = search_box()->text();
   const base::string16& details =
       search_model_->results()->GetItemAt(0)->details();
   const base::string16& search_text =
       search_model_->results()->GetItemAt(0)->title();
-  if (base::StartsWith(details, current_text,
+  if (base::StartsWith(details, user_typed_text,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     // Current text in the search_box matches the first result's url.
     SetAutocompleteText(details);
     return;
   }
-  if (base::StartsWith(search_text, current_text,
+  if (base::StartsWith(search_text, user_typed_text,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     // Current text in the search_box matches the first result's search result
     // text.
@@ -420,15 +427,13 @@ void SearchBoxView::SetAutocompleteText(
   if (autocomplete_text.length() == current_text.length())
     return;
 
-  search_box()->SetText(autocomplete_text);
+  const base::string16& user_typed_text =
+      current_text.substr(0, highlight_range_.start());
+  const base::string16& highlighted_text =
+      autocomplete_text.substr(highlight_range_.start());
+  search_box()->SetText(user_typed_text + highlighted_text);
   highlight_range_.set_end(autocomplete_text.length());
   search_box()->SelectRange(highlight_range_);
-}
-
-void SearchBoxView::UpdateAutocompleteSelectionRange(uint32_t start,
-                                                     uint32_t end) {
-  highlight_range_.set_start(start);
-  highlight_range_.set_end(end);
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
