@@ -28,9 +28,6 @@ CROS_TREE_STATUS_URL = 'https://chromiumos-status.appspot.com'
 CROS_TREE_STATUS_JSON_URL = '%s/current?format=json' % CROS_TREE_STATUS_URL
 CROS_TREE_STATUS_UPDATE_URL = '%s/status' % CROS_TREE_STATUS_URL
 
-_USER_NAME = 'buildbot@chromium.org'
-_PASSWORD_PATH = '/home/chrome-bot/.status_password_chromiumos'
-
 _LUCI_MILO_BUILDBOT_URL = 'https://luci-milo.appspot.com/buildbot'
 _LEGOLAND_BUILD_URL = ('https://cros-goldeneye.corp.google.com/chromeos/'
                        'healthmonitoring/buildDetails?buildbucketId='
@@ -58,14 +55,6 @@ DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT = 60 * 3
 
 # Match EXPERIMENTAL= case-insensitive.
 EXPERIMENTAL_BUILDERS_RE = re.compile(r'EXPERIMENTAL=(\S+)', re.IGNORECASE)
-
-
-class PasswordFileDoesNotExist(Exception):
-  """Raised when password file does not exist."""
-
-
-class InvalidTreeStatus(Exception):
-  """Raised when user wants to set an invalid tree status."""
 
 
 def _GetStatusDict(status_url, raw_message=False):
@@ -237,143 +226,6 @@ def GetExperimentalBuilders(status_url=None, timeout=1):
     return experimental
 
   return retry_util.GenericRetry(lambda _: True, 3, _get_status_dict, sleep=1)
-
-def _GetPassword():
-  """Returns the password for updating tree status."""
-  if not os.path.exists(_PASSWORD_PATH):
-    raise PasswordFileDoesNotExist(
-        'Unable to retrieve password. %s does not exist',
-        _PASSWORD_PATH)
-
-  return osutils.ReadFile(_PASSWORD_PATH).strip()
-
-
-def _UpdateTreeStatus(status_url, message):
-  """Updates the tree status to |message|.
-
-  Args:
-    status_url: The tree status URL.
-    message: The tree status text to post .
-  """
-  password = _GetPassword()
-  params = urllib.urlencode({
-      'message': message,
-      'username': _USER_NAME,
-      'password': password,
-  })
-  headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-  req = urllib2.Request(status_url, data=params, headers=headers)
-  try:
-    urllib2.urlopen(req)
-  except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
-    logging.error('Unable to update tree status: %s', e)
-    raise e
-  else:
-    logging.info('Updated tree status with message: %s', message)
-
-
-def UpdateTreeStatus(status, message, announcer='cbuildbot', epilogue='',
-                     status_url=None, dryrun=False):
-  """Updates the tree status to |status| with additional |message|.
-
-  Args:
-    status: A status in constants.VALID_TREE_STATUSES.
-    message: A string to display as part of the tree status.
-    announcer: The announcer the message.
-    epilogue: The string to append to |message|.
-    status_url: The URL of the tree status to update.
-    dryrun: If set, don't update the tree status.
-  """
-  if status_url is None:
-    status_url = CROS_TREE_STATUS_UPDATE_URL
-
-  if status not in constants.VALID_TREE_STATUSES:
-    raise InvalidTreeStatus('%s is not a valid tree status.' % status)
-
-  if status == 'maintenance':
-    # This is a special case because "Tree is maintenance" is
-    # grammatically incorrect.
-    status = 'under maintenance'
-
-  text_dict = {
-      'status': status,
-      'epilogue': epilogue,
-      'announcer': announcer,
-      'message': message,
-      'delimiter': MESSAGE_DELIMITER
-  }
-  if epilogue:
-    text = ('Tree is %(status)s (%(announcer)s: %(message)s %(delimiter)s '
-            '%(epilogue)s)' % text_dict)
-  else:
-    text = 'Tree is %(status)s (%(announcer)s: %(message)s)' % text_dict
-
-  if dryrun:
-    logging.info('Would have updated the tree status with message: %s', text)
-  else:
-    _UpdateTreeStatus(status_url, text)
-
-
-def ThrottleOrCloseTheTree(announcer, message, internal=None, buildnumber=None,
-                           dryrun=False):
-  """Throttle or close the tree with |message|.
-
-  By default, this function throttles the tree with an updated
-  message. If the tree is already not open, it will keep the original
-  status (closed, maintenance) and only update the message. This
-  ensures that we do not lower the severity of tree closure.
-
-  In the case where the tree is not open, the previous tree status
-  message is kept by prepending it to |message|, if possible. This
-  ensures that the cause of the previous tree closure remains visible.
-
-  Args:
-    announcer: The announcer the message.
-    message: A string to display as part of the tree status.
-    internal: Whether the build is internal or not. Append the build type
-      if this is set. Defaults to None.
-    buildnumber: The build number to append.
-    dryrun: If set, generate the message but don't update the tree status.
-  """
-  # Get current tree status.
-  status_dict = _GetStatusDict(CROS_TREE_STATUS_JSON_URL)
-  current_status = status_dict.get(TREE_STATUS_STATE)
-  current_msg = status_dict.get(TREE_STATUS_MESSAGE)
-
-  status = constants.TREE_THROTTLED
-  if (constants.VALID_TREE_STATUSES.index(current_status) >
-      constants.VALID_TREE_STATUSES.index(status)):
-    # Maintain the current status if it is more servere than throttled.
-    status = current_status
-
-  epilogue = ''
-  # Don't prepend the current status message if the tree is open.
-  if current_status != constants.TREE_OPEN and current_msg:
-    # Scan the current message and discard the text by the same
-    # announcer.
-    chunks = [x.strip() for x in current_msg.split(MESSAGE_DELIMITER)
-              if '%s' % announcer not in x.strip()]
-    current_msg = MESSAGE_DELIMITER.join(chunks)
-
-    if any(x for x in MESSAGE_KEYWORDS if x.lower() in
-           current_msg.lower().split()):
-      # The waterfall scans the message for keywords to change the
-      # tree status. Don't prepend the current status message if it
-      # contains such keywords.
-      logging.warning('Cannot prepend the previous tree status message because '
-                      'there are keywords that may affect the tree state.')
-    else:
-      epilogue = current_msg
-
-  if internal is not None:
-    # 'p' stands for 'public.
-    announcer += '-i' if internal else '-p'
-
-  if buildnumber:
-    announcer = '%s-%d' % (announcer, buildnumber)
-
-  UpdateTreeStatus(status, message, announcer=announcer, epilogue=epilogue,
-                   dryrun=dryrun)
 
 
 def _OpenSheriffURL(sheriff_url):
