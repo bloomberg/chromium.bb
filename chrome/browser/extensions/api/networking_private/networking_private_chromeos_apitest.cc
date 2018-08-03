@@ -423,6 +423,9 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
         kWifi1ServicePath, shill::kConnectableProperty, base::Value(true));
     service_test_->SetServiceProperty(kWifi1ServicePath, shill::kDeviceProperty,
                                       base::Value(kWifiDevicePath));
+    service_test_->SetServiceProperty(
+        kWifi1ServicePath, shill::kTetheringProperty,
+        base::Value(shill::kTetheringNotDetectedState));
     base::DictionaryValue static_ipconfig;
     static_ipconfig.SetKey(shill::kAddressProperty, base::Value("1.2.3.4"));
     service_test_->SetServiceProperty(
@@ -444,6 +447,9 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
         kWifi2ServicePath, shill::kSignalStrengthProperty, base::Value(80));
     service_test_->SetServiceProperty(
         kWifi2ServicePath, shill::kConnectableProperty, base::Value(true));
+    service_test_->SetServiceProperty(
+        kWifi2ServicePath, shill::kTetheringProperty,
+        base::Value(shill::kTetheringNotDetectedState));
 
     AddService("stub_wimax", "wimax", shill::kTypeWimax, shill::kStateOnline);
     service_test_->SetServiceProperty(

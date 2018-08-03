@@ -84,6 +84,18 @@ arc::mojom::SecurityType TranslateONCWifiSecurityType(
   return arc::mojom::SecurityType::NONE;
 }
 
+arc::mojom::TetheringClientState TranslateTetheringState(
+    const std::string& tethering_state) {
+  if (tethering_state == onc::tethering_state::kTetheringConfirmedState)
+    return arc::mojom::TetheringClientState::CONFIRMED;
+  else if (tethering_state == onc::tethering_state::kTetheringNotDetectedState)
+    return arc::mojom::TetheringClientState::NOT_DETECTED;
+  else if (tethering_state == onc::tethering_state::kTetheringSuspectedState)
+    return arc::mojom::TetheringClientState::SUSPECTED;
+  NOTREACHED() << "Invalid tethering state: " << tethering_state;
+  return arc::mojom::TetheringClientState::NOT_DETECTED;
+}
+
 arc::mojom::WiFiPtr TranslateONCWifi(const base::DictionaryValue* dict) {
   arc::mojom::WiFiPtr wifi = arc::mojom::WiFi::New();
 
@@ -104,6 +116,14 @@ arc::mojom::WiFiPtr TranslateONCWifi(const base::DictionaryValue* dict) {
   dict->GetInteger(onc::wifi::kSignalStrength, &wifi->signal_strength);
 
   return wifi;
+}
+
+// Extracts WiFi's tethering client state from a dictionary of WiFi properties.
+arc::mojom::TetheringClientState GetWifiTetheringClientState(
+    const base::DictionaryValue* dict) {
+  std::string tethering_state;
+  dict->GetString(onc::wifi::kTetheringState, &tethering_state);
+  return TranslateTetheringState(tethering_state);
 }
 
 std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
@@ -181,6 +201,9 @@ void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
                                     arc::mojom::NetworkConfiguration* mojo) {
   std::string type = GetStringFromOncDictionary(
       dict, onc::network_config::kType, true /* required */);
+  // This property will be updated as required by the relevant network types
+  // below.
+  mojo->tethering_client_state = arc::mojom::TetheringClientState::NOT_DETECTED;
   if (type == onc::network_type::kCellular) {
     mojo->type = arc::mojom::NetworkType::CELLULAR;
   } else if (type == onc::network_type::kEthernet) {
@@ -189,11 +212,11 @@ void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
     mojo->type = arc::mojom::NetworkType::VPN;
   } else if (type == onc::network_type::kWiFi) {
     mojo->type = arc::mojom::NetworkType::WIFI;
-
     const base::DictionaryValue* wifi_dict = nullptr;
     dict->GetDictionary(onc::network_config::kWiFi, &wifi_dict);
     DCHECK(wifi_dict);
     mojo->wifi = TranslateONCWifi(wifi_dict);
+    mojo->tethering_client_state = GetWifiTetheringClientState(wifi_dict);
   } else if (type == onc::network_type::kWimax) {
     mojo->type = arc::mojom::NetworkType::WIMAX;
   } else {

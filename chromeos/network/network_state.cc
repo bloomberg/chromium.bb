@@ -295,6 +295,8 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
     dictionary->SetKey(shill::kEapMethodProperty, base::Value(eap_method()));
     dictionary->SetKey(shill::kWifiFrequency, base::Value(frequency_));
     dictionary->SetKey(shill::kWifiHexSsid, base::Value(GetHexSsid()));
+    dictionary->SetKey(shill::kTetheringProperty,
+                       base::Value(tethering_state_));
   }
 
   // Mobile properties

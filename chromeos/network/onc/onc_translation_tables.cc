@@ -148,6 +148,7 @@ const FieldTranslationEntry wifi_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::wifi::kSecurity, shill::kSecurityClassProperty },
     {::onc::wifi::kSignalStrength, shill::kSignalStrengthProperty},
+    {::onc::wifi::kTetheringState, shill::kTetheringProperty},
     {NULL}};
 
 const FieldTranslationEntry wimax_fields[] = {
@@ -381,6 +382,15 @@ const StringTranslationEntry kNetworkTechnologyTable[] = {
 const StringTranslationEntry kRoamingStateTable[] = {
     {::onc::cellular::kRoamingHome, shill::kRoamingStateHome},
     {::onc::cellular::kRoamingRoaming, shill::kRoamingStateRoaming},
+    {NULL}};
+
+const StringTranslationEntry kTetheringStateTable[] = {
+    {::onc::tethering_state::kTetheringConfirmedState,
+     shill::kTetheringConfirmedState},
+    {::onc::tethering_state::kTetheringNotDetectedState,
+     shill::kTetheringNotDetectedState},
+    {::onc::tethering_state::kTetheringSuspectedState,
+     shill::kTetheringSuspectedState},
     {NULL}};
 
 // This must contain only Shill Device properties and no Service properties.
