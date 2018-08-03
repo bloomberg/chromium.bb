@@ -60,7 +60,6 @@ chrome/browser/media_galleries/media_file_system_context.h
 chrome/browser/notifications/displayed_notifications_dispatch_callback.h
 chrome/browser/permissions/permission_queue_controller.h
 chrome/browser/prefs/active_profile_pref_service.h
-chrome/browser/rlz/chrome_rlz_tracker_delegate.h
 chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h
 chrome/browser/ui/app_icon_loader_delegate.h
 chrome/browser/ui/app_list/app_list_syncable_service_factory.h
