@@ -4,57 +4,25 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_winrt.h"
 
-#include <utility>
-
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
-namespace {
-
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    IGattDescriptor;
-using Microsoft::WRL::ComPtr;
-
-}  // namespace
-
-// static
-std::unique_ptr<BluetoothRemoteGattDescriptorWinrt>
-BluetoothRemoteGattDescriptorWinrt::Create(
-    BluetoothRemoteGattCharacteristic* characteristic,
-    ComPtr<IGattDescriptor> descriptor) {
-  DCHECK(descriptor);
-  GUID guid;
-  HRESULT hr = descriptor->get_Uuid(&guid);
-  if (FAILED(hr)) {
-    VLOG(2) << "Getting UUID failed: " << logging::SystemErrorCodeToString(hr);
-    return nullptr;
-  }
-
-  uint16_t attribute_handle;
-  hr = descriptor->get_AttributeHandle(&attribute_handle);
-  if (FAILED(hr)) {
-    VLOG(2) << "Getting AttributeHandle failed: "
-            << logging::SystemErrorCodeToString(hr);
-    return nullptr;
-  }
-
-  return base::WrapUnique(new BluetoothRemoteGattDescriptorWinrt(
-      characteristic, std::move(descriptor), BluetoothUUID(guid),
-      attribute_handle));
-}
+BluetoothRemoteGattDescriptorWinrt::BluetoothRemoteGattDescriptorWinrt() =
+    default;
 
 BluetoothRemoteGattDescriptorWinrt::~BluetoothRemoteGattDescriptorWinrt() =
     default;
 
 std::string BluetoothRemoteGattDescriptorWinrt::GetIdentifier() const {
-  return identifier_;
+  NOTIMPLEMENTED();
+  return std::string();
 }
 
 BluetoothUUID BluetoothRemoteGattDescriptorWinrt::GetUUID() const {
-  return uuid_;
+  NOTIMPLEMENTED();
+  return BluetoothUUID();
 }
 
 BluetoothGattCharacteristic::Permissions
@@ -70,7 +38,8 @@ const std::vector<uint8_t>& BluetoothRemoteGattDescriptorWinrt::GetValue()
 
 BluetoothRemoteGattCharacteristic*
 BluetoothRemoteGattDescriptorWinrt::GetCharacteristic() const {
-  return characteristic_;
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
@@ -85,20 +54,5 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
-
-BluetoothRemoteGattDescriptorWinrt::BluetoothRemoteGattDescriptorWinrt(
-    BluetoothRemoteGattCharacteristic* characteristic,
-    Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
-                               GenericAttributeProfile::IGattDescriptor>
-        descriptor,
-    BluetoothUUID uuid,
-    uint16_t attribute_handle)
-    : characteristic_(characteristic),
-      descriptor_(std::move(descriptor)),
-      uuid_(std::move(uuid)),
-      identifier_(base::StringPrintf("%s/%s_%04x",
-                                     characteristic_->GetIdentifier().c_str(),
-                                     uuid_.value().c_str(),
-                                     attribute_handle)) {}
 
 }  // namespace device
