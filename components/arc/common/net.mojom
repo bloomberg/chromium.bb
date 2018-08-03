@@ -65,6 +65,19 @@ enum SecurityType {
   WPA_EAP,
 };
 
+// Tethering state of a |NetworkConfiguration| as a client.
+[Extensible]
+enum TetheringClientState {
+  // Tethering state is detected and confirmed.
+  CONFIRMED,
+
+  // Tethering state is not detected.
+  NOT_DETECTED,
+
+  // Tethering data is suspected and can be |CONFIRMED| in the future.
+  SUSPECTED,
+};
+
 struct WiFi {
   string bssid;
   int32 frequency;
@@ -93,6 +106,7 @@ struct NetworkConfiguration {
   string? mac_address;
   NetworkType type;
   WiFi? wifi;
+  [MinVersion=8] TetheringClientState tethering_client_state;
 };
 
 struct WifiConfiguration {
