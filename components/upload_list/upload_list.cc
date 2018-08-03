@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 
 UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
                                    const base::Time& upload_time,

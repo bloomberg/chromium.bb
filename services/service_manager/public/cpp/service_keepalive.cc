@@ -5,7 +5,7 @@
 #include "services/service_manager/public/cpp/service_keepalive.h"
 
 #include "base/bind.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace service_manager {

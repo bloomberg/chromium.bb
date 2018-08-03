@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/strings/string_split.h"
+#include "base/task/post_task_forward.h"
 #include "base/task_runner_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"

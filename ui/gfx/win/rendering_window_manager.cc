@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "base/memory/singleton.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
+#include "base/task/post_task_forward.h"
+#include "base/task/task_traits_forward.h"
 
 namespace gfx {
 

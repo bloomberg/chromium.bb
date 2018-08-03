@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/strings/string_piece.h"
-#include "base/task_scheduler/task_scheduler.h"
+#include "base/task/task_scheduler/task_scheduler_forward.h"
 
 namespace task_scheduler_util {
 

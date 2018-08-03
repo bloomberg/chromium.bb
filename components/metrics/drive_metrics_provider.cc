@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
+#include "base/task/post_task_forward.h"
+#include "base/task/task_traits_forward.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 

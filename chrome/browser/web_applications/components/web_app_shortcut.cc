@@ -6,8 +6,8 @@
 
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_scheduler.h"
+#include "base/task/post_task_forward.h"
+#include "base/task/task_scheduler/task_scheduler_forward.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"

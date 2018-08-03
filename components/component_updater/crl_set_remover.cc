@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 
 namespace component_updater {
 

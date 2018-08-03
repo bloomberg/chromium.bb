@@ -5,7 +5,7 @@
 #include "components/exo/data_source.h"
 
 #include "base/posix/eintr_wrapper.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 #include "components/exo/data_source_delegate.h"
 #include "components/exo/data_source_observer.h"
 
