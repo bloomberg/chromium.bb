@@ -22,10 +22,6 @@ _ToolchainTuple = collections.namedtuple('_ToolchainTuple',
 _DEFAULT_TOOLCHAIN_KEY = 'default'
 
 
-class NoDefaultToolchainDefinedError(Exception):
-  """Overlays are required to define a default toolchain."""
-
-
 class MismatchedToolchainConfigsError(Exception):
   """We have no defined resolution for conflicting toolchain configs."""
 
