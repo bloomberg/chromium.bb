@@ -122,7 +122,7 @@ public class OAuthTokenConsumer {
                 return null;
             }
         }
-                .execute();
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private void handleErrorOnMainThread(final OAuthTokenFetcher.Callback callback,
