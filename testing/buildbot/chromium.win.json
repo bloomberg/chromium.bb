@@ -201,7 +201,7 @@
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -940,7 +940,7 @@
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -2286,7 +2286,7 @@
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -3024,7 +3024,7 @@
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 10
         },
         "test": "content_browsertests"
       },

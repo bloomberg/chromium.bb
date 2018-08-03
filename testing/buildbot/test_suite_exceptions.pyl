@@ -1078,6 +1078,17 @@
       },
     },
   },
+  'surface_sync_content_browsertests': {
+    'modifications': {
+      # chromium.android
+      'android-kitkat-arm-rel': {
+        'experiment_percentage': 100,
+      },
+      'android-marshmallow-arm64-rel': {
+        'experiment_percentage': 100,
+      },
+    },
+  },
   'sync_integration_tests': {
     'modifications': {
       'Win7 Tests (dbg)(1)': {
@@ -1284,10 +1295,20 @@
   },
   'viz_content_browsertests': {
     'remove_from': [
+      # chromium.android
+      # GL OOM error triggered on KitKat. crbug.com/863049
+      'android-kitkat-arm-rel',
       # Currently flaky timeouts on Windows 10. crbug.com/839824
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
+      # chromium.android
+      'android-kitkat-arm-rel': {
+        'experiment_percentage': 100,
+      },
+      'android-marshmallow-arm64-rel': {
+        'experiment_percentage': 100,
+      },
       # chromium.clang
       'ToTLinuxUBSanVptr': {
         'swarming': {
