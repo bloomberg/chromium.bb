@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/blame_context.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -924,16 +925,16 @@ MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::DeferrableTaskQueueTraits() {
   return QueueTraits()
       .SetCanBeDeferred(true)
-      .SetCanBeFrozen(
-          RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
+      .SetCanBeFrozen(base::FeatureList::IsEnabled(
+          blink::features::kStopNonTimersInBackground))
       .SetCanBePaused(true);
 }
 
 // static
 MainThreadTaskQueue::QueueTraits FrameSchedulerImpl::PausableTaskQueueTraits() {
   return QueueTraits()
-      .SetCanBeFrozen(
-          RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
+      .SetCanBeFrozen(base::FeatureList::IsEnabled(
+          blink::features::kStopNonTimersInBackground))
       .SetCanBePaused(true);
 }
 

@@ -536,10 +536,6 @@ void WebRuntimeFeatures::EnableStopInBackground(bool enable) {
   RuntimeEnabledFeatures::SetStopInBackgroundEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableStopNonTimersInBackground(bool enable) {
-  RuntimeEnabledFeatures::SetStopNonTimersInBackgroundEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnablePWAFullCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetPWAFullCodeCacheEnabled(enable);
 }

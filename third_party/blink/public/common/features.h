@@ -20,6 +20,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kNestedWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsClicked;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsVisible;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
+BLINK_COMMON_EXPORT extern const base::Feature kStopNonTimersInBackground;
 
 }  // namespace features
 }  // namespace blink

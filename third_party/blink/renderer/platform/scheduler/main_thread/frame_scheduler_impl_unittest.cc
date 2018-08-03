@@ -16,7 +16,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -150,6 +150,14 @@ class FrameSchedulerImplTest : public testing::Test {
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
   scoped_refptr<TaskQueue> throttleable_task_queue_;
+};
+
+class FrameSchedulerImplStopNonTimersInBackgroundEnabledTest
+    : public FrameSchedulerImplTest {
+ public:
+  FrameSchedulerImplStopNonTimersInBackgroundEnabledTest()
+      : FrameSchedulerImplTest({blink::features::kStopNonTimersInBackground},
+                               {}) {}
 };
 
 namespace {
@@ -353,8 +361,8 @@ TEST_F(FrameSchedulerImplTest, PauseAndResume) {
   EXPECT_EQ(5, counter);
 }
 
-TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
-  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
+TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
+       PageFreezeAndUnfreezeFlagEnabled) {
   int counter = 0;
   LoadingTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
@@ -384,7 +392,6 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
-  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(false);
   int counter = 0;
   LoadingTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
@@ -414,7 +421,6 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
-  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(false);
   std::vector<std::string> tasks;
   LoadingTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
@@ -471,8 +477,8 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
               UnorderedElementsAre(std::string(LoadingTaskQueue()->GetName())));
 }
 
-TEST_F(FrameSchedulerImplTest, PageFreezeAndPageVisible) {
-  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
+TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
+       PageFreezeAndPageVisible) {
   int counter = 0;
   LoadingTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
@@ -1526,8 +1532,7 @@ class ThrottleAndFreezeTaskTypesExperimentTest : public FrameSchedulerImplTest {
  public:
   ThrottleAndFreezeTaskTypesExperimentTest(
       std::map<std::string, std::string> params,
-      const char* group_name)
-      : stop_non_timers_enabler_(false) {
+      const char* group_name) {
     const char kStudyName[] = "ThrottleAndFreezeTaskTypes";
 
     field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
@@ -1544,9 +1549,6 @@ class ThrottleAndFreezeTaskTypesExperimentTest : public FrameSchedulerImplTest {
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
     scoped_feature_list().InitWithFeatureList(std::move(feature_list));
   }
-
- private:
-  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler_;
 };
 
 class ThrottleableAndFreezableTaskTypesTest

@@ -17,9 +17,11 @@
 #include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -139,8 +141,6 @@ class PageSchedulerImplTest : public testing::Test {
   // set the page as visible or unfreezes it while still hidden (depending on
   // the argument), and verifies that tasks can run.
   void TestFreeze(bool make_page_visible) {
-    ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
-
     int counter = 0;
     LoadingTaskQueue()->PostTask(
         FROM_HERE,
@@ -205,6 +205,20 @@ class PageSchedulerImplTest : public testing::Test {
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
+};
+
+class PageSchedulerImplStopNonTimersInBackgroundEnabledTest
+    : public PageSchedulerImplTest {
+ public:
+  PageSchedulerImplStopNonTimersInBackgroundEnabledTest() {
+    feature_list_.InitWithFeatures(
+        {blink::features::kStopNonTimersInBackground}, {});
+  }
+
+  ~PageSchedulerImplStopNonTimersInBackgroundEnabledTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(PageSchedulerImplTest, TestDestructionOfFrameSchedulersBefore) {
@@ -1263,13 +1277,15 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
 // Verify that freezing a page prevents tasks in its task queues from running.
 // Then, verify that making the page visible unfreezes it and allows tasks in
 // its task queues to run.
-TEST_F(PageSchedulerImplTest, PageFreezeAndSetVisible) {
+TEST_F(PageSchedulerImplStopNonTimersInBackgroundEnabledTest,
+       PageFreezeAndSetVisible) {
   TestFreeze(true);
 }
 
 // Same as before, but unfreeze the page explicitly instead of making it
 // visible.
-TEST_F(PageSchedulerImplTest, PageFreezeAndUnfreeze) {
+TEST_F(PageSchedulerImplStopNonTimersInBackgroundEnabledTest,
+       PageFreezeAndUnfreeze) {
   TestFreeze(false);
 }
 
