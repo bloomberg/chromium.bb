@@ -58,6 +58,10 @@ function checkStreamDetailsNoFile() {
   chrome.test.assertTrue(streamDetails.tabId != -1);
 }
 
+// The following helper methods are used in BrowserPlugin-specific tests.
+function dummyTouchStartHandler(e) {
+}
+
 var tests = [
   function testBasic() {
     checkStreamDetails('testBasic.csv', false);
