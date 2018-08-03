@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
 
+#include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -125,6 +126,9 @@
   UIImageView* navigationChevronImage = [[UIImageView alloc]
       initWithImage:[UIImage imageNamed:@"table_view_cell_chevron"]];
   self.accessoryView = navigationChevronImage;
+  // TODO(crbug.com/870841): Use default accessory type.
+  if (base::i18n::IsRTL())
+    self.accessoryView.transform = CGAffineTransformMakeRotation(M_PI);
 
   return self;
 }

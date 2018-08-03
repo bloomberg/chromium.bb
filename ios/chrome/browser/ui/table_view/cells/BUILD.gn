@@ -36,6 +36,7 @@ source_set("cells") {
     "resources:table_view_cell_chevron",
     "resources:table_view_cell_favicon_background",
     "//base",
+    "//base:i18n",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/colors:colors",

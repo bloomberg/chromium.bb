@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
 
+#include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
@@ -76,6 +77,9 @@
     [disclosureImageView
         setContentHuggingPriority:UILayoutPriorityDefaultHigh
                           forAxis:UILayoutConstraintAxisHorizontal];
+    // TODO(crbug.com/870841): Use default accessory type.
+    if (base::i18n::IsRTL())
+      disclosureImageView.transform = CGAffineTransformMakeRotation(M_PI);
 
     // Horizontal stack view holds imageView, title, and disclosureView.
     UIStackView* horizontalStack =
