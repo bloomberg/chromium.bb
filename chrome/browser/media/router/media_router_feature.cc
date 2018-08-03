@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/mirroring/service/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_features.h"
 #include "crypto/random.h"
@@ -151,7 +152,7 @@ bool ShouldUseViewsDialog() {
 }
 
 bool ShouldUseMirroringService() {
-  return base::FeatureList::IsEnabled(features::kMirroringService) &&
+  return base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
          base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
          base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
          base::FeatureList::IsEnabled(network::features::kNetworkService);
