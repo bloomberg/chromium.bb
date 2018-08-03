@@ -597,7 +597,8 @@ def main(argv):
       input_strings=javac_cmd + classpath,
       output_paths=output_paths,
       force=force,
-      pass_changes=True)
+      pass_changes=True,
+      add_pydeps=False)
 
 
 if __name__ == '__main__':
