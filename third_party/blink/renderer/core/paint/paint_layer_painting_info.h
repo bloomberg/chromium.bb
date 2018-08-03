@@ -45,9 +45,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTING_INFO_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTING_INFO_H_
 
+#include "base/logging.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+
+#if DCHECK_IS_ON()
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#endif
 
 namespace blink {
 
@@ -102,6 +108,62 @@ struct PaintLayerPaintingInfo {
  private:
   const GlobalPaintFlags global_paint_flags_;
 };
+
+#if DCHECK_IS_ON()
+inline String PaintLayerFlagsToDebugString(PaintLayerFlags flags) {
+  if (flags == 0)
+    return "(kPaintLayerNoFlag)";
+
+  StringBuilder builder;
+  builder.Append("(");
+  bool need_separator = false;
+  auto append = [&builder, &need_separator](const char* str) {
+    if (need_separator)
+      builder.Append("|");
+    builder.Append(str);
+    need_separator = true;
+  };
+
+  if (flags & kPaintLayerPaintingCompositingAllPhases) {
+    append("kPaintLayerPaintingCompositingAllPhases");
+  } else {
+    if (flags & kPaintLayerPaintingCompositingBackgroundPhase)
+      append("kPaintLayerPaintingCompositingBackgroundPhase");
+    if (flags & kPaintLayerPaintingCompositingForegroundPhase)
+      append("kPaintLayerPaintingCompositingForegroundPhase");
+    if (flags & kPaintLayerPaintingCompositingMaskPhase)
+      append("kPaintLayerPaintingCompositingMaskPhase");
+    if (flags & kPaintLayerPaintingCompositingDecorationPhase)
+      append("kPaintLayerPaintingCompositingDecorationPhase");
+  }
+
+  if (flags & kPaintLayerHaveTransparency)
+    append("kPaintLayerHaveTransparency");
+  if (flags & kPaintLayerAppliedTransform)
+    append("kPaintLayerAppliedTransform");
+  if (flags & kPaintLayerUncachedClipRects)
+    append("kPaintLayerUncachedClipRects");
+  if (flags & kPaintLayerPaintingOverlayScrollbars)
+    append("kPaintLayerPaintingOverlayScrollbars");
+  if (flags & kPaintLayerPaintingCompositingScrollingPhase)
+    append("kPaintLayerPaintingCompositingScrollingPhase");
+  if (flags & kPaintLayerPaintingOverflowContents)
+    append("kPaintLayerPaintingOverflowContents");
+  if (flags & kPaintLayerPaintingSkipRootBackground)
+    append("kPaintLayerPaintingSkipRootBackground");
+  if (flags & kPaintLayerPaintingChildClippingMaskPhase)
+    append("kPaintLayerPaintingChildClippingMaskPhase");
+  if (flags & kPaintLayerPaintingAncestorClippingMaskPhase)
+    append("kPaintLayerPaintingAncestorClippingMaskPhase");
+  if (flags & kPaintLayerPaintingRenderingClipPathAsMask)
+    append("kPaintLayerPaintingRenderingClipPathAsMask");
+  if (flags & kPaintLayerPaintingRenderingResourceSubtree)
+    append("kPaintLayerPaintingRenderingResourceSubtree");
+
+  builder.Append(")");
+  return builder.ToString();
+}
+#endif  // DCHECK_IS_ON()
 
 }  // namespace blink
 
