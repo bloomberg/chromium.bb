@@ -16,7 +16,6 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -109,14 +108,6 @@ class WorkspaceControllerTest : public AshTestBase {
   aura::Window* CreatePopupLikeWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithBounds(bounds);
     window->Show();
-    return window;
-  }
-
-  aura::Window* CreateTestPanel(aura::WindowDelegate* delegate,
-                                const gfx::Rect& bounds) {
-    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        delegate, aura::client::WINDOW_TYPE_PANEL, 0, bounds);
-    PanelLayoutManager::Get(window)->Relayout();
     return window;
   }
 
@@ -1464,78 +1455,6 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
     gfx::Transform transform;
     transform.Translate(70, 40);
     second->SetTransform(transform);
-  }
-}
-
-// Verifies mouse event targeting just outside the window edges for panels.
-TEST_F(WorkspaceControllerTest, WindowEdgeMouseHitTestPanel) {
-  aura::test::TestWindowDelegate delegate;
-  std::unique_ptr<Window> window(
-      CreateTestPanel(&delegate, gfx::Rect(20, 10, 100, 50)));
-  aura::Window* root = window->GetRootWindow();
-  ui::EventTargeter* targeter =
-      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
-  const gfx::Rect bounds = window->bounds();
-  const int kNumPoints = 5;
-  struct {
-    const char* direction;
-    gfx::Point location;
-    bool is_target_hit;
-  } points[kNumPoints] = {
-      {"left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true},
-      {"top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true},
-      {"right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true},
-      {"bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), true},
-      {"outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false},
-  };
-  for (int i = 0; i < kNumPoints; ++i) {
-    SCOPED_TRACE(points[i].direction);
-    const gfx::Point& location = points[i].location;
-    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location,
-                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-    ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
-    if (points[i].is_target_hit)
-      EXPECT_EQ(window.get(), target);
-    else
-      EXPECT_NE(window.get(), target);
-  }
-}
-
-// Verifies touch event targeting just outside the window edges for panels.
-// The shelf is aligned to the bottom by default, and so touches just below
-// the bottom edge of the panel should not target the panel itself because
-// an AttachedPanelWindowTargeter is installed on the panel container.
-TEST_F(WorkspaceControllerTest, WindowEdgeTouchHitTestPanel) {
-  aura::test::TestWindowDelegate delegate;
-  std::unique_ptr<Window> window(
-      CreateTestPanel(&delegate, gfx::Rect(20, 10, 100, 50)));
-  aura::Window* root = window->GetRootWindow();
-  ui::EventTargeter* targeter =
-      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
-  const gfx::Rect bounds = window->bounds();
-  const int kNumPoints = 5;
-  struct {
-    const char* direction;
-    gfx::Point location;
-    bool is_target_hit;
-  } points[kNumPoints] = {
-      {"left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true},
-      {"top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true},
-      {"right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true},
-      {"bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), false},
-      {"outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false},
-  };
-  for (int i = 0; i < kNumPoints; ++i) {
-    SCOPED_TRACE(points[i].direction);
-    const gfx::Point& location = points[i].location;
-    ui::TouchEvent touch(
-        ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    ui::EventTarget* target = targeter->FindTargetForEvent(root, &touch);
-    if (points[i].is_target_hit)
-      EXPECT_EQ(window.get(), target);
-    else
-      EXPECT_NE(window.get(), target);
   }
 }
 

@@ -368,10 +368,6 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
                       ui::mojom::kResizeBehaviorCanMaximize |
                           ui::mojom::kResizeBehaviorCanMinimize |
                           ui::mojom::kResizeBehaviorCanResize);
-  // Setting the item type triggers ShelfWindowWatcher to create a shelf item.
-  if (type == aura::client::WINDOW_TYPE_PANEL)
-    window->SetProperty<int>(kShelfItemTypeKey, TYPE_APP_PANEL);
-
   return window;
 }
 

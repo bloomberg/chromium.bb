@@ -127,9 +127,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // will be returned.
   gfx::Rect GetIdealBoundsOfItemIcon(const ShelfID& id);
 
-  // Repositions the icon for the specified item by the midpoint of the window.
-  void UpdatePanelIconPosition(const ShelfID& id, const gfx::Point& midpoint);
-
   // Returns true if we're showing a menu.
   bool IsShowingMenu() const;
 
@@ -243,10 +240,10 @@ class ASH_EXPORT ShelfView : public views::View,
   const ShelfButton* drag_view() const { return drag_view_; }
 
   // Returns true when this ShelfView is used for Overflow Bubble.
-  // In this mode, it does not show app list, panel and overflow button.
+  // In this mode, it does not show app list and overflow button.
   // Note:
-  //   * When Shelf can contain only one item (overflow button) due to very
-  //     small resolution screen, overflow bubble can show app list and panel
+  //   * When Shelf can contain only one item (the overflow button) due to very
+  //     small resolution screen, the overflow bubble can show the app list
   //     button.
   bool is_overflow_mode() const { return overflow_mode_; }
 
@@ -333,8 +330,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Note:
   //  * When overflow button is visible, returns bounds from first item
   //    to overflow button.
-  //  * When overflow button is visible and one or more panel items exists,
-  //    returns bounds from first item to last panel item.
   //  * In the overflow mode, returns only bubble's bounds.
   gfx::Rect GetBoundsForDragInsertInScreen();
 
@@ -463,7 +458,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // item in |model_|.
   std::unique_ptr<views::ViewModel> view_model_;
 
-  // Index of first visible launcher item.
+  // Index of the first visible launcher item. This is not always zero because
+  // the overflow view (also a kind of shelf view) only shows a subset of items.
   int first_visible_index_ = 0;
 
   // Last index of a launcher button that is visible

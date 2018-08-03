@@ -27,7 +27,6 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
-#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
@@ -246,8 +245,8 @@ WindowSelector::~WindowSelector() {
 }
 
 // NOTE: The work done in Init() is not done in the constructor because it may
-// cause other, unrelated classes, (ie PanelLayoutManager) to make indirect
-// calls to restoring_minimized_windows() on a partially constructed object.
+// cause other, unrelated classes, to make indirect method calls on a partially
+// constructed object.
 void WindowSelector::Init(const WindowList& windows,
                           const WindowList& hide_windows) {
   hide_overview_windows_ =
@@ -279,10 +278,6 @@ void WindowSelector::Init(const WindowList& windows,
       observed_windows_.insert(container);
     }
 
-    // Hide the callout widgets for panels. It is safe to call this for
-    // root windows that don't contain any panel windows.
-    PanelLayoutManager::Get(root)->SetShowCalloutWidgets(false);
-
     std::unique_ptr<WindowGrid> grid(
         new WindowGrid(root, windows, this, GetGridBoundsInScreen(root)));
     num_items_ += grid->size();
@@ -291,14 +286,10 @@ void WindowSelector::Init(const WindowList& windows,
 
   {
     // The calls to WindowGrid::PrepareForOverview() and CreateTextFilter(...)
-    // requires some LayoutManagers (ie PanelLayoutManager) to perform layouts
-    // so that windows are correctly visible and properly animated in overview
-    // mode. Otherwise these layouts should be suppressed during overview mode
-    // so they don't conflict with overview mode animations. The
-    // |restoring_minimized_windows_| flag enables the PanelLayoutManager to
-    // make this decision.
-    base::AutoReset<bool> auto_restoring_minimized_windows(
-        &restoring_minimized_windows_, true);
+    // requires some LayoutManagers to perform layouts so that windows are
+    // correctly visible and properly animated in overview mode. Otherwise
+    // these layouts should be suppressed during overview mode so they don't
+    // conflict with overview mode animations.
 
     WindowList mru_window_list =
         Shell::Get()->mru_window_tracker()->BuildMruWindowList();
@@ -348,8 +339,8 @@ void WindowSelector::Init(const WindowList& windows,
 }
 
 // NOTE: The work done in Shutdown() is not done in the destructor because it
-// may cause other, unrelated classes, (ie PanelLayoutManager) to make indirect
-// calls to restoring_minimized_windows() on a partially destructed object.
+// may cause other, unrelated classes, to make indirect calls to
+// restoring_minimized_windows() on a partially destructed object.
 void WindowSelector::Shutdown() {
   // Stop observing screen metrics changes first to avoid auto-positioning
   // windows in response to work area changes from window activation.
@@ -386,12 +377,6 @@ void WindowSelector::Shutdown() {
   // Setting focus after restoring windows' state avoids unnecessary animations.
   ResetFocusRestoreWindow(true);
   RemoveAllObservers();
-
-  for (aura::Window* window : Shell::GetAllRootWindows()) {
-    // Un-hide the callout widgets for panels. It is safe to call this for
-    // root_windows that don't contain any panel windows.
-    PanelLayoutManager::Get(window)->SetShowCalloutWidgets(true);
-  }
 
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_)
     window_grid->Shutdown();

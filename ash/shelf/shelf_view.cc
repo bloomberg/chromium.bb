@@ -254,7 +254,6 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
       return static_cast<const ShelfButton*>(item_view)->state() &
              ShelfButton::STATE_DRAGGING;
     case TYPE_DIALOG:
-    case TYPE_APP_PANEL:
     case TYPE_BACK_BUTTON:
     case TYPE_APP_LIST:
     case TYPE_UNDEFINED:
@@ -396,12 +395,6 @@ gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
                    icon_bounds.height());
 }
 
-void ShelfView::UpdatePanelIconPosition(const ShelfID& id,
-                                        const gfx::Point& midpoint) {
-  // Do nothing: panels are deprecated.
-  // TODO(788033): Remove all call sites.
-}
-
 bool ShelfView::IsShowingMenu() const {
   return shelf_menu_model_adapter_ &&
          shelf_menu_model_adapter_->IsShowingMenu();
@@ -459,7 +452,7 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   if (view == GetAppListButton() && GetAppListButton()->is_showing_app_list())
     return false;
   const ShelfItem* item = ShelfItemForView(view);
-  return item && item->shows_tooltip;
+  return item != nullptr;
 }
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {
@@ -530,7 +523,6 @@ void ShelfView::ButtonPressed(views::Button* sender,
           UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
       break;
 
-    case TYPE_APP_PANEL:
     case TYPE_BACK_BUTTON:
     case TYPE_DIALOG:
       break;
@@ -900,6 +892,7 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
 
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
+      // This happens for the overflow view.
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
@@ -1025,7 +1018,6 @@ void ShelfView::AnimateToIdealBounds() {
 views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
   views::View* view = nullptr;
   switch (item.type) {
-    case TYPE_APP_PANEL:
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
@@ -1111,7 +1103,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   int last_drag_index = indices.second;
   // If the last index isn't valid, we're overflowing. Constrain to the app list
   // (which is the last visible item).
-  if (first_drag_index < model_->FirstPanelIndex() &&
+  if (first_drag_index < model_->item_count() - 1 &&
       last_drag_index > last_visible_index_)
     last_drag_index = last_visible_index_;
   int x = 0, y = 0;
@@ -1388,7 +1380,6 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
       return (typeb == TYPE_PINNED_APP || typeb == TYPE_BROWSER_SHORTCUT);
-    case TYPE_APP_PANEL:
     case TYPE_APP_LIST:
     case TYPE_APP:
     case TYPE_BACK_BUTTON:
@@ -1537,10 +1528,9 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
     const int last_button_index = view_model_->view_size() - 1;
     gfx::Rect last_button_bounds =
         view_model_->view_at(last_button_index)->bounds();
-    if (overflow_button_->visible() &&
-        model_->GetItemIndexForType(TYPE_APP_PANEL) == -1) {
-      // When overflow button is visible and shelf has no panel items,
-      // last_button_bounds should be overflow button's bounds.
+    if (overflow_button_->visible()) {
+      // When overflow button is visible, last_button_bounds should be
+      // overflow button's bounds.
       last_button_bounds = overflow_button_->bounds();
     }
 
@@ -1833,7 +1823,6 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
 
   views::View* view = view_model_->view_at(model_index);
   switch (item.type) {
-    case TYPE_APP_PANEL:
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:

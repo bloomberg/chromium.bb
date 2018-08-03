@@ -337,17 +337,6 @@ FocusCycler* ShelfWidget::GetFocusCycler() {
   return delegate_view_->focus_cycler();
 }
 
-void ShelfWidget::UpdateIconPositionForPanel(aura::Window* panel) {
-  ShelfID id = ShelfID::Deserialize(panel->GetProperty(kShelfIDKey));
-  if (id.IsNull())
-    return;
-
-  aura::Window* shelf_window = this->GetNativeWindow();
-  gfx::Rect bounds = panel->GetBoundsInScreen();
-  ::wm::ConvertRectFromScreen(shelf_window, &bounds);
-  shelf_view_->UpdatePanelIconPosition(id, bounds.CenterPoint());
-}
-
 gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(
     aura::Window* window) {
   ShelfID id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));

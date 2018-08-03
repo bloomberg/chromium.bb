@@ -64,7 +64,6 @@ TEST_F(ShelfItemStructTraitsTest, BasicNullImage) {
   item.id = ShelfID("app_id", "launch_id");
   item.status = STATUS_RUNNING;
   item.title = base::ASCIIToUTF16("title");
-  item.shows_tooltip = false;
   item.pinned_by_policy = true;
 
   ShelfItem out_item;
@@ -77,7 +76,6 @@ TEST_F(ShelfItemStructTraitsTest, BasicNullImage) {
   EXPECT_EQ(STATUS_RUNNING, out_item.status);
   EXPECT_EQ(ShelfID("app_id", "launch_id"), out_item.id);
   EXPECT_EQ(base::ASCIIToUTF16("title"), out_item.title);
-  EXPECT_FALSE(out_item.shows_tooltip);
   EXPECT_TRUE(out_item.pinned_by_policy);
 }
 
@@ -88,7 +86,6 @@ TEST_F(ShelfItemStructTraitsTest, BasicValidImage) {
   item.id = ShelfID("app_id", "launch_id");
   item.status = STATUS_RUNNING;
   item.title = base::ASCIIToUTF16("title");
-  item.shows_tooltip = false;
   item.pinned_by_policy = true;
 
   ShelfItem out_item;
@@ -100,7 +97,6 @@ TEST_F(ShelfItemStructTraitsTest, BasicValidImage) {
   EXPECT_EQ(STATUS_RUNNING, out_item.status);
   EXPECT_EQ(ShelfID("app_id", "launch_id"), out_item.id);
   EXPECT_EQ(base::ASCIIToUTF16("title"), out_item.title);
-  EXPECT_FALSE(out_item.shows_tooltip);
   EXPECT_TRUE(out_item.pinned_by_policy);
 }
 

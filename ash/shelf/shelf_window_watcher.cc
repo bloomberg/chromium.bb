@@ -79,10 +79,6 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   } else {
     item->image = *image;
   }
-
-  // Do not show tooltips for visible attached app panel windows.
-  item->shows_tooltip = item->type != TYPE_APP_PANEL || !window->IsVisible() ||
-                        !window->GetProperty(kPanelAttachedKey);
 }
 
 }  // namespace
@@ -97,9 +93,8 @@ ShelfWindowWatcher::ContainerWindowObserver::~ContainerWindowObserver() =
 void ShelfWindowWatcher::ContainerWindowObserver::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (!params.old_parent && params.new_parent &&
-      (params.new_parent->id() == kShellWindowId_DefaultContainer ||
-       params.new_parent->id() == kShellWindowId_PanelContainer)) {
-    // A new window was created in the default container or the panel container.
+      (params.new_parent->id() == kShellWindowId_DefaultContainer)) {
+    // A new window was created in the default container.
     window_watcher_->OnUserWindowAdded(params.target);
   }
 }
@@ -137,8 +132,8 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
   }
 
   if (key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
-      key == aura::client::kDrawAttentionKey || key == kPanelAttachedKey ||
-      key == kShelfItemTypeKey || key == kShelfIDKey) {
+      key == aura::client::kDrawAttentionKey || key == kShelfItemTypeKey ||
+      key == kShelfIDKey) {
     window_watcher_->OnUserWindowPropertyChanged(window);
   }
 }
@@ -189,8 +184,7 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
       item.id,
       std::make_unique<ShelfWindowWatcherItemDelegate>(item.id, window));
 
-  // Panels are inserted on the left so as not to push all existing panels over.
-  model_->AddAt(item.type == TYPE_APP_PANEL ? 0 : model_->item_count(), item);
+  model_->AddAt(model_->item_count(), item);
 }
 
 void ShelfWindowWatcher::RemoveShelfItem(aura::Window* window) {
@@ -227,11 +221,10 @@ void ShelfWindowWatcher::OnUserWindowDestroying(aura::Window* window) {
 }
 
 void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
-  // ShelfWindowWatcher only handles panels and dialogs for now, all other shelf
-  // item types are handled by ChromeLauncherController.
+  // ShelfWindowWatcher only handles dialogs for now, all other shelf item
+  // types are handled by ChromeLauncherController.
   const ShelfItemType item_type = GetShelfItemType(window);
-  if ((item_type != TYPE_APP_PANEL && item_type != TYPE_DIALOG) ||
-      GetShelfID(window).IsNull()) {
+  if (item_type != TYPE_DIALOG || GetShelfID(window).IsNull()) {
     // Remove |window|'s ShelfItem if it was added by ShelfWindowWatcher.
     if (user_windows_with_items_.count(window) > 0)
       RemoveShelfItem(window);
@@ -247,8 +240,8 @@ void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
     return;
   }
 
-  // Create a new item for |window|, if it is visible or a [minimized] panel.
-  if (index < 0 && (window->IsVisible() || item_type == TYPE_APP_PANEL))
+  // Create a new item for |window|, if it is visible.
+  if (index < 0 && window->IsVisible())
     AddShelfItem(window);
 }
 
@@ -262,14 +255,11 @@ void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,
 }
 
 void ShelfWindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
-  constexpr int container_ids[] = {kShellWindowId_DefaultContainer,
-                                   kShellWindowId_PanelContainer};
-  for (const int container_id : container_ids) {
-    aura::Window* container = root_window->GetChildById(container_id);
-    for (aura::Window* window : container->children())
-      OnUserWindowAdded(window);
-    observed_container_windows_.Add(container);
-  }
+  aura::Window* container =
+      root_window->GetChildById(kShellWindowId_DefaultContainer);
+  for (aura::Window* window : container->children())
+    OnUserWindowAdded(window);
+  observed_container_windows_.Add(container);
 }
 
 }  // namespace ash

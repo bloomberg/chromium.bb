@@ -30,7 +30,6 @@ class KeyboardController;
 }
 
 namespace ui {
-class EventHandler;
 class SimpleMenuModel;
 class WindowTreeHost;
 }
@@ -48,7 +47,6 @@ class AlwaysOnTopController;
 class AshWindowTreeHost;
 class LockScreenActionBackgroundController;
 enum class LoginStatus;
-class PanelLayoutManager;
 class Shelf;
 class ShelfLayoutManager;
 class Sidebar;
@@ -136,8 +134,6 @@ class ASH_EXPORT RootWindowController {
   void set_touch_hud_projection(TouchHudProjection* hud) {
     touch_hud_projection_ = hud;
   }
-
-  PanelLayoutManager* panel_layout_manager() { return panel_layout_manager_; }
 
   wm::RootWindowLayoutManager* root_window_layout_manager() {
     return root_window_layout_manager_;
@@ -288,7 +284,6 @@ class ASH_EXPORT RootWindowController {
   aura::WindowTreeHost* window_tree_host_;
 
   // LayoutManagers are owned by the window they are installed on.
-  PanelLayoutManager* panel_layout_manager_ = nullptr;
   wm::RootWindowLayoutManager* root_window_layout_manager_ = nullptr;
 
   std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
@@ -322,9 +317,6 @@ class ASH_EXPORT RootWindowController {
   // window controller and manage their own lifetimes.
   TouchHudDebug* touch_hud_debug_ = nullptr;
   TouchHudProjection* touch_hud_projection_ = nullptr;
-
-  // Handles double clicks on the panel window header.
-  std::unique_ptr<ui::EventHandler> panel_container_handler_;
 
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
 

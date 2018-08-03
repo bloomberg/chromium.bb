@@ -14544,11 +14544,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Panel_Minimize_Caption_Click">
+  <obsolete>Removed 07/2018 since panels were deprecated in M-69.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="Panel_Minimize_Caption_Gesture">
+  <obsolete>Removed 07/2018 since panels were deprecated in M-69.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

@@ -17,9 +17,9 @@ constexpr char kDelimiter[] = "|";
 }  // namespace
 
 bool IsValidShelfItemType(int64_t type) {
-  return type == TYPE_APP_PANEL || type == TYPE_PINNED_APP ||
-         type == TYPE_APP_LIST || type == TYPE_BROWSER_SHORTCUT ||
-         type == TYPE_APP || type == TYPE_DIALOG || type == TYPE_BACK_BUTTON ||
+  return type == TYPE_PINNED_APP || type == TYPE_APP_LIST ||
+         type == TYPE_BROWSER_SHORTCUT || type == TYPE_APP ||
+         type == TYPE_DIALOG || type == TYPE_BACK_BUTTON ||
          type == TYPE_UNDEFINED;
 }
 

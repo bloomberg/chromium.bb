@@ -80,7 +80,6 @@ void ExpectAllContainers() {
       Shell::GetContainer(root_window, kShellWindowId_DefaultContainer));
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer));
-  EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_PanelContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_ShelfContainer));
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_SystemModalContainer));

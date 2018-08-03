@@ -17,7 +17,6 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -200,9 +199,6 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     if (remove_standard_frame_)
       return new EmptyDraggableNonClientFrameView();
     aura::Window* window = GetNativeView();
-    if (window->GetProperty(aura::client::kWindowTypeKey) ==
-        ui::mojom::WindowType::PANEL)
-      return new PanelFrameView(GetWidget(), PanelFrameView::FRAME_ASH);
     immersive_delegate_ =
         std::make_unique<ImmersiveFullscreenControllerDelegateMus>(GetWidget(),
                                                                    window);

@@ -98,9 +98,6 @@ enum ShelfAction {
 
 // The type of a shelf item.
 enum ShelfItemType {
-  // Represents a running app panel.
-  TYPE_APP_PANEL,
-
   // Represents a pinned shortcut to an app, the app may be running or not.
   TYPE_PINNED_APP,
 

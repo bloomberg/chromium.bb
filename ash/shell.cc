@@ -644,11 +644,6 @@ void Shell::NotifyPinnedStateChanged(aura::Window* pinned_window) {
     observer.OnPinnedStateChanged(pinned_window);
 }
 
-void Shell::NotifyShelfCreatedForRootWindow(aura::Window* root_window) {
-  for (auto& observer : shell_observers_)
-    observer.OnShelfCreatedForRootWindow(root_window);
-}
-
 void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnShelfAlignmentChanged(root_window);

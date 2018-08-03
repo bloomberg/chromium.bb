@@ -48,10 +48,6 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // false otherwise.
   bool AcceptSelection();
 
-  // Returns true if overview mode is restoring minimized windows so that they
-  // are visible during overview mode.
-  bool IsRestoringMinimizedWindows() const;
-
   // Called when the overview button tray has been long pressed. Enters
   // splitview mode if the active window is snappable. Also enters overview mode
   // if device is not currently in overview mode.

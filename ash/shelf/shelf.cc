@@ -209,10 +209,6 @@ gfx::Rect Shelf::GetUserWorkAreaBounds() const {
                                : gfx::Rect();
 }
 
-void Shelf::UpdateIconPositionForPanel(aura::Window* panel) {
-  shelf_widget_->UpdateIconPositionForPanel(panel);
-}
-
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
   if (!shelf_widget_)
     return gfx::Rect();

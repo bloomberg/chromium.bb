@@ -28,12 +28,6 @@ namespace {
 // Close command id; avoids colliding with ShelfContextMenuModel command ids.
 const int kCloseCommandId = ShelfContextMenuModel::MENU_LOCAL_END + 1;
 
-ShelfItemType GetShelfItemType(const ShelfID& id) {
-  ShelfModel* model = Shell::Get()->shelf_controller()->model();
-  ShelfItems::const_iterator item = model->ItemByID(id);
-  return item == model->items().end() ? TYPE_UNDEFINED : item->type;
-}
-
 }  // namespace
 
 ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(
@@ -51,15 +45,6 @@ void ShelfWindowWatcherItemDelegate::ItemSelected(
     int64_t display_id,
     ShelfLaunchSource source,
     ItemSelectedCallback callback) {
-  // Move panels attached on another display to the current display.
-  if (GetShelfItemType(shelf_id()) == TYPE_APP_PANEL &&
-      window_->GetProperty(kPanelAttachedKey) &&
-      wm::MoveWindowToDisplay(window_, display_id)) {
-    wm::ActivateWindow(window_);
-    std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
-    return;
-  }
-
   if (wm::IsActiveWindow(window_)) {
     if (event && event->type() == ui::ET_KEY_RELEASED) {
       ::wm::AnimateWindow(window_, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);

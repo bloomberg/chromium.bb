@@ -104,10 +104,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   gfx::Rect GetUserWorkAreaBounds() const;
 
-  // Updates the icon position given the current window bounds. This is used
-  // when dragging panels to reposition them with respect to the other panels.
-  void UpdateIconPositionForPanel(aura::Window* window);
-
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
