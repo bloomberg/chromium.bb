@@ -672,34 +672,38 @@ const base::Feature kOverrideUIThreadPriority{
     "OverrideUIThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS)
 
-bool IsVideoCaptureServiceEnabledForOutOfProcess() {
-#if defined(OS_ANDROID)
-  return false;
-#else
+enum class VideoCaptureServiceConfiguration {
+  kEnabledForOutOfProcess,
+  kEnabledForBrowserProcess,
+  kDisabled
+};
+
+VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
   if (!base::FeatureList::IsEnabled(features::kMojoVideoCapture))
-    return false;
-#if defined(OS_CHROMEOS)
-  if (media::ShouldUseCrosCameraService())
-    return false;
-#endif
-  return !base::FeatureList::IsEnabled(
-      features::kRunVideoCaptureServiceInBrowserProcess);
+    return VideoCaptureServiceConfiguration::kDisabled;
+
+#if defined(OS_ANDROID)
+  return VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
+#elif defined(OS_CHROMEOS)
+  return media::ShouldUseCrosCameraService()
+             ? VideoCaptureServiceConfiguration::kEnabledForBrowserProcess
+             : VideoCaptureServiceConfiguration::kEnabledForOutOfProcess;
+#else
+  return base::FeatureList::IsEnabled(
+             features::kRunVideoCaptureServiceInBrowserProcess)
+             ? VideoCaptureServiceConfiguration::kEnabledForBrowserProcess
+             : VideoCaptureServiceConfiguration::kEnabledForOutOfProcess;
 #endif
 }
 
+bool IsVideoCaptureServiceEnabledForOutOfProcess() {
+  return GetVideoCaptureServiceConfiguration() ==
+         VideoCaptureServiceConfiguration::kEnabledForOutOfProcess;
+}
+
 bool IsVideoCaptureServiceEnabledForBrowserProcess() {
-#if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(features::kMojoVideoCapture);
-#else
-  if (!base::FeatureList::IsEnabled(features::kMojoVideoCapture))
-    return false;
-#if defined(OS_CHROMEOS)
-  if (media::ShouldUseCrosCameraService())
-    return true;
-#endif
-  return base::FeatureList::IsEnabled(
-      features::kRunVideoCaptureServiceInBrowserProcess);
-#endif
+  return GetVideoCaptureServiceConfiguration() ==
+         VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
 }
 
 }  // namespace features
