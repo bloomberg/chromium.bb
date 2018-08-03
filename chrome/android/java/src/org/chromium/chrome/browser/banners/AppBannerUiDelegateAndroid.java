@@ -31,6 +31,8 @@ public class AppBannerUiDelegateAndroid
 
     private AddToHomescreenDialog mDialog;
 
+    private boolean mAddedToHomescreen;
+
     private AppBannerUiDelegateAndroid(long nativePtr, Tab tab) {
         mNativePointer = nativePtr;
         mTab = tab;
@@ -38,13 +40,9 @@ public class AppBannerUiDelegateAndroid
 
     @Override
     public void addToHomescreen(String title) {
+        mAddedToHomescreen = true;
         // The title is ignored for app banners as we respect the developer-provided title.
         nativeAddToHomescreen(mNativePointer);
-    }
-
-    @Override
-    public void onDialogCancelled() {
-        nativeOnUiCancelled(mNativePointer);
     }
 
     @Override
@@ -54,8 +52,13 @@ public class AppBannerUiDelegateAndroid
 
     @Override
     public void onDialogDismissed() {
+        if (!mAddedToHomescreen) {
+            nativeOnUiCancelled(mNativePointer);
+        }
+
         mDialog = null;
         mInstallerDelegate = null;
+        mAddedToHomescreen = false;
     }
 
     @Override
@@ -91,6 +94,7 @@ public class AppBannerUiDelegateAndroid
         }
         mInstallerDelegate = null;
         mNativePointer = 0;
+        mAddedToHomescreen = false;
     }
 
     @CalledByNative
