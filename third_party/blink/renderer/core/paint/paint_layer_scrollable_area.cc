@@ -250,9 +250,8 @@ SmoothScrollSequencer* PaintLayerScrollableArea::GetSmoothScrollSequencer()
     const {
   if (HasBeenDisposed())
     return nullptr;
-  if (Page* page = GetLayoutBox()->GetFrame()->GetPage())
-    return page->GetSmoothScrollSequencer();
-  return nullptr;
+
+  return &GetLayoutBox()->GetFrame()->GetSmoothScrollSequencer();
 }
 
 GraphicsLayer* PaintLayerScrollableArea::LayerForScrolling() const {

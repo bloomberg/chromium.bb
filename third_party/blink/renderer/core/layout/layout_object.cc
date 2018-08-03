@@ -699,13 +699,13 @@ LayoutRect LayoutObject::ScrollRectToVisible(
   if (!enclosing_box)
     return rect;
 
-  GetDocument().GetPage()->GetSmoothScrollSequencer()->AbortAnimations();
+  GetDocument().GetFrame()->GetSmoothScrollSequencer().AbortAnimations();
   WebScrollIntoViewParams new_params(params);
   new_params.is_for_scroll_sequence |=
       params.GetScrollType() == kProgrammaticScroll;
   LayoutRect new_location =
       enclosing_box->ScrollRectToVisibleRecursive(rect, new_params);
-  GetDocument().GetPage()->GetSmoothScrollSequencer()->RunQueuedAnimations();
+  GetDocument().GetFrame()->GetSmoothScrollSequencer().RunQueuedAnimations();
 
   return new_location;
 }

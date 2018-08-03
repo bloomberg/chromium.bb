@@ -2279,6 +2279,42 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
 #endif
 }
 
+// This test verifies that smooth scrolling works correctly inside nested OOPIFs
+// which are same origin with the parent. Note that since the frame tree has
+// a A(B(A1())) structure, if and A1 and A2 shared the same
+// SmoothScrollSequencer, then this test would time out or at best be flaky with
+// random time outs. See https://crbug.com/865446 for more context.
+IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+                       SmoothScrollInNestedSameProcessOOPIF) {
+  GURL main_frame(
+      embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
+  GURL child_url_b(
+      embedded_test_server()->GetURL("b.com", kIframeOutOfViewHTML));
+  GURL same_origin(
+      embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
+
+  // This will set up the page frame tree as A(B(A1(A2()))) where A1 is later
+  // asked to scroll the <iframe> element of A2 into view. The important bit
+  // here is that the inner frame A1 is recursively scrolling (smoothly) an
+  // element inside its document into view (A2's origin is irrelevant here).
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  WaitForOnLoad(root);
+  NavigateFrameToURL(root->child_at(0), child_url_b);
+  WaitForOnLoad(root->child_at(0));
+  auto* nested_ftn = root->child_at(0)->child_at(0);
+  NavigateFrameToURL(nested_ftn, same_origin);
+  WaitForOnLoad(nested_ftn);
+
+  // *Smoothly* scroll the inner most frame into view.
+  ASSERT_TRUE(ExecuteScript(
+      nested_ftn,
+      "document.querySelector('iframe').scrollIntoView({behavior: 'smooth'})"));
+  WaitForElementVisible(root, kIframeSelector);
+  WaitForElementVisible(root->child_at(0), kIframeSelector);
+  WaitForElementVisible(nested_ftn, kIframeSelector);
+}
+
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
 // OnSwapCompositorFrame message.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CompositorFrameSwapped) {
