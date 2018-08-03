@@ -214,6 +214,33 @@ bool GLContextCGL::ForceGpuSwitchIfNeeded() {
   return true;
 }
 
+void GLContextCGL::OnReleaseVirtuallyCurrent(GLContext* virtual_context) {
+  TRACE_EVENT0("gpu", "GLContextCGL::OnReleaseVirtuallyCurrent");
+  // Flush before switching contexts, to avoid driver crashes.
+  // https://crbug.com/863817
+  if (IsCurrent(nullptr))
+    glFlush();
+  GLContext::OnReleaseVirtuallyCurrent(virtual_context);
+}
+
+bool GLContextCGL::MakeVirtuallyCurrent(GLContext* virtual_context,
+                                        GLSurface* surface) {
+  TRACE_EVENT0("gpu", "GLContextCGL::MakeVirtuallyCurrent");
+  // Flush before restoring the new context's state, to avoid driver crashes.
+  // https://crbug.com/863817
+  if (IsCurrent(nullptr))
+    glFlush();
+
+  // Restore the state of the new context.
+  if (!GLContext::MakeVirtuallyCurrent(virtual_context, surface))
+    return false;
+
+  // Flush after having restored this context's state, to avoid driver crashes.
+  // https://crbug.com/863817
+  glFlush();
+  return true;
+}
+
 YUVToRGBConverter* GLContextCGL::GetYUVToRGBConverter(
     const gfx::ColorSpace& color_space) {
   std::unique_ptr<YUVToRGBConverter>& yuv_to_rgb_converter =
@@ -228,9 +255,6 @@ constexpr uint64_t kInvalidFenceId = 0;
 
 uint64_t GLContextCGL::BackpressureFenceCreate() {
   TRACE_EVENT0("gpu", "GLContextCGL::BackpressureFenceCreate");
-
-  // This flush will trigger a crash.
-  glFlush();
 
   if (gl::GLFence::IsSupported()) {
     next_backpressure_fence_ += 1;
@@ -284,12 +308,6 @@ void GLContextCGL::BackpressureFenceWait(uint64_t fence_id) {
   // remove them.
   while (backpressure_fences_.begin()->first < fence_id)
     backpressure_fences_.erase(backpressure_fences_.begin());
-}
-
-void GLContextCGL::FlushForDebugging() {
-  if (!context_ || CGLGetCurrentContext() != context_)
-    return;
-  glFlush();
 }
 
 bool GLContextCGL::MakeCurrent(GLSurface* surface) {
