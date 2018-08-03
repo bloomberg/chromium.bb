@@ -382,10 +382,6 @@ const base::Feature kMaterialDesignIncognitoNTP{
 #endif
 };
 
-// Enables or disables Mirroring Service.
-const base::Feature kMirroringService{"MirroringService",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables modal permission prompts.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
