@@ -290,13 +290,6 @@ class WindowSelectorTest : public AshTestBase {
     return iter->get();
   }
 
-  gfx::SlideAnimation* GetBackgroundViewAnimationForWindow(
-      int grid_index,
-      aura::Window* window) {
-    return GetWindowItemForWindow(grid_index, window)
-        ->GetBackgroundViewAnimation();
-  }
-
   // Selects |window| in the active overview session by cycling through all
   // windows in overview until it is found. Returns true if |window| was found,
   // false otherwise.
@@ -843,7 +836,7 @@ TEST_F(WindowSelectorTest, CloseButton) {
   EXPECT_TRUE(minimized_widget->IsClosed());
 
   // All minimized windows are closed, so it should exit overview mode.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsSelecting());
 }
 
@@ -1044,37 +1037,6 @@ TEST_F(WindowSelectorTest, MinimizedWindowState) {
   EXPECT_FALSE(window1->IsVisible());
   EXPECT_FALSE(window1->layer()->GetTargetVisibility());
   EXPECT_FALSE(window_state->ignored_by_shelf());
-}
-
-// Tests that it is safe to destroy a window while the overview header animation
-// is still active. See http://crbug.com/646350.
-TEST_F(WindowSelectorTest, SafeToDestroyWindowDuringAnimation) {
-  const gfx::Rect bounds(400, 400);
-  {
-    // Quickly enter and exit overview mode to activate header animations.
-    std::unique_ptr<aura::Window> window(CreateWindow(bounds));
-    ui::ScopedAnimationDurationScaleMode test_duration_mode(
-        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-    ToggleOverview();
-    EXPECT_TRUE(IsSelecting());
-
-    gfx::SlideAnimation* animation =
-        GetBackgroundViewAnimationForWindow(0, window.get());
-    ASSERT_TRUE(animation);
-    ToggleOverview();
-    EXPECT_FALSE(IsSelecting());
-    if (animation)
-      EXPECT_TRUE(animation->is_animating());
-
-    // Close the window while the overview header animation is active.
-    window.reset();
-
-    // Progress animation to the end - should not crash.
-    if (animation) {
-      animation->SetCurrentValue(1.0);
-      animation->Reset(1.0);
-    }
-  }
 }
 
 // Tests that a bounds change during overview is corrected for.
@@ -1330,7 +1292,7 @@ TEST_F(WindowSelectorTest, DragDropInProgress) {
 
   event_generator.MoveMouseBy(10, 10);
   event_generator.ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(gfx::Rect(30, 30, 100, 100), window->bounds());
 }
 
@@ -1709,7 +1671,7 @@ TEST_F(WindowSelectorTest, ShowTextFilterMenu) {
     tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   }
 
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // This should not cancel overview mode.
   ASSERT_TRUE(IsSelecting());
@@ -2049,7 +2011,7 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
   // Enter overview mode. Verify that the no windows indicator is visible on the
   // primary display but not on the other two.
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(window_selector());
   EXPECT_TRUE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
   EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
@@ -2071,7 +2033,7 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
   // Enter overview mode. Verify that the no windows indicator is not visible on
   // any display.
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(window_selector());
   EXPECT_EQ(3u, grids().size());
   EXPECT_FALSE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
@@ -2088,7 +2050,7 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
   // Close |item2|. Verify that we are still in overview mode because |window1|
   // is still open. The non primary root grids are empty however.
   item2->CloseWindow();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(window_selector());
   EXPECT_EQ(3u, grids().size());
   EXPECT_FALSE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
@@ -2101,7 +2063,7 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
   // Close |item1|. Verify that since no windows are open, we exit overview
   // mode.
   item1->CloseWindow();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(window_selector());
 }
 
@@ -2406,7 +2368,7 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   EXPECT_FALSE(window6->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window7->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window8->layer()->GetAnimator()->is_animating());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Click on |window1| to activate it and exit overview.
   // Should animate |window1|, |window2|, |window3| and |window5| because
@@ -2421,7 +2383,7 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   EXPECT_FALSE(window6->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window7->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window8->layer()->GetAnimator()->is_animating());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Case 2: Click on |window3| to activate it and exit overview.
   // Should animate |window1|, |window2|, |window3| and |window5|.
@@ -2443,7 +2405,7 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -2456,7 +2418,7 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   EXPECT_FALSE(window6->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window7->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window8->layer()->GetAnimator()->is_animating());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Case 3: Click on maximized |window6| to activate it and exit overview.
   // Should animate |window6|, |window3| and |window5| because |window3| and
@@ -2479,7 +2441,7 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -2492,7 +2454,7 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   EXPECT_TRUE(window6->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window7->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window8->layer()->GetAnimator()->is_animating());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Case 4: Click on |window8| to activate it and exit overview.
   // Should animate |window8|, |window1|, |window2|, |window3| and |window5|
@@ -2516,7 +2478,7 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -2529,7 +2491,7 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   EXPECT_FALSE(window6->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window7->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(window8->layer()->GetAnimator()->is_animating());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Verify that the selector item can animate after the item is dragged and
@@ -2543,7 +2505,7 @@ TEST_F(WindowSelectorTest, WindowItemCanAnimateOnDragRelease) {
   wm::ActivateWindow(window1.get());
 
   // The item dragging is only allowed in tablet mode.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   ToggleOverview();
@@ -2552,7 +2514,7 @@ TEST_F(WindowSelectorTest, WindowItemCanAnimateOnDragRelease) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(item2->target_bounds().CenterPoint());
   generator->PressLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   generator->MoveMouseTo(gfx::Point(200, 200));
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
@@ -2560,7 +2522,7 @@ TEST_F(WindowSelectorTest, WindowItemCanAnimateOnDragRelease) {
   generator->ReleaseLeftButton();
   EXPECT_TRUE(window2->layer()->GetAnimator()->IsAnimatingProperty(
       ui::LayerAnimationElement::AnimatableProperty::TRANSFORM));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Verify that the window selector items titlebar and close button change
@@ -2572,7 +2534,7 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
   // Dragging is only allowed in tablet mode.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   ToggleOverview();
@@ -2584,22 +2546,22 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(item1->target_bounds().CenterPoint());
   generator->PressLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0.f, item1->GetTitlebarOpacityForTesting());
-  EXPECT_EQ(0.f, item1->GetCloseButtonOpacityForTesting());
+  EXPECT_TRUE(item1->GetCloseButtonVisibilityForTesting());
   EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
-  EXPECT_EQ(0.f, item2->GetCloseButtonOpacityForTesting());
+  EXPECT_FALSE(item2->GetCloseButtonVisibilityForTesting());
 
   // Drag |item1| in a way so that |window1| does not get activated (drags
   // within a certain threshold count as clicks). Verify the close button and
   // titlebar is visible for all items.
   generator->MoveMouseTo(gfx::Point(200, 200));
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1.f, item1->GetTitlebarOpacityForTesting());
-  EXPECT_EQ(1.f, item1->GetCloseButtonOpacityForTesting());
+  EXPECT_TRUE(item1->GetCloseButtonVisibilityForTesting());
   EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
-  EXPECT_EQ(1.f, item2->GetCloseButtonOpacityForTesting());
+  EXPECT_TRUE(item2->GetCloseButtonVisibilityForTesting());
 }
 
 // Tests that overview widgets are stacked in the correct order.
@@ -2615,7 +2577,7 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
   DCHECK_EQ(parent, minimized->parent());
 
   // Dragging is only allowed in tablet mode.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   ToggleOverview();
@@ -2694,7 +2656,7 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrderWithDragging) {
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
 
   // Dragging is only allowed in tablet mode.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   ToggleOverview();
@@ -2728,7 +2690,7 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrderWithDragging) {
 
   // Verify that after release the ordering is the same as before dragging.
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
             IndexOf(widget2->GetNativeWindow(), parent));
   EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
@@ -2749,7 +2711,7 @@ TEST_F(WindowSelectorTest, Backdrop) {
       CreateWindow(gfx::Rect(10, 10, 200, 200)));
 
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   WindowSelectorItem* wide_item = GetWindowItemForWindow(0, wide.get());
   WindowSelectorItem* tall_item = GetWindowItemForWindow(0, tall.get());
   WindowSelectorItem* normal_item = GetWindowItemForWindow(0, normal.get());
@@ -2899,7 +2861,7 @@ TEST_F(WindowSelectorTest, ShadowBounds) {
   normal->SetProperty(aura::client::kTopViewInset, 0);
 
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   WindowSelectorItem* wide_item = GetWindowItemForWindow(0, wide.get());
   WindowSelectorItem* tall_item = GetWindowItemForWindow(0, tall.get());
   WindowSelectorItem* normal_item = GetWindowItemForWindow(0, normal.get());
@@ -2927,7 +2889,7 @@ TEST_F(WindowSelectorTest, ShadowBounds) {
   // widgets when the overview windows are positioned with animations.
   SetGridBounds(grid, gfx::Rect(200, 400));
   grid->PositionWindows(true);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(contains(wide_widget, wide_item));
   EXPECT_TRUE(contains(tall_widget, tall_item));
   EXPECT_TRUE(contains(normal_widget, normal_item));
@@ -2947,12 +2909,12 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
   // Dragging is only allowed in tablet mode.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
   WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
 
@@ -3429,7 +3391,7 @@ TEST_F(SplitViewWindowSelectorTest, DragToClose) {
   window_selector()->InitiateDrag(item, start);
   window_selector()->Drag(item, start + gfx::Vector2d(0, 180));
   window_selector()->CompleteDrag(item, start + gfx::Vector2d(0, 180));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(window_selector());
 }
 
@@ -3470,7 +3432,7 @@ TEST_F(SplitViewWindowSelectorTest, FlingToClose) {
   window_selector()->InitiateDrag(item, start);
   window_selector()->Drag(item, start + gfx::Vector2d(0, 50));
   window_selector()->Fling(item, start, 0, 2500);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(window_selector());
 }
 
