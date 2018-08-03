@@ -159,7 +159,7 @@ TEST_F(BluetoothLowEnergyAdvertisementManagerMacTest,
   EXPECT_FALSE(advertisement_);
   EXPECT_FALSE(registration_error_);
 
-  // Change the adapter state to CBPeripheralManagerStateUnsupported, which
+  // Change the adapter state to CBPeripheralManagerStatePoweredOff, which
   // causes the registration to fail.
   peripheral_manager_state_ = CBPeripheralManagerStatePoweredOff;
   advertisement_manager_.OnPeripheralManagerStateChanged();
