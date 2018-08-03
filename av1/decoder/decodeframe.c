@@ -2087,29 +2087,9 @@ static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
   cm->cur_frame->height = cm->height;
 }
 
-static void setup_frame_size(AV1_COMMON *cm, int frame_size_override_flag,
-                             struct aom_read_bit_buffer *rb) {
-  const SequenceHeader *const seq_params = &cm->seq_params;
-  int width, height;
+static void setup_buffer_pool(AV1_COMMON *cm) {
   BufferPool *const pool = cm->buffer_pool;
-
-  if (frame_size_override_flag) {
-    int num_bits_width = seq_params->num_bits_width;
-    int num_bits_height = seq_params->num_bits_height;
-    av1_read_frame_size(rb, num_bits_width, num_bits_height, &width, &height);
-    if (width > seq_params->max_frame_width ||
-        height > seq_params->max_frame_height) {
-      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                         "Frame dimensions are larger than the maximum values");
-    }
-  } else {
-    width = seq_params->max_frame_width;
-    height = seq_params->max_frame_height;
-  }
-
-  setup_superres(cm, rb, &width, &height);
-  resize_context_buffers(cm, width, height);
-  setup_render_size(cm, rb);
+  const SequenceHeader *const seq_params = &cm->seq_params;
 
   lock_buffer_pool(pool);
   if (aom_realloc_frame_buffer(
@@ -2145,6 +2125,31 @@ static void setup_frame_size(AV1_COMMON *cm, int frame_size_override_flag,
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
 }
 
+static void setup_frame_size(AV1_COMMON *cm, int frame_size_override_flag,
+                             struct aom_read_bit_buffer *rb) {
+  const SequenceHeader *const seq_params = &cm->seq_params;
+  int width, height;
+
+  if (frame_size_override_flag) {
+    int num_bits_width = seq_params->num_bits_width;
+    int num_bits_height = seq_params->num_bits_height;
+    av1_read_frame_size(rb, num_bits_width, num_bits_height, &width, &height);
+    if (width > seq_params->max_frame_width ||
+        height > seq_params->max_frame_height) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Frame dimensions are larger than the maximum values");
+    }
+  } else {
+    width = seq_params->max_frame_width;
+    height = seq_params->max_frame_height;
+  }
+
+  setup_superres(cm, rb, &width, &height);
+  resize_context_buffers(cm, width, height);
+  setup_render_size(cm, rb);
+  setup_buffer_pool(cm);
+}
+
 static void setup_sb_size(SequenceHeader *seq_params,
                           struct aom_read_bit_buffer *rb) {
   set_sb_size(seq_params, aom_rb_read_bit(rb) ? BLOCK_128X128 : BLOCK_64X64);
@@ -2163,7 +2168,6 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   int width, height;
   int found = 0;
   int has_valid_ref_frame = 0;
-  BufferPool *const pool = cm->buffer_pool;
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     if (aom_rb_read_bit(rb)) {
       YV12_BUFFER_CONFIG *const buf = cm->frame_refs[i].buf;
@@ -2213,39 +2217,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Referenced frame has incompatible color format");
   }
-
-  lock_buffer_pool(pool);
-  if (aom_realloc_frame_buffer(
-          get_frame_new_buffer(cm), cm->width, cm->height,
-          seq_params->subsampling_x, seq_params->subsampling_y,
-          seq_params->use_highbitdepth, AOM_BORDER_IN_PIXELS,
-          cm->byte_alignment,
-          &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer, pool->get_fb_cb,
-          pool->cb_priv)) {
-    unlock_buffer_pool(pool);
-    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate frame buffer");
-  }
-  unlock_buffer_pool(pool);
-
-  pool->frame_bufs[cm->new_fb_idx].buf.subsampling_x =
-      seq_params->subsampling_x;
-  pool->frame_bufs[cm->new_fb_idx].buf.subsampling_y =
-      seq_params->subsampling_y;
-  pool->frame_bufs[cm->new_fb_idx].buf.bit_depth =
-      (unsigned int)seq_params->bit_depth;
-  pool->frame_bufs[cm->new_fb_idx].buf.color_primaries =
-      seq_params->color_primaries;
-  pool->frame_bufs[cm->new_fb_idx].buf.transfer_characteristics =
-      seq_params->transfer_characteristics;
-  pool->frame_bufs[cm->new_fb_idx].buf.matrix_coefficients =
-      seq_params->matrix_coefficients;
-  pool->frame_bufs[cm->new_fb_idx].buf.monochrome = seq_params->monochrome;
-  pool->frame_bufs[cm->new_fb_idx].buf.chroma_sample_position =
-      seq_params->chroma_sample_position;
-  pool->frame_bufs[cm->new_fb_idx].buf.color_range = seq_params->color_range;
-  pool->frame_bufs[cm->new_fb_idx].buf.render_width = cm->render_width;
-  pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
+  setup_buffer_pool(cm);
 }
 
 // Same function as av1_read_uniform but reading from uncompresses header wb
