@@ -15,6 +15,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -92,7 +93,7 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents != NULL);
     Observe(web_contents);
-    AutofillManager::RegisterProfilePrefs(autofill_client_.GetPrefRegistry());
+    prefs::RegisterProfilePrefs(autofill_client_.GetPrefRegistry());
 
     web_contents->RemoveUserData(
         ContentAutofillDriverFactory::

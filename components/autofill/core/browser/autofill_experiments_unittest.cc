@@ -6,7 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/test_sync_service.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +89,7 @@ TEST_F(AutofillExperimentsTest,
 TEST_F(AutofillExperimentsTest,
        DenyUpload_AutofillWalletImportEnabledPrefIsDisabled) {
   scoped_feature_list_.InitAndEnableFeature(kAutofillUpstream);
-  pref_service_.SetBoolean(prefs::kAutofillWalletImportEnabled, false);
+  prefs::SetPaymentsIntegrationEnabled(&pref_service_, false);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 

@@ -7,6 +7,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace autofill {

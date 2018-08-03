@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -163,7 +163,7 @@ void WebViewBrowserState::RegisterPrefs(
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
-  autofill::AutofillManager::RegisterProfilePrefs(pref_registry);
+  autofill::prefs::RegisterProfilePrefs(pref_registry);
   password_manager::PasswordManager::RegisterProfilePrefs(pref_registry);
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 

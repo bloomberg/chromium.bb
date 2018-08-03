@@ -8,7 +8,7 @@
 
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -323,8 +323,8 @@ TEST_F(SyncSettingsCollectionViewControllerTest,
 }
 
 TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOff) {
-  chrome_browser_state_->GetPrefs()->SetBoolean(
-      autofill::prefs::kAutofillWalletImportEnabled, false);
+  autofill::prefs::SetPaymentsIntegrationEnabled(
+      chrome_browser_state_->GetPrefs(), false);
 
   TurnSyncOn();
   TurnSyncEverythingOn();
@@ -336,8 +336,8 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOff) {
 }
 
 TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOn) {
-  chrome_browser_state_->GetPrefs()->SetBoolean(
-      autofill::prefs::kAutofillWalletImportEnabled, true);
+  autofill::prefs::SetPaymentsIntegrationEnabled(
+      chrome_browser_state_->GetPrefs(), true);
 
   TurnSyncOn();
   TurnSyncEverythingOn();

@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -86,10 +86,6 @@ const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
-bool IsAutofillEnabled(const PrefService* pref_service) {
-  return pref_service->GetBoolean(prefs::kAutofillEnabled);
-}
-
 bool IsInAutofillSuggestionsDisabledExperiment() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillEnabled");
@@ -159,7 +155,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     return false;
 
   // Check Payments integration user setting.
-  if (!pref_service->GetBoolean(prefs::kAutofillWalletImportEnabled))
+  if (!prefs::IsPaymentsIntegrationEnabled(pref_service))
     return false;
 
   // Check that the user is logged into a supported domain.

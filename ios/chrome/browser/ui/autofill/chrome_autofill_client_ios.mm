@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/infobars/core/infobar.h"
@@ -233,8 +233,7 @@ void ChromeAutofillClientIOS::HideAutofillPopup() {
 }
 
 bool ChromeAutofillClientIOS::IsAutocompleteEnabled() {
-  // For browser, Autocomplete is always enabled as part of Autofill.
-  return GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
+  return prefs::IsAutocompleteEnabled(GetPrefs());
 }
 
 void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(

@@ -60,7 +60,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -183,41 +183,6 @@ AutofillManager::AutofillManager(
                       enable_download_manager) {}
 
 AutofillManager::~AutofillManager() {}
-
-// static
-void AutofillManager::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDoublePref(
-      prefs::kAutofillBillingCustomerNumber, 0.0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  // This pref is not synced because it's for a signin promo, which by
-  // definition will not be synced.
-  registry->RegisterIntegerPref(
-      prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
-  registry->RegisterBooleanPref(
-      prefs::kAutofillEnabled, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kAutofillProfileEnabled, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kAutofillLastVersionDeduped, 0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kAutofillLastVersionDisusedAddressesDeleted, 0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // These choices are made on a per-device basis, so they're not syncable.
-  registry->RegisterBooleanPref(prefs::kAutofillWalletImportEnabled, true);
-  registry->RegisterBooleanPref(
-      prefs::kAutofillWalletImportStorageCheckboxState, true);
-  registry->RegisterIntegerPref(
-      prefs::kAutofillAcceptSaveCreditCardPromptState,
-      prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
-  registry->RegisterIntegerPref(
-      prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
-  registry->RegisterBooleanPref(prefs::kAutofillCreditCardEnabled, true);
-  registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);
-}
 
 void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   // TODO(jrg): consider passing delegate into the ctor.  That won't
@@ -1047,17 +1012,17 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  return ::autofill::IsAutofillEnabled(client_->GetPrefs()) &&
+  return ::autofill::prefs::IsAutofillEnabled(client_->GetPrefs()) &&
          client_->IsAutofillSupported();
 }
 
 bool AutofillManager::IsProfileAutofillEnabled() const {
-  return client_->GetPrefs()->GetBoolean(prefs::kAutofillProfileEnabled) &&
+  return ::autofill::prefs::IsProfileAutofillEnabled(client_->GetPrefs()) &&
          client_->IsAutofillSupported();
 }
 
 bool AutofillManager::IsCreditCardAutofillEnabled() const {
-  return client_->GetPrefs()->GetBoolean(prefs::kAutofillCreditCardEnabled) &&
+  return ::autofill::prefs::IsCreditCardAutofillEnabled(client_->GetPrefs()) &&
          client_->IsAutofillSupported();
 }
 
