@@ -8,7 +8,6 @@
 #include "ui/gfx/transform.h"
 
 namespace ui {
-class ImplicitAnimationObserver;
 class Layer;
 }  // namespace ui
 
@@ -62,12 +61,10 @@ enum SplitviewAnimationType {
 // Animates |layer|'s opacity based on |type|.
 void DoSplitviewOpacityAnimation(ui::Layer* layer, SplitviewAnimationType type);
 
-// Animates |layer|'s transform based on |type|. |observer| can be passed if the
-// caller wants to do an action after the animation has ended.
+// Animates |layer|'s transform based on |type|.
 void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
-                                   const gfx::Transform& target_transform,
-                                   ui::ImplicitAnimationObserver* observer);
+                                   const gfx::Transform& target_transform);
 
 }  // namespace ash
 

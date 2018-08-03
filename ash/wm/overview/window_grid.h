@@ -29,7 +29,6 @@ class Widget;
 
 namespace ash {
 
-class OverviewWindowAnimationObserver;
 class WindowSelectorItem;
 
 // Represents a grid of windows in the Overview Mode in a particular root
@@ -159,12 +158,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   gfx::Rect GetNoItemsIndicatorLabelBoundsForTesting() const;
 
-  // Sets |should_animate_when_entering_| and |should_animate_when_exiting_|
-  // of the selector items of the windows based on where the first MRU window
-  // covering the available workspace is found. Also sets the
-  // |should_be_observed_when_exiting_| of the last should-animate item.
-  // |selector_item| is not nullptr when |selector_item| is the selected item
-  // when exiting overview mode.
+  // Sets |should_animate_when_entering_| and |should_animate_when_exiting_| of
+  // the selector items of the windows based on where the first MRU window
+  // covering the available workspace is found. |selector_item| is not nullptr
+  // when |selector_item| is the selected item when exiting overview mode.
   void SetWindowListAnimationStates(
       WindowSelectorItem* selected_item,
       WindowSelector::OverviewTransition transition);
@@ -173,9 +170,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // used when splitview and overview mode are both active, selecting a window
   // will put the window in splitview mode and also end the overview mode. In
   // this case the windows in WindowGrid should not animate when exiting the
-  // overivew mode. Instead, OverviewWindowAnimationObserver will observer the
-  // snapped window animation and reset all windows transform in WindowGrid
-  // directly when the animation is completed.
+  // overivew mode. These windows will use ZERO tween so that transforms will
+  // reset at the end of animation.
   void SetWindowListNotAnimatedWhenExiting();
 
   // Starts a nudge, with |item| being the item that may be deleted. This method
@@ -207,14 +203,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   }
 
   WindowSelector* window_selector() { return window_selector_; }
-
-  void set_window_animation_observer(
-      base::WeakPtr<OverviewWindowAnimationObserver> observer) {
-    window_animation_observer_ = observer;
-  }
-  base::WeakPtr<OverviewWindowAnimationObserver> window_animation_observer() {
-    return window_animation_observer_;
-  }
 
   const gfx::Rect bounds() const { return bounds_; }
 
@@ -279,7 +267,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
                               int* out_max_right);
 
   // Sets |selector_item|'s |should_animate_when_entering_|,
-  // |should_animate_when_exiting_| and |should_be_observed_when_exiting_|.
+  // |should_animate_when_exiting_|.
   // |selector_item| is not nullptr when |selector_item| is the selected item
   // when exiting overview mode.
   void SetWindowSelectorItemAnimationState(
@@ -338,12 +326,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Collection of the items which should be nudged. This should only be
   // non-empty if a nudge is in progress.
   std::vector<NudgeData> nudge_data_;
-
-  // Weak ptr to the observer monitoring the exit animation of the first MRU
-  // window which covers the available workspace. The observer will be deleted
-  // by itself when the animation completes.
-  base::WeakPtr<OverviewWindowAnimationObserver> window_animation_observer_ =
-      nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowGrid);
 };

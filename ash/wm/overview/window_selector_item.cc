@@ -14,7 +14,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/overview_window_animation_observer.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
@@ -1144,7 +1143,7 @@ OverviewAnimationType WindowSelectorItem::GetExitOverviewAnimationType() {
 OverviewAnimationType WindowSelectorItem::GetExitTransformAnimationType() {
   return should_animate_when_exiting_
              ? OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW
-             : OverviewAnimationType::OVERVIEW_ANIMATION_NONE;
+             : OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
 float WindowSelectorItem::GetCloseButtonOpacityForTesting() {

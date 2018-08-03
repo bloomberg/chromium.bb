@@ -48,6 +48,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
       return base::TimeDelta::FromMilliseconds(kFadeOutMilliseconds);
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
+    case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
       return base::TimeDelta::FromMilliseconds(kTransitionMilliseconds);
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
       return base::TimeDelta::FromMilliseconds(kCloseScaleMilliseconds);
@@ -118,6 +119,7 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
       return g_reporter_enter.Pointer();
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
+    case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
       return g_reporter_exit.Pointer();
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
@@ -158,6 +160,11 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      break;
+    case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      animation_settings_->SetTweenType(gfx::Tween::ZERO);
       break;
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:

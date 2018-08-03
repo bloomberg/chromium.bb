@@ -33,7 +33,6 @@ namespace ash {
 class SplitViewControllerTest;
 class SplitViewDivider;
 class SplitViewWindowSelectorTest;
-class OverviewWindowAnimationObserver;
 
 // The controller for the split view. It snaps a window to left/right side of
 // the screen. It also observes the two snapped windows and decides when to exit
@@ -191,9 +190,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   SnapPosition default_snap_position() const { return default_snap_position_; }
   SplitViewDivider* split_view_divider() { return split_view_divider_.get(); }
   bool is_resizing() const { return is_resizing_; }
-  base::WeakPtr<OverviewWindowAnimationObserver>
-  snapped_window_animation_observer() {
-    return snapped_window_animation_observer_;
+  bool has_animating_window() const {
+    return has_animating_window_;
   }
 
  private:
@@ -406,10 +404,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // window comes from the overview.
   base::flat_map<aura::Window*, gfx::Rect> overview_window_item_bounds_map_;
 
-  // Weak ptr to the observer that observes the snapped window's transform
-  // animaiton if it comes from the overview.
-  base::WeakPtr<OverviewWindowAnimationObserver>
-      snapped_window_animation_observer_ = nullptr;
+  // True if there is an animating window.
+  bool has_animating_window_ = false;
 
   base::ObserverList<Observer> observers_;
   mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;

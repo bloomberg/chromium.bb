@@ -19,7 +19,6 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/overview_window_animation_observer.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -1269,7 +1268,9 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
   overview_window_item_bounds_map_.erase(iter);
 
   // Restore the window's transform first if it's not identity.
-  if (!window->layer()->GetTargetTransform().IsIdentity()) {
+  has_animating_window_ = !window->layer()->GetTargetTransform().IsIdentity();
+
+  if (has_animating_window_) {
     // Calculate the starting transform based on the window's expected snapped
     // bounds and its window item bounds in overview.
     const gfx::Rect snapped_bounds = GetSnappedWindowBoundsInScreen(
@@ -1277,18 +1278,12 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
     const gfx::Transform starting_transform =
         ScopedTransformOverviewWindow::GetTransformForRect(snapped_bounds,
                                                            item_bounds);
-
-    // Create an observer to observe the window's tranform animation.
-    auto* window_transform_observer = new OverviewWindowAnimationObserver();
-    snapped_window_animation_observer_ =
-        window_transform_observer->GetWeakPtr();
     for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
       if (!starting_transform.IsIdentity())
         window_iter->SetTransform(starting_transform);
-      DoSplitviewTransformAnimation(
-          window_iter->layer(), SPLITVIEW_ANIMATION_RESTORE_OVERVIEW_WINDOW,
-          gfx::Transform(),
-          (window_iter == window) ? window_transform_observer : nullptr);
+      DoSplitviewTransformAnimation(window_iter->layer(),
+                                    SPLITVIEW_ANIMATION_RESTORE_OVERVIEW_WINDOW,
+                                    gfx::Transform());
     }
   }
 }

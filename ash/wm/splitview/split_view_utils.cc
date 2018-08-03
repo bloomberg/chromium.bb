@@ -159,8 +159,7 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
 
 void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
-                                   const gfx::Transform& target_transform,
-                                   ui::ImplicitAnimationObserver* observer) {
+                                   const gfx::Transform& target_transform) {
   if (layer->GetTargetTransform() == target_transform)
     return;
 
@@ -188,8 +187,6 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
   ui::ScopedLayerAnimationSettings settings(animator);
   ApplyAnimationSettings(&settings, animator, duration, tween,
                          preemption_strategy, delay);
-  if (observer)
-    settings.AddObserver(observer);
   layer->SetTransform(target_transform);
 }
 
