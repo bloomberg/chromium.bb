@@ -158,7 +158,6 @@ class NavigationUIData;
 class PlatformNotificationService;
 class QuotaPermissionContext;
 class ReceiverPresentationServiceDelegate;
-class RedirectChecker;
 class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
@@ -1105,9 +1104,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // requests for the URLLoaderFactory. Otherwise |*factory_request| is left
   // unmodified and this must return |false|.
   //
-  // If |redirect_checker| is set, it should be called on the IO thread to check
-  // if a redirect should be allowed.
-  //
   // Always called on the UI thread and only when the Network Service is
   // enabled.
   //
@@ -1118,8 +1114,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       RenderFrameHost* frame,
       bool is_navigation,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      scoped_refptr<RedirectChecker>* redirect_checker);
+      network::mojom::URLLoaderFactoryRequest* factory_request);
 
   // Allows the embedder to intercept a WebSocket connection. |*request|
   // is always valid upon entry and MUST be valid upon return. The embedder
@@ -1290,10 +1285,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // default implementation provides nullptr OverlayWindow.
   virtual std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
       PictureInPictureWindowController* controller);
-
-  // Returns true if it is safe to redirect to |url|, otherwise returns false.
-  // This is called on the IO thread.
-  virtual bool IsSafeRedirectTarget(const GURL& url, ResourceContext* context);
 };
 
 }  // namespace content

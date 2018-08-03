@@ -21,6 +21,9 @@
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeReload
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeReloadDisableLoFi
 
+# https://crbug.com/837666
+-NavigationHandleImplBrowserTest.RedirectToRendererDebugUrl
+
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
 
 # services/network/url_loader.cc should handle failure in
@@ -45,6 +48,10 @@
 # Network service path needs some way to update the per-WebContents load state.
 # https://crbug.com/819663.
 -WebContentsImplBrowserTest.UpdateLoadState
+
+# Previously Fails because of missing support to navigate to filesystem URLs,
+# https://crbug.com/797292. Still failing, cause unknown.
+-BlockedSchemeNavigationBrowserTest.WindowOpenRedirectAndBack/1
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing

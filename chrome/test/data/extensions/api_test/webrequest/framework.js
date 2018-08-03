@@ -125,7 +125,7 @@ function navigateAndWait(url, callback) {
   var done = chrome.test.listenForever(chrome.tabs.onUpdated,
       function (_, info, tab) {
     if (tab.id == tabId && info.status == "complete") {
-      if (callback) callback(tab);
+      if (callback) callback();
       done();
     }
   });
