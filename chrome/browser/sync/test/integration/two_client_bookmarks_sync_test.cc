@@ -1678,7 +1678,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
 // Test a scenario of updating the name of the same bookmark from two clients at
 // the same time.
-IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        MC_BookmarkNameChangeConflict) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -1703,7 +1703,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
 // Test a scenario of updating the URL of the same bookmark from two clients at
 // the same time.
-IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        MC_BookmarkURLChangeConflict) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -1730,7 +1730,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
 // Test a scenario of updating the BM Folder name from two clients at the same
 // time.
-IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        MC_FolderNameChangeConflict) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1791,101 +1791,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   // Simultaneously rename folder C on both clients.
   SetTitle(0, folderC[0], "Folder C++");
   SetTitle(1, folderC[1], "Folder C--");
-  ASSERT_TRUE(BookmarksMatchChecker().Wait());
-  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
-}
-
-// Test a scenario of updating an empty BM Folder name from one client and
-// deleting it from another client at the same time.
-IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
-                       MC_EmptyFolderNameChangeAndDeletionConflict) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  DisableVerifier();
-
-  const BookmarkNode* folders[2];
-
-  // Create empty folder on both clients.
-  folders[0] = AddFolder(0, IndexedFolderName(0));
-  ASSERT_NE(nullptr, folders[0]);
-  folders[1] = AddFolder(1, IndexedFolderName(0));
-  ASSERT_NE(nullptr, folders[1]);
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BookmarksMatchChecker().Wait());
-  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
-
-  // Simultaneously rename the folder and delete it.
-  SetTitle(0, folders[0], "Folder A++");
-  Remove(1, GetBookmarkBarNode(1), 0);
-  // Both model should match.
-  ASSERT_TRUE(BookmarksMatchChecker().Wait());
-  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
-}
-
-// Test a scenario of updating a non-empty BM Folder name from one client and
-// deleting it from another client at the same time.
-IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
-                       MC_NonEmptyFolderNameChangeAndDeletionConflict) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  DisableVerifier();
-
-  const BookmarkNode* folderA[2];
-  const BookmarkNode* folderB[2];
-
-  // Create empty folder A on both clients.
-  folderA[0] = AddFolder(0, IndexedFolderName(0));
-  ASSERT_NE(nullptr, folderA[0]);
-  folderA[1] = AddFolder(1, IndexedFolderName(0));
-  ASSERT_NE(nullptr, folderA[1]);
-
-  // Create folder B under folder A on both clients.
-  folderB[0] = AddFolder(0, folderA[0], 0, IndexedFolderName(1));
-  ASSERT_NE(nullptr, folderB[0]);
-  folderB[1] = AddFolder(1, folderA[1], 0, IndexedFolderName(1));
-  ASSERT_NE(nullptr, folderB[1]);
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BookmarksMatchChecker().Wait());
-  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
-
-  // Simultaneously delete folder A from one client and delete it on the other.
-  SetTitle(0, folderA[0], "Folder A++");
-  Remove(1, GetBookmarkBarNode(1), 0);
-  ASSERT_TRUE(BookmarksMatchChecker().Wait());
-  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
-}
-
-// Test a scenario of deleting a parent BM Folder name from one client and
-// renaming a child in another client at the same time. Deleting the parent will
-// also delete the child and hence there would be a conflict at the child node.
-IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
-                       MC_ParentDeleteChildRenameConflict) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  DisableVerifier();
-
-  const BookmarkNode* folderA[2];
-  const BookmarkNode* folderB[2];
-
-  // Create empty folder A on both clients.
-  folderA[0] = AddFolder(0, IndexedFolderName(0));
-  ASSERT_NE(nullptr, folderA[0]);
-  folderA[1] = AddFolder(1, IndexedFolderName(0));
-  ASSERT_NE(nullptr, folderA[1]);
-
-  // Create folder B under folder A on both clients.
-  folderB[0] = AddFolder(0, folderA[0], 0, IndexedFolderName(1));
-  ASSERT_NE(nullptr, folderB[0]);
-  folderB[1] = AddFolder(1, folderA[1], 0, IndexedFolderName(1));
-  ASSERT_NE(nullptr, folderB[1]);
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BookmarksMatchChecker().Wait());
-  ASSERT_FALSE(ContainsDuplicateBookmarks(0));
-
-  // Simultaneously delete folder A from one client and rename folder B on the
-  // other.
-  SetTitle(0, folderB[0], "Folder B++");
-  Remove(1, GetBookmarkBarNode(1), 0);
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
