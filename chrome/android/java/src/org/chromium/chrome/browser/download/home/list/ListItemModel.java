@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.SimpleList;
 
 import java.util.ArrayList;
@@ -13,17 +14,17 @@ import java.util.List;
 /**
  * This model represents the data required to build a list UI around a set of {@link ListItem}s.
  * This includes (1) a {@link ListObservable} implementation and (2) exposing a
- * {@link ListPropertyModel} for shared item properties and general list information.
+ * {@link PropertyModel} for shared item properties and general list information.
  */
 class ListItemModel extends BatchListObservable implements SimpleList<ListItem> {
     private final List<ListItem> mItems = new ArrayList<>();
-    private final ListPropertyModel mListProperties = new ListPropertyModel();
+    private final PropertyModel mListProperties = new PropertyModel(ListProperties.ALL_KEYS);
 
     /**
-     * @return A {@link ListPropertyModel} instance, which is a set of shared properties for the
+     * @return A {@link PropertyModel} instance, which is a set of shared properties for the
      *         list.
      */
-    public ListPropertyModel getProperties() {
+    public PropertyModel getProperties() {
         return mListProperties;
     }
 

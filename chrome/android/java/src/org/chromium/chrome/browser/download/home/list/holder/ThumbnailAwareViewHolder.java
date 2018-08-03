@@ -11,8 +11,9 @@ import android.widget.ImageView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
+import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.view.SelectionView;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
@@ -68,7 +69,7 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
     // MoreButtonViewHolder implementation.
     @Override
     @CallSuper
-    public void bind(ListPropertyModel properties, ListItem item) {
+    public void bind(PropertyModel properties, ListItem item) {
         super.bind(properties, item);
         // If we have no thumbnail to show just return early.
         if (mThumbnail == null) return;
@@ -81,20 +82,21 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
         }
 
         if (mSelectionView != null) {
-            mSelectionView.setSelectionState(
-                    item.selected, properties.getSelectionModeActive(), item.showSelectedAnimation);
+            mSelectionView.setSelectionState(item.selected,
+                    properties.getValue(ListProperties.SELECTION_MODE_ACTIVE),
+                    item.showSelectedAnimation);
         }
 
         itemView.setOnLongClickListener(v -> {
-            properties.getSelectionCallback().onResult(item);
+            properties.getValue(ListProperties.CALLBACK_SELECTION).onResult(item);
             return true;
         });
 
         itemView.setOnClickListener(v -> {
             if (mSelectionView != null && mSelectionView.isInSelectionMode()) {
-                properties.getSelectionCallback().onResult(item);
+                properties.getValue(ListProperties.CALLBACK_SELECTION).onResult(item);
             } else {
-                properties.getOpenCallback().onResult(offlineItem);
+                properties.getValue(ListProperties.CALLBACK_OPEN).onResult(offlineItem);
             }
         });
 
@@ -106,18 +108,19 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
 
         // Start the new request.
         mId = offlineItem.id;
-        mCancellable =
-                properties.getVisualsProvider().getVisuals(offlineItem, mWidthPx, mHeightPx, this);
+        mCancellable = properties.getValue(ListProperties.PROVIDER_VISUALS)
+                               .getVisuals(offlineItem, mWidthPx, mHeightPx, this);
 
         // Make sure to update our state properly if we got a synchronous response.
         if (!mIsRequesting) mCancellable = null;
     }
 
-    private boolean selectionStateHasChanged(ListPropertyModel properties, ListItem item) {
+    private boolean selectionStateHasChanged(PropertyModel properties, ListItem item) {
         if (mSelectionView == null) return false;
 
         return mSelectionView.isSelected() != item.selected
-                || mSelectionView.isInSelectionMode() != properties.getSelectionModeActive();
+                || mSelectionView.isInSelectionMode()
+                != properties.getValue(ListProperties.SELECTION_MODE_ACTIVE);
     }
 
     // VisualsCallback implementation.

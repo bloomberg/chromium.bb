@@ -13,7 +13,8 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
+import org.chromium.chrome.browser.download.home.list.ListProperties;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
@@ -52,11 +53,11 @@ public class InProgressViewHolder extends ListItemViewHolder {
 
     // ListItemViewHolder implementation.
     @Override
-    public void bind(ListPropertyModel properties, ListItem item) {
+    public void bind(PropertyModel properties, ListItem item) {
         ListItem.OfflineItemListItem offlineItem = (ListItem.OfflineItemListItem) item;
         mTitle.setText(offlineItem.item.title);
-        mCancelButton.setOnClickListener(
-                v -> properties.getCancelCallback().onResult(offlineItem.item));
+        mCancelButton.setOnClickListener(v
+                -> properties.getValue(ListProperties.CALLBACK_CANCEL).onResult(offlineItem.item));
 
         if (offlineItem.item.state == OfflineItemState.PAUSED) {
             mPauseResumeButton.setImageResource(R.drawable.ic_play_arrow_white_24dp);
@@ -72,9 +73,9 @@ public class InProgressViewHolder extends ListItemViewHolder {
         mCaption.setText(DownloadUtils.getProgressTextForNotification(offlineItem.item.progress));
         mPauseResumeButton.setOnClickListener(view -> {
             if (offlineItem.item.state == OfflineItemState.PAUSED) {
-                properties.getResumeCallback().onResult(offlineItem.item);
+                properties.getValue(ListProperties.CALLBACK_RESUME).onResult(offlineItem.item);
             } else {
-                properties.getPauseCallback().onResult(offlineItem.item);
+                properties.getValue(ListProperties.CALLBACK_PAUSE).onResult(offlineItem.item);
             }
         });
 

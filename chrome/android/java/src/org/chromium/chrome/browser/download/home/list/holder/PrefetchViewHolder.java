@@ -12,8 +12,8 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 
 /**
@@ -47,7 +47,7 @@ public class PrefetchViewHolder extends ThumbnailAwareViewHolder {
 
     // ThumbnailAwareViewHolder implementation.
     @Override
-    public void bind(ListPropertyModel properties, ListItem item) {
+    public void bind(PropertyModel properties, ListItem item) {
         super.bind(properties, item);
         ListItem.OfflineItemListItem offlineItem = (ListItem.OfflineItemListItem) item;
 

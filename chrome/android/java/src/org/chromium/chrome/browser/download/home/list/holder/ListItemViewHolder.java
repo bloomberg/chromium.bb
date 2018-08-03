@@ -9,8 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
 import org.chromium.chrome.browser.download.home.list.ListUtils;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /**
  * A {@link ViewHolder} responsible for building and setting properties on the underlying Android
@@ -51,8 +51,8 @@ public abstract class ListItemViewHolder extends ViewHolder {
 
     /**
      * Binds the currently held {@link View} to {@code item}.
-     * @param properties The shared {@link ListPropertyModel} all items can access.
+     * @param properties The shared {@link PropertyModel} all items can access.
      * @param item       The {@link ListItem} to visually represent in this {@link ViewHolder}.
      */
-    public abstract void bind(ListPropertyModel properties, ListItem item);
+    public abstract void bind(PropertyModel properties, ListItem item);
 }
