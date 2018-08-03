@@ -5,11 +5,10 @@
 #ifndef COMPONENTS_METRICS_CALL_STACK_PROFILE_BUILDER_H_
 #define COMPONENTS_METRICS_CALL_STACK_PROFILE_BUILDER_H_
 
-#include "base/profiler/stack_sampling_profiler.h"
-
 #include <map>
 
 #include "base/callback.h"
+#include "base/profiler/stack_sampling_profiler.h"
 
 namespace metrics {
 
