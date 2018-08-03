@@ -40,7 +40,7 @@ class BlacklistedCredentialsCleaner
   ~BlacklistedCredentialsCleaner() override = default;
 
   void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
+      std::vector<std::unique_ptr<PasswordForm>> results) override {
     bool need_to_clean = !prefs_->GetBoolean(
         password_manager::prefs::kBlacklistedCredentialsStripped);
     UMA_HISTOGRAM_BOOLEAN("PasswordManager.BlacklistedSites.NeedToBeCleaned",
@@ -55,7 +55,7 @@ class BlacklistedCredentialsCleaner
   // TODO(https://crbug.com/817754): remove the code once majority of the users
   // executed it.
   void RemoveUsernameAndPassword(
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>& results) {
+      const std::vector<std::unique_ptr<PasswordForm>>& results) {
     bool cleaned_something = false;
     for (const auto& form : results) {
       DCHECK(form->blacklisted_by_user);
@@ -77,7 +77,7 @@ class BlacklistedCredentialsCleaner
   }
 
   void RemoveDuplicates(
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>& results) {
+      const std::vector<std::unique_ptr<PasswordForm>>& results) {
     std::set<std::string> signon_realms;
     for (const auto& form : results) {
       DCHECK(form->blacklisted_by_user);
@@ -112,6 +112,15 @@ bool IsBetterMatch(const PasswordForm* lhs, const PasswordForm* rhs) {
 
 }  // namespace
 
+// Update |credential| to reflect usage.
+void UpdateMetadataForUsage(PasswordForm* credential) {
+  ++credential->times_used;
+
+  // Remove alternate usernames. At this point we assume that we have found
+  // the right username.
+  credential->other_possible_usernames.clear();
+}
+
 password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service) {
   if (sync_service && sync_service->IsFirstSetupComplete() &&
@@ -138,10 +147,9 @@ password_manager::SyncState GetHistorySyncState(
   return password_manager::NOT_SYNCING;
 }
 
-void FindDuplicates(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms,
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* duplicates,
-    std::vector<std::vector<autofill::PasswordForm*>>* tag_groups) {
+void FindDuplicates(std::vector<std::unique_ptr<PasswordForm>>* forms,
+                    std::vector<std::unique_ptr<PasswordForm>>* duplicates,
+                    std::vector<std::vector<PasswordForm*>>* tag_groups) {
   if (forms->empty())
     return;
 
@@ -149,11 +157,11 @@ void FindDuplicates(
   // duplicates. Therefore, the caller should try to preserve it.
   std::stable_sort(forms->begin(), forms->end(), autofill::LessThanUniqueKey());
 
-  std::vector<std::unique_ptr<autofill::PasswordForm>> unique_forms;
+  std::vector<std::unique_ptr<PasswordForm>> unique_forms;
   unique_forms.push_back(std::move(forms->front()));
   if (tag_groups) {
     tag_groups->clear();
-    tag_groups->push_back(std::vector<autofill::PasswordForm*>());
+    tag_groups->push_back(std::vector<PasswordForm*>());
     tag_groups->front().push_back(unique_forms.front().get());
   }
   for (auto it = forms->begin() + 1; it != forms->end(); ++it) {
@@ -163,8 +171,7 @@ void FindDuplicates(
       duplicates->push_back(std::move(*it));
     } else {
       if (tag_groups)
-        tag_groups->push_back(
-            std::vector<autofill::PasswordForm*>(1, it->get()));
+        tag_groups->push_back(std::vector<PasswordForm*>(1, it->get()));
       unique_forms.push_back(std::move(*it));
     }
   }
@@ -172,22 +179,20 @@ void FindDuplicates(
 }
 
 void TrimUsernameOnlyCredentials(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* android_credentials) {
+    std::vector<std::unique_ptr<PasswordForm>>* android_credentials) {
   // Remove username-only credentials which are not federated.
   base::EraseIf(*android_credentials,
-                [](const std::unique_ptr<autofill::PasswordForm>& form) {
-                  return form->scheme ==
-                             autofill::PasswordForm::SCHEME_USERNAME_ONLY &&
+                [](const std::unique_ptr<PasswordForm>& form) {
+                  return form->scheme == PasswordForm::SCHEME_USERNAME_ONLY &&
                          form->federation_origin.unique();
                 });
 
   // Set "skip_zero_click" on federated credentials.
-  std::for_each(
-      android_credentials->begin(), android_credentials->end(),
-      [](const std::unique_ptr<autofill::PasswordForm>& form) {
-        if (form->scheme == autofill::PasswordForm::SCHEME_USERNAME_ONLY)
-          form->skip_zero_click = true;
-      });
+  std::for_each(android_credentials->begin(), android_credentials->end(),
+                [](const std::unique_ptr<PasswordForm>& form) {
+                  if (form->scheme == PasswordForm::SCHEME_USERNAME_ONLY)
+                    form->skip_zero_click = true;
+                });
 }
 
 bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {

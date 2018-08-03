@@ -63,15 +63,6 @@ bool IsProbablyNotUsername(const base::string16& s) {
   return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
 }
 
-// Update |credential| to reflect usage.
-void UpdateMetadataForUsage(PasswordForm* credential) {
-  ++credential->times_used;
-
-  // Remove alternate usernames. At this point we assume that we have found
-  // the right username.
-  credential->other_possible_usernames.clear();
-}
-
 // Returns true iff |best_matches| contain a preferred credential with a
 // username other than |preferred_username|.
 bool DidPreferenceChange(
@@ -599,7 +590,7 @@ void PasswordFormManager::ProcessUpdate() {
   DCHECK(!IsNewLogin() && pending_credentials_.preferred);
   DCHECK(!client_->IsIncognito());
 
-  UpdateMetadataForUsage(&pending_credentials_);
+  password_manager_util::UpdateMetadataForUsage(&pending_credentials_);
 
   base::RecordAction(
       base::UserMetricsAction("PasswordManager_LoginFollowingAutofill"));
@@ -643,7 +634,7 @@ void PasswordFormManager::CreatePendingCredentials() {
       // If this isn't updated, then password generation uploads are off for
       // sites where PSL matching is required to fill the login form, as two
       // PASSWORD votes are uploaded per saved password instead of one.
-      UpdateMetadataForUsage(&pending_credentials_);
+      password_manager_util::UpdateMetadataForUsage(&pending_credentials_);
 
       // Update |pending_credentials_| in order to be able correctly save it.
       pending_credentials_.origin = submitted_form_->origin;

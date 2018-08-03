@@ -32,6 +32,9 @@ class PrefService;
 
 namespace password_manager_util {
 
+// Update |credential| to reflect usage.
+void UpdateMetadataForUsage(autofill::PasswordForm* credential);
+
 // Reports whether and how passwords are currently synced. In particular, for a
 // null |sync_service| returns NOT_SYNCING.
 password_manager::SyncState GetPasswordSyncState(
