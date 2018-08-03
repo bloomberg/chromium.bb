@@ -10,5 +10,7 @@ PASS setConfiguration(config) - with { rtcpMuxPolicy: 'invalid' } should throw T
 PASS setConfiguration({ rtcpMuxPolicy: 'negotiate' }) with initial rtcpMuxPolicy require should throw InvalidModificationError
 PASS setConfiguration({ rtcpMuxPolicy: 'require' }) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError
 PASS setConfiguration({}) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError
+PASS setRemoteDescription throws InvalidAccessError when called with an offer without rtcp-mux and rtcpMuxPolicy is set to require
+PASS setRemoteDescription throws InvalidAccessError when called with an answer without rtcp-mux and rtcpMuxPolicy is set to require
 Harness: the test ran to completion.
 

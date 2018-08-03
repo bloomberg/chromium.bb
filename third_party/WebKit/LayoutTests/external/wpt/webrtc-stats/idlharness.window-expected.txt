@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS webrtc-stats interfaces.
+PASS Partial dictionary RTCIceCandidateStats: original dictionary defined
+PASS Partial dictionary RTCIceCandidatePairStats: original dictionary defined
+FAIL Partial dictionary RTCRTPStreamStats: original dictionary defined assert_true: Original dictionary should be defined expected true got false
+Harness: the test ran to completion.
+
