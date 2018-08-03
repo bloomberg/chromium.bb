@@ -21,6 +21,7 @@ namespace download {
 
 class DownloadDB;
 struct DownloadDBEntry;
+struct DownloadEntry;
 
 // Responsible for caching the metadata of all in progress downloads.
 class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
@@ -38,6 +39,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
 
   // Remove an entry from the DownloadDB.
   void RemoveEntry(const std::string& guid);
+
+  // Migrate DownloadEntry from in-progress cache.
+  void MigrateFromInProgressCache(const std::vector<DownloadEntry>& entries);
 
  private:
   friend class DownloadDBCacheTest;

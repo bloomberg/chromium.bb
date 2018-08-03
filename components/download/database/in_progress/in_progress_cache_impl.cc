@@ -212,4 +212,12 @@ void InProgressCacheImpl::RemoveEntry(const std::string& guid) {
                                                    entries_string, file_path_));
 }
 
+std::vector<DownloadEntry> InProgressCacheImpl::GetAllEntries() {
+  if (initialization_status_ != CACHE_INITIALIZED) {
+    LOG(ERROR) << "Cache is not initialized, cannot get all entries.";
+    return std::vector<DownloadEntry>();
+  }
+  return DownloadDBConversions::DownloadEntriesFromProto(entries_);
+}
+
 }  // namespace download

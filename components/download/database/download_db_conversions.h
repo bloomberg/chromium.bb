@@ -64,6 +64,9 @@ class DownloadDBConversions {
 
   static DownloadDBEntry DownloadDBEntryFromProto(
       const download_pb::DownloadDBEntry& proto);
+
+  static DownloadDBEntry DownloadDBEntryFromDownloadEntry(
+      const DownloadEntry& entry);
 };
 
 }  // namespace download

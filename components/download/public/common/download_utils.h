@@ -72,7 +72,7 @@ COMPONENTS_DOWNLOAD_EXPORT DownloadEntry CreateDownloadEntryFromItem(
 // Helper functions for DownloadItem -> DownloadDBEntry for DownloadDB.
 COMPONENTS_DOWNLOAD_EXPORT DownloadDBEntry CreateDownloadDBEntryFromItem(
     const DownloadItem& item,
-    DownloadSource download_source,
+    const UkmInfo& ukm_info,
     bool fetch_error_body,
     const DownloadUrlParameters::RequestHeadersType& request_headers);
 

@@ -311,4 +311,22 @@ download_pb::DownloadDBEntry DownloadDBConversions::DownloadDBEntryToProto(
   return proto;
 }
 
+DownloadDBEntry DownloadDBConversions::DownloadDBEntryFromDownloadEntry(
+    const DownloadEntry& entry) {
+  DownloadDBEntry db_entry;
+  DownloadInfo download_info;
+  download_info.guid = entry.guid;
+
+  UkmInfo ukm_info(entry.download_source, entry.ukm_download_id);
+
+  InProgressInfo in_progress_info;
+  in_progress_info.fetch_error_body = entry.fetch_error_body;
+  in_progress_info.request_headers = entry.request_headers;
+
+  download_info.ukm_info = ukm_info;
+  download_info.in_progress_info = in_progress_info;
+  db_entry.download_info = download_info;
+  return db_entry;
+}
+
 }  // namespace download
