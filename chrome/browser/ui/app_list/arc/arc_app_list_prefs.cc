@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -34,7 +35,9 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 
@@ -42,7 +45,6 @@ constexpr char kActivity[] = "activity";
 constexpr char kIconResourceId[] = "icon_resource_id";
 constexpr char kInstallTime[] = "install_time";
 constexpr char kIntentUri[] = "intent_uri";
-constexpr char kInvalidatedIcons[] = "invalidated_icons";
 constexpr char kLastBackupAndroidId[] = "last_backup_android_id";
 constexpr char kLastBackupTime[] = "last_backup_time";
 constexpr char kLastLaunchTime[] = "lastlaunchtime";
@@ -185,34 +187,6 @@ bool GetInt64FromPref(const base::DictionaryValue* dict,
   return true;
 }
 
-base::FilePath ToIconPath(const base::FilePath& app_path,
-                          ui::ScaleFactor scale_factor) {
-  DCHECK(!app_path.empty());
-  switch (scale_factor) {
-    case ui::SCALE_FACTOR_100P:
-      return app_path.AppendASCII("icon_100p.png");
-    case ui::SCALE_FACTOR_125P:
-      return app_path.AppendASCII("icon_125p.png");
-    case ui::SCALE_FACTOR_133P:
-      return app_path.AppendASCII("icon_133p.png");
-    case ui::SCALE_FACTOR_140P:
-      return app_path.AppendASCII("icon_140p.png");
-    case ui::SCALE_FACTOR_150P:
-      return app_path.AppendASCII("icon_150p.png");
-    case ui::SCALE_FACTOR_180P:
-      return app_path.AppendASCII("icon_180p.png");
-    case ui::SCALE_FACTOR_200P:
-      return app_path.AppendASCII("icon_200p.png");
-    case ui::SCALE_FACTOR_250P:
-      return app_path.AppendASCII("icon_250p.png");
-    case ui::SCALE_FACTOR_300P:
-      return app_path.AppendASCII("icon_300p.png");
-    default:
-      NOTREACHED();
-      return base::FilePath();
-  }
-}
-
 // Returns true if one of state of |info1| does not match the same state in
 // |info2|.
 bool AreAppStatesChanged(const ArcAppListPrefs::AppInfo& info1,
@@ -286,6 +260,68 @@ std::string ArcAppListPrefs::GetAppIdByPackageName(
   return std::string();
 }
 
+// Instances are owned by ArcAppListPrefs.
+// It performs decoding, resizing and encoding resized icon. Used to support
+// legacy mojom for icon requests.
+class ArcAppListPrefs::ResizeRequest : public ImageDecoder::ImageRequest {
+ public:
+  ResizeRequest(const base::WeakPtr<ArcAppListPrefs>& host,
+                const std::string& app_id,
+                const ArcAppIconDescriptor& descriptor)
+      : host_(host), app_id_(app_id), descriptor_(descriptor) {}
+  ~ResizeRequest() override = default;
+
+  // ImageDecoder::ImageRequest:
+  void OnImageDecoded(const SkBitmap& bitmap) override {
+    // See host_ comments.
+    DCHECK(host_);
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&ResizeRequest::ResizeAndEncodeIconAsyncronously, bitmap,
+                       descriptor_.GetSizeInPixels()),
+        base::BindOnce(&ArcAppListPrefs::OnIconResized, host_, app_id_,
+                       descriptor_));
+    host_->DiscardResizeRequest(this);
+  }
+
+  // ImageDecoder::ImageRequest:
+  void OnDecodeImageFailed() override {
+    // See host_ comments.
+    DCHECK(host_);
+    host_->DiscardResizeRequest(this);
+  }
+
+ private:
+  static std::vector<uint8_t> ResizeAndEncodeIconAsyncronously(
+      const SkBitmap& bitmap,
+      int dimension_in_pixels) {
+    DCHECK_EQ(bitmap.height(), bitmap.width());
+    // Matching dimensions are not sent to resizing.
+    DCHECK_NE(dimension_in_pixels, bitmap.width());
+    const SkBitmap resized_bitmap = skia::ImageOperations::Resize(
+        bitmap, skia::ImageOperations::RESIZE_BEST, dimension_in_pixels,
+        dimension_in_pixels);
+    std::vector<uint8_t> result;
+    if (!gfx::PNGCodec::EncodeBGRASkBitmap(
+            resized_bitmap, false /* discard_transparency*/, &result)) {
+      NOTREACHED() << "Failed to encode png";
+      return {};
+    }
+    return result;
+  }
+
+  // Owner of this class. |host_| does not contain nullptr for decode callbacks
+  // OnImageDecoded and OnDecodeImageFailed because once owner is deleted this
+  // class is automatically deleted as well and this cancels any decode
+  // operation. However, ResizeAndEncodeIconAsyncronously can be executed
+  // after deletion of this class and therefore |host_| may contain nullptr.
+  base::WeakPtr<ArcAppListPrefs> host_;
+  const std::string app_id_;
+  const ArcAppIconDescriptor descriptor_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResizeRequest);
+};
+
 ArcAppListPrefs::ArcAppListPrefs(
     Profile* profile,
     arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
@@ -300,10 +336,6 @@ ArcAppListPrefs::ArcAppListPrefs(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   const base::FilePath& base_path = profile->GetPath();
   base_path_ = base_path.AppendASCII(arc::prefs::kArcApps);
-
-  invalidated_icon_scale_factor_mask_ = 0;
-  for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors())
-    invalidated_icon_scale_factor_mask_ |= (1U << scale_factor);
 
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   if (!arc_session_manager)
@@ -362,27 +394,29 @@ base::FilePath ArcAppListPrefs::GetAppPath(const std::string& app_id) const {
 
 base::FilePath ArcAppListPrefs::MaybeGetIconPathForDefaultApp(
     const std::string& app_id,
-    ui::ScaleFactor scale_factor) const {
+    const ArcAppIconDescriptor& descriptor) const {
   const ArcDefaultAppList::AppInfo* default_app = default_apps_.GetApp(app_id);
   if (!default_app || default_app->app_path.empty())
     return base::FilePath();
 
-  return ToIconPath(default_app->app_path, scale_factor);
+  return default_app->app_path.AppendASCII(descriptor.GetName());
 }
 
 base::FilePath ArcAppListPrefs::GetIconPath(
     const std::string& app_id,
-    ui::ScaleFactor scale_factor) const {
-  return ToIconPath(GetAppPath(app_id), scale_factor);
+    const ArcAppIconDescriptor& descriptor) {
+  // TODO(khmel): Add DCHECK(GetApp(app_id));
+  active_icons_[app_id].insert(descriptor);
+  return GetAppPath(app_id).AppendASCII(descriptor.GetName());
 }
 
 bool ArcAppListPrefs::IsIconRequestRecorded(
     const std::string& app_id,
-    ui::ScaleFactor scale_factor) const {
+    const ArcAppIconDescriptor& descriptor) const {
   const auto iter = request_icon_recorded_.find(app_id);
   if (iter == request_icon_recorded_.end())
     return false;
-  return iter->second & (1 << scale_factor);
+  return iter->second.count(descriptor);
 }
 
 void ArcAppListPrefs::MaybeRemoveIconRequestRecord(const std::string& app_id) {
@@ -394,7 +428,7 @@ void ArcAppListPrefs::ClearIconRequestRecord() {
 }
 
 void ArcAppListPrefs::RequestIcon(const std::string& app_id,
-                                  ui::ScaleFactor scale_factor) {
+                                  const ArcAppIconDescriptor& descriptor) {
   DCHECK_NE(app_id, arc::kPlayStoreAppId);
 
   // ArcSessionManager can be terminated during test tear down, before callback
@@ -412,7 +446,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
   // becomes ready.
   // This record will prevent ArcAppIcon from resending request to ARC for app
   // icon when icon file decode failure is suffered in case app sends bad icon.
-  request_icon_recorded_[app_id] |= (1 << scale_factor);
+  request_icon_recorded_[app_id].insert(descriptor);
 
   if (!ready_apps_.count(app_id))
     return;
@@ -429,32 +463,73 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  if (app_info->icon_resource_id.empty()) {
+  if (app_connection_holder_->instance_version() <
+      arc::mojom::AppInstance::kRequestAppIconMinVersion) {
+    LOG(WARNING) << "Using depreciated interface ("
+                 << app_connection_holder_->instance_version()
+                 << ") to request icons.";
+    SendIconRequestDeprecated(app_id, *app_info, descriptor);
+    return;
+  }
+
+  SendIconRequest(app_id, *app_info, descriptor);
+}
+
+void ArcAppListPrefs::SendIconRequest(const std::string& app_id,
+                                      const AppInfo& app_info,
+                                      const ArcAppIconDescriptor& descriptor) {
+  base::OnceCallback<void(const std::vector<uint8_t>& /* icon_png_data */)>
+      callback =
+          base::BindOnce(&ArcAppListPrefs::OnIcon,
+                         weak_ptr_factory_.GetWeakPtr(), app_id, descriptor);
+  if (app_info.icon_resource_id.empty()) {
     auto* app_instance =
         ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_, RequestAppIcon);
-    // Version 0 instance should always be available here because IsConnected()
-    // returned true above.
-    DCHECK(app_instance);
-    app_instance->RequestAppIcon(
-        app_info->package_name, app_info->activity,
-        static_cast<arc::mojom::ScaleFactor>(scale_factor));
-  } else {
-    auto* app_instance =
-        ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_, RequestIcon);
     if (!app_instance)
-      return;  // The instance version on ARC side was too old.
-    app_instance->RequestIcon(
-        app_info->icon_resource_id,
-        static_cast<arc::mojom::ScaleFactor>(scale_factor),
-        base::Bind(&ArcAppListPrefs::OnIcon, base::Unretained(this), app_id,
-                   static_cast<arc::mojom::ScaleFactor>(scale_factor)));
+      return;  // Error is logged in macro.
+    app_instance->RequestAppIcon(app_info.package_name, app_info.activity,
+                                 descriptor.GetSizeInPixels(),
+                                 std::move(callback));
+  } else {
+    auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_,
+                                                     RequestShortcutIcon);
+    if (!app_instance)
+      return;  // Error is logged in macro.
+    app_instance->RequestShortcutIcon(app_info.icon_resource_id,
+                                      descriptor.GetSizeInPixels(),
+                                      std::move(callback));
+  }
+}
+
+void ArcAppListPrefs::SendIconRequestDeprecated(
+    const std::string& app_id,
+    const AppInfo& app_info,
+    const ArcAppIconDescriptor& descriptor) {
+  if (app_info.icon_resource_id.empty()) {
+    auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_,
+                                                     RequestAppIconDeprecated);
+    if (!app_instance)
+      return;  // Error is logged in macro.
+    app_instance->RequestAppIconDeprecated(
+        app_info.package_name, app_info.activity,
+        static_cast<arc::mojom::ScaleFactor>(descriptor.scale_factor));
+  } else {
+    auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(
+        app_connection_holder_, RequestShortcutIconDeprecated);
+    if (!app_instance)
+      return;  // Error is logged in macro.
+    app_instance->RequestShortcutIconDeprecated(
+        app_info.icon_resource_id,
+        static_cast<arc::mojom::ScaleFactor>(descriptor.scale_factor),
+        base::BindOnce(&ArcAppListPrefs::OnIconDeprecated,
+                       weak_ptr_factory_.GetWeakPtr(), app_id, descriptor));
   }
 }
 
 void ArcAppListPrefs::MaybeRequestIcon(const std::string& app_id,
-                                       ui::ScaleFactor scale_factor) {
-  if (!IsIconRequestRecorded(app_id, scale_factor))
-    RequestIcon(app_id, scale_factor);
+                                       const ArcAppIconDescriptor& descriptor) {
+  if (!IsIconRequestRecorded(app_id, descriptor))
+    RequestIcon(app_id, descriptor);
 }
 
 void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
@@ -825,18 +900,8 @@ void ArcAppListPrefs::RegisterDefaultApps() {
     if (!default_apps_.HasApp(app_id))
       continue;
     // Skip already tracked app.
-    if (tracked_apps_.count(app_id)) {
-      // Icon should be already taken from the cache. Play Store icon is loaded
-      // from internal resources.
-      if (ready_apps_.count(app_id) || app_id == arc::kPlayStoreAppId)
-        continue;
-      // Notify that icon is ready for default app.
-      for (auto& observer : observer_list_) {
-        for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors())
-          observer.OnAppIconUpdated(app_id, scale_factor);
-      }
+    if (tracked_apps_.count(app_id))
       continue;
-    }
 
     const ArcDefaultAppList::AppInfo& app_info = *default_app.second.get();
     AddAppAndShortcut(app_info.name, app_info.package_name, app_info.activity,
@@ -1008,17 +1073,13 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
     tracked_apps_.insert(app_id);
   }
 
-  if (app_ready) {
-    int icon_update_mask = 0;
-    app_dict->GetInteger(kInvalidatedIcons, &icon_update_mask);
-    auto pending_icons = request_icon_recorded_.find(app_id);
-    if (pending_icons != request_icon_recorded_.end())
-      icon_update_mask |= pending_icons->second;
-    for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
-      if (icon_update_mask & (1 << scale_factor))
-        RequestIcon(app_id, scale_factor);
-    }
+  // Send pending requests in case app becomes visible.
+  if (!app_old_info || !app_old_info->ready) {
+    for (const auto& descriptor : request_icon_recorded_[app_id])
+      RequestIcon(app_id, descriptor);
+  }
 
+  if (app_ready) {
     bool deferred_notifications_enabled;
     if (SetNotificationsEnabledDeferred(prefs_).Get(
             app_id, &deferred_notifications_enabled)) {
@@ -1038,11 +1099,10 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
 
   // From now, app is not available.
   ready_apps_.erase(app_id);
+  active_icons_.erase(app_id);
 
-  // app_id may be released by observers, get the path first. It should be done
-  // before removing prefs entry in order not to mix with pre-build default apps
-  // files.
-  const base::FilePath app_path = GetAppPath(app_id);
+  // Remove asyncronously local data on file system.
+  ScheduleAppFolderDeletion(app_id);
 
   // Remove from prefs.
   DictionaryPrefUpdate update(prefs_, arc::prefs::kArcApps);
@@ -1054,11 +1114,6 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   for (auto& observer : observer_list_)
     observer.OnAppRemoved(app_id);
   tracked_apps_.erase(app_id);
-
-  // Remove local data on file system.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&DeleteAppFolderFromFileThread, app_path));
 }
 
 void ArcAppListPrefs::AddOrUpdatePackagePrefs(
@@ -1217,15 +1272,12 @@ void ArcAppListPrefs::InvalidateAppIcons(const std::string& app_id) {
   // Clean up previous icon records. They may refer to outdated icons.
   MaybeRemoveIconRequestRecord(app_id);
 
-  {
-    ScopedArcPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
-    base::DictionaryValue* app_dict = update.Get();
-    app_dict->SetInteger(kInvalidatedIcons,
-                         invalidated_icon_scale_factor_mask_);
-  }
+  // Clear icon cache that contains outdated icons.
+  ScheduleAppFolderDeletion(app_id);
 
-  for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors())
-    MaybeRequestIcon(app_id, scale_factor);
+  // Re-request active icons.
+  for (const auto& descriptor : active_icons_[app_id])
+    MaybeRequestIcon(app_id, descriptor);
 }
 
 void ArcAppListPrefs::InvalidatePackageIcons(const std::string& package_name) {
@@ -1249,6 +1301,13 @@ bool ArcAppListPrefs::NeedSetInstallTime(
 
   // TODO(b/34248841) - Handle apps, installed by sync.
   return true;
+}
+
+void ArcAppListPrefs::ScheduleAppFolderDeletion(const std::string& app_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&DeleteAppFolderFromFileThread, GetAppPath(app_id)));
 }
 
 void ArcAppListPrefs::OnPackageAppListRefreshed(
@@ -1378,36 +1437,78 @@ void ArcAppListPrefs::OnPackageRemoved(const std::string& package_name) {
     observer.OnPackageRemoved(package_name, true);
 }
 
-void ArcAppListPrefs::OnAppIcon(const std::string& package_name,
-                                const std::string& activity,
-                                arc::mojom::ScaleFactor scale_factor,
-                                const std::vector<uint8_t>& icon_png_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_NE(0u, icon_png_data.size());
-
-  std::string app_id = GetAppId(package_name, activity);
-  if (!IsRegistered(app_id)) {
-    VLOG(2) << "Request to update icon for non-registered app: " << app_id;
-    return;
-  }
-
-  InstallIcon(app_id, static_cast<ui::ScaleFactor>(scale_factor),
-              icon_png_data);
+void ArcAppListPrefs::OnAppIconDeprecated(
+    const std::string& package_name,
+    const std::string& activity,
+    arc::mojom::ScaleFactor scale_factor,
+    const std::vector<uint8_t>& icon_png_data) {
+  const std::string app_id = GetAppId(package_name, activity);
+  // There is no info about original request dimension. Use active requests to
+  // notify all.
+  for (const auto& descriptor : active_icons_[app_id])
+    OnIconDeprecated(app_id, descriptor, icon_png_data);
 }
 
 void ArcAppListPrefs::OnIcon(const std::string& app_id,
-                             arc::mojom::ScaleFactor scale_factor,
+                             const ArcAppIconDescriptor& descriptor,
                              const std::vector<uint8_t>& icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_NE(0u, icon_png_data.size());
+
+  if (icon_png_data.empty()) {
+    LOG(WARNING) << "Cannot fetch icon for " << app_id;
+    return;
+  }
 
   if (!IsRegistered(app_id)) {
     VLOG(2) << "Request to update icon for non-registered app: " << app_id;
     return;
   }
 
-  InstallIcon(app_id, static_cast<ui::ScaleFactor>(scale_factor),
-              icon_png_data);
+  InstallIcon(app_id, descriptor, icon_png_data);
+}
+
+void ArcAppListPrefs::OnIconDeprecated(
+    const std::string& app_id,
+    const ArcAppIconDescriptor& descriptor,
+    const std::vector<uint8_t>& icon_png_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (icon_png_data.empty()) {
+    LOG(WARNING) << "Cannot fetch icon for " << app_id;
+    return;
+  }
+
+  constexpr int kLegacyIconDimension = 48;
+
+  // Icon may not have required dimension. We only can safely use legacy app
+  // dimension.
+  if (descriptor.dip_size == kLegacyIconDimension) {
+    OnIcon(app_id, descriptor, icon_png_data);
+    return;
+  }
+
+  resize_requests_.emplace_back(std::make_unique<ResizeRequest>(
+      weak_ptr_factory_.GetWeakPtr(), app_id, descriptor));
+  // Result will be delivered to |OnIconResized|
+  ImageDecoder::Start(resize_requests_.back().get(), icon_png_data);
+}
+
+void ArcAppListPrefs::OnIconResized(const std::string& app_id,
+                                    const ArcAppIconDescriptor& descriptor,
+                                    const std::vector<uint8_t>& icon_png_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!icon_png_data.empty())
+    OnIcon(app_id, descriptor, icon_png_data);
+}
+
+void ArcAppListPrefs::DiscardResizeRequest(ResizeRequest* request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto it = std::find_if(resize_requests_.begin(), resize_requests_.end(),
+                         [request](const std::unique_ptr<ResizeRequest>& ptr) {
+                           return ptr.get() == request;
+                         });
+  DCHECK(it != resize_requests_.end());
+  resize_requests_.erase(it);
 }
 
 void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
@@ -1563,32 +1664,25 @@ base::Time ArcAppListPrefs::GetInstallTime(const std::string& app_id) const {
 }
 
 void ArcAppListPrefs::InstallIcon(const std::string& app_id,
-                                  ui::ScaleFactor scale_factor,
+                                  const ArcAppIconDescriptor& descriptor,
                                   const std::vector<uint8_t>& content_png) {
-  const base::FilePath icon_path = GetIconPath(app_id, scale_factor);
+  const base::FilePath icon_path = GetIconPath(app_id, descriptor);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&InstallIconFromFileThread, icon_path, content_png),
-      base::Bind(&ArcAppListPrefs::OnIconInstalled,
-                 weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
+      base::BindOnce(&InstallIconFromFileThread, icon_path, content_png),
+      base::BindOnce(&ArcAppListPrefs::OnIconInstalled,
+                     weak_ptr_factory_.GetWeakPtr(), app_id, descriptor));
 }
 
 void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
-                                      ui::ScaleFactor scale_factor,
+                                      const ArcAppIconDescriptor& descriptor,
                                       bool install_succeed) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!install_succeed)
     return;
 
-  ScopedArcPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
-  int invalidated_icon_mask = 0;
-  base::DictionaryValue* app_dict = update.Get();
-  app_dict->GetInteger(kInvalidatedIcons, &invalidated_icon_mask);
-  invalidated_icon_mask &= (~(1 << scale_factor));
-  app_dict->SetInteger(kInvalidatedIcons, invalidated_icon_mask);
-
   for (auto& observer : observer_list_)
-    observer.OnAppIconUpdated(app_id, scale_factor);
+    observer.OnAppIconUpdated(app_id, descriptor);
 }
 
 void ArcAppListPrefs::OnInstallationStarted(

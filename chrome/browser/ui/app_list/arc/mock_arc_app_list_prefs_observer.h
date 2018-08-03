@@ -24,7 +24,8 @@ class MockArcAppListPrefsObserver : public ArcAppListPrefs::Observer {
                     const ArcAppListPrefs::AppInfo& app_info));
   MOCK_METHOD1(OnAppRemoved, void(const std::string& id));
   MOCK_METHOD2(OnAppIconUpdated,
-               void(const std::string& id, ui::ScaleFactor scale_factor));
+               void(const std::string& id,
+                    const ArcAppIconDescriptor& descriptor));
   MOCK_METHOD2(OnAppNameUpdated,
                void(const std::string& id, const std::string& name));
   MOCK_METHOD1(OnAppLastLaunchTimeUpdated, void(const std::string& app_id));

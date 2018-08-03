@@ -18,6 +18,14 @@ namespace arc {
 
 class FakeAppInstance : public mojom::AppInstance {
  public:
+  enum class IconResponseType {
+    // Generate and send good icon.
+    ICON_RESPONSE_SEND_GOOD,
+    // Generate broken bad icon.
+    ICON_RESPONSE_SEND_BAD,
+    // Don't send icon.
+    ICON_RESPONSE_SKIP,
+  };
   class Request {
    public:
     Request(const std::string& package_name, const std::string& activity)
@@ -44,33 +52,32 @@ class FakeAppInstance : public mojom::AppInstance {
    public:
     IconRequest(const std::string& package_name,
                 const std::string& activity,
-                mojom::ScaleFactor scale_factor)
+                int dimension)
         : Request(package_name, activity),
-          scale_factor_(static_cast<int>(scale_factor)) {}
+          dimension_(static_cast<int>(dimension)) {}
     ~IconRequest() {}
 
-    int scale_factor() const { return scale_factor_; }
+    int dimension() const { return dimension_; }
 
    private:
-    int scale_factor_;
+    const int dimension_;
 
     DISALLOW_COPY_AND_ASSIGN(IconRequest);
   };
 
   class ShortcutIconRequest {
    public:
-    ShortcutIconRequest(const std::string& icon_resource_id,
-                        mojom::ScaleFactor scale_factor)
+    ShortcutIconRequest(const std::string& icon_resource_id, int dimension)
         : icon_resource_id_(icon_resource_id),
-          scale_factor_(static_cast<int>(scale_factor)) {}
+          dimension_(static_cast<int>(dimension)) {}
     ~ShortcutIconRequest() {}
 
     const std::string& icon_resource_id() const { return icon_resource_id_; }
-    int scale_factor() const { return scale_factor_; }
+    int dimension() const { return dimension_; }
 
    private:
-    std::string icon_resource_id_;
-    int scale_factor_;
+    const std::string icon_resource_id_;
+    const int dimension_;
 
     DISALLOW_COPY_AND_ASSIGN(ShortcutIconRequest);
   };
@@ -93,14 +100,22 @@ class FakeAppInstance : public mojom::AppInstance {
                              int64_t display_id) override;
   void RequestAppIcon(const std::string& package_name,
                       const std::string& activity,
-                      mojom::ScaleFactor scale_factor) override;
+                      int dimension,
+                      RequestAppIconCallback callback) override;
+  void RequestAppIconDeprecated(const std::string& package_name,
+                                const std::string& activity,
+                                mojom::ScaleFactor scale_factor) override {}
   void LaunchIntentDeprecated(
       const std::string& intent_uri,
       const base::Optional<gfx::Rect>& dimension_on_screen) override;
   void LaunchIntent(const std::string& intent_uri, int64_t display_id) override;
-  void RequestIcon(const std::string& icon_resource_id,
-                   mojom::ScaleFactor scale_factor,
-                   RequestIconCallback callback) override;
+  void RequestShortcutIcon(const std::string& icon_resource_id,
+                           int dimension,
+                           RequestShortcutIconCallback callback) override;
+  void RequestShortcutIconDeprecated(
+      const std::string& icon_resource_id,
+      mojom::ScaleFactor scale_factor,
+      RequestShortcutIconDeprecatedCallback callback) override {}
   void RemoveCachedIcon(const std::string& icon_resource_id) override;
   void CanHandleResolutionDeprecated(
       const std::string& package_name,
@@ -153,11 +168,6 @@ class FakeAppInstance : public mojom::AppInstance {
                            const std::string& label,
                            const std::string& icon_png_data_as_string);
   void SendTaskDestroyed(int32_t taskId);
-  bool GenerateAndSendIcon(const mojom::AppInfo& app,
-                           mojom::ScaleFactor scale_factor,
-                           std::string* png_data_as_string);
-  void GenerateAndSendBadIcon(const mojom::AppInfo& app,
-                              mojom::ScaleFactor scale_factor);
   void SendInstallShortcut(const mojom::ShortcutInfo& shortcut);
   void SendUninstallShortcut(const std::string& package_name,
                              const std::string& intent_uri);
@@ -175,12 +185,29 @@ class FakeAppInstance : public mojom::AppInstance {
   void SendInstallationFinished(const std::string& package_name,
                                 bool success);
 
+  // Returns latest icon response for particular dimension. Returns true and
+  // fill |png_data_as_string| if icon for |dimension| was generated.
+  bool GetIconResponse(int dimension, std::string* png_data_as_string);
+  // Generates an icon for app or shorcut, determined by |app_icon| and returns:
+  //   false if |icon_response_type_| is IconResponseType::ICON_RESPONSE_SKIP.
+  //   true and valid png content in |png_data_as_string| if
+  //        |icon_response_type_| is IconResponseType::ICON_RESPONSE_SEND_GOOD.
+  //   true and invalid png content in |png_data_as_string| if
+  //         |icon_response_type_| is IconResponseType::ICON_RESPONSE_SEND_BAD.
+  bool GenerateIconResponse(int dimension,
+                            bool app_icon,
+                            std::string* png_data_as_string);
+
   int refresh_app_list_count() const { return refresh_app_list_count_; }
 
   int start_pai_request_count() const { return start_pai_request_count_; }
 
   int start_fast_app_reinstall_request_count() const {
     return start_fast_app_reinstall_request_count_;
+  }
+
+  void set_icon_response_type(IconResponseType icon_response_type) {
+    icon_response_type_ = icon_response_type;
   }
 
   int launch_app_shortcut_item_count() const {
@@ -226,6 +253,11 @@ class FakeAppInstance : public mojom::AppInstance {
   std::vector<std::unique_ptr<ShortcutIconRequest>> shortcut_icon_requests_;
   // Keeps information for running tasks.
   TaskIdToInfo task_id_to_info_;
+  // Defines how to response to icon requests.
+  IconResponseType icon_response_type_ =
+      IconResponseType::ICON_RESPONSE_SEND_GOOD;
+  // Keeps latest generated icons per icon dimension.
+  std::map<int, std::string> icon_responses_;
 
   // Keeps the binding alive so that calls to this class can be correctly
   // routed.

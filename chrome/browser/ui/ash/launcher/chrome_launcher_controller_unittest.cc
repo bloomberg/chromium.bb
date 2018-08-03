@@ -1048,6 +1048,10 @@ class ChromeLauncherControllerWithArcTest
   void SetUp() override {
     if (GetParam())
       arc::SetArcAlwaysStartForTesting(true);
+
+    // To prevent crash on test exit and pending decode request.
+    ArcAppIcon::DisableSafeDecodingForTesting();
+
     ChromeLauncherControllerTest::SetUp();
   }
 
@@ -2411,19 +2415,21 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
       launcher_controller_->test_shelf_controller();
   ASSERT_TRUE(shelf_controller);
 
-  ArcAppIcon::DisableSafeDecodingForTesting();
+  // Wait until other apps are updated to avoid race condition while accessing
+  // last updated item.
+  base::RunLoop().RunUntilIdle();
 
   // Register fake ARC apps.
   SendListOfArcApps();
   // Use first fake ARC app for testing.
-  const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+  const arc::mojom::AppInfo& app = arc_test_.fake_apps()[0];
+  const std::string arc_app_id = ArcAppTest::GetAppId(app);
 
   // Generate icon for the testing app and use compressed png content as test
-  // input.
+  // input. Take shortcut to separate from default app icon.
   std::string png_data;
-  EXPECT_TRUE(arc_test_.app_instance()->GenerateAndSendIcon(
-      arc_test_.fake_apps()[0], arc::mojom::ScaleFactor::SCALE_FACTOR_100P,
-      &png_data));
+  EXPECT_TRUE(arc_test_.app_instance()->GenerateIconResponse(
+      extension_misc::EXTENSION_ICON_SMALL, false /* app_icon */, &png_data));
   EXPECT_FALSE(png_data.empty());
   // Some input that represents invalid png content.
   std::string invalid_png_data("aaaaaa");
@@ -2433,18 +2439,16 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   std::string window_app_id2("org.chromium.arc.2");
   views::Widget* window1 = CreateArcWindow(window_app_id1);
   ASSERT_TRUE(window1 && window1->GetNativeWindow());
-  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
-                                            std::string());
+  arc_test_.app_instance()->SendTaskCreated(1, app, std::string());
 
   views::Widget* window2 = CreateArcWindow(window_app_id2);
   ASSERT_TRUE(window2 && window2->GetNativeWindow());
-  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[0],
-                                            std::string());
+  arc_test_.app_instance()->SendTaskCreated(2, app, std::string());
   EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(arc_app_id)));
   ash::ShelfItemDelegate* item_delegate =
       model_->GetShelfItemDelegate(ash::ShelfID(arc_app_id));
   ASSERT_TRUE(item_delegate);
-
+  base::RunLoop().RunUntilIdle();
   const SkBitmap default_icon = GetLastItemImage(shelf_controller);
 
   // No custom icon set. Acitivating windows should not change icon.
@@ -3993,9 +3997,6 @@ INSTANTIATE_TEST_CASE_P(,
 TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
-
-  // Prevent safe decoding which requires IPC.
-  ArcAppIcon::DisableSafeDecodingForTesting();
 
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
   EnablePlayStore(false);

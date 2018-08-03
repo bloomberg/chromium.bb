@@ -11,7 +11,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 
@@ -30,7 +30,7 @@ class Profile;
 // A ui::BaseWindow for a chromeos launcher to control ARC applications.
 class ArcAppWindow : public AppWindowBase,
                      public ImageDecoder::ImageRequest,
-                     public ArcAppIcon::Observer {
+                     public AppIconLoaderDelegate {
  public:
   // TODO(khmel): use a bool set to false by default, or use an existing enum,
   // like ash::mojom::WindowStateType.
@@ -65,8 +65,9 @@ class ArcAppWindow : public AppWindowBase,
   bool IsActive() const override;
   void Close() override;
 
-  // ArcAppIcon::Observer:
-  void OnIconUpdated(ArcAppIcon* icon) override;
+  // AppIconLoaderDelegate:
+  void OnAppImageUpdated(const std::string& app_id,
+                         const gfx::ImageSkia& image) override;
 
  private:
   // Ensures that default app icon is set.
@@ -90,7 +91,7 @@ class ArcAppWindow : public AppWindowBase,
 
   // Loads the ARC app icon to the window icon keys. Nullptr once a custom icon
   // has been successfully set.
-  std::unique_ptr<ArcAppIcon> app_icon_;
+  std::unique_ptr<ArcAppIconLoader> app_icon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindow);
 };
