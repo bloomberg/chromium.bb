@@ -585,7 +585,6 @@ static int64_t inter_mode_data_sse[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
 static int64_t inter_mode_data_dist[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
 static int inter_mode_data_residue_cost[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
 static int inter_mode_data_all_cost[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
-static int64_t inter_mode_data_ref_best_rd[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
 
 int inter_mode_data_block_idx(BLOCK_SIZE bsize) {
   if (bsize == BLOCK_8X8) return 1;
@@ -686,8 +685,7 @@ void av1_inter_mode_data_fit(int rdmult) {
 }
 
 static void inter_mode_data_push(BLOCK_SIZE bsize, int64_t sse, int64_t dist,
-                                 int residue_cost, int all_cost,
-                                 int64_t ref_best_rd) {
+                                 int residue_cost, int all_cost) {
   if (residue_cost == 0 || sse == dist) return;
   const int block_idx = inter_mode_data_block_idx(bsize);
   if (block_idx == -1) return;
@@ -697,7 +695,6 @@ static void inter_mode_data_push(BLOCK_SIZE bsize, int64_t sse, int64_t dist,
     inter_mode_data_dist[block_idx][data_idx] = dist;
     inter_mode_data_residue_cost[block_idx][data_idx] = residue_cost;
     inter_mode_data_all_cost[block_idx][data_idx] = all_cost;
-    inter_mode_data_ref_best_rd[block_idx][data_idx] = ref_best_rd;
     ++inter_mode_data_idx[block_idx];
   }
 }
@@ -8879,7 +8876,7 @@ static int64_t motion_mode_rd(
           inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
                                rd_stats_y->rate + rd_stats_uv->rate +
                                    x->skip_cost[skip_ctx][mbmi->skip],
-                               rd_stats->rate, ref_best_rd);
+                               rd_stats->rate);
         }
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
       } else {
