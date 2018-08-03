@@ -12,7 +12,7 @@
 Polymer({
   is: 'settings-crostini-page',
 
-  behaviors: [PrefsBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior],
 
   properties: {
     /** Preferences state. */

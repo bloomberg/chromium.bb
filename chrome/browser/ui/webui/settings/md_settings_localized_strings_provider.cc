@@ -394,13 +394,17 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
 void AddCrostiniStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"crostiniPageTitle", IDS_SETTINGS_CROSTINI_TITLE},
-      {"crostiniSubtext", IDS_SETTINGS_CROSTINI_SUBTEXT},
       {"crostiniPageLabel", IDS_SETTINGS_CROSTINI_LABEL},
       {"crostiniEnable", IDS_SETTINGS_TURN_ON},
       {"crostiniRemove", IDS_SETTINGS_CROSTINI_REMOVE},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+  html_source->AddString(
+      "crostiniSubtext",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CROSTINI_SUBTEXT,
+          GetHelpUrlWithBoard(chrome::kLinuxAppsLearnMoreURL)));
 }
 
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
