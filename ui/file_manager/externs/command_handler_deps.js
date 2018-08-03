@@ -102,3 +102,8 @@ CommandHandlerDeps.prototype.getCurrentDirectoryEntry = function() {};
  * @return {FileSelection}
  */
 CommandHandlerDeps.prototype.getSelection = function() {};
+
+/**
+ * @type {MetadataModel}
+ */
+CommandHandlerDeps.prototype.metadataModel;

@@ -563,9 +563,9 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
   }
   this.metadataModel_.notifyEntriesRemoved(removedUrls);
 
-  // Retrieve metadata information for the new (visible) items in the list.
+  // Retrieve metadata information for the new directory.
   this.metadataModel_.get(
-      newDirContents.fileList_.array_,
+      [this.currentDirContents_.getDirectoryEntry()],
       constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
 
   // Clear the table, and start scanning.
