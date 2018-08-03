@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_INTERFACES_JPEG_DECODE_ACCELERATOR_TYPEMAP_TRAITS_H_
-#define MEDIA_MOJO_INTERFACES_JPEG_DECODE_ACCELERATOR_TYPEMAP_TRAITS_H_
+#ifndef MEDIA_MOJO_INTERFACES_JPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_
+#define MEDIA_MOJO_INTERFACES_JPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_
 
 #include "base/numerics/safe_conversions.h"
 #include "media/base/bitstream_buffer.h"
@@ -61,4 +61,4 @@ struct StructTraits<media::mojom::BitstreamBufferDataView,
 
 }  // namespace mojo
 
-#endif  // MEDIA_MOJO_INTERFACES_JPEG_DECODE_ACCELERATOR_TYPEMAP_TRAITS_H_
+#endif  // MEDIA_MOJO_INTERFACES_JPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_

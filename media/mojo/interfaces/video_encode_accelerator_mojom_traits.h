@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_TYPEMAP_TRAITS_H_
-#define MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_TYPEMAP_TRAITS_H_
+#ifndef MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_MOJOM_TRAITS_H_
+#define MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_MOJOM_TRAITS_H_
 
 #include "media/base/ipc/media_param_traits.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
@@ -114,4 +114,4 @@ struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
 
 }  // namespace mojo
 
-#endif  // MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_TYPEMAP_TRAITS_H_
+#endif  // MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_MOJOM_TRAITS_H_
