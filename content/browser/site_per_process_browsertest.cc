@@ -7452,13 +7452,19 @@ class ShutdownObserver : public RenderProcessHostObserver {
   ShutdownObserver() : message_loop_runner_(new MessageLoopRunner) {}
 
   void RenderProcessShutdownRequested(RenderProcessHost* host) override {
+    has_received_shutdown_request_ = true;
     message_loop_runner_->Quit();
   }
 
   void Wait() { message_loop_runner_->Run(); }
 
+  bool has_received_shutdown_request() {
+    return has_received_shutdown_request_;
+  }
+
  private:
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  bool has_received_shutdown_request_ = false;
   DISALLOW_COPY_AND_ASSIGN(ShutdownObserver);
 };
 
@@ -11847,6 +11853,72 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Check that it still has a valid last committed URL.
   EXPECT_EQ(start_url, rfh->GetLastCommittedURL());
+}
+
+namespace {
+
+// A helper class that watches for SwapOut ACK messages, allowing them
+// to go through but remembering that the message was received.  It also
+// watches for any ShutdownRequests coming from the renderer and ensures that
+// the SwapOut ACK is received prior to those.
+class SwapoutACKReceivedFilter : public BrowserMessageFilter {
+ public:
+  explicit SwapoutACKReceivedFilter(RenderProcessHost* process)
+      : BrowserMessageFilter(FrameMsgStart) {
+    process->AddObserver(&shutdown_observer_);
+    process->AddFilter(this);
+  }
+
+  bool has_received_swapout_ack() { return received_; }
+
+ protected:
+  ~SwapoutACKReceivedFilter() override {}
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() == FrameHostMsg_SwapOut_ACK::ID) {
+      // This ensures that the SwapOut ACK arrived before any
+      // renderer-initiated process shutdown requests.
+      EXPECT_FALSE(shutdown_observer_.has_received_shutdown_request())
+          << " Shutdown request should be received after the swapout ACK";
+      received_ = true;
+    }
+    return false;
+  }
+
+  bool received_ = false;
+  ShutdownObserver shutdown_observer_;
+  DISALLOW_COPY_AND_ASSIGN(SwapoutACKReceivedFilter);
+};
+
+}  // namespace
+
+// Verify that when the last active frame in a process is going away as part of
+// OnSwapOut, the SwapOut ACK is received prior to the process starting to shut
+// down, ensuring that any related unload work also happens before shutdown.
+// See https://crbug.com/867274 and https://crbug.com/794625.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SwapOutACKArrivesPriorToProcessShutdownRequest) {
+  GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  RenderFrameHostImpl* rfh = web_contents()->GetMainFrame();
+  rfh->DisableSwapOutTimerForTesting();
+
+  // Navigate cross-site.  Since the current frame is the last active frame in
+  // the current process, the process will eventually shut down.  Once the
+  // process goes away, ensure that the SwapOut ACK was received (i.e., that we
+  // didn't just simulate OnSwappedOut() due to the process erroneously going
+  // away before the SwapOut ACK was received, as in https://crbug.com/867274).
+  RenderProcessHostWatcher watcher(
+      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  scoped_refptr<SwapoutACKReceivedFilter> swapout_ack_filter =
+      new SwapoutACKReceivedFilter(rfh->GetProcess());
+  GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), cross_site_url));
+  watcher.Wait();
+  EXPECT_TRUE(swapout_ack_filter->has_received_swapout_ack());
+  EXPECT_TRUE(watcher.did_exit_normally());
 }
 
 // Tests that when a large OOPIF has been scaled, the compositor raster area
