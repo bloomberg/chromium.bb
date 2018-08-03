@@ -280,11 +280,8 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   // Update SearchBoxView search box autocomplete as necessary based on new
   // first result view.
-  if (first_result_view_) {
-    AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete(
-        result_container_views_[0] ==
-        AppListPage::contents_view()->search_result_list_view());
-  }
+  if (first_result_view_)
+    AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
 
   // If one of the search result is focused, do not highlight the first search
   // result.

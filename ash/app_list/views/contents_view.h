@@ -108,7 +108,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
       const {
     return search_result_tile_item_list_view_;
   }
-  SearchResultListView* search_result_list_view() const {
+  SearchResultListView* search_result_list_view_for_test() const {
     return search_result_list_view_;
   }
   HorizontalPageContainer* horizontal_page_container() const {

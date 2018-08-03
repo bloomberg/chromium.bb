@@ -82,7 +82,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void OnWallpaperColorsChanged();
 
   // Sets the autocomplete text if autocomplete conditions are met.
-  void ProcessAutocomplete(bool is_search_result_list_view_first);
+  void ProcessAutocomplete();
 
  private:
   // Gets the wallpaper prominent colors.
@@ -106,8 +106,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // After verifying autocomplete text is valid, sets the current searchbox
   // text to the autocomplete text and sets the text highlight.
   void SetAutocompleteText(const base::string16& autocomplete_text);
-
-  void UpdateAutocompleteSelectionRange(uint32_t start, uint32_t end);
 
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
