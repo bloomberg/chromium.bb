@@ -68,7 +68,8 @@ class CanvasResourceDispatcherTest : public testing::Test {
 
 void CanvasResourceDispatcherTest::DispatchOneFrame() {
   dispatcher_->DispatchFrame(resource_provider_->ProduceFrame(),
-                             base::TimeTicks(), SkIRect::MakeEmpty());
+                             base::TimeTicks(), SkIRect::MakeEmpty(),
+                             false /* needs_vertical_flip */);
 }
 
 TEST_F(CanvasResourceDispatcherTest, PlaceholderRunsNormally) {

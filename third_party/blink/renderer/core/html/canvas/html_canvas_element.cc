@@ -420,13 +420,15 @@ void HTMLCanvasElement::FinalizeFrame() {
         context_->PaintRenderingResultsToCanvas(kBackBuffer);
       scoped_refptr<CanvasResource> canvas_resource =
           ResourceProvider()->ProduceFrame();
-      FloatRect src_rect(0, 0, Size().Width(), Size().Height());
+      const FloatRect src_rect(0, 0, Size().Width(), Size().Height());
       dirty_rect_.Intersect(src_rect);
-      IntRect int_dirty = EnclosingIntRect(dirty_rect_);
-      SkIRect damage_rect = SkIRect::MakeXYWH(
+      const IntRect int_dirty = EnclosingIntRect(dirty_rect_);
+      const SkIRect damage_rect = SkIRect::MakeXYWH(
           int_dirty.X(), int_dirty.Y(), int_dirty.Width(), int_dirty.Height());
+      const bool needs_vertical_flip = !RenderingContext()->IsOriginTopLeft();
       frame_dispatcher_->DispatchFrameSync(std::move(canvas_resource),
-                                           start_time, damage_rect);
+                                           start_time, damage_rect,
+                                           needs_vertical_flip);
       (void)start_time;
       (void)damage_rect;
       dirty_rect_ = FloatRect();

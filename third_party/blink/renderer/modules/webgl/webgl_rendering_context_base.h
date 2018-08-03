@@ -653,6 +653,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool Is3d() const override { return true; }
   bool IsComposited() const override { return true; }
   bool IsAccelerated() const override { return true; }
+  bool IsOriginTopLeft() const override;
   void SetIsHidden(bool) override;
   bool PaintRenderingResultsToCanvas(SourceDrawingBuffer) override;
   cc::Layer* CcLayer() const override;
@@ -710,6 +711,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   scoped_refptr<DrawingBuffer> drawing_buffer_;
 
   TraceWrapperMember<WebGLContextGroup> context_group_;
+
+  bool is_origin_top_left_;
 
   bool is_hidden_;
   LostContextMode context_lost_mode_;

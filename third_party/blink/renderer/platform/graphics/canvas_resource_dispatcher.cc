@@ -129,10 +129,11 @@ void CanvasResourceDispatcher::PostImageToPlaceholder(
 void CanvasResourceDispatcher::DispatchFrameSync(
     scoped_refptr<CanvasResource> canvas_resource,
     base::TimeTicks commit_start_time,
-    const SkIRect& damage_rect) {
+    const SkIRect& damage_rect,
+    bool needs_vertical_flip) {
   viz::CompositorFrame frame;
   if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
-                    &frame)) {
+                    needs_vertical_flip, &frame)) {
     return;
   }
 
@@ -147,10 +148,11 @@ void CanvasResourceDispatcher::DispatchFrameSync(
 void CanvasResourceDispatcher::DispatchFrame(
     scoped_refptr<CanvasResource> canvas_resource,
     base::TimeTicks commit_start_time,
-    const SkIRect& damage_rect) {
+    const SkIRect& damage_rect,
+    bool needs_vertical_flip) {
   viz::CompositorFrame frame;
   if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
-                    &frame)) {
+                    needs_vertical_flip, &frame)) {
     return;
   }
 
@@ -164,6 +166,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
     scoped_refptr<CanvasResource> canvas_resource,
     base::TimeTicks commit_start_time,
     const SkIRect& damage_rect,
+    bool needs_vertical_flip,
     viz::CompositorFrame* frame) {
   if (!canvas_resource || !VerifyImageSize(canvas_resource->Size()))
     return false;
@@ -205,9 +208,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
   sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, is_clipped,
               are_contents_opaque, 1.f, SkBlendMode::kSrcOver, 0);
 
-  viz::TransferableResource resource;
-
-  bool yflipped = false;
   OffscreenCanvasCommitType commit_type;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, commit_type_histogram,
@@ -221,7 +221,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
     if (SharedGpuContext::IsGpuCompositingEnabled()) {
       // Case 1: both canvas and compositor are gpu accelerated.
       commit_type = kCommitGPUCanvasGPUCompositing;
-      yflipped = true;
     } else {
       // Case 2: canvas is accelerated but gpu compositing is disabled.
       commit_type = kCommitGPUCanvasSoftwareCompositing;
@@ -236,6 +235,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
     }
   }
 
+  viz::TransferableResource resource;
   offscreen_canvas_resource_provider_->SetTransferableResource(&resource,
                                                                canvas_resource);
   // TODO(crbug.com/869913): add unit testing for this.
@@ -266,6 +266,11 @@ bool CanvasResourceDispatcher::PrepareFrame(
   // TODO(crbug.com/645590): filter should respect the image-rendering CSS
   // property of associated canvas element.
   const bool kNearestNeighbor = false;
+  // Accelerated resources have the origin of coordinates in the upper left
+  // corner while canvases have it in the lower left corner. The DrawQuad is
+  // marked as vertically flipped unless someone else has done the flip for us.
+  const bool yflipped =
+      SharedGpuContext::IsGpuCompositingEnabled() && needs_vertical_flip;
   quad->SetAll(sqs, bounds, bounds, kNeedsBlending, resource.id,
                canvas_resource_size, kPremultipliedAlpha, uv_top_left,
                uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, yflipped,

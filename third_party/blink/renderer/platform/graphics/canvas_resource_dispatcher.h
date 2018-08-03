@@ -49,11 +49,13 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   bool IsAnimationSuspended() const { return suspend_animation_; }
   void DispatchFrame(scoped_refptr<CanvasResource>,
                      base::TimeTicks commit_start_time,
-                     const SkIRect& damage_rect);
+                     const SkIRect& damage_rect,
+                     bool needs_vertical_flip);
   void ReclaimResource(viz::ResourceId);
   void DispatchFrameSync(scoped_refptr<CanvasResource>,
                          base::TimeTicks commit_start_time,
-                         const SkIRect& damage_rect);
+                         const SkIRect& damage_rect,
+                         bool needs_vertical_flip);
 
   void Reshape(const IntSize&);
 
@@ -88,6 +90,7 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   bool PrepareFrame(scoped_refptr<CanvasResource>,
                     base::TimeTicks commit_start_time,
                     const SkIRect& damage_rect,
+                    bool needs_vertical_flip,
                     viz::CompositorFrame* frame);
 
   // Surface-related
