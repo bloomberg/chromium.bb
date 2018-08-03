@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":closure_compile_externs",
     ":commands",
     ":exif_encoder",
+    ":exif_encoder_unittest",
     ":filter",
     ":image_adjust",
     ":image_buffer",
@@ -68,6 +69,13 @@ js_library("exif_encoder") {
     ":image_encoder",
     "../../../file_manager/foreground/js/metadata:exif_constants",
     "../../../file_manager/foreground/js/metadata:metadata_item",
+  ]
+}
+
+js_library("exif_encoder_unittest") {
+  deps = [
+    ":exif_encoder",
+    "../../../file_manager/foreground/js/metadata:exif_parser",
   ]
 }
 
