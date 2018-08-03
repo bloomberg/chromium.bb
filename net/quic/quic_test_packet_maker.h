@@ -54,7 +54,8 @@ class QuicTestPacketMaker {
   std::unique_ptr<quic::QuicReceivedPacket> MakePingPacket(
       quic::QuicPacketNumber num,
       bool include_version);
-  std::unique_ptr<quic::QuicReceivedPacket> MakeInitialDummyCHLOPacket();
+  std::unique_ptr<quic::QuicReceivedPacket> MakeDummyCHLOPacket(
+      quic::QuicPacketNumber packet_num);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndPingPacket(
       quic::QuicPacketNumber num,
       bool include_version,
