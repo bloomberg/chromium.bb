@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -39,6 +40,10 @@ TouchActionFilter::TouchActionFilter()
       drop_current_tap_ending_event_(false),
       allow_current_double_tap_event_(true),
       force_enable_zoom_(false) {}
+
+TouchActionFilter::~TouchActionFilter() {
+  function_call_sequence_.clear();
+}
 
 FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     WebGestureEvent* gesture_event) {
@@ -74,6 +79,11 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       // two-finger scrolling but a "touch-action: pan-x pinch-zoom" region
       // doesn't.
       // TODO(mustaq): Add it to spec?
+      // TODO(https://crbug.com/870536): GSU can be generated from
+      // ResendEventToEmbedder(), make sure |scrolling_touch_action_| has value
+      // in this case.
+      if (!scrolling_touch_action_.has_value())
+        SetTouchAction(cc::kTouchActionAuto);
       if (IsYAxisActionDisallowed(scrolling_touch_action_.value())) {
         gesture_event->data.scroll_update.delta_y = 0;
         gesture_event->data.scroll_update.velocity_y = 0;
@@ -91,6 +101,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       break;
 
     case WebInputEvent::kGestureScrollEnd:
+      function_call_sequence_.clear();
       DCHECK(touchscreen_scroll_in_progress_);
       touchscreen_scroll_in_progress_ = false;
       ReportGestureEventFiltered(suppress_manipulation_events_);
@@ -118,9 +129,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     // If double tap is disabled, there's no reason for the tap delay.
     case WebInputEvent::kGestureTapUnconfirmed: {
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
-      // TODO(https://crbug.com/851644): Make sure the value is properly set.
-      if (!scrolling_touch_action_.has_value())
-        SetTouchAction(cc::kTouchActionAuto);
       allow_current_double_tap_event_ = (scrolling_touch_action_.value() &
                                          cc::kTouchActionDoubleTapZoom) != 0;
       if (!allow_current_double_tap_event_) {
@@ -144,11 +152,21 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       if (gesture_event->is_source_touch_event_set_non_blocking)
         SetTouchAction(cc::kTouchActionAuto);
       scrolling_touch_action_ = allowed_touch_action_;
-      // TODO(https://crbug.com/851644): The value may not set in the case when
-      // the gesture event is flushed due to touch ack time out after the finger
-      // is lifted up. Make sure the value is properly set.
-      if (!scrolling_touch_action_.has_value())
+      // TODO(https://crbug.com/851644): Make sure the value is properly set.
+      if (!scrolling_touch_action_.has_value()) {
+        auto index_of_set =
+            std::find(std::begin(function_call_sequence_),
+                      std::end(function_call_sequence_), kOnSetTouchActionCall);
+        auto index_of_reset =
+            std::find(std::begin(function_call_sequence_),
+                      std::end(function_call_sequence_), kResetTouchActionCall);
+        if (index_of_set != std::end(function_call_sequence_) &&
+            index_of_reset != std::end(function_call_sequence_) &&
+            index_of_reset > index_of_set) {
+          base::debug::DumpWithoutCrashing();
+        }
         SetTouchAction(cc::kTouchActionAuto);
+      }
       DCHECK(!drop_current_tap_ending_event_);
       break;
 
@@ -175,6 +193,8 @@ bool TouchActionFilter::FilterManipulationEventAndResetState() {
 }
 
 void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
+  if (touch_action != cc::kTouchActionAuto)
+    function_call_sequence_.push_back(kOnSetTouchActionCall);
   // TODO(https://crbug.com/849819): add a DCHECK for
   // |has_touch_event_handler_|.
   // For multiple fingers, we take the intersection of the touch actions for
@@ -233,6 +253,7 @@ void TouchActionFilter::ResetTouchAction() {
   // their begin event(s) suppressed will be suppressed until the next
   // sequenceo.
   if (has_touch_event_handler_) {
+    function_call_sequence_.push_back(kResetTouchActionCall);
     allowed_touch_action_.reset();
     white_listed_touch_action_.reset();
   } else {

@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -30,6 +31,7 @@ enum class FilterGestureEventResult {
 class CONTENT_EXPORT TouchActionFilter {
  public:
   TouchActionFilter();
+  ~TouchActionFilter();
 
   // Returns kFilterGestureEventFiltered if the supplied gesture event should be
   // dropped based on the current touch-action state. Otherwise returns
@@ -110,6 +112,15 @@ class CONTENT_EXPORT TouchActionFilter {
 
   // Whitelisted touch action received from the compositor.
   base::Optional<cc::TouchAction> white_listed_touch_action_;
+
+  // DEBUG ONLY! Record the sequence of function calls, cleared at GSE. When it
+  // is GSB and |scrolling_touch_action_| has no value, check this sequence.
+  enum FunctionCalls {
+    kOnSetTouchActionCall,
+    kResetTouchActionCall,
+  };
+
+  std::vector<FunctionCalls> function_call_sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionFilter);
 };
