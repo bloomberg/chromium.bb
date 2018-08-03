@@ -31,23 +31,23 @@ bool GbmPixmap::AreDmaBufFdsValid() const {
 }
 
 size_t GbmPixmap::GetDmaBufFdCount() const {
-  return buffer_->fd_count();
+  return buffer_->GetFdCount();
 }
 
 int GbmPixmap::GetDmaBufFd(size_t plane) const {
-  return buffer_->GetFd(plane);
+  return buffer_->GetPlaneFd(plane);
 }
 
 int GbmPixmap::GetDmaBufPitch(size_t plane) const {
-  return buffer_->GetStride(plane);
+  return buffer_->GetPlaneStride(plane);
 }
 
 int GbmPixmap::GetDmaBufOffset(size_t plane) const {
-  return buffer_->GetOffset(plane);
+  return buffer_->GetPlaneOffset(plane);
 }
 
 uint64_t GbmPixmap::GetDmaBufModifier(size_t plane) const {
-  return buffer_->format_modifier();
+  return buffer_->GetFormatModifier();
 }
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {
@@ -55,7 +55,7 @@ gfx::BufferFormat GbmPixmap::GetBufferFormat() const {
 }
 
 gfx::Size GbmPixmap::GetBufferSize() const {
-  return buffer_->size();
+  return buffer_->GetSize();
 }
 
 uint32_t GbmPixmap::GetUniqueId() const {
@@ -69,7 +69,7 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      const gfx::RectF& crop_rect,
                                      bool enable_blend,
                                      std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  DCHECK(buffer_->flags() & GBM_BO_USE_SCANOUT);
+  DCHECK(buffer_->GetFlags() & GBM_BO_USE_SCANOUT);
   // |framebuffer_id| might be 0 if AddFramebuffer2 failed, in that case we
   // already logged the error in GbmBuffer ctor. We avoid logging the error
   // here since this method might be called every pageflip.

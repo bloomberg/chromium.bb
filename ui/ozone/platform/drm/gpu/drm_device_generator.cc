@@ -16,16 +16,4 @@ DrmDeviceGenerator::DrmDeviceGenerator() {
 DrmDeviceGenerator::~DrmDeviceGenerator() {
 }
 
-scoped_refptr<DrmDevice> DrmDeviceGenerator::CreateDevice(
-    const base::FilePath& device_path,
-    base::File file,
-    bool is_primary_device) {
-  scoped_refptr<DrmDevice> drm =
-      new DrmDevice(device_path, std::move(file), is_primary_device);
-  if (drm->Initialize())
-    return drm;
-
-  return nullptr;
-}
-
 }  // namespace ui

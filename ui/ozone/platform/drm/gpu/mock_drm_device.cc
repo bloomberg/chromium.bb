@@ -74,7 +74,10 @@ MockDrmDevice::PlaneProperties::PlaneProperties(const PlaneProperties&) =
 MockDrmDevice::PlaneProperties::~PlaneProperties() = default;
 
 MockDrmDevice::MockDrmDevice()
-    : DrmDevice(base::FilePath(), base::File(), true /* is_primary_device */),
+    : DrmDevice(base::FilePath(),
+                base::File(),
+                true /* is_primary_device */,
+                nullptr),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
       restore_crtc_call_count_(0),

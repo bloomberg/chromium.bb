@@ -23,7 +23,7 @@ class DrmDeviceGenerator {
   virtual scoped_refptr<DrmDevice> CreateDevice(
       const base::FilePath& device_path,
       base::File file,
-      bool is_primary_device);
+      bool is_primary_device) = 0;
 
  public:
   DISALLOW_COPY_AND_ASSIGN(DrmDeviceGenerator);
