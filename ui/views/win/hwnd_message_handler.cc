@@ -245,6 +245,31 @@ bool IsHitTestOnResizeHandle(LRESULT hittest) {
          hittest == HTBOTTOMLEFT || hittest == HTBOTTOMRIGHT;
 }
 
+// Convert |param| to the HitTest used in WindowResizeUtils.
+HitTest GetWindowResizeHitTest(UINT param) {
+  switch (param) {
+    case WMSZ_BOTTOM:
+      return HitTest::kBottom;
+    case WMSZ_TOP:
+      return HitTest::kTop;
+    case WMSZ_LEFT:
+      return HitTest::kLeft;
+    case WMSZ_RIGHT:
+      return HitTest::kRight;
+    case WMSZ_TOPLEFT:
+      return HitTest::kTopLeft;
+    case WMSZ_TOPRIGHT:
+      return HitTest::kTopRight;
+    case WMSZ_BOTTOMLEFT:
+      return HitTest::kBottomLeft;
+    case WMSZ_BOTTOMRIGHT:
+      return HitTest::kBottomRight;
+    default:
+      NOTREACHED();
+      return HitTest::kBottomRight;
+  }
+}
+
 const int kTouchDownContextResetTimeout = 500;
 
 // Windows does not flag synthesized mouse messages from touch or pen in all
@@ -866,6 +891,23 @@ void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
   // window, then go ahead and do it now.
   if (!fullscreen && dwm_transition_desired_)
     PerformDwmTransition();
+}
+
+void HWNDMessageHandler::SetAspectRatio(float aspect_ratio) {
+  // If the aspect ratio is not in the valid range, do nothing.
+  DCHECK_GT(aspect_ratio, 0.0f);
+
+  aspect_ratio_ = aspect_ratio;
+
+  // When the aspect ratio is set, size the window to adhere to it. This keeps
+  // the same origin point as the original window.
+  RECT window_rect;
+  if (GetWindowRect(hwnd(), &window_rect)) {
+    gfx::Rect rect(window_rect);
+
+    SizeRectToAspectRatio(WMSZ_BOTTOMRIGHT, &rect);
+    SetBoundsInternal(rect, false);
+  }
 }
 
 void HWNDMessageHandler::SizeConstraintsChanged() {
@@ -2337,6 +2379,19 @@ void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
   ResetWindowRegion(false, true);
 }
 
+void HWNDMessageHandler::OnSizing(UINT param, RECT* rect) {
+  // If the aspect ratio was not specified for the window, do nothing.
+  if (!aspect_ratio_.has_value())
+    return;
+
+  gfx::Rect window_rect(*rect);
+  SizeRectToAspectRatio(param, &window_rect);
+
+  // TODO(apacible): Account for window borders as part of the aspect ratio.
+  // https://crbug/869487.
+  *rect = window_rect.ToRECT();
+}
+
 void HWNDMessageHandler::OnSysCommand(UINT notification_code,
                                       const gfx::Point& point) {
   // Windows uses the 4 lower order bits of |notification_code| for type-
@@ -3187,6 +3242,20 @@ void HWNDMessageHandler::OnBackgroundFullscreen() {
 
 void HWNDMessageHandler::DestroyAXSystemCaret() {
   ax_system_caret_ = nullptr;
+}
+
+void HWNDMessageHandler::SizeRectToAspectRatio(UINT param,
+                                               gfx::Rect* window_rect) {
+  gfx::Size min_window_size;
+  gfx::Size max_window_size;
+  delegate_->GetMinMaxSize(&min_window_size, &max_window_size);
+  WindowResizeUtils::SizeMinMaxToAspectRatio(
+      aspect_ratio_.value(), &min_window_size, &max_window_size);
+  min_window_size = delegate_->DIPToScreenSize(min_window_size);
+  max_window_size = delegate_->DIPToScreenSize(max_window_size);
+  WindowResizeUtils::SizeRectToAspectRatio(
+      GetWindowResizeHitTest(param), aspect_ratio_.value(), min_window_size,
+      max_window_size, window_rect);
 }
 
 }  // namespace views

@@ -21,4 +21,5 @@ include_rules = [
   "+ui/views/views_export.h",
   "+ui/views/widget/widget_hwnd_utils.h",
   "+ui/views/win",
+  "+ui/views/window/window_resize_utils.h",
 ]
