@@ -76,7 +76,7 @@ constexpr base::TimeDelta kDefaultWakeUpDuration =
 // Name of the finch study that enables using resource fetch priorities to
 // schedule tasks on Blink.
 constexpr const char kResourceFetchPriorityExperiment[] =
-    "BlinkSchedulerResourceFetchPriority";
+    "ResourceFetchPriorityExperiment";
 
 base::TimeDelta GetWakeUpDuration() {
   int duration_ms;
@@ -575,18 +575,27 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
       base::FeatureList::IsEnabled(kLowPriorityForThrottleableTask);
   low_priority_subframe_throttleable =
       base::FeatureList::IsEnabled(kLowPriorityForSubFrameThrottleableTask);
+  use_frame_priorities_only_during_loading =
+      base::FeatureList::IsEnabled(kFrameExperimentOnlyWhenLoading);
 
   low_priority_ad_frame = base::FeatureList::IsEnabled(kLowPriorityForAdFrame);
   best_effort_ad_frame =
       base::FeatureList::IsEnabled(kBestEffortPriorityForAdFrame);
+  use_adframe_priorities_only_during_loading =
+      base::FeatureList::IsEnabled(kAdFrameExperimentOnlyWhenLoading);
 
   low_priority_cross_origin =
       base::FeatureList::IsEnabled(kLowPriorityForCrossOrigin);
+  low_priority_cross_origin_only_during_loading =
+      base::FeatureList::IsEnabled(kLowPriorityForCrossOriginOnlyWhenLoading);
 
   use_resource_fetch_priority =
       base::FeatureList::IsEnabled(kUseResourceFetchPriority);
+  use_resource_priorities_only_during_loading =
+      base::FeatureList::IsEnabled(kUseResourceFetchPriorityOnlyWhenLoading);
 
-  if (use_resource_fetch_priority) {
+  if (use_resource_fetch_priority ||
+      use_resource_priorities_only_during_loading) {
     std::map<std::string, std::string> params;
     base::GetFieldTrialParams(kResourceFetchPriorityExperiment, &params);
     for (size_t net_priority = 0;
@@ -602,9 +611,6 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
       }
     }
   }
-
-  experiment_only_when_loading =
-      base::FeatureList::IsEnabled(kExperimentOnlyWhenLoading);
 
   FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
       frame_task_types_to_queue_traits);

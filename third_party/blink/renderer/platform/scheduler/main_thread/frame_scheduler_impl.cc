@@ -508,7 +508,10 @@ FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandle() {
 std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
 FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
   if (main_thread_scheduler_->scheduling_settings()
-          .use_resource_fetch_priority) {
+          .use_resource_fetch_priority ||
+      (parent_page_scheduler_->IsLoading() &&
+       main_thread_scheduler_->scheduling_settings()
+           .use_resource_priorities_only_during_loading)) {
     scoped_refptr<MainThreadTaskQueue> task_queue =
         frame_task_queue_controller_->NewResourceLoadingTaskQueue();
     resource_loading_task_queue_priorities_.insert(
@@ -796,7 +799,7 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   // all times.
   if (parent_page_scheduler_->IsLoading() ||
       !main_thread_scheduler_->scheduling_settings()
-           .experiment_only_when_loading) {
+           .use_frame_priorities_only_during_loading) {
     // Low priority feature enabled for hidden frame.
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_hidden_frame &&
@@ -824,20 +827,28 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
             .low_priority_throttleable &&
         is_throttleable_task_queue)
       return TaskQueue::QueuePriority::kLowPriority;
+  }
 
-    if (main_thread_scheduler_->scheduling_settings().low_priority_ad_frame &&
-        IsAdFrame()) {
+  // Ad frame experiment.
+  if (IsAdFrame() && (parent_page_scheduler_->IsLoading() ||
+                      !main_thread_scheduler_->scheduling_settings()
+                           .use_adframe_priorities_only_during_loading)) {
+    if (main_thread_scheduler_->scheduling_settings().low_priority_ad_frame) {
       return TaskQueue::QueuePriority::kLowPriority;
     }
 
-    if (main_thread_scheduler_->scheduling_settings().best_effort_ad_frame &&
-        IsAdFrame()) {
+    if (main_thread_scheduler_->scheduling_settings().best_effort_ad_frame) {
       return TaskQueue::QueuePriority::kBestEffortPriority;
     }
+  }
 
+  // Frame origin type experiment.
+  if (IsCrossOrigin()) {
     if (main_thread_scheduler_->scheduling_settings()
-            .low_priority_cross_origin &&
-        IsCrossOrigin()) {
+            .low_priority_cross_origin ||
+        (main_thread_scheduler_->scheduling_settings()
+             .low_priority_cross_origin_only_during_loading &&
+         parent_page_scheduler_->IsLoading())) {
       return TaskQueue::QueuePriority::kLowPriority;
     }
   }
