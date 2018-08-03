@@ -53,10 +53,6 @@ extern const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[];
 extern const base::Feature kMacViewsAutofillPopup;
 #endif  // defined(OS_MACOSX)
 
-// Returns true if autofill should be enabled. See also
-// IsInAutofillSuggestionsDisabledExperiment below.
-bool IsAutofillEnabled(const PrefService* pref_service);
-
 // Returns true if autofill suggestions are disabled via experiment. The
 // disabled experiment isn't the same as disabling autofill completely since we
 // still want to run detection code for metrics purposes. This experiment just

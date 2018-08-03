@@ -40,7 +40,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/prefs/pref_service.h"
@@ -1398,19 +1398,19 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  return ::autofill::IsAutofillEnabled(pref_service_);
+  return ::autofill::prefs::IsAutofillEnabled(pref_service_);
 }
 
 bool PersonalDataManager::IsAutofillProfileEnabled() const {
-  return pref_service_->GetBoolean(prefs::kAutofillProfileEnabled);
+  return ::autofill::prefs::IsProfileAutofillEnabled(pref_service_);
 }
 
 bool PersonalDataManager::IsAutofillCreditCardEnabled() const {
-  return pref_service_->GetBoolean(prefs::kAutofillCreditCardEnabled);
+  return ::autofill::prefs::IsCreditCardAutofillEnabled(pref_service_);
 }
 
 bool PersonalDataManager::IsAutofillWalletImportEnabled() const {
-  return pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled);
+  return ::autofill::prefs::IsPaymentsIntegrationEnabled(pref_service_);
 }
 
 bool PersonalDataManager::ShouldSuggestServerCards() const {
@@ -1906,7 +1906,7 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
 
 void PersonalDataManager::EnabledPrefChanged() {
   default_country_code_.clear();
-  if (!pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
+  if (!prefs::IsPaymentsIntegrationEnabled(pref_service_)) {
     // Re-mask all server cards when the user turns off wallet card
     // integration.
     ResetFullServerCards();

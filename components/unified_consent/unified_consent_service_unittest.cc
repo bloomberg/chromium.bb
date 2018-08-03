@@ -9,7 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"

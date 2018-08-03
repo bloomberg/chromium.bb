@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
@@ -97,7 +97,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  autofill::AutofillManager::RegisterProfilePrefs(registry);
+  autofill::prefs::RegisterProfilePrefs(registry);
   DesktopPromotionSyncService::RegisterDesktopPromotionUserPrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
   FirstRun::RegisterProfilePrefs(registry);

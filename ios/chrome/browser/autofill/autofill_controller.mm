@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -118,8 +117,6 @@ using autofill::AutofillPopupDelegate;
 - (void)
 showAutofillPopup:(const std::vector<autofill::Suggestion>&)popup_suggestions
     popupDelegate:(const base::WeakPtr<AutofillPopupDelegate>&)delegate {
-  DCHECK(
-      _browserState->GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled));
   // Convert the suggestions into an NSArray for the keyboard.
   NSMutableArray* suggestions = [[NSMutableArray alloc] init];
   for (size_t i = 0; i < popup_suggestions.size(); ++i) {
@@ -176,8 +173,6 @@ showAutofillPopup:(const std::vector<autofill::Suggestion>&)popup_suggestions
 
 - (void)onFormDataFilled:(uint16_t)query_id
                   result:(const autofill::FormData&)result {
-  DCHECK(
-      _browserState->GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled));
   [_autofillAgent onFormDataFilled:result];
   if (_autofillManager)
     _autofillManager->OnDidFillAutofillFormData(result, base::TimeTicks::Now());

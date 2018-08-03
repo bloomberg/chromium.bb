@@ -8,7 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
@@ -1012,13 +1012,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (BOOL)isAutofillWalletImportOn {
-  return _browserState->GetPrefs()->GetBoolean(
-      autofill::prefs::kAutofillWalletImportEnabled);
+  return autofill::prefs::IsPaymentsIntegrationEnabled(
+      _browserState->GetPrefs());
 }
 
 - (void)setAutofillWalletImportOn:(BOOL)on {
-  _browserState->GetPrefs()->SetBoolean(
-      autofill::prefs::kAutofillWalletImportEnabled, on);
+  autofill::prefs::SetPaymentsIntegrationEnabled(_browserState->GetPrefs(), on);
 }
 
 - (NSInteger)tagForIndexPath:(NSIndexPath*)indexPath {

@@ -546,7 +546,7 @@ class PersonalDataManager : public KeyedService,
   // Prefers verified profiles over unverified ones.
   std::string MostCommonCountryCodeFromProfiles() const;
 
-  // Called when the value of prefs::kAutofillEnabled changes.
+  // Called when the value of observed prefs change.
   void EnabledPrefChanged();
 
   // Returns credit card suggestions based on the |cards_to_suggest| and the

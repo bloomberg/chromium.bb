@@ -8,7 +8,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "components/prefs/pref_service.h"
@@ -46,7 +46,7 @@ class AutofillAgentTests : public PlatformTest {
     test_web_state_.SetCurrentURL(GURL("https://example.com"));
 
     prefs_ = autofill::test::PrefServiceForTesting();
-    prefs_->SetBoolean(autofill::prefs::kAutofillEnabled, true);
+    autofill::prefs::SetAutofillEnabled(prefs_.get(), true);
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:prefs_.get()
                                           webState:&test_web_state_];

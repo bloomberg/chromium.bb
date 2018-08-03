@@ -44,10 +44,6 @@ namespace gfx {
 class RectF;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace autofill {
 
 class AutofillDataModel;
@@ -74,9 +70,6 @@ class AutofillManager : public AutofillHandler,
                         public payments::FullCardRequest::ResultDelegate,
                         public payments::FullCardRequest::UIDelegate {
  public:
-  // Registers our Enable/Disable Autofill pref.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
   AutofillManager(AutofillDriver* driver,
                   AutofillClient* client,
                   const std::string& app_locale,

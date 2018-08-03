@@ -4,9 +4,9 @@
 
 #include <memory>
 
-#include "components/autofill/core/browser/autofill_policy_handler.h"
 #include "base/values.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/browser/autofill_policy_handler.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"

@@ -16,7 +16,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
@@ -272,8 +272,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Turn off the wallet autofill pref, the card should be gone as a side
   // effect of the wallet data type controller noticing.
-  GetProfile(0)->GetPrefs()->SetBoolean(
-      autofill::prefs::kAutofillWalletImportEnabled, false);
+  autofill::prefs::SetPaymentsIntegrationEnabled(GetProfile(0)->GetPrefs(),
+                                                 false);
   cards = pdm->GetCreditCards();
   ASSERT_EQ(0uL, cards.size());
 }

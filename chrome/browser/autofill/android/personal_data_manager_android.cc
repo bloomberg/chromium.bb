@@ -37,7 +37,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -860,7 +860,7 @@ PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
 static jboolean JNI_PersonalDataManager_IsAutofillEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  return GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled);
+  return prefs::IsAutofillEnabled(GetPrefs());
 }
 
 // Enables or disables the Autofill feature.
@@ -868,21 +868,21 @@ static void JNI_PersonalDataManager_SetAutofillEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     jboolean enable) {
-  GetPrefs()->SetBoolean(autofill::prefs::kAutofillEnabled, enable);
+  prefs::SetAutofillEnabled(GetPrefs(), enable);
 }
 
 // Returns whether the Autofill feature is managed.
 static jboolean JNI_PersonalDataManager_IsAutofillManaged(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  return GetPrefs()->IsManagedPreference(autofill::prefs::kAutofillEnabled);
+  return prefs::IsAutofillManaged(GetPrefs());
 }
 
 // Returns whether the Payments integration feature is enabled.
 static jboolean JNI_PersonalDataManager_IsPaymentsIntegrationEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  return GetPrefs()->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled);
+  return prefs::IsPaymentsIntegrationEnabled(GetPrefs());
 }
 
 // Enables or disables the Payments integration feature.
@@ -890,7 +890,7 @@ static void JNI_PersonalDataManager_SetPaymentsIntegrationEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     jboolean enable) {
-  GetPrefs()->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled, enable);
+  prefs::SetPaymentsIntegrationEnabled(GetPrefs(), enable);
 }
 
 // Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using

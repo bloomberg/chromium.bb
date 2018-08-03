@@ -4,7 +4,7 @@
 
 #import "ios/web_view/internal/cwv_preferences_internal.h"
 
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -48,11 +48,11 @@
 #pragma mark - Autofill
 
 - (void)setAutofillEnabled:(BOOL)enabled {
-  _prefService->SetBoolean(autofill::prefs::kAutofillEnabled, enabled);
+  autofill::prefs::SetAutofillEnabled(_prefService, enabled);
 }
 
 - (BOOL)isAutofillEnabled {
-  return _prefService->GetBoolean(autofill::prefs::kAutofillEnabled);
+  return autofill::prefs::IsAutofillEnabled(_prefService);
 }
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 

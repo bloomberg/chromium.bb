@@ -39,7 +39,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -442,9 +442,8 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
   const base::Value* callback_id = nullptr;
   ParseConfigurationArguments(args, &configuration, &callback_id);
 
-  PrefService* pref_service = profile_->GetPrefs();
-  pref_service->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
-                           configuration.payments_integration_enabled);
+  autofill::prefs::SetPaymentsIntegrationEnabled(
+      profile_->GetPrefs(), configuration.payments_integration_enabled);
 
   // Start configuring the ProfileSyncService using the configuration passed
   // to us from the JS layer.
@@ -975,9 +974,8 @@ void PeopleHandler::PushSyncPrefs() {
   PrefService* pref_service = profile_->GetPrefs();
   syncer::SyncPrefs sync_prefs(pref_service);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
-  args.SetBoolean(
-      "paymentsIntegrationEnabled",
-      pref_service->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled));
+  args.SetBoolean("paymentsIntegrationEnabled",
+                  autofill::prefs::IsPaymentsIntegrationEnabled(pref_service));
   args.SetBoolean("encryptAllData", service->IsEncryptEverythingEnabled());
   args.SetBoolean("encryptAllDataAllowed",
                   service->IsEncryptEverythingAllowed());

@@ -9,7 +9,7 @@
 #include "base/feature_list.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -548,7 +548,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 - (CollectionViewItem*)autoFillDetailItem {
   BOOL autofillEnabled =
-      _browserState->GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled);
+      autofill::prefs::IsAutofillEnabled(_browserState->GetPrefs());
   NSString* autofillDetail = autofillEnabled
                                  ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
@@ -1245,7 +1245,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   if (preferenceName == autofill::prefs::kAutofillEnabled) {
     BOOL autofillEnabled =
-        _browserState->GetPrefs()->GetBoolean(preferenceName);
+        autofill::prefs::IsAutofillEnabled(_browserState->GetPrefs());
     NSString* autofillDetail =
         autofillEnabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                         : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);

@@ -8,7 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #include "components/prefs/pref_service.h"
@@ -547,33 +547,31 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Getters and Setter
 
 - (BOOL)isAutofillEnabled {
-  return _browserState->GetPrefs()->GetBoolean(
-      autofill::prefs::kAutofillEnabled);
+  return autofill::prefs::IsAutofillEnabled(_browserState->GetPrefs());
 }
 
 - (void)setAutofillEnabled:(BOOL)isEnabled {
-  _browserState->GetPrefs()->SetBoolean(autofill::prefs::kAutofillEnabled,
-                                        isEnabled);
+  return autofill::prefs::SetAutofillEnabled(_browserState->GetPrefs(),
+                                             isEnabled);
 }
 
 - (BOOL)isAutofillProfileEnabled {
-  return _browserState->GetPrefs()->GetBoolean(
-      autofill::prefs::kAutofillProfileEnabled);
+  return autofill::prefs::IsProfileAutofillEnabled(_browserState->GetPrefs());
 }
 
 - (void)setAutofillProfileEnabled:(BOOL)isEnabled {
-  _browserState->GetPrefs()->SetBoolean(
-      autofill::prefs::kAutofillProfileEnabled, isEnabled);
+  return autofill::prefs::SetProfileAutofillEnabled(_browserState->GetPrefs(),
+                                                    isEnabled);
 }
 
 - (BOOL)isAutofillCreditCardEnabled {
-  return _browserState->GetPrefs()->GetBoolean(
-      autofill::prefs::kAutofillCreditCardEnabled);
+  return autofill::prefs::IsCreditCardAutofillEnabled(
+      _browserState->GetPrefs());
 }
 
 - (void)setAutofillCreditCardEnabled:(BOOL)isEnabled {
-  _browserState->GetPrefs()->SetBoolean(
-      autofill::prefs::kAutofillCreditCardEnabled, isEnabled);
+  return autofill::prefs::SetCreditCardAutofillEnabled(
+      _browserState->GetPrefs(), isEnabled);
 }
 
 @end

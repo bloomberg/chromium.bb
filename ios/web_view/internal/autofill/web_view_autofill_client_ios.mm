@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -144,8 +144,7 @@ void WebViewAutofillClientIOS::HideAutofillPopup() {
 }
 
 bool WebViewAutofillClientIOS::IsAutocompleteEnabled() {
-  // For browser, Autocomplete is always enabled as part of Autofill.
-  return GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
+  return prefs::IsAutocompleteEnabled(GetPrefs());
 }
 
 void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(

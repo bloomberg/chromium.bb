@@ -5,7 +5,7 @@
 #include "components/unified_consent/unified_consent_service.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -195,8 +195,7 @@ void UnifiedConsentService::SetSyncEverythingIfPossible(bool sync_everything) {
     return;
 
   if (sync_everything) {
-    pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
-                              true);
+    autofill::prefs::SetPaymentsIntegrationEnabled(pref_service_, true);
     sync_service_->OnUserChoseDatatypes(sync_everything,
                                         syncer::UserSelectableTypes());
   } else {

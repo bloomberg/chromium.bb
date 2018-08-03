@@ -44,7 +44,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/os_crypt/os_crypt_mocker.h"
@@ -1580,13 +1580,13 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
 
   // Disabling Autofill blows away this cache and shouldn't account for Autofill
   // profiles.
-  prefs_->SetBoolean(prefs::kAutofillEnabled, false);
+  prefs::SetAutofillEnabled(prefs_.get(), false);
   EXPECT_EQ(default_country,
             personal_data_->GetDefaultCountryCodeForNewAddress());
 
   // Enabling Autofill blows away the cached value and should reflect the new
   // value (accounting for profiles).
-  prefs_->SetBoolean(prefs::kAutofillEnabled, true);
+  prefs::SetAutofillEnabled(prefs_.get(), true);
   EXPECT_EQ(base::UTF16ToUTF8(moose.GetRawInfo(ADDRESS_HOME_COUNTRY)),
             personal_data_->GetDefaultCountryCodeForNewAddress());
 }
@@ -2008,8 +2008,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   profile_autofill_table_->SetServerProfiles(GetServerProfiles);
 
   // Disable Profile autofill.
-  personal_data_->pref_service_->SetBoolean(prefs::kAutofillProfileEnabled,
-                                            false);
+  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
   personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
@@ -2062,9 +2061,8 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(2U, personal_data_->GetProfiles().size());
   EXPECT_EQ(2U, personal_data_->GetProfilesToSuggest().size());
 
-  // Disable CProfile autofill.
-  personal_data_->pref_service_->SetBoolean(prefs::kAutofillProfileEnabled,
-                                            false);
+  // Disable Profile autofill.
+  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
   // Reload the database.
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
@@ -2082,8 +2080,7 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_NoProfilesAddedIfDisabled) {
   // Disable Profile autofill.
-  personal_data_->pref_service_->SetBoolean(prefs::kAutofillProfileEnabled,
-                                            false);
+  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
 
   // Add a local profile.
   AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -2319,8 +2316,7 @@ TEST_F(PersonalDataManagerTest,
   SetServerCards(server_cards);
 
   // Disable Credit card autofill.
-  personal_data_->pref_service_->SetBoolean(prefs::kAutofillCreditCardEnabled,
-                                            false);
+  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
 
@@ -2372,8 +2368,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(5U, personal_data_->GetCreditCards().size());
 
   // Disable Credit card autofill.
-  personal_data_->pref_service_->SetBoolean(prefs::kAutofillCreditCardEnabled,
-                                            false);
+  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
   // Reload the database.
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
@@ -2395,8 +2390,7 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(PersonalDataManagerTest,
        GetCreditCardSuggestions_NoCreditCardsAddedIfDisabled) {
   // Disable Profile autofill.
-  personal_data_->pref_service_->SetBoolean(prefs::kAutofillCreditCardEnabled,
-                                            false);
+  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
 
   // Add a local credit card.
   CreditCard credit_card("002149C1-EE28-4213-A3B9-DA243FFF021B",
