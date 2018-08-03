@@ -931,7 +931,8 @@ GPU_TELEMETRY_TEST_OUTPUT = """\
             {
               "gpu": "10de:1cb3"
             }
-          ]
+          ],
+          "idempotent": false
         }
       }
     ]

@@ -6344,7 +6344,8 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 960,
+          "idempotent": false
         }
       }
     ]

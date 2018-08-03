@@ -21934,6 +21934,7 @@
             }
           ],
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 15
         }
       }

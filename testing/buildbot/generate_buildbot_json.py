@@ -576,6 +576,11 @@ class BBJSONGenerator(object):
     result['isolate_name'] = 'telemetry_gpu_integration_test'
     args = result.get('args', [])
     test_to_run = result.pop('telemetry_test_name', test_name)
+
+    # These tests upload and download results from cloud storage and therefore
+    # aren't idempotent yet. https://crbug.com/549140.
+    result['swarming']['idempotent'] = False
+
     args = [
       test_to_run,
       '--show-stdout',

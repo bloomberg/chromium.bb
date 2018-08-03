@@ -16517,7 +16517,8 @@
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "idempotent": false
         }
       },
       {
@@ -16526,6 +16527,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -16537,6 +16539,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       },
