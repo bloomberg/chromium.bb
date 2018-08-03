@@ -60,14 +60,6 @@ ValueElementPair PasswordToSave(const PasswordForm& form) {
   return {form.new_password_value, form.new_password_element};
 }
 
-// Update |credential| to reflect usage.
-void UpdateMetadataForUsage(PasswordForm* credential) {
-  ++credential->times_used;
-
-  // Remove alternate usernames. At this point we assume that we have found
-  // the right username.
-  credential->other_possible_usernames.clear();
-}
 
 // Copies field properties masks from the form |from| to the form |to|.
 void CopyFieldPropertiesMasks(const FormData& from, FormData* to) {
@@ -363,7 +355,7 @@ void NewPasswordFormManager::CreatePendingCredentials() {
       // If this isn't updated, then password generation uploads are off for
       // sites where PSL matching is required to fill the login form, as two
       // PASSWORD votes are uploaded per saved password instead of one.
-      UpdateMetadataForUsage(&pending_credentials_);
+      password_manager_util::UpdateMetadataForUsage(&pending_credentials_);
 
       // Update |pending_credentials_| in order to be able correctly save it.
       pending_credentials_.origin = submitted_form_.origin;
