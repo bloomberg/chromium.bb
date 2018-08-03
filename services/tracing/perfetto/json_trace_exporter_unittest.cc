@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
@@ -64,7 +65,8 @@ class MockConsumerEndpoint : public perfetto::TracingService::ConsumerEndpoint {
   void EnableTracing(
       const perfetto::TraceConfig& config,
       perfetto::base::ScopedFile = perfetto::base::ScopedFile()) override {
-    EXPECT_EQ(1, config.data_sources_size());
+    EXPECT_EQ(mojom::kTraceEventDataSourceName,
+              config.data_sources()[0].config().name());
     mock_service_->OnTracingEnabled(
         config.data_sources()[0].config().chrome_config().trace_config());
   }
@@ -72,7 +74,9 @@ class MockConsumerEndpoint : public perfetto::TracingService::ConsumerEndpoint {
   void DisableTracing() override { mock_service_->OnTracingDisabled(); }
   void ReadBuffers() override {}
   void FreeBuffers() override {}
-  void Flush(uint32_t timeout_ms, FlushCallback) override {}
+  void Flush(uint32_t timeout_ms, FlushCallback callback) override {
+    callback(true);
+  }
 
  private:
   MockService* mock_service_;
@@ -141,7 +145,10 @@ class JSONTraceExporterTest : public testing::Test {
         &JSONTraceExporterTest::OnTraceEventJSON, base::Unretained(this)));
   }
 
-  void OnTraceEventJSON(const std::string& json, bool has_more) {
+  void OnTraceEventJSON(const std::string& json,
+                        base::DictionaryValue* metadata,
+                        bool has_more) {
+    CHECK(!has_more);
     // The TraceAnalyzer expects the raw trace output, without the
     // wrapping root-node.
     static const size_t kTracingPreambleLength = strlen("\"{traceEvents\":");
@@ -151,7 +158,10 @@ class JSONTraceExporterTest : public testing::Test {
         json.length() - kTracingPreambleLength - kTracingEpilogueLength);
 
     trace_analyzer_.reset(trace_analyzer::TraceAnalyzer::Create(raw_events));
-    EXPECT_TRUE(trace_analyzer_);
+
+    parsed_trace_data_ =
+        base::DictionaryValue::From(base::JSONReader::Read(json));
+    EXPECT_TRUE(parsed_trace_data_);
   }
 
   void SetTestPacketBasicData(
@@ -215,12 +225,16 @@ class JSONTraceExporterTest : public testing::Test {
     return trace_analyzer_.get();
   }
   MockService* service() { return service_.get(); }
+  const base::DictionaryValue* parsed_trace_data() const {
+    return parsed_trace_data_.get();
+  }
 
  private:
   std::unique_ptr<MockService> service_;
   std::unique_ptr<JSONTraceExporter> json_trace_exporter_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<trace_analyzer::TraceAnalyzer> trace_analyzer_;
+  std::unique_ptr<base::DictionaryValue> parsed_trace_data_;
 };
 
 TEST_F(JSONTraceExporterTest, EnableTracingWithGivenConfig) {
@@ -228,6 +242,54 @@ TEST_F(JSONTraceExporterTest, EnableTracingWithGivenConfig) {
   CreateJSONTraceExporter(kDummyTraceConfig);
   service()->WaitForTracingEnabled();
   EXPECT_EQ(kDummyTraceConfig, service()->tracing_enabled_with_config());
+}
+
+TEST_F(JSONTraceExporterTest, TestMetadata) {
+  CreateJSONTraceExporter("foo");
+  service()->WaitForTracingEnabled();
+  StopAndFlush();
+
+  perfetto::protos::TracePacket trace_packet_proto;
+
+  {
+    auto* new_metadata =
+        trace_packet_proto.mutable_chrome_events()->add_metadata();
+    new_metadata->set_name("int_metadata");
+    new_metadata->set_int_value(42);
+  }
+
+  {
+    auto* new_metadata =
+        trace_packet_proto.mutable_chrome_events()->add_metadata();
+    new_metadata->set_name("string_metadata");
+    new_metadata->set_string_value("met_val");
+  }
+
+  {
+    auto* new_metadata =
+        trace_packet_proto.mutable_chrome_events()->add_metadata();
+    new_metadata->set_name("bool_metadata");
+    new_metadata->set_bool_value(true);
+  }
+
+  {
+    auto* new_metadata =
+        trace_packet_proto.mutable_chrome_events()->add_metadata();
+    new_metadata->set_name("dict_metadata");
+    new_metadata->set_json_value("{\"child_dict\": \"foo\"}");
+  }
+
+  FinalizePacket(trace_packet_proto);
+
+  service()->WaitForTracingDisabled();
+  auto* metadata = parsed_trace_data()->FindKey("metadata");
+  EXPECT_TRUE(metadata);
+  EXPECT_EQ(metadata->FindKey("int_metadata")->GetInt(), 42);
+  EXPECT_EQ(metadata->FindKey("string_metadata")->GetString(), "met_val");
+  EXPECT_EQ(metadata->FindKey("bool_metadata")->GetBool(), true);
+  EXPECT_EQ(
+      metadata->FindKey("dict_metadata")->FindKey("child_dict")->GetString(),
+      "foo");
 }
 
 TEST_F(JSONTraceExporterTest, TestBasicEvent) {

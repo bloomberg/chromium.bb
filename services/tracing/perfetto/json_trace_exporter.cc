@@ -4,6 +4,10 @@
 
 #include "services/tracing/perfetto/json_trace_exporter.h"
 
+#include <utility>
+
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 
@@ -178,7 +182,7 @@ namespace tracing {
 
 JSONTraceExporter::JSONTraceExporter(const std::string& config,
                                      perfetto::TracingService* service)
-    : config_(config) {
+    : config_(config), metadata_(std::make_unique<base::DictionaryValue>()) {
   consumer_endpoint_ = service->ConnectConsumer(this);
 }
 
@@ -188,23 +192,35 @@ void JSONTraceExporter::OnConnect() {
   // Start tracing.
   perfetto::TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(4096 * 100);
-  auto* ds_config = trace_config.add_data_sources()->mutable_config();
-  ds_config->set_name(mojom::kTraceEventDataSourceName);
-  ds_config->set_target_buffer(0);
-  auto* chrome_config = ds_config->mutable_chrome_config();
+
+  auto* trace_event_config = trace_config.add_data_sources()->mutable_config();
+  trace_event_config->set_name(mojom::kTraceEventDataSourceName);
+  trace_event_config->set_target_buffer(0);
+  auto* chrome_config = trace_event_config->mutable_chrome_config();
   chrome_config->set_trace_config(config_);
+
+  auto* trace_metadata_config =
+      trace_config.add_data_sources()->mutable_config();
+  trace_metadata_config->set_name(mojom::kMetaDataSourceName);
+  trace_metadata_config->set_target_buffer(0);
 
   consumer_endpoint_->EnableTracing(trace_config);
 }
 
 void JSONTraceExporter::OnDisconnect() {}
 
+void JSONTraceExporter::OnTracingDisabled() {
+  consumer_endpoint_->ReadBuffers();
+}
+
+// This is called by the Coordinator interface, mainly used by the
+// TracingController which in turn is used by the tracing UI etc
+// to start/stop tracing.
 void JSONTraceExporter::StopAndFlush(OnTraceEventJSONCallback callback) {
   DCHECK(!json_callback_ && callback);
   json_callback_ = callback;
 
   consumer_endpoint_->DisableTracing();
-  consumer_endpoint_->ReadBuffers();
 }
 
 void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
@@ -239,13 +255,37 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
 
       OutputJSONFromTraceEventProto(event, &out);
     }
+
+    for (const perfetto::protos::ChromeMetadata& metadata : bundle.metadata()) {
+      if (metadata.has_string_value()) {
+        metadata_->SetString(metadata.name(), metadata.string_value());
+      } else if (metadata.has_int_value()) {
+        metadata_->SetInteger(metadata.name(), metadata.int_value());
+      } else if (metadata.has_bool_value()) {
+        metadata_->SetBoolean(metadata.name(), metadata.bool_value());
+      } else if (metadata.has_json_value()) {
+        std::unique_ptr<base::Value> value(
+            base::JSONReader::Read(metadata.json_value()));
+        metadata_->Set(metadata.name(), std::move(value));
+      } else {
+        NOTREACHED();
+      }
+    }
   }
 
   if (!has_more) {
-    out += "]}";
+    out += "]";
+    if (!metadata_->empty()) {
+      out += ",\"metadata\":";
+      std::string json_value;
+      base::JSONWriter::Write(*metadata_, &json_value);
+      out += json_value;
+    }
+
+    out += "}";
   }
 
-  json_callback_.Run(out, has_more);
+  json_callback_.Run(out, metadata_.get(), has_more);
 }
 
 }  // namespace tracing

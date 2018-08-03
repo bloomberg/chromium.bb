@@ -121,12 +121,16 @@ class MockProducerClient : public ProducerClient {
     }
   }
 
-  void TearDownDataSourceInstance(uint64_t id) override {
+  void TearDownDataSourceInstance(
+      uint64_t id,
+      TearDownDataSourceInstanceCallback callback) override {
     enabled_data_source_.reset();
 
     if (client_disabled_callback_) {
       std::move(client_disabled_callback_).Run();
     }
+
+    std::move(callback).Run();
   }
 
   void CommitData(const perfetto::CommitDataRequest& commit,

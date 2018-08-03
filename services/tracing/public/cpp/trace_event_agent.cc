@@ -26,6 +26,10 @@
     defined(OS_WIN)
 #define PERFETTO_AVAILABLE
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
+#include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #endif
 
 namespace {
@@ -63,6 +67,21 @@ class PerfettoTraceEventAgent : public TraceEventAgent {
               std::move(producer_client_pipe), std::move(producer_host_pipe));
         },
         std::move(perfetto_service)));
+
+    GetProducerClient()->AddDataSource(TraceEventDataSource::GetInstance());
+  }
+
+  void AddMetadataGeneratorFunction(
+      MetadataGeneratorFunction generator) override {
+    // Instantiate and register the metadata data source on the first
+    // call.
+    static TraceEventMetadataSource* metadata_source = []() {
+      static base::NoDestructor<TraceEventMetadataSource> instance;
+      GetProducerClient()->AddDataSource(instance.get());
+      return instance.get();
+    }();
+
+    metadata_source->AddGeneratorFunction(generator);
   }
 };
 #endif

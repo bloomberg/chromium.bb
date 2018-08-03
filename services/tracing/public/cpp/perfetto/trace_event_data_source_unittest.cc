@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/leak_annotations.h"
+#include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -30,10 +31,12 @@ const char kCategoryGroup[] = "foo";
 class MockProducerClient : public ProducerClient {
  public:
   explicit MockProducerClient(
-      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner)
+      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
+      const char* wanted_event_category)
       : delegate_(perfetto::base::kPageSize),
         stream_(&delegate_),
-        main_thread_task_runner_(std::move(main_thread_task_runner)) {
+        main_thread_task_runner_(std::move(main_thread_task_runner)),
+        wanted_event_category_(wanted_event_category) {
     trace_packet_.Reset(&stream_);
   }
 
@@ -55,8 +58,11 @@ class MockProducerClient : public ProducerClient {
       if (proto->has_chrome_events() &&
           proto->chrome_events().trace_events().size() > 0 &&
           proto->chrome_events().trace_events()[0].category_group_name() ==
-              kCategoryGroup) {
+              wanted_event_category_) {
         finalized_packets_.push_back(std::move(proto));
+      } else if (proto->has_chrome_events() &&
+                 proto->chrome_events().metadata().size() > 0) {
+        metadata_packets_.push_back(std::move(proto));
       }
     }
 
@@ -84,13 +90,24 @@ class MockProducerClient : public ProducerClient {
     return event_bundle.trace_events();
   }
 
+  const google::protobuf::RepeatedPtrField<perfetto::protos::ChromeMetadata>
+  GetChromeMetadata(size_t packet_index = 0) {
+    FlushPacketIfPossible();
+    EXPECT_GT(metadata_packets_.size(), packet_index);
+
+    auto event_bundle = metadata_packets_[packet_index]->chrome_events();
+    return event_bundle.metadata();
+  }
+
  private:
   std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
       finalized_packets_;
+  std::vector<std::unique_ptr<perfetto::protos::TracePacket>> metadata_packets_;
   perfetto::protos::pbzero::TracePacket trace_packet_;
   protozero::ScatteredStreamWriterNullDelegate delegate_;
   protozero::ScatteredStreamWriter stream_;
   scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  const char* wanted_event_category_;
 };
 
 // For sequences/threads other than our own, we just want to ignore
@@ -157,27 +174,34 @@ class TraceEventDataSourceTest : public testing::Test {
  public:
   void SetUp() override {
     ProducerClient::ResetTaskRunnerForTesting();
-    producer_client_ = std::make_unique<MockProducerClient>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
   }
 
   void TearDown() override {
-    base::RunLoop wait_for_tracelog_flush;
+    if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
+      base::RunLoop wait_for_tracelog_flush;
 
-    TraceEventDataSource::GetInstance()->StopTracing(base::BindRepeating(
-        [](const base::RepeatingClosure& quit_closure) { quit_closure.Run(); },
-        wait_for_tracelog_flush.QuitClosure()));
+      TraceEventDataSource::GetInstance()->StopTracing(base::BindRepeating(
+          [](const base::RepeatingClosure& quit_closure) {
+            quit_closure.Run();
+          },
+          wait_for_tracelog_flush.QuitClosure()));
 
-    wait_for_tracelog_flush.Run();
+      wait_for_tracelog_flush.Run();
+    }
 
     // As MockTraceWriter keeps a pointer to our MockProducerClient,
     // we need to make sure to clean it up from TLS. The other sequences
     // get DummyTraceWriters that we don't care about.
-    TraceEventDataSource::GetInstance()->ResetCurrentThreadForTesting();
+    TraceEventDataSource::GetInstance()->FlushCurrentThread();
     producer_client_.reset();
   }
 
-  void CreateTraceEventDataSource() {
+  void CreateTraceEventDataSource(
+      const char* wanted_event_category = kCategoryGroup) {
+    producer_client_ = std::make_unique<MockProducerClient>(
+        scoped_task_environment_.GetMainThreadTaskRunner(),
+        wanted_event_category);
+
     auto data_source_config = mojom::DataSourceConfig::New();
     TraceEventDataSource::GetInstance()->StartTracing(producer_client(),
                                                       *data_source_config);
@@ -189,6 +213,105 @@ class TraceEventDataSourceTest : public testing::Test {
   std::unique_ptr<MockProducerClient> producer_client_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
+
+void HasMetadataValue(const perfetto::protos::ChromeMetadata& entry,
+                      const char* value) {
+  EXPECT_TRUE(entry.has_string_value());
+  EXPECT_EQ(entry.string_value(), value);
+}
+
+void HasMetadataValue(const perfetto::protos::ChromeMetadata& entry,
+                      int value) {
+  EXPECT_TRUE(entry.has_int_value());
+  EXPECT_EQ(entry.int_value(), value);
+}
+
+void HasMetadataValue(const perfetto::protos::ChromeMetadata& entry,
+                      bool value) {
+  EXPECT_TRUE(entry.has_bool_value());
+  EXPECT_EQ(entry.bool_value(), value);
+}
+
+void HasMetadataValue(const perfetto::protos::ChromeMetadata& entry,
+                      const base::DictionaryValue& value) {
+  EXPECT_TRUE(entry.has_json_value());
+
+  std::unique_ptr<base::Value> child_dict =
+      base::JSONReader::Read(entry.json_value());
+  EXPECT_EQ(*child_dict, value);
+}
+
+template <typename T>
+void MetadataHasNamedValue(const google::protobuf::RepeatedPtrField<
+                               perfetto::protos::ChromeMetadata>& metadata,
+                           const char* name,
+                           const T& value) {
+  for (int i = 0; i < metadata.size(); i++) {
+    auto& entry = metadata[i];
+    if (entry.name() == name) {
+      HasMetadataValue(entry, value);
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+TEST_F(TraceEventDataSourceTest, MetadataSourceBasicTypes) {
+  auto metadata_source = std::make_unique<TraceEventMetadataSource>();
+  metadata_source->AddGeneratorFunction(base::BindRepeating([]() {
+    auto metadata = std::make_unique<base::DictionaryValue>();
+    metadata->SetInteger("foo_int", 42);
+    metadata->SetString("foo_str", "bar");
+    metadata->SetBoolean("foo_bool", true);
+
+    auto child_dict = std::make_unique<base::DictionaryValue>();
+    child_dict->SetString("child_str", "child_val");
+    metadata->Set("child_dict", std::move(child_dict));
+    return metadata;
+  }));
+
+  CreateTraceEventDataSource();
+
+  auto data_source_config = mojom::DataSourceConfig::New();
+  metadata_source->StartTracing(producer_client(), *data_source_config);
+
+  base::RunLoop wait_for_flush;
+  metadata_source->Flush(wait_for_flush.QuitClosure());
+  wait_for_flush.Run();
+
+  auto metadata = producer_client()->GetChromeMetadata();
+  EXPECT_EQ(4, metadata.size());
+  MetadataHasNamedValue(metadata, "foo_int", 42);
+  MetadataHasNamedValue(metadata, "foo_str", "bar");
+  MetadataHasNamedValue(metadata, "foo_bool", true);
+
+  auto child_dict = std::make_unique<base::DictionaryValue>();
+  child_dict->SetString("child_str", "child_val");
+  MetadataHasNamedValue(metadata, "child_dict", *child_dict);
+}
+
+TEST_F(TraceEventDataSourceTest, TraceLogMetadataEvents) {
+  CreateTraceEventDataSource("__metadata");
+
+  base::RunLoop wait_for_flush;
+  TraceEventDataSource::GetInstance()->StopTracing(
+      wait_for_flush.QuitClosure());
+  wait_for_flush.Run();
+
+  bool has_process_uptime_event = false;
+  for (size_t i = 0; i < producer_client()->GetFinalizedPacketCount(); ++i) {
+    auto trace_events = producer_client()->GetChromeTraceEvents(i);
+    for (auto& event : trace_events) {
+      if (event.name() == "process_uptime_seconds") {
+        has_process_uptime_event = true;
+        break;
+      }
+    }
+  }
+
+  EXPECT_TRUE(has_process_uptime_event);
+}
 
 TEST_F(TraceEventDataSourceTest, BasicTraceEvent) {
   CreateTraceEventDataSource();

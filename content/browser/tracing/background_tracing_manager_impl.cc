@@ -561,6 +561,8 @@ bool BackgroundTracingManagerImpl::IsAllowedFinalization() const {
 
 std::unique_ptr<base::DictionaryValue>
 BackgroundTracingManagerImpl::GenerateMetadataDict() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   auto metadata_dict = std::make_unique<base::DictionaryValue>();
   if (config_) {
     auto config_dict = std::make_unique<base::DictionaryValue>();
