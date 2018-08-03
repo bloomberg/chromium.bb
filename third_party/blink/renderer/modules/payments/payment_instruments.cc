@@ -94,6 +94,52 @@ ScriptPromise RejectNotAllowedToUsePaymentFeatures(ScriptState* script_state) {
 
 }  // namespace
 
+// Class used to convert the placement only |PaymentInstrument| to
+// GarbageCollected, so it can be used in WTF::Bind. Otherwise, on-heap objects
+// referenced by |PaymentInstrument| will not be traced through the callback and
+// can be prematurely destroyed.
+// TODO(keishi): Remove this conversion if IDLDictionaryBase situation changes.
+class PaymentInstrumentParameter
+    : public GarbageCollectedFinalized<PaymentInstrumentParameter> {
+ public:
+  explicit PaymentInstrumentParameter(const PaymentInstrument& instrument)
+      : has_icons_(instrument.hasIcons()),
+        has_capabilities_(instrument.hasCapabilities()),
+        has_method_(instrument.hasMethod()),
+        has_name_(instrument.hasName()),
+        capabilities_(instrument.capabilities()),
+        method_(instrument.method()),
+        name_(instrument.name()) {
+    if (has_icons_)
+      icons_ = instrument.icons();
+  }
+
+  bool has_capabilities() const { return has_capabilities_; }
+  ScriptValue capabilities() const { return capabilities_; }
+
+  bool has_icons() const { return has_icons_; }
+  const HeapVector<ImageObject>& icons() const { return icons_; }
+
+  bool has_method() const { return has_method_; }
+  const String& method() const { return method_; }
+
+  bool has_name() const { return has_name_; }
+  const String& name() const { return name_; }
+
+  void Trace(blink::Visitor* visitor) { visitor->Trace(icons_); }
+
+ private:
+  bool has_icons_;
+  bool has_capabilities_;
+  bool has_method_;
+  bool has_name_;
+
+  ScriptValue capabilities_;
+  HeapVector<ImageObject> icons_;
+  String method_;
+  String name_;
+};
+
 PaymentInstruments::PaymentInstruments(
     const payments::mojom::blink::PaymentManagerPtr& manager)
     : manager_(manager) {}
@@ -207,7 +253,8 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
           Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
           WTF::Bind(&PaymentInstruments::OnRequestPermission,
                     WrapPersistent(this), WrapPersistent(resolver),
-                    instrument_key, details));
+                    instrument_key,
+                    WrapPersistent(new PaymentInstrumentParameter(details))));
   return resolver->Promise();
 }
 
@@ -242,7 +289,7 @@ mojom::blink::PermissionService* PaymentInstruments::GetPermissionService(
 void PaymentInstruments::OnRequestPermission(
     ScriptPromiseResolver* resolver,
     const String& instrument_key,
-    const PaymentInstrument& details,
+    PaymentInstrumentParameter* details,
     mojom::blink::PermissionStatus status) {
   DCHECK(resolver);
   if (!resolver->GetExecutionContext() ||
@@ -260,11 +307,12 @@ void PaymentInstruments::OnRequestPermission(
 
   payments::mojom::blink::PaymentInstrumentPtr instrument =
       payments::mojom::blink::PaymentInstrument::New();
-  instrument->name = details.hasName() ? details.name() : WTF::g_empty_string;
-  if (details.hasIcons()) {
+  instrument->name =
+      details->has_name() ? details->name() : WTF::g_empty_string;
+  if (details->has_icons()) {
     ExecutionContext* context =
         ExecutionContext::From(resolver->GetScriptState());
-    for (const ImageObject image_object : details.icons()) {
+    for (const ImageObject image_object : details->icons()) {
       KURL parsed_url = context->CompleteURL(image_object.src());
       if (!parsed_url.IsValid() || !parsed_url.ProtocolIsInHTTPFamily()) {
         resolver->Reject(V8ThrowException::CreateTypeError(
@@ -288,12 +336,12 @@ void PaymentInstruments::OnRequestPermission(
   }
 
   instrument->method =
-      details.hasMethod() ? details.method() : WTF::g_empty_string;
+      details->has_method() ? details->method() : WTF::g_empty_string;
 
-  if (details.hasCapabilities()) {
+  if (details->has_capabilities()) {
     v8::Local<v8::String> value;
     if (!v8::JSON::Stringify(resolver->GetScriptState()->GetContext(),
-                             details.capabilities().V8Value().As<v8::Object>())
+                             details->capabilities().V8Value().As<v8::Object>())
              .ToLocal(&value)) {
       resolver->Reject(V8ThrowException::CreateTypeError(
           resolver->GetScriptState()->GetIsolate(),
@@ -306,7 +354,7 @@ void PaymentInstruments::OnRequestPermission(
                                      ExceptionState::kSetterContext,
                                      "PaymentInstruments", "set");
       BasicCardHelper::ParseBasiccardData(
-          details.capabilities(), instrument->supported_networks,
+          details->capabilities(), instrument->supported_networks,
           instrument->supported_types, exception_state);
       if (exception_state.HadException()) {
         resolver->Reject(exception_state);
