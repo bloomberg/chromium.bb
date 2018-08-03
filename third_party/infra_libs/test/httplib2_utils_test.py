@@ -17,120 +17,10 @@ from infra_libs import ts_mon
 
 import httplib2
 import mock
-import oauth2client.client
 
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 
-
-class LoadJsonCredentialsTest(unittest.TestCase):
-  # Everything's good, should not raise any exceptions.
-  def test_valid_credentials(self):
-    creds = httplib2_utils.load_service_account_credentials(
-      'valid_creds.json',
-      service_accounts_creds_root=DATA_DIR)
-    self.assertIsInstance(creds, dict)
-    self.assertIn('type', creds)
-    self.assertIn('client_email', creds)
-    self.assertIn('private_key', creds)
-
-  # File exists but issue with the content: raises AuthError.
-  def test_missing_type(self):
-    with self.assertRaises(infra_libs.AuthError):
-      httplib2_utils.load_service_account_credentials(
-        'creds_missing_type.json',
-        service_accounts_creds_root=DATA_DIR)
-
-  def test_wrong_type(self):
-    with self.assertRaises(infra_libs.AuthError):
-      httplib2_utils.load_service_account_credentials(
-        'creds_wrong_type.json',
-        service_accounts_creds_root=DATA_DIR)
-
-  def test_missing_client_email(self):
-    with self.assertRaises(infra_libs.AuthError):
-      httplib2_utils.load_service_account_credentials(
-        'creds_missing_client_email.json',
-        service_accounts_creds_root=DATA_DIR)
-
-  def test_missing_private_key(self):
-    with self.assertRaises(infra_libs.AuthError):
-      httplib2_utils.load_service_account_credentials(
-        'creds_missing_private_key.json',
-        service_accounts_creds_root=DATA_DIR)
-
-  def test_malformed(self):
-    with self.assertRaises(infra_libs.AuthError):
-      httplib2_utils.load_service_account_credentials(
-        'creds_malformed.json',
-        service_accounts_creds_root=DATA_DIR)
-
-  # Problem with the file itself
-  def test_file_not_found(self):
-    with self.assertRaises(IOError):
-      httplib2_utils.load_service_account_credentials(
-        'this_file_should_not_exist.json',
-        service_accounts_creds_root=DATA_DIR)
-
-
-class GetSignedJwtAssertionCredentialsTest(unittest.TestCase):
-  def test_valid_credentials(self):
-    creds = infra_libs.get_signed_jwt_assertion_credentials(
-      'valid_creds.json',
-      service_accounts_creds_root=DATA_DIR)
-    self.assertIsInstance(creds,
-                          oauth2client.client.SignedJwtAssertionCredentials)
-    # A default scope must be provided, we don't care which one
-    self.assertTrue(creds.scope)
-
-  def test_valid_credentials_with_scope_as_string(self):
-    creds = infra_libs.get_signed_jwt_assertion_credentials(
-      'valid_creds.json',
-      scope='repo',
-      service_accounts_creds_root=DATA_DIR)
-    self.assertIsInstance(creds,
-                          oauth2client.client.SignedJwtAssertionCredentials)
-    self.assertIn('repo', creds.scope)
-
-  def test_valid_credentials_with_scope_as_list(self):
-    creds = infra_libs.get_signed_jwt_assertion_credentials(
-      'valid_creds.json',
-      scope=['gist'],
-      service_accounts_creds_root=DATA_DIR)
-    self.assertIsInstance(creds,
-                          oauth2client.client.SignedJwtAssertionCredentials)
-    self.assertIn('gist', creds.scope)
-
-  # Only test one malformed case and rely on LoadJsonCredentialsTest
-  # for the other cases.
-  def test_malformed_credentials(self):
-    with self.assertRaises(infra_libs.AuthError):
-      infra_libs.get_signed_jwt_assertion_credentials(
-        'creds_malformed.json',
-        service_accounts_creds_root=DATA_DIR)
-
-
-class GetAuthenticatedHttp(unittest.TestCase):
-  def test_valid_credentials(self):
-    http = infra_libs.get_authenticated_http(
-      'valid_creds.json',
-      service_accounts_creds_root=DATA_DIR)
-    self.assertIsInstance(http, httplib2.Http)
-
-  def test_valid_credentials_authenticated(self):
-    http = infra_libs.get_authenticated_http(
-      'valid_creds.json',
-      service_accounts_creds_root=DATA_DIR,
-      http_identifier='test_case')
-    self.assertIsInstance(http, infra_libs.InstrumentedHttp)
-
-  # Only test one malformed case and rely on LoadJsonCredentialsTest
-  # for the other cases.
-  def test_malformed_credentials(self):
-    with self.assertRaises(infra_libs.AuthError):
-      infra_libs.get_authenticated_http(
-        'creds_malformed.json',
-        service_accounts_creds_root=DATA_DIR)
 
 class RetriableHttplib2Test(unittest.TestCase):
   def setUp(self):
@@ -140,13 +30,6 @@ class RetriableHttplib2Test(unittest.TestCase):
                                                    spec_set=True)
 
   _MOCK_REQUEST = mock.call('http://foo/', 'GET', None)
-
-  def test_authorize(self):
-    http = infra_libs.RetriableHttp(httplib2.Http())
-    creds = infra_libs.get_signed_jwt_assertion_credentials(
-      'valid_creds.json',
-      service_accounts_creds_root=DATA_DIR)
-    creds.authorize(http)
 
   def test_delegate_get_attr(self):
     """RetriableHttp should delegate getting attribute except request() to
