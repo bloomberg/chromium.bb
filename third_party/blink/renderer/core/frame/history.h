@@ -107,8 +107,8 @@ class CORE_EXPORT History final : public ScriptWrappable,
 
   scoped_refptr<SerializedScriptValue> last_state_object_requested_;
   struct {
-    int count;
-    TimeTicks last_updated;
+    int tokens = 0;
+    TimeTicks last_token_grant;
   } state_flood_guard;
 };
 
