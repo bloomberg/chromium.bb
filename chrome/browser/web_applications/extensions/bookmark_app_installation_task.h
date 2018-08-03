@@ -10,9 +10,12 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 
+class Profile;
+
 namespace extensions {
 
 class BookmarkAppDataRetriever;
+class BookmarkAppInstaller;
 
 // Class to install a BookmarkApp-based Shortcut or WebApp from a WebContents
 // or WebApplicationInfo. Can only be called from the UI thread.
@@ -21,6 +24,7 @@ class BookmarkAppInstallationTask {
   enum class Result {
     kSuccess,
     kGetWebApplicationInfoFailed,
+    kInstallationFailed,
   };
 
   using ResultCallback = base::OnceCallback<void(Result)>;
@@ -29,14 +33,17 @@ class BookmarkAppInstallationTask {
 
   void SetDataRetrieverForTesting(
       std::unique_ptr<BookmarkAppDataRetriever> data_retriever);
+  void SetInstallerForTesting(std::unique_ptr<BookmarkAppInstaller> installer);
 
  protected:
-  BookmarkAppInstallationTask();
+  explicit BookmarkAppInstallationTask(Profile* profile);
 
   BookmarkAppDataRetriever& data_retriever() { return *data_retriever_; }
+  BookmarkAppInstaller& installer() { return *installer_; }
 
  private:
   std::unique_ptr<BookmarkAppDataRetriever> data_retriever_;
+  std::unique_ptr<BookmarkAppInstaller> installer_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallationTask);
 };

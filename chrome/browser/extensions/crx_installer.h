@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -248,6 +249,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
  private:
   friend class ::ExtensionServiceTest;
   friend class ExtensionUpdaterTest;
+  friend class BookmarkAppInstallerTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
                std::unique_ptr<ExtensionInstallPrompt> client,
