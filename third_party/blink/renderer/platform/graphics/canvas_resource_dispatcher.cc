@@ -131,6 +131,7 @@ void CanvasResourceDispatcher::DispatchFrameSync(
     base::TimeTicks commit_start_time,
     const SkIRect& damage_rect,
     bool needs_vertical_flip) {
+  TRACE_EVENT0("blink", "CanvasResourceDispatcher::DispatchFrameSync");
   viz::CompositorFrame frame;
   if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
                     needs_vertical_flip, &frame)) {
@@ -150,6 +151,7 @@ void CanvasResourceDispatcher::DispatchFrame(
     base::TimeTicks commit_start_time,
     const SkIRect& damage_rect,
     bool needs_vertical_flip) {
+  TRACE_EVENT0("blink", "CanvasResourceDispatcher::DispatchFrame");
   viz::CompositorFrame frame;
   if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
                     needs_vertical_flip, &frame)) {
@@ -168,6 +170,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
     const SkIRect& damage_rect,
     bool needs_vertical_flip,
     viz::CompositorFrame* frame) {
+  TRACE_EVENT0("blink", "CanvasResourceDispatcher::PrepareFrame");
   if (!canvas_resource || !VerifyImageSize(canvas_resource->Size()))
     return false;
 
