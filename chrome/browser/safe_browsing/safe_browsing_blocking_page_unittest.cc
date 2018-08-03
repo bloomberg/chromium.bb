@@ -949,14 +949,14 @@ TEST_F(SafeBrowsingBlockingPageTest,
   ui_manager_->GetThreatDetails()->clear();
 }
 
-// Tests showing a blocking page for trick-to-bill.
-TEST_F(SafeBrowsingBlockingPageTest, TrickToBillPage) {
+// Tests showing a blocking page for billing.
+TEST_F(SafeBrowsingBlockingPageTest, BillingPage) {
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   // Simulate the load causing a safe browsing interstitial to be shown.
-  ShowInterstitial(false, kBadURL, SB_THREAT_TYPE_TRICK_TO_BILL);
+  ShowInterstitial(false, kBadURL, SB_THREAT_TYPE_BILLING);
 
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -967,14 +967,13 @@ TEST_F(SafeBrowsingBlockingPageTest, TrickToBillPage) {
   base::string16 str;
 
   load_time_data.GetString("heading", &str);
-  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_HEADING));
+  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_BILLING_HEADING));
   load_time_data.GetString("primaryParagraph", &str);
-  EXPECT_EQ(str,
-            l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PRIMARY_PARAGRAPH));
+  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_BILLING_PRIMARY_PARAGRAPH));
   load_time_data.GetString("primaryButtonText", &str);
-  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PRIMARY_BUTTON));
+  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_BILLING_PRIMARY_BUTTON));
   load_time_data.GetString("proceedButtonText", &str);
-  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PROCEED_BUTTON));
+  EXPECT_EQ(str, l10n_util::GetStringUTF16(IDS_BILLING_PROCEED_BUTTON));
 
   load_time_data.GetString("openDetails", &str);
   EXPECT_EQ(str, base::string16());
@@ -986,7 +985,7 @@ TEST_F(SafeBrowsingBlockingPageTest, TrickToBillPage) {
   EXPECT_EQ(str, base::string16());
 
   bool flag;
-  load_time_data.GetBoolean("trick_to_bill", &flag);
+  load_time_data.GetBoolean("billing", &flag);
   EXPECT_TRUE(flag);
   load_time_data.GetBoolean("phishing", &flag);
   EXPECT_FALSE(flag);

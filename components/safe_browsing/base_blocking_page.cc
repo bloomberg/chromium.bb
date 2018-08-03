@@ -239,9 +239,8 @@ std::string BaseBlockingPage::GetMetricPrefix(
       return primary_subresource ? "malware_subresource" : "malware";
     case BaseSafeBrowsingErrorUI::SB_REASON_HARMFUL:
       return primary_subresource ? "harmful_subresource" : "harmful";
-    case BaseSafeBrowsingErrorUI::SB_REASON_TRICK_TO_BILL:
-      return primary_subresource ? "trick_to_bill_subresource"
-                                 : "trick_to_bill";
+    case BaseSafeBrowsingErrorUI::SB_REASON_BILLING:
+      return primary_subresource ? "billing_subresource" : "billing";
     case BaseSafeBrowsingErrorUI::SB_REASON_PHISHING:
       ThreatPatternType threat_pattern_type =
           unsafe_resources[0].threat_metadata.threat_pattern_type;
@@ -294,8 +293,8 @@ BaseBlockingPage::GetInterstitialReason(
        iter != unsafe_resources.end(); ++iter) {
     const BaseUIManager::UnsafeResource& resource = *iter;
     safe_browsing::SBThreatType threat_type = resource.threat_type;
-    if (threat_type == SB_THREAT_TYPE_TRICK_TO_BILL)
-      return BaseSafeBrowsingErrorUI::SB_REASON_TRICK_TO_BILL;
+    if (threat_type == SB_THREAT_TYPE_BILLING)
+      return BaseSafeBrowsingErrorUI::SB_REASON_BILLING;
 
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE) {

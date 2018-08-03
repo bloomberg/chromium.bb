@@ -44,17 +44,17 @@ body.safe-browsing {
   }
 }
 
-.safe-browsing-trick-to-bill .small-link {
+.safe-browsing-billing .small-link {
   background-color: white;
   border:none;
   float: none;
 }
 
-.safe-browsing-trick-to-bill .small-link:hover {
+.safe-browsing-billing .small-link:hover {
   box-shadow: none;
 }
 
-.safe-browsing-trick-to-bill .icon {
+.safe-browsing-billing .icon {
   background-image: -webkit-image-set(
       url(images/1x/triangle_red.png) 1x,
       url(images/2x/triangle_red.png) 2x);
