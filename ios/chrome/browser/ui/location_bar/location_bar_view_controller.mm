@@ -378,7 +378,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
       [self.locationBarSteadyView.trailingButton
           setImage:
               [[UIImage imageNamed:@"location_bar_voice"]
-                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
           forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_VOICE_SEARCH);
