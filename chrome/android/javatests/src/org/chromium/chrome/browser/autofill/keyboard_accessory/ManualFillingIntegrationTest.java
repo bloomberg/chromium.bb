@@ -7,8 +7,11 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
+import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
@@ -25,10 +28,15 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.autofill.AutofillTestHelper;
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.ui.DropdownPopupWindowInterface;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+
 /**
  * Integration tests for password accessory views. This integration test currently stops testing at
  * the bridge - ideally, there should be an easy way to add a temporary account with temporary
@@ -137,6 +145,31 @@ public class ManualFillingIntegrationTest {
         mHelper.waitForKeyboard();
         onView(withId(R.id.keyboard_accessory)).check(matches(isDisplayed()));
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+    }
+
+    @Test
+    @SmallTest
+    public void testOpeningSheetDismissesAutofill()
+            throws InterruptedException, TimeoutException, ExecutionException {
+        mHelper.loadTestPage(false);
+        new AutofillTestHelper().setProfile(new PersonalDataManager.AutofillProfile("",
+                "https://www.example.com/", "Alan Turing", "", "Street Ave 4", "", "Capitaltown",
+                "", "80666", "", "Disneyland", "1", "a.turing@enigma.com", "DE"));
+        mHelper.createTestTab();
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickEmailField();
+        mHelper.waitForKeyboard();
+        DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup();
+
+        assertThat(popup.isShowing(), is(true));
+
+        // Click the tab to show the sheet and hide keyboard and popup.
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+
+        assertThat(popup.isShowing(), is(false));
     }
 
     @Test

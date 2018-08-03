@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.UiUtils;
 
 import java.util.HashMap;
@@ -89,6 +90,7 @@ class ManualFillingMediator
     private ChromeActivity mActivity; // Used to control the keyboard.
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private Tab mActiveBrowserTab;
+    private DropdownPopupWindow mPopup;
 
     private final SceneChangeObserver mTabSwitcherObserver = new SceneChangeObserver() {
         @Override
@@ -184,6 +186,10 @@ class ManualFillingMediator
         return false;
     }
 
+    void notifyPopupOpened(DropdownPopupWindow popup) {
+        mPopup = popup;
+    }
+
     @Override
     public void onChangeAccessorySheet(int tabIndex) {
         mAccessorySheet.setActiveTab(tabIndex);
@@ -193,6 +199,9 @@ class ManualFillingMediator
     public void onOpenAccessorySheet() {
         assert mActivity != null : "ManualFillingMediator needs initialization.";
         UiUtils.hideKeyboard(mActivity.getCurrentFocus());
+        if (mPopup != null && mPopup.isShowing()) {
+            mPopup.dismiss();
+        }
         mAccessorySheet.show();
     }
 

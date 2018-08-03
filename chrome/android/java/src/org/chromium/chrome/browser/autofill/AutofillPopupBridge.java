@@ -47,8 +47,10 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
         } else {
             mAutofillPopup = new AutofillPopup(activity, anchorView, this);
             mContext = activity;
+            ChromeActivity chromeActivity = (ChromeActivity) activity;
+            chromeActivity.getManualFillingController().notifyPopupAvailable(mAutofillPopup);
             mWebContentsAccessibility = WebContentsAccessibility.fromWebContents(
-                    ((ChromeActivity) activity).getCurrentWebContents());
+                    chromeActivity.getCurrentWebContents());
         }
     }
 
