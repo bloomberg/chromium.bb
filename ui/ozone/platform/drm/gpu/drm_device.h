@@ -73,7 +73,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   DrmDevice(const base::FilePath& device_path,
             base::File file,
-            bool is_primary_device);
+            bool is_primary_device,
+            std::unique_ptr<GbmDevice> gbm_device);
 
   bool is_primary_device() const { return is_primary_device_; }
 
@@ -246,7 +247,7 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
 
-  gbm_device* gbm_device() const { return gbm_.device(); }
+  GbmDevice* gbm_device() const { return gbm_.get(); }
 
  protected:
   friend class base::RefCountedThreadSafe<DrmDevice>;
@@ -258,8 +259,6 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
  private:
   class IOWatcher;
   class PageFlipManager;
-
-  GbmDevice gbm_;
 
   // Path to the DRM device (in sysfs).
   const base::FilePath device_path_;
@@ -275,6 +274,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   bool is_primary_device_;
 
   bool allow_addfb2_modifiers_;
+
+  std::unique_ptr<GbmDevice> gbm_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDevice);
 };

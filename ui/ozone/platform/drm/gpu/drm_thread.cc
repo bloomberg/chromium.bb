@@ -17,6 +17,7 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/common/linux/gbm_device.h"
+#include "ui/ozone/common/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
@@ -35,21 +36,20 @@ namespace ui {
 
 namespace {
 
-scoped_refptr<DrmFramebuffer> AddFramebuffersForBo(
+scoped_refptr<DrmFramebuffer> AddFramebuffersForBuffer(
     const scoped_refptr<DrmDevice>& drm,
-    gbm_bo* bo,
-    uint32_t format,
-    uint64_t format_modifier) {
+    GbmBuffer* buffer) {
+  gfx::Size size = buffer->GetSize();
   DrmFramebuffer::AddFramebufferParams params;
-  params.format = format;
-  params.modifier = format_modifier;
-  params.width = gbm_bo_get_width(bo);
-  params.height = gbm_bo_get_height(bo);
-  params.num_planes = gbm_bo_get_num_planes(bo);
+  params.format = buffer->GetFormat();
+  params.modifier = buffer->GetFormatModifier();
+  params.width = size.width();
+  params.height = size.height();
+  params.num_planes = buffer->GetNumPlanes();
   for (size_t i = 0; i < params.num_planes; ++i) {
-    params.handles[i] = gbm_bo_get_plane_handle(bo, i).u32;
-    params.strides[i] = gbm_bo_get_plane_stride(bo, i);
-    params.offsets[i] = gbm_bo_get_plane_offset(bo, i);
+    params.handles[i] = buffer->GetPlaneHandle(i);
+    params.strides[i] = buffer->GetPlaneStride(i);
+    params.offsets[i] = buffer->GetPlaneOffset(i);
   }
 
   // AddFramebuffer2 only considers the modifiers if addfb_flags has
@@ -97,18 +97,16 @@ void CreateBufferWithGbmFlags(const scoped_refptr<DrmDevice>& drm,
                               scoped_refptr<DrmFramebuffer>* out_framebuffer) {
   std::unique_ptr<GbmBuffer> buffer;
   if (modifiers.empty())
-    buffer =
-        GbmBuffer::CreateBuffer(drm->gbm_device(), fourcc_format, size, flags);
+    buffer = drm->gbm_device()->CreateBuffer(fourcc_format, size, flags);
   else
-    buffer = GbmBuffer::CreateBufferWithModifiers(
-        drm->gbm_device(), fourcc_format, size, flags, modifiers);
+    buffer = drm->gbm_device()->CreateBufferWithModifiers(fourcc_format, size,
+                                                          flags, modifiers);
   if (!buffer)
     return;
 
   scoped_refptr<DrmFramebuffer> framebuffer;
   if (flags & GBM_BO_USE_SCANOUT) {
-    framebuffer = AddFramebuffersForBo(drm, buffer->bo(), buffer->format(),
-                                       buffer->format_modifier());
+    framebuffer = AddFramebuffersForBuffer(drm, buffer.get());
     if (!framebuffer)
       return;
   }
@@ -130,18 +128,17 @@ class GbmBufferGenerator : public DrmFramebufferGenerator {
     std::unique_ptr<GbmBuffer> buffer;
 
     if (modifiers.size() > 0) {
-      buffer = GbmBuffer::CreateBufferWithModifiers(
-          drm->gbm_device(), format, size, GBM_BO_USE_SCANOUT, modifiers);
+      buffer = drm->gbm_device()->CreateBufferWithModifiers(
+          format, size, GBM_BO_USE_SCANOUT, modifiers);
     } else {
-      buffer = GbmBuffer::CreateBuffer(drm->gbm_device(), format, size,
-                                       GBM_BO_USE_SCANOUT);
+      buffer =
+          drm->gbm_device()->CreateBuffer(format, size, GBM_BO_USE_SCANOUT);
     }
 
     if (!buffer)
       return nullptr;
 
-    return AddFramebuffersForBo(drm, buffer->bo(), buffer->format(),
-                                buffer->format_modifier());
+    return AddFramebuffersForBuffer(drm, buffer.get());
   }
 
  protected:
@@ -157,8 +154,14 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
   scoped_refptr<DrmDevice> CreateDevice(const base::FilePath& path,
                                         base::File file,
                                         bool is_primary_device) override {
-    auto drm = base::MakeRefCounted<DrmDevice>(path, std::move(file),
-                                               is_primary_device);
+    auto gbm = CreateGbmDevice(file.GetPlatformFile());
+    if (!gbm) {
+      PLOG(ERROR) << "Unable to initialize GBM for " << path.value();
+      return nullptr;
+    }
+
+    auto drm = base::MakeRefCounted<DrmDevice>(
+        path, std::move(file), is_primary_device, std::move(gbm));
     if (!drm->Initialize())
       return nullptr;
     return drm;
@@ -251,16 +254,15 @@ void DrmThread::CreateBufferFromFds(
   scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
   DCHECK(drm);
 
-  std::unique_ptr<GbmBuffer> buffer = GbmBuffer::CreateBufferFromFds(
-      drm->gbm_device(), ui::GetFourCCFormatFromBufferFormat(format), size,
-      std::move(fds), planes);
+  std::unique_ptr<GbmBuffer> buffer = drm->gbm_device()->CreateBufferFromFds(
+      ui::GetFourCCFormatFromBufferFormat(format), size, std::move(fds),
+      planes);
   if (!buffer)
     return;
 
   scoped_refptr<DrmFramebuffer> framebuffer;
-  if (buffer->flags() & GBM_BO_USE_SCANOUT) {
-    framebuffer = AddFramebuffersForBo(drm, buffer->bo(), buffer->format(),
-                                       buffer->format_modifier());
+  if (buffer->GetFlags() & GBM_BO_USE_SCANOUT) {
+    framebuffer = AddFramebuffersForBuffer(drm, buffer.get());
     if (!framebuffer)
       return;
   }
