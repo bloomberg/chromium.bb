@@ -242,7 +242,7 @@ class TetherService
   bool IsAllowedByPolicy() const;
 
   // Whether Tether is enabled.
-  bool IsEnabledbyPreference() const;
+  bool IsEnabledByPreference() const;
 
   TetherFeatureState GetTetherFeatureState();
 

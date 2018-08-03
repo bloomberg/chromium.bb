@@ -25,6 +25,7 @@
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_type_pattern.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
@@ -60,9 +61,6 @@ TetherService* TetherService::Get(Profile* profile) {
 // static
 void TetherService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kInstantTetheringAllowed, true);
-  registry->RegisterBooleanPref(prefs::kInstantTetheringEnabled, true);
-
   // If we initially assume that BLE advertising is not supported, it will
   // result in Tether's Settings and Quick Settings sections not being visible
   // when the user logs in with Bluetooth disabled (because the TechnologyState
@@ -176,14 +174,15 @@ TetherService::TetherService(
   }
 
   registrar_.Init(profile_->GetPrefs());
-  registrar_.Add(prefs::kInstantTetheringAllowed,
-                 base::BindRepeating(&TetherService::OnPrefsChanged,
-                                     weak_ptr_factory_.GetWeakPtr()));
+  registrar_.Add(
+      chromeos::multidevice_setup::kInstantTetheringFeatureAllowedPrefName,
+      base::BindRepeating(&TetherService::OnPrefsChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnStartup",
-                        IsEnabledbyPreference());
+                        IsEnabledByPreference());
   PA_LOG(INFO) << "TetherService has started. Initial user preference value: "
-               << IsEnabledbyPreference();
+               << IsEnabledByPreference();
 
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     if (device_sync_client_->is_ready())
@@ -371,7 +370,7 @@ void TetherService::DevicePropertiesUpdated(
 }
 
 void TetherService::UpdateEnabledState() {
-  bool was_pref_enabled = IsEnabledbyPreference();
+  bool was_pref_enabled = IsEnabledByPreference();
   chromeos::NetworkStateHandler::TechnologyState tether_technology_state =
       network_state_handler_->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether());
@@ -393,8 +392,9 @@ void TetherService::UpdateEnabledState() {
   }
 
   if (is_enabled != was_pref_enabled) {
-    profile_->GetPrefs()->SetBoolean(prefs::kInstantTetheringEnabled,
-                                     is_enabled);
+    profile_->GetPrefs()->SetBoolean(
+        chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName,
+        is_enabled);
     UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnToggle",
                           is_enabled);
     PA_LOG(INFO) << "Tether user preference changed. New value: " << is_enabled;
@@ -609,11 +609,13 @@ bool TetherService::IsCellularAvailableButNotEnabled() const {
 }
 
 bool TetherService::IsAllowedByPolicy() const {
-  return profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringAllowed);
+  return profile_->GetPrefs()->GetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringFeatureAllowedPrefName);
 }
 
-bool TetherService::IsEnabledbyPreference() const {
-  return profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled);
+bool TetherService::IsEnabledByPreference() const {
+  return profile_->GetPrefs()->GetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName);
 }
 
 TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
@@ -647,7 +649,7 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
   if (!IsBluetoothPowered())
     return BLUETOOTH_DISABLED;
 
-  if (!IsEnabledbyPreference())
+  if (!IsEnabledByPreference())
     return USER_PREFERENCE_DISABLED;
 
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&

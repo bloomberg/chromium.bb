@@ -42,6 +42,7 @@
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client_impl.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
@@ -990,7 +991,9 @@ TEST_F(TetherServiceTest, TestNoTetherHosts) {
 }
 
 TEST_F(TetherServiceTest, TestProhibitedByPolicy) {
-  profile_->GetPrefs()->SetBoolean(prefs::kInstantTetheringAllowed, false);
+  profile_->GetPrefs()->SetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringFeatureAllowedPrefName,
+      false);
 
   CreateTetherService();
 
@@ -1201,7 +1204,9 @@ TEST_F(TetherServiceTest, TestCellularIsAvailable) {
 }
 
 TEST_F(TetherServiceTest, TestDisabled) {
-  profile_->GetPrefs()->SetBoolean(prefs::kInstantTetheringEnabled, false);
+  profile_->GetPrefs()->SetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName,
+      false);
 
   CreateTetherService();
 
@@ -1209,8 +1214,8 @@ TEST_F(TetherServiceTest, TestDisabled) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
-  EXPECT_FALSE(
-      profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled));
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName));
   VerifyTetherActiveStatus(false /* expected_active */);
 
   VerifyTetherFeatureStateRecorded(
@@ -1231,8 +1236,8 @@ TEST_F(TetherServiceTest, TestEnabled) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
-  EXPECT_FALSE(
-      profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled));
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName));
   VerifyTetherActiveStatus(false /* expected_active */);
   histogram_tester_.ExpectBucketCount(
       "InstantTethering.UserPreference.OnToggle", false,
@@ -1242,8 +1247,8 @@ TEST_F(TetherServiceTest, TestEnabled) {
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Tether()));
-  EXPECT_TRUE(
-      profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled));
+  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName));
   VerifyTetherActiveStatus(true /* expected_active */);
   histogram_tester_.ExpectBucketCount(
       "InstantTethering.UserPreference.OnToggle", true,

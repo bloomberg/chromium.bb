@@ -12,10 +12,15 @@
 #include "chromeos/chromeos_features.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+
+namespace chromeos {
+
+namespace device_sync {
 
 namespace {
 
@@ -24,14 +29,11 @@ bool IsEnrollmentAllowedByPolicy(content::BrowserContext* context) {
   // depends on CryptAuth is enabled by enterprise policy.
   PrefService* pref_service = Profile::FromBrowserContext(context)->GetPrefs();
   return pref_service->GetBoolean(prefs::kEasyUnlockAllowed) ||
-         pref_service->GetBoolean(prefs::kInstantTetheringAllowed);
+         pref_service->GetBoolean(
+             multidevice_setup::kInstantTetheringFeatureAllowedPrefName);
 }
 
 }  // namespace
-
-namespace chromeos {
-
-namespace device_sync {
 
 // Class that wraps DeviceSyncClient in a KeyedService.
 class DeviceSyncClientHolder : public KeyedService {

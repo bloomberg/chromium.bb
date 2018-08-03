@@ -28,9 +28,18 @@ const char kSuiteEnabledPrefName[] = "multidevice_setup.suite_enabled";
 const char kAndroidMessagesFeatureEnabledPrefName[] =
     "multidevice.sms_connect_enabled";
 
+// Whether Instant Tethering is allowed by policy.
+const char kInstantTetheringFeatureAllowedPrefName[] = "tether.allowed";
+
+// Whether Instant Tethering is enabled by the user. Note that if the feature is
+// enabled by the user but disallowed by policy, it is unavailable.
+const char kInstantTetheringFeatureEnabledPrefName[] = "tether.enabled";
+
 void RegisterFeaturePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kSuiteEnabledPrefName, false);
   registry->RegisterBooleanPref(kAndroidMessagesFeatureEnabledPrefName, false);
+  registry->RegisterBooleanPref(kInstantTetheringFeatureAllowedPrefName, true);
+  registry->RegisterBooleanPref(kInstantTetheringFeatureEnabledPrefName, true);
 }
 
 }  // namespace multidevice_setup
