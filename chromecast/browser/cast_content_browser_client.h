@@ -197,9 +197,9 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
     return renderer_config_manager_.get();
   }
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#if BUILDFLAG(USE_CHROMECAST_CDMS)
   virtual std::unique_ptr<::media::CdmFactory> CreateCdmFactory();
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
  protected:
   CastContentBrowserClient();
