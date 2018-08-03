@@ -26,7 +26,7 @@ namespace autofill {
 
 namespace {
 
-void* UserDataKey() {
+void* AutofillWalletSyncableServiceUserDataKey() {
   // Use the address of a static so that COMDAT folding won't ever fold
   // with something else.
   static int user_data_key = 0;
@@ -242,8 +242,9 @@ void AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
     AutofillWebDataBackend* webdata_backend,
     const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
-      UserDataKey(), base::WrapUnique(new AutofillWalletSyncableService(
-                         webdata_backend, app_locale)));
+      AutofillWalletSyncableServiceUserDataKey(),
+      base::WrapUnique(
+          new AutofillWalletSyncableService(webdata_backend, app_locale)));
 }
 
 // static
@@ -251,7 +252,8 @@ AutofillWalletSyncableService*
 AutofillWalletSyncableService::FromWebDataService(
     AutofillWebDataService* web_data_service) {
   return static_cast<AutofillWalletSyncableService*>(
-      web_data_service->GetDBUserData()->GetUserData(UserDataKey()));
+      web_data_service->GetDBUserData()->GetUserData(
+          AutofillWalletSyncableServiceUserDataKey()));
 }
 
 void AutofillWalletSyncableService::InjectStartSyncFlare(
