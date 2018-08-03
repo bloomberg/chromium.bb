@@ -67,6 +67,11 @@ class AssistantMainStage : public views::View,
   bool OnActiveQueryExitAnimationEnded(
       const ui::CallbackLayerAnimationObserver& observer);
 
+  void OnSuggestionContainerAnimationStarted(
+      const ui::CallbackLayerAnimationObserver& observer);
+  bool OnSuggestionContainerAnimationEnded(
+      const ui::CallbackLayerAnimationObserver& observer);
+
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   views::View* active_query_view_spacer_;          // Owned by view hierarchy.
@@ -81,6 +86,9 @@ class AssistantMainStage : public views::View,
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver>
       active_query_exit_animation_observer_;
+
+  std::unique_ptr<ui::CallbackLayerAnimationObserver>
+      suggestion_container_animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMainStage);
 };

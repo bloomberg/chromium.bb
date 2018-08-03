@@ -78,6 +78,14 @@ std::unique_ptr<::ui::LayerAnimationElement> CreateOpacityElement(
     const base::TimeDelta& duration,
     const gfx::Tween::Type& tween = gfx::Tween::Type::LINEAR);
 
+// Starts the specified |layer_animation_sequence| on the given
+// |layer_animator|. If an optional |observer| is supplied, it will be added to
+// the sequence.
+void StartLayerAnimationSequence(
+    ::ui::LayerAnimator* layer_animator,
+    ::ui::LayerAnimationSequence* layer_animation_sequence,
+    ::ui::LayerAnimationObserver* observer = nullptr);
+
 // Starts the specified |layer_animation_sequences| together on the given
 // |layer_animator|. If an optional |observer| is supplied, it will be added
 // to each sequence in the animation set.

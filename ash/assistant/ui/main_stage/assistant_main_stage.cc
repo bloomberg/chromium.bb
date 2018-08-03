@@ -26,6 +26,8 @@ namespace ash {
 namespace {
 
 // Animation.
+// TODO(dmblack): Rename these constants to refer to the specific views they are
+// animating to avoid confusion.
 constexpr base::TimeDelta kAnimationExitFadeDuration =
     base::TimeDelta::FromMilliseconds(50);
 constexpr int kAnimationExitTranslationDip = -103;
@@ -41,6 +43,23 @@ constexpr base::TimeDelta kAnimationTranslateUpDelay =
     base::TimeDelta::FromMilliseconds(83);
 constexpr base::TimeDelta kAnimationTranslateUpDuration =
     base::TimeDelta::FromMilliseconds(333);
+
+// Pending query animation.
+constexpr base::TimeDelta kPendingQueryAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(433);
+
+// Suggestion container animation.
+constexpr int kSuggestionContainerAnimationTranslationDip = 22;
+constexpr base::TimeDelta kSuggestionContainerAnimationTranslationDelay =
+    base::TimeDelta::FromMilliseconds(66);
+constexpr base::TimeDelta kSuggestionContainerAnimationTranslationDuration =
+    base::TimeDelta::FromMilliseconds(416);
+constexpr base::TimeDelta kSuggestionContainerAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(149);
+constexpr base::TimeDelta kSuggestionContainerAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kSuggestionContainerAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(100);
 
 // StackLayout -----------------------------------------------------------------
 
@@ -103,6 +122,14 @@ AssistantMainStage::AssistantMainStage(
           std::make_unique<ui::CallbackLayerAnimationObserver>(
               /*animation_ended_callback=*/base::BindRepeating(
                   &AssistantMainStage::OnActiveQueryExitAnimationEnded,
+                  base::Unretained(this)))),
+      suggestion_container_animation_observer_(
+          std::make_unique<ui::CallbackLayerAnimationObserver>(
+              /*animation_started_callback=*/base::BindRepeating(
+                  &AssistantMainStage::OnSuggestionContainerAnimationStarted,
+                  base::Unretained(this)),
+              /*animation_ended_callback=*/base::BindRepeating(
+                  &AssistantMainStage::OnSuggestionContainerAnimationEnded,
                   base::Unretained(this)))) {
   InitLayout(assistant_controller);
 
@@ -151,6 +178,12 @@ void AssistantMainStage::OnViewVisibilityChanged(views::View* view) {
 
 void AssistantMainStage::InitLayout(AssistantController* assistant_controller) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  // The children of AssistantMainStage will be animated on their own layers and
+  // we want them to be clipped by their parent layer.
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetMasksToBounds(true);
 
   InitContentLayoutContainer(assistant_controller);
   InitQueryLayoutContainer(assistant_controller);
@@ -332,6 +365,18 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
 
     query_layout_container_->AddChildView(pending_query_view_);
 
+    if (assistant::ui::kIsMotionSpecEnabled) {
+      using namespace assistant::util;
+
+      // Starting from 0% opacity...
+      pending_query_view_->layer()->SetOpacity(0.f);
+
+      // ...animate the pending query view to 100% opacity.
+      pending_query_view_->layer()->GetAnimator()->StartAnimation(
+          CreateLayerAnimationSequence(
+              CreateOpacityElement(1.f, kPendingQueryAnimationFadeInDuration)));
+    }
+
     UpdateSuggestionContainer();
   }
 
@@ -399,14 +444,78 @@ void AssistantMainStage::UpdateQueryViewTransform(views::View* query_view) {
   query_view->layer()->SetTransform(transform);
 }
 
-// TODO(dmblack): Animate visibility changes.
 void AssistantMainStage::UpdateSuggestionContainer() {
   // The suggestion container is only visible when the committed/pending query
   // views are not. When it is not visible, it should not process events.
   bool visible = !committed_query_view_ && !pending_query_view_;
-  suggestion_container_->layer()->SetOpacity(visible ? 1.f : 0.f);
-  suggestion_container_->set_can_process_events_within_subtree(visible ? true
-                                                                       : false);
+
+  if (!assistant::ui::kIsMotionSpecEnabled) {
+    suggestion_container_->layer()->SetOpacity(visible ? 1.f : 0.f);
+    suggestion_container_->set_can_process_events_within_subtree(
+        visible ? true : false);
+    return;
+  }
+
+  using namespace assistant::util;
+
+  if (visible) {
+    // The suggestion container will animate up into position so we need to set
+    // an initial offset transformation from which to animate.
+    gfx::Transform transform;
+    transform.Translate(0, kSuggestionContainerAnimationTranslationDip);
+    suggestion_container_->layer()->SetTransform(transform);
+
+    // Animate the entry of the suggestion container.
+    StartLayerAnimationSequencesTogether(
+        suggestion_container_->layer()->GetAnimator(),
+        {// Animate the translation with delay.
+         CreateLayerAnimationSequence(
+             ui::LayerAnimationElement::CreatePauseElement(
+                 ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
+                 kSuggestionContainerAnimationTranslationDelay),
+             CreateTransformElement(
+                 gfx::Transform(),
+                 kSuggestionContainerAnimationTranslationDuration,
+                 gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+         // Animate the fade in with delay.
+         CreateLayerAnimationSequence(
+             ui::LayerAnimationElement::CreatePauseElement(
+                 ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                 kSuggestionContainerAnimationFadeInDelay),
+             CreateOpacityElement(
+                 1.f, kSuggestionContainerAnimationFadeInDuration))},
+        // Observer animation start/end events.
+        suggestion_container_animation_observer_.get());
+  } else {
+    // Animate the exit of the suggestion container.
+    StartLayerAnimationSequence(
+        suggestion_container_->layer()->GetAnimator(),
+        // Animate fade out.
+        CreateLayerAnimationSequence(CreateOpacityElement(
+            0.f, kSuggestionContainerAnimationFadeOutDuration)),
+        // Observe animation start/end events.
+        suggestion_container_animation_observer_.get());
+  }
+
+  // Set the observer to active so that we'll receive start/end events.
+  suggestion_container_animation_observer_->SetActive();
+}
+
+void AssistantMainStage::OnSuggestionContainerAnimationStarted(
+    const ui::CallbackLayerAnimationObserver& observer) {
+  // The suggestion container should not process events while animating.
+  suggestion_container_->set_can_process_events_within_subtree(false);
+}
+
+bool AssistantMainStage::OnSuggestionContainerAnimationEnded(
+    const ui::CallbackLayerAnimationObserver& observer) {
+  // The suggestion container should only process events when visible. It is
+  // only visible when there is no committed or pending query view.
+  suggestion_container_->set_can_process_events_within_subtree(
+      !committed_query_view_ && !pending_query_view_);
+
+  // Return false so that the observer does not destroy itself.
+  return false;
 }
 
 }  // namespace ash
