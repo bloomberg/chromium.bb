@@ -19528,6 +19528,7 @@ Called by update_net_error_codes.py.-->
   <int value="2520" label="AddDocumentLevelPassiveDefaultWheelEventListener"/>
   <int value="2521"
       label="DocumentLevelPassiveDefaultEventListenerPreventedWheel"/>
+  <int value="2522" label="ShapeDetectionAPI"/>
 </enum>
 
 <enum name="FeedbackSource">
