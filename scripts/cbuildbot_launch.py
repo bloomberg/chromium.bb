@@ -330,7 +330,7 @@ def ShouldFixBotoCerts(options):
       return major <= 9667  # This is the newest known to be failing.
 
     return False
-  except Exception, e:
+  except Exception as e:
     logging.warning(' failed: %s', e)
     # Conservatively continue without the fix.
     return False
