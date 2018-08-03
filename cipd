@@ -59,7 +59,11 @@ case $UNAME in
     ARCH=386
     ;;
   mips*)
+    # detect mips64le vs mips64.
     ARCH=$UNAME
+    if lscpu | grep -q "Little Endian"; then
+      ARCH+=le
+    fi
     ;;
   *)
     echo "UNKNOWN Machine architecture: $UNAME"
