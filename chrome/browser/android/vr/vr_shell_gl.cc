@@ -2267,8 +2267,11 @@ void VrShellGl::PerformControllerActionForTesting(
           std::make_unique<ControllerDelegateForTesting>(ui_.get());
     controller_delegate_for_testing_.swap(controller_delegate_);
   }
-  static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
-      ->QueueControllerActionForTesting(controller_input);
+  if (controller_input.action !=
+      VrControllerTestAction::kEnableMockedController) {
+    static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
+        ->QueueControllerActionForTesting(controller_input);
+  }
 }
 
 void VrShellGl::ReportUiStatusForTesting(const base::TimeTicks& current_time,
