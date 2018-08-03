@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
+#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
@@ -178,19 +179,25 @@ ScriptPromise XRDevice::requestSession(
       options.environmentIntegration();
   session_options->has_user_activation = has_user_activation;
 
+  XRPresentationContext* output_context =
+      options.hasOutputContext() ? options.outputContext() : nullptr;
+
   // TODO(offenwanger): Once device activation is sorted out for WebXR, either
   // pass in the value for metrics, or remove the value as soon as legacy API
   // has been removed.
   display_->RequestSession(
       std::move(session_options), false /* triggered by display activate */,
       WTF::Bind(&XRDevice::OnRequestSessionReturned, WrapWeakPersistent(this),
-                WrapPersistent(resolver), options));
+                WrapPersistent(resolver), WrapPersistent(output_context),
+                options.environmentIntegration(), options.immersive()));
   return promise;
 }
 
 void XRDevice::OnRequestSessionReturned(
     ScriptPromiseResolver* resolver,
-    const XRSessionCreationOptions& options,
+    XRPresentationContext* output_context,
+    bool environment_integration,
+    bool immersive,
     device::mojom::blink::XRSessionPtr session_ptr) {
   if (!session_ptr) {
     DOMException* exception = DOMException::Create(
@@ -199,22 +206,15 @@ void XRDevice::OnRequestSessionReturned(
     return;
   }
 
-  XRPresentationContext* output_context = nullptr;
-  if (options.hasOutputContext()) {
-    output_context = options.outputContext();
-  }
-
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
-  if (options.environmentIntegration()) {
+  if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
-  }
 
-  XRSession* session =
-      new XRSession(this, options.immersive(), options.environmentIntegration(),
-                    output_context, blend_mode);
+  XRSession* session = new XRSession(this, immersive, environment_integration,
+                                     output_context, blend_mode);
   sessions_.insert(session);
 
-  if (options.immersive()) {
+  if (immersive) {
     frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));

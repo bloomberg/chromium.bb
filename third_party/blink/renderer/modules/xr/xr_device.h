@@ -88,7 +88,9 @@ class XRDevice final : public ScriptWrappable,
   const char* checkSessionSupport(const XRSessionCreationOptions&) const;
 
   void OnRequestSessionReturned(ScriptPromiseResolver* resolver,
-                                const XRSessionCreationOptions& options,
+                                XRPresentationContext* output_context,
+                                bool environment_integration,
+                                bool immersive,
                                 device::mojom::blink::XRSessionPtr session);
   void OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
                                  bool supports_session);
