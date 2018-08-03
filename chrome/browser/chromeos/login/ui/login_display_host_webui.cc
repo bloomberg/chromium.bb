@@ -348,6 +348,23 @@ class CloseAfterCommit : public ui::CompositorObserver,
   DISALLOW_COPY_AND_ASSIGN(CloseAfterCommit);
 };
 
+// Returns true if we have default audio device.
+bool CanPlayStartupSound() {
+  chromeos::AudioDevice device;
+  bool found =
+      chromeos::CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device);
+  return found && device.stable_device_id_version &&
+         device.type != chromeos::AudioDeviceType::AUDIO_TYPE_OTHER;
+}
+
+// Returns true if it is too late to play startup sound.
+bool StartupSoundOutdated(base::TimeTicks login_prompt_visible_time) {
+  // Don't try to play startup sound if login prompt has been already visible
+  // for a long time.
+  return base::TimeTicks::Now() - login_prompt_visible_time >
+         base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -851,7 +868,7 @@ void LoginDisplayHostWebUI::EmitLoginPromptVisibleCalled() {
 // LoginDisplayHostWebUI, chromeos::CrasAudioHandler::AudioObserver:
 
 void LoginDisplayHostWebUI::OnActiveOutputNodeChanged() {
-  TryToPlayOobeStartupSound();
+  PlayStartupSoundIfPossible();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1102,25 +1119,8 @@ void LoginDisplayHostWebUI::SetOobeProgressBarVisible(bool visible) {
 }
 
 void LoginDisplayHostWebUI::TryToPlayOobeStartupSound() {
-  if (is_voice_interaction_oobe_)
-    return;
-
-  if (oobe_startup_sound_played_ || login_prompt_visible_time_.is_null() ||
-      !CrasAudioHandler::Get()->GetPrimaryActiveOutputNode()) {
-    return;
-  }
-
-  oobe_startup_sound_played_ = true;
-
-  // Don't try play startup sound if login prompt is already visible
-  // for a long time or can't be played.
-  if (base::TimeTicks::Now() - login_prompt_visible_time_ >
-      base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs)) {
-    return;
-  }
-
-  AccessibilityManager::Get()->PlayEarcon(SOUND_STARTUP,
-                                          PlaySoundOption::ALWAYS);
+  need_to_play_startup_sound_ = true;
+  PlayStartupSoundIfPossible();
 }
 
 void LoginDisplayHostWebUI::OnLoginPromptVisible() {
@@ -1191,6 +1191,26 @@ void LoginDisplayHostWebUI::OnCancelPasswordChangedFlow() {}
 
 void LoginDisplayHostWebUI::UpdateAddUserButtonStatus() {
   NOTREACHED();
+}
+
+void LoginDisplayHostWebUI::PlayStartupSoundIfPossible() {
+  if (!need_to_play_startup_sound_ || oobe_startup_sound_played_)
+    return;
+
+  if (login_prompt_visible_time_.is_null())
+    return;
+
+  if (is_voice_interaction_oobe_ || !CanPlayStartupSound())
+    return;
+
+  need_to_play_startup_sound_ = false;
+  oobe_startup_sound_played_ = true;
+
+  if (StartupSoundOutdated(login_prompt_visible_time_))
+    return;
+
+  AccessibilityManager::Get()->PlayEarcon(SOUND_STARTUP,
+                                          PlaySoundOption::ALWAYS);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
