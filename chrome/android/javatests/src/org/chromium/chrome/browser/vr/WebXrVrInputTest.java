@@ -129,11 +129,11 @@ public class WebXrVrInputTest {
         framework.executeStepAndWait("stepVerifyNoInitialTaps()");
         framework.enterSessionWithUserGestureOrFail();
         VrTransitionUtils.waitForOverlayGone();
-        // Wait on VrShellImpl to say that its parent consumed the touch event
+        // Wait on VrShell to say that its parent consumed the touch event.
         // Set to 2 because there's an ACTION_DOWN followed by ACTION_UP
         final CountDownLatch touchRegisteredLatch = new CountDownLatch(2);
-        ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
-                .setOnDispatchTouchEventForTesting(new OnDispatchTouchEventCallback() {
+        TestVrShellDelegate.getVrShellForTesting().setOnDispatchTouchEventForTesting(
+                new OnDispatchTouchEventCallback() {
                     @Override
                     public void onDispatchTouchEvent(boolean parentConsumed) {
                         if (!parentConsumed) Assert.fail("Parent did not consume event");
@@ -141,7 +141,7 @@ public class WebXrVrInputTest {
                     }
                 });
         TouchCommon.singleClickView(mTestRule.getActivity().getWindow().getDecorView());
-        Assert.assertTrue("VrShellImpl did not dispatch touches",
+        Assert.assertTrue("VrShell did not dispatch touches",
                 touchRegisteredLatch.await(POLL_TIMEOUT_LONG_MS * 10, TimeUnit.MILLISECONDS));
         framework.executeStepAndWait("stepVerifyNoAdditionalTaps()");
         framework.endTest();
@@ -271,10 +271,10 @@ public class WebXrVrInputTest {
         int x = mWebVrTestFramework.getFirstTabContentView().getWidth() / 2;
         int y = mWebVrTestFramework.getFirstTabContentView().getHeight() / 2;
         // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
-        // (VrShellImpl) is flaky. Sometimes the events just don't get routed to the presentation
+        // (VrShell) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
-        final View presentationView = ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
-                                              .getPresentationViewForTesting();
+        final View presentationView =
+                TestVrShellDelegate.getVrShellForTesting().getPresentationViewForTesting();
         long downTime = sendScreenTouchDown(presentationView, x, y);
         mWebVrTestFramework.waitOnJavaScriptStep();
         sendScreenTouchUp(presentationView, x, y, downTime);
@@ -305,10 +305,10 @@ public class WebXrVrInputTest {
         int x = mWebXrVrTestFramework.getFirstTabContentView().getWidth() / 2;
         int y = mWebXrVrTestFramework.getFirstTabContentView().getHeight() / 2;
         // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
-        // (VrShellImpl) is flaky. Sometimes the events just don't get routed to the presentation
+        // (VrShell) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
-        final View presentationView = ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
-                                              .getPresentationViewForTesting();
+        final View presentationView =
+                TestVrShellDelegate.getVrShellForTesting().getPresentationViewForTesting();
 
         // Tap the screen a bunch of times and make sure that they're all registered.
         spamScreenTaps(presentationView, x, y, numIterations);
@@ -682,8 +682,8 @@ public class WebXrVrInputTest {
 
             View presentationView;
             if (webxrPresent) {
-                presentationView = ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
-                                           .getPresentationViewForTesting();
+                presentationView =
+                        TestVrShellDelegate.getVrShellForTesting().getPresentationViewForTesting();
             } else {
                 presentationView = mTestRule.getActivity().getWindow().getDecorView();
             }

@@ -147,8 +147,7 @@ public class TestVrShellDelegate extends VrShellDelegate {
     protected boolean createVrShell() {
         boolean result = super.createVrShell();
         if (result && mOnVSyncPausedCallback != null) {
-            ((VrShellImpl) getVrShellForTesting())
-                    .setOnVSyncPausedForTesting(mOnVSyncPausedCallback);
+            getVrShellForTesting().setOnVSyncPausedForTesting(mOnVSyncPausedCallback);
         }
         return result;
     }

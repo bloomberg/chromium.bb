@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.VrCoreInfo;
-import org.chromium.chrome.browser.vr.mock.MockVrCoreVersionCheckerImpl;
+import org.chromium.chrome.browser.vr.mock.MockVrCoreVersionChecker;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -42,8 +42,8 @@ public class VrShellDelegateUtils {
      * @return The MockVrCoreVersionCheckerImpl that was set as VrShellDelegate's
      *        VrCoreVersionChecker instance.
      */
-    public static MockVrCoreVersionCheckerImpl setVrCoreCompatibility(int compatibility) {
-        final MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
+    public static MockVrCoreVersionChecker setVrCoreCompatibility(int compatibility) {
+        final MockVrCoreVersionChecker mockChecker = new MockVrCoreVersionChecker();
         mockChecker.setMockReturnValue(new VrCoreInfo(null, compatibility));
         ThreadUtils.runOnUiThreadBlocking(() -> {
             VrShellDelegateUtils.getDelegateInstance().overrideVrCoreVersionCheckerForTesting(

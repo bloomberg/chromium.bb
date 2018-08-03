@@ -64,9 +64,9 @@ public class VrBrowserWebInputEditingTest {
                 PAGE_LOAD_TIMEOUT_S);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
-        VrShellImpl vrShellImpl = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
+        VrShell vrShell = TestVrShellDelegate.getVrShellForTesting();
         MockBrowserKeyboardInterface keyboard = new MockBrowserKeyboardInterface();
-        vrShellImpl.getInputMethodManageWrapperForTesting().setBrowserKeyboardInterfaceForTesting(
+        vrShell.getInputMethodManageWrapperForTesting().setBrowserKeyboardInterfaceForTesting(
                 keyboard);
 
         // The webpage reacts to the first controller click by focusing its input field. Verify that
@@ -84,7 +84,7 @@ public class VrBrowserWebInputEditingTest {
 
         // Add text to the input field via the input connection and verify that the keyboard
         // interface is called to update the indices.
-        VrInputConnection ic = vrShellImpl.getVrInputConnectionForTesting();
+        VrInputConnection ic = vrShell.getVrInputConnectionForTesting();
         TextEditAction[] edits = {new TextEditAction(TextEditActionType.COMMIT_TEXT, "i", 1)};
         ic.onKeyboardEdit(edits);
         // Inserting 'i' should move the cursor by one character and there should be no composition.

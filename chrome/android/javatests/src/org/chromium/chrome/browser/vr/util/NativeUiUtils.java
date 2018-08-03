@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.UserFriendlyElementName;
 import org.chromium.chrome.browser.vr.VrControllerTestAction;
 import org.chromium.chrome.browser.vr.VrDialog;
-import org.chromium.chrome.browser.vr.VrShellImpl;
+import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrUiTestActivityResult;
 import org.chromium.chrome.browser.vr.VrViewContainer;
 
@@ -165,7 +165,7 @@ public class NativeUiUtils {
                     if (frameLatch.getCount() == 0) return;
                     Choreographer.getInstance().postFrameCallback(this);
                     frameLatch.countDown();
-                };
+                }
             };
             Choreographer.getInstance().postFrameCallback(callback);
         });
@@ -173,7 +173,7 @@ public class NativeUiUtils {
     }
 
     private static void clickFallbackUiButton(int buttonId) throws InterruptedException {
-        VrShellImpl vrShell = (VrShellImpl) (TestVrShellDelegate.getVrShellForTesting());
+        VrShell vrShell = TestVrShellDelegate.getVrShellForTesting();
         VrViewContainer viewContainer = vrShell.getVrViewContainerForTesting();
         Assert.assertTrue(
                 "VrViewContainer does not have children", viewContainer.getChildCount() > 0);
