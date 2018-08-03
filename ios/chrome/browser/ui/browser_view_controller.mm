@@ -5369,8 +5369,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // UI Refresh animation.
   if (IsUIRefreshPhase1Enabled()) {
+    // The animation will have the same frame as |self|, minus the status bar,
+    // so shift it down and reduce its height accordingly.
     CGRect frame = self.view.bounds;
     frame.origin.y += StatusBarHeight();
+    frame.size.height -= StatusBarHeight();
     frame = [self.contentArea convertRect:frame fromView:self.view];
     ForegroundTabAnimationView* animatedView =
         [[ForegroundTabAnimationView alloc] initWithFrame:frame];
