@@ -119,7 +119,7 @@ namespace service_manager {
 class ServiceProcessLauncher;
 }
 
-namespace shell_integration {
+namespace shell_integration_linux {
 class LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
 }
 
@@ -329,7 +329,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class mojo::core::ScopedIPCSupport;
   friend class net::MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
   friend class rlz_lib::FinancialPing;
-  friend class shell_integration::LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
+  friend class shell_integration_linux::
+      LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
   friend class webrtc::DesktopConfigurationMonitor;
   friend class content::ServiceWorkerSubresourceLoader;
   friend class viz::HostGpuMemoryBufferManager;

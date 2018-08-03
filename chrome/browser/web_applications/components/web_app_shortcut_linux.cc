@@ -79,7 +79,8 @@ std::string CreateShortcutIcon(const gfx::ImageFamily& icon_images,
     argv.push_back(temp_file_path.value());
     argv.push_back(icon_name);
     int exit_code;
-    if (!shell_integration::LaunchXdgUtility(argv, &exit_code) || exit_code) {
+    if (!shell_integration_linux::LaunchXdgUtility(argv, &exit_code) ||
+        exit_code) {
       LOG(WARNING) << "Could not install icon " << icon_name << ".png at size "
                    << width << ".";
     }
@@ -172,7 +173,7 @@ bool CreateShortcutInApplicationsMenu(const base::FilePath& shortcut_filename,
     argv.push_back(temp_directory_path.value());
   argv.push_back(temp_file_path.value());
   int exit_code;
-  shell_integration::LaunchXdgUtility(argv, &exit_code);
+  shell_integration_linux::LaunchXdgUtility(argv, &exit_code);
   return exit_code == 0;
 }
 
@@ -220,7 +221,7 @@ void DeleteShortcutInApplicationsMenu(
     argv.push_back(directory_filename.value());
   argv.push_back(shortcut_filename.value());
   int exit_code;
-  shell_integration::LaunchXdgUtility(argv, &exit_code);
+  shell_integration_linux::LaunchXdgUtility(argv, &exit_code);
 }
 
 bool CreateDesktopShortcut(
