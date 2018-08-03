@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 
 #if !defined(OS_CHROMEOS)
@@ -68,8 +69,8 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnPrimaryAccountCleared(
         const AccountInfo& previous_primary_account_info) {}
 
-    // TODO(blundell): Eventually we might need a callback for failure to log in
-    // to the primary account.
+    // TODO(https://crbug/869418): Eventually we might need a callback for
+    // failure to log in to the primary account.
 
     // Called when a new refresh token is associated with |account_info|.
     // |is_valid| indicates whether the new refresh token is valid.
@@ -127,6 +128,29 @@ class IdentityManager : public SigninManagerBase::Observer,
   // cached information. Simple convenience wrapper over checking whether the
   // primary account info has a valid account ID.
   bool HasPrimaryAccount() const;
+
+// For ChromeOS, mutation of primary account state is not managed externally.
+#if !defined(OS_CHROMEOS)
+  // Describes options for handling of tokens upon calling
+  // ClearPrimaryAccount().
+  enum class ClearAccountTokensAction{
+      // Default action (keep or remove tokens) based on internal policy.
+      kDefault,
+      // Keeps all account tokens for all accounts.
+      kKeepAll,
+      // Removes all accounts tokens for all accounts.
+      kRemoveAll,
+  };
+
+  // Clears the primary account, removing the preferences, and canceling all
+  // auth in progress. May optionally remove account tokens - see
+  // ClearAccountTokensAction. See definitions of signin_metrics::ProfileSignout
+  // and signin_metrics::SignoutDelete for usage. Observers will be notified via
+  // OnPrimaryAccountCleared() when complete.
+  void ClearPrimaryAccount(ClearAccountTokensAction token_action,
+                           signin_metrics::ProfileSignout signout_source_metric,
+                           signin_metrics::SignoutDelete signout_delete_metric);
+#endif  // defined(OS_CHROMEOS)
 
   // Provides access to the latest cached information of all accounts that have
   // refresh tokens.
