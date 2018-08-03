@@ -273,8 +273,6 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
       submit_time,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  UMA_HISTOGRAM_ENUMERATION(
-      "Compositing.CompositorFrameSinkSupport.SubmitResult", result);
   DCHECK_EQ(result, SubmitResult::ACCEPTED);
 }
 
@@ -295,7 +293,7 @@ void CompositorFrameSinkSupport::DidDeleteSharedBitmap(
   owned_bitmaps_.erase(id);
 }
 
-SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
+SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
     base::Optional<HitTestRegionList> hit_test_region_list,
@@ -571,6 +569,20 @@ Surface* CompositorFrameSinkSupport::CreateSurface(
   return surface_manager_->CreateSurface(
       weak_factory_.GetWeakPtr(), surface_info,
       frame_sink_manager_->GetPrimaryBeginFrameSource(), needs_sync_tokens_);
+}
+
+SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
+    const LocalSurfaceId& local_surface_id,
+    CompositorFrame frame,
+    base::Optional<HitTestRegionList> hit_test_region_list,
+    uint64_t submit_time,
+    mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
+  SubmitResult result = MaybeSubmitCompositorFrameInternal(
+      local_surface_id, std::move(frame), std::move(hit_test_region_list),
+      submit_time, std::move(callback));
+  UMA_HISTOGRAM_ENUMERATION(
+      "Compositing.CompositorFrameSinkSupport.SubmitResult", result);
+  return result;
 }
 
 void CompositorFrameSinkSupport::AttachCaptureClient(
