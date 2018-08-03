@@ -33,10 +33,12 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_type.h"
 #include "ipc/message_filter.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
@@ -320,6 +322,10 @@ class ToRenderFrameHost {
 RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_view_host);
 RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents);
 
+// Semi-deprecated: in new code, prefer ExecJs() -- it works the same, but has
+// better error handling. (Note: still use ExecuteScript() on pages with a
+// Content Security Policy).
+//
 // Executes the passed |script| in the specified frame with the user gesture.
 //
 // Appends |domAutomationController.send(...)| to the end of |script| and waits
@@ -335,8 +341,9 @@ RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents);
 // with a malformed or unexpected value).
 //
 // See also:
-// - ExecuteScriptAsync
-// - ExecuteScriptAndExtractBool/Int/String/etc.
+// - ExecJs (preferred replacement with better errror handling)
+// - EvalJs (if you want to retrieve a value)
+// - ExecuteScriptAsync (if you don't want to block for |script| completion)
 // - DOMMessageQueue (to manually wait for domAutomationController.send(...))
 bool ExecuteScript(const ToRenderFrameHost& adapter,
                    const std::string& script) WARN_UNUSED_RESULT;
@@ -359,6 +366,10 @@ void ExecuteScriptAsync(const ToRenderFrameHost& adapter,
 // sets |result| to the value passed to "window.domAutomationController.send" by
 // the executed script. They return true on success, false if the script
 // execution failed or did not evaluate to the expected type.
+//
+// Semi-deprecated: Consider using EvalJs() or EvalJsWithManualReply() instead,
+// which handle errors better and don't require an out-param. If the target
+// document doesn't have a CSP. See the comment on EvalJs() for migration tips.
 bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    double* result) WARN_UNUSED_RESULT;
@@ -371,101 +382,6 @@ bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
 bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) WARN_UNUSED_RESULT;
-
-// JsLiteralHelper is a helper class that determines what types are legal to
-// pass to StringifyJsLiteral. Legal types include int, string, StringPiece,
-// char*, bool, double, GURL, url::Origin, and base::Value&&.
-template <typename T>
-struct JsLiteralHelper {
-  // This generic version enables passing any type from which base::Value can be
-  // instantiated. This covers int, string, double, bool, base::Value&&, etc.
-  template <typename U>
-  static base::Value Convert(U&& arg) {
-    return base::Value(std::forward<U>(arg));
-  }
-};
-
-// Specialization allowing GURL to be passed to StringifyJsLiteral.
-template <>
-struct JsLiteralHelper<GURL> {
-  static base::Value Convert(const GURL& url) {
-    return base::Value(url.spec());
-  }
-};
-
-// Specialization allowing url::Origin to be passed to StringifyJsLiteral.
-template <>
-struct JsLiteralHelper<url::Origin> {
-  static base::Value Convert(const url::Origin& url) {
-    return base::Value(url.Serialize());
-  }
-};
-
-// Convert a value to a corresponding JS literal.
-//
-// |value| can be any type explicitly convertible to base::Value
-// (including int/string/StringPiece/char*/double/bool), or any type that
-// JsLiteralHelper is specialized for -- like URL and url::Origin, which emit
-// string literals.
-template <typename T>
-std::string StringifyJsLiteral(T&& value) {
-  using ValueType = std::remove_cv_t<std::remove_reference_t<T>>;
-  base::Value value_as_base_value =
-      JsLiteralHelper<ValueType>::Convert(std::forward<T>(value));
-  std::string value_as_json;
-  CHECK(base::JSONWriter::Write(value_as_base_value, &value_as_json));
-  return value_as_json;
-}
-
-// Base case for StringifyJsLiterals() variadic template (see below).
-inline void StringifyJsLiterals(std::vector<std::string>* list) {}
-
-// Call StringifyJsLiteral() on an arbitrary mix of values, appending the
-// results to |list|. |first| and |rest...| can have any type accepted by
-// StringifyJsLiteral.
-template <typename T, typename... Args>
-void StringifyJsLiterals(std::vector<std::string>* list,
-                         T&& first,
-                         Args&&... rest) {
-  list->push_back(StringifyJsLiteral(std::forward<T>(first)));
-  StringifyJsLiterals(list, std::forward<Args>(rest)...);
-}
-
-// Replaces $1, $2, $3, etc in |script_template| with JS literal values
-// constructed from |args|, similar to base::ReplaceStringPlaceholders.
-//
-// Unlike StringPrintf or manual concatenation, this version will properly
-// escape string content, even if it contains slashes or quotation marks.
-//
-// Each |arg| can be any type explicitly convertible to base::Value
-// (including int/string/StringPiece/char*/double/bool), or any type that
-// JsLiteralHelper is specialized for -- like URL and url::Origin, which emit
-// string literals. |args| can be a mix of different types.
-//
-// Example 1:
-//
-//   GURL page_url("http://example.com");
-//   EXPECT_TRUE(ExecuteScript(
-//       shell(), JsReplace("window.open($1, '_blank');", page_url)));
-//
-// $1 is replaced with a double-quoted JS string literal: "http://example.com".
-// Note that quotes around $1 are not required.
-//
-// Example 2:
-//
-//   bool forced_reload = true;
-//   EXPECT_TRUE(ExecuteScript(
-//       shell(), JsReplace("window.location.reload($1);", forced_reload)));
-//
-// This becomes "window.location.reload(true);" -- because bool values are
-// supported by base::Value. Numbers, lists, and dicts also work.
-template <typename... Args>
-std::string JsReplace(base::StringPiece script_template, Args&&... args) {
-  std::vector<std::string> replacements;
-  StringifyJsLiterals(&replacements, std::forward<Args>(args)...);
-  return base::ReplaceStringPlaceholders(script_template, replacements,
-                                         nullptr);
-}
 
 // Same as above but the script executed without user gesture.
 bool ExecuteScriptWithoutUserGestureAndExtractDouble(
@@ -485,17 +401,328 @@ bool ExecuteScriptWithoutUserGestureAndExtractString(
     const std::string& script,
     std::string* result) WARN_UNUSED_RESULT;
 
-// This function behaves similarly to ExecuteScriptAndExtractBool but runs the
-// the script in the specified isolated world.
-bool ExecuteScriptInIsolatedWorldAndExtractBool(
-    const ToRenderFrameHost& adapter,
-    const int world_id,
-    const std::string& script,
-    bool* result) WARN_UNUSED_RESULT;
+// JsLiteralHelper is a helper class that determines what types are legal to
+// pass to StringifyJsLiteral. Legal types include int, string, StringPiece,
+// char*, bool, double, GURL, url::Origin, and base::Value&&.
+template <typename T>
+struct JsLiteralHelper {
+  // This generic version enables passing any type from which base::Value can be
+  // instantiated. This covers int, string, double, bool, base::Value&&, etc.
+  template <typename U>
+  static base::Value Convert(U&& arg) {
+    return base::Value(std::forward<U>(arg));
+  }
 
-// Walks the frame tree of the specified WebContents and returns the sole frame
-// that matches the specified predicate function. This function will DCHECK if
-// no frames match the specified predicate, or if more than one frame matches.
+  template <>
+  static base::Value Convert(const base::Value& value) {
+    return value.Clone();
+  }
+
+  template <>
+  static base::Value Convert(const base::ListValue& value) {
+    return value.Clone();
+  }
+};
+
+// Specialization allowing GURL to be passed to StringifyJsLiteral.
+template <>
+struct JsLiteralHelper<GURL> {
+  static base::Value Convert(const GURL& url) {
+    return base::Value(url.spec());
+  }
+};
+
+// Specialization allowing url::Origin to be passed to StringifyJsLiteral.
+template <>
+struct JsLiteralHelper<url::Origin> {
+  static base::Value Convert(const url::Origin& url) {
+    return base::Value(url.Serialize());
+  }
+};
+
+// Helper for variadic ListValueOf() -- zero-argument base case.
+inline void ConvertToBaseValueList(base::Value::ListStorage* list) {}
+
+// Helper for variadic ListValueOf() -- case with at least one argument.
+//
+// |first| can be any type explicitly convertible to base::Value
+// (including int/string/StringPiece/char*/double/bool), or any type that
+// JsLiteralHelper is specialized for -- like URL and url::Origin, which emit
+// string literals.
+template <typename T, typename... Args>
+void ConvertToBaseValueList(base::Value::ListStorage* list,
+                            T&& first,
+                            Args&&... rest) {
+  using ValueType = std::remove_cv_t<std::remove_reference_t<T>>;
+  list->push_back(JsLiteralHelper<ValueType>::Convert(std::forward<T>(first)));
+  ConvertToBaseValueList(list, std::forward<Args>(rest)...);
+}
+
+// Construct a list-type base::Value from a mix of arguments.
+//
+// Each |arg| can be any type explicitly convertible to base::Value
+// (including int/string/StringPiece/char*/double/bool), or any type that
+// JsLiteralHelper is specialized for -- like URL and url::Origin, which emit
+// string literals. |args| can be a mix of different types.
+template <typename... Args>
+base::ListValue ListValueOf(Args&&... args) {
+  base::ListValue result;
+  ConvertToBaseValueList(&result.GetList(), std::forward<Args>(args)...);
+  return result;
+}
+
+// Replaces $1, $2, $3, etc in |script_template| with JS literal values
+// constructed from |args|, similar to base::ReplaceStringPlaceholders.
+//
+// Unlike StringPrintf or manual concatenation, this version will properly
+// escape string content, even if it contains slashes or quotation marks.
+//
+// Each |arg| can be any type explicitly convertible to base::Value
+// (including int/string/StringPiece/char*/double/bool), or any type that
+// JsLiteralHelper is specialized for -- like URL and url::Origin, which emit
+// string literals. |args| can be a mix of different types.
+//
+// Example 1:
+//
+//   GURL page_url("http://example.com");
+//   EXPECT_TRUE(ExecuteScript(
+//       shell(), JsReplace("window.open($1, '_blank');", page_url)));
+//
+// $1 is replaced with a double-quoted JS string literal:
+// "http://example.com". Note that quotes around $1 are not required.
+//
+// Example 2:
+//
+//   bool forced_reload = true;
+//   EXPECT_TRUE(ExecuteScript(
+//       shell(), JsReplace("window.location.reload($1);", forced_reload)));
+//
+// This becomes "window.location.reload(true);" -- because bool values are
+// supported by base::Value. Numbers, lists, and dicts also work.
+template <typename... Args>
+std::string JsReplace(base::StringPiece script_template, Args&&... args) {
+  base::Value::ListStorage values;
+  ConvertToBaseValueList(&values, std::forward<Args>(args)...);
+  std::vector<std::string> replacements(values.size());
+  for (size_t i = 0; i < values.size(); ++i) {
+    CHECK(base::JSONWriter::Write(values[i], &replacements[i]));
+  }
+  return base::ReplaceStringPlaceholders(script_template, replacements,
+                                         nullptr);
+}
+
+// The return value of EvalJs. Captures the value (or the error) arising from
+// script execution. When used with gtest assertions, EvalJsResult generally
+// behaves like its wrapped value.
+//
+// An EvalJsResult can be consumed in two ways:
+//
+//  (1) [preferred] Pass it directly to an EXPECT_EQ() macro. It has
+//      overloaded operator== against std::string, bool, int, double,
+//      nullptr_t, and base::Value. This will produce readable assertion
+//      failures if there is a type mismatch, or if an exception was thrown --
+//      errors are never equal to anything.
+//
+//      For boolean results, note that EXPECT_TRUE(..) and EXPECT_FALSE()
+//      won't compile; use EXPECT_EQ(true, ...) instead. This is intentional,
+//      since EXPECT_TRUE() could be read ambiguously as either "expect
+//      successful execution", "expect truthy value of any type", or "expect
+//      boolean value 'true'".
+//
+//  (2) [use when necessary] Extract the underlying value of an expected type,
+//      by calling ExtractString(), ExtractInt(), etc. This will produce a
+//      CHECK failure if the execution didn't result in the appropriate type
+//      of result, or if an exception was thrown.
+struct EvalJsResult {
+  const base::Value value;  // Value; if things went well.
+  const std::string error;  // Error; if things went badly.
+
+  // Creates an ExecuteScript result. If |error| is non-empty, |value| will be
+  // ignored.
+  EvalJsResult(base::Value value, const std::string& error);
+
+  // Copy ctor.
+  EvalJsResult(const EvalJsResult& value);
+
+  // Extract a result value of the requested type, or die trying.
+  //
+  // If there was an error, or if returned value is of a different type, these
+  // will fail with a CHECK. Use Extract methods only when accessing the
+  // result value is necessary; prefer operator== and EXPECT_EQ() instead:
+  // they don't CHECK, and give better error messages.
+  const std::string& ExtractString() const WARN_UNUSED_RESULT;
+  int ExtractInt() const WARN_UNUSED_RESULT;
+  bool ExtractBool() const WARN_UNUSED_RESULT;
+  double ExtractDouble() const WARN_UNUSED_RESULT;
+  base::ListValue ExtractList() const WARN_UNUSED_RESULT;
+};
+
+// Enables EvalJsResult to be used directly in ASSERT/EXPECT macros:
+//
+//    ASSERT_EQ("ab", EvalJs(rfh, "'a' + 'b'"))
+//    ASSERT_EQ(2, EvalJs(rfh, "1 + 1"))
+//    ASSERT_EQ(nullptr, EvalJs(rfh, "var a = 1 + 1"))
+//
+// Error values never return true for any comparison operator.
+template <typename T>
+bool operator==(const T& a, const EvalJsResult& b) {
+  return b.error.empty() && (JsLiteralHelper<T>::Convert(a) == b.value);
+}
+
+template <typename T>
+bool operator!=(const T& a, const EvalJsResult& b) {
+  return b.error.empty() && (JsLiteralHelper<T>::Convert(a) != b.value);
+}
+
+template <typename T>
+bool operator>=(const T& a, const EvalJsResult& b) {
+  return b.error.empty() && (JsLiteralHelper<T>::Convert(a) >= b.value);
+}
+
+template <typename T>
+bool operator<=(const T& a, const EvalJsResult& b) {
+  return b.error.empty() && (JsLiteralHelper<T>::Convert(a) <= b.value);
+}
+
+template <typename T>
+bool operator<(const T& a, const EvalJsResult& b) {
+  return b.error.empty() && (JsLiteralHelper<T>::Convert(a) < b.value);
+}
+
+template <typename T>
+bool operator>(const T& a, const EvalJsResult& b) {
+  return b.error.empty() && (JsLiteralHelper<T>::Convert(a) > b.value);
+}
+
+inline bool operator==(nullptr_t a, const EvalJsResult& b) {
+  return b.error.empty() && (base::Value() == b.value);
+}
+
+// Provides informative failure messages when the result of EvalJs() is
+// used in a failing ASSERT_EQ or EXPECT_EQ.
+void PrintTo(const EvalJsResult& bar, ::std::ostream* os);
+
+enum EvalJsOptions {
+  EXECUTE_SCRIPT_DEFAULT_OPTIONS = 0,
+
+  // By default, EvalJs runs with a user gesture. This bit flag disables
+  // that.
+  EXECUTE_SCRIPT_NO_USER_GESTURE = (1 << 0),
+
+  // This bit controls how the result is obtained. By default, EvalJs's runner
+  // script will call domAutomationController.send() with the completion
+  // value. Setting this bit will disable that, requiring |script| to provide
+  // its own call to domAutomationController.send() instead.
+  EXECUTE_SCRIPT_USE_MANUAL_REPLY = (1 << 1),
+
+  // By default, when the script passed to EvalJs evaluates to a Promise, the
+  // execution continues until the Promise resolves, and the resolved value is
+  // returned. Setting this bit disables such Promise resolution.
+  EXECUTE_SCRIPT_NO_RESOLVE_PROMISES = (1 << 2),
+};
+
+// EvalJs() -- run |script| in |execution_target| and return its value or error.
+//
+// Example simple usage:
+//
+//   EXPECT_EQ("https://abcd.com", EvalJs(render_frame_host, "self.origin"));
+//   EXPECT_EQ(5, EvalJs(render_frame_host, "history.length"));
+//   EXPECT_EQ(false, EvalJs(render_frame_host, "history.length > 5"));
+//
+// The result value of |script| is its "statement completion value" -- the same
+// semantics used by Javascript's own eval() function. If |script|
+// raises exceptions, or is syntactically invalid, an error is captured instead,
+// including a full stack trace.
+//
+// The return value of EvalJs() may be used directly in EXPECT_EQ()
+// macros, and compared for against std::string, int, or any other type for
+// which base::Value has a constructor.  If an error was thrown by the script,
+// any comparison operators will always return false.
+//
+// If |script|'s captured completion value is a Promise, this function blocks
+// until the Promise is resolved. This enables a usage pattern where |script|
+// may call an async function, and use the await keyword to wait for
+// events to fire. For example:
+//
+//   EXPECT_EQ(200, EvalJs(rfh, "(async () => { var resp = (await fetch(url));"
+//                              "               return resp.status; })()");
+//
+// In the above example, the immediately-invoked function expression results in
+// a Promise (that's what async functions do); EvalJs will continue blocking
+// until the Promise resolves, which happens when the async function returns
+// the HTTP status code -- which is expected, in this case, to be 200.
+//
+// Quick migration guide for users of the classic ExecuteScriptAndExtract*():
+//  - If your page has a Content SecurityPolicy, don't migrate [yet]; CSP can
+//    interfere with the internal mechanism used here.
+//  - Get rid of the out-param. You call EvalJs no matter what your return
+//    type is.
+//  - If possible, pass the result of EvalJs() into the second argument of an
+//    EXPECT_EQ macro. This will trigger failure (and a nice message) if an
+//    error occurs.
+//  - Eliminate calls to domAutomationController.send() in |script|. In simple
+//    cases, |script| is just an expression you want the value of.
+//  - When a script previously installed a callback or event listener that
+//    invoked domAutomationController.send(x) asynchronously, there is a choice:
+//     * Preferred, but more rewriting: Use EvalJs with a Promise which
+//       resolves to the value you previously passed to send().
+//     * Less rewriting of |script|, but with some drawbacks: Use
+//       EXECUTE_SCRIPT_USE_MANUAL_REPLY in |options|, or EvalJsWithManualReply.
+//       When specified, this means that |script| must continue to call
+//       domAutomationController.send(). Note that this option option disables
+//       some error-catching safeguards, but you still get the benefit of having
+//       an EvalJsResult that can be passed to EXPECT.
+//
+// Why prefer EvalJs over ExecuteScriptAndExtractString(), etc? Because:
+//
+//  - It's one function, that does everything, and more succinctly.
+//  - Can be used directly in EXPECT_EQ macros (no out- param pointers like
+//    ExecuteScriptAndExtractBool()) -- no temporary variable is required,
+//    usually resulting in fewer lines of code.
+//  - JS exceptions are reliably captured and will appear as C++ assertion
+//    failures.
+//  - JS stack traces arising from exceptions are annotated with the
+//    corresponding source code; this also appears in C++ assertion failures.
+//  - Delayed response is supported via Promises and JS async/await.
+//  - |script| doesn't need to call domAutomationController.send directly.
+//  - When a script doesn't produce a result, it's likely an assertion
+//    failure rather than a hang.  Doesn't get confused by crosstalk with
+//    other callers of domAutomationController.send() -- script results carry
+//    a GUID.
+//  - Lists, dicts, null values, etc. can be returned as base::Values.
+EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
+                    const std::string& script,
+                    int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                    int world_id = ISOLATED_WORLD_ID_GLOBAL) WARN_UNUSED_RESULT;
+
+// Like EvalJs(), except that |script| must call domAutomationController.send()
+// itself. This is the same as specifying the EXECUTE_SCRIPT_USE_MANUAL_REPLY
+// option to EvalJs.
+EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
+                                   const std::string& script,
+                                   int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                                   int world_id = ISOLATED_WORLD_ID_GLOBAL)
+    WARN_UNUSED_RESULT;
+
+// Run a script exactly the same as EvalJs(), but ignore the resulting value.
+//
+// Returns AssertionSuccess() if |script| ran successfully, and
+// AssertionFailure() if |script| contained a syntax error or threw an
+// exception.
+//
+// Unlike ExecuteScript(), this catches syntax errors and uncaught exceptions,
+// and gives more useful error messages when things go wrong. Prefer ExecJs to
+// ExecuteScript(), unless your page has a CSP.
+::testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
+                                  const std::string& script,
+                                  int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                                  int world_id = ISOLATED_WORLD_ID_GLOBAL)
+    WARN_UNUSED_RESULT;
+
+// Walks the frame tree of the specified WebContents and returns the sole
+// frame that matches the specified predicate function. This function will
+// DCHECK if no frames match the specified predicate, or if more than one
+// frame matches.
 RenderFrameHost* FrameMatchingPredicate(
     WebContents* web_contents,
     const base::Callback<bool(RenderFrameHost*)>& predicate);

@@ -10,6 +10,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
@@ -77,6 +78,101 @@ IN_PROC_BROWSER_TEST_F(CrossSiteRedirectorBrowserTest,
 
   EXPECT_EQ(expected_url, observer.navigation_url());
   EXPECT_EQ(observer.redirect_url(), observer.navigation_url());
+}
+
+using EvalJsBrowserTest = ContentBrowserTest;
+
+IN_PROC_BROWSER_TEST_F(EvalJsBrowserTest, EvalJsErrors) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html"));
+
+  {
+    // Test syntax errors.
+    auto result = EvalJs(shell(), "}}");
+    EXPECT_FALSE(true == result);
+    EXPECT_FALSE(false == result);  // EXPECT_FALSE(EvalJs()) shouldn't compile.
+    EXPECT_FALSE(0 == result);
+    EXPECT_FALSE(1 == result);
+    EXPECT_FALSE("}}" == result);  // EXPECT_EQ should fail
+    EXPECT_FALSE("}}" != result);  // As should EXPECT_NE
+    EXPECT_FALSE(nullptr == result);
+
+    std::string expected_error = R"(a JavaScript error:
+SyntaxError: Unexpected token }
+    at eval (<anonymous>)
+    at Promise.resolve.then.script (EvalJs-runner.js:2:34)
+)";
+    EXPECT_FALSE(expected_error == result);
+    EXPECT_EQ(expected_error, result.error);
+  }
+
+  {
+    // Test throwing exceptions.
+    auto result = EvalJs(shell(), "55; throw new Error('whoops');");
+    EXPECT_FALSE(55 == result);
+    EXPECT_FALSE(1 == result);
+    EXPECT_FALSE("whoops" == result);
+
+    std::string expected_error = R"(a JavaScript error:
+Error: whoops
+    at eval (__const_std::string&_script__:1:11):
+        55; throw new Error('whoops');
+                  ^^^^^
+    at eval (<anonymous>)
+    at Promise.resolve.then.script (EvalJs-runner.js:2:34)
+)";
+    EXPECT_FALSE(expected_error == result);
+    EXPECT_EQ(expected_error, result.error);
+  }
+
+  {
+    // Test reference errors in a multi-line script.
+    auto result = EvalJs(shell(), R"(
+    22;
+    var x = 200 + 300;
+    var y = z + x;
+    'sweet';)");
+    EXPECT_FALSE(22 == result);
+    EXPECT_FALSE("sweet" == result);
+
+    std::string expected_error = R"(a JavaScript error:
+ReferenceError: z is not defined
+    at eval (__const_std::string&_script__:4:13):
+            var y = z + x;
+                    ^^^^^
+    at eval (<anonymous>)
+    at Promise.resolve.then.script (EvalJs-runner.js:2:34)
+)";
+    EXPECT_FALSE(expected_error == result);
+    EXPECT_EQ(expected_error, result.error);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(EvalJsBrowserTest, EvalJsWithManualReply) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html"));
+
+  std::string script = "window.domAutomationController.send(20); 'hi';";
+
+  // Calling domAutomationController is required for EvalJsWithManualReply.
+  EXPECT_EQ(20, EvalJsWithManualReply(shell(), script));
+
+  // Calling domAutomationController is an error with EvalJs.
+  auto result = EvalJs(shell(), script);
+  EXPECT_FALSE(20 == result);
+  EXPECT_FALSE("hi" == result);
+  EXPECT_THAT(result.error,
+              ::testing::StartsWith(
+                  "Internal Error: expected a 2-element list of the form "));
+  EXPECT_THAT(
+      result.error,
+      ::testing::EndsWith("This is potentially because a script tried to call "
+                          "domAutomationController.send itself -- that is only "
+                          "allowed when using EvalJsWithManualReply().  When "
+                          "using EvalJs(), result values are just the result "
+                          "of calling eval() on the script -- the completion "
+                          "value is the value of the last executed statement.  "
+                          "When using ExecJs(), there is no result value."));
 }
 
 }  // namespace content

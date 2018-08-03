@@ -376,12 +376,11 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   // Wait for the page load to complete (this will be a distiller error page).
   content::WaitForLoadStop(contents);
 
-  bool result;
   // Execute in isolated world; where all distiller scripts are run.
-  EXPECT_TRUE(content::ExecuteScriptInIsolatedWorldAndExtractBool(
-      contents, ISOLATED_WORLD_ID_CHROME_INTERNAL, kTestDistillerObject,
-      &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, content::EvalJsWithManualReply(
+                      contents, kTestDistillerObject,
+                      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                      ISOLATED_WORLD_ID_CHROME_INTERNAL));
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
