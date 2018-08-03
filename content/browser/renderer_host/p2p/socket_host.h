@@ -13,13 +13,15 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/p2p_socket_type.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/datagram_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/p2p_socket_type.h"
-#include "services/network/public/mojom/p2p.mojom.h"
+
+namespace IPC {
+class Sender;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -29,26 +31,27 @@ namespace network {
 class ProxyResolvingClientSocketFactory;
 }
 
+namespace rtc {
+struct PacketOptions;
+}
+
 namespace content {
-class P2PSocketDispatcherHost;
 class P2PMessageThrottler;
 
 // Base class for P2P sockets.
-class CONTENT_EXPORT P2PSocketHost : public network::mojom::P2PSocket {
+class CONTENT_EXPORT P2PSocketHost {
  public:
   static const int kStunHeaderSize = 20;
-  static const size_t kMaximumPacketSize = 32768;
   // Creates P2PSocketHost of the specific type.
-  static P2PSocketHost* Create(P2PSocketDispatcherHost* socket_dispatcher_host,
-                               network::mojom::P2PSocketClientPtr client,
-                               network::mojom::P2PSocketRequest socket,
-                               network::P2PSocketType type,
+  static P2PSocketHost* Create(IPC::Sender* message_sender,
+                               int socket_id,
+                               P2PSocketType type,
                                net::URLRequestContextGetter* url_context,
                                network::ProxyResolvingClientSocketFactory*
                                    proxy_resolving_socket_factory,
                                P2PMessageThrottler* throttler);
 
-  ~P2PSocketHost() override;
+  virtual ~P2PSocketHost();
 
   // Initalizes the socket. Returns false when initialization fails.
   // |min_port| and |max_port| specify the valid range of allowed ports.
@@ -62,16 +65,27 @@ class CONTENT_EXPORT P2PSocketHost : public network::mojom::P2PSocket {
   virtual bool Init(const net::IPEndPoint& local_address,
                     uint16_t min_port,
                     uint16_t max_port,
-                    const network::P2PHostAndIPEndPoint& remote_address) = 0;
+                    const P2PHostAndIPEndPoint& remote_address) = 0;
+
+  // Sends |data| on the socket to |to|.
+  virtual void Send(
+      const net::IPEndPoint& to,
+      const std::vector<char>& data,
+      const rtc::PacketOptions& options,
+      uint64_t packet_id,
+      const net::NetworkTrafficAnnotationTag traffic_annotation) = 0;
+
+  virtual std::unique_ptr<P2PSocketHost> AcceptIncomingTcpConnection(
+      const net::IPEndPoint& remote_address,
+      int id) = 0;
+
+  virtual bool SetOption(P2PSocketOption option, int value) = 0;
 
   void StartRtpDump(
       bool incoming,
       bool outgoing,
       const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback);
   void StopRtpDump(bool incoming, bool outgoing);
-
-  network::mojom::P2PSocketClientPtr ReleaseClientForTesting();
-  network::mojom::P2PSocketRequest ReleaseBindingForTesting();
 
  protected:
   friend class P2PSocketHostTcpTestBase;
@@ -112,22 +126,20 @@ class CONTENT_EXPORT P2PSocketHost : public network::mojom::P2PSocket {
     STATE_ERROR,
   };
 
-  P2PSocketHost(P2PSocketDispatcherHost* socket_dispatcher_host,
-                network::mojom::P2PSocketClientPtr client,
-                network::mojom::P2PSocketRequest socket,
+  P2PSocketHost(IPC::Sender* message_sender,
+                int socket_id,
                 ProtocolType protocol_type);
 
   // Verifies that the packet |data| has a valid STUN header. In case
   // of success stores type of the message in |type|.
-  static bool GetStunPacketType(const int8_t* data,
-                                int data_size,
+  static bool GetStunPacketType(const char* data, int data_size,
                                 StunMessageType* type);
   static bool IsRequestOrResponse(StunMessageType type);
 
   static void ReportSocketError(int result, const char* histogram_name);
 
   // Calls |packet_dump_callback_| to record the RTP header.
-  void DumpRtpPacket(const int8_t* packet, size_t length, bool incoming);
+  void DumpRtpPacket(const char* packet, size_t length, bool incoming);
 
   // A helper to dump the packet on the IO thread.
   void DumpRtpPacketOnIOThread(std::unique_ptr<uint8_t[]> packet_header,
@@ -141,9 +153,8 @@ class CONTENT_EXPORT P2PSocketHost : public network::mojom::P2PSocket {
   void IncrementDelayedBytes(uint32_t size);
   void DecrementDelayedBytes(uint32_t size);
 
-  P2PSocketDispatcherHost* socket_dispatcher_host_;
-  network::mojom::P2PSocketClientPtr client_;
-  mojo::Binding<network::mojom::P2PSocket> binding_;
+  IPC::Sender* message_sender_;
+  int id_;
   State state_;
   bool dump_incoming_rtp_packet_;
   bool dump_outgoing_rtp_packet_;
@@ -152,7 +163,6 @@ class CONTENT_EXPORT P2PSocketHost : public network::mojom::P2PSocket {
   ProtocolType protocol_type_;
 
  private:
-  void OnConnectionError();
   // Track total delayed packets for calculating how many packets are
   // delayed by system at the end of call.
   uint32_t send_packets_delayed_total_;
