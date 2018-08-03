@@ -37,7 +37,6 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/fileapi/file_system_manager_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -50,6 +49,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_visual_properties.h"
@@ -105,7 +105,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -2389,21 +2388,6 @@ void PwnMessageHelper::RegisterBlobURL(RenderProcessHost* process,
       process->GetChannel(), BlobHostMsg_RegisterPublicURL(url, uuid));
 }
 
-namespace {
-blink::mojom::FileSystemManagerPtr GetFileSystemManager(
-    RenderProcessHost* rph) {
-  FileSystemManagerImpl* file_system = static_cast<RenderProcessHostImpl*>(rph)
-                                           ->GetFileSystemManagerForTesting();
-  blink::mojom::FileSystemManagerPtr file_system_manager_ptr;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&FileSystemManagerImpl::BindRequest,
-                     base::Unretained(file_system),
-                     mojo::MakeRequest(&file_system_manager_ptr)));
-  return file_system_manager_ptr;
-}
-}  // namespace
-
 // static
 void PwnMessageHelper::FileSystemCreate(RenderProcessHost* process,
                                         int request_id,
@@ -2411,14 +2395,17 @@ void PwnMessageHelper::FileSystemCreate(RenderProcessHost* process,
                                         bool exclusive,
                                         bool is_directory,
                                         bool recursive) {
-  TestFileapiOperationWaiter waiter;
-  blink::mojom::FileSystemManagerPtr file_system_manager_ptr =
-      GetFileSystemManager(process);
-  file_system_manager_ptr->Create(
-      path, exclusive, is_directory, recursive,
-      base::BindOnce(&TestFileapiOperationWaiter::DidCreate,
-                     base::Unretained(&waiter)));
-  waiter.WaitForOperationToFinish();
+  TestFileapiOperationWaiter waiter(
+      process->GetStoragePartition()->GetFileSystemContext());
+
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      process->GetChannel(),
+      FileSystemHostMsg_Create(request_id, path, exclusive, is_directory,
+                               recursive));
+
+  // If this started an async operation, wait for it to complete.
+  if (waiter.did_start_update())
+    waiter.WaitForEndUpdate();
 }
 
 // static
@@ -2427,18 +2414,16 @@ void PwnMessageHelper::FileSystemWrite(RenderProcessHost* process,
                                        GURL file_path,
                                        std::string blob_uuid,
                                        int64_t position) {
-  TestFileapiOperationWaiter waiter;
-  blink::mojom::FileSystemManagerPtr file_system_manager_ptr =
-      GetFileSystemManager(process);
-  blink::mojom::FileSystemOperationListenerPtr listener_ptr;
-  mojo::Binding<blink::mojom::FileSystemOperationListener> binding(
-      &waiter, mojo::MakeRequest(&listener_ptr));
-  blink::mojom::FileSystemCancellableOperationPtr op_ptr;
+  TestFileapiOperationWaiter waiter(
+      process->GetStoragePartition()->GetFileSystemContext());
 
-  file_system_manager_ptr->Write(file_path, blob_uuid, position,
-                                 mojo::MakeRequest(&op_ptr),
-                                 std::move(listener_ptr));
-  waiter.WaitForOperationToFinish();
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      process->GetChannel(),
+      FileSystemHostMsg_Write(request_id, file_path, blob_uuid, position));
+
+  // If this started an async operation, wait for it to complete.
+  if (waiter.did_start_update())
+    waiter.WaitForEndUpdate();
 }
 
 void PwnMessageHelper::LockMouse(RenderProcessHost* process,
