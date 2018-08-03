@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -109,11 +108,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // in virtual screen coordinates. The returned bounds are adjusted to allow
   // the original |window_|'s header to be hidden.
   gfx::Rect GetTransformedBounds() const;
-
-  // Returns the kFrameActiveColorKey or kFrameInactiveColorKey property of
-  // |window_| unless there are transient ancestors, in which case returns
-  // SK_ColorTRANSPARENT.
-  SkColor GetTopColor() const;
 
   // Returns the kTopViewInset property of |window_| unless there are transient
   // ancestors, in which case returns 0.

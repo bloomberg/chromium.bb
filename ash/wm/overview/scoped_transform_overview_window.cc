@@ -314,22 +314,6 @@ gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds() const {
   return bounds;
 }
 
-SkColor ScopedTransformOverviewWindow::GetTopColor() const {
-  for (auto* window : wm::GetTransientTreeIterator(window_)) {
-    // If there are regular windows in the transient ancestor tree, all those
-    // windows are shown in the same overview item and the header is not masked.
-    if (window != window_ &&
-        (window->type() == aura::client::WINDOW_TYPE_NORMAL ||
-         window->type() == aura::client::WINDOW_TYPE_PANEL)) {
-      return SK_ColorTRANSPARENT;
-    }
-  }
-
-  return window_->GetProperty(wm::GetWindowState(window_)->IsActive()
-                                  ? kFrameActiveColorKey
-                                  : kFrameInactiveColorKey);
-}
-
 int ScopedTransformOverviewWindow::GetTopInset() const {
   // Mirror window doesn't have insets.
   if (minimized_widget_)

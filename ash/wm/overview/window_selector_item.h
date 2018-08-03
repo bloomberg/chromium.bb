@@ -238,8 +238,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   bool animating_to_close() const { return animating_to_close_; }
   void set_animating_to_close(bool val) { animating_to_close_ = val; }
 
-  float GetCloseButtonOpacityForTesting();
-  float GetTitlebarOpacityForTesting();
+  bool GetCloseButtonVisibilityForTesting() const;
+  float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
 
  private:
@@ -335,29 +335,26 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Container view that owns a Button view covering the |transform_window_|.
   // That button serves as an event shield to receive all events such as clicks
   // targeting the |transform_window_| or the overview header above the window.
-  // The shield button owns |background_view_| which owns |label_view_|
+  // The shield button owns a header view which owns |label_view_|
   // and |close_button_|.
   CaptionContainerView* caption_container_view_ = nullptr;
 
-  // A View for the text label above the window owned by the |background_view_|.
+  // A View for the text label above the window owned by the a header view in
+  // |caption_container_view_|.
   views::Label* label_view_ = nullptr;
 
   // A View for the text label in the center of the window warning users that
   // this window cannot be snapped for splitview. Owned by a container in
-  // |background_view_|.
+  // |caption_container_view_|.
   views::Label* cannot_snap_label_view_ = nullptr;
 
-  // A close button for the window in this item owned by the |background_view_|.
+  // A close button for the window in this item owned by a header view in
+  // |caption_container_view_|.
   OverviewCloseButton* close_button_ = nullptr;
 
   // Pointer to the WindowSelector that owns the WindowGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.
   WindowSelector* window_selector_;
-
-  // Pointer to a view that covers the original header and has rounded top
-  // corners. This view can have its color and opacity animated. It has a layer
-  // which is the only textured layer used by the |item_widget_|.
-  RoundedContainerView* background_view_ = nullptr;
 
   // Pointer to the WindowGrid that contains |this|. Guaranteed to be non-null
   // for the lifetime of |this|.

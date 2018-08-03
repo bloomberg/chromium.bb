@@ -70,9 +70,6 @@ constexpr int kWindowSelectorMargin = kWindowMargin * 2;
 // Foreground label color.
 constexpr SkColor kLabelColor = SK_ColorWHITE;
 
-// Corner radius for the selection tiles.
-static int kLabelBackgroundRadius = 2;
-
 // Horizontal padding for the label, on both sides.
 constexpr int kHorizontalLabelPaddingDp = 12;
 
@@ -88,16 +85,6 @@ constexpr float kClosingItemOpacity = 0.8f;
 // Opacity for the item header.
 constexpr float kHeaderOpacity = 0.1f;
 
-// Duration it takes for the header to shift from opaque header color to
-// |kLabelBackgroundColor|.
-constexpr int kSelectorColorSlideMilliseconds = 240;
-
-// Duration of background opacity transition for the selected label.
-constexpr int kSelectorFadeInMilliseconds = 350;
-
-// Duration of background opacity transition when exiting overview mode.
-constexpr int kExitFadeInMilliseconds = 30;
-
 // Duration of the header and close button fade in/out when a drag is
 // started/finished on a window selector item;
 constexpr int kDragAnimationMs = 167;
@@ -111,10 +98,6 @@ constexpr float kPreCloseScale = 0.02f;
 constexpr gfx::Size kIconSize{24, 24};
 
 constexpr int kCloseButtonInkDropInsetDp = 2;
-
-// Shift the close button by |kCloseButtonOffsetDp| so that its image aligns
-// with the overview window, but its hit bounds exceeds.
-constexpr int kCloseButtonOffsetDp = 8;
 
 // Close button color.
 constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
@@ -326,198 +309,51 @@ int WindowSelectorItem::OverviewCloseButton::GetInkDropRadius() const {
          kCloseButtonInkDropInsetDp;
 }
 
-// A View having rounded top corners and a specified background color which is
-// only painted within the bounds defined by the rounded corners.
-// This class coordinates the transitions of the overview mode header when
-// entering the overview mode. Those animations are:
-// - Opacity animation. The header is initially same color as the original
-//   window's header. It starts as transparent and is faded in. When the full
-//   opacity is reached the original header is hidden (which is nearly
-//   imperceptable because this view obscures the original header) and a color
-//   animation starts.
-// - Color animation is used to change the color from the opaque color of the
-//   original window's header to semi-transparent color of the overview mode
-//   header (on entry to overview). It is also used on exit from overview to
-//   quickly change the color to a close opaque color in parallel with an
-//   opacity transition to mask the original header reappearing.
-class WindowSelectorItem::RoundedContainerView
-    : public views::View,
-      public gfx::AnimationDelegate,
-      public ui::ImplicitAnimationObserver {
- public:
-  RoundedContainerView(WindowSelectorItem* item,
-                       int corner_radius,
-                       SkColor background)
-      : item_(item),
-        corner_radius_(corner_radius),
-        initial_color_(background),
-        target_color_(background),
-        current_value_(0),
-        animation_(new gfx::SlideAnimation(this)) {
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
-
-    // Do not animate in the title bar of windows which are maximized in
-    // tablet mode, as their title bars are already hidden.
-    should_animate_ = !UseTabletModeAnimations(item_->GetWindow());
-  }
-
-  ~RoundedContainerView() override { StopObservingImplicitAnimations(); }
-
-  void OnItemRestored() {
-    item_ = nullptr;
-  }
-
-  // Used by tests to set animation state.
-  gfx::SlideAnimation* animation() { return animation_.get(); }
-
-  void set_color(SkColor target_color) {
-    target_color_ = target_color;
-    if (should_animate_)
-      SchedulePaint();
-  }
-
-  bool should_animate() const { return should_animate_; }
-
-  // Starts a color animation using |tween_type|. The animation will change the
-  // color from |initial_color_| to |target_color_| over |duration| specified
-  // in milliseconds.
-  // This animation can start once the implicit layer fade-in opacity animation
-  // is completed. It is used to transition color from the opaque original
-  // window header color to |kLabelBackgroundColor| on entry into overview mode
-  // and from |kLabelBackgroundColor| back to the original window header color
-  // on exit from the overview mode.
-  void AnimateColor(gfx::Tween::Type tween_type, int duration) {
-    if (!should_animate_)
-      return;
-
-    animation_->SetSlideDuration(duration);
-    animation_->SetTweenType(tween_type);
-    animation_->Reset(0);
-    animation_->Show();
-
-    // Tests complete animations immediately. Emulate by invoking the callback.
-    if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
-        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {
-      AnimationEnded(animation_.get());
-    }
-  }
-
-  // Changes the view opacity by animating its background color. The animation
-  // will change the alpha value in |target_color_| from its current value to
-  // |opacity| * 255 but preserve the RGB values.
-  void AnimateBackgroundOpacity(float opacity) {
-    animation_->SetSlideDuration(kSelectorFadeInMilliseconds);
-    animation_->SetTweenType(gfx::Tween::EASE_OUT);
-    animation_->Reset(0);
-    animation_->Show();
-    target_color_ = SkColorSetA(target_color_, opacity * 255);
-  }
-
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    views::View::OnPaint(canvas);
-    SkScalar radius = SkIntToScalar(corner_radius_);
-    const SkScalar kRadius[8] = {radius, radius, radius, radius, 0, 0, 0, 0};
-    SkPath path;
-    gfx::Rect bounds(size());
-    path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
-
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    canvas->ClipPath(path, true);
-
-    SkColor target_color = should_animate_ ? initial_color_ : target_color_;
-    if (should_animate_ && (target_color_ != target_color)) {
-      target_color = color_utils::AlphaBlend(target_color_, initial_color_,
-                                             current_value_);
-    }
-    canvas->DrawColor(target_color);
-  }
-
-  const char* GetClassName() const override { return "RoundedContainerView"; }
-
- private:
-  // gfx::AnimationDelegate:
-  void AnimationEnded(const gfx::Animation* animation) override {
-    initial_color_ = target_color_;
-    // Tabbed browser windows show the overview mode header behind the window
-    // during the initial animation. Once the initial fade-in completes and the
-    // overview header is fully exposed update stacking to keep the label above
-    // the item which prevents input events from reaching the window.
-    if (item_)
-      item_->RestackItemWidget();
-  }
-
-  void AnimationProgressed(const gfx::Animation* animation) override {
-    current_value_ = animation_->CurrentValueBetween(0, 255);
-    SchedulePaint();
-  }
-
-  void AnimationCanceled(const gfx::Animation* animation) override {
-    initial_color_ = target_color_;
-    current_value_ = 255;
-    SchedulePaint();
-  }
-
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override {
-    // Return if the fade in animation of |item_->item_widget_| was aborted.
-    if (WasAnimationAbortedForProperty(
-            ui::LayerAnimationElement::AnimatableProperty::OPACITY)) {
-      return;
-    }
-    DCHECK(WasAnimationCompletedForProperty(
-        ui::LayerAnimationElement::AnimatableProperty::OPACITY));
-
-    // Otherwise, animate the color of this view.
-    AnimateColor(gfx::Tween::EASE_IN, kSelectorColorSlideMilliseconds);
-  }
-
-  WindowSelectorItem* item_;
-  int corner_radius_;
-  SkColor initial_color_;
-  SkColor target_color_;
-  int current_value_;
-  std::unique_ptr<gfx::SlideAnimation> animation_;
-  bool should_animate_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(RoundedContainerView);
-};
-
 // A Container View that has a ShieldButton to listen to events. The
 // ShieldButton covers most of the View except for the transparent gap between
-// the windows and is visually transparent. The ShieldButton owns a background
-// non-transparent view positioned at the ShieldButton top. The background view
-// in its turn owns an item text label and a close button.
-// The text label does not receive events, however the close button is higher in
-// Z-order than its parent and receives events forwarding them to the same
-// |listener| (i.e. WindowSelectorItem::ButtonPressed()).
+// the windows and is visually transparent. The text label does not receive
+// events, however the close button is higher in Z-order than its parent and
+// receives events forwarding them to the same |listener| (i.e.
+// WindowSelectorItem::ButtonPressed()).
 class WindowSelectorItem::CaptionContainerView : public views::View {
  public:
+  enum class HeaderVisibility {
+    kInvisible,
+    kCloseButtonInvisibleOnly,
+    kVisible,
+  };
+
   CaptionContainerView(ButtonListener* listener,
                        views::ImageView* image_view,
                        views::Label* title_label,
                        views::Label* cannot_snap_label,
-                       views::ImageButton* close_button,
-                       WindowSelectorItem::RoundedContainerView* background)
+                       views::ImageButton* close_button)
       : listener_button_(new ShieldButton(listener, title_label->text())),
-        background_(background),
         image_view_(image_view),
         title_label_(title_label),
         cannot_snap_label_(cannot_snap_label),
         close_button_(close_button) {
-    if (image_view_)
-      background_->AddChildView(image_view_);
-    background_->AddChildView(title_label_);
-    listener_button_->AddChildView(background_);
     AddChildView(listener_button_);
-    // Do not make |close_button_| a child of |background_| because
-    // |close_button_|'s hit radius should extend outside the bounds of
-    // |background_|.
-    close_button_->SetPaintToLayer();
-    close_button_->layer()->SetFillsBoundsOpaquely(false);
-    AddChildView(close_button_);
+
+    // Helper function to add a child view to a parent view and make it paint to
+    // layer.
+    auto add_child_with_layer = [](views::View* parent, views::View* child) {
+      child->SetPaintToLayer();
+      child->layer()->SetFillsBoundsOpaquely(false);
+      parent->AddChildView(child);
+    };
+
+    header_view_ = new views::View();
+    views::BoxLayout* layout =
+        header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::kHorizontal, gfx::Insets(),
+            kHorizontalLabelPaddingDp));
+    if (image_view_)
+      add_child_with_layer(header_view_, image_view_);
+    add_child_with_layer(header_view_, title_label_);
+    add_child_with_layer(header_view_, close_button_);
+    add_child_with_layer(this, header_view_);
+    layout->SetFlexForView(title_label_, 1);
 
     // Use |cannot_snap_container_| to specify the padding surrounding
     // |cannot_snap_label_| and to give the label rounded corners.
@@ -529,24 +365,24 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
                     kSplitviewLabelHorizontalInsetDp)));
     cannot_snap_container_->AddChildView(cannot_snap_label_);
     cannot_snap_container_->set_can_process_events_within_subtree(false);
-    cannot_snap_container_->SetPaintToLayer();
-    cannot_snap_container_->layer()->SetFillsBoundsOpaquely(false);
+    add_child_with_layer(this, cannot_snap_container_);
     cannot_snap_container_->layer()->SetOpacity(0.f);
-    AddChildView(cannot_snap_container_);
   }
 
   ShieldButton* listener_button() { return listener_button_; }
 
   gfx::Rect backdrop_bounds() const { return backdrop_bounds_; }
 
-  void SetCloseButtonVisibility(bool visible) {
-    DCHECK(close_button_->layer());
-    AnimateLayerOpacity(close_button_->layer(), visible);
-  }
+  void SetHeaderVisibility(HeaderVisibility visibility) {
+    DCHECK(header_view_->layer());
 
-  void SetTitleLabelVisibility(bool visible) {
-    DCHECK(background_->layer());
-    AnimateLayerOpacity(background_->layer(), visible);
+    // Set the close button invisible if the rest of the header is to be shown.
+    // If the rest of the header is to be hidden, set the close visiblilty to
+    // true as |header_view_|'s opacity will be 0.f, hiding the close button.
+    close_button_->SetVisible(visibility !=
+                              HeaderVisibility::kCloseButtonInvisibleOnly);
+    const bool visible = visibility != HeaderVisibility::kInvisible;
+    AnimateLayerOpacity(header_view_->layer(), visible);
   }
 
   void SetCannotSnapLabelVisibility(bool visible) {
@@ -556,17 +392,14 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
                 : SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_OUT);
   }
 
+  views::View* header_view() { return header_view_; }
+
  protected:
   // views::View:
   void Layout() override {
-    // Position close button in the top right corner sized to its icon size and
-    // the label in the top left corner as tall as the button and extending to
-    // the button's left edge. Position the cannot snap label in the center of
-    // the window selector item.
-    // The rest of this container view serves as a shield to prevent input
-    // events from reaching the transformed window in overview.
+    // |listener_button_| serves as a shield to prevent input events from
+    // reaching the transformed window in overview.
     gfx::Rect bounds(GetLocalBounds());
-
     bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin);
     listener_button_->SetBoundsRect(bounds);
 
@@ -582,37 +415,20 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     backdrop_bounds_ = bounds;
     backdrop_bounds_.Inset(0, visible_height, 0, 0);
 
-    // Center the cannot snap label in the middle of the item, minus the title.
+    // Position the cannot snap label in the middle of the item, minus the
+    // title.
     gfx::Rect cannot_snap_bounds = GetLocalBounds();
     cannot_snap_bounds.Inset(0, visible_height, 0, 0);
     cannot_snap_bounds.ClampToCenteredSize(label_size);
     cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
 
-    gfx::Rect background_bounds(gfx::Rect(bounds.size()));
-    background_bounds.set_height(visible_height);
-    background_->SetBoundsRect(background_bounds);
-
-    bounds = background_bounds;
-    bounds.Inset(kHorizontalLabelPaddingDp +
-                     (image_view_ ? image_view_->size().width() : 0),
-                 0, kHorizontalLabelPaddingDp + visible_height, 0);
-    title_label_->SetBoundsRect(bounds);
-
-    if (image_view_) {
-      bounds.set_x(0);
-      bounds.set_width(image_view_->size().width());
-      image_view_->SetBoundsRect(bounds);
-    }
-
-    bounds = background_bounds;
-    // Align the close button so that the right edge of its image is aligned
-    // with the right edge of the overview window, but the right edge of its
-    // touch target exceeds it.
-    bounds.set_x(bounds.width() - visible_height + kCloseButtonOffsetDp +
-                 kWindowSelectorMargin);
-    bounds.set_y(kWindowSelectorMargin);
-    bounds.set_width(visible_height);
-    close_button_->SetBoundsRect(bounds);
+    // Position the header at the top. The left should be indented to match
+    // the transformed window, but not the right because the close button hit
+    // radius should extend past the transformed window's rightmost bounds.
+    gfx::Rect header_bounds = GetLocalBounds();
+    header_bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin, 0, 0);
+    header_bounds.set_height(visible_height);
+    header_view_->SetBoundsRect(header_bounds);
   }
 
   const char* GetClassName() const override { return "CaptionContainerView"; }
@@ -647,12 +463,13 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
   }
 
   ShieldButton* listener_button_;
-  WindowSelectorItem::RoundedContainerView* background_;
   views::ImageView* image_view_;
   views::Label* title_label_;
   views::Label* cannot_snap_label_;
   RoundedRectView* cannot_snap_container_;
   views::ImageButton* close_button_;
+  // View which contains the icon, title and close button.
+  views::View* header_view_ = nullptr;
   gfx::Rect backdrop_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptionContainerView);
@@ -702,10 +519,6 @@ void WindowSelectorItem::RestoreWindow(bool reset_transform) {
   caption_container_view_->listener_button()->ResetListener();
   close_button_->ResetListener();
   transform_window_.RestoreWindow(reset_transform);
-  if (background_view_) {
-    background_view_->OnItemRestored();
-    background_view_ = nullptr;
-  }
   UpdateHeaderLayout(HeaderFadeInMode::kExit, GetExitOverviewAnimationType());
 }
 
@@ -730,10 +543,6 @@ void WindowSelectorItem::Shutdown() {
                                                transform_window_.window());
     }
   }
-  if (background_view_) {
-    background_view_->OnItemRestored();
-    background_view_ = nullptr;
-  }
   // Fade out the item widget. This animation continues past the lifetime
   // of |this|.
   FadeOutWidgetOnExit(std::move(item_widget_),
@@ -743,13 +552,6 @@ void WindowSelectorItem::Shutdown() {
 void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
   RestackItemWidget();
-  // The minimized widget was unavailable up to this point, but if a window
-  // is minimized, |item_widget_| should stack on top of it, unless the
-  // animation is in progress and will take care of that.
-  if (!background_view_->should_animate() &&
-      wm::GetWindowState(GetWindow())->IsMinimized()) {
-    RestackItemWidget();
-  }
   UpdateHeaderLayout(HeaderFadeInMode::kEnter,
                      OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
 }
@@ -883,14 +685,15 @@ void WindowSelectorItem::UpdateCannotSnapWarningVisibility() {
 }
 
 void WindowSelectorItem::OnSelectorItemDragStarted(WindowSelectorItem* item) {
-  caption_container_view_->SetCloseButtonVisibility(false);
-  if (item == this)
-    caption_container_view_->SetTitleLabelVisibility(false);
+  caption_container_view_->SetHeaderVisibility(
+      item == this
+          ? CaptionContainerView::HeaderVisibility::kInvisible
+          : CaptionContainerView::HeaderVisibility::kCloseButtonInvisibleOnly);
 }
 
 void WindowSelectorItem::OnSelectorItemDragEnded() {
-  caption_container_view_->SetCloseButtonVisibility(true);
-  caption_container_view_->SetTitleLabelVisibility(true);
+  caption_container_view_->SetHeaderVisibility(
+      CaptionContainerView::HeaderVisibility::kVisible);
 }
 
 ScopedTransformOverviewWindow::GridWindowFillMode
@@ -1146,12 +949,12 @@ OverviewAnimationType WindowSelectorItem::GetExitTransformAnimationType() {
              : OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
-float WindowSelectorItem::GetCloseButtonOpacityForTesting() {
-  return close_button_->layer()->opacity();
+bool WindowSelectorItem::GetCloseButtonVisibilityForTesting() const {
+  return close_button_->visible();
 }
 
-float WindowSelectorItem::GetTitlebarOpacityForTesting() {
-  return background_view_->layer()->opacity();
+float WindowSelectorItem::GetTitlebarOpacityForTesting() const {
+  return caption_container_view_->header_view()->layer()->opacity();
 }
 
 gfx::Rect WindowSelectorItem::GetShadowBoundsForTesting() {
@@ -1184,11 +987,6 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
 }
 
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
-  background_view_ = new RoundedContainerView(this, kLabelBackgroundRadius,
-                                              transform_window_.GetTopColor());
-  background_view_->set_color(SK_ColorTRANSPARENT);
-
-  // |background_view_| will get added as a child to CaptionContainerView.
   views::Widget::InitParams params_label;
   params_label.type = views::Widget::InitParams::TYPE_POPUP;
   params_label.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -1204,19 +1002,9 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(params_label);
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  if (transform_window_.GetTopInset() || !background_view_->should_animate()) {
-    // For windows with headers the overview header fades in above the
-    // original window header. Windows that should not animate their headers
-    // (maximized tablet mode windows have no headers) should initially be
-    // stacked above as well.
-    widget_window->parent()->StackChildAbove(widget_window,
-                                             transform_window_.window());
-  } else {
-    // For tabbed windows the overview header slides from behind. The stacking
-    // is then corrected when the animation completes.
-    widget_window->parent()->StackChildBelow(widget_window,
-                                             transform_window_.window());
-  }
+  // Stack the widget above the transform window so that it can block events.
+  widget_window->parent()->StackChildAbove(widget_window,
+                                           transform_window_.window());
 
   // Create an image view the header icon. Tries to use the app icon, as it is
   // higher resolution. If it does not exist, use the window icon. If neither
@@ -1252,8 +1040,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   cannot_snap_label_view_->SetBackgroundColor(kSplitviewLabelBackgroundColor);
 
   caption_container_view_ = new CaptionContainerView(
-      this, image_view, label_view_, cannot_snap_label_view_, close_button_,
-      background_view_);
+      this, image_view, label_view_, cannot_snap_label_view_, close_button_);
   UpdateCannotSnapWarningVisibility();
 
   item_widget_->SetContentsView(caption_container_view_);
@@ -1288,28 +1075,9 @@ void WindowSelectorItem::UpdateHeaderLayout(
           ? -label_rect.height()
           : 0);
 
-  {
-    ui::ScopedLayerAnimationSettings layer_animation_settings(
-        item_widget_->GetLayer()->GetAnimator());
-    if (background_view_) {
-      if (mode == HeaderFadeInMode::kEnter) {
-        // Animate the color of |background_view_| once the fade in animation of
-        // |item_widget_| ends.
-        layer_animation_settings.AddObserver(background_view_);
-      } else if (mode == HeaderFadeInMode::kExit) {
-        // Make the header visible above the window. It will be faded out when
-        // the Shutdown() is called.
-        background_view_->AnimateColor(
-            gfx::Tween::EASE_OUT,
-            animation_type == OverviewAnimationType::OVERVIEW_ANIMATION_NONE
-                ? 0
-                : kExitFadeInMilliseconds);
-      }
-    }
-    if (!label_view_->visible()) {
-      label_view_->SetVisible(true);
-      SetupFadeInAfterLayout(item_widget_.get(), GetWindow());
-    }
+  if (!label_view_->visible()) {
+    label_view_->SetVisible(true);
+    SetupFadeInAfterLayout(item_widget_.get(), GetWindow());
   }
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();
@@ -1352,10 +1120,6 @@ void WindowSelectorItem::AnimateOpacity(float opacity,
 void WindowSelectorItem::UpdateAccessibilityName() {
   caption_container_view_->listener_button()->SetAccessibleName(
       GetWindow()->GetTitle());
-}
-
-gfx::SlideAnimation* WindowSelectorItem::GetBackgroundViewAnimation() {
-  return background_view_ ? background_view_->animation() : nullptr;
 }
 
 aura::Window* WindowSelectorItem::GetOverviewWindowForMinimizedStateForTest() {
