@@ -44,6 +44,9 @@ constexpr char kDataUriPrefix[] = "data:text/html;base64,";
 
 // CardElementViewHolder -------------------------------------------------------
 
+// This class uses a child widget to host a view for a card element that has an
+// aura::Window. The child widget's layer becomes the root of the card's layer
+// hierarchy.
 class CardElementViewHolder : public views::NativeViewHost,
                               public views::ViewObserver {
  public:

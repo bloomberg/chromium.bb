@@ -83,6 +83,15 @@ std::unique_ptr<::ui::LayerAnimationElement> CreateTransformElement(
   return layer_animation_element;
 }
 
+void StartLayerAnimationSequence(
+    ::ui::LayerAnimator* layer_animator,
+    ::ui::LayerAnimationSequence* layer_animation_sequence,
+    ::ui::LayerAnimationObserver* observer) {
+  if (observer)
+    layer_animation_sequence->AddObserver(observer);
+  layer_animator->StartAnimation(layer_animation_sequence);
+}
+
 void StartLayerAnimationSequencesTogether(
     ::ui::LayerAnimator* layer_animator,
     const std::vector<ui::LayerAnimationSequence*>& layer_animation_sequences,
