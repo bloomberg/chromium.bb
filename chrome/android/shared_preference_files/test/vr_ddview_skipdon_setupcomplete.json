@@ -11,7 +11,8 @@
       "PairedControllerDriver": "DRIVER_AUTOMATED",
       "PairedControllerAddress": "FOO",
       "GvrPlatformLibraryPref": false,
-      "EnableVrCoreHeadTracking": false
+      "EnableVrCoreHeadTracking": false,
+      "EnableDeveloperService": false
     }
   }
 ]

@@ -16388,10 +16388,10 @@
       },
       {
         "args": [
-          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--annotation=Restriction=DON_Enabled",
-          "--don-enabled",
+          "--annotation=Restriction=VR_Settings_Service",
+          "--vr-settings-service-enabled",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -16400,11 +16400,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "chrome_public_test_vr_apk-ddready-ddview-donenabled"
+            "chrome_public_test_vr_apk-ddready-dynamicsettings"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "chrome_public_test_vr_apk-ddready-ddview-donenabled",
+        "name": "chrome_public_test_vr_apk-ddready-dynamicsettings",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -16569,10 +16569,10 @@
       },
       {
         "args": [
-          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--annotation=Restriction=DON_Enabled",
-          "--don-enabled",
+          "--annotation=Restriction=VR_Settings_Service",
+          "--vr-settings-service-enabled",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -16581,11 +16581,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "chrome_public_test_vr_apk-ddready-ddview-donenabled"
+            "chrome_public_test_vr_apk-ddready-dynamicsettings"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "chrome_public_test_vr_apk-ddready-ddview-donenabled",
+        "name": "chrome_public_test_vr_apk-ddready-dynamicsettings",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [

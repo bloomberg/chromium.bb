@@ -9,7 +9,6 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
-import org.chromium.chrome.browser.vr.util.HeadTrackingUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
 
@@ -19,22 +18,18 @@ import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
  */
 public class WebappActivityVrTestRule extends WebappActivityTestRule implements VrTestRule {
     private boolean mTrackerDirty;
+    private boolean mDonEnabled;
 
     @Override
     public Statement apply(final Statement base, final Description desc) {
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
-                HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(
-                        WebappActivityVrTestRule.this, desc);
-                startWebappActivity();
-                TestVrShellDelegate.createTestVrShellDelegate(getActivity());
-                try {
-                    base.evaluate();
-                } finally {
-                    if (isTrackerDirty()) HeadTrackingUtils.revertTracker();
-                }
+                VrTestRuleUtils.evaluateVrTestRuleImpl(
+                        base, desc, WebappActivityVrTestRule.this, () -> {
+                            startWebappActivity();
+                            TestVrShellDelegate.createTestVrShellDelegate(getActivity());
+                        });
             }
         }, desc);
     }
@@ -52,5 +47,15 @@ public class WebappActivityVrTestRule extends WebappActivityTestRule implements 
     @Override
     public void setTrackerDirty() {
         mTrackerDirty = true;
+    }
+
+    @Override
+    public boolean isDonEnabled() {
+        return mDonEnabled;
+    }
+
+    @Override
+    public void setDonEnabled(boolean isEnabled) {
+        mDonEnabled = isEnabled;
     }
 }

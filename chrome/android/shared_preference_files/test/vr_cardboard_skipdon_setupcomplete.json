@@ -9,7 +9,8 @@
       "VrDeviceParams": "CgZHb29nbGUSCUNhcmRib2FyZB0J-SA9JQHegj0qEAAAcEIAAHBCAABwQgAAcEI1KVwPPToIV_GrPmKxDT9QAFgAYAM",
       "UseAutomatedController": false,
       "GvrPlatformLibraryPref": false,
-      "EnableVrCoreHeadTracking": false
+      "EnableVrCoreHeadTracking": false,
+      "EnableDeveloperService": false
     }
   }
 ]

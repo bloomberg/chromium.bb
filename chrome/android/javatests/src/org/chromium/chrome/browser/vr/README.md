@@ -157,17 +157,19 @@ headset. The two most common files used are:
   way to manually re-enable real controller use from within the VrCore developer
   settings)
 
-#### don-enabled
+#### vr-settings-service-enabled
 
-`--don-enabled --annotation=Restriction=DON_Enabled`
+`--vr-settings-service-enabled --annotation=Restriction=VR_Settings_Service`
 
-Tells the test runner to allow the running of tests that only work with the DON
-flow enabled and limits the set of tests run to those that work with the DON
-flow enabled.
+Tells the test runner to allow the running of tests that utilize the VR settings
+service to dynamically change VrCore settings during a test instead of relying
+on whatever was set by the shared preference file that was applied. This is used
+as a catch-all for less standard tests, such as those that require the DON flow
+to be enabled or that need to switch the paired viewer mid-test.
 
 This should only be used when `--shared-prefs-file` is passed
-`//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json`
-as otherwise the DON flow will be disabled.
+`//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json`
+as otherwise trying to use the service will be a NOOP.
 
 ## Adding New Tests
 

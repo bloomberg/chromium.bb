@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.vr;
 
 import org.junit.Assert;
 
-import org.chromium.base.CommandLine;
+import org.chromium.chrome.browser.vr.rules.VrTestRule;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
@@ -31,10 +31,8 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
         // TODO(https://crbug.com/762724): Remove this workaround when the issue with being resumed
         // before receiving the VR broadcast is fixed on VrCore's end.
         // However, we don't want to enable the workaround if the DON flow is enabled, as that
-        // causes issues. Since we don't have a way of actually checking whether the DON flow is
-        // enabled, check for the presence of the flag that's passed to tests when the DON flow is
-        // enabled.
-        if (!CommandLine.getInstance().hasSwitch("don-enabled")) {
+        // causes issues.
+        if (!((VrTestRule) getRule()).isDonEnabled()) {
             VrShellDelegateUtils.getDelegateInstance().setExpectingBroadcast();
         }
         super.enterSessionWithUserGesture(webContents);

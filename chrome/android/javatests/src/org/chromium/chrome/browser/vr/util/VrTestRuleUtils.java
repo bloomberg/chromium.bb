@@ -8,9 +8,13 @@ import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
 
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.rules.CustomTabActivityVrTestRule;
+import org.chromium.chrome.browser.vr.rules.VrTestRule;
 import org.chromium.chrome.browser.vr.rules.WebappActivityVrTestRule;
 
 import java.util.ArrayList;
@@ -25,6 +29,40 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
     // Daydream intent, meaning that it still thinks VR is active until this amount of time has
     // passed.
     private static final int VRCORE_UNREGISTER_DELAY_MS = 500;
+
+    /**
+     * Essentially a Runnable that can throw exceptions.
+     */
+    public interface ChromeLaunchMethod { public void launch() throws Throwable; }
+
+    /**
+     * Helper method to apply a VrTestRule/ChromeActivityTestRule combination. The only difference
+     * between various classes that implement VrTestRule is how they start their activity, so the
+     * common boilerplate code can be kept here so each VrTestRule only has to provide a way to
+     * launch Chrome.
+     *
+     * @param base The Statement passed to the calling ChromeActivityTestRule's apply() method.
+     * @param desc The Description passed to the calling ChromeActivityTestRule's apply() method.
+     * @param rule The calling VrTestRule.
+     * @param launcher A ChromeLaunchMethod whose launch() contains the code snippet to start Chrome
+     *        in the calling ChromeActivityTestRule's activity type.
+     */
+    public static void evaluateVrTestRuleImpl(final Statement base, final Description desc,
+            final VrTestRule rule, final ChromeLaunchMethod launcher) throws Throwable {
+        VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
+        HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(rule, desc);
+        launcher.launch();
+        // Must be called after Chrome is started, as otherwise startService fails with an
+        // IllegalStateException for being used from a backgrounded app.
+        VrSettingsServiceUtils.checkForAndApplyVrSettingsFileAnnotation(desc, rule);
+
+        try {
+            base.evaluate();
+        } finally {
+            if (rule.isTrackerDirty()) HeadTrackingUtils.revertTracker();
+        }
+    }
+
     /**
      * Creates the list of VrTestRules that are currently supported for use in test
      * parameterization.
