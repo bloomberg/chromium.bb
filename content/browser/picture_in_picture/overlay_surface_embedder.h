@@ -23,7 +23,7 @@ class OverlaySurfaceEmbedder {
   explicit OverlaySurfaceEmbedder(OverlayWindow* window);
   ~OverlaySurfaceEmbedder();
 
-  void SetPrimarySurfaceId(const viz::SurfaceId& surface_id);
+  void SetSurfaceId(const viz::SurfaceId&);
   void UpdateLayerBounds();
 
  private:
