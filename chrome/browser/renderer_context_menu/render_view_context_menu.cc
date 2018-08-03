@@ -1032,13 +1032,16 @@ void RenderViewContextMenu::AppendDevtoolsForUnpackedExtensions() {
 void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
+      const Browser* browser = GetBrowser();
+      const bool is_app = browser && browser->is_app();
+
       AppendOpenInBookmarkAppLinkItems();
 
       menu_model_.AddItemWithStringId(
           IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-          GetBrowser()->is_app() ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
-                                 : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-      if (!GetBrowser()->is_app()) {
+          is_app ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
+                 : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+      if (!is_app) {
         menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
                                         IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
       }
@@ -1049,9 +1052,8 @@ void RenderViewContextMenu::AppendLinkItems() {
 
       menu_model_.AddItemWithStringId(
           IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
-          GetBrowser()->is_app()
-              ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
-              : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+          is_app ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
+                 : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
 
     } else {
       menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
@@ -1193,8 +1195,10 @@ void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
     return;
 
   int open_in_app_string_id;
-  if (GetBrowser()->app_name() ==
-      web_app::GenerateApplicationNameFromExtensionId(pwa->id())) {
+  const Browser* browser = GetBrowser();
+  if (browser &&
+      browser->app_name() ==
+          web_app::GenerateApplicationNameFromExtensionId(pwa->id())) {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP_SAMEAPP;
   } else {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP;
