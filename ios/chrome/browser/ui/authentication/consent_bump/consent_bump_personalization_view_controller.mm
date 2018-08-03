@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_personalization_view_controller.h"
 
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_option_button.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -17,6 +18,7 @@
 
 namespace {
 const CGFloat kTitleTextMargin = 16;
+const CGFloat kOptionsVerticalMargin = 16;
 }  // namespace
 
 @interface ConsentBumpPersonalizationViewController ()
@@ -81,6 +83,7 @@ const CGFloat kTitleTextMargin = 16;
   title.numberOfLines = 0;
   [container addSubview:title];
 
+  // Text.
   UILabel* text = [[UILabel alloc] initWithFrame:CGRectZero];
   text.translatesAutoresizingMaskIntoConstraints = NO;
   text.text =
@@ -90,6 +93,33 @@ const CGFloat kTitleTextMargin = 16;
   text.font = [UIFont systemFontOfSize:kAuthenticationTextFontSize];
   text.numberOfLines = 0;
   [container addSubview:text];
+
+  // Options.
+  ConsentBumpOptionButton* noChangeOption = [ConsentBumpOptionButton
+      consentBumpOptionButtonWithTitle:l10n_util::GetNSString(
+                                           IDS_IOS_CONSENT_BUMP_NO_CHANGE_TITLE)
+                                  text:
+                                      l10n_util::GetNSString(
+                                          IDS_IOS_CONSENT_BUMP_NO_CHANGE_TEXT)];
+  noChangeOption.type = ConsentBumpOptionTypeNoChange;
+  noChangeOption.checked = YES;
+
+  ConsentBumpOptionButton* reviewOption = [ConsentBumpOptionButton
+      consentBumpOptionButtonWithTitle:l10n_util::GetNSString(
+                                           IDS_IOS_CONSENT_BUMP_REVIEW_TITLE)
+                                  text:nil];
+  reviewOption.type = ConsentBumpOptionTypeReview;
+  reviewOption.checked = NO;
+
+  ConsentBumpOptionButton* turnOnOption = [ConsentBumpOptionButton
+      consentBumpOptionButtonWithTitle:l10n_util::GetNSString(
+                                           IDS_IOS_CONSENT_BUMP_TURN_ON_TITLE)
+                                  text:l10n_util::GetNSString(
+                                           IDS_IOS_CONSENT_BUMP_TURN_ON_TEXT)];
+  turnOnOption.type = ConsentBumpOptionTypeTurnOn;
+  turnOnOption.checked = NO;
+
+  NSArray<UIView*>* options = @[ noChangeOption, reviewOption, turnOnOption ];
 
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self.view);
   AddSameConstraints(self.view, self.scrollView);
@@ -119,9 +149,36 @@ const CGFloat kTitleTextMargin = 16;
   NSArray* constraints = @[
     @"H:|-(HMargin)-[title]-(HMargin)-|",
     @"H:|-(HMargin)-[text]-(HMargin)-|",
-    @"V:|[header]-(HeaderTitleMargin)-[title]-(TitleTextMargin)-[text]|",
+    @"V:|[header]-(HeaderTitleMargin)-[title]-(TitleTextMargin)-[text]",
   ];
   ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
+
+  // Options positioning.
+  UIView* viewAbove = nil;
+  for (UIView* option in options) {
+    option.translatesAutoresizingMaskIntoConstraints = NO;
+    [container addSubview:option];
+    // TODO(crbug.com/866506): Add action for the option.
+
+    if (viewAbove) {
+      [option.topAnchor constraintEqualToAnchor:viewAbove.bottomAnchor].active =
+          YES;
+    }
+    [NSLayoutConstraint activateConstraints:@[
+      [option.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
+      [option.trailingAnchor constraintEqualToAnchor:container.trailingAnchor]
+    ]];
+    viewAbove = option;
+  }
+
+  // Positioning the first and last options.
+  [NSLayoutConstraint activateConstraints:@[
+    [options[0].topAnchor constraintEqualToAnchor:text.bottomAnchor
+                                         constant:kOptionsVerticalMargin],
+    [container.bottomAnchor
+        constraintEqualToAnchor:options[options.count - 1].bottomAnchor
+                       constant:kOptionsVerticalMargin],
+  ]];
 
   [self updateScrollViewAndImageBackgroundView];
 }

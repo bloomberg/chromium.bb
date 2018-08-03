@@ -31,8 +31,6 @@ namespace {
 // Sizes.
 // Size of the small icons next to the text.
 const CGFloat kIconSize = 16.;
-// Separator line height.
-const CGFloat kSeparatorHeight = 1.;
 
 // Horizontal margin between the small icon and the text next to it.
 const CGFloat kIconTextMargin = 16.;
@@ -47,9 +45,6 @@ const CGFloat kVerticalTextMargin = 22.;
 const CGFloat kVerticalBetweenTextMargin = 25.;
 // Vertical margin between separator and text.
 const CGFloat kVerticalSeparatorTextMargin = 16.;
-
-// Alpha for the separator color.
-const CGFloat kSeparatorColorAlpha = 0.12;
 
 // URL for the Settings link.
 const char* const kSettingsSyncURL = "internal://settings-sync";
@@ -223,7 +218,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   UIView* separator = [[UIView alloc] initWithFrame:CGRectZero];
   separator.translatesAutoresizingMaskIntoConstraints = NO;
   separator.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kSeparatorColorAlpha];
+      [UIColor colorWithWhite:0 alpha:kAuthenticationSeparatorColorAlpha];
   [container addSubview:separator];
   // Customize label.
   self.openSettingsStringId = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS;
@@ -252,7 +247,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
     @"VSeparatorText" : @(kVerticalSeparatorTextMargin),
     @"LeftSeparMrg" : @(kLeftSeparatorMargin),
     @"VTextMargin" : @(kVerticalTextMargin),
-    @"SeparatorHeight" : @(kSeparatorHeight),
+    @"SeparatorHeight" : @(kAuthenticationSeparatorHeight),
     @"HeaderHeight" : @(kAuthenticationHeaderImageHeight),
     @"HeaderWidth" : @(kAuthenticationHeaderImageWidth),
     @"HeaderTitleMargin" : @(kAuthenticationHeaderTitleMargin),

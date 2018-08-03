@@ -21,4 +21,7 @@ const CGFloat kAuthenticationHeaderTitleMargin = 19.;
 const CGFloat kAuthenticationTitleColorAlpha = 0.87;
 const CGFloat kAuthenticationTextColorAlpha = 0.54;
 
+const CGFloat kAuthenticationSeparatorColorAlpha = 0.12;
+const CGFloat kAuthenticationSeparatorHeight = 1;
+
 NSString* const kAuthenticationHeaderImageName = @"unified_consent_header";
