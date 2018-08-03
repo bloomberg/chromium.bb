@@ -117,11 +117,12 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
     // Bail out if we are in the middle of writing events for another label to
     // the stream, since we do not want to interleave chunks for different
     // fields. For example, we do not want to mix |traceEvent| chunks with
-    // |battor| chunks.
+    // |systrace| chunks.
     //
-    // If we receive a |battor| chunk from an agent while writing |traceEvent|
-    // chunks to the stream, we wait until all agents that send |traceEvent|
-    // chunks are done, and then, we start writing |battor| chunks.
+    // If we receive a |systemTraceEvents| chunk from an agent while writing
+    // |traceEvent| chunks to the stream, we wait until all agents that send
+    // |traceEvent| chunks are done, and then, we start writing
+    // |systemTraceEvents| chunks.
     if (!streaming_label_.empty() && streaming_label_ != label)
       return;
 

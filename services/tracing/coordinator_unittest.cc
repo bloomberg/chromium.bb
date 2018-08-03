@@ -69,7 +69,7 @@ class CoordinatorTest : public testing::Test,
 
   MockAgent* AddStringAgent() {
     auto agent = std::make_unique<MockAgent>();
-    agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "battor",
+    agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "power",
                                    mojom::TraceDataType::STRING, false,
                                    base::kNullProcessId);
     agents_.push_back(std::move(agent));
@@ -325,8 +325,8 @@ TEST_F(CoordinatorTest, StopAndFlushDifferentTypeAgents) {
   if (!quit_closure_.is_null())
     run_loop.Run();
 
-  EXPECT_TRUE(output_ == "{\"traceEvents\":[e1,e2],\"battor\":\"e3e4\"}" ||
-              output_ == "{\"battor\":\"e3e4\",\"traceEvents\":[e1,e2]}");
+  EXPECT_TRUE(output_ == "{\"traceEvents\":[e1,e2],\"power\":\"e3e4\"}" ||
+              output_ == "{\"power\":\"e3e4\",\"traceEvents\":[e1,e2]}");
 
   // Each agent should have received exactly two calls.
   EXPECT_EQ(2u, agent1->call_stat().size());
