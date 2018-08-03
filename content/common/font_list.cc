@@ -4,7 +4,7 @@
 
 #include "content/common/font_list.h"
 
-#include "base/task_scheduler/lazy_task_runner.h"
+#include "base/task/lazy_task_runner_forward.h"
 
 namespace content {
 

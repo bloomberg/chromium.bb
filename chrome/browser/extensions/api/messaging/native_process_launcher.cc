@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/common/chrome_paths.h"

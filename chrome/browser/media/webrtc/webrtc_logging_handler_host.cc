@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 #include "build/build_config.h"
 #include "chrome/browser/bad_message.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"

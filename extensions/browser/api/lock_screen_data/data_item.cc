@@ -14,7 +14,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 #include "base/values.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"

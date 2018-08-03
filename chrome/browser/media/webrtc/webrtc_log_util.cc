@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"

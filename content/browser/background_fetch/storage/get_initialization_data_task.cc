@@ -6,8 +6,8 @@
 
 #include "base/barrier_closure.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
+#include "base/task/post_task_forward.h"
+#include "base/task/task_traits_forward.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"

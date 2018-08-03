@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task_forward.h"
+#include "base/task/task_traits_forward.h"
 #include "base/task_runner_util.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
 #include "base/version.h"
 #include "printing/backend/cups_jobs.h"
 

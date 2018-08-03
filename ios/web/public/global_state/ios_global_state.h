@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_GLOBAL_STATE_IOS_GLOBAL_STATE_H_
 #define IOS_WEB_PUBLIC_GLOBAL_STATE_IOS_GLOBAL_STATE_H_
 
-#include "base/task_scheduler/task_scheduler.h"
+#include "base/task/task_scheduler/task_scheduler_forward.h"
 
 namespace ios_global_state {
 

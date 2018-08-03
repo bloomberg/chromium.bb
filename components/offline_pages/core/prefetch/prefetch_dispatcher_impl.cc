@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/task/post_task_forward.h"
 #include "base/task_runner.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_event_logger.h"

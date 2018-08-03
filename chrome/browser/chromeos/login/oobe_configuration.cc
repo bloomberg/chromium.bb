@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 
 namespace chromeos {
 

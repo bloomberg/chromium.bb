@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/path_service.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/bookmark_apps/external_web_apps.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"

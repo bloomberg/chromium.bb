@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task_forward.h"
 #include "build/build_config.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "content/public/browser/browser_thread.h"

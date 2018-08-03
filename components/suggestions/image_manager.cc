@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/task/post_task_forward.h"
 #include "base/task_runner_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/suggestions/image_encoder.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"

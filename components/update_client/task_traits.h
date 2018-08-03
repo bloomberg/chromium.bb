@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_TASK_TRAITS_H_
 #define COMPONENTS_UPDATE_CLIENT_TASK_TRAITS_H_
 
-#include "base/task_scheduler/task_traits.h"
+#include "base/task/task_traits_forward.h"
 
 namespace update_client {
 
