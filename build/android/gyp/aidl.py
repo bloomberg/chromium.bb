@@ -18,6 +18,7 @@ from util import build_utils
 
 def main(argv):
   option_parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(option_parser)
   option_parser.add_option('--aidl-path', help='Path to the aidl binary.')
   option_parser.add_option('--imports', help='Files to import.')
   option_parser.add_option('--includes',
@@ -52,6 +53,9 @@ def main(argv):
           arcname = '%s/%s' % (
               pkg_name.replace('.', '/'), os.path.basename(path))
           build_utils.AddToZipHermetic(srcjar, arcname, data=data)
+
+  if options.depfile:
+    build_utils.WriteDepfile(options.depfile, options.srcjar)
 
 
 if __name__ == '__main__':
