@@ -93,7 +93,7 @@ def _Run(java_tests_src_dir, test_filter,
       chrome_wrapper_path = os.path.join(java_tests_src_dir, 'chrome-wrapper-no-sandbox')
       with open(chrome_wrapper_path, 'w') as f:
         f.write('#!/bin/sh\n')
-        f.write('exec %s --no-sandbox --disable-gpu "$@"\n' %
+        f.write('exec "%s" --no-sandbox --disable-gpu "$@"\n' %
             os.path.abspath(chrome_path))
       st = os.stat(chrome_wrapper_path)
       os.chmod(chrome_wrapper_path, st.st_mode | stat.S_IEXEC)
@@ -103,7 +103,7 @@ def _Run(java_tests_src_dir, test_filter,
       chrome_wrapper_path = os.path.join(java_tests_src_dir, 'chrome-wrapper')
       with open(chrome_wrapper_path, 'w') as f:
         f.write('#!/bin/sh\n')
-        f.write('exec %s --force-color-profile=srgb "$@"\n' %
+        f.write('exec "%s" --force-color-profile=srgb "$@"\n' %
             os.path.abspath(chrome_path))
       st = os.stat(chrome_wrapper_path)
       os.chmod(chrome_wrapper_path, st.st_mode | stat.S_IEXEC)
