@@ -167,6 +167,12 @@ public class SectionList extends InnerNode<NewTabPageViewHolder, PartialBindCall
                 return;
 
             case CategoryStatus.CATEGORY_EXPLICITLY_DISABLED:
+                // Need to remove the entire section from the UI immediately. If the section is
+                // expandable, we may add the section back for displaying the header.
+                removeSection(mSections.get(category));
+                maybeAddSectionForHeader(category);
+                return;
+
             case CategoryStatus.LOADING_ERROR:
                 // Need to remove the entire section from the UI immediately.
                 removeSection(mSections.get(category));
