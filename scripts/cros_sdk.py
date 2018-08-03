@@ -458,23 +458,6 @@ def ListChrootSnapshots(chroot_vg, chroot_lv):
   return snapshots
 
 
-def _FindSubmounts(*args):
-  """Find all mounts matching each of the paths in |args| and any submounts.
-
-  Returns:
-    A list of all matching mounts in the order found in /proc/mounts.
-  """
-  mounts = []
-  paths = [p.rstrip('/') for p in args]
-  for mtab in osutils.IterateMountPoints():
-    for path in paths:
-      if mtab.destination == path or mtab.destination.startswith(path + '/'):
-        mounts.append(mtab.destination)
-        break
-
-  return mounts
-
-
 def _SudoCommand():
   """Get the 'sudo' command, along with all needed environment variables."""
 
