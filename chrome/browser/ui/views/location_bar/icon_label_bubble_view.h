@@ -67,6 +67,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void InkDropAnimationStarted() override;
   void InkDropRippleAnimationEnded(views::InkDropState state) override;
 
+  // Returns true when the label should be visible.
+  virtual bool ShouldShowLabel() const;
+
   void SetLabel(const base::string16& label);
   void SetImage(const gfx::ImageSkia& image);
 
@@ -95,9 +98,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   // Gets the color for displaying text.
   virtual SkColor GetTextColor() const = 0;
-
-  // Returns true when the label should be visible.
-  virtual bool ShouldShowLabel() const;
 
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
