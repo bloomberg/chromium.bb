@@ -19,6 +19,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace gfx {
+class Range;
+}  // namespace gfx
+
 @interface SuggestedTextTouchBarController
     : NSObject<NSTouchBarDelegate, NSCandidateListTouchBarItemDelegate>
 
@@ -40,19 +44,15 @@ class WebContents;
      endSelectingCandidateAtIndex:(NSInteger)index
     API_AVAILABLE(macos(10.12.2));
 
-- (void)webContentsTextSelectionChanged:(const base::string16&)text
-                                  range:(NSRange)range
-    API_AVAILABLE(macos(10.12.2));
-
-- (void)webContentsFinishedLoading API_AVAILABLE(macos(10.12.2));
+- (void)updateTextSelection:(const base::string16&)text
+                      range:(const gfx::Range&)range;
 
 // Returns a range from start to the end of the word that the cursor is
 // currently in.
 - (NSRange)editingWordRangeFromText:(const base::string16&)text
                      cursorPosition:(size_t)cursor;
 
-- (void)requestSuggestionsForText:(NSString*)text
-                          inRange:(NSRange)range API_AVAILABLE(macos(10.12.2));
+- (void)requestSuggestions API_AVAILABLE(macos(10.12.2));
 
 // Select the range of the editing word and replace it with a suggestion
 // from the touch bar.
@@ -69,8 +69,8 @@ class WebContents;
 - (WebTextfieldTouchBarController*)controller;
 - (void)setWebContents:(content::WebContents*)webContents;
 - (content::WebContents*)webContents;
-- (void)setSelectionRange:(NSRange)range;
-- (NSRange)selectionRange;
+- (void)setSelectionRange:(const gfx::Range&)range;
+- (gfx::Range)selectionRange;
 
 @end
 
