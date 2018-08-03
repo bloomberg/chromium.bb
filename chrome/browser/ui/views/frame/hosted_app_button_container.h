@@ -44,6 +44,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public ImmersiveModeController::Observer,
                                  public views::WidgetObserver {
  public:
+  static const char kViewClassName[];
+
   // |active_color| and |inactive_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
   HostedAppButtonContainer(views::Widget* widget,

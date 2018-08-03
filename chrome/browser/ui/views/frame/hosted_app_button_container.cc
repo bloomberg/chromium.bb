@@ -70,6 +70,9 @@ int HorizontalPaddingBetweenItems() {
 
 }  // namespace
 
+const char HostedAppButtonContainer::kViewClassName[] =
+    "HostedAppButtonContainer";
+
 const base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay =
     base::TimeDelta::FromMilliseconds(750);
 
@@ -331,7 +334,7 @@ void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
 }
 
 const char* HostedAppButtonContainer::GetClassName() const {
-  return "HostedAppButtonContainer";
+  return kViewClassName;
 }
 
 views::MenuButton* HostedAppButtonContainer::GetOverflowReferenceView() {

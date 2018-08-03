@@ -8,6 +8,7 @@
 #include "base/containers/adapters.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -171,13 +172,22 @@ int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
   if (!delegate_->ShouldShowWindowTitle())
     return FrameTopBorderThickness(restored);
 
-  // The + 2 here puts at least 1 px of space on top and bottom of the icon.
-  const int icon_height =
-      TitlebarTopThickness(restored) + delegate_->GetIconSize() + 2;
+  // Adding 2px of vertical padding puts at least 1 px of space on the top and
+  // bottom of the element.
+  constexpr int kVerticalPadding = 2;
+  const int icon_height = TitlebarTopThickness(restored) +
+                          delegate_->GetIconSize() + kVerticalPadding;
   const int caption_button_height = DefaultCaptionButtonY(restored) +
                                     kCaptionButtonHeight +
                                     kCaptionButtonBottomPadding;
-  return std::max(icon_height, caption_button_height) +
+  int hosted_app_button_height = 0;
+  if (hosted_app_button_container_) {
+    hosted_app_button_height =
+        hosted_app_button_container_->GetPreferredSize().height() +
+        kVerticalPadding;
+  }
+  return std::max(std::max(icon_height, caption_button_height),
+                  hosted_app_button_height) +
          kContentEdgeShadowThickness;
 }
 
@@ -375,7 +385,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
   bool should_show_icon = delegate_->ShouldShowWindowIcon() && window_icon_;
   bool should_show_title = delegate_->ShouldShowWindowTitle() && window_title_;
 
-  if (should_show_icon || should_show_title) {
+  if (should_show_icon || should_show_title || hosted_app_button_container_) {
     use_hidden_icon_location = false;
 
     // Our frame border has a different "3D look" than Windows'.  Theirs has
@@ -391,15 +401,22 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
     // caption button, we vertically center it.  We want to bias rounding to
     // put extra space below the icon, since we'll use the same Y coordinate for
     // the title, and the majority of the font weight is below the centerline.
+    const int available_height = NonClientTopHeight(false);
     const int icon_height =
         unavailable_px_at_top + size + kContentEdgeShadowThickness;
-    const int y =
-        unavailable_px_at_top + (NonClientTopHeight(false) - icon_height) / 2;
+    const int y = unavailable_px_at_top + (available_height - icon_height) / 2;
 
     window_icon_bounds_ =
         gfx::Rect(available_space_leading_x_ + kIconLeftSpacing, y, size, size);
     available_space_leading_x_ += size + kIconLeftSpacing;
     minimum_size_for_buttons_ += size + kIconLeftSpacing;
+
+    if (hosted_app_button_container_) {
+      available_space_trailing_x_ =
+          hosted_app_button_container_->LayoutInContainer(
+              available_space_leading_x_, available_space_trailing_x_,
+              available_height);
+    }
   }
 
   if (should_show_icon)
@@ -650,8 +667,13 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
     case VIEW_ID_AVATAR_BUTTON:
       new_avatar_button_ = view;
       break;
+    case VIEW_ID_HOSTED_APP_BUTTON_CONTAINER:
+      DCHECK_EQ(view->GetClassName(), HostedAppButtonContainer::kViewClassName);
+      hosted_app_button_container_ =
+          static_cast<HostedAppButtonContainer*>(view);
+      break;
     default:
-      NOTIMPLEMENTED() << "Unknown view id " << id;
+      NOTREACHED() << "Unknown view id " << id;
       break;
   }
 }
