@@ -499,7 +499,18 @@ void LockContentsView::OnUsersChanged(
   opt_secondary_big_view_ = nullptr;
   users_list_ = nullptr;
   rotation_actions_.clear();
-  users_.clear();
+
+  // Build user state list. Preserve previous state if the user already exists.
+  std::vector<UserState> new_users;
+  for (const mojom::LoginUserInfoPtr& user : users) {
+    UserState* old_state = FindStateForUser(user->basic_user_info->account_id);
+    if (old_state)
+      new_users.push_back(std::move(*old_state));
+    else
+      new_users.push_back(UserState(user));
+  }
+
+  users_ = std::move(new_users);
 
   // If there are no users, show gaia signin if login, otherwise crash.
   if (users.empty()) {
@@ -509,10 +520,6 @@ void LockContentsView::OnUsersChanged(
         false /*can_close*/, base::nullopt /*prefilled_account*/);
     return;
   }
-
-  // Build user state list.
-  for (const mojom::LoginUserInfoPtr& user : users)
-    users_.push_back(UserState(user));
 
   auto box_layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
