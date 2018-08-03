@@ -1266,7 +1266,7 @@ public class TabPersistentStore extends TabPersister {
         } else {
             TabRestoreDetails tabToRestore = mTabsToRestore.removeFirst();
             mLoadTabTask = new LoadTabTask(tabToRestore);
-            mLoadTabTask.execute();
+            mLoadTabTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         }
     }
 
