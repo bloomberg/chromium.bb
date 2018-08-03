@@ -36,7 +36,7 @@ class ListPropertyViewBinder implements ViewBinder<PropertyModel, RecyclerView, 
                 || propertyKey == ListProperties.PROVIDER_VISUALS
                 || propertyKey == ListProperties.CALLBACK_SELECTION
                 || propertyKey == ListProperties.SELECTION_MODE_ACTIVE) {
-            view.getAdapter().notifyItemChanged(0, view.getAdapter().getItemCount());
+            view.getAdapter().notifyItemRangeChanged(0, view.getAdapter().getItemCount());
         }
     }
 }
