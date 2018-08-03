@@ -19,7 +19,7 @@
 namespace vr {
 
 class VRDisplayHost;
-class BrowserXrDevice;
+class BrowserXRRuntime;
 
 // Browser process representation of a WebVR site session. Instantiated through
 // Mojo once the user loads a page containing WebVR.
@@ -36,15 +36,15 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
                      device::mojom::VRServiceRequest request);
 
   // device::mojom::VRService implementation
-  // Adds this service to the VRDeviceManager.
+  // Adds this service to the XRRuntimeManager.
   void SetClient(device::mojom::VRServiceClientPtr service_client,
                  SetClientCallback callback) override;
 
   // Tells the renderer that a new VR device is available.
-  void ConnectDevice(BrowserXrDevice* device);
+  void ConnectRuntime(BrowserXRRuntime* device);
 
   // Tells the renderer that a VR device has gone away.
-  void RemoveDevice(BrowserXrDevice* device);
+  void RemoveRuntime(BrowserXRRuntime* device);
 
   void InitializationComplete();
 

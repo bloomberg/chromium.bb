@@ -25,7 +25,7 @@ class VRDisplayImpl;
 
 namespace vr {
 
-class BrowserXrDevice;
+class BrowserXRRuntime;
 
 // The browser-side host for a device::VRDisplayImpl. Controls access to VR
 // APIs like poses and presentation.
@@ -48,10 +48,10 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   void SetInFocusedFrame(bool in_focused_frame);
 
   // Notifications when devices are added/removed.
-  void OnDeviceRemoved(BrowserXrDevice* device);
-  void OnDeviceAdded(BrowserXrDevice* device);
+  void OnRuntimeRemoved(BrowserXRRuntime* device);
+  void OnRuntimeAvailable(BrowserXRRuntime* device);
 
-  // Notifications/calls from BrowserXrDevice:
+  // Notifications/calls from BrowserXRRuntime:
   void OnChanged();
   void OnExitPresent();
   void OnBlur();
@@ -95,9 +95,9 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
 
   // If we start an immersive session, or are listening to immersive activation,
   // notify this device if we are destroyed.
-  BrowserXrDevice* immersive_device_ = nullptr;
-  BrowserXrDevice* magic_window_device_ = nullptr;
-  BrowserXrDevice* ar_device_ = nullptr;
+  BrowserXRRuntime* immersive_runtime_ = nullptr;
+  BrowserXRRuntime* non_immersive_runtime_ = nullptr;
+  BrowserXRRuntime* ar_runtime_ = nullptr;
 
   base::WeakPtrFactory<VRDisplayHost> weak_ptr_factory_;
 

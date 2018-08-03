@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/vr/service/vr_device_manager.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
+#include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_device_provider.h"
@@ -23,18 +23,18 @@ namespace vr {
 
 namespace {
 
-class VRDeviceManagerForTesting : public VRDeviceManager {
+class XRRuntimeManagerForTesting : public XRRuntimeManager {
  public:
-  explicit VRDeviceManagerForTesting(ProviderList providers)
-      : VRDeviceManager(std::move(providers)) {}
-  ~VRDeviceManagerForTesting() override = default;
+  explicit XRRuntimeManagerForTesting(ProviderList providers)
+      : XRRuntimeManager(std::move(providers)) {}
+  ~XRRuntimeManagerForTesting() override = default;
 
   size_t NumberOfConnectedServices() {
-    return VRDeviceManager::NumberOfConnectedServices();
+    return XRRuntimeManager::NumberOfConnectedServices();
   }
 
   // Expose this test-only method as public for tests.
-  using VRDeviceManager::GetRuntime;
+  using XRRuntimeManager::GetRuntimeForTest;
 };
 
 class VRServiceImplForTesting : public VRServiceImpl {
@@ -45,23 +45,23 @@ class VRServiceImplForTesting : public VRServiceImpl {
 
 }  // namespace
 
-class VRDeviceManagerTest : public testing::Test {
+class XRRuntimeManagerTest : public testing::Test {
  public:
   void onDisplaySynced() {}
 
  protected:
-  VRDeviceManagerTest() = default;
-  ~VRDeviceManagerTest() override = default;
+  XRRuntimeManagerTest() = default;
+  ~XRRuntimeManagerTest() override = default;
 
   void SetUp() override {
     std::vector<std::unique_ptr<device::VRDeviceProvider>> providers;
     provider_ = new device::FakeVRDeviceProvider();
     providers.emplace_back(
         std::unique_ptr<device::FakeVRDeviceProvider>(provider_));
-    new VRDeviceManagerForTesting(std::move(providers));
+    new XRRuntimeManagerForTesting(std::move(providers));
   }
 
-  void TearDown() override { EXPECT_FALSE(VRDeviceManager::HasInstance()); }
+  void TearDown() override { EXPECT_FALSE(XRRuntimeManager::HasInstance()); }
 
   std::unique_ptr<VRServiceImplForTesting> BindService() {
     device::mojom::VRServiceClientPtr proxy;
@@ -69,31 +69,31 @@ class VRDeviceManagerTest : public testing::Test {
     auto service = base::WrapUnique(new VRServiceImplForTesting());
     service->SetClient(
         std::move(proxy),
-        base::BindRepeating(&VRDeviceManagerTest::onDisplaySynced,
+        base::BindRepeating(&XRRuntimeManagerTest::onDisplaySynced,
                             base::Unretained(this)));
     return service;
   }
 
-  VRDeviceManagerForTesting* DeviceManager() {
-    EXPECT_TRUE(VRDeviceManager::HasInstance());
-    return static_cast<VRDeviceManagerForTesting*>(
-        VRDeviceManager::GetInstance());
+  XRRuntimeManagerForTesting* DeviceManager() {
+    EXPECT_TRUE(XRRuntimeManager::HasInstance());
+    return static_cast<XRRuntimeManagerForTesting*>(
+        XRRuntimeManager::GetInstance());
   }
 
   size_t ServiceCount() { return DeviceManager()->NumberOfConnectedServices(); }
 
   device::FakeVRDeviceProvider* Provider() {
-    EXPECT_TRUE(VRDeviceManager::HasInstance());
+    EXPECT_TRUE(XRRuntimeManager::HasInstance());
     return provider_;
   }
 
  private:
   device::FakeVRDeviceProvider* provider_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(VRDeviceManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(XRRuntimeManagerTest);
 };
 
-TEST_F(VRDeviceManagerTest, InitializationTest) {
+TEST_F(XRRuntimeManagerTest, InitializationTest) {
   EXPECT_FALSE(Provider()->Initialized());
 
   // Calling GetDevices should initialize the service if it hasn't been
@@ -105,19 +105,20 @@ TEST_F(VRDeviceManagerTest, InitializationTest) {
   EXPECT_TRUE(Provider()->Initialized());
 }
 
-TEST_F(VRDeviceManagerTest, GetNoDevicesTest) {
+TEST_F(XRRuntimeManagerTest, GetNoDevicesTest) {
   auto service = BindService();
   // Calling GetVRDevices should initialize the providers.
   EXPECT_TRUE(Provider()->Initialized());
 
   // GetDeviceByIndex should return nullptr if an invalid index in queried.
-  device::mojom::XRRuntime* queried_device = DeviceManager()->GetRuntime(1);
+  device::mojom::XRRuntime* queried_device =
+      DeviceManager()->GetRuntimeForTest(1);
   EXPECT_EQ(nullptr, queried_device);
 }
 
 // Ensure that services are registered with the device manager as they are
 // created and removed from the device manager as their connections are closed.
-TEST_F(VRDeviceManagerTest, DeviceManagerRegistration) {
+TEST_F(XRRuntimeManagerTest, DeviceManagerRegistration) {
   EXPECT_EQ(0u, ServiceCount());
   auto service_1 = BindService();
   EXPECT_EQ(1u, ServiceCount());
@@ -126,12 +127,12 @@ TEST_F(VRDeviceManagerTest, DeviceManagerRegistration) {
   service_1.reset();
   EXPECT_EQ(1u, ServiceCount());
   service_2.reset();
-  EXPECT_FALSE(VRDeviceManager::HasInstance());
+  EXPECT_FALSE(XRRuntimeManager::HasInstance());
 }
 
 // Ensure that devices added and removed are reflected in calls to request
 // sessions.
-TEST_F(VRDeviceManagerTest, AddRemoveDevices) {
+TEST_F(XRRuntimeManagerTest, AddRemoveDevices) {
   auto service = BindService();
   EXPECT_EQ(1u, ServiceCount());
   EXPECT_TRUE(Provider()->Initialized());
@@ -141,9 +142,9 @@ TEST_F(VRDeviceManagerTest, AddRemoveDevices) {
 
   device::mojom::XRSessionOptions options = {};
   options.provide_passthrough_camera = true;
-  EXPECT_TRUE(DeviceManager()->GetDeviceForOptions(&options));
+  EXPECT_TRUE(DeviceManager()->GetRuntimeForOptions(&options));
   Provider()->RemoveDevice(device->GetId());
-  EXPECT_TRUE(!DeviceManager()->GetDeviceForOptions(&options));
+  EXPECT_TRUE(!DeviceManager()->GetRuntimeForOptions(&options));
 }
 
 }  // namespace vr

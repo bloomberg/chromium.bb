@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_SERVICE_BROWSER_XR_DEVICE_H_
-#define CHROME_BROWSER_VR_SERVICE_BROWSER_XR_DEVICE_H_
+#ifndef CHROME_BROWSER_VR_SERVICE_BROWSER_XR_RUNTIME_H_
+#define CHROME_BROWSER_VR_SERVICE_BROWSER_XR_RUNTIME_H_
 
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -14,19 +14,19 @@ namespace vr {
 
 class VRDisplayHost;
 
-// This class wraps the VRDevice interface, and registers for events.
-// There is one BrowserXrDevice per VRDevice (ie - one per runtime).
+// This class wraps a physical device's interfaces, and registers for events.
+// There is one BrowserXRRuntime per physical device runtime.
 // It manages browser-side handling of state, like which VRDisplayHost is
 // listening for device activation.
-class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
+class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
  public:
-  explicit BrowserXrDevice(device::mojom::XRRuntimePtr device,
-                           device::mojom::VRDisplayInfoPtr info);
-  ~BrowserXrDevice() override;
+  explicit BrowserXRRuntime(device::mojom::XRRuntimePtr runtime,
+                            device::mojom::VRDisplayInfoPtr info);
+  ~BrowserXRRuntime() override;
 
-  device::mojom::XRRuntime* GetRuntime() { return device_.get(); }
+  device::mojom::XRRuntime* GetRuntime() { return runtime_.get(); }
 
-  // Methods called by VRDisplayHost to interact with the device.
+  // Methods called by VRDisplayHost to interact with the runtime's device.
   void OnDisplayHostAdded(VRDisplayHost* display);
   void OnDisplayHostRemoved(VRDisplayHost* display);
   void ExitPresent(VRDisplayHost* display);
@@ -60,7 +60,7 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr immersive_session_controller);
 
-  device::mojom::XRRuntimePtr device_;
+  device::mojom::XRRuntimePtr runtime_;
   device::mojom::XRSessionControllerPtr immersive_session_controller_;
 
   std::set<VRDisplayHost*> displays_;
@@ -71,9 +71,9 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
 
   mojo::Binding<device::mojom::XRRuntimeEventListener> binding_;
 
-  base::WeakPtrFactory<BrowserXrDevice> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserXRRuntime> weak_ptr_factory_;
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_SERVICE_BROWSER_XR_DEVICE_H_
+#endif  // CHROME_BROWSER_VR_SERVICE_BROWSER_XR_RUNTIME_H_
