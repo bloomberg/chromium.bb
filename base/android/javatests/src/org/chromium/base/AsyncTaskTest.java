@@ -28,9 +28,9 @@ import java.util.concurrent.TimeUnit;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class AsyncTaskTest {
-    private static class SpecialChromeAsyncTask extends AsyncTask<Void, Void, Void> {
+    private static class SpecialChromeAsyncTask extends AsyncTask<Void> {
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground() {
             return null;
         }
     }

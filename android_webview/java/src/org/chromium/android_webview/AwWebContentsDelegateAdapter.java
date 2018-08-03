@@ -321,7 +321,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
                 ? mAwSettings.getBlockNetworkLoads() && URLUtil.isNetworkUrl(url) : true;
     }
 
-    private static class GetDisplayNameTask extends AsyncTask<Void, Void, String[]> {
+    private static class GetDisplayNameTask extends AsyncTask<String[]> {
         final int mProcessId;
         final int mRenderId;
         final int mModeFlags;
@@ -341,7 +341,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         }
 
         @Override
-        protected String[] doInBackground(Void...voids) {
+        protected String[] doInBackground() {
             String[] displayNames = new String[mFilePaths.length];
             for (int i = 0; i < mFilePaths.length; i++) {
                 displayNames[i] = resolveFileName(mFilePaths[i]);

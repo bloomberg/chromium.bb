@@ -28,9 +28,9 @@ public class StorageSummary {
      * Asynchronous task to query the default download directory option on primary storage.
      * Pass one String parameter as the name of the directory option.
      */
-    private static class DefaultDirectoryTask extends AsyncTask<Void, Void, DirectoryOption> {
+    private static class DefaultDirectoryTask extends AsyncTask<DirectoryOption> {
         @Override
-        protected DirectoryOption doInBackground(Void... params) {
+        protected DirectoryOption doInBackground() {
             File defaultDownloadDir =
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             DirectoryOption directoryOption =

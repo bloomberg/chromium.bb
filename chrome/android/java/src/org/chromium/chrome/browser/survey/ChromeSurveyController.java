@@ -456,7 +456,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
                 "Android.Survey.InfoBarClosingState", value, InfoBarClosingState.NUM_ENTRIES);
     }
 
-    static class StartDownloadIfEligibleTask extends AsyncTask<Void, Void, Boolean> {
+    static class StartDownloadIfEligibleTask extends AsyncTask<Boolean> {
         ChromeSurveyController mController;
         final TabModelSelector mSelector;
 
@@ -467,7 +467,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Boolean doInBackground() {
             if (!mController.doesUserQualifyForSurvey()) return false;
 
             if (SurveyController.getInstance().doesSurveyExist(

@@ -95,9 +95,9 @@ public final class ConnectivityChecker {
             postResult(callback, ConnectivityCheckResult.ERROR);
             return;
         }
-        new AsyncTask<Void, Void, Integer>() {
+        new AsyncTask<Integer>() {
             @Override
-            protected Integer doInBackground(Void... params) {
+            protected Integer doInBackground() {
                 try {
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setInstanceFollowRedirects(false);

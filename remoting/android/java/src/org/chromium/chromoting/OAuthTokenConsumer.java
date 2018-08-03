@@ -95,9 +95,9 @@ public class OAuthTokenConsumer {
      *                 callback.
      */
     public void revokeLatestToken(final OAuthTokenFetcher.Callback callback) {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 try {
                     GoogleAuthUtil.clearToken(mContext, mLatestToken);
                     mLatestToken = null;
@@ -121,7 +121,8 @@ public class OAuthTokenConsumer {
                 }
                 return null;
             }
-        }.execute();
+        }
+                .execute();
     }
 
     private void handleErrorOnMainThread(final OAuthTokenFetcher.Callback callback,

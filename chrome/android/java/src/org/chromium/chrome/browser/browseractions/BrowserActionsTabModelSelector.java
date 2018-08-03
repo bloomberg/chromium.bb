@@ -144,9 +144,9 @@ public class BrowserActionsTabModelSelector
                     mPendingUrls.clear();
                 }
             };
-            new AsyncTask<Void, Void, Void>() {
+            new AsyncTask<Void>() {
                 @Override
-                protected Void doInBackground(Void... params) {
+                protected Void doInBackground() {
                     mTabSaver.loadState(true);
                     mTabSaver.restoreTabs(false);
                     return null;

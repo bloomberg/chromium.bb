@@ -116,7 +116,7 @@ public class SmartSelectionProvider {
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    private class ClassificationTask extends AsyncTask<Void, Void, SelectionClient.Result> {
+    private class ClassificationTask extends AsyncTask<SelectionClient.Result> {
         private final TextClassifier mTextClassifier;
         private final int mRequestType;
         private final CharSequence mText;
@@ -135,7 +135,7 @@ public class SmartSelectionProvider {
         }
 
         @Override
-        protected SelectionClient.Result doInBackground(Void... params) {
+        protected SelectionClient.Result doInBackground() {
             int start = mOriginalStart;
             int end = mOriginalEnd;
 

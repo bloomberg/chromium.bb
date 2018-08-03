@@ -37,7 +37,7 @@ public abstract class AsyncInitTaskRunner {
         return ChromeVersionInfo.isOfficialBuild();
     }
 
-    private class FetchSeedTask extends AsyncTask<Void, Void, Void> {
+    private class FetchSeedTask extends AsyncTask<Void> {
         private final String mRestrictMode;
         private final String mMilestone;
         private final String mChannel;
@@ -49,7 +49,7 @@ public abstract class AsyncInitTaskRunner {
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground() {
             VariationsSeedFetcher.get().fetchSeed(mRestrictMode, mMilestone, mChannel);
             return null;
         }

@@ -72,8 +72,8 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     /** Tracks whether tabs from two TabPersistentStores tabs are being merged together. */
     private static final AtomicBoolean MERGE_IN_PROGRESS = new AtomicBoolean();
 
-    private static AsyncTask<Void, Void, Void> sMigrationTask;
-    private static AsyncTask<Void, Void, Void> sCleanupTask;
+    private static AsyncTask<Void> sMigrationTask;
+    private static AsyncTask<Void> sCleanupTask;
 
     private static File sStateDirectory;
 
@@ -172,9 +172,9 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
 
         synchronized (MIGRATION_LOCK) {
             if (sMigrationTask != null) return true;
-            sMigrationTask = new AsyncTask<Void, Void, Void>() {
+            sMigrationTask = new AsyncTask<Void>() {
                 @Override
-                protected Void doInBackground(Void... params) {
+                protected Void doInBackground() {
                     if (!hasRunLegacyMigration) {
                         performLegacyMigration();
                     }
@@ -384,7 +384,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         mDestroyed = true;
     }
 
-    private class CleanUpTabStateDataTask extends AsyncTask<Void, Void, Void> {
+    private class CleanUpTabStateDataTask extends AsyncTask<Void> {
         private final Callback<List<String>> mFilesToDeleteCallback;
 
         private String[] mTabFileNames;
@@ -396,7 +396,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Void doInBackground() {
             if (mDestroyed) return null;
 
             mTabFileNames = getOrCreateStateDirectory().list();

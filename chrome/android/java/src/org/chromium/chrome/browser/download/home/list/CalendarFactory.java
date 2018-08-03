@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 
 /** Helper class to simplify querying for a {@link Calendar} instance. */
 public final class CalendarFactory {
-    private static final AsyncTask<Void, Void, Calendar> sCalendarBuilder =
+    private static final AsyncTask<Calendar> sCalendarBuilder =
             new CalendarBuilder().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
     private CalendarFactory() {}
@@ -34,9 +34,9 @@ public final class CalendarFactory {
         return calendar;
     }
 
-    private static class CalendarBuilder extends AsyncTask<Void, Void, Calendar> {
+    private static class CalendarBuilder extends AsyncTask<Calendar> {
         @Override
-        protected Calendar doInBackground(Void... params) {
+        protected Calendar doInBackground() {
             return Calendar.getInstance();
         }
     }

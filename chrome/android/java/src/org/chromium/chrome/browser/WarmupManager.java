@@ -217,9 +217,9 @@ public final class WarmupManager {
      */
     private void prefetchDnsForUrlInBackground(final String url) {
         mDnsRequestsInFlight.add(url);
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 try (TraceEvent e =
                                 TraceEvent.scoped("WarmupManager.prefetchDnsForUrlInBackground")) {
                     InetAddress.getByName(new URL(url).getHost());

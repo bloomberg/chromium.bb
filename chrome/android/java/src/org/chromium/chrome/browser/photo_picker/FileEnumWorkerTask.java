@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * A worker task to enumerate image files on disk.
  */
-class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
+class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
     /**
      * An interface to use to communicate back the results to the client.
      */
@@ -95,7 +95,7 @@ class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
      * @return A sorted list of images (by last-modified first).
      */
     @Override
-    protected List<PickerBitmap> doInBackground(Void... params) {
+    protected List<PickerBitmap> doInBackground() {
         assert !ThreadUtils.runningOnUiThread();
 
         if (isCancelled()) return null;

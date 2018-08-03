@@ -132,9 +132,9 @@ public class AccountTrackerService {
         }
 
         AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
-            new AsyncTask<Void, Void, String[][]>() {
+            new AsyncTask<String[][]>() {
                 @Override
-                public String[][] doInBackground(Void... params) {
+                public String[][] doInBackground() {
                     Log.d(TAG, "Getting id/email mapping");
                     String[][] accountIdNameMap = new String[2][accounts.length];
                     for (int i = 0; i < accounts.length; ++i) {
@@ -159,7 +159,8 @@ public class AccountTrackerService {
                         seedSystemAccounts();
                     }
                 }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         });
     }
 

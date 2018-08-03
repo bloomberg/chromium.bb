@@ -243,9 +243,9 @@ public final class AwBrowserProcess {
      * minidumps, if we don't, delete them.
      */
     public static void handleMinidumps(final boolean userApproved) {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 final Context appContext = ContextUtils.getApplicationContext();
                 final File crashSpoolDir = new File(appContext.getCacheDir().getPath(), "WebView");
                 if (!crashSpoolDir.isDirectory()) return null;

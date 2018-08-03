@@ -266,9 +266,9 @@ class TtsPlatformImpl {
     private void initialize() {
         TraceEvent.begin("TtsPlatformImpl:initialize");
 
-        new AsyncTask<Void, Void, List<TtsVoice>>() {
+        new AsyncTask<List<TtsVoice>>() {
             @Override
-            protected List<TtsVoice> doInBackground(Void... unused) {
+            protected List<TtsVoice> doInBackground() {
                 assert mNativeTtsPlatformImplAndroid != 0;
 
                 try (TraceEvent te = TraceEvent.scoped("TtsPlatformImpl:initialize.async_task")) {
@@ -309,7 +309,8 @@ class TtsPlatformImpl {
 
                 TraceEvent.end("TtsPlatformImpl:initialize");
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private native void nativeVoicesChanged(long nativeTtsPlatformImplAndroid);

@@ -63,7 +63,7 @@ public class OmahaService extends OmahaBase implements BackgroundTask {
         }
     }
 
-    private AsyncTask<Void, Void, Void> mJobServiceTask;
+    private AsyncTask<Void> mJobServiceTask;
 
     /** Used only by {@link BackgroundTaskScheduler}. */
     public OmahaService() {
@@ -93,9 +93,9 @@ public class OmahaService extends OmahaBase implements BackgroundTask {
     @TargetApi(Build.VERSION_CODES.M)
     public boolean onStartTask(
             Context context, TaskParameters parameters, final TaskFinishedCallback callback) {
-        mJobServiceTask = new AsyncTask<Void, Void, Void>() {
+        mJobServiceTask = new AsyncTask<Void>() {
             @Override
-            public Void doInBackground(Void... params) {
+            public Void doInBackground() {
                 run();
                 return null;
             }

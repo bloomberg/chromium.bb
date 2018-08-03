@@ -126,9 +126,9 @@ public class WebApkInstaller {
 
     @CalledByNative
     private void checkFreeSpace() {
-        new AsyncTask<Void, Void, Integer>() {
+        new AsyncTask<Integer>() {
             @Override
-            protected Integer doInBackground(Void... params) {
+            protected Integer doInBackground() {
                 long availableSpaceInBytes = WebApkUma.getAvailableSpaceAboveLowSpaceLimit();
 
                 if (availableSpaceInBytes > 0) return SpaceStatus.ENOUGH_SPACE;
@@ -144,7 +144,8 @@ public class WebApkInstaller {
             protected void onPostExecute(Integer result) {
                 nativeOnGotSpaceStatus(mNativePointer, result);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private boolean isWebApkInstalled(String packageName) {

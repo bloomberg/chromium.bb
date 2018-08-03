@@ -74,13 +74,14 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
                 new AccountManagerFacade.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(final String token) {
-                        new AsyncTask<Void, Void, Void>() {
+                        new AsyncTask<Void>() {
                             @Override
-                            protected Void doInBackground(Void... voids) {
+                            protected Void doInBackground() {
                                 sendUpstreamMessage(to, data, token, applicationContext);
                                 return null;
                             }
-                        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
+                                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     }
 
                     @Override

@@ -470,9 +470,9 @@ public abstract class SigninFragmentBase
     private void recordConsent(TextView confirmationView) {
         // TODO(crbug.com/831257): Provide the account id synchronously from AccountManagerFacade.
         final AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
-        new AsyncTask<Void, Void, String>() {
+        new AsyncTask<String>() {
             @Override
-            public String doInBackground(Void... params) {
+            public String doInBackground() {
                 return accountIdProvider.getAccountId(mSelectedAccountName);
             }
 

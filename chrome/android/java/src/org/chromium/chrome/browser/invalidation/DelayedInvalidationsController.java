@@ -73,9 +73,9 @@ public class DelayedInvalidationsController {
      */
     @VisibleForTesting
     void notifyInvalidationsOnBackgroundThread(final Account account, final List<Bundle> bundles) {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... unused) {
+            protected Void doInBackground() {
                 String contractAuthority = AndroidSyncSettings.getContractAuthority();
                 for (Bundle bundle : bundles) {
                     ContentResolver.requestSync(account, contractAuthority, bundle);

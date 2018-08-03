@@ -200,8 +200,7 @@ public class PartnerBrowserCustomizations {
         sIsInitialized = false;
         Provider provider = AppHooks.get().getCustomizationProvider();
         // Setup an initializing async task.
-        final AsyncTask<Void, Void, Void> initializeAsyncTask =
-                new AsyncTask<Void, Void, Void>() {
+        final AsyncTask<Void> initializeAsyncTask = new AsyncTask<Void>() {
             private boolean mDisablePartnerBookmarksShim;
             private boolean mHomepageUriChanged;
 
@@ -241,7 +240,7 @@ public class PartnerBrowserCustomizations {
             }
 
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 try {
                     boolean systemOrPreStable =
                             (context.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) == 1

@@ -200,15 +200,16 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     private void ensureGcmIsInitialized() {
         if (mGcmInitialized) return;
         mGcmInitialized = true;
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... arg0) {
+            protected Void doInBackground() {
                 boolean useGcmUpstream = true;
                 AndroidGcmController.get(ContextUtils.getApplicationContext())
                         .initializeGcm(useGcmUpstream);
                 return null;
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @VisibleForTesting

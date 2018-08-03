@@ -163,9 +163,9 @@ public class ShortcutHelper {
             final Bitmap icon, @WebDisplayMode final int displayMode, final int orientation,
             final int source, final long themeColor, final long backgroundColor,
             final String splashScreenUrl, final long callbackPointer) {
-        new AsyncTask<Void, Void, Intent>() {
+        new AsyncTask<Intent>() {
             @Override
-            protected Intent doInBackground(Void... args0) {
+            protected Intent doInBackground() {
                 // Encoding {@link icon} as a string and computing the mac are expensive.
 
                 Context context = ContextUtils.getApplicationContext();
@@ -199,7 +199,8 @@ public class ShortcutHelper {
                     showAddedToHomescreenToast(userTitle);
                 }
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -280,9 +281,9 @@ public class ShortcutHelper {
     private static void storeWebappSplashImage(final String id, final Bitmap splashImage) {
         final WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(id);
         if (storage != null) {
-            new AsyncTask<Void, Void, String>() {
+            new AsyncTask<String>() {
                 @Override
-                protected String doInBackground(Void... args0) {
+                protected String doInBackground() {
                     return encodeBitmapAsString(splashImage);
                 }
 
@@ -290,7 +291,8 @@ public class ShortcutHelper {
                 protected void onPostExecute(String encodedImage) {
                     storage.updateSplashScreenImage(encodedImage);
                 }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 

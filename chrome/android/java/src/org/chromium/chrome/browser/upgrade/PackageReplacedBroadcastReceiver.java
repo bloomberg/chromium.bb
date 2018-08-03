@@ -39,9 +39,9 @@ public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
         if (!ChannelsUpdater.getInstance().shouldUpdateChannels()) return;
 
         final PendingResult result = goAsync();
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 ChannelsUpdater.getInstance().updateChannels();
                 result.finish();
                 return null;

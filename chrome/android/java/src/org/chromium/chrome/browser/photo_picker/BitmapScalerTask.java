@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A worker task to scale bitmaps in the background.
  */
-class BitmapScalerTask extends AsyncTask<Void, Void, Bitmap> {
+class BitmapScalerTask extends AsyncTask<Bitmap> {
     private final LruCache<String, Bitmap> mCache;
     private final String mFilePath;
     private final int mSize;
@@ -40,7 +40,7 @@ class BitmapScalerTask extends AsyncTask<Void, Void, Bitmap> {
      * @return A sorted list of images (by last-modified first).
      */
     @Override
-    protected Bitmap doInBackground(Void... params) {
+    protected Bitmap doInBackground() {
         assert !ThreadUtils.runningOnUiThread();
 
         if (isCancelled()) return null;

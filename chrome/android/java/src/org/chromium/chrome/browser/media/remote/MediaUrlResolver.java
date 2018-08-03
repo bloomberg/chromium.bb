@@ -29,7 +29,7 @@ import java.util.Map;
  * Resolves the final URL if it's a redirect. Works asynchronously, uses HTTP
  * HEAD request to determine if the URL is redirected.
  */
-public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Result> {
+public class MediaUrlResolver extends AsyncTask<MediaUrlResolver.Result> {
     // Cast.Sender.UrlResolveResult UMA histogram values; must match values of
     // RemotePlaybackUrlResolveResult in histograms.xml. Do not change these values, as they are
     // being used in UMA.
@@ -159,7 +159,7 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     }
 
     @Override
-    protected MediaUrlResolver.Result doInBackground(Void... params) {
+    protected MediaUrlResolver.Result doInBackground() {
         Uri uri = mDelegate.getUri();
         if (uri == null || uri.equals(Uri.EMPTY)) {
             return new MediaUrlResolver.Result(Uri.EMPTY, false);

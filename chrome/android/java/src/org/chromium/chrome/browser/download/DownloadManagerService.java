@@ -536,10 +536,9 @@ public class DownloadManagerService
     private boolean updateDownloadSuccessNotification(DownloadProgress progress) {
         final boolean isSupportedMimeType = progress.mIsSupportedMimeType;
         final DownloadItem item = progress.mDownloadItem;
-        AsyncTask<Void, Void, Pair<Long, Boolean>> task =
-                new AsyncTask<Void, Void, Pair<Long, Boolean>>() {
+        AsyncTask<Pair<Long, Boolean>> task = new AsyncTask<Pair<Long, Boolean>>() {
             @Override
-            public Pair<Long, Boolean> doInBackground(Void... params) {
+            public Pair<Long, Boolean> doInBackground() {
                 boolean success = addCompletedDownload(item);
                 boolean canResolve = success
                         && (isOMADownloadDescription(item.getDownloadInfo())
@@ -889,9 +888,9 @@ public class DownloadManagerService
             final boolean isSupportedMimeType, final boolean isOffTheRecord,
             final String downloadGuid, final long downloadId, final String originalUrl,
             final String referrer, @DownloadOpenSource int source) {
-        new AsyncTask<Void, Void, Intent>() {
+        new AsyncTask<Intent>() {
             @Override
-            public Intent doInBackground(Void... params) {
+            public Intent doInBackground() {
                 return getLaunchIntentFromDownloadId(
                         context, filePath, downloadId, isSupportedMimeType, originalUrl, referrer);
             }
@@ -916,7 +915,8 @@ public class DownloadManagerService
                     DownloadMetrics.recordDownloadOpen(source, mimeType);
                 }
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -1076,13 +1076,14 @@ public class DownloadManagerService
             removeDownloadProgress(downloadGuid);
         });
 
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            public Void doInBackground(Void... params) {
+            public Void doInBackground() {
                 mDownloadManagerDelegate.removeCompletedDownload(downloadGuid, externallyRemoved);
                 return null;
             }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**
@@ -1690,9 +1691,9 @@ public class DownloadManagerService
     public void checkIfDownloadWillAutoOpen(DownloadItem downloadItem, Callback<Boolean> callback) {
         assert(downloadItem.getDownloadInfo().state() == DownloadState.COMPLETE);
 
-        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+        AsyncTask<Boolean> task = new AsyncTask<Boolean>() {
             @Override
-            public Boolean doInBackground(Void... params) {
+            public Boolean doInBackground() {
                 boolean isSupportedMimeType =
                         isSupportedMimeType(downloadItem.getDownloadInfo().getMimeType());
                 boolean canResolve = isOMADownloadDescription(downloadItem.getDownloadInfo())

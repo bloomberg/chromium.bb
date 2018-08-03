@@ -349,7 +349,7 @@ public class LibraryLoader {
         new LibraryPrefetchTask(coldStart).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private static class LibraryPrefetchTask extends AsyncTask<Void, Void, Void> {
+    private static class LibraryPrefetchTask extends AsyncTask<Void> {
         private final boolean mColdStart;
 
         public LibraryPrefetchTask(boolean coldStart) {
@@ -357,7 +357,7 @@ public class LibraryLoader {
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground() {
             try (TraceEvent e = TraceEvent.scoped("LibraryLoader.asyncPrefetchLibrariesToMemory")) {
                 int percentage = nativePercentageOfResidentNativeLibraryCode();
                 // Arbitrary percentage threshold. If most of the native library is already

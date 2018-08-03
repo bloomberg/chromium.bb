@@ -317,9 +317,9 @@ public class AccountManagerFacade {
     @MainThread
     public void getGoogleAccounts(final Callback<AccountManagerResult<Account[]>> callback) {
         ThreadUtils.assertOnUiThread();
-        new AsyncTask<Void, Void, AccountManagerResult<Account[]>>() {
+        new AsyncTask<AccountManagerResult<Account[]>>() {
             @Override
-            protected AccountManagerResult<Account[]> doInBackground(Void... params) {
+            protected AccountManagerResult<Account[]> doInBackground() {
                 try {
                     return new AccountManagerResult<>(getGoogleAccounts());
                 } catch (AccountManagerDelegateException ex) {
@@ -331,7 +331,8 @@ public class AccountManagerFacade {
             protected void onPostExecute(AccountManagerResult<Account[]> accounts) {
                 callback.onResult(accounts);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -356,9 +357,9 @@ public class AccountManagerFacade {
     @MainThread
     public void tryGetGoogleAccounts(final Callback<Account[]> callback) {
         ThreadUtils.assertOnUiThread();
-        new AsyncTask<Void, Void, Account[]>() {
+        new AsyncTask<Account[]>() {
             @Override
-            protected Account[] doInBackground(Void... params) {
+            protected Account[] doInBackground() {
                 return tryGetGoogleAccounts();
             }
 
@@ -366,7 +367,8 @@ public class AccountManagerFacade {
             protected void onPostExecute(Account[] accounts) {
                 callback.onResult(accounts);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -531,9 +533,9 @@ public class AccountManagerFacade {
     @MainThread
     public void checkChildAccountStatus(Account account, Callback<Integer> callback) {
         ThreadUtils.assertOnUiThread();
-        new AsyncTask<Void, Void, Integer>() {
+        new AsyncTask<Integer>() {
             @Override
-            public @ChildAccountStatus.Status Integer doInBackground(Void... params) {
+            public @ChildAccountStatus.Status Integer doInBackground() {
                 if (hasFeature(account, FEATURE_IS_CHILD_ACCOUNT_KEY)) {
                     return ChildAccountStatus.REGULAR_CHILD;
                 }
@@ -712,14 +714,14 @@ public class AccountManagerFacade {
         mCallbacksWaitingForPendingUpdates.clear();
     }
 
-    private class InitializeTask extends AsyncTask<Void, Void, Void> {
+    private class InitializeTask extends AsyncTask<Void> {
         @Override
         protected void onPreExecute() {
             ++mUpdateTasksCounter;
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground() {
             mAccountRestrictionPatterns = getAccountRestrictionPatterns();
             mAllAccounts = getAllAccounts();
             mFilteredAccounts.set(getFilteredAccounts());
@@ -736,15 +738,14 @@ public class AccountManagerFacade {
         }
     }
 
-    private class UpdateAccountRestrictionPatternsTask
-            extends AsyncTask<Void, Void, PatternMatcher[]> {
+    private class UpdateAccountRestrictionPatternsTask extends AsyncTask<PatternMatcher[]> {
         @Override
         protected void onPreExecute() {
             ++mUpdateTasksCounter;
         }
 
         @Override
-        protected PatternMatcher[] doInBackground(Void... params) {
+        protected PatternMatcher[] doInBackground() {
             return getAccountRestrictionPatterns();
         }
 
@@ -755,15 +756,14 @@ public class AccountManagerFacade {
         }
     }
 
-    private class UpdateAccountsTask
-            extends AsyncTask<Void, Void, AccountManagerResult<Account[]>> {
+    private class UpdateAccountsTask extends AsyncTask<AccountManagerResult<Account[]>> {
         @Override
         protected void onPreExecute() {
             ++mUpdateTasksCounter;
         }
 
         @Override
-        protected AccountManagerResult<Account[]> doInBackground(Void... params) {
+        protected AccountManagerResult<Account[]> doInBackground() {
             return getAllAccounts();
         }
 
@@ -812,9 +812,9 @@ public class AccountManagerFacade {
             ThreadUtils.assertOnUiThread();
             // Clear any transient error.
             mIsTransientError.set(false);
-            new AsyncTask<Void, Void, T>() {
+            new AsyncTask<T>() {
                 @Override
-                public T doInBackground(Void... params) {
+                public T doInBackground() {
                     try {
                         return mAuthTask.run();
                     } catch (AuthException ex) {
@@ -838,7 +838,8 @@ public class AccountManagerFacade {
                         NetworkChangeNotifier.addConnectionTypeObserver(ConnectionRetry.this);
                     }
                 }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         @Override

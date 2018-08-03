@@ -90,9 +90,9 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
 
         // Use an AsyncTask to execute the installed/related checks on a background thread (so as
         // not to block the UI thread).
-        new AsyncTask<Void, Void, Pair<RelatedApplication[], Integer>>() {
+        new AsyncTask<Pair<RelatedApplication[], Integer>>() {
             @Override
-            protected Pair<RelatedApplication[], Integer> doInBackground(Void... unused) {
+            protected Pair<RelatedApplication[], Integer> doInBackground() {
                 return filterInstalledAppsOnBackgroundThread(relatedApps, frameUrl);
             }
 
@@ -109,7 +109,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
                     }
                 }, delayMillis);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override

@@ -32,7 +32,7 @@ public class OptionalShareTargetsManager {
     private static Set<Activity> sPendingShareActivities =
             Collections.synchronizedSet(new HashSet<Activity>());
     private static ActivityStateListener sStateListener;
-    private static AsyncTask<Void, Void, Void> sStateChangeTask;
+    private static AsyncTask<Void> sStateChangeTask;
     private static List<ComponentName> sEnabledComponents;
 
     /**
@@ -65,9 +65,9 @@ public class OptionalShareTargetsManager {
         waitForPendingStateChangeTask();
         if (wasEmpty) {
             // Note: possible race condition if two calls to this method happen simultaneously.
-            sStateChangeTask = new AsyncTask<Void, Void, Void>() {
+            sStateChangeTask = new AsyncTask<Void>() {
                 @Override
-                protected Void doInBackground(Void... params) {
+                protected Void doInBackground() {
                     if (sPendingShareActivities.isEmpty()) return null;
                     sEnabledComponents = new ArrayList<>(enabledClasses.size());
                     for (int i = 0; i < enabledClasses.size(); i++) {
@@ -109,9 +109,9 @@ public class OptionalShareTargetsManager {
         ApplicationStatus.unregisterActivityStateListener(sStateListener);
 
         waitForPendingStateChangeTask();
-        sStateChangeTask = new AsyncTask<Void, Void, Void>() {
+        sStateChangeTask = new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 if (!sPendingShareActivities.isEmpty() || sEnabledComponents == null) return null;
                 for (int i = 0; i < sEnabledComponents.size(); i++) {
                     triggeringActivity.getPackageManager().setComponentEnabledSetting(

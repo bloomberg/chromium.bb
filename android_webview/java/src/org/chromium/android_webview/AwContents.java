@@ -2157,9 +2157,9 @@ public class AwContents implements SmartClipProvider {
         }
         // If auto-generating the file name, handle the name generation on a background thread
         // as it will require I/O access for checking whether previous files existed.
-        new AsyncTask<Void, Void, String>() {
+        new AsyncTask<String>() {
             @Override
-            protected String doInBackground(Void... params) {
+            protected String doInBackground() {
                 return generateArchiveAutoNamePath(getOriginalUrl(), basename);
             }
 
@@ -2167,7 +2167,8 @@ public class AwContents implements SmartClipProvider {
             protected void onPostExecute(String result) {
                 saveWebArchiveInternal(result, callback);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public String getOriginalUrl() {

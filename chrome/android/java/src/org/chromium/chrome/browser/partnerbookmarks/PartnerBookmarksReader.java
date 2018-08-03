@@ -218,11 +218,11 @@ public class PartnerBookmarksReader {
     }
 
     /** Handles fetching partner bookmarks in a background thread. */
-    private class ReadBookmarksTask extends AsyncTask<Void, Void, Void> {
+    private class ReadBookmarksTask extends AsyncTask<Void> {
         private final Object mRootSync = new Object();
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground() {
             if (mFaviconThrottle == null) {
                 // Initialize the throttle here since we need to load shared preferences on the
                 // background thread as well.

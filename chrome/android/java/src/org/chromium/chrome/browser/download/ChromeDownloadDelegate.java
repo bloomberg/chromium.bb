@@ -78,9 +78,9 @@ public class ChromeDownloadDelegate {
         assert !TextUtils.isEmpty(fileName);
         final String newMimeType =
                 remapGenericMimeType(downloadInfo.getMimeType(), downloadInfo.getUrl(), fileName);
-        new AsyncTask<Void, Void, Pair<String, File>>() {
+        new AsyncTask<Pair<String, File>>() {
             @Override
-            protected Pair<String, File> doInBackground(Void... params) {
+            protected Pair<String, File> doInBackground() {
                 // Check to see if we have an SDCard.
                 String status = Environment.getExternalStorageState();
                 File fullDirPath = getDownloadDirectoryFullPath();
@@ -162,9 +162,9 @@ public class ChromeDownloadDelegate {
         if (overwrite) {
             // Android DownloadManager does not have an overwriting option.
             // We remove the file here instead.
-            new AsyncTask<Void, Void, Void>() {
+            new AsyncTask<Void>() {
                 @Override
-                public Void doInBackground(Void... params) {
+                public Void doInBackground() {
                     deleteFileForOverwrite(downloadInfo);
                     return null;
                 }
@@ -284,8 +284,7 @@ public class ChromeDownloadDelegate {
         String path = uri.getPath();
         if (!OMADownloadHandler.isOMAFile(path)) return false;
         if (mTab == null) return true;
-        String fileName = URLUtil.guessFileName(
-                url, null, OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
+        String fileName = URLUtil.guessFileName(url, null, OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
         final DownloadInfo downloadInfo =
                 new DownloadInfo.Builder().setUrl(url).setFileName(fileName).build();
         WindowAndroid window = mTab.getWindowAndroid();

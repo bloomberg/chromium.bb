@@ -79,9 +79,9 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
         return getMessageText(template, filename, new ClickableSpan() {
             @Override
             public void onClick(View view) {
-                new AsyncTask<Void, Void, Boolean>() {
+                new AsyncTask<Boolean>() {
                     @Override
-                    protected Boolean doInBackground(Void... params) {
+                    protected Boolean doInBackground() {
                         return new File(mFilePath).exists();
                     }
 
@@ -129,13 +129,13 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
      * @param clickableSpan Action to perform when clicking on the file name.
      * @return message to be displayed on the infobar.
      */
-    private CharSequence getMessageText(final String template, final String fileName,
-            final ClickableSpan clickableSpan) {
+    private CharSequence getMessageText(
+            final String template, final String fileName, final ClickableSpan clickableSpan) {
         final SpannableString formattedFilePath = new SpannableString(fileName);
         formattedFilePath.setSpan(new StyleSpan(Typeface.BOLD), 0, fileName.length(),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        formattedFilePath.setSpan(clickableSpan, 0, fileName.length(),
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        formattedFilePath.setSpan(
+                clickableSpan, 0, fileName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return TextUtils.expandTemplate(template, formattedFilePath);
     }
 
