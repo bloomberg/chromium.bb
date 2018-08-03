@@ -8,8 +8,6 @@ source_set("manual_fill") {
   sources = [
     "keyboard_accessory_view.h",
     "keyboard_accessory_view.mm",
-    "keyboard_background_view.h",
-    "keyboard_background_view.mm",
   ]
   deps = [
     "//base",
