@@ -9,9 +9,11 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
@@ -29,6 +31,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image.h"
@@ -51,6 +54,12 @@
 
 using content::WebContents;
 
+namespace {
+
+constexpr SkColor kTitleBarFeatureColor = SK_ColorWHITE;
+
+}  // namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, public:
 
@@ -69,6 +78,11 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
       frame_background_(new views::FrameBackground()) {
   layout_->set_delegate(this);
   SetLayoutManager(std::unique_ptr<views::LayoutManager>(layout_));
+
+  // This must be initialised before the call to GetFrameColor().
+  platform_observer_.reset(OpaqueBrowserFrameViewPlatformSpecific::Create(
+      this, layout_,
+      ThemeServiceFactory::GetForProfile(browser_view->browser()->profile())));
 
   minimize_button_ = InitWindowCaptionButton(IDR_MINIMIZE,
                                              IDR_MINIMIZE_H,
@@ -106,15 +120,23 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
 
   window_title_ = new views::Label(browser_view->GetWindowTitle());
   window_title_->SetVisible(browser_view->ShouldShowWindowTitle());
-  window_title_->SetEnabledColor(SK_ColorWHITE);
+  window_title_->SetEnabledColor(kTitleBarFeatureColor);
   window_title_->SetSubpixelRenderingEnabled(false);
   window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  platform_observer_.reset(OpaqueBrowserFrameViewPlatformSpecific::Create(
-      this, layout_,
-      ThemeServiceFactory::GetForProfile(browser_view->browser()->profile())));
+  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_view->browser())) {
+    hosted_app_button_container_ = new HostedAppButtonContainer(
+        frame, browser_view,
+        color_utils::GetReadableColor(kTitleBarFeatureColor,
+                                      GetFrameColor(true)),
+        color_utils::GetReadableColor(kTitleBarFeatureColor,
+                                      GetFrameColor(false)));
+    hosted_app_button_container_->set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
+    AddChildView(hosted_app_button_container_);
+  }
 }
 
 OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {}
@@ -276,6 +298,8 @@ void OpaqueBrowserFrameView::ResetWindowControls() {
   minimize_button_->SetState(views::Button::STATE_NORMAL);
   maximize_button_->SetState(views::Button::STATE_NORMAL);
   // The close button isn't affected by this constraint.
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
 }
 
 void OpaqueBrowserFrameView::UpdateWindowIcon() {
@@ -294,11 +318,19 @@ void OpaqueBrowserFrameView::SizeConstraintsChanged() {}
 
 void OpaqueBrowserFrameView::ActivationChanged(bool active) {
   BrowserNonClientFrameView::ActivationChanged(active);
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->SetPaintAsActive(active);
   MaybeRedrawFrameButtons();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
+
+void OpaqueBrowserFrameView::ChildPreferredSizeChanged(views::View* child) {
+  BrowserNonClientFrameView::ChildPreferredSizeChanged(child);
+  if (browser_view()->initialized() && child == hosted_app_button_container_)
+    Layout();
+}
 
 void OpaqueBrowserFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTitleBar;
@@ -470,7 +502,9 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   if (frame()->IsFullscreen())
     return;  // Nothing is visible, so don't bother to paint.
 
-  frame_background_->set_frame_color(GetFrameColor());
+  SkColor frame_color = GetFrameColor();
+  window_title_->SetBackgroundColor(frame_color);
+  frame_background_->set_frame_color(frame_color);
   frame_background_->set_use_custom_frame(frame()->UseCustomFrame());
   frame_background_->set_is_active(ShouldPaintAsActive());
   frame_background_->set_incognito(browser_view()->IsIncognito());

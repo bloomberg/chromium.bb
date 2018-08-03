@@ -21,6 +21,7 @@
 
 class BrowserView;
 class OpaqueBrowserFrameViewLayout;
+class HostedAppButtonContainer;
 class OpaqueBrowserFrameViewPlatformSpecific;
 class TabIconView;
 
@@ -71,6 +72,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   bool HasClientEdge() const override;
 
   // views::View:
+  void ChildPreferredSizeChanged(views::View* child) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
@@ -186,6 +188,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // The window icon and title.
   TabIconView* window_icon_;
   views::Label* window_title_;
+
+  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
   // Background painter for the window frame.
   std::unique_ptr<views::FrameBackground> frame_background_;

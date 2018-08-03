@@ -11,6 +11,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/window/frame_buttons.h"
 
+class HostedAppButtonContainer;
 class OpaqueBrowserFrameViewLayoutDelegate;
 
 namespace views {
@@ -237,6 +238,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   views::View* window_icon_;
   views::Label* window_title_;
+
+  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
   views::View* incognito_icon_;
 

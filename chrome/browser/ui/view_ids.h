@@ -24,6 +24,7 @@ enum ViewID {
   VIEW_ID_WINDOW_TITLE,
   VIEW_ID_PROFILE_INDICATOR_ICON,
   VIEW_ID_AVATAR_BUTTON,
+  VIEW_ID_HOSTED_APP_BUTTON_CONTAINER,
 
   // Tabs within a window/tab strip, counting from the left.
   VIEW_ID_TAB_0,
