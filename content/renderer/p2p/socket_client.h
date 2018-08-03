@@ -9,8 +9,9 @@
 
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "content/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
-#include "services/network/public/cpp/p2p_socket_type.h"
 
 namespace rtc {
 struct PacketOptions;
@@ -21,17 +22,17 @@ namespace content {
 class P2PSocketClientDelegate;
 
 // P2P socket that routes all calls over IPC.
-class P2PSocketClient {
+// Note that while ref-counting is thread-safe, all methods must be
+// called on the same thread.
+class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
  public:
-  virtual ~P2PSocketClient() {}
-
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|. Return value is the unique packet_id for this packet.
   virtual uint64_t Send(const net::IPEndPoint& address,
-                        const std::vector<int8_t>& data,
+                        const std::vector<char>& data,
                         const rtc::PacketOptions& options) = 0;
 
-  virtual void SetOption(network::P2PSocketOption option, int value) = 0;
+  virtual void SetOption(P2PSocketOption option, int value) = 0;
 
   // Must be called before the socket is destroyed.
   virtual void Close() = 0;
@@ -41,6 +42,11 @@ class P2PSocketClient {
 
  protected:
   P2PSocketClient() {}
+  virtual ~P2PSocketClient() {}
+
+ private:
+  // Calls destructor.
+  friend class base::RefCountedThreadSafe<P2PSocketClient>;
 };
 }  // namespace content
 

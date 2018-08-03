@@ -11,14 +11,12 @@
 #include <tuple>
 #include <vector>
 
+#include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/p2p_param_traits.h"
-#include "services/network/public/mojom/p2p.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -100,34 +98,10 @@ class FakeSocket : public net::StreamSocket {
   net::NetLogWithSource net_log_;
 };
 
-class FakeSocketClient : public network::mojom::P2PSocketClient {
- public:
-  FakeSocketClient(network::mojom::P2PSocketPtr socket,
-                   network::mojom::P2PSocketClientRequest client_request);
-  ~FakeSocketClient() override;
-
-  // network::mojom::P2PSocketClient interface.
-  MOCK_METHOD2(SocketCreated,
-               void(const net::IPEndPoint&, const net::IPEndPoint&));
-  MOCK_METHOD1(SendComplete, void(const network::P2PSendPacketMetrics&));
-  MOCK_METHOD1(IncomingTcpConnection, void(const net::IPEndPoint&));
-  MOCK_METHOD3(DataReceived,
-               void(const net::IPEndPoint&,
-                    const std::vector<int8_t>&,
-                    base::TimeTicks));
-
-  bool connection_error() { return connection_error_; }
-
- private:
-  network::mojom::P2PSocketPtr socket_;
-  mojo::Binding<network::mojom::P2PSocketClient> binding_;
-  bool connection_error_ = false;
-};
-
-void CreateRandomPacket(std::vector<int8_t>* packet);
-void CreateStunRequest(std::vector<int8_t>* packet);
-void CreateStunResponse(std::vector<int8_t>* packet);
-void CreateStunError(std::vector<int8_t>* packet);
+void CreateRandomPacket(std::vector<char>* packet);
+void CreateStunRequest(std::vector<char>* packet);
+void CreateStunResponse(std::vector<char>* packet);
+void CreateStunError(std::vector<char>* packet);
 
 net::IPEndPoint ParseAddress(const std::string& ip_str, uint16_t port);
 
@@ -135,10 +109,32 @@ MATCHER_P(MatchMessage, type, "") {
   return arg->type() == type;
 }
 
+MATCHER_P(MatchPacketMessage, packet_content, "") {
+  if (arg->type() != P2PMsg_OnDataReceived::ID)
+    return false;
+  P2PMsg_OnDataReceived::Param params;
+  P2PMsg_OnDataReceived::Read(arg, &params);
+  return std::get<2>(params) == packet_content;
+}
+
+MATCHER_P(MatchIncomingSocketMessage, address, "") {
+  if (arg->type() != P2PMsg_OnIncomingTcpConnection::ID)
+    return false;
+  P2PMsg_OnIncomingTcpConnection::Param params;
+  P2PMsg_OnIncomingTcpConnection::Read(
+      arg, &params);
+  return std::get<1>(params) == address;
+}
+
 MATCHER_P2(MatchSendPacketMetrics, rtc_packet_id, test_start_time, "") {
-  return arg.rtc_packet_id == rtc_packet_id &&
-         arg.send_time >= test_start_time &&
-         arg.send_time <= base::TimeTicks::Now();
+  if (arg->type() != P2PMsg_OnSendComplete::ID)
+    return false;
+
+  P2PMsg_OnSendComplete::Param params;
+  P2PMsg_OnSendComplete::Read(arg, &params);
+  return std::get<1>(params).rtc_packet_id == rtc_packet_id &&
+         std::get<1>(params).send_time >= test_start_time &&
+         std::get<1>(params).send_time <= base::TimeTicks::Now();
 }
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TEST_UTILS_H_

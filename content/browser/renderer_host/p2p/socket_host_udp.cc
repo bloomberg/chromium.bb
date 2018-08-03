@@ -12,13 +12,13 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
+#include "content/common/p2p_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
-#include "services/network/public/mojom/p2p.mojom.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 
 namespace {
@@ -76,7 +76,7 @@ namespace content {
 
 P2PSocketHostUdp::PendingPacket::PendingPacket(
     const net::IPEndPoint& to,
-    const std::vector<int8_t>& content,
+    const std::vector<char>& content,
     const rtc::PacketOptions& options,
     uint64_t id,
     const net::NetworkTrafficAnnotationTag traffic_annotation)
@@ -96,16 +96,12 @@ P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 }
 
 P2PSocketHostUdp::P2PSocketHostUdp(
-    P2PSocketDispatcherHost* socket_dispatcher_host,
-    network::mojom::P2PSocketClientPtr client,
-    network::mojom::P2PSocketRequest socket,
+    IPC::Sender* message_sender,
+    int socket_id,
     P2PMessageThrottler* throttler,
     net::NetLog* net_log,
     const DatagramServerSocketFactory& socket_factory)
-    : P2PSocketHost(socket_dispatcher_host,
-                    std::move(client),
-                    std::move(socket),
-                    P2PSocketHost::UDP),
+    : P2PSocketHost(message_sender, socket_id, P2PSocketHost::UDP),
       socket_(socket_factory.Run(net_log)),
       send_pending_(false),
       last_dscp_(net::DSCP_CS0),
@@ -113,15 +109,12 @@ P2PSocketHostUdp::P2PSocketHostUdp(
       net_log_(net_log),
       socket_factory_(socket_factory) {}
 
-P2PSocketHostUdp::P2PSocketHostUdp(
-    P2PSocketDispatcherHost* socket_dispatcher_host,
-    network::mojom::P2PSocketClientPtr client,
-    network::mojom::P2PSocketRequest socket,
-    P2PMessageThrottler* throttler,
-    net::NetLog* net_log)
-    : P2PSocketHostUdp(socket_dispatcher_host,
-                       std::move(client),
-                       std::move(socket),
+P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
+                                   int socket_id,
+                                   P2PMessageThrottler* throttler,
+                                   net::NetLog* net_log)
+    : P2PSocketHostUdp(message_sender,
+                       socket_id,
                        throttler,
                        net_log,
                        base::Bind(&P2PSocketHostUdp::DefaultSocketFactory)) {}
@@ -133,11 +126,10 @@ P2PSocketHostUdp::~P2PSocketHostUdp() {
   }
 }
 
-bool P2PSocketHostUdp::Init(
-    const net::IPEndPoint& local_address,
-    uint16_t min_port,
-    uint16_t max_port,
-    const network::P2PHostAndIPEndPoint& remote_address) {
+bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
+                            uint16_t min_port,
+                            uint16_t max_port,
+                            const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK((min_port == 0 && max_port == 0) || min_port > 0);
   DCHECK_LE(min_port, max_port);
@@ -191,7 +183,8 @@ bool P2PSocketHostUdp::Init(
   state_ = STATE_OPEN;
 
   // NOTE: Remote address will be same as what renderer provided.
-  client_->SocketCreated(address, remote_address.ip_address);
+  message_sender_->Send(new P2PMsg_OnSocketCreated(
+      id_, address, remote_address.ip_address));
 
   recv_buffer_ = new net::IOBuffer(kUdpReadBufferSize);
   DoRead();
@@ -203,10 +196,8 @@ void P2PSocketHostUdp::OnError() {
   socket_.reset();
   send_queue_.clear();
 
-  if (state_ == STATE_UNINITIALIZED || state_ == STATE_OPEN) {
-    binding_.Close();
-    client_.reset();
-  }
+  if (state_ == STATE_UNINITIALIZED || state_ == STATE_OPEN)
+    message_sender_->Send(new P2PMsg_OnError(id_));
 
   state_ = STATE_ERROR;
 }
@@ -234,13 +225,11 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
   DCHECK_EQ(STATE_OPEN, state_);
 
   if (result > 0) {
-    std::vector<int8_t> data(recv_buffer_->data(),
-                             recv_buffer_->data() + result);
+    std::vector<char> data(recv_buffer_->data(), recv_buffer_->data() + result);
 
     if (!base::ContainsKey(connected_peers_, recv_address_)) {
       P2PSocketHost::StunMessageType type;
-      bool stun = GetStunPacketType(
-          reinterpret_cast<const int8_t*>(&*data.begin()), data.size(), &type);
+      bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
       if ((stun && IsRequestOrResponse(type))) {
         connected_peers_.insert(recv_address_);
       } else if (!stun || type == STUN_DATA_INDICATION) {
@@ -251,13 +240,39 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
       }
     }
 
-    client_->DataReceived(recv_address_, data, base::TimeTicks::Now());
+    message_sender_->Send(new P2PMsg_OnDataReceived(
+        id_, recv_address_, data, base::TimeTicks::Now()));
 
     if (dump_incoming_rtp_packet_)
       DumpRtpPacket(&data[0], data.size(), true);
   } else if (result < 0 && !IsTransientError(result)) {
     LOG(ERROR) << "Error when reading from UDP socket: " << result;
     OnError();
+  }
+}
+
+void P2PSocketHostUdp::Send(
+    const net::IPEndPoint& to,
+    const std::vector<char>& data,
+    const rtc::PacketOptions& options,
+    uint64_t packet_id,
+    const net::NetworkTrafficAnnotationTag traffic_annotation) {
+  if (!socket_) {
+    // The Send message may be sent after the an OnError message was
+    // sent by hasn't been processed the renderer.
+    return;
+  }
+
+  IncrementTotalSentPackets();
+
+  if (send_pending_) {
+    send_queue_.push_back(
+        PendingPacket(to, data, options, packet_id, traffic_annotation));
+    IncrementDelayedBytes(data.size());
+    IncrementDelayedPackets();
+  } else {
+    PendingPacket packet(to, data, options, packet_id, traffic_annotation);
+    DoSend(packet);
   }
 }
 
@@ -271,9 +286,7 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   // messages are sent in correct order.
   if (!base::ContainsKey(connected_peers_, packet.to)) {
     P2PSocketHost::StunMessageType type = P2PSocketHost::StunMessageType();
-    bool stun =
-        GetStunPacketType(reinterpret_cast<const int8_t*>(packet.data->data()),
-                          packet.size, &type);
+    bool stun = GetStunPacketType(packet.data->data(), packet.size, &type);
     if (!stun || type == STUN_DATA_INDICATION) {
       LOG(ERROR) << "Page tried to send a data packet to "
                  << packet.to.ToString() << " before STUN binding is finished.";
@@ -286,8 +299,9 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
       // The renderer expects P2PMsg_OnSendComplete for all packets it generates
       // and in the same order it generates them, so we need to respond even
       // when the packet is dropped.
-      client_->SendComplete(network::P2PSendPacketMetrics(
-          packet.id, packet.packet_options.packet_id, send_time));
+      message_sender_->Send(new P2PMsg_OnSendComplete(
+          id_, P2PSendPacketMetrics(packet.id, packet.packet_options.packet_id,
+                                    send_time)));
       // Do not reset the socket.
       return;
     }
@@ -343,8 +357,7 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   }
 
   if (dump_outgoing_rtp_packet_)
-    DumpRtpPacket(reinterpret_cast<const int8_t*>(packet.data->data()),
-                  packet.size, false);
+    DumpRtpPacket(packet.data->data(), packet.size, false);
 }
 
 void P2PSocketHostUdp::OnSend(uint64_t packet_id,
@@ -391,70 +404,35 @@ void P2PSocketHostUdp::HandleSendResult(uint64_t packet_id,
   UMA_HISTOGRAM_TIMES("WebRTC.SystemSendPacketDuration_UDP" /* name */,
                       base::TimeTicks::Now() - send_time /* sample */);
 
-  client_->SendComplete(network::P2PSendPacketMetrics(
-      packet_id, transport_sequence_number, send_time));
+  message_sender_->Send(new P2PMsg_OnSendComplete(
+      id_,
+      P2PSendPacketMetrics(packet_id, transport_sequence_number, send_time)));
 }
 
-void P2PSocketHostUdp::AcceptIncomingTcpConnection(
+std::unique_ptr<P2PSocketHost> P2PSocketHostUdp::AcceptIncomingTcpConnection(
     const net::IPEndPoint& remote_address,
-    network::mojom::P2PSocketClientPtr client,
-    network::mojom::P2PSocketRequest socket) {
+    int id) {
   NOTREACHED();
   OnError();
+  return nullptr;
 }
 
-void P2PSocketHostUdp::Send(
-    const std::vector<int8_t>& data,
-    const network::P2PPacketInfo& packet_info,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (data.size() > kMaximumPacketSize) {
-    LOG(ERROR) << "Received P2PHostMsg_Send with a packet that is too big: "
-               << data.size();
-    delete this;
-  }
-
-  if (!socket_) {
-    // The Send message may be sent after the an OnError message was
-    // sent by hasn't been processed the renderer.
-    return;
-  }
-
-  IncrementTotalSentPackets();
-
-  if (send_pending_) {
-    send_queue_.push_back(
-        PendingPacket(packet_info.destination, data, packet_info.packet_options,
-                      packet_info.packet_id,
-                      net::NetworkTrafficAnnotationTag(traffic_annotation)));
-    IncrementDelayedBytes(data.size());
-    IncrementDelayedPackets();
-  } else {
-    PendingPacket packet(packet_info.destination, data,
-                         packet_info.packet_options, packet_info.packet_id,
-                         net::NetworkTrafficAnnotationTag(traffic_annotation));
-    DoSend(packet);
-  }
-}
-
-void P2PSocketHostUdp::SetOption(network::P2PSocketOption option,
-                                 int32_t value) {
+bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {
   if (state_ != STATE_OPEN) {
     DCHECK_EQ(state_, STATE_ERROR);
-    return;
+    return false;
   }
   switch (option) {
-    case network::P2P_SOCKET_OPT_RCVBUF:
-      socket_->SetReceiveBufferSize(value);
-      break;
-    case network::P2P_SOCKET_OPT_SNDBUF:
-      socket_->SetSendBufferSize(value);
-      break;
-    case network::P2P_SOCKET_OPT_DSCP:
-      SetSocketDiffServCodePointInternal(
-          static_cast<net::DiffServCodePoint>(value));
-      break;
+    case P2P_SOCKET_OPT_RCVBUF:
+      return socket_->SetReceiveBufferSize(value) == net::OK;
+    case P2P_SOCKET_OPT_SNDBUF:
+      return socket_->SetSendBufferSize(value) == net::OK;
+    case P2P_SOCKET_OPT_DSCP:
+      return net::OK == SetSocketDiffServCodePointInternal(
+                            static_cast<net::DiffServCodePoint>(value));
     default:
       NOTREACHED();
+      return false;
   }
 }
 

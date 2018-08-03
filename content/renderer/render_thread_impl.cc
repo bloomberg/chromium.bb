@@ -819,7 +819,8 @@ void RenderThreadImpl::Init(
   peer_connection_tracker_.reset(new PeerConnectionTracker());
   AddObserver(peer_connection_tracker_.get());
 
-  p2p_socket_dispatcher_ = new P2PSocketDispatcher();
+  p2p_socket_dispatcher_ = new P2PSocketDispatcher(GetIOTaskRunner().get());
+  AddFilter(p2p_socket_dispatcher_.get());
 
   peer_connection_factory_.reset(
       new PeerConnectionDependencyFactory(p2p_socket_dispatcher_.get()));
