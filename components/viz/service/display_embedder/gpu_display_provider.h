@@ -23,9 +23,9 @@
 #endif
 
 namespace gpu {
-class GpuChannelManager;
-class GpuChannelManagerDelegate;
 class CommandBufferTaskExecutor;
+class GpuChannelManagerDelegate;
+class GpuMemoryBufferManager;
 class ImageFactory;
 }  // namespace gpu
 
@@ -39,10 +39,18 @@ class SoftwareOutputDevice;
 // In-process implementation of DisplayProvider.
 class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
  public:
+  GpuDisplayProvider(
+      uint32_t restart_id,
+      GpuServiceImpl* gpu_service_impl,
+      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
+      std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
+      gpu::ImageFactory* image_factory,
+      ServerSharedBitmapManager* server_shared_bitmap_manager,
+      bool headless,
+      bool wait_for_all_pipeline_stages_before_draw);
+  // Software compositing only.
   GpuDisplayProvider(uint32_t restart_id,
-                     GpuServiceImpl* gpu_service_impl,
-                     scoped_refptr<gpu::CommandBufferTaskExecutor> gpu_service,
-                     gpu::GpuChannelManager* gpu_channel_manager,
                      ServerSharedBitmapManager* server_shared_bitmap_manager,
                      bool headless,
                      bool wait_for_all_pipeline_stages_before_draw);

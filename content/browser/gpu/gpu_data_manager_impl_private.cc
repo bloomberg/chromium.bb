@@ -353,8 +353,19 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
 }
 
 bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
-  return base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-         GpuAccessAllowed(nullptr);
+  if (GpuAccessAllowed(nullptr))
+    return true;
+
+#if defined(USE_X11) || defined(OS_MACOSX)
+  // If GPU access is disabled with OOP-D we run the display compositor in:
+  //   Browser process: Windows
+  //   GPU process: Linux and Mac
+  //   N/A: Android and Chrome OS (GPU access can't be disabled)
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return true;
+#endif
+
+  return false;
 }
 
 void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
