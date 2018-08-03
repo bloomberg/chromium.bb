@@ -126,20 +126,8 @@ class UnifiedConsentServiceTest : public testing::Test {
                           consent_service_->service_client_.get();
   }
 
-  // Returns true if all supported non-personalized services are enabled.
   bool AreAllNonPersonalizedServicesEnabled() {
-    for (int service = 0; service <= static_cast<int>(Service::kLast);
-         ++service) {
-      if (service_client_->GetServiceState(static_cast<Service>(service)) ==
-          ServiceState::kDisabled) {
-        return false;
-      }
-    }
-    if (!pref_service_.GetBoolean(
-            prefs::kUrlKeyedAnonymizedDataCollectionEnabled))
-      return false;
-
-    return true;
+    return consent_service_->AreAllNonPersonalizedServicesEnabled();
   }
 
  protected:
@@ -249,6 +237,36 @@ TEST_F(UnifiedConsentServiceTest, DisableUnfiedConsentWhenServiceIsDisabled) {
 
   // Disabling child service disables unified consent.
   pref_service_.SetBoolean(kSpellCheckDummyEnabled, false);
+  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+}
+
+// Test whether unified consent is disabled when any of its dependent services
+// gets disabled before startup.
+TEST_F(UnifiedConsentServiceTest,
+       DisableUnfiedConsentWhenServiceIsDisabled_OnStartup) {
+  CreateConsentService();
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+  EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
+
+  // Enable Unified Consent enables all supported non-personalized features
+  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
+  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+
+  // Simulate shutdown.
+  consent_service_->Shutdown();
+  consent_service_.reset();
+
+  // Disable child service.
+  pref_service_.SetBoolean(kSpellCheckDummyEnabled, false);
+
+  // Unified Consent is disabled during creation of the consent service because
+  // not all non-personalized services are enabled.
+  CreateConsentService();
   EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
 }
