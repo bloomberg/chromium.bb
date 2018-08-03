@@ -17,16 +17,15 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.VrIntentUtils;
+import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
-import org.chromium.chrome.browser.vr.VrShellImpl;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Class containing utility functions for transitioning between different
- * states in the VR Browser.
+ * Class containing utility functions for transitioning between different states in the VR Browser.
  */
 public class VrBrowserTransitionUtils extends VrTransitionUtils {
     /**
@@ -49,7 +48,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
      * allotted time.
      *
      * @param timeoutMs The amount of time in milliseconds to wait for VR Browser entry before
-     *        failing.
+     *            failing.
      */
     public static void forceEnterVrBrowserOrFail(int timeoutMs) {
         Assert.assertTrue("Request to enter VR Browser failed", forceEnterVrBrowser());
@@ -134,7 +133,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
      */
     public static void waitForNativeUiPrompt(final int timeout) {
         CriteriaHelper.pollInstrumentationThread(() -> {
-            VrShellImpl vrShell = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
+            VrShell vrShell = TestVrShellDelegate.getVrShellForTesting();
             return vrShell.isDisplayingDialogView();
         }, "Native UI prompt did not display", timeout, POLL_CHECK_INTERVAL_SHORT_MS);
     }

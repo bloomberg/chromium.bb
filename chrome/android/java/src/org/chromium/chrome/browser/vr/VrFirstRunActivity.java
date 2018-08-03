@@ -32,12 +32,6 @@ public class VrFirstRunActivity extends Activity {
 
         recordFreHistogram();
 
-        VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
-        if (wrapper == null) {
-            showFre();
-            return;
-        }
-
         // VrCore version M21 allows a transitioning VR activity to call DOFF and requires that
         // we set VR mode programmatically. Up until then, this hack of having a pure VR activity
         // works, but there's still a race every now and then that causes Chrome to crash and

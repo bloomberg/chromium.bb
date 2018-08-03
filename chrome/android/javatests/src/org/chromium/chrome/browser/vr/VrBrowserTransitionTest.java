@@ -261,9 +261,9 @@ public class VrBrowserTransitionTest {
             throws InterruptedException {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        VrShellImpl vrShellImpl = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
-        float expectedWidth = vrShellImpl.getContentWidthForTesting();
-        float expectedHeight = vrShellImpl.getContentHeightForTesting();
+        VrShell vrShell = TestVrShellDelegate.getVrShellForTesting();
+        float expectedWidth = vrShell.getContentWidthForTesting();
+        float expectedHeight = vrShell.getContentHeightForTesting();
         framework.enterSessionWithUserGestureOrFail();
 
         // Validate our size is what we expect while in VR.

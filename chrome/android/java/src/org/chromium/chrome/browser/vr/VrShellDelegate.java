@@ -33,6 +33,10 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import com.google.vr.ndk.base.AndroidCompat;
+import com.google.vr.ndk.base.DaydreamApi;
+import com.google.vr.ndk.base.GvrUiLayout;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
@@ -68,8 +72,7 @@ import org.chromium.ui.display.DisplayAndroidManager;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -139,16 +142,18 @@ public class VrShellDelegate
     // how slow it already is.
     private static final int WINDOW_FADE_ANIMATION_DURATION_MS = 500;
 
+    private static final String VR_BOOT_SYSTEM_PROPERTY = "ro.boot.vr";
+
     private static VrShellDelegate sInstance;
     private static VrBroadcastReceiver sVrBroadcastReceiver;
     private static VrLifecycleObserver sVrLifecycleObserver;
-    private static VrClassesWrapper sVrClassesWrapper;
     private static VrDaydreamApi sVrDaydreamApi;
     private static VrCoreVersionChecker sVrCoreVersionChecker;
     private static Set<Activity> sVrModeEnabledActivitys = new HashSet<>();
     private static boolean sRegisteredDaydreamHook;
     private static boolean sRegisteredVrAssetsComponent;
     private static @VrSupportLevel Integer sVrSupportLevel;
+    private static Boolean sBootsToVr = null;
 
     private ChromeActivity mActivity;
 
@@ -279,7 +284,7 @@ public class VrShellDelegate
                     // animations, and causes the system UI to show up during the preview window and
                     // window animations.
                     Intent launchIntent = new Intent(activity, activity.getClass());
-                    launchIntent = getVrClassesWrapper().setupVrIntent(launchIntent);
+                    launchIntent = VrIntentUtils.setupVrIntent(launchIntent);
                     sInstance.mInternalIntentUsedToStartVr = true;
                     sInstance.setExpectingIntent(true);
                     getVrDaydreamApi().launchInVr(PendingIntent.getActivity(
@@ -357,10 +362,6 @@ public class VrShellDelegate
      * Called when the native library is first available.
      */
     public static void onNativeLibraryAvailable() {
-        // Check if VR classes are available before trying to use them. Note that the native
-        // vr_shell_delegate.cc is compiled out of unsupported platforms (like x86).
-        VrClassesWrapper wrapper = getVrClassesWrapper();
-        if (wrapper == null) return;
         nativeOnLibraryAvailable();
     }
 
@@ -508,8 +509,7 @@ public class VrShellDelegate
             listener.onSucceeded();
             return;
         }
-        sInstance.requestToExitVrInternal(
-                listener, reason, !getVrClassesWrapper().supports2dInVr());
+        sInstance.requestToExitVrInternal(listener, reason, !supports2dInVr());
     }
 
     public static void requestToExitVrAndRunOnSuccess(Runnable onSuccess) {
@@ -650,16 +650,14 @@ public class VrShellDelegate
      * Asynchronously enable VR mode.
      */
     public static void setVrModeEnabled(Activity activity, boolean enabled) {
-        VrClassesWrapper wrapper = getVrClassesWrapper();
-        if (wrapper == null) return;
         ensureLifecycleObserverInitialized();
         if (enabled) {
             if (sVrModeEnabledActivitys.contains(activity)) return;
-            getVrClassesWrapper().setVrModeEnabled(activity, true);
+            AndroidCompat.setVrModeEnabled(activity, true);
             sVrModeEnabledActivitys.add(activity);
         } else {
             if (!sVrModeEnabledActivitys.contains(activity)) return;
-            getVrClassesWrapper().setVrModeEnabled(activity, false);
+            AndroidCompat.setVrModeEnabled(activity, false);
             sVrModeEnabledActivitys.remove(activity);
         }
     }
@@ -668,23 +666,26 @@ public class VrShellDelegate
      * See VrClassesWrapper#bootsToVr().
      */
     public static boolean bootsToVr() {
-        if (getVrClassesWrapper() == null) return false;
-        return getVrClassesWrapper().bootsToVr();
+        if (sBootsToVr == null) {
+            // TODO(mthiesse): Replace this with a Daydream API call when supported.
+            // Note that System.GetProperty is unable to read system ro properties, so we have to
+            // resort to reflection as seen below. This method of reading system properties has been
+            // available since API level 1.
+            sBootsToVr = getIntSystemProperty(VR_BOOT_SYSTEM_PROPERTY, 0) == 1;
+        }
+        return sBootsToVr;
     }
 
     /**
      * @return A Daydream Api instance, for interacting with Daydream platform features.
      */
     public static VrDaydreamApi getVrDaydreamApi() {
-        if (sVrDaydreamApi == null) {
-            if (getVrClassesWrapper() == null) return null;
-            sVrDaydreamApi = getVrClassesWrapper().createVrDaydreamApi();
-        }
+        if (sVrDaydreamApi == null) sVrDaydreamApi = new VrDaydreamApi();
         return sVrDaydreamApi;
     }
 
     public static boolean isDaydreamReadyDevice() {
-        return getVrClassesWrapper() != null && getVrClassesWrapper().isDaydreamReadyDevice();
+        return DaydreamApi.isDaydreamReadyPlatform(ContextUtils.getApplicationContext());
     }
 
     public static boolean isDaydreamCurrentViewer() {
@@ -692,17 +693,25 @@ public class VrShellDelegate
         return getVrDaydreamApi().isDaydreamCurrentViewer();
     }
 
-    /**
-     * @return A helper class for creating VR-specific classes that may not be available at compile
-     * time.
-     */
-    /* package */ static VrClassesWrapper getVrClassesWrapper() {
-        if (sVrClassesWrapper == null) sVrClassesWrapper = createVrClassesWrapper();
-        return sVrClassesWrapper;
+    public static boolean supports2dInVr() {
+        Context context = ContextUtils.getApplicationContext();
+        return isDaydreamReadyDevice() && DaydreamApi.supports2dInVr(context);
     }
 
     /* package */ static boolean isVrModeEnabled(Activity activity) {
         return sVrModeEnabledActivitys.contains(activity);
+    }
+
+    private static int getIntSystemProperty(String key, int defaultValue) {
+        try {
+            final Class<?> systemProperties = Class.forName("android.os.SystemProperties");
+            final Method getInt = systemProperties.getMethod("getInt", String.class, int.class);
+            return (Integer) getInt.invoke(null, key, defaultValue);
+        } catch (Exception e) {
+            Log.e("Exception while getting system property %s. Using default %s.", key,
+                    defaultValue, e);
+            return defaultValue;
+        }
     }
 
     private static boolean activitySupportsPresentation(Activity activity) {
@@ -727,28 +736,8 @@ public class VrShellDelegate
     }
 
     private static VrCoreVersionChecker getVrCoreVersionChecker() {
-        if (sVrCoreVersionChecker == null) {
-            if (getVrClassesWrapper() == null) return null;
-            sVrCoreVersionChecker = getVrClassesWrapper().createVrCoreVersionChecker();
-        }
+        if (sVrCoreVersionChecker == null) sVrCoreVersionChecker = new VrCoreVersionChecker();
         return sVrCoreVersionChecker;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static VrClassesWrapper createVrClassesWrapper() {
-        try {
-            Class<? extends VrClassesWrapper> vrClassesBuilderClass =
-                    (Class<? extends VrClassesWrapper>) Class.forName(
-                            "org.chromium.chrome.browser.vr.VrClassesWrapperImpl");
-            Constructor<?> vrClassesBuilderConstructor = vrClassesBuilderClass.getConstructor();
-            return (VrClassesWrapper) vrClassesBuilderConstructor.newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
-            if (!(e instanceof ClassNotFoundException)) {
-                Log.e(TAG, "Unable to instantiate VrClassesWrapper", e);
-            }
-            return null;
-        }
     }
 
     private static void setSystemUiVisibilityForVr(Activity activity) {
@@ -807,7 +796,15 @@ public class VrShellDelegate
     }
 
     /* package */ static boolean isInVrSession() {
-        return getVrClassesWrapper() != null && getVrClassesWrapper().isInVrSession();
+        Context context = ContextUtils.getApplicationContext();
+        // The call to isInVrSession crashes when called on a non-Daydream ready device, so we add
+        // the device check (b/77268533).
+        try {
+            return isDaydreamReadyDevice() && DaydreamApi.isInVrSession(context);
+        } catch (Exception ex) {
+            Log.e(TAG, "Unable to check if in vr session", ex);
+            return false;
+        }
     }
 
     /* package */ static boolean deviceSupportsVrLaunches() {
@@ -870,13 +867,6 @@ public class VrShellDelegate
         // Only S8(+) and Note 8 models change resolution in VR.
         if (!SAMSUNG_GALAXY_8_MODELS.contains(modelNumber)) return false;
         return true;
-    }
-
-    /**
-     *  @return Whether or not VR is enabled in this build.
-     */
-    /* package */ static boolean isVrEnabled() {
-        return getVrClassesWrapper() != null;
     }
 
     private static void addBlackOverlayViewForActivity(ChromeActivity activity) {
@@ -972,12 +962,9 @@ public class VrShellDelegate
     @CalledByNative
     private static int getVrSupportLevel() {
         if (sVrSupportLevel == null) {
-            VrClassesWrapper wrapper = getVrClassesWrapper();
-            if (wrapper == null) {
-                sVrSupportLevel = VrSupportLevel.VR_DISABLED;
-            } else if (!isVrCoreCompatible()) {
+            if (!isVrCoreCompatible()) {
                 sVrSupportLevel = VrSupportLevel.VR_NEEDS_UPDATE;
-            } else if (wrapper.isDaydreamReadyDevice()) {
+            } else if (isDaydreamReadyDevice()) {
                 sVrSupportLevel = VrSupportLevel.VR_DAYDREAM;
             } else {
                 sVrSupportLevel = VrSupportLevel.VR_CARDBOARD;
@@ -997,8 +984,6 @@ public class VrShellDelegate
         if (!LibraryLoader.getInstance().isInitialized()) return null;
         if (activity == null || !activitySupportsPresentation(activity)) return null;
         if (sInstance != null) return sInstance;
-        VrClassesWrapper wrapper = getVrClassesWrapper();
-        if (wrapper == null) return null;
         ThreadUtils.assertOnUiThread();
         sInstance = new VrShellDelegate(activity);
         return sInstance;
@@ -1057,7 +1042,6 @@ public class VrShellDelegate
         // If we're on Daydream support level, Chrome will get restarted by Android in response to
         // VrCore being updated/downgraded, so we don't need to check.
         if (getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM) return;
-        if (getVrClassesWrapper() == null) return;
         int version = getVrCorePackageVersion();
         // If VrCore package hasn't changed, no need to update.
         if (version == mCachedVrCorePackageVersion
@@ -1212,7 +1196,7 @@ public class VrShellDelegate
             registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
         }
         boolean webVrMode = mRequestedWebVr || tentativeWebVrMode;
-        mVrShell.initializeNative(webVrMode, getVrClassesWrapper().bootsToVr());
+        mVrShell.initializeNative(webVrMode, bootsToVr());
         mVrShell.setWebVrModeEnabled(webVrMode);
 
         // We're entering VR, but not in WebVr mode.
@@ -1448,7 +1432,7 @@ public class VrShellDelegate
     private void requestToExitVrInternal(OnExitVrRequestListener listener,
             @UiUnsupportedMode int reason, boolean showExitPromptBeforeDoff) {
         assert listener != null;
-        if (getVrClassesWrapper().bootsToVr()) {
+        if (bootsToVr()) {
             setVrModeEnabled(mActivity, false);
             listener.onSucceeded();
             return;
@@ -1490,8 +1474,8 @@ public class VrShellDelegate
         if (DEBUG_LOGS) Log.e(TAG, "canceling startup animation");
         mCancellingEntryAnimation = true;
         Bundle options = ActivityOptions.makeCustomAnimation(mActivity, 0, 0).toBundle();
-        Intent intent = getVrClassesWrapper().setupVrIntent(
-                new Intent(mActivity, VrCancelAnimationActivity.class));
+        Intent intent =
+                VrIntentUtils.setupVrIntent(new Intent(mActivity, VrCancelAnimationActivity.class));
         // We don't want this to run in a new task stack, or we may end up resuming the wrong
         // Activity when the VrCancelAnimationActivity finishes.
         intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -1658,7 +1642,7 @@ public class VrShellDelegate
         // This handles the case where Chrome was paused in VR (ie the user navigated to DD home or
         // something), then exited VR and resumed Chrome in 2D. Chrome is still showing VR UI but
         // the user is no longer in a VR session.
-        if (mInVr && !getVrClassesWrapper().isInVrSession()) {
+        if (mInVr && !isInVrSession()) {
             shutdownVr(true, false);
         }
 
@@ -1690,7 +1674,7 @@ public class VrShellDelegate
         assert !mShowingDaydreamDoff;
         if (!isDaydreamCurrentViewerInternal()) return false;
 
-        if (getVrClassesWrapper().supports2dInVr()) {
+        if (supports2dInVr()) {
             setVrModeEnabled(mActivity, false);
             callOnExitVrRequestListener(true);
             return true;
@@ -1868,7 +1852,9 @@ public class VrShellDelegate
             @Override
             public void run() {
                 shutdownVr(true /* disableVrMode */, false /* stayingInChrome */);
-                getVrClassesWrapper().launchGvrSettings(mActivity);
+
+                // Launch Daydream settings.
+                GvrUiLayout.launchOrInstallGvrApp(mActivity);
             }
         };
         return mSettingsButtonListener;
@@ -1908,24 +1894,22 @@ public class VrShellDelegate
 
     @VisibleForTesting
     protected boolean canLaunch2DIntentsInternal() {
-        return getVrClassesWrapper().supports2dInVr()
-                && !sVrModeEnabledActivitys.contains(sInstance.mActivity);
+        return supports2dInVr() && !sVrModeEnabledActivitys.contains(sInstance.mActivity);
     }
 
     @VisibleForTesting
     protected boolean createVrShell() {
         assert mVrShell == null;
-        if (getVrClassesWrapper() == null) return false;
         if (mActivity.getCompositorViewHolder() == null) return false;
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
         if (tabModelSelector == null) return false;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            mVrShell = getVrClassesWrapper().createVrShell(mActivity, this, tabModelSelector);
+            mVrShell = new VrShell(mActivity, this, tabModelSelector);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-        return mVrShell != null;
+        return true;
     }
 
     private void addVrViews() {

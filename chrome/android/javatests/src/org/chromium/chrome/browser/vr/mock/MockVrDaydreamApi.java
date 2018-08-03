@@ -8,7 +8,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 
-import org.chromium.chrome.browser.vr.VrDaydreamApiImpl;
+import org.chromium.chrome.browser.vr.VrDaydreamApi;
 
 // TODO(bsheedy): Make Mockito work in instrumentation tests and replace uses of this class with
 // Mockito spies.
@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.vr.VrDaydreamApiImpl;
  * "Mock" implementation of VR Shell's VrDaydreamApi that mostly does the same thing as the normal
  * VrDaydreamApiImpl, but allows checking whether methods were called and modifying return values.
  */
-public class MockVrDaydreamApi extends VrDaydreamApiImpl {
+public class MockVrDaydreamApi extends VrDaydreamApi {
     private boolean mLaunchInVrCalled;
     private boolean mExitFromVrCalled;
     private boolean mLaunchVrHomescreenCalled;

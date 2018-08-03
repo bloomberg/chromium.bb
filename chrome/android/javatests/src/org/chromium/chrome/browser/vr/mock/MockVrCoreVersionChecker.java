@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.vr.mock;
 
 import org.chromium.chrome.browser.vr.VrCoreCompatibility;
 import org.chromium.chrome.browser.vr.VrCoreInfo;
-import org.chromium.chrome.browser.vr.VrCoreVersionCheckerImpl;
+import org.chromium.chrome.browser.vr.VrCoreVersionChecker;
 
 /**
  * Mock version of VrCoreVersionCheckerImpl that allows setting of the return
  * value.
  */
-public class MockVrCoreVersionCheckerImpl extends VrCoreVersionCheckerImpl {
+public class MockVrCoreVersionChecker extends VrCoreVersionChecker {
     private boolean mUseActualImplementation;
     private VrCoreInfo mMockReturnValue = new VrCoreInfo(null, VrCoreCompatibility.VR_READY);
     private VrCoreInfo mLastReturnValue = null;

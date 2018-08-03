@@ -8,54 +8,88 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 
+import com.google.vr.ndk.base.DaydreamApi;
+import com.google.vr.ndk.base.GvrApi;
+
+import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
+
 /**
- * Abstract away DaydreamImpl class, which may or may not be present at runtime depending on compile
- * flags.
+ * A wrapper for DaydreamApi.
  */
-public interface VrDaydreamApi {
-    /**
-     * Register the intent to launch after phone inserted into a Daydream viewer.
-     * @return false if unable to acquire DaydreamApi instance.
-     */
-    boolean registerDaydreamIntent(final PendingIntent pendingIntent);
+public class VrDaydreamApi {
+    private DaydreamApi mDaydreamApi;
 
-    /**
-     * Unregister the intent if any.
-     * @return false if unable to acquire DaydreamApi instance.
-     */
-    boolean unregisterDaydreamIntent();
+    private DaydreamApi getDaydreamApi() {
+        if (mDaydreamApi == null) {
+            mDaydreamApi = DaydreamApi.create(ContextUtils.getApplicationContext());
+        }
+        return mDaydreamApi;
+    }
 
-    /**
-     * Launch the given PendingIntent in VR mode.
-     * @return false if unable to acquire DaydreamApi instance.
-     */
-    boolean launchInVr(final PendingIntent pendingIntent);
+    public boolean registerDaydreamIntent(final PendingIntent pendingIntent) {
+        DaydreamApi daydreamApi = getDaydreamApi();
+        if (daydreamApi == null) return false;
+        daydreamApi.registerDaydreamIntent(pendingIntent);
+        return true;
+    }
 
-    /**
-     * Launch the given Intent in VR mode.
-     * @return false if unable to acquire DaydreamApi instance.
-     */
-    boolean launchInVr(final Intent intent);
+    public boolean unregisterDaydreamIntent() {
+        DaydreamApi daydreamApi = getDaydreamApi();
+        if (daydreamApi == null) return false;
+        daydreamApi.unregisterDaydreamIntent();
+        return true;
+    }
 
-    /**
-     * @param requestCode The requestCode used by startActivityForResult.
-     * @param intent The data passed to VrCore as part of the exit request.
-     * @return false if unable to acquire DaydreamApi instance.
-     */
-    boolean exitFromVr(Activity activity, int requestCode, final Intent intent);
+    public boolean launchInVr(final PendingIntent pendingIntent) {
+        DaydreamApi daydreamApi = getDaydreamApi();
+        if (daydreamApi == null) return false;
+        daydreamApi.launchInVr(pendingIntent);
+        return true;
+    }
 
-    /**
-     * @return Whether the current Viewer is a Daydream Viewer.
-     */
-    boolean isDaydreamCurrentViewer();
+    public boolean launchInVr(final Intent intent) {
+        DaydreamApi daydreamApi = getDaydreamApi();
+        if (daydreamApi == null) return false;
+        daydreamApi.launchInVr(intent);
+        return true;
+    }
 
-    /**
-     * Launch the stereoscopic, 3D VR launcher homescreen.
-     */
-    boolean launchVrHomescreen();
+    public boolean exitFromVr(Activity activity, int requestCode, final Intent intent) {
+        DaydreamApi daydreamApi = getDaydreamApi();
+        if (daydreamApi == null) return false;
+        daydreamApi.exitFromVr(activity, requestCode, intent);
+        return true;
+    }
 
-    /**
-     * Closes this DaydreamApi instance.
-     */
-    void close();
+    public boolean isDaydreamCurrentViewer() {
+        DaydreamApi daydreamApi = getDaydreamApi();
+        if (daydreamApi == null) return false;
+        int type = GvrApi.ViewerType.CARDBOARD;
+        // If this is the first time any app reads the daydream config file, daydream may create its
+        // config directory... crbug.com/686104
+        try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+            type = daydreamApi.getCurrentViewerType();
+        } catch (RuntimeException ex) {
+            // TODO(mthiesse, b/110092501): Remove this exception handling once Daydream handles
+            // this exception.
+            // We occasionally get the hidden CursorWindowAllocationException here, presumably from
+            // being OOM when trying to check the current viewer type.
+            return false;
+        }
+        return type == GvrApi.ViewerType.DAYDREAM;
+    }
+
+    public boolean launchVrHomescreen() {
+        DaydreamApi daydreamApi = getDaydreamApi();
+        if (daydreamApi == null) return false;
+        daydreamApi.launchVrHomescreen();
+        return true;
+    }
+
+    public void close() {
+        if (mDaydreamApi == null) return;
+        mDaydreamApi.close();
+        mDaydreamApi = null;
+    }
 }

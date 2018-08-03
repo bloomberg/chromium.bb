@@ -135,8 +135,8 @@ generate_jni("vr_jni_headers") {
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/AndroidVSyncHelper.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrCoreInfo.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrInputConnection.java",
+    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrShell.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrShellDelegate.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrShellImpl.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/keyboard/GvrKeyboardLoaderClient.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/keyboard/TextEditAction.java",
   ]
