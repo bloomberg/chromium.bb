@@ -18299,6 +18299,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.Contextual.Carousel.Scrolled">
+  <obsolete>
+    Deprecated with new contextual suggestions implementation.
+  </obsolete>
   <owner>dgn@chromium.org</owner>
   <owner>galinap@google.com</owner>
   <description>
@@ -18308,6 +18311,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.Contextual.Carousel.Shown">
+  <obsolete>
+    Deprecated with new contextual suggestions implementation.
+  </obsolete>
   <owner>dgn@chromium.org</owner>
   <owner>galinap@google.com</owner>
   <description>
@@ -18317,6 +18323,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.ContextualSuggestion.Open">
+  <obsolete>
+    Deprecated with new contextual suggestions implementation.
+  </obsolete>
   <owner>dgn@chromium.org</owner>
   <owner>galinap@google.com</owner>
   <description>
@@ -18374,6 +18383,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.SurfaceFullyVisible">
+  <obsolete>Deprecated with Chrome Home ramp down.</obsolete>
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
   <description>
@@ -18384,6 +18394,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.SurfaceHalfVisible">
+  <obsolete>Deprecated with Chrome Home ramp down.</obsolete>
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
   <description>
