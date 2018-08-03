@@ -446,19 +446,9 @@ def _main(argv):
     # Prepare the buildroot with source for the build.
     with metrics.SuccessCounter(METRIC_PREP, metrics_fields):
       manifest_url = config_lib.GetSiteParams().MANIFEST_INT_URL
-
-      # Select which sync optimization to use (if any).
-      if repository.IsARepoRoot(constants.SOURCE_ROOT):
-        referenced_repo = constants.SOURCE_ROOT
-        git_cache_dir = None
-      else:
-        referenced_repo = None
-        git_cache_dir = options.git_cache_dir
-
       repo = repository.RepoRepository(manifest_url, buildroot,
                                        branch=branchname,
-                                       referenced_repo=referenced_repo,
-                                       git_cache_dir=git_cache_dir)
+                                       git_cache_dir=options.git_cache_dir)
       previous_build_state = GetLastBuildState(root)
 
       # Clean up the buildroot to a safe state.

@@ -143,8 +143,6 @@ class RunTests(cros_test_lib.RunCommandTestCase):
     mock_repo.branch = 'master'
     mock_repo.directory = '/root/repository'
 
-    self.PatchObject(repository, 'IsARepoRoot', autospec=True,
-                     return_value=True)
     mock_repo_create = self.PatchObject(repository, 'RepoRepository',
                                         autospec=True, return_value=mock_repo)
     mock_clean = self.PatchObject(cbuildbot_launch, 'CleanBuildRoot',
@@ -165,8 +163,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
     # Did we create the repo instance correctly?
     self.assertEqual(mock_repo_create.mock_calls,
                      [mock.call(EXPECTED_MANIFEST_URL, '/root/repository',
-                                git_cache_dir=None, branch='master',
-                                referenced_repo=constants.SOURCE_ROOT)])
+                                git_cache_dir=None, branch='master')])
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls, [
@@ -205,48 +202,6 @@ class RunTests(cros_test_lib.RunCommandTestCase):
     self.assertEqual(mock_cleanup_chroot.mock_calls, [
         mock.call('/root/repository')])
 
-  def testMainGitCacheValidRepo(self):
-    """Test having both git cache and a reference repo available."""
-    self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
-    self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
-                     autospec=True, return_value=(constants.REEXEC_API_MAJOR,
-                                                  constants.REEXEC_API_MINOR))
-    mock_repo = mock.MagicMock()
-    mock_repo.branch = 'master'
-    mock_repo.directory = '/root/repository'
-
-    self.PatchObject(
-        repository, 'IsARepoRoot', autospec=True, return_value=True)
-    mock_repo_create = self.PatchObject(
-        repository, 'RepoRepository', autospec=True, return_value=mock_repo)
-    self.PatchObject(cbuildbot_launch, 'CleanBuildRoot', autospec=True)
-    self.PatchObject(cbuildbot_launch, 'InitialCheckout', autospec=True)
-    self.PatchObject(cbuildbot_launch, 'CleanupChroot', autospec=True)
-    self.PatchObject(cbuildbot_launch, 'SetLastBuildState', autospec=True)
-
-    cbuildbot_launch._main(['-r', '/root', 'config',
-                            '--git-cache', '/git-cache'])
-
-    # Ensure we prefer the referenced repo to the git-cache argument.
-    self.assertEqual(mock_repo_create.mock_calls,
-                     [mock.call(EXPECTED_MANIFEST_URL, '/root/repository',
-                                git_cache_dir=None, branch='master',
-                                referenced_repo=constants.SOURCE_ROOT)])
-
-    # Ensure we still pass along git cache to cbuildbot.
-    self.assertCommandCalled(
-        [
-            '/root/repository/chromite/bin/cbuildbot',
-            'config',
-            '-r', '/root/repository',
-            '--git-cache-dir', '/git-cache',
-            '--workspace', '/root/workspace',
-            '--ts-mon-task-num', '1',
-        ],
-        extra_env={'PATH': mock.ANY},
-        cwd='/root/repository',
-        error_code_ok=True)
-
   def testMainMax(self):
     """Test a larger set of command line options."""
     self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
@@ -267,8 +222,6 @@ class RunTests(cros_test_lib.RunCommandTestCase):
     mock_get_last_build_state = self.PatchObject(
         cbuildbot_launch, 'GetLastBuildState', autospec=True,
         return_value=mock_summary)
-    self.PatchObject(repository, 'IsARepoRoot', autospec=True,
-                     return_value=False)
     mock_repo_create = self.PatchObject(repository, 'RepoRepository',
                                         autospec=True, return_value=mock_repo)
     mock_clean = self.PatchObject(cbuildbot_launch, 'CleanBuildRoot',
@@ -291,8 +244,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
     # Did we create the repo instance correctly?
     self.assertEqual(mock_repo_create.mock_calls,
                      [mock.call(EXPECTED_MANIFEST_URL, '/root/repository',
-                                git_cache_dir='/git-cache', branch='branch',
-                                referenced_repo=None)])
+                                git_cache_dir='/git-cache', branch='branch')])
 
     # Ensure we look up the previous status.
     self.assertEqual(mock_get_last_build_state.mock_calls, [

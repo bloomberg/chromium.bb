@@ -129,21 +129,10 @@ class WorkspaceSyncStage(WorkspaceStageBase):
 
     site_config = config_lib.GetConfig()
     manifest_url = site_config.params['MANIFEST_INT_URL']
-
-    # Select which sync optimization to use (if any).
-    if repository.IsARepoRoot(constants.SOURCE_ROOT):
-      referenced_repo = constants.SOURCE_ROOT
-      git_cache_dir = None
-    else:
-      referenced_repo = None
-      git_cache_dir = self._run.options.git_cache_dir
-
     repo = repository.RepoRepository(
         manifest_url, self._build_root,
         branch=self.workspace_branch,
-        referenced_repo=referenced_repo,
-        git_cache_dir=git_cache_dir,
-    )
+        git_cache_dir=self._run.options.git_cache_dir)
 
     repo.Sync(detach=True)
 
