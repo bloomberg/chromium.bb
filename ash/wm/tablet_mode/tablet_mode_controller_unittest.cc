@@ -792,17 +792,21 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   // Start in tablet mode.
   OpenLidToAngle(300.0f);
   EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
 
-  // Attach external mouse and keyboard. Verify that tablet mode has ended.
+  // Attach external mouse and keyboard. Verify that tablet mode has ended, but
+  // events are still blocked because the keyboard is still facing the bottom.
   ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
       3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
 
   // Verify that after unplugging the mouse, tablet mode will resume.
   ui::InputDeviceClientTestApi().SetMouseDevices({});
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
 }
 
 }  // namespace ash
