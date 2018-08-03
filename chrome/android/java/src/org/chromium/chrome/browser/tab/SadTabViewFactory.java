@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.components.ui_metrics.SadTabEvent;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -119,7 +120,10 @@ public class SadTabViewFactory {
         SpannableStringBuilder spannableString = new SpannableStringBuilder();
         if (!isIncognito) {
             spannableString
-                    .append(generateBulletedString(context, R.string.sad_tab_reload_incognito))
+                    .append(generateBulletedString(context,
+                            ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                                    ? R.string.sad_tab_reload_private
+                                    : R.string.sad_tab_reload_incognito))
                     .append("\n");
         }
         spannableString

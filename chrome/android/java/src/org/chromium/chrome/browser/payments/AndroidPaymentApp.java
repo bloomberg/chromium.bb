@@ -25,6 +25,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
@@ -296,12 +297,14 @@ public class AndroidPaymentApp
 
         new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
-                .setMessage(R.string.external_payment_app_leave_incognito_warning)
+                .setMessage(ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                                ? R.string.external_payment_app_leave_private_warning
+                                : R.string.external_payment_app_leave_incognito_warning)
                 .setPositiveButton(R.string.ok,
-                        (OnClickListener) (dialog, which) -> launchPaymentApp(id, merchantName,
-                                schemelessOrigin,
-                                schemelessIframeOrigin, certificateChain, methodDataMap,
-                                total, displayItems, modifiers))
+                        (OnClickListener) (dialog, which)
+                                -> launchPaymentApp(id, merchantName, schemelessOrigin,
+                                        schemelessIframeOrigin, certificateChain, methodDataMap,
+                                        total, displayItems, modifiers))
                 .setNegativeButton(R.string.cancel,
                         (OnClickListener) (dialog, which) -> notifyErrorInvokingPaymentApp())
                 .setOnCancelListener(dialog -> notifyErrorInvokingPaymentApp())

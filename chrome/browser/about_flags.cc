@@ -4196,7 +4196,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"incognito-strings", flag_descriptions::kIncognitoStringsName,
      flag_descriptions::kIncognitoStringsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kIncognitoStrings)},
+     FEATURE_VALUE_TYPE(features::kIncognitoStrings)},
 #endif
 
     {"enable-idn-navigation-suggestions",

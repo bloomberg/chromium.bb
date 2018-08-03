@@ -59,6 +59,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kExperimentalAppBanners,
     &features::kExperimentalUi,
     &features::kGenericSensorExtraClasses,
+    &features::kIncognitoStrings,
     &features::kMaterialDesignIncognitoNTP,
     &features::kPermissionDelegation,
     &features::kServiceWorkerPaymentApps,
@@ -109,7 +110,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kHomepageTile,
     &kHorizontalTabSwitcherAndroid,
     &kImprovedA2HS,
-    &kIncognitoStrings,
     &kLanguagesPreference,
     &kLongPressBackForHistory,
     &kLongPressBackNewDesign,
@@ -314,9 +314,6 @@ const base::Feature kHorizontalTabSwitcherAndroid{
 // issues.
 const base::Feature kImprovedA2HS{"ImprovedA2HS",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kIncognitoStrings{"IncognitoStrings",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLanguagesPreference{"LanguagesPreference",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

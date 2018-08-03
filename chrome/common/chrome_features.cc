@@ -670,4 +670,10 @@ extern const base::Feature kWebRtcRemoteEventLogGzipped{
 const base::Feature kWin10AcceleratedDefaultBrowserFlow{
     "Win10AcceleratedDefaultBrowserFlow", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
+
+#if defined(OS_ANDROID)
+// Enables showing alternative incognito strings.
+const base::Feature kIncognitoStrings{"IncognitoStrings",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
 }  // namespace features
