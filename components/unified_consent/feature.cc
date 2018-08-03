@@ -14,6 +14,8 @@ namespace unified_consent {
 const base::Feature kUnifiedConsent{"UnifiedConsent",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kUnifiedConsentShowBumpParameter[] = "show_consent_bump";
+const base::Feature kForceUnifiedConsentBump{"ForceUnifiedConsentBump",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace internal {
 UnifiedConsentFeatureState GetUnifiedConsentFeatureState() {

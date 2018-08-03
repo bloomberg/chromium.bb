@@ -22,6 +22,7 @@ enum class UnifiedConsentFeatureState {
 // Improved and unified consent for privacy-related features.
 extern const base::Feature kUnifiedConsent;
 extern const char kUnifiedConsentShowBumpParameter[];
+extern const base::Feature kForceUnifiedConsentBump;
 
 namespace internal {
 // Returns the state of the "Unified Consent" feature.
