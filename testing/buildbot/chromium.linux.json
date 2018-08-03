@@ -1242,16 +1242,6 @@
         "test": "interactive_ui_tests"
       },
       {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1426,16 +1416,6 @@
         "test": "sync_integration_tests"
       },
       {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_sync_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "sync_integration_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1454,16 +1434,6 @@
         "test": "ui_touch_selection_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "unit_tests"
-      },
-      {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2081,16 +2051,6 @@
         "test": "interactive_ui_tests"
       },
       {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2266,16 +2226,6 @@
         "test": "sync_integration_tests"
       },
       {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_sync_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "sync_integration_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2294,16 +2244,6 @@
         "test": "ui_touch_selection_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "unit_tests"
-      },
-      {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3829,21 +3769,6 @@
         "test": "interactive_ui_tests"
       },
       {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4163,21 +4088,6 @@
         "test": "sync_integration_tests"
       },
       {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_sync_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "sync_integration_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4211,21 +4121,6 @@
         "test": "ui_touch_selection_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "unit_tests"
-      },
-      {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
