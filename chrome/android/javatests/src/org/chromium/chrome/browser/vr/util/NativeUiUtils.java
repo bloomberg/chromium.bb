@@ -31,6 +31,12 @@ public class NativeUiUtils {
     // with an element.
     private static final int DEFAULT_UI_QUIESCENCE_TIMEOUT_MS = 1000;
 
+    public static void enableMockedController() {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                0 /* elementName, unused */, VrControllerTestAction.ENABLE_MOCKED_CONTROLLER,
+                new PointF() /* position, unused */);
+    }
+
     /**
      * Clicks on a UI element as if done via a controller.
      *

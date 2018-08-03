@@ -44,6 +44,7 @@ enum class VrUiTestActivityResult : int {
 enum class VrControllerTestAction : int {
   kClick,
   kHover,
+  kEnableMockedController,
   kRevertToRealController,
   kClickDown,
   kClickUp,
