@@ -60,7 +60,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothUUID {
   // value to them later. The default constructor will initialize an invalid
   // UUID by definition and the string accessors will return an empty string.
   BluetoothUUID();
-  virtual ~BluetoothUUID();
+  ~BluetoothUUID();
 
 #if defined(OS_WIN)
   // The canonical UUID string format is device::BluetoothUUID.value().
