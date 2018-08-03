@@ -11,8 +11,8 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /** A {@link RecyclerView.ViewHolder} specifically meant to display a date header. */
 public class DateViewHolder extends ListItemViewHolder {
@@ -31,7 +31,7 @@ public class DateViewHolder extends ListItemViewHolder {
 
     // ListItemViewHolder implementation.
     @Override
-    public void bind(ListPropertyModel properties, ListItem item) {
+    public void bind(PropertyModel properties, ListItem item) {
         ListItem.DateListItem dateItem = (ListItem.DateListItem) item;
         ((TextView) itemView).setText(UiUtils.dateToHeaderString(dateItem.date));
     }

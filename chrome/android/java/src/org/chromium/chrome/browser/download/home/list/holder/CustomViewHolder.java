@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /** A {@link RecyclerView.ViewHolder} that holds a {@link View} that is opaque to the holder. */
 public class CustomViewHolder extends ListItemViewHolder {
@@ -23,7 +23,7 @@ public class CustomViewHolder extends ListItemViewHolder {
 
     // ListItemViewHolder implemenation.
     @Override
-    public void bind(ListPropertyModel properties, ListItem item) {
+    public void bind(PropertyModel properties, ListItem item) {
         ListItem.ViewListItem viewItem = (ListItem.ViewListItem) item;
         ViewGroup viewGroup = (ViewGroup) itemView;
 

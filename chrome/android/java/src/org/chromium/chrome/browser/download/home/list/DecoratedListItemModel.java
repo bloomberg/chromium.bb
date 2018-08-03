@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 import org.chromium.chrome.browser.modelutil.ListObservableImpl;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.SimpleList;
 
 /**
@@ -30,7 +31,7 @@ class DecoratedListItemModel
     }
 
     /** @see ListItemModel#getProperties() */
-    public ListPropertyModel getProperties() {
+    public PropertyModel getProperties() {
         return mModel.getProperties();
     }
 

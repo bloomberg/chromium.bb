@@ -75,7 +75,8 @@ class DateOrderedListMediator {
                 mModel.setItem(i, item);
             }
             mModel.dispatchLastEvent();
-            mModel.getProperties().setSelectionModeActive(mSelectionDelegate.isSelectionEnabled());
+            mModel.getProperties().setValue(
+                    ListProperties.SELECTION_MODE_ACTIVE, mSelectionDelegate.isSelectionEnabled());
         }
     }
 
@@ -115,15 +116,17 @@ class DateOrderedListMediator {
                 ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool());
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
 
-        mModel.getProperties().setEnableItemAnimations(true);
-        mModel.getProperties().setOpenCallback(mProvider::openItem);
-        mModel.getProperties().setPauseCallback(mProvider::pauseDownload);
-        mModel.getProperties().setResumeCallback(item -> mProvider.resumeDownload(item, true));
-        mModel.getProperties().setCancelCallback(mProvider::cancelDownload);
-        mModel.getProperties().setShareCallback(item -> {});
-        mModel.getProperties().setRemoveCallback(this::onDeleteItem);
-        mModel.getProperties().setVisualsProvider(this::getVisuals);
-        mModel.getProperties().setSelectionCallback(selectionDelegate::toggleSelectionForItem);
+        mModel.getProperties().setValue(ListProperties.ENABLE_ITEM_ANIMATIONS, true);
+        mModel.getProperties().setValue(ListProperties.CALLBACK_OPEN, mProvider::openItem);
+        mModel.getProperties().setValue(ListProperties.CALLBACK_PAUSE, mProvider::pauseDownload);
+        mModel.getProperties().setValue(
+                ListProperties.CALLBACK_RESUME, item -> mProvider.resumeDownload(item, true));
+        mModel.getProperties().setValue(ListProperties.CALLBACK_CANCEL, mProvider::cancelDownload);
+        mModel.getProperties().setValue(ListProperties.CALLBACK_SHARE, item -> {});
+        mModel.getProperties().setValue(ListProperties.CALLBACK_REMOVE, this ::onDeleteItem);
+        mModel.getProperties().setValue(ListProperties.PROVIDER_VISUALS, this ::getVisuals);
+        mModel.getProperties().setValue(
+                ListProperties.CALLBACK_SELECTION, selectionDelegate::toggleSelectionForItem);
     }
 
     /** Tears down this mediator. */
@@ -225,13 +228,15 @@ class DateOrderedListMediator {
     /** Helper class to disable animations for certain list changes. */
     private class AnimationDisableClosable implements Closeable {
         AnimationDisableClosable() {
-            mModel.getProperties().setEnableItemAnimations(false);
+            mModel.getProperties().setValue(ListProperties.ENABLE_ITEM_ANIMATIONS, false);
         }
 
         // Closeable implementation.
         @Override
         public void close() {
-            mHandler.post(() -> mModel.getProperties().setEnableItemAnimations(true));
+            mHandler.post(() -> {
+                mModel.getProperties().setValue(ListProperties.ENABLE_ITEM_ANIMATIONS, true);
+            });
         }
     }
 }

@@ -8,15 +8,15 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ItemAnimator;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
 
-class ListPropertyViewBinder
-        implements ViewBinder<ListPropertyModel, RecyclerView, ListPropertyModel.PropertyKey> {
+class ListPropertyViewBinder implements ViewBinder<PropertyModel, RecyclerView, PropertyKey> {
     @Override
-    public void bind(ListPropertyModel model, RecyclerView view, PropertyKey propertyKey) {
-        if (propertyKey == ListPropertyModel.PropertyKey.ENABLE_ITEM_ANIMATIONS) {
-            if (model.getEnableItemAnimations()) {
+    public void bind(PropertyModel model, RecyclerView view, PropertyKey propertyKey) {
+        if (propertyKey == ListProperties.ENABLE_ITEM_ANIMATIONS) {
+            if (model.getValue(ListProperties.ENABLE_ITEM_ANIMATIONS)) {
                 if (view.getItemAnimator() == null) {
                     view.setItemAnimator((ItemAnimator) view.getTag(R.id.item_animator));
                     view.setTag(R.id.item_animator, null);
@@ -27,15 +27,15 @@ class ListPropertyViewBinder
                     view.setItemAnimator(null);
                 }
             }
-        } else if (propertyKey == ListPropertyModel.PropertyKey.CALLBACK_OPEN
-                || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_PAUSE
-                || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_RESUME
-                || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_CANCEL
-                || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_SHARE
-                || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_REMOVE
-                || propertyKey == ListPropertyModel.PropertyKey.PROVIDER_VISUALS
-                || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_SELECTION
-                || propertyKey == ListPropertyModel.PropertyKey.SELECTION_MODE_ACTIVE) {
+        } else if (propertyKey == ListProperties.CALLBACK_OPEN
+                || propertyKey == ListProperties.CALLBACK_PAUSE
+                || propertyKey == ListProperties.CALLBACK_RESUME
+                || propertyKey == ListProperties.CALLBACK_CANCEL
+                || propertyKey == ListProperties.CALLBACK_SHARE
+                || propertyKey == ListProperties.CALLBACK_REMOVE
+                || propertyKey == ListProperties.PROVIDER_VISUALS
+                || propertyKey == ListProperties.CALLBACK_SELECTION
+                || propertyKey == ListProperties.SELECTION_MODE_ACTIVE) {
             view.getAdapter().notifyItemChanged(0, view.getAdapter().getItemCount());
         }
     }

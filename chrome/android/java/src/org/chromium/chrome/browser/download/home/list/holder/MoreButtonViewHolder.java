@@ -9,7 +9,8 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
+import org.chromium.chrome.browser.download.home.list.ListProperties;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 
 /**
@@ -33,11 +34,15 @@ class MoreButtonViewHolder extends ListItemViewHolder implements ListMenuButton.
     // ListItemViewHolder implementation.
     @CallSuper
     @Override
-    public void bind(ListPropertyModel properties, ListItem item) {
+    public void bind(PropertyModel properties, ListItem item) {
         ListItem.OfflineItemListItem offlineItem = (ListItem.OfflineItemListItem) item;
-        mShareCallback = () -> properties.getShareCallback().onResult(offlineItem.item);
-        mDeleteCallback = () -> properties.getRemoveCallback().onResult(offlineItem.item);
-        if (mMore != null) mMore.setClickable(!properties.getSelectionModeActive());
+        mShareCallback =
+                () -> properties.getValue(ListProperties.CALLBACK_SHARE).onResult(offlineItem.item);
+        mDeleteCallback = ()
+                -> properties.getValue(ListProperties.CALLBACK_REMOVE).onResult(offlineItem.item);
+        if (mMore != null) {
+            mMore.setClickable(!properties.getValue(ListProperties.SELECTION_MODE_ACTIVE));
+        }
     }
 
     // ListMenuButton.Delegate implementation.

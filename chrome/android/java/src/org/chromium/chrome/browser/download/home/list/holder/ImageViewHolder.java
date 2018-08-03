@@ -11,7 +11,7 @@ import android.widget.ImageView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.home.list.ListPropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 
 /** A {@link RecyclerView.ViewHolder} specifically meant to display an image {@code OfflineItem}. */
@@ -32,7 +32,7 @@ public class ImageViewHolder extends ThumbnailAwareViewHolder {
 
     // ThumbnailAwareViewHolder implementation.
     @Override
-    public void bind(ListPropertyModel properties, ListItem item) {
+    public void bind(PropertyModel properties, ListItem item) {
         super.bind(properties, item);
         ListItem.OfflineItemListItem offlineItem = (ListItem.OfflineItemListItem) item;
         View imageView = itemView.findViewById(R.id.thumbnail);
