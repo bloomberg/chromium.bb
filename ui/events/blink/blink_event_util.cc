@@ -167,6 +167,7 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
       touch, event.GetPointerId(pointer_index),
       event.GetPressure(pointer_index), event.GetOrientation(pointer_index),
       event.GetTiltX(pointer_index), event.GetTiltY(pointer_index),
+      event.GetTwist(pointer_index), event.GetTangentialPressure(pointer_index),
       0 /* no button changed */, event.GetToolType(pointer_index));
 
   touch.state = ToWebTouchPointState(event, pointer_index);
@@ -1061,6 +1062,8 @@ void SetWebPointerPropertiesFromMotionEventData(
     float orientation_rad,
     float tilt_x,
     float tilt_y,
+    float twist,
+    float tangential_pressure,
     int android_buttons_changed,
     MotionEvent::ToolType tool_type) {
   webPointerProperties.id = pointer_id;
@@ -1071,8 +1074,12 @@ void SetWebPointerPropertiesFromMotionEventData(
     // the opposite direction. Coordinate system is left-handed.
     webPointerProperties.tilt_x = tilt_x;
     webPointerProperties.tilt_y = tilt_y;
+    webPointerProperties.twist = twist;
+    webPointerProperties.tangential_pressure = tangential_pressure;
   } else {
     webPointerProperties.tilt_x = webPointerProperties.tilt_y = 0;
+    webPointerProperties.twist = 0;
+    webPointerProperties.tangential_pressure = 0;
   }
 
   webPointerProperties.button = ToWebPointerButton(android_buttons_changed);

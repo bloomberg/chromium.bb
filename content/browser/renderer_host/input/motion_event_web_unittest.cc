@@ -22,6 +22,8 @@ TEST(MotionEventWebTest, Constructor) {
   const float orientations[] = {-pi, -2.f * pi / 3, -pi / 2};
   const float tilts_x[] = {0.f, -180 / 4, -180 / 3};
   const float tilts_y[] = {0.5f, 180 / 2, 180 / 3};
+  const float twists[] = {60, 160, 260};
+  const float tangential_pressures[] = {0.3f, 0.5f, 0.9f};
   const MotionEvent::ToolType tool_types[] = {MotionEvent::ToolType::FINGER,
                                               MotionEvent::ToolType::STYLUS,
                                               MotionEvent::ToolType::MOUSE};
@@ -34,10 +36,14 @@ TEST(MotionEventWebTest, Constructor) {
       const float tilt_x = tilts_x[i];
       const float tilt_y = tilts_y[i];
       const float orientation = orientations[i];
+      const float twist = twists[i];
+      const float tangential_pressure = tangential_pressures[i];
       PointerProperties pp2;
       pp2.orientation = orientation;
       pp2.tilt_x = tilt_x;
       pp2.tilt_y = tilt_y;
+      pp2.twist = twist;
+      pp2.tangential_pressure = tangential_pressure;
       pp2.tool_type = tool_type;
       size_t pointer_index = generic_event.PushPointer(pp2);
       EXPECT_GT(pointer_index, 0u);
@@ -55,6 +61,9 @@ TEST(MotionEventWebTest, Constructor) {
             << " orientation=" << orientation;
         EXPECT_NEAR(tilt_y, event.GetTiltY(pointer_index), 0.5)
             << " orientation=" << orientation;
+        EXPECT_EQ(twist, event.GetTwist(pointer_index));
+        EXPECT_EQ(tangential_pressure,
+                  event.GetTangentialPressure(pointer_index));
       } else {
         EXPECT_EQ(0.f, event.GetTiltX(pointer_index));
         EXPECT_EQ(0.f, event.GetTiltY(pointer_index));

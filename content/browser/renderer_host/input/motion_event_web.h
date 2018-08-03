@@ -37,6 +37,8 @@ class CONTENT_EXPORT MotionEventWeb : public ui::MotionEvent {
   float GetPressure(size_t pointer_index) const override;
   float GetTiltX(size_t pointer_index) const override;
   float GetTiltY(size_t pointer_index) const override;
+  float GetTwist(size_t pointer_index) const override;
+  float GetTangentialPressure(size_t pointer_index) const override;
   base::TimeTicks GetEventTime() const override;
   ToolType GetToolType(size_t pointer_index) const override;
   int GetButtonState() const override;

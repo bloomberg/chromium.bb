@@ -36,6 +36,8 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
   pointer.orientation = -base::kPiFloat / 2;
   pointer.tilt_x = 60;
   pointer.tilt_y = 70;
+  pointer.twist = 160;
+  pointer.tangential_pressure = 0;
   for (MotionEvent::ToolType tool_type : tool_types) {
     pointer.tool_type = tool_type;
     MotionEventGeneric event(MotionEvent::Action::DOWN, base::TimeTicks::Now(),
@@ -60,6 +62,8 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
     if (tool_type == MotionEvent::ToolType::STYLUS) {
       expected_pointer.tilt_x = 60;
       expected_pointer.tilt_y = 70;
+      expected_pointer.twist = 160;
+      expected_pointer.tangential_pressure = 0;
     } else {
       expected_pointer.tilt_x = 0;
       expected_pointer.tilt_y = 0;

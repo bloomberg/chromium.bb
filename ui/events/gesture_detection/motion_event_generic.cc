@@ -31,6 +31,8 @@ PointerProperties::PointerProperties(float x, float y, float touch_major)
       orientation(0),
       tilt_x(0),
       tilt_y(0),
+      twist(0),
+      tangential_pressure(0),
       source_device_id(0) {}
 
 PointerProperties::PointerProperties(const MotionEvent& event,
@@ -47,6 +49,8 @@ PointerProperties::PointerProperties(const MotionEvent& event,
       orientation(event.GetOrientation(pointer_index)),
       tilt_x(event.GetTiltX(pointer_index)),
       tilt_y(event.GetTiltY(pointer_index)),
+      twist(event.GetTwist(pointer_index)),
+      tangential_pressure(event.GetTangentialPressure(pointer_index)),
       source_device_id(0) {}
 
 PointerProperties::PointerProperties(const PointerProperties& other) = default;
@@ -182,6 +186,16 @@ float MotionEventGeneric::GetTiltX(size_t pointer_index) const {
 float MotionEventGeneric::GetTiltY(size_t pointer_index) const {
   DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].tilt_y;
+}
+
+float MotionEventGeneric::GetTwist(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, pointers_->size());
+  return pointers_[pointer_index].twist;
+}
+
+float MotionEventGeneric::GetTangentialPressure(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, pointers_->size());
+  return pointers_[pointer_index].tangential_pressure;
 }
 
 MotionEvent::ToolType MotionEventGeneric::GetToolType(

@@ -38,6 +38,8 @@ struct GESTURE_DETECTION_EXPORT PointerProperties {
   float orientation;
   float tilt_x;
   float tilt_y;
+  float twist;
+  float tangential_pressure;
   // source_device_id is only used on Aura.
   int source_device_id;
 };
@@ -68,6 +70,8 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   float GetPressure(size_t pointer_index) const override;
   float GetTiltX(size_t pointer_index) const override;
   float GetTiltY(size_t pointer_index) const override;
+  float GetTwist(size_t pointer_index) const override;
+  float GetTangentialPressure(size_t pointer_index) const override;
   ToolType GetToolType(size_t pointer_index) const override;
   int GetButtonState() const override;
   int GetFlags() const override;

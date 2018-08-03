@@ -72,11 +72,12 @@ void ApppendTouchPointDetails(const WebTouchPoint& point, std::string* result) {
   StringAppendF(result,
                 "  (ID: %d, State: %d, ScreenPos: (%f, %f), Pos: (%f, %f),"
                 " Radius: (%f, %f), Rot: %f, Force: %f,"
-                " Tilt: (%d, %d)),\n",
+                " Tilt: (%d, %d), Twist: %d, TangentialPressure: %f),\n",
                 point.id, point.state, point.PositionInScreen().x,
                 point.PositionInScreen().y, point.PositionInWidget().x,
                 point.PositionInWidget().y, point.radius_x, point.radius_y,
-                point.rotation_angle, point.force, point.tilt_x, point.tilt_y);
+                point.rotation_angle, point.force, point.tilt_x, point.tilt_y,
+                point.twist, point.tangential_pressure);
 }
 
 void ApppendEventDetails(const WebTouchEvent& event, std::string* result) {
