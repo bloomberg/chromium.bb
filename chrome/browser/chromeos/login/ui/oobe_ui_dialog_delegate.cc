@@ -137,7 +137,7 @@ void OobeUIDialogDelegate::UpdateSizeAndPosition(int width, int height) {
   gfx::Rect display_rect =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(dialog_widget_->GetNativeWindow())
-          .bounds();
+          .work_area();
 
   // Place the dialog in the center of the screen.
   const gfx::Rect bounds(
