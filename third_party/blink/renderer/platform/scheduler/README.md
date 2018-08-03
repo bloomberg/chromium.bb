@@ -18,6 +18,33 @@ The following is a collection of scheduling-related documentation about the
 Blink Scheduler as well as other schedulers in Chrome.
 
 
+## 2018
+* [Browser-side scheduling roadmap](https://docs.google.com/document/d/1yxjka3kyKieEWP6gRlLyXVy72DJ5Gc22Nqp9vehFj14/edit)
+* [Browser UI thread scheduler](https://docs.google.com/document/d/1z1BDq9vzcEpkhN9LSPF5XMnZ0kLJ8mWWkNAi4OI7cos/edit)
+* [Browser IO thread scheduling for input latency](https://docs.google.com/document/d/12waKYiZOOu1DwUJO5faSonq9OwRIJuaP0GavClPTHWY/edit)
+* [Off Main Thread: Scheduling API](https://docs.google.com/document/d/1SGWR1LrrgOUWHNJZU6JfUC89dCMSIXP7TH8RmoWLqyc/edit)
+* [Task traits for sequence scheduling in //content](https://docs.google.com/document/d/1SGy9VTXUwyXEX_yBZ0ukFAnS8B0hDeMUJD-1iALaE-Q/edit)
+* [Stop more task queues in background on Android](https://docs.google.com/document/d/10D2uvOVxBZ2YhcwtK1XOb6CClminPpqAeS82KOVT7hk/edit)
+* [Discussion of more graceful worker shutdown](https://docs.google.com/document/d/11waILCkPehUfML6_defbpkNk4mau6qiK8f7qXtqauwY/edit)
+* [Stop loading in background on Android](https://docs.google.com/document/d/1DEGgG9HfA2ixJpXQDsKbYCJJyHILWz3CQmuNEJr9Xho/edit)
+* [Android startup performance tweaks](https://docs.google.com/document/d/1rGbdF0Rjv0wl7dEQ4kGj2f79Q20MlIv7ch9MSlm2G3M/edit#heading=h.e7o0jj9sx1od)
+* [C++ Promises for Chromium](https://docs.google.com/document/d/1l12PAJgEtlrqTXKiw6mk2cR2jP7FAfCCDr-DGIdiC9w/edit)
+* [C++ Promise/Future/Coroutine in Chromium](https://docs.google.com/document/d/1RThP0a8fTyuYqpPN2zrMxt8Te9M0v3JUv1XhcquBz9E/edit)
+* [Java task scheduling](https://docs.google.com/document/d/1z2ALaVDkfxurPpzDzO9dAAK3dLuLCjYViJijydPoMHs/edit)
+* [Scheduling resource responses with right priority](https://docs.google.com/document/d/18WcfptovabsfE-2Nb4M_x8abVqInr-94fno81E_NcJk/edit)
+* [Refactor EventQueue](https://docs.google.com/document/d/1BBtBPTarOF4NeVKSWZe3XaDHo4yTGhdlqYm35yVzPs4/edit)
+* [Looking into scrolling lag](https://docs.google.com/document/d/1l2e3B6Ad0mqMRqs3_cK8a-o4Po6XMhOgIZt2B5r_ZG0/edit#heading=h.2ef1y98v91gv)
+* [Better scheduling metrics](https://docs.google.com/document/d/1o6QHeY8y6PssEv--Qs6uNeNWrOzTwDyrbTk9iuq2WmY/edit#heading=h.ia9zbay5xpwt)
+* [Scheduler architecture 2.0](https://docs.google.com/document/d/1dk71yTd5fndb5gMSb7wlB2P80hw5ImFxbPao06Ti8EQ/edit#heading=h.7m3oi6qeqhdv)
+* [Task Scheduler - Message Loop integration and migration](https://docs.google.com/document/d/1Vy7kz_9evp6xOFRQBD6M1h4qmk4EEBu0cutipQ3e6kA/edit)
+* [Supporting per-frame priorities in Blink Scheduler](https://docs.google.com/document/d/1-0nNG75hfsg1WhW3Xa4yUNDQdP1D6EJ9r2tl4tmAVJM/edit)
+* [Simplifying scheduler interfaces](https://docs.google.com/document/d/1oz-Rjpn6KhmQvaJF4b674Jofiy3PQQPbyngqFGlYknY/edit)
+* [Using dedicated workers for background work](https://docs.google.com/document/d/1qTYo9ZQwsycJYPAuT5AKw6JYBEsSfJQR823mma3CGvQ/edit)
+* [Untangling spaghetti of platform/scheduler/](https://docs.google.com/document/d/1jxM32tM-djMl7Xzy_tQbVadX1HjQ06fH0x7ofxeeSVc/edit#heading=h.34va28zf1wfu)
+* [Better layering for platform/scheduler/](https://docs.google.com/document/d/1Brt1oSUrL4M_TBSl-KiCbvQt8kYxwnmqsXrmJM00ylA/edit)
+* [Keyed Service scheduling](https://docs.google.com/document/d/1JCvCQvux0DW0X3tyfE_u70Fvpspfn7KDTTdJVD7M524/edit)
+
+
 ## 2017
 * [Improved load time scheduling](https://docs.google.com/document/d/1q5uPIKyUP0X7KaQRyxWXmIzMvKF3fx1j6QPCWhjI82o/edit)
 * [Wake-up based throttling](https://docs.google.com/document/d/1A87Ci3_USDyQEdlmXTO1spQxUcR_ML5zqiCsaow4NGM/edit)
@@ -25,11 +52,23 @@ Blink Scheduler as well as other schedulers in Chrome.
 * [BeginFrame sequence numbers + acknowledgements](https://docs.google.com/document/d/1nxaunQ0cYWxhtS6Zzfwa99nae74F7gxanbuT5JRpI6Y/edit)
 * [Background tab use cases](https://docs.google.com/document/d/16-QGneIkYNbNleoXbdD-mRMYdZAG2JIjMcTVxSC3ZWc/edit)
 * [Activity traits](https://docs.google.com/document/d/1BaJpx08vbPz_1LCj9tehnatZNqh1eLPeE9xoUnWdlW4/edit#heading=h.nwhgpfhlxswr)
+* [Blink and Task Scheduler integration](https://docs.google.com/document/d/1h-FlOeO-27g__JnuRvdJ8KG9G-bmG_zn6zuw7GerFkc/edit)
+* [Lifecycle use cases](https://docs.google.com/document/d/16-QGneIkYNbNleoXbdD-mRMYdZAG2JIjMcTVxSC3ZWc/edit)
+* [Task execution policies in Blink](https://docs.google.com/document/d/1tFI0pkLp1LCFDKRxwT6BSdA-ub8K4cZJLlCaAlqmsvM/edit)
+* [Capturing task type metadata](https://docs.google.com/document/d/1Py2ZdjpaCMdpVtKfdHMITAn5gst_owjQiqlbPm3mCxc/edit)
+* [Further per-frame scheduler work](https://docs.google.com/document/d/1yOhE6-1HLb3aeNWmoa9O2LlnegWjd4awYUn2OhUL4vk/edit)
+* [Better tracing for Blink Scheduler](https://docs.google.com/document/d/18Iz0lVX38_ZIMNoAp4e2RpeIFcCUUU2cghDwy_aLK3k/edit)
+* [Scheduling architecture roadmap: one pager](https://docs.google.com/document/d/13dQAthHRn7bkEgsb7OzG50zhxFFB1rHEDCM7ObXH1_c/edit)
+* [RendererMainThreadLoad metrics](https://docs.google.com/document/d/1MvAadiO3kwSodfOIZ35k2j4oJX-zVY9FsQaSshI-vus/edit#heading=h.r8nzo35yh6ck)
+* [State of the throttling](https://docs.google.com/document/d/1csir1MUkI1maqjAIzhR51LTy1pwSqeh9HDmAPTZWirw/edit)
+* [Background tabs & offscreen frames](https://docs.google.com/document/d/18_sX-KGRaHcV3xe5Xk_l6NNwXoxm-23IOepgMx4OlE4/edit)
+* [Prototyping cooperative scheduling](https://docs.google.com/document/d/1ennqB9cCfko6eg1a6bNoJjaypESjfFvhVup9LSJCyUg/edit)
+* [Cooperative scheduling in Blink](https://docs.google.com/document/d/14WoGZ8pfD4TmOFDebE-WIgkfQ62MnOiyafQI4Zhqjzs/edit)
 
 ## 2016
 
 * [Time-based renderer task throttling](https://drive.google.com/open?id=1vCUeGfr2xzZ67SFt2yZjNeaIcXGp2Td6KHN7bI02ySo)
-* [kV8 Performance Mode](https://drive.google.com/open?id=1bRVAP08qNBvnEm_vO4hW1-NqQC9-lQZjUH29_vwfYRY)
+* [V8 Performance Mode](https://drive.google.com/open?id=1bRVAP08qNBvnEm_vO4hW1-NqQC9-lQZjUH29_vwfYRY)
 * [Isolating performance of third-party iframes](https://docs.google.com/document/d/1CEggurHQGXenhu_GQT7KnRvtSuowuenXpxVzYSeRxSY/edit)
 * [Folly of Scheduling (BlinkOn 6)](https://drive.google.com/open?id=1ZMxbnSn1R1o2-NGztP0mVyOOoQg24bLSqWE1SWXnQ_E)
 * [Rendering pipeline throttling (BlinkOn 6)](https://docs.google.com/presentation/d/1aPZzH7J0O29sqA_FzsuWQNDwK6CoNcAcpMvJexsO6Vg/edit)
