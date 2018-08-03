@@ -73,3 +73,11 @@ pause or stop a session (MagicWindow or Presentation).
 
 XRRuntimeEventListener - Lives in the browser process.  Exposes runtime events
 to the browser.
+
+# Browser <-> XRInput interfaces (defined in isolated_xr_service.mojom)
+IsolatedXRGamepadProvider and IsolatedXRGamepadProviderFactory - Live in the
+XRInput process, and allow GamepadDataFetchers living in the browser process
+to expose data from gamepads that cannot be queried from the browser process.
+
+The XRInput process may be the browser process or a separate process depending
+on the platform.

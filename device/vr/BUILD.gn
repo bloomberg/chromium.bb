@@ -113,6 +113,8 @@ if (enable_vr) {
       ]
 
       sources += [
+        "isolated_gamepad_data_fetcher.cc",
+        "isolated_gamepad_data_fetcher.h",
         "windows/d3d11_texture_helper.cc",
         "windows/d3d11_texture_helper.h",
         "windows/flip_pixel_shader.h",
@@ -132,8 +134,8 @@ if (enable_vr) {
         "oculus/oculus_device.h",
         "oculus/oculus_device_provider.cc",
         "oculus/oculus_device_provider.h",
-        "oculus/oculus_gamepad_data_fetcher.cc",
-        "oculus/oculus_gamepad_data_fetcher.h",
+        "oculus/oculus_gamepad_helper.cc",
+        "oculus/oculus_gamepad_helper.h",
         "oculus/oculus_render_loop.cc",
         "oculus/oculus_render_loop.h",
         "oculus/oculus_type_converters.cc",
