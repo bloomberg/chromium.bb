@@ -7,9 +7,28 @@ over the bare Identity Service Mojo interfaces such as:
 
 - Synchronous access to the information of the primary account (via caching)
 
-PrimaryAccountTokenFetcher is the primary client-side interface for obtaining
-access tokens for the primary account. In particular, it takes care of waiting
-until the primary account is available.
+A cheat sheet for developers migrating from usage of //components/signin and
+//google_apis/gaia:
+
+- "Primary account" in IdentityManager refers to what is called the
+  "authenticated account" in SigninManager, i.e., the account that has been
+  blessed for sync by the user.
+- PrimaryAccountTokenFetcher is the primary client-side interface for obtaining
+  access tokens for the primary account. In particular, it can take care of 
+  waiting until the primary account is available.
+- AccessTokenFetcher is the client-side interface for obtaining access tokens
+  for arbitrary accounts.
+- IdentityTestEnvironment is the preferred test infrastructure for unittests
+  of production code that interacts with IdentityManager. It is suitable for
+  use in cases where neither the production code nor the unittest is interacting
+  with Profile (e.g., //components-level unittests).
+- identity_test_utils.h provides lower-level test facilities for interacting
+  explicitly with IdentityManager and its dependencies (SigninManager,
+  ProfileOAuth2TokenService). These facilities are the way to interact with
+  IdentityManager in unittest contexts where the production code and/or the
+  unittest are interacting with Profile (in particular, where the
+  IdentityManager instance with which the test is interacting must be
+  IdentityManagerFactory::GetForProfile(profile)).
 
 IMPLEMENTATION NOTES
 
