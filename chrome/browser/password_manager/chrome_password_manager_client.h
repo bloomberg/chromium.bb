@@ -144,7 +144,7 @@ class ChromePasswordManagerClient
 #endif
 
   ukm::SourceId GetUkmSourceId() override;
-  password_manager::PasswordManagerMetricsRecorder& GetMetricsRecorder()
+  password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
 
   static void CreateForWebContentsWithAutofillClient(

@@ -345,13 +345,12 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
 
-    if (password_client_) {
+    if (password_client_ && password_client_->GetMetricsRecorder()) {
       using UserAction =
           password_manager::PasswordManagerMetricsRecorder::PageLevelUserAction;
-
-      password_client_->GetMetricsRecorder().RecordPageLevelUserAction(
+      password_client_->GetMetricsRecorder()->RecordPageLevelUserAction(
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
-      }
+    }
   } else {
     bool success =
         FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));

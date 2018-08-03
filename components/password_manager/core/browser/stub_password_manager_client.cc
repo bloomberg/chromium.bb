@@ -94,12 +94,12 @@ ukm::SourceId StubPasswordManagerClient::GetUkmSourceId() {
   return ukm_source_id_;
 }
 
-PasswordManagerMetricsRecorder&
+PasswordManagerMetricsRecorder*
 StubPasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
     metrics_recorder_.emplace(GetUkmSourceId(), GetMainFrameURL());
   }
-  return metrics_recorder_.value();
+  return base::OptionalOrNullptr(metrics_recorder_);
 }
 
 }  // namespace password_manager

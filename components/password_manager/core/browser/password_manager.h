@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/form_submission_observer.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 
 class PrefRegistrySimple;
 
@@ -243,6 +244,13 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // nullptr if no match exists.
   PasswordFormManager* GetMatchingPendingManager(
       const autofill::PasswordForm& form);
+
+  // Records provisional save failure using current |client_| and
+  // |main_frame_url_|.
+  void RecordProvisionalSaveFailure(
+      PasswordManagerMetricsRecorder::ProvisionalSaveFailure failure,
+      const GURL& form_origin,
+      BrowserSavePasswordProgressLogger* logger);
 
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
