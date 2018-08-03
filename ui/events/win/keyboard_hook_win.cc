@@ -53,6 +53,10 @@ class KeyboardHookWin : public KeyboardHookBase {
 
   HHOOK hook_ = nullptr;
 
+  // Tracks the last key down seen in order to determine if the current key
+  // event is a repeated key press.
+  DWORD last_key_down_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardHookWin);
 };
 
@@ -114,6 +118,22 @@ LRESULT CALLBACK KeyboardHookWin::ProcessKeyEvent(int code,
                (ll_hooks->scanCode << 16) | (ll_hooks->flags & 0xFFFF),
                ll_hooks->time};
     KeyEvent key_event = KeyEventFromMSG(msg);
+
+    // Determine if this key event represents a repeated key event.
+    // A low level KB Hook is not passed a parameter or flag which indicates
+    // whether the key event is a repeat or not as it is called very early in
+    // input handling pipeline. That means we need to apply our own heuristic
+    // to determine if it should be treated as a repeated key press or not.
+    if (key_event.type() == ET_KEY_PRESSED) {
+      if (instance_->last_key_down_ != 0 &&
+          instance_->last_key_down_ == ll_hooks->vkCode) {
+        key_event.set_flags(key_event.flags() | EF_IS_REPEAT);
+      }
+      instance_->last_key_down_ = ll_hooks->vkCode;
+    } else {
+      DCHECK_EQ(key_event.type(), ET_KEY_RELEASED);
+      instance_->last_key_down_ = 0;
+    }
     instance_->ForwardCapturedKeyEvent(std::make_unique<KeyEvent>(key_event));
     return 1;
   }
