@@ -283,7 +283,7 @@ class PrinterDiscoverySessionHostImpl
       RemovePrinter(printer->id());
       return;
     }
-    printers_manager_->PrinterInstalled(*printer);
+    printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
     const std::string& printer_id = printer->id();
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},

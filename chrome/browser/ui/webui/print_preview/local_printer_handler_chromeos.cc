@@ -167,7 +167,7 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
     case chromeos::PrinterSetupResult::kSuccess:
       VLOG(1) << "Printer setup successful for " << printer->id()
               << " fetching properties";
-      printers_manager_->PrinterInstalled(*printer);
+      printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
 
       // fetch settings on the blocking pool and invoke callback.
       FetchCapabilities(std::move(printer), std::move(cb));

@@ -138,7 +138,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Code common between the discovered and manual add printer code paths.
   void OnAddedPrinterCommon(const Printer& printer,
-                            PrinterSetupResult result_code);
+                            PrinterSetupResult result_code,
+                            bool is_automatic);
 
   // CupsPrintersManager::Observer override:
   void OnPrintersChanged(CupsPrintersManager::PrinterClass printer_class,

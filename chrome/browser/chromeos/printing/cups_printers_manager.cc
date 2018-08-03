@@ -160,7 +160,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       return;
     }
     // If this is an 'add' instead of just an update, record the event.
-    MaybeRecordInstallation(printer);
+    MaybeRecordInstallation(printer, false);
     synced_printers_manager_->UpdateConfiguredPrinter(printer);
     // Note that we will rebuild our lists when we get the observer
     // callback from |synced_printers_manager_|.
@@ -191,14 +191,14 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
   // Public API function.
-  void PrinterInstalled(const Printer& printer) override {
+  void PrinterInstalled(const Printer& printer, bool is_automatic) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (!native_printers_allowed_.GetValue()) {
       LOG(WARNING) << "PrinterInstalled() called when "
                       "UserNativePrintersAllowed is  set to false";
       return;
     }
-    MaybeRecordInstallation(printer);
+    MaybeRecordInstallation(printer, is_automatic);
     synced_printers_manager_->PrinterInstalled(printer);
   }
 
@@ -342,21 +342,22 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     return nullptr;
   }
 
-  void MaybeRecordInstallation(const Printer& printer) {
+  void MaybeRecordInstallation(const Printer& printer,
+                               bool is_automatic_installation) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (synced_printers_manager_->GetPrinter(printer.id()) != nullptr) {
       // It's just an update, not a new installation, so don't record an event.
       return;
     }
-    // Get the associated detection record if one exists.
-    const auto* detected = FindDetectedPrinter(printer.id());
 
     // For compatibility with the previous implementation, record USB printers
     // separately from other IPP printers.  Eventually we may want to shift
     // this to be split by autodetected/not autodetected instead of USB/other
     // IPP.
     if (IsUsbPrinter(printer)) {
-      // If it's a usb printer, we should have the full DetectedPrinter.  We
+      // Get the associated detection record if one exists.
+      const auto* detected = FindDetectedPrinter(printer.id());
+      // We should have the full DetectedPrinter.  We
       // can't log the printer if we don't have it.
       if (detected == nullptr) {
         LOG(WARNING) << "Failed to find USB printer " << printer.id()
@@ -368,7 +369,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       // used -- i.e. the user didn't have to change anything to obtain a ppd
       // that worked.
       PrinterEventTracker::SetupMode mode;
-      if (printer.ppd_reference() == detected->printer.ppd_reference()) {
+      if (is_automatic_installation) {
         mode = PrinterEventTracker::kAutomatic;
       } else {
         mode = PrinterEventTracker::kUser;
@@ -376,11 +377,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       event_tracker_->RecordUsbPrinterInstalled(*detected, mode);
     } else {
       PrinterEventTracker::SetupMode mode;
-      if (detected != nullptr &&
-          (detected->printer.ppd_reference().autoconf ||
-           (detected->printer.ppd_reference() == printer.ppd_reference()))) {
-        // A printer is automatic if we successfully used IPP Anywhere or we
-        // auto-grabbed a ppd reference that worked.
+      if (is_automatic_installation) {
         mode = PrinterEventTracker::kAutomatic;
       } else {
         mode = PrinterEventTracker::kUser;
