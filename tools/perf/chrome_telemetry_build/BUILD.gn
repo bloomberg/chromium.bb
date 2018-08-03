@@ -52,7 +52,10 @@ group("telemetry_chrome_test") {
   }
 
   if (is_chromeos && cros_board != "") {
-    data_deps += [ "//chromeos:cros_vm_launcher" ]
+    data_deps += [
+      "//chromeos:cros_chrome_deploy",
+      "//chromeos:cros_vm_launcher",
+    ]
   }
 
   if (is_win && (symbol_level == 1 || symbol_level == 2)) {
