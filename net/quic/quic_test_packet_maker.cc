@@ -105,10 +105,10 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeInitialDummyCHLOPacket() {
+QuicTestPacketMaker::MakeDummyCHLOPacket(quic::QuicPacketNumber packet_num) {
   encryption_level_ = quic::ENCRYPTION_NONE;
   SetLongHeaderType(quic::INITIAL);
-  InitializeHeader(/*packet_number=*/1, /*include_version=*/true);
+  InitializeHeader(packet_num, /*include_version=*/true);
 
   quic::CryptoHandshakeMessage message =
       MockCryptoClientStream::GetDummyCHLOMessage();

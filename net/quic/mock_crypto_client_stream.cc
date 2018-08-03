@@ -167,16 +167,7 @@ bool MockCryptoClientStream::CryptoConnect() {
     case COLD_START_WITH_CHLO_SENT: {
       handshake_confirmed_ = false;
       encryption_established_ = false;
-
-      CryptoHandshakeMessage message = GetDummyCHLOMessage();
-      QUIC_DVLOG(1) << "Sending "
-                    << message.DebugString(session()->perspective());
-      session()->NeuterUnencryptedData();
-      session()->OnCryptoHandshakeMessageSent(message);
-      const quic::QuicData& data =
-          message.GetSerialized(session()->perspective());
-      WriteOrBufferData(QuicStringPiece(data.data(), data.length()), false,
-                        nullptr);
+      SendHandshakeMessage(GetDummyCHLOMessage());
       break;
     }
   }
