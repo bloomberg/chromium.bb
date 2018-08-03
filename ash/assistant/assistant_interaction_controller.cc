@@ -10,6 +10,7 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
@@ -173,10 +174,12 @@ void AssistantInteractionController::OnInteractionStarted(
     assistant_interaction_model_.CommitPendingQuery();
     assistant_interaction_model_.SetMicState(MicState::kClosed);
 
-    // Clear the interaction to wipe the stage.
-    assistant_interaction_model_.ClearInteraction(
-        /*retain_committed_query=*/true,
-        /*retain_pending_query=*/false);
+    if (!assistant::ui::kIsMotionSpecEnabled) {
+      // Clear the interaction to wipe the stage.
+      assistant_interaction_model_.ClearInteraction(
+          /*retain_committed_query=*/true,
+          /*retain_pending_query=*/false);
+    }
   }
 
   // Start caching a new Assistant response for the interaction.
@@ -297,10 +300,12 @@ void AssistantInteractionController::OnSpeechRecognitionFinalResult(
       std::make_unique<AssistantVoiceQuery>(final_result));
   assistant_interaction_model_.CommitPendingQuery();
 
-  // Clear the interaction to wipe the stage.
-  assistant_interaction_model_.ClearInteraction(
-      /*retain_committed_query=*/true,
-      /*retain_pending_response=*/true);
+  if (!assistant::ui::kIsMotionSpecEnabled) {
+    // Clear the interaction to wipe the stage.
+    assistant_interaction_model_.ClearInteraction(
+        /*retain_committed_query=*/true,
+        /*retain_pending_response=*/true);
+  }
 }
 
 void AssistantInteractionController::OnSpeechLevelUpdated(float speech_level) {

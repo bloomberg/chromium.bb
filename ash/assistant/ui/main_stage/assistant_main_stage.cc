@@ -202,12 +202,6 @@ void AssistantMainStage::InitQueryLayoutContainer(
   query_layout_container_->set_can_process_events_within_subtree(false);
   query_layout_container_->SetLayoutManager(std::make_unique<StackLayout>());
 
-  // The children of the query layout container will be animated but should be
-  // clipped by their parent's bounds.
-  query_layout_container_->SetPaintToLayer();
-  query_layout_container_->layer()->SetFillsBoundsOpaquely(false);
-  query_layout_container_->layer()->SetMasksToBounds(true);
-
   AddChildView(query_layout_container_);
 }
 
