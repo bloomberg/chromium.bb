@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <vector>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "test/function_equivalence_test.h"
@@ -26,82 +28,24 @@ using libaom_test::FunctionEquivalenceTest;
 
 namespace {
 
-static void compute_stats_win5_opt_c(const uint8_t *dgd, const uint8_t *src,
-                                     int h_start, int h_end, int v_start,
-                                     int v_end, int dgd_stride, int src_stride,
-                                     double *M, double *H) {
+static void compute_stats_win_opt_c(int wiener_win, const uint8_t *dgd,
+                                    const uint8_t *src, int h_start, int h_end,
+                                    int v_start, int v_end, int dgd_stride,
+                                    int src_stride, double *M, double *H) {
+  ASSERT_TRUE(wiener_win == WIENER_WIN || wiener_win == WIENER_WIN_CHROMA);
   int i, j, k, l, m, n;
-  const int wiener_win = WIENER_WIN_CHROMA;
   const int pixel_count = (h_end - h_start) * (v_end - v_start);
   const int wiener_win2 = wiener_win * wiener_win;
   const int wiener_halfwin = (wiener_win >> 1);
   const double avg =
       find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
-  int64_t M_int[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
-  int64_t H_int[WIENER_WIN_CHROMA * WIENER_WIN_CHROMA][WIENER_WIN_CHROMA * 8] =
-      { { 0 } };
-  int32_t sumY[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
-  int32_t sumX = 0;
-  const uint8_t *dgd_win = dgd - wiener_halfwin * dgd_stride - wiener_halfwin;
-
-  for (i = v_start; i < v_end; i++) {
-    for (j = h_start; j < h_end; j += 2) {
-      const uint8_t X1 = src[i * src_stride + j];
-      const uint8_t X2 = src[i * src_stride + j + 1];
-      sumX += X1 + X2;
-
-      const uint8_t *dgd_ij = dgd_win + i * dgd_stride + j;
-      for (k = 0; k < wiener_win; k++) {
-        for (l = 0; l < wiener_win; l++) {
-          const uint8_t *dgd_ijkl = dgd_ij + k * dgd_stride + l;
-          int64_t *H_int_temp = &H_int[(l * wiener_win + k)][0];
-          const uint8_t D1 = dgd_ijkl[0];
-          const uint8_t D2 = dgd_ijkl[1];
-          sumY[k][l] += D1 + D2;
-          M_int[l][k] += D1 * X1 + D2 * X2;
-          for (m = 0; m < wiener_win; m++) {
-            for (n = 0; n < wiener_win; n++) {
-              H_int_temp[m * 8 + n] += D1 * dgd_ij[n + dgd_stride * m] +
-                                       D2 * dgd_ij[n + dgd_stride * m + 1];
-            }
-          }
-        }
-      }
-    }
-  }
-
-  const double avg_square_sum = avg * avg * pixel_count;
-  for (k = 0; k < wiener_win; k++) {
-    for (l = 0; l < wiener_win; l++) {
-      M[l * wiener_win + k] =
-          M_int[l][k] + avg_square_sum - avg * (sumX + sumY[k][l]);
-      for (m = 0; m < wiener_win; m++) {
-        for (n = 0; n < wiener_win; n++) {
-          H[(l * wiener_win + k) * wiener_win2 + m * wiener_win + n] =
-              H_int[(l * wiener_win + k)][n * 8 + m] + avg_square_sum -
-              avg * (sumY[k][l] + sumY[n][m]);
-        }
-      }
-    }
-  }
-}
-
-static void compute_stats_win7_opt_c(const uint8_t *dgd, const uint8_t *src,
-                                     int h_start, int h_end, int v_start,
-                                     int v_end, int dgd_stride, int src_stride,
-                                     double *M, double *H) {
-  int i, j, k, l, m, n;
-  const int wiener_win = WIENER_WIN;
-  const int pixel_count = (h_end - h_start) * (v_end - v_start);
-  const int wiener_win2 = wiener_win * wiener_win;
-  const int wiener_halfwin = (wiener_win >> 1);
-  const double avg =
-      find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
-
-  int64_t M_int[WIENER_WIN][WIENER_WIN] = { { 0 } };
-  int64_t H_int[WIENER_WIN * WIENER_WIN][WIENER_WIN * 8] = { { 0 } };
-  int32_t sumY[WIENER_WIN][WIENER_WIN] = { { 0 } };
+  std::vector<std::vector<int64_t> > M_int(wiener_win,
+                                           std::vector<int64_t>(wiener_win, 0));
+  std::vector<std::vector<int64_t> > H_int(
+      wiener_win * wiener_win, std::vector<int64_t>(wiener_win * 8, 0));
+  std::vector<std::vector<int32_t> > sumY(wiener_win,
+                                          std::vector<int32_t>(wiener_win, 0));
   int32_t sumX = 0;
   const uint8_t *dgd_win = dgd - wiener_halfwin * dgd_stride - wiener_halfwin;
 
@@ -150,12 +94,9 @@ static void compute_stats_win7_opt_c(const uint8_t *dgd, const uint8_t *src,
 void compute_stats_opt_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
                          int h_start, int h_end, int v_start, int v_end,
                          int dgd_stride, int src_stride, double *M, double *H) {
-  if (wiener_win == WIENER_WIN) {
-    compute_stats_win7_opt_c(dgd, src, h_start, h_end, v_start, v_end,
-                             dgd_stride, src_stride, M, H);
-  } else if (wiener_win == WIENER_WIN_CHROMA) {
-    compute_stats_win5_opt_c(dgd, src, h_start, h_end, v_start, v_end,
-                             dgd_stride, src_stride, M, H);
+  if (wiener_win == WIENER_WIN || wiener_win == WIENER_WIN_CHROMA) {
+    compute_stats_win_opt_c(wiener_win, dgd, src, h_start, h_end, v_start,
+                            v_end, dgd_stride, src_stride, M, H);
   } else {
     av1_compute_stats_c(wiener_win, dgd, src, h_start, h_end, v_start, v_end,
                         dgd_stride, src_stride, M, H);
