@@ -97,7 +97,10 @@ class CupsPrintersManager : public KeyedService {
   // Record that the given printers has been installed in CUPS for usage.  If
   // |printer| is not a configured or enterprise printer, this will have the
   // side effect of moving |printer| into the configured class.
-  virtual void PrinterInstalled(const Printer& printer) = 0;
+  // Parameter |is_automatic| should be set to true if the printer was
+  // configured automatically (without requesting additional information
+  // from the user).
+  virtual void PrinterInstalled(const Printer& printer, bool is_automatic) = 0;
 
   // Returns true if |printer| is currently installed in CUPS with this
   // configuration.

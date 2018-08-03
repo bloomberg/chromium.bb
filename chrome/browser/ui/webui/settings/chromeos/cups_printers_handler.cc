@@ -322,7 +322,8 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
                           "kUserNativePrintersAllowed is set to false";
     // Used to log UMA metrics.
     OnAddedPrinterCommon(printer,
-                         PrinterSetupResult::kNativePrintersNotAllowed);
+                         PrinterSetupResult::kNativePrintersNotAllowed,
+                         false);
     // Used to fire the web UI listener.
     OnAddPrinterError(PrinterSetupResult::kNativePrintersNotAllowed);
     return;
@@ -495,7 +496,8 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
                           "kUserNativePrintersAllowed is set to false";
     // Used to log UMA metrics.
     OnAddedPrinterCommon(*printer,
-                         PrinterSetupResult::kNativePrintersNotAllowed);
+                         PrinterSetupResult::kNativePrintersNotAllowed,
+                         false);
     // Used to fire the web UI listener.
     OnAddPrinterError(PrinterSetupResult::kNativePrintersNotAllowed);
     return;
@@ -588,7 +590,8 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
-                                               PrinterSetupResult result_code) {
+                                               PrinterSetupResult result_code,
+                                               bool is_automatic) {
   UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterSetupResult", result_code,
                             PrinterSetupResult::kMaxValue);
   switch (result_code) {
@@ -596,7 +599,7 @@ void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
       UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
                                 printer.GetProtocol(), Printer::kProtocolMax);
       PRINTER_LOG(USER) << "Performing printer setup";
-      printers_manager_->PrinterInstalled(printer);
+      printers_manager_->PrinterInstalled(printer, is_automatic);
       printers_manager_->UpdateConfiguredPrinter(printer);
       return;
     case PrinterSetupResult::kPpdNotFound:
@@ -641,7 +644,7 @@ void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
 void CupsPrintersHandler::OnAddedDiscoveredPrinter(
     const Printer& printer,
     PrinterSetupResult result_code) {
-  OnAddedPrinterCommon(printer, result_code);
+  OnAddedPrinterCommon(printer, result_code, true);
   if (result_code == PrinterSetupResult::kSuccess) {
     FireWebUIListener("on-add-cups-printer", base::Value(result_code),
                       base::Value(printer.display_name()));
@@ -657,7 +660,7 @@ void CupsPrintersHandler::OnAddedSpecifiedPrinter(
     const Printer& printer,
     PrinterSetupResult result_code) {
   PRINTER_LOG(EVENT) << "Add manual printer: " << result_code;
-  OnAddedPrinterCommon(printer, result_code);
+  OnAddedPrinterCommon(printer, result_code, false);
   FireWebUIListener("on-add-cups-printer", base::Value(result_code),
                     base::Value(printer.display_name()));
 }
