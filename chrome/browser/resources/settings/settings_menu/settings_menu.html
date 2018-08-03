@@ -120,15 +120,15 @@
         $i18n{searchPageTitle}
       </a>
 <if expr="chromeos">
-      <a href="/crostini" hidden="[[!showCrostini]]">
-        <iron-icon icon="settings:crostini-mascot"></iron-icon>
-        $i18n{crostiniPageTitle}
-      </a>
-</if>
-<if expr="chromeos">
       <a href="/androidApps" hidden="[[!showAndroidApps]]">
         <iron-icon icon="settings:play-prism"></iron-icon>
         $i18n{androidAppsPageTitle}
+      </a>
+</if>
+<if expr="chromeos">
+      <a href="/crostini" hidden="[[!showCrostini]]">
+        <iron-icon icon="settings:crostini-mascot"></iron-icon>
+        $i18n{crostiniPageTitle}
       </a>
 </if>
 <if expr="not chromeos">

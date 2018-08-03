@@ -51,10 +51,10 @@ Polymer({
     pageVisibility_: {type: Object, value: settings.pageVisibility},
 
     /** @private */
-    showCrostini_: Boolean,
+    showAndroidApps_: Boolean,
 
     /** @private */
-    showAndroidApps_: Boolean,
+    showCrostini_: Boolean,
 
     /** @private */
     showMultidevice_: Boolean,
@@ -144,10 +144,10 @@ Polymer({
     };
     // </if>
 
-    this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
-        loadTimeData.getBoolean('showCrostini');
     this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');
+    this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
+        loadTimeData.getBoolean('showCrostini');
     this.showMultidevice_ = this.showAndroidApps_ &&
         loadTimeData.valueExists('enableMultideviceSettings') &&
         loadTimeData.getBoolean('enableMultideviceSettings');
