@@ -24,9 +24,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
-#include "mojo/public/cpp/bindings/type_converter.h"
-#include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
@@ -525,21 +522,7 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
   app_list_overlay_view_params.name = "AppList";
-  if (parent) {
-    app_list_overlay_view_params.parent = parent;
-  } else {
-    // Under mash, the app list is owned by the browser process, which cannot
-    // directly access the ash window container hierarchy to set |parent|.
-    // TODO(jamescook): Remove this when app_list moves into //ash as |parent|
-    // will not be null.
-    app_list_overlay_view_params
-        .mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(parent_container_id);
-    app_list_overlay_view_params
-        .mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(display_nearest_view.id());
-    app_list_overlay_view_params.bounds = local_bounds;
-  }
+  app_list_overlay_view_params.parent = parent;
   app_list_overlay_view_params.delegate = this;
   app_list_overlay_view_params.opacity =
       views::Widget::InitParams::TRANSLUCENT_WINDOW;
