@@ -20,7 +20,7 @@
       <div slot="title">
         <div>[[i18n('advancedSettingsDialogTitle', destination.displayName)]]
         </div>
-        <print-preview-search-box id="searchBox" on-keydown="onKeydown_"
+        <print-preview-search-box id="searchBox"
             hidden$="[[!hasMultipleItems_(
                 destination.capabilities.printer.vendor_capability)]]"
             label="$i18n{advancedSettingsSearchBoxPlaceholder}"
