@@ -37,17 +37,14 @@ debug = True
 PER_PKG_LICENSE_DIR = 'var/db/pkg'
 
 STOCK_LICENSE_DIRS = [
-    os.path.join(constants.SOURCE_ROOT,
-                 'src/third_party/portage-stable/licenses'),
+    'src/third_party/portage-stable/licenses',
 ]
 
 # There are licenses for custom software we got and isn't part of
 # upstream gentoo.
 CUSTOM_LICENSE_DIRS = [
-    os.path.join(constants.SOURCE_ROOT,
-                 'src/third_party/chromiumos-overlay/licenses'),
-    os.path.join(constants.SOURCE_ROOT,
-                 'src/private-overlays/chromeos-overlay/licenses'),
+    'src/third_party/chromiumos-overlay/licenses',
+    'src/private-overlays/chromeos-overlay/licenses',
 ]
 
 COPYRIGHT_ATTRIBUTION_DIR = (
@@ -197,9 +194,15 @@ ENTRY_TMPL = os.path.join(SCRIPT_DIR, 'about_credits_entry.tmpl')
 SHARED_LICENSE_TMPL = os.path.join(
     SCRIPT_DIR, 'about_credits_shared_license_entry.tmpl')
 
+# dir_set constants for _GetLicenseDirectories.
+_CUSTOM_DIRS = 'custom'
+_STOCK_DIRS = 'stock'
+_BOTH_DIRS = 'both'
+
 
 # This is called directly by src/repohooks/pre-upload.py
-def GetLicenseTypesFromEbuild(ebuild_contents):
+def GetLicenseTypesFromEbuild(ebuild_contents, overlay_path,
+                              buildroot=constants.SOURCE_ROOT):
   """Returns a list of license types from an ebuild.
 
   This function does not always return the correct list, but it is
@@ -208,6 +211,8 @@ def GetLicenseTypesFromEbuild(ebuild_contents):
 
   Args:
     ebuild_contents: contents of ebuild.
+    overlay_path: path of the overlay containing the ebuild
+    buildroot: base directory, usually constants.SOURCE_ROOT, useful for tests
 
   Returns:
     list of licenses read from ebuild.
@@ -234,18 +239,12 @@ inherit() {
 }
 %(ebuild)s"""
 
-  # TODO: the overlay_list hard-coded here should be changed to look
-  # at the current overlay, and then the master overlays. E.g. for an
-  # ebuild file in overlay-parrot, we will look at parrot overlay
-  # first, and then look at portage-stable and chromiumos, which are
-  # listed as masters in overlay-parrot/metadata/layout.conf.
+  repo_name = portage_util.GetOverlayName(overlay_path)
+  overlays = portage_util.FindOverlays(constants.BOTH_OVERLAYS, repo_name,
+                                       buildroot=buildroot)
   tmpl_env = {
       'ebuild': ebuild_contents,
-      'overlay_list': '%s %s' % (
-          os.path.join(constants.SOURCE_ROOT,
-                       'src/third_party/chromiumos-overlay'),
-          os.path.join(constants.SOURCE_ROOT,
-                       'src/third_party/portage-stable'))
+      'overlay_list': ' '.join(overlays),
   }
 
   with tempfile.NamedTemporaryFile(bufsize=0) as f:
@@ -788,6 +787,34 @@ being scraped currently).""",
     osutils.WriteFile(save_file, yaml.dump(yaml_dump), makedirs=True)
 
 
+def _GetLicenseDirectories(board=None, dir_set=_BOTH_DIRS,
+                           buildroot=constants.SOURCE_ROOT):
+  """Get the "licenses" directories for all matching overlays.
+
+  Args:
+    board: str|None - Which board to use to search a hierarchy.
+    dir_set: str - Whether to fetch stock, custom, or both sets of directories.
+        See the _(STOCK|CUSTOM|BOTH)_DIRS constants
+    buildroot: str - (typically) the root chromiumos path
+
+  Returns:
+    list - all matching "licenses" directories
+  """
+  stock = [os.path.join(buildroot, d) for d in STOCK_LICENSE_DIRS]
+  if board is None:
+    custom = [os.path.join(buildroot, d) for d in CUSTOM_LICENSE_DIRS]
+  else:
+    tmp = portage_util.FindOverlays(constants.BOTH_OVERLAYS, board, buildroot)
+    custom = [os.path.join(d, 'licenses') for d in tmp]
+
+  if dir_set == _STOCK_DIRS:
+    return stock
+  elif dir_set == _CUSTOM_DIRS:
+    return custom
+  else:
+    return stock + custom
+
+
 class Licensing(object):
   """Do the actual work of extracting licensing info and outputting html."""
 
@@ -888,15 +915,41 @@ class Licensing(object):
 
   # Called directly by src/repohooks/pre-upload.py
   @staticmethod
-  def FindLicenseType(license_name):
-    """Says if a license is stock Gentoo, custom, or doesn't exist."""
+  def FindLicenseType(license_name, board=None, overlay_path=None,
+                      buildroot=constants.SOURCE_ROOT):
+    """Says if a license is stock Gentoo, custom, or doesn't exist.
 
-    for directory in STOCK_LICENSE_DIRS:
+    Will check the old, static locations by default, but supplying either the
+    overlay directory or board name allows searching in the overlay hierarchy.
+    Ignores the overlay_path if board is provided.
+
+    Args:
+      license_name: The license name
+      board: Which board to use as the search base
+      overlay_path: Which overlay directory to use as the search base
+      buildroot: source root
+
+    Returns:
+      str - license type
+
+    Raises:
+      AssertionError when the license couldn't be found
+    """
+    # Check the stock licenses first since those may appear in the generated
+    # list of overlay directories for a board
+    stock = _GetLicenseDirectories(dir_set=_STOCK_DIRS, buildroot=buildroot)
+    for directory in stock:
       path = os.path.join(directory, license_name)
       if os.path.exists(path):
         return 'Gentoo Package Stock'
 
-    for directory in CUSTOM_LICENSE_DIRS:
+    # Not stock, find and check relevant custom directories
+    if board is None and overlay_path is not None:
+      board = portage_util.GetOverlayName(overlay_path)
+
+    # Check the custom licenses
+    custom = _GetLicenseDirectories(board, _CUSTOM_DIRS, buildroot)
+    for directory in custom:
       path = os.path.join(directory, license_name)
       if os.path.exists(path):
         return 'Custom'
@@ -917,17 +970,16 @@ b) if it's a non gentoo package with a custom license, you can copy that license
 to third_party/chromiumos-overlay/licenses/
 
 Try re-running the script with -p cat/package-ver --generate
-after fixing the license.""" %
-                         (license_name,
-                          '\n'.join(STOCK_LICENSE_DIRS + CUSTOM_LICENSE_DIRS))
-                        )
+after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
 
   @staticmethod
-  def ReadSharedLicense(license_name):
+  def ReadSharedLicense(license_name, board=None,
+                        buildroot=constants.SOURCE_ROOT):
     """Read and return stock or cust license file specified in an ebuild."""
-
+    directories = _GetLicenseDirectories(board=board, dir_set=_BOTH_DIRS,
+                                         buildroot=buildroot)
     license_path = None
-    for directory in STOCK_LICENSE_DIRS + CUSTOM_LICENSE_DIRS:
+    for directory in directories:
       path = os.path.join(directory, license_name)
       if os.path.exists(path):
         license_path = path
@@ -937,10 +989,7 @@ after fixing the license.""" %
       return ReadUnknownEncodedFile(license_path, 'read license')
     else:
       raise AssertionError('license %s could not be found in %s'
-                           % (license_name,
-                              '\n'.join(STOCK_LICENSE_DIRS +
-                                        CUSTOM_LICENSE_DIRS))
-                          )
+                           % (license_name, '\n'.join(directories)))
 
   @staticmethod
   def EvaluateTemplate(template, env):
@@ -971,7 +1020,7 @@ after fixing the license.""" %
     # sln: shared license name.
     for sln in pkg.license_names:
       # Says whether it's a stock gentoo or custom license.
-      license_type = self.FindLicenseType(sln)
+      license_type = self.FindLicenseType(sln, board=self.board)
       license_pointers.append(
           "<li><a href='#%s'>%s License %s</a></li>" % (
               sln, license_type, sln))
@@ -1019,8 +1068,8 @@ after fixing the license.""" %
         pkg_fullnamerev = self.licenses[sln][0]
         logging.info('Collapsing shared license %s into single use license '
                      '(only used by %s)', sln, pkg_fullnamerev)
-        license_type = self.FindLicenseType(sln)
-        license_txt = self.ReadSharedLicense(sln)
+        license_type = self.FindLicenseType(sln, board=self.board)
+        license_txt = self.ReadSharedLicense(sln, board=self.board)
         single_license = '%s License %s:\n\n%s' % (license_type, sln,
                                                    license_txt)
         pkg = self.packages[pkg_fullnamerev]
@@ -1044,8 +1093,9 @@ after fixing the license.""" %
     for license_name in self.sorted_licenses:
       env = {
           'license_name': license_name,
-          'license': cgi.escape(self.ReadSharedLicense(license_name)),
-          'license_type': self.FindLicenseType(license_name),
+          'license': cgi.escape(self.ReadSharedLicense(license_name,
+                                                       board=self.board)),
+          'license_type': self.FindLicenseType(license_name, board=self.board),
           'license_packages': ' '.join(self.LicensedPackages(license_name)),
       }
       licenses_txt += [self.EvaluateTemplate(license_template, env)]
