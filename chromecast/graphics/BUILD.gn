@@ -42,12 +42,16 @@ cast_source_set("graphics") {
       "accessibility/partial_magnification_controller.h",
       "cast_focus_client_aura.cc",
       "cast_focus_client_aura.h",
-      "cast_system_gesture_event_handler.cc",
-      "cast_system_gesture_event_handler.h",
       "cast_window_manager_aura.cc",
       "cast_window_manager_aura.h",
-      "triple_tap_detector.cc",
-      "triple_tap_detector.h",
+      "gestures/cast_system_gesture_dispatcher.cc",
+      "gestures/cast_system_gesture_dispatcher.h",
+      "gestures/cast_system_gesture_event_handler.cc",
+      "gestures/cast_system_gesture_event_handler.h",
+      "gestures/side_swipe_detector.cc",
+      "gestures/side_swipe_detector.h",
+      "gestures/triple_tap_detector.cc",
+      "gestures/triple_tap_detector.h",
     ]
 
     deps += [
@@ -108,11 +112,11 @@ if (use_aura && !is_cast_audio_only) {
       "accessibility/accessibility_focus_ring_controller_unittest.cc",
       "accessibility/partial_magnification_controller_unittest.cc",
       "cast_focus_client_aura_test.cc",
-      "cast_system_gesture_event_handler_test.cc",
       "cast_views_test.cc",
       "cast_window_manager_aura_test.cc",
+      "gestures/side_swipe_detector_test.cc",
+      "gestures/triple_tap_detector_test.cc",
       "run_all_unittests.cc",
-      "triple_tap_detector_test.cc",
     ]
     deps = [
       ":graphics",

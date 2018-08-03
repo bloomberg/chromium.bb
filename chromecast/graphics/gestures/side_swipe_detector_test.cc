@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/graphics/cast_system_gesture_event_handler.h"
+#include "chromecast/graphics/gestures/side_swipe_detector.h"
 
 #include <memory>
 
+#include "base/run_loop.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
@@ -107,9 +108,9 @@ class TestEventHandler : public ui::EventHandler {
   int num_touch_events_received_;
 };
 
-class CastSystemGestureEventHandlerTest : public aura::test::AuraTestBase {
+class SideSwipeDetectorTest : public aura::test::AuraTestBase {
  public:
-  ~CastSystemGestureEventHandlerTest() override = default;
+  ~SideSwipeDetectorTest() override = default;
 
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
@@ -118,17 +119,15 @@ class CastSystemGestureEventHandlerTest : public aura::test::AuraTestBase {
     aura::client::SetScreenPositionClient(root_window(),
                                           screen_position_client_.get());
 
-    gesture_event_handler_ =
-        std::make_unique<CastSystemGestureEventHandler>(root_window());
     gesture_handler_ = std::make_unique<TestSideSwipeGestureHandler>();
-    gesture_event_handler_->AddGestureHandler(gesture_handler_.get());
+    side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
+        gesture_handler_.get(), root_window());
     test_event_handler_ = std::make_unique<TestEventHandler>();
     root_window()->AddPostTargetHandler(test_event_handler_.get());
   }
 
   void TearDown() override {
-    gesture_event_handler_->RemoveGestureHandler(gesture_handler_.get());
-    gesture_event_handler_.reset();
+    side_swipe_detector_.reset();
     gesture_handler_.reset();
 
     aura::test::AuraTestBase::TearDown();
@@ -152,13 +151,13 @@ class CastSystemGestureEventHandlerTest : public aura::test::AuraTestBase {
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
-  std::unique_ptr<CastSystemGestureEventHandler> gesture_event_handler_;
+  std::unique_ptr<SideSwipeDetector> side_swipe_detector_;
   std::unique_ptr<TestEventHandler> test_event_handler_;
   std::unique_ptr<TestSideSwipeGestureHandler> gesture_handler_;
 };
 
 // Test that initialization works and initial state is clean.
-TEST_F(CastSystemGestureEventHandlerTest, Initialization) {
+TEST_F(SideSwipeDetectorTest, Initialization) {
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().begin_swipe_origin());
   EXPECT_EQ(kZeroPoint, test_gesture_handler().begin_swipe_point());
@@ -169,14 +168,15 @@ TEST_F(CastSystemGestureEventHandlerTest, Initialization) {
 }
 
 // A swipe in the middle of the screen should produce no system gesture.
-TEST_F(CastSystemGestureEventHandlerTest, SwipeWithNoSystemGesture) {
+TEST_F(SideSwipeDetectorTest, SwipeWithNoSystemGesture) {
   gfx::Point drag_point(root_window()->bounds().width() / 2,
                         root_window()->bounds().height() / 2);
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.GestureScrollSequence(drag_point,
                                   drag_point - gfx::Vector2d(0, kSwipeDistance),
                                   kTimeDelay, kNumSteps);
-  RunAllPendingInMessageLoop();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().begin_swipe_origin());
@@ -187,13 +187,14 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeWithNoSystemGesture) {
   EXPECT_NE(0, test_event_handler().NumTouchEventsReceived());
 }
 
-TEST_F(CastSystemGestureEventHandlerTest, SwipeFromLeft) {
+TEST_F(SideSwipeDetectorTest, SwipeFromLeft) {
   gfx::Point drag_point(0, root_window()->bounds().height() / 2);
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.GestureScrollSequence(drag_point,
                                   drag_point + gfx::Vector2d(kSwipeDistance, 0),
                                   kTimeDelay, kNumSteps);
-  RunAllPendingInMessageLoop();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
   EXPECT_EQ(CastSideSwipeOrigin::LEFT,
             test_gesture_handler().begin_swipe_origin());
@@ -204,14 +205,15 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeFromLeft) {
   EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
 
-TEST_F(CastSystemGestureEventHandlerTest, SwipeFromRight) {
+TEST_F(SideSwipeDetectorTest, SwipeFromRight) {
   gfx::Point drag_point(root_window()->bounds().width(),
                         root_window()->bounds().height() / 2);
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.GestureScrollSequence(drag_point,
                                   drag_point - gfx::Vector2d(kSwipeDistance, 0),
                                   kTimeDelay, kNumSteps);
-  RunAllPendingInMessageLoop();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
   EXPECT_EQ(CastSideSwipeOrigin::RIGHT,
             test_gesture_handler().begin_swipe_origin());
@@ -222,13 +224,14 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeFromRight) {
   EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
 
-TEST_F(CastSystemGestureEventHandlerTest, SwipeFromTop) {
+TEST_F(SideSwipeDetectorTest, SwipeFromTop) {
   gfx::Point drag_point(root_window()->bounds().width() / 2, 0);
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.GestureScrollSequence(drag_point,
                                   drag_point + gfx::Vector2d(0, kSwipeDistance),
                                   kTimeDelay, kNumSteps);
-  RunAllPendingInMessageLoop();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
   EXPECT_EQ(CastSideSwipeOrigin::TOP,
             test_gesture_handler().begin_swipe_origin());
@@ -239,14 +242,15 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeFromTop) {
   EXPECT_EQ(0, test_event_handler().NumTouchEventsReceived());
 }
 
-TEST_F(CastSystemGestureEventHandlerTest, SwipeFromBottom) {
+TEST_F(SideSwipeDetectorTest, SwipeFromBottom) {
   gfx::Point drag_point(root_window()->bounds().width() / 2,
                         root_window()->bounds().height());
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.GestureScrollSequence(drag_point,
                                   drag_point - gfx::Vector2d(0, kSwipeDistance),
                                   kTimeDelay, kNumSteps);
-  RunAllPendingInMessageLoop();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
   EXPECT_EQ(CastSideSwipeOrigin::BOTTOM,
             test_gesture_handler().begin_swipe_origin());
@@ -259,7 +263,7 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeFromBottom) {
 
 // Test that ignoring the gesture at its beginning will make it so the swipe
 // is not produced at the end.
-TEST_F(CastSystemGestureEventHandlerTest, SwipeUnhandledIgnored) {
+TEST_F(SideSwipeDetectorTest, SwipeUnhandledIgnored) {
   test_gesture_handler().SetHandleSwipe(false);
 
   gfx::Point drag_point(root_window()->bounds().width() / 2,
@@ -268,7 +272,8 @@ TEST_F(CastSystemGestureEventHandlerTest, SwipeUnhandledIgnored) {
   generator.GestureScrollSequence(drag_point,
                                   drag_point - gfx::Vector2d(0, kSwipeDistance),
                                   kTimeDelay, kNumSteps);
-  RunAllPendingInMessageLoop();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
   EXPECT_EQ(CastSideSwipeOrigin::NONE,
             test_gesture_handler().begin_swipe_origin());

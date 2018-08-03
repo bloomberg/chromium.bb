@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_GRAPHICS_TRIPLE_TAP_DETECTOR_H_
-#define CHROMECAST_GRAPHICS_TRIPLE_TAP_DETECTOR_H_
+#ifndef CHROMECAST_GRAPHICS_GESTURES_TRIPLE_TAP_DETECTOR_H_
+#define CHROMECAST_GRAPHICS_GESTURES_TRIPLE_TAP_DETECTOR_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -38,6 +38,8 @@ enum class TripleTapState {
   INTERVAL_WAIT,
 };
 
+// An event rewriter responsible for detecting triple-tap events on the root
+// window.
 class TripleTapDetector : public ui::EventRewriter {
  public:
   TripleTapDetector(aura::Window* root_window,
@@ -89,4 +91,4 @@ class TripleTapDetector : public ui::EventRewriter {
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_GRAPHICS_TRIPLE_TAP_DETECTOR_H_
+#endif  // CHROMECAST_GRAPHICS_GESTURES_TRIPLE_TAP_DETECTOR_H_

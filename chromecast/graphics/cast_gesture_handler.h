@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_GRAPHICS_CAST_GESTURE_HANDLER_H_
 #define CHROMECAST_GRAPHICS_CAST_GESTURE_HANDLER_H_
 
+// TODO(rdaum): Move into chromecast/graphics/gestures, which will require some
+// cross-repo maneuvers.
 #include "base/macros.h"
 
 namespace gfx {

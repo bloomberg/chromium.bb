@@ -23,6 +23,8 @@ namespace chromecast {
 
 class CastFocusClientAura;
 class CastSystemGestureEventHandler;
+class CastSystemGestureDispatcher;
+class SideSwipeDetector;
 
 // An aura::WindowTreeHost that correctly converts input events.
 class CastWindowTreeHost : public aura::WindowTreeHostPlatform {
@@ -76,7 +78,9 @@ class CastWindowManagerAura : public CastWindowManager,
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<CastFocusClientAura> focus_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
+  std::unique_ptr<CastSystemGestureDispatcher> system_gesture_dispatcher_;
   std::unique_ptr<CastSystemGestureEventHandler> system_gesture_event_handler_;
+  std::unique_ptr<SideSwipeDetector> side_swipe_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWindowManagerAura);
 };
