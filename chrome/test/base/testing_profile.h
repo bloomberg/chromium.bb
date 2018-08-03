@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/domain_reliability/clear_mode.h"
@@ -113,6 +114,10 @@ class TestingProfile : public Profile {
     // Makes the Profile being built a guest profile.
     void SetGuestSession();
 
+    // Override the default behavior of is_new_profile to return the provided
+    // value.
+    void OverrideIsNewProfile(bool is_new_profile);
+
     // Sets the supervised user ID (which is empty by default). If it is set to
     // a non-empty string, the profile is supervised.
     void SetSupervisedUserId(const std::string& supervised_user_id);
@@ -144,6 +149,7 @@ class TestingProfile : public Profile {
     base::FilePath path_;
     Delegate* delegate_;
     bool guest_session_;
+    base::Optional<bool> is_new_profile_;
     std::string supervised_user_id_;
     std::unique_ptr<policy::PolicyService> policy_service_;
     TestingFactories testing_factories_;
@@ -175,6 +181,7 @@ class TestingProfile : public Profile {
                  std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
                  TestingProfile* parent,
                  bool guest_session,
+                 base::Optional<bool> is_new_profile,
                  const std::string& supervised_user_id,
                  std::unique_ptr<policy::PolicyService> policy_service,
                  const TestingFactories& factories,
@@ -219,6 +226,9 @@ class TestingProfile : public Profile {
 
   // Allow setting a profile as Guest after-the-fact to simplify some tests.
   void SetGuestSession(bool guest);
+
+  // Allow setting the return value of IsNewProfile.
+  void SetIsNewProfile(bool is_new_profile);
 
   sync_preferences::TestingPrefServiceSyncable* GetTestingPrefService();
 
@@ -322,6 +332,7 @@ class TestingProfile : public Profile {
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   bool IsGuestSession() const override;
+  bool IsNewProfile() override;
   void SetExitType(ExitType exit_type) override {}
   ExitType GetLastSessionExitType() override;
   network::mojom::NetworkContextPtr CreateMainNetworkContext() override;
@@ -393,6 +404,8 @@ class TestingProfile : public Profile {
   TestingProfile* original_profile_;
 
   bool guest_session_;
+
+  base::Optional<bool> is_new_profile_;
 
   std::string supervised_user_id_;
 

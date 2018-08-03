@@ -997,7 +997,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     const bool user_is_child =
         (user->GetType() == user_manager::USER_TYPE_CHILD);
     const bool profile_is_child = profile->IsChild();
-    if (profile_is_child != user_is_child) {
+    const bool profile_is_new = profile->IsNewProfile();
+    if (!profile_is_new && profile_is_child != user_is_child) {
       ProfileAttributesEntry* entry;
       if (storage.GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
         LOG(WARNING) << "Profile child status has changed.";

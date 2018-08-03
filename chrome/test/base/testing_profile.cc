@@ -320,6 +320,7 @@ TestingProfile::TestingProfile(
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
     TestingProfile* parent,
     bool guest_session,
+    base::Optional<bool> is_new_profile,
     const std::string& supervised_user_id,
     std::unique_ptr<policy::PolicyService> policy_service,
     const TestingFactories& factories,
@@ -330,6 +331,7 @@ TestingProfile::TestingProfile(
       force_incognito_(false),
       original_profile_(parent),
       guest_session_(guest_session),
+      is_new_profile_(std::move(is_new_profile)),
       supervised_user_id_(supervised_user_id),
       last_session_exited_cleanly_(true),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -632,6 +634,10 @@ void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
 
 void TestingProfile::SetGuestSession(bool guest) {
   guest_session_ = guest;
+}
+
+void TestingProfile::SetIsNewProfile(bool is_new_profile) {
+  is_new_profile_ = is_new_profile;
 }
 
 base::FilePath TestingProfile::GetPath() const {
@@ -990,6 +996,12 @@ bool TestingProfile::IsGuestSession() const {
   return guest_session_;
 }
 
+bool TestingProfile::IsNewProfile() {
+  if (is_new_profile_.has_value())
+    return is_new_profile_.value();
+  return Profile::IsNewProfile();
+}
+
 Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
@@ -1036,6 +1048,10 @@ void TestingProfile::Builder::SetGuestSession() {
   guest_session_ = true;
 }
 
+void TestingProfile::Builder::OverrideIsNewProfile(bool is_new_profile) {
+  is_new_profile_ = is_new_profile;
+}
+
 void TestingProfile::Builder::SetSupervisedUserId(
     const std::string& supervised_user_id) {
   supervised_user_id_ = supervised_user_id;
@@ -1065,7 +1081,8 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       extension_policy_,
 #endif
-      std::move(pref_service_), NULL, guest_session_, supervised_user_id_,
+      std::move(pref_service_), NULL, guest_session_,
+      std::move(is_new_profile_), supervised_user_id_,
       std::move(policy_service_), testing_factories_, profile_name_));
 }
 
@@ -1081,7 +1098,7 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
                             extension_policy_,
 #endif
                             std::move(pref_service_), original_profile,
-                            guest_session_, supervised_user_id_,
-                            std::move(policy_service_), testing_factories_,
-                            profile_name_);
+                            guest_session_, std::move(is_new_profile_),
+                            supervised_user_id_, std::move(policy_service_),
+                            testing_factories_, profile_name_);
 }
