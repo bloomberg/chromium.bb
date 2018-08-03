@@ -19,7 +19,6 @@ from util import build_utils
 def _ParseArgs(args):
   args = build_utils.ExpandFileArgs(args)
   parser = argparse.ArgumentParser()
-  build_utils.AddDepfileOption(parser)
   parser.add_argument('--output-path',
                       help='Output path for .json file.',
                       required=True)
@@ -75,9 +74,6 @@ def main(args):
 
   with build_utils.AtomicOutput(options.output_path) as f:
     json.dump(data, f, indent=2, sort_keys=True)
-
-  if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.output_path)
 
 
 if __name__ == '__main__':

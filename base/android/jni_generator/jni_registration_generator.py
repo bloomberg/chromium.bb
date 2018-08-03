@@ -333,7 +333,8 @@ def main(argv):
 
   if args.depfile:
     build_utils.WriteDepfile(args.depfile, output_file,
-                             args.sources_files + java_file_paths)
+                             args.sources_files + java_file_paths,
+                             add_pydeps=False)
 
 
 if __name__ == '__main__':
