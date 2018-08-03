@@ -8860,16 +8860,9 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
   return 0;
 }
 
-#ifndef NDEBUG
-static INLINE int is_single_inter_mode(PREDICTION_MODE this_mode) {
-  return this_mode >= SINGLE_INTER_MODE_START &&
-         this_mode < SINGLE_INTER_MODE_END;
-}
-#endif
-
 static INLINE int get_ref_mv_offset(PREDICTION_MODE single_mode,
                                     uint8_t ref_mv_idx) {
-  assert(is_single_inter_mode(single_mode));
+  assert(is_inter_singleref_mode(single_mode));
   int ref_mv_offset;
   if (single_mode == NEARESTMV) {
     ref_mv_offset = 0;
@@ -8889,7 +8882,7 @@ static INLINE void get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
   const int is_comp_pred = ref_frame[1] > INTRA_FRAME;
   const PREDICTION_MODE single_mode =
       get_single_mode(this_mode, ref_idx, is_comp_pred);
-  assert(is_single_inter_mode(single_mode));
+  assert(is_inter_singleref_mode(single_mode));
   if (single_mode == NEWMV) {
     this_mv->as_int = INVALID_MV;
   } else if (single_mode == GLOBALMV) {
