@@ -7,11 +7,11 @@ mojom = "//media/mojo/interfaces/video_encode_accelerator.mojom"
 public_headers = [ "//media/video/video_encode_accelerator.h" ]
 
 traits_headers =
-    [ "//media/mojo/interfaces/video_encode_accelerator_typemap_traits.h" ]
+    [ "//media/mojo/interfaces/video_encode_accelerator_mojom_traits.h" ]
 
 sources = [
-  "//media/mojo/interfaces/video_encode_accelerator_typemap_traits.cc",
-  "//media/mojo/interfaces/video_encode_accelerator_typemap_traits.h",
+  "//media/mojo/interfaces/video_encode_accelerator_mojom_traits.cc",
+  "//media/mojo/interfaces/video_encode_accelerator_mojom_traits.h",
 ]
 
 public_deps = [

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MEDIA_MEDIA_DEVICES_TYPEMAP_TRAITS_H_
-#define CONTENT_COMMON_MEDIA_MEDIA_DEVICES_TYPEMAP_TRAITS_H_
+#ifndef CONTENT_COMMON_MEDIA_MEDIA_DEVICES_MOJOM_TRAITS_H_
+#define CONTENT_COMMON_MEDIA_MEDIA_DEVICES_MOJOM_TRAITS_H_
 
 #include "content/common/media/media_devices.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
@@ -47,4 +47,4 @@ struct StructTraits<blink::mojom::MediaDeviceInfoDataView,
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_MEDIA_MEDIA_DEVICES_TYPEMAP_TRAITS_H_
+#endif  // CONTENT_COMMON_MEDIA_MEDIA_DEVICES_MOJOM_TRAITS_H_

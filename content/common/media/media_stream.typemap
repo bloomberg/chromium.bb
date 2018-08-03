@@ -11,11 +11,11 @@ public_headers = [
 
 traits_headers = [
   "//content/common/media/media_stream_param_traits.h",
-  "//content/common/media/media_stream_typemap_traits.h",
+  "//content/common/media/media_stream_mojom_traits.h",
 ]
 
 sources = [
-  "//content/common/media/media_stream_typemap_traits.cc",
+  "//content/common/media/media_stream_mojom_traits.cc",
 ]
 
 deps = [
