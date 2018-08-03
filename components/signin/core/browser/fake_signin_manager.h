@@ -35,8 +35,20 @@ class FakeSigninManager : public SigninManager {
   FakeSigninManager(SigninClient* client,
                     ProfileOAuth2TokenService* token_service,
                     AccountTrackerService* account_tracker_service,
+                    GaiaCookieManagerService* cookie_manager_service);
+
+  FakeSigninManager(SigninClient* client,
+                    ProfileOAuth2TokenService* token_service,
+                    AccountTrackerService* account_tracker_service,
                     GaiaCookieManagerService* cookie_manager_service,
-                    SigninErrorController* signin_error_controller = nullptr);
+                    SigninErrorController* signin_error_controller);
+
+  FakeSigninManager(SigninClient* client,
+                    ProfileOAuth2TokenService* token_service,
+                    AccountTrackerService* account_tracker_service,
+                    GaiaCookieManagerService* cookie_manager_service,
+                    SigninErrorController* signin_error_controller,
+                    signin::AccountConsistencyMethod account_consistency);
 
   ~FakeSigninManager() override;
 
