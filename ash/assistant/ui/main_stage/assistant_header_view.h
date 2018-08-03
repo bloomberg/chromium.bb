@@ -19,6 +19,7 @@ namespace ash {
 
 class AssistantController;
 class AssistantProgressIndicator;
+class BaseLogoView;
 
 // AssistantHeaderView is the child of UiElementContainerView which provides
 // the Assistant icon. On first launch, it also displays a greeting to the user.
@@ -47,8 +48,13 @@ class AssistantHeaderView : public views::View,
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
+  BaseLogoView* molecule_icon_;       // Owned by view hierarchy.
   views::Label* greeting_label_;      // Owned by view hierarchy.
   AssistantProgressIndicator* progress_indicator_;  // Owned by view hierarchy.
+
+  // True if this is the first query response received for the current Assistant
+  // UI session, false otherwise.
+  bool is_first_response_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantHeaderView);
 };
