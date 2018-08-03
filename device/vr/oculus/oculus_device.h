@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "device/vr/oculus/oculus_gamepad_data_fetcher.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -21,7 +20,7 @@ class OculusRenderLoop;
 
 class OculusDevice : public VRDeviceBase,
                      public mojom::XRSessionController,
-                     public OculusGamepadDataProvider {
+                     public mojom::IsolatedXRGamepadProviderFactory {
  public:
   explicit OculusDevice();
   ~OculusDevice() override;
@@ -38,33 +37,31 @@ class OculusDevice : public VRDeviceBase,
 
   bool IsInitialized() { return !!session_; }
 
+  mojom::IsolatedXRGamepadProviderFactoryPtr BindGamepadFactory();
+
  private:
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
   void OnPresentingControllerMojoConnectionError();
 
-  // OculusGamepadDataProvider
-  void RegisterDataFetcher(OculusGamepadDataFetcher*) override;
+  // mojom::IsolatedXRGamepadProviderFactory
+  void GetIsolatedXRGamepadProvider(
+      mojom::IsolatedXRGamepadProviderRequest provider_request) override;
 
   void OnPresentationEnded();
   void StartOvrSession();
   void StopOvrSession();
 
-  void OnControllerUpdated(ovrInputState input,
-                           ovrInputState remote,
-                           ovrTrackingState tracking,
-                           bool has_touch,
-                           bool has_remote);
-
   std::unique_ptr<OculusRenderLoop> render_loop_;
-  OculusGamepadDataFetcher* data_fetcher_ = nullptr;
   mojom::VRDisplayInfoPtr display_info_;
   ovrSession session_ = nullptr;
-  OculusGamepadDataFetcher::Factory* oculus_gamepad_factory_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
+  mojo::Binding<mojom::IsolatedXRGamepadProviderFactory>
+      gamepad_provider_factory_binding_;
+  mojom::IsolatedXRGamepadProviderRequest provider_request_;
 
   base::WeakPtrFactory<OculusDevice> weak_ptr_factory_;
 

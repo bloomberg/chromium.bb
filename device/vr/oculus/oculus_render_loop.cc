@@ -4,6 +4,7 @@
 
 #include "device/vr/oculus/oculus_render_loop.h"
 
+#include "device/vr/oculus/oculus_gamepad_helper.h"
 #include "device/vr/oculus/oculus_type_converters.h"
 #include "third_party/libovr/src/Include/Extras/OVR_Math.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
@@ -42,16 +43,13 @@ gfx::Transform PoseToTransform(const ovrPosef& pose) {
 }  // namespace
 
 OculusRenderLoop::OculusRenderLoop(
-    base::RepeatingCallback<void()> on_presentation_ended,
-    base::RepeatingCallback<
-        void(ovrInputState, ovrInputState, ovrTrackingState, bool, bool)>
-        on_controller_updated)
+    base::RepeatingCallback<void()> on_presentation_ended)
     : base::Thread("OculusRenderLoop"),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       presentation_binding_(this),
       frame_data_binding_(this),
       on_presentation_ended_(on_presentation_ended),
-      on_controller_updated_(on_controller_updated),
+      gamepad_provider_(this),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_task_runner_);
 }
@@ -72,6 +70,7 @@ void OculusRenderLoop::CleanUp() {
   StopOvrSession();
   presentation_binding_.Close();
   frame_data_binding_.Close();
+  gamepad_provider_.Close();
 }
 
 void OculusRenderLoop::SubmitFrameMissing(int16_t frame_index,
@@ -363,6 +362,14 @@ void OculusRenderLoop::GetFrameData(
   std::move(callback).Run(std::move(frame_data));
 }
 
+void OculusRenderLoop::RequestGamepadProvider(
+    mojom::IsolatedXRGamepadProviderRequest request) {
+  gamepad_provider_.Close();
+  // We just close the binding, so the other side won't expect callbacks.
+  gamepad_callback_.Reset();
+  gamepad_provider_.Bind(std::move(request));
+}
+
 std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
     const ovrTrackingState& tracking_state) {
   std::vector<mojom::XRInputSourceStatePtr> input_states;
@@ -416,28 +423,18 @@ std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
 }
 
 void OculusRenderLoop::UpdateControllerState() {
-  if (!session_) {
-    ovrInputState input = {};
-    ovrTrackingState tracking = {};
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(on_controller_updated_, input, input,
-                                  tracking, false, false));
+  if (!gamepad_callback_) {
+    // Nobody is listening to updates, so bail early.
+    return;
   }
 
-  ovrInputState input_touch;
-  bool have_touch = OVR_SUCCESS(
-      ovr_GetInputState(session_, ovrControllerType_Touch, &input_touch));
+  if (!session_) {
+    std::move(gamepad_callback_).Run(nullptr);
+    return;
+  }
 
-  ovrInputState input_remote;
-  bool have_remote = OVR_SUCCESS(
-      ovr_GetInputState(session_, ovrControllerType_Remote, &input_remote));
-
-  ovrTrackingState tracking = ovr_GetTrackingState(session_, 0, false);
-
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(on_controller_updated_, input_touch, input_remote,
-                     tracking, have_touch, have_remote));
+  std::move(gamepad_callback_)
+      .Run(OculusGamepadHelper::GetGamepadData(session_));
 }
 
 device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
@@ -496,6 +493,24 @@ device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
   state->description = std::move(desc);
 
   return state;
+}
+
+void OculusRenderLoop::RequestUpdate(
+    mojom::IsolatedXRGamepadProvider::RequestUpdateCallback callback) {
+  DCHECK(!gamepad_callback_);
+  if (gamepad_callback_) {
+    std::move(gamepad_callback_).Run(nullptr);
+  }
+
+  // If we aren't presenting, reply now saying that we have no controllers.
+  if (!is_presenting_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // Otherwise, save the callback to resolve next time we update (typically on
+  // vsync).
+  gamepad_callback_ = std::move(callback);
 }
 
 }  // namespace device
