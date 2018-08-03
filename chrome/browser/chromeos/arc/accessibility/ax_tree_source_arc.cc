@@ -204,7 +204,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   event_bundle.updates.emplace_back();
   if (event_data->event_type == AXEventType::WINDOW_CONTENT_CHANGED) {
-    current_tree_serializer_->DeleteClientSubtree(
+    current_tree_serializer_->InvalidateSubtree(
         GetFromId(event_data->source_id));
   }
   current_tree_serializer_->SerializeChanges(GetFromId(event_data->source_id),
