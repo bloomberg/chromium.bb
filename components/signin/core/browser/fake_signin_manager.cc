@@ -30,14 +30,40 @@ FakeSigninManager::FakeSigninManager(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
+    GaiaCookieManagerService* cookie_manager_service)
+    : FakeSigninManager(client,
+                        token_service,
+                        account_tracker_service,
+                        cookie_manager_service,
+                        nullptr,
+                        signin::AccountConsistencyMethod::kDisabled) {}
+
+FakeSigninManager::FakeSigninManager(
+    SigninClient* client,
+    ProfileOAuth2TokenService* token_service,
+    AccountTrackerService* account_tracker_service,
     GaiaCookieManagerService* cookie_manager_service,
     SigninErrorController* signin_error_controller)
+    : FakeSigninManager(client,
+                        token_service,
+                        account_tracker_service,
+                        cookie_manager_service,
+                        signin_error_controller,
+                        signin::AccountConsistencyMethod::kDisabled) {}
+
+FakeSigninManager::FakeSigninManager(
+    SigninClient* client,
+    ProfileOAuth2TokenService* token_service,
+    AccountTrackerService* account_tracker_service,
+    GaiaCookieManagerService* cookie_manager_service,
+    SigninErrorController* signin_error_controller,
+    signin::AccountConsistencyMethod account_consistency)
     : SigninManager(client,
                     token_service,
                     account_tracker_service,
                     cookie_manager_service,
                     signin_error_controller,
-                    signin::AccountConsistencyMethod::kDisabled),
+                    account_consistency),
       token_service_(token_service) {}
 
 FakeSigninManager::~FakeSigninManager() {}
