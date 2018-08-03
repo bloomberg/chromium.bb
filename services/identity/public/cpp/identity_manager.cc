@@ -154,6 +154,33 @@ bool IdentityManager::HasPrimaryAccount() const {
   return !primary_account_info_.account_id.empty();
 }
 
+#if !defined(OS_CHROMEOS)
+void IdentityManager::ClearPrimaryAccount(
+    ClearAccountTokensAction token_action,
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
+  SigninManager* signin_manager =
+      SigninManager::FromSigninManagerBase(signin_manager_);
+
+  switch (token_action) {
+    case IdentityManager::ClearAccountTokensAction::kDefault:
+      signin_manager->SignOut(signout_source_metric, signout_delete_metric);
+      break;
+    case IdentityManager::ClearAccountTokensAction::kKeepAll:
+      signin_manager->SignOutAndKeepAllAccounts(signout_source_metric,
+                                                signout_delete_metric);
+      break;
+    case IdentityManager::ClearAccountTokensAction::kRemoveAll:
+      signin_manager->SignOutAndRemoveAllAccounts(signout_source_metric,
+                                                  signout_delete_metric);
+      break;
+  }
+
+  // NOTE: |primary_account_| member is cleared in WillFireGoogleSignedOut()
+  // and IdentityManager::Observers are notified in GoogleSignedOut();
+}
+#endif  // defined(OS_CHROMEOS)
+
 std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
   // TODO(blundell): It seems wasteful to construct this vector every time this
   // method is called, but it also seems bad to maintain the vector as an ivar
@@ -289,7 +316,6 @@ void IdentityManager::WillFireOnRefreshTokenAvailable(
     const std::string& account_id,
     bool is_valid) {
   DCHECK(!pending_token_available_state_);
-
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
 
