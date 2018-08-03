@@ -73,8 +73,8 @@ void CaptureAccessHandlerBase::UpdateMediaRequestState(
     content::MediaStreamType stream_type,
     content::MediaRequestState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if ((stream_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) &&
-      (stream_type != content::MEDIA_TAB_VIDEO_CAPTURE))
+  if ((stream_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) &&
+      (stream_type != content::MEDIA_GUM_TAB_VIDEO_CAPTURE))
     return;
 
   if (state == content::MEDIA_REQUEST_STATE_DONE) {

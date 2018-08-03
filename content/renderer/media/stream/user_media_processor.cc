@@ -70,10 +70,10 @@ void InitializeAudioTrackControls(const blink::WebUserMediaRequest& web_request,
           : constraints.Basic().media_stream_source.Exact()[0].Utf8();
   if (!source_constraint.empty()) {
     if (source_constraint == kMediaStreamSourceTab) {
-      *stream_type = MEDIA_TAB_AUDIO_CAPTURE;
+      *stream_type = MEDIA_GUM_TAB_AUDIO_CAPTURE;
     } else if (source_constraint == kMediaStreamSourceDesktop ||
                source_constraint == kMediaStreamSourceSystem) {
-      *stream_type = MEDIA_DESKTOP_AUDIO_CAPTURE;
+      *stream_type = MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
     }
   } else {
     *stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
@@ -96,10 +96,10 @@ void InitializeVideoTrackControls(const blink::WebUserMediaRequest& web_request,
           : constraints.Basic().media_stream_source.Exact()[0].Utf8();
   if (!source_constraint.empty()) {
     if (source_constraint == kMediaStreamSourceTab) {
-      *stream_type = MEDIA_TAB_VIDEO_CAPTURE;
+      *stream_type = MEDIA_GUM_TAB_VIDEO_CAPTURE;
     } else if (source_constraint == kMediaStreamSourceDesktop ||
                source_constraint == kMediaStreamSourceScreen) {
-      *stream_type = MEDIA_DESKTOP_VIDEO_CAPTURE;
+      *stream_type = MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
     }
   } else {
     *stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;

@@ -358,8 +358,8 @@ class CONTENT_EXPORT MediaStreamManager
   // StreamControls for requested device IDs.
   bool SetUpDeviceCaptureRequest(DeviceRequest* request,
                                  const MediaDeviceEnumeration& enumeration);
-  // Prepare |request| of type MEDIA_DESKTOP_AUDIO_CAPTURE and/or
-  // MEDIA_DESKTOP_VIDEO_CAPTURE for being posted to the UI by parsing
+  // Prepare |request| of type MEDIA_GUM_DESKTOP_AUDIO_CAPTURE and/or
+  // MEDIA_GUM_DESKTOP_VIDEO_CAPTURE for being posted to the UI by parsing
   // StreamControls for the requested desktop ID.
   bool SetUpScreenCaptureRequest(DeviceRequest* request);
   // Resolve the random device ID of tab capture on UI thread before proceeding
@@ -370,9 +370,9 @@ class CONTENT_EXPORT MediaStreamManager
       int requesting_process_id,
       int requesting_frame_id,
       const GURL& origin);
-  // Prepare |request| of type MEDIA_TAB_AUDIO_CAPTURE and/or
-  // MEDIA_TAB_VIDEO_CAPTURE for being posted to the UI after the requested
-  // tab capture IDs are resolved from registry.
+  // Prepare |request| of type MEDIA_GUM_TAB_AUDIO_CAPTURE and/or
+  // MEDIA_GUM_TAB_VIDEO_CAPTURE for being posted to the UI after the
+  // requested tab capture IDs are resolved from registry.
   void FinishTabCaptureRequestSetupWithDeviceId(
       const std::string& label,
       const DesktopMediaID& device_id);

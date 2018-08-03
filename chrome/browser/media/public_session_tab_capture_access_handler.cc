@@ -46,8 +46,8 @@ void PublicSessionTabCaptureAccessHandler::HandleRequest(
   // This class handles requests for Public Sessions only, outside of them just
   // pass the request through to the original class.
   if (!profiles::IsPublicSession() || !extension ||
-      (request.audio_type != content::MEDIA_TAB_AUDIO_CAPTURE &&
-       request.video_type != content::MEDIA_TAB_VIDEO_CAPTURE)) {
+      (request.audio_type != content::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
+       request.video_type != content::MEDIA_GUM_TAB_VIDEO_CAPTURE)) {
     return tab_capture_access_handler_.HandleRequest(
         web_contents, request, std::move(callback), extension);
   }

@@ -94,7 +94,7 @@ int AudioInputDeviceManager::Open(const MediaStreamDevice& device) {
                                   base::Optional<media::AudioParameters>()));
   } else {
     // TODO(tommi): As is, we hit this code path when device.type is
-    // MEDIA_TAB_AUDIO_CAPTURE and the device id is not a device that
+    // MEDIA_GUM_TAB_AUDIO_CAPTURE and the device id is not a device that
     // the AudioManager can know about. This currently does not fail because
     // the implementation of GetInputStreamParameters returns valid parameters
     // by default for invalid devices. That behavior is problematic because it

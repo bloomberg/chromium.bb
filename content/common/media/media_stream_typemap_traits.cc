@@ -19,14 +19,16 @@ EnumTraits<content::mojom::MediaStreamType, content::MediaStreamType>::ToMojom(
       return content::mojom::MediaStreamType::MEDIA_DEVICE_AUDIO_CAPTURE;
     case content::MediaStreamType::MEDIA_DEVICE_VIDEO_CAPTURE:
       return content::mojom::MediaStreamType::MEDIA_DEVICE_VIDEO_CAPTURE;
-    case content::MediaStreamType::MEDIA_TAB_AUDIO_CAPTURE:
-      return content::mojom::MediaStreamType::MEDIA_TAB_AUDIO_CAPTURE;
-    case content::MediaStreamType::MEDIA_TAB_VIDEO_CAPTURE:
-      return content::mojom::MediaStreamType::MEDIA_TAB_VIDEO_CAPTURE;
-    case content::MediaStreamType::MEDIA_DESKTOP_VIDEO_CAPTURE:
-      return content::mojom::MediaStreamType::MEDIA_DESKTOP_VIDEO_CAPTURE;
-    case content::MediaStreamType::MEDIA_DESKTOP_AUDIO_CAPTURE:
-      return content::mojom::MediaStreamType::MEDIA_DESKTOP_AUDIO_CAPTURE;
+    case content::MediaStreamType::MEDIA_GUM_TAB_AUDIO_CAPTURE:
+      return content::mojom::MediaStreamType::MEDIA_GUM_TAB_AUDIO_CAPTURE;
+    case content::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+      return content::mojom::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE;
+    case content::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+      return content::mojom::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+    case content::MediaStreamType::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE:
+      return content::mojom::MediaStreamType::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
+    case content::MediaStreamType::MEDIA_DISPLAY_VIDEO_CAPTURE:
+      return content::mojom::MediaStreamType::MEDIA_DISPLAY_VIDEO_CAPTURE;
     case content::MediaStreamType::NUM_MEDIA_TYPES:
       return content::mojom::MediaStreamType::NUM_MEDIA_TYPES;
   }
@@ -48,17 +50,20 @@ bool EnumTraits<content::mojom::MediaStreamType, content::MediaStreamType>::
     case content::mojom::MediaStreamType::MEDIA_DEVICE_VIDEO_CAPTURE:
       *out = content::MediaStreamType::MEDIA_DEVICE_VIDEO_CAPTURE;
       return true;
-    case content::mojom::MediaStreamType::MEDIA_TAB_AUDIO_CAPTURE:
-      *out = content::MediaStreamType::MEDIA_TAB_AUDIO_CAPTURE;
+    case content::mojom::MediaStreamType::MEDIA_GUM_TAB_AUDIO_CAPTURE:
+      *out = content::MediaStreamType::MEDIA_GUM_TAB_AUDIO_CAPTURE;
       return true;
-    case content::mojom::MediaStreamType::MEDIA_TAB_VIDEO_CAPTURE:
-      *out = content::MediaStreamType::MEDIA_TAB_VIDEO_CAPTURE;
+    case content::mojom::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+      *out = content::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE;
       return true;
-    case content::mojom::MediaStreamType::MEDIA_DESKTOP_VIDEO_CAPTURE:
-      *out = content::MediaStreamType::MEDIA_DESKTOP_VIDEO_CAPTURE;
+    case content::mojom::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+      *out = content::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
       return true;
-    case content::mojom::MediaStreamType::MEDIA_DESKTOP_AUDIO_CAPTURE:
-      *out = content::MediaStreamType::MEDIA_DESKTOP_AUDIO_CAPTURE;
+    case content::mojom::MediaStreamType::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE:
+      *out = content::MediaStreamType::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
+      return true;
+    case content::mojom::MediaStreamType::MEDIA_DISPLAY_VIDEO_CAPTURE:
+      *out = content::MediaStreamType::MEDIA_DISPLAY_VIDEO_CAPTURE;
       return true;
     case content::mojom::MediaStreamType::NUM_MEDIA_TYPES:
       *out = content::MediaStreamType::NUM_MEDIA_TYPES;

@@ -318,7 +318,7 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
       MediaCaptureDevicesDispatcher::GetInstance()->
           GetMediaStreamCaptureIndicator();
   const MediaStreamDevice dummyVideoCaptureDevice(
-      content::MEDIA_TAB_VIDEO_CAPTURE, "dummy_id", "dummy name");
+      content::MEDIA_GUM_TAB_VIDEO_CAPTURE, "dummy_id", "dummy name");
   std::unique_ptr<MediaStreamUI> streamUi(indicator->RegisterMediaStream(
       contents, MediaStreamDevices(1, dummyVideoCaptureDevice)));
   streamUi->OnStarted(base::DoNothing());

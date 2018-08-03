@@ -710,8 +710,8 @@ SelectSettingsAudioCapture(MediaStreamAudioSource* source,
                            const blink::WebMediaConstraints& constraints) {
   DCHECK(source);
   if (source->device().type != MEDIA_DEVICE_AUDIO_CAPTURE &&
-      source->device().type != MEDIA_TAB_AUDIO_CAPTURE &&
-      source->device().type != MEDIA_DESKTOP_AUDIO_CAPTURE) {
+      source->device().type != MEDIA_GUM_TAB_AUDIO_CAPTURE &&
+      source->device().type != MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) {
     return AudioCaptureSettings();
   }
 
@@ -722,13 +722,13 @@ SelectSettingsAudioCapture(MediaStreamAudioSource* source,
         constraints.Basic().media_stream_source.GetName());
   }
 
-  if (source->device().type == MEDIA_TAB_AUDIO_CAPTURE &&
+  if (source->device().type == MEDIA_GUM_TAB_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
       media_stream_source != kMediaStreamSourceTab) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }
-  if (source->device().type == MEDIA_DESKTOP_AUDIO_CAPTURE &&
+  if (source->device().type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
       media_stream_source != kMediaStreamSourceSystem &&
       media_stream_source != kMediaStreamSourceDesktop) {

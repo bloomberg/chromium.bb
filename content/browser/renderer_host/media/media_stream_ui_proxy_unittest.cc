@@ -262,7 +262,7 @@ TEST_F(MediaStreamUIProxyTest, MAYBE_WindowIdCallbackCalled) {
   std::unique_ptr<MediaStreamRequest> request(new MediaStreamRequest(
       0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
       std::string(), std::string(), MEDIA_NO_SERVICE,
-      MEDIA_DESKTOP_VIDEO_CAPTURE, false));
+      MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, false));
   MediaStreamRequest* request_ptr = request.get();
 
   proxy_->RequestAccess(

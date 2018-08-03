@@ -295,7 +295,7 @@ void VideoCaptureManager::OnDeviceLaunched(VideoCaptureController* controller) {
   DCHECK_EQ(controller, device_start_request_queue_.begin()->controller());
   DCHECK(controller);
 
-  if (controller->stream_type() == MEDIA_DESKTOP_VIDEO_CAPTURE) {
+  if (controller->stream_type() == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
     const media::VideoCaptureSessionId session_id =
         device_start_request_queue_.front().session_id();
     DCHECK(session_id != kFakeSessionId);
@@ -573,7 +573,7 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
     return;
   }
 
-  DCHECK_EQ(MEDIA_DESKTOP_VIDEO_CAPTURE, existing_device->stream_type());
+  DCHECK_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, existing_device->stream_type());
   DesktopMediaID id = DesktopMediaID::Parse(existing_device->device_id());
   if (id.is_null())
     return;

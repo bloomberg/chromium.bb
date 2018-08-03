@@ -217,7 +217,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   WebContentsMediaCaptureId capture_id(main_frame->GetProcess()->GetID(),
                                        main_frame->GetRoutingID());
   int session_id = audio_input_device_manager()->Open(MediaStreamDevice(
-      MEDIA_TAB_AUDIO_CAPTURE, capture_id.ToString(), kDeviceName));
+      MEDIA_GUM_TAB_AUDIO_CAPTURE, capture_id.ToString(), kDeviceName));
   base::RunLoop().RunUntilIdle();
 
   mojom::RendererAudioInputStreamFactoryClientPtr client;
@@ -242,7 +242,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   WebContentsMediaCaptureId capture_id(main_frame->GetProcess()->GetID(),
                                        main_frame->GetRoutingID());
   int session_id = audio_input_device_manager()->Open(MediaStreamDevice(
-      MEDIA_TAB_AUDIO_CAPTURE, capture_id.ToString(), kDeviceName));
+      MEDIA_GUM_TAB_AUDIO_CAPTURE, capture_id.ToString(), kDeviceName));
   base::RunLoop().RunUntilIdle();
 
   source_contents.reset();

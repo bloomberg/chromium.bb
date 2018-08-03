@@ -123,7 +123,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
 #if defined(ENABLE_SCREEN_CAPTURE)
 #if !defined(OS_ANDROID)
-    case MEDIA_TAB_VIDEO_CAPTURE:
+    case MEDIA_GUM_TAB_VIDEO_CAPTURE:
       start_capture_closure = base::BindOnce(
           &InProcessVideoCaptureDeviceLauncher::DoStartTabCaptureOnDeviceThread,
           base::Unretained(this), device_id, params, std::move(receiver),
@@ -131,7 +131,9 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
       break;
 #endif  // !defined(OS_ANDROID)
 
-    case MEDIA_DESKTOP_VIDEO_CAPTURE: {
+    case MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+      FALLTHROUGH;
+    case MEDIA_DISPLAY_VIDEO_CAPTURE: {
       const DesktopMediaID desktop_id = DesktopMediaID::Parse(device_id);
       if (desktop_id.is_null()) {
         DLOG(ERROR) << "Desktop media ID is null";

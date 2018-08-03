@@ -354,8 +354,8 @@ void TabCaptureRegistry::OnRequestUpdate(
     content::MediaStreamType stream_type,
     const content::MediaRequestState new_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (stream_type != content::MEDIA_TAB_VIDEO_CAPTURE &&
-      stream_type != content::MEDIA_TAB_AUDIO_CAPTURE) {
+  if (stream_type != content::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
+      stream_type != content::MEDIA_GUM_TAB_AUDIO_CAPTURE) {
     return;
   }
 

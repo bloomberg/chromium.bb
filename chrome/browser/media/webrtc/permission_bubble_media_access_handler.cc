@@ -69,7 +69,7 @@ bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
 #if defined(OS_ANDROID)
   return type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
          type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+         type == content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
 #else
   return type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
          type == content::MEDIA_DEVICE_AUDIO_CAPTURE;
@@ -107,7 +107,7 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_ANDROID)
-  if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE &&
+  if (request.video_type == content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE &&
       !base::FeatureList::IsEnabled(
           chrome::android::kUserMediaScreenCapturing)) {
     // If screen capturing isn't enabled on Android, we'll use "invalid state"
@@ -143,7 +143,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
 
   const content::MediaStreamRequest request = it->second.front().request;
 #if defined(OS_ANDROID)
-  if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
+  if (request.video_type == content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
     ScreenCaptureInfoBarDelegateAndroid::Create(
         web_contents, request,
         base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,

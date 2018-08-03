@@ -177,12 +177,12 @@ void SendVideoCaptureLogMessage(const std::string& message) {
 
 MediaStreamType AdjustAudioStreamTypeBasedOnCommandLineSwitches(
     MediaStreamType stream_type) {
-  if (stream_type != MEDIA_DESKTOP_AUDIO_CAPTURE)
+  if (stream_type != MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
     return stream_type;
   const bool audio_support_flag_for_desktop_share =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAudioSupportForDesktopShare);
-  return audio_support_flag_for_desktop_share ? MEDIA_DESKTOP_AUDIO_CAPTURE
+  return audio_support_flag_for_desktop_share ? MEDIA_GUM_DESKTOP_AUDIO_CAPTURE
                                               : MEDIA_NO_SERVICE;
 }
 
@@ -989,10 +989,11 @@ void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
     const MediaDeviceEnumeration& enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Actual audio parameters are required only for MEDIA_TAB_AUDIO_CAPTURE.
-  // TODO(guidou): MEDIA_TAB_AUDIO_CAPTURE should not be a special case. See
-  // crbug.com/584287.
-  if (request->audio_type() == MEDIA_TAB_AUDIO_CAPTURE) {
+  // Actual audio parameters are required only for
+  // MEDIA_GUM_TAB_AUDIO_CAPTURE.
+  // TODO(guidou): MEDIA_GUM_TAB_AUDIO_CAPTURE should not be a special
+  // case. See https://crbug.com/584287.
+  if (request->audio_type() == MEDIA_GUM_TAB_AUDIO_CAPTURE) {
     // Using base::Unretained is safe: |audio_system_| will post
     // PostRequestToUI() to IO thread, and MediaStreamManager is deleted on the
     // UI thread, after the IO thread has been stopped.
@@ -1032,7 +1033,7 @@ void MediaStreamManager::PostRequestToUI(
   // The fake UI doesn't work for desktop sharing requests since we can't see
   // its devices from here; always use the real UI for such requests.
   if (fake_ui_factory_ &&
-      request->video_type() != MEDIA_DESKTOP_VIDEO_CAPTURE) {
+      request->video_type() != MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
     MediaStreamDevices devices = ConvertToMediaStreamDevices(
         request->audio_type(), enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]);
     MediaStreamDevices video_devices = ConvertToMediaStreamDevices(
@@ -1069,8 +1070,8 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
   request->SetVideoType(request->controls.video.stream_type);
 
   const bool is_tab_capture =
-      request->audio_type() == MEDIA_TAB_AUDIO_CAPTURE ||
-      request->video_type() == MEDIA_TAB_VIDEO_CAPTURE;
+      request->audio_type() == MEDIA_GUM_TAB_AUDIO_CAPTURE ||
+      request->video_type() == MEDIA_GUM_TAB_VIDEO_CAPTURE;
   if (is_tab_capture) {
     if (!SetUpTabCaptureRequest(request, label)) {
       FinalizeRequestFailed(label, request, MEDIA_DEVICE_TAB_CAPTURE_FAILURE);
@@ -1079,7 +1080,7 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
   }
 
   const bool is_screen_capture =
-      request->video_type() == MEDIA_DESKTOP_VIDEO_CAPTURE;
+      request->video_type() == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
   if (is_screen_capture && !SetUpScreenCaptureRequest(request)) {
     FinalizeRequestFailed(label, request, MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE);
     return;
@@ -1133,8 +1134,8 @@ bool MediaStreamManager::SetUpDeviceCaptureRequest(
 
 bool MediaStreamManager::SetUpTabCaptureRequest(DeviceRequest* request,
                                                 const std::string& label) {
-  DCHECK(request->audio_type() == MEDIA_TAB_AUDIO_CAPTURE ||
-         request->video_type() == MEDIA_TAB_VIDEO_CAPTURE);
+  DCHECK(request->audio_type() == MEDIA_GUM_TAB_AUDIO_CAPTURE ||
+         request->video_type() == MEDIA_GUM_TAB_VIDEO_CAPTURE);
 
   std::string capture_device_id;
   if (!request->controls.audio.device_id.empty()) {
@@ -1145,9 +1146,9 @@ bool MediaStreamManager::SetUpTabCaptureRequest(DeviceRequest* request,
     return false;
   }
 
-  if ((request->audio_type() != MEDIA_TAB_AUDIO_CAPTURE &&
+  if ((request->audio_type() != MEDIA_GUM_TAB_AUDIO_CAPTURE &&
        request->audio_type() != MEDIA_NO_SERVICE) ||
-      (request->video_type() != MEDIA_TAB_VIDEO_CAPTURE &&
+      (request->video_type() != MEDIA_GUM_TAB_VIDEO_CAPTURE &&
        request->video_type() != MEDIA_NO_SERVICE)) {
     return false;
   }
@@ -1213,29 +1214,28 @@ void MediaStreamManager::FinishTabCaptureRequestSetupWithDeviceId(
 }
 
 bool MediaStreamManager::SetUpScreenCaptureRequest(DeviceRequest* request) {
-  DCHECK(request->audio_type() == MEDIA_DESKTOP_AUDIO_CAPTURE ||
-         request->video_type() == MEDIA_DESKTOP_VIDEO_CAPTURE);
+  DCHECK(request->audio_type() == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE ||
+         request->video_type() == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE);
 
   // For screen capture we only support two valid combinations:
   // (1) screen video capture only, or
   // (2) screen video capture with loopback audio capture.
-  if (request->video_type() != MEDIA_DESKTOP_VIDEO_CAPTURE ||
+  if (request->video_type() != MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
       (request->audio_type() != MEDIA_NO_SERVICE &&
-       request->audio_type() != MEDIA_DESKTOP_AUDIO_CAPTURE)) {
+       request->audio_type() != MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)) {
     LOG(ERROR) << "Invalid screen capture request.";
     return false;
   }
 
   std::string video_device_id;
-  if (request->video_type() == MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    if (!request->controls.video.device_id.empty()) {
-      video_device_id = request->controls.video.device_id;
-    }
+  if (request->video_type() == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE &&
+      !request->controls.video.device_id.empty()) {
+    video_device_id = request->controls.video.device_id;
   }
 
   const std::string audio_device_id =
-      request->audio_type() == MEDIA_DESKTOP_AUDIO_CAPTURE ? video_device_id
-                                                           : "";
+      request->audio_type() == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE ? video_device_id
+                                                               : "";
 
   request->CreateUIRequest(audio_device_id, video_device_id);
   return true;
@@ -1430,7 +1430,7 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
           // Store the native audio parameters in the device struct.
           // TODO(xians): Handle the tab capture sample rate/channel layout
           // in AudioInputDeviceManager::Open().
-          if (device.type != MEDIA_TAB_AUDIO_CAPTURE) {
+          if (device.type != MEDIA_GUM_TAB_AUDIO_CAPTURE) {
             const MediaStreamDevice* opened_device =
                 audio_input_device_manager_->GetOpenedDeviceById(
                     device.session_id);
@@ -1599,16 +1599,16 @@ void MediaStreamManager::HandleAccessRequestResponse(
   for (const MediaStreamDevice& media_stream_device : devices) {
     MediaStreamDevice device = media_stream_device;
 
-    if (device.type == MEDIA_TAB_VIDEO_CAPTURE ||
-        device.type == MEDIA_TAB_AUDIO_CAPTURE) {
+    if (device.type == MEDIA_GUM_TAB_VIDEO_CAPTURE ||
+        device.type == MEDIA_GUM_TAB_AUDIO_CAPTURE) {
       device.id = request->tab_capture_device_id;
     }
 
     // Initialize the sample_rate and channel_layout here since for audio
     // mirroring, we don't go through EnumerateDevices where these are usually
     // initialized.
-    if (device.type == MEDIA_TAB_AUDIO_CAPTURE ||
-        device.type == MEDIA_DESKTOP_AUDIO_CAPTURE) {
+    if (device.type == MEDIA_GUM_TAB_AUDIO_CAPTURE ||
+        device.type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) {
       int sample_rate = output_parameters.sample_rate();
       // If we weren't able to get the native sampling rate or the sample_rate
       // is outside the valid range for input devices set reasonable defaults.
@@ -1770,13 +1770,13 @@ void MediaStreamManager::OnMediaStreamUIWindowId(
   if (!window_id)
     return;
 
-  if (video_type != MEDIA_DESKTOP_VIDEO_CAPTURE)
+  if (video_type != MEDIA_GUM_DESKTOP_VIDEO_CAPTURE)
     return;
 
   // Pass along for desktop screen and window capturing when
   // DesktopCaptureDevice is used.
   for (const MediaStreamDevice& device : devices) {
-    if (device.type != MEDIA_DESKTOP_VIDEO_CAPTURE)
+    if (device.type != MEDIA_GUM_DESKTOP_VIDEO_CAPTURE)
       continue;
 
     DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
