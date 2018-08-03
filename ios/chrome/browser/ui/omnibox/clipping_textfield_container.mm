@@ -14,6 +14,17 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Clipping of long URLs is disabled on iOS 12 due to a bug with UITextField
+// not being rendered when the backing layer is large (approx. 915
+// characters with current font). This is used as the max number of characters
+// to clip.
+// TODO(crbug.com/860790) : reenable clipping on iOS 12.
+const CGFloat kMaxCharsToClipOnIOS12 = 800;
+
+}  // namespace
+
 @interface ClippingTextFieldContainer ()
 
 @property(nonatomic, strong) NSLayoutConstraint* leftConstraint;
@@ -69,11 +80,12 @@
 }
 
 - (void)startClipping {
-  // TODO(crbug.com/860790) : reenable this.
-  if (base::ios::IsRunningOnIOS12OrLater()) {
-    // Clipping is disabled on iOS 12 due to a bug with UITextField not being
-    // rendered when the backing layer is large (approx. 915 characters with
-    // current font).
+  // TODO(crbug.com/860790) : reenable clipping on iOS 12.
+  if (base::ios::IsRunningOnIOS12OrLater() &&
+      self.textField.text.length > kMaxCharsToClipOnIOS12) {
+    // Clipping of long URLs is disabled on iOS 12 due to a bug with UITextField
+    // not being rendered when the backing layer is large (approx. 915
+    // characters with current font).
     return;
   }
 
@@ -84,6 +96,16 @@
 }
 
 - (void)applyClipping {
+  // TODO(crbug.com/860790) : reenable clipping on iOS 12.
+  if (base::ios::IsRunningOnIOS12OrLater() &&
+      self.textField.text.length > kMaxCharsToClipOnIOS12) {
+    // Clipping of long URLs is disabled on iOS 12 due to a bug with UITextField
+    // not being rendered when the backing layer is large (approx. 915
+    // characters with current font).
+    [self stopClipping];
+    return;
+  }
+
   CGFloat suffixWidth = 0;
   CGFloat prefixWidth =
       -[self leftConstantWithAttributedText:self.textField.attributedText
