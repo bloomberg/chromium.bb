@@ -450,7 +450,9 @@ void DesktopWindowTreeHostWin::SetOpacity(float opacity) {
 }
 
 void DesktopWindowTreeHostWin::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
-  // TODO(apacible): Implement for Windows. https://crbug.com/853276.
+  DCHECK(!aspect_ratio.IsEmpty());
+  message_handler_->SetAspectRatio(aspect_ratio.width() /
+                                   aspect_ratio.height());
 }
 
 void DesktopWindowTreeHostWin::SetWindowIcons(

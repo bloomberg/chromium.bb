@@ -240,7 +240,6 @@ jumbo_component("views") {
     "widget/root_view.h",
     "widget/root_view_targeter.h",
     "widget/tooltip_manager.h",
-    "widget/util_mac.h",
     "widget/widget.h",
     "widget/widget_aura_utils.h",
     "widget/widget_delegate.h",
@@ -260,6 +259,7 @@ jumbo_component("views") {
     "window/window_button_order_provider.h",
     "window/window_resources.h",
     "window/window_shape.h",
+    "window/window_resize_utils.h",
     "word_lookup_client.h",
   ]
 
@@ -440,6 +440,7 @@ jumbo_component("views") {
     "window/native_frame_view.cc",
     "window/non_client_view.cc",
     "window/window_button_order_provider.cc",
+    "window/window_resize_utils.cc",
     "window/window_shape.cc",
   ]
 
@@ -1007,6 +1008,7 @@ source_set("views_unittests_sources") {
     "window/dialog_client_view_unittest.cc",
     "window/dialog_delegate_unittest.cc",
     "window/non_client_view_unittest.cc",
+    "window/window_resize_utils_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

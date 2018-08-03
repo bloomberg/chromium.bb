@@ -31,6 +31,7 @@
 #include "ui/gfx/win/window_impl.h"
 #include "ui/views/views_export.h"
 #include "ui/views/win/pen_event_processor.h"
+#include "ui/views/window/window_resize_utils.h"
 
 namespace gfx {
 class ImageSkia;
@@ -160,6 +161,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   }
 
   void SetFullscreen(bool fullscreen);
+
+  // Updates the aspect ratio of the window.
+  void SetAspectRatio(float aspect_ratio);
 
   // Updates the window style to reflect whether it can be resized or maximized.
   void SizeConstraintsChanged();
@@ -408,6 +412,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
     CR_MSG_WM_SETTEXT(OnSetText)
     CR_MSG_WM_SETTINGCHANGE(OnSettingChange)
     CR_MSG_WM_SIZE(OnSize)
+    CR_MSG_WM_SIZING(OnSizing)
     CR_MSG_WM_SYSCOMMAND(OnSysCommand)
     CR_MSG_WM_THEMECHANGED(OnThemeChanged)
     CR_MSG_WM_TIMECHANGE(OnTimeChange)
@@ -467,6 +472,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   LRESULT OnSetText(const wchar_t* text);
   void OnSettingChange(UINT flags, const wchar_t* section);
   void OnSize(UINT param, const gfx::Size& size);
+  void OnSizing(UINT param, RECT* rect);
   void OnSysCommand(UINT notification_code, const gfx::Point& point);
   void OnThemeChanged();
   void OnTimeChange();
@@ -560,6 +566,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // if they request its location.
   void DestroyAXSystemCaret();
 
+  // Updates |rect| to adhere to the |aspect_ratio| of the window. |param|
+  // refers to the edge of the window being sized.
+  void SizeRectToAspectRatio(UINT param, gfx::Rect* rect);
+
   HWNDMessageHandlerDelegate* delegate_;
 
   std::unique_ptr<FullscreenHandler> fullscreen_handler_;
@@ -585,6 +595,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // The icon created from the bitmap image of the app icon.
   base::win::ScopedHICON app_icon_;
+
+  // The aspect ratio for the window. This is only used for sizing operations
+  // for the non-client area.
+  base::Optional<float> aspect_ratio_;
 
   // The current DPI.
   int dpi_;
