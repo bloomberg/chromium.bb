@@ -4081,16 +4081,7 @@ jumbo_split_static_library("browser") {
   }
 
   if (enable_rlz) {
-    sources += [
-      "rlz/chrome_rlz_tracker_delegate.cc",
-      "rlz/chrome_rlz_tracker_delegate.h",
-    ]
-
-    public_deps += [
-      "//components/google/core/browser",
-      "//components/rlz",
-      "//rlz:rlz_lib",
-    ]
+    deps += [ ":rlz" ]
   }
 
   if (enable_service_discovery) {
@@ -5141,6 +5132,22 @@ static_library("test_support_ui") {
       "//chrome:browser_tests_pak",
       "//chrome/common:mojo_bindings",
       "//chrome/test/data:web_ui_test_bindings",
+    ]
+  }
+}
+
+if (enable_rlz_support) {
+  static_library("rlz") {
+    sources = [
+      "rlz/chrome_rlz_tracker_delegate.cc",
+      "rlz/chrome_rlz_tracker_delegate.h",
+    ]
+    public_deps = [
+      "//components/google/core/browser",
+      "//components/omnibox/browser",
+      "//components/rlz",
+      "//components/search_engines",
+      "//rlz:rlz_lib",
     ]
   }
 }
