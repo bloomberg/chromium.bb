@@ -80,30 +80,6 @@ public interface WebContents extends Parcelable {
     }
 
     /**
-     * Factory interface passed to {@link #setUserData()} for instantiation of
-     * class as user data.
-     *
-     * Constructor method reference comes handy for class Foo to provide the factory.
-     * Use lazy initialization to avoid having to generate too many anonymous reference.
-     *
-     * <code>
-     * public class Foo {
-     *     static final class FoofactoryLazyHolder {
-     *         private static final UserDataFactory<Foo> INSTANCE = Foo::new;
-     *     }
-     *     ....
-     *
-     *     webContents.setUserData(Foo.class, FooFactoryLazyHolder.INSTANCE);
-     *
-     *     ....
-     * }
-     * </code>
-     *
-     * @param <T> Class to instantiate.
-     */
-    public interface UserDataFactory<T> { T create(WebContents webContents); }
-
-    /**
      * Initialize various content objects of {@link WebContents} lifetime.
      * @param productVersion Product version for accessibility.
      * @param viewDelegate Delegate to add/remove anchor views.
@@ -143,17 +119,6 @@ public interface WebContents extends Parcelable {
      * @return Whether or not the native object associated with this WebContent is destroyed.
      */
     boolean isDestroyed();
-
-    /**
-     * Retrieves or stores a user data object for this WebContents.
-     * @param key Class instance of the object used as the key.
-     * @param userDataFactory Factory that creates an object of the generic class. A new object
-     *        is created if it hasn't been created and non-null factory is given.
-     * @return The created or retrieved user data object. Can be null if the object was
-     *         not created yet, or {@code userDataFactory} is null, or the internal data
-     *         storage is already garbage-collected.
-     */
-    public <T> T getOrSetUserData(Class<T> key, UserDataFactory<T> userDataFactory);
 
     /**
      * @return The navigation controller associated with this WebContents.

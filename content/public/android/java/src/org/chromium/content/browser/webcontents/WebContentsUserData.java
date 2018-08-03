@@ -4,8 +4,8 @@
 
 package org.chromium.content.browser.webcontents;
 
+import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 
 /**
  * Holds an object to be stored in {@code userDataMap} in {@link WebContents} for those

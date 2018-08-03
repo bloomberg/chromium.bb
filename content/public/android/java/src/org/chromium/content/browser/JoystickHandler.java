@@ -8,10 +8,10 @@ import android.view.InputDevice;
 import android.view.MotionEvent;
 
 import org.chromium.content.browser.input.ImeAdapterImpl;
+import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.EventForwarder;
 
 /**
