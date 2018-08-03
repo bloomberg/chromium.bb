@@ -510,8 +510,22 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
     // parent window. So, if there's a parent, order above that. Otherwise, this
     // will order above all windows at the same level.
     NSInteger parent_window_number = 0;
-    if (parent_)
+    if (parent_) {
+      // When there's a parent, check if the window is already visible. If
+      // ShowInactive() is called on an already-visible window, there should be
+      // no effect: the macOS childWindow mechanism should have already raised
+      // the window to the right stacking order. More importantly, invoking
+      // -[NSWindow orderWindow:] could cause a Space switch, which defeats the
+      // point of ShowInactive(), so avoid it. See https://crbug.com/866760.
+
+      // Sanity check: if the window is visible, the prior Show should have
+      // hooked it up as a native child window already.
+      DCHECK_EQ(window_visible_, !![window_ parentWindow]);
+      if (window_visible_)
+        return;  // Avoid a Spaces transition.
+
       parent_window_number = [parent_->GetNSWindow() windowNumber];
+    }
 
     [window_ orderWindow:NSWindowAbove
               relativeTo:parent_window_number];

@@ -60,9 +60,11 @@
 @interface NativeWidgetMacTestWindow : NativeWidgetMacNSWindow {
  @private
   int invalidateShadowCount_;
+  int orderWindowCount_;
   bool* deallocFlag_;
 }
 @property(readonly, nonatomic) int invalidateShadowCount;
+@property(readonly, nonatomic) int orderWindowCount;
 @property(assign, nonatomic) bool* deallocFlag;
 @end
 
@@ -466,6 +468,44 @@ TEST_F(NativeWidgetMacTest, DISABLED_OrderFrontAfterMiniaturize) {
   EXPECT_TRUE([child_ns_window occlusionState] & NSWindowOcclusionStateVisible);
   EXPECT_TRUE(IsWindowStackedAbove(child_widget, widget));
   widget->Close();
+}
+
+// Test that ShowInactive() on already-visible child widgets is ignored, since
+// it may cause a space transition. See https://crbug.com/866760.
+TEST_F(NativeWidgetMacTest, ShowInactiveOnChildWidget) {
+  NativeWidgetMacTestWindow* parent_window;
+  NativeWidgetMacTestWindow* child_window;
+
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.bounds = gfx::Rect(100, 100, 200, 200);
+  Widget* parent = CreateWidgetWithTestWindow(init_params, &parent_window);
+
+  // CreateWidgetWithTestWindow calls Show()
+  EXPECT_EQ(1, [parent_window orderWindowCount]);
+
+  init_params.parent = parent->GetNativeView();
+  Widget* child = CreateWidgetWithTestWindow(init_params, &child_window);
+
+  // The child is ordered twice, once by Show() and again (by AppKit) when it is
+  // registered as a child window.
+  EXPECT_EQ(2, [child_window orderWindowCount]);
+
+  // Parent is unchanged.
+  EXPECT_EQ(1, [parent_window orderWindowCount]);
+
+  // ShowInactive() on a visible regular window may serve to raise its stacking
+  // order without taking focus, so it should invoke -[NSWindow orderWindow:..].
+  parent->ShowInactive();
+  EXPECT_EQ(2, [parent_window orderWindowCount]);  // Increases.
+
+  // However, ShowInactive() on the child should have no effect. It should
+  // already be in a correct stacking order and we must avoid a Space switch.
+  child->ShowInactive();
+  EXPECT_EQ(2, [child_window orderWindowCount]);   // No change.
+  EXPECT_EQ(2, [parent_window orderWindowCount]);  // Parent also unchanged.
+
+  parent->CloseNow();
 }
 
 // Test minimized states triggered externally, implied visibility and restored
@@ -2343,6 +2383,7 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
 @implementation NativeWidgetMacTestWindow
 
 @synthesize invalidateShadowCount = invalidateShadowCount_;
+@synthesize orderWindowCount = orderWindowCount_;
 @synthesize deallocFlag = deallocFlag_;
 
 - (void)dealloc {
@@ -2356,6 +2397,12 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
 - (void)invalidateShadow {
   ++invalidateShadowCount_;
   [super invalidateShadow];
+}
+
+- (void)orderWindow:(NSWindowOrderingMode)orderingMode
+         relativeTo:(NSInteger)otherWindowNumber {
+  ++orderWindowCount_;
+  [super orderWindow:orderingMode relativeTo:otherWindowNumber];
 }
 
 @end
