@@ -1978,6 +1978,7 @@ enum WebFeature {
   kAddDocumentLevelPassiveFalseWheelEventListener = 2519,
   kAddDocumentLevelPassiveDefaultWheelEventListener = 2520,
   kDocumentLevelPassiveDefaultEventListenerPreventedWheel = 2521,
+  kShapeDetectionAPI = 2522,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

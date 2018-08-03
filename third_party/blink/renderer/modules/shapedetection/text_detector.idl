@@ -11,5 +11,5 @@
     MeasureAs=ShapeDetection_TextDetectorConstructor,
     OriginTrialEnabled=ShapeDetection
 ] interface TextDetector {
-    [CallWith=ScriptState] Promise<sequence<DetectedText>> detect(ImageBitmapSource image);
+    [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedText>> detect(ImageBitmapSource image);
 };

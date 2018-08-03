@@ -11,5 +11,5 @@
     MeasureAs=ShapeDetection_FaceDetectorConstructor,
     OriginTrialEnabled=ShapeDetection
 ] interface FaceDetector {
-    [CallWith=ScriptState] Promise<sequence<DetectedFace>> detect(ImageBitmapSource image);
+    [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedFace>> detect(ImageBitmapSource image);
 };

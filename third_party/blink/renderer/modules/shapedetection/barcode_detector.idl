@@ -11,5 +11,5 @@
     MeasureAs=ShapeDetection_BarcodeDetectorConstructor,
     OriginTrialEnabled=ShapeDetection
 ] interface BarcodeDetector {
-    [CallWith=ScriptState] Promise<sequence<DetectedBarcode>> detect(ImageBitmapSource image);
+    [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedBarcode>> detect(ImageBitmapSource image);
 };
