@@ -2108,21 +2108,22 @@ void RenderFrameImpl::OnSwapOut(
   // process that is now rendering the frame.
   proxy->SetReplicatedState(replicated_frame_state);
 
-  // Safe to exit if no one else is using the process.
-  // TODO(nasko): Remove the dependency on RenderViewImpl here and ref count
-  // the process based on the lifetime of this RenderFrameImpl object.
-  if (is_main_frame)
-    render_view->GetWidget()->WasSwappedOut();
-
   // Notify the browser that this frame was swapped. Use the RenderThread
   // directly because |this| is deleted.  Post a task to send the ACK, so that
   // any postMessage IPCs scheduled from the unload handler are sent before
   // the ACK (see https://crbug.com/857274).
   auto send_swapout_ack = base::BindOnce(
-      [](int routing_id) {
+      [](int routing_id, bool is_main_frame) {
         RenderThread::Get()->Send(new FrameHostMsg_SwapOut_ACK(routing_id));
+        // Now that the unload handler, and any postMessages posted from it,
+        // have finished, and we've sent the swapout ACK, it's safe to exit if
+        // no one else is using the process.  Release the process if we've
+        // swapped the main frame out, and hence transitioned the
+        // RenderView/Widget to swapped out state.
+        if (is_main_frame)
+          RenderProcess::current()->ReleaseProcess();
       },
-      routing_id);
+      routing_id, is_main_frame);
   task_runner->PostTask(FROM_HERE, std::move(send_swapout_ack));
 }
 
@@ -5855,13 +5856,18 @@ bool RenderFrameImpl::SwapIn() {
   in_frame_tree_ = true;
 
   // If this is the main frame going from a remote frame to a local frame,
-  // it needs to set RenderViewImpl's pointer for the main frame to itself
-  // and ensure RenderWidget is no longer in swapped out mode.
+  // it needs to set RenderViewImpl's pointer for the main frame to itself,
+  // ensure RenderWidget is no longer in swapped out mode, and call
+  // AddRefProcess() to prevent the process from exiting.  A matching
+  // ReleaseProcess() call will be made if the RenderWidget ever becomes
+  // swapped out again - see OnSwapOut().
   if (is_main_frame_) {
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;
-    if (render_view_->is_swapped_out())
+    if (render_view_->is_swapped_out()) {
       render_view_->SetSwappedOut(false);
+      RenderProcess::current()->AddRefProcess();
+    }
     render_view_->UpdateWebViewWithDeviceScaleFactor();
   }
 

@@ -605,10 +605,6 @@ class CONTENT_EXPORT RenderWidget
   friend class RenderViewImplTest;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
 
-  // Allows the process to exit once the unload handler has finished, if there
-  // are no other active RenderWidgets.
-  void WasSwappedOut();
-
   void DoDeferredClose();
   void NotifyOnClose();
 

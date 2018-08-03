@@ -838,6 +838,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            LastCommittedURLRetainedAfterSwapOut);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            RenderFrameProxyNotRecreatedDuringProcessShutdown);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           SwapOutACKArrivesPriorToProcessShutdownRequest);
   FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
                            AttemptDuplicateRenderViewHost);
 
