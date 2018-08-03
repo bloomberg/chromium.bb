@@ -25,7 +25,43 @@ default_chrome_public_jinja_variables = [
   "enable_vr=$enable_vr",
 ]
 
-template("chrome_public_apk_tmpl") {
+# A template used to declare any target that will implement a full Chromium
+# or Chrome application, either as an APK, or an app bundle module.
+#
+# Variables:
+#   target_type: Either 'android_apk' or 'android_app_bundle_module'.
+#   apk_name: For APK target types, the final APK name without a suffix.
+#   module_name: For bundle module target types, the module's name without a
+#     suffix.
+#   is_base_module: For bundle module target types, true iff this is a base
+#     application module, instead of a feature module.
+#   android_manifest: Application manifest path.
+#   android_manifest_dep: Name of target generating the android_manifest.
+#   shared_libraries: List of native shared libraries targets to include in
+#     the final target (e.g. [ ":libchrome" ]).
+#   add_unwind_tables_in_apk: Optional. If true, add the unwind tables to the
+#     final APK or bundle.
+#   is_modern: If true, indicates this corresponds to a chrome_modern_XXX
+#     target that can only run on Android L-M.
+#   png_to_webp: Optional. If true, convert image resources to webp format.
+#     requires Android K+, since these were not supported by Android properly
+#     before 4.3.0.
+#   load_library_from_apk: Optional. If true, native libraries will be loaded
+#     directly from the APK (and stored zipaligned and uncompressed). This
+#     requires either the Chromium linker, or Android M+.
+#   version_name: Application version name (e.g. "Developer Build").
+#   is_modern: Optional. true iff this is a chrome_modern derived build.
+#
+#   Plus all other variables accepted by android_apk() or
+#   android_app_bundle_module(), depending on the target type.
+#
+template("chrome_public_common_apk_or_module_tmpl") {
+  assert(defined(invoker.target_type), "target_type is required!")
+  assert(
+      invoker.target_type == "android_apk" ||
+          invoker.target_type == "android_app_bundle_module",
+      "Invalid target_type definition, should be 'android_apk' or 'android_app_bundle_module'")
+
   # Adds unwind table asset to the chrome apk for the given library target. This
   # is not part of generic apk assets target since it depends on the main shared
   # library of the apk, to extract unwind tables.
@@ -47,6 +83,10 @@ template("chrome_public_apk_tmpl") {
   } else {
     _target_type = invoker.target_type
   }
+
+  _is_modern = defined(invoker.is_modern) && invoker.is_modern
+  assert(_is_modern || !_is_modern)  # Mark as used.
+
   target(_target_type, target_name) {
     forward_variables_from(invoker, "*")
     exclude_xxxhdpi = true
@@ -133,8 +173,10 @@ template("chrome_public_apk_tmpl") {
   }
 }
 
-template("monochrome_public_apk_tmpl") {
-  chrome_public_apk_tmpl(target_name) {
+# The equivalent of chrome_common_apk_or_module_tmpl for all builds of
+# monochrome.
+template("monochrome_public_common_apk_or_module_tmpl") {
+  chrome_public_common_apk_or_module_tmpl(target_name) {
     # Always build 64-bit //android_webview:monochrome because Chrome runs
     # in 32-bit mode.
     if (android_64bit_target_cpu) {
@@ -223,5 +265,23 @@ template("monochrome_public_apk_tmpl") {
         loadable_modules = [ "${root_out_dir}/libarcore_sdk_c_minimal.so" ]
       }
     }
+  }
+}
+
+# These empty templates are still being called from the clank/ BUILD.gn
+# scripts. Remove them when they have been fixed to call the
+# xxx_common_apk_or_module_tmpl templates above.
+
+template("chrome_public_apk_tmpl") {
+  chrome_public_common_apk_or_module_tmpl(target_name) {
+    forward_variables_from(invoker, "*")
+    target_type = "android_apk"
+  }
+}
+
+template("monochrome_public_apk_tmpl") {
+  monochrome_public_common_apk_or_module_tmpl(target_name) {
+    forward_variables_from(invoker, "*")
+    target_type = "android_apk"
   }
 }

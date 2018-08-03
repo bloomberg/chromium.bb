@@ -1154,24 +1154,16 @@ shared_library("chrome_sync_shell") {
   }
 }
 
-# Contains rules common to chrome_public_apk and chrome_sync_shell_apk
-template("chrome_public_apk_tmpl_shared") {
-  chrome_public_apk_tmpl(target_name) {
-    forward_variables_from(invoker, "*")
-    if (!defined(deps)) {
-      deps = []
-    }
-
-    deps += [
-      ":app_hooks_java",
-      ":chrome_java",
-      ":chrome_public_apk_resources",
-      ":chrome_public_non_pak_assets",
-      ":chrome_public_pak_assets",
-      "//base:base_java",
-    ]
-  }
-}
+# Dependencies that are common to any chrome_public derivative targets, as well
+# as to chrome_sync_shell_apk.
+_chrome_public_and_sync_shell_shared_deps = [
+  ":app_hooks_java",
+  ":chrome_java",
+  ":chrome_public_apk_resources",
+  ":chrome_public_non_pak_assets",
+  ":chrome_public_pak_assets",
+  "//base:base_java",
+]
 
 generate_jni("test_support_jni_headers") {
   sources = [
@@ -1206,40 +1198,99 @@ static_library("browser_test_support") {
 _add_unwind_tables_in_chrome_public_apk =
     can_unwind_with_cfi_table && is_official_build
 
+# Defines a target that derives from the chrome public application. This
+# can be either an APK or an app bundle module. This supports both the
+# chrome_public_xxx targets (for Android J-K) and chrome_modern_public_xxx
+# ones (for Android L-M). For Android N+, see instead
+# monochrome_public_apk_or_module_tmpl() below.
+#
+# Variables:
+#  target_type: Determines the final target type. Should be one of
+#    'android_apk', or 'android_app_bundle_module'.
+#  apk_name: For 'android_apk' target types, name of the final APK without
+#    an .apk suffix (e.g. 'ChromePublic').
+#  module_name: For 'android_app_bundle_module' target types, name of the
+#    module (e.g. 'ChromePublicBase').
+#  is_base_module: For 'android_app_bundle_module' target types only,
+#     set to true to indicate that this is a base application module
+#     (instead of a feature module).
+#  is_modern: Optional. Set to true to indicate that this is a Chrome-modern
+#    target, intended for Android L and M only.
 template("chrome_public_apk_or_module_tmpl") {
-  chrome_public_apk_tmpl_shared(target_name) {
+  _is_modern = defined(invoker.is_modern) && invoker.is_modern
+  chrome_public_common_apk_or_module_tmpl(target_name) {
     forward_variables_from(invoker,
                            [
                              "apk_name",
-                             "version_name",
                              "is_base_module",
+                             "is_modern",
                              "module_name",
                              "target_type",
                            ])
 
-    android_manifest = chrome_public_android_manifest
-    android_manifest_dep = ":chrome_public_android_manifest"
+    deps = _chrome_public_and_sync_shell_shared_deps
+
+    if (_is_modern) {
+      android_manifest = chrome_modern_public_android_manifest
+      android_manifest_dep = ":chrome_modern_public_android_manifest"
+    } else {
+      android_manifest = chrome_public_android_manifest
+      android_manifest_dep = ":chrome_public_android_manifest"
+    }
+
     shared_libraries = [ ":libchrome" ]
     add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
     if (_add_unwind_tables_in_chrome_public_apk) {
       shared_library_for_unwind_asset = "chrome"
     }
+
+    # Android supports webp transparent resources properly since API level 18,
+    # so this can only be activated for modern ones (which target API >= 21).
+    # TODO(digit): Turn this on for all builds once JellyBean support is
+    # dropped in the future.
+    png_to_webp = _is_modern && !is_java_debug
+
+    # Native libraries can be loaded directly from the APK using the
+    # Chromium linker. However, we disable this for J-K due to an OEM-specific
+    # platform bug, where overzealous SELinux settings prevent mapping some apk
+    # file segments with PROT_EXEC (see http://crbug.com/398425). This was
+    # fixed for Android L by adding proper CTS tests.
+    load_library_from_apk = _is_modern && chromium_linker_supported
+
+    version_name = chrome_version_name
   }
 }
 
+# The chrome_public and chrome_modern_public APKs and bundle modules
+
 chrome_public_apk_or_module_tmpl("chrome_public_apk") {
-  version_name = chrome_version_name
-  apk_name = "ChromePublic"
   target_type = "android_apk"
+  apk_name = "ChromePublic"
+}
+
+chrome_public_apk_or_module_tmpl("chrome_modern_public_apk") {
+  target_type = "android_apk"
+  apk_name = "ChromeModernPublic"
+  is_modern = true
 }
 
 chrome_public_apk_or_module_tmpl("chrome_public_base_module") {
-  module_name = "ChromePublicBase"
   target_type = "android_app_bundle_module"
   is_base_module = true
+  module_name = "ChromePublicBase"
 }
 
-chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
+chrome_public_apk_or_module_tmpl("chrome_modern_public_base_module") {
+  target_type = "android_app_bundle_module"
+  module_name = "ChromeModernPublicBase"
+  is_base_module = true
+  is_modern = true
+}
+
+# Defines the 'chrome_public_apk_for_test' target, which corresponds to APK
+# built to run instrumentation tests. This includes additional code that is
+# not part of the regular 'chrome_public_apk' target.
+chrome_public_common_apk_or_module_tmpl("chrome_public_apk_for_test") {
   testonly = true
   target_type = "android_apk"
   android_manifest = chrome_public_android_manifest
@@ -1250,56 +1301,16 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
   if (_add_unwind_tables_in_chrome_public_apk) {
     shared_library_for_unwind_asset = "chromefortest"
   }
-  deps = [
-    ":browser_java_test_support",
-    "//chrome/browser/android/metrics:ukm_utils_java",
-    "//components/heap_profiling:heap_profiling_java_test_support",
-    "//content/public/test/android:content_java_test_support",
-    "//third_party/android_tools:android_test_mock_java",
-  ]
+  deps = _chrome_public_and_sync_shell_shared_deps + [
+           ":browser_java_test_support",
+           "//chrome/browser/android/metrics:ukm_utils_java",
+           "//components/heap_profiling:heap_profiling_java_test_support",
+           "//content/public/test/android:content_java_test_support",
+           "//third_party/android_tools:android_test_mock_java",
+         ]
   if (!is_java_debug) {
     proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
   }
-}
-
-template("chrome_modern_public_apk_or_module_tmpl") {
-  chrome_public_apk_tmpl_shared(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "apk_name",
-                             "version_name",
-                             "is_base_module",
-                             "module_name",
-                             "target_type",
-                           ])
-
-    android_manifest = chrome_modern_public_android_manifest
-    android_manifest_dep = ":chrome_modern_public_android_manifest"
-    shared_libraries = [ ":libchrome" ]
-    add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-    if (_add_unwind_tables_in_chrome_public_apk) {
-      shared_library_for_unwind_asset = "chrome"
-    }
-
-    if (!is_java_debug) {
-      png_to_webp = true
-    }
-
-    # Always enable load_library_from_apk.
-    load_library_from_apk = chromium_linker_supported
-  }
-}
-
-chrome_modern_public_apk_or_module_tmpl("chrome_modern_public_apk") {
-  version_name = chrome_version_name
-  apk_name = "ChromeModernPublic"
-  target_type = "android_apk"
-}
-
-chrome_modern_public_apk_or_module_tmpl("chrome_modern_public_base_module") {
-  module_name = "ChromeModernPublicBase"
-  target_type = "android_app_bundle_module"
-  is_base_module = true
 }
 
 android_library("monochrome_java") {
@@ -1314,12 +1325,25 @@ android_library("monochrome_java") {
       [ "java/src/org/chromium/chrome/browser/MonochromeApplication.java" ]
 }
 
+# Defines a target that derives from the monochrome public application. This
+# can be either an APK or an app bundle module. Note that these only work
+# on Android N+ devices, see chrome_public_apk_or_module_tmpl() for a template
+# that supports generating targets for older Android releases.
+#
+# Variables:
+#   target_type: Either 'android_apk' or 'android_app_bundle_module'.
+#   apk_name: For APK target types, the final APK name without an .apk
+#     suffix (e.g. "MonochromePublic").
+#   module_name: For module target types, the module's name without a
+#     suffix (e.g. "MonochromePublicBase")
+#   is_base_module: For module target types, a boolean indicating whether
+#     this is a base bundle module (instead of a feature one).
+#
 template("monochrome_public_apk_or_module_tmpl") {
-  monochrome_public_apk_tmpl(target_name) {
+  monochrome_public_common_apk_or_module_tmpl(target_name) {
     forward_variables_from(invoker,
                            [
                              "apk_name",
-                             "version_name",
                              "is_base_module",
                              "module_name",
                              "proguard_jar_path",
@@ -1347,11 +1371,12 @@ template("monochrome_public_apk_or_module_tmpl") {
     if (_add_unwind_tables_in_chrome_public_apk && can_unwind_with_cfi_table) {
       shared_library_for_unwind_asset = "monochrome"
     }
+
+    version_name = chrome_version_name
   }
 }
 
 monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
-  version_name = chrome_version_name
   apk_name = "MonochromePublic"
   target_type = "android_apk"
   if (!is_java_debug) {
@@ -1366,7 +1391,7 @@ monochrome_public_apk_or_module_tmpl("monochrome_public_base_module") {
   is_base_module = true
 }
 
-chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
+chrome_public_common_apk_or_module_tmpl("chrome_sync_shell_apk") {
   testonly = true
   target_type = "android_apk"
   android_manifest = chrome_sync_shell_android_manifest
@@ -1377,15 +1402,16 @@ chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
   # This exists here rather than in chrome_sync_shell_test_apk for JNI
   # registration to be able to find the native side functions.
   java_files = [ "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java" ]
-  deps = [
-    ":chrome_sync_shell_apk_template_resources",
+  deps =
+      _chrome_public_and_sync_shell_shared_deps + [
+        ":chrome_sync_shell_apk_template_resources",
 
-    # This exists here because com.google.protobuf.nano is needed in tests,
-    # but that code is stripped out via proguard. Adding this deps adds
-    # usages and prevents removal of the proto code.
-    "//components/sync:test_support_proto_java",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
-  ]
+        # This exists here because com.google.protobuf.nano is needed in tests,
+        # but that code is stripped out via proguard. Adding this deps adds
+        # usages and prevents removal of the proto code.
+        "//components/sync:test_support_proto_java",
+        "//third_party/android_protobuf:protobuf_nano_javalib",
+      ]
 }
 
 chrome_public_test_apk_manifest =
@@ -1612,25 +1638,28 @@ if (defined(expected_static_initializer_count)) {
 
 # Generate application bundles if possible.
 android_app_bundle("chrome_public_bundle") {
+  bundle_name = "ChromePublicBundle"
   base_module_target = ":chrome_public_base_module"
+  proguard_enabled = !is_java_debug
 
   # Signing is very slow, only do that for official builds.
   sign_bundle = is_official_build
 
   enable_language_splits = true
-  synchronized_proguard_enabled = !is_java_debug
 }
 
 android_app_bundle("chrome_modern_public_bundle") {
+  bundle_name = "ChromeModernPublicBundle"
   base_module_target = ":chrome_modern_public_base_module"
-  synchronized_proguard_enabled = !is_java_debug
+  proguard_enabled = !is_java_debug
 }
 
 android_app_bundle("monochrome_public_bundle") {
+  bundle_name = "MonochromePublicBundle"
   base_module_target = ":monochrome_public_base_module"
-  synchronized_proguard_enabled = !is_java_debug
   if (!is_java_debug) {
     # TODO(crbug.com/868770): Address proguard version skew.
+    proguard_enabled = true
     proguard_jar_path = "//third_party/proguard/lib/proguard.6.0.3.jar"
   }
 }

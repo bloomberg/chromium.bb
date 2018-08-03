@@ -258,6 +258,8 @@ used when committed.
     coverage data with the EMMA tool.
 *   [Android BuildConfig files](../build/android/docs/build_config.md) -
     What are .build_config files and how they are used.
+*   [Android App Bundles](../build/android/docs/android_app_bundles.md) -
+    How to build Android app bundles for Chrome.
 
 ### Misc iOS-Specific Docs
 *   [Continuous Build and Test Infrastructure for Chromium for iOS](ios/infra.md)

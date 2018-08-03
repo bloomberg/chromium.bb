@@ -2387,20 +2387,10 @@ if (enable_java_templates) {
       }
     }
 
-    # When using an app bundle that is made of several modules, it is crucial to
-    # ensure that the obfuscated class names used by each module are consistent.
-    #
-    # To achieve this, all modules belonging to the same app bundle must
-    # be grouped into a single .jar, that will be proguarded all at once. This
-    # is called "synchronized proguarding", and ensures that the obfuscated
-    # names of all classes remain consistent across modules.
-    #
-    # Later, this single optimized .jar is processed to generate module-specific
-    # .jar files that only contain the obfuscated classes needed by the module
-    # itself.
-    #
-    # This synchronized proguarding step is added by the bundle target.
-    if (!_is_bundle_module || !_proguard_enabled) {
+    # Dex generation for app bundle modules with proguarding enabled takes
+    # place later due to synchronized proguarding. For more details,
+    # read build/android/docs/android_app_bundles.md
+    if (!(_is_bundle_module && _proguard_enabled)) {
       if (_proguard_enabled) {
         _proguard_target = "${_template_name}__proguard"
         proguard(_proguard_target) {
@@ -2486,6 +2476,13 @@ if (enable_java_templates) {
         use_pool = true
       }
     } else {
+      # A small sanity check to help developers with a subtle point!
+      assert(
+          !defined(invoker.proguard_jar_path),
+          "proguard_jar_path should not be used for app bundle modules " +
+              "when proguard is enabled. Pass it to the android_app_bundle() " +
+              "target instead!")
+
       _final_deps += [ ":$_java_target" ]
     }
 
@@ -3655,13 +3652,12 @@ if (enable_java_templates) {
   #      APKs use 'chrome-command-line', the WebView one uses
   #      'webview-command-line').
   #
-  #    synchronized_proguard_enabled: True if synchronized proguarding is
-  #      enabled for this bundle. WARNING: All modules that contain Java must
-  #      have proguarding enabled if this is true and disabled if this is false.
+  #    proguard_enabled: Optional. True if proguarding is enabled for this
+  #      bundle. Default is to enable this only for release builds. Note that
+  #      this will always perform synchronized proguarding.
   #
-  #    proguard_jar_path: Path to custom proguard jar used for synchronized
-  #      proguarding. WARNING: Can only be set if
-  #      |synchronized_proguard_enabled| is set to true.
+  #    proguard_jar_path: Optional. Path to custom proguard jar used for
+  #      proguarding.
   #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
@@ -3697,9 +3693,8 @@ if (enable_java_templates) {
       _all_modules += invoker.extra_modules
     }
 
-    _synchronized_proguard_enabled =
-        defined(invoker.synchronized_proguard_enabled) &&
-        invoker.synchronized_proguard_enabled
+    _proguard_enabled =
+        defined(invoker.proguard_enabled) && invoker.proguard_enabled
 
     # Make build config, which is required for synchronized proguarding.
     _module_targets = []
@@ -3713,16 +3708,16 @@ if (enable_java_templates) {
       type = "android_app_bundle"
       possible_config_deps = _module_targets
       build_config = _build_config
-      synchronized_proguard_enabled = _synchronized_proguard_enabled
     }
 
-    if (_synchronized_proguard_enabled) {
+    if (_proguard_enabled) {
       # Proguard all modules together to keep binary size small while still
       # maintaining compatibility between modules.
       _proguard_output_jar_path =
           "${target_gen_dir}/${target_name}/${target_name}.proguard.jar"
       _sync_proguard_target = "${target_name}__sync_proguard"
       proguard(_sync_proguard_target) {
+        forward_variables_from(invoker, [ "proguard_jar_path" ])
         build_config = _build_config
         deps = _module_targets + [ ":$_build_config_target" ]
 
@@ -3731,10 +3726,6 @@ if (enable_java_templates) {
           "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
         ]
-
-        if (defined(invoker.proguard_jar_path)) {
-          proguard_jar_path = invoker.proguard_jar_path
-        }
       }
     }
 
@@ -3749,7 +3740,7 @@ if (enable_java_templates) {
       _module_build_config =
           "$_module_target_gen_dir/${_module_target_name}.build_config"
 
-      if (_synchronized_proguard_enabled) {
+      if (_proguard_enabled) {
         # Extract optimized classes for each module and dex them.
 
         _module_final_dex_target = "${target_name}__${_module.name}__dex"

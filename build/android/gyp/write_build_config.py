@@ -499,12 +499,6 @@ invoking `javac`.
 
 This type corresponds to an Android app bundle (`.aab` file).
 
-* `deps_info['synchronized_proguard_enabled"]`:
-True to indicate that the app modules of this bundle should be proguarded in a
-single synchronized proguarding step. Synchronized proguarding means that all
-un-optimized jars for all modules are sent to a single proguard command. The
-resulting optimized jar is then split into optimized app module jars after.
-
 --------------- END_MARKDOWN ---------------------------------------------------
 """
 
@@ -862,8 +856,6 @@ def main(argv):
       'test apk).')
   parser.add_option('--proguard-enabled', action='store_true',
       help='Whether proguard is enabled for this apk or bundle module.')
-  parser.add_option('--synchronized-proguard-enabled', action='store_true',
-      help='Whether synchronized proguarding is enabled for this bundle.')
   parser.add_option('--proguard-configs',
       help='GN-list of proguard flag files to use in final apk.')
   parser.add_option('--proguard-output-jar-path',
@@ -1253,16 +1245,6 @@ def main(argv):
         raise Exception('Deps %s have proguard enabled while deps %s have '
                         'proguard disabled' % (deps_proguard_enabled,
                                                deps_proguard_disabled))
-      if (bool(deps_proguard_enabled) !=
-              bool(options.synchronized_proguard_enabled) or
-          bool(deps_proguard_disabled) ==
-              bool(options.synchronized_proguard_enabled)):
-        raise Exception('Modules %s of bundle %s have opposite proguard '
-                        'enabling flags than bundle' % (deps_proguard_enabled +
-                            deps_proguard_disabled, config['deps_info']['name'])
-                        )
-      deps_info['synchronized_proguard_enabled'] = bool(
-          options.synchronized_proguard_enabled)
     else:
       deps_info['proguard_enabled'] = bool(options.proguard_enabled)
       if options.proguard_output_jar_path:
