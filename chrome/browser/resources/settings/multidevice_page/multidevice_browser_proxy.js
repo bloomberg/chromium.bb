@@ -9,6 +9,8 @@ cr.define('settings', function() {
 
     /** @return {!Promise<!MultiDevicePageContentData>} */
     getPageContentData() {}
+
+    retryPendingHostSetup() {}
   }
 
   /**
@@ -23,6 +25,11 @@ cr.define('settings', function() {
     /** @override */
     getPageContentData() {
       return cr.sendWithPromise('getPageContentData');
+    }
+
+    /** @override */
+    retryPendingHostSetup() {
+      chrome.send('retryPendingHostSetup');
     }
   }
 

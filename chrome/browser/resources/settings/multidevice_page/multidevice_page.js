@@ -135,13 +135,11 @@ Polymer({
         this.browserProxy_.showMultiDeviceSetupDialog();
         return;
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
-        // TODO(jordynass): Implement this when API is ready.
-        console.log('Trying to connect to server again.');
-        return;
+        // Intentional fall-through.
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
-        // TODO(jordynass): Implement this when API is ready.
-        console.log('Trying to verify multidevice connection.');
-        return;
+        // If this device is waiting for action on the server or the host
+        // device, clicking the button should trigger this action.
+        this.browserProxy_.retryPendingHostSetup();
     }
   },
 });
