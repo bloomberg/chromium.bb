@@ -7,6 +7,7 @@ mlamouri@chromium.org
 # Reviewers for inspector-related code:
 dgozman@chromium.org
 pfeldman@chromium.org
+caseq@chromium.org
 
 # TEAM: platform-architecture-dev@chromium.org
 # COMPONENT: Blink>Internals>Modularization
