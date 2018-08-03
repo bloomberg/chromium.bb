@@ -116,7 +116,7 @@ public class OAuthTokenFetcher {
                 return null;
             }
         }
-                .execute();
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private void handleTokenReceived(final String token) {
