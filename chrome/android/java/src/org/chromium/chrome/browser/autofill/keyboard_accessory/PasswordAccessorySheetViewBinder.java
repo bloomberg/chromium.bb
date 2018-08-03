@@ -96,6 +96,7 @@ class PasswordAccessorySheetViewBinder {
             getTextView().setTransformationMethod(
                     item.isPassword() ? new PasswordTransformationMethod() : null);
             getTextView().setText(item.getCaption());
+            getTextView().setContentDescription(item.getContentDescription());
             if (item.getItemSelectedCallback() != null) {
                 getTextView().setOnClickListener(
                         src -> item.getItemSelectedCallback().onResult(item));

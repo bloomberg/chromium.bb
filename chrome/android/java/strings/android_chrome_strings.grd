@@ -3641,6 +3641,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON_SHORT" desc="Shortened text for the button used to generate a password. This is used for devices with small screen.">
           Suggest password...
       </message>
+      <message name="IDS_PASSWORD_ACCESSORY_SHEET_TOGGLE" desc="Description for the icon button used to open and close the password accessory sheet.">
+          Tap to toggle between password suggestions and keyboard
+      </message>
 
 
       <!-- Launcher Shortcuts -->
