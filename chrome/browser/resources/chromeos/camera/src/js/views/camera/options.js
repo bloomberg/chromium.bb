@@ -49,6 +49,12 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
    * @type {HTMLInputElement}
    * @private
    */
+  this.toggleGrid_ = document.querySelector('#toggle-grid');
+
+  /**
+   * @type {HTMLInputElement}
+   * @private
+   */
   this.toggleTimer_ = document.querySelector('#toggle-timer');
 
   /**
@@ -68,6 +74,12 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
    * @private
    */
   this.switchTakePhoto_ = document.querySelector('#switch-takephoto');
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.grid_ = document.querySelector('#preview-grid');
 
   /**
    * @type {Audio}
@@ -139,11 +151,13 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
       'click', this.onToggleDeviceClicked_.bind(this));
   this.toggleMirror_.addEventListener(
       'click', this.onToggleMirrorClicked_.bind(this));
+  this.toggleGrid_.addEventListener(
+      'click', this.onToggleGridClicked_.bind(this));
   this.toggleTimer_.addEventListener(
       'click', this.onToggleTimerClicked_.bind(this));
 
   // Handle key-press for checkbox-type toggles.
-  [this.toggleMirror_, this.toggleTimer_].forEach(element => {
+  [this.toggleMirror_, this.toggleGrid_, this.toggleTimer_].forEach(element => {
     element.addEventListener('keypress', event => {
       if (camera.util.getShortcutIdentifier(event) == 'Enter') {
         element.click();
@@ -178,6 +192,7 @@ camera.views.camera.Options.prototype = {
     this.switchTakePhoto_.disabled = value;
     this.toggleDevice_.disabled = value;
     this.toggleMirror_.disabled = value;
+    this.toggleGrid_.disabled = value;
     this.toggleTimer_.disabled = value;
   }
 };
@@ -195,9 +210,12 @@ camera.views.camera.Options.prototype.prepare = function() {
   // Select the default state of the toggle buttons.
   chrome.storage.local.get({
     toggleTimer: false,
+    toggleGrid: false,
     mirroringToggles: {},  // Manually mirroring states per video device.
   }, values => {
     this.toggleTimer_.checked = values.toggleTimer;
+    this.toggleGrid_.checked = values.toggleGrid;
+    this.grid_.classList.toggle('visible', values.toggleGrid);
     this.mirroringToggles_ = values.mirroringToggles;
   });
   // Remove the deprecated values.
@@ -257,6 +275,17 @@ camera.views.camera.Options.prototype.onToggleDeviceClicked_ = function(event) {
  */
 camera.views.camera.Options.prototype.onToggleTimerClicked_ = function(event) {
   chrome.storage.local.set({toggleTimer: this.toggleTimer_.checked});
+};
+
+/**
+ * Handles clicking on the grid switch.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
+  var enabled = this.toggleGrid_.checked;
+  chrome.storage.local.set({toggleGrid: enabled});
+  this.grid_.classList.toggle('visible', enabled);
 };
 
 /**
@@ -386,17 +415,14 @@ camera.views.camera.Options.prototype.updateMirroring_ = function(stream) {
   var facingMode = trackSettings && trackSettings.facingMode;
   var enabled = facingMode ? facingMode == 'user' : true;
 
-  if (this.toggleMirror_.hidden) {
-    document.body.classList.toggle('mirror', enabled);
-  } else {
-    // Override mirroring if it was set manually by the mirror toggle.
-    if (this.videoDeviceId_ in this.mirroringToggles_) {
-      enabled = this.mirroringToggles_[this.videoDeviceId_];
-    }
-    if (this.toggleMirror_.checked != enabled) {
-      this.toggleMirror_.click();
-    }
+  // Override mirroring only if the mirror toggle is visible and mirroring was
+  // set manually.
+  if (!this.toggleMirror_.hidden &&
+      this.videoDeviceId_ in this.mirroringToggles_) {
+    enabled = this.mirroringToggles_[this.videoDeviceId_];
   }
+  this.toggleMirror_.checked = enabled;
+  document.body.classList.toggle('mirror', enabled);
 };
 
 /**

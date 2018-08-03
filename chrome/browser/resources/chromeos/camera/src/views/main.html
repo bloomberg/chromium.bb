@@ -23,8 +23,12 @@
   </head>
   <body class="mirror">
     <div id="camera">
-      <div id="main-preview-wrapper">
-        <video id="main-preview"></video>
+      <div id="preview-wrapper">
+        <video id="preview-video"></video>
+        <div id="preview-grid">
+          <div id="preview-grid-horizontal"></div>
+          <div id="preview-grid-vertical"></div>
+        </div>
       </div>
       <div id="toolbar">
         <div id="toolbar-stripe">
@@ -35,24 +39,26 @@
                    i18n-label="switchRecordVideoButton"></button>
             <button id="switch-takephoto" disabled tabindex="0"
                    i18n-label="switchTakePhotoButton"></button>
-            <input type="checkbox" id="toggle-mirror" disabled tabindex="0"
-                   i18n-label="toggleMirrorButton" checked hidden>
           </div>
           <div class="one-button">
             <button id="take-picture" disabled tabindex="0"
                     i18n-label="takePhotoButton"></button>
           </div>
-          <div class="buttons next-to-middle">
-            <input type="checkbox" id="toggle-timer" disabled tabindex="0"
-                   i18n-label="toggleTimerButton">
-          </div>
         </div>
+      </div>
+      <div class="buttons left-stripe">
+        <input type="checkbox" id="toggle-mirror" disabled tabindex="0"
+               i18n-label="toggleMirrorButton" checked hidden>
+        <input type="checkbox" id="toggle-grid" disabled tabindex="0"
+               i18n-label="toggleGridButton">
+        <input type="checkbox" id="toggle-timer" disabled tabindex="0"
+               i18n-label="toggleTimerButton">
       </div>
       <div class="one-button circle">
         <button id="gallery-enter" disabled tabindex="0"
                 i18n-label="galleryButton" hidden></button>
       </div>
-      <div id="toast" class="visible">
+      <div id="toast">
         <div id="toast-message"></div>
       </div>
       <div id="recording-timer"></div>
