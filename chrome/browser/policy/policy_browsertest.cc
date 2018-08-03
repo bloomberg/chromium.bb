@@ -97,6 +97,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
+#include "chrome/browser/ui/search/instant_test_utils.h"
+#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
@@ -113,7 +115,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_application_info.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/locale_settings.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
@@ -351,6 +355,14 @@ const char kTestWebRtcUdpPortRange[] = "10000-10100";
 void GetTestDataDirectory(base::FilePath* test_data_directory) {
   ASSERT_TRUE(
       base::PathService::Get(chrome::DIR_TEST_DATA, test_data_directory));
+}
+
+content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
+  for (content::RenderFrameHost* frame : tab->GetAllFrames()) {
+    if (frame->GetFrameName() == "mv-single")
+      return frame;
+  }
+  return nullptr;
 }
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
@@ -596,6 +608,16 @@ bool ContainsVisibleElement(content::WebContents* contents,
       "domAutomationController.send(!!elem && !elem.hidden);",
       &result));
   return result;
+}
+
+bool ContainsWebstoreTile(content::RenderFrameHost* iframe) {
+  int num_webstore_tiles = 0;
+  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe,
+      "document.querySelectorAll(\".md-tile[href='" +
+          l10n_util::GetStringUTF8(IDS_WEBSTORE_URL) + "']\").length",
+      &num_webstore_tiles));
+  return num_webstore_tiles == 1;
 }
 
 #if defined(OS_CHROMEOS)
@@ -2037,12 +2059,30 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode) {
   EXPECT_TRUE(is_toggle_dev_mode_checkbox_disabled);
 }
 
-// TODO(samarth): remove along with rest of NTP4 code.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_WebStoreIconHidden) {
-  // Verifies that the web store icons can be hidden from the new tab page.
+IN_PROC_BROWSER_TEST_F(PolicyTest, NTPWebStoreIconShown) {
+  // This test is to verify that the web store icons is shown when no policy
+  // applies. See WebStoreIconPolicyTest.NTPWebStoreIconHidden for verification
+  // when a policy is in effect.
 
   // Open new tab page and look for the web store icons.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+
+  // Look though all the tiles and see whether there is a webstore icon.
+  // Make sure that there is one web store icon.
+  EXPECT_TRUE(ContainsWebstoreTile(iframe));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, AppsWebStoreIconHidden) {
+  // Verifies that the web store icon can be hidden from the chrome://apps
+  // page. A policy change takes immediate effect on the apps page for the
+  // current profile. Browser restart is not required.
+
+  // Open new tab page and look for the web store icons.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAppsURL));
   content::WebContents* contents =
     browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -2064,7 +2104,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_WebStoreIconHidden) {
   UpdateProviderPolicy(policies);
 
   // The web store icons should now be hidden.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAppsURL));
   EXPECT_FALSE(ContainsVisibleElement(contents,
                                       "ahfgeienlihckogmohjhadlkjgocpleb"));
   EXPECT_FALSE(ContainsVisibleElement(contents, "chrome-web-store-link"));
@@ -4060,6 +4100,43 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
   EXPECT_GT(samples->GetCount(35), 0);
   // BookmarkBarEnabled has policy ID 82.
   EXPECT_GT(samples->GetCount(82), 0);
+}
+
+// Similar to PolicyTest, but applies the HideWebStoreIcon policy before
+// the browser is started. This is required because the list that includes the
+// WebStoreIcon on the NTP is initialized at browser start.
+class PolicyWebStoreIconTest : public PolicyTest {
+ public:
+  PolicyWebStoreIconTest() {}
+  ~PolicyWebStoreIconTest() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(key::kHideWebStoreIcon, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(true), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyWebStoreIconTest, NTPWebStoreIconHidden) {
+  // Verifies that the web store icon can be hidden from the new tab page. Check
+  // to see NTPWebStoreIconShown for behavior when the policy is not applied.
+
+  // Open new tab page and look for the web store icon
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+
+  // Applying the policy before the browser started, the web store icon should
+  // now be hidden.
+  EXPECT_FALSE(ContainsWebstoreTile(iframe));
 }
 
 class MediaStreamDevicesControllerBrowserTest
