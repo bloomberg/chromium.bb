@@ -90,9 +90,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Activates |item's| window.
   void SelectWindow(WindowSelectorItem* item);
 
-  // Called when |window| is about to get closed.
-  void WindowClosing(WindowSelectorItem* window);
-
   // Called to set bounds for window grids. Used for split view.
   void SetBoundsForWindowGridsInScreenIgnoringWindow(
       const gfx::Rect& bounds,

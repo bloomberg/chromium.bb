@@ -105,11 +105,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // If |pattern| is empty, no item is dimmed.
   void FilterItems(const base::string16& pattern);
 
-  // Called when |window| is about to get closed. If the |window| is currently
-  // selected the implementation fades out |selection_widget_| to transparent
-  // opacity, effectively hiding the selector widget.
-  void WindowClosing(WindowSelectorItem* window);
-
   // Sets bounds for the window grid and positions all windows in the grid.
   void SetBoundsAndUpdatePositions(const gfx::Rect& bounds_in_screen);
   void SetBoundsAndUpdatePositionsIgnoringWindow(
