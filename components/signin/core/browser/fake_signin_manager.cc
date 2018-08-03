@@ -89,6 +89,22 @@ void FakeSigninManager::DoSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
     RemoveAccountsOption remove_option) {
+  if (!IsAuthenticated()) {
+    if (AuthInProgress()) {
+      // If the user is in the process of signing in, then treat a call to
+      // SignOut as a cancellation request.
+      GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
+      HandleAuthError(error);
+    } else {
+      // Clean up our transient data and exit if we aren't signed in.
+      // This avoids a perf regression from clearing out the TokenDB if
+      // SignOut() is invoked on startup to clean up any incomplete previous
+      // signin attempts.
+      ClearTransientSigninData();
+    }
+    return;
+  }
+
   if (IsSignoutProhibited())
     return;
   set_auth_in_progress(std::string());
