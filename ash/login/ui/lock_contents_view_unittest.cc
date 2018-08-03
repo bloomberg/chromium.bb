@@ -1740,4 +1740,28 @@ TEST_F(LockContentsViewUnitTest, PowerwashShortcutSendsMojoCall) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(LockContentsViewUnitTest, UsersChangedRetainsExistingState) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetUserCount(2);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  LockContentsView::TestApi test_api(contents);
+
+  AccountId primary_user = test_api.primary_big_view()
+                               ->GetCurrentUser()
+                               ->basic_user_info->account_id;
+  data_dispatcher()->SetPinEnabledForUser(primary_user, true);
+
+  // This user should be identical to the user we enabled PIN for.
+  SetUserCount(1);
+
+  EXPECT_TRUE(
+      LoginAuthUserView::TestApi(test_api.primary_big_view()->auth_user())
+          .pin_view()
+          ->visible());
+}
+
 }  // namespace ash
