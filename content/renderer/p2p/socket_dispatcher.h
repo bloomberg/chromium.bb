@@ -27,35 +27,35 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/containers/id_map.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/p2p_socket_type.h"
 #include "content/renderer/p2p/network_list_manager.h"
-#include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
+#include "services/network/public/cpp/p2p_socket_type.h"
+#include "services/network/public/mojom/p2p.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace net {
-class IPEndPoint;
-}  // namespace net
-
 namespace content {
 
 class NetworkListObserver;
-class P2PAsyncAddressResolver;
-class P2PSocketClientImpl;
 
-class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
-                                           public NetworkListManager {
+// This class is created on the main thread, but is used primarily on the
+// WebRTC worker threads.
+class CONTENT_EXPORT P2PSocketDispatcher
+    : public base::RefCountedThreadSafe<P2PSocketDispatcher>,
+      public NetworkListManager,
+      public network::mojom::P2PNetworkNotificationClient {
  public:
-  explicit P2PSocketDispatcher(base::SingleThreadTaskRunner* ipc_task_runner);
+  P2PSocketDispatcher();
 
   // NetworkListManager interface:
   void AddNetworkListObserver(
@@ -63,67 +63,38 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   void RemoveNetworkListObserver(
       NetworkListObserver* network_list_observer) override;
 
-  bool connected() { return connected_; }
-
- protected:
-  ~P2PSocketDispatcher() override;
+  network::mojom::P2PSocketManager* GetP2PSocketManager();
 
  private:
-  friend class P2PAsyncAddressResolver;
-  friend class P2PSocketClientImpl;
+  friend class base::RefCountedThreadSafe<P2PSocketDispatcher>;
 
-  // Send a message asynchronously.
-  virtual void Send(IPC::Message* message);
+  ~P2PSocketDispatcher() override;
 
-  // IPC::MessageFilter override. Called on IO thread.
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void OnFilterAdded(IPC::Channel* channel) override;
-  void OnFilterRemoved() override;
-  void OnChannelClosing() override;
-  void OnChannelConnected(int32_t peer_pid) override;
+  // network::mojom::P2PNetworkNotificationClient interface.
+  void NetworkListChanged(
+      const std::vector<net::NetworkInterface>& networks,
+      const net::IPAddress& default_ipv4_local_address,
+      const net::IPAddress& default_ipv6_local_address) override;
 
-  base::SingleThreadTaskRunner* task_runner();
+  void RequestInterfaceIfNecessary();
+  void RequestNetworkEventsIfNecessary();
 
-  // Called by P2PSocketClient.
-  int RegisterClient(P2PSocketClientImpl* client);
-  void UnregisterClient(int id);
-  void SendP2PMessage(IPC::Message* msg);
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  // Called by DnsRequest.
-  int RegisterHostAddressRequest(P2PAsyncAddressResolver* request);
-  void UnregisterHostAddressRequest(int id);
-
-  // Incoming message handlers.
-  void OnNetworkListChanged(const net::NetworkInterfaceList& networks,
-                            const net::IPAddress& default_ipv4_local_address,
-                            const net::IPAddress& default_ipv6_local_address);
-  void OnGetHostAddressResult(int32_t request_id,
-                              const net::IPAddressList& addresses);
-  void OnSocketCreated(int socket_id,
-                       const net::IPEndPoint& local_address,
-                       const net::IPEndPoint& remote_address);
-  void OnIncomingTcpConnection(int socket_id, const net::IPEndPoint& address);
-  void OnSendComplete(int socket_id, const P2PSendPacketMetrics& send_metrics);
-  void OnError(int socket_id);
-  void OnDataReceived(int socket_id, const net::IPEndPoint& address,
-                      const std::vector<char>& data,
-                      const base::TimeTicks& timestamp);
-
-  P2PSocketClientImpl* GetClient(int socket_id);
-
-  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-  base::IDMap<P2PSocketClientImpl*> clients_;
-
-  base::IDMap<P2PAsyncAddressResolver*> host_address_requests_;
-
-  bool network_notifications_started_;
   scoped_refptr<base::ObserverListThreadSafe<NetworkListObserver>>
       network_list_observers_;
 
-  IPC::Sender* sender_;
+  network::mojom::P2PSocketManagerRequest p2p_socket_manager_request_;
+  scoped_refptr<network::mojom::ThreadSafeP2PSocketManagerPtr>
+      thread_safe_p2p_socket_manager_;
 
-  // To indicate whether IPC could be invoked on this dispatcher.
-  bool connected_ = false;
+  // Cached from last |NetworkListChanged| call.
+  std::vector<net::NetworkInterface> networks_;
+  net::IPAddress default_ipv4_local_address_;
+  net::IPAddress default_ipv6_local_address_;
+
+  mojo::Binding<network::mojom::P2PNetworkNotificationClient>
+      network_notification_client_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };

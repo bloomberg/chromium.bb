@@ -66,7 +66,7 @@ void FakeAudioInputStream::Stop() {
 
 void FakeAudioInputStream::Close() {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
-  DCHECK(!callback_);
+  Stop();
   audio_manager_->ReleaseInputStream(this);
 }
 

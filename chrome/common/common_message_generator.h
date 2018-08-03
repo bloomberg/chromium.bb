@@ -6,6 +6,7 @@
 
 #include "chrome/common/common_param_traits_macros.h"
 #include "chrome/common/instant_struct_traits.h"
+#include "services/network/public/cpp/p2p_param_traits.h"
 #undef CHROME_COMMON_MAC_APP_SHIM_MESSAGES_H_
 #include "chrome/common/mac/app_shim_messages.h"
 #ifndef CHROME_COMMON_MAC_APP_SHIM_MESSAGES_H_

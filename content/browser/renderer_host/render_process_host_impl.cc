@@ -1855,8 +1855,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
 
   p2p_socket_dispatcher_host_ =
-      new P2PSocketDispatcherHost(request_context.get());
-  AddFilter(p2p_socket_dispatcher_host_.get());
+      new P2PSocketDispatcherHost(GetID(), request_context.get());
 
   AddFilter(new TraceMessageFilter(GetID()));
   AddFilter(new ResolveProxyMsgHelper(GetID()));
@@ -2034,6 +2033,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       &AppCacheDispatcherHost::Create,
       base::Unretained(storage_partition_impl_->GetAppCacheService()),
       GetID()));
+
+  registry->AddInterface(base::BindRepeating(
+      &P2PSocketDispatcherHost::BindRequest, p2p_socket_dispatcher_host_));
 
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
 

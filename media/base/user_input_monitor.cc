@@ -54,7 +54,8 @@ UserInputMonitorBase::UserInputMonitorBase() {
 }
 
 UserInputMonitorBase::~UserInputMonitorBase() {
-  DCHECK_EQ(0u, references_);
+  // |references_| may be non-zero as it's decremented due to Mojo messages from
+  // the renderer, and they may not reach the browser always in tests.
 }
 
 void UserInputMonitorBase::EnableKeyPressMonitoring() {

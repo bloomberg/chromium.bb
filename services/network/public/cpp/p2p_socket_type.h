@@ -5,8 +5,8 @@
 // This file defines some basic types used by the P2P-related IPC
 // messages.
 
-#ifndef CONTENT_COMMON_P2P_SOCKET_TYPE_H_
-#define CONTENT_COMMON_P2P_SOCKET_TYPE_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_P2P_SOCKET_TYPE_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_P2P_SOCKET_TYPE_H_
 
 #include <stdint.h>
 
@@ -16,7 +16,7 @@
 #include "net/base/ip_endpoint.h"
 #include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
 
-namespace content {
+namespace network {
 
 enum P2PSocketOption {
   P2P_SOCKET_OPT_RCVBUF,  // Receive buffer size.
@@ -45,8 +45,7 @@ struct P2PHostAndIPEndPoint {
   P2PHostAndIPEndPoint() {}
   P2PHostAndIPEndPoint(const std::string& hostname,
                        const net::IPEndPoint& ip_address)
-      : hostname(hostname), ip_address(ip_address) {
-  }
+      : hostname(hostname), ip_address(ip_address) {}
 
   std::string hostname;
   net::IPEndPoint ip_address;
@@ -97,6 +96,6 @@ struct P2PPacketInfo {
   uint64_t packet_id;
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_COMMON_P2P_SOCKET_TYPE_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_P2P_SOCKET_TYPE_H_

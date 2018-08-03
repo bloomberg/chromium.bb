@@ -15,7 +15,6 @@
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webplugininfo_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
@@ -44,8 +43,6 @@ IPC_ENUM_TRAITS_VALIDATE(ui::PageTransition,
                          ((value &
                            ui::PageTransition::PAGE_TRANSITION_CORE_MASK) <=
                           ui::PageTransition::PAGE_TRANSITION_LAST_CORE))
-IPC_ENUM_TRAITS_MAX_VALUE(net::NetworkChangeNotifier::ConnectionType,
-                          net::NetworkChangeNotifier::CONNECTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
                           content::CONSOLE_MESSAGE_LEVEL_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameSerializerCacheControlPolicy,

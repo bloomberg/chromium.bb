@@ -35,32 +35,7 @@ namespace content {
 class PageState;
 }
 
-namespace net {
-class IPAddress;
-class IPEndPoint;
-}
-
 namespace IPC {
-
-template <>
-struct CONTENT_EXPORT ParamTraits<net::IPEndPoint> {
-  typedef net::IPEndPoint param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<net::IPAddress> {
-  typedef net::IPAddress param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct CONTENT_EXPORT ParamTraits<content::PageState> {
