@@ -5,7 +5,7 @@
 
 """Prints the total PSS attributed to Chrome's code pages in an application.
 
-This scripts assumes a device with Monochrome, and requires root access.
+This script assumes a device with Monochrome, and requires root access.
 For instance, to get chrome's code page memory footprint:
 $ tools/android/native_lib_memory/code_pages_pss.py
     --app-package com.android.chrome
