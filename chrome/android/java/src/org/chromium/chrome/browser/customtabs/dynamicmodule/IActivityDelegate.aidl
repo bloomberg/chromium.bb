@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
+import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
+
 interface IActivityDelegate {
   void onCreate(in Bundle savedInstanceState) = 0;
 
@@ -26,4 +28,12 @@ interface IActivityDelegate {
   void onDestroy() = 9;
 
   boolean onBackPressed() = 10;
+
+  /**
+   * Offers an opportunity to handle the back press event. If it is not handled,
+   * the Runnable must be run.
+   *
+   * Introduced in API version 2.
+   */
+  void onBackPressedAsync(in IObjectWrapper /* Runnable */ notHandledRunnable) = 11;
 }
