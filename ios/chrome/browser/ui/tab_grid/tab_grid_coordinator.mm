@@ -90,11 +90,13 @@
     [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
                               forProtocol:@protocol(ApplicationCommands)];
     // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
-    // passed protocol conforms to, so ApplicationSettingsCommands is explicitly
-    // dispatched to the endpoint as well.
+    // passed protocol conforms to, so ApplicationSettingsCommands and
+    // BrowsingDataCommands are explicitly dispatched to the endpoint as well.
     [_dispatcher
         startDispatchingToTarget:applicationCommandEndpoint
                      forProtocol:@protocol(ApplicationSettingsCommands)];
+    [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
+                              forProtocol:@protocol(BrowsingDataCommands)];
   }
   return self;
 }
@@ -243,6 +245,7 @@
   [self.dispatcher stopDispatchingForProtocol:@protocol(ApplicationCommands)];
   [self.dispatcher
       stopDispatchingForProtocol:@protocol(ApplicationSettingsCommands)];
+  [self.dispatcher stopDispatchingForProtocol:@protocol(BrowsingDataCommands)];
 
   // TODO(crbug.com/845192) : RecentTabsTableViewController behaves like a
   // coordinator and that should be factored out.
