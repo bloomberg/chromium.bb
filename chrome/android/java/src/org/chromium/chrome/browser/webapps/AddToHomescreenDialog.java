@@ -43,11 +43,6 @@ public class AddToHomescreenDialog implements View.OnClickListener {
         void addToHomescreen(String title);
 
         /**
-         * Called when the dialog is explicitly cancelled by the user.
-         */
-        void onDialogCancelled();
-
-        /**
          * Called when the user wants to view a native app in the Play Store.
          */
         void onNativeAppDetailsRequested();
@@ -101,7 +96,6 @@ public class AddToHomescreenDialog implements View.OnClickListener {
                         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
-                                mDelegate.onDialogCancelled();
                                 dialog.cancel();
                             }
                         });
