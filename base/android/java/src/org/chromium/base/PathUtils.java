@@ -151,8 +151,8 @@ public abstract class PathUtils {
             sCacheSubDirectory = cacheSubDir;
 
             // We don't use an AsyncTask because this function is called in early Webview startup
-            // and it won't always have a UI thread available. Thus, we can't use
-            // AsyncTask which inherently posts to the UI thread for onPostExecute().
+            // and it won't always have a UI thread available. Thus, we can't use AsyncTask which
+            // inherently posts to the UI thread for onPostExecute().
             sDirPathFetchTask = new FutureTask<>(PathUtils::setPrivateDataDirectorySuffixInternal);
             AsyncTask.THREAD_POOL_EXECUTOR.execute(sDirPathFetchTask);
         }

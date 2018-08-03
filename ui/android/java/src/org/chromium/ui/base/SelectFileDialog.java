@@ -446,7 +446,7 @@ public class SelectFileDialog
         }
     }
 
-    private class GetCameraIntentTask extends AsyncTask<Void, Void, Uri> {
+    private class GetCameraIntentTask extends AsyncTask<Uri> {
         private Boolean mDirectToCamera;
         private WindowAndroid mWindow;
         private WindowAndroid.IntentCallback mCallback;
@@ -459,7 +459,7 @@ public class SelectFileDialog
         }
 
         @Override
-        public Uri doInBackground(Void...voids) {
+        public Uri doInBackground() {
             try {
                 Context context = ContextUtils.getApplicationContext();
                 return ApiCompatibilityUtils.getUriForImageCaptureFile(
@@ -700,7 +700,7 @@ public class SelectFileDialog
         return count;
     }
 
-    class GetDisplayNameTask extends AsyncTask<Void, Void, String[]> {
+    class GetDisplayNameTask extends AsyncTask<String[]> {
         String[] mFilePaths;
         final Context mContext;
         final boolean mIsMultiple;
@@ -713,7 +713,7 @@ public class SelectFileDialog
         }
 
         @Override
-        public String[] doInBackground(Void... params) {
+        public String[] doInBackground() {
             mFilePaths = new String[mUris.length];
             String[] displayNames = new String[mUris.length];
             try {

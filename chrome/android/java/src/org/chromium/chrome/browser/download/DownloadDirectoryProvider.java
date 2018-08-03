@@ -8,11 +8,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
@@ -41,9 +41,9 @@ public class DownloadDirectoryProvider {
      * The logic to retrieve directories should match
      * {@link PathUtils#getAllPrivateDownloadsDirectories}.
      */
-    private class AllDirectoriesTask extends AsyncTask<Void, Void, ArrayList<DirectoryOption>> {
+    private class AllDirectoriesTask extends AsyncTask<ArrayList<DirectoryOption>> {
         @Override
-        protected ArrayList<DirectoryOption> doInBackground(Void... params) {
+        protected ArrayList<DirectoryOption> doInBackground() {
             ArrayList<DirectoryOption> dirs = new ArrayList<>();
 
             // Retrieve default directory.

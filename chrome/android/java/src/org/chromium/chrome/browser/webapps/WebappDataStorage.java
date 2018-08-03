@@ -170,9 +170,9 @@ public class WebappDataStorage {
      *                 The bitmap result will be null if no image was found.
      */
     public void getSplashScreenImage(final FetchCallback<Bitmap> callback) {
-        new AsyncTask<Void, Void, Bitmap>() {
+        new AsyncTask<Bitmap>() {
             @Override
-            protected final Bitmap doInBackground(Void... nothing) {
+            protected final Bitmap doInBackground() {
                 return ShortcutHelper.decodeBitmapFromString(
                         mPreferences.getString(KEY_SPLASH_ICON, null));
             }
@@ -182,7 +182,8 @@ public class WebappDataStorage {
                 assert callback != null;
                 callback.onDataRetrieved(result);
             }
-        }.execute();
+        }
+                .execute();
     }
 
     /**
@@ -522,15 +523,16 @@ public class WebappDataStorage {
         if (pendingUpdateFilePath == null) return;
 
         mPreferences.edit().remove(KEY_PENDING_UPDATE_FILE_PATH).apply();
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 if (!new File(pendingUpdateFilePath).delete()) {
                     Log.d(TAG, "Failed to delete file " + pendingUpdateFilePath);
                 }
                 return null;
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

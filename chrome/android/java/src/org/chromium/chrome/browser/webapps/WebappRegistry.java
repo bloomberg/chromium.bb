@@ -111,9 +111,9 @@ public class WebappRegistry {
      * @return The storage object for the web app.
      */
     public void register(final String webappId, final FetchWebappDataStorageCallback callback) {
-        new AsyncTask<Void, Void, WebappDataStorage>() {
+        new AsyncTask<WebappDataStorage>() {
             @Override
-            protected final WebappDataStorage doInBackground(Void... nothing) {
+            protected final WebappDataStorage doInBackground() {
                 // Create the WebappDataStorage on the background thread, as this must create and
                 // open a new SharedPreferences.
                 WebappDataStorage storage = WebappDataStorage.open(webappId);
@@ -135,7 +135,8 @@ public class WebappRegistry {
                 storage.updateLastUsedTime();
                 if (callback != null) callback.onWebappDataStorageRetrieved(storage);
             }
-        }.execute();
+        }
+                .execute();
     }
 
     /**

@@ -90,7 +90,7 @@ public class ModuleLoader {
     /**
      * A task for loading the module entry point class on a background thread.
      */
-    private class LoadClassTask extends AsyncTask<Void, Void, Class<?>> {
+    private class LoadClassTask extends AsyncTask<Class<?>> {
         private final Context mModuleContext;
         private final Callback<ModuleEntryPoint> mCallback;
 
@@ -107,7 +107,7 @@ public class ModuleLoader {
 
         @Override
         @Nullable
-        protected Class<?> doInBackground(Void... params) {
+        protected Class<?> doInBackground() {
             int oldPriority = Process.getThreadPriority(0);
             try {
                 // We don't want to block the UI thread, but we don't want to be really slow either.

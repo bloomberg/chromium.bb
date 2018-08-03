@@ -14,16 +14,21 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadows.ShadowApplication;
 
 @Implements(AsyncTask.class)
-public class ShadowAsyncTask<Params, Progress, Result> {
+public class ShadowAsyncTask<Result> {
     @RealObject
-    private AsyncTask<Params, Progress, Result> realAsyncTask;
+    private AsyncTask<Result> realAsyncTask;
 
     private final FutureTask<Result> future;
-    private final BackgroundWorker worker;
+    private final Callable<Result> worker;
     private AsyncTask.Status status = AsyncTask.Status.PENDING;
 
     public ShadowAsyncTask() {
-        worker = new BackgroundWorker();
+        worker = new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                return getBridge().doInBackground();
+            }
+        };
         future = new FutureTask<Result>(worker) {
             @Override
             protected void done() {
@@ -85,11 +90,9 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
     @SuppressWarnings("unchecked")
     @Implementation
-    public AsyncTask<Params, Progress, Result> execute(final Params... params) {
+    public AsyncTask<Result> execute() {
         status = AsyncTask.Status.RUNNING;
         getBridge().onPreExecute();
-
-        worker.params = params;
 
         ShadowApplication.getInstance().getBackgroundThreadScheduler().post(new Runnable() {
             @Override
@@ -103,12 +106,10 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
     @SuppressWarnings("unchecked")
     @Implementation
-    public AsyncTask<Params, Progress, Result> executeOnExecutor(
-            Executor executor, Params... params) {
+    public AsyncTask<Result> executeOnExecutor(Executor executor) {
         status = AsyncTask.Status.RUNNING;
         getBridge().onPreExecute();
 
-        worker.params = params;
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -124,35 +125,8 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         return status;
     }
 
-    /**
-     * Enqueue a call to {@link AsyncTask#onProgressUpdate(Object[])} on UI looper (or run it
-     * immediately if the looper it is not paused).
-     *
-     * @param values The progress values to update the UI with.
-     * @see AsyncTask#publishProgress(Object[])
-     */
-    @SuppressWarnings("unchecked")
-    @Implementation
-    public void publishProgress(final Progress... values) {
-        ShadowApplication.getInstance().getForegroundThreadScheduler().post(new Runnable() {
-            @Override
-            public void run() {
-                getBridge().onProgressUpdate(values);
-            }
-        });
-    }
-
-    private ShadowAsyncTaskBridge<Params, Progress, Result> getBridge() {
+    private ShadowAsyncTaskBridge<Result> getBridge() {
         return new ShadowAsyncTaskBridge<>(realAsyncTask);
-    }
-
-    private final class BackgroundWorker implements Callable<Result> {
-        Params[] params;
-
-        @Override
-        public Result call() throws Exception {
-            return getBridge().doInBackground(params);
-        }
     }
 
     private static class OnPostExecuteException extends Exception {

@@ -109,7 +109,7 @@ public class AwVariationsSeedFetcher extends JobService {
         }
     }
 
-    private class FetchTask extends AsyncTask<Void, Void, Void> {
+    private class FetchTask extends AsyncTask<Void> {
         private JobParameters mParams;
 
         FetchTask(JobParameters params) {
@@ -117,7 +117,7 @@ public class AwVariationsSeedFetcher extends JobService {
         }
 
         @Override
-        protected Void doInBackground(Void... unused) {
+        protected Void doInBackground() {
             // Should we call jobFinished at the end of this task?
             boolean shouldFinish = true;
 

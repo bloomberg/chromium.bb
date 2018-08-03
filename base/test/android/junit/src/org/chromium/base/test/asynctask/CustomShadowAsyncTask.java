@@ -15,18 +15,13 @@ import java.util.concurrent.Executor;
  * Forces async tasks to execute with the default executor.
  * This works around Robolectric not working out of the box with custom executors.
  *
- * @param <Params>
- * @param <Progress>
  * @param <Result>
  */
 @Implements(AsyncTask.class)
-public class CustomShadowAsyncTask<Params, Progress, Result>
-        extends ShadowAsyncTask<Params, Progress, Result> {
-    @SafeVarargs
+public class CustomShadowAsyncTask<Result> extends ShadowAsyncTask<Result> {
     @Override
     @Implementation
-    public final AsyncTask<Params, Progress, Result> executeOnExecutor(
-            Executor executor, Params... params) {
-        return super.execute(params);
+    public final AsyncTask<Result> executeOnExecutor(Executor executor) {
+        return super.execute();
     }
 }

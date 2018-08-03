@@ -20,25 +20,21 @@ import java.util.concurrent.Executors;
  * Executes async tasks on a background thread and waits on the result on the main thread.
  * This is useful for users of AsyncTask on Roboelectric who check if the code is actually being
  * run on a background thread (i.e. through the use of {@link ThreadUtils#runningOnUiThread()}).
- * @param <Params>     type for execute function parameters
- * @param <Progress>   type for reporting Progress
  * @param <Result>     type for reporting result
  */
 @Implements(AsyncTask.class)
-public class BackgroundShadowAsyncTask<Params, Progress, Result>
-        extends ShadowAsyncTask<Params, Progress, Result> {
+public class BackgroundShadowAsyncTask<Result> extends ShadowAsyncTask<Result> {
     private static final ExecutorService sExecutorService = Executors.newSingleThreadExecutor();
 
     @Override
     @Implementation
-    @SafeVarargs
-    public final AsyncTask<Params, Progress, Result> execute(final Params... params) {
+    public final AsyncTask<Result> execute() {
         try {
             return sExecutorService
-                    .submit(new Callable<AsyncTask<Params, Progress, Result>>() {
+                    .submit(new Callable<AsyncTask<Result>>() {
                         @Override
-                        public AsyncTask<Params, Progress, Result> call() throws Exception {
-                            return BackgroundShadowAsyncTask.super.execute(params);
+                        public AsyncTask<Result> call() throws Exception {
+                            return BackgroundShadowAsyncTask.super.execute();
                         }
                     })
                     .get();

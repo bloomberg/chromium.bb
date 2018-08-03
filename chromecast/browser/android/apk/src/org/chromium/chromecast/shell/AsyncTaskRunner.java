@@ -38,9 +38,9 @@ public class AsyncTaskRunner {
      * if the Observable deactivates.
      */
     public <T> Scope doAsync(Supplier<T> task, Consumer<? super T> callback) {
-        AsyncTask<Void, Void, T> asyncTask = new AsyncTask<Void, Void, T>() {
+        AsyncTask<T> asyncTask = new AsyncTask<T>() {
             @Override
-            protected T doInBackground(Void... params) {
+            protected T doInBackground() {
                 return task.get();
             }
             @Override

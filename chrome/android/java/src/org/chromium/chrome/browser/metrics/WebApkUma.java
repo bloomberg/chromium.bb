@@ -280,11 +280,11 @@ public class WebApkUma {
      * Log necessary disk usage and cache size UMAs when WebAPK installation fails.
      */
     public static void logSpaceUsageUMAWhenInstallationFails() {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             long mAvailableSpaceInByte = 0;
             long mCacheSizeInByte = 0;
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 mAvailableSpaceInByte = getAvailableSpaceAboveLowSpaceLimit();
                 mCacheSizeInByte = getCacheDirSize();
                 return null;
@@ -294,7 +294,8 @@ public class WebApkUma {
             protected void onPostExecute(Void result) {
                 logSpaceUsageUMAOnDataAvailable(mAvailableSpaceInByte, mCacheSizeInByte);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private static void logSpaceUsageUMAOnDataAvailable(long spaceSize, long cacheSize) {

@@ -230,7 +230,7 @@ public class MediaPlayerBridge {
         return true;
     }
 
-    private class LoadDataUriTask extends AsyncTask<Void, Void, Boolean> {
+    private class LoadDataUriTask extends AsyncTask<Boolean> {
         private final String mData;
         private File mTempFile;
 
@@ -239,7 +239,7 @@ public class MediaPlayerBridge {
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Boolean doInBackground() {
             FileOutputStream fos = null;
             try {
                 mTempFile = File.createTempFile("decoded", "mediadata");

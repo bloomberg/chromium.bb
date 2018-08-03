@@ -43,7 +43,6 @@ import java.util.concurrent.ExecutionException;
  * insert the headers automatically.
  */
 public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder> {
-
     /**
      * Interface that the {@link Adapter} uses to interact with the items it manages.
      */
@@ -376,8 +375,8 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     }
 
     // Cached async tasks to get the two Calendar objects, which are used when comparing dates.
-    private static final AsyncTask<Void, Void, Calendar> sCal1 = createCalendar();
-    private static final AsyncTask<Void, Void, Calendar> sCal2 = createCalendar();
+    private static final AsyncTask<Calendar> sCal1 = createCalendar();
+    private static final AsyncTask<Calendar> sCal2 = createCalendar();
 
     /**
      * Specifies various view types of the list items for the purpose of recycling.
@@ -832,12 +831,13 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     /**
      * Wraps {@link Calendar#getInstance()} in an {@link AsyncTask} to avoid Strict mode violation.
      */
-    private static AsyncTask<Void, Void, Calendar> createCalendar() {
-        return new AsyncTask<Void, Void, Calendar>() {
+    private static AsyncTask<Calendar> createCalendar() {
+        return new AsyncTask<Calendar>() {
             @Override
-            protected Calendar doInBackground(Void... unused) {
+            protected Calendar doInBackground() {
                 return Calendar.getInstance();
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
-}
+    }

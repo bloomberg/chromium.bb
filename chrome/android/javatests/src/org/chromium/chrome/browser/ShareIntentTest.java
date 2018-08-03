@@ -66,9 +66,9 @@ public class ShareIntentTest {
         @Override
         public void startActivity(Intent intent) {
             final Uri uri = intent.getClipData().getItemAt(0).getUri();
-            new AsyncTask<Void, Void, Void>() {
+            new AsyncTask<Void>() {
                 @Override
-                protected Void doInBackground(Void... params) {
+                protected Void doInBackground() {
                     ChromeFileProvider provider = new ChromeFileProvider();
                     ParcelFileDescriptor file = null;
                     try {
@@ -83,7 +83,8 @@ public class ShareIntentTest {
                     }
                     return null;
                 }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         /**

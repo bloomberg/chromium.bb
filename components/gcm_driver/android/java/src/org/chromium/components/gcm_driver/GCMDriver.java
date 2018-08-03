@@ -63,9 +63,9 @@ public class GCMDriver {
 
     @CalledByNative
     private void register(final String appId, final String senderId) {
-        new AsyncTask<Void, Void, String>() {
+        new AsyncTask<String>() {
             @Override
-            protected String doInBackground(Void... voids) {
+            protected String doInBackground() {
                 try {
                     String subtype = appId;
                     String registrationId = mSubscriber.subscribe(senderId, subtype, null);
@@ -80,14 +80,15 @@ public class GCMDriver {
                 nativeOnRegisterFinished(mNativeGCMDriverAndroid, appId, registrationId,
                                          !registrationId.isEmpty());
             }
-        }.execute();
+        }
+                .execute();
     }
 
     @CalledByNative
     private void unregister(final String appId, final String senderId) {
-        new AsyncTask<Void, Void, Boolean>() {
+        new AsyncTask<Boolean>() {
             @Override
-            protected Boolean doInBackground(Void... voids) {
+            protected Boolean doInBackground() {
                 try {
                     String subtype = appId;
                     mSubscriber.unsubscribe(senderId, subtype, null);
@@ -102,7 +103,8 @@ public class GCMDriver {
             protected void onPostExecute(Boolean success) {
                 nativeOnUnregisterFinished(mNativeGCMDriverAndroid, appId, success);
             }
-        }.execute();
+        }
+                .execute();
     }
 
     // The caller of this function is responsible for ensuring the browser process is initialized.

@@ -41,7 +41,7 @@ public class ResourceExtractor {
     private static final String COMPRESSED_LOCALES_DIR = "locales";
     private static final int BUFFER_SIZE = 16 * 1024;
 
-    private class ExtractTask extends AsyncTask<Void, Void, Void> {
+    private class ExtractTask extends AsyncTask<Void> {
         private final List<Runnable> mCompletionCallbacks = new ArrayList<Runnable>();
 
         private void doInBackgroundImpl() {
@@ -90,7 +90,7 @@ public class ResourceExtractor {
         }
 
         @Override
-        protected Void doInBackground(Void... unused) {
+        protected Void doInBackground() {
             TraceEvent.begin("ResourceExtractor.ExtractTask.doInBackground");
             try {
                 doInBackgroundImpl();

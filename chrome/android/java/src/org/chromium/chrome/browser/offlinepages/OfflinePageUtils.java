@@ -527,9 +527,9 @@ public class OfflinePageUtils {
     public static void sharePage(Activity activity, String pageUrl, String pageTitle,
             String offlinePath, File offlinePageFile, final Callback<ShareParams> shareCallback) {
         RecordUserAction.record("OfflinePages.Sharing.SharePageFromOverflowMenu");
-        AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
+        AsyncTask<Uri> task = new AsyncTask<Uri>() {
             @Override
-            protected Uri doInBackground(Void... v) {
+            protected Uri doInBackground() {
                 // If we have a content or file URI, we will not have a filename, just return the
                 // URI.
                 if (offlinePath.isEmpty()) {

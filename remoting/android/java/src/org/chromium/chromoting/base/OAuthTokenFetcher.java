@@ -95,9 +95,9 @@ public class OAuthTokenFetcher {
     }
 
     private void fetchImpl(final String expiredToken) {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 try {
                     if (expiredToken != null) {
                         GoogleAuthUtil.clearToken(mContext, expiredToken);
@@ -115,7 +115,8 @@ public class OAuthTokenFetcher {
                 }
                 return null;
             }
-        }.execute();
+        }
+                .execute();
     }
 
     private void handleTokenReceived(final String token) {

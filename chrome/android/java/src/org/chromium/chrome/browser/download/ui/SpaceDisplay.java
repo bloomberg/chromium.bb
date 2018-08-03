@@ -49,7 +49,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         R.string.download_manager_ui_space_other_gb
     };
 
-    private static class StorageSizeTask extends AsyncTask<Void, Void, Long> {
+    private static class StorageSizeTask extends AsyncTask<Long> {
         /**
          * If true, the task gets the total size of storage.  If false, it fetches how much
          * space is free.
@@ -63,7 +63,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         }
 
         @Override
-        protected Long doInBackground(Void... params) {
+        protected Long doInBackground() {
             File downloadDirectory = Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOWNLOADS);
 
@@ -104,7 +104,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
     };
 
     private final ObserverList<Observer> mObservers = new ObserverList<>();
-    private AsyncTask<Void, Void, Long> mFreeBytesTask;
+    private AsyncTask<Long> mFreeBytesTask;
 
     private DownloadHistoryAdapter mHistoryAdapter;
     private View mView;

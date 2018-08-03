@@ -149,9 +149,9 @@ public class SigninHelper {
             // It is possible that Chrome got to this point without account
             // rename notification. Let us signout before doing a rename.
             // updateAccountRenameData(mContext, new SystemAccountChangeEventChecker());
-            AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            AsyncTask<Void> task = new AsyncTask<Void>() {
                 @Override
-                protected Void doInBackground(Void... params) {
+                protected Void doInBackground() {
                     updateAccountRenameData(mContext, new SystemAccountChangeEventChecker());
                     return null;
                 }

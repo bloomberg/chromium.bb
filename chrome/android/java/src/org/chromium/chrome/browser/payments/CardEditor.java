@@ -148,7 +148,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     private final Handler mHandler;
     private final EditorFieldValidator mCardNumberValidator;
     private final EditorValueIconGenerator mCardIconGenerator;
-    private final AsyncTask<Void, Void, Calendar> mCalendar;
+    private final AsyncTask<Calendar> mCalendar;
 
     @Nullable private EditorFieldModel mIconHint;
     @Nullable private EditorFieldModel mNumberField;
@@ -262,9 +262,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             return cardTypeInfo.icon;
         };
 
-        mCalendar = new AsyncTask<Void, Void, Calendar>() {
+        mCalendar = new AsyncTask<Calendar>() {
             @Override
-            protected Calendar doInBackground(Void... unused) {
+            protected Calendar doInBackground() {
                 return Calendar.getInstance();
             }
         };

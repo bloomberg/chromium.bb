@@ -71,7 +71,7 @@ class FileDeletionQueue {
         mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private class FileDeletionTask extends AsyncTask<Void, Void, Void> {
+    private class FileDeletionTask extends AsyncTask<Void> {
         private final File mFile;
 
         FileDeletionTask(File file) {
@@ -79,7 +79,7 @@ class FileDeletionQueue {
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground() {
             mDeleter.onResult(mFile);
             return null;
         }

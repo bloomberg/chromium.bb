@@ -73,7 +73,7 @@ public final class DefaultBrowserInfo {
     /** A lock to synchronize background tasks to retrieve browser information. */
     private static final Object sDirCreationLock = new Object();
 
-    private static AsyncTask<Void, Void, ArrayList<String>> sDefaultBrowserFetcher;
+    private static AsyncTask<ArrayList<String>> sDefaultBrowserFetcher;
 
     /** Don't instantiate me. */
     private DefaultBrowserInfo() {}
@@ -84,9 +84,9 @@ public final class DefaultBrowserInfo {
     public static void initBrowserFetcher() {
         synchronized (sDirCreationLock) {
             if (sDefaultBrowserFetcher == null) {
-                sDefaultBrowserFetcher = new AsyncTask<Void, Void, ArrayList<String>>() {
+                sDefaultBrowserFetcher = new AsyncTask<ArrayList<String>>() {
                     @Override
-                    protected ArrayList<String> doInBackground(Void... params) {
+                    protected ArrayList<String> doInBackground() {
                         Context context = ContextUtils.getApplicationContext();
                         ArrayList<String> menuTitles = new ArrayList<String>(2);
                         // Store the package label of current application.
@@ -173,9 +173,9 @@ public final class DefaultBrowserInfo {
                 .isStartupSuccessfullyCompleted();
 
         try {
-            new AsyncTask<Void, Void, DefaultInfo>() {
+            new AsyncTask<DefaultInfo>() {
                 @Override
-                protected DefaultInfo doInBackground(Void... params) {
+                protected DefaultInfo doInBackground() {
                     Context context = ContextUtils.getApplicationContext();
 
                     PackageManager pm = context.getPackageManager();

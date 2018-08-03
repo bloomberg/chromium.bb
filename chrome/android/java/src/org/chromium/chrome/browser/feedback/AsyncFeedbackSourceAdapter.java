@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
 public abstract class AsyncFeedbackSourceAdapter<Result> implements AsyncFeedbackSource {
     private Worker mWorker;
 
-    private class Worker extends AsyncTask<Void, Void, Result> {
+    private class Worker extends AsyncTask<Result> {
         private final Runnable mCallback;
 
         public Worker(Runnable callback) {
@@ -32,7 +32,7 @@ public abstract class AsyncFeedbackSourceAdapter<Result> implements AsyncFeedbac
 
         // AsyncTask implementation.
         @Override
-        protected Result doInBackground(Void... params) {
+        protected Result doInBackground() {
             return AsyncFeedbackSourceAdapter.this.doInBackground(
                     ContextUtils.getApplicationContext());
         }

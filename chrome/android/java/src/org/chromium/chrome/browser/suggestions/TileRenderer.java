@@ -152,9 +152,9 @@ public class TileRenderer {
             return;
         }
 
-        AsyncTask<Void, Void, Bitmap> task = new AsyncTask<Void, Void, Bitmap>() {
+        AsyncTask<Bitmap> task = new AsyncTask<Bitmap>() {
             @Override
-            protected Bitmap doInBackground(Void... params) {
+            protected Bitmap doInBackground() {
                 Bitmap bitmap = BitmapFactory.decodeFile(siteData.whitelistIconPath);
                 if (bitmap == null) {
                     Log.d(TAG, "Image decoding failed: %s", siteData.whitelistIconPath);

@@ -186,10 +186,10 @@ public class InstanceIDBridge {
         protected abstract void sendResultToNative(Result result);
 
         public void execute() {
-            AsyncTask<Void, Void, Result> task = new AsyncTask<Void, Void, Result>() {
+            AsyncTask<Result> task = new AsyncTask<Result>() {
                 @Override
                 @SuppressWarnings("NoSynchronizedThisCheck") // Only used/accessible by native.
-                protected Result doInBackground(Void... params) {
+                protected Result doInBackground() {
                     synchronized (InstanceIDBridge.this) {
                         if (mInstanceID == null) {
                             mInstanceID = InstanceIDWithSubtype.getInstance(mSubtype);

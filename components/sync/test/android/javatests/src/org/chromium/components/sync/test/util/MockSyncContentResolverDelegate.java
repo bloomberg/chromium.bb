@@ -199,9 +199,9 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
 
         private void notifyObserverAsync(final Semaphore pendingObserverCount) {
             if (ThreadUtils.runningOnUiThread()) {
-                new AsyncTask<Void, Void, Void>() {
+                new AsyncTask<Void>() {
                     @Override
-                    protected Void doInBackground(Void... params) {
+                    protected Void doInBackground() {
                         mSyncStatusObserver.onStatusChanged(
                                 ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS);
                         return null;
@@ -211,7 +211,8 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
                     protected void onPostExecute(Void result) {
                         pendingObserverCount.release();
                     }
-                }.execute();
+                }
+                        .execute();
             } else {
                 mSyncStatusObserver.onStatusChanged(ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS);
                 pendingObserverCount.release();

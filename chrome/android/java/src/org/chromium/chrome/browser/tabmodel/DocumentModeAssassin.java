@@ -210,9 +210,9 @@ public class DocumentModeAssassin {
         ThreadUtils.assertOnUiThread();
         if (!setStage(STAGE_INITIALIZED, STAGE_COPY_TAB_STATES_STARTED)) return;
 
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 File documentDirectory = getDocumentDataDirectory();
                 File tabbedDirectory = getTabbedDataDirectory();
 
@@ -293,7 +293,8 @@ public class DocumentModeAssassin {
                     }
                 }
             }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
 
@@ -328,7 +329,7 @@ public class DocumentModeAssassin {
         ThreadUtils.assertOnUiThread();
         if (!setStage(STAGE_COPY_TAB_STATES_DONE, STAGE_WRITE_TABMODEL_METADATA_STARTED)) return;
 
-        new AsyncTask<Void, Void, Boolean>() {
+        new AsyncTask<Boolean>() {
             private byte[] mSerializedMetadata;
 
             @Override
@@ -366,7 +367,7 @@ public class DocumentModeAssassin {
             }
 
             @Override
-            protected Boolean doInBackground(Void... params) {
+            protected Boolean doInBackground() {
                 if (mSerializedMetadata != null) {
                     // If an old tab state file still exists when we run migration in TPS, then it
                     // will overwrite the new tab state file that our document tabs migrated to.
@@ -393,7 +394,8 @@ public class DocumentModeAssassin {
                 Log.d(TAG, "Finished writing tabbed mode metadata file.");
                 setStage(STAGE_WRITE_TABMODEL_METADATA_STARTED, STAGE_WRITE_TABMODEL_METADATA_DONE);
             }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /** Moves the user to tabbed mode by opting them out and removing all the tasks. */
@@ -424,9 +426,9 @@ public class DocumentModeAssassin {
         ThreadUtils.assertOnUiThread();
         if (!setStage(STAGE_CHANGE_SETTINGS_DONE, STAGE_DELETION_STARTED)) return;
 
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 Log.d(TAG, "Starting to delete document mode data.");
 
                 // Delete the old tab state directory.
@@ -446,7 +448,8 @@ public class DocumentModeAssassin {
                 Log.d(TAG, "Finished deleting document mode data.");
                 setStage(STAGE_DELETION_STARTED, STAGE_DONE);
             }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**

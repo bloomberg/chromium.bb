@@ -66,7 +66,7 @@ public class OfflinePageEvaluationBridge {
      * Class used for writing logs to external log file asynchronously to prevent violating strict
      * mode during test.
      */
-    private class LogTask extends AsyncTask<Void, Void, Void> {
+    private class LogTask extends AsyncTask<Void> {
         final String mLogString;
 
         LogTask(String logString) {
@@ -74,7 +74,7 @@ public class OfflinePageEvaluationBridge {
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground() {
             try {
                 synchronized (mLogOutput) {
                     mLogOutput.write(mLogString);

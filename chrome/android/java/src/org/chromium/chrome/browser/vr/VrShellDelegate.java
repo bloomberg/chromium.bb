@@ -420,9 +420,9 @@ public class VrShellDelegate
 
         try {
             // Reading VR support level and version can be slow, so do it asynchronously.
-            new AsyncTask<Void, Void, Integer>() {
+            new AsyncTask<Integer>() {
                 @Override
-                protected Integer doInBackground(Void... params) {
+                protected Integer doInBackground() {
                     return getVrSupportLevel();
                 }
 

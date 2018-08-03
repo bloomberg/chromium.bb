@@ -151,13 +151,14 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             // On Android M, Android DownloadManager may not delete the actual file, so we need to
             // delete the files here.
             if (filesToDelete.size() != 0) {
-                new AsyncTask<Void, Void, Void>() {
+                new AsyncTask<Void>() {
                     @Override
-                    public Void doInBackground(Void... params) {
+                    public Void doInBackground() {
                         FileUtils.batchDeleteFiles(filesToDelete);
                         return null;
                     }
-                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
 
             RecordUserAction.record("Android.DownloadManager.Delete");

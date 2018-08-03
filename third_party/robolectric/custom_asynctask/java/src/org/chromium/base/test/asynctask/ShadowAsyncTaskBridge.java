@@ -9,17 +9,15 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * Bridge between shadows and {@link org.chromium.base.AsyncTask}.
  */
 @DoNotInstrument
-public class ShadowAsyncTaskBridge<Params, Progress, Result> {
-    private AsyncTask<Params, Progress, Result> asyncTask;
+public class ShadowAsyncTaskBridge<Result> {
+    private AsyncTask<Result> asyncTask;
 
-    public ShadowAsyncTaskBridge(AsyncTask<Params, Progress, Result> asyncTask) {
+    public ShadowAsyncTaskBridge(AsyncTask<Result> asyncTask) {
         this.asyncTask = asyncTask;
     }
 
-    @SuppressWarnings("unchecked")
-    public Result doInBackground(Params... params) {
-        return ReflectionHelpers.callInstanceMethod(
-                asyncTask, "doInBackground", ClassParameter.from(Object[].class, params));
+    public Result doInBackground() {
+        return ReflectionHelpers.callInstanceMethod(asyncTask, "doInBackground");
     }
 
     public void onPreExecute() {
@@ -29,12 +27,6 @@ public class ShadowAsyncTaskBridge<Params, Progress, Result> {
     public void onPostExecute(Result result) {
         ReflectionHelpers.callInstanceMethod(
                 asyncTask, "onPostExecute", ClassParameter.from(Object.class, result));
-    }
-
-    @SuppressWarnings("unchecked")
-    public void onProgressUpdate(Progress... values) {
-        ReflectionHelpers.callInstanceMethod(
-                asyncTask, "onProgressUpdate", ClassParameter.from(Object[].class, values));
     }
 
     public void onCancelled() {

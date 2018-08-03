@@ -195,7 +195,7 @@ public class DownloadManagerDelegate {
     /**
      * Async task to query download status from Android DownloadManager
      */
-    private class DownloadQueryTask extends AsyncTask<Void, Void, DownloadQueryResult> {
+    private class DownloadQueryTask extends AsyncTask<DownloadQueryResult> {
         private final DownloadItem mDownloadItem;
         private final boolean mShowNotifications;
         private final DownloadQueryCallback mCallback;
@@ -208,7 +208,7 @@ public class DownloadManagerDelegate {
         }
 
         @Override
-        public DownloadQueryResult doInBackground(Void... voids) {
+        public DownloadQueryResult doInBackground() {
             DownloadManager manager =
                     (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
             Cursor c = manager.query(
@@ -316,7 +316,7 @@ public class DownloadManagerDelegate {
     /**
      * Async task to enqueue a download request into DownloadManager.
      */
-    private class EnqueueDownloadRequestTask extends AsyncTask<Void, Void, Boolean> {
+    private class EnqueueDownloadRequestTask extends AsyncTask<Boolean> {
         private final DownloadItem mDownloadItem;
         private final boolean mNotifyCompleted;
         private final EnqueueDownloadRequestCallback mCallback;
@@ -332,7 +332,7 @@ public class DownloadManagerDelegate {
         }
 
         @Override
-        public Boolean doInBackground(Void... voids) {
+        public Boolean doInBackground() {
             Uri uri = Uri.parse(mDownloadItem.getDownloadInfo().getUrl());
             DownloadManager.Request request;
             DownloadInfo info = mDownloadItem.getDownloadInfo();

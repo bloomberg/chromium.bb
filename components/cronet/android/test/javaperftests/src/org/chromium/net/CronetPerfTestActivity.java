@@ -555,9 +555,9 @@ public class CronetPerfTestActivity extends Activity {
         }
     }
 
-    private class BenchmarkTask extends AsyncTask<Void, Void, Void> {
+    private class BenchmarkTask extends AsyncTask<Void> {
         @Override
-        protected Void doInBackground(Void... unused) {
+        protected Void doInBackground() {
             JSONObject results = new JSONObject();
             for (Mode mode : Mode.values()) {
                 for (Direction direction : Direction.values()) {

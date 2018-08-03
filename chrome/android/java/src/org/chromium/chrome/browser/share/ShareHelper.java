@@ -261,9 +261,9 @@ public class ShareHelper {
      * Clears all shared image files.
      */
     public static void clearSharedImages() {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected Void doInBackground() {
                 try {
                     File imagePath = UiUtils.getDirectoryForImageCapture(
                             ContextUtils.getApplicationContext());
@@ -273,7 +273,8 @@ public class ShareHelper {
                 }
                 return null;
             }
-        }.execute();
+        }
+                .execute();
     }
 
     /**
@@ -314,9 +315,9 @@ public class ShareHelper {
             return;
         }
 
-        new AsyncTask<Void, Void, Uri>() {
+        new AsyncTask<Uri>() {
             @Override
-            protected Uri doInBackground(Void... params) {
+            protected Uri doInBackground() {
                 FileOutputStream fOut = null;
                 try {
                     File path = new File(UiUtils.getDirectoryForImageCapture(activity),
@@ -363,7 +364,8 @@ public class ShareHelper {
                     }
                 }
             }
-        }.execute();
+        }
+                .execute();
     }
 
     private static class ExternallyVisibleUriCallback implements Callback<String> {
@@ -379,9 +381,9 @@ public class ShareHelper {
                 return;
             }
 
-            new AsyncTask<Void, Void, Uri>() {
+            new AsyncTask<Uri>() {
                 @Override
-                protected Uri doInBackground(Void... v) {
+                protected Uri doInBackground() {
                     return ApiCompatibilityUtils.getUriForImageCaptureFile(new File(path));
                 }
 
@@ -547,10 +549,10 @@ public class ShareHelper {
             boolean retrieved = false;
             try {
                 final PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
-                AsyncTask<Void, Void, Pair<Drawable, CharSequence>> task =
-                        new AsyncTask<Void, Void, Pair<Drawable, CharSequence>>() {
+                AsyncTask<Pair<Drawable, CharSequence>> task =
+                        new AsyncTask<Pair<Drawable, CharSequence>>() {
                             @Override
-                            protected Pair<Drawable, CharSequence> doInBackground(Void... params) {
+                            protected Pair<Drawable, CharSequence> doInBackground() {
                                 Drawable directShareIcon = null;
                                 CharSequence directShareTitle = null;
                                 try {

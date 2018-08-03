@@ -251,9 +251,9 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
     /**
      * Avoids disk reads for timezone when getting the default instance of Calendar.
      */
-    private class CalendarTask extends AsyncTask<Void, Void, Calendar> {
+    private class CalendarTask extends AsyncTask<Calendar> {
         @Override
-        protected Calendar doInBackground(Void... unused) {
+        protected Calendar doInBackground() {
             return Calendar.getInstance();
         }
 
