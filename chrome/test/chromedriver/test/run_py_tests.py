@@ -83,7 +83,10 @@ _NEGATIVE_FILTER = [
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
-_VERSION_SPECIFIC_FILTER['HEAD'] = []
+_VERSION_SPECIFIC_FILTER['HEAD'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
+    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+]
 
 _VERSION_SPECIFIC_FILTER['69'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2515
