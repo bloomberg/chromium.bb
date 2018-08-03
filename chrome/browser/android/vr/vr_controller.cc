@@ -261,9 +261,15 @@ void VrController::UpdateState(const gfx::Transform& head_pose) {
                                  gvr_head_pose);
   const int32_t old_status = controller_state_->GetApiStatus();
   const int32_t old_connection_state = controller_state_->GetConnectionState();
-  for (int button = 0; button < GVR_CONTROLLER_BUTTON_COUNT; ++button) {
-    previous_button_states_[button] =
-        ButtonState(static_cast<gvr_controller_button>(button));
+  // Due to DON flow skipping weirdness, it's possible for the controller to be
+  // briefly disconnected. We don't want to miss a button up/down transition
+  // during that time, so only update previous button states if the controller
+  // is actually connected.
+  if (IsConnected()) {
+    for (int button = 0; button < GVR_CONTROLLER_BUTTON_COUNT; ++button) {
+      previous_button_states_[button] =
+          ButtonState(static_cast<gvr_controller_button>(button));
+    }
   }
   // Read current controller state.
   controller_state_->Update(*controller_api_);
