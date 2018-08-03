@@ -282,7 +282,7 @@ class VM(object):
     # Make sure we can read these files later on by creating them as ourselves.
     osutils.Touch(self.kvm_serial)
     for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
-      os.mkfifo(pipe, 0600)
+      os.mkfifo(pipe, 0o600)
     osutils.Touch(self.pidfile)
 
     qemu_args = [self.qemu_path]

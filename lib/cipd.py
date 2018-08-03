@@ -102,7 +102,7 @@ class CipdCache(cache.RemoteCache):
     binary = _DownloadCIPD(instance_id)
     log.info('Fetched CIPD package %s:%s', CIPD_PACKAGE, instance_id)
     osutils.WriteFile(path, binary)
-    os.chmod(path, 0755)
+    os.chmod(path, 0o755)
 
 
 def GetCIPDFromCache(instance_id=CIPD_INSTANCE_ID):

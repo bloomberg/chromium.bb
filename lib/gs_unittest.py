@@ -1477,7 +1477,7 @@ class CatTest(cros_test_lib.TempDirTestCase):
     filename = os.path.join(self.tempdir, 'myfile')
     content = 'foo'
     osutils.WriteFile(filename, content)
-    os.chmod(filename, 000)
+    os.chmod(filename, 0o000)
     with self.assertRaises(gs.GSContextException):
       ctx.Cat(filename)
 

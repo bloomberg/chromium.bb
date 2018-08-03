@@ -136,7 +136,7 @@ class BlacklistTest(image_test_lib.ImageTestCase):
         full_name = os.path.join(root, file_name)
         file_stat = os.lstat(full_name)
         if (not stat.S_ISREG(file_stat.st_mode) or
-            (file_stat.st_mode & 0111) == 0):
+            (file_stat.st_mode & 0o0111) == 0):
           continue
 
         with open(full_name, 'rb') as f:
@@ -158,7 +158,7 @@ class BlacklistTest(image_test_lib.ImageTestCase):
         if not os.path.isfile(interp):
           failures.append('File %s uses non-existing interpreter %s.' %
                           (full_name, interp))
-        elif (os.stat(interp).st_mode & 0111) == 0:
+        elif (os.stat(interp).st_mode & 0o111) == 0:
           failures.append('Interpreter %s is not executable.' % interp)
 
     self.assertFalse(failures, '\n'.join(failures))
