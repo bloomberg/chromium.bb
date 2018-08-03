@@ -9,6 +9,8 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
+import org.chromium.chrome.browser.modelutil.PropertyObservable;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.suggestions.OfflinableSuggestion;
 
 import java.io.File;
@@ -16,7 +18,8 @@ import java.io.File;
 /**
  * Represents the data for an article card on the NTP.
  */
-public class SnippetArticle implements OfflinableSuggestion {
+public class SnippetArticle
+        extends PropertyObservable<PartialBindCallback> implements OfflinableSuggestion {
     /** The category of this article. */
     public final int mCategory;
 

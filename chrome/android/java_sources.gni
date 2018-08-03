@@ -809,6 +809,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/modelutil/ListObservable.java",
   "java/src/org/chromium/chrome/browser/modelutil/ListObservableImpl.java",
   "java/src/org/chromium/chrome/browser/modelutil/PropertyKey.java",
+  "java/src/org/chromium/chrome/browser/modelutil/PropertyListObservable.java",
   "java/src/org/chromium/chrome/browser/modelutil/PropertyModel.java",
   "java/src/org/chromium/chrome/browser/modelutil/PropertyModelChangeProcessor.java",
   "java/src/org/chromium/chrome/browser/modelutil/PropertyObservable.java",
