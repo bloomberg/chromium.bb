@@ -24,6 +24,8 @@ sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir))
 import chrome_paths
 import test_environment
 import util
+import glob
+import time
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
@@ -81,22 +83,6 @@ def _Run(java_tests_src_dir, test_filter,
   Returns:
     A list of |TestResult|s.
   """
-  test_dir = util.MakeTempDir()
-  keystore_path = ('java', 'client', 'test', 'keystore')
-  required_dirs = [keystore_path[:-1],
-                   ('javascript',),
-                   ('third_party', 'closure', 'goog'),
-                   ('third_party', 'js')]
-  for required_dir in required_dirs:
-    os.makedirs(os.path.join(test_dir, *required_dir))
-
-  test_jar = 'test-standalone.jar'
-  class_path = test_jar
-  shutil.copyfile(os.path.join(java_tests_src_dir, 'keystore'),
-                  os.path.join(test_dir, *keystore_path))
-  util.Unzip(os.path.join(java_tests_src_dir, 'common.zip'), test_dir)
-  shutil.copyfile(os.path.join(java_tests_src_dir, test_jar),
-                  os.path.join(test_dir, test_jar))
 
   sys_props = ['selenium.browser=chrome',
                'webdriver.chrome.driver=' + os.path.abspath(chromedriver_path)]
@@ -104,7 +90,7 @@ def _Run(java_tests_src_dir, test_filter,
     if util.IsLinux() and android_package_key is None:
       # Workaround for crbug.com/611886 and
       # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
-      chrome_wrapper_path = os.path.join(test_dir, 'chrome-wrapper-no-sandbox')
+      chrome_wrapper_path = os.path.join(java_tests_src_dir, 'chrome-wrapper-no-sandbox')
       with open(chrome_wrapper_path, 'w') as f:
         f.write('#!/bin/sh\n')
         f.write('exec %s --no-sandbox --disable-gpu "$@"\n' %
@@ -114,7 +100,7 @@ def _Run(java_tests_src_dir, test_filter,
     elif util.IsMac():
       # Use srgb color profile, otherwise the default color profile on Mac
       # causes some color adjustments, so screenshots have unexpected colors.
-      chrome_wrapper_path = os.path.join(test_dir, 'chrome-wrapper')
+      chrome_wrapper_path = os.path.join(java_tests_src_dir, 'chrome-wrapper')
       with open(chrome_wrapper_path, 'w') as f:
         f.write('#!/bin/sh\n')
         f.write('exec %s --force-color-profile=srgb "$@"\n' %
@@ -146,18 +132,14 @@ def _Run(java_tests_src_dir, test_filter,
       transport = 'dt_shmem'
     jvm_args += ['-agentlib:jdwp=transport=%s,server=y,suspend=y,'
                  'address=33081' % transport]
-    # Unpack the sources into the test directory and add to the class path
-    # for ease of debugging, particularly with jdb.
-    util.Unzip(os.path.join(java_tests_src_dir, 'test-nodeps-srcs.jar'),
-               test_dir)
-    class_path += ':' + test_dir
 
-  return _RunAntTest(
-      test_dir, 'org.openqa.selenium.chrome.ChromeDriverTests',
-      class_path, sys_props, jvm_args, verbose)
+  return _RunAntTest(java_tests_src_dir, test_filter, chromedriver_path,
+                     chrome_path, log_path, android_package_key,
+                     jvm_args, verbose, debug, sys_props)
 
-
-def _RunAntTest(test_dir, test_class, class_path, sys_props, jvm_args, verbose):
+def _RunAntTest(java_tests_src_dir, test_filter, chromedriver_path,
+                    chrome_path, log_path, android_package_key,
+                    jvm_args, verbose, debug, sys_props):
   """Runs a single Ant JUnit test suite and returns the |TestResult|s.
 
   Args:
@@ -171,27 +153,37 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props, jvm_args, verbose):
   Returns:
     A list of |TestResult|s.
   """
-  def _CreateBuildConfig(test_name, results_file, class_path, junit_props,
-                         sys_props, jvm_args):
+  def _CreateBuildConfig(java_tests_src_dir, jvm_args, sys_props):
+    path_element = []
+
+    for name in glob.glob(java_tests_src_dir + "/jar/*.jar"):
+      path_element.append('\t<pathelement location=\"%s\" />' % name)
+
+    build_xml = '\n'.join([
+    '<project>',
+    ' <property name="test.class.name" value="org.openqa.selenium.chrome.ChromeDriverTests" />',
+    ' <path id="test.classpath">',
+    '\n'.join(path_element),
+    '</path>'])
+
     def _SystemPropToXml(prop):
       key, value = prop.split('=')
       return '<sysproperty key="%s" value="%s"/>' % (key, value)
     def _JvmArgToXml(arg):
       return '<jvmarg value="%s"/>' % arg
-    return '\n'.join([
-        '<project>',
-        '  <target name="test">',
-        '    <junit %s>' % ' '.join(junit_props),
-        '      <formatter type="xml"/>',
-        '      <classpath>',
-        '        <pathelement path="%s"/>' % class_path,
-        '      </classpath>',
-        '      ' + '\n      '.join(map(_SystemPropToXml, sys_props)),
-        '      ' + '\n      '.join(map(_JvmArgToXml, jvm_args)),
-        '      <test name="%s" outfile="%s"/>' % (test_name, results_file),
-        '    </junit>',
-        '  </target>',
-        '</project>'])
+    build_xml += '\n'.join([
+      '  <target name="test">',
+      '    <junit %s>' % ' '.join(junit_props),
+      '      <formatter type="xml"/>',
+      '      ' + '\n      '.join(map(_SystemPropToXml, sys_props)),
+      '      ' + '\n      '.join(map(_JvmArgToXml, jvm_args)),
+      '      <test name="%s" outfile="%s"/>' % ("org.openqa.selenium.chrome.ChromeDriverTests", "results"),
+      '      <classpath refid="test.classpath" />',
+      '    </junit>',
+      '  </target>',
+      '</project>'])
+
+    return build_xml
 
   def _ProcessResults(results_path):
     doc = minidom.parse(results_path)
@@ -216,20 +208,21 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props, jvm_args, verbose):
   if verbose:
     junit_props += ['showoutput="yes"']
 
-  ant_file = open(os.path.join(test_dir, 'build.xml'), 'w')
-  ant_file.write(_CreateBuildConfig(
-      test_class, 'results', class_path, junit_props, sys_props, jvm_args))
+  ant_file = open(os.path.join(java_tests_src_dir, 'build.xml'), 'w')
+  file_contents = _CreateBuildConfig(java_tests_src_dir, jvm_args, sys_props)
+
+  ant_file.write(file_contents)
   ant_file.close()
 
   if util.IsWindows():
     ant_name = 'ant.bat'
   else:
     ant_name = 'ant'
-  code = util.RunCommand([ant_name, 'test'], cwd=test_dir)
+  code = util.RunCommand([ant_name, 'test'], java_tests_src_dir)
   if code != 0:
-    print 'FAILED to run java tests of %s through ant' % test_class
+    print 'FAILED to run java tests of ChromeDriverTests through ant'
     return
-  return _ProcessResults(os.path.join(test_dir, 'results.xml'))
+  return _ProcessResults(os.path.join(java_tests_src_dir, 'results.xml'))
 
 
 def PrintTestResults(results):
@@ -351,7 +344,12 @@ def main():
     return PrintTestResults(results)
   finally:
     environment.GlobalTearDown()
-
+    os.remove(os.path.join(java_tests_src_dir, "build.xml"))
+    os.remove(os.path.join(java_tests_src_dir, "results.xml"))
+    if(os.path.exists(os.path.join(java_tests_src_dir, "chrome-wrapper-no-sandbox"))):
+      os.remove(os.path.join(java_tests_src_dir, "chrome-wrapper-no-sandbox"))
+    if(os.path.exists(os.path.join(java_tests_src_dir, "chrome-wrapper"))):
+      os.remove(os.path.join(java_tests_src_dir, "chrome-wrapper"))
 
 if __name__ == '__main__':
   sys.exit(main())

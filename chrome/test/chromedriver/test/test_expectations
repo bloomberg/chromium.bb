@@ -23,7 +23,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'BasicMouseInterfaceTest.testMovingIntoAnImageEnclosedInALink',
     'BasicMouseInterfaceTest.testMovingMouseBackAndForthPastViewPort',
     'BasicMouseInterfaceTest.testMovingMousePastViewPort',
-    'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
+    'ChromeOptionsFunctionalTest.*',
     'ClickScrollingTest.testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow',
     'ClickScrollingTest.testShouldNotBeAbleToClickElementThatIsOutOfViewInANonScrollableFrame',
     'ClickScrollingTest.testShouldNotScrollIfAlreadyScrolledAndElementIsInView',
@@ -102,20 +102,100 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.testPromptShouldUseDefaultValueIfNoKeysSent',
     'UnexpectedAlertBehaviorTest.canAcceptUnhandledAlert',
     'UnexpectedAlertBehaviorTest.canSpecifyUnhandledAlertBehaviourUsingCapabilities',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
+    'ClickTest.testShouldBeAbleToClickOnAPartiallyOverlappedLinkThatWrapsToTheNextLine',
+    'ClickTest.testShouldSetRelatedTargetForMouseOut',
+
+    'ContentEditableTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
+    'ContentEditableTest.testShouldAppendToTinyMCE',
+    'CorrectEventFiringTest.testNativelyClickOverlappingElements',
+    'CorrectEventFiringTest.testClickPartiallyOverlappingElements',
+
+    'ElementFindingTest.testShouldBeAbleToFindElementByXPathInXmlDocument',
+
+    'ExecutingJavascriptTest.shouldReturnDocumentElementIfDocumentIsReturned',
+    'ExecutingJavascriptTest.testShouldBeAbleToReturnADateObject',
+    'ExecutingJavascriptTest.shouldHandleRecursiveStructures',
+
+    'I18nTest.testEnteringSupplementaryCharacters',
+
+    'PageLoadingTest.testEagerStrategyShouldNotWaitForResourcesOnRefresh',
+    'PageLoadingTest.testEagerStrategyShouldWaitForDocumentToBeLoaded',
+    'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
+    'PageLoadingTest.testShouldNotStopLoadingPageAfterTimeout',
+    'PageLoadingTest.testEagerStrategyShouldNotWaitForResources',
+
+    'PositionAndSizeTest.testShouldHandleNonIntegerPositionAndSize',
+
+    'ProxySettingTest.canConfigureProxyThroughPACFile',
+    'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
+    'ProxySettingTest.canConfigureManualHttpProxy',
+    'ProxySettingTest.canConfigureNoProxy',
+
+    'SelectElementTest.shouldNotAllowInvisibleOptionsToBeSelectedByVisibleText',
+    'SelectElementTest.shouldNotAllowUserToDeselectOptionsByInvisibleText',
+
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfAnElement',
+    'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePageAfterSwitching',
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithTooLongX',
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithTooLongY',
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithLongX',
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithLongY',
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithTooLongXandY',
+
+    'TextHandlingTest.testShouldNotReturnLtrMarks',
+    'TextHandlingTest.testShouldTrimTextWithMultiByteWhitespaces',
+
+    'UnexpectedAlertBehaviorTest.canDismissUnhandledAlert',
+    'UnexpectedAlertBehaviorTest.canSilentlyAcceptUnhandledAlert',
+    'UnexpectedAlertBehaviorTest.canDismissUnhandledAlertsByDefault',
+    'UnexpectedAlertBehaviorTest.canSilentlyDismissUnhandledAlert',
+
+    'UploadTest.testClickFileInput',
+
+    'PageLoadingTest.testNoneStrategyShouldNotWaitForPageToRefresh',
+    'BasicMouseInterfaceTest.testHoverPersists',
+
+    'AlertsTest.testShouldHandleAlertOnPageLoad',
+    'AlertsTest.testShouldAllowAUserToSetTheValueOfAPrompt',
+    'AlertsTest.testHandlesTwoAlertsFromOneInteraction',
+    'AlertsTest.testCanQuitWhenAnAlertIsPresent',
+    'AlertsTest.testShouldImplicitlyHandleAlertOnPageBeforeUnload',
+    'AlertsTest.testSwitchingToMissingAlertInAClosedWindowThrows',
+    'AlertsTest.testShouldAllowAUserToAcceptAPrompt',
+    'AlertsTest.testShouldAllowUsersToAcceptAnAlertManually',
+    'AlertsTest.testShouldThrowIllegalArgumentExceptionWhenKeysNull',
+    'AlertsTest.testShouldAllowAUserToDismissAPrompt',
+    'AlertsTest.testShouldAllowUsersToAcceptAnAlertWithNoTextManually',
+    'AlertsTest.shouldHandleAlertOnFormSubmit',
+    'AlertsTest.testShouldBeAbleToOverrideTheWindowAlertMethod',
+    'ElementAttributeTest.testShouldReturnInnerHtml',
+    'ExecutingAsyncJavascriptTest.shouldBeAbleToMakeXMLHttpRequestsAndWaitForTheResponse',
+    'MiscTest.testShouldReturnTheSourceOfAPage',
+    'TextHandlingTest.testReadALargeAmountOfData',
+    'TypingTest.testNumericShiftKeys',
+    'TypingTest.testAllPrintableKeys',
+    'TypingTest.testChordControlCutAndPaste',
 ]
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
+    'ClickScrollingTest.testClickingOnAnchorScrollsPage',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
+    'PageLoadingTest.testNoneStrategyShouldNotWaitForPageToRefresh',
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfCurrentViewport',
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [
-    'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
+    'ChromeOptionsFunctionalTest.*',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
 
     'ClickTest.testShouldOnlyFollowHrefOnce',
@@ -214,39 +294,41 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'BasicMouseInterfaceTest.testMoveAndClick',
     'BasicMouseInterfaceTest.testShouldClickElementInIFrame',
     'CombinedInputActionsTest.testCanClickOnLinks',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
+    'ImplicitWaitTest.testShouldRetainImplicitlyWaitFromTheReturnedWebDriverOfFrameSwitchTo',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
+    'CorrectEventFiringTest.testSendingKeysToAnotherElementShouldCauseTheBlurEventToFireInNonTopmostWindow',
+    'CorrectEventFiringTest.testClickAnElementThatDisappear',
+    'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
+    'ReferrerTest.crossDomainHistoryNavigationWithADirectProxy',
+    'ReferrerTest.navigationWhenProxyInterceptsASpecificUrl',
+    'ReferrerTest.crossDomainHistoryNavigationWithoutAProxy',
+    'ReferrerTest.basicHistoryNavigationWithoutAProxy',
+    'ReferrerTest.basicHistoryNavigationWithADirectProxy',
+    'ReferrerTest.crossDomainHistoryNavigationWhenProxyInterceptsHostRequests',
+    'ReferrerTest.crossDomainHistoryNavigationWithAProxiedHost',
+    'TakesScreenshotTest.testShouldCaptureScreenshotOfCurrentViewport',
+    'UploadTest.testUploadingWithHiddenFileInput',
+    'CombinedInputActionsTest.testControlClickingOnMultiSelectionList',
+    'CombinedInputActionsTest.testShiftClickingOnMultiSelectionList',
+    'CombinedInputActionsTest.testPlainClickingOnMultiSelectionList',
 ]
+
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
+    'CorrectEventFiringTest.testClickingAnUnfocusableChildShouldNotBlurTheParent',
+    'CorrectEventFiringTest.testShouldFireFocusEventInNonTopmostWindow',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2286
-        'CorrectEventFiringTest.*',
-        'FormHandlingTest.testShouldSubmitAFormUsingTheEnterKey',
-        'FormHandlingTest.testShouldSubmitAFormUsingTheNewlineLiteral',
-        'JavascriptEnabledDriverTest.testShouldBeAbleToFindElementAfterJavascriptCausesANewPageToLoad',
-        'JavascriptEnabledDriverTest.testShouldBeAbleToDetermineTheLocationOfAnElement',
-        'JavascriptEnabledDriverTest.testShouldBeAbleToSwitchToFocusedElement',
-        'JavascriptEnabledDriverTest.testIfNoElementHasFocusTheActiveElementIsTheBody',
-        'JavascriptEnabledDriverTest.testShouldWaitForLoadsToCompleteAfterJavascriptCausesANewPageToLoad',
-        'TypingTest.testShouldBeAbleToUseArrowKeys',
-        'TypingTest.testShouldReportKeyCodeOfArrowKeysUpDownEvents',
-        'TypingTest.testShouldBeAbleToMixUpperAndLowerCaseLetters',
-        'BasicMouseInterfaceTest.testDoubleClickThenGet',
-        'MiscTest.testShouldReturnTheSourceOfAPage',
-        'MiscTest.testClickingShouldNotTrampleWOrHInGlobalScope',
-        'MiscTest.testShouldReportTheCurrentUrlCorrectly',
-        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
-        'ElementAttributeTest.testShouldCorrectlyReportValueOfColspan',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
-        'ImplicitWaitTest.*',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2401
-        'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
@@ -255,7 +337,10 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
         'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
          # Not applicable on ChromeDriverWebViewShell (doesn't support tabs).
         'WindowSwitchingTest.*',
-        'TakesScreenshotTest.testShouldCaptureScreenshot',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
+        'TakesScreenshotTest.*',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
+        'ImplicitWaitTest.testShouldRetainImplicitlyWaitFromTheReturnedWebDriverOfFrameSwitchTo',
     ]
 )
 
