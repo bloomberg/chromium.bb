@@ -26,6 +26,7 @@ class CORE_EXPORT LayoutNGText : public LayoutText {
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectNGText || LayoutText::IsOfType(type);
   }
+  bool IsLayoutNGObject() const override { return true; }
 
   bool HasValidLayout() const { return valid_ng_items_; }
   const Vector<NGInlineItem*>& InlineItems() const {

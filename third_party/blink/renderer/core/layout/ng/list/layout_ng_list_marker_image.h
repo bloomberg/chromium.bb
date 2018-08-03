@@ -17,6 +17,8 @@ class CORE_EXPORT LayoutNGListMarkerImage final : public LayoutImage {
   explicit LayoutNGListMarkerImage(Element*);
   static LayoutNGListMarkerImage* CreateAnonymous(Document*);
 
+  bool IsLayoutNGObject() const override { return true; }
+
  private:
   bool IsOfType(LayoutObjectType) const override;
 
