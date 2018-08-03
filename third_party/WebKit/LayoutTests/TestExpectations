@@ -2335,23 +2335,6 @@ crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007
 crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
 crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
 
-crbug.com/595206 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Skip ]
-crbug.com/595206 http/tests/inspector-protocol/terminate-execution-with-fetch-callbacks.js [ Skip ]
-crbug.com/595206 inspector-protocol/console/console-let-const-with-api.js [ Skip ]
-crbug.com/595206 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
-crbug.com/595206 inspector-protocol/debugger/setScriptSource.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-await-promise.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-callFunctionOn-async.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-clear-of-command-line-api.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-console-line-and-column.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-console-log-doesnt-run-microtasks.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-evaluate-async.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-evaluate-in-default-context.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-get-properties-on-proxy.js [ Skip ]
-crbug.com/595206 inspector-protocol/runtime/runtime-property-on-console-proto.js [ Skip ]
-crbug.com/595206 inspector-protocol/sessions/runtime-evaluate.js [ Skip ]
-crbug.com/595206 inspector-protocol/target/target-send-message.js [ Skip ]
-
 # Not implemented yet
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
@@ -2483,14 +2466,6 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/standards-percentage-height
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
 
 
-crbug.com/v8/7753 http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Skip ]
-crbug.com/v8/7753 http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints.js [ Skip ]
-crbug.com/v8/7753 http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.js [ Skip ]
-crbug.com/v8/7753 http/tests/devtools/sources/debugger-step/step-through-event-listeners.js [ Skip ]
-crbug.com/v8/7753 inspector-protocol/debugger/message-channel-async-stack.js [ Skip ]
-crbug.com/v8/7753 inspector-protocol/worker/worker-on-message-async-stacks.js [ Skip ]
-crbug.com/v8/7753 inspector-protocol/worker/worker-post-message-async-stacks.js [ Skip ]
-
 # TODO(ftang,jshin) Remove once v8 is rolled to include a fix for v8/7958.
 crbug.com/v8/7958 fast/js/string-prototype-properties.html [ Skip ]
 
@@ -2614,14 +2589,6 @@ crbug.com/694525 external/wpt/content-security-policy/script-src/worker-set-time
 crbug.com/694525 external/wpt/content-security-policy/style-src/inline-style-allowed-while-cloning-objects.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/style-src/style-blocked.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/unsafe-eval/eval-blocked-in-about-blank-iframe.sub.html [ Skip ]
-
-crbug.com/v8/7858 http/tests/devtools/persistence/persistence-external-change-breakpoints.js [ Skip ]
-crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-into-document-write.js [ Skip ]
-crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-into-inlined-scripts.js [ Skip ]
-crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-out-document-write.js [ Skip ]
-crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-over-document-write.js [ Skip ]
-crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-over-inlined-scripts.js [ Skip ]
-crbug.com/v8/7858 inspector-protocol/debugger/debugger-doesnt-step-into-injected-script.js [ Skip ]
 
 # These tests will be added back soon:
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-aux-frame-navigation.sub.html [ Skip ]

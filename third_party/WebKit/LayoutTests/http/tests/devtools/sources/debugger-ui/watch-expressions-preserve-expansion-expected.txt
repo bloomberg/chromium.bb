@@ -128,7 +128,7 @@ func: function() {return a + b;}
     name: 
     prototype: Object
     __proto__: function () { [native code] }
-    [[FunctionLocation]]: undefined
+    [[FunctionLocation]]: Object
     [[Scopes]]: Scopes[2]
       0: Closure
         a: 10
@@ -255,7 +255,7 @@ func: function() {return a + b;}
     name: 
     prototype: Object
     __proto__: function () { [native code] }
-    [[FunctionLocation]]: undefined
+    [[FunctionLocation]]: Object
     [[Scopes]]: Scopes[2]
       0: Closure
         a: 10

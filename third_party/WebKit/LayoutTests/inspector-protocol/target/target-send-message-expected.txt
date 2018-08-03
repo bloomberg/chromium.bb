@@ -4,9 +4,9 @@ JSON syntax error..
 JSON with primitive value..
 {"error":{"code":-32600,"message":"Message must be an object"}}
 JSON without method property..
-{"error":{"code":-32600,"message":"Message must have string 'method' property"}}
+{"error":{"code":-32600,"message":"Message must have integer 'id' property"}}
 JSON without id property..
 {"error":{"code":-32600,"message":"Message must have integer 'id' property"}}
 Valid JSON..
-{"id":1,"result":{"result":{"type":"number","value":42}}}
+{"id":1,"result":{"result":{"type":"number","value":42,"description":"42"}}}
 
