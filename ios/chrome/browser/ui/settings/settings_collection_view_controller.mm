@@ -93,6 +93,20 @@ namespace {
 
 const CGFloat kAccountProfilePhotoDimension = 40.0f;
 
+NSString* const kSyncAndGoogleServicesImageName = @"sync_and_google_services";
+NSString* const kSettingsSearchEngineImageName = @"settings_search_engine";
+NSString* const kSettingsPasswordsImageName = @"settings_passwords";
+NSString* const kSettingsAutofillFormsImageName = @"settings_autofill_forms";
+NSString* const kSettingsVoiceSearchImageName = @"settings_voice_search";
+NSString* const kSettingsPrivacyImageName = @"settings_privacy";
+NSString* const kSettingsContentSettingsImageName =
+    @"settings_content_settings";
+NSString* const kSettingsBandwidthImageName = @"settings_bandwidth";
+NSString* const kSettingsAboutChromeImageName = @"settings_about_chrome";
+NSString* const kSettingsDebugImageName = @"settings_debug";
+NSString* const kSettingsArticleSuggestionsImageName =
+    @"settings_article_suggestions";
+
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSignIn = kSectionIdentifierEnumZero,
   SectionIdentifierAccount,
@@ -506,7 +520,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                              text:l10n_util::GetNSString(
                                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE)
                        detailText:nil
-                    iconImageName:nil];
+                    iconImageName:kSyncAndGoogleServicesImageName];
 }
 
 - (CollectionViewItem*)accountCellItem {
@@ -530,7 +544,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                           text:l10n_util::GetNSString(
                                    IDS_IOS_SEARCH_ENGINE_SETTING_TITLE)
                     detailText:defaultSearchEngineName
-                 iconImageName:@"settings_search_engine"];
+                 iconImageName:kSettingsSearchEngineImageName];
   _defaultSearchEngineItem.accessibilityIdentifier =
       kSettingsSearchEngineCellId;
   return _defaultSearchEngineItem;
@@ -541,7 +555,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [self detailItemWithType:ItemTypeSavedPasswords
                           text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
                     detailText:nil
-                 iconImageName:@"settings_passwords"];
+                 iconImageName:kSettingsPasswordsImageName];
 
   return _savePasswordsDetailItem;
 }
@@ -556,7 +570,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [self detailItemWithType:ItemTypeAutofill
                           text:l10n_util::GetNSString(IDS_IOS_AUTOFILL)
                     detailText:autofillDetail
-                 iconImageName:@"settings_autofill_forms"];
+                 iconImageName:kSettingsAutofillFormsImageName];
 
   return _autoFillDetailItem;
 }
@@ -574,7 +588,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                           text:l10n_util::GetNSString(
                                    IDS_IOS_VOICE_SEARCH_SETTING_TITLE)
                     detailText:languageName
-                 iconImageName:@"settings_voice_search"];
+                 iconImageName:kSettingsVoiceSearchImageName];
   _voiceSearchDetailItem.accessibilityIdentifier = kSettingsVoiceSearchCellId;
   return _voiceSearchDetailItem;
 }
@@ -585,7 +599,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                           text:l10n_util::GetNSString(
                                    IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)
                     detailText:nil
-                 iconImageName:@"settings_privacy"];
+                 iconImageName:kSettingsPrivacyImageName];
 }
 
 - (CollectionViewItem*)contentSettingsDetailItem {
@@ -593,7 +607,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       detailItemWithType:ItemTypeContentSettings
                     text:l10n_util::GetNSString(IDS_IOS_CONTENT_SETTINGS_TITLE)
               detailText:nil
-           iconImageName:@"settings_content_settings"];
+           iconImageName:kSettingsContentSettingsImageName];
 }
 
 - (CollectionViewItem*)bandwidthManagementDetailItem {
@@ -601,21 +615,21 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                              text:l10n_util::GetNSString(
                                       IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS)
                        detailText:nil
-                    iconImageName:@"settings_bandwidth"];
+                    iconImageName:kSettingsBandwidthImageName];
 }
 
 - (CollectionViewItem*)aboutChromeDetailItem {
   return [self detailItemWithType:ItemTypeAboutChrome
                              text:l10n_util::GetNSString(IDS_IOS_PRODUCT_NAME)
                        detailText:nil
-                    iconImageName:@"settings_about_chrome"];
+                    iconImageName:kSettingsAboutChromeImageName];
 }
 
 - (SettingsSwitchItem*)showMemoryDebugSwitchItem {
   SettingsSwitchItem* showMemoryDebugSwitchItem =
       [self switchItemWithType:ItemTypeMemoryDebugging
                          title:@"Show memory debug tools"
-                 iconImageName:@"settings_debug"
+                 iconImageName:kSettingsDebugImageName
                withDefaultsKey:nil];
   showMemoryDebugSwitchItem.on = [_showMemoryDebugToolsEnabled value];
 
@@ -627,7 +641,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [self switchItemWithType:ItemTypeArticlesForYou
                          title:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE)
-                 iconImageName:@"settings_article_suggestions"
+                 iconImageName:kSettingsArticleSuggestionsImageName
                withDefaultsKey:nil];
   articlesForYouSwitchItem.on = [_articlesEnabled value];
 
@@ -638,14 +652,14 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 - (SettingsSwitchItem*)viewSourceSwitchItem {
   return [self switchItemWithType:ItemTypeViewSource
                             title:@"View source menu"
-                    iconImageName:@"settings_debug"
+                    iconImageName:kSettingsDebugImageName
                   withDefaultsKey:kDevViewSourceKey];
 }
 
 - (SettingsSwitchItem*)logJavascriptConsoleSwitchItem {
   return [self switchItemWithType:ItemTypeLogJavascript
                             title:@"Log JS"
-                    iconImageName:@"settings_debug"
+                    iconImageName:kSettingsDebugImageName
                   withDefaultsKey:kLogJavascriptKey];
 }
 
@@ -653,14 +667,14 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   return [self detailItemWithType:ItemTypeCollectionCellCatalog
                              text:@"Collection Cell Catalog"
                        detailText:nil
-                    iconImageName:@"settings_debug"];
+                    iconImageName:kSettingsDebugImageName];
 }
 
 - (SettingsDetailItem*)tableViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeTableCellCatalog
                              text:@"TableView Cell Catalog"
                        detailText:nil
-                    iconImageName:@"settings_debug"];
+                    iconImageName:kSettingsDebugImageName];
 }
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 
