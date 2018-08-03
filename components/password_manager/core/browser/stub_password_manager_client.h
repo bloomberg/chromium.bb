@@ -63,7 +63,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   void LogPasswordReuseDetectedEvent() override;
 #endif
   ukm::SourceId GetUkmSourceId() override;
-  PasswordManagerMetricsRecorder& GetMetricsRecorder() override;
+  PasswordManagerMetricsRecorder* GetMetricsRecorder() override;
 
  private:
   const StubCredentialsFilter credentials_filter_;

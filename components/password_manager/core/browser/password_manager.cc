@@ -29,7 +29,6 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_reuse_defines.h"
@@ -395,17 +394,16 @@ void PasswordManager::ProvisionallySavePassword(
   }
 
   if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
-    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::SAVING_DISABLED, main_frame_url_,
-        form.origin, logger.get());
+    RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::SAVING_DISABLED, form.origin,
+        logger.get());
     return;
   }
 
   // No password value to save? Then don't.
   if (PasswordFormManager::PasswordToSave(form).first.empty()) {
-    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::EMPTY_PASSWORD, main_frame_url_,
-        form.origin, logger.get());
+    RecordProvisionalSaveFailure(PasswordManagerMetricsRecorder::EMPTY_PASSWORD,
+                                 form.origin, logger.get());
     return;
   }
 
@@ -413,9 +411,9 @@ void PasswordManager::ProvisionallySavePassword(
   metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
       should_block);
   if (should_block) {
-    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::SAVING_ON_HTTP_AFTER_HTTPS,
-        main_frame_url_, form.origin, logger.get());
+    RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::SAVING_ON_HTTP_AFTER_HTTPS, form.origin,
+        logger.get());
     return;
   }
 
@@ -426,9 +424,9 @@ void PasswordManager::ProvisionallySavePassword(
   // first loading the page containing the form. Don't offer to save
   // passwords in this case.
   if (!matched_manager) {
-    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::NO_MATCHING_FORM, main_frame_url_,
-        form.origin, logger.get());
+    RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::NO_MATCHING_FORM, form.origin,
+        logger.get());
     return;
   }
   matched_manager->SaveSubmittedFormTypeForMetrics(form);
@@ -811,8 +809,8 @@ bool PasswordManager::CanProvisionalManagerSave() {
       FormFetcher::State::WAITING) {
     // We have a provisional save manager, but it didn't finish matching yet.
     // We just give up.
-    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::MATCHING_NOT_COMPLETE, main_frame_url_,
+    RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::MATCHING_NOT_COMPLETE,
         provisional_save_manager_->GetOrigin(), logger.get());
     provisional_save_manager_.reset();
     return false;
@@ -945,8 +943,8 @@ void PasswordManager::OnLoginSuccessful() {
   if (!client_->GetStoreResultFilter()->ShouldSave(
           *provisional_save_manager_->submitted_form())) {
     provisional_save_manager_->WipeStoreCopyIfOutdated();
-    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::SYNC_CREDENTIAL, main_frame_url_,
+    RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::SYNC_CREDENTIAL,
         provisional_save_manager_->GetOrigin(), logger.get());
     provisional_save_manager_.reset();
     return;
@@ -1140,6 +1138,16 @@ PasswordFormManager* PasswordManager::GetMatchingPendingManager(
     }
   }
   return matched_manager;
+}
+
+void PasswordManager::RecordProvisionalSaveFailure(
+    PasswordManagerMetricsRecorder::ProvisionalSaveFailure failure,
+    const GURL& form_origin,
+    BrowserSavePasswordProgressLogger* logger) {
+  if (client_ && client_->GetMetricsRecorder()) {
+    client_->GetMetricsRecorder()->RecordProvisionalSaveFailure(
+        failure, main_frame_url_, form_origin, logger);
+  }
 }
 
 }  // namespace password_manager

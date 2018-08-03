@@ -195,7 +195,7 @@ ukm::SourceId IOSChromePasswordManagerClient::GetUkmSourceId() {
   return ukm_source_id_;
 }
 
-PasswordManagerMetricsRecorder&
+PasswordManagerMetricsRecorder*
 IOSChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
     // Query source_id first, because that has the side effect of initializing
@@ -203,7 +203,7 @@ IOSChromePasswordManagerClient::GetMetricsRecorder() {
     ukm::SourceId source_id = GetUkmSourceId();
     metrics_recorder_.emplace(source_id, ukm_source_url_);
   }
-  return metrics_recorder_.value();
+  return base::OptionalOrNullptr(metrics_recorder_);
 }
 
 void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {

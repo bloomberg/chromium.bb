@@ -522,12 +522,12 @@ ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
   return ukm::GetSourceIdForWebContentsDocument(web_contents());
 }
 
-PasswordManagerMetricsRecorder&
+PasswordManagerMetricsRecorder*
 ChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
     metrics_recorder_.emplace(GetUkmSourceId(), GetMainFrameURL());
   }
-  return metrics_recorder_.value();
+  return base::OptionalOrNullptr(metrics_recorder_);
 }
 
 void ChromePasswordManagerClient::DidFinishNavigation(
@@ -970,7 +970,9 @@ void ChromePasswordManagerClient::RecordSavePasswordProgress(
 }
 
 void ChromePasswordManagerClient::UserModifiedPasswordField() {
-  GetMetricsRecorder().RecordUserModifiedPasswordField();
+  if (GetMetricsRecorder()) {
+    GetMetricsRecorder()->RecordUserModifiedPasswordField();
+  }
 }
 
 // static

@@ -247,8 +247,9 @@ class PasswordManagerClient {
   // Gets a metrics recorder for the currently committed navigation.
   // As PasswordManagerMetricsRecorder submits metrics on destruction, a new
   // instance will be returned for each committed navigation. A caller must not
-  // hold on to the pointer.
-  virtual PasswordManagerMetricsRecorder& GetMetricsRecorder() = 0;
+  // hold on to the pointer. This method returns a nullptr if the client
+  // does not support metrics recording.
+  virtual PasswordManagerMetricsRecorder* GetMetricsRecorder() = 0;
 
   // Gets the PasswordRequirementsService associated with the client. It is
   // valid that this method returns a nullptr if the PasswordRequirementsService
