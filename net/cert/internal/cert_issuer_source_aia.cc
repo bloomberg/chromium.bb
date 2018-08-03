@@ -4,8 +4,10 @@
 
 #include "net/cert/internal/cert_issuer_source_aia.h"
 
+#include "base/strings/string_piece.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/internal/cert_errors.h"
+#include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_util.h"
 #include "url/gurl.h"
 
@@ -17,6 +19,37 @@ namespace {
 const int kTimeoutMilliseconds = 10000;
 const int kMaxResponseBytes = 65536;
 const int kMaxFetchesPerCert = 5;
+
+bool ParseCertFromDer(const uint8_t* data,
+                      size_t length,
+                      ParsedCertificateList* results) {
+  CertErrors errors;
+  if (!ParsedCertificate::CreateAndAddToVector(
+          x509_util::CreateCryptoBuffer(data, length),
+          x509_util::DefaultParseCertificateOptions(), results, &errors)) {
+    // TODO(crbug.com/634443): propagate error info.
+    LOG(ERROR) << "Error parsing cert retrieved from AIA (as DER):\n"
+               << errors.ToDebugString();
+
+    return false;
+  }
+
+  return true;
+}
+
+bool ParseCertFromPem(const uint8_t* data,
+                      size_t length,
+                      ParsedCertificateList* results) {
+  base::StringPiece data_strpiece(reinterpret_cast<const char*>(data), length);
+
+  PEMTokenizer pem_tokenizer(data_strpiece, {"CERTIFICATE"});
+  if (!pem_tokenizer.GetNext())
+    return false;
+
+  return ParseCertFromDer(
+      reinterpret_cast<const uint8_t*>(pem_tokenizer.data().data()),
+      pem_tokenizer.data().size(), results);
+}
 
 class AiaRequest : public CertIssuerSource::Request {
  public:
@@ -70,6 +103,7 @@ bool AiaRequest::AddCompletedFetchToResults(Error error,
     LOG(ERROR) << "AiaRequest::OnFetchCompleted got error " << error;
     return false;
   }
+
   // RFC 5280 section 4.2.2.1:
   //
   //    Conforming applications that support HTTP or FTP for accessing
@@ -77,20 +111,12 @@ bool AiaRequest::AddCompletedFetchToResults(Error error,
   //    certificates and SHOULD be able to accept "certs-only" CMS messages.
   //
   // TODO(mattm): Is supporting CMS message format important?
-  //
-  // TODO(eroman): Avoid copying bytes in the certificate?
-  CertErrors errors;
-  if (!ParsedCertificate::CreateAndAddToVector(
-          x509_util::CreateCryptoBuffer(fetched_bytes.data(),
-                                        fetched_bytes.size()),
-          x509_util::DefaultParseCertificateOptions(), results, &errors)) {
-    // TODO(crbug.com/634443): propagate error info.
-    LOG(ERROR) << "Error parsing cert retrieved from AIA:\n"
-               << errors.ToDebugString();
-    return false;
-  }
 
-  return true;
+  // TODO(https://crbug.com/870359): Some AIA responses are served as PEM, which
+  // is not part of RFC 5280's profile.
+  return ParseCertFromDer(fetched_bytes.data(), fetched_bytes.size(),
+                          results) ||
+         ParseCertFromPem(fetched_bytes.data(), fetched_bytes.size(), results);
 }
 
 }  // namespace
