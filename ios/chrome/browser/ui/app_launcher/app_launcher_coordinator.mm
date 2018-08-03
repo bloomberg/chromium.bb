@@ -102,8 +102,7 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
 
 // Shows an alert that the app will open in another application. If the user
 // accepts, the |URL| is launched.
-- (void)showAlertAndLaunchAppStoreURL:(const GURL&)URL {
-  DCHECK(UrlHasAppStoreScheme(URL));
+- (void)showAlertAndLaunchAppURL:(const GURL&)URL {
   NSString* prompt = l10n_util::GetNSString(IDS_IOS_OPEN_IN_ANOTHER_APP);
   NSString* openLabel =
       l10n_util::GetNSString(IDS_IOS_APP_LAUNCHER_OPEN_APP_BUTTON_LABEL);
@@ -175,7 +174,7 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
 
 - (BOOL)appLauncherTabHelper:(AppLauncherTabHelper*)tabHelper
             launchAppWithURL:(const GURL&)URL
-                  linkTapped:(BOOL)linkTapped {
+              linkTransition:(BOOL)linkTransition {
   // Don't open application if chrome is not active.
   if ([[UIApplication sharedApplication] applicationState] !=
       UIApplicationStateActive) {
@@ -183,7 +182,7 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
   }
   if (@available(iOS 10.3, *)) {
     if (UrlHasAppStoreScheme(URL)) {
-      [self showAlertAndLaunchAppStoreURL:URL];
+      [self showAlertAndLaunchAppURL:URL];
       return YES;
     }
   } else {
@@ -197,8 +196,8 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
     // Prior to iOS 10.3, Chrome prompts user with an alert before opening
     // App Store when user did not tap on any links and an iTunes app URL is
     // opened. This maintains parity with Safari in pre-10.3 environment.
-    if (!linkTapped && UrlHasAppStoreScheme(URL)) {
-      [self showAlertAndLaunchAppStoreURL:URL];
+    if (!linkTransition && UrlHasAppStoreScheme(URL)) {
+      [self showAlertAndLaunchAppURL:URL];
       return YES;
     }
   }
@@ -216,9 +215,15 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
   }
 
   if (base::FeatureList::IsEnabled(kAppLauncherRefresh)) {
-    [[UIApplication sharedApplication] openURL:net::NSURLWithGURL(URL)
-                                       options:@{}
-                             completionHandler:nil];
+    // For all other apps other than AppStore, show a prompt if there was no
+    // link transition.
+    if (linkTransition) {
+      [[UIApplication sharedApplication] openURL:net::NSURLWithGURL(URL)
+                                         options:@{}
+                               completionHandler:nil];
+    } else {
+      [self showAlertAndLaunchAppURL:URL];
+    }
     return YES;
   }
 

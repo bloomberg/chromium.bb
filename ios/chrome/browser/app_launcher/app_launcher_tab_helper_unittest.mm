@@ -50,13 +50,15 @@
 @synthesize countOfAppsLaunched = _countOfAppsLaunched;
 @synthesize countOfAlertsShown = _countOfAlertsShown;
 @synthesize simulateUserAcceptingPrompt = _simulateUserAcceptingPrompt;
+
 - (BOOL)appLauncherTabHelper:(AppLauncherTabHelper*)tabHelper
             launchAppWithURL:(const GURL&)URL
-                  linkTapped:(BOOL)linkTapped {
+              linkTransition:(BOOL)linkTransition {
   self.countOfAppsLaunched++;
   self.lastLaunchedAppURL = URL;
   return YES;
 }
+
 - (void)appLauncherTabHelper:(AppLauncherTabHelper*)tabHelper
     showAlertOfRepeatedLaunchesWithCompletionHandler:
         (ProceduralBlockWithBool)completionHandler {
