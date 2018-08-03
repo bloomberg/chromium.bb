@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_snapshot_providing.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -200,9 +201,6 @@ const CGFloat kResizeFactor = 4;
 
   // Tab model.
   __weak TabModel* model_;
-
-  // The image view containing the background image.
-  UIImageView* backgroundView_;
 }
 
 @synthesize backgroundTopConstraint = _backgroundTopConstraint;
@@ -234,7 +232,11 @@ const CGFloat kResizeFactor = 4;
       [[background bottomAnchor] constraintEqualToAnchor:self.bottomAnchor]
     ]];
 
-    InstallBackgroundInView(background);
+    if (IsUIRefreshPhase1Enabled()) {
+      background.backgroundColor = UIColorFromRGB(kGridBackgroundColor);
+    } else {
+      InstallBackgroundInView(background);
+    }
 
     _rightCard =
         [[SwipeView alloc] initWithFrame:CGRectZero topMargin:topMargin];
