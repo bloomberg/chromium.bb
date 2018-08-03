@@ -672,7 +672,7 @@ void VrShellGl::SubmitFrameWithTextureHandle(
 
 void VrShellGl::ConnectPresentingService(
     device::mojom::VRDisplayInfoPtr display_info,
-    device::mojom::XRDeviceRuntimeSessionOptionsPtr options) {
+    device::mojom::XRRuntimeSessionOptionsPtr options) {
   ClosePresentationBindings();
 
   device::mojom::XRPresentationProviderPtr presentation_provider;
@@ -915,7 +915,7 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
 
 device::mojom::XRPresentationTransportOptionsPtr
 VrShellGl::GetWebVrFrameTransportOptions(
-    const device::mojom::XRDeviceRuntimeSessionOptionsPtr& options) {
+    const device::mojom::XRRuntimeSessionOptionsPtr& options) {
   DVLOG(1) << __FUNCTION__;
 
   MetricsUtilAndroid::XRRenderPath render_path =

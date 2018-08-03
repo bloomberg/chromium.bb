@@ -32,7 +32,7 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
   void ExitPresent(VRDisplayHost* display);
   void RequestSession(
       VRDisplayHost* display,
-      const device::mojom::XRDeviceRuntimeSessionOptionsPtr& options,
+      const device::mojom::XRRuntimeSessionOptionsPtr& options,
       device::mojom::VRDisplayHost::RequestSessionCallback callback);
   VRDisplayHost* GetPresentingDisplayHost() { return presenting_display_host_; }
   void UpdateListeningForActivate(VRDisplayHost* display);
@@ -55,7 +55,7 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
   void OnListeningForActivate(bool is_listening);
   void OnRequestSessionResult(
       base::WeakPtr<VRDisplayHost> display,
-      device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      device::mojom::XRRuntimeSessionOptionsPtr options,
       device::mojom::VRDisplayHost::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr immersive_session_controller);

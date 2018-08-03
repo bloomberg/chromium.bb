@@ -139,7 +139,7 @@ void VROrientationDevice::HandleSensorError() {
 }
 
 void VROrientationDevice::RequestSession(
-    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   DCHECK(!options->immersive);
   // TODO(offenwanger): Perform a check to see if sensors are available when

@@ -143,7 +143,7 @@ void ARCoreDevice::OnARCoreGlThreadInitialized() {
 }
 
 void ARCoreDevice::RequestSession(
-    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   DCHECK(IsOnMainThread());
 

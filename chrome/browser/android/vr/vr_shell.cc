@@ -706,7 +706,7 @@ void VrShell::CancelToast(JNIEnv* env,
 
 void VrShell::ConnectPresentingService(
     device::mojom::VRDisplayInfoPtr display_info,
-    device::mojom::XRDeviceRuntimeSessionOptionsPtr options) {
+    device::mojom::XRRuntimeSessionOptionsPtr options) {
   PostToGlThread(FROM_HERE,
                  base::BindOnce(&VrShellGl::ConnectPresentingService,
                                 gl_thread_->GetVrShellGl(),

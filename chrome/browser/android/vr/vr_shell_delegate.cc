@@ -175,7 +175,7 @@ void VrShellDelegate::RecordVrStartAction(
 
 void VrShellDelegate::OnPresentResult(
     device::mojom::VRDisplayInfoPtr display_info,
-    device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    device::mojom::XRRuntimeSessionOptionsPtr options,
     base::OnceCallback<void(device::mojom::XRSessionPtr)> callback,
     bool success) {
   DVLOG(1) << __FUNCTION__ << ": success=" << success;
@@ -286,7 +286,7 @@ void VrShellDelegate::SetDeviceId(unsigned int device_id) {
 
 void VrShellDelegate::StartWebXRPresentation(
     device::mojom::VRDisplayInfoPtr display_info,
-    device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    device::mojom::XRRuntimeSessionOptionsPtr options,
     base::OnceCallback<void(device::mojom::XRSessionPtr)> callback) {
   if (!on_present_result_callback_.is_null() ||
       !request_present_response_callback_.is_null()) {

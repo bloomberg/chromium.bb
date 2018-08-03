@@ -44,7 +44,7 @@ class VRDisplayImplTest : public testing::Test {
 
   void RequestSession(VRDisplayImpl* display_impl) {
     device_->RequestSession(
-        mojom::XRDeviceRuntimeSessionOptionsPtr(),
+        mojom::XRRuntimeSessionOptionsPtr(),
         base::BindOnce(
             [](device::mojom::XRSessionPtr session,
                mojom::XRSessionControllerPtr immersive_session_controller) {}));

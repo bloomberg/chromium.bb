@@ -38,10 +38,10 @@ bool IsSecureContext(content::RenderFrameHost* host) {
   return true;
 }
 
-device::mojom::XRDeviceRuntimeSessionOptionsPtr GetRuntimeOptions(
+device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
     device::mojom::XRSessionOptions* options) {
-  device::mojom::XRDeviceRuntimeSessionOptionsPtr runtime_options =
-      device::mojom::XRDeviceRuntimeSessionOptions::New();
+  device::mojom::XRRuntimeSessionOptionsPtr runtime_options =
+      device::mojom::XRRuntimeSessionOptions::New();
   runtime_options->immersive = options->immersive;
   runtime_options->has_user_activation = options->has_user_activation;
   runtime_options->provide_passthrough_camera =
