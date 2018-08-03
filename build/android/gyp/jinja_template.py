@@ -124,8 +124,7 @@ def main():
   parser.add_argument('--variables', help='Variables to be made available in '
                       'the template processing environment, as a GYP list '
                       '(e.g. --variables "channel=beta mstone=39")', default='')
-  parser.add_argument('--no-checks', action='store_true',
-                      help='Disable input checks.')
+  build_utils.AddDepfileOption(parser)
   options = parser.parse_args()
 
   inputs = build_utils.ParseGnList(options.inputs)
@@ -147,13 +146,15 @@ def main():
     _ProcessFiles(processor, inputs, options.inputs_base_dir,
                   options.outputs_zip)
 
-  if not options.no_checks:
+  if options.depfile:
+    output = options.output or options.outputs_zip
     all_inputs = set(processor.GetLoadedTemplates())
     all_inputs.difference_update(inputs)
     all_inputs.difference_update(includes)
     if all_inputs:
       raise Exception('Found files not listed via --includes:\n' +
                       '\n'.join(sorted(all_inputs)))
+    build_utils.WriteDepfile(options.depfile, output)
 
 
 if __name__ == '__main__':

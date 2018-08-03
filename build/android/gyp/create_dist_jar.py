@@ -24,8 +24,7 @@ def main(args):
   build_utils.MergeZips(options.output, input_jars)
 
   if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.output, input_jars,
-                             add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile, options.output, input_jars)
 
 
 if __name__ == '__main__':

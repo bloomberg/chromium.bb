@@ -671,8 +671,7 @@ def main(args):
       input_paths=input_paths,
       input_strings=input_strings,
       output_paths=output_paths,
-      depfile_deps=options.dependencies_res_zips + options.extra_r_text_files,
-      add_pydeps=False)
+      depfile_deps=options.dependencies_res_zips + options.extra_r_text_files)
 
 
 if __name__ == '__main__':
