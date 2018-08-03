@@ -376,8 +376,12 @@ gbm_bo_get_stride_or_tiling(struct gbm_bo *bo);
 uint32_t
 gbm_bo_get_format(struct gbm_bo *bo);
 
+/* Deprecated */
 uint64_t
 gbm_bo_get_format_modifier(struct gbm_bo *bo);
+
+uint64_t
+gbm_bo_get_modifier(struct gbm_bo *bo);
 
 struct gbm_device *
 gbm_bo_get_device(struct gbm_bo *bo);
@@ -388,8 +392,12 @@ gbm_bo_get_handle(struct gbm_bo *bo);
 int
 gbm_bo_get_fd(struct gbm_bo *bo);
 
+/* Deprecated */
 size_t
 gbm_bo_get_num_planes(struct gbm_bo *bo);
+
+size_t
+gbm_bo_get_plane_count(struct gbm_bo *bo);
 
 union gbm_bo_handle
 gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane);
@@ -397,14 +405,22 @@ gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane);
 int
 gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane);
 
+/* Deprecated */
 uint32_t
 gbm_bo_get_plane_offset(struct gbm_bo *bo, size_t plane);
 
 uint32_t
-gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane);
+gbm_bo_get_offset(struct gbm_bo *bo, size_t plane);
 
 uint32_t
+gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane);
+
+/* Deprecated */
+uint32_t
 gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane);
+
+uint32_t
+gbm_bo_get_stride_for_plane(struct gbm_bo *bo, size_t plane);
 
 uint64_t
 gbm_bo_get_plane_format_modifier(struct gbm_bo *bo, size_t plane);
