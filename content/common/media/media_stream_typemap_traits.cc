@@ -187,7 +187,7 @@ bool StructTraits<
     content::TrackControls>::Read(content::mojom::TrackControlsDataView input,
                                   content::TrackControls* out) {
   out->requested = input.requested();
-  if (!input.ReadStreamSource(&out->stream_source))
+  if (!input.ReadStreamType(&out->stream_type))
     return false;
   if (!input.ReadDeviceId(&out->device_id))
     return false;

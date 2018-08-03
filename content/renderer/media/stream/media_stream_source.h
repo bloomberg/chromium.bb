@@ -14,6 +14,13 @@
 
 namespace content {
 
+// Names for media stream source capture types.
+// These are values set via the "chromeMediaSource" constraint.
+CONTENT_EXPORT extern const char kMediaStreamSourceTab[];
+CONTENT_EXPORT extern const char kMediaStreamSourceScreen[]; /* video only */
+CONTENT_EXPORT extern const char kMediaStreamSourceDesktop[];
+CONTENT_EXPORT extern const char kMediaStreamSourceSystem[]; /* audio only */
+
 class CONTENT_EXPORT MediaStreamSource
     : public blink::WebMediaStreamSource::ExtraData {
  public:

@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
-#include "content/common/media/media_stream_controls.h"
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_source.h"

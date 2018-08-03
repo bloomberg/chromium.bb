@@ -324,9 +324,8 @@ void FakeMediaStreamUIProxy::RequestAccess(
          request->requested_audio_device_id == it->id)) {
       devices_to_use.push_back(*it);
       accepted_audio = true;
-    } else if (!accepted_video &&
-               IsVideoMediaType(request->video_type) &&
-               IsVideoMediaType(it->type) &&
+    } else if (!accepted_video && IsVideoInputMediaType(request->video_type) &&
+               IsVideoInputMediaType(it->type) &&
                (request->requested_video_device_id.empty() ||
                 request->requested_video_device_id == it->id)) {
       devices_to_use.push_back(*it);

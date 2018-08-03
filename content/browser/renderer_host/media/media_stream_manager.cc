@@ -100,47 +100,6 @@ std::string RandomLabel() {
   return label;
 }
 
-void ParseStreamType(const StreamControls& controls,
-                     MediaStreamType* audio_type,
-                     MediaStreamType* video_type) {
-  *audio_type = MEDIA_NO_SERVICE;
-  *video_type = MEDIA_NO_SERVICE;
-  const bool audio_support_flag_for_desktop_share =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAudioSupportForDesktopShare);
-  if (controls.audio.requested) {
-    if (!controls.audio.stream_source.empty()) {
-      // This is tab or screen capture.
-      if (controls.audio.stream_source == kMediaStreamSourceTab) {
-        *audio_type = MEDIA_TAB_AUDIO_CAPTURE;
-      } else if (controls.audio.stream_source == kMediaStreamSourceSystem) {
-        *audio_type = MEDIA_DESKTOP_AUDIO_CAPTURE;
-      } else if (audio_support_flag_for_desktop_share &&
-                 controls.audio.stream_source == kMediaStreamSourceDesktop) {
-        *audio_type = MEDIA_DESKTOP_AUDIO_CAPTURE;
-      }
-    } else {
-      // This is normal audio device capture.
-      *audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
-    }
-  }
-  if (controls.video.requested) {
-    if (!controls.video.stream_source.empty()) {
-      // This is tab or screen capture.
-      if (controls.video.stream_source == kMediaStreamSourceTab) {
-        *video_type = MEDIA_TAB_VIDEO_CAPTURE;
-      } else if (controls.video.stream_source == kMediaStreamSourceScreen) {
-        *video_type = MEDIA_DESKTOP_VIDEO_CAPTURE;
-      } else if (controls.video.stream_source == kMediaStreamSourceDesktop) {
-        *video_type = MEDIA_DESKTOP_VIDEO_CAPTURE;
-      }
-    } else {
-      // This is normal video device capture.
-      *video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
-    }
-  }
-}
-
 // Turns off available audio effects (removes the flag) if the options
 // explicitly turn them off.
 void FilterAudioEffects(const StreamControls& controls, int* effects) {
@@ -216,6 +175,17 @@ void SendVideoCaptureLogMessage(const std::string& message) {
   MediaStreamManager::SendMessageToNativeLog("video capture: " + message);
 }
 
+MediaStreamType AdjustAudioStreamTypeBasedOnCommandLineSwitches(
+    MediaStreamType stream_type) {
+  if (stream_type != MEDIA_DESKTOP_AUDIO_CAPTURE)
+    return stream_type;
+  const bool audio_support_flag_for_desktop_share =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAudioSupportForDesktopShare);
+  return audio_support_flag_for_desktop_share ? MEDIA_DESKTOP_AUDIO_CAPTURE
+                                              : MEDIA_NO_SERVICE;
+}
+
 }  // namespace
 
 // MediaStreamManager::DeviceRequest represents a request to either enumerate
@@ -259,7 +229,7 @@ class MediaStreamManager::DeviceRequest {
   MediaStreamType audio_type() const { return audio_type_; }
 
   void SetVideoType(MediaStreamType video_type) {
-    DCHECK(IsVideoMediaType(video_type) || video_type == MEDIA_NO_SERVICE);
+    DCHECK(IsVideoInputMediaType(video_type) || video_type == MEDIA_NO_SERVICE);
     video_type_ = video_type;
   }
 
@@ -809,9 +779,11 @@ void MediaStreamManager::OpenDevice(int render_process_id,
   StreamControls controls;
   if (IsAudioInputMediaType(type)) {
     controls.audio.requested = true;
+    controls.audio.stream_type = type;
     controls.audio.device_id = device_id;
-  } else if (IsVideoMediaType(type)) {
+  } else if (IsVideoInputMediaType(type)) {
     controls.video.requested = true;
+    controls.video.stream_type = type;
     controls.video.device_id = device_id;
   } else {
     NOTREACHED();
@@ -1053,7 +1025,7 @@ void MediaStreamManager::PostRequestToUI(
   // Post the request to UI and set the state.
   if (IsAudioInputMediaType(audio_type))
     request->SetState(audio_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
-  if (IsVideoMediaType(video_type))
+  if (IsVideoInputMediaType(video_type))
     request->SetState(video_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
 
   // If using the fake UI, it will just auto-select from the available devices.
@@ -1092,30 +1064,30 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
     return;  // This can happen if the request has been canceled.
   }
 
-  MediaStreamType audio_type = MEDIA_NO_SERVICE;
-  MediaStreamType video_type = MEDIA_NO_SERVICE;
-  ParseStreamType(request->controls, &audio_type, &video_type);
-  request->SetAudioType(audio_type);
-  request->SetVideoType(video_type);
+  request->SetAudioType(AdjustAudioStreamTypeBasedOnCommandLineSwitches(
+      request->controls.audio.stream_type));
+  request->SetVideoType(request->controls.video.stream_type);
 
-  const bool is_web_contents_capture = audio_type == MEDIA_TAB_AUDIO_CAPTURE ||
-                                       video_type == MEDIA_TAB_VIDEO_CAPTURE;
-  if (is_web_contents_capture) {
+  const bool is_tab_capture =
+      request->audio_type() == MEDIA_TAB_AUDIO_CAPTURE ||
+      request->video_type() == MEDIA_TAB_VIDEO_CAPTURE;
+  if (is_tab_capture) {
     if (!SetUpTabCaptureRequest(request, label)) {
       FinalizeRequestFailed(label, request, MEDIA_DEVICE_TAB_CAPTURE_FAILURE);
     }
     return;
   }
 
-  const bool is_screen_capture = video_type == MEDIA_DESKTOP_VIDEO_CAPTURE;
+  const bool is_screen_capture =
+      request->video_type() == MEDIA_DESKTOP_VIDEO_CAPTURE;
   if (is_screen_capture && !SetUpScreenCaptureRequest(request)) {
     FinalizeRequestFailed(label, request, MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE);
     return;
   }
 
-  if (!is_web_contents_capture && !is_screen_capture) {
-    if (audio_type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-        video_type == MEDIA_DEVICE_VIDEO_CAPTURE) {
+  if (!is_tab_capture && !is_screen_capture) {
+    if (IsDeviceMediaType(request->audio_type()) ||
+        IsDeviceMediaType(request->video_type())) {
       StartEnumeration(request, label);
       return;
     }
@@ -1256,11 +1228,7 @@ bool MediaStreamManager::SetUpScreenCaptureRequest(DeviceRequest* request) {
 
   std::string video_device_id;
   if (request->video_type() == MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    const std::string& video_stream_source =
-        request->controls.video.stream_source;
-
-    if (video_stream_source == kMediaStreamSourceDesktop &&
-        !request->controls.video.device_id.empty()) {
+    if (!request->controls.video.device_id.empty()) {
       video_device_id = request->controls.video.device_id;
     }
   }
@@ -1329,7 +1297,7 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
   for (const MediaStreamDevice& device : request->devices) {
     if (IsAudioInputMediaType(device.type))
       audio_devices.push_back(device);
-    else if (IsVideoMediaType(device.type))
+    else if (IsVideoInputMediaType(device.type))
       video_devices.push_back(device);
     else
       NOTREACHED();
@@ -1693,7 +1661,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
     DVLOG(1) << "Set no audio found label " << label;
   }
 
-  if (!found_video && IsVideoMediaType(request->video_type()))
+  if (!found_video && IsVideoInputMediaType(request->video_type()))
     request->SetState(request->video_type(), MEDIA_REQUEST_STATE_ERROR);
 
   if (RequestDone(*request))
@@ -1751,7 +1719,7 @@ void MediaStreamManager::NotifyDevicesChanged(
         new_devices);
     if (media_observer)
       media_observer->OnAudioCaptureDevicesChanged();
-  } else if (IsVideoMediaType(stream_type)) {
+  } else if (IsVideoInputMediaType(stream_type)) {
     MediaCaptureDevicesImpl::GetInstance()->OnVideoCaptureDevicesChanged(
         new_devices);
     if (media_observer)
@@ -1765,7 +1733,7 @@ bool MediaStreamManager::RequestDone(const DeviceRequest& request) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const bool requested_audio = IsAudioInputMediaType(request.audio_type());
-  const bool requested_video = IsVideoMediaType(request.video_type());
+  const bool requested_video = IsVideoInputMediaType(request.video_type());
 
   const bool audio_done =
       !requested_audio ||
@@ -1786,7 +1754,7 @@ bool MediaStreamManager::RequestDone(const DeviceRequest& request) const {
 
 MediaStreamProvider* MediaStreamManager::GetDeviceManager(
     MediaStreamType stream_type) {
-  if (IsVideoMediaType(stream_type))
+  if (IsVideoInputMediaType(stream_type))
     return video_capture_manager();
   else if (IsAudioInputMediaType(stream_type))
     return audio_input_device_manager();

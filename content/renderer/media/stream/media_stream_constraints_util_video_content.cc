@@ -260,7 +260,7 @@ int ClampToValidScreenCastDimension(int value) {
 VideoCaptureSettings SelectResultFromCandidates(
     const VideoContentCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
-    const std::string& stream_source,
+    MediaStreamType stream_type,
     int screen_width,
     int screen_height) {
   std::string device_id = SelectDeviceIDFromCandidates(
@@ -300,7 +300,7 @@ VideoCaptureSettings SelectResultFromCandidates(
 
   // This default comes from the old algorithm.
   media::ResolutionChangePolicy default_resolution_policy =
-      stream_source == kMediaStreamSourceTab
+      stream_type == MEDIA_TAB_VIDEO_CAPTURE
           ? media::ResolutionChangePolicy::FIXED_RESOLUTION
           : media::ResolutionChangePolicy::ANY_WITHIN_LIMIT;
 
@@ -346,7 +346,7 @@ VideoCaptureSettings UnsatisfiedConstraintsResult(
 
 VideoCaptureSettings SelectSettingsVideoContentCapture(
     const blink::WebMediaConstraints& constraints,
-    const std::string& stream_source,
+    MediaStreamType stream_type,
     int screen_width,
     int screen_height) {
   VideoContentCaptureCandidates candidates;
@@ -367,7 +367,7 @@ VideoCaptureSettings SelectSettingsVideoContentCapture(
 
   DCHECK(!candidates.IsEmpty());
   return SelectResultFromCandidates(candidates, constraints.Basic(),
-                                    stream_source, screen_width, screen_height);
+                                    stream_type, screen_width, screen_height);
 }
 
 }  // namespace content

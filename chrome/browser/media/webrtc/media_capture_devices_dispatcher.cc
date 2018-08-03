@@ -390,7 +390,8 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
   }
 
 #if defined(OS_CHROMEOS)
-  if (IsOriginForCasting(security_origin) && IsVideoMediaType(stream_type)) {
+  if (IsOriginForCasting(security_origin) &&
+      IsVideoInputMediaType(stream_type)) {
     // Notify ash that casting state has changed.
     if (state == content::MEDIA_REQUEST_STATE_DONE) {
       ash::Shell::Get()->OnCastingSessionStartedOrStopped(true);
