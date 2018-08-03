@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
   int screen_height = ash::Shell::GetPrimaryRootWindow()->bounds().height();
   gfx::Rect test_bounds(0, 0, 0, screen_height - ime_window_visible_height + 1);
   auto* controller = keyboard::KeyboardController::Get();
-  controller->ShowKeyboard(true);
+  controller->ShowKeyboard(false /* locked */);
   controller->NotifyKeyboardWindowLoaded();
   controller->GetKeyboardWindow()->SetBounds(test_bounds);
 
