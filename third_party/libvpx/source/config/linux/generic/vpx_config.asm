@@ -1,6 +1,7 @@
 @ This file was created from a .asm file
 @  using the ads2gas.pl script.
 	.equ DO1STROUNDING, 0
+	.syntax unified
 .equ ARCH_ARM ,  0
 .equ ARCH_MIPS ,  0
 .equ ARCH_X86 ,  0
