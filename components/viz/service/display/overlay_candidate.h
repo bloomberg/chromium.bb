@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/resource_id.h"
@@ -41,11 +42,20 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // an overlay.
   static bool IsInvisibleQuad(const DrawQuad* quad);
 
-  // Returns true if any any of the quads in the list given by |quad_list_begin|
+  // Returns true if any of the quads in the list given by |quad_list_begin|
   // and |quad_list_end| are visible and on top of |candidate|.
   static bool IsOccluded(const OverlayCandidate& candidate,
                          QuadList::ConstIterator quad_list_begin,
                          QuadList::ConstIterator quad_list_end);
+
+  // Returns true if any of the quads in the list given by |quad_list_begin|
+  // and |quad_list_end| have a filter associated and occlude |candidate|.
+  static bool IsOccludedByFilteredQuad(
+      const OverlayCandidate& candidate,
+      QuadList::ConstIterator quad_list_begin,
+      QuadList::ConstIterator quad_list_end,
+      const base::flat_map<RenderPassId, cc::FilterOperations*>&
+          render_pass_background_filters);
 
   OverlayCandidate();
   OverlayCandidate(const OverlayCandidate& other);

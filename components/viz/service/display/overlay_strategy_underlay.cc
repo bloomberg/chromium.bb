@@ -22,6 +22,7 @@ OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::Attempt(
     const SkMatrix44& output_color_matrix,
+    const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
     DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
     OverlayCandidateList* candidate_list,
@@ -33,6 +34,14 @@ bool OverlayStrategyUnderlay::Attempt(
                                         *it, &candidate) ||
         (opaque_mode_ == OpaqueMode::RequireOpaqueCandidates &&
          !candidate.is_opaque)) {
+      continue;
+    }
+
+    // Filters read back the framebuffer to get the pixel values that need to
+    // be filtered.  This is a problem when there are hardware planes because
+    // the planes are not composited until they are on the display controller.
+    if (OverlayCandidate::IsOccludedByFilteredQuad(
+            candidate, quad_list.begin(), it, render_pass_background_filters)) {
       continue;
     }
 
