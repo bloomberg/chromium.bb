@@ -594,6 +594,12 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   // change) with no corresponding OnStartLoad.
   uncommitted_load_started_ = false;
 
+#if defined(OS_ANDROID)
+  // Don't need this state. It will be refreshed if another error page is
+  // loaded.
+  available_content_helper_.Reset();
+#endif
+
   // Track if an error occurred due to a page button press.
   // This isn't perfect; if (for instance), the server is slow responding
   // to a request generated from the page reload button, and the user hits
@@ -659,6 +665,12 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
 
   delegate_->EnablePageHelperFunctions(
       static_cast<net::Error>(committed_error_page_info_->error.reason()));
+
+#if defined(OS_ANDROID)
+  // TODO(https://crbug.com/852872): Only show for 'offline' error.
+  available_content_helper_.FetchAvailableContent(base::BindOnce(
+      &Delegate::OfflineContentAvailable, base::Unretained(delegate_)));
+#endif
 
   if (committed_error_page_info_->needs_load_navigation_corrections) {
     // If there is another pending error page load, |fix_url| should have been

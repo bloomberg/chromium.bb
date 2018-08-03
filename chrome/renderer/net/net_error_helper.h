@@ -131,6 +131,8 @@ class NetErrorHelper
   void DiagnoseError(const GURL& page_url) override;
   void DownloadPageLater() override;
   void SetIsShowingDownloadButton(bool show) override;
+  void OfflineContentAvailable(
+      const std::string& offline_content_json) override;
 
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,
                                      const std::string& language,

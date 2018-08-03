@@ -10,6 +10,7 @@
         "renderer": [
           "autofill.mojom.AutofillDriver",
           "autofill.mojom.PasswordManagerDriver",
+          "chrome.mojom.AvailableOfflineContentProvider",
           "chrome.mojom.CacheStatsRecorder",
           "chrome.mojom.NetBenchmarking",
           "extensions.StashService",

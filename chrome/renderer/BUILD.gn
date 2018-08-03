@@ -412,6 +412,13 @@ static_library("renderer") {
       "searchbox/searchbox_extension.h",
     ]
   }
+
+  if (is_android) {
+    sources += [
+      "net/available_offline_content_helper.cc",
+      "net/available_offline_content_helper.h",
+    ]
+  }
 }
 
 static_library("test_support") {

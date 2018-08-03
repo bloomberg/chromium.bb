@@ -154,6 +154,22 @@ var primaryControlOnLeft = true;
 primaryControlOnLeft = false;
 // </if>
 
+// Populates suggested offline content. Note: this UI is in development.
+// See https://crbug.com/852872.
+function offlineContentAvailable(content) {
+  var div = document.getElementById('offline-suggestions');
+  var suggestionText = [];
+  for (var c of content) {
+    suggestionText.push(
+      `<li>${c.title} ${c.date_modified} ${c.attribution}</li>`);
+  }
+  var htmlList = document.getElementById('offline-content-list');
+  htmlList.innerHTML = suggestionText.join('\n');
+  div.hidden = false;
+  document.getElementById('scroll-spacer').hidden = false;
+  document.getElementById('suggestions-list').hidden = true;
+}
+
 function onDocumentLoad() {
   var controlButtonDiv = document.getElementById('control-buttons');
   var reloadButton = document.getElementById('reload-button');

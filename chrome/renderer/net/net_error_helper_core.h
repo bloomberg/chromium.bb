@@ -17,6 +17,10 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/renderer/net/available_offline_content_helper.h"
+#endif
+
 namespace error_page {
 struct ErrorPageParams;
 }
@@ -110,6 +114,10 @@ class NetErrorHelperCore {
 
     // Inform that download button is being shown in the error page.
     virtual void SetIsShowingDownloadButton(bool show) = 0;
+
+    // Signals that offline content is available.
+    virtual void OfflineContentAvailable(
+        const std::string& offline_content_json) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -287,6 +295,10 @@ class NetErrorHelperCore {
   // the error page.  It is used to detect when such navigations result
   // in errors.
   Button navigation_from_button_;
+
+#if defined(OS_ANDROID)
+  AvailableOfflineContentHelper available_content_helper_;
+#endif
 };
 
 #endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_
