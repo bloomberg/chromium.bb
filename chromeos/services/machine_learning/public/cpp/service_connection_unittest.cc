@@ -42,9 +42,10 @@ class ServiceConnectionTest : public testing::Test {
 
 // Tests that BindModelProvider runs OK (no crash) in a basic Mojo environment.
 TEST_F(ServiceConnectionTest, BindModelProvider) {
-  mojom::ModelProviderPtr model_provider;
-  ServiceConnection::GetInstance()->BindModelProvider(
-      mojo::MakeRequest(&model_provider));
+  mojom::ModelPtr model;
+  mojom::ModelSpecPtr spec = mojom::ModelSpec::New(mojom::ModelId::UNKNOWN);
+  ServiceConnection::GetInstance()->LoadModel(std::move(spec),
+                                              mojo::MakeRequest(&model));
 }
 
 }  // namespace

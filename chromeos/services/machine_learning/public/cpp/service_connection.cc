@@ -21,10 +21,11 @@ ServiceConnection* ServiceConnection::GetInstance() {
   return service_connection.get();
 }
 
-void ServiceConnection::BindModelProvider(mojom::ModelProviderRequest request) {
+void ServiceConnection::LoadModel(mojom::ModelSpecPtr spec,
+                                  mojom::ModelRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindMachineLearningServiceIfNeeded();
-  machine_learning_service_->GetModelProvider(std::move(request));
+  machine_learning_service_->LoadModel(std::move(spec), std::move(request));
 }
 
 void ServiceConnection::BindMachineLearningServiceIfNeeded() {
