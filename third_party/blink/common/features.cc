@@ -43,5 +43,10 @@ const base::Feature kRecordAnchorMetricsVisible{
 // Enable Portals. https://crbug.com/865123.
 const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Stop non-timer task queues in background, after allowed grace time. Launch
+// bug: https://crbug.com/822954.
+const base::Feature kStopNonTimersInBackground{
+    "stop-non-timers-in-background", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

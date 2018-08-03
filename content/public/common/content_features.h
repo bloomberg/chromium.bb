@@ -97,7 +97,6 @@ CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangeOriginTrial;
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kStopInBackground;
-CONTENT_EXPORT extern const base::Feature kStopNonTimersInBackground;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTopDocumentIsolation;
 CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;

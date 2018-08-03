@@ -1246,10 +1246,6 @@
       status: "test",
     },
     {
-      name: "StopNonTimersInBackground",
-      status: "test",
-    },
-    {
       name: "TextUnderlinePositionLeftRight",
       status: "experimental",
     },
