@@ -805,6 +805,12 @@ void ChromePasswordManagerClient::PasswordNoLongerGenerated(
           BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED))
     return;
   password_manager_.OnPasswordNoLongerGenerated(password_form);
+  PasswordGenerationPopupController* controller = popup_controller_.get();
+  if (controller &&
+      controller->state() ==
+          PasswordGenerationPopupController::kEditGeneratedPassword) {
+    HidePasswordGenerationPopup();
+  }
 }
 
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {

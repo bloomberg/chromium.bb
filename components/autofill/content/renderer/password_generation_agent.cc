@@ -628,13 +628,14 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
   }
 
   if (element.Value().IsEmpty()) {
+    // The call may pop up a generation prompt.
+    MaybeOfferAutomaticGeneration();
+    // Tell the browser that the state isn't "editing" anymore. The browser
+    // should hide the editing prompt if it wasn't replaced above.
     if (password_is_generated_) {
       // User generated a password and then deleted it.
       PasswordNoLongerGenerated();
     }
-
-    // Offer generation again.
-    MaybeOfferAutomaticGeneration();
   } else if (password_is_generated_) {
     password_edited_ = true;
     // Mirror edits to any confirmation password fields.
