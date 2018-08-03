@@ -60,7 +60,7 @@ ListenerType* GetEventListenerInternal(
 }  // namespace
 
 // static
-V8EventListener* V8EventListenerHelper::GetEventListener(
+V8AbstractEventListener* V8EventListenerHelper::GetEventListener(
     ScriptState* script_state,
     v8::Local<v8::Value> value,
     bool is_attribute,
@@ -77,7 +77,7 @@ V8EventListener* V8EventListenerHelper::GetEventListener(
           ? V8PrivateProperty::GetV8EventListenerAttributeListener(isolate)
           : V8PrivateProperty::GetV8EventListenerListener(isolate);
 
-  return GetEventListenerInternal<V8EventListener>(
+  return GetEventListenerInternal<V8AbstractEventListener>(
       script_state, object, listener_property, lookup,
       [object, is_attribute, script_state, listener_property]() {
         return script_state->World().IsWorkerWorld()

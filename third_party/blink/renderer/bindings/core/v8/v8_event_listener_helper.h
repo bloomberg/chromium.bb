@@ -53,10 +53,11 @@ class V8EventListenerHelper {
   STATIC_ONLY(V8EventListenerHelper);
 
  public:
-  CORE_EXPORT static V8EventListener* GetEventListener(ScriptState*,
-                                                       v8::Local<v8::Value>,
-                                                       bool is_attribute,
-                                                       ListenerLookupType);
+  CORE_EXPORT static V8AbstractEventListener* GetEventListener(
+      ScriptState*,
+      v8::Local<v8::Value>,
+      bool is_attribute,
+      ListenerLookupType);
 
   CORE_EXPORT static V8ErrorHandler* EnsureErrorHandler(ScriptState*,
                                                         v8::Local<v8::Value>);
