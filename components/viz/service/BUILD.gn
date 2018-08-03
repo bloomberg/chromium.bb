@@ -155,6 +155,8 @@ viz_component("service") {
     "hit_test/hit_test_aggregator_delegate.h",
     "hit_test/hit_test_manager.cc",
     "hit_test/hit_test_manager.h",
+    "main/viz_compositor_thread_runner.cc",
+    "main/viz_compositor_thread_runner.h",
     "surfaces/latest_local_surface_id_lookup_delegate.h",
     "surfaces/referenced_surface_tracker.cc",
     "surfaces/referenced_surface_tracker.h",
