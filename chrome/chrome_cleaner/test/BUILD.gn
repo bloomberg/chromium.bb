@@ -184,6 +184,10 @@ executable("test_process") {
     "//chrome/chrome_cleaner/engines:resources",
     "//chrome/chrome_cleaner/os:common_os",
   ]
+
+  # Default entrypoint is main, console app. Change it to wWinMain, windowed.
+  configs -= [ "//build/config/win:console" ]
+  configs += [ "//build/config/win:windowed" ]
 }
 
 executable("test_service") {
