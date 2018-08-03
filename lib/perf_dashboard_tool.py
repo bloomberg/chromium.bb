@@ -14,7 +14,7 @@ system.  See this page for details on running that:
   https://sites.google.com/a/google.com/chromeperf/
 
 This guide should help familiarize yourself with the perf data format:
-  http://dev.chromium.org/developers/testing/sending-data-to-the-performance-dashboard
+  https://dev.chromium.org/developers/testing/sending-data-to-the-performance-dashboard
 This tool currently uses the version 0 data format.
 
 Some notes:

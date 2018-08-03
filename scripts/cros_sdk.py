@@ -828,7 +828,7 @@ def main(argv):
         'Are you in a Chromium source tree instead of Chromium OS?\n\n'
         'Please change to a directory inside your Chromium OS source tree\n'
         'and retry.  If you need to setup a Chromium OS source tree, see\n'
-        '  http://www.chromium.org/chromium-os/developer-guide')
+        '  https://dev.chromium.org/chromium-os/developer-guide')
 
   any_snapshot_operation = (options.snapshot_create or options.snapshot_restore
                             or options.snapshot_delete or options.snapshot_list)

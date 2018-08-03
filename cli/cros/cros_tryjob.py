@@ -285,7 +285,7 @@ def PushLocalPatches(local_patches, user_email, dryrun=False):
     print('Uploading patch %s' % patch)
     patch.Upload(checkout['push_url'], ref_final, dryrun=dryrun)
 
-    # TODO(rcui): Pass in the remote instead of tag. http://crosbug.com/33937.
+    # TODO(rcui): Pass in the remote instead of tag. https://crbug.com/216095.
     tag = constants.EXTERNAL_PATCH_TAG
     if checkout['remote'] == config_lib.GetSiteParams().INTERNAL_REMOTE:
       tag = constants.INTERNAL_PATCH_TAG

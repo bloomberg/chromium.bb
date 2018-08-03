@@ -6,10 +6,10 @@
 """Generate an HTML file containing license info for all installed packages.
 
 Documentation on this script is also available here:
-http://www.chromium.org/chromium-os/licensing-for-chromiumos-developers
+https://dev.chromium.org/chromium-os/licensing-for-chromiumos-developers
 
 End user (i.e. package owners) documentation is here:
-http://www.chromium.org/chromium-os/licensing-for-chromiumos-package-owners
+https://dev.chromium.org/chromium-os/licensing-for-chromiumos-package-owners
 
 Usage:
 For this script to work, you must have built the architecture
@@ -100,7 +100,7 @@ The detailed process is listed below.
   the diff in your commit message so that the reviewers know what the
   changes are. You can add reviewers on the review page by clicking on
   "Edit issue".  (A quick reference:
-  http://www.chromium.org/developers/quick-reference)
+  https://dev.chromium.org/developers/quick-reference)
 
   Make sure you click on 'Publish+Mail Comments' after adding reviewers
   (the review URL looks like this https://codereview.chromium.org/183883018/ ).
@@ -111,12 +111,12 @@ If you don't get this in before the freeze window, it'll need to be merged into
 the branch being released, which is done by adding a Merge-Requested label.
 Once it's been updated to "Merge-Approved" by a TPM, please merge into the
 required release branch. You can ask karen@ for merge approve help.
-Example: http://crbug.com/221281
+Example: https://crbug.com/221281
 
 Note however that this is only during the transition period.
 build-image will be modified to generate the license for each board and save
 the file in /opt/google/chrome/resources/about_os_credits.html or as defined
-in http://crbug.com/271832 .
+in https://crbug.com/271832 .
 """
 
 from __future__ import print_function

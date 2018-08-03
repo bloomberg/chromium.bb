@@ -6,7 +6,7 @@
 """Library for validating ebuild license information, and generating credits.
 
 Documentation on this script is also available here:
-  http://www.chromium.org/chromium-os/licensing
+  https://dev.chromium.org/chromium-os/licensing
 """
 
 from __future__ import print_function
@@ -33,7 +33,7 @@ except ImportError:
 
 debug = True
 
-# See http://crbug.com/207004 for discussion.
+# See https://crbug.com/207004 for discussion.
 PER_PKG_LICENSE_DIR = 'var/db/pkg'
 
 STOCK_LICENSE_DIRS = [
@@ -109,7 +109,7 @@ LICENSE_NAMES_REGEX = [
 # right license directly in COPYRIGHT_ATTRIBUTION_DIR.
 PACKAGE_LICENSES = {
     # TODO: replace the naive license parsing code in this script with a hook
-    # into portage's license parsing. See http://crbug.com/348779
+    # into portage's license parsing. See https://crbug.com/348779
 
     # Chrome (the browser) is complicated, it has a morphing license that is
     # either BSD-Google, or BSD-Google,Google-TOS depending on how it was

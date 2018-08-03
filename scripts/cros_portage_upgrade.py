@@ -1389,7 +1389,7 @@ class Upgrader(object):
       dbapi = self._GetPortageDBAPI()
       ebuild_path = dbapi.findname2(pinfo.cpv)[0]
       if not ebuild_path:
-        # This has only happened once.  See crosbug.com/26385.
+        # This has only happened once.  See https://crbug.com/209254.
         # In that case, this meant the package, while in the deps graph,
         # was actually to be uninstalled.  How is that possible?  The
         # package was newly added to package.provided.  So skip it.

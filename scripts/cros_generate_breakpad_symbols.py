@@ -114,7 +114,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
       if result.returncode:
         # Sometimes dump_syms can crash because there's too much info.
         # Try dumping and stripping the extended stuff out.  At least
-        # this way we'll get the extended symbols.  http://crbug.com/266064
+        # this way we'll get the extended symbols.  https://crbug.com/266064
         _CrashCheck(result.returncode, 'retrying w/out CFI')
         cmd_args = ['-c', '-r'] + cmd_args
         result = _DumpIt(cmd_args)

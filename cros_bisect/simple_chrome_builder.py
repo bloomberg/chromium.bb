@@ -142,7 +142,7 @@ ChromeOS (board specified.) Also, it can deploy the result to ChromeOS DUT
 
     If reuse_build, it first checks if the build exists. If so, uses it.
     Otherwise, it builds CrOS Chrome using SimpleChrome flow:
-      http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/
+      https://dev.chromium.org/chromium-os/how-tos-and-troubleshooting/
       building-chromium-browser
     and optionally archives the build output.
 

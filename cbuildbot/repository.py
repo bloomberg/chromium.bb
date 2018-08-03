@@ -555,7 +555,7 @@ class RepoRepository(object):
       all_branches: If False, a repo sync -c is performed; this saves on
         sync'ing via grabbing only what is needed for the manifest specified
         branch. Defaults to True. TODO(davidjames): Set the default back to
-        False once we've fixed http://crbug.com/368722 .
+        False once we've fixed https://crbug.com/368722 .
       network_only: If true, perform only the network half of the sync; skip
         the checkout.  Primarily of use to validate a manifest (although
         if the manifest has bad copyfile statements, via skipping checkout

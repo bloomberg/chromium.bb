@@ -308,7 +308,7 @@ class CQConfigParser(object):
     is found within the project checkout path, a config file path in the root of
     the checkout will be returned, in which case the file is not guaranteed to
     exist. See
-    http://chromium.org/chromium-os/build/bypassing-tests-on-a-per-project-basis
+    https://dev.chromium.org/chromium-os/build/bypassing-tests-on-a-per-project-basis
 
     Args:
       build_root: The path to the build root.

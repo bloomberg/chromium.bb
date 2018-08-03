@@ -26,7 +26,7 @@ EMAIL_WATERFALLS = (
 )
 
 # URLs to the various waterfalls.
-BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
+BUILD_DASHBOARD = 'https://build.chromium.org/p/chromiumos'
 BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
 TRYBOT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
 RELEASE_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos_release'

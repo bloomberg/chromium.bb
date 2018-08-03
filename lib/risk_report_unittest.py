@@ -28,13 +28,13 @@ class RiskReportTest(cros_test_lib.MockTestCase):
   def testSingle(self):
     self.risks = {1: 0.0}
     self.assertEqual(risk_report.GetCLRiskReport(42), {
-        'Bad CL risk for 1 = 0.0%': 'http://crrev.com/c/1'
+        'Bad CL risk for 1 = 0.0%': 'https://crrev.com/c/1'
     })
 
   def testMultipleBelow(self):
     self.risks = {1: 0.05, 2: 0.03, 3: 0.01}
     self.assertEqual(risk_report.GetCLRiskReport(42), {
-        'Bad CL risk for 1 = 5.0%': 'http://crrev.com/c/1'
+        'Bad CL risk for 1 = 5.0%': 'https://crrev.com/c/1'
     })
 
   def testMultipleAboveAndSomeBelow(self):
@@ -42,15 +42,15 @@ class RiskReportTest(cros_test_lib.MockTestCase):
     # other CLs whose risk is above the threshold.
     self.risks = {1: 0.5, 2: 0.4999, 3: 0.4998, 4: 0.01}
     self.assertEqual(risk_report.GetCLRiskReport(42), {
-        'Bad CL risk for 1 = 50.0%': 'http://crrev.com/c/1',
-        'Bad CL risk for 2 = 50.0%': 'http://crrev.com/c/2',
-        'Bad CL risk for 3 = 50.0%': 'http://crrev.com/c/3'
+        'Bad CL risk for 1 = 50.0%': 'https://crrev.com/c/1',
+        'Bad CL risk for 2 = 50.0%': 'https://crrev.com/c/2',
+        'Bad CL risk for 3 = 50.0%': 'https://crrev.com/c/3'
     })
 
   def testWithinSmallPercentOfTop(self):
     self.risks = {1: 0.05, 2: 0.0499, 3: 0.0498}
     self.assertEqual(risk_report.GetCLRiskReport(42), {
-        'Bad CL risk for 1 = 5.0%': 'http://crrev.com/c/1',
-        'Bad CL risk for 2 = 5.0%': 'http://crrev.com/c/2',
-        'Bad CL risk for 3 = 5.0%': 'http://crrev.com/c/3'
+        'Bad CL risk for 1 = 5.0%': 'https://crrev.com/c/1',
+        'Bad CL risk for 2 = 5.0%': 'https://crrev.com/c/2',
+        'Bad CL risk for 3 = 5.0%': 'https://crrev.com/c/3'
     })

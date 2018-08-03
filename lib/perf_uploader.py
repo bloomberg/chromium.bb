@@ -10,7 +10,7 @@ https://chromeperf.appspot.com/
 Users must be logged in with an @google.com account to view perf data there.
 
 For more information on sending data to the dashboard, see:
-http://dev.chromium.org/developers/testing/sending-data-to-the-performance-dashboard
+https://dev.chromium.org/developers/testing/sending-data-to-the-performance-dashboard
 
 Note: This module started off from the autotest/tko/perf_uploader.py but has
 been extended significantly since.
@@ -362,7 +362,7 @@ def _ComputeRevisionFromVersions(chrome_version, cros_version):
 
   To compute the integer ID, we take the portions of each version number that
   serve as the shortest unambiguous names for each (as described here:
-  http://www.chromium.org/developers/version-numbers).  We then force each
+  https://dev.chromium.org/developers/version-numbers).  We then force each
   component of each portion to be a fixed width (padded by zeros if needed),
   concatenate all digits together (with those coming from the Chrome version
   number first), and convert the entire string of digits into an integer.

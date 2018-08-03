@@ -222,7 +222,8 @@ GOLDEN_DEP_GRAPHS = {
     'dev-libs/C-2': {'needs': {}},
     'dev-libs/D-3': {'needs': {}},
     # TODO(mtennant): Bug in parallel_emerge deps graph makes blocker show up
-    # for E-3, rather than in just E-2 where it belongs. See crosbug.com/22190.
+    # for E-3, rather than in just E-2 where it belongs.
+    # See https://crbug.com/205225.
     # To repeat bug, swap the commented status of next two lines.
     #'dev-libs/E-3': {'needs': {}},
     'dev-libs/E-3': {'needs': {'dev-libs/D-3': 'blocker'}},
@@ -563,7 +564,7 @@ class CpuTestBase(cros_test_lib.MoxTempDirTestOutputCase):
 class CopyUpstreamTest(CpuTestBase):
   """Test Upgrader._CopyUpstreamPackage, _CopyUpstreamEclass, _CreateManifest"""
 
-  # This is a hack until crosbug.com/21965 is completed and upstreamed
+  # This is a hack until https://crbug.com/205007 is completed and upstreamed
   # to Portage.  Insert eclass simulation into tree.
   def _AddEclassToPlayground(self, eclass, lines=None,
                              ebuilds=None, missing=False):

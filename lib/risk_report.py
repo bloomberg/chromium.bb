@@ -21,7 +21,7 @@ CL_SCANNER_API = (
 _MINIMUM_RISK_THRESHOLD = 0.10
 # Include CLs at least 80% as risky as the top risky CL
 _CLOSE_TO_TOP_RATIO = 0.80
-_EXTERNAL_CL_LINK = 'http://crrev.com/c/%s'
+_EXTERNAL_CL_LINK = 'https://crrev.com/c/%s'
 
 
 def GetCLRiskReport(build_id):

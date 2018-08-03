@@ -112,7 +112,7 @@ class DocStringChecker(BaseChecker):
   """PyLint AST based checker to verify PEP 257 compliance
 
   See our style guide for more info:
-  http://dev.chromium.org/chromium-os/python-style-guidelines#TOC-Describing-arguments-in-docstrings
+  https://dev.chromium.org/chromium-os/python-style-guidelines#TOC-Describing-arguments-in-docstrings
   """
 
   # TODO: See about merging with the pep257 project:

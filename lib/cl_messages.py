@@ -45,7 +45,7 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
 
   if messages:
     # Build a list of error messages. We don't want to build a ridiculously
-    # long comment, as Gerrit will reject it. See http://crbug.com/236831
+    # long comment, as Gerrit will reject it. See https://crbug.com/236831
     max_error_len = 20000 / max(1, len(messages))
     msg.append('The following build(s) failed:')
     for message in map(str, messages):
@@ -114,11 +114,11 @@ class PaladinMessage(object):
   """Object used to send messages to developers about their changes."""
 
   # URL where Paladin documentation is stored.
-  _PALADIN_DOCUMENTATION_URL = ('http://www.chromium.org/developers/'
+  _PALADIN_DOCUMENTATION_URL = ('https://dev.chromium.org/developers/'
                                 'tree-sheriffs/sheriff-details-chromium-os/'
                                 'commit-queue-overview')
 
-  # Gerrit can't handle commands over 32768 bytes. See http://crbug.com/236831
+  # Gerrit can't handle commands over 32768 bytes. See https://crbug.com/236831
   MAX_MESSAGE_LEN = 32000
 
   def __init__(self, message, patch, helper):

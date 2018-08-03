@@ -24,9 +24,9 @@ from chromite.lib import path_util
 
 
 _GOMA_COMPILER_PROXY_LOG_URL_TEMPLATE = (
-    'http://chromium-build-stats.appspot.com/compiler_proxy_log/%s/%s')
+    'https://chromium-build-stats.appspot.com/compiler_proxy_log/%s/%s')
 _GOMA_NINJA_LOG_URL_TEMPLATE = (
-    'http://chromium-build-stats.appspot.com/ninja_log/%s/%s')
+    'https://chromium-build-stats.appspot.com/ninja_log/%s/%s')
 
 
 class Goma(object):

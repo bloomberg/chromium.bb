@@ -275,7 +275,7 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None,
   if toolchain_boards:
     cmd.extend(['--toolchain_boards', ','.join(toolchain_boards)])
 
-  # workaround http://crbug.com/225509
+  # workaround https://crbug.com/225509
   # Building with FEATURES=separatedebug will create a dedicated tarball with
   # the debug files, and the debug files won't be in the glibc.tbz2, which is
   # where the build scripts expect them.
@@ -1870,7 +1870,7 @@ def GenerateBreakpadSymbols(buildroot, board, debug):
     debug: Include extra debugging output.
   """
   # We don't care about firmware symbols.
-  # See http://crbug.com/213670.
+  # See https://crbug.com/213670.
   exclude_dirs = ['firmware']
 
   cmd = ['cros_generate_breakpad_symbols', '--board=%s' % board,
@@ -2527,7 +2527,7 @@ def BuildFullAutotestTarball(buildroot, board, tarball_dir):
   # status code 1. The tarball is still OK, although there might be a few
   # unneeded (and garbled) tmp files. If tar fails in a different way, it'll
   # return an error code other than 1.
-  # TODO: Fix the autotest ebuild. See http://crbug.com/237537
+  # TODO: Fix the autotest ebuild. See https://crbug.com/237537
   if result.returncode not in (0, 1):
     raise Exception('Autotest tarball creation failed with exit code %s'
                     % (result.returncode))

@@ -669,7 +669,7 @@ class DepGraphGenerator(object):
           # package to another, which requires editing the CONTENTS files of
           # both packages. To avoid race conditions while editing this file,
           # the two packages must not be installed in parallel, so we can't
-          # safely ignore dependencies. See http://crosbug.com/19328
+          # safely ignore dependencies. See https://crbug.com/202428.
           if "blocker" in dep_types:
             this_pkg["nodeps"] = False
 

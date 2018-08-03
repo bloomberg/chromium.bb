@@ -71,7 +71,7 @@ Example:
 \$ ${ARGV0} -q -r ${ROOT:-${PWD}}
 
 See this page for more information:
-http://dev.chromium.org/chromium-os/how-tos-and-troubleshooting/creating-local-mirrors
+https://dev.chromium.org/chromium-os/how-tos-and-troubleshooting/creating-local-mirrors
 EOF
   exit ${1:-0}
 }
@@ -112,7 +112,7 @@ cd "${ROOT}"
 #
 if ! which repo >/dev/null; then
   die "you must have repo installed and in your \$PATH; please see:" \
-      "http://dev.chromium.org/developers/how-tos/install-depot-tools"
+      "https://dev.chromium.org/developers/how-tos/install-depot-tools"
 fi
 # This has been tested against 1.7.7.x, so require at least that.
 if ! gver=$(git --version); then

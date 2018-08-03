@@ -62,7 +62,7 @@ Examples:
   cros flash usb:// xbuddy://remote/eve/latest-stable/signed
 
   For more information and known problems/fixes, please see:
-  http://dev.chromium.org/chromium-os/build/cros-flash
+  https://dev.chromium.org/chromium-os/build/cros-flash
 """
 
   @classmethod

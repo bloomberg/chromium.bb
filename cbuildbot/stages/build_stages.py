@@ -453,7 +453,7 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
     # We need to run chroot updates on most builders because they uprev after
     # the InitSDK stage. For the SDK builder, we can skip updates because uprev
     # is run prior to InitSDK. This is not just an optimization: It helps
-    # workaround http://crbug.com/225509
+    # workaround https://crbug.com/225509
     if self._run.config.build_type != constants.CHROOT_BUILDER_TYPE:
       usepkg_toolchain = (self._run.config.usepkg_toolchain and
                           not self._latest_toolchain)
