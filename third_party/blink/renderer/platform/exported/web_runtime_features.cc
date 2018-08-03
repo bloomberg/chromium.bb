@@ -444,10 +444,6 @@ void WebRuntimeFeatures::EnableServiceWorkerScriptFullCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetServiceWorkerScriptFullCodeCacheEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableAutoplayMutedVideos(bool enable) {
-  RuntimeEnabledFeatures::SetAutoplayMutedVideosEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(bool enable) {
   RuntimeEnabledFeatures::SetTimerThrottlingForBackgroundTabsEnabled(enable);
 }

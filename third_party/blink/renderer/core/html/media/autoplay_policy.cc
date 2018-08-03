@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/autoplay.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -134,6 +135,13 @@ bool AutoplayPolicy::DocumentHasForceAllowFlag(const Document& document) {
          mojom::blink::kAutoplayFlagForceAllow;
 }
 
+// static
+bool AutoplayPolicy::DocumentShouldAutoplayMutedVideos(
+    const Document& document) {
+  return GetAutoplayPolicyForDocument(document) !=
+         AutoplayPolicy::Type::kNoUserGestureRequired;
+}
+
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
     : locked_pending_user_gesture_(false),
       locked_pending_user_gesture_if_cross_origin_experiment_enabled_(true),
@@ -169,7 +177,7 @@ void AutoplayPolicy::DidMoveToNewDocument(Document& old_document) {
 
 bool AutoplayPolicy::IsEligibleForAutoplayMuted() const {
   return element_->IsHTMLVideoElement() && element_->muted() &&
-         RuntimeEnabledFeatures::AutoplayMutedVideosEnabled();
+         DocumentShouldAutoplayMutedVideos(element_->GetDocument());
 }
 
 void AutoplayPolicy::StartAutoplayMutedWhenVisible() {
@@ -288,7 +296,7 @@ bool AutoplayPolicy::IsOrWillBeAutoplayingMuted() const {
 
 bool AutoplayPolicy::IsOrWillBeAutoplayingMutedInternal(bool muted) const {
   if (!element_->IsHTMLVideoElement() ||
-      !RuntimeEnabledFeatures::AutoplayMutedVideosEnabled()) {
+      !DocumentShouldAutoplayMutedVideos(element_->GetDocument())) {
     return false;
   }
 
@@ -349,7 +357,7 @@ bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
   // - Preload was not disabled (low end devices);
   // - Autoplay is enabled in settings;
   if (element_->IsHTMLVideoElement() && element_->muted() &&
-      RuntimeEnabledFeatures::AutoplayMutedVideosEnabled() &&
+      DocumentShouldAutoplayMutedVideos(element_->GetDocument()) &&
       !(element_->GetDocument().GetSettings() &&
         GetNetworkStateNotifier().SaveDataEnabled() &&
         !element_->GetDocument()
