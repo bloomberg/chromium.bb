@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "build/build_config.h"
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/paint/paint_image.h"
@@ -425,8 +426,16 @@ TEST_F(LayerTreeHostBlendingPixelTest,
                             kUseMasks | kUseColorMatrix);
 }
 
+// Often times out on Windows 10. See: https://crbug.com/870236.
+#if defined(OS_WIN)
+#define MAYBE_BlendingWithRenderPassWithMaskColorMatrixAA_GL \
+  DISABLED_BlendingWithRenderPassWithMaskColorMatrixAA_GL
+#else
+#define MAYBE_BlendingWithRenderPassWithMaskColorMatrixAA_GL \
+  BlendingWithRenderPassWithMaskColorMatrixAA_GL
+#endif
 TEST_F(LayerTreeHostBlendingPixelTest,
-       BlendingWithRenderPassWithMaskColorMatrixAA_GL) {
+       MAYBE_BlendingWithRenderPassWithMaskColorMatrixAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing | kUseColorMatrix);
@@ -507,8 +516,16 @@ TEST_F(LayerTreeHostBlendingPixelTest,
                             kUseMasks | kUseColorMatrix | kForceShaders);
 }
 
+// Often times out on Windows 10. See: https://crbug.com/870236.
+#if defined(OS_WIN)
+#define MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL \
+  DISABLED_BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL
+#else
+#define MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL \
+  BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL
+#endif
 TEST_F(LayerTreeHostBlendingPixelTest,
-       BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL) {
+       MAYBE_BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL) {
   RunBlendingWithRenderPass(
       ZERO_COPY, FILE_PATH_LITERAL("blending_render_pass_mask.png"),
       kUseMasks | kUseAntialiasing | kUseColorMatrix | kForceShaders);
