@@ -166,7 +166,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebXRGamepadSupport(bool);
   BLINK_PLATFORM_EXPORT static void EnableXSLT(bool);
   BLINK_PLATFORM_EXPORT static void ForceOverlayFullscreenVideo(bool);
-  BLINK_PLATFORM_EXPORT static void EnableAutoplayMutedVideos(bool);
   BLINK_PLATFORM_EXPORT static void EnableTimerThrottlingForBackgroundTabs(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableTimerThrottlingForHiddenFrames(bool);

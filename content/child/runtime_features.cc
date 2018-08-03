@@ -46,7 +46,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::EnableNotificationConstructor(false);
   // Android does not yet support switching of audio output devices
   WebRuntimeFeatures::EnableAudioOutputDevices(false);
-  WebRuntimeFeatures::EnableAutoplayMutedVideos(true);
   // Android does not yet support SystemMonitor.
   WebRuntimeFeatures::EnableOnDeviceChange(false);
   WebRuntimeFeatures::EnableMediaSession(true);
@@ -363,11 +362,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kWebNfc))
     WebRuntimeFeatures::EnableWebNfc(true);
 #endif
-
-  if (media::GetEffectiveAutoplayPolicy(command_line) !=
-      switches::autoplay::kNoUserGestureRequiredPolicy) {
-    WebRuntimeFeatures::EnableAutoplayMutedVideos(true);
-  }
 
   WebRuntimeFeatures::EnableWebAuth(
       base::FeatureList::IsEnabled(features::kWebAuth));
