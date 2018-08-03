@@ -50,12 +50,9 @@ TouchExplorationController::TouchExplorationController(
       gesture_provider_(new ui::GestureProviderAura(this, this)),
       prev_state_(NO_FINGERS_DOWN),
       VLOG_on_(true) {
-  DCHECK(root_window);
-  root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
 }
 
 TouchExplorationController::~TouchExplorationController() {
-  root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
 }
 
 void TouchExplorationController::SetTouchAccessibilityAnchorPoint(
@@ -67,11 +64,6 @@ void TouchExplorationController::SetTouchAccessibilityAnchorPoint(
 
 void TouchExplorationController::SetExcludeBounds(const gfx::Rect& bounds) {
   exclude_bounds_ = bounds;
-}
-
-void TouchExplorationController::SetLiftActivationBounds(
-    const gfx::Rect& bounds) {
-  lift_activation_bounds_ = bounds;
 }
 
 ui::EventRewriteStatus TouchExplorationController::RewriteEvent(

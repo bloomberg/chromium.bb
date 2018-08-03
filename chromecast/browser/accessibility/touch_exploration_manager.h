@@ -11,6 +11,7 @@
 #include "chromecast/browser/accessibility/accessibility_sound_delegate.h"
 #include "chromecast/browser/accessibility/touch_exploration_controller.h"
 #include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
+#include "ui/events/event_rewriter.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -20,7 +21,8 @@ namespace shell {
 // Responsible for initializing TouchExplorationController when spoken feedback
 // is on. Implements TouchExplorationControllerDelegate which allows touch
 // gestures to manipulate the system.
-class TouchExplorationManager : public TouchExplorationControllerDelegate,
+class TouchExplorationManager : public ui::EventRewriter,
+                                public TouchExplorationControllerDelegate,
                                 public ::wm::ActivationChangeObserver {
  public:
   TouchExplorationManager(
@@ -32,6 +34,14 @@ class TouchExplorationManager : public TouchExplorationControllerDelegate,
   // Enable or disable touch exploration.
   // (In the Chrome version this is handled as an AccessibilityObserver.)
   void Enable(bool enabled);
+
+  // ui::EventRewriter overrides:
+  ui::EventRewriteStatus RewriteEvent(
+      const ui::Event& event,
+      std::unique_ptr<ui::Event>* rewritten_event) override;
+  ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& last_event,
+      std::unique_ptr<ui::Event>* new_event) override;
 
   // TouchExplorationControllerDelegate overrides:
   void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;
