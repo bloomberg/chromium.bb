@@ -987,6 +987,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)openNewTabInPage:(TabGridPage)page focusOmnibox:(BOOL)focusOmnibox {
   switch (page) {
     case TabGridPageIncognitoTabs:
+      [self.incognitoTabsViewController prepareForDismissal];
       [self.incognitoTabsDelegate addNewItem];
       // Record when new incognito tab is created.
       // TODO(crbug.com/856965) : Rename metrics.
@@ -994,6 +995,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
           base::UserMetricsAction("MobileTabSwitcherCreateIncognitoTab"));
       break;
     case TabGridPageRegularTabs:
+      [self.regularTabsViewController prepareForDismissal];
       [self.regularTabsDelegate addNewItem];
       // Record when new regular tab is created.
       // TODO(crbug.com/856965) : Rename metrics.
