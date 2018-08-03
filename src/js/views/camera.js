@@ -37,7 +37,7 @@ camera.views.Camera = function(context, router, model) {
    * @type {Video}
    * @private
    */
-  this.video_ = document.querySelector('#main-preview');
+  this.video_ = document.querySelector('#preview-video');
 
   /**
    * Current camera stream.
@@ -550,7 +550,6 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
           'recordVideoStartButton' : 'takePhotoButton');
       document.body.classList.add('capturing');
       this.updateControls_();
-      this.shutterButton_.focus();
       onSuccess();
     };
     // Load the stream and wait for the metadata.

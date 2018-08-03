@@ -109,6 +109,10 @@
     "message": "Toggle mirroring",
     "description": "Label for the button to toggle the preview mirroring."
   },
+  "toggleGridButton": {
+    "message": "Toggle grid",
+    "description": "Label for the button to toggle the grid shown on preview."
+  },
   "dialogYesButton": {
     "message": "Yes",
     "description": "Label for the accepting button in the confirmation dialog."

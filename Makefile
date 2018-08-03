@@ -63,10 +63,8 @@ SRC_RESOURCES= \
 	src/css/main.css \
 	src/images/2x/browser_button_export.png \
 	src/images/2x/browser_button_print.png \
-	src/images/2x/camera_button_mirror.png \
 	src/images/2x/camera_button_picture.png \
         src/images/2x/camera_button_record.png \
-	src/images/2x/camera_button_timer.png \
 	src/images/2x/camera_button_toggle.png \
 	src/images/2x/camera_button_video.png \
 	src/images/2x/gallery_button_back.png \
@@ -82,10 +80,14 @@ SRC_RESOURCES= \
 	src/images/camera_app_icons_96.png \
 	src/images/camera_app_icons_favicon_16.png \
 	src/images/camera_app_icons_favicon_32.png \
-	src/images/camera_button_mirror.png \
+        src/images/camera_button_grid_off.svg \
+        src/images/camera_button_grid_on.svg \
+        src/images/camera_button_mirror_off.svg \
+        src/images/camera_button_mirror_on.svg \
 	src/images/camera_button_picture.png \
         src/images/camera_button_record.png \
-	src/images/camera_button_timer.png \
+        src/images/camera_button_timer_off.svg \
+        src/images/camera_button_timer_on.svg \
 	src/images/camera_button_toggle.png \
 	src/images/camera_button_video.png \
 	src/images/gallery_button_back.png \

@@ -66,37 +66,22 @@ body {
   width: 8px;
 }
 
-.buttons {
-  align-content: flex-end;
-  align-items: flex-end;
-  bottom: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  left: 0;
-  margin: -2px;
-  padding: 10px;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
+.buttons,
 .one-button {
   align-items: center;
   display: flex;
   justify-content: center;
-  margin-bottom: 5px;
+  pointer-events: none;
 }
 
 .buttons button,
 .buttons input {
+  pointer-events: auto;
   -webkit-app-region: no-drag;
   background-color: transparent;
   border: none;
   margin: 2px;
   padding: 0;
-  pointer-events: auto;
   vertical-align: middle;
   width: 32px;
   height: 32px;
@@ -104,6 +89,7 @@ body {
 
 .one-button button,
 .one-button input {
+  pointer-events: auto;
   background-color: transparent;
   border: none;
   margin: 0;
@@ -127,14 +113,14 @@ body {
 .one-button input:not([disabled]):hover,
 .buttons button:not([disabled]):hover,
 .buttons input:not([disabled]):hover {
-  background-color: rgba(60, 60, 60, 0.75);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .one-button button:not([disabled]):active,
 .one-button input:not([disabled]):active,
 .buttons button:not([disabled]):active,
 .buttons input:not([disabled]):active {
-  background-color: rgba(90, 90, 90, 0.75);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 #toolbar-stripe {
@@ -148,14 +134,9 @@ body {
   justify-content: flex-end;
 }
 
-.buttons.next-to-middle {
-  /* Start just after the take-picture button. */
-  -webkit-margin-start: calc(50% + 73px/2);
-  justify-content: flex-start;
-}
-
 #toolbar .buttons {
-  align-items: center;
+  position: absolute;
+  right: 0;
   padding: 0 10px;
 }
 
@@ -244,7 +225,7 @@ body.has-error #error {
   display: flex;
 }
 
-body.mirror #main-preview {
+body.mirror #preview-video {
   -webkit-transform: scaleX(-1);
 }
 
@@ -326,16 +307,6 @@ body.record-mode #take-picture {
   }
 }
 
-.buttons #toggle-timer {
-  -webkit-appearance: none;
-  background-image: -webkit-image-set(
-      url(../images/camera_button_timer.png) 1x,
-      url(../images/2x/camera_button_timer.png) 2x);
-  height: 32px;
-  width: 32px;
-  background-position: 0 0;
-}
-
 .buttons #toggle-device {
   background-image: -webkit-image-set(
       url(../images/camera_button_toggle.png) 1x,
@@ -367,20 +338,52 @@ body.record-mode #switch-recordvideo {
   visibility: hidden;
 }
 
-.buttons #toggle-mirror {
-  -webkit-appearance: none;
-  background-image: -webkit-image-set(
-      url(../images/camera_button_mirror.png) 1x,
-      url(../images/2x/camera_button_mirror.png) 2x);
-  height: 32px;
-  width: 32px;
-  background-position: 0 0;
+.left-stripe.buttons {
+  flex-direction: column;
+  position: absolute;
+  /* TODO(yuli): Align by 40px to the icons' center. */
+  left: 24px;
 }
 
-.buttons #toggle-timer.animate,
-.buttons #toggle-timer:not(:checked),
-.buttons #toggle-mirror:not(:checked) {
-  background-position: 0 -32px;
+.left-stripe.buttons input {
+  -webkit-appearance: none;
+  background-color: transparent;
+  width: 40px;
+  height: 40px;
+}
+
+.left-stripe.buttons input,
+#browser .buttons button {
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.left-stripe.buttons #toggle-timer {
+  background-image: url(../images/camera_button_timer_on.svg);
+}
+
+.left-stripe.buttons #toggle-timer:not(:checked) {
+  background-image: url(../images/camera_button_timer_off.svg);
+}
+
+.left-stripe.buttons #toggle-timer.animate {
+  opacity: 0.25;
+}
+
+.left-stripe.buttons #toggle-grid {
+  background-image: url(../images/camera_button_grid_on.svg);
+}
+
+.left-stripe.buttons #toggle-grid:not(:checked) {
+  background-image: url(../images/camera_button_grid_off.svg);
+}
+
+.left-stripe.buttons #toggle-mirror {
+  background-image: url(../images/camera_button_mirror_on.svg);
+}
+
+.left-stripe.buttons #toggle-mirror:not(:checked) {
+  background-image: url(../images/camera_button_mirror_off.svg);
 }
 
 #toolbar {
@@ -412,15 +415,51 @@ body.browser #browser {
 }
 
 #camera,
-#main-preview-wrapper {
+#preview-wrapper {
   align-items: center;
   display: flex;
   justify-content: center;
   overflow: hidden;
 }
 
-#main-preview-wrapper {
+#preview-wrapper,
+#preview-video {
   flex-shrink: 0;
+  pointer-events: none;
+  position: relative;
+}
+
+#preview-grid {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  opacity: 0;
+}
+
+body.capturing #preview-grid.visible {
+  opacity: 0.5;
+}
+
+#preview-grid-horizontal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 33.333%;
+  height: 33.333%;
+  border-bottom: 1px solid white;
+  border-top: 1px solid white;
+}
+
+#preview-grid-vertical {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  left: 33.333%;
+  width: 33.333%;
+  border-left: 1px solid white;
+  border-right: 1px solid white;
 }
 
 #toast {
@@ -461,7 +500,6 @@ body.browser #browser {
   opacity: 0;
   position: absolute;
   top: 24px;
-  z-index: 1;
 }
 
 #recording-timer.visible {
@@ -470,14 +508,11 @@ body.browser #browser {
 
 #browser .buttons {
   position: fixed;
+  bottom: 0;
+  right: 0;
+  margin: 10px;
   /* Fix crbug.com/638500: button background flickers when hovered. */
   transform: translate3d(0, 0, 0);
-}
-
-#browser .buttons button {
-  /* TODO(yuli): Fix browser view's buttons' incorrect dimensions. */
-  background-position: center;
-  background-repeat: no-repeat;
 }
 
 #browser .buttons button[disabled] {
