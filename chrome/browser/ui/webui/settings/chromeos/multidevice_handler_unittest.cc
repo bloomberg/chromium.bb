@@ -122,6 +122,13 @@ class MultideviceHandlerTest : public testing::Test {
     VerifyPageContentDict(call_data.arg2(), host_status, host_device);
   }
 
+  void CallRetryPendingHostSetup(bool success) {
+    base::ListValue empty_args;
+    test_web_ui()->HandleReceivedMessage("retryPendingHostSetup", &empty_args);
+    fake_multidevice_setup_client()->InvokePendingRetrySetHostNowCallback(
+        success);
+  }
+
   const content::TestWebUI::CallData& CallDataAtIndex(size_t index) {
     return *test_web_ui_->call_data()[index];
   }
@@ -175,6 +182,11 @@ TEST_F(MultideviceHandlerTest, HostStatusUpdates) {
       test_device_);
   SimulateHostStatusUpdate(multidevice_setup::mojom::HostStatus::kHostVerified,
                            test_device_);
+}
+
+TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {
+  CallRetryPendingHostSetup(true /* success */);
+  CallRetryPendingHostSetup(false /* success */);
 }
 
 }  // namespace settings

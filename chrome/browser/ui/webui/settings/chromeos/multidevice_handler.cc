@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
@@ -45,6 +46,14 @@ std::unique_ptr<base::DictionaryValue> GeneratePageContentDataDictionary(
   return page_content_dictionary;
 }
 
+void OnRetrySetHostNowResult(bool success) {
+  if (success)
+    return;
+
+  PA_LOG(WARNING) << "OnRetrySetHostNowResult(): Attempt to retry setting the "
+                  << "host device failed.";
+}
+
 }  // namespace
 
 MultideviceHandler::MultideviceHandler(
@@ -63,6 +72,10 @@ void MultideviceHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getPageContentData",
       base::BindRepeating(&MultideviceHandler::HandleGetPageContent,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "retryPendingHostSetup",
+      base::BindRepeating(&MultideviceHandler::HandleRetryPendingHostSetup,
                           base::Unretained(this)));
 }
 
@@ -103,6 +116,13 @@ void MultideviceHandler::HandleGetPageContent(const base::ListValue* args) {
   multidevice_setup_client_->GetHostStatus(
       base::BindOnce(&MultideviceHandler::OnHostStatusFetched,
                      callback_weak_ptr_factory_.GetWeakPtr(), callback_id));
+}
+
+void MultideviceHandler::HandleRetryPendingHostSetup(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  multidevice_setup_client_->RetrySetHostNow(
+      base::BindOnce(&OnRetrySetHostNowResult));
 }
 
 void MultideviceHandler::OnHostStatusFetched(
