@@ -4,6 +4,7 @@
 	.set WIDE_REFERENCE, 0
 	.set ARCHITECTURE, 5
 	.set DO1STROUNDING, 0
+	.syntax unified
 .set ARCH_ARM ,  1
 .set ARCH_MIPS ,  0
 .set ARCH_X86 ,  0
