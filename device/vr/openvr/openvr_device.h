@@ -31,7 +31,7 @@ class OpenVRDevice : public VRDeviceBase,
 
   // VRDeviceBase
   void RequestSession(
-      mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
 
   void OnPollingEvents();

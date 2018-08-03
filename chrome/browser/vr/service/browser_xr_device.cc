@@ -98,7 +98,7 @@ void BrowserXrDevice::ExitPresent(VRDisplayHost* display) {
 
 void BrowserXrDevice::RequestSession(
     VRDisplayHost* display,
-    const device::mojom::XRDeviceRuntimeSessionOptionsPtr& options,
+    const device::mojom::XRRuntimeSessionOptionsPtr& options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback) {
   // base::Unretained is safe because we won't be called back after device_ is
   // destroyed.
@@ -111,7 +111,7 @@ void BrowserXrDevice::RequestSession(
 
 void BrowserXrDevice::OnRequestSessionResult(
     base::WeakPtr<VRDisplayHost> display,
-    device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    device::mojom::XRRuntimeSessionOptionsPtr options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback,
     device::mojom::XRSessionPtr session,
     device::mojom::XRSessionControllerPtr immersive_session_controller) {

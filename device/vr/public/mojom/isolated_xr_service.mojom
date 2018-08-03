@@ -35,7 +35,7 @@ interface XRRuntimeEventListener {
   OnExitPresent();
 };
 
-struct XRDeviceRuntimeSessionOptions {
+struct XRRuntimeSessionOptions {
   bool immersive;
   bool provide_passthrough_camera;
 
@@ -62,7 +62,7 @@ interface XRRuntime {
   // will probably be passed to the renderer process to allow getting data and
   // possibly submitting graphics without going through an extra IPC hop through
   // the browser process.
-  RequestSession(XRDeviceRuntimeSessionOptions options) => (
+  RequestSession(XRRuntimeSessionOptions options) => (
                      XRSession? session,
                      XRSessionController? controller);
 

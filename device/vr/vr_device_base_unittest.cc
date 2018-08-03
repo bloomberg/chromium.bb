@@ -35,7 +35,7 @@ class VRDeviceBaseForTesting : public VRDeviceBase {
   bool ListeningForActivate() { return listening_for_activate; }
 
   void RequestSession(
-      mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override {}
 
  private:

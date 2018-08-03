@@ -168,7 +168,7 @@ void OpenVRRenderLoop::UpdateLayerBounds(int16_t frame_id,
 
 void OpenVRRenderLoop::RequestSession(
     base::OnceCallback<void()> on_presentation_ended,
-    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntimeSessionOptionsPtr options,
     RequestSessionCallback callback) {
   DCHECK(options->immersive);
   presentation_binding_.Close();

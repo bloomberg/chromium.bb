@@ -171,7 +171,7 @@ void OpenVRDevice::Shutdown() {
 }
 
 void OpenVRDevice::RequestSession(
-    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   if (!options->immersive) {
     ReturnNonImmersiveSession(std::move(callback));

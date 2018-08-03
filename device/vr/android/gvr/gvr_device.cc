@@ -177,7 +177,7 @@ GvrDevice::~GvrDevice() {
 }
 
 void GvrDevice::RequestSession(
-    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   if (!options->immersive) {
     // TODO(https://crbug.com/695937): This should be NOTREACHED() once we no

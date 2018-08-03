@@ -229,9 +229,8 @@ void OculusRenderLoop::UpdateLayerBounds(int16_t frame_id,
   DestroyOvrSwapChain();
 };
 
-void OculusRenderLoop::RequestSession(
-    mojom::XRDeviceRuntimeSessionOptionsPtr options,
-    RequestSessionCallback callback) {
+void OculusRenderLoop::RequestSession(mojom::XRRuntimeSessionOptionsPtr options,
+                                      RequestSessionCallback callback) {
   DCHECK(options->immersive);
 
   StartOvrSession();

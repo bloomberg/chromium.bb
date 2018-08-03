@@ -39,7 +39,7 @@ class ARCoreDevice : public VRDeviceBase {
   void PauseTracking() override;
   void ResumeTracking() override;
   void RequestSession(
-      mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
 
   base::WeakPtr<ARCoreDevice> GetWeakPtr() {

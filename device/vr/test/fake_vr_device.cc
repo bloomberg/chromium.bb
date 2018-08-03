@@ -51,7 +51,7 @@ mojom::VREyeParametersPtr FakeVRDevice::InitEye(float fov,
 }
 
 void FakeVRDevice::RequestSession(
-    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   OnStartPresenting();
   // The current tests never use the return values, so it's fine to return

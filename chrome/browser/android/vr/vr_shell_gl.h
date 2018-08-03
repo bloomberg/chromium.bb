@@ -142,7 +142,7 @@ class VrShellGl : public RenderLoop,
 
   void ConnectPresentingService(
       device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::XRDeviceRuntimeSessionOptionsPtr options);
+      device::mojom::XRRuntimeSessionOptionsPtr options);
 
   void OnSwapContents(int new_content_id);
 
@@ -168,7 +168,7 @@ class VrShellGl : public RenderLoop,
 
   device::mojom::XRPresentationTransportOptionsPtr
   GetWebVrFrameTransportOptions(
-      const device::mojom::XRDeviceRuntimeSessionOptionsPtr&);
+      const device::mojom::XRRuntimeSessionOptionsPtr&);
 
   void InitializeRenderer();
   void UpdateViewports();

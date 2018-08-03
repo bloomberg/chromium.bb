@@ -37,7 +37,7 @@ class OpenVRRenderLoop : public base::Thread,
   ~OpenVRRenderLoop() override;
 
   void RequestSession(base::OnceCallback<void()> on_presentation_ended,
-                      mojom::XRDeviceRuntimeSessionOptionsPtr options,
+                      mojom::XRRuntimeSessionOptionsPtr options,
                       RequestSessionCallback callback);
   void ExitPresent();
   base::WeakPtr<OpenVRRenderLoop> GetWeakPtr();

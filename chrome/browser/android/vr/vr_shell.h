@@ -243,7 +243,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   void ConnectPresentingService(
       device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::XRDeviceRuntimeSessionOptionsPtr options);
+      device::mojom::XRRuntimeSessionOptionsPtr options);
 
   // device::GvrGamepadDataProvider implementation.
   void UpdateGamepadData(device::GvrGamepadData) override;
