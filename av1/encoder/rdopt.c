@@ -2004,6 +2004,8 @@ static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
                          txb_width, txb_height, visible_cols, visible_rows,
                          x->qindex);
   }
+#else
+  (void)force_sse;
 #endif
   diff += ((blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]);
   return aom_sum_squares_2d_i16(diff, diff_stride, visible_cols, visible_rows);
@@ -4775,7 +4777,6 @@ static void try_tx_block_split(
   MACROBLOCKD *const xd = &x->e_mbd;
   const int max_blocks_high = max_block_high(xd, plane_bsize, 0);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, 0);
-  struct macroblock_plane *const p = &x->plane[0];
   const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
   const int bsw = tx_size_wide_unit[sub_txs];
   const int bsh = tx_size_high_unit[sub_txs];
@@ -4785,6 +4786,7 @@ static void try_tx_block_split(
   int64_t tmp_rd = 0;
 #if CONFIG_DIST_8X8
   int sub8x8_eob[4] = { 0, 0, 0, 0 };
+  struct macroblock_plane *const p = &x->plane[0];
   struct macroblockd_plane *const pd = &xd->plane[0];
 #endif
   split_rd_stats->rate = x->txfm_partition_cost[txfm_partition_ctx][1];
