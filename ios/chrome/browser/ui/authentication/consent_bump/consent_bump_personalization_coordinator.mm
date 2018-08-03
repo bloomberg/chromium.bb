@@ -28,6 +28,10 @@
   return self.personalizationViewController;
 }
 
+- (ConsentBumpOptionType)selectedOption {
+  return self.personalizationViewController.selectedOption;
+}
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {

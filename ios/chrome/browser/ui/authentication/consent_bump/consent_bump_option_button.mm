@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_option_button.h"
 
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
+#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,6 +17,13 @@ const CGFloat kVerticalMargin = 8;
 const CGFloat kTitleTextMargin = 4;
 
 const CGFloat kImageViewMargin = 16;
+
+const CGFloat kCheckmarkSize = 18;
+const int kCheckmarkColor = 0x1A73E8;
+
+const CGFloat kHighlightAlpha = 0.07;
+
+const CGFloat kAnimationDuration = 0.15;
 }  // namespace
 
 @interface ConsentBumpOptionButton ()
@@ -23,6 +31,8 @@ const CGFloat kImageViewMargin = 16;
 // Image view containing the check mark is the option is selected.
 @property(nonatomic, strong) UIImageView* checkMarkImageView;
 
+// Whether the highlight animation is running.
+@property(nonatomic, assign) BOOL highlightAnimationRunning;
 @end
 
 @implementation ConsentBumpOptionButton
@@ -30,6 +40,7 @@ const CGFloat kImageViewMargin = 16;
 @synthesize checked = _checked;
 @synthesize type = _type;
 @synthesize checkMarkImageView = _checkMarkImageView;
+@synthesize highlightAnimationRunning = _highlightAnimationRunning;
 
 + (instancetype)consentBumpOptionButtonWithTitle:(NSString*)title
                                             text:(NSString*)text {
@@ -50,9 +61,14 @@ const CGFloat kImageViewMargin = 16;
   separator.translatesAutoresizingMaskIntoConstraints = NO;
   [option addSubview:separator];
 
-  UIImageView* checkMarkImageView = [[UIImageView alloc] init];
+  UIImageView* checkMarkImageView = [[UIImageView alloc]
+      initWithImage:
+          [[UIImage imageNamed:@"consent_bump_checkmark"]
+              imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
   option.checkMarkImageView = checkMarkImageView;
   checkMarkImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  checkMarkImageView.hidden = YES;
+  checkMarkImageView.tintColor = UIColorFromRGB(kCheckmarkColor);
   [option addSubview:checkMarkImageView];
 
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(option);
@@ -111,6 +127,8 @@ const CGFloat kImageViewMargin = 16;
     [checkMarkImageView.bottomAnchor
         constraintLessThanOrEqualToAnchor:option.bottomAnchor
                                  constant:-kImageViewMargin],
+    [checkMarkImageView.heightAnchor constraintEqualToConstant:kCheckmarkSize],
+    [checkMarkImageView.widthAnchor constraintEqualToConstant:kCheckmarkSize],
 
     // Separator.
     [separator.heightAnchor
@@ -125,12 +143,65 @@ const CGFloat kImageViewMargin = 16;
   return option;
 }
 
+#pragma mark - Properties
+
 - (void)setChecked:(BOOL)checked {
   if (checked == _checked)
     return;
 
   _checked = checked;
-  // TODO(crbug.com/866506): Update image.
+  self.checkMarkImageView.hidden = !checked;
+}
+
+#pragma mark - UIButton
+
+- (void)setHighlighted:(BOOL)highlighted {
+  [super setHighlighted:highlighted];
+
+  if (self.highlightAnimationRunning)
+    return;
+
+  if (highlighted) {
+    [self animateHighlighting];
+  } else {
+    [self animateUnhighlighting];
+  }
+}
+
+#pragma mark - Private
+
+// Highlights this view, in an animated way. If at the end of the animation the
+// view isn't |highlighted| anymore, the effect is removed.
+- (void)animateHighlighting {
+  self.highlightAnimationRunning = YES;
+  [UIView animateWithDuration:kAnimationDuration
+      delay:0
+      options:UIViewAnimationOptionCurveEaseOut
+      animations:^{
+        self.backgroundColor = [UIColor colorWithWhite:0 alpha:kHighlightAlpha];
+      }
+      completion:^(BOOL finished) {
+        self.highlightAnimationRunning = NO;
+        if (!self.highlighted)
+          [self animateUnhighlighting];
+      }];
+}
+
+// Unhighlights this view, in an animated way. If at the end of the animation
+// the view is |highlighted|, the effect is added back.
+- (void)animateUnhighlighting {
+  self.highlightAnimationRunning = YES;
+  [UIView animateWithDuration:kAnimationDuration
+      delay:0
+      options:UIViewAnimationOptionCurveEaseOut
+      animations:^{
+        self.backgroundColor = [UIColor clearColor];
+      }
+      completion:^(BOOL finished) {
+        self.highlightAnimationRunning = NO;
+        if (self.highlighted)
+          [self animateHighlighting];
+      }];
 }
 
 @end
