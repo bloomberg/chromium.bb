@@ -21,6 +21,7 @@
         android:textColor="#de000000"
         android:textSize="16sp" />
 
+    <!-- This TextView is hidden if it has no text, so the initial visibility should be "gone". -->
     <TextView
         android:id="@+id/description"
         android:layout_width="wrap_content"
@@ -28,5 +29,6 @@
         android:layout_alignStart="@id/title"
         android:layout_below="@id/title"
         android:textColor="#8a000000"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:visibility="gone"/>
 </merge>
