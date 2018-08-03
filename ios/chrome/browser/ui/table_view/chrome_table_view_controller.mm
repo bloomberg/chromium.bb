@@ -79,18 +79,6 @@ const CGFloat kTableViewSeparatorColor = 0xC8C7CC;
   _tableViewModel = [[TableViewModel alloc] init];
 }
 
-- (void)reconfigureCellsForItems:(NSArray*)items {
-  for (TableViewItem* item in items) {
-    NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
-    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-
-    // |cell| may be nil if the row is not currently on screen.
-    if (cell) {
-      [item configureCell:cell withStyler:self.styler];
-    }
-  }
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -171,6 +159,34 @@ const CGFloat kTableViewSeparatorColor = 0xC8C7CC;
     if (completion)
       completion(YES);
   }
+}
+
+#pragma mark - ChromeTableViewConsumer
+
+- (void)reconfigureCellsForItems:(NSArray*)items {
+  for (TableViewItem* item in items) {
+    NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
+    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+
+    // |cell| may be nil if the row is not currently on screen.
+    if (cell) {
+      [item configureCell:cell withStyler:self.styler];
+    }
+  }
+}
+
+- (void)reloadCellsForItems:(NSArray*)items
+           withRowAnimation:(UITableViewRowAnimation)rowAnimation {
+  if (![items count])
+    return;
+  NSMutableArray* indexPathsToReload = [[NSMutableArray alloc] init];
+  for (TableViewItem* item in items) {
+    NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
+    [indexPathsToReload addObject:indexPath];
+  }
+  if ([indexPathsToReload count])
+    [self.tableView reloadRowsAtIndexPaths:indexPathsToReload
+                          withRowAnimation:rowAnimation];
 }
 
 #pragma mark - UITableViewDataSource

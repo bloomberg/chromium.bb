@@ -221,7 +221,11 @@ class ChromeBrowserState;
 #pragma mark - ClearBrowsingDataConsumer
 
 - (void)updateCellsForItem:(ListItem*)item {
-  [self reconfigureCellsForItems:@[ item ]];
+  // Reload the item instead of reconfiguring it. This might update
+  // TableViewTextLinkItems which which can have different number of lines,
+  // thus the cell height needs to adapt accordingly.
+  [self reloadCellsForItems:@[ item ]
+           withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 - (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
