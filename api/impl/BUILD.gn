@@ -8,6 +8,8 @@ source_set("impl") {
     "screen_list.h",
     "screen_listener_impl.cc",
     "screen_listener_impl.h",
+    "screen_publisher_impl.cc",
+    "screen_publisher_impl.h",
   ]
 
   deps = [

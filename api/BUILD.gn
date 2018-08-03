@@ -15,6 +15,7 @@ source_set("api_unittests") {
   sources = [
     "impl/screen_list_unittest.cc",
     "impl/screen_listener_impl_unittest.cc",
+    "impl/screen_publisher_impl_unittest.cc",
     "public/screen_info_unittest.cc",
   ]
 
