@@ -705,6 +705,7 @@
             }
           ],
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -724,6 +725,7 @@
               "os": "ChromeOS"
             }
           ],
+          "idempotent": false,
           "shards": 4
         }
       }

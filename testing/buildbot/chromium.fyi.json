@@ -840,7 +840,8 @@
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "idempotent": false
         }
       },
       {
@@ -849,6 +850,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -860,6 +862,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       },
@@ -1028,6 +1031,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -1041,6 +1045,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -1049,6 +1054,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       },
@@ -1060,6 +1066,7 @@
         "name": "telemetry_unittests_viz",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       }
@@ -2969,6 +2976,7 @@
             }
           ],
           "hard_timeout": 3600,
+          "idempotent": false,
           "io_timeout": 3600,
           "shards": 12
         }
@@ -2994,6 +3002,7 @@
             }
           ],
           "hard_timeout": 3600,
+          "idempotent": false,
           "io_timeout": 3600,
           "shards": 6
         }
@@ -4731,7 +4740,8 @@
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "idempotent": false
         }
       },
       {
@@ -4740,6 +4750,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -4751,6 +4762,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       },
@@ -5517,7 +5529,8 @@
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "idempotent": false
         }
       },
       {
@@ -5526,6 +5539,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -5537,6 +5551,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       },

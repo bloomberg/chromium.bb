@@ -427,6 +427,7 @@
       ],
       'swarming': {
         'hard_timeout': 1200,
+        'idempotent': False,
         'shards': 12,
       },
     },
@@ -444,6 +445,7 @@
       ],
       'swarming': {
         'hard_timeout': 1200,
+        'idempotent': False,
         'shards': 6,
       },
     },
@@ -458,6 +460,7 @@
       ],
       'swarming': {
         'hard_timeout': 960,
+        'idempotent': False,
         'shards': 12,
       },
     },
@@ -468,6 +471,7 @@
         '--jobs=1',
       ],
       'swarming': {
+        'idempotent': False,
         'shards': 4,
       },
     },
@@ -829,13 +833,18 @@
     'content_shell_crash_test': {},
     'devtools_closure_compile': {},
     'devtools_eslint': {},
-    'telemetry_gpu_unittests': {},
+    'telemetry_gpu_unittests': {
+      'swarming': {
+        'idempotent': False,
+      },
+    },
     'telemetry_perf_unittests': {
       'args': [
         '--xvfb',
       ],
       'swarming': {
         'hard_timeout': 960,
+        'idempotent': False,
         'shards': 12,
       },
     },
@@ -844,6 +853,7 @@
         '--jobs=1',
       ],
       'swarming': {
+        'idempotent': False,
         'shards': 4,
       },
     },
@@ -871,12 +881,17 @@
   'desktop_chromium_isolated_scripts': {
     'content_shell_crash_test': {},
     'metrics_python_tests': {},
-    'telemetry_gpu_unittests': {},
+    'telemetry_gpu_unittests': {
+      'swarming': {
+        'idempotent': False,
+      },
+    },
     'telemetry_unittests': {
       'args': [
         '--jobs=1',
       ],
       'swarming': {
+        'idempotent': False,
         'shards': 4,
       },
     },
@@ -1611,6 +1626,7 @@
       ],
       'swarming': {
         'hard_timeout': 960,
+        'idempotent': False,
         'shards': 12,
       },
     },
@@ -1622,6 +1638,7 @@
       ],
       'swarming': {
         'hard_timeout': 960,
+        'idempotent': False,
         'shards': 12,
       },
     },
@@ -1631,11 +1648,13 @@
         '--extra-browser-args=--enable-features=VizDisplayCompositor',
       ],
       'swarming': {
+        'idempotent': False,
         'shards': 4,
       },
      },
      'telemetry_unittests': {
        'swarming': {
+         'idempotent': False,
          'shards': 4,
        },
      },
@@ -2026,6 +2045,7 @@
     'telemetry_perf_unittests': {
       'swarming': {
         'hard_timeout': 960,
+        'idempotent': False,
         'shards': 12,
       },
     },

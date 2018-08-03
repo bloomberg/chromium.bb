@@ -1559,7 +1559,8 @@
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "idempotent": false
         }
       },
       {
@@ -1572,6 +1573,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -1583,6 +1585,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       },
@@ -2331,7 +2334,8 @@
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "idempotent": false
         }
       },
       {
@@ -2344,6 +2348,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -2355,6 +2360,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       },
@@ -3008,7 +3014,8 @@
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "idempotent": false
         }
       },
       {
@@ -3019,6 +3026,7 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "idempotent": false,
           "shards": 4
         }
       },
@@ -4321,7 +4329,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "idempotent": false
         }
       },
       {
@@ -4339,6 +4348,7 @@
             }
           ],
           "hard_timeout": 960,
+          "idempotent": false,
           "shards": 12
         }
       },
@@ -4355,6 +4365,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "idempotent": false,
           "shards": 4
         }
       },
