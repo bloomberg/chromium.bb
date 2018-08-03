@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
@@ -12,6 +11,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.PropertyListObservable;
+import org.chromium.chrome.browser.modelutil.SimpleListObservableBase;
+import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcpBase;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -30,11 +32,9 @@ import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -50,6 +50,10 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final OfflineModelObserver mOfflineModelObserver;
     private final SuggestionsSource mSuggestionsSource;
+    private final SuggestionsRanker mSuggestionsRanker;
+
+    private final PropertyListObservable<SnippetArticle, PartialBindCallback> mSuggestions =
+            new PropertyListObservable<>();
 
     // Children
     private final SectionHeader mHeader;
@@ -93,6 +97,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         mDelegate = delegate;
         mCategoryInfo = info;
         mSuggestionsSource = uiDelegate.getSuggestionsSource();
+        mSuggestionsRanker = ranker;
 
         boolean isExpandable = ChromeFeatureList.isEnabled(
                                        ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
@@ -102,7 +107,8 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
                                          this::updateSuggestionsVisibilityForExpandableHeader)
                                : new SectionHeader(info.getTitle());
-        mSuggestionsList = new SuggestionsList(mSuggestionsSource, ranker, info);
+        mSuggestionsList =
+                new SuggestionsList(mSuggestionsSource, mSuggestions, this::bindSuggestion);
         mMoreButton = new ActionItem(this, ranker);
 
         mStatus = StatusItem.createNoSuggestionsItem(info);
@@ -111,88 +117,21 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         mOfflineModelObserver = new OfflineModelObserver(offlinePageBridge);
         uiDelegate.addDestructionObserver(mOfflineModelObserver);
-
     }
 
-    private static class SuggestionsList
-            extends ChildNode<NewTabPageViewHolder, PartialBindCallback>
-            implements Iterable<SnippetArticle>, PartiallyBindable {
-        private final List<SnippetArticle> mSuggestions = new ArrayList<>();
-
+    private static class SuggestionsList extends SimpleRecyclerViewMcpBase<SnippetArticle,
+            NewTabPageViewHolder, PartialBindCallback> {
         private final SuggestionsSource mSuggestionsSource;
-        private final SuggestionsRanker mSuggestionsRanker;
-        private final SuggestionsCategoryInfo mCategoryInfo;
+        private final SimpleListObservableBase<SnippetArticle, PartialBindCallback> mSuggestions;
 
         private boolean mIsDestroyed;
 
-        public SuggestionsList(SuggestionsSource suggestionsSource, SuggestionsRanker ranker,
-                SuggestionsCategoryInfo categoryInfo) {
+        public SuggestionsList(SuggestionsSource suggestionsSource,
+                PropertyListObservable<SnippetArticle, PartialBindCallback> suggestions,
+                ViewBinder<SnippetArticle, NewTabPageViewHolder, PartialBindCallback> viewBinder) {
+            super(ignored -> ItemViewType.SNIPPET, viewBinder, suggestions);
             mSuggestionsSource = suggestionsSource;
-            mSuggestionsRanker = ranker;
-            mCategoryInfo = categoryInfo;
-        }
-
-        @Override
-        protected int getItemCountForDebugging() {
-            return mSuggestions.size();
-        }
-
-        @Override
-        @ItemViewType
-        public int getItemViewType(int position) {
-            checkIndex(position);
-            return ItemViewType.SNIPPET;
-        }
-
-        @Override
-        public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
-            checkIndex(position);
-            SnippetArticle suggestion = getSuggestionAt(position);
-            mSuggestionsRanker.rankSuggestion(suggestion);
-            ((SnippetArticleViewHolder) holder).onBindViewHolder(suggestion, mCategoryInfo);
-        }
-
-        public SnippetArticle getSuggestionAt(int position) {
-            return mSuggestions.get(position);
-        }
-
-        public void clear() {
-            int itemCount = mSuggestions.size();
-            if (itemCount == 0) return;
-
-            mSuggestions.clear();
-            notifyItemRangeRemoved(0, itemCount);
-        }
-
-        /**
-         * Clears all suggestions except for the first {@code n} suggestions.
-         */
-        private void clearAllButFirstN(int n) {
-            int itemCount = mSuggestions.size();
-            if (itemCount > n) {
-                mSuggestions.subList(n, itemCount).clear();
-                notifyItemRangeRemoved(n, itemCount - n);
-            }
-        }
-
-        public void addAll(List<SnippetArticle> suggestions) {
-            if (suggestions.isEmpty()) return;
-
-            int insertionPointIndex = mSuggestions.size();
-            mSuggestions.addAll(suggestions);
-            notifyItemRangeInserted(insertionPointIndex, suggestions.size());
-        }
-
-        public SnippetArticle remove(int position) {
-            SnippetArticle suggestion = mSuggestions.remove(position);
-            notifyItemRemoved(position);
-            return suggestion;
-        }
-
-        @NonNull
-        @Override
-        public Iterator<SnippetArticle> iterator() {
-            return mSuggestions.iterator();
+            mSuggestions = suggestions;
         }
 
         @Override
@@ -208,7 +147,6 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         @Override
         public void dismissItem(int position, Callback<String> itemRemovedCallback) {
-            checkIndex(position);
             if (mIsDestroyed) {
                 // It is possible for this method to be called after the NewTabPage has had
                 // destroy() called. This can happen when
@@ -218,23 +156,23 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
                 return;
             }
 
-            SnippetArticle suggestion = remove(position);
+            SnippetArticle suggestion = mSuggestions.removeAt(position);
             mSuggestionsSource.dismissSuggestion(suggestion);
             itemRemovedCallback.onResult(suggestion.mTitle);
         }
 
-        public void updateSuggestionOfflineId(
-                SnippetArticle article, Long newId, boolean isPrefetched) {
-            int index = mSuggestions.indexOf(article);
+        public void updateSuggestionOfflineId(int position, Long newId, boolean isPrefetched) {
+            SnippetArticle article = mSuggestions.get(position);
             // The suggestions could have been removed / replaced in the meantime.
-            if (index == -1) return;
+            if (position == -1) return;
 
             Long oldId = article.getOfflinePageOfflineId();
             article.setOfflinePageOfflineId(newId);
             article.setIsPrefetched(isPrefetched);
 
+            // TODO(bauerb): This notification should be sent by the article itself.
             if ((oldId == null) == (newId == null)) return;
-            notifyItemChanged(index, SnippetArticleViewHolder::refreshOfflineBadgeVisibility);
+            notifyItemChanged(position, SnippetArticleViewHolder::refreshOfflineBadgeVisibility);
         }
 
         public void destroy() {
@@ -316,9 +254,9 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
      */
     public void removeSuggestionById(String idWithinCategory) {
         int i = 0;
-        for (SnippetArticle suggestion : mSuggestionsList) {
+        for (SnippetArticle suggestion : mSuggestions) {
             if (suggestion.mIdWithinCategory.equals(idWithinCategory)) {
-                mSuggestionsList.remove(i);
+                mSuggestions.removeAt(i);
                 return;
             }
             i++;
@@ -328,7 +266,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     private int getNumberOfSuggestionsExposed() {
         int exposedCount = 0;
         int suggestionsCount = 0;
-        for (SnippetArticle suggestion : mSuggestionsList) {
+        for (SnippetArticle suggestion : mSuggestions) {
             ++suggestionsCount;
             // We treat all suggestions preceding an exposed suggestion as exposed too.
             if (suggestion.mExposed) exposedCount = suggestionsCount;
@@ -338,15 +276,15 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     }
 
     private boolean hasSuggestions() {
-        return mSuggestionsList.getItemCount() != 0;
+        return mSuggestions.size() != 0;
     }
 
     public int getSuggestionsCount() {
-        return mSuggestionsList.getItemCount();
+        return mSuggestions.size();
     }
 
     public SnippetArticle getSuggestionForTesting(int index) {
-        return mSuggestionsList.getSuggestionAt(index);
+        return mSuggestions.get(index);
     }
 
     public boolean isDataStale() {
@@ -367,9 +305,9 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     }
 
     private String[] getDisplayedSuggestionIds() {
-        String[] suggestionIds = new String[mSuggestionsList.getItemCount()];
-        for (int i = 0; i < mSuggestionsList.getItemCount(); ++i) {
-            suggestionIds[i] = mSuggestionsList.getSuggestionAt(i).mIdWithinCategory;
+        String[] suggestionIds = new String[mSuggestions.size()];
+        for (int i = 0; i < mSuggestions.size(); ++i) {
+            suggestionIds[i] = mSuggestions.get(i).mIdWithinCategory;
         }
         return suggestionIds;
     }
@@ -396,7 +334,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         List<SnippetArticle> suggestions =
                 mSuggestionsSource.getSuggestionsForCategory(getCategory());
         Log.d(TAG, "Received %d new suggestions for category %d, had %d previously.",
-                suggestions.size(), getCategory(), mSuggestionsList.getItemCount());
+                suggestions.size(), getCategory(), mSuggestions.size());
 
         // Nothing to append, we can just exit now.
         // TODO(dgn): Distinguish the init case where we have to wait? (https://crbug.com/711457)
@@ -429,13 +367,18 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         if (keepSectionSize) {
             Log.d(TAG, "updateSuggestions: keeping the first %d suggestion",
                     numberOfSuggestionsExposed);
-            int numberofSuggestionsToAppend =
+            int numSuggestionsToAppend =
                     Math.max(0, suggestions.size() - numberOfSuggestionsExposed);
-            mSuggestionsList.clearAllButFirstN(numberOfSuggestionsExposed);
-            trimIncomingSuggestions(suggestions,
-                    /* targetSize = */ numberofSuggestionsToAppend);
+            int itemCount = mSuggestions.size();
+            if (itemCount > numberOfSuggestionsExposed) {
+                mSuggestions.removeRange(
+                        numberOfSuggestionsExposed, itemCount - numberOfSuggestionsExposed);
+            }
+            trimIncomingSuggestions(suggestions, /* targetSize = */ numSuggestionsToAppend);
         }
-        mSuggestionsList.addAll(suggestions);
+        if (!suggestions.isEmpty()) {
+            mSuggestions.addAll(suggestions);
+        }
 
         mOfflineModelObserver.updateAllSuggestionsOfflineAvailability(
                 reportPrefetchedSuggestionsCount);
@@ -458,7 +401,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
      * the incoming list.
      */
     private void trimIncomingSuggestions(List<SnippetArticle> suggestions, int targetSize) {
-        for (SnippetArticle suggestion : mSuggestionsList) {
+        for (SnippetArticle suggestion : mSuggestions) {
             suggestions.remove(suggestion);
         }
 
@@ -547,7 +490,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
     /** Clears the suggestions and related data, resetting the state of the section. */
     public void clearData() {
-        mSuggestionsList.clear();
+        mSuggestions.set(Collections.emptyList());
         mHasAppended = false;
         mIsDataStale = false;
     }
@@ -653,13 +596,25 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
             boolean isPrefetched = item != null
                     && TextUtils.equals(item.getClientId().getNamespace(),
                                OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE);
-            mSuggestionsList.updateSuggestionOfflineId(
-                    suggestion, item == null ? null : item.getOfflineId(), isPrefetched);
+
+            mSuggestionsList.updateSuggestionOfflineId(mSuggestions.indexOf(suggestion),
+                    item == null ? null : item.getOfflineId(), isPrefetched);
         }
 
         @Override
         public Iterable<SnippetArticle> getOfflinableSuggestions() {
-            return mSuggestionsList;
+            return mSuggestions;
         }
+    }
+
+    private void bindSuggestion(NewTabPageViewHolder holder, SnippetArticle suggestion,
+            @Nullable PartialBindCallback callback) {
+        if (callback != null) {
+            callback.onResult(holder);
+            return;
+        }
+
+        mSuggestionsRanker.rankSuggestion(suggestion);
+        ((SnippetArticleViewHolder) holder).onBindViewHolder(suggestion, mCategoryInfo);
     }
 }

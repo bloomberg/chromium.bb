@@ -77,10 +77,12 @@ public class SimpleListObservableBase<T, P> extends ListObservableImpl<P> implem
     /**
      * Removes an item by position from the held {@link List}. Notifies observers about the removal.
      * @param position The position of the item to be removed.
+     * @return The item that has been removed.
      */
-    public void removeAt(int position) {
-        mItems.remove(position);
+    public T removeAt(int position) {
+        T item = mItems.remove(position);
         notifyItemRemoved(position);
+        return item;
     }
 
     /**

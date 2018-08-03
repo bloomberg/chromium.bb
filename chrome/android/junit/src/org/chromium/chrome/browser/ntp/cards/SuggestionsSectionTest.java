@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doNothing;
@@ -576,6 +577,7 @@ public class SuggestionsSectionTest {
             @SuppressWarnings("unchecked")
             Callback<String> callback = mock(Callback.class);
             section.dismissItem(1, callback);
+            verify(callback).onResult(anyString());
         }
         assertEquals(0, section.getSuggestionsCount());
 
