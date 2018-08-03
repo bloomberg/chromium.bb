@@ -27,7 +27,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
@@ -309,11 +308,11 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   int64_t id = 0;
   if (!base::StringToInt64(registration_id, &id))
     return CreateInvalidVersionIdErrorResponse();
-  PushEventPayload payload;
+  base::Optional<std::string> payload;
   if (data.size() > 0)
-    payload.setData(data);
+    payload = data;
   BrowserContext::DeliverPushMessage(
-      browser_context_, GURL(origin), id, payload,
+      browser_context_, GURL(origin), id, std::move(payload),
       base::BindRepeating([](mojom::PushDeliveryStatus status) {}));
 
   return Response::OK();

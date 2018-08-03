@@ -25,7 +25,6 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/public/common/push_event_payload.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
@@ -305,7 +304,7 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
                                           std::move(callback));
   }
 
-  void DispatchPushEvent(const PushEventPayload& payload,
+  void DispatchPushEvent(const base::Optional<std::string>& payload,
                          DispatchPushEventCallback callback) override {
     if (!helper_)
       return;
@@ -659,7 +658,7 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
 }
 
 void EmbeddedWorkerTestHelper::OnPushEvent(
-    const PushEventPayload& payload,
+    base::Optional<std::string> payload,
     mojom::ServiceWorker::DispatchPushEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                           base::Time::Now());
@@ -978,11 +977,12 @@ void EmbeddedWorkerTestHelper::OnNotificationCloseEventStub(
 }
 
 void EmbeddedWorkerTestHelper::OnPushEventStub(
-    const PushEventPayload& payload,
+    base::Optional<std::string> payload,
     mojom::ServiceWorker::DispatchPushEventCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnPushEvent,
-                                AsWeakPtr(), payload, std::move(callback)));
+      FROM_HERE,
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnPushEvent, AsWeakPtr(),
+                     std::move(payload), std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnAbortPaymentEventStub(

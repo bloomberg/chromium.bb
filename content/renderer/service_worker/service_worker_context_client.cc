@@ -23,7 +23,6 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
@@ -1839,7 +1838,7 @@ void ServiceWorkerContextClient::DispatchNotificationCloseEvent(
 }
 
 void ServiceWorkerContextClient::DispatchPushEvent(
-    const PushEventPayload& payload,
+    const base::Optional<std::string>& payload,
     DispatchPushEventCallback callback) {
   int request_id = context_->timeout_timer->StartEventWithCustomTimeout(
       CreateAbortCallback(&context_->push_event_callbacks),
@@ -1853,8 +1852,8 @@ void ServiceWorkerContextClient::DispatchPushEvent(
 
   // Only set data to be a valid string if the payload had decrypted data.
   blink::WebString data;
-  if (!payload.is_null)
-    data = blink::WebString::FromUTF8(payload.data);
+  if (payload)
+    data = blink::WebString::FromUTF8(*payload);
   proxy_->DispatchPushEvent(request_id, data);
 }
 

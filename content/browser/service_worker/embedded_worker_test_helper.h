@@ -43,7 +43,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class TestBrowserContext;
 struct PlatformNotificationData;
-struct PushEventPayload;
 
 // In-Process EmbeddedWorker test helper.
 //
@@ -212,7 +211,7 @@ class EmbeddedWorkerTestHelper {
       const PlatformNotificationData& notification_data,
       mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback);
   virtual void OnPushEvent(
-      const PushEventPayload& payload,
+      base::Optional<std::string> payload,
       mojom::ServiceWorker::DispatchPushEventCallback callback);
   virtual void OnAbortPaymentEvent(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
@@ -312,7 +311,7 @@ class EmbeddedWorkerTestHelper {
       const PlatformNotificationData& notification_data,
       mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback);
   void OnPushEventStub(
-      const PushEventPayload& payload,
+      base::Optional<std::string> payload,
       mojom::ServiceWorker::DispatchPushEventCallback callback);
   void OnAbortPaymentEventStub(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,

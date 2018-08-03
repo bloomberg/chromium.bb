@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -29,7 +30,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/push_messaging_service.h"
-#include "content/public/common/push_event_payload.h"
 
 class Profile;
 class PushMessagingAppIdentifier;
@@ -256,7 +256,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       base::Callback<void(const std::string& app_id,
                           const GURL& origin,
                           int64_t service_worker_registration_id,
-                          const content::PushEventPayload& payload)>;
+                          base::Optional<std::string> payload)>;
 
   void SetMessageDispatchedCallbackForTesting(
       const MessageDispatchedCallback& callback) {

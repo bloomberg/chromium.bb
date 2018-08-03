@@ -55,7 +55,6 @@ class WebURLResponse;
 namespace content {
 
 struct PlatformNotificationData;
-struct PushEventPayload;
 class EmbeddedWorkerInstanceClientImpl;
 class ServiceWorkerNetworkProvider;
 class ServiceWorkerProviderContext;
@@ -318,7 +317,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,
       DispatchNotificationCloseEventCallback callback) override;
-  void DispatchPushEvent(const PushEventPayload& payload,
+  void DispatchPushEvent(const base::Optional<std::string>& payload,
                          DispatchPushEventCallback callback) override;
   void DispatchSyncEvent(const std::string& tag,
                          bool last_chance,

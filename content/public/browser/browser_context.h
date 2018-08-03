@@ -15,6 +15,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
+#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -73,7 +74,6 @@ class DownloadManager;
 class DownloadManagerDelegate;
 class PermissionController;
 class PermissionControllerDelegate;
-struct PushEventPayload;
 class PushMessagingService;
 class ResourceContext;
 class ServiceManagerConnection;
@@ -171,7 +171,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context,
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const PushEventPayload& payload,
+      base::Optional<std::string> payload,
       const base::Callback<void(mojom::PushDeliveryStatus)>& callback);
 
   static void NotifyWillBeDestroyed(BrowserContext* browser_context);

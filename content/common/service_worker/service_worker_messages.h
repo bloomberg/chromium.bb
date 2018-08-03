@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/platform_notification_data.h"
-#include "content/public/common/push_event_payload.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -65,11 +64,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(side_data_blob_uuid)
   IPC_STRUCT_TRAITS_MEMBER(side_data_blob_size)
   IPC_STRUCT_TRAITS_MEMBER(side_data_blob)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-  IPC_STRUCT_TRAITS_MEMBER(is_null)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_MESSAGES_H_
