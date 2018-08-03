@@ -6,10 +6,13 @@ package org.chromium.chrome.browser.signin;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
 
@@ -31,6 +34,13 @@ public class ConsentBumpMoreOptionsFragment extends Fragment {
         noChanges.setDescriptionText(getText(R.string.consent_bump_no_changes_description));
         RadioButtonWithDescription turnOn = view.findViewById(R.id.consent_bump_turn_on);
         turnOn.setDescriptionText(getText(R.string.consent_bump_turn_on_description));
+
+        Button button = view.findViewById(R.id.back_button);
+        button.setOnClickListener(btn -> {
+            FragmentManager fragmentManager =
+                    ApiCompatibilityUtils.requireNonNull(getFragmentManager());
+            fragmentManager.popBackStack();
+        });
         return view;
     }
 }
