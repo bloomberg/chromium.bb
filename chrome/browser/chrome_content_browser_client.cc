@@ -438,6 +438,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/socket_permission.h"
 #include "extensions/common/switches.h"
@@ -4366,7 +4367,8 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     bool is_navigation,
-    network::mojom::URLLoaderFactoryRequest* factory_request) {
+    network::mojom::URLLoaderFactoryRequest* factory_request,
+    scoped_refptr<content::RedirectChecker>* redirect_checker) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
@@ -4377,8 +4379,8 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
   if (!web_request_api)
     return false;
 
-  return web_request_api->MaybeProxyURLLoaderFactory(frame, is_navigation,
-                                                     factory_request);
+  return web_request_api->MaybeProxyURLLoaderFactory(
+      frame, is_navigation, factory_request, redirect_checker);
 #else
   return false;
 #endif
@@ -4618,6 +4620,23 @@ ChromeContentBrowserClient::CreateWindowForPictureInPicture(
 #else
   return nullptr;
 #endif
+}
+
+bool ChromeContentBrowserClient::IsSafeRedirectTarget(
+    const GURL& url,
+    content::ResourceContext* context) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+    const Extension* extension =
+        io_data->GetExtensionInfoMap()->extensions().GetByID(url.host());
+    if (!extension)
+      return false;
+    return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
+        extension, url.path());
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  return true;
 }
 
 // Static; handles rewriting Web UI URLs.

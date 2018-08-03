@@ -23,9 +23,9 @@ struct RedirectInfo;
 namespace content {
 
 class NavigationData;
+class NavigationLoaderInterceptor;
 class ResourceContext;
 class StoragePartition;
-class NavigationLoaderInterceptor;
 struct GlobalRequestID;
 
 class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {

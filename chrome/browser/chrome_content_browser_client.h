@@ -425,7 +425,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
       bool is_navigation,
-      network::mojom::URLLoaderFactoryRequest* factory_request) override;
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      scoped_refptr<content::RedirectChecker>* redirect_checker) override;
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
   WillCreateURLLoaderRequestInterceptors(
       content::NavigationUIData* navigation_ui_data,
@@ -481,6 +482,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool has_user_gesture) override;
   std::unique_ptr<content::OverlayWindow> CreateWindowForPictureInPicture(
       content::PictureInPictureWindowController* controller) override;
+  bool IsSafeRedirectTarget(const GURL& url,
+                            content::ResourceContext* context) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

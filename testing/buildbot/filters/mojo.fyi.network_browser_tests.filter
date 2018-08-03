@@ -116,11 +116,6 @@
 -SSLUITest.CertificateTransparencyEnforcementDisabledForUrls/0
 -SSLUITest.CertificateTransparencyEnforcementDisabledForUrls/1
 
-# Redirects to chrome-extension:// should be blocked unless the resource is
-# webaccessible.  https://crbug.com/821586
--ProcessManagerBrowserTest.ServerRedirectToNonWebAccessibleResource
--ProcessManagerBrowserTest.CrossExtensionEmbeddingOfWebAccessibleResources
-
 # https://crbug.com/853256
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked/0
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked/1
@@ -194,9 +189,22 @@
 
 # http://crbug.com/721414
 # TODO(rockot): add support for webRequest API.
--ExtensionWebRequestApiTest.WebRequestBlocking
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
+
+# http://crbug.com/827582
+# Editing response cookies through headers with webRequest is not supported with
+# the network service.
+-ExtensionWebRequestApiTest.WebRequestBlockingSetCookieHeader
+
+# http://crbug.com/868545
+# Network service does not support redirecting subresource requests to schemes
+# besides http/https/data.
+-ExtensionWebRequestApiTest.WebRequestSubresourceRedirects
+
+# http://crbug.com/870588
+# Flaky on Win with network service.
+-ExtensionWebRequestApiTest.WebRequestTestOSDD
 
 # http://crbug.com/809583
 # Switch Predictor from using ResourceThrottle and ResourceDispatcherHost to
