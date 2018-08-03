@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_container_view.h"
@@ -98,10 +99,10 @@ class StackLayout : public views::LayoutManager {
 AssistantMainStage::AssistantMainStage(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      committed_query_exit_animation_observer_(
+      active_query_exit_animation_observer_(
           std::make_unique<ui::CallbackLayerAnimationObserver>(
               /*animation_ended_callback=*/base::BindRepeating(
-                  &AssistantMainStage::OnCommittedQueryExitAnimationEnded,
+                  &AssistantMainStage::OnActiveQueryExitAnimationEnded,
                   base::Unretained(this)))) {
   InitLayout(assistant_controller);
 
@@ -109,9 +110,11 @@ AssistantMainStage::AssistantMainStage(
   // AssistantController, so AssistantController is guaranteed to outlive the
   // AssistantMainStage.
   assistant_controller_->interaction_controller()->AddModelObserver(this);
+  assistant_controller_->ui_controller()->AddModelObserver(this);
 }
 
 AssistantMainStage::~AssistantMainStage() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
@@ -124,17 +127,17 @@ void AssistantMainStage::ChildVisibilityChanged(views::View* child) {
 }
 
 void AssistantMainStage::OnViewBoundsChanged(views::View* view) {
-  if (view == committed_query_view_) {
-    UpdateCommittedQueryViewSpacer();
+  if (view == active_query_view_) {
+    UpdateActiveQueryViewSpacer();
+  } else if (view == committed_query_view_) {
+    UpdateQueryViewTransform(committed_query_view_);
   } else if (view == pending_query_view_) {
-    // The pending query should be bottom aligned in its parent until it is
-    // committed at which point it is animated to the top.
-    const int top_offset =
-        query_layout_container_->height() - pending_query_view_->height();
-
-    gfx::Transform transform;
-    transform.Translate(0, top_offset);
-    pending_query_view_->layer()->SetTransform(transform);
+    UpdateQueryViewTransform(pending_query_view_);
+  } else if (view == query_layout_container_) {
+    if (committed_query_view_)
+      UpdateQueryViewTransform(committed_query_view_);
+    if (pending_query_view_)
+      UpdateQueryViewTransform(pending_query_view_);
   }
 }
 
@@ -165,12 +168,12 @@ void AssistantMainStage::InitContentLayoutContainer(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
 
-  // Committed query spacer.
-  // Note: This view reserves layout space for |committed_query_view_|,
+  // Active query spacer.
+  // Note: This view reserves layout space for |active_query_view_|,
   // dynamically mirroring its preferred size and visibility.
-  committed_query_view_spacer_ = new views::View();
-  committed_query_view_spacer_->AddObserver(this);
-  content_layout_container->AddChildView(committed_query_view_spacer_);
+  active_query_view_spacer_ = new views::View();
+  active_query_view_spacer_->AddObserver(this);
+  content_layout_container->AddChildView(active_query_view_spacer_);
 
   // UI element container.
   ui_element_container_ = new UiElementContainerView(assistant_controller);
@@ -199,6 +202,7 @@ void AssistantMainStage::InitQueryLayoutContainer(
   // necessary because |query_layout_container_| may not change size in response
   // to these events, thereby requiring an explicit layout pass.
   query_layout_container_ = new views::View();
+  query_layout_container_->AddObserver(this);
   query_layout_container_->set_can_process_events_within_subtree(false);
   query_layout_container_->SetLayoutManager(std::make_unique<StackLayout>());
 
@@ -206,22 +210,35 @@ void AssistantMainStage::InitQueryLayoutContainer(
 }
 
 void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
-  // Clean up any previous committed query.
-  OnCommittedQueryCleared();
-
+  // The pending query has been committed. Update our pointers.
   committed_query_view_ = pending_query_view_;
   pending_query_view_ = nullptr;
 
   // Update the view.
   committed_query_view_->SetQuery(query);
 
-  // Upon query commit, the view for the query should move from the bottom of
-  // its parent to the top. This transition is animated in the motion spec.
+  // When the motion spec is disabled, we will immediately activate the
+  // committed query to prevent deviation from current UI behavior. When the
+  // motion spec is enabled, we activate the query upon receipt of the response.
+  if (!assistant::ui::kIsMotionSpecEnabled)
+    OnActivateQuery();
+}
+
+void AssistantMainStage::OnActivateQuery() {
+  // Clear the previously active query.
+  OnActiveQueryCleared();
+
+  active_query_view_ = committed_query_view_;
+  committed_query_view_ = nullptr;
+
+  // Upon response delivery, we consider a query active. The view for the query
+  // should move from the bottom of its parent to the top. This transition is
+  // animated when the motion spec is enabled.
   if (!assistant::ui::kIsMotionSpecEnabled) {
-    committed_query_view_->layer()->SetTransform(gfx::Transform());
+    active_query_view_->layer()->SetTransform(gfx::Transform());
   } else {
     using namespace assistant::util;
-    committed_query_view_->layer()->GetAnimator()->StartTogether(
+    active_query_view_->layer()->GetAnimator()->StartTogether(
         {// Animate transformation.
          CreateLayerAnimationSequence(
              // Pause...
@@ -244,30 +261,29 @@ void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
              CreateOpacityElement(1.f, kAnimationFadeInDuration))});
   }
 
-  UpdateCommittedQueryViewSpacer();
+  UpdateActiveQueryViewSpacer();
   UpdateSuggestionContainer();
 }
 
-void AssistantMainStage::OnCommittedQueryCleared() {
-  if (!committed_query_view_)
+void AssistantMainStage::OnActiveQueryCleared() {
+  if (!active_query_view_)
     return;
 
   if (!assistant::ui::kIsMotionSpecEnabled) {
-    delete committed_query_view_;
-    committed_query_view_ = nullptr;
-    UpdateCommittedQueryViewSpacer();
+    delete active_query_view_;
+    active_query_view_ = nullptr;
     return;
   }
 
   using namespace assistant::util;
 
-  // The previous committed query view will translate off stage.
+  // The active query view will translate off stage.
   gfx::Transform transform;
   transform.Translate(0, kAnimationExitTranslationDip);
 
-  // Animate an exit of the previous committed query view.
+  // Animate the exit of the action query view.
   StartLayerAnimationSequencesTogether(
-      committed_query_view_->layer()->GetAnimator(),
+      active_query_view_->layer()->GetAnimator(),
       {// Animate transformation.
        CreateLayerAnimationSequence(
            CreateTransformElement(transform, kAnimationExitTranslateDuration,
@@ -276,28 +292,36 @@ void AssistantMainStage::OnCommittedQueryCleared() {
        CreateLayerAnimationSequence(
            CreateOpacityElement(0.f, kAnimationExitFadeDuration))},
       // Observe the animation.
-      committed_query_exit_animation_observer_.get());
+      active_query_exit_animation_observer_.get());
 
   // Set the animation observer to active so that we receive callback events.
-  committed_query_exit_animation_observer_->SetActive();
+  active_query_exit_animation_observer_->SetActive();
 
   // Note that we have not yet deleted the query view but it will be cleaned up
   // when the animation observer callback runs.
-  committed_query_view_ = nullptr;
+  active_query_view_ = nullptr;
 }
 
-bool AssistantMainStage::OnCommittedQueryExitAnimationEnded(
+bool AssistantMainStage::OnActiveQueryExitAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
-  // The exited committed query view will always be the first child of its
-  // parent view.
+  // The exited active query view will always be the first child of its parent.
   delete query_layout_container_->child_at(0);
-  UpdateCommittedQueryViewSpacer();
+  UpdateActiveQueryViewSpacer();
 
   // Return false to prevent the observer from destroying itself.
   return false;
 }
 
 void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
+  // It is possible for the user to pend multiple queries in rapid succession.
+  // When this happens, a new query can be pended before the previously
+  // committed query was answered and activated. When this occurs, we discard
+  // the view for the previously committed query as it has been aborted.
+  if (committed_query_view_) {
+    delete committed_query_view_;
+    committed_query_view_ = nullptr;
+  }
+
   if (!pending_query_view_) {
     pending_query_view_ = new AssistantQueryView();
     pending_query_view_->AddObserver(this);
@@ -320,21 +344,66 @@ void AssistantMainStage::OnPendingQueryCleared() {
     pending_query_view_ = nullptr;
   }
 
+  // If the pending query is cleared but a committed query exists, we don't
+  // need to update the suggestions container because the suggestion container
+  // visibility state should not have changed.
+  if (!committed_query_view_)
+    UpdateSuggestionContainer();
+}
+
+void AssistantMainStage::OnResponseChanged(const AssistantResponse& response) {
+  // If the motion spec is enabled, we only consider the query active once
+  // the response has been received. When the motion spec is disabled, we
+  // immediately activate the query as it is committed.
+  if (assistant::ui::kIsMotionSpecEnabled)
+    OnActivateQuery();
+}
+
+void AssistantMainStage::OnUiVisibilityChanged(bool visible,
+                                               AssistantSource source) {
+  if (visible)
+    return;
+
+  delete active_query_view_;
+  active_query_view_ = nullptr;
+
+  delete committed_query_view_;
+  committed_query_view_ = nullptr;
+
+  delete pending_query_view_;
+  pending_query_view_ = nullptr;
+
+  UpdateActiveQueryViewSpacer();
   UpdateSuggestionContainer();
 }
 
-void AssistantMainStage::UpdateCommittedQueryViewSpacer() {
-  // The spacer reserves room in the layout for the committed query view, so
-  // it should match its size.
-  committed_query_view_spacer_->SetPreferredSize(
-      committed_query_view_ ? committed_query_view_->size() : gfx::Size());
+void AssistantMainStage::UpdateActiveQueryViewSpacer() {
+  // The spacer reserves room in the layout for the active query view, so it
+  // needs to match its size.
+  active_query_view_spacer_->SetPreferredSize(
+      active_query_view_ ? active_query_view_->size() : gfx::Size());
+}
+
+void AssistantMainStage::UpdateQueryViewTransform(views::View* query_view) {
+  // Unless activated, a view for a query should be bottom aligned in its
+  // parent. We calculate a top offset and apply a transformation to the query
+  // view to have that effect and animate the transformation back to identity
+  // when the query is activated on delivery of its response.
+  DCHECK_NE(query_view, active_query_view_);
+
+  const int top_offset =
+      query_layout_container_->height() - query_view->height();
+
+  gfx::Transform transform;
+  transform.Translate(0, top_offset);
+  query_view->layer()->SetTransform(transform);
 }
 
 // TODO(dmblack): Animate visibility changes.
 void AssistantMainStage::UpdateSuggestionContainer() {
-  // The suggestion container is only visible when the pending query is not.
-  // When it is not visible, it should not process events.
-  bool visible = pending_query_view_ == nullptr;
+  // The suggestion container is only visible when the committed/pending query
+  // views are not. When it is not visible, it should not process events.
+  bool visible = !committed_query_view_ && !pending_query_view_;
   suggestion_container_->layer()->SetOpacity(visible ? 1.f : 0.f);
   suggestion_container_->set_can_process_events_within_subtree(visible ? true
                                                                        : false);
