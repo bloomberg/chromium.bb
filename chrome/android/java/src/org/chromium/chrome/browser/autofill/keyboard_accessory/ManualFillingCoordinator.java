@@ -9,6 +9,7 @@ import android.view.ViewStub;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -52,6 +53,10 @@ public class ManualFillingCoordinator {
      */
     public boolean handleBackPress() {
         return mMediator.handleBackPress();
+    }
+
+    public void notifyPopupAvailable(DropdownPopupWindow popup) {
+        mMediator.notifyPopupOpened(popup);
     }
 
     /**

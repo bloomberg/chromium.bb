@@ -28,16 +28,20 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.hamcrest.Matcher;
+import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.UiUtils;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -86,6 +90,37 @@ public class ManualFillingTestHelper {
 
     public void clickPasswordField() throws TimeoutException, InterruptedException {
         DOMUtils.clickNode(mWebContentsRef.get(), "password");
+    }
+
+    public void clickEmailField() throws TimeoutException, InterruptedException {
+        DOMUtils.clickNode(mWebContentsRef.get(), "email");
+    }
+
+    public DropdownPopupWindowInterface waitForAutofillPopup()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
+        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
+        CriteriaHelper.pollUiThread(new Criteria("Autofill Popup anchor view was never added.") {
+            @Override
+            public boolean isSatisfied() {
+                return view.findViewById(R.id.dropdown_popup_window) != null;
+            }
+        });
+        View anchorView = view.findViewById(R.id.dropdown_popup_window);
+
+        Assert.assertTrue(anchorView.getTag() instanceof DropdownPopupWindowInterface);
+        final DropdownPopupWindowInterface popup =
+                (DropdownPopupWindowInterface) anchorView.getTag();
+        CriteriaHelper.pollUiThread(new Criteria("Autofill Popup anchor view was never added.") {
+            @Override
+            public boolean isSatisfied() {
+                // Wait until the popup is showing and onLayout() has happened.
+                return popup.isShowing() && popup.getListView() != null
+                        && popup.getListView().getHeight() != 0;
+            }
+        });
+
+        return popup;
     }
 
     /**
