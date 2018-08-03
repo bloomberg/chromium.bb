@@ -131,7 +131,7 @@ eventSender.mouseMoveTo(inputRect.left + 8, (inputRect.top + inputRect.bottom) /
 eventSender.mouseDown();
 eventSender.mouseMoveTo((spanRect.left + spanRect.right) / 2, spanRect.top + 1);
 eventSender.mouseUp();
-shouldBeNull('lastClickTarget');
+shouldBe('lastClickTarget', 'document.body');
 lastClickTarget = null;
 
 container.remove();

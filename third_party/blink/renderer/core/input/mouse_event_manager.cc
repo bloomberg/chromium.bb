@@ -906,15 +906,14 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
     return true;
   }
 
-  // Once we're past the drag threshold, we don't want to treat this gesture as
-  // a click.
-  InvalidateClick();
-
   if (!TryStartDrag(event)) {
     // Something failed to start the drag, clean up.
     ClearDragDataTransfer();
     ResetDragState();
   } else {
+    // Once the drag operation is initiated, we don't want to treat this
+    // gesture as a click.
+    InvalidateClick();
     // Since drag operation started we need to send a pointercancel for the
     // corresponding pointer.
     if (initiator == DragInitiator::kMouse) {

@@ -1,7 +1,7 @@
 When selecting from non-anchor Node to anchor node in ShadowDOM, client should not cause page jump.
 
 Selecting from a node to another node in ShadowDOM. This should not start page navigation.
-PASS lastClickTarget is null
+PASS lastClickTarget is host
 
 Clicking a node in ShadowDOM.
 PASS lastClickTarget is host
