@@ -80,7 +80,7 @@ def _ParseProcSmapsLines(lines):
       # Offset
       '([0-9a-f]{1,16}) '
       # Device
-      '([0-9a-f]{2}:[0-9a-f]{2}) '
+      '([0-9a-f]{2,3}:[0-9a-f]{2,3}) '
       # Inode
       '([0-9]*) '
       # Pathname
