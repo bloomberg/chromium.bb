@@ -45,6 +45,8 @@ constexpr char kIsConfirmationDialogHiddenQuery[] =
     "!!document.querySelector('.cr-dialog-container').hidden";
 
 constexpr char kDefaultNetworkServicePath[] = "/service/eth1";
+constexpr char kDefaultNetworkName[] = "eth1";
+
 constexpr base::TimeDelta kJsConditionCheckFrequency =
     base::TimeDelta::FromMilliseconds(200);
 
@@ -616,6 +618,32 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, NextDisabledOnNetworkScreen) {
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickNetworkOnNetworkScreen) {
+  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_FALSE(IsScreenDialogElementEnabled(
+      OobeScreen::SCREEN_OOBE_NETWORK, DemoSetupDialog::kNetwork,
+      ButtonToStringId(OobeButton::kNext)));
+
+  ClickNetworkListElement(kDefaultNetworkName);
+  SimulateNetworkConnected();
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickConnectedNetworkOnNetworkScreen) {
+  SimulateNetworkConnected();
+  SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_TRUE(IsScreenDialogElementEnabled(
+      OobeScreen::SCREEN_OOBE_NETWORK, DemoSetupDialog::kNetwork,
+      ButtonToStringId(OobeButton::kNext)));
+
+  ClickNetworkListElement(kDefaultNetworkName);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnNetworkScreen) {
