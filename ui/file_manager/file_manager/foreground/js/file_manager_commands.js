@@ -349,6 +349,8 @@ var CommandHandler = function(fileManager, selectionHandler) {
   selectionHandler.addEventListener(
       FileSelectionHandler.EventType.CHANGE_THROTTLED,
       this.updateAvailability.bind(this));
+  fileManager.metadataModel.addEventListener(
+      'update', this.updateAvailability.bind(this));
 
   chrome.commandLinePrivate.hasSwitch(
       'disable-zip-archiver-packer', function(disabled) {
