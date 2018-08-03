@@ -201,7 +201,8 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_impl_avx2.c"
-              "${AOM_ROOT}/aom_dsp/x86/obmc_sad_avx2.c")
+              "${AOM_ROOT}/aom_dsp/x86/obmc_sad_avx2.c"
+              "${AOM_ROOT}/aom_dsp/x86/obmc_variance_avx2.c")
 
   list(APPEND AOM_DSP_ENCODER_ASM_SSSE3_X86_64
               "${AOM_ROOT}/aom_dsp/x86/quantize_ssse3_x86_64.asm")
