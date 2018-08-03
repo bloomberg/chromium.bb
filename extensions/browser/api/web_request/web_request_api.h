@@ -50,7 +50,6 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
-class RedirectChecker;
 class RenderFrameHost;
 }
 
@@ -135,11 +134,6 @@ class WebRequestAPI
     void AssociateProxyWithRequestId(Proxy* proxy,
                                      const content::GlobalRequestID& id);
 
-    // Disassociates |proxy| with |id|. |proxy| must already be registered
-    // within this ProxySet.
-    void DisassociateProxyWithRequestId(Proxy* proxy,
-                                        const content::GlobalRequestID& id);
-
     Proxy* GetProxyFromRequestId(const content::GlobalRequestID& id);
 
     void MaybeProxyAuthRequest(
@@ -210,8 +204,7 @@ class WebRequestAPI
   bool MaybeProxyURLLoaderFactory(
       content::RenderFrameHost* frame,
       bool is_navigation,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      scoped_refptr<content::RedirectChecker>* redirect_checker);
+      network::mojom::URLLoaderFactoryRequest* factory_request);
 
   // Any request which requires authentication to complete will be bounced
   // through this method iff Network Service is enabled.

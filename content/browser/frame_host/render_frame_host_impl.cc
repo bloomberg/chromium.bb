@@ -840,8 +840,7 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
 
   auto* context = GetSiteInstance()->GetBrowserContext();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      context, this, false /* is_navigation */, &default_factory_request,
-      nullptr /* redirect_checker */);
+      context, this, false /* is_navigation */, &default_factory_request);
   // Keep DevTools proxy lasy, i.e. closest to the network.
   RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
       this, false /* is_navigation */, false /* is_download */,
@@ -4026,8 +4025,7 @@ void RenderFrameHostImpl::CommitNavigation(
       network::mojom::URLLoaderFactoryPtrInfo factory_proxy_info;
       auto factory_request = mojo::MakeRequest(&factory_proxy_info);
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
-          browser_context, this, false /* is_navigation */, &factory_request,
-          nullptr /* redirect_checker */);
+          browser_context, this, false /* is_navigation */, &factory_request);
       // Keep DevTools proxy lasy, i.e. closest to the network.
       RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,

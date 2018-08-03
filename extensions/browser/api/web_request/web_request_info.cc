@@ -300,8 +300,7 @@ WebRequestInfo::WebRequestInfo(
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     int32_t routing_id,
     content::ResourceContext* resource_context,
-    const network::ResourceRequest& request,
-    bool is_async)
+    const network::ResourceRequest& request)
     : id(request_id),
       url(request.url),
       site_for_cookies(request.site_for_cookies),
@@ -312,7 +311,6 @@ WebRequestInfo::WebRequestInfo(
       is_browser_side_navigation(!!navigation_ui_data),
       initiator(request.request_initiator),
       type(static_cast<content::ResourceType>(request.resource_type)),
-      is_async(is_async),
       extra_request_headers(request.headers),
       logger(std::make_unique<NetworkServiceLogger>()),
       resource_context(resource_context) {

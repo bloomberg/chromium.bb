@@ -75,8 +75,7 @@ struct WebRequestInfo {
                  std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
                  int32_t routing_id,
                  content::ResourceContext* resource_context,
-                 const network::ResourceRequest& request,
-                 bool is_async);
+                 const network::ResourceRequest& request);
 
   ~WebRequestInfo();
 

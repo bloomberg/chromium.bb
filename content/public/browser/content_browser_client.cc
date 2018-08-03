@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -22,7 +21,6 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/url_loader_throttle.h"
-#include "content/public/common/url_utils.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
@@ -655,8 +653,7 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     BrowserContext* browser_context,
     RenderFrameHost* frame,
     bool is_navigation,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
-    scoped_refptr<RedirectChecker>* redirect_checker) {
+    network::mojom::URLLoaderFactoryRequest* factory_request) {
   return false;
 }
 
@@ -782,11 +779,6 @@ std::unique_ptr<OverlayWindow>
 ContentBrowserClient::CreateWindowForPictureInPicture(
     PictureInPictureWindowController* controller) {
   return nullptr;
-}
-
-bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
-                                                ResourceContext* context) {
-  return true;
 }
 
 }  // namespace content

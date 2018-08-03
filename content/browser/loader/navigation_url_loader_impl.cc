@@ -52,7 +52,6 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/redirect_checker.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -300,29 +299,6 @@ void UnknownSchemeCallback(bool handled_externally,
       handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
 }
 
-// Returns whether this URL can be handled by the default network service
-// URLLoader.
-bool IsURLHandledByDefaultLoader(const GURL& url) {
-  // Data URLs are only handled by the network service if
-  // |enable_data_url_support| is set in NetworkContextParams. This is set to
-  // true for the context used by NavigationURLLoaderImpl, so in addition to
-  // checking whether the URL is handled by the network service, we also need to
-  // check for the data scheme.
-  return IsURLHandledByNetworkService(url) || url.SchemeIs(url::kDataScheme);
-}
-
-// Determines whether it is safe to redirect to |url|.
-bool IsSafeRedirectTarget(const GURL& url, ResourceContext* resource_context) {
-  static base::NoDestructor<std::set<std::string>> kUnsafeSchemes({
-      url::kAboutScheme, url::kDataScheme, url::kFileScheme,
-      url::kFileSystemScheme,
-  });
-  return !HasWebUIScheme(url) &&
-         kUnsafeSchemes->find(url.scheme()) == kUnsafeSchemes->end() &&
-         GetContentClient()->browser()->IsSafeRedirectTarget(url,
-                                                             resource_context);
-}
-
 }  // namespace
 
 // Kept around during the lifetime of the navigation request, and is
@@ -344,7 +320,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderFactoryRequest proxied_factory_request,
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
       std::set<std::string> known_schemes,
-      scoped_refptr<RedirectChecker> redirect_checker,
       const base::WeakPtr<NavigationURLLoaderImpl>& owner)
       : interceptors_(std::move(initial_interceptors)),
         resource_request_(std::move(resource_request)),
@@ -355,7 +330,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         proxied_factory_request_(std::move(proxied_factory_request)),
         proxied_factory_info_(std::move(proxied_factory_info)),
         known_schemes_(std::move(known_schemes)),
-        redirect_checker_(std::move(redirect_checker)),
         weak_factory_(this) {}
 
   ~URLLoaderRequestController() override {
@@ -698,15 +672,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // the restarted request to use a new loader, instead of, e.g., reusing the
     // AppCache or service worker loader. For an optimization, we keep and reuse
     // the default url loader if the all |interceptors_| doesn't handle the
-    // redirected request. If the network service is enabled, only certain
-    // schemes are handled by the default URL loader. We need to make sure the
-    // redirected URL is a handled scheme, otherwise reset the loader so the
-    // correct non-network service loader can be used.
-    if (!default_loader_used_ ||
-        (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !IsURLHandledByDefaultLoader(resource_request_->url))) {
+    // redirected request.
+    if (!default_loader_used_)
       url_loader_.reset();
-    }
     interceptor_index_ = 0;
     received_response_ = false;
     MaybeStartLoader(nullptr /* interceptor */,
@@ -824,7 +792,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       return;
     }
 
-    if (!IsURLHandledByDefaultLoader(resource_request_->url)) {
+    if (!IsURLHandledByNetworkService(resource_request_->url) &&
+        !resource_request_->url.SchemeIs(url::kDataScheme)) {
       if (known_schemes_.find(resource_request_->url.scheme()) ==
           known_schemes_.end()) {
         bool handled = GetContentClient()->browser()->HandleExternalProtocol(
@@ -1114,19 +1083,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      bool bypass_safety_checks =
-          redirect_checker_ &&
-          redirect_checker_->ShouldAllowRedirect(global_request_id_.request_id,
-                                                 redirect_info);
-      if (!bypass_safety_checks &&
-          !IsSafeRedirectTarget(redirect_info.new_url, resource_context_)) {
-        OnComplete(
-            network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
-        return;
-      }
-    }
-
     if (--redirect_limit_ == 0) {
       OnComplete(
           network::URLLoaderCompletionStatus(net::ERR_TOO_MANY_REDIRECTS));
@@ -1333,8 +1289,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // protocol handlers.
   std::set<std::string> known_schemes_;
 
-  scoped_refptr<RedirectChecker> redirect_checker_;
-
   mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
@@ -1384,7 +1338,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         request_info->common_params.url,
         /* proxied_url_loader_factory_request */ nullptr,
         /* proxied_url_loader_factory_info */ nullptr, std::set<std::string>(),
-        /* redirect_checker */ nullptr, weak_factory_.GetWeakPtr());
+        weak_factory_.GetWeakPtr());
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -1413,7 +1367,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;
   network::mojom::URLLoaderFactoryRequest proxied_factory_request;
-  scoped_refptr<RedirectChecker> redirect_checker;
   auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   if (frame_tree_node) {
     // |frame_tree_node| may be null in some unit test environments.
@@ -1430,7 +1383,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     auto factory_request = mojo::MakeRequest(&factory_info);
     bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
         partition->browser_context(), frame_tree_node->current_frame_host(),
-        true /* is_navigation */, &factory_request, &redirect_checker);
+        true /* is_navigation */, &factory_request);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true, false,
             &factory_request)) {
@@ -1464,7 +1417,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       std::move(initial_interceptors), std::move(new_request), resource_context,
       request_info->common_params.url, std::move(proxied_factory_request),
       std::move(proxied_factory_info), std::move(known_schemes),
-      std::move(redirect_checker), weak_factory_.GetWeakPtr());
+      weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
@@ -1562,7 +1515,7 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
   auto* frame = frame_tree_node->current_frame_host();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       frame->GetSiteInstance()->GetBrowserContext(), frame,
-      true /* is_navigation */, &factory, nullptr /* redirect_checker */);
+      true /* is_navigation */, &factory);
   it->second->Clone(std::move(factory));
 }
 
