@@ -1458,14 +1458,16 @@ void Tab::UpdateIconVisibility() {
   // TODO(pkasting): This whole function should go away, and we should simply
   // compute child visibility state in Layout().
 
-  // Don't adjust whether we're centering the favicon during tab closure; let it
-  // stay however it was prior to closing the tab.  This prevents the icon from
-  // sliding left at the end of closing a non-narrow tab.
-  if (!closing_)
+  // Don't adjust whether we're centering the favicon or adding extra padding
+  // during tab closure; let it stay however it was prior to closing the tab.
+  // This prevents the icon and text from sliding left at the end of closing
+  // a non-narrow tab.
+  if (!closing_) {
     center_favicon_ = false;
+    extra_padding_before_content_ = false;
+  }
 
   showing_icon_ = showing_alert_indicator_ = false;
-  extra_padding_before_content_ = false;
   extra_alert_indicator_padding_ = false;
 
   if (height() < GetLayoutConstant(TAB_HEIGHT))
@@ -1546,20 +1548,25 @@ void Tab::UpdateIconVisibility() {
     }
   }
 
-  // The extra padding is intended to visually balance the close button, so only
-  // include it when the close button is shown or will be shown on hover. We
-  // also check this for active tabs so that the extra padding doesn't pop in
-  // and out as you switch tabs.
-  extra_padding_before_content_ = large_enough_for_close_button;
+  // Don't update padding while the tab is closing, to avoid glitchy-looking
+  // behaviour when the close animation causes the tab to get very small
+  if (!closing_) {
+    // The extra padding is intended to visually balance the close button, so
+    // only include it when the close button is shown or will be shown on hover.
+    // We also check this for active tabs so that the extra padding doesn't pop
+    // in and out as you switch tabs.
+    extra_padding_before_content_ = large_enough_for_close_button;
 
-  if (DCHECK_IS_ON()) {
-    const int extra_left_padding =
-        MD::IsRefreshUi() ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
-                          : kExtraLeftPaddingToBalanceCloseButtonPadding;
-    DCHECK(!extra_padding_before_content_ ||
-           extra_left_padding <= available_width);
-    if (extra_padding_before_content_)
-      available_width -= extra_left_padding;
+    if (DCHECK_IS_ON()) {
+      const int extra_left_padding =
+          MD::IsRefreshUi()
+              ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
+              : kExtraLeftPaddingToBalanceCloseButtonPadding;
+      DCHECK(!extra_padding_before_content_ ||
+             extra_left_padding <= available_width);
+      if (extra_padding_before_content_)
+        available_width -= extra_left_padding;
+    }
   }
 
   if (MD::IsRefreshUi()) {
