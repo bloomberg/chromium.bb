@@ -16,18 +16,20 @@ namespace machine_learning {
 // Encapsulates a connection to the Chrome OS ML Service daemon via its Mojo
 // interface.
 // Usage:
-//   chromeos::machine_learning::mojom::ModelProviderPtr model_provider;
+//   chromeos::machine_learning::mojom::ModelPtr model;
+//   chromeos::machine_learning::mojom::ModelSpec spec;
 //   chromeos::machine_learning::ServiceConnection::GetInstance()
-//       ->BindModelProvider(mojom::MakeRequest(&model_provider));
-//   // Use model_provider ...
+//       ->LoadModel(spec, mojom::MakeRequest(&model));
+//   // Use model ...
 // Sequencing: Must be used on a single sequence (may be created on another).
 class ServiceConnection {
  public:
   static ServiceConnection* GetInstance();
 
-  // Instruct ML daemon to bind a ModelProvider implementation to |request|.
+  // Instruct ML daemon to load the model specified in |spec|, binding a Model
+  // implementation to |request|.
   // Bootstraps the initial Mojo connection to the daemon if necessary.
-  void BindModelProvider(mojom::ModelProviderRequest request);
+  void LoadModel(mojom::ModelSpecPtr spec, mojom::ModelRequest request);
 
  private:
   friend class base::NoDestructor<ServiceConnection>;
