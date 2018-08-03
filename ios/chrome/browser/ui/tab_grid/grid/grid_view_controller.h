@@ -59,6 +59,9 @@
 // Returns the layout of the grid for use in an animated transition.
 - (GridTransitionLayout*)transitionLayout;
 
+// Notifies the grid that it is about to be dismissed.
+- (void)prepareForDismissal;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_VIEW_CONTROLLER_H_

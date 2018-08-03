@@ -64,7 +64,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Animator to show or hide the empty state.
 @property(nonatomic, strong) UIViewPropertyAnimator* emptyStateAnimator;
 // The default layout for the tab grid.
-@property(nonatomic, strong) UICollectionViewLayout* defaultLayout;
+@property(nonatomic, strong) GridLayout* defaultLayout;
 // The layout used while the grid is being reordered.
 @property(nonatomic, strong) UICollectionViewLayout* reorderingLayout;
 
@@ -142,6 +142,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   self.updatesCollectionView = YES;
+  self.defaultLayout.animatesItemUpdates = YES;
   [self.collectionView reloadData];
   // Selection is invalid if there are no items.
   if (self.items.count == 0) {
@@ -241,6 +242,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return [GridTransitionLayout layoutWithInactiveItems:items
                                             activeItem:activeItem
                                          selectionItem:selectionItem];
+}
+
+- (void)prepareForDismissal {
+  // Stop animating the collection view to prevent the insertion animation from
+  // interfering with the tab presentation animation.
+  self.defaultLayout.animatesItemUpdates = NO;
 }
 
 #pragma mark - UICollectionViewDataSource
