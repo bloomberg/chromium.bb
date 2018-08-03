@@ -4242,7 +4242,8 @@ void HTMLMediaElement::RequestPause() {
 
 bool HTMLMediaElement::MediaShouldBeOpaque() const {
   return !IsMediaDataCORSSameOrigin(GetDocument().GetSecurityOrigin()) &&
-         ready_state_ < kHaveMetadata && !FastGetAttribute(srcAttr).IsEmpty();
+         ready_state_ < kHaveMetadata && !FastGetAttribute(srcAttr).IsEmpty() &&
+         EffectivePreloadType() != WebMediaPlayer::kPreloadNone;
 }
 
 void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
