@@ -258,24 +258,33 @@ bool Module::Write(std::ostream &stream, SymbolData symbol_data) {
     for (FunctionSet::const_iterator func_it = functions_.begin();
          func_it != functions_.end(); ++func_it) {
       Function *func = *func_it;
-      stream << "FUNC " << hex
-             << (func->address - load_address_) << " "
-             << func->size << " "
-             << func->parameter_size << " "
-             << func->name << dec << "\n";
-      if (!stream.good())
-        return ReportError();
+      vector<Line>::iterator line_it = func->lines.begin();
+      for (auto range_it = func->ranges.cbegin();
+           range_it != func->ranges.cend(); ++range_it) {
+        stream << "FUNC " << hex
+               << (range_it->address - load_address_) << " "
+               << range_it->size << " "
+               << func->parameter_size << " "
+               << func->name << dec << "\n";
 
-      for (vector<Line>::iterator line_it = func->lines.begin();
-           line_it != func->lines.end(); ++line_it) {
-        stream << hex
-               << (line_it->address - load_address_) << " "
-               << line_it->size << " "
-               << dec
-               << line_it->number << " "
-               << line_it->file->source_id << "\n";
         if (!stream.good())
           return ReportError();
+
+        while ((line_it != func->lines.end()) &&
+               (line_it->address >= range_it->address) &&
+               (line_it->address < (range_it->address + range_it->size))) {
+          stream << hex
+                 << (line_it->address - load_address_) << " "
+                 << line_it->size << " "
+                 << dec
+                 << line_it->number << " "
+                 << line_it->file->source_id << "\n";
+
+          if (!stream.good())
+            return ReportError();
+
+          ++line_it;
+        }
       }
     }
 

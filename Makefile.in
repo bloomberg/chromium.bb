@@ -694,10 +694,10 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 	src/common/dwarf_cu_to_module_unittest.cc \
 	src/common/dwarf_line_to_module.cc \
 	src/common/dwarf_line_to_module_unittest.cc \
-	src/common/language.cc src/common/memory_range_unittest.cc \
-	src/common/module.cc src/common/module_unittest.cc \
-	src/common/path_helper.cc src/common/stabs_reader.cc \
-	src/common/stabs_reader_unittest.cc \
+	src/common/dwarf_range_list_handler.cc src/common/language.cc \
+	src/common/memory_range_unittest.cc src/common/module.cc \
+	src/common/module_unittest.cc src/common/path_helper.cc \
+	src/common/stabs_reader.cc src/common/stabs_reader_unittest.cc \
 	src/common/stabs_to_module.cc \
 	src/common/stabs_to_module_unittest.cc \
 	src/common/test_assembler.cc src/common/dwarf/bytereader.cc \
@@ -740,6 +740,7 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-dwarf_cu_to_module_unittest.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-dwarf_line_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-dwarf_line_to_module_unittest.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-dwarf_range_list_handler.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-language.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-memory_range_unittest.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-module.$(OBJEXT) \
@@ -1402,7 +1403,8 @@ src_tools_linux_core2md_core2md_OBJECTS =  \
 am__src_tools_linux_dump_syms_dump_syms_SOURCES_DIST =  \
 	src/common/dwarf_cfi_to_module.cc \
 	src/common/dwarf_cu_to_module.cc \
-	src/common/dwarf_line_to_module.cc src/common/language.cc \
+	src/common/dwarf_line_to_module.cc \
+	src/common/dwarf_range_list_handler.cc src/common/language.cc \
 	src/common/module.cc src/common/path_helper.cc \
 	src/common/stabs_reader.cc src/common/stabs_to_module.cc \
 	src/common/dwarf/bytereader.cc \
@@ -1421,6 +1423,7 @@ am__src_tools_linux_dump_syms_dump_syms_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am_src_tools_linux_dump_syms_dump_syms_OBJECTS = src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-language.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-path_helper.$(OBJEXT) \
@@ -1486,7 +1489,8 @@ src_tools_linux_symupload_sym_upload_DEPENDENCIES =
 am__src_tools_mac_dump_syms_dump_syms_mac_SOURCES_DIST =  \
 	src/common/dwarf_cfi_to_module.cc \
 	src/common/dwarf_cu_to_module.cc \
-	src/common/dwarf_line_to_module.cc src/common/language.cc \
+	src/common/dwarf_line_to_module.cc \
+	src/common/dwarf_range_list_handler.cc src/common/language.cc \
 	src/common/md5.cc src/common/module.cc \
 	src/common/path_helper.cc src/common/stabs_reader.cc \
 	src/common/stabs_to_module.cc src/common/dwarf/bytereader.cc \
@@ -1505,6 +1509,7 @@ am__src_tools_mac_dump_syms_dump_syms_mac_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am_src_tools_mac_dump_syms_dump_syms_mac_OBJECTS = src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_cfi_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_cu_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_line_to_module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-language.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-md5.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-module.$(OBJEXT) \
@@ -2413,6 +2418,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cfi_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cu_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_line_to_module.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_range_list_handler.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/language.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/path_helper.cc \
@@ -2463,6 +2469,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cfi_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cu_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_line_to_module.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_range_list_handler.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/language.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/md5.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module.cc \
@@ -2504,6 +2511,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cu_to_module_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_line_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_line_to_module_unittest.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_range_list_handler.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/language.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/memory_range_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module.cc \
@@ -4053,6 +4061,9 @@ src/common/src_common_dumper_unittest-dwarf_line_to_module.$(OBJEXT):  \
 src/common/src_common_dumper_unittest-dwarf_line_to_module_unittest.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/src_common_dumper_unittest-dwarf_range_list_handler.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_common_dumper_unittest-language.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
@@ -4560,6 +4571,9 @@ src/common/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.$(OBJEXT):  \
 src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_tools_linux_dump_syms_dump_syms-language.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
@@ -4679,6 +4693,9 @@ src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_cu_to_module.$(OBJEXT):  
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_line_to_module.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_tools_mac_dump_syms_dump_syms_mac-language.$(OBJEXT):  \
@@ -4811,6 +4828,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_cu_to_module_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_line_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_line_to_module_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_range_list_handler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-language.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-memory_range_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-module.Po@am__quote@
@@ -4845,6 +4863,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cfi_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_cu_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-path_helper.Po@am__quote@
@@ -4853,6 +4872,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_cfi_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_cu_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_line_to_module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-language.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-md5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-module.Po@am__quote@
@@ -5659,6 +5679,20 @@ src/common/src_common_dumper_unittest-dwarf_line_to_module_unittest.obj: src/com
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_line_to_module_unittest.cc' object='src/common/src_common_dumper_unittest-dwarf_line_to_module_unittest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-dwarf_line_to_module_unittest.obj `if test -f 'src/common/dwarf_line_to_module_unittest.cc'; then $(CYGPATH_W) 'src/common/dwarf_line_to_module_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_line_to_module_unittest.cc'; fi`
+
+src/common/src_common_dumper_unittest-dwarf_range_list_handler.o: src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-dwarf_range_list_handler.o -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_range_list_handler.Tpo -c -o src/common/src_common_dumper_unittest-dwarf_range_list_handler.o `test -f 'src/common/dwarf_range_list_handler.cc' || echo '$(srcdir)/'`src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_range_list_handler.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_range_list_handler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_range_list_handler.cc' object='src/common/src_common_dumper_unittest-dwarf_range_list_handler.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-dwarf_range_list_handler.o `test -f 'src/common/dwarf_range_list_handler.cc' || echo '$(srcdir)/'`src/common/dwarf_range_list_handler.cc
+
+src/common/src_common_dumper_unittest-dwarf_range_list_handler.obj: src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-dwarf_range_list_handler.obj -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_range_list_handler.Tpo -c -o src/common/src_common_dumper_unittest-dwarf_range_list_handler.obj `if test -f 'src/common/dwarf_range_list_handler.cc'; then $(CYGPATH_W) 'src/common/dwarf_range_list_handler.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_range_list_handler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_range_list_handler.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_range_list_handler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_range_list_handler.cc' object='src/common/src_common_dumper_unittest-dwarf_range_list_handler.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-dwarf_range_list_handler.obj `if test -f 'src/common/dwarf_range_list_handler.cc'; then $(CYGPATH_W) 'src/common/dwarf_range_list_handler.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_range_list_handler.cc'; fi`
 
 src/common/src_common_dumper_unittest-language.o: src/common/language.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-language.o -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-language.Tpo -c -o src/common/src_common_dumper_unittest-language.o `test -f 'src/common/language.cc' || echo '$(srcdir)/'`src/common/language.cc
@@ -7116,6 +7150,20 @@ src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.obj: src/com
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.obj `if test -f 'src/common/dwarf_line_to_module.cc'; then $(CYGPATH_W) 'src/common/dwarf_line_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_line_to_module.cc'; fi`
 
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.o: src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.o `test -f 'src/common/dwarf_range_list_handler.cc' || echo '$(srcdir)/'`src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_range_list_handler.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.o `test -f 'src/common/dwarf_range_list_handler.cc' || echo '$(srcdir)/'`src/common/dwarf_range_list_handler.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.obj: src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.obj `if test -f 'src/common/dwarf_range_list_handler.cc'; then $(CYGPATH_W) 'src/common/dwarf_range_list_handler.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_range_list_handler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_range_list_handler.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-dwarf_range_list_handler.obj `if test -f 'src/common/dwarf_range_list_handler.cc'; then $(CYGPATH_W) 'src/common/dwarf_range_list_handler.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_range_list_handler.cc'; fi`
+
 src/common/src_tools_linux_dump_syms_dump_syms-language.o: src/common/language.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-language.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-language.o `test -f 'src/common/language.cc' || echo '$(srcdir)/'`src/common/language.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Po
@@ -7423,6 +7471,20 @@ src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_line_to_module.obj: src/c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_line_to_module.cc' object='src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_line_to_module.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_line_to_module.obj `if test -f 'src/common/dwarf_line_to_module.cc'; then $(CYGPATH_W) 'src/common/dwarf_line_to_module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_line_to_module.cc'; fi`
+
+src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.o: src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.Tpo -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.o `test -f 'src/common/dwarf_range_list_handler.cc' || echo '$(srcdir)/'`src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.Tpo src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_range_list_handler.cc' object='src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.o `test -f 'src/common/dwarf_range_list_handler.cc' || echo '$(srcdir)/'`src/common/dwarf_range_list_handler.cc
+
+src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.obj: src/common/dwarf_range_list_handler.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.Tpo -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.obj `if test -f 'src/common/dwarf_range_list_handler.cc'; then $(CYGPATH_W) 'src/common/dwarf_range_list_handler.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_range_list_handler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.Tpo src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/dwarf_range_list_handler.cc' object='src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-dwarf_range_list_handler.obj `if test -f 'src/common/dwarf_range_list_handler.cc'; then $(CYGPATH_W) 'src/common/dwarf_range_list_handler.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf_range_list_handler.cc'; fi`
 
 src/common/src_tools_mac_dump_syms_dump_syms_mac-language.o: src/common/language.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_mac_dump_syms_dump_syms_mac-language.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-language.Tpo -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-language.o `test -f 'src/common/language.cc' || echo '$(srcdir)/'`src/common/language.cc
