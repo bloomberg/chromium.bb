@@ -13,6 +13,8 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
 #include "chrome/common/web_application_info.h"
 
+class Profile;
+
 namespace content {
 class WebContents;
 }
@@ -20,10 +22,12 @@ class WebContents;
 namespace extensions {
 
 // Subclass of BookmarkAppInstallationTask that exclusively installs
-// BookmarkApp-based Shortcuts.
+// BookmarkApp-based shortcuts.
 class BookmarkAppShortcutInstallationTask : public BookmarkAppInstallationTask {
  public:
-  BookmarkAppShortcutInstallationTask();
+  // Constructs a task that will install a BookmarkApp-based shortcut for
+  // |profile|.
+  explicit BookmarkAppShortcutInstallationTask(Profile* profile);
   ~BookmarkAppShortcutInstallationTask() override;
 
   void InstallFromWebContents(content::WebContents* web_contents,
@@ -34,7 +38,9 @@ class BookmarkAppShortcutInstallationTask : public BookmarkAppInstallationTask {
       ResultCallback result_callback,
       std::unique_ptr<WebApplicationInfo> web_app_info);
   void OnGetIcons(ResultCallback result_callback,
+                  std::unique_ptr<WebApplicationInfo> web_app_info,
                   std::vector<WebApplicationInfo::IconInfo> icons);
+  void OnInstalled(ResultCallback result_callback, bool success);
 
   base::WeakPtrFactory<BookmarkAppShortcutInstallationTask> weak_ptr_factory_{
       this};

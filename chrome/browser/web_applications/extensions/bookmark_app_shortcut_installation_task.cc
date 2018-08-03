@@ -11,13 +11,15 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 
-BookmarkAppShortcutInstallationTask::BookmarkAppShortcutInstallationTask() =
-    default;
+BookmarkAppShortcutInstallationTask::BookmarkAppShortcutInstallationTask(
+    Profile* profile)
+    : BookmarkAppInstallationTask(profile) {}
 
 BookmarkAppShortcutInstallationTask::~BookmarkAppShortcutInstallationTask() =
     default;
@@ -53,15 +55,30 @@ void BookmarkAppShortcutInstallationTask::OnGetWebApplicationInfo(
   data_retriever().GetIcons(
       web_app_info->app_url, icon_urls,
       base::BindOnce(&BookmarkAppShortcutInstallationTask::OnGetIcons,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(result_callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
+                     std::move(web_app_info)));
 }
 
 void BookmarkAppShortcutInstallationTask::OnGetIcons(
     ResultCallback result_callback,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
     std::vector<WebApplicationInfo::IconInfo> icons) {
-  // TODO(crbug.com/864904): Continue the installation process.
-  std::move(result_callback).Run(Result::kSuccess);
+  web_app_info->icons = std::move(icons);
+
+  // TODO(crbug.com/864904): Make this a WebContents observer and cancel the
+  // task if the WebContents has been destroyed.
+  installer().Install(
+      *web_app_info,
+      base::BindOnce(&BookmarkAppShortcutInstallationTask::OnInstalled,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(result_callback)));
+}
+
+void BookmarkAppShortcutInstallationTask::OnInstalled(
+    ResultCallback result_callback,
+    bool success) {
+  std::move(result_callback)
+      .Run(success ? Result::kSuccess : Result::kInstallationFailed);
 }
 
 }  // namespace extensions

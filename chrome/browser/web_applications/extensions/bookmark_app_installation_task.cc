@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 
 namespace extensions {
 
@@ -20,7 +21,13 @@ void BookmarkAppInstallationTask::SetDataRetrieverForTesting(
   data_retriever_ = std::move(data_retriever);
 }
 
-BookmarkAppInstallationTask::BookmarkAppInstallationTask()
-    : data_retriever_(std::make_unique<BookmarkAppDataRetriever>()) {}
+void BookmarkAppInstallationTask::SetInstallerForTesting(
+    std::unique_ptr<BookmarkAppInstaller> installer) {
+  installer_ = std::move(installer);
+}
+
+BookmarkAppInstallationTask::BookmarkAppInstallationTask(Profile* profile)
+    : data_retriever_(std::make_unique<BookmarkAppDataRetriever>()),
+      installer_(std::make_unique<BookmarkAppInstaller>(profile)) {}
 
 }  // namespace extensions
