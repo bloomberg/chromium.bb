@@ -85,11 +85,10 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
             }
         }
 
-        private boolean isDonEnabled() {
-            // We can't directly check whether the VR DON flow is enabled since
-            // we don't have permission to read the VrCore settings file. Instead,
-            // pass a flag.
-            return CommandLine.getInstance().hasSwitch("don-enabled");
+        private boolean isVrSettingsServiceEnabled() {
+            // We can't directly check whether the VR settings service is enabled since we don't
+            // have permission to read the VrCore settings file. Instead, pass a flag.
+            return CommandLine.getInstance().hasSwitch("vr-settings-service-enabled");
         }
 
         @Override
@@ -133,8 +132,9 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
                     return true;
                 }
             }
-            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED)) {
-                return !isDonEnabled();
+            if (TextUtils.equals(
+                        restriction, ChromeRestriction.RESTRICTION_TYPE_VR_SETTINGS_SERVICE)) {
+                return !isVrSettingsServiceEnabled();
             }
             return false;
         }

@@ -120,6 +120,35 @@ Rules that implement `VrTestRule` do the same, but also perform some additional
 VR-specific setup such as ensuring that the test is not started in VR and
 allowing the use of the experimental/broken VrCore head tracking service.
 
+## Dynamic VrCore Settings
+
+Most tests simply use whatever VrCore settings are set via the
+`--shared-prefs-file` option before testing starts. This is normally beneficial
+since only having to apply settings once per test suite is more efficient.
+However, since `--shared-prefs-file` is per-test-suite, it's less desirable for
+tests that need uncommon settings (e.g. DON flow enabled) and completely
+unusable by itself if a test needs to change VrCore settings mid-test.
+
+Thus, tests that use less common settings instead use a shared preference file
+that enables VrCore's VR settings service and apply settings on a per-test
+basis using the service. These tests must be kept separate from the regular
+tests that don't use dynamic settings because the setting changes are permanent.
+So, unless all or none of the tests in a given run use dynamic settings, we risk
+running tests with incorrect VrCore settings.
+
+Skipping over these tests is done using an `@Restriction` annotation instead of
+a rule like for test parameterization because skipping via `@Restriction` is
+faster.
+
+Why not use this for all tests? Since many tests are run twice, once with
+Cardboard and once with Daydream View, we would need to use parameterization and
+annotations for supported settings types to run with. Add in additional, less
+commonly used settings types, and you could end up with most tests being tried
+in three different activity types and something like five different settings
+types, for a total of fifteen attempted runs. While most of these would end up
+being skipped, starting the rule application process does have some overhead, so
+the end result would be a noticeable increase in test run time.
+
 ## VR Controller Input
 
 There are currently two ways of injecting Daydream controller input into tests,

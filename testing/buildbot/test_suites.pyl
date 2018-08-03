@@ -118,12 +118,12 @@
       },
       'test': 'chrome_public_test_vr_apk',
     },
-    'chrome_public_test_vr_apk-marlin-ddview-nougat-donenabled': {
+    'chrome_public_test_vr_apk-marlin-nougat-dynamicsettings': {
       'args': [
-        '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json',
+        '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        '--annotation=Restriction=DON_Enabled',
-        '--don-enabled',
+        '--annotation=Restriction=VR_Settings_Service',
+        '--vr-settings-service-enabled',
       ],
       'swarming': {
         'dimension_sets': [
@@ -189,13 +189,13 @@
       ],
       'test': 'chrome_public_test_vr_apk',
     },
-    'chrome_public_test_vr_apk (don enabled)': {
+    'chrome_public_test_vr_apk (dynamic settings)': {
       'args': [
-        '--shared-prefs-file=src/chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json',
+        '--shared-prefs-file=src/chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json',
         '--additional-apk=src/third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
         '--additional-apk=src/third_party/gvr-android-sdk/test-apks/daydream_home/daydream_home_current.apk',
-        '--annotation=Restriction=DON_Enabled',
-        '--don-enabled',
+        '--annotation=Restriction=VR_Settings_Service',
+        '--vr-settings-service-enabled',
       ],
       'test': 'chrome_public_test_vr_apk',
     },
@@ -224,12 +224,12 @@
       ],
       'test': 'chrome_public_test_vr_apk',
     },
-    'chrome_public_test_vr_apk-ddready-ddview-donenabled': {
+    'chrome_public_test_vr_apk-ddready-dynamicsettings': {
       'args': [
-        '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json',
+        '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        '--annotation=Restriction=DON_Enabled',
-        '--don-enabled',
+        '--annotation=Restriction=VR_Settings_Service',
+        '--vr-settings-service-enabled',
       ],
       'test': 'chrome_public_test_vr_apk',
     },
