@@ -933,45 +933,24 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
   }
 }
 
-static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
-                                const int mi_col, aom_writer *w) {
+// If delta q is present, writes delta_q index.
+// Also writes delta_q loop filter levels, if present.
+static void write_delta_q_params(AV1_COMP *cpi, const int mi_row,
+                                 const int mi_col, int skip, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCK *const x = &cpi->td.mb;
-  MACROBLOCKD *const xd = &x->e_mbd;
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  const struct segmentation *const seg = &cm->seg;
-  struct segmentation_probs *const segp = &ec_ctx->seg;
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
-  const PREDICTION_MODE mode = mbmi->mode;
-  const int segment_id = mbmi->segment_id;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int allow_hp = cm->allow_high_precision_mv;
-  const int is_inter = is_inter_block(mbmi);
-  const int is_compound = has_second_ref(mbmi);
-  int skip, ref;
-  (void)mi_row;
-  (void)mi_col;
-
-  write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, 0, 1);
-
-  write_skip_mode(cm, xd, segment_id, mbmi, w);
-
-  assert(IMPLIES(mbmi->skip_mode, mbmi->skip));
-  skip = mbmi->skip_mode ? 1 : write_skip(cm, xd, segment_id, mbmi, w);
-
-  write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, skip, 0);
-
-  write_cdef(cm, xd, w, skip, mi_col, mi_row);
-
   if (cm->delta_q_present_flag) {
-    int super_block_upper_left =
+    MACROBLOCK *const x = &cpi->td.mb;
+    MACROBLOCKD *const xd = &x->e_mbd;
+    const MB_MODE_INFO *const mbmi = xd->mi[0];
+    const BLOCK_SIZE bsize = mbmi->sb_type;
+    const int super_block_upper_left =
         ((mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
         ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
+
     if ((bsize != cm->seq_params.sb_size || skip == 0) &&
         super_block_upper_left) {
       assert(mbmi->current_qindex > 0);
-      int reduced_delta_qindex =
+      const int reduced_delta_qindex =
           (mbmi->current_qindex - xd->current_qindex) / cm->delta_q_res;
       write_delta_qindex(xd, reduced_delta_qindex, w);
       xd->current_qindex = mbmi->current_qindex;
@@ -996,6 +975,39 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       }
     }
   }
+}
+
+static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
+                                const int mi_col, aom_writer *w) {
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCK *const x = &cpi->td.mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  const struct segmentation *const seg = &cm->seg;
+  struct segmentation_probs *const segp = &ec_ctx->seg;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  const PREDICTION_MODE mode = mbmi->mode;
+  const int segment_id = mbmi->segment_id;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const int allow_hp = cm->allow_high_precision_mv;
+  const int is_inter = is_inter_block(mbmi);
+  const int is_compound = has_second_ref(mbmi);
+  int ref;
+
+  write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, 0, 1);
+
+  write_skip_mode(cm, xd, segment_id, mbmi, w);
+
+  assert(IMPLIES(mbmi->skip_mode, mbmi->skip));
+  const int skip =
+      mbmi->skip_mode ? 1 : write_skip(cm, xd, segment_id, mbmi, w);
+
+  write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, skip, 0);
+
+  write_cdef(cm, xd, w, skip, mi_col, mi_row);
+
+  write_delta_q_params(cpi, mi_row, mi_col, skip, w);
 
   if (!mbmi->skip_mode) write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
 
@@ -1188,38 +1200,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
 
   write_cdef(cm, xd, w, skip, mi_col, mi_row);
 
-  if (cm->delta_q_present_flag) {
-    int super_block_upper_left =
-        ((mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
-        ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
-    if ((bsize != cm->seq_params.sb_size || skip == 0) &&
-        super_block_upper_left) {
-      assert(mbmi->current_qindex > 0);
-      int reduced_delta_qindex =
-          (mbmi->current_qindex - xd->current_qindex) / cm->delta_q_res;
-      write_delta_qindex(xd, reduced_delta_qindex, w);
-      xd->current_qindex = mbmi->current_qindex;
-      if (cm->delta_lf_present_flag) {
-        if (cm->delta_lf_multi) {
-          const int frame_lf_count =
-              av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-          for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
-            int reduced_delta_lflevel =
-                (mbmi->delta_lf[lf_id] - xd->delta_lf[lf_id]) /
-                cm->delta_lf_res;
-            write_delta_lflevel(cm, xd, lf_id, reduced_delta_lflevel, w);
-            xd->delta_lf[lf_id] = mbmi->delta_lf[lf_id];
-          }
-        } else {
-          int reduced_delta_lflevel =
-              (mbmi->delta_lf_from_base - xd->delta_lf_from_base) /
-              cm->delta_lf_res;
-          write_delta_lflevel(cm, xd, -1, reduced_delta_lflevel, w);
-          xd->delta_lf_from_base = mbmi->delta_lf_from_base;
-        }
-      }
-    }
-  }
+  write_delta_q_params(cpi, mi_row, mi_col, skip, w);
 
   if (av1_allow_intrabc(cm)) {
     write_intrabc_info(xd, mbmi_ext, w);
