@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
@@ -117,10 +118,14 @@ void DialAppDiscoveryService::PendingRequest::OnDialAppInfoFetchError(
   if (response_code == net::HTTP_NOT_FOUND ||
       response_code >= net::HTTP_INTERNAL_SERVER_ERROR ||
       response_code == net::HTTP_OK) {
+    MediaRouterMetrics::RecordDialFetchAppInfo(
+        DialAppInfoResultCode::kNotFound);
     std::move(app_info_cb_)
         .Run(sink_id_, app_name_,
              DialAppInfoResult(nullptr, DialAppInfoResultCode::kNotFound));
   } else {
+    MediaRouterMetrics::RecordDialFetchAppInfo(
+        DialAppInfoResultCode::kNetworkError);
     std::move(app_info_cb_)
         .Run(sink_id_, app_name_,
              DialAppInfoResult(nullptr, DialAppInfoResultCode::kNetworkError));
@@ -135,10 +140,13 @@ void DialAppDiscoveryService::PendingRequest::OnDialAppInfoParsed(
   if (!parsed_app_info) {
     DVLOG(2) << "Failed to parse app info XML in utility process, error: "
              << parsing_result;
+    MediaRouterMetrics::RecordDialFetchAppInfo(
+        DialAppInfoResultCode::kParsingError);
     std::move(app_info_cb_)
         .Run(sink_id_, app_name_,
              DialAppInfoResult(nullptr, DialAppInfoResultCode::kParsingError));
   } else {
+    MediaRouterMetrics::RecordDialFetchAppInfo(DialAppInfoResultCode::kOk);
     std::move(app_info_cb_)
         .Run(sink_id_, app_name_,
              DialAppInfoResult(std::move(parsed_app_info),

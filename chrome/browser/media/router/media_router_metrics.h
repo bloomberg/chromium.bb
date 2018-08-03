@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "media/base/container_names.h"
@@ -83,6 +84,7 @@ class MediaRouterMetrics {
   // UMA histogram names.
   static const char kHistogramCloseLatency[];
   static const char kHistogramDialParsingError[];
+  static const char kHistogramDialFetchAppInfo[];
   static const char kHistogramIconClickLocation[];
   static const char kHistogramMediaRouterCastingSource[];
   static const char kHistogramMediaRouterFileFormat[];
@@ -138,6 +140,9 @@ class MediaRouterMetrics {
   // Records why DIAL device description resolution failed.
   static void RecordDialParsingError(
       SafeDialDeviceDescriptionParser::ParsingError parsing_error);
+
+  // Records the result of a DIAL app info request.
+  static void RecordDialFetchAppInfo(DialAppInfoResultCode result_code);
 
   // Records the type of Presentation URL used by a web page.
   static void RecordPresentationUrlType(const GURL& url);

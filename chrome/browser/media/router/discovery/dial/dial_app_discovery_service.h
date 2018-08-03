@@ -25,11 +25,14 @@ namespace media_router {
 class DataDecoder;
 
 // Represents DIAL app status on receiver device.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class DialAppInfoResultCode {
   kOk = 0,
-  kNotFound,
-  kNetworkError,
-  kParsingError
+  kNotFound = 1,
+  kNetworkError = 2,
+  kParsingError = 3,
+  kCount
 };
 
 struct DialAppInfoResult {

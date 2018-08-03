@@ -114,6 +114,8 @@ static_library("router") {
       "providers/dial/dial_internal_message_util.h",
       "providers/dial/dial_media_route_provider.cc",
       "providers/dial/dial_media_route_provider.h",
+      "providers/dial/dial_media_route_provider_metrics.cc",
+      "providers/dial/dial_media_route_provider_metrics.h",
       "providers/extension/extension_media_route_provider_proxy.cc",
       "providers/extension/extension_media_route_provider_proxy.h",
       "providers/wired_display/wired_display_media_route_provider.cc",
