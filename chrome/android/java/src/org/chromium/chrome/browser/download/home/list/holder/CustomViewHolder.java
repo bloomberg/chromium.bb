@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.home.list.holder;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
@@ -30,6 +31,9 @@ public class CustomViewHolder extends ListItemViewHolder {
         if (viewGroup.getChildCount() > 0 && viewGroup.getChildAt(0) == viewItem.customView) {
             return;
         }
+
+        ViewParent parent = viewItem.customView.getParent();
+        if (parent instanceof ViewGroup) ((ViewGroup) parent).removeView(viewItem.customView);
 
         viewGroup.removeAllViews();
         viewGroup.addView(viewItem.customView,
