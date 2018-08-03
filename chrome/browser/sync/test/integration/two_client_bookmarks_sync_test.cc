@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 }
 
 // Add bookmarks with different name and same URL.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        SC_DuplicateBookmarksWithSameURL) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -1234,7 +1234,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_BiDirectionalPushAddingBM) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -1252,7 +1252,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_BiDirectionalPush_AddingSameBMs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -1269,14 +1269,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_BootStrapEmptyStateEverywhere) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_Merge_CaseInsensitivity_InNames) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1298,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_SimpleMergeOfDifferentBMModels) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1324,7 +1324,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_MergeSimpleBMHierarchyUnderBMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1347,7 +1347,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1365,7 +1365,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Merge bookmark folders with different bookmarks.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_MergeBMFoldersWithDifferentBMs) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1388,7 +1388,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Merge moderately complex bookmark models.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_MergeDifferentBMModelsModeratelyComplex) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1429,7 +1429,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Merge simple bookmark subset under bookmark folder.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_MergeSimpleBMHierarchySubsetUnderBMFolder) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1454,7 +1454,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Merge subsets of bookmark under bookmark bar.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_MergeSimpleBMHierarchySubsetUnderBookmarkBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1478,7 +1478,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Merge simple bookmark hierarchy under bookmark folder.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_Merge_SimpleBMHierarchy_Under_BMFolder) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1509,7 +1509,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
 // Merge disjoint sets of bookmark hierarchy under bookmark
 // folder.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_Merge_SimpleBMHierarchy_DisjointSets_Under_BMFolder) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1538,7 +1538,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Merge disjoint sets of bookmark hierarchy under bookmark bar.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(
+    TwoClientBookmarksSyncTestIncludingUssTests,
     MC_Merge_SimpleBMHierarchy_DisjointSets_Under_BookmarkBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1561,7 +1562,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Merge sets of duplicate bookmarks under bookmark bar.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_Merge_SimpleBMHierarchy_DuplicateBMs_Under_BMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
@@ -1621,7 +1622,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableSync) {
 }
 
 // Test adding duplicate folder - Both with different BMs underneath.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DuplicateFolders) {
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+                       MC_DuplicateFolders) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
@@ -1969,7 +1971,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
 // Trigger the server side creation of Synced Bookmarks. Ensure both clients
 // remain syncing afterwards. Add bookmarks to the synced bookmarks folder
 // and ensure both clients receive the bookmark.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, CreateSyncedBookmarks) {
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
+                       CreateSyncedBookmarks) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
