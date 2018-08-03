@@ -61,6 +61,7 @@ Running test: testExceptionInFunctionExpression
 Running test: testFunctionReturnNotPromise
 {
     result : {
+        description : 239
         type : number
         value : 239
     }

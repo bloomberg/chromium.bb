@@ -4,11 +4,12 @@ Tests line and column numbers in reported console messages.
     params : {
         args : [
             [0] : {
+                description : 239
                 type : number
                 value : 239
             }
         ]
-        executionContextId : 3
+        executionContextId : <number>
         stackTrace : {
             callFrames : [
                 [0] : {
@@ -23,17 +24,19 @@ Tests line and column numbers in reported console messages.
         timestamp : <number>
         type : log
     }
+    sessionId : <string>
 }
 {
     method : Runtime.consoleAPICalled
     params : {
         args : [
             [0] : {
+                description : 239
                 type : number
                 value : 239
             }
         ]
-        executionContextId : 3
+        executionContextId : <number>
         stackTrace : {
             callFrames : [
                 [0] : {
@@ -48,5 +51,6 @@ Tests line and column numbers in reported console messages.
         timestamp : <number>
         type : log
     }
+    sessionId : <string>
 }
 
