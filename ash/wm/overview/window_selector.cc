@@ -486,10 +486,6 @@ void WindowSelector::SelectWindow(WindowSelectorItem* item) {
   wm::GetWindowState(window)->Activate();
 }
 
-void WindowSelector::WindowClosing(WindowSelectorItem* window) {
-  grid_list_[selected_grid_index_]->WindowClosing(window);
-}
-
 void WindowSelector::SetBoundsForWindowGridsInScreenIgnoringWindow(
     const gfx::Rect& bounds,
     WindowSelectorItem* ignored_item) {

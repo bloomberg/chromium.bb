@@ -517,15 +517,6 @@ void WindowGrid::FilterItems(const base::string16& pattern) {
   }
 }
 
-void WindowGrid::WindowClosing(WindowSelectorItem* window) {
-  if (!selection_widget_ || SelectedWindow() != window)
-    return;
-  aura::Window* selection_widget_window = selection_widget_->GetNativeWindow();
-  ScopedOverviewAnimationSettings animation_settings_label(
-      OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM, selection_widget_window);
-  selection_widget_->SetOpacity(0.f);
-}
-
 void WindowGrid::SetBoundsAndUpdatePositions(const gfx::Rect& bounds) {
   SetBoundsAndUpdatePositionsIgnoringWindow(bounds, nullptr);
 }
