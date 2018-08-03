@@ -2688,6 +2688,44 @@ class CertVerifyProcInternalWithNetFetchingTest
     return test_server_.GetURL(path);
   }
 
+  // Creates a certificate chain for www.example.com, where the leaf certificate
+  // has an AIA URL pointing to the test server.
+  void CreateSimpleChainWithAIA(
+      scoped_refptr<X509Certificate>* out_leaf,
+      std::string* ca_issuers_path,
+      bssl::UniquePtr<CRYPTO_BUFFER>* out_intermediate,
+      scoped_refptr<X509Certificate>* out_root) {
+    const char kHostname[] = "www.example.com";
+
+    base::FilePath certs_dir =
+        GetTestNetDataDirectory()
+            .AppendASCII("verify_certificate_chain_unittest")
+            .AppendASCII("target-and-intermediate");
+
+    CertificateList orig_certs = CreateCertificateListFromFile(
+        certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
+    ASSERT_EQ(3U, orig_certs.size());
+
+    // Build a slightly modified variant of |orig_certs|.
+    CertBuilder root(orig_certs[2]->cert_buffer(), nullptr);
+    CertBuilder intermediate(orig_certs[1]->cert_buffer(), &root);
+    CertBuilder leaf(orig_certs[0]->cert_buffer(), &intermediate);
+
+    // Make the leaf certificate have an AIA (CA Issuers) that points to the
+    // embedded test server. This uses a random URL for predictable behavior in
+    // the presence of global caching.
+    *ca_issuers_path = MakeRandomPath(".cer");
+    GURL ca_issuers_url = GetTestServerAbsoluteUrl(*ca_issuers_path);
+    leaf.SetCaIssuersUrl(ca_issuers_url);
+    leaf.SetSubjectAltName(kHostname);
+
+    // The chain being verified is solely the leaf certificate (missing the
+    // intermediate and root).
+    *out_leaf = leaf.GetX509Certificate();
+    *out_root = root.GetX509Certificate();
+    *out_intermediate = intermediate.DupCertBuffer();
+  }
+
  private:
   std::unique_ptr<test_server::HttpResponse> DispatchToRequestHandler(
       const test_server::HttpRequest& request) {
@@ -2784,39 +2822,23 @@ INSTANTIATE_TEST_CASE_P(,
 TEST_P(CertVerifyProcInternalWithNetFetchingTest, MAYBE_IntermediateFromAia404) {
   const char kHostname[] = "www.example.com";
 
-  base::FilePath certs_dir =
-      GetTestNetDataDirectory()
-          .AppendASCII("verify_certificate_chain_unittest")
-          .AppendASCII("target-and-intermediate");
+  // Create a chain where the leaf has an AIA that points to test server.
+  scoped_refptr<X509Certificate> leaf;
+  std::string ca_issuers_path;
+  bssl::UniquePtr<CRYPTO_BUFFER> intermediate;
+  scoped_refptr<X509Certificate> root;
+  CreateSimpleChainWithAIA(&leaf, &ca_issuers_path, &intermediate, &root);
 
-  CertificateList orig_certs = CreateCertificateListFromFile(
-      certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(3U, orig_certs.size());
-
-  // Build a slightly modified variant of |orig_certs|, in which the leaf points
-  // to an AIA for obtaining the missing intermediate. This URL responds
-  // with a 404 (and a non-certificate response body and MIME).
-  CertBuilder root(orig_certs[2]->cert_buffer(), nullptr);
-  CertBuilder intermediate(orig_certs[1]->cert_buffer(), &root);
-  CertBuilder leaf(orig_certs[0]->cert_buffer(), &intermediate);
-
-  std::string ca_issuers_path = MakeRandomPath(".cer");
-  GURL ca_issuers_url = GetTestServerAbsoluteUrl(ca_issuers_path);
-  leaf.SetCaIssuersUrl(ca_issuers_url);
-  leaf.SetSubjectAltName(kHostname);
-
+  // Serve a 404 for the AIA url.
   RegisterSimpleTestServerHandler(ca_issuers_path, HTTP_NOT_FOUND, "text/plain",
                                   "Not Found");
 
   // Trust the root certificate.
-  auto root_cert = root.GetX509Certificate();
-  ScopedTestRoot scoped_root(root_cert.get());
+  ScopedTestRoot scoped_root(root.get());
 
   // The chain being verified is solely the leaf certificate (missing the
   // intermediate and root).
-  scoped_refptr<X509Certificate> chain = leaf.GetX509Certificate();
-  ASSERT_TRUE(chain.get());
-  ASSERT_EQ(0u, chain->intermediate_buffers().size());
+  ASSERT_EQ(0u, leaf->intermediate_buffers().size());
 
   const int flags = 0;
   int error;
@@ -2824,7 +2846,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, MAYBE_IntermediateFromAia404) 
 
   // Verifying the chain should fail as the intermediate is missing, and
   // cannot be fetched via AIA.
-  error = Verify(chain.get(), kHostname, flags, nullptr, CertificateList(),
+  error = Verify(leaf.get(), kHostname, flags, nullptr, CertificateList(),
                  &verify_result);
   EXPECT_NE(OK, error);
 
@@ -2843,49 +2865,32 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, MAYBE_IntermediateFromAia404) 
 // intermediate is available via AIA.
 // TODO(crbug.com/860189): Failing on iOS
 #if defined(OS_IOS)
-#define MAYBE_IntermediateFromAia200 DISABLED_IntermediateFromAia200
+#define MAYBE_IntermediateFromAia200Der DISABLED_IntermediateFromAia200Der
 #else
-#define MAYBE_IntermediateFromAia200 IntermediateFromAia200
+#define MAYBE_IntermediateFromAia200Der IntermediateFromAia200Der
 #endif
 TEST_P(CertVerifyProcInternalWithNetFetchingTest,
-       MAYBE_IntermediateFromAia200) {
+       MAYBE_IntermediateFromAia200Der) {
   const char kHostname[] = "www.example.com";
 
-  base::FilePath certs_dir =
-      GetTestNetDataDirectory()
-          .AppendASCII("verify_certificate_chain_unittest")
-          .AppendASCII("target-and-intermediate");
-
-  CertificateList orig_certs = CreateCertificateListFromFile(
-      certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(3U, orig_certs.size());
-
-  // Build a slightly modified variant of |orig_certs|.
-  CertBuilder root(orig_certs[2]->cert_buffer(), nullptr);
-  CertBuilder intermediate(orig_certs[1]->cert_buffer(), &root);
-  CertBuilder leaf(orig_certs[0]->cert_buffer(), &intermediate);
-
-  // Make the leaf certificate have an AIA (CA Issuers) that points to the
-  // embedded test server. This uses a random URL for predictable behavior in
-  // the presence of global caching.
-  std::string ca_issuers_path = MakeRandomPath(".cer");
-  GURL ca_issuers_url = GetTestServerAbsoluteUrl(ca_issuers_path);
-  leaf.SetCaIssuersUrl(ca_issuers_url);
-  leaf.SetSubjectAltName(kHostname);
+  // Create a chain where the leaf has an AIA that points to test server.
+  scoped_refptr<X509Certificate> leaf;
+  std::string ca_issuers_path;
+  bssl::UniquePtr<CRYPTO_BUFFER> intermediate;
+  scoped_refptr<X509Certificate> root;
+  CreateSimpleChainWithAIA(&leaf, &ca_issuers_path, &intermediate, &root);
 
   // Setup the test server to reply with the correct intermediate.
   RegisterSimpleTestServerHandler(
-      ca_issuers_path, HTTP_OK, "application/pkix-cert", intermediate.GetDER());
+      ca_issuers_path, HTTP_OK, "application/pkix-cert",
+      x509_util::CryptoBufferAsStringPiece(intermediate.get()).as_string());
 
   // Trust the root certificate.
-  auto root_cert = root.GetX509Certificate();
-  ScopedTestRoot scoped_root(root_cert.get());
+  ScopedTestRoot scoped_root(root.get());
 
   // The chain being verified is solely the leaf certificate (missing the
   // intermediate and root).
-  scoped_refptr<X509Certificate> chain = leaf.GetX509Certificate();
-  ASSERT_TRUE(chain.get());
-  ASSERT_EQ(0u, chain->intermediate_buffers().size());
+  ASSERT_EQ(0u, leaf->intermediate_buffers().size());
 
   const int flags = 0;
   int error;
@@ -2893,9 +2898,117 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Verifying the chain should succeed as the missing intermediate can be
   // fetched via AIA.
-  error = Verify(chain.get(), kHostname, flags, nullptr, CertificateList(),
+  error = Verify(leaf.get(), kHostname, flags, nullptr, CertificateList(),
                  &verify_result);
   EXPECT_THAT(error, IsOk());
+}
+
+// This test is the same as IntermediateFromAia200Der, except the certificate is
+// served as PEM rather than DER.
+//
+// Tries verifying a certificate chain that is missing an intermediate. The
+// intermediate is available via AIA, however is served as a PEM file rather
+// than DER.
+// TODO(crbug.com/860189): Failing on iOS
+#if defined(OS_IOS)
+#define MAYBE_IntermediateFromAia200Pem DISABLED_IntermediateFromAia200Pem
+#else
+#define MAYBE_IntermediateFromAia200Pem IntermediateFromAia200Pem
+#endif
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       MAYBE_IntermediateFromAia200Pem) {
+  const char kHostname[] = "www.example.com";
+
+  // Create a chain where the leaf has an AIA that points to test server.
+  scoped_refptr<X509Certificate> leaf;
+  std::string ca_issuers_path;
+  bssl::UniquePtr<CRYPTO_BUFFER> intermediate;
+  scoped_refptr<X509Certificate> root;
+  CreateSimpleChainWithAIA(&leaf, &ca_issuers_path, &intermediate, &root);
+
+  std::string intermediate_pem;
+  ASSERT_TRUE(
+      X509Certificate::GetPEMEncoded(intermediate.get(), &intermediate_pem));
+
+  // Setup the test server to reply with the correct intermediate.
+  RegisterSimpleTestServerHandler(
+      ca_issuers_path, HTTP_OK, "application/x-x509-ca-cert", intermediate_pem);
+
+  // Trust the root certificate.
+  ScopedTestRoot scoped_root(root.get());
+
+  // The chain being verified is solely the leaf certificate (missing the
+  // intermediate and root).
+  ASSERT_EQ(0u, leaf->intermediate_buffers().size());
+
+  const int flags = 0;
+  int error;
+  CertVerifyResult verify_result;
+
+  // Verifying the chain should succeed as the missing intermediate can be
+  // fetched via AIA.
+  error = Verify(leaf.get(), kHostname, flags, nullptr, CertificateList(),
+                 &verify_result);
+
+  if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    // Android doesn't support PEM - https://crbug.com/725180
+    EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+  } else {
+    EXPECT_THAT(error, IsOk());
+  }
+}
+
+// This test is the same as IntermediateFromAia200Pem, but with a different
+// formatting on the PEM data.
+//
+// TODO(crbug.com/860189): Failing on iOS
+#if defined(OS_IOS)
+#define MAYBE_IntermediateFromAia200Pem2 DISABLED_IntermediateFromAia200Pem2
+#else
+#define MAYBE_IntermediateFromAia200Pem2 IntermediateFromAia200Pem2
+#endif
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       MAYBE_IntermediateFromAia200Pem2) {
+  const char kHostname[] = "www.example.com";
+
+  // Create a chain where the leaf has an AIA that points to test server.
+  scoped_refptr<X509Certificate> leaf;
+  std::string ca_issuers_path;
+  bssl::UniquePtr<CRYPTO_BUFFER> intermediate;
+  scoped_refptr<X509Certificate> root;
+  CreateSimpleChainWithAIA(&leaf, &ca_issuers_path, &intermediate, &root);
+
+  std::string intermediate_pem;
+  ASSERT_TRUE(
+      X509Certificate::GetPEMEncoded(intermediate.get(), &intermediate_pem));
+  intermediate_pem = "Text at start of file\n" + intermediate_pem;
+
+  // Setup the test server to reply with the correct intermediate.
+  RegisterSimpleTestServerHandler(
+      ca_issuers_path, HTTP_OK, "application/x-x509-ca-cert", intermediate_pem);
+
+  // Trust the root certificate.
+  ScopedTestRoot scoped_root(root.get());
+
+  // The chain being verified is solely the leaf certificate (missing the
+  // intermediate and root).
+  ASSERT_EQ(0u, leaf->intermediate_buffers().size());
+
+  const int flags = 0;
+  int error;
+  CertVerifyResult verify_result;
+
+  // Verifying the chain should succeed as the missing intermediate can be
+  // fetched via AIA.
+  error = Verify(leaf.get(), kHostname, flags, nullptr, CertificateList(),
+                 &verify_result);
+
+  if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    // Android doesn't support PEM - https://crbug.com/725180
+    EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+  } else {
+    EXPECT_THAT(error, IsOk());
+  }
 }
 
 // Tries verifying a certificate chain that uses a SHA1 intermediate,
