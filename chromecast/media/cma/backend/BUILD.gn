@@ -184,6 +184,7 @@ cast_source_set("for_mixer_audio") {
     "audio_output_redirector.h",
     "buffering_mixer_source.cc",
     "buffering_mixer_source.h",
+    "cast_media_shlib_mixer_audio.cc",
     "direct_mixer_source.cc",
     "direct_mixer_source.h",
     "filter_group.cc",

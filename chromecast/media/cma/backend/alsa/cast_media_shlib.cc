@@ -190,23 +190,5 @@ bool CastMediaShlib::SupportsMediaClockRateChange() {
   return g_rate_offset_element != nullptr;
 }
 
-void CastMediaShlib::AddLoopbackAudioObserver(LoopbackAudioObserver* observer) {
-  StreamMixer::Get()->AddLoopbackAudioObserver(observer);
-}
-
-void CastMediaShlib::RemoveLoopbackAudioObserver(
-    LoopbackAudioObserver* observer) {
-  StreamMixer::Get()->RemoveLoopbackAudioObserver(observer);
-}
-
-void CastMediaShlib::ResetPostProcessors() {
-  StreamMixer::Get()->ResetPostProcessors();
-}
-
-void CastMediaShlib::SetPostProcessorConfig(const std::string& name,
-                                            const std::string& config) {
-  StreamMixer::Get()->SetPostProcessorConfig(name, config);
-}
-
 }  // namespace media
 }  // namespace chromecast

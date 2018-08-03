@@ -24,14 +24,5 @@ bool MediaCapabilitiesShlib::IsSupportedAudioConfig(const AudioConfig& config) {
   return false;
 }
 
-void CastMediaShlib::AddLoopbackAudioObserver(LoopbackAudioObserver* observer) {
-  StreamMixer::Get()->AddLoopbackAudioObserver(observer);
-}
-
-void CastMediaShlib::RemoveLoopbackAudioObserver(
-    LoopbackAudioObserver* observer) {
-  StreamMixer::Get()->RemoveLoopbackAudioObserver(observer);
-}
-
 }  // namespace media
 }  // namespace chromecast
