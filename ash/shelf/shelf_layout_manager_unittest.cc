@@ -2181,7 +2181,6 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfNotMoveOnKeyboardOpen) {
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
   NotifyKeyboardChanging(layout_manager, false, keyboard_bounds());
-  layout_manager->LayoutShelf();
 
   // Shelf position should not be changed.
   EXPECT_EQ(orig_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
@@ -2200,7 +2199,6 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
   NotifyKeyboardChanging(layout_manager, false, keyboard_bounds());
-  layout_manager->LayoutShelf();
 
   // Work area should not be changed.
   EXPECT_EQ(orig_work_area,
@@ -2208,7 +2206,6 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
 
   kb_controller->HideKeyboardExplicitlyBySystem();
   NotifyKeyboardChanging(layout_manager, false, gfx::Rect());
-  layout_manager->LayoutShelf();
   EXPECT_EQ(orig_work_area,
             display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 }
@@ -2224,10 +2221,17 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfShouldChangeWorkAreaInStickyMode) {
   // Open keyboard in sticky mode.
   kb_controller->ShowKeyboard(true);
   NotifyKeyboardChanging(layout_manager, true, keyboard_bounds());
-  layout_manager->LayoutShelf();
 
   // Work area should be changed.
   EXPECT_NE(orig_work_area,
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  // Hide the keyboard.
+  kb_controller->HideKeyboardByUser();
+  NotifyKeyboardChanging(layout_manager, true, gfx::Rect());
+
+  // Work area should be reset to its original value.
+  EXPECT_EQ(orig_work_area,
             display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 }
 
