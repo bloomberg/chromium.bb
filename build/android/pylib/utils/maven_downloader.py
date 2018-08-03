@@ -36,7 +36,8 @@ class MavenDownloader(object):
   _REMOTE_REPO = 'https://maven.google.com'
 
   # Default Maven repository.
-  _DEFAULT_REPO_PATH = os.path.join(os.getenv('HOME'), '.m2', 'repository')
+  _DEFAULT_REPO_PATH = os.path.join(
+      os.path.expanduser('~'), '.m2', 'repository')
 
   def __init__(self, debug=False):
     self._repo_path = MavenDownloader._DEFAULT_REPO_PATH
