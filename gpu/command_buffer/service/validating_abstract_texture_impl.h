@@ -38,7 +38,6 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
   void BindStreamTextureImage(GLStreamTextureImage* image,
                               GLuint service_id) override;
   void BindImage(gl::GLImage* image, bool client_managed) override;
-  void ReleaseImage() override;
   gl::GLImage* GetImage() const override;
   void SetCleared() override;
   void SetCleanupCallback(CleanupCallback cb) override;
@@ -58,6 +57,7 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
   void SetLevelInfo();
 
   scoped_refptr<TextureRef> texture_ref_;
+  bool decoder_managed_image_ = false;
 
   DecoderContext* decoder_context_ = nullptr;
   DestructionCB destruction_cb_;

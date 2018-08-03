@@ -77,12 +77,6 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // The context must be current.
   virtual void BindImage(gl::GLImage* image, bool client_managed) = 0;
 
-  // Unbind and release any image bound to this texture, and return it to an
-  // uncleared state.
-  //
-  // The context must be current.
-  virtual void ReleaseImage() = 0;
-
   // Return the image, if any.
   virtual gl::GLImage* GetImage() const = 0;
 

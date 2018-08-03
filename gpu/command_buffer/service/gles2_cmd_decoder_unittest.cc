@@ -325,7 +325,7 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   EXPECT_EQ(texture->GetLevelImage(target, 0), image.get());
 
   // Unbinding should make it not renderable.
-  abstract_texture->ReleaseImage();
+  abstract_texture->BindImage(nullptr, false);
   EXPECT_EQ(texture->SafeToRenderFrom(), false);
   EXPECT_EQ(abstract_texture->GetImage(), nullptr);
 
