@@ -496,11 +496,12 @@ void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
 
 void ShelfLayoutManager::OnKeyboardAppearanceChanged(
     const keyboard::KeyboardStateDescriptor& state) {
+  // If displaced bounds changed, then change the work area too.
+  bool change_work_area = state.displaced_bounds != keyboard_displaced_bounds_;
+
   keyboard_occluded_bounds_ = state.occluded_bounds;
   keyboard_displaced_bounds_ = state.displaced_bounds;
 
-  // If there are displaced bounds, then change the work area.
-  bool change_work_area = !keyboard_displaced_bounds_.IsEmpty();
   LayoutShelfAndUpdateBounds(change_work_area);
 }
 
