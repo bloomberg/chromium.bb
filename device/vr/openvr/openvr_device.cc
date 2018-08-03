@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "build/build_config.h"
-#include "device/vr/openvr/openvr_gamepad_data_fetcher.h"
 #include "device/vr/openvr/openvr_render_loop.h"
 #include "device/vr/openvr/openvr_type_converters.h"
 #include "third_party/openvr/src/headers/openvr.h"
@@ -132,6 +131,7 @@ OpenVRDevice::OpenVRDevice()
     : VRDeviceBase(VRDeviceId::OPENVR_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       exclusive_controller_binding_(this),
+      gamepad_provider_factory_binding_(this),
       weak_ptr_factory_(this) {
   // Initialize OpenVR.
   openvr_ = std::make_unique<OpenVRWrapper>(false /* presenting */);
@@ -142,20 +142,15 @@ OpenVRDevice::OpenVRDevice()
 
   SetVRDisplayInfo(CreateVRDisplayInfo(openvr_->GetSystem(), GetId()));
 
-  render_loop_ = std::make_unique<OpenVRRenderLoop>(base::BindRepeating(
-      &OpenVRDevice::OnGamepadUpdated, weak_ptr_factory_.GetWeakPtr()));
+  render_loop_ = std::make_unique<OpenVRRenderLoop>();
 
   OnPollingEvents();
 }
 
-void OpenVRDevice::OnGamepadUpdated(OpenVRGamepadState state) {
-  if (gamepad_data_fetcher_) {
-    gamepad_data_fetcher_->UpdateGamepadData(state);
-  }
-}
-
-void OpenVRDevice::RegisterDataFetcher(OpenVRGamepadDataFetcher* fetcher) {
-  gamepad_data_fetcher_ = fetcher;
+mojom::IsolatedXRGamepadProviderFactoryPtr OpenVRDevice::BindGamepadFactory() {
+  mojom::IsolatedXRGamepadProviderFactoryPtr ret;
+  gamepad_provider_factory_binding_.Bind(mojo::MakeRequest(&ret));
+  return ret;
 }
 
 OpenVRDevice::~OpenVRDevice() {
@@ -178,12 +173,20 @@ void OpenVRDevice::RequestSession(
     return;
   }
 
-  if (!render_loop_->IsRunning())
+  if (!render_loop_->IsRunning()) {
     render_loop_->Start();
 
-  if (!render_loop_->IsRunning()) {
-    std::move(callback).Run(nullptr, nullptr);
-    return;
+    if (!render_loop_->IsRunning()) {
+      std::move(callback).Run(nullptr, nullptr);
+      return;
+    }
+
+    if (provider_request_) {
+      render_loop_->task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&OpenVRRenderLoop::RequestGamepadProvider,
+                                    render_loop_->GetWeakPtr(),
+                                    std::move(provider_request_)));
+    }
   }
 
   // We are done using OpenVR until the presentation session ends.
@@ -235,6 +238,18 @@ void OpenVRDevice::OnRequestSessionResult(
                      base::Unretained(this)));
 
   std::move(callback).Run(std::move(session), std::move(session_controller));
+}
+
+void OpenVRDevice::GetIsolatedXRGamepadProvider(
+    mojom::IsolatedXRGamepadProviderRequest provider_request) {
+  if (render_loop_->IsRunning()) {
+    render_loop_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&OpenVRRenderLoop::RequestGamepadProvider,
+                                  render_loop_->GetWeakPtr(),
+                                  std::move(provider_request)));
+  } else {
+    provider_request_ = std::move(provider_request);
+  }
 }
 
 // XRSessionController
