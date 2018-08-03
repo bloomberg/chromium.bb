@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (indlæser...)</translation>
+<translation id="1841545962859478868">Administratoren af enheden kan overvåge følgende:</translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
 <translation id="1864454756846565995">USB-C-enhed (port bagpå)</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
@@ -326,6 +327,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7143207342074048698">Opretter forbindelse</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
+<translation id="7228479291753472782">Manipuler indstillinger, der angiver, om websites må anvende funktioner såsom geoplacering, mikrofon, kamera m.m.</translation>
 <translation id="7256634071279256947">Mikrofon på bagsiden</translation>
 <translation id="726276584504105859">Træk hertil for at bruge delt skærm</translation>
 <translation id="7348093485538360975">Skærmtastatur</translation>
@@ -342,6 +344,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7564874036684306347">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd. Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skriveborde.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
+<translation id="7604942372593434070">Adgang til din browseraktivitet</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
 <translation id="7647488630410863958">Lås enheden op for at se dine underretninger</translation>
 <translation id="7649070708921625228">Hjælp</translation>
@@ -356,6 +359,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7829386189513694949">Stærkt signal</translation>
 <translation id="7842569679327885685">Advarsel! Eksperimentel funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="790040513076446191">Manipulere indstillinger til beskyttelse af personlige oplysninger</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="7933084174919150729">Google Assistent kan kun bruges via den primære profil.</translation>
 <translation id="79341161159229895">Kontoen administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -374,6 +378,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8142699993796781067">Privat netværk</translation>
 <translation id="8152119955266188852">Du trykkede på genvejen for forstørrelse af fuld skærm. Vil du aktivere indstillingen?</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
+<translation id="8191230140820435481">Administrere dine apps, udvidelser og temaer</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8297006494302853456">Svag</translation>
 <translation id="8308637677604853869">Forrige menu</translation>

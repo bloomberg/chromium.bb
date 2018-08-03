@@ -2163,7 +2163,7 @@
 <translation id="428608937826130504">栏中第 8 项</translation>
 <translation id="4287502004382794929">您没有足够的软件许可来注册此设备。请与销售代表联系，以购买更多软件许可。如果您认为自己不应看到此讯息，请与支持人员联系。</translation>
 <translation id="4289540628985791613">概述</translation>
-<translation id="4295072614469448764">应用已出现在您的终端上，且可能在启动器中显示图标。</translation>
+<translation id="4295072614469448764">应用已可在您的终端上使用，且可能在启动器中显示图标。</translation>
 <translation id="4296575653627536209">添加受监管用户</translation>
 <translation id="4297219207642690536">重启并重置</translation>
 <translation id="4297322094678649474">更改语言</translation>
@@ -3053,7 +3053,7 @@
 <translation id="5677503058916217575">网页语言：</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5678550637669481956">已授予对 <ph name="VOLUME_NAME" />的读写权限。</translation>
-<translation id="5678784840044122290">此 Linux 应用将出现在您的终端上，且可能在启动器中显示图标。</translation>
+<translation id="5678784840044122290">此 Linux 应用将可以在您的终端上使用，且可能在启动器中显示图标。</translation>
 <translation id="5678955352098267522">读取您在 <ph name="WEBSITE_1" /> 上的数据</translation>
 <translation id="5684661240348539843">资产标识符</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />无法断开与档案或虚拟磁盘的连接<ph name="END_BOLD" />
@@ -4154,7 +4154,6 @@
 <translation id="7387829944233909572">“清除浏览数据”对话框</translation>
 <translation id="7388044238629873883">即将终结！</translation>
 <translation id="7388222713940428051">以访客身份打开一个窗口</translation>
-<translation id="7391648274628927397">已为您添加书签</translation>
 <translation id="7392118418926456391">病毒扫描失败</translation>
 <translation id="7392915005464253525">重新打开关闭的窗口(&amp;E)</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> 会在系统启动时启动，即使您将其他所有 <ph name="PRODUCT_NAME" />窗口关闭，它也会继续在后台运行。</translation>

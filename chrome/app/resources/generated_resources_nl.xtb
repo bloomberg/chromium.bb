@@ -2172,7 +2172,7 @@
 <translation id="4289540628985791613">Overzicht</translation>
 <translation id="4295072614469448764">De app is beschikbaar in je terminal. Mogelijk staat er ook een pictogram van de app in de Launcher.</translation>
 <translation id="4296575653627536209">Gebruiker met beperkte rechten toevoegen</translation>
-<translation id="4297219207642690536">Opnieuw starten en resetten</translation>
+<translation id="4297219207642690536">Opnieuw opstarten en resetten</translation>
 <translation id="4297322094678649474">Talen wijzigen</translation>
 <translation id="4300305918532693141">Als je deze instelling wilt wijzigen, moet je de <ph name="BEGIN_LINK" />synchronisatie resetten<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lang (2 sec.)</translation>
@@ -4170,7 +4170,6 @@
 <translation id="7387829944233909572">Dialoogvenster 'Browsegegevens wissen'</translation>
 <translation id="7388044238629873883">Je bent bijna klaar.</translation>
 <translation id="7388222713940428051">Gastvenster openen</translation>
-<translation id="7391648274628927397">Er is een bladwijzer voor je toegevoegd</translation>
 <translation id="7392118418926456391">Virusscan is mislukt</translation>
 <translation id="7392915005464253525">G&amp;esloten venster opnieuw openen</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> wordt gestart zodra je het systeem opstart en blijft zelfs op de achtergrond actief als je alle andere vensters van <ph name="PRODUCT_NAME" /> sluit.</translation>

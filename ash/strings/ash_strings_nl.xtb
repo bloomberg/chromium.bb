@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Schermtoetsenbord ingeschakeld</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laden...)</translation>
+<translation id="1841545962859478868">De apparaatbeheerder kan het volgende controleren:</translation>
 <translation id="1850504506766569011">Wifi is uitgeschakeld.</translation>
 <translation id="1864454756846565995">USB-C-apparaat (poort aan achterkant)</translation>
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
@@ -208,7 +209,7 @@
 <translation id="4905614135390995787">De sneltoets om de modus voor hoog contrast in of uit te schakelen, is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918086044614829423">Accepteren</translation>
-<translation id="4924411785043111640">Opnieuw starten en resetten</translation>
+<translation id="4924411785043111640">Opnieuw opstarten en resetten</translation>
 <translation id="4961318399572185831">Scherm casten</translation>
 <translation id="5069971504769299223">De beheerder van het apparaat kan je activiteit mogelijk bekijken.</translation>
 <translation id="5136175204352732067">Ander toetsenbord aangesloten</translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Verbinding maken</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Instellingen bewerken die bepalen of websites functies (zoals geolocatie, microfoon, camera, enzovoort) kunnen gebruiken</translation>
 <translation id="7256634071279256947">Microfoon aan achterzijde</translation>
 <translation id="726276584504105859">Sleep hier naartoe om het scherm te splitsen</translation>
 <translation id="7348093485538360975">Schermtoetsenbord</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Verplaatsing van vensters naar een ander bureaublad kan leiden tot onverwacht gedrag. Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de bureaubladen.</translation>
 <translation id="7569509451529460200">Braille en ChromeVox zijn ingeschakeld</translation>
 <translation id="7593891976182323525">Zoeken of Shift</translation>
+<translation id="7604942372593434070">Toegang krijgen tot je browse-activiteit</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eigenaar)</translation>
 <translation id="7647488630410863958">Ontgrendel het apparaat om je meldingen weer te geven</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Sterk signaal</translation>
 <translation id="7842569679327885685">Waarschuwing: Experimentele functie</translation>
 <translation id="7846634333498149051">Toetsenbord</translation>
+<translation id="790040513076446191">Privacygerelateerde instellingen manipuleren</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>
 <translation id="7933084174919150729">De Google Assistent is alleen beschikbaar voor het primaire profiel.</translation>
 <translation id="79341161159229895">Account wordt beheerd door <ph name="FIRST_PARENT_EMAIL" /> en <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Privénetwerk</translation>
 <translation id="8152119955266188852">Je hebt op de sneltoets voor volledig scherm vergroten gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="8190698733819146287">Talen en invoer aanpassen...</translation>
+<translation id="8191230140820435481">Je apps, extensies en thema's beheren</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8297006494302853456">Zwak</translation>
 <translation id="8308637677604853869">Vorig menu</translation>

@@ -788,7 +788,7 @@
 <translation id="2178098616815594724">El complemento <ph name="PEPPER_PLUGIN_NAME" /> del dominio <ph name="PEPPER_PLUGIN_DOMAIN" /> desea acceder a tu computadora</translation>
 <translation id="2178614541317717477">Compromiso de entidad de certificación</translation>
 <translation id="218070003709087997">Usa un número para indicar la cantidad de copias que deseas imprimir (1 a 999).</translation>
-<translation id="2183558561014688873">Accede a tu Asistente cada vez que digas "OK Google" cuando tu dispositivo está activo y desbloqueado.</translation>
+<translation id="2183558561014688873">Accede a tu Asistente cada vez que digas "OK Google" cuando tu dispositivo esté activo y desbloqueado.</translation>
 <translation id="2187895286714876935">Error en el servidor de importación de certificado</translation>
 <translation id="2187906491731510095">Se actualizaron las extensiones</translation>
 <translation id="2188881192257509750">Abrir <ph name="APPLICATION" /></translation>
@@ -1914,7 +1914,7 @@
 <translation id="3871092408932389764">Muy bajo</translation>
 <translation id="3872220884670338524">Más acciones (cuenta guardada para <ph name="USERNAME" /> en <ph name="DOMAIN" />)</translation>
 <translation id="3872991219937722530">Libera espacio en el disco o el dispositivo dejará de funcionar.</translation>
-<translation id="3873315167136380065">Para activar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /> para quitar la frase de contraseña de sincronización</translation>
+<translation id="3873315167136380065">A fin de activar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /> para quitar la frase de contraseña de sincronización</translation>
 <translation id="3878840326289104869">Creando usuario supervisado</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>
 <translation id="3880709822663530586">La llave de seguridad solo funciona cuando está activada la conexión Bluetooth de tu dispositivo</translation>
@@ -4165,7 +4165,6 @@
 <translation id="7387829944233909572">Diálogo "Eliminar datos de navegación"</translation>
 <translation id="7388044238629873883">Falta muy poco</translation>
 <translation id="7388222713940428051">Abrir una ventana como invitado</translation>
-<translation id="7391648274628927397">Se agregó un favorito para ti</translation>
 <translation id="7392118418926456391">Error en el análisis antivirus</translation>
 <translation id="7392915005464253525">Volver a abrir una ventana cerrada</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> empezará a ejecutarse cuando se inicie el sistema y seguirá ejecutándose en segundo plano aunque cierres todas las demás ventanas de <ph name="PRODUCT_NAME" />.</translation>
@@ -5019,7 +5018,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8698464937041809063">Dibujo de Google</translation>
 <translation id="869884720829132584">Menú Aplicaciones</translation>
 <translation id="869891660844655955">Fecha de vencimiento</translation>
-<translation id="8699566574894671540">Para activar esta opción, primero selecciona Comprobar ortografía mientras se escribe en el menú Editar</translation>
+<translation id="8699566574894671540">Para activar esta opción, primero selecciona Comprobar ortografía mientras se escribe, en el menú Editar</translation>
 <translation id="870073306461175568">Network File Shares</translation>
 <translation id="8701677791353449257">El nombre del dispositivo debe coincidir con la expresión regular <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Esta acción está tardando más de lo normal. Puedes seguir esperando o cancelar la acción y volver a intentarlo más tarde.</translation>

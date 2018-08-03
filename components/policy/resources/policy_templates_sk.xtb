@@ -505,6 +505,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo ponecháte nenastavené, používatelia si budú môcť vybrať, či chcú funkciu používať alebo nie.
 
       Toto nastavenie sa v prehliadači <ph name="PRODUCT_NAME" /> verzie 29 a vyšších už nenachádza.</translation>
+<translation id="2433412232489478893">Toto pravidlo riadi, či je funkcia zdieľania súborov v sieti pre <ph name="PRODUCT_NAME" /> povolená pre používateľa.
+
+      Keď ho nenakonfigurujete alebo nastavíte na hodnotu True, používatelia budú môcť používať zdieľanie súborov v sieti.
+
+      Keď ho nastavíte na hodnotu False, používatelia nebudú môcť používať zdieľanie súborov v sieti.</translation>
 <translation id="2438609638493026652">Povolí nahlasovanie kľúčových udalostí počas inštalácie aplikácie pre Android do Googlu. Udalosti sa zaznamenávajú iba v prípade aplikácií, ktorých inštalácia bola spustená prostredníctvom pravidla.
 
       Ak toto pravidlo nastavíte na hodnotu true, udalosti sa budú zaznamenávať.
@@ -586,6 +591,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2598508021807251719">Konfiguruje miestne nastavenia, v ktorých sa <ph name="PRODUCT_OS_NAME" /> môže zobrazovať.
 
       Ak toto pravidlo nastavíte, používateľ môže nakonfigurovať iba to, aby sa <ph name="PRODUCT_OS_NAME" /> zobrazoval v jednom z miestnych nastavení špecifikovaných týmto pravidlom. Ak toto pravidlo nenastavíte alebo ho nastavíte na prázdny zoznam, <ph name="PRODUCT_OS_NAME" /> sa môže zobrazovať vo všetkých podporovaných miestnych nastaveniach používateľského rozhrania. Ak pravidlo nastavíte na zoznam s neplatnými hodnotami, všetky neplatné hodnoty sa budú ignorovať. Ak používateľ predtým nakonfiguroval, aby sa <ph name="PRODUCT_OS_NAME" /> zobrazoval v jazyku, ktorý toto pravidlo nepovoľuje, pri najbližšom prihlásení používateľa sa zobrazené miestne nastavenie prepne na povolené miestne nastavenie používateľského rozhrania. Ak používateľ nakonfiguroval preferované miestne nastavenia a jedno z týchto nastavení je povolené týmto pravidlom, <ph name="PRODUCT_OS_NAME" /> sa prepne na toto miestne nastavenie. V opačnom prípade sa <ph name="PRODUCT_OS_NAME" /> prepne na prvú platnú hodnotu špecifikovanú týmto pravidlom alebo na záložné miestne nastavenie (aktuálne en-US), ak pravidlo obsahuje iba neplatné záznamy.</translation>
+<translation id="2604182581880595781">Konfigurácia pravidiel súvisiacich so zdieľaním súborov v sieti</translation>
 <translation id="2623014935069176671">Počkať na aktivitu používateľa</translation>
 <translation id="262740370354162807">Povolí odoslanie dokumentov do služby <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Umožňuje poskytnúť konfigurácie pre podnikové tlačiarne.
@@ -671,6 +677,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2823870601012066791">Umiestnenie v registri systému Windows pre klienty <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Povoliť režim inkognito</translation>
 <translation id="2838830882081735096">Zakázať migráciu dát a ARC</translation>
+<translation id="2839294585867804686">Nastavenia zdieľania súborov v sieti</translation>
 <translation id="2840269525054388612">Umožňuje určiť tlačiarne, ktoré má používateľ k dispozícii.
 
       Toto pravidlo sa používa iba vtedy, keď je pre <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> vybraná možnosť <ph name="PRINTERS_WHITELIST" />
@@ -1161,6 +1168,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo ponecháte nenastavené, anonymizované zhromažďovanie dát prostredníctvom kódovaných webových adries sa povolí, no používateľ ho bude môcť zmeniť.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4261820385751181068">Jazyk prihlasovacej obrazovky zariadenia</translation>
+<translation id="4264607809747169568">Riadi dostupnosť zdieľania súborov v sieti pre Chrome OS</translation>
 <translation id="427220754384423013">Umožňuje určiť tlačiarne, ktoré má používateľ k dispozícii.
 
       Toto pravidlo sa používa iba vtedy, keď je pre <ph name="BULK_PRINTERS_ACCESS_MODE" /> vybraná možnosť <ph name="PRINTERS_WHITELIST" />.
@@ -1592,6 +1600,15 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Hodnota pravidla musí byť zadaná v milisekundách.</translation>
 <translation id="5511702823008968136">Povoliť panel so záložkami</translation>
 <translation id="5512418063782665071">Webová adresa domovskej stránky</translation>
+<translation id="551639594034811656">Toto pravidlo definuje zoznam percentuálnych hodnôt určujúcich časť zariadení so systémom <ph name="PRODUCT_OS_NAME" /> v organizačnej jednotke, ktorá má byť každý týždeň aktualizovaná odo dňa prvého zistenia dostupnosti aktualizácie. Čas zistenia nasleduje po čase zverejnenia aktualizácie, pretože zariadenie môže skontrolovať dostupnosť aktualizácií až s určitým časovým odstupom po ich zverejnení.
+
+      Jednotlivé páry (počet dní a percento) uvádzajú percento zariadení, ktoré sa má aktualizovať za určený počet dní odo dňa zistenia dostupnosti aktualizácie. Ak máte napríklad páry [(4, 40), (10, 70), (15, 100)], potom 40 % zariadení by sa malo aktualizovať do 4 dní od zistenia dostupnosti danej aktualizácie. 70 % by sa malo aktualizovať po 10 dňoch atď.
+
+      Ak pre toto pravidlo definujete hodnotu, aktualizácie budú ignorovať pravidlo <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> a nasledovať namiesto neho toto pravidlo.
+
+      Ak tento zoznam ponecháte prázdny, nedôjde k postupnému zavádzaniu po etapách a aktualizácie sa budú uplatňovať v súlade s ostatnými pravidlami zariadenia.
+
+      Toto pravidlo sa netýka zmien kanálov.</translation>
 <translation id="5523812257194833591">Verejná relácia, do ktorej sa zariadenie po oneskorení automaticky prihlási.
 
       Ak je pravidlo nastavené, zariadenie sa po uplynutí určitého časového obdobia nečinnosti používateľa na prihlasovacej obrazovke automaticky prihlási do určenej relácie. Verejná relácia už musí byť nakonfigurovaná (prečítajte si časť |DeviceLocalAccounts|).
@@ -2524,6 +2541,11 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
       Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť.
       Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
       </translation>
+<translation id="7902255855035461275">Vzory v tomto zozname sa porovnajú s pôvodom
+      zabezpečenia webovej adresy, ktorá odoslala žiadosť. Ak sa nájde zhoda, prístup k zariadeniam
+      na zaznamenávanie zvuku sa udelí bez výzvy.
+
+      POZNÁMKA: Do verzie 45 bolo toto pravidlo podporované iba v režime verejného terminálu.</translation>
 <translation id="7912255076272890813">Nakonfigurovať povolené typy aplikácií/rozšírení</translation>
 <translation id="7915236031252389808">Tu môžete zadať webovú adresu súboru .pac proxy servera.
 

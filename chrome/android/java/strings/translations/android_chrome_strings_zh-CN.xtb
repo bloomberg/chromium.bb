@@ -316,7 +316,7 @@
 <translation id="360207483134687714">帮助我们改进 Chrome 中的虚拟现实体验</translation>
 <translation id="3616113530831147358">音频</translation>
 <translation id="3620176948598597475">这项重置操作会清空流量节省程序的历史记录，包括曾访问过的网站的列表。</translation>
-<translation id="3630011985153972676">允许 Chrome 在连接到您在“设置”中指定的 Wi-Fi 网络时为您下载文章。</translation>
+<translation id="3630011985153972676">在“设置”中允许 Chrome 在连接到 Wi-Fi 网络时为您下载文章。</translation>
 <translation id="3632295766818638029">显示密码</translation>
 <translation id="363596933471559332">使用存储的凭据自动登录网站。当该功能处于停用状态时，系统会在您每次登录网站之前要求您进行验证。</translation>
 <translation id="3661699943263275414">第三方网站可以保存和读取 Cookie 数据</translation>
@@ -462,7 +462,6 @@
 <translation id="4860895144060829044">拨打</translation>
 <translation id="4874967477260347223">媒体许可</translation>
 <translation id="4875775213178255010">内容建议</translation>
-<translation id="4876188919622883022">简化版视图</translation>
 <translation id="4878404682131129617">未能成功通过代理服务器建立隧道</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="488187801263602086">重命名文件</translation>

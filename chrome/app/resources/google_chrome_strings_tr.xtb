@@ -149,12 +149,12 @@ Daha fazla talimat için lütfen e-postanızı <ph name="ACCOUNT_EMAIL" /> kontr
 <translation id="4891791193823137474">Google Chrome'un arka planda çalışmasına izin ver</translation>
 <translation id="4895437082222824641">Bağlantıyı yeni Chrome &amp;sekmesinde aç</translation>
 <translation id="4921569541910214635">Bilgisayarı paylaşıyor musunuz? Artık Chrome'u tam olarak istediğiniz gibi kurabilirsiniz.</translation>
-<translation id="4945319281866068441">{0,plural, =1{Chrome OS'u bir gün içinde yeniden başlatın}other{Chrome OS'u # gün içinde yeniden başlatın}}</translation>
+<translation id="4945319281866068441">{0,plural, =1{Chrome OS'i bir gün içinde yeniden başlatın}other{Chrome OS'i # gün içinde yeniden başlatın}}</translation>
 <translation id="4953650215774548573">Google Chrome'u varsayılan tarayıcım olarak ayarla</translation>
 <translation id="495931528404527476">Chrome'da</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome, verilerinizi senkronize edemedi. Lütfen Senkronizasyon parolanızı güncelleyin.</translation>
-<translation id="5062123544085870375">Chrome OS'u yeniden başlat</translation>
+<translation id="5062123544085870375">Chrome OS'i yeniden başlat</translation>
 <translation id="5090044601776247154">Google Chrome 70 sürümünden itibaren denetlenen kullanıcı profilleri artık kullanılmayacaktır.</translation>
 <translation id="5132929315877954718">Google Chrome'a özgü harika uygulamaları, oyunları, uzantıları ve temaları keşfedin.</translation>
 <translation id="5166975452760862670">Google Chrome bu dilde görüntüleniyor</translation>
@@ -211,7 +211,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6970811910055250180">Cihazınız güncelleniyor...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" />, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Google Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
 <translation id="6989339256997917931">Google Chrome güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
-<translation id="7023651421574588884">Bir güncellemeyi uygulamak için yöneticiniz Chrome OS'u yeniden başlatmanızı gerektiriyor</translation>
+<translation id="7023651421574588884">Bir güncellemeyi uygulamak için yöneticiniz Chrome OS'i yeniden başlatmanızı gerektiriyor</translation>
 <translation id="7098166902387133879">Google Chrome mikrofonunuzu kullanıyor.</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
 <translation id="7164397146364144019">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildirerek Chrome'un daha güvenli ve kullanımı kolay bir hale gelmesine yardımcı olabilirsiniz.</translation>
@@ -249,7 +249,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8008534537613507642">Chrome'u yeniden yükle</translation>
 <translation id="8030318113982266900">Cihazınız <ph name="CHANNEL_NAME" /> kanalına güncelleniyor...</translation>
 <translation id="8032142183999901390">Hesabınızı Chrome'dan kaldırdıktan sonra, geçerli olması için açık sekmelerinizi yeniden yüklemeniz gerekebilir.</translation>
-<translation id="8077352834923175128">Yöneticiniz bu güncellemeyi uygulamak için Chrome OS'u yeniden başlatmanızı istiyor</translation>
+<translation id="8077352834923175128">Yöneticiniz bu güncellemeyi uygulamak için Chrome OS'i yeniden başlatmanızı istiyor</translation>
 <translation id="8129812357326543296">&amp;Google Chrome hakkında</translation>
 <translation id="8179874765710681175">Chrome'u telefonunuza yükleyin. Telefonunuza SMS göndereceğiz.</translation>
 <translation id="8183957050892517584">Chrome, kişisel bilgilerinizi güvenli şekilde depoladığından bu bilgileri tekrar yazmak zorunda kalmazsınız.</translation>

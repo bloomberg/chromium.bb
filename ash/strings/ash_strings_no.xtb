@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laster inn …)</translation>
+<translation id="1841545962859478868">Enhetsadministratoren kan overvåke følgende:</translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Håndter innstillinger som angir om nettsteder kan bruke funksjoner som geolokalisering, mikrofonen, kameraet og så videre.</translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="726276584504105859">Dra hit for å bruke delt skjerm</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd. Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
+<translation id="7604942372593434070">Gå til surfeaktiviteten din</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>
 <translation id="7647488630410863958">Lås opp enheten for å se varslene dine</translation>
 <translation id="7649070708921625228">Hjelp</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Sterkt signal</translation>
 <translation id="7842569679327885685">Advarsel: Funksjon på forsøksstadiet</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="790040513076446191">manipulere personvernrelaterte innstillinger</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7933084174919150729">Google-assistenten er bare tilgjengelig for den primære profilen.</translation>
 <translation id="79341161159229895">Kontoen er administrert av <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Privat nettverk</translation>
 <translation id="8152119955266188852">Du trykket på snarveien for lupen for hele skjermen. Vil du slå den på?</translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
+<translation id="8191230140820435481">Administrering av programmer, utvidelser og temaer</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8297006494302853456">Svak</translation>
 <translation id="8308637677604853869">Forrige meny</translation>

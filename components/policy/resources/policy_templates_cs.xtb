@@ -284,6 +284,11 @@ Pokud tato zásada není nastavena, nebude mít zařízení žádné tiskárny a
       Pokud některá možnost nebude nakonfigurována, použije se výchozí hodnota.
 
       Pokud tato zásada není nastavena, budou pro všechna nastavení použity výchozí hodnoty.</translation>
+<translation id="1958138414749279167">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožňuje uživatelům automaticky ve webových formulářích vyplňovat informace o adresách pomocí dříve uložených údajů.
+
+      Pokud je toto nastavení vypnuto, automatické vyplňování nebude navrhovat ani vyplňovat informace o adresách a nebude ani ukládat další informace o adresách, které uživatel při prohlížení webu odešle.
+
+      Pokud je toto nastavení zapnuto nebo nemá žádnou hodnotu, uživatel bude moci automatické vyplňování adres ovládat v uživatelském rozhraní.</translation>
 <translation id="1960840544413786116">Udává, zda mají být povoleny certifikáty vydané místními kotvami vztahu důvěryhodnosti bez rozšíření subjectAlternativeName.</translation>
 <translation id="1964634611280150550">Anonymní režim zakázán</translation>
 <translation id="1964802606569741174">Tato zásada nemá vliv na aplikaci YouTube pro Android. Chcete-li na YouTube vynutit bezpečný režim, měli byste instalaci aplikace YouTube pro Android zakázat.</translation>
@@ -488,6 +493,11 @@ Pokud tuto zásadu aktivujete nebo deaktivujete, uživatelé je nebudou moci zm�
 Pokud toto nastavení ponecháte nenastavené, uživatelé se budou moci rozhodnout, zda tuto funkci chtějí používat.
 
 Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo toto nastavení odebráno.</translation>
+<translation id="2433412232489478893">Tato zásada určuje, zda má uživatel v prohlížeči <ph name="PRODUCT_NAME" /> povolenou funkci sdílených síťových složek.
+
+      Pokud tato zásada není nakonfigurována nebo je nastavena na hodnotu True, uživatelé sdílené síťové složky budou moci používat.
+
+      Pokud je tato zásada nastavena na hodnotu False, uživatelé sdílené síťové složky nebudou moci používat.</translation>
 <translation id="2438609638493026652">Umožňuje hlášení zásadních událostí během instalace aplikací pro Android do Googlu. Události se zaznamenávají pouze pro aplikace, jejichž instalace byla spuštěna prostřednictvím zásady.
 
       Pokud je tato zásada nastavena na hodnotu true, budou se události protokolovat.
@@ -569,6 +579,7 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 <translation id="2598508021807251719">Konfiguruje jazyky, ve kterých se <ph name="PRODUCT_OS_NAME" /> může zobrazovat.
 
       Pokud je tato zásada nastavena, může uživatel nakonfigurovat zobrazení systému <ph name="PRODUCT_OS_NAME" /> jen v jednom z jazyků zadaných v této zásadě. Pokud tato zásada není nastavena nebo je nastavena na prázdný seznam, je možné systém <ph name="PRODUCT_OS_NAME" /> zobrazovat ve všech podporovaných jazycích uživatelského prostředí. Pokud je tato zásada nastavena na seznam s neplatnými hodnotami, všechny neplatné hodnoty budou ignorovány. Pokud uživatel v minulosti systém <ph name="PRODUCT_OS_NAME" /> nastavil na zobrazování v jazyce, který tato zásada nepovoluje, přepne se zobrazovaný jazyk při příštím přihlášení uživatele na povolený jazyk uživatelského rozhraní. Pokud uživatel nakonfiguroval preferované jazyky a tato zásada některý z nich povoluje, přejde <ph name="PRODUCT_OS_NAME" /> na daný jazyk. Jinak <ph name="PRODUCT_OS_NAME" /> přejde na první platnou hodnotu zadanou v této zásadě nebo na záložní jazyk (v současné době en-US), pokud tato zásada obsahuje jen neplatné položky.</translation>
+<translation id="2604182581880595781">Konfigurace zásad souvisejících se sdílenými síťovými složkami.</translation>
 <translation id="2623014935069176671">Počkat na první aktivitu uživatele</translation>
 <translation id="262740370354162807">Povolí odesílání dokumentů do služby <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Poskytuje konfigurace pro podnikové tiskárny.
@@ -653,6 +664,7 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
 <translation id="2823870601012066791">Umístění v registru systému Windows pro klienty <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Povolit anonymní režim</translation>
 <translation id="2838830882081735096">Zakázat migraci dat a rozšíření ARC</translation>
+<translation id="2839294585867804686">Nastavení sdílených síťových složek</translation>
 <translation id="2840269525054388612">Určuje, které tiskárny uživatel může používat.
 
 Tato zásada se použije, jen pokud je v zásadě <ph name="PRINTERS_WHITELIST" /> vybrána možnost <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1140,6 +1152,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Pokud tuto zásadu ponecháte nenastavenou, bude shromažďování anonymizovaných dat zapnuto, ale uživatel to bude moci změnit.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jazyk přihlašovací obrazovky zařízení</translation>
+<translation id="4264607809747169568">Ovládá dostupnost sdílených síťových složek pro Chrome OS</translation>
 <translation id="427220754384423013">Určuje, které tiskárny uživatel může používat.
 
 Tato zásada se použije, jen pokud je v zásadě <ph name="PRINTERS_WHITELIST" /> vybrána možnost <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1568,6 +1581,15 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
       Hodnota zásady musí být zadána v milisekundách.</translation>
 <translation id="5511702823008968136">Aktivovat panel záložek</translation>
 <translation id="5512418063782665071">Adresa URL domovské stránky</translation>
+<translation id="551639594034811656">Tato zásada určuje seznam procentuálních podílů zařízení se systémem <ph name="PRODUCT_OS_NAME" /> v organizační jednotce, která se aktualizují každý den ode dne prvního objevení aktualizace. Čas objevení je pozdější než čas publikování aktualizace, protože zařízení může dostupnost aktualizací zkontrolovat až nějakou dobu po publikování aktualizace.
+
+Každý pár (den, procento) udává, jaké procento všech zařízení musí být aktualizováno do daného počtu dní od prvního objevení aktualizace. Páry [(4, 40), (10, 70), (15, 100)] například znamenají, že 40 % zařízení má být aktualizováno do 4 dnů po objevení aktualizace, 70 % má být aktualizováno do 10 dnů atd.
+
+Pokud je v této zásadě definovaná nějaká hodnota, budou aktualizace ignorovat zásadu <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> a budou se namísto ní řídit touto zásadou.
+
+Je-li seznam prázdný, aktualizace se nebudou zavádět na etapy, ale podle jiných zásad zařízení.
+
+Tato zásada se nevztahuje na přepínání mezi kanály.</translation>
 <translation id="5523812257194833591">Veřejná relace, do které se zařízení po prodlevě automaticky přihlásí.
 
       Pokud je zásada nastavena, zařízení se po uplynutí určité doby nečinnosti uživatele na přihlašovací obrazovce automaticky přihlásí do určené relace. Veřejná relace již musí být nakonfigurována (viz |DeviceLocalAccounts|).
@@ -1880,6 +1902,7 @@ Nastavením této zásady na hodnotu False přeskočení stránky s upozorněn�
 <translation id="6440051664870270040">Povolit webům zároveň provádět navigaci a otevírat vyskakovací okna</translation>
 <translation id="6447948611083700881">Zálohování a obnovení zakázáno</translation>
 <translation id="645425387487868471">Aktivovat vynucené přihlášení do prohlížeče <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Povolit automatické vyplňování pro adresy</translation>
 <translation id="6473623140202114570">Konfiguruje seznam domén, na kterých Bezpečné prohlížení nebude zobrazovat upozornění.</translation>
 <translation id="6491139795995924304">Povolit na zařízení Bluetooth</translation>
 <translation id="6520802717075138474">Importování vyhledávačů z výchozího prohlížeče při prvním spuštění</translation>
@@ -2485,6 +2508,9 @@ V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou ho
       Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu SitePerProcess moci povolit ručně.
       Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
       </translation>
+<translation id="7902255855035461275">Vzory v tomto seznamu budou porovnány s žádající adresou URL. Pokud bude nalezena shoda, přístup k zařízením pro záznam videa bude udělen bez zobrazení výzvy.
+
+      POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veřejného terminálu.</translation>
 <translation id="7912255076272890813">Konfigurovat povolené typy aplikací nebo rozšíření</translation>
 <translation id="7915236031252389808">Zde můžete zadat adresu URL souboru PAC proxy serveru.
 

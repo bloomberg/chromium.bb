@@ -52,7 +52,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="216054706567564023">Sakinisha Chrome kwenye simu yako. Tutatuma SMS kwenye nambari yako ya simu ya mbinu za kurejesha uwezo wa kufikia akaunti.</translation>
 <translation id="2246246234298806438">Google Chrome haiwezi kuonyesha uhakiki wa kuchapisha wakati kionyeshi kilichojengewa ndani cha PDF kinakosekana.</translation>
 <translation id="2252923619938421629">Saidia kuboresha Google Chrome kwa kuripoti mipangilio ya sasa</translation>
-<translation id="225363235161345695">{0,plural, =1{Chrome itaanza upya baada ya saa}other{Chrome itaanza upya baada ya saa #}}</translation>
+<translation id="225363235161345695">{0,plural, =1{Chrome itafunguka upya baada ya saa}other{Chrome itafunguka upya baada ya saa #}}</translation>
 <translation id="2286950485307333924">Sasa umeingia katika Chrome</translation>
 <translation id="2290014774651636340">Funguo za API za Google zinakosekana. Baadhi ya utendaji wa Google Chrome utazimwa.</translation>
 <translation id="2290095356545025170">Je, una hakika kuwa ungependa kusanidua Google Chrome?</translation>
@@ -172,7 +172,7 @@ Huenda baadhi ya vipengele visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="5430073640787465221">Faili yako ya mapendekezo imeharibika au ni batili.
 
 Google Chrome haiwezi kufufua mipangilio yako.</translation>
-<translation id="5483595757826856374">{0,plural, =0{Chrome itawaka upya sasa hivi}=1{Chrome itawaka upya baada ya sekunde 1}other{Chrome itawaka upya baada ya sekunde #}}</translation>
+<translation id="5483595757826856374">{0,plural, =0{Chrome itafunguka upya sasa hivi}=1{Chrome itafunguka upya baada ya sekunde 1}other{Chrome itafunguka upya baada ya sekunde #}}</translation>
 <translation id="5514308096618405748">Mfumo wa uendeshaji wa Chrome unawezeshwa na <ph name="BEGIN_LINK_CROS_OSS" />programu huria<ph name="END_LINK_CROS_OSS" /> za ziada, kama vile Linux (Beta).</translation>
 <translation id="556024056938947818">Google Chrome inajaribu kuonyesha manenosiri.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -216,7 +216,7 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="6970811910055250180">Inasasisha kifaa chako...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> huhitaji usome na ukubali Sheria na Masharti yafuatayo kabla ya kutumia kifaa hiki. Masharti haya hayapanui, kurekebisha au kupunguza Masharti ya Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome imesasishwa, lakini hujaitumia kwa angalau siku 30.</translation>
-<translation id="7023651421574588884">Msimamizi wako anakushauri uzime kisha uwashe mfumo wa uendeshaji wa Chrome ili utumie sasisho</translation>
+<translation id="7023651421574588884">Msimamizi wako anakushauri uzime kisha uwashe mfumo wa uendeshaji wa Chrome ili uweke sasisho</translation>
 <translation id="7098166902387133879">Google Chrome inatumia maikrofoni yako.</translation>
 <translation id="7106741999175697885">Kidhibiti cha Shughuli - Google Chrome</translation>
 <translation id="7164397146364144019">Unaweza kusaidia kuifanya Chrome kuwa salama na rahisi zaidi kutumia kwa kuripoti maelezo ya uwezekano wa matukio yasiyo salama kwa Google kiotomatiki.</translation>
@@ -232,7 +232,7 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7486227612705979895">Chrome itafikia Hifadhi yako ili kutoa mapendekezo kwenye sehemu ya anwani</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Onyesha Mfumo wa Uendeshaji wa Chrome katika lugha hii</translation>
-<translation id="7561940363513215021">{0,plural, =1{Chrome itawaka upya baada ya dakika 1}other{Chrome itawaka upya baada ya dakika #}}</translation>
+<translation id="7561940363513215021">{0,plural, =1{Chrome itafunguka upya baada ya dakika 1}other{Chrome itafunguka upya baada ya dakika #}}</translation>
 <translation id="7589360514048265910">Kompyuta hii haitapokea tena masasisho ya Google Chrome kwa sababu Mac OS X 10.9 haitumiki tena.</translation>
 <translation id="7592736734348559088">Google Chrome haikuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
 <translation id="7626032353295482388">Karibu kwenye Chrome</translation>
@@ -254,7 +254,7 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="8008534537613507642">Sakinisha Chrome Upya</translation>
 <translation id="8030318113982266900">Inasasisha kituo chako kwenda kituo cha <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Baada ya kuiondoa akaunti yako kwenye Chrome, huenda ukahitajika kupakia upya vichupo vyako vilivyo wazi ili kuanza kufanya kazi.</translation>
-<translation id="8077352834923175128">Msimamizi wako anakuomba uzime kisha uwashe mfumo wa uendeshaji wa Chrome ili utumie sasisho hili</translation>
+<translation id="8077352834923175128">Msimamizi wako anakuomba uzime kisha uwashe mfumo wa uendeshaji wa Chrome ili uweke sasisho hili</translation>
 <translation id="8129812357326543296">Kuhusu &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Sakinisha Chrome kwenye simu yako. Tutakutumia SMS kwenye simu yako.</translation>
 <translation id="8183957050892517584">Chrome itahifadhi salama maelezo yako ya kibinafsi ili usihitaji kuyaandika tena.</translation>

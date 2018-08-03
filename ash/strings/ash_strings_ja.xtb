@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">アシスタント（読み込み中...）</translation>
+<translation id="1841545962859478868">デバイス管理者が次の情報を監視している可能性があります。</translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
+<translation id="7228479291753472782">ウェブサイトが位置情報やマイク、カメラなどの機能を使用できるかどうかの設定の操作</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
@@ -342,6 +344,7 @@
 <translation id="7564874036684306347">ウィンドウを別のデスクトップに移動すると、予期しない動作が起こることがあります。以降の通知、ウィンドウ、ダイアログは、複数のデスクトップに分かれて表示される可能性があります。</translation>
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
+<translation id="7604942372593434070">閲覧アクティビティへのアクセス</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">デバイスのロックを解除して通知を確認してください</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
@@ -356,6 +359,7 @@
 <translation id="7829386189513694949">電波: 強い</translation>
 <translation id="7842569679327885685">警告: 試験運用版の機能</translation>
 <translation id="7846634333498149051">キーボード</translation>
+<translation id="790040513076446191">プライバシー関連設定を操作する</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="7933084174919150729">Google アシスタントはメインのプロフィールでのみご利用いただけます。</translation>
 <translation id="79341161159229895">このアカウントは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> により管理されています</translation>
@@ -374,6 +378,7 @@
 <translation id="8142699993796781067">プライベート ネットワーク</translation>
 <translation id="8152119955266188852">拡大鏡（全画面）のショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
+<translation id="8191230140820435481">アプリ、拡張機能、テーマを管理する</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8297006494302853456">弱い</translation>
 <translation id="8308637677604853869">前のメニュー</translation>

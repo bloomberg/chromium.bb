@@ -2571,7 +2571,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4953808748584563296">Varsayılan turuncu avatar</translation>
 <translation id="4955814292505481804">Yıllık</translation>
 <translation id="4957949153200969297">Yalnızca <ph name="IDS_SHORT_PRODUCT_NAME" /> Senkronizasyonu ile ilişkili özellikleri etkinleştirin</translation>
-<translation id="4959262764292427323">Şifreler Google Hesabınızda kaydedildiğinden bunları herhangi bir cihazda kullanabilirsiniz</translation>
+<translation id="4959262764292427323">Şifreler Google Hesabınıza kaydedildiğinden bunları herhangi bir cihazda kullanabilirsiniz</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="496226124210045887">Seçtiğiniz klasör hassas dosyalar içeriyor. "$1" için bu klasöre kalıcı okuma erişimi vermek istediğinizden emin misiniz?</translation>
 <translation id="4964455510556214366">Düzenleme</translation>
@@ -4169,7 +4169,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7387829944233909572">"Gözatma verilerini temizle" iletişim kutusu</translation>
 <translation id="7388044238629873883">Neredeyse bitti!</translation>
 <translation id="7388222713940428051">Davetli penceresini aç</translation>
-<translation id="7391648274628927397">Sizin için bir yer işareti eklendi</translation>
 <translation id="7392118418926456391">Virüs taraması başarısız oldu</translation>
 <translation id="7392915005464253525">Kapatılan p&amp;encereyi yeniden aç</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" />, sistem açıldığında başlayacak ve diğer tüm <ph name="PRODUCT_NAME" /> pencerelerini kapatsanız da arka planda çalışmaya devam edecektir.</translation>

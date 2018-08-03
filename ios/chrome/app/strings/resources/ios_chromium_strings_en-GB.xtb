@@ -23,6 +23,7 @@
 <translation id="3605252743693911722">Sign in to Chromium to get your bookmarks, passwords and more on all your devices.</translation>
 <translation id="3805899903892079518">Chromium does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4024541897090868497">To get your tabs on all your devices, sign in to Chromium.</translation>
+<translation id="4157467675761413638">Chromium tip. For more tab options, press and hold the Show Tabs button in the toolbar, which is at the bottom or top of your screen.</translation>
 <translation id="4241912885070669028">You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />. This will delete your Chromium data from this device, but your data will remain in your Google account.</translation>
 <translation id="4272892696084633551">Help improve Chromium's features and performance</translation>
 <translation id="4555020257205549924">When this feature is turned on, Chromium will offer to translate pages written in other languages using Google Translate. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
@@ -45,6 +46,7 @@
 <translation id="7357211569052832586">The selected data has been removed from Chromium and synced devices. Your Google account may have other forms of browsing history such as searches and activity from other Google services at history.google.com.</translation>
 <translation id="7400689562045506105">Use Chromium Everywhere</translation>
 <translation id="7674213385180944843">Open Settings &gt; Privacy &gt; Camera &gt; Chromium and turn on the camera.</translation>
+<translation id="7746854981345936341">Chromium tip. Some buttons are now at the bottom of your screen, such as Back, Forward and Search.</translation>
 <translation id="786327964234957808">You are switching sync accounts from <ph name="USER_EMAIL1" /> to <ph name="USER_EMAIL2" />. Your existing Chromium data is managed by <ph name="DOMAIN" />. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Move Chromium to your dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Get a better Google experience in Chromium based on your location.</translation>

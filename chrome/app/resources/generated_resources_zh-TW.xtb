@@ -1301,7 +1301,7 @@
 <translation id="2939938020978911855">顯示可用的藍牙裝置</translation>
 <translation id="2941112035454246133">低</translation>
 <translation id="2942560570858569904">等待中…</translation>
-<translation id="2942581856830209953">自訂此頁</translation>
+<translation id="2942581856830209953">自訂這個頁面</translation>
 <translation id="2943400156390503548">投影片</translation>
 <translation id="2943503720238418293">請縮短名稱</translation>
 <translation id="2946119680249604491">新增連線</translation>
@@ -4002,7 +4002,7 @@
 <translation id="7127980134843952133">下載記錄</translation>
 <translation id="7131040479572660648">讀取你在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 上產生的資料</translation>
 <translation id="713122686776214250">新增網頁(&amp;G)...</translation>
-<translation id="7133578150266914903">管理員正在復原這個裝置 (進度：<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133578150266914903">你的管理員正在復原這個裝置 (進度：<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">縮小文字</translation>
 <translation id="7136694880210472378">設為預設</translation>
 <translation id="7136984461011502314">歡迎使用 <ph name="PRODUCT_NAME" /></translation>
@@ -4165,7 +4165,6 @@
 <translation id="7387829944233909572">[清除瀏覽資料] 對話方塊</translation>
 <translation id="7388044238629873883">就快完成了！</translation>
 <translation id="7388222713940428051">開啟訪客視窗</translation>
-<translation id="7391648274628927397">已為你新增書籤</translation>
 <translation id="7392118418926456391">病毒掃描失敗</translation>
 <translation id="7392915005464253525">重新開啟已關閉視窗(&amp;E)</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> 會隨著系統一併啟動，即使在所有 <ph name="PRODUCT_NAME" /> 視窗都關閉後仍會在背景繼續執行。</translation>
@@ -5213,7 +5212,7 @@
 <translation id="9009369504041480176">上傳中 (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">一律顯示圖示</translation>
 <translation id="9011178328451474963">最後一個分頁</translation>
-<translation id="9013707997379828817">管理員已復原這個裝置。請儲存重要檔案後再重新啟動。重新啟動後，裝置上的資料將全數刪除。</translation>
+<translation id="9013707997379828817">你的管理員已復原這個裝置。請儲存重要檔案後再重新啟動。重新啟動後，裝置上的資料將全數刪除。</translation>
 <translation id="9014987600015527693">顯示其他手機</translation>
 <translation id="9018218886431812662">安裝完成</translation>
 <translation id="901834265349196618">電子郵件</translation>
