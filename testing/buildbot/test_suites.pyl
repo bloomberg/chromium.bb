@@ -580,6 +580,15 @@
         'shards': 5,
       },
     },
+    'viz_content_browsertests': {
+      'args': [
+        '--enable-features=VizDisplayCompositor',
+      ],
+      'swarming': {
+        'shards': 10,
+      },
+      'test': 'content_browsertests',
+    },
     'viz_unittests': {},
   },
 
@@ -1898,15 +1907,6 @@
       },
       'test': 'browser_tests',
     },
-    'viz_content_browsertests': {
-      'args': [
-        '--enable-features=VizDisplayCompositor',
-      ],
-      'swarming': {
-        'shards': 2,
-      },
-      'test': 'content_browsertests',
-    },
     'viz_content_unittests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
@@ -2018,6 +2018,18 @@
     },
   },
 
+  'surface_sync_gtests': {
+     'surface_sync_content_browsertests': {
+      'args': [
+        '--enable-surface-synchronization',
+      ],
+      'swarming': {
+        'shards': 2,
+      },
+      'test': 'content_browsertests',
+    },
+  },
+
   'system_webview_shell_instrumentation_tests': {
     'system_webview_shell_layout_test_apk': {},
   },
@@ -2055,16 +2067,7 @@
     'components_perftests': {},
   },
 
-  'viz_fyi_gtests': {
-    'viz_browser_tests': {
-      'args': [
-        '--enable-features=VizDisplayCompositor',
-      ],
-      'swarming': {
-        'shards': 10,
-      },
-      'test': 'browser_tests',
-    },
+  'viz_gtests': {
     'viz_content_browsertests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
@@ -2073,6 +2076,18 @@
         'shards': 2,
       },
       'test': 'content_browsertests',
+    },
+  },
+
+  'viz_non_android_fyi_gtests': {
+    'viz_browser_tests': {
+      'args': [
+        '--enable-features=VizDisplayCompositor',
+      ],
+      'swarming': {
+        'shards': 10,
+      },
+      'test': 'browser_tests',
     },
     'viz_content_unittests': {
       'args': [
@@ -2086,27 +2101,6 @@
       ],
        'test': 'interactive_ui_tests',
      },
-  },
-
-  'viz_fyi_android_gtests': {
-     'surface_sync_content_browsertests': {
-      'args': [
-        '--enable-surface-synchronization',
-      ],
-      'swarming': {
-        'shards': 2,
-      },
-      'test': 'content_browsertests',
-    },
-    'viz_content_browsertests': {
-      'args': [
-        '--enable-features=VizDisplayCompositor',
-      ],
-      'swarming': {
-        'shards': 2,
-      },
-      'test': 'content_browsertests',
-    },
   },
 
   'vr_platform_specific_chromium_gtests': {
@@ -2222,6 +2216,7 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'linux_flavor_specific_chromium_gtests',
+    'surface_sync_gtests',
     'vr_platform_specific_chromium_gtests',
   ],
 
@@ -2602,6 +2597,11 @@
 
   # END composition test suites used by the GPU bots
 
+  'linux_viz_gtests': [
+    'viz_gtests',
+    'viz_non_android_fyi_gtests',
+  ],
+
   'marshmallow_isolated_scripts': [
     'components_perftests_isolated_scripts',
     'monochrome_apk_checker_isolated_script',
@@ -2610,20 +2610,23 @@
 
   'mojo_android_gtests': [
     'network_service_android_gtests',
-    'viz_fyi_android_gtests',
+    'surface_sync_gtests',
+    'viz_gtests',
   ],
 
   'mojo_windows_gtests': [
     'mojo_windows_specific_gtests',
     'network_service_gtests',
-    'viz_fyi_gtests',
+    'viz_gtests',
+    'viz_non_android_fyi_gtests',
   ],
 
   'mojo_chromiumos_fyi_gtests': [
     'aura_gtests',
     'mash_chromium_gtests',
     'mojo_chromiumos_specific_gtests',
-    'viz_fyi_gtests',
+    'viz_gtests',
+    'viz_non_android_fyi_gtests',
   ],
 
   'sandboxed_chromium_memory_linux_gtests': [
