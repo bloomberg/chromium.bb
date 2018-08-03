@@ -24,6 +24,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -64,6 +66,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -321,6 +324,9 @@ class DeviceStatusCollectorTest : public testing::Test {
     ChromeUnitTestSuite::InitializeProviders();
     ChromeUnitTestSuite::InitializeResourceBundle();
 
+    content::SetContentClient(&content_client_);
+    content::SetBrowserClientForTesting(&browser_content_client_);
+
     // Run this test with a well-known timezone so that Time::LocalMidnight()
     // returns the same values on all machines.
     std::unique_ptr<base::Environment> env(base::Environment::Create());
@@ -557,6 +563,8 @@ class DeviceStatusCollectorTest : public testing::Test {
   TestingBrowserProcessInitializer initializer_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
+  ChromeContentClient content_client_;
+  ChromeContentBrowserClient browser_content_client_;
   chromeos::ScopedStubInstallAttributes install_attributes_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   DiskMountManager::MountPointMap mount_point_map_;
