@@ -23,21 +23,8 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
-
 using protocol::Maybe;
 using protocol::Response;
-
-namespace EmulationAgentState {
-static const char kVirtualTimeBudget[] = "virtualTimeBudget";
-static const char kVirtualTimeBudgetInitalOffset[] =
-    "virtualTimeBudgetInitalOffset";
-static const char kInitialVirtualTime[] = "initialVirtualTime";
-static const char kVirtualTimeOffset[] = "virtualTimeOffset";
-static const char kVirtualTimePolicy[] = "virtualTimePolicy";
-static const char kVirtualTimeTaskStarvationCount[] =
-    "virtualTimeTaskStarvationCount";
-static const char kWaitForNavigation[] = "waitForNavigation";
-}  // namespace EmulationAgentState
 
 InspectorEmulationAgent::InspectorEmulationAgent(
     WebLocalFrameImpl* web_local_frame_impl)
@@ -54,7 +41,14 @@ InspectorEmulationAgent::InspectorEmulationAgent(
                                    /*default_value=*/WTF::String()),
       user_agent_override_(&agent_state_, /*default_value=*/WTF::String()),
       accept_language_override_(&agent_state_,
-                                /*default_value=*/WTF::String()) {}
+                                /*default_value=*/WTF::String()),
+      virtual_time_budget_(&agent_state_, /*default_value*/ 0.0),
+      virtual_time_budget_initial_offset_(&agent_state_, /*default_value=*/0.0),
+      initial_virtual_time_(&agent_state_, /*default_value=*/0.0),
+      virtual_time_offset_(&agent_state_, /*default_value=*/0.0),
+      virtual_time_policy_(&agent_state_, /*default_value=*/WTF::String()),
+      virtual_time_task_starvation_count_(&agent_state_, /*default_value=*/0),
+      wait_for_navigation_(&agent_state_, /*default_value=*/false) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() = default;
 
@@ -92,60 +86,40 @@ void InspectorEmulationAgent::Restore() {
     }
   }
 
-  String virtual_time_policy;
-  if (state_->getString(EmulationAgentState::kVirtualTimePolicy,
-                        &virtual_time_policy)) {
-    // Tell the scheduler about the saved virtual time progress to ensure that
-    // virtual time monotonically advances despite the cross origin navigation.
-    // This should be done regardless of the virtual time mode.
-    double offset = 0;
-    state_->getDouble(EmulationAgentState::kVirtualTimeOffset, &offset);
-    web_local_frame_->View()->Scheduler()->SetInitialVirtualTimeOffset(
-        base::TimeDelta::FromMillisecondsD(offset));
+  if (virtual_time_policy_.Get().IsNull())
+    return;
+  // Tell the scheduler about the saved virtual time progress to ensure that
+  // virtual time monotonically advances despite the cross origin navigation.
+  // This should be done regardless of the virtual time mode.
+  web_local_frame_->View()->Scheduler()->SetInitialVirtualTimeOffset(
+      base::TimeDelta::FromMillisecondsD(virtual_time_offset_.Get()));
 
-    // Set initial time baselines for all modes.
-    double initial_virtual_time = 0;
-    bool has_initial_time = state_->getDouble(
-        EmulationAgentState::kInitialVirtualTime, &initial_virtual_time);
-    Maybe<double> initial_time = has_initial_time
-                                     ? Maybe<double>()
-                                     : Maybe<double>(initial_virtual_time);
+  // Preserve wait for navigation in all modes.
+  bool wait_for_navigation = wait_for_navigation_.Get();
 
-    // Preserve wait for navigation in all modes.
-    bool wait_for_navigation = false;
-    state_->getBoolean(EmulationAgentState::kWaitForNavigation,
-                       &wait_for_navigation);
+  // Reinstate the stored policy.
+  double virtual_time_ticks_base_ms;
 
-    // Reinstate the stored policy.
-    double virtual_time_ticks_base_ms;
-
-    // For Pause, do not pass budget or starvation count.
-    if (virtual_time_policy ==
-        protocol::Emulation::VirtualTimePolicyEnum::Pause) {
-      setVirtualTimePolicy(protocol::Emulation::VirtualTimePolicyEnum::Pause,
-                           Maybe<double>(), Maybe<int>(), wait_for_navigation,
-                           std::move(initial_time),
-                           &virtual_time_ticks_base_ms);
-      return;
-    }
-
-    // Calculate remaining budget for the advancing modes.
-    double budget = 0;
-    state_->getDouble(EmulationAgentState::kVirtualTimeBudget, &budget);
-    double inital_offset = 0;
-    state_->getDouble(EmulationAgentState::kVirtualTimeBudgetInitalOffset,
-                      &inital_offset);
-    double budget_remaining = budget + inital_offset - offset;
-    DCHECK_GE(budget_remaining, 0);
-
-    int starvation_count = 0;
-    state_->getInteger(EmulationAgentState::kVirtualTimeTaskStarvationCount,
-                       &starvation_count);
-
-    setVirtualTimePolicy(virtual_time_policy, budget_remaining,
-                         starvation_count, wait_for_navigation,
-                         std::move(initial_time), &virtual_time_ticks_base_ms);
+  // For Pause, do not pass budget or starvation count.
+  if (virtual_time_policy_.Get() ==
+      protocol::Emulation::VirtualTimePolicyEnum::Pause) {
+    setVirtualTimePolicy(protocol::Emulation::VirtualTimePolicyEnum::Pause,
+                         Maybe<double>(), Maybe<int>(), wait_for_navigation,
+                         initial_virtual_time_.Get(),
+                         &virtual_time_ticks_base_ms);
+    return;
   }
+
+  // Calculate remaining budget for the advancing modes.
+  double budget_remaining = virtual_time_budget_.Get() +
+                            virtual_time_budget_initial_offset_.Get() -
+                            virtual_time_offset_.Get();
+  DCHECK_GE(budget_remaining, 0);
+
+  setVirtualTimePolicy(virtual_time_policy_.Get(), budget_remaining,
+                       virtual_time_task_starvation_count_.Get(),
+                       wait_for_navigation, initial_virtual_time_.Get(),
+                       &virtual_time_ticks_base_ms);
 }
 
 Response InspectorEmulationAgent::disable() {
@@ -263,7 +237,7 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
   Response response = AssertPage();
   if (!response.isSuccess())
     return response;
-  state_->setString(EmulationAgentState::kVirtualTimePolicy, policy);
+  virtual_time_policy_.Set(policy);
 
   PendingVirtualTimePolicy new_policy;
   new_policy.policy = PageScheduler::VirtualTimePolicy::kPause;
@@ -290,24 +264,21 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
 
   if (virtual_time_budget_ms.isJust()) {
     new_policy.virtual_time_budget_ms = virtual_time_budget_ms.fromJust();
-    state_->setDouble(EmulationAgentState::kVirtualTimeBudget,
-                      *new_policy.virtual_time_budget_ms);
+    virtual_time_budget_.Set(*new_policy.virtual_time_budget_ms);
     // Record the current virtual time offset so Restore can compute how much
     // budget is left.
-    state_->setDouble(
-        EmulationAgentState::kVirtualTimeBudgetInitalOffset,
-        state_->doubleProperty(EmulationAgentState::kVirtualTimeOffset, 0.0));
+    virtual_time_budget_initial_offset_.Set(virtual_time_offset_.Get());
   } else {
-    state_->remove(EmulationAgentState::kVirtualTimeBudget);
+    virtual_time_budget_.Clear();
   }
 
   if (max_virtual_time_task_starvation_count.isJust()) {
     new_policy.max_virtual_time_task_starvation_count =
         max_virtual_time_task_starvation_count.fromJust();
-    state_->setDouble(EmulationAgentState::kVirtualTimeTaskStarvationCount,
-                      *new_policy.max_virtual_time_task_starvation_count);
+    virtual_time_task_starvation_count_.Set(
+        *new_policy.max_virtual_time_task_starvation_count);
   } else {
-    state_->remove(EmulationAgentState::kVirtualTimeTaskStarvationCount);
+    virtual_time_task_starvation_count_.Clear();
   }
 
   InnerEnable();
@@ -318,14 +289,13 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
 
   // This needs to happen before we apply virtual time.
   if (initial_virtual_time.isJust()) {
-    state_->setDouble(EmulationAgentState::kInitialVirtualTime,
-                      initial_virtual_time.fromJust());
+    initial_virtual_time_.Set(initial_virtual_time.fromJust());
     web_local_frame_->View()->Scheduler()->SetInitialVirtualTime(
         base::Time::FromDoubleT(initial_virtual_time.fromJust()));
   }
 
   if (wait_for_navigation.fromMaybe(false)) {
-    state_->setBoolean(EmulationAgentState::kWaitForNavigation, true);
+    wait_for_navigation_.Set(true);
     pending_virtual_time_policy_ = std::move(new_policy);
   } else {
     ApplyVirtualTimePolicy(new_policy);
@@ -366,7 +336,7 @@ void InspectorEmulationAgent::ApplyVirtualTimePolicy(
 
 void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*) {
   if (pending_virtual_time_policy_) {
-    state_->setBoolean(EmulationAgentState::kWaitForNavigation, false);
+    wait_for_navigation_.Set(false);
     ApplyVirtualTimePolicy(*pending_virtual_time_policy_);
     pending_virtual_time_policy_ = base::nullopt;
   }
@@ -405,22 +375,19 @@ void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
   DCHECK(web_local_frame_);
   web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
       PageScheduler::VirtualTimePolicy::kPause);
-  state_->setString(EmulationAgentState::kVirtualTimePolicy,
-                    protocol::Emulation::VirtualTimePolicyEnum::Pause);
+  virtual_time_policy_.Set(protocol::Emulation::VirtualTimePolicyEnum::Pause);
   GetFrontend()->virtualTimeBudgetExpired();
 }
 
 void InspectorEmulationAgent::OnVirtualTimeAdvanced(
     WTF::TimeDelta virtual_time_offset) {
-  state_->setDouble(EmulationAgentState::kVirtualTimeOffset,
-                    virtual_time_offset.InMillisecondsF());
+  virtual_time_offset_.Set(virtual_time_offset.InMillisecondsF());
   GetFrontend()->virtualTimeAdvanced(virtual_time_offset.InMillisecondsF());
 }
 
 void InspectorEmulationAgent::OnVirtualTimePaused(
     WTF::TimeDelta virtual_time_offset) {
-  state_->setDouble(EmulationAgentState::kVirtualTimeOffset,
-                    virtual_time_offset.InMillisecondsF());
+  virtual_time_offset_.Set(virtual_time_offset.InMillisecondsF());
   GetFrontend()->virtualTimePaused(virtual_time_offset.InMillisecondsF());
 }
 
