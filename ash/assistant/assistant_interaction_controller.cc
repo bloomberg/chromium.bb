@@ -210,6 +210,13 @@ void AssistantInteractionController::OnHtmlResponse(
     return;
   }
 
+  // If this occurs, the server has broken our response ordering agreement. We
+  // should not crash but we cannot handle the response so we ignore it.
+  if (!assistant_interaction_model_.pending_response()) {
+    NOTREACHED();
+    return;
+  }
+
   assistant_interaction_model_.pending_response()->AddUiElement(
       std::make_unique<AssistantCardElement>(response));
 }
@@ -236,6 +243,13 @@ void AssistantInteractionController::OnSuggestionsResponse(
     return;
   }
 
+  // If this occurs, the server has broken our response ordering agreement. We
+  // should not crash but we cannot handle the response so we ignore it.
+  if (!assistant_interaction_model_.pending_response()) {
+    NOTREACHED();
+    return;
+  }
+
   assistant_interaction_model_.pending_response()->AddSuggestions(
       std::move(response));
 }
@@ -244,6 +258,13 @@ void AssistantInteractionController::OnTextResponse(
     const std::string& response) {
   if (assistant_interaction_model_.interaction_state() !=
       InteractionState::kActive) {
+    return;
+  }
+
+  // If this occurs, the server has broken our response ordering agreement. We
+  // should not crash but we cannot handle the response so we ignore it.
+  if (!assistant_interaction_model_.pending_response()) {
+    NOTREACHED();
     return;
   }
 
