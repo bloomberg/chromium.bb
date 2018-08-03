@@ -255,11 +255,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Read which category we should be showing.
         if (getArguments() != null) {
-            int contentSettingsType = SiteSettingsCategory.contentSettingsType(
+            mCategory = SiteSettingsCategory.createFromPreferenceKey(
                     getArguments().getString(EXTRA_CATEGORY, ""));
-            if (contentSettingsType != -1) {
-                mCategory = SiteSettingsCategory.createFromContentSettingsType(contentSettingsType);
-            }
         }
         if (mCategory == null) {
             mCategory = SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.ALL_SITES);
