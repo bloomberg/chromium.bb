@@ -66,7 +66,6 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gsa.GSAState;
-import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
@@ -78,6 +77,7 @@ import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -153,6 +153,8 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mHasSpeculated;
     private CustomTabObserver mTabObserver;
     private CustomTabNavigationEventObserver mTabNavigationEventObserver;
+    /** Adds and removes observers from tabs when needed. */
+    private final TabObserverRegistrar mTabObserverRegistrar = new TabObserverRegistrar();
 
     private String mSpeculatedUrl;
 
@@ -177,81 +179,6 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mModuleOnResumePending;
     private boolean mHasSetOverlayView;
 
-    private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
-        private final CustomTabsConnection mConnection;
-        private final CustomTabsSessionToken mSession;
-        private final Tab mTab;
-        private final CustomTabObserver mCustomTabObserver;
-
-        public PageLoadMetricsObserver(CustomTabsConnection connection,
-                CustomTabsSessionToken session, Tab tab, CustomTabObserver tabObserver) {
-            mConnection = connection;
-            mSession = session;
-            mTab = tab;
-            mCustomTabObserver = tabObserver;
-        }
-
-        @Override
-        public void onNewNavigation(WebContents webContents, long navigationId) {}
-
-        @Override
-        public void onNetworkQualityEstimate(WebContents webContents, long navigationId,
-                int effectiveConnectionType, long httpRttMs, long transportRttMs) {
-            if (webContents != mTab.getWebContents()) return;
-
-            Bundle args = new Bundle();
-            args.putLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, effectiveConnectionType);
-            args.putLong(PageLoadMetrics.HTTP_RTT, httpRttMs);
-            args.putLong(PageLoadMetrics.TRANSPORT_RTT, transportRttMs);
-            args.putBoolean(CustomTabsConnection.DATA_REDUCTION_ENABLED,
-                    DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
-            mConnection.notifyPageLoadMetrics(mSession, args);
-        }
-
-        @Override
-        public void onFirstContentfulPaint(WebContents webContents, long navigationId,
-                long navigationStartTick, long firstContentfulPaintMs) {
-            if (webContents != mTab.getWebContents()) return;
-
-            mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT,
-                    navigationStartTick, firstContentfulPaintMs);
-        }
-
-        @Override
-        public void onFirstMeaningfulPaint(WebContents webContents, long navigationId,
-                long navigationStartTick, long firstContentfulPaintMs) {
-            if (webContents != mTab.getWebContents()) return;
-
-            mCustomTabObserver.onFirstMeaningfulPaint(mTab);
-        }
-
-        @Override
-        public void onLoadEventStart(WebContents webContents, long navigationId,
-                long navigationStartTick, long loadEventStartMs) {
-            if (webContents != mTab.getWebContents()) return;
-
-            mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.LOAD_EVENT_START,
-                    navigationStartTick, loadEventStartMs);
-        }
-
-        @Override
-        public void onLoadedMainResource(WebContents webContents, long navigationId,
-                long dnsStartMs, long dnsEndMs, long connectStartMs, long connectEndMs,
-                long requestStartMs, long sendStartMs, long sendEndMs) {
-            if (webContents != mTab.getWebContents()) return;
-
-            Bundle args = new Bundle();
-            args.putLong(PageLoadMetrics.DOMAIN_LOOKUP_START, dnsStartMs);
-            args.putLong(PageLoadMetrics.DOMAIN_LOOKUP_END, dnsEndMs);
-            args.putLong(PageLoadMetrics.CONNECT_START, connectStartMs);
-            args.putLong(PageLoadMetrics.CONNECT_END, connectEndMs);
-            args.putLong(PageLoadMetrics.REQUEST_START, requestStartMs);
-            args.putLong(PageLoadMetrics.SEND_START, sendStartMs);
-            args.putLong(PageLoadMetrics.SEND_END, sendEndMs);
-            mConnection.notifyPageLoadMetrics(mSession, args);
-        }
-    }
-
     private static class CustomTabCreator extends ChromeTabCreator {
         private final boolean mSupportsUrlBarHiding;
         private final boolean mIsOpenedByChrome;
@@ -273,33 +200,11 @@ public class CustomTabActivity extends ChromeActivity {
         }
     }
 
-    private PageLoadMetricsObserver mMetricsObserver;
-
-    // Only the normal tab model is observed because there is no incognito tabmodel in Custom Tabs.
-    private TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
-        @Override
-        public void didAddTab(Tab tab, @TabLaunchType int type) {
-            // Ensure that the PageLoadMetrics observer is attached in all cases, if in
-            // the future we do not go through initializeMainTab. ObserverList.addObserver
-            // will deduplicate additions, so it is safe to add both here as well as in
-            // initializeMainTab().
-            PageLoadMetrics.addObserver(mMetricsObserver);
-            tab.addObserver(mTabObserver);
-            tab.addObserver(mTabNavigationEventObserver);
-        }
-
+    private TabModelObserver mCloseActivityWhenEmptyTabModelObserver = new EmptyTabModelObserver() {
         @Override
         public void didCloseTab(int tabId, boolean incognito) {
-            PageLoadMetrics.removeObserver(mMetricsObserver);
             // Finish the activity after we intent out.
             if (getTabModelSelector().getCurrentModel().getCount() == 0) finishAndClose(false);
-        }
-
-        @Override
-        public void tabRemoved(Tab tab) {
-            tab.removeObserver(mTabObserver);
-            tab.removeObserver(mTabNavigationEventObserver);
-            PageLoadMetrics.removeObserver(mMetricsObserver);
         }
     };
 
@@ -534,10 +439,11 @@ public class CustomTabActivity extends ChromeActivity {
         if (IntentHandler.getExtraHeadersFromIntent(getIntent()) != null) {
             mConnection.cancelSpeculation(mSession);
         }
-
-        getTabModelSelector()
-                .getModel(mIntentDataProvider.isIncognito())
-                .addObserver(mTabModelObserver);
+        // Only the normal tab model is observed because there is no incognito TabModel in Custom
+        // Tabs.
+        TabModel tabModel = getTabModelSelector().getModel(mIntentDataProvider.isIncognito());
+        tabModel.addObserver(mTabObserverRegistrar);
+        tabModel.addObserver(mCloseActivityWhenEmptyTabModelObserver);
 
         boolean successfulStateRestore = false;
         // Attempt to restore the previous tab state if applicable.
@@ -559,9 +465,7 @@ public class CustomTabActivity extends ChromeActivity {
             } else {
                 mMainTab = createMainTab();
             }
-            getTabModelSelector()
-                    .getModel(mIntentDataProvider.isIncognito())
-                    .addTab(mMainTab, 0, mMainTab.getLaunchType());
+            tabModel.addTab(mMainTab, 0, mMainTab.getLaunchType());
         }
 
         // This cannot be done before because we want to do the reparenting only
@@ -783,16 +687,21 @@ public class CustomTabActivity extends ChromeActivity {
     private void initializeMainTab(Tab tab) {
         tab.getTabRedirectHandler().updateIntent(getIntent());
         tab.getView().requestFocus();
+
         mTabObserver = new CustomTabObserver(
                 getApplication(), mSession, mIntentDataProvider.isOpenedByChrome());
         mTabNavigationEventObserver = new CustomTabNavigationEventObserver(mSession);
 
-        mMetricsObserver = new PageLoadMetricsObserver(mConnection, mSession, tab, mTabObserver);
+        mTabObserverRegistrar.registerTabObserver(mTabObserver);
+        mTabObserverRegistrar.registerTabObserver(mTabNavigationEventObserver);
+        mTabObserverRegistrar.registerPageLoadMetricsObserver(
+                new PageLoadMetricsObserver(mConnection, mSession, tab));
+        mTabObserverRegistrar.registerPageLoadMetricsObserver(
+                new FirstMeaningfulPaintObserver(mTabObserver, tab));
+
         // Immediately add the observer to PageLoadMetrics to catch early events that may
         // be generated in the middle of tab initialization.
-        PageLoadMetrics.addObserver(mMetricsObserver);
-        tab.addObserver(mTabObserver);
-        tab.addObserver(mTabNavigationEventObserver);
+        mTabObserverRegistrar.addObserversForTab(tab);
 
         // Let ServiceWorkerPaymentAppBridge observe the opened tab for payment request.
         if (mIntentDataProvider.isForPaymentRequest()) {
@@ -1124,8 +1033,8 @@ public class CustomTabActivity extends ChromeActivity {
                 (getActivityTab() == null) ? null : getActivityTab().getAppAssociatedWith();
         if (packageName == null) return; // No associated package
 
-        boolean isConnected = packageName.equals(
-                CustomTabsConnection.getInstance().getClientPackageNameForSession(mSession));
+        boolean isConnected =
+                packageName.equals(mConnection.getClientPackageNameForSession(mSession));
         int status = -1;
         if (isConnected) {
             if (mIsKeepAlive) {
