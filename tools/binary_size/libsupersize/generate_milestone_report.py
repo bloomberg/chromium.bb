@@ -105,14 +105,14 @@ def _PossibleReportFiles():
 def _SetPushedReports(directory):
   outpath = os.path.join(directory, 'milestones.json')
   with codecs.open(outpath, 'w', encoding='ascii') as out_file:
-    json.dump(out_file, {
+    pushed_reports_obj = {
       'pushed': {
         'cpu': DESIRED_CPUS,
         'apk': DESIRED_APKS,
         'version': DESIRED_VERSION,
       },
-    })
-
+    }
+    json.dump(pushed_reports_obj, out_file)
 
 def _GetReportPaths(directory, template, report):
   report_dict = report._asdict()
@@ -194,7 +194,7 @@ def main():
                       format='%(levelname).1s %(relativeCreated)6d %(message)s')
 
   size_file_bucket = args.size_file_bucket
-  if not size_file_bucket.startwith('gs://'):
+  if not size_file_bucket.startswith('gs://'):
     parser.error('Size file bucket must be located in Google Cloud Storage.')
   elif size_file_bucket.endswith('/'):
     # Remove trailing slash
