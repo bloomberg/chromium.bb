@@ -198,6 +198,9 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
 }  // namespace
 
 // static
+constexpr int ThemeProperties::kFrameHeightAboveTabs;
+
+// static
 int ThemeProperties::StringToAlignment(const std::string& alignment) {
   int alignment_mask = 0;
   for (const std::string& component : base::SplitString(

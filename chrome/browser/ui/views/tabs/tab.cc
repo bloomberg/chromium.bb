@@ -1243,15 +1243,15 @@ void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds,
 
 void Tab::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) {
   int active_tab_fill_id = 0;
-  int active_tab_y_offset = 0;
+  int active_tab_y_inset = 0;
   if (GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
     active_tab_fill_id = IDR_THEME_TOOLBAR;
-    active_tab_y_offset = -GetStrokeHeight();
+    active_tab_y_inset = GetStrokeHeight();
   }
 
   if (IsActive()) {
     PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
-                       active_tab_y_offset, nullptr /* clip */);
+                       active_tab_y_inset, nullptr /* clip */);
   } else {
     PaintInactiveTabBackground(canvas, clip);
 
@@ -1260,7 +1260,7 @@ void Tab::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) {
       canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
                              GetLocalBounds());
       PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
-                         active_tab_y_offset, nullptr /* clip */);
+                         active_tab_y_inset, nullptr /* clip */);
       canvas->Restore();
     }
   }
@@ -1280,10 +1280,10 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas,
 void Tab::PaintTabBackground(gfx::Canvas* canvas,
                              bool active,
                              int fill_id,
-                             int y_offset,
+                             int y_inset,
                              const gfx::Path* clip) {
-  // |y_offset| is only set when |fill_id| is being used.
-  DCHECK(!y_offset || fill_id);
+  // |y_inset| is only set when |fill_id| is being used.
+  DCHECK(!y_inset || fill_id);
 
   const SkColor active_color = controller_->GetTabBackgroundColor(TAB_ACTIVE);
   const SkColor inactive_color =
@@ -1308,7 +1308,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
       (MD::IsRefreshUi() && (std::trunc(scale) != scale))) {
     gfx::Path fill_path = GetInteriorPath(scale, bounds());
     PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
-                           active_color, inactive_color, fill_id, y_offset);
+                           active_color, inactive_color, fill_id, y_inset);
     if (TabStrip::ShouldDrawStrokes()) {
       gfx::Path stroke_path = GetBorderPath(scale, false, false, bounds());
       gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
@@ -1331,7 +1331,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
             recorder.beginRecording(size().width(), size().height()), scale);
         PaintTabBackgroundFill(&cache_canvas, fill_path, active,
                                paint_hover_effect, active_color, inactive_color,
-                               fill_id, y_offset);
+                               fill_id, y_inset);
         cache.fill_record = recorder.finishRecordingAsPicture();
       }
       if (TabStrip::ShouldDrawStrokes()) {
@@ -1365,7 +1365,7 @@ void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
                                  SkColor active_color,
                                  SkColor inactive_color,
                                  int fill_id,
-                                 int y_offset) {
+                                 int y_inset) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
 
@@ -1374,8 +1374,8 @@ void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
     gfx::ScopedCanvas scale_scoper(canvas);
     canvas->sk_canvas()->scale(scale, scale);
     canvas->TileImageInt(*GetThemeProvider()->GetImageSkiaNamed(fill_id),
-                         GetMirroredX() + background_offset_, y_offset, 0,
-                         0, width(), height());
+                         GetMirroredX() + background_offset_, 0, 0, y_inset,
+                         width(), height());
   } else {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);

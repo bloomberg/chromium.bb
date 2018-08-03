@@ -477,16 +477,12 @@ gfx::Size OpaqueBrowserFrameView::GetNewTabButtonPreferredSize() const {
 }
 
 int OpaqueBrowserFrameView::GetTopAreaHeight() const {
-  const gfx::ImageSkia frame_image = GetFrameImage();
-  int top_area_height =
-      std::max(frame_image.height(), layout_->NonClientTopHeight(false));
-  if (browser_view()->IsTabStripVisible()) {
-    top_area_height =
-        std::max(top_area_height,
-                 GetBoundsForTabStrip(browser_view()->tabstrip()).bottom() -
-                     GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP));
-  }
-  return top_area_height;
+  const int non_client_top_height = layout_->NonClientTopHeight(false);
+  if (!browser_view()->IsTabStripVisible())
+    return non_client_top_height;
+  return std::max(non_client_top_height,
+                  GetBoundsForTabStrip(browser_view()->tabstrip()).bottom() -
+                      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP));
 }
 
 bool OpaqueBrowserFrameView::UseCustomFrame() const {
@@ -509,8 +505,17 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   frame_background_->set_is_active(ShouldPaintAsActive());
   frame_background_->set_incognito(browser_view()->IsIncognito());
   frame_background_->set_theme_image(GetFrameImage());
+  const int y_inset =
+      browser_view()->IsTabStripVisible()
+          ? (ThemeProperties::kFrameHeightAboveTabs - GetTopInset(false))
+          : 0;
+  frame_background_->set_theme_image_y_inset(y_inset);
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
-  frame_background_->set_top_area_height(GetTopAreaHeight());
+  const int visible_image_height = GetFrameImage().height() -
+                                   ThemeProperties::kFrameHeightAboveTabs +
+                                   GetTopInset(false);
+  frame_background_->set_top_area_height(
+      std::max(GetTopAreaHeight(), visible_image_height));
 
   if (layout_->IsTitleBarCondensed())
     PaintMaximizedFrameBorder(canvas);

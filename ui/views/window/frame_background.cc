@@ -19,6 +19,7 @@ FrameBackground::FrameBackground()
       use_custom_frame_(true),
       is_active_(true),
       incognito_(false),
+      theme_image_y_inset_(0),
       top_area_height_(0),
       left_edge_(nullptr),
       top_edge_(nullptr),
@@ -138,7 +139,7 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas,
 
   // Draw the theme frame and overlay, if available.
   if (!theme_image_.isNull()) {
-    canvas->TileImageInt(theme_image_, 0, 0, 0, -maximized_top_inset_,
+    canvas->TileImageInt(theme_image_, 0, theme_image_y_inset_, 0, 0,
                          view->width(), top_area_height_, 1.0f,
                          SkShader::kRepeat_TileMode,
                          SkShader::kMirror_TileMode);

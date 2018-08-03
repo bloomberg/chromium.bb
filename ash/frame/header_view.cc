@@ -50,6 +50,10 @@ class WindowPropertyAppearanceProvider
                                          : kFrameImageInactiveKey);
   }
 
+  int GetFrameHeaderImageYInset() override {
+    return window_->GetProperty(kFrameImageYInsetKey);
+  }
+
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override {
     return LookUpImageForProperty(active ? kFrameImageOverlayActiveKey
                                          : kFrameImageOverlayInactiveKey);
@@ -255,7 +259,7 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
   DCHECK_EQ(target_widget_->GetNativeWindow(), window);
   if (key == kFrameImageActiveKey || key == kFrameImageInactiveKey ||
       key == kFrameImageOverlayActiveKey ||
-      key == kFrameImageOverlayInactiveKey) {
+      key == kFrameImageOverlayInactiveKey || key == kFrameImageYInsetKey) {
     SchedulePaint();
   } else if (key == aura::client::kAvatarIconKey) {
     gfx::ImageSkia* const avatar_icon =

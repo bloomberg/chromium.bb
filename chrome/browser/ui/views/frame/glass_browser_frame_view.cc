@@ -754,10 +754,13 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   canvas->DrawRect(titlebar_rect, flags);
   const gfx::ImageSkia frame_image = GetFrameImage();
   if (!frame_image.isNull()) {
-    canvas->TileImageInt(
-        frame_image, 0, 0, titlebar_rect.x(), titlebar_rect.y(),
-        titlebar_rect.width(), titlebar_rect.height(), scale,
-        SkShader::kRepeat_TileMode, SkShader::kMirror_TileMode);
+    canvas->TileImageInt(frame_image, 0,
+                         ThemeProperties::kFrameHeightAboveTabs -
+                             GetTopInset(false) + titlebar_rect.y(),
+                         titlebar_rect.x(), titlebar_rect.y(),
+                         titlebar_rect.width(), titlebar_rect.height(), scale,
+                         SkShader::kRepeat_TileMode,
+                         SkShader::kMirror_TileMode);
   }
   const gfx::ImageSkia frame_overlay_image = GetFrameOverlayImage();
   if (!frame_overlay_image.isNull()) {

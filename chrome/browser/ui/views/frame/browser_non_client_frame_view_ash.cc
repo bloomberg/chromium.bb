@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -530,6 +531,9 @@ void BrowserNonClientFrameViewAsh::Layout() {
     BrowserNonClientFrameView::Layout();
 
     UpdateClientArea();
+
+    frame()->GetNativeWindow()->SetProperty(ash::kFrameImageYInsetKey,
+                                            GetFrameHeaderImageYInset());
     return;
   }
 
@@ -659,6 +663,10 @@ SkColor BrowserNonClientFrameViewAsh::GetFrameHeaderColor(bool active) {
 gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderImage(bool active) {
   DCHECK(!IsMash());
   return GetFrameImage(active);
+}
+
+int BrowserNonClientFrameViewAsh::GetFrameHeaderImageYInset() {
+  return ThemeProperties::kFrameHeightAboveTabs - GetTopInset(false);
 }
 
 gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(

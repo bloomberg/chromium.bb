@@ -92,6 +92,7 @@ class BrowserNonClientFrameViewAsh
   SkColor GetTitleColor() override;
   SkColor GetFrameHeaderColor(bool active) override;
   gfx::ImageSkia GetFrameHeaderImage(bool active) override;
+  int GetFrameHeaderImageYInset() override;
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override;
   bool IsTabletMode() const override;
 
