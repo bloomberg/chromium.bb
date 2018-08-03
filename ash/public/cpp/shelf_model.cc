@@ -27,8 +27,6 @@ int ShelfItemTypeToWeight(ShelfItemType type) {
       return 2;
     case TYPE_DIALOG:
       return 3;
-    case TYPE_APP_PANEL:
-      return 4;
     case TYPE_UNDEFINED:
       NOTREACHED() << "ShelfItemType must be set";
       return -1;
@@ -266,14 +264,6 @@ int ShelfModel::ItemIndexByAppID(const std::string& app_id) const {
 int ShelfModel::FirstRunningAppIndex() const {
   ShelfItem weight_dummy;
   weight_dummy.type = TYPE_APP;
-  return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
-                          CompareByWeight) -
-         items_.begin();
-}
-
-int ShelfModel::FirstPanelIndex() const {
-  ShelfItem weight_dummy;
-  weight_dummy.type = TYPE_APP_PANEL;
   return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
                           CompareByWeight) -
          items_.begin();

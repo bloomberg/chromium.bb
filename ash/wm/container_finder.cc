@@ -87,6 +87,7 @@ aura::Window* GetDefaultParent(aura::Window* window,
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_POPUP:
+    case aura::client::WINDOW_TYPE_PANEL:
       if (window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM)
         return GetSystemModalContainer(target_root, window);
       if (HasTransientParentWindow(window))
@@ -95,10 +96,6 @@ aura::Window* GetDefaultParent(aura::Window* window,
     case aura::client::WINDOW_TYPE_CONTROL:
       return target_root->GetChildById(
           kShellWindowId_UnparentedControlContainer);
-    case aura::client::WINDOW_TYPE_PANEL:
-      if (window->GetProperty(kPanelAttachedKey))
-        return target_root->GetChildById(kShellWindowId_PanelContainer);
-      return GetContainerFromAlwaysOnTopController(target_root, window);
     case aura::client::WINDOW_TYPE_MENU:
       return target_root->GetChildById(kShellWindowId_MenuContainer);
     case aura::client::WINDOW_TYPE_TOOLTIP:

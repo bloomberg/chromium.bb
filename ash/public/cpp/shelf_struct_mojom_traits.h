@@ -95,8 +95,6 @@ template <>
 struct EnumTraits<ash::mojom::ShelfItemType, ash::ShelfItemType> {
   static ash::mojom::ShelfItemType ToMojom(ash::ShelfItemType input) {
     switch (input) {
-      case ash::TYPE_APP_PANEL:
-        return ash::mojom::ShelfItemType::PANEL;
       case ash::TYPE_PINNED_APP:
         return ash::mojom::ShelfItemType::PINNED_APP;
       case ash::TYPE_APP_LIST:
@@ -119,9 +117,6 @@ struct EnumTraits<ash::mojom::ShelfItemType, ash::ShelfItemType> {
   static bool FromMojom(ash::mojom::ShelfItemType input,
                         ash::ShelfItemType* out) {
     switch (input) {
-      case ash::mojom::ShelfItemType::PANEL:
-        *out = ash::TYPE_APP_PANEL;
-        return true;
       case ash::mojom::ShelfItemType::PINNED_APP:
         *out = ash::TYPE_PINNED_APP;
         return true;

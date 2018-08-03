@@ -20,7 +20,6 @@ namespace {
 
 const int kContainerIdsToHide[] = {
     kShellWindowId_DefaultContainer, kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_PanelContainer,
     // TODO(dzhioev): uncomment this when issue with BrowserView::CanActivate
     // will be fixed.
     // kShellWindowId_SystemModalContainer

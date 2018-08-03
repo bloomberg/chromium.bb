@@ -68,7 +68,6 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
                               ui::MenuSourceType source_type) override;
 
   views::Button* create_button_;
-  views::Button* panel_button_;
   views::Button* create_nonresizable_button_;
   views::Button* bubble_button_;
   views::Button* lock_button_;

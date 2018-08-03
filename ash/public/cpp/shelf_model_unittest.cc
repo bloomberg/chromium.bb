@@ -213,42 +213,16 @@ TEST_F(ShelfModelTest, AddIndices) {
   int app_shortcut_index5 = model_->AddAt(3, item);
   EXPECT_EQ(3, app_shortcut_index5);
 
-  // Before there are any panels, no icons should be right aligned.
-  EXPECT_EQ(model_->item_count(), model_->FirstPanelIndex());
-
-  // Check that AddAt() figures out the correct indexes for apps and panels.
+  // Check that AddAt() figures out the correct indexes for apps.
   item.type = TYPE_APP;
   item.id = ShelfID("id8");
   int platform_app_index3 = model_->AddAt(4, item);
   EXPECT_EQ(8, platform_app_index3);
 
-  item.type = TYPE_APP_PANEL;
+  item.type = TYPE_APP;
   item.id = ShelfID("id9");
-  int app_panel_index1 = model_->AddAt(3, item);
-  EXPECT_EQ(11, app_panel_index1);
-
-  item.type = TYPE_APP;
-  item.id = ShelfID("id10");
-  int platform_app_index4 = model_->AddAt(12, item);
-  EXPECT_EQ(11, platform_app_index4);
-
-  item.type = TYPE_APP_PANEL;
-  item.id = ShelfID("id11");
-  int app_panel_index2 = model_->AddAt(13, item);
-  EXPECT_EQ(13, app_panel_index2);
-
-  item.type = TYPE_APP;
-  item.id = ShelfID("id12");
-  int platform_app_index5 = model_->AddAt(8, item);
-  EXPECT_EQ(8, platform_app_index5);
-
-  item.type = TYPE_APP_PANEL;
-  item.id = ShelfID("id13");
-  int app_panel_index3 = model_->AddAt(14, item);
-  EXPECT_EQ(14, app_panel_index3);
-
-  // Right aligned index should be the first app panel index.
-  EXPECT_EQ(13, model_->FirstPanelIndex());
+  int platform_app_index4 = model_->AddAt(8, item);
+  EXPECT_EQ(8, platform_app_index4);
 
   EXPECT_EQ(TYPE_BACK_BUTTON, model_->items()[0].type);
   EXPECT_EQ(TYPE_APP_LIST, model_->items()[1].type);
@@ -263,13 +237,6 @@ TEST_F(ShelfModelTest, FirstRunningAppIndex) {
   item.id = ShelfID("browser");
   item.type = TYPE_BROWSER_SHORTCUT;
   EXPECT_EQ(2, model_->Add(item));
-  EXPECT_EQ(3, model_->FirstRunningAppIndex());
-
-  // Insert a panel application at the end and check that the running
-  // application index would be at / before the application panel.
-  item.type = TYPE_APP_PANEL;
-  item.id = ShelfID("app panel");
-  EXPECT_EQ(3, model_->Add(item));
   EXPECT_EQ(3, model_->FirstRunningAppIndex());
 
   // Insert an application shortcut and make sure that the running application

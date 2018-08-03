@@ -188,9 +188,6 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   int index = model_->ItemIndexByID(id);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
-  // Update the window's ShelfItemType.
-  widget->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
-                                         static_cast<int32_t>(TYPE_APP_PANEL));
   // No new item is created after updating a launcher item.
   EXPECT_EQ(3, model_->item_count());
   // index and id are not changed after updating a launcher item.
@@ -254,8 +251,8 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   EXPECT_EQ(id, model_->items()[index].id);
 }
 
-// Ensure panels and dialogs get shelf items.
-TEST_F(ShelfWindowWatcherTest, PanelAndDialogWindows) {
+// Ensure dialogs get shelf items.
+TEST_F(ShelfWindowWatcherTest, DialogWindows) {
   // An item is created for a dialog window.
   std::unique_ptr<views::Widget> dialog_widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
@@ -264,31 +261,16 @@ TEST_F(ShelfWindowWatcherTest, PanelAndDialogWindows) {
   dialog->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   EXPECT_EQ(3, model_->item_count());
 
-  // An item is created for a panel window.
-  views::Widget panel_widget;
-  views::Widget::InitParams panel_params(views::Widget::InitParams::TYPE_PANEL);
-  panel_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  panel_params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-      kShellWindowId_PanelContainer);
-  panel_widget.Init(panel_params);
-  panel_widget.Show();
-  aura::Window* panel = panel_widget.GetNativeWindow();
-  panel->SetProperty(kShelfIDKey, new std::string(ShelfID("b").Serialize()));
-  panel->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP_PANEL));
-  EXPECT_EQ(4, model_->item_count());
-
   // An item is not created for an app window.
   std::unique_ptr<views::Widget> app_widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   aura::Window* app = app_widget->GetNativeWindow();
   app->SetProperty(kShelfIDKey, new std::string(ShelfID("c").Serialize()));
   app->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
-  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   app_widget.reset();
 
   // Each ShelfItem is removed when the associated window is destroyed.
-  panel_widget.CloseNow();
-  EXPECT_EQ(3, model_->item_count());
   dialog_widget.reset();
   EXPECT_EQ(2, model_->item_count());
 }

@@ -99,8 +99,7 @@ bool IsUserActive() {
 // UMA statistics. Note the containers are ordered from top most visible
 // container to the lowest to allow the |GetNumVisibleWindows| method to short
 // circuit when processing a maximized or fullscreen window.
-int kVisibleWindowContainerIds[] = {kShellWindowId_PanelContainer,
-                                    kShellWindowId_AlwaysOnTopContainer,
+int kVisibleWindowContainerIds[] = {kShellWindowId_AlwaysOnTopContainer,
                                     kShellWindowId_DefaultContainer};
 
 // Returns an approximate count of how many windows are currently visible in the
@@ -139,9 +138,7 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
       // windows. Only windows in the kShellWindowId_DefaultContainer and
       // kShellWindowId_AlwaysOnTopContainer can be maximized or fullscreened
       // and completely obscure windows beneath them.
-      if ((kShellWindowId_DefaultContainer == current_container_id ||
-           kShellWindowId_AlwaysOnTopContainer == current_container_id) &&
-          child_window_state->IsMaximizedOrFullscreenOrPinned()) {
+      if (child_window_state->IsMaximizedOrFullscreenOrPinned()) {
         maximized_or_fullscreen_window_present = true;
         break;
       }

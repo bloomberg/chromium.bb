@@ -33,7 +33,6 @@
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_item.h"
-#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
@@ -200,18 +199,6 @@ class WindowSelectorTest : public AshTestBase {
     aura::Window* window = widget->GetNativeWindow();
     window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
     return widget;
-  }
-
-  aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
-    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        nullptr, aura::client::WINDOW_TYPE_PANEL, 0, bounds);
-    static int id = 0;
-    std::string shelf_id(ShelfID(base::IntToString(id++)).Serialize());
-    window->SetProperty(kShelfIDKey, new std::string(shelf_id));
-    window->SetProperty<int>(kShelfItemTypeKey, TYPE_APP_PANEL);
-    window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-    shelf_view_test_api_->RunMessageLoopUntilAnimationsDone();
-    return window;
   }
 
   bool WindowsOverlapping(aura::Window* window1, aura::Window* window2) {
@@ -421,7 +408,6 @@ class WindowSelectorTest : public AshTestBase {
 TEST_F(WindowSelectorTest, OverviewScreenRotation) {
   const gfx::Rect bounds(400, 300);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> panel(CreatePanelWindow(bounds));
 
   // In overview mode the windows should no longer overlap and the text filter
   // widget should be focused.
@@ -486,11 +472,8 @@ TEST_F(WindowSelectorTest, Basic) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
-  std::unique_ptr<aura::Window> panel2(CreatePanelWindow(bounds));
 
   EXPECT_TRUE(WindowsOverlapping(window1.get(), window2.get()));
-  EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
   wm::ActivateWindow(window2.get());
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
@@ -506,8 +489,6 @@ TEST_F(WindowSelectorTest, Basic) {
   ToggleOverview();
   EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
-  EXPECT_FALSE(WindowsOverlapping(window1.get(), panel1.get()));
-  EXPECT_FALSE(WindowsOverlapping(panel1.get(), panel2.get()));
 
   // Clicking window 1 should activate it.
   ClickWindow(window1.get());
@@ -930,31 +911,20 @@ TEST_F(WindowSelectorTest, FullscreenWindow) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
   wm::ActivateWindow(window1.get());
 
   const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
   wm::GetWindowState(window1.get())->OnWMEvent(&toggle_fullscreen_event);
-  // The panel is hidden in fullscreen mode.
-  EXPECT_FALSE(panel1->IsVisible());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
 
   // Enter overview and select the fullscreen window.
   ToggleOverview();
 
-  // The panel becomes temporarily visible for the overview.
-  EXPECT_TRUE(panel1->IsVisible());
-  ClickWindow(window1.get());
-
-  // The window is still fullscreen as it was selected. The panel should again
-  // be hidden.
+  // The window is still fullscreen as it was selected.
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_FALSE(panel1->IsVisible());
 
   // Entering overview and selecting another window, the previous window remains
   // fullscreen.
-  // TODO(flackr): Currently the panel remains hidden, but should become visible
-  // again.
   ToggleOverview();
   ClickWindow(window2.get());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
@@ -1256,19 +1226,10 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds1));
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds2));
   std::unique_ptr<aura::Window> window4(CreateWindow(bounds2));
-  std::unique_ptr<aura::Window> panel1(CreatePanelWindow(bounds1));
-  std::unique_ptr<aura::Window> panel2(CreatePanelWindow(bounds1));
-  std::unique_ptr<aura::Window> panel3(CreatePanelWindow(bounds2));
-  std::unique_ptr<aura::Window> panel4(CreatePanelWindow(bounds2));
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[0], window2->GetRootWindow());
   EXPECT_EQ(root_windows[1], window3->GetRootWindow());
   EXPECT_EQ(root_windows[1], window4->GetRootWindow());
-
-  EXPECT_EQ(root_windows[0], panel1->GetRootWindow());
-  EXPECT_EQ(root_windows[0], panel2->GetRootWindow());
-  EXPECT_EQ(root_windows[1], panel3->GetRootWindow());
-  EXPECT_EQ(root_windows[1], panel4->GetRootWindow());
 
   // In overview mode, each window remains in the same root window.
   ToggleOverview();
@@ -1276,10 +1237,6 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
   EXPECT_EQ(root_windows[0], window2->GetRootWindow());
   EXPECT_EQ(root_windows[1], window3->GetRootWindow());
   EXPECT_EQ(root_windows[1], window4->GetRootWindow());
-  EXPECT_EQ(root_windows[0], panel1->GetRootWindow());
-  EXPECT_EQ(root_windows[0], panel2->GetRootWindow());
-  EXPECT_EQ(root_windows[1], panel3->GetRootWindow());
-  EXPECT_EQ(root_windows[1], panel4->GetRootWindow());
 
   // Window indices are based on top-down order. The reverse of our creation.
   IsWindowAndCloseButtonInScreen(window1.get(),
@@ -1290,15 +1247,6 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
                                  GetWindowItemForWindow(1, window3.get()));
   IsWindowAndCloseButtonInScreen(window4.get(),
                                  GetWindowItemForWindow(1, window4.get()));
-
-  IsWindowAndCloseButtonInScreen(panel1.get(),
-                                 GetWindowItemForWindow(0, panel1.get()));
-  IsWindowAndCloseButtonInScreen(panel2.get(),
-                                 GetWindowItemForWindow(0, panel2.get()));
-  IsWindowAndCloseButtonInScreen(panel3.get(),
-                                 GetWindowItemForWindow(1, panel3.get()));
-  IsWindowAndCloseButtonInScreen(panel4.get(),
-                                 GetWindowItemForWindow(1, panel4.get()));
 }
 
 // Tests shutting down during overview.
@@ -1308,11 +1256,7 @@ TEST_F(WindowSelectorTest, Shutdown) {
   // is shut down.
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreatePanelWindow(bounds));
-  std::unique_ptr<aura::Window> window4(CreatePanelWindow(bounds));
 
-  wm::ActivateWindow(window4.get());
-  wm::ActivateWindow(window3.get());
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(window1.get());
 
@@ -1326,17 +1270,11 @@ TEST_F(WindowSelectorTest, RemoveDisplay) {
   gfx::Rect bounds2(450, 0, 100, 100);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds1));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds2));
-  std::unique_ptr<aura::Window> window3(CreatePanelWindow(bounds1));
-  std::unique_ptr<aura::Window> window4(CreatePanelWindow(bounds2));
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
-  EXPECT_EQ(root_windows[0], window3->GetRootWindow());
-  EXPECT_EQ(root_windows[1], window4->GetRootWindow());
 
-  wm::ActivateWindow(window4.get());
-  wm::ActivateWindow(window3.get());
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(window1.get());
 
@@ -1353,17 +1291,11 @@ TEST_F(WindowSelectorTest, RemoveDisplayWithAnimation) {
   gfx::Rect bounds2(450, 0, 100, 100);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds1));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds2));
-  std::unique_ptr<aura::Window> window3(CreatePanelWindow(bounds1));
-  std::unique_ptr<aura::Window> window4(CreatePanelWindow(bounds2));
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
-  EXPECT_EQ(root_windows[0], window3->GetRootWindow());
-  EXPECT_EQ(root_windows[1], window4->GetRootWindow());
 
-  wm::ActivateWindow(window4.get());
-  wm::ActivateWindow(window3.get());
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(window1.get());
 
@@ -1376,7 +1308,7 @@ TEST_F(WindowSelectorTest, RemoveDisplayWithAnimation) {
   EXPECT_FALSE(IsSelecting());
 }
 
-// Tests that toggling overview on and off doesnot cancel drag.
+// Tests that toggling overview on and off does not cancel drag.
 TEST_F(WindowSelectorTest, DragDropInProgress) {
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
@@ -1660,35 +1592,6 @@ TEST_F(WindowSelectorTest, SelectWindowWithReturnKey) {
   SendKey(ui::VKEY_RETURN);
   EXPECT_FALSE(IsSelecting());
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-}
-
-// Tests that overview mode hides the callout widget.
-TEST_F(WindowSelectorTest, WindowOverviewHidesCalloutWidgets) {
-  std::unique_ptr<aura::Window> panel1(
-      CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
-  std::unique_ptr<aura::Window> panel2(
-      CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
-  PanelLayoutManager* panel_manager = PanelLayoutManager::Get(panel1.get());
-
-  // By default, panel callout widgets are visible.
-  EXPECT_TRUE(
-      panel_manager->GetCalloutWidgetForPanel(panel1.get())->IsVisible());
-  EXPECT_TRUE(
-      panel_manager->GetCalloutWidgetForPanel(panel2.get())->IsVisible());
-
-  // Toggling the overview should hide the callout widgets.
-  ToggleOverview();
-  EXPECT_FALSE(
-      panel_manager->GetCalloutWidgetForPanel(panel1.get())->IsVisible());
-  EXPECT_FALSE(
-      panel_manager->GetCalloutWidgetForPanel(panel2.get())->IsVisible());
-
-  // Ending the overview should show them again.
-  ToggleOverview();
-  EXPECT_TRUE(
-      panel_manager->GetCalloutWidgetForPanel(panel1.get())->IsVisible());
-  EXPECT_TRUE(
-      panel_manager->GetCalloutWidgetForPanel(panel2.get())->IsVisible());
 }
 
 // Creates three windows and tests filtering them by title.

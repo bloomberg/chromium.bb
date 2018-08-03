@@ -24,9 +24,6 @@ namespace shell {
 
 namespace {
 
-constexpr int kContainerIds[] = {kShellWindowId_DefaultContainer,
-                                 kShellWindowId_PanelContainer};
-
 }  // namespace
 
 class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
@@ -45,21 +42,19 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
   }
 
   void RootWindowAdded(aura::Window* root) {
-    for (const int container_id : kContainerIds) {
-      aura::Window* container = root->GetChildById(container_id);
-      container->AddObserver(watcher_);
-      for (aura::Window* window : container->children())
-        watcher_->OnWindowAdded(window);
-    }
+    aura::Window* container =
+        root->GetChildById(kShellWindowId_DefaultContainer);
+    container->AddObserver(watcher_);
+    for (aura::Window* window : container->children())
+      watcher_->OnWindowAdded(window);
   }
 
   void RootWindowRemoved(aura::Window* root) {
-    for (const int container_id : kContainerIds) {
-      aura::Window* container = root->GetChildById(container_id);
-      container->RemoveObserver(watcher_);
-      for (aura::Window* window : container->children())
-        watcher_->OnWillRemoveWindow(window);
-    }
+    aura::Window* container =
+        root->GetChildById(kShellWindowId_DefaultContainer);
+    container->RemoveObserver(watcher_);
+    for (aura::Window* window : container->children())
+      watcher_->OnWillRemoveWindow(window);
   }
 
  private:
@@ -93,9 +88,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
 
   ShelfModel* model = Shell::Get()->shelf_model();
   ShelfItem item;
-  item.type = new_window->type() == aura::client::WINDOW_TYPE_PANEL
-                  ? TYPE_APP_PANEL
-                  : TYPE_APP;
+  item.type = TYPE_APP;
   static int shelf_id = 0;
   item.id = ShelfID(base::IntToString(shelf_id++));
   id_to_window_[item.id] = new_window;

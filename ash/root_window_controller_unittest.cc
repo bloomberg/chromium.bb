@@ -187,7 +187,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   aura::Window* panel = CreateTestWindowInShellWithDelegateAndType(
       NULL, aura::client::WINDOW_TYPE_PANEL, 0, gfx::Rect(700, 100, 100, 100));
   EXPECT_EQ(root_windows[1], panel->GetRootWindow());
-  EXPECT_EQ(kShellWindowId_PanelContainer, panel->parent()->id());
 
   // Make sure a window that will delete itself when losing focus
   // will not crash.
@@ -258,7 +257,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
 
   // Test if the panel has moved.
   EXPECT_EQ(root_windows[0], panel->GetRootWindow());
-  EXPECT_EQ(kShellWindowId_PanelContainer, panel->parent()->id());
 }
 
 TEST_F(RootWindowControllerTest, MoveWindows_Modal) {

@@ -30,7 +30,6 @@ bool ShelfItemStructTraits::Read(ash::mojom::ShelfItemDataView data,
       !data.ReadTitle(&out->title)) {
     return false;
   }
-  out->shows_tooltip = data.shows_tooltip();
   out->pinned_by_policy = data.pinned_by_policy();
   return true;
 }

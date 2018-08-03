@@ -168,10 +168,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   WindowSelectorDelegate* delegate() { return delegate_; }
 
-  bool restoring_minimized_windows() const {
-    return restoring_minimized_windows_;
-  }
-
   int text_filter_bottom() const { return text_filter_bottom_; }
 
   const std::vector<std::unique_ptr<WindowGrid>>& grid_list_for_testing()
@@ -292,10 +288,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // The number of times the text filtering textfield has been cleared of text
   // during this overview mode session.
   size_t num_times_textfield_cleared_ = 0;
-
-  // Tracks whether minimized windows are currently being restored for overview
-  // mode.
-  bool restoring_minimized_windows_ = false;
 
   // The distance between the top edge of the screen and the bottom edge of
   // the text filtering textfield.

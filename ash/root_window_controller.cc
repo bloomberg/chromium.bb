@@ -50,9 +50,6 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_action_handler_layout_manager.h"
 #include "ash/wm/lock_layout_manager.h"
-#include "ash/wm/panels/attached_panel_window_targeter.h"
-#include "ash/wm/panels/panel_layout_manager.h"
-#include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/switchable_windows.h"
@@ -203,7 +200,6 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   // Set of windows to move.
   const int kContainerIdsToMove[] = {
       kShellWindowId_DefaultContainer,
-      kShellWindowId_PanelContainer,
       kShellWindowId_AlwaysOnTopContainer,
       kShellWindowId_SystemModalContainer,
       kShellWindowId_LockSystemModalContainer,
@@ -333,14 +329,6 @@ void RootWindowController::InitializeShelf() {
   if (shelf_initialized_)
     return;
   shelf_initialized_ = true;
-
-  // TODO(jamescook): Pass |shelf_| into the constructors for these layout
-  // managers.
-  panel_layout_manager_->SetShelf(shelf_.get());
-
-  // TODO(jamescook): Eliminate this. Refactor AttachedPanelWidgetTargeter's
-  // access to Shelf.
-  Shell::Get()->NotifyShelfCreatedForRootWindow(GetRootWindow());
 
   shelf_->shelf_widget()->PostCreateShelf();
 }
@@ -484,10 +472,6 @@ void RootWindowController::CloseChildWindows() {
   // Deactivate keyboard container before closing child windows and shutting
   // down associated layout managers.
   DeactivateKeyboard(keyboard::KeyboardController::Get());
-
-  // |panel_layout_manager_| needs to be shut down before windows are destroyed.
-  panel_layout_manager_->Shutdown();
-  panel_layout_manager_ = nullptr;
 
   shelf_->ShutdownShelfWidget();
 
@@ -764,11 +748,6 @@ void RootWindowController::InitLayoutManagers() {
   always_on_top_controller_ =
       std::make_unique<AlwaysOnTopController>(always_on_top_container);
 
-  // Create Panel layout manager
-  aura::Window* panel_container = GetContainer(kShellWindowId_PanelContainer);
-  panel_layout_manager_ = new PanelLayoutManager(panel_container);
-  panel_container->SetLayoutManager(panel_layout_manager_);
-
   wm::WmSnapToPixelLayoutManager::InstallOnContainers(root);
 
   // Make it easier to resize windows that partially overlap the shelf. Must
@@ -779,21 +758,6 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
   status_container->SetEventTargeter(
       std::make_unique<ShelfWindowTargeter>(status_container, shelf_.get()));
-
-  panel_container_handler_ = std::make_unique<PanelWindowEventHandler>();
-  GetContainer(kShellWindowId_PanelContainer)
-      ->AddPreTargetHandler(panel_container_handler_.get());
-
-  // Install an AttachedPanelWindowTargeter on the panel container to make it
-  // easier to correctly target shelf buttons with touch.
-  gfx::Insets mouse_extend(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
-                           -kResizeOutsideBoundsSize,
-                           -kResizeOutsideBoundsSize);
-  gfx::Insets touch_extend =
-      mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
-  panel_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
-      new AttachedPanelWindowTargeter(panel_container, mouse_extend,
-                                      touch_extend, panel_layout_manager())));
 }
 
 void RootWindowController::CreateContainers() {
@@ -889,12 +853,6 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(shelf_container);
   shelf_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   shelf_container->SetProperty(kLockedToRootKey, true);
-
-  aura::Window* panel_container =
-      CreateContainer(kShellWindowId_PanelContainer, "PanelContainer",
-                      non_lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(panel_container);
-  panel_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* shelf_bubble_container =
       CreateContainer(kShellWindowId_ShelfBubbleContainer,

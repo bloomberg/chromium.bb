@@ -281,11 +281,6 @@ bool WindowSelectorController::AcceptSelection() {
   return window_selector_->AcceptSelection();
 }
 
-bool WindowSelectorController::IsRestoringMinimizedWindows() const {
-  return window_selector_.get() != NULL &&
-         window_selector_->restoring_minimized_windows();
-}
-
 void WindowSelectorController::OnOverviewButtonTrayLongPressed(
     const gfx::Point& event_location) {
   // Do nothing if split view is not enabled.

@@ -83,9 +83,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void SetFocusCycler(FocusCycler* focus_cycler);
   FocusCycler* GetFocusCycler();
 
-  // See Shelf::UpdateIconPositionForPanel().
-  void UpdateIconPositionForPanel(aura::Window* panel);
-
   // See Shelf::GetScreenBoundsOfItemIconForWindow().
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
 
