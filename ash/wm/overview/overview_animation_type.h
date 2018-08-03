@@ -24,6 +24,8 @@ enum OverviewAnimationType {
   // Used to restore windows to their original position when exiting overview
   // mode.
   OVERVIEW_ANIMATION_RESTORE_WINDOW,
+  // Same as RESTORE_WINDOW but apply the target at the end of the animation.
+  OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO,
   // Used to animate scaling down of a window that is about to get closed while
   // overview mode is active.
   OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM,

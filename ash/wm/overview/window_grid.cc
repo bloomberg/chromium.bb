@@ -25,7 +25,6 @@
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/overview_window_animation_observer.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector.h"
@@ -837,10 +836,8 @@ void WindowGrid::SetWindowListAnimationStates(
 }
 
 void WindowGrid::SetWindowListNotAnimatedWhenExiting() {
-  for (const auto& item : window_list_) {
+  for (const auto& item : window_list_)
     item->set_should_animate_when_exiting(false);
-    item->set_should_be_observed_when_exiting(false);
-  }
 }
 
 void WindowGrid::StartNudge(WindowSelectorItem* item) {
@@ -1379,14 +1376,8 @@ void WindowGrid::SetWindowSelectorItemAnimationState(
   if (transition == WindowSelector::OverviewTransition::kExit)
     selector_item->set_should_animate_when_exiting(should_animate);
 
-  if (!(*has_covered_available_workspace) && can_cover_available_workspace) {
-    if (transition == WindowSelector::OverviewTransition::kExit) {
-      selector_item->set_should_be_observed_when_exiting(true);
-      auto* observer = new OverviewWindowAnimationObserver();
-      set_window_animation_observer(observer->GetWeakPtr());
-    }
+  if (!(*has_covered_available_workspace) && can_cover_available_workspace)
     *has_covered_available_workspace = true;
-  }
 }
 
 std::vector<std::unique_ptr<WindowSelectorItem>>::iterator

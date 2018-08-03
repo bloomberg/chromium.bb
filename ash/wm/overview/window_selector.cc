@@ -369,12 +369,7 @@ void WindowSelector::Shutdown() {
     if (split_view_controller->IsSplitViewModeActive() &&
         split_view_controller->GetDefaultSnappedWindow()->GetRootWindow() ==
             window_grid->root_window() &&
-        split_view_controller->snapped_window_animation_observer()) {
-      // OverviewWindowAnimationObserver is used to obseve the snapped window
-      // animation. And the windows in |window_grid| will restore their
-      // transform when the snapped window completes its animation.
-      window_grid->set_window_animation_observer(
-          split_view_controller->snapped_window_animation_observer());
+        split_view_controller->has_animating_window()) {
       window_grid->SetWindowListNotAnimatedWhenExiting();
     } else {
       window_grid->SetWindowListAnimationStates(

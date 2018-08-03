@@ -226,13 +226,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     return should_animate_when_exiting_;
   }
 
-  void set_should_be_observed_when_exiting(bool should_be_observed) {
-    should_be_observed_when_exiting_ = should_be_observed;
-  }
-  bool should_be_observed_when_exiting() const {
-    return should_be_observed_when_exiting_;
-  }
-
   OverviewAnimationType GetExitOverviewAnimationType();
   OverviewAnimationType GetExitTransformAnimationType();
 
@@ -375,14 +368,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   // True if the contained window should animate during the exiting animation.
   bool should_animate_when_exiting_ = true;
-
-  // True if the contained window is the first window that covers the available
-  // workspace in the MRU list during the exiting animation. It will create an
-  // OverviewWindowAnimationObserver for |window_grid_| and any other windows
-  // which should not animate will defer SetTranfrom by adding the their
-  // layer-transform pairs to the observer until this contained window completes
-  // its exiting animation.
-  bool should_be_observed_when_exiting_ = false;
 
   // True if after an animation, we need to reorder the stacking order of the
   // widgets.

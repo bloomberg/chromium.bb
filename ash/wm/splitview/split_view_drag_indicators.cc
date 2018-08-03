@@ -440,12 +440,10 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
 
     DoSplitviewTransformAnimation(
         left_rotated_view_->layer(), animation,
-        preview_left ? main_rotated_transform : other_rotated_transform,
-        nullptr);
+        preview_left ? main_rotated_transform : other_rotated_transform);
     DoSplitviewTransformAnimation(
         right_rotated_view_->layer(), animation,
-        preview_left ? other_rotated_transform : main_rotated_transform,
-        nullptr);
+        preview_left ? other_rotated_transform : main_rotated_transform);
   }
 
   std::vector<SplitViewHighlightView*> GetHighlightViews() {

@@ -56,6 +56,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
@@ -116,6 +117,40 @@ int IndexOf(aura::Window* child, aura::Window* parent) {
 
   return static_cast<int>(std::distance(children.begin(), it));
 }
+
+class TweenTester : public ui::LayerAnimationObserver {
+ public:
+  explicit TweenTester(aura::Window* window) : window_(window) {
+    window->layer()->GetAnimator()->AddObserver(this);
+  }
+
+  ~TweenTester() override {
+    window_->layer()->GetAnimator()->RemoveObserver(this);
+    EXPECT_TRUE(will_animate_);
+  }
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+  void OnAttachedToSequence(ui::LayerAnimationSequence* sequence) override {
+    ui::LayerAnimationObserver::OnAttachedToSequence(sequence);
+    if (!will_animate_) {
+      tween_type_ = sequence->FirstElement()->tween_type();
+      will_animate_ = true;
+    }
+  }
+
+  gfx::Tween::Type tween_type() const { return tween_type_; }
+
+ private:
+  gfx::Tween::Type tween_type_ = gfx::Tween::LINEAR;
+  aura::Window* window_;
+  bool will_animate_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TweenTester);
+};
 
 }  // namespace
 
@@ -2280,10 +2315,13 @@ TEST_F(WindowSelectorTest, SetWindowListAnimationStatesWithSelectedWindow) {
   // Click on |window3| to activate it and exit overview.
   // Should only set |should_animate_when_exiting_| and
   // |should_be_observed_when_exiting_| on window 3.
+  TweenTester tester1(window1.get());
+  TweenTester tester2(window2.get());
+  TweenTester tester3(window3.get());
   ClickWindow(window3.get());
-  EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
-  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
-  EXPECT_TRUE(window3->layer()->GetAnimator()->is_animating());
+  EXPECT_EQ(gfx::Tween::ZERO, tester1.tween_type());
+  EXPECT_EQ(gfx::Tween::ZERO, tester2.tween_type());
+  EXPECT_EQ(gfx::Tween::EASE_OUT, tester3.tween_type());
 }
 
 // Tests OverviewWindowAnimationObserver can handle deleted window.
@@ -2316,11 +2354,15 @@ TEST_F(WindowSelectorTest,
   // Click on |window3| to activate it and exit overview.
   // Should only set |should_animate_when_exiting_| and
   // |should_be_observed_when_exiting_| on window 3.
-  ClickWindow(window3.get());
-  EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
-  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
-  EXPECT_TRUE(window3->layer()->GetAnimator()->is_animating());
-
+  {
+    TweenTester tester1(window1.get());
+    TweenTester tester2(window2.get());
+    TweenTester tester3(window3.get());
+    ClickWindow(window3.get());
+    EXPECT_EQ(gfx::Tween::ZERO, tester1.tween_type());
+    EXPECT_EQ(gfx::Tween::ZERO, tester2.tween_type());
+    EXPECT_EQ(gfx::Tween::EASE_OUT, tester3.tween_type());
+  }
   // Destroy |window1| and |window2| before |window3| finishes animation can be
   // handled in OverviewWindowAnimationObserver.
   window1.reset();
@@ -2393,12 +2435,17 @@ TEST_F(WindowSelectorTest, HandleActiveWindowNotInWindowGrid) {
   // Create and active a new window should exit overview without error.
   auto widget =
       CreateTestWidget(nullptr, kShellWindowId_StatusContainer, bounds);
+
+  TweenTester tester1(window1.get());
+  TweenTester tester2(window2.get());
+  TweenTester tester3(window3.get());
+
   ClickWindow(widget->GetNativeWindow());
 
   // |window1| and |window2| should animate.
-  EXPECT_TRUE(window1->layer()->GetAnimator()->is_animating());
-  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
-  EXPECT_FALSE(window3->layer()->GetAnimator()->is_animating());
+  EXPECT_EQ(gfx::Tween::EASE_OUT, tester1.tween_type());
+  EXPECT_EQ(gfx::Tween::EASE_OUT, tester2.tween_type());
+  EXPECT_EQ(gfx::Tween::ZERO, tester3.tween_type());
 }
 
 // Tests that AlwaysOnTopWindow can be handled correctly in new overview
