@@ -215,14 +215,14 @@ void Service::Init(mojom::ClientPtr client,
   voice_interaction_controller_->IsHotwordEnabled(base::BindOnce(
       &Service::CreateAssistantManagerService, weak_ptr_factory_.GetWeakPtr()));
   voice_interaction_controller_->AddObserver(std::move(ptr));
-#else
-  assistant_manager_service_ =
-      std::make_unique<FakeAssistantManagerServiceImpl>();
-#endif
-
   voice_interaction_controller_->IsSettingEnabled(
       base::BindOnce(&Service::OnVoiceInteractionSettingsEnabled,
                      weak_ptr_factory_.GetWeakPtr()));
+#else
+  assistant_manager_service_ =
+      std::make_unique<FakeAssistantManagerServiceImpl>();
+  RequestAccessToken();
+#endif
 }
 
 void Service::GetPrimaryAccountInfoCallback(
@@ -276,14 +276,13 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
 }
 
 void Service::CreateAssistantManagerService(bool enable_hotword) {
-  hotword_enabled_ = enable_hotword;
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  hotword_enabled_ = enable_hotword;
   device::mojom::BatteryMonitorPtr battery_monitor;
   context()->connector()->BindInterface(device::mojom::kServiceName,
                                         mojo::MakeRequest(&battery_monitor));
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
       context()->connector(), std::move(battery_monitor), this, enable_hotword);
-#endif
 
   // Bind to Assistant controller in ash.
   context()->connector()->BindInterface(ash::mojom::kServiceName,
@@ -292,7 +291,6 @@ void Service::CreateAssistantManagerService(bool enable_hotword) {
   BindAssistantConnection(mojo::MakeRequest(&ptr));
   assistant_controller_->SetAssistant(std::move(ptr));
 
-  AddAshSessionObserver();
   registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
       &Service::BindAssistantConnection, base::Unretained(this)));
 
@@ -300,11 +298,15 @@ void Service::CreateAssistantManagerService(bool enable_hotword) {
       assistant_manager_service_.get()->GetAssistantSettingsManager();
   registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
       &Service::BindAssistantSettingsManager, base::Unretained(this)));
+#endif
 }
 
 void Service::FinalizeAssistantManagerService() {
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
+
+  if (!session_observer_binding_)
+    AddAshSessionObserver();
 
   // Double check settings enabled status to avoid racing issue.
   if (!settings_enabled_) {
