@@ -83,7 +83,7 @@ class ASH_EXPORT TabletModeController
   // tablet mode becomes enabled.
   bool CanEnterTabletMode();
 
-  // TODO(jonross): Merge this with EnterTabletMode. Currently these are
+  // TODO(jonross): Merge this with AttemptEnterTabletMode. Currently these are
   // separate for several reasons: there is no internal display when running
   // unittests; the event blocker prevents keyboard input when running ChromeOS
   // on linux. http://crbug.com/362881
@@ -174,13 +174,12 @@ class ASH_EXPORT TabletModeController
   // a certain range of time before using unstable angle.
   bool CanUseUnstableLidAngle() const;
 
-  // Enables TabletModeWindowManager, and determines the current state of
-  // rotation lock.
-  void EnterTabletMode();
+  // Attempts to enter tablet mode and locks the internal keyboard and touchpad.
+  void AttemptEnterTabletMode();
 
-  // Removes TabletModeWindowManager and resets the display rotation if there
-  // is no rotation lock.
-  void LeaveTabletMode(bool called_by_device_update);
+  // Attempts to exit tablet mode and unlocks the internal keyboard and touchpad
+  // if |called_by_device_update| is false.
+  void AttemptLeaveTabletMode(bool called_by_device_update);
 
   // Record UMA stats tracking TabletMode usage. If |type| is
   // TABLET_MODE_INTERVAL_INACTIVE, then record that TabletMode has been
