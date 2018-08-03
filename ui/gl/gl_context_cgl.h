@@ -34,11 +34,13 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
   void* GetHandle() override;
   void SetSafeToForceGpuSwitch() override;
   bool ForceGpuSwitchIfNeeded() override;
+  void OnReleaseVirtuallyCurrent(GLContext* virtual_context) override;
+  bool MakeVirtuallyCurrent(GLContext* virtual_context,
+                            GLSurface* surface) override;
   YUVToRGBConverter* GetYUVToRGBConverter(
       const gfx::ColorSpace& color_space) override;
   uint64_t BackpressureFenceCreate() override;
   void BackpressureFenceWait(uint64_t fence) override;
-  void FlushForDebugging() override;
 
  protected:
   ~GLContextCGL() override;

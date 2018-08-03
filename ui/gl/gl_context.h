@@ -162,11 +162,12 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   virtual bool WasAllocatedUsingRobustnessExtension();
 
   // Make this context current when used for context virtualization.
-  bool MakeVirtuallyCurrent(GLContext* virtual_context, GLSurface* surface);
+  virtual bool MakeVirtuallyCurrent(GLContext* virtual_context,
+                                    GLSurface* surface);
 
   // Notify this context that |virtual_context|, that was using us, is
   // being released or destroyed.
-  void OnReleaseVirtuallyCurrent(GLContext* virtual_context);
+  virtual void OnReleaseVirtuallyCurrent(GLContext* virtual_context);
 
   // Returns the GL version string. The context must be current.
   virtual std::string GetGLVersion();
@@ -202,8 +203,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   virtual uint64_t BackpressureFenceCreate();
   // Perform a client-side wait on a previously-created fence.
   virtual void BackpressureFenceWait(uint64_t fence);
-  // Temporary instrumentation for https://crbug.com/863817
-  virtual void FlushForDebugging();
 #endif
 
  protected:
