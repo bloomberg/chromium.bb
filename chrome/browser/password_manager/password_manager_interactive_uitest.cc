@@ -16,22 +16,6 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test_utils.h"
 
-namespace {
-
-// Erases all characters that have been typed into |field_id|.
-void SimulateUserDeletingFieldContent(content::WebContents* web_contents,
-                                      const std::string& field_id) {
-  std::string focus("document.getElementById('" + field_id + "').focus();");
-  ASSERT_TRUE(content::ExecuteScript(web_contents, focus));
-  std::string select("document.getElementById('" + field_id + "').select();");
-  ASSERT_TRUE(content::ExecuteScript(web_contents, select));
-  content::SimulateKeyPress(web_contents, ui::DomKey::BACKSPACE,
-                            ui::DomCode::BACKSPACE, ui::VKEY_BACK, false, false,
-                            false, false);
-}
-
-}  // namespace
-
 namespace password_manager {
 
 // Test fixture that condionally enable feature kAutofillExpandedPopupViews.
@@ -177,7 +161,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   prompt_observer.WaitForFallbackForSaving();
 
   // Delete typed content and verify that inactive state is reached.
-  SimulateUserDeletingFieldContent(WebContents(), "password_field");
+  SimulateUserDeletingFieldContent("password_field");
   prompt_observer.WaitForInactiveState();
 }
 
@@ -203,7 +187,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   prompt_observer.WaitForFallbackForSaving();
 
   // Delete typed content and verify that management state is reached.
-  SimulateUserDeletingFieldContent(WebContents(), "password_field");
+  SimulateUserDeletingFieldContent("password_field");
   prompt_observer.WaitForManagementState();
 }
 
