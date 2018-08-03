@@ -7,19 +7,46 @@ Chromium follows the [Android Open Source style
 guide](http://source.android.com/source/code-style.html) unless an exception
 is listed below.
 
-A checkout should give you clang-format to automatically format Java code.
-It is suggested that Clang's formatting of code should be accepted in code
-reviews.
-
 You can propose changes to this style guide by sending an email to
 `java@chromium.org`. Ideally, the list will arrive at some consensus and you can
 request review for a change to this file. If there's no consensus,
 [`//styleguide/java/OWNERS`](https://chromium.googlesource.com/chromium/src/+/master/styleguide/java/OWNERS)
 get to decide.
 
+[TOC]
+
+## Java 8 Language Features
+[Desugar](https://github.com/bazelbuild/bazel/blob/master/src/tools/android/java/com/google/devtools/build/android/desugar/Desugar.java)
+is used to rewrite some Java 7 & 8 language constructs in a way that is
+compatible with Java 6 (and thus all Android versions). Use of
+[these features](https://developer.android.com/studio/write/java8-support)
+is encouraged, but there are some gotchas:
+
+### Default Interface Methods
+ * Desugar makes default interface methods work by copy & pasting the default
+   implementations into all implementing classes.
+ * This technique is fine for infrequently-used interfaces, but should be
+   avoided (e.g. via a base class) if it noticeably increases method count.
+
+### Lambdas and Method References
+ * These are syntactic sugar for creating anonymous inner classes.
+ * Use them only where the cost of an extra class & method definition is
+   justified.
+
+### try-with-resources
+ * Some library classes do not implement Closeable on older platform APIs.
+   Runtime exceptions are thrown if you use them with a try-with-resources.
+   Do not use the following classes in a try-with-resources:
+   * java.util.zip.ZipFile (implemented in API 19)
+   * java.net.Socket (implemented in API 19)
+
 ## Tools
 
 ### Automatically formatting edited files
+
+A checkout should give you clang-format to automatically format Java code.
+It is suggested that Clang's formatting of code should be accepted in code
+reviews.
 
 You can run `git cl format` to apply the automatic formatting.
 
