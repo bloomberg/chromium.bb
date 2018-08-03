@@ -5,6 +5,7 @@
 #include "net/http/partial_data.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -14,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_response_headers.h"
@@ -104,20 +106,22 @@ int PartialData::ShouldValidateCache(disk_cache::Entry* entry,
 
   if (sparse_entry_) {
     DCHECK(callback_.is_null());
+    // |start| will be deleted later in this method if GetAvailableRange()
+    // returns synchronously, or by GetAvailableRangeCompleted() if it returns
+    // asynchronously.
     int64_t* start = new int64_t;
-    // This callback now owns "start". We make sure to keep it
-    // in a local variable since we want to use it later.
-    CompletionCallback cb =
-        base::Bind(&PartialData::GetAvailableRangeCompleted,
-                   weak_factory_.GetWeakPtr(), base::Owned(start));
-    cached_min_len_ =
-        entry->GetAvailableRange(current_range_start_, len, start, cb);
+    CompletionOnceCallback cb =
+        base::BindOnce(&PartialData::GetAvailableRangeCompleted,
+                       weak_factory_.GetWeakPtr(), start);
+    cached_min_len_ = entry->GetAvailableRange(current_range_start_, len, start,
+                                               std::move(cb));
 
     if (cached_min_len_ == ERR_IO_PENDING) {
       callback_ = callback;
       return ERR_IO_PENDING;
     } else {
       cached_start_ = *start;
+      delete start;
     }
   } else if (!truncated_) {
     if (byte_range_.HasFirstBytePosition() &&
@@ -459,6 +463,7 @@ void PartialData::GetAvailableRangeCompleted(int64_t* start, int result) {
   DCHECK_NE(ERR_IO_PENDING, result);
 
   cached_start_ = *start;
+  delete start;
   cached_min_len_ = result;
   if (result >= 0)
     result = 1;  // Return success, go ahead and validate the entry.
