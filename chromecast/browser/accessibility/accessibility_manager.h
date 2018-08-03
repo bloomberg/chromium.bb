@@ -10,7 +10,7 @@
 
 #include "chromecast/browser/accessibility/touch_exploration_manager.h"
 #include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
-#include "chromecast/graphics/triple_tap_detector.h"
+#include "chromecast/graphics/gestures/triple_tap_detector.h"
 
 namespace aura {
 class WindowTreeHost;

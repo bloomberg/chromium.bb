@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/graphics/cast_system_gesture_event_handler.h"
+#include "chromecast/graphics/gestures/side_swipe_detector.h"
 
 #include <deque>
 
@@ -20,9 +20,7 @@
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace chromecast {
-
 namespace {
-
 // The number of pixels from the very left or right of the screen to consider as
 // a valid origin for the left or right swipe gesture.
 constexpr int kDefaultSideGestureStartWidth = 35;
@@ -48,46 +46,6 @@ int BottomGestureStartHeight() {
 }
 
 }  // namespace
-
-// An event rewriter for detecting system-wide gestures performed on the screen.
-// Recognizes swipe gestures that originate from the top, left, bottom, and
-// right of the root window.  Stashes copies of touch events that occur during
-// the side swipe, and replays them if the finger releases before leaving the
-// margin area.
-class SideSwipeDetector : public ui::EventRewriter {
- public:
-  SideSwipeDetector(CastGestureHandler* gesture_handler,
-                    aura::Window* root_window);
-
-  ~SideSwipeDetector() override;
-
-  CastSideSwipeOrigin GetDragPosition(const gfx::Point& point,
-                                      const gfx::Rect& screen_bounds) const;
-
-  // Overridden from ui::EventRewriter
-  ui::EventRewriteStatus RewriteEvent(
-      const ui::Event& event,
-      std::unique_ptr<ui::Event>* rewritten_event) override;
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override;
-
- private:
-  void StashEvent(const ui::TouchEvent& event);
-
-  const int gesture_start_width_;
-  const int gesture_start_height_;
-  const int bottom_gesture_start_height_;
-
-  CastGestureHandler* gesture_handler_;
-  aura::Window* root_window_;
-  CastSideSwipeOrigin current_swipe_;
-  base::ElapsedTimer current_swipe_time_;
-
-  std::deque<ui::TouchEvent> stashed_events_;
-
-  DISALLOW_COPY_AND_ASSIGN(SideSwipeDetector);
-};
 
 SideSwipeDetector::SideSwipeDetector(CastGestureHandler* gesture_handler,
                                      aura::Window* root_window)
@@ -249,100 +207,6 @@ ui::EventRewriteStatus SideSwipeDetector::NextDispatchEvent(
   stashed_events_.pop_front();
 
   return ui::EVENT_REWRITE_DISPATCH_ANOTHER;
-}
-
-CastSystemGestureEventHandler::CastSystemGestureEventHandler(
-    aura::Window* root_window)
-    : EventHandler(),
-      root_window_(root_window),
-      side_swipe_detector_(
-          std::make_unique<SideSwipeDetector>(this, root_window)) {
-  DCHECK(root_window);
-  root_window->AddPreTargetHandler(this);
-}
-
-CastSystemGestureEventHandler::~CastSystemGestureEventHandler() {
-  DCHECK(gesture_handlers_.empty());
-  root_window_->RemovePreTargetHandler(this);
-}
-
-void CastSystemGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP ||
-      event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    ProcessPressedEvent(event);
-  }
-}
-
-void CastSystemGestureEventHandler::ProcessPressedEvent(
-    ui::GestureEvent* event) {
-  if (gesture_handlers_.empty()) {
-    return;
-  }
-  gfx::Point touch_location(event->location());
-  // Let the subscriber know about the gesture begin.
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN: {
-      for (auto* gesture_handler : gesture_handlers_) {
-        gesture_handler->HandleTapDownGesture(touch_location);
-      }
-      break;
-    }
-    case ui::ET_GESTURE_TAP: {
-      for (auto* gesture_handler : gesture_handlers_) {
-        gesture_handler->HandleTapGesture(touch_location);
-      }
-      break;
-    }
-    default: { return; }
-  }
-}
-
-void CastSystemGestureEventHandler::AddGestureHandler(
-    CastGestureHandler* handler) {
-  gesture_handlers_.insert(handler);
-}
-
-void CastSystemGestureEventHandler::RemoveGestureHandler(
-    CastGestureHandler* handler) {
-  gesture_handlers_.erase(handler);
-}
-
-bool CastSystemGestureEventHandler::CanHandleSwipe(
-    CastSideSwipeOrigin swipe_origin) {
-  for (auto* gesture_handler : gesture_handlers_) {
-    if (gesture_handler->CanHandleSwipe(swipe_origin)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void CastSystemGestureEventHandler::HandleSideSwipeBegin(
-    CastSideSwipeOrigin swipe_origin,
-    const gfx::Point& touch_location) {
-  for (auto* gesture_handler : gesture_handlers_) {
-    if (gesture_handler->CanHandleSwipe(swipe_origin)) {
-      gesture_handler->HandleSideSwipeBegin(swipe_origin, touch_location);
-    }
-  }
-}
-void CastSystemGestureEventHandler::HandleSideSwipeContinue(
-    CastSideSwipeOrigin swipe_origin,
-    const gfx::Point& touch_location) {
-  for (auto* gesture_handler : gesture_handlers_) {
-    if (gesture_handler->CanHandleSwipe(swipe_origin)) {
-      gesture_handler->HandleSideSwipeContinue(swipe_origin, touch_location);
-    }
-  }
-}
-void CastSystemGestureEventHandler::HandleSideSwipeEnd(
-    CastSideSwipeOrigin swipe_origin,
-    const gfx::Point& touch_location) {
-  for (auto* gesture_handler : gesture_handlers_) {
-    if (gesture_handler->CanHandleSwipe(swipe_origin)) {
-      gesture_handler->HandleSideSwipeEnd(swipe_origin, touch_location);
-    }
-  }
 }
 
 }  // namespace chromecast
