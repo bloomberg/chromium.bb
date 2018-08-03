@@ -52,26 +52,37 @@ void ValidatingAbstractTextureImpl::SetParameteri(GLenum pname, GLint param) {
 
 void ValidatingAbstractTextureImpl::BindImage(gl::GLImage* image,
                                               bool client_managed) {
-  DCHECK(image);
-
   if (!texture_ref_)
     return;
 
+  const GLuint target = texture_ref_->texture()->target();
   const GLint level = 0;
 
-  Texture::ImageState state = client_managed ? Texture::ImageState::BOUND
-                                             : Texture::ImageState::UNBOUND;
+  // If there is a decoder-managed image bound, release it.
+  if (decoder_managed_image_) {
+    Texture::ImageState image_state;
+    gl::GLImage* current_image =
+        texture_ref_->texture()->GetLevelImage(target, 0, &image_state);
+    if (current_image && image_state == Texture::BOUND)
+      current_image->ReleaseTexImage(target);
+  }
 
-  GetTextureManager()->SetLevelImage(texture_ref_.get(),
-                                     texture_ref_->texture()->target(), level,
-                                     image, state);
-  SetCleared();
+  // Configure the new image.
+  decoder_managed_image_ = image && !client_managed;
+  Texture::ImageState state = image && client_managed
+                                  ? Texture::ImageState::BOUND
+                                  : Texture::ImageState::UNBOUND;
+  GetTextureManager()->SetLevelImage(texture_ref_.get(), target, level, image,
+                                     state);
+  GetTextureManager()->SetLevelCleared(texture_ref_.get(), target, level,
+                                       image);
 }
 
 void ValidatingAbstractTextureImpl::BindStreamTextureImage(
     GLStreamTextureImage* image,
     GLuint service_id) {
   DCHECK(image);
+  DCHECK(!decoder_managed_image_);
 
   if (!texture_ref_)
     return;
@@ -84,31 +95,6 @@ void ValidatingAbstractTextureImpl::BindStreamTextureImage(
       texture_ref_.get(), target, level, image, Texture::ImageState::UNBOUND,
       service_id);
   SetCleared();
-}
-
-void ValidatingAbstractTextureImpl::ReleaseImage() {
-  if (!texture_ref_)
-    return;
-
-  GLuint target = texture_ref_->texture()->target();
-  Texture::ImageState image_state;
-  gl::GLImage* image =
-      texture_ref_->texture()->GetLevelImage(target, 0, &image_state);
-  if (!image)
-    return;
-
-  // TODO(liberato): Suppress errors here?
-  if (image_state == Texture::BOUND)
-    image->ReleaseTexImage(target);
-
-  GetTextureManager()->SetLevelImage(texture_ref_.get(), target, 0, nullptr,
-                                     Texture::UNBOUND);
-
-  // Mark the texture as uncleared, in case it's only cleared because of the
-  // image binding.
-  const GLint level = 0;
-  GetTextureManager()->SetLevelCleared(texture_ref_.get(), target, level,
-                                       false);
 }
 
 gl::GLImage* ValidatingAbstractTextureImpl::GetImage() const {

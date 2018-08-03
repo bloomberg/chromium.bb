@@ -28,7 +28,6 @@ void FakeCommandBufferHelper::StubLost() {
   has_stub_ = false;
   is_context_lost_ = true;
   is_context_current_ = false;
-  service_ids_.clear();
   waits_.clear();
 }
 
@@ -110,7 +109,6 @@ bool FakeCommandBufferHelper::BindImage(GLuint service_id,
   DVLOG(2) << __func__ << "(" << service_id << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(service_ids_.count(service_id));
-  DCHECK(image);
   return has_stub_;
 }
 

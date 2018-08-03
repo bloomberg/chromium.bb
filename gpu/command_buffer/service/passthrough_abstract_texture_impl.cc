@@ -51,27 +51,29 @@ void PassthroughAbstractTextureImpl::BindImage(gl::GLImage* image,
   if (!texture_passthrough_)
     return;
 
-  texture_passthrough_->set_is_bind_pending(!client_managed);
-  texture_passthrough_->SetLevelImage(texture_passthrough_->target(), 0, image);
+  const GLuint target = texture_passthrough_->target();
+  const GLuint level = 0;
+
+  // If there is a decoder-managed image bound, release it.
+  if (decoder_managed_image_) {
+    gl::GLImage* current_image =
+        texture_passthrough_->GetLevelImage(target, level);
+    // TODO(sandersd): This isn't correct if CopyTexImage() was used.
+    bool is_bound = !texture_passthrough_->is_bind_pending();
+    if (current_image && is_bound)
+      current_image->ReleaseTexImage(target);
+  }
+
+  // Configure the new image.
+  decoder_managed_image_ = image && !client_managed;
+  texture_passthrough_->set_is_bind_pending(decoder_managed_image_);
+  texture_passthrough_->SetLevelImage(target, level, image);
 }
 
 void PassthroughAbstractTextureImpl::BindStreamTextureImage(
     GLStreamTextureImage* image,
     GLuint service_id) {
   NOTREACHED();
-}
-
-void PassthroughAbstractTextureImpl::ReleaseImage() {
-  if (!texture_passthrough_)
-    return;
-
-  texture_passthrough_->set_is_bind_pending(false);
-  const GLuint target = texture_passthrough_->target();
-  const GLuint level = 0;
-  if (gl::GLImage* image = GetImage()) {
-    image->ReleaseTexImage(target);
-    texture_passthrough_->SetLevelImage(target, level, nullptr);
-  }
 }
 
 gl::GLImage* PassthroughAbstractTextureImpl::GetImage() const {

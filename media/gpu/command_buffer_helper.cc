@@ -174,10 +174,6 @@ class CommandBufferHelperImpl
     DVLOG(3) << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-    // Drop all textures.  Note that it's okay if the context isn't current,
-    // since AbstractTexture handles that case.
-    textures_.clear();
-
     decoder_helper_ = nullptr;
 
     // If the last reference to |this| is in a |done_cb|, destroying the wait
