@@ -47,6 +47,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void UpdateSearchBoxBorder() override;
   void SetupCloseButton() override;
   void SetupBackButton() override;
+  void RecordSearchBoxActivationHistogram(ui::EventType event_type) override;
 
   // Overridden from views::View:
   void OnKeyEvent(ui::KeyEvent* event) override;

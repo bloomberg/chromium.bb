@@ -65,7 +65,7 @@ void KSVSearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
   ClearSearch();
   // |VKEY_ESCAPE| will clear text and exit search mode directly.
   if (is_escape_key)
-    SetSearchBoxActive(false);
+    SetSearchBoxActive(false, event->type());
 }
 
 void KSVSearchBoxView::ButtonPressed(views::Button* sender,
@@ -89,7 +89,7 @@ void KSVSearchBoxView::UpdateSearchBoxBorder() {
   // TODO(wutao): Rename this function or create another function in base class.
   // It updates many things in addition to the border.
   if (!search_box()->HasFocus() && search_box()->text().empty())
-    SetSearchBoxActive(false);
+    SetSearchBoxActive(false, ui::ET_UNKNOWN);
 
   constexpr int kBorderThichness = 2;
   constexpr SkColor kActiveBorderColor = SkColorSetARGB(0x7F, 0x1A, 0x73, 0xE8);

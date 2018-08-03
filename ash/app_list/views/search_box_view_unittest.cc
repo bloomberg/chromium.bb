@@ -93,7 +93,9 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     view_delegate_.SetSearchEngineIsGoogle(is_google);
   }
 
-  void SetSearchBoxActive(bool active) { view()->SetSearchBoxActive(active); }
+  void SetSearchBoxActive(bool active, ui::EventType type) {
+    view()->SetSearchBoxActive(active, type);
+  }
 
   int GetContentsViewKeyPressCountAndReset() {
     return counter_view_->GetCountAndReset();
@@ -156,7 +158,7 @@ TEST_F(SearchBoxViewTest, CloseButtonVisibleAfterTyping) {
 // Tests that the close button is still invisible after the search box is
 // activated.
 TEST_F(SearchBoxViewTest, CloseButtonInvisibleAfterSearchBoxActived) {
-  view()->SetSearchBoxActive(true);
+  SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   EXPECT_FALSE(view()->close_button()->visible());
 }
 
@@ -201,7 +203,7 @@ TEST_F(SearchBoxViewTest, SearchBoxInactiveByDefault) {
 // Tests that the black Google icon is used for an inactive Google search.
 TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchBoxGoogle) {
   SetSearchEngineIsGoogle(true);
-  SetSearchBoxActive(false);
+  SetSearchBoxActive(false, ui::ET_UNKNOWN);
   const gfx::ImageSkia expected_icon =
       gfx::CreateVectorIcon(kIcGoogleBlackIcon, search_box::kSearchIconSize,
                             search_box::kDefaultSearchboxColor);
@@ -217,7 +219,7 @@ TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchBoxGoogle) {
 // Tests that the colored Google icon is used for an active Google search.
 TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineGoogle) {
   SetSearchEngineIsGoogle(true);
-  SetSearchBoxActive(true);
+  SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   const gfx::ImageSkia expected_icon =
       gfx::CreateVectorIcon(kIcGoogleColorIcon, search_box::kSearchIconSize,
                             search_box::kDefaultSearchboxColor);
@@ -233,7 +235,7 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineGoogle) {
 // Tests that the non-Google icon is used for an inactive non-Google search.
 TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchEngineNotGoogle) {
   SetSearchEngineIsGoogle(false);
-  SetSearchBoxActive(false);
+  SetSearchBoxActive(false, ui::ET_UNKNOWN);
   const gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
       kIcSearchEngineNotGoogleIcon, search_box::kSearchIconSize,
       search_box::kDefaultSearchboxColor);
@@ -249,7 +251,7 @@ TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchEngineNotGoogle) {
 // Tests that the non-Google icon is used for an active non-Google search.
 TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineNotGoogle) {
   SetSearchEngineIsGoogle(false);
-  SetSearchBoxActive(true);
+  SetSearchBoxActive(true, ui::ET_UNKNOWN);
   const gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
       kIcSearchEngineNotGoogleIcon, search_box::kSearchIconSize,
       search_box::kDefaultSearchboxColor);

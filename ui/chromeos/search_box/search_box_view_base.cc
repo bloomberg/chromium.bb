@@ -248,7 +248,8 @@ void SearchBoxViewBase::ShowBackOrGoogleIcon(bool show_back_button) {
   content_container_->Layout();
 }
 
-void SearchBoxViewBase::SetSearchBoxActive(bool active) {
+void SearchBoxViewBase::SetSearchBoxActive(bool active,
+                                           ui::EventType event_type) {
   if (active == is_search_box_active_)
     return;
 
@@ -263,8 +264,10 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active) {
                                                  : search_box_color_);
   search_box_->SetCursorEnabled(active);
 
-  if (active)
+  if (active) {
     search_box_->RequestFocus();
+    RecordSearchBoxActivationHistogram(event_type);
+  }
 
   search_box_right_space_->SetVisible(!active);
 
@@ -278,11 +281,11 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active) {
   SchedulePaint();
 }
 
-bool SearchBoxViewBase::OnTextfieldEvent() {
+bool SearchBoxViewBase::OnTextfieldEvent(ui::EventType type) {
   if (is_search_box_active_)
     return false;
 
-  SetSearchBoxActive(true);
+  SetSearchBoxActive(true, type);
   return true;
 }
 
@@ -410,19 +413,19 @@ void SearchBoxViewBase::ContentsChanged(views::Textfield* sender,
   search_box_->RequestFocus();
   UpdateModel(true);
   NotifyQueryChanged();
-  SetSearchBoxActive(true);
+  SetSearchBoxActive(true, ui::ET_KEY_PRESSED);
   UpdateCloseButtonVisisbility();
 }
 
 bool SearchBoxViewBase::HandleMouseEvent(views::Textfield* sender,
                                          const ui::MouseEvent& mouse_event) {
-  return OnTextfieldEvent();
+  return OnTextfieldEvent(mouse_event.type());
 }
 
 bool SearchBoxViewBase::HandleGestureEvent(
     views::Textfield* sender,
     const ui::GestureEvent& gesture_event) {
-  return OnTextfieldEvent();
+  return OnTextfieldEvent(gesture_event.type());
 }
 
 void SearchBoxViewBase::SetSearchBoxBackgroundCornerRadius(int corner_radius) {
@@ -448,7 +451,8 @@ void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
       return;
     // If the event was within the searchbox bounds and in an inactive empty
     // search box, enable the search box.
-    SetSearchBoxActive(true);
+
+    SetSearchBoxActive(true, located_event->type());
   }
   located_event->SetHandled();
 }

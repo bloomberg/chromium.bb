@@ -1156,11 +1156,11 @@ TEST_F(AppListViewFocusTest, SetFocusOnSearchboxWhenActivated) {
   EXPECT_FALSE(search_box_view()->search_box()->HasFocus());
 
   // Activate the search box.
-  search_box_view()->SetSearchBoxActive(true);
+  search_box_view()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
 
   // Deactivate the search box won't move focus away.
-  search_box_view()->SetSearchBoxActive(false);
+  search_box_view()->SetSearchBoxActive(false, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
 }
 
