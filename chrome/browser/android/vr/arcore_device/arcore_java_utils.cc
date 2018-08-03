@@ -6,7 +6,6 @@
 
 #include "chrome/browser/android/vr/arcore_device/arcore_device.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_shim.h"
-#include "chrome/browser/vr/service/vr_device_manager.h"
 #include "jni/ArCoreJavaUtils_jni.h"
 
 using base::android::AttachCurrentThread;

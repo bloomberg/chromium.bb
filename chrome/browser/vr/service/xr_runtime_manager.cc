@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/service/vr_device_manager.h"
+#include "chrome/browser/vr/service/xr_runtime_manager.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
-#include "chrome/browser/vr/service/browser_xr_device.h"
+#include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
@@ -38,11 +38,11 @@
 namespace vr {
 
 namespace {
-VRDeviceManager* g_vr_device_manager = nullptr;
+XRRuntimeManager* g_xr_runtime_manager = nullptr;
 }  // namespace
 
-VRDeviceManager* VRDeviceManager::GetInstance() {
-  if (!g_vr_device_manager) {
+XRRuntimeManager* XRRuntimeManager::GetInstance() {
+  if (!g_xr_runtime_manager) {
     // Register VRDeviceProviders for the current platform
     ProviderList providers;
 
@@ -81,28 +81,28 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
       }
     }
 
-    // The constructor sets g_vr_device_manager, which is cleaned up when
+    // The constructor sets g_xr_runtime_manager, which is cleaned up when
     // RemoveService is called, when the last active VRServiceImpl is destroyed.
-    new VRDeviceManager(std::move(providers));
+    new XRRuntimeManager(std::move(providers));
   }
-  return g_vr_device_manager;
+  return g_xr_runtime_manager;
 }
 
-BrowserXrDevice* VRDeviceManager::GetImmersiveDevice() {
+BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
 #if defined(OS_ANDROID)
-  auto* gvr = GetDevice(device::VRDeviceId::GVR_DEVICE_ID);
+  auto* gvr = GetRuntime(device::VRDeviceId::GVR_DEVICE_ID);
   if (gvr)
     return gvr;
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
-  auto* openvr = GetDevice(device::VRDeviceId::OPENVR_DEVICE_ID);
+  auto* openvr = GetRuntime(device::VRDeviceId::OPENVR_DEVICE_ID);
   if (openvr)
     return openvr;
 #endif
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
-  auto* oculus = GetDevice(device::VRDeviceId::OCULUS_DEVICE_ID);
+  auto* oculus = GetRuntime(device::VRDeviceId::OCULUS_DEVICE_ID);
   if (oculus)
     return oculus;
 #endif
@@ -110,53 +110,53 @@ BrowserXrDevice* VRDeviceManager::GetImmersiveDevice() {
   return nullptr;
 }
 
-BrowserXrDevice* VRDeviceManager::GetDevice(device::VRDeviceId id) {
-  auto it = devices_.find(static_cast<unsigned int>(id));
-  if (it == devices_.end())
+BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::VRDeviceId id) {
+  auto it = runtimes_.find(static_cast<unsigned int>(id));
+  if (it == runtimes_.end())
     return nullptr;
 
   return it->second.get();
 }
 
-BrowserXrDevice* VRDeviceManager::GetDeviceForOptions(
+BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
     device::mojom::XRSessionOptions* options) {
   // Examine options to determine which device provider we should use.
   if (options->immersive && !options->provide_passthrough_camera) {
-    return GetImmersiveDevice();
+    return GetImmersiveRuntime();
   } else if (options->provide_passthrough_camera && !options->immersive) {
-    return GetDevice(device::VRDeviceId::ARCORE_DEVICE_ID);
+    return GetRuntime(device::VRDeviceId::ARCORE_DEVICE_ID);
   } else if (!options->provide_passthrough_camera && !options->immersive) {
-    // Magic window session.
+    // Non immersive session.
     // Try the orientation provider if it exists.
-    auto* orientation_device =
-        GetDevice(device::VRDeviceId::ORIENTATION_DEVICE_ID);
-    if (orientation_device) {
-      return orientation_device;
+    auto* orientation_runtime =
+        GetRuntime(device::VRDeviceId::ORIENTATION_DEVICE_ID);
+    if (orientation_runtime) {
+      return orientation_runtime;
     }
 
     // Otherwise fall back to immersive providers.
-    return GetImmersiveDevice();
+    return GetImmersiveRuntime();
   }
   return nullptr;
 }
 
-bool VRDeviceManager::HasInstance() {
-  return g_vr_device_manager != nullptr;
+bool XRRuntimeManager::HasInstance() {
+  return g_xr_runtime_manager != nullptr;
 }
 
-VRDeviceManager::VRDeviceManager(ProviderList providers)
+XRRuntimeManager::XRRuntimeManager(ProviderList providers)
     : providers_(std::move(providers)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  CHECK(!g_vr_device_manager);
-  g_vr_device_manager = this;
+  CHECK(!g_xr_runtime_manager);
+  g_xr_runtime_manager = this;
 }
 
-VRDeviceManager::~VRDeviceManager() {
+XRRuntimeManager::~XRRuntimeManager() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  g_vr_device_manager = nullptr;
+  g_xr_runtime_manager = nullptr;
 }
 
-void VRDeviceManager::AddService(VRServiceImpl* service) {
+void XRRuntimeManager::AddService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Loop through any currently active devices and send Connected messages to
@@ -170,78 +170,66 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
   services_.insert(service);
 }
 
-void VRDeviceManager::RemoveService(VRServiceImpl* service) {
+void XRRuntimeManager::RemoveService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   services_.erase(service);
 
   if (services_.empty()) {
     // Delete the device manager when it has no active connections.
-    delete g_vr_device_manager;
+    delete g_xr_runtime_manager;
   }
 }
 
-void VRDeviceManager::AddDevice(unsigned int id,
-                                device::mojom::VRDisplayInfoPtr info,
-                                device::mojom::XRRuntimePtr runtime) {
+void XRRuntimeManager::AddRuntime(unsigned int id,
+                                  device::mojom::VRDisplayInfoPtr info,
+                                  device::mojom::XRRuntimePtr runtime) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(devices_.find(id) == devices_.end());
+  DCHECK(runtimes_.find(id) == runtimes_.end());
 
-  devices_[id] =
-      std::make_unique<BrowserXrDevice>(std::move(runtime), std::move(info));
+  runtimes_[id] =
+      std::make_unique<BrowserXRRuntime>(std::move(runtime), std::move(info));
   for (VRServiceImpl* service : services_)
-    service->ConnectDevice(devices_[id].get());
+    service->ConnectRuntime(runtimes_[id].get());
 }
 
-void VRDeviceManager::RemoveDevice(unsigned int id) {
+void XRRuntimeManager::RemoveRuntime(unsigned int id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto it = devices_.find(id);
-  DCHECK(it != devices_.end());
+  auto it = runtimes_.find(id);
+  DCHECK(it != runtimes_.end());
 
-  // Remove the device from devices_ before notifying services that it was
-  // removed, since they will query for devices in RemoveDevice.
-  std::unique_ptr<BrowserXrDevice> removed_device = std::move(it->second);
-  devices_.erase(it);
+  // Remove the device from runtimes_ before notifying services that it was
+  // removed, since they will query for devices in RemoveRuntime.
+  std::unique_ptr<BrowserXRRuntime> removed_device = std::move(it->second);
+  runtimes_.erase(it);
 
   for (VRServiceImpl* service : services_)
-    service->RemoveDevice(removed_device.get());
+    service->RemoveRuntime(removed_device.get());
 }
 
-void VRDeviceManager::RecordVrStartupHistograms() {
+void XRRuntimeManager::RecordVrStartupHistograms() {
 #if BUILDFLAG(ENABLE_OPENVR)
   device::OpenVRDeviceProvider::RecordRuntimeAvailability();
 #endif
 }
 
-device::mojom::XRRuntime* VRDeviceManager::GetRuntime(unsigned int id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (id == 0)
-    return nullptr;
-
-  DeviceMap::iterator iter = devices_.find(id);
-  if (iter == devices_.end())
-    return nullptr;
-
-  return iter->second->GetRuntime();
-}
-
-void VRDeviceManager::InitializeProviders() {
+void XRRuntimeManager::InitializeProviders() {
   if (providers_initialized_)
     return;
 
   for (const auto& provider : providers_) {
-    provider->Initialize(base::BindRepeating(&VRDeviceManager::AddDevice,
-                                             base::Unretained(this)),
-                         base::BindRepeating(&VRDeviceManager::RemoveDevice,
-                                             base::Unretained(this)),
-                         base::BindOnce(&VRDeviceManager::OnProviderInitialized,
-                                        base::Unretained(this)));
+    provider->Initialize(
+        base::BindRepeating(&XRRuntimeManager::AddRuntime,
+                            base::Unretained(this)),
+        base::BindRepeating(&XRRuntimeManager::RemoveRuntime,
+                            base::Unretained(this)),
+        base::BindOnce(&XRRuntimeManager::OnProviderInitialized,
+                       base::Unretained(this)));
   }
 
   providers_initialized_ = true;
 }
 
-void VRDeviceManager::OnProviderInitialized() {
+void XRRuntimeManager::OnProviderInitialized() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ++num_initialized_providers_;
   if (AreAllProvidersInitialized()) {
@@ -250,13 +238,26 @@ void VRDeviceManager::OnProviderInitialized() {
   }
 }
 
-bool VRDeviceManager::AreAllProvidersInitialized() {
+bool XRRuntimeManager::AreAllProvidersInitialized() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return num_initialized_providers_ == providers_.size();
 }
 
-size_t VRDeviceManager::NumberOfConnectedServices() {
+size_t XRRuntimeManager::NumberOfConnectedServices() {
   return services_.size();
+}
+
+device::mojom::XRRuntime* XRRuntimeManager::GetRuntimeForTest(unsigned int id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (id == 0)
+    return nullptr;
+
+  DeviceRuntimeMap::iterator iter = runtimes_.find(id);
+  if (iter == runtimes_.end())
+    return nullptr;
+
+  return iter->second->GetRuntime();
 }
 
 }  // namespace vr

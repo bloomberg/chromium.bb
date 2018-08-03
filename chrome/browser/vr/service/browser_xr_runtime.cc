@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/service/browser_xr_device.h"
+#include "chrome/browser/vr/service/browser_xr_runtime.h"
 
 #include "chrome/browser/vr/service/vr_display_host.h"
 #include "device/vr/vr_device.h"
 
 namespace vr {
 
-BrowserXrDevice::BrowserXrDevice(device::mojom::XRRuntimePtr device,
-                                 device::mojom::VRDisplayInfoPtr display_info)
-    : device_(std::move(device)),
+BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRRuntimePtr runtime,
+                                   device::mojom::VRDisplayInfoPtr display_info)
+    : runtime_(std::move(runtime)),
       display_info_(std::move(display_info)),
       binding_(this),
       weak_ptr_factory_(this) {
@@ -19,21 +19,21 @@ BrowserXrDevice::BrowserXrDevice(device::mojom::XRRuntimePtr device,
   binding_.Bind(mojo::MakeRequest(&listener));
 
   // Unretained is safe because we are calling through an InterfacePtr we own,
-  // so we won't be called after device_ is destroyed.
-  device_->ListenToDeviceChanges(
+  // so we won't be called after runtime_ is destroyed.
+  runtime_->ListenToDeviceChanges(
       std::move(listener),
-      base::BindOnce(&BrowserXrDevice::OnInitialDevicePropertiesReceived,
+      base::BindOnce(&BrowserXRRuntime::OnInitialDevicePropertiesReceived,
                      base::Unretained(this)));
 }
 
-void BrowserXrDevice::OnInitialDevicePropertiesReceived(
+void BrowserXRRuntime::OnInitialDevicePropertiesReceived(
     device::mojom::VRDisplayInfoPtr display_info) {
   OnDisplayInfoChanged(std::move(display_info));
 }
 
-BrowserXrDevice::~BrowserXrDevice() = default;
+BrowserXRRuntime::~BrowserXRRuntime() = default;
 
-void BrowserXrDevice::OnDisplayInfoChanged(
+void BrowserXRRuntime::OnDisplayInfoChanged(
     device::mojom::VRDisplayInfoPtr vr_device_info) {
   display_info_ = std::move(vr_device_info);
   for (VRDisplayHost* display : displays_) {
@@ -41,21 +41,21 @@ void BrowserXrDevice::OnDisplayInfoChanged(
   }
 }
 
-void BrowserXrDevice::StopImmersiveSession() {
+void BrowserXRRuntime::StopImmersiveSession() {
   if (immersive_session_controller_) {
     immersive_session_controller_ = nullptr;
     presenting_display_host_ = nullptr;
   }
 }
 
-void BrowserXrDevice::OnExitPresent() {
+void BrowserXRRuntime::OnExitPresent() {
   if (presenting_display_host_) {
     presenting_display_host_->OnExitPresent();
     presenting_display_host_ = nullptr;
   }
 }
 
-void BrowserXrDevice::OnDeviceActivated(
+void BrowserXRRuntime::OnDeviceActivated(
     device::mojom::VRDisplayEventReason reason,
     base::OnceCallback<void(bool)> on_handled) {
   if (listening_for_activation_display_host_) {
@@ -66,17 +66,18 @@ void BrowserXrDevice::OnDeviceActivated(
   }
 }
 
-void BrowserXrDevice::OnDeviceIdle(device::mojom::VRDisplayEventReason reason) {
+void BrowserXRRuntime::OnDeviceIdle(
+    device::mojom::VRDisplayEventReason reason) {
   for (VRDisplayHost* display : displays_) {
     display->OnDeactivate(reason);
   }
 }
 
-void BrowserXrDevice::OnDisplayHostAdded(VRDisplayHost* display) {
+void BrowserXRRuntime::OnDisplayHostAdded(VRDisplayHost* display) {
   displays_.insert(display);
 }
 
-void BrowserXrDevice::OnDisplayHostRemoved(VRDisplayHost* display) {
+void BrowserXRRuntime::OnDisplayHostRemoved(VRDisplayHost* display) {
   DCHECK(display);
   displays_.erase(display);
   if (display == presenting_display_host_) {
@@ -86,30 +87,30 @@ void BrowserXrDevice::OnDisplayHostRemoved(VRDisplayHost* display) {
   if (display == listening_for_activation_display_host_) {
     // Not listening for activation.
     listening_for_activation_display_host_ = nullptr;
-    device_->SetListeningForActivate(false);
+    runtime_->SetListeningForActivate(false);
   }
 }
 
-void BrowserXrDevice::ExitPresent(VRDisplayHost* display) {
+void BrowserXRRuntime::ExitPresent(VRDisplayHost* display) {
   if (display == presenting_display_host_) {
     StopImmersiveSession();
   }
 }
 
-void BrowserXrDevice::RequestSession(
+void BrowserXRRuntime::RequestSession(
     VRDisplayHost* display,
     const device::mojom::XRRuntimeSessionOptionsPtr& options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback) {
-  // base::Unretained is safe because we won't be called back after device_ is
+  // base::Unretained is safe because we won't be called back after runtime_ is
   // destroyed.
-  device_->RequestSession(
+  runtime_->RequestSession(
       options->Clone(),
-      base::BindOnce(&BrowserXrDevice::OnRequestSessionResult,
+      base::BindOnce(&BrowserXRRuntime::OnRequestSessionResult,
                      base::Unretained(this), display->GetWeakPtr(),
                      options->Clone(), std::move(callback)));
 }
 
-void BrowserXrDevice::OnRequestSessionResult(
+void BrowserXRRuntime::OnRequestSessionResult(
     base::WeakPtr<VRDisplayHost> display,
     device::mojom::XRRuntimeSessionOptionsPtr options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback,
@@ -133,7 +134,7 @@ void BrowserXrDevice::OnRequestSessionResult(
   }
 }
 
-void BrowserXrDevice::UpdateListeningForActivate(VRDisplayHost* display) {
+void BrowserXRRuntime::UpdateListeningForActivate(VRDisplayHost* display) {
   if (display->ListeningForActivate() && display->InFocusedFrame()) {
     bool was_listening = !!listening_for_activation_display_host_;
     listening_for_activation_display_host_ = display;
@@ -145,8 +146,8 @@ void BrowserXrDevice::UpdateListeningForActivate(VRDisplayHost* display) {
   }
 }
 
-void BrowserXrDevice::OnListeningForActivate(bool is_listening) {
-  device_->SetListeningForActivate(is_listening);
+void BrowserXRRuntime::OnListeningForActivate(bool is_listening) {
+  runtime_->SetListeningForActivate(is_listening);
 }
 
 }  // namespace vr

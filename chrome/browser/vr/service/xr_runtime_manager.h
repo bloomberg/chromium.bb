@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_SERVICE_VR_DEVICE_MANAGER_H_
-#define CHROME_BROWSER_VR_SERVICE_VR_DEVICE_MANAGER_H_
+#ifndef CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_H_
+#define CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_H_
 
 #include <stdint.h>
 
@@ -28,20 +28,20 @@ class VRDeviceProvider;
 
 namespace vr {
 
-class BrowserXrDevice;
+class BrowserXRRuntime;
 
 // Singleton used to provide the platform's VR devices to VRServiceImpl
 // instances.
-class VR_EXPORT VRDeviceManager {
+class VR_EXPORT XRRuntimeManager {
  public:
-  virtual ~VRDeviceManager();
+  virtual ~XRRuntimeManager();
 
-  // Returns the VRDeviceManager singleton.
-  static VRDeviceManager* GetInstance();
+  // Returns the XRRuntimeManager singleton.
+  static XRRuntimeManager* GetInstance();
   static bool HasInstance();
   static void RecordVrStartupHistograms();
 
-  // Adds a listener for device manager events. VRDeviceManager does not own
+  // Adds a listener for runtime manager events. XRRuntimeManager does not own
   // this object.
   // Automatically connects all currently available VR devices by querying
   // the device providers and, for each returned device, calling
@@ -49,18 +49,17 @@ class VR_EXPORT VRDeviceManager {
   void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
-  BrowserXrDevice* GetDeviceForOptions(
+  BrowserXRRuntime* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
-  BrowserXrDevice* GetImmersiveDevice();
+  BrowserXRRuntime* GetImmersiveRuntime();
 
  protected:
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
 
   // Used by tests to supply providers.
-  explicit VRDeviceManager(ProviderList providers);
-
+  explicit XRRuntimeManager(ProviderList providers);
   // Used by tests to check on device state.
-  device::mojom::XRRuntime* GetRuntime(unsigned int id);
+  device::mojom::XRRuntime* GetRuntimeForTest(unsigned int id);
 
   size_t NumberOfConnectedServices();
 
@@ -69,20 +68,20 @@ class VR_EXPORT VRDeviceManager {
   void OnProviderInitialized();
   bool AreAllProvidersInitialized();
 
-  void AddDevice(unsigned int id,
-                 device::mojom::VRDisplayInfoPtr info,
-                 device::mojom::XRRuntimePtr runtime);
-  void RemoveDevice(unsigned int id);
+  void AddRuntime(unsigned int id,
+                  device::mojom::VRDisplayInfoPtr info,
+                  device::mojom::XRRuntimePtr runtime);
+  void RemoveRuntime(unsigned int id);
 
-  BrowserXrDevice* GetDevice(device::VRDeviceId id);
+  BrowserXRRuntime* GetRuntime(device::VRDeviceId id);
 
   ProviderList providers_;
 
   // VRDevices are owned by their providers, each correspond to a
-  // BrowserXrDevice that is owned by VRDeviceManager.
-  using DeviceMap =
-      base::small_map<std::map<unsigned int, std::unique_ptr<BrowserXrDevice>>>;
-  DeviceMap devices_;
+  // BrowserXRRuntime that is owned by XRRuntimeManager.
+  using DeviceRuntimeMap = base::small_map<
+      std::map<unsigned int, std::unique_ptr<BrowserXRRuntime>>>;
+  DeviceRuntimeMap runtimes_;
 
   bool providers_initialized_ = false;
   size_t num_initialized_providers_ = 0;
@@ -91,9 +90,9 @@ class VR_EXPORT VRDeviceManager {
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(VRDeviceManager);
+  DISALLOW_COPY_AND_ASSIGN(XRRuntimeManager);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_SERVICE_VR_DEVICE_MANAGER_H_
+#endif  // CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_H_

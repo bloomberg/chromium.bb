@@ -23,7 +23,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/mac/bluetooth_utility.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/vr/service/vr_device_manager.h"
+#include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -525,7 +525,7 @@ void RecordIsPinnedToTaskbarHistogram(
 }
 
 void RecordVrStartupHistograms() {
-  vr::VRDeviceManager::RecordVrStartupHistograms();
+  vr::XRRuntimeManager::RecordVrStartupHistograms();
 }
 #endif  // defined(OS_WIN)
 
