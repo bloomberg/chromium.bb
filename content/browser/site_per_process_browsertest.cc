@@ -12746,4 +12746,48 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(b_process_observer.did_exit_normally());
 }
 
+// Tests that an inner WebContents will reattach to its outer WebContents after
+// a navigation that causes a process swap.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessSwapOnInnerContents) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* child_frame =
+      web_contents()->GetFrameTree()->root()->child_at(0);
+  WebContentsImpl* inner_contents =
+      static_cast<WebContentsImpl*>(CreateAndAttachInnerContents(
+          ToRenderFrameHost(child_frame).render_frame_host()));
+  FrameTreeNode* inner_contents_root = inner_contents->GetFrameTree()->root();
+  RenderFrameProxyHost* outer_proxy =
+      inner_contents_root->render_manager()->GetProxyToOuterDelegate();
+  CrossProcessFrameConnector* outer_connector =
+      outer_proxy->cross_process_frame_connector();
+  EXPECT_NE(nullptr, outer_connector->get_view_for_testing());
+
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  NavigateFrameToURL(inner_contents_root, a_url);
+  SiteInstance* a_site_instance =
+      inner_contents->GetMainFrame()->GetSiteInstance();
+  RenderProcessHost* a_process = a_site_instance->GetProcess();
+  RenderWidgetHostViewChildFrame* a_view =
+      outer_connector->get_view_for_testing();
+
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  NavigateFrameToURL(inner_contents_root, b_url);
+  SiteInstance* b_site_instance =
+      inner_contents->GetMainFrame()->GetSiteInstance();
+  RenderProcessHost* b_process = b_site_instance->GetProcess();
+  RenderWidgetHostViewChildFrame* b_view =
+      outer_connector->get_view_for_testing();
+
+  // Ensure that the SiteInstances have changed, we've completed a process swap
+  // and reattached the inner WebContents creating a new RenderWidgetHostView.
+  EXPECT_NE(a_site_instance, b_site_instance);
+  EXPECT_NE(a_process, b_process);
+  EXPECT_NE(nullptr, a_view);
+  EXPECT_NE(nullptr, b_view);
+  EXPECT_NE(a_view, b_view);
+}
+
 }  // namespace content
