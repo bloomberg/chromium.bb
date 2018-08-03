@@ -13,7 +13,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/views/widget/widget.h"
 
@@ -74,7 +73,6 @@ class TextInputTest : public test::ExoTestBase {
   TextInputTest() = default;
 
   void SetUp() override {
-    ui::SetUpInputMethodFactoryForTesting();
     test::ExoTestBase::SetUp();
     text_input_ =
         std::make_unique<TextInput>(std::make_unique<MockTextInputDelegate>());

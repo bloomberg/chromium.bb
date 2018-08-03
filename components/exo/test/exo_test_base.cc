@@ -8,6 +8,7 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/test/test_client_controlled_state_delegate.h"
 #include "components/exo/wm_helper.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace exo {
@@ -24,6 +25,7 @@ void ExoTestBase::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Disable window animation when running tests.
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
+  ui::SetUpInputMethodFactoryForTesting();
   AshTestBase::SetUp();
   wm_helper_ = std::make_unique<WMHelper>();
   WMHelper::SetInstance(wm_helper_.get());
