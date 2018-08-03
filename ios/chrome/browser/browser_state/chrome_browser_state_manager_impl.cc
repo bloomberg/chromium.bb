@@ -41,7 +41,6 @@
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 
 namespace {
 
@@ -224,9 +223,6 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
   ios::AccountFetcherServiceFactory::GetForBrowserState(browser_state)
       ->SetupInvalidationsOnProfileLoad(invalidation_service);
   ios::AccountReconcilorFactory::GetForBrowserState(browser_state);
-  // Initialization needs to happen after the browser context is available
-  // because ProfileSyncService needs the URL context getter.
-  UnifiedConsentServiceFactory::GetForBrowserState(browser_state);
   DesktopPromotionSyncServiceFactory::GetForBrowserState(browser_state);
 }
 
