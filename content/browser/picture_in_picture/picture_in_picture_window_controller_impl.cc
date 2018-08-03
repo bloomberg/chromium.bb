@@ -117,7 +117,7 @@ void PictureInPictureWindowControllerImpl::EmbedSurface(
 
   if (!embedder_)
     embedder_.reset(new OverlaySurfaceEmbedder(window_.get()));
-  embedder_->SetPrimarySurfaceId(surface_id_);
+  embedder_->SetSurfaceId(surface_id_);
 }
 
 OverlayWindow* PictureInPictureWindowControllerImpl::GetWindowForTesting() {
