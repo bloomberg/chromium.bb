@@ -1163,6 +1163,9 @@ extern const char kTrySupportedChannelLayoutsDescription[];
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
 
+extern const char kForceUnifiedConsentBumpName[];
+extern const char kForceUnifiedConsentBumpDescription[];
+
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 

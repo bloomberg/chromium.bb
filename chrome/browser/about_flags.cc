@@ -3752,6 +3752,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kUnifiedConsentVariations,
                                     "UnifiedConsentVariations")},
 
+    {"force-unified-consent-bump",
+     flag_descriptions::kForceUnifiedConsentBumpName,
+     flag_descriptions::kForceUnifiedConsentBumpDescription, kOsAll,
+     FEATURE_VALUE_TYPE(unified_consent::kForceUnifiedConsentBump)},
+
     {"simplify-https-indicator", flag_descriptions::kSimplifyHttpsIndicatorName,
      flag_descriptions::kSimplifyHttpsIndicatorDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(toolbar::features::kSimplifyHttpsIndicator,

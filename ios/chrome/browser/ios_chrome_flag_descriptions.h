@@ -216,6 +216,10 @@ extern const char kUIRefreshPhase1Description[];
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
 
+// Title and description for the flag to force the consent bump.
+extern const char kForceUnifiedConsentBumpName[];
+extern const char kForceUnifiedConsentBumpDescription[];
+
 // Title and description for the flag to enable the ddljson Doodle API.
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];

@@ -12,6 +12,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 
@@ -78,6 +79,8 @@ MigrationState UnifiedConsentService::GetMigrationState() {
 }
 
 bool UnifiedConsentService::ShouldShowConsentBump() {
+  if (base::FeatureList::IsEnabled(unified_consent::kForceUnifiedConsentBump))
+    return true;
   return GetMigrationState() ==
          MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP;
 }
