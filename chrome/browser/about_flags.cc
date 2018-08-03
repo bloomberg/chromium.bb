@@ -4211,6 +4211,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLongPressBackNewDesignDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kLongPressBackNewDesign)},
 #endif
+
+    {"sync-standalone-transport",
+     flag_descriptions::kSyncStandaloneTransportName,
+     flag_descriptions::kSyncStandaloneTransportDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncStandaloneTransport)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
