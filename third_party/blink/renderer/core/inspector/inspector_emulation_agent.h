@@ -132,6 +132,13 @@ class CORE_EXPORT InspectorEmulationAgent final
   InspectorAgentState::String navigator_platform_override_;
   InspectorAgentState::String user_agent_override_;
   InspectorAgentState::String accept_language_override_;
+  InspectorAgentState::Double virtual_time_budget_;
+  InspectorAgentState::Double virtual_time_budget_initial_offset_;
+  InspectorAgentState::Double initial_virtual_time_;
+  InspectorAgentState::Double virtual_time_offset_;
+  InspectorAgentState::String virtual_time_policy_;
+  InspectorAgentState::Integer virtual_time_task_starvation_count_;
+  InspectorAgentState::Boolean wait_for_navigation_;
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };
 
