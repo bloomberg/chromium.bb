@@ -1073,8 +1073,13 @@ void NavigationRequest::OnResponseStarted(
   // download.
   if (is_download && (response->head.headers.get() &&
                       (response->head.headers->response_code() / 100 != 2))) {
-    navigation_handle_->set_net_error_code(net::ERR_INVALID_RESPONSE);
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_RESPONSE),
+        false /* skip_throttles */, base::nullopt /* error_page_content */,
+        false /* collapse_frame */);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
     return;
   }
 

@@ -408,7 +408,7 @@ class DNSErrorPageTest : public ErrorPageTest {
     if (path != request.relative_url)
       return nullptr;
     return std::unique_ptr<net::test_server::HttpResponse>(
-        new net::test_server::RawHttpResponse("HTTP/1.1 500 Server Sad :(",
+        new net::test_server::RawHttpResponse("HTTP/1.1 500 Server Sad :(\n\n",
                                               "\x01"));
   }
 
