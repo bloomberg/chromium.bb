@@ -86,8 +86,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
     ErrorCallback error_callback;
   };
 
-  using PendingNotificationCallbacks = PendingWriteCallbacks;
-
   BluetoothRemoteGattCharacteristicWinrt(
       BluetoothRemoteGattService* service,
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
@@ -97,12 +95,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
       Properties proporties,
       uint16_t attribute_handle);
 
-  void WriteCccDescriptor(
-      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-          GattClientCharacteristicConfigurationDescriptorValue value,
-      base::OnceClosure callback,
-      const ErrorCallback& error_callback);
-
   void OnReadValue(Microsoft::WRL::ComPtr<
                    ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
                        IGattReadResult> read_result);
@@ -111,25 +103,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
                                  GenericAttributeProfile::IGattWriteResult>
           write_result);
-
-  void OnWriteCccDescriptor(
-      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
-                                 GenericAttributeProfile::IGattWriteResult>
-          write_result);
-
-  void OnWriteImpl(
-      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
-                                 GenericAttributeProfile::IGattWriteResult>
-          write_result,
-      std::unique_ptr<PendingWriteCallbacks> callbacks);
-
-  void OnValueChanged(
-      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-          IGattCharacteristic* characteristic,
-      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-          IGattValueChangedEventArgs* event_args);
-
-  bool RemoveValueChangedHandler();
 
   BluetoothRemoteGattService* service_;
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
@@ -142,8 +115,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
   std::vector<uint8_t> value_;
   std::unique_ptr<PendingReadCallbacks> pending_read_callbacks_;
   std::unique_ptr<PendingWriteCallbacks> pending_write_callbacks_;
-  std::unique_ptr<PendingNotificationCallbacks> pending_notification_callbacks_;
-  base::Optional<EventRegistrationToken> value_changed_token_;
 
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWinrt>
       weak_ptr_factory_;
