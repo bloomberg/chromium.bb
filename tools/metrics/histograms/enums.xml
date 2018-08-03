@@ -31138,11 +31138,33 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Failure Invalid Sink"/>
 </enum>
 
+<enum name="MediaRouterDialCreateRouteResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Sink not found"/>
+  <int value="2" label="App info not found"/>
+  <int value="3" label="App launch failed"/>
+  <int value="4" label="Unsupported source"/>
+  <int value="5" label="Route already exists"/>
+</enum>
+
+<enum name="MediaRouterDialFetchAppInfoResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Not found"/>
+  <int value="2" label="Network error"/>
+  <int value="3" label="Parse error"/>
+</enum>
+
 <enum name="MediaRouterDialogOpenOrigin">
   <int value="0" label="Toolbar"/>
   <int value="1" label="Overflow Menu"/>
   <int value="2" label="Contextual Menu"/>
   <int value="3" label="Page"/>
+</enum>
+
+<enum name="MediaRouterDialParseMessageResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Parse error"/>
+  <int value="2" label="Invalid message"/>
 </enum>
 
 <enum name="MediaRouterDialParsingError">
@@ -31157,6 +31179,13 @@ Called by update_use_counter_css.py.-->
   <int value="8" label="Missing app URL"/>
   <int value="9" label="Invalid app URL"/>
   <int value="10" label="Utility process error"/>
+</enum>
+
+<enum name="MediaRouterDialTerminateRouteResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Route not found"/>
+  <int value="2" label="Sink not found"/>
+  <int value="3" label="Stop app failed"/>
 </enum>
 
 <enum name="MediaRouterInitialViews">
