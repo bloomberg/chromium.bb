@@ -97,6 +97,9 @@ class UnifiedConsentService : public KeyedService,
   // inconsistencies with sync-related prefs.
   void MigrateProfileToUnifiedConsent();
 
+  // Returns true if all non-personalized services are enabled.
+  bool AreAllNonPersonalizedServicesEnabled();
+
   std::unique_ptr<UnifiedConsentServiceClient> service_client_;
   PrefService* pref_service_;
   identity::IdentityManager* identity_manager_;

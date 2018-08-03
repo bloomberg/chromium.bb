@@ -46,6 +46,12 @@ UnifiedConsentService::UnifiedConsentService(
       base::BindRepeating(
           &UnifiedConsentService::OnUnifiedConsentGivenPrefChanged,
           base::Unretained(this)));
+
+  // If somebody disabled any of the non-personalized services while Chrome
+  // wasn't running, disable unified consent.
+  if (!AreAllNonPersonalizedServicesEnabled() && IsUnifiedConsentGiven()) {
+    SetUnifiedConsentGiven(false);
+  }
 }
 
 UnifiedConsentService::~UnifiedConsentService() {}
@@ -230,6 +236,19 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
   // Sync-everything can then be set to true again after going through the
   // consent bump and opting into unified consent.
   SetSyncEverythingIfPossible(false);
+}
+
+bool UnifiedConsentService::AreAllNonPersonalizedServicesEnabled() {
+  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
+    Service service = static_cast<Service>(i);
+    if (service_client_->GetServiceState(service) == ServiceState::kDisabled)
+      return false;
+  }
+  if (!pref_service_->GetBoolean(
+          prefs::kUrlKeyedAnonymizedDataCollectionEnabled))
+    return false;
+
+  return true;
 }
 
 }  //  namespace unified_consent
