@@ -267,10 +267,10 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
       "PushMessaging.MessageReceived.Origin", app_identifier.origin());
 
   // The payload of a push message can be valid with content, valid with empty
-  // content, or null. Only set the payload data if it is non-null.
-  content::PushEventPayload payload;
+  // content, or null.
+  base::Optional<std::string> payload;
   if (message.decrypted)
-    payload.setData(message.raw_data);
+    payload = message.raw_data;
 
   // Dispatch the message to the appropriate Service Worker.
   content::BrowserContext::DeliverPushMessage(
@@ -286,7 +286,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   if (!message_dispatched_callback_for_testing_.is_null()) {
     message_dispatched_callback_for_testing_.Run(
         app_id, app_identifier.origin(),
-        app_identifier.service_worker_registration_id(), payload);
+        app_identifier.service_worker_registration_id(), std::move(payload));
   }
 }
 

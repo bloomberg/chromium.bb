@@ -186,7 +186,6 @@ jumbo_source_set("common_sources") {
     "platform_notification_data.h",
     "previews_state.h",
     "process_type.h",
-    "push_event_payload.h",
     "push_subscription_options.h",
     "referrer.cc",
     "referrer.h",

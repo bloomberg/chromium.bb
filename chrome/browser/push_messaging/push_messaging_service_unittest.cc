@@ -26,7 +26,6 @@
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
-#include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -126,15 +125,15 @@ class PushMessagingServiceTest : public ::testing::Test {
   void DidDispatchMessage(std::string* app_id_out,
                           GURL* origin_out,
                           int64_t* service_worker_registration_id_out,
-                          content::PushEventPayload* payload_out,
+                          base::Optional<std::string>* payload_out,
                           const std::string& app_id,
                           const GURL& origin,
                           int64_t service_worker_registration_id,
-                          const content::PushEventPayload& payload) {
+                          base::Optional<std::string> payload) {
     *app_id_out = app_id;
     *origin_out = origin;
     *service_worker_registration_id_out = service_worker_registration_id;
-    *payload_out = payload;
+    *payload_out = std::move(payload);
   }
 
  protected:
@@ -210,12 +209,12 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   std::string app_id;
   GURL dispatched_origin;
   int64_t service_worker_registration_id;
-  content::PushEventPayload payload;
+  base::Optional<std::string> payload;
 
-  // (5) Observe message dispatchings from the Push Messaging service, and then
-  // dispatch the |message| on the GCM driver as if it had actually been
-  // received by Google Cloud Messaging.
-  push_service->SetMessageDispatchedCallbackForTesting(base::Bind(
+  // (5) Observe message dispatchings from the Push Messaging service, and
+  // then dispatch the |message| on the GCM driver as if it had actually
+  // been received by Google Cloud Messaging.
+  push_service->SetMessageDispatchedCallbackForTesting(base::BindRepeating(
       &PushMessagingServiceTest::DidDispatchMessage, base::Unretained(this),
       &app_id, &dispatched_origin, &service_worker_registration_id, &payload));
 
@@ -234,8 +233,8 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   EXPECT_EQ(origin, dispatched_origin);
   EXPECT_EQ(service_worker_registration_id, kTestServiceWorkerId);
 
-  EXPECT_FALSE(payload.is_null);
-  EXPECT_EQ(kTestPayload, payload.data);
+  EXPECT_TRUE(payload);
+  EXPECT_EQ(kTestPayload, *payload);
 }
 
 TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
