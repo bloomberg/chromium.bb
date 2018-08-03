@@ -40,7 +40,6 @@
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/install_verification/win/install_verification.h"
 #include "chrome/browser/memory/swap_thrashing_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -549,18 +548,6 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 
   UMA_HISTOGRAM_BOOLEAN("Windows.Tablet",
       base::win::IsTabletDevice(nullptr, ui::GetHiddenWindow()));
-
-  // Set up a task to verify installed modules in the current process.
-  // TODO(gab): Use base::PostTaskWithTraits() directly when we're convinced
-  // BACKGROUND work doesn't interfere with startup (i.e.
-  // https://crbug.com/726937).
-  // TODO(robertshield): remove this altogether, https://crbug.com/747557.
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE,
-      base::CreateTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
-      base::Bind(&VerifyInstallation));
 
   InitializeChromeElf();
 

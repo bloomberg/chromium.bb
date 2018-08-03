@@ -2441,8 +2441,6 @@ test("unit_tests") {
     "../browser/history/history_tab_helper_unittest.cc",
     "../browser/infobars/mock_infobar_service.cc",
     "../browser/infobars/mock_infobar_service.h",
-    "../browser/install_verification/win/loaded_module_verification_unittest.cc",
-    "../browser/install_verification/win/module_ids_unittest.cc",
     "../browser/install_verification/win/module_info_unittest.cc",
     "../browser/install_verification/win/module_list_unittest.cc",
     "../browser/install_verification/win/module_verification_test.cc",
