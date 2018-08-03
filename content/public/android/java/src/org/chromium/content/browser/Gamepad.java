@@ -7,8 +7,9 @@ package org.chromium.content.browser;
 import android.content.Context;
 
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.device.gamepad.GamepadList;
 
 /**
@@ -23,7 +24,8 @@ class Gamepad implements WindowEventObserver {
     }
 
     public static Gamepad from(WebContents webContents) {
-        return webContents.getOrSetUserData(Gamepad.class, UserDataFactoryLazyHolder.INSTANCE);
+        return WebContentsUserData.fromWebContents(
+                webContents, Gamepad.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
     public Gamepad(WebContents webContents) {

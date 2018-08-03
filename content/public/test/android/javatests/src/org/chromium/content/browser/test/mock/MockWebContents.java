@@ -18,7 +18,6 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
@@ -64,11 +63,6 @@ public class MockWebContents implements WebContents {
     @Override
     public boolean isDestroyed() {
         return false;
-    }
-
-    @Override
-    public <T> T getOrSetUserData(Class<T> key, UserDataFactory<T> userDataFactory) {
-        return null;
     }
 
     @Override

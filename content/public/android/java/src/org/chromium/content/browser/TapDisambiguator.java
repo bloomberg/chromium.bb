@@ -16,9 +16,9 @@ import org.chromium.content.browser.PopupZoomer.OnTapListener;
 import org.chromium.content.browser.PopupZoomer.OnVisibilityChangedListener;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 
 /**
  * Class that handles tap disambiguation feature.  When a tap lands ambiguously

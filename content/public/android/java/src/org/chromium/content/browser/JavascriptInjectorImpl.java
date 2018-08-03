@@ -8,10 +8,10 @@ import android.util.Pair;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;

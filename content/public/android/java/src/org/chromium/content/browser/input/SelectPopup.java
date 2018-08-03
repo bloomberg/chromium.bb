@@ -17,8 +17,9 @@ import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -61,7 +62,8 @@ public class SelectPopup
      * @return {@link SelectPopup} object.
      */
     public static SelectPopup fromWebContents(WebContents webContents) {
-        return webContents.getOrSetUserData(SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
+        return WebContentsUserData.fromWebContents(
+                webContents, SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
     @CalledByNative

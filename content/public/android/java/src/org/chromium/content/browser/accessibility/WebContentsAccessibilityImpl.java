@@ -35,10 +35,11 @@ import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.captioning.CaptioningController;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 
 import java.util.ArrayList;
@@ -139,8 +140,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     public static WebContentsAccessibilityImpl fromWebContents(WebContents webContents) {
-        return webContents.getOrSetUserData(
-                WebContentsAccessibilityImpl.class, UserDataFactoryLazyHolder.INSTANCE);
+        return WebContentsUserData.fromWebContents(webContents, WebContentsAccessibilityImpl.class,
+                UserDataFactoryLazyHolder.INSTANCE);
     }
 
     protected WebContentsAccessibilityImpl(WebContents webContents) {

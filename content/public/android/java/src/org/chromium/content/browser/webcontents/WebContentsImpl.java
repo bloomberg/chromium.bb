@@ -44,7 +44,6 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.content_public.browser.WebContentsInternals;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
@@ -111,6 +110,30 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                     return new WebContents[size];
                 }
             };
+
+    /**
+     * Factory interface passed to {@link #getOrSetUserData()} for instantiation of
+     * class as user data.
+     *
+     * Constructor method reference comes handy for class Foo to provide the factory.
+     * Use lazy initialization to avoid having to generate too many anonymous references.
+     *
+     * <code>
+     * public class Foo {
+     *     static final class FoofactoryLazyHolder {
+     *         private static final UserDataFactory<Foo> INSTANCE = Foo::new;
+     *     }
+     *     ....
+     *
+     *     webContents.getOrsetUserData(Foo.class, FooFactoryLazyHolder.INSTANCE);
+     *
+     *     ....
+     * }
+     * </code>
+     *
+     * @param <T> Class to instantiate.
+     */
+    public interface UserDataFactory<T> { T create(WebContents webContents); }
 
     // Note this list may be incomplete. Frames that never had to initialize java side would
     // not have an entry here. This is here mainly to keep the java RenderFrameHosts alive, since
@@ -785,7 +808,15 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         return mRenderCoordinates;
     }
 
-    @Override
+    /**
+     * Retrieves or stores a user data object for this WebContents.
+     * @param key Class instance of the object used as the key.
+     * @param userDataFactory Factory that creates an object of the generic class. A new object
+     *        is created if it hasn't been created and non-null factory is given.
+     * @return The created or retrieved user data object. Can be null if the object was
+     *         not created yet, or {@code userDataFactory} is null, or the internal data
+     *         storage is already garbage-collected.
+     */
     public <T> T getOrSetUserData(Class<T> key, UserDataFactory<T> userDataFactory) {
         // For tests that go without calling |initialize|.
         if (!mInitialized) return null;

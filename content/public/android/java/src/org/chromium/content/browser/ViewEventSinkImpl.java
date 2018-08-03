@@ -8,9 +8,10 @@ import android.content.res.Configuration;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid.ActivityStateObserver;
 
@@ -39,8 +40,8 @@ public final class ViewEventSinkImpl implements ViewEventSink, ActivityStateObse
     }
 
     public static ViewEventSinkImpl from(WebContents webContents) {
-        return webContents.getOrSetUserData(
-                ViewEventSinkImpl.class, UserDataFactoryLazyHolder.INSTANCE);
+        return WebContentsUserData.fromWebContents(
+                webContents, ViewEventSinkImpl.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
     public ViewEventSinkImpl(WebContents webContents) {
