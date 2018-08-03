@@ -364,6 +364,10 @@ extern const base::Feature kWebRtcRemoteEventLogGzipped;
 extern const base::Feature kWin10AcceleratedDefaultBrowserFlow;
 #endif  // defined(OS_WIN)
 
+#if defined(OS_ANDROID)
+extern const base::Feature kIncognitoStrings;
+#endif  // defined(OS_ANDROID)
+
 bool PrefServiceEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

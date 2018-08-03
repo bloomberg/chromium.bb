@@ -13,6 +13,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_target.h"
 #include "cc/animation/keyframe_effect.h"
@@ -2401,14 +2402,22 @@ void UiSceneCreator::CreateOverflowMenu() {
     base::RepeatingCallback<void(UiBrowserInterface*)> action;
     base::RepeatingCallback<bool(Model*)> visibility;
   };
+  int new_incognito_tab_res_id = IDS_VR_MENU_NEW_INCOGNITO_TAB;
+  int close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_INCOGNITO_TABS;
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kIncognitoStrings)) {
+    new_incognito_tab_res_id = IDS_VR_MENU_NEW_PRIVATE_TAB;
+    close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_PRIVATE_TABS;
+  }
+#endif  // defined(OS_ANDROID)
   std::vector<MenuItem> menu_items = {
       {
-          kOverflowMenuNewIncognitoTabItem, IDS_VR_MENU_NEW_INCOGNITO_TAB,
+          kOverflowMenuNewIncognitoTabItem, new_incognito_tab_res_id,
           base::BindRepeating(
               [](UiBrowserInterface* browser) { browser->OpenNewTab(true); }),
           base::BindRepeating([](Model* m) { return !m->incognito; }),
       },
-      {kOverflowMenuCloseAllIncognitoTabsItem, IDS_VR_MENU_CLOSE_INCOGNITO_TABS,
+      {kOverflowMenuCloseAllIncognitoTabsItem, close_incognito_tabs_res_id,
        base::BindRepeating([](UiBrowserInterface* browser) {
          browser->CloseAllIncognitoTabs();
        }),
