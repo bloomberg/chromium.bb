@@ -77,8 +77,9 @@ using CameraCalibration =
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
 CONTENT_EXPORT bool IsAudioInputMediaType(MediaStreamType type);
-CONTENT_EXPORT bool IsVideoMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsVideoInputMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsScreenCaptureMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsDeviceMediaType(MediaStreamType type);
 
 // TODO(xians): Change the structs to classes.
 // Represents one device in a request for media stream(s).

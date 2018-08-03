@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ CONTENT_EXPORT extern const double kDefaultScreenCastFrameRate;
 // for content video capture based on the given |constraints|.
 VideoCaptureSettings CONTENT_EXPORT
 SelectSettingsVideoContentCapture(const blink::WebMediaConstraints& constraints,
-                                  const std::string& stream_source,
+                                  MediaStreamType stream_type,
                                   int screen_width,
                                   int screen_height);
 

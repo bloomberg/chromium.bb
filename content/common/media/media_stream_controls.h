@@ -8,28 +8,27 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/media_stream_request.h"
 
 namespace content {
 
 // Names for media stream source capture types.
-// These are values of the "TrackControls.stream_source" field, and are
-// set via the "chromeMediaSource" constraint.
+// These are values set via the "chromeMediaSource" constraint.
 CONTENT_EXPORT extern const char kMediaStreamSourceTab[];
-CONTENT_EXPORT extern const char kMediaStreamSourceScreen[];
+CONTENT_EXPORT extern const char kMediaStreamSourceScreen[]; /* video only */
 CONTENT_EXPORT extern const char kMediaStreamSourceDesktop[];
-CONTENT_EXPORT extern const char kMediaStreamSourceSystem[];
+CONTENT_EXPORT extern const char kMediaStreamSourceSystem[]; /* audio only */
 
 struct CONTENT_EXPORT TrackControls {
   TrackControls();
-  explicit TrackControls(bool request);
+  explicit TrackControls(bool request, MediaStreamType type);
   explicit TrackControls(const TrackControls& other);
   ~TrackControls();
 
   bool requested = false;
 
-  // Source. This is "tab", "screen", "desktop", "system", or blank.
-  // Consider replacing with MediaStreamType enum variables.
-  std::string stream_source;  // audio.kMediaStreamSource
+  // Represents the requested  stream type.
+  MediaStreamType stream_type = MEDIA_NO_SERVICE;
 
   // An empty string represents the default device.
   // A nonempty string represents a specific device.

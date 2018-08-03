@@ -133,7 +133,7 @@ void MediaStreamDeviceObserver::AddStream(const std::string& label,
   Stream stream;
   if (IsAudioInputMediaType(device.type))
     stream.audio_devices.push_back(device);
-  else if (IsVideoMediaType(device.type))
+  else if (IsVideoInputMediaType(device.type))
     stream.video_devices.push_back(device);
   else
     NOTREACHED();

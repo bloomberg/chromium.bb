@@ -45,7 +45,7 @@ enum MediaStreamRequestResult {
 // See content/common/media/media_stream_controls.h.
 struct TrackControls {
   bool requested;
-  string stream_source;
+  MediaStreamType stream_type;
   string device_id;
 };
 

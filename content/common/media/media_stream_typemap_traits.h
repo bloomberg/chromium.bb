@@ -36,9 +36,9 @@ struct StructTraits<content::mojom::TrackControlsDataView,
     return controls.requested;
   }
 
-  static const std::string& stream_source(
+  static const content::MediaStreamType& stream_type(
       const content::TrackControls& controls) {
-    return controls.stream_source;
+    return controls.stream_type;
   }
 
   static const std::string& device_id(const content::TrackControls& controls) {
