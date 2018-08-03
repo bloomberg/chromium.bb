@@ -388,8 +388,9 @@ timezoneTypes.res
 windowsZones.res
 zoneinfo64.res
 
-# *.cnv
+# mappings/*
 big5-html.cnv
+cnvalias.icu
 euc-jp-html.cnv
 euc-kr-html.cnv
 gb18030.cnv
@@ -425,3 +426,5 @@ x-mac-cyrillic-html.cnv
 
 # other
 confusables.cfu
+uts46.nrm
+nfkc_cf.nrm
