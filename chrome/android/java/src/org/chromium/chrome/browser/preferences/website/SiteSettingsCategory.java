@@ -158,7 +158,8 @@ public class SiteSettingsCategory {
         return new SiteSettingsCategory(type, permission);
     }
 
-    public static SiteSettingsCategory createFromContentSettingsType(int contentSettingsType) {
+    public static SiteSettingsCategory createFromContentSettingsType(
+            @ContentSettingsType int contentSettingsType) {
         assert contentSettingsType != -1;
         assert Type.ALL_SITES == 0;
         for (@Type int i = Type.ALL_SITES; i < Type.NUM_ENTRIES; i++) {
@@ -167,16 +168,12 @@ public class SiteSettingsCategory {
         return null;
     }
 
-    /**
-     * Convert preference String into ContentSettingsType or returns -1
-     * when mapping cannot be done.
-     */
-    public static int contentSettingsType(String preferenceKey) {
-        if (preferenceKey.isEmpty()) return -1;
-        for (int i = 0; i < PREFERENCE_KEYS.length; i++) {
-            if (PREFERENCE_KEYS[i].equals(preferenceKey)) return CONTENT_TYPES[i];
+    public static SiteSettingsCategory createFromPreferenceKey(String preferenceKey) {
+        assert Type.ALL_SITES == 0;
+        for (@Type int i = Type.ALL_SITES; i < Type.NUM_ENTRIES; i++) {
+            if (PREFERENCE_KEYS[i].equals(preferenceKey)) return createFromType(i);
         }
-        return -1;
+        return null;
     }
 
     /**
@@ -196,7 +193,7 @@ public class SiteSettingsCategory {
     /**
      * Returns the {@link ContentSettingsType} for this category, or -1 if no such type exists.
      */
-    public int getContentSettingsType() {
+    public @ContentSettingsType int getContentSettingsType() {
         return CONTENT_TYPES[mCategory];
     }
 
