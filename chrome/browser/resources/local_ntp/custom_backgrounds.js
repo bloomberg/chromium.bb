@@ -139,6 +139,44 @@ function $(id) {
 }
 
 /**
+ * Sets the visibility of the settings menu and individual options depending on
+ * their respective features and if the user has a theme installed.
+ * @param {boolean} hasTheme True if the user has a theme installed.
+ */
+customBackgrounds.setMenuVisibility = function(hasTheme) {
+  // Hide the settings menu if:
+  // - Custom links and custom backgrounds are not enabled.
+  // - Custom links is not enabled and a theme is installed.
+  if ((!configData.isCustomLinksEnabled &&
+       !configData.isCustomBackgroundsEnabled) ||
+      (!configData.isCustomLinksEnabled && hasTheme)) {
+    $(customBackgrounds.IDS.EDIT_BG).hidden = true;
+    return;
+  }
+
+  // Reset all hidden values.
+  $(customBackgrounds.IDS.EDIT_BG).hidden = false;
+  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = false;
+  $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = false;
+  $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = false;
+  $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = false;
+  $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden = false;
+
+  // Custom backgrounds is disabled or a theme is installed, hide all custom
+  // background options.
+  if (!configData.isCustomBackgroundsEnabled || hasTheme) {
+    $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = true;
+    $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = true;
+    $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = true;
+    $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = true;
+  }
+
+  // Custom links is disabled, hide all custom link options.
+  if (!configData.isCustomLinksEnabled)
+    $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden = true;
+};
+
+/**
  * Display custom background image attributions on the page.
  * @param {string} attributionLine1 First line of attribution.
  * @param {string} attributionLine2 Second line of attribution.
