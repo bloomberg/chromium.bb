@@ -355,11 +355,9 @@ function renderTheme() {
           !info.customBackgroundConfigured);
 
   if (configData.isGooglePage) {
-    // Hide the settings menu if the user has a theme. Do not hide if custom
-    // links is enabled.
-    $('edit-bg').hidden =
-        (!configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme) &&
-        !configData.isCustomLinksEnabled;
+    // Hide the settings menu or individual options if the related features are
+    // disabled and/or a theme is installed.
+    customBackgrounds.setMenuVisibility(!info.usingDefaultTheme);
   }
 }
 
@@ -376,8 +374,7 @@ function sendThemeInfoToMostVisitedIframe() {
 
   var message = {cmd: 'updateTheme'};
   message.isThemeDark = isThemeDark;
-  message.isUsingTheme =
-      !info.customBackgroundConfigured && !info.usingDefaultTheme;
+  message.isUsingTheme = !info.usingDefaultTheme;
 
   var titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
@@ -942,21 +939,6 @@ function init() {
     if (configData.isCustomBackgroundsEnabled ||
         configData.isCustomLinksEnabled) {
       customBackgrounds.init();
-
-      // Hide items in the settings menu if a feature is disabled.
-      if (configData.isCustomBackgroundsEnabled &&
-          !configData.isCustomLinksEnabled) {
-        // Only custom backgrounds enabled, hide all custom link options.
-        $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden = true;
-      } else if (
-          !configData.isCustomBackgroundsEnabled &&
-          configData.isCustomLinksEnabled) {
-        // Only custom links enabled, hide all custom background options.
-        $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = true;
-        $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = true;
-        $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = true;
-        $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = true;
-      }
     }
 
 
