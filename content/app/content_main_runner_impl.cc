@@ -119,6 +119,7 @@
 #endif  // OS_LINUX
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#include "content/child/field_trial.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
@@ -168,40 +169,6 @@ namespace {
 #define kV8SnapshotDataDescriptor kV8Snapshot32DataDescriptor
 #endif
 #endif
-
-// This sets up two singletons responsible for managing field trials. The
-// |field_trial_list| singleton lives on the stack and must outlive the Run()
-// method of the process.
-void InitializeFieldTrialAndFeatureList(
-    std::unique_ptr<base::FieldTrialList>* field_trial_list) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  // Initialize statistical testing infrastructure.  We set the entropy
-  // provider to nullptr to disallow non-browser processes from creating
-  // their own one-time randomized trials; they should be created in the
-  // browser process.
-  field_trial_list->reset(new base::FieldTrialList(nullptr));
-
-// Ensure any field trials in browser are reflected into the child
-// process.
-#if defined(OS_WIN)
-  base::FieldTrialList::CreateTrialsFromCommandLine(
-      command_line, switches::kFieldTrialHandle, -1);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  // On POSIX systems that use the zygote, we get the trials from a shared
-  // memory segment backed by an fd instead of the command line.
-  base::FieldTrialList::CreateTrialsFromCommandLine(
-      command_line, switches::kFieldTrialHandle,
-      service_manager::kFieldTrialDescriptor);
-#endif
-
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  base::FieldTrialList::CreateFeaturesFromCommandLine(
-      command_line, switches::kEnableFeatures, switches::kDisableFeatures,
-      feature_list.get());
-  base::FeatureList::SetInstance(std::move(feature_list));
-}
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 void LoadV8SnapshotFile() {
@@ -514,8 +481,7 @@ int RunZygote(ContentMainDelegate* delegate) {
   MainFunctionParams main_params(command_line);
   main_params.zygote_child = true;
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list;
-  InitializeFieldTrialAndFeatureList(&field_trial_list);
+  InitializeFieldTrialAndFeatureList();
 
   service_manager::SandboxType sandbox_type =
       service_manager::SandboxTypeFromCommandLine(command_line);
@@ -874,12 +840,13 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   // Run this logic on all child processes. Zygotes will run this at a later
   // point in time when the command line has been updated.
-  std::unique_ptr<base::FieldTrialList> field_trial_list;
   if (!process_type.empty() &&
       process_type != service_manager::switches::kZygoteProcess)
-    InitializeFieldTrialAndFeatureList(&field_trial_list);
+    InitializeFieldTrialAndFeatureList();
+#endif
 
   MainFunctionParams main_params(command_line);
   main_params.ui_task = ui_task_;
