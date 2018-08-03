@@ -175,6 +175,7 @@ if ({{variable}} != null) {
             org.chromium.mojo.bindings.DataHeader mainDataHeader = decoder0.readAndValidateDataHeader(VERSION_ARRAY);
             final int elementsOrVersion = mainDataHeader.elementsOrVersion;
             result = new {{struct|name}}(elementsOrVersion);
+
 {%- set prev_ver = [0] %}
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}
@@ -183,7 +184,9 @@ if ({{variable}} != null) {
             }
 {%-       endif %}
 {%-       set _ = prev_ver.append(packed_field.min_version) %}
+{%-       if prev_ver[-1] != 0 %}
             if (elementsOrVersion >= {{packed_field.min_version}}) {
+{%-       endif %}
 {%-     endif %}
                 {
                     {{decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(16)}}
@@ -193,6 +196,7 @@ if ({{variable}} != null) {
 {%- if prev_ver[-1] != 0 %}
             }
 {%- endif %}
+
         } finally {
             decoder0.decreaseStackDepth();
         }
