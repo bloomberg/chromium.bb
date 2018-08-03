@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
-#include "device/vr/openvr/openvr_gamepad_data_fetcher.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -18,11 +17,10 @@
 namespace device {
 
 class OpenVRRenderLoop;
-struct OpenVRGamepadState;
 
 class OpenVRDevice : public VRDeviceBase,
                      public mojom::XRSessionController,
-                     public OpenVRGamepadDataProvider {
+                     public mojom::IsolatedXRGamepadProviderFactory {
  public:
   OpenVRDevice();
   ~OpenVRDevice() override;
@@ -42,6 +40,8 @@ class OpenVRDevice : public VRDeviceBase,
 
   bool IsInitialized() { return !!openvr_; }
 
+  mojom::IsolatedXRGamepadProviderFactoryPtr BindGamepadFactory();
+
  private:
   // VRDeviceBase
   void OnMagicWindowFrameDataRequest(
@@ -50,11 +50,12 @@ class OpenVRDevice : public VRDeviceBase,
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
+  // mojom::IsolatedXRGamepadProviderFactory
+  void GetIsolatedXRGamepadProvider(
+      mojom::IsolatedXRGamepadProviderRequest provider_request) override;
+
   void OnPresentingControllerMojoConnectionError();
   void OnPresentationEnded();
-
-  void RegisterDataFetcher(OpenVRGamepadDataFetcher*) override;
-  void OnGamepadUpdated(OpenVRGamepadState state);
 
   std::unique_ptr<OpenVRRenderLoop> render_loop_;
   mojom::VRDisplayInfoPtr display_info_;
@@ -62,7 +63,10 @@ class OpenVRDevice : public VRDeviceBase,
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
-  OpenVRGamepadDataFetcher* gamepad_data_fetcher_ = nullptr;
+
+  mojo::Binding<mojom::IsolatedXRGamepadProviderFactory>
+      gamepad_provider_factory_binding_;
+  mojom::IsolatedXRGamepadProviderRequest provider_request_;
 
   base::WeakPtrFactory<OpenVRDevice> weak_ptr_factory_;
 

@@ -6,9 +6,9 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
+#include "device/vr/isolated_gamepad_data_fetcher.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
 #include "device/vr/openvr/openvr_device.h"
-#include "device/vr/openvr/openvr_gamepad_data_fetcher.h"
 #include "device/vr/openvr/test/test_hook.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
@@ -43,9 +43,10 @@ void OpenVRDeviceProvider::Initialize(
     base::RepeatingCallback<void(unsigned int)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   CreateDevice();
-  if (device_)
+  if (device_) {
     add_device_callback.Run(device_->GetId(), device_->GetVRDisplayInfo(),
                             device_->BindXRRuntimePtr());
+  }
   initialized_ = true;
   std::move(initialization_complete).Run();
 }
@@ -61,7 +62,8 @@ void OpenVRDeviceProvider::CreateDevice() {
   device_ = std::make_unique<OpenVRDevice>();
   if (device_->IsInitialized()) {
     GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new OpenVRGamepadDataFetcher::Factory(device_->GetId(), device_.get()));
+        new IsolatedGamepadDataFetcher::Factory(VRDeviceId::OPENVR_DEVICE_ID,
+                                                device_->BindGamepadFactory()));
   } else {
     device_ = nullptr;
   }
