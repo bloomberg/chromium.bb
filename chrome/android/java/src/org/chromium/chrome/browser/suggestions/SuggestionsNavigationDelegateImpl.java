@@ -105,7 +105,9 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
 
     @Override
     public void openSnippet(final int windowOpenDisposition, final SnippetArticle article) {
-        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
+        if (!article.isContextual()) {
+            NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
+        }
 
         if (article.isAssetDownload()) {
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
@@ -157,7 +159,9 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         }
 
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);
-        if (loadingTab != null) SuggestionsMetrics.recordVisit(loadingTab, article);
+        if (loadingTab != null && !article.isContextual()) {
+            SuggestionsMetrics.recordVisit(loadingTab, article);
+        }
     }
 
     private void openDownloadSuggestion(
