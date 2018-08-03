@@ -478,6 +478,16 @@ float MotionEventAndroid::GetTiltY(size_t pointer_index) const {
   return tilt_y;
 }
 
+float MotionEventAndroid::GetTwist(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, cached_pointer_count_);
+  return 0.f;
+}
+
+float MotionEventAndroid::GetTangentialPressure(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, cached_pointer_count_);
+  return 0.f;
+}
+
 base::TimeTicks MotionEventAndroid::GetEventTime() const {
   return cached_time_;
 }

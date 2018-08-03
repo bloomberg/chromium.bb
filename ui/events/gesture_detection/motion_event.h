@@ -71,6 +71,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual float GetPressure(size_t pointer_index) const = 0;
   virtual float GetTiltX(size_t pointer_index) const = 0;
   virtual float GetTiltY(size_t pointer_index) const = 0;
+  virtual float GetTwist(size_t pointer_index) const = 0;
+  virtual float GetTangentialPressure(size_t pointer_index) const = 0;
   virtual ToolType GetToolType(size_t pointer_index) const = 0;
   virtual int GetButtonState() const = 0;
   virtual int GetFlags() const = 0;
@@ -119,6 +121,9 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   // [-90,90]. See the PointerEvent spec link above for details
   float GetTiltX() const { return GetTiltX(0); }
   float GetTiltY() const { return GetTiltY(0); }
+  float GetTwist() const { return GetTwist(0); }
+  float GetTangentialPressure() const { return GetTangentialPressure(0); }
+
   ToolType GetToolType() const { return GetToolType(0); }
 
   // O(N) search of pointers (use sparingly!). Returns -1 if |id| nonexistent.
