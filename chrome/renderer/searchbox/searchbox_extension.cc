@@ -74,7 +74,6 @@ const char kCSSBackgroundColorFormat[] = "rgba(%d,%d,%d,%s)";
 const char kCSSBackgroundPositionCenter[] = "center";
 const char kCSSBackgroundPositionLeft[] = "left";
 const char kCSSBackgroundPositionTop[] = "top";
-const char kCSSBackgroundPositionCenterCover[] = "center/cover";
 const char kCSSBackgroundPositionRight[] = "right";
 const char kCSSBackgroundPositionBottom[] = "bottom";
 
@@ -334,6 +333,8 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     }
   }
 
+  // If a custom background has been set provide the relevant information to the
+  // page.
   if (theme_info.using_default_theme &&
       !theme_info.custom_background_url.is_empty()) {
     builder.Set("alternateLogo", true);
@@ -341,19 +342,15 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     builder.Set("textColorRgba",
                 internal::RGBAColorToArray(isolate, whiteTextRgba));
     builder.Set("customBackgroundConfigured", true);
-    builder.Set("imageUrl",
-                "url('" + theme_info.custom_background_url.spec() + "')");
-    builder.Set("imageTiling", std::string(kCSSBackgroundRepeatNo));
-    builder.Set("imageHorizontalAlignment",
-                std::string(kCSSBackgroundPositionCenter));
-    builder.Set("imageVerticalAlignment",
-                std::string(kCSSBackgroundPositionCenterCover));
+    builder.Set("imageUrl", theme_info.custom_background_url.spec());
     builder.Set("attributionActionUrl",
                 theme_info.custom_background_attribution_action_url.spec());
     builder.Set("attribution1",
                 theme_info.custom_background_attribution_line_1);
     builder.Set("attribution2",
                 theme_info.custom_background_attribution_line_2);
+  } else {
+    builder.Set("customBackgroundConfigured", false);
   }
 
   return builder.Build();

@@ -2,6 +2,21 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#custom-bg {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100%;
+  left: 0;
+  margin: 0;
+  opacity: 0;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  transition: opacity 700ms;
+  width: 100%;
+}
+
 #edit-bg {
   border-radius: 8px;
   bottom: 16px;
