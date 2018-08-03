@@ -44,6 +44,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
+#include "chrome/browser/ui/autofill/save_card_ui.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -65,6 +66,9 @@
 #include "chrome/browser/ui/views/autofill/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/save_card_manage_cards_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/save_card_offer_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/save_card_sign_in_promo_bubble_views.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/confirm_quit_bubble_controller.h"
@@ -1229,8 +1233,29 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
       anchor_view = toolbar_button_provider()->GetAppMenuButton();
   }
 
-  autofill::SaveCardBubbleViews* bubble = new autofill::SaveCardBubbleViews(
-      anchor_view, gfx::Point(), web_contents, controller);
+  autofill::BubbleType bubble_type = controller->GetBubbleType();
+  autofill::SaveCardBubbleViews* bubble = nullptr;
+
+  switch (bubble_type) {
+    case autofill::BubbleType::LOCAL_SAVE:
+    case autofill::BubbleType::UPLOAD_SAVE:
+      bubble = new autofill::SaveCardOfferBubbleViews(anchor_view, gfx::Point(),
+                                                      web_contents, controller);
+      break;
+    case autofill::BubbleType::SIGN_IN_PROMO:
+      bubble = new autofill::SaveCardSignInPromoBubbleViews(
+          anchor_view, gfx::Point(), web_contents, controller);
+      break;
+    case autofill::BubbleType::MANAGE_CARDS:
+      bubble = new autofill::SaveCardManageCardsBubbleViews(
+          anchor_view, gfx::Point(), web_contents, controller);
+      break;
+    case autofill::BubbleType::INACTIVE:
+      break;
+  }
+
+  DCHECK(bubble);
+
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(bubble);
 

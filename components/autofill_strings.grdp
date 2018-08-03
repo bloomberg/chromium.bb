@@ -23,6 +23,24 @@
   <message name="IDS_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO" desc="Promo text shown alongside credit card suggestions to get people to sign in.">
     To use cards from your Google Account, sign in to Chrome
   </message>
+  <message name="IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE" desc="Promo message for Sign-in Promo bubble (shown after a local save) to get people to sign in.">
+    To get your cards on all devices, sign in and turn on sync.
+  </message>
+  <message name="IDS_AUTOFILL_SYNC_PROMO_MESSAGE" desc="Promo message for Sign-in Promo bubble (shown after a local save) to get people to sync.">
+    To get your cards on all devices, turn on sync.
+  </message>
+  <message name="IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED" desc="Text of the sign in promo bubble and manage cards footnote.">
+    To get your cards on all your devices, <ph name="SIGN_IN_LINK">$1<ex>sign in</ex></ph>.
+  </message>
+  <message name="IDS_AUTOFILL_SYNC_PROMO_MESSAGE_DICE_DISABLED" desc="Text of the sync promo bubble and manage cards footnote.">
+    To get your cards on all your devices, <ph name="SYNC_LINK">$1<ex>turn on sync</ex></ph>.
+  </message>
+  <message name="IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED" desc="Text of the link to sign in from the save card sync promo.">
+    sign in to Chrome
+  </message>
+  <message name="IDS_AUTOFILL_SYNC_PROMO_LINK_DICE_DISABLED" desc="Text of the link to sync from the save card sync promo.">
+    turn on sync
+  </message>
   <if expr="_google_chrome">
     <message name="IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete an autocomplete form history suggestion.">
       Remove form suggestion from Chrome?
@@ -197,6 +215,15 @@
   </if>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to January 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
     Save card?
+  </message>
+  <message name="IDS_AUTOFILL_CARD_SAVED" desc="Title text for the Autofill save card manager bubble when the card has been saved either locally or to Google Payments. Also label for icon animation.">
+    Card saved
+  </message>
+  <message name="IDS_AUTOFILL_MANAGE_CARDS" desc="Text to show for the button in the save card manager bubble when the card has been saved either locally or to Google Payments.">
+    Manage cards
+  </message>
+  <message name="IDS_AUTOFILL_DONE" desc="Text to show for the button in the save card manager bubble when the card has been saved either locally or to Google Payments.">
+    Done
   </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
     Pay quickly on sites and apps across devices using cards you have saved with Google.
