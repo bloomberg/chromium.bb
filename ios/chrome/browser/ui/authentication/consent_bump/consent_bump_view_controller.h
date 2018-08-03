@@ -7,10 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_consumer.h"
+
 @protocol ConsentBumpViewControllerDelegate;
 
 // View Controller handling the ConsentBump screen.
-@interface ConsentBumpViewController : UIViewController
+@interface ConsentBumpViewController : UIViewController<ConsentBumpConsumer>
 
 // Delegate for the view controller.
 @property(nonatomic, weak) id<ConsentBumpViewControllerDelegate> delegate;

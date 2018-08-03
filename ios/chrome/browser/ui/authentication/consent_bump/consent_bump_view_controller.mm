@@ -5,7 +5,10 @@
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_view_controller.h"
 
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_view_controller_delegate.h"
+#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,6 +17,12 @@
 namespace {
 const CGFloat kMargin = 16;
 const CGFloat kGradientHeight = 40;
+const int kButtonBackgroundColor = 0x1A73E8;
+const CGFloat kButtonTitleGreyShade = 0.98;
+const CGFloat kButtonCornerRadius = 8;
+const CGFloat kButtonPadding = 16;
+const CGFloat kButtonMinimalWidth = 80;
+const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
 }  // namespace
 
 @interface ConsentBumpViewController ()
@@ -73,8 +82,13 @@ const CGFloat kGradientHeight = 40;
   if (!_primaryButton) {
     _primaryButton = [UIButton buttonWithType:UIButtonTypeSystem];
     _primaryButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [_primaryButton setTitle:@"Primary Button" forState:UIControlStateNormal];
-    _primaryButton.backgroundColor = [UIColor blueColor];
+    _primaryButton.backgroundColor = UIColorFromRGB(kButtonBackgroundColor);
+    [_primaryButton
+        setTitleColor:[UIColor colorWithWhite:kButtonTitleGreyShade alpha:1]
+             forState:UIControlStateNormal];
+    _primaryButton.layer.cornerRadius = kButtonCornerRadius;
+    _primaryButton.contentEdgeInsets =
+        UIEdgeInsetsMake(0, kButtonPadding, 0, kButtonPadding);
     [_primaryButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                       forAxis:UILayoutConstraintAxisVertical];
     [_primaryButton addTarget:self
@@ -88,8 +102,6 @@ const CGFloat kGradientHeight = 40;
   if (!_secondaryButton) {
     _secondaryButton = [UIButton buttonWithType:UIButtonTypeSystem];
     _secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [_secondaryButton setTitle:@"Secondary Button"
-                      forState:UIControlStateNormal];
     [_secondaryButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                         forAxis:UILayoutConstraintAxisVertical];
     [_secondaryButton addTarget:self
@@ -166,7 +178,42 @@ const CGFloat kGradientHeight = 40;
     [self.primaryButton.leadingAnchor
         constraintGreaterThanOrEqualToAnchor:self.secondaryButton
                                                  .trailingAnchor],
+
+    // Add minimum width to the buttons to have a better looking animation when
+    // changing the label.
+    [self.primaryButton.widthAnchor
+        constraintGreaterThanOrEqualToConstant:kButtonMinimalWidth],
+    [self.secondaryButton.widthAnchor
+        constraintGreaterThanOrEqualToConstant:kButtonMinimalWidth],
   ]];
+}
+
+#pragma mark - ConsentBumpConsumer
+
+- (void)setPrimaryButtonTitle:(NSString*)secondaryButtonTitle {
+  // Use CrossDisolve to avoid issue where the button is changing size before
+  // changing its label, leading to an inconsistent animation.
+  [UIView transitionWithView:self.primaryButton
+                    duration:kButtonTitleChangeAnimationDuration
+                     options:UIViewAnimationOptionTransitionCrossDissolve
+                  animations:^{
+                    [self.primaryButton setTitle:secondaryButtonTitle
+                                        forState:UIControlStateNormal];
+                  }
+                  completion:nil];
+}
+
+- (void)setSecondaryButtonTitle:(NSString*)secondaryButtonTitle {
+  // Use CrossDisolve to avoid issue where the button is changing size before
+  // changing its label, leading to an inconsistent animation.
+  [UIView transitionWithView:self.primaryButton
+                    duration:kButtonTitleChangeAnimationDuration
+                     options:UIViewAnimationOptionTransitionCrossDissolve
+                  animations:^{
+                    [self.secondaryButton setTitle:secondaryButtonTitle
+                                          forState:UIControlStateNormal];
+                  }
+                  completion:nil];
 }
 
 #pragma mark - Private

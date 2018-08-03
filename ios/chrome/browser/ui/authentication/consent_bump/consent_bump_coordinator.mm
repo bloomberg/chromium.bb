@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
 
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_mediator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_personalization_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_view_controller_delegate.h"
@@ -13,18 +14,10 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Type of child coordinator presented by this coordinator.
-typedef NS_ENUM(NSInteger, PresentedCoordinator) {
-  PresentedCoordinatorUnifiedConsent,
-  PresentedCoordinatorPersonalization,
-};
-}  // namespace
-
 @interface ConsentBumpCoordinator ()<ConsentBumpViewControllerDelegate>
 
 // Which child coordinator is currently presented.
-@property(nonatomic, assign) PresentedCoordinator presentedCoordinator;
+@property(nonatomic, assign) ConsentBumpScreen presentedCoordinatorType;
 
 // The ViewController of this coordinator, redefined as a
 // ConsentBumpViewController.
@@ -36,20 +29,29 @@ typedef NS_ENUM(NSInteger, PresentedCoordinator) {
 // The child coordinator presenting the presonalization content.
 @property(nonatomic, strong)
     ConsentBumpPersonalizationCoordinator* personalizationCoordinator;
+// Mediator for this coordinator.
+@property(nonatomic, strong) ConsentBumpMediator* mediator;
 
 @end
 
 @implementation ConsentBumpCoordinator
 
-@synthesize presentedCoordinator = _presentedCoordinator;
+@synthesize presentedCoordinatorType = _presentedCoordinatorType;
 @synthesize consentBumpViewController = _consentBumpViewController;
 @synthesize unifiedConsentCoordinator = _unifiedConsentCoordinator;
 @synthesize personalizationCoordinator = _personalizationCoordinator;
+@synthesize mediator = _mediator;
 
 #pragma mark - Properties
 
 - (UIViewController*)viewController {
   return self.consentBumpViewController;
+}
+
+- (void)setPresentedCoordinatorType:
+    (ConsentBumpScreen)presentedCoordinatorType {
+  _presentedCoordinatorType = presentedCoordinatorType;
+  [self.mediator updateConsumerForConsentBumpScreen:presentedCoordinatorType];
 }
 
 #pragma mark - ChromeCoordinator
@@ -58,15 +60,19 @@ typedef NS_ENUM(NSInteger, PresentedCoordinator) {
   self.consentBumpViewController = [[ConsentBumpViewController alloc] init];
   self.consentBumpViewController.delegate = self;
 
+  self.mediator = [[ConsentBumpMediator alloc] init];
+  self.mediator.consumer = self.consentBumpViewController;
+
   self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
   [self.unifiedConsentCoordinator start];
-  self.presentedCoordinator = PresentedCoordinatorUnifiedConsent;
+  self.presentedCoordinatorType = ConsentBumpScreenUnifiedConsent;
 
   self.consentBumpViewController.contentViewController =
       self.unifiedConsentCoordinator.viewController;
 }
 
 - (void)stop {
+  self.mediator = nil;
   self.consentBumpViewController = nil;
   self.unifiedConsentCoordinator = nil;
   self.personalizationCoordinator = nil;
@@ -76,11 +82,11 @@ typedef NS_ENUM(NSInteger, PresentedCoordinator) {
 
 - (void)consentBumpViewControllerDidTapPrimaryButton:
     (ConsentBumpViewController*)consentBumpViewController {
-  switch (self.presentedCoordinator) {
-    case PresentedCoordinatorUnifiedConsent:
+  switch (self.presentedCoordinatorType) {
+    case ConsentBumpScreenUnifiedConsent:
       // TODO(crbug.com/866506): Consent bump accepted.
       break;
-    case PresentedCoordinatorPersonalization:
+    case ConsentBumpScreenPersonalization:
       // TODO(crbug.com/866506): Clarify what should be the behavior at this
       // point.
       break;
@@ -89,8 +95,8 @@ typedef NS_ENUM(NSInteger, PresentedCoordinator) {
 
 - (void)consentBumpViewControllerDidTapSecondaryButton:
     (ConsentBumpViewController*)consentBumpViewController {
-  switch (self.presentedCoordinator) {
-    case PresentedCoordinatorUnifiedConsent:
+  switch (self.presentedCoordinatorType) {
+    case ConsentBumpScreenUnifiedConsent:
       // Present the personlization.
       if (!self.personalizationCoordinator) {
         self.personalizationCoordinator =
@@ -100,14 +106,14 @@ typedef NS_ENUM(NSInteger, PresentedCoordinator) {
       }
       self.consentBumpViewController.contentViewController =
           self.personalizationCoordinator.viewController;
-      self.presentedCoordinator = PresentedCoordinatorPersonalization;
+      self.presentedCoordinatorType = ConsentBumpScreenPersonalization;
       break;
 
-    case PresentedCoordinatorPersonalization:
+    case ConsentBumpScreenPersonalization:
       // Go back to the unified consent.
       self.consentBumpViewController.contentViewController =
           self.unifiedConsentCoordinator.viewController;
-      self.presentedCoordinator = PresentedCoordinatorUnifiedConsent;
+      self.presentedCoordinatorType = ConsentBumpScreenUnifiedConsent;
       break;
   }
 }
