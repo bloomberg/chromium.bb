@@ -485,8 +485,10 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
     // Only show the media controls when the mouse is hovering over the window.
     // This is checking for both ENTERED and MOVED because ENTERED is not fired
     // after a resize on Windows.
-    case ui::ET_MOUSE_ENTERED:
+#if defined (OS_WIN)
     case ui::ET_MOUSE_MOVED:
+#endif  // OS_WIN
+    case ui::ET_MOUSE_ENTERED:
       UpdateControlsVisibility(true);
       break;
 
