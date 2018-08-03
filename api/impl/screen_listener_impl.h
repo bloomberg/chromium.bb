@@ -5,16 +5,17 @@
 #ifndef API_IMPL_SCREEN_LISTENER_IMPL_H_
 #define API_IMPL_SCREEN_LISTENER_IMPL_H_
 
+#include "api/impl/screen_list.h"
 #include "api/public/screen_info.h"
 #include "api/public/screen_listener.h"
-#include "api/impl/screen_list.h"
+#include "base/macros.h"
 
 namespace openscreen {
 
 class ScreenListenerImpl final : public ScreenListener {
  public:
   class Delegate {
-  public:
+   public:
     Delegate();
     virtual ~Delegate();
 
@@ -27,13 +28,16 @@ class ScreenListenerImpl final : public ScreenListener {
     virtual void ResumeListener() = 0;
     virtual void SearchNow(ScreenListenerState from) = 0;
 
-  protected:
+   protected:
     void SetState(ScreenListenerState state) { listener_->SetState(state); }
 
     ScreenListenerImpl* listener_ = nullptr;
   };
 
-  explicit ScreenListenerImpl(Delegate* delegate);
+  // |observer| is optional.  If it is provided, it will receive appropriate
+  // notifications about this ScreenListener.  |delegate| is required and is
+  // used to implement state transitions.
+  ScreenListenerImpl(ScreenListenerObserver* observer, Delegate* delegate);
   ~ScreenListenerImpl() override;
 
   // Called by |delegate_| when there are updates to the available screens.
@@ -66,6 +70,8 @@ class ScreenListenerImpl final : public ScreenListener {
 
   Delegate* const delegate_;
   ScreenList screen_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenListenerImpl);
 };
 
 }  // namespace openscreen

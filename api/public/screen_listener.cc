@@ -20,7 +20,8 @@ ScreenListenerErrorInfo& ScreenListenerErrorInfo::operator=(
 ScreenListenerMetrics::ScreenListenerMetrics() = default;
 ScreenListenerMetrics::~ScreenListenerMetrics() = default;
 
-ScreenListener::ScreenListener() = default;
+ScreenListener::ScreenListener(ScreenListenerObserver* observer)
+    : observer_(observer) {}
 ScreenListener::~ScreenListener() = default;
 
 }  // namespace openscreen

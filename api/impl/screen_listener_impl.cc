@@ -53,8 +53,9 @@ void ScreenListenerImpl::Delegate::SetListenerImpl(
   listener_ = listener;
 }
 
-ScreenListenerImpl::ScreenListenerImpl(Delegate* delegate)
-    : delegate_(delegate) {
+ScreenListenerImpl::ScreenListenerImpl(ScreenListenerObserver* observer,
+                                       Delegate* delegate)
+    : ScreenListener(observer), delegate_(delegate) {
   delegate_->SetListenerImpl(this);
 }
 

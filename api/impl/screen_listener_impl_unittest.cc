@@ -52,7 +52,7 @@ class MockMdnsDelegate final : public ScreenListenerImpl::Delegate {
 class ScreenListenerImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    screen_listener_ = MakeUnique<ScreenListenerImpl>(&mock_delegate_);
+    screen_listener_ = MakeUnique<ScreenListenerImpl>(nullptr, &mock_delegate_);
   }
 
   MockMdnsDelegate mock_delegate_;
@@ -233,61 +233,63 @@ TEST_F(ScreenListenerImplTest, SuspendWhileSearching) {
 
 TEST_F(ScreenListenerImplTest, ObserveTransitions) {
   MockObserver observer;
-  screen_listener_->SetObserver(&observer);
+  MockMdnsDelegate mock_delegate;
+  screen_listener_ = MakeUnique<ScreenListenerImpl>(&observer, &mock_delegate);
 
   screen_listener_->Start();
   Expectation start_from_stopped = EXPECT_CALL(observer, OnStarted());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(ScreenListenerState::kRunning);
 
   screen_listener_->SearchNow();
   Expectation search_from_running =
       EXPECT_CALL(observer, OnSearching()).After(start_from_stopped);
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
+  mock_delegate.SetState(ScreenListenerState::kSearching);
   EXPECT_CALL(observer, OnStarted());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(ScreenListenerState::kRunning);
 
   screen_listener_->Suspend();
   Expectation suspend_from_running =
       EXPECT_CALL(observer, OnSuspended()).After(search_from_running);
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
+  mock_delegate.SetState(ScreenListenerState::kSuspended);
 
   screen_listener_->SearchNow();
   Expectation search_from_suspended =
       EXPECT_CALL(observer, OnSearching()).After(suspend_from_running);
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
+  mock_delegate.SetState(ScreenListenerState::kSearching);
   EXPECT_CALL(observer, OnSuspended());
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
+  mock_delegate.SetState(ScreenListenerState::kSuspended);
 
   screen_listener_->Resume();
   Expectation resume_from_suspended =
       EXPECT_CALL(observer, OnStarted()).After(suspend_from_running);
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(ScreenListenerState::kRunning);
 
   screen_listener_->Stop();
   EXPECT_CALL(observer, OnStopped()).After(resume_from_suspended);
-  mock_delegate_.SetState(ScreenListenerState::kStopped);
+  mock_delegate.SetState(ScreenListenerState::kStopped);
 }
 
 TEST_F(ScreenListenerImplTest, ObserveFromSearching) {
   MockObserver observer;
-  screen_listener_->SetObserver(&observer);
+  MockMdnsDelegate mock_delegate;
+  screen_listener_ = MakeUnique<ScreenListenerImpl>(&observer, &mock_delegate);
 
   screen_listener_->Start();
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(ScreenListenerState::kRunning);
 
   screen_listener_->SearchNow();
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
+  mock_delegate.SetState(ScreenListenerState::kSearching);
 
   screen_listener_->Suspend();
   EXPECT_CALL(observer, OnSuspended());
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
+  mock_delegate.SetState(ScreenListenerState::kSuspended);
 
   EXPECT_TRUE(screen_listener_->SearchNow());
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
+  mock_delegate.SetState(ScreenListenerState::kSearching);
 
   screen_listener_->Resume();
   EXPECT_CALL(observer, OnStarted());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(ScreenListenerState::kRunning);
 }
 
 TEST_F(ScreenListenerImplTest, ScreenObserverPassThrough) {
@@ -300,7 +302,8 @@ TEST_F(ScreenListenerImplTest, ScreenObserverPassThrough) {
   const ScreenInfo screen1_alt_name{
       "id1", "name1 alt", "eth0", {{192, 168, 1, 10}, 12345}, {{}, 0}};
   MockObserver observer;
-  screen_listener_->SetObserver(&observer);
+  MockMdnsDelegate mock_delegate;
+  screen_listener_ = MakeUnique<ScreenListenerImpl>(&observer, &mock_delegate);
 
   EXPECT_CALL(observer, OnScreenAdded(screen1));
   screen_listener_->OnScreenAdded(screen1);

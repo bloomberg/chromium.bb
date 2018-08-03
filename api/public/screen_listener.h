@@ -6,11 +6,11 @@
 #define API_PUBLIC_SCREEN_LISTENER_H_
 
 #include <cstdint>
-#include <ostream>
 #include <string>
 #include <vector>
 
 #include "api/public/screen_info.h"
+#include "base/macros.h"
 
 namespace openscreen {
 
@@ -143,20 +143,17 @@ class ScreenListener {
   // Returns the last error reported by this listener.
   const ScreenListenerErrorInfo& GetLastError() const { return last_error_; }
 
-  // Must be called with a valid observer before the listener is started.
-  void SetObserver(ScreenListenerObserver* observer) { observer_ = observer; }
-
   // Returns the current list of screens known to the ScreenListener.
   virtual const std::vector<ScreenInfo>& GetScreens() const = 0;
 
  protected:
-  ScreenListener();
+  explicit ScreenListener(ScreenListenerObserver* observer);
 
   ScreenListenerState state_ = ScreenListenerState::kStopped;
   ScreenListenerErrorInfo last_error_;
-  ScreenListenerObserver* observer_ = nullptr;
+  ScreenListenerObserver* const observer_;
 
-  // TODO: Add DISALLOW_COPY_AND_ASSIGN when macro is available
+  DISALLOW_COPY_AND_ASSIGN(ScreenListener);
 };
 
 }  // namespace openscreen
