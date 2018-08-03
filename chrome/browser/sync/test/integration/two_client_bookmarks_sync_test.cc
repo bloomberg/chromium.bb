@@ -1678,7 +1678,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
 // Test a scenario of updating the name of the same bookmark from two clients at
 // the same time.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_BookmarkNameChangeConflict) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -1703,7 +1703,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
 // Test a scenario of updating the URL of the same bookmark from two clients at
 // the same time.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_BookmarkURLChangeConflict) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -1730,7 +1730,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
 // Test a scenario of updating the BM Folder name from two clients at the same
 // time.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_FolderNameChangeConflict) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
