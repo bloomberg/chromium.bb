@@ -75,6 +75,10 @@ Polymer({
     'adjustHeight_(invitation_, showCloudPrintPromo)',
   ],
 
+  listeners: {
+    'keydown': 'onKeydown_',
+  },
+
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
@@ -112,7 +116,9 @@ Polymer({
    */
   onKeydown_: function(e) {
     e.stopPropagation();
-    if (e.key == 'Escape' && !this.$.searchBox.getSearchInput().value.trim()) {
+    const searchInput = this.$.searchBox.getSearchInput();
+    if (e.key == 'Escape' &&
+        (e.composedPath()[0] !== searchInput || !searchInput.value.trim())) {
       this.$.dialog.cancel();
       e.preventDefault();
     }
