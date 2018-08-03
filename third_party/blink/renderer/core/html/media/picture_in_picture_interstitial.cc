@@ -116,11 +116,25 @@ void PictureInPictureInterstitial::Hide() {
     GetVideoElement().CcLayer()->SetIsDrawable(true);
 }
 
+Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
+    ContainerNode* root) {
+  if (GetVideoElement().isConnected() && !resize_observer_) {
+    resize_observer_ =
+        ResizeObserver::Create(GetVideoElement().GetDocument(),
+                               new VideoElementResizeObserverDelegate(this));
+    resize_observer_->observe(&GetVideoElement());
+  }
+
+  return HTMLDivElement::InsertedInto(root);
+}
+
 void PictureInPictureInterstitial::RemovedFrom(ContainerNode*) {
   DCHECK(!GetVideoElement().isConnected());
 
-  resize_observer_->disconnect();
-  resize_observer_.Clear();
+  if (resize_observer_) {
+    resize_observer_->disconnect();
+    resize_observer_.Clear();
+  }
 }
 
 void PictureInPictureInterstitial::NotifyElementSizeChanged(

@@ -74,4 +74,21 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitialAndTextContainer) {
   SetFakeCcLayer(nullptr);
 }
 
+TEST_F(HTMLVideoElementTest, PictureInPictureInterstitial_Reattach) {
+  scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+  SetFakeCcLayer(layer.get());
+
+  video()->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+  video()->SetSrc("http://example.com/foo.mp4");
+  test::RunPendingTasks();
+
+  // Simulate entering Picture-in-Picture.
+  video()->OnEnteredPictureInPicture();
+
+  // Try detaching and reattaching. This should not crash.
+  GetDocument().body()->removeChild(video());
+  GetDocument().body()->appendChild(video());
+  GetDocument().body()->removeChild(video());
+}
+
 }  // namespace blink
