@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -119,8 +120,8 @@ void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance) {
   UseCounter::CountCrossOriginIframe(
       *document, WebFeature::kTextToSpeech_SpeakCrossOrigin);
   if (!IsAllowedToStartByAutoplay()) {
-    UseCounter::Count(document,
-                      WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay);
+    Deprecation::CountDeprecation(
+        document, WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay);
   }
 
   utterance_queue_.push_back(utterance);
