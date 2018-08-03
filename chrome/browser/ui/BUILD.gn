@@ -3676,6 +3676,8 @@ jumbo_split_static_library("ui") {
         "app_list/arc/arc_app_dialog.h",
         "app_list/arc/arc_app_icon.cc",
         "app_list/arc/arc_app_icon.h",
+        "app_list/arc/arc_app_icon_descriptor.cc",
+        "app_list/arc/arc_app_icon_descriptor.h",
         "app_list/arc/arc_app_icon_loader.cc",
         "app_list/arc/arc_app_icon_loader.h",
         "app_list/arc/arc_app_item.cc",

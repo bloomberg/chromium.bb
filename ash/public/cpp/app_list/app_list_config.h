@@ -63,7 +63,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int page_spacing() const { return page_spacing_; }
   int expand_arrow_tile_height() const { return expand_arrow_tile_height_; }
   int folder_bubble_radius() const { return folder_bubble_radius_; }
-  int arc_icon_dimension() const { return arc_icon_dimension_; }
   int folder_bubble_y_offset() const { return folder_bubble_y_offset_; }
   int folder_icon_dimension() const { return folder_icon_dimension_; }
   int folder_unclipped_icon_dimension() const {
@@ -109,10 +108,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   gfx::Size search_list_badge_icon_size() const {
     return gfx::Size(search_list_badge_icon_dimension_,
                      search_list_badge_icon_dimension_);
-  }
-
-  gfx::Size arc_icon_size() const {
-    return gfx::Size(arc_icon_dimension_, arc_icon_dimension_);
   }
 
   gfx::Size folder_icon_size() const {
@@ -209,11 +204,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The folder image bubble radius.
   int folder_bubble_radius_;
-
-  // Original icon dimension of arc app, this will be resized to
-  // |grid_icon_dimension_| when being shown in the apps grid. (Original arc
-  // icon support 48px instead of 64px.)
-  int arc_icon_dimension_;
 
   // The y offset of folder image bubble center.
   int folder_bubble_y_offset_;

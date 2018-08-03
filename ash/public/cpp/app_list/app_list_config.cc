@@ -41,7 +41,6 @@ AppListConfig::AppListConfig()
       page_spacing_(40),
       expand_arrow_tile_height_(60),
       folder_bubble_radius_(23),
-      arc_icon_dimension_(48),
       folder_bubble_y_offset_(1),
       folder_icon_dimension_(48),
       folder_unclipped_icon_dimension_(48),

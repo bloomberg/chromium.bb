@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -35,9 +34,8 @@ void ArcAppIconLoader::FetchImage(const std::string& app_id) {
 
   // Note, ARC icon is available only for 48x48 dips. In case |icon_size_|
   // differs from this size, re-scale is required.
-  std::unique_ptr<ArcAppIcon> icon = std::make_unique<ArcAppIcon>(
-      profile(), app_id,
-      app_list::AppListConfig::instance().arc_icon_dimension(), this);
+  std::unique_ptr<ArcAppIcon> icon =
+      std::make_unique<ArcAppIcon>(profile(), app_id, icon_size(), this);
   icon->image_skia().EnsureRepsForSupportedScales();
   icon_map_[app_id] = std::move(icon);
   UpdateImage(app_id);
@@ -53,6 +51,9 @@ void ArcAppIconLoader::UpdateImage(const std::string& app_id) {
     return;
 
   gfx::ImageSkia image = it->second->image_skia();
+  DCHECK_EQ(icon_size(), image.width());
+  DCHECK_EQ(icon_size(), image.height());
+
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_prefs_->GetApp(app_id);
   if (app_info && app_info->suspended) {
@@ -77,10 +78,13 @@ void ArcAppIconLoader::OnAppStatesChanged(
   UpdateImage(app_id);
 }
 
-void ArcAppIconLoader::OnAppIconUpdated(const std::string& app_id,
-                                        ui::ScaleFactor scale_factor) {
+void ArcAppIconLoader::OnAppIconUpdated(
+    const std::string& app_id,
+    const ArcAppIconDescriptor& descriptor) {
+  if (descriptor.dip_size != icon_size())
+    return;
   AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
   if (it == icon_map_.end())
     return;
-  it->second->LoadForScaleFactor(scale_factor);
+  it->second->LoadForScaleFactor(descriptor.scale_factor);
 }

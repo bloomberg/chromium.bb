@@ -37,7 +37,7 @@ class ArcAppIconLoader : public AppIconLoader,
   void OnAppStatesChanged(const std::string& app_id,
                           const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppIconUpdated(const std::string& id,
-                        ui::ScaleFactor scale_factor) override;
+                        const ArcAppIconDescriptor& descriptor) override;
 
   // Overrides ArcAppIcon::Observer:
   void OnIconUpdated(ArcAppIcon* icon) override;

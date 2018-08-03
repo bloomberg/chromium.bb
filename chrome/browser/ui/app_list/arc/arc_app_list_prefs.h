@@ -23,6 +23,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/connection_observer.h"
@@ -135,7 +136,7 @@ class ArcAppListPrefs : public KeyedService,
     virtual void OnAppRemoved(const std::string& id) {}
     // Notifies an observer that app icon has been installed or updated.
     virtual void OnAppIconUpdated(const std::string& id,
-                                  ui::ScaleFactor scale_factor) {}
+                                  const ArcAppIconDescriptor& descriptor) {}
     // Notifies an observer that the name of an app has changed.
     virtual void OnAppNameUpdated(const std::string& id,
                                   const std::string& name) {}
@@ -231,19 +232,19 @@ class ArcAppListPrefs : public KeyedService,
 
   // Constructs path to app icon for specific scale factor.
   base::FilePath GetIconPath(const std::string& app_id,
-                             ui::ScaleFactor scale_factor) const;
+                             const ArcAppIconDescriptor& descriptor);
   // Constructs path to default app icon for specific scale factor. This path
   // is used to resolve icon if no icon is available at |GetIconPath|.
   base::FilePath MaybeGetIconPathForDefaultApp(
       const std::string& app_id,
-      ui::ScaleFactor scale_factor) const;
+      const ArcAppIconDescriptor& descriptor) const;
 
   // Sets last launched time for the requested app.
   void SetLastLaunchTime(const std::string& app_id);
 
   // Calls RequestIcon if no request is recorded.
   void MaybeRequestIcon(const std::string& app_id,
-                        ui::ScaleFactor scale_factor);
+                        const ArcAppIconDescriptor& descriptor);
 
   // Sets notification enabled flag for given value. If the app or ARC bridge
   // service is not ready, then defer this request until the app gets
@@ -310,6 +311,8 @@ class ArcAppListPrefs : public KeyedService,
  private:
   friend class ChromeLauncherControllerTest;
   friend class ArcAppModelBuilderTest;
+  // To support deprecated mojom icon requests.
+  class ResizeRequest;
 
   // See the Create methods.
   ArcAppListPrefs(
@@ -331,12 +334,12 @@ class ArcAppListPrefs : public KeyedService,
   void OnUninstallShortcut(const std::string& package_name,
                            const std::string& intent_uri) override;
   void OnPackageRemoved(const std::string& package_name) override;
-  void OnAppIcon(const std::string& package_name,
-                 const std::string& activity,
-                 arc::mojom::ScaleFactor scale_factor,
-                 const std::vector<uint8_t>& icon_png_data) override;
+  void OnAppIconDeprecated(const std::string& package_name,
+                           const std::string& activity,
+                           arc::mojom::ScaleFactor scale_factor,
+                           const std::vector<uint8_t>& icon_png_data) override;
   void OnIcon(const std::string& app_id,
-              arc::mojom::ScaleFactor scale_factor,
+              const ArcAppIconDescriptor& descriptor,
               const std::vector<uint8_t>& icon_png_data);
   void OnTaskCreated(int32_t task_id,
                      const std::string& package_name,
@@ -408,17 +411,23 @@ class ArcAppListPrefs : public KeyedService,
   // Installs an icon to file system in the special folder of the profile
   // directory.
   void InstallIcon(const std::string& app_id,
-                   ui::ScaleFactor scale_factor,
+                   const ArcAppIconDescriptor& descriptor,
                    const std::vector<uint8_t>& contentPng);
   void OnIconInstalled(const std::string& app_id,
-                       ui::ScaleFactor scale_factor,
+                       const ArcAppIconDescriptor& descriptor,
                        bool install_succeed);
 
   // Requests to load an app icon for specific scale factor. If the app or ARC
   // bridge service is not ready, then defer this request until the app gets
   // available. Once new icon is installed notifies an observer
   // OnAppIconUpdated.
-  void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
+  void RequestIcon(const std::string& app_id,
+                   const ArcAppIconDescriptor& descriptor);
+
+  // Sends icon request via mojom. It supports different icon's dimensions.
+  void SendIconRequest(const std::string& app_id,
+                       const AppInfo& app,
+                       const ArcAppIconDescriptor& descriptor);
 
   // This checks if app is not registered yet and in this case creates
   // non-launchable app entry. In case app is already registered then updates
@@ -442,7 +451,7 @@ class ArcAppListPrefs : public KeyedService,
   void MaybeSetDefaultAppLoadingTimeout();
 
   bool IsIconRequestRecorded(const std::string& app_id,
-                             ui::ScaleFactor scale_factor) const;
+                             const ArcAppIconDescriptor& descriptor) const;
 
   // Removes the IconRequestRecord associated with app_id.
   void MaybeRemoveIconRequestRecord(const std::string& app_id);
@@ -467,6 +476,25 @@ class ArcAppListPrefs : public KeyedService,
   // Extracts app info from the prefs without any ARC availability check.
   // Returns null if app is not registered.
   std::unique_ptr<AppInfo> GetAppFromPrefs(const std::string& app_id) const;
+
+  // Schedules deletion of app folder with icons on file thread.
+  void ScheduleAppFolderDeletion(const std::string& app_id);
+
+  // TODO(b/112035954): Remove following block of 4 methods that supports icon
+  // using deprecated mojom. Once Android side change is propagated in builds we
+  // can safely remove this. Sends icon request view mojom using old protocol.
+  // In this protocol only icons of 48 pixels are supported. This requires
+  // resizing icon to the requested size.
+  void SendIconRequestDeprecated(const std::string& app_id,
+                                 const AppInfo& app,
+                                 const ArcAppIconDescriptor& descriptor);
+  void OnIconDeprecated(const std::string& app_id,
+                        const ArcAppIconDescriptor& descriptor,
+                        const std::vector<uint8_t>& icon_png_data);
+  void OnIconResized(const std::string& app_id,
+                     const ArcAppIconDescriptor& descriptor,
+                     const std::vector<uint8_t>& icon_png_data);
+  void DiscardResizeRequest(ResizeRequest* request);
 
   Profile* const profile_;
 
@@ -493,9 +521,13 @@ class ArcAppListPrefs : public KeyedService,
   // 1. Keeps deferred icon load requests when apps are not ready. Request will
   // be sent when apps becomes ready.
   // 2. Keeps record of icon request sent to Android. In each user session, one
-  // request per app per scale_factor is allowed once.
+  // request per app per ArcAppIconDescriptor is allowed once.
   // When ARC is disabled or the app is uninstalled, the record will be erased.
-  std::map<std::string, uint32_t> request_icon_recorded_;
+  std::map<std::string, std::set<ArcAppIconDescriptor>> request_icon_recorded_;
+  // Keeps icons accessed from outside for the current session. They are
+  // considered as an active icons and once app gets invalidated, its active
+  // icons get automatically invalidated.
+  std::map<std::string, std::set<ArcAppIconDescriptor>> active_icons_;
   // True if this preference has been initialized once.
   bool is_initialized_ = false;
   // True if apps were restored.
@@ -511,8 +543,6 @@ class ArcAppListPrefs : public KeyedService,
   base::OneShotTimer detect_default_app_availability_timeout_;
   // Set of currently installing default apps_.
   std::unordered_set<std::string> default_apps_installations_;
-  // Mask of scale factors for which the app's icon needs invalidation.
-  uint32_t invalidated_icon_scale_factor_mask_;
 
   arc::ArcPackageSyncableService* sync_service_ = nullptr;
 
@@ -524,6 +554,9 @@ class ArcAppListPrefs : public KeyedService,
 
   // TODO (b/70566216): Remove this once fixed.
   base::OnceClosure app_list_refreshed_callback_;
+
+  // Keeps all pending resize requests used to support legacy icons.
+  std::vector<std::unique_ptr<ResizeRequest>> resize_requests_;
 
   base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_;
 

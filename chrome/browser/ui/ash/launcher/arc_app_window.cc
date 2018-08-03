@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
@@ -74,19 +73,17 @@ void ArcAppWindow::Close() {
   arc::CloseTask(task_id_);
 }
 
-void ArcAppWindow::OnIconUpdated(ArcAppIcon* icon) {
-  SetIcon(icon->image_skia());
+void ArcAppWindow::OnAppImageUpdated(const std::string& app_id,
+                                     const gfx::ImageSkia& image) {
+  SetIcon(image);
 }
 
 void ArcAppWindow::SetDefaultAppIcon() {
-  if (!app_icon_) {
-    app_icon_ = std::make_unique<ArcAppIcon>(
-        profile_, app_shelf_id_.ToString(),
-        app_list::AppListConfig::instance().arc_icon_dimension(), this);
+  if (!app_icon_loader_) {
+    app_icon_loader_ = std::make_unique<ArcAppIconLoader>(
+        profile_, extension_misc::EXTENSION_ICON_SMALL, this);
   }
-  // Apply default image now and in case icon is updated then OnIconUpdated()
-  // will be called additionally.
-  OnIconUpdated(app_icon_.get());
+  app_icon_loader_->FetchImage(app_shelf_id_.ToString());
 }
 
 void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
@@ -106,7 +103,7 @@ void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
 
 void ArcAppWindow::OnImageDecoded(const SkBitmap& decoded_image) {
   // Use the custom icon and stop observing updates.
-  app_icon_.reset();
+  app_icon_loader_.reset();
   SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
       gfx::ImageSkia(gfx::ImageSkiaRep(decoded_image, 1.0f)),
       skia::ImageOperations::RESIZE_BEST,

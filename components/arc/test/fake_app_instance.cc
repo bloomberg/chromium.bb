@@ -82,9 +82,17 @@ void FakeAppInstance::LaunchAppShortcutItem(const std::string& package_name,
 
 void FakeAppInstance::RequestAppIcon(const std::string& package_name,
                                      const std::string& activity,
-                                     mojom::ScaleFactor scale_factor) {
+                                     int dimension,
+                                     RequestAppIconCallback callback) {
   icon_requests_.push_back(
-      std::make_unique<IconRequest>(package_name, activity, scale_factor));
+      std::make_unique<IconRequest>(package_name, activity, dimension));
+
+  std::string png_data_as_string;
+  if (GenerateIconResponse(dimension, true /* app_icon */,
+                           &png_data_as_string)) {
+    std::move(callback).Run(std::vector<uint8_t>(png_data_as_string.begin(),
+                                                 png_data_as_string.end()));
+  }
 }
 
 void FakeAppInstance::SendRefreshAppList(
@@ -144,24 +152,46 @@ void FakeAppInstance::SendTaskDestroyed(int32_t taskId) {
   app_host_->OnTaskDestroyed(taskId);
 }
 
-bool FakeAppInstance::GenerateAndSendIcon(const mojom::AppInfo& app,
-                                          mojom::ScaleFactor scale_factor,
-                                          std::string* png_data_as_string) {
-  if (!GetFakeIcon(scale_factor, png_data_as_string)) {
+bool FakeAppInstance::GetIconResponse(int dimension,
+                                      std::string* png_data_as_string) {
+  const auto previous_response = icon_responses_.find(dimension);
+  if (previous_response == icon_responses_.end())
     return false;
-  }
-
-  app_host_->OnAppIcon(app.package_name, app.activity, scale_factor,
-                       std::vector<uint8_t>(png_data_as_string->begin(),
-                                            png_data_as_string->end()));
-
+  *png_data_as_string = previous_response->second;
   return true;
 }
 
-void FakeAppInstance::GenerateAndSendBadIcon(const mojom::AppInfo& app,
-                                             mojom::ScaleFactor scale_factor) {
-  std::vector<uint8_t> badIcon(10, 1);
-  app_host_->OnAppIcon(app.package_name, app.activity, scale_factor, badIcon);
+bool FakeAppInstance::GenerateIconResponse(int dimension,
+                                           bool app_icon,
+                                           std::string* png_data_as_string) {
+  DCHECK(png_data_as_string != nullptr);
+
+  auto previous_response = icon_responses_.find(dimension);
+  if (previous_response != icon_responses_.end())
+    icon_responses_.erase(previous_response);
+
+  if (icon_response_type_ == IconResponseType::ICON_RESPONSE_SKIP)
+    return false;
+
+  if (icon_response_type_ == IconResponseType::ICON_RESPONSE_SEND_BAD) {
+    *png_data_as_string = "BAD_ICON_CONTENT";
+    icon_responses_[dimension] = *png_data_as_string;
+    return true;
+  }
+
+  base::FilePath base_path;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
+  base::FilePath icon_file_path =
+      base_path.AppendASCII("components")
+          .AppendASCII("test")
+          .AppendASCII("data")
+          .AppendASCII("arc")
+          .AppendASCII(base::StringPrintf(
+              "icon_%s_%d.png", app_icon ? "app" : "shortcut", dimension));
+  CHECK(base::PathExists(icon_file_path)) << icon_file_path.MaybeAsASCII();
+  CHECK(base::ReadFileToString(icon_file_path, png_data_as_string));
+  icon_responses_[dimension] = *png_data_as_string;
+  return true;
 }
 
 bool FakeAppInstance::GetFakeIcon(mojom::ScaleFactor scale_factor,
@@ -448,14 +478,16 @@ void FakeAppInstance::LaunchIntent(const std::string& intent_uri,
   launch_intents_.push_back(intent_uri);
 }
 
-void FakeAppInstance::RequestIcon(const std::string& icon_resource_id,
-                                  arc::mojom::ScaleFactor scale_factor,
-                                  RequestIconCallback callback) {
+void FakeAppInstance::RequestShortcutIcon(
+    const std::string& icon_resource_id,
+    int dimension,
+    RequestShortcutIconCallback callback) {
   shortcut_icon_requests_.push_back(
-      std::make_unique<ShortcutIconRequest>(icon_resource_id, scale_factor));
+      std::make_unique<ShortcutIconRequest>(icon_resource_id, dimension));
 
   std::string png_data_as_string;
-  if (GetFakeIcon(scale_factor, &png_data_as_string)) {
+  if (GenerateIconResponse(dimension, false /* app_icon */,
+                           &png_data_as_string)) {
     std::move(callback).Run(std::vector<uint8_t>(png_data_as_string.begin(),
                                                  png_data_as_string.end()));
   }
