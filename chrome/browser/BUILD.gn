@@ -2062,6 +2062,8 @@ jumbo_split_static_library("browser") {
       "android/document/document_web_contents_delegate.h",
       "android/dom_distiller/distiller_ui_handle_android.cc",
       "android/dom_distiller/distiller_ui_handle_android.h",
+      "android/download/available_offline_content_provider.cc",
+      "android/download/available_offline_content_provider.h",
       "android/download/chrome_duplicate_download_infobar_delegate.cc",
       "android/download/chrome_duplicate_download_infobar_delegate.h",
       "android/download/dangerous_download_infobar_delegate.cc",

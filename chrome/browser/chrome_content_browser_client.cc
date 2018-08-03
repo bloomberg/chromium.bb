@@ -341,6 +341,7 @@
 #include "chrome/browser/android/app_hooks.h"
 #include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
+#include "chrome/browser/android/download/available_offline_content_provider.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/intercept_oma_download_navigation_throttle.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
@@ -3455,6 +3456,12 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
                           content::PROCESS_TYPE_RENDERER,
                           base::Unretained(ModuleDatabase::GetInstance())),
       ui_task_runner);
+#endif
+#if defined(OS_ANDROID)
+  registry->AddInterface(
+      base::BindRepeating(&android::AvailableOfflineContentProvider::Create,
+                          render_process_host->GetBrowserContext()),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
 #endif
 
   for (auto* ep : extra_parts_) {

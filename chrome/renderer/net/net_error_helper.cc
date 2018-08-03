@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -473,6 +474,14 @@ void NetErrorHelper::SetIsShowingDownloadButton(bool show) {
       new ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage(
           render_frame()->GetRoutingID(), show));
 #endif  // defined(OS_ANDROID)
+}
+
+void NetErrorHelper::OfflineContentAvailable(
+    const std::string& offline_content_json) {
+#if defined(OS_ANDROID)
+  render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(
+      base::StrCat({"offlineContentAvailable(", offline_content_json, ");"})));
+#endif
 }
 
 void NetErrorHelper::DNSProbeStatus(int32_t status_num) {

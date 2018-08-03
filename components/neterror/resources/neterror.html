@@ -31,6 +31,14 @@
         </div>
         <div class="error-code" jscontent="errorCode"></div>
         <div id="diagnose-frame" class="hidden"></div>
+        <div id="offline-suggestions" hidden>
+          <!--TODO(https://crbug.com/852872) Finalize this UI.
+            Don't remove PLACEHOLDER until the UI is complete and localized.-->
+          <p style="text-align: center;">Explore while offline [PLACEHOLDER]</p>
+          <ul id="offline-content-list">
+          </ul>
+        </div>
+        <div id="scroll-spacer" style="height: 30vw" hidden></div>
       </div>
     </div>
     <div id="buttons" class="nav-wrapper">
