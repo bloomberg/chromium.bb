@@ -596,6 +596,14 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
   }
   DCHECK_GE(active_touches_, 0);
 
+  // Debugging for crbug.com/814674.
+  if (touch_target_.target && !IsViewInMap(touch_target_.target)) {
+    NOTREACHED() << "Touch events should not be routed to a destroyed target "
+                    "View.";
+    touch_target_.target = nullptr;
+    base::debug::DumpWithoutCrashing();
+  }
+
   if (!touch_target_.target) {
     TouchEventWithLatencyInfo touch_with_latency(touch_event, latency);
     root_view->ProcessAckedTouchEvent(touch_with_latency,
