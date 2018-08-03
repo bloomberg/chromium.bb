@@ -5,6 +5,7 @@
 import("//build/config/chromecast_build.gni")
 import("//build/config/locales.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//media/media_options.gni")
 
 # This args block should contain arguments used within the //chromecast
 # directory. Arguments which are used in other Chrome components should
@@ -112,6 +113,12 @@ if (chromecast_branding == "public") {
 cast_locales = locales
 
 enable_chromecast_extensions = enable_extensions
+
+# Use Chromecast CDMs for protected content. Some Android platforms use
+# MediaDrm for CDM support.
+declare_args() {
+  use_chromecast_cdms = is_cast_using_cma_backend
+}
 
 foreach(target_type,
         [
