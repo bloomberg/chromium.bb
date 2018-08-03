@@ -81,7 +81,7 @@ autofill::ValueElementVector DeserializeValueElementPairs(
 namespace {
 
 // Convenience enum for interacting with SQL queries that use all the columns.
-enum LoginTableColumns {
+enum LoginDatabaseTableColumns {
   COLUMN_ORIGIN_URL = 0,
   COLUMN_ACTION_URL,
   COLUMN_USERNAME_ELEMENT,
@@ -448,7 +448,8 @@ void InitializeBuilder(SQLTableBuilder* builder) {
   DCHECK_EQ(19u, version);
 
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builder->NumberOfColumns())
-      << "Adjust LoginTableColumns if you change column definitions here.";
+      << "Adjust LoginDatabaseTableColumns if you change column definitions "
+         "here.";
 }
 
 // Call this after having called InitializeBuilder, to migrate the database from
