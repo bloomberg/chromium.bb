@@ -196,25 +196,11 @@ public class AutocompleteEditText
         if (DEBUG) Log.i(TAG, "setText -- text: %s", text);
         mDisableTextScrollingFromAutocomplete = false;
 
-        // Avoid setting the same text as it will mess up the scroll/cursor position.
-        // Setting the text is also quite expensive, so only do it when the text has changed.
-        if (!isNewTextEquivalentToExistingText(text)) {
-            // Certain OEM implementations of setText trigger disk reads. https://crbug.com/633298
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                super.setText(text, type);
-            }
+        // Certain OEM implementations of setText trigger disk reads. https://crbug.com/633298
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            super.setText(text, type);
         }
         if (mModel != null) mModel.onSetText(text);
-    }
-
-    /**
-     * Whether the specified new text is equivalent to what is already being shown in the TextView.
-     *
-     * @param newCharSequence The proposed new text to replace the existing text.
-     * @return Whether the text is the same.
-     */
-    protected boolean isNewTextEquivalentToExistingText(CharSequence newCharSequence) {
-        return TextUtils.equals(getEditableText(), newCharSequence);
     }
 
     @Override

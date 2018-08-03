@@ -75,6 +75,7 @@ public class PropertyModelTest {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
+        Mockito.<PropertyObserver>reset(observer);
 
         model.setValue(key, value);
         verify(observer).onPropertyChanged(model, key);
@@ -103,6 +104,7 @@ public class PropertyModelTest {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
+        Mockito.<PropertyObserver>reset(observer);
 
         model.setValue(key, value);
         verify(observer).onPropertyChanged(model, key);
@@ -127,6 +129,7 @@ public class PropertyModelTest {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
+        Mockito.<PropertyObserver>reset(observer);
 
         model.setValue(key, value);
         verify(observer).onPropertyChanged(model, key);
@@ -162,6 +165,7 @@ public class PropertyModelTest {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
+        Mockito.<PropertyObserver>reset(observer);
 
         model.setValue(key, value);
         verify(observer).onPropertyChanged(model, key);
@@ -184,6 +188,7 @@ public class PropertyModelTest {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
+        Mockito.<PropertyObserver>reset(observer);
 
         model.setValue(BOOLEAN_PROPERTY_A, true);
         model.setValue(FLOAT_PROPERTY_A, 1f);

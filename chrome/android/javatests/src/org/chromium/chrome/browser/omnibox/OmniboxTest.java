@@ -181,7 +181,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable(){
             @Override
             public void run() {
-                urlBar.setUrl(UrlBarData.forUrl("http://www.example.com/"));
+                urlBar.setText("http://www.example.com/");
             }
         });
 

@@ -505,13 +505,18 @@ public class SearchActivityTest {
 
     @SuppressLint("SetTextI18n")
     private void setUrlBarText(final Activity activity, final String url) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
-            public void run() {
+            public boolean isSatisfied() {
                 UrlBar urlBar = (UrlBar) activity.findViewById(R.id.url_bar);
-                if (!urlBar.hasFocus()) urlBar.requestFocus();
-                urlBar.setText(url);
+                if (urlBar.isFocusable() && urlBar.hasFocus()) return true;
+                urlBar.requestFocus();
+                return false;
             }
+        });
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            UrlBar urlBar = (UrlBar) activity.findViewById(R.id.url_bar);
+            urlBar.setText(url);
         });
     }
 }
