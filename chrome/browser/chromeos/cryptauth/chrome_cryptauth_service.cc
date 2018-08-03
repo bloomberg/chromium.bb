@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/cryptauth_client_impl.h"
 #include "components/cryptauth/cryptauth_device_manager_impl.h"
@@ -126,7 +127,7 @@ ChromeCryptAuthService::ChromeCryptAuthService(
   registrar_.Add(prefs::kEasyUnlockAllowed,
                  base::Bind(&ChromeCryptAuthService::OnPrefsChanged,
                             weak_ptr_factory_.GetWeakPtr()));
-  registrar_.Add(prefs::kInstantTetheringAllowed,
+  registrar_.Add(multidevice_setup::kInstantTetheringFeatureAllowedPrefName,
                  base::Bind(&ChromeCryptAuthService::OnPrefsChanged,
                             weak_ptr_factory_.GetWeakPtr()));
 
@@ -231,8 +232,9 @@ bool ChromeCryptAuthService::IsEnrollmentAllowedByPolicy() {
   // We allow CryptAuth enrollments if at least one of the features which
   // depends on CryptAuth is enabled by enterprise policy.
   PrefService* pref_service = profile_->GetPrefs();
-  return pref_service->GetBoolean(prefs::kEasyUnlockAllowed) |
-         pref_service->GetBoolean(prefs::kInstantTetheringAllowed);
+  return pref_service->GetBoolean(prefs::kEasyUnlockAllowed) ||
+         pref_service->GetBoolean(
+             multidevice_setup::kInstantTetheringFeatureAllowedPrefName);
 }
 
 void ChromeCryptAuthService::OnPrefsChanged() {

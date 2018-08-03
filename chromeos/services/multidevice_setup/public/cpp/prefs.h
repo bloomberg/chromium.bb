@@ -13,6 +13,8 @@ namespace multidevice_setup {
 
 extern const char kSuiteEnabledPrefName[];
 extern const char kAndroidMessagesFeatureEnabledPrefName[];
+extern const char kInstantTetheringFeatureAllowedPrefName[];
+extern const char kInstantTetheringFeatureEnabledPrefName[];
 
 void RegisterFeaturePrefs(PrefRegistrySimple* registry);
 

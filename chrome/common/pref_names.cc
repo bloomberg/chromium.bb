@@ -805,12 +805,6 @@ const char kPinUnlockWeakPinsAllowed[] = "pin_unlock_weak_pins_allowed";
 const char kEnableQuickUnlockFingerprint[] =
     "settings.enable_quick_unlock_fingerprint";
 
-// Boolean pref indicating whether a user is allowed to use Tether.
-const char kInstantTetheringAllowed[] = "tether.allowed";
-
-// Boolean pref indicating whether a user has enabled Tether.
-const char kInstantTetheringEnabled[] = "tether.enabled";
-
 // Boolean pref indicating whether this device supports BLE advertising.
 const char kInstantTetheringBleAdvertisingSupported[] =
     "tether.ble_advertising_supported";
