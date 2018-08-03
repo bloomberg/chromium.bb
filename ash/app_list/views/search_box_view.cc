@@ -24,6 +24,7 @@
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
@@ -202,6 +203,26 @@ void SearchBoxView::SetupBackButton() {
       l10n_util::GetStringUTF16(IDS_APP_LIST_BACK));
   back->SetAccessibleName(back_button_label);
   back->SetTooltipText(back_button_label);
+}
+
+void SearchBoxView::RecordSearchBoxActivationHistogram(
+    ui::EventType event_type) {
+  search_box::ActivationSource activation_type;
+  switch (event_type) {
+    case ui::ET_GESTURE_TAP:
+      activation_type = search_box::ActivationSource::kGestureTap;
+      break;
+    case ui::ET_MOUSE_PRESSED:
+      activation_type = search_box::ActivationSource::kMousePress;
+      break;
+    case ui::ET_KEY_PRESSED:
+      activation_type = search_box::ActivationSource::kKeyPress;
+      break;
+    default:
+      return;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated", activation_type);
 }
 
 void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
@@ -454,7 +475,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     }
 
     if (!is_search_box_active()) {
-      SetSearchBoxActive(true);
+      SetSearchBoxActive(true, key_event.type());
       return true;
     }
     return false;
@@ -481,9 +502,8 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
   if (!features::IsZeroStateSuggestionsEnabled())
     return;
 
-  if (close_button() && sender == close_button()) {
-    SetSearchBoxActive(false);
-  }
+  if (close_button() && sender == close_button())
+    SetSearchBoxActive(false, ui::ET_UNKNOWN);
 }
 
 void SearchBoxView::HintTextChanged() {

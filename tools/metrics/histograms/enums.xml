@@ -42574,6 +42574,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Received Answer - Too Large"/>
 </enum>
 
+<enum name="SearchBoxActivationSource">
+  <int value="0" label="Mouse Press"/>
+  <int value="1" label="Key Press"/>
+  <int value="2" label="Gesture Tap"/>
+</enum>
+
 <enum name="SearchEngine">
   <obsolete>
     Deprecated 8/2013. No longer generated.

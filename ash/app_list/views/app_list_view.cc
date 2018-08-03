@@ -595,7 +595,7 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   }
 
   search_box_view_->ClearSearch();
-  search_box_view_->SetSearchBoxActive(false);
+  search_box_view_->SetSearchBoxActive(false, ui::ET_UNKNOWN);
 }
 
 void AppListView::StartDrag(const gfx::Point& location) {

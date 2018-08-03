@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/chromeos/search_box/search_box_export.h"
+#include "ui/events/event_constants.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -31,6 +32,16 @@ namespace search_box {
 class SearchBoxViewDelegate;
 class SearchBoxBackground;
 class SearchBoxImageButton;
+
+// These are used in histograms, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// SearchBoxActivationSource enum listing in tools/metrics/histograms/enums.xml.
+enum class ActivationSource {
+  kMousePress = 0,
+  kKeyPress = 1,
+  kGestureTap = 2,
+  kMaxValue = kGestureTap,
+};
 
 // TODO(wutao): WidgetDelegateView owns itself and cannot be deleted from the
 // views hierarchy automatically. Make SearchBoxViewBase a subclass of View
@@ -70,10 +81,10 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   // the color of the placeholder text, and enables cursor blink. Setting the
   // search box inactive center aligns the placeholder text, sets the color, and
   // disables cursor blink.
-  void SetSearchBoxActive(bool active);
+  void SetSearchBoxActive(bool active, ui::EventType event_type);
 
   // Handles Gesture and Mouse Events sent from |search_box_|.
-  bool OnTextfieldEvent();
+  bool OnTextfieldEvent(ui::EventType type);
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -178,6 +189,9 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   // Setup button's image, accessible name, and tooltip text etc.
   virtual void SetupCloseButton() = 0;
   virtual void SetupBackButton() = 0;
+
+  // Records in histograms the activation of the searchbox.
+  virtual void RecordSearchBoxActivationHistogram(ui::EventType event_type){};
 
   // Gets the search box background.
   SearchBoxBackground* GetSearchBoxBackground() const;

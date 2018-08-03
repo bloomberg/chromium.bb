@@ -31,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/views/background.h"
@@ -257,7 +258,7 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
 
 void KeyboardShortcutView::BackButtonPressed() {
   search_box_view_->ClearSearch();
-  search_box_view_->SetSearchBoxActive(false);
+  search_box_view_->SetSearchBoxActive(false, ui::ET_UNKNOWN);
 }
 
 void KeyboardShortcutView::ActiveChanged(
