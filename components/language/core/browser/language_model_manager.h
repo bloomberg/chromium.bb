@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_LANGUAGE_CORE_BROWSER_LANGUAGE_MODEL_MANAGER_H_
 #define COMPONENTS_LANGUAGE_CORE_BROWSER_LANGUAGE_MODEL_MANAGER_H_
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,15 +19,31 @@ namespace language {
 // Manages a set of LanguageModel objects.
 class LanguageModelManager : public KeyedService {
  public:
+  enum class ModelType {
+    BASELINE,
+    GEO,
+    HEURISTIC,
+  };
+
   LanguageModelManager(PrefService* prefs, const std::string& ui_lang);
 
   ~LanguageModelManager() override;
 
-  void SetDefaultModel(std::unique_ptr<LanguageModel> model);
-  LanguageModel* GetDefaultModel();
+  void AddModel(const ModelType type, std::unique_ptr<LanguageModel> model);
+
+  // Sets which model type should be used as the Primary model to make target
+  // language decisions. A model for |type| must have been previously added
+  // through a call to AddModel.
+  void SetPrimaryModel(ModelType type);
+  LanguageModel* GetPrimaryModel() const;
+
+  LanguageModel* GetModel(ModelType type) const;
 
  private:
   std::unique_ptr<LanguageModel> default_model_;
+  std::map<ModelType, std::unique_ptr<LanguageModel>> models_;
+
+  ModelType primary_model_type_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LanguageModelManager);
 };

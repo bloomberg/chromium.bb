@@ -983,7 +983,7 @@ std::string RenderViewContextMenu::GetTargetLanguage() const {
       ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(browser_context_)));
   language::LanguageModel* language_model =
       LanguageModelManagerFactory::GetForBrowserContext(browser_context_)
-          ->GetDefaultModel();
+          ->GetPrimaryModel();
   return translate::TranslateManager::GetTargetLanguage(prefs.get(),
                                                         language_model);
 }
@@ -1345,7 +1345,7 @@ void RenderViewContextMenu::AppendPageItems() {
     if (prefs->IsTranslateAllowedByPolicy()) {
       language::LanguageModel* language_model =
           LanguageModelManagerFactory::GetForBrowserContext(browser_context_)
-              ->GetDefaultModel();
+              ->GetPrimaryModel();
       std::string locale = translate::TranslateManager::GetTargetLanguage(
           prefs.get(), language_model);
       base::string16 language =

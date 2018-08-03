@@ -404,7 +404,7 @@ std::string ContextualSearchDelegate::GetTargetLanguage() {
   PrefService* pref_service = profile->GetPrefs();
   language::LanguageModel* language_model =
       LanguageModelManagerFactory::GetForBrowserContext(profile)
-          ->GetDefaultModel();
+          ->GetPrimaryModel();
   std::string result =
       TranslateService::GetTargetLanguage(pref_service, language_model);
   DCHECK(!result.empty());

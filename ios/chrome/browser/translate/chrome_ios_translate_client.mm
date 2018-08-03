@@ -77,7 +77,7 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(
           LanguageModelManagerFactory::GetForBrowserState(
               ios::ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState()))
-              ->GetDefaultModel())),
+              ->GetPrimaryModel())),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get()),
