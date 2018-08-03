@@ -1882,10 +1882,13 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Titled) {
   NSWindow* window = widget->GetNativeWindow();
   base::scoped_nsobject<MockBridgedView> mock_bridged_view(
       [[MockBridgedView alloc] init]);
+  // Reset drawRect count.
+  [mock_bridged_view setDrawRectCount:0];
   [window setContentView:mock_bridged_view];
 
   // Ensure the initial draw of the window is done.
-  base::RunLoop().RunUntilIdle();
+  while ([mock_bridged_view drawRectCount] == 0)
+    base::RunLoop().RunUntilIdle();
 
   // Add a dummy view to the widget. This will cause SchedulePaint to be called
   // on the dummy view.
@@ -1897,7 +1900,8 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Titled) {
   widget->GetContentsView()->AddChildView(dummy_view);
 
   // SchedulePaint is asyncronous. Wait for drawRect: to be called.
-  base::RunLoop().RunUntilIdle();
+  while ([mock_bridged_view drawRectCount] == 0)
+    base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, [mock_bridged_view drawRectCount]);
   int client_area_height = widget->GetClientAreaBoundsInScreen().height();
@@ -1924,10 +1928,13 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
   NSWindow* window = widget->GetNativeWindow();
   base::scoped_nsobject<MockBridgedView> mock_bridged_view(
       [[MockBridgedView alloc] init]);
+  // Reset drawRect count.
+  [mock_bridged_view setDrawRectCount:0];
   [window setContentView:mock_bridged_view];
 
   // Ensure the initial draw of the window is done.
-  base::RunLoop().RunUntilIdle();
+  while ([mock_bridged_view drawRectCount] == 0)
+    base::RunLoop().RunUntilIdle();
 
   // Add a dummy view to the widget. This will cause SchedulePaint to be called
   // on the dummy view.
@@ -1939,7 +1946,8 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
   widget->GetRootView()->AddChildView(dummy_view);
 
   // SchedulePaint is asyncronous. Wait for drawRect: to be called.
-  base::RunLoop().RunUntilIdle();
+  while ([mock_bridged_view drawRectCount] == 0)
+    base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, [mock_bridged_view drawRectCount]);
   // These are expected dummy_view bounds in AppKit coordinate system. The y
