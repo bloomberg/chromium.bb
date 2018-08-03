@@ -9,7 +9,7 @@
 #include "base/bind.h"
 
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
-#include "chrome/browser/vr/service/vr_display_host.h"
+#include "chrome/browser/vr/service/xr_device_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -37,10 +37,10 @@ void VRServiceImpl::SetBinding(mojo::StrongBindingPtr<VRService> binding) {
 }
 
 VRServiceImpl::~VRServiceImpl() {
-  // Destroy VRDisplayHost before calling RemoveService below. RemoveService
+  // Destroy XRDeviceImpl before calling RemoveService below. RemoveService
   // might implicitly destory the XRRuntimeManager, and therefore the
-  // BrowserXRRuntime that VRDisplayHost needs to access in its dtor.
-  display_ = nullptr;
+  // BrowserXRRuntime that XRDeviceImpl needs to access in its dtor.
+  device_ = nullptr;
   XRRuntimeManager::GetInstance()->RemoveService(this);
 }
 
@@ -67,32 +67,32 @@ void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
 }
 
 void VRServiceImpl::InitializationComplete() {
-  // display_ is added after all providers have initialized.  This means that we
+  // device_ is added after all providers have initialized.  This means that we
   // can correctly answer SupportsSession, and can provide correct display
   // capabilities.
-  display_ = std::make_unique<VRDisplayHost>(render_frame_host_, client_.get());
+  device_ = std::make_unique<XRDeviceImpl>(render_frame_host_, client_.get());
   base::ResetAndReturn(&set_client_callback_).Run();
 }
 
 void VRServiceImpl::ConnectRuntime(BrowserXRRuntime* runtime) {
-  // display_ is initialized on IntializationComplete.  Devices may be added
-  // before that, but they'll be picked up during display_'s constructor.
-  // We just need to notify display_ when new capabilities were added after
+  // device_ is initialized on IntializationComplete.  Devices may be added
+  // before that, but they'll be picked up during device_'s constructor.
+  // We just need to notify device_ when new capabilities were added after
   // initialization.
-  if (display_) {
-    display_->OnRuntimeAvailable(runtime);
+  if (device_) {
+    device_->OnRuntimeAvailable(runtime);
   }
 }
 
 void VRServiceImpl::RemoveRuntime(BrowserXRRuntime* runtime) {
-  if (display_) {
-    display_->OnRuntimeRemoved(runtime);
+  if (device_) {
+    device_->OnRuntimeRemoved(runtime);
   }
 }
 
 void VRServiceImpl::SetListeningForActivate(bool listening) {
-  if (display_)
-    display_->SetListeningForActivate(listening);
+  if (device_)
+    device_->SetListeningForActivate(listening);
 }
 
 void VRServiceImpl::OnWebContentsFocused(content::RenderWidgetHost* host) {
@@ -120,8 +120,8 @@ void VRServiceImpl::OnWebContentsFocusChanged(content::RenderWidgetHost* host,
       render_frame_host_->GetView()->GetRenderWidgetHost() != host) {
     return;
   }
-  if (display_)
-    display_->SetInFocusedFrame(focused);
+  if (device_)
+    device_->SetInFocusedFrame(focused);
 }
 
 }  // namespace vr

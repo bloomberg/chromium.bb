@@ -18,7 +18,7 @@
 
 namespace vr {
 
-class VRDisplayHost;
+class XRDeviceImpl;
 class BrowserXRRuntime;
 
 // Browser process representation of a WebVR site session. Instantiated through
@@ -65,7 +65,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   void OnWebContentsFocusChanged(content::RenderWidgetHost* host, bool focused);
 
-  std::unique_ptr<VRDisplayHost> display_;
+  std::unique_ptr<XRDeviceImpl> device_;
   SetClientCallback set_client_callback_;
   device::mojom::VRServiceClientPtr client_;
   content::RenderFrameHost* render_frame_host_;

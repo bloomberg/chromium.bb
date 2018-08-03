@@ -127,11 +127,11 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
 // here. Upon calling SetClient in the constructor we should receive one call
 // for each XRDevice that was already connected at the time.
 void XR::OnDisplayConnected(
-    device::mojom::blink::VRDisplayHostPtr display,
+    device::mojom::blink::XRDevicePtr device,
     device::mojom::blink::VRDisplayClientRequest client_request,
     device::mojom::blink::VRDisplayInfoPtr display_info) {
   XRDevice* xr_device =
-      new XRDevice(this, std::move(display), std::move(client_request),
+      new XRDevice(this, std::move(device), std::move(client_request),
                    std::move(display_info));
 
   devices_.push_back(xr_device);

@@ -28,7 +28,7 @@ class XRDevice final : public ScriptWrappable,
 
  public:
   XRDevice(XR*,
-           device::mojom::blink::VRDisplayHostPtr,
+           device::mojom::blink::XRDevicePtr,
            device::mojom::blink::VRDisplayClientRequest,
            device::mojom::blink::VRDisplayInfoPtr);
   XR* xr() const { return xr_; }
@@ -51,8 +51,8 @@ class XRDevice final : public ScriptWrappable,
 
   void Dispose();
 
-  const device::mojom::blink::VRDisplayHostPtr& xrDisplayHostPtr() const {
-    return display_;
+  const device::mojom::blink::XRDevicePtr& xrDevicePtr() const {
+    return device_ptr_;
   }
   const device::mojom::blink::XRFrameDataProviderPtr& xrMagicWindowProviderPtr()
       const {
@@ -115,7 +115,7 @@ class XRDevice final : public ScriptWrappable,
 
   device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
   device::mojom::blink::XREnviromentIntegrationProviderPtr enviroment_provider_;
-  device::mojom::blink::VRDisplayHostPtr display_;
+  device::mojom::blink::XRDevicePtr device_ptr_;
   device::mojom::blink::VRDisplayInfoPtr display_info_;
   unsigned int display_info_id_ = 0;
 
