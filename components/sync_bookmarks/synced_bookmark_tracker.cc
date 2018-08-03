@@ -136,7 +136,7 @@ void SyncedBookmarkTracker::Update(
   auto it = sync_id_to_entities_map_.find(sync_id);
   Entity* entity = it->second.get();
   DCHECK(entity);
-  entity->metadata()->set_server_id(sync_id);
+  DCHECK_EQ(entity->metadata()->server_id(), sync_id);
   entity->metadata()->set_server_version(server_version);
   entity->metadata()->set_modification_time(
       syncer::TimeToProtoTime(modification_time));
@@ -144,6 +144,14 @@ void SyncedBookmarkTracker::Update(
   HashSpecifics(specifics, entity->metadata()->mutable_specifics_hash());
   // TODO(crbug.com/516866): in case of conflict, the entity might exist in
   // |ordered_local_tombstones_| as well if it has been locally deleted.
+}
+
+void SyncedBookmarkTracker::UpdateServerVersion(const std::string& sync_id,
+                                                int64_t server_version) {
+  auto it = sync_id_to_entities_map_.find(sync_id);
+  Entity* entity = it->second.get();
+  DCHECK(entity);
+  entity->metadata()->set_server_version(server_version);
 }
 
 void SyncedBookmarkTracker::MarkDeleted(const std::string& sync_id) {
@@ -225,7 +233,7 @@ SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
        sync_id_to_entities_map_) {
     Entity* entity = pair.second.get();
     if (entity->metadata()->is_deleted()) {
-      // Deletion are stored sorted in |ordered_local_tombstones_| and will be
+      // Deletions are stored sorted in |ordered_local_tombstones_| and will be
       // added later.
       continue;
     }
@@ -342,6 +350,18 @@ void SyncedBookmarkTracker::UpdateUponCommitResponse(
     sync_id_to_entities_map_[new_id] = std::move(it->second);
     sync_id_to_entities_map_.erase(old_id);
   }
+}
+
+void SyncedBookmarkTracker::AckSequenceNumber(const std::string& sync_id) {
+  auto it = sync_id_to_entities_map_.find(sync_id);
+  Entity* entity =
+      it != sync_id_to_entities_map_.end() ? it->second.get() : nullptr;
+  if (!entity) {
+    DLOG(WARNING) << "Trying to update a non existing entity.";
+    return;
+  }
+  entity->metadata()->set_acked_sequence_number(
+      entity->metadata()->sequence_number());
 }
 
 bool SyncedBookmarkTracker::IsEmpty() const {

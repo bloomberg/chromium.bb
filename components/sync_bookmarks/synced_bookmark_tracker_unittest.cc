@@ -150,6 +150,38 @@ TEST(SyncedBookmarkTrackerTest,
   // request in a separate test probably.
 }
 
+TEST(SyncedBookmarkTrackerTest, ShouldAckSequenceNumber) {
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  const std::string kSyncId = "SYNC_ID";
+  const int64_t kId = 1;
+  const int64_t kServerVersion = 1000;
+  const base::Time kModificationTime(base::Time::Now() -
+                                     base::TimeDelta::FromSeconds(1));
+  const sync_pb::UniquePosition unique_position;
+  const sync_pb::EntitySpecifics specifics =
+      GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
+  bookmarks::BookmarkNode node(kId, GURL());
+  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
+              unique_position, specifics);
+
+  // Test simple scenario of ack'ing an incrememented sequence number.
+  EXPECT_THAT(tracker.HasLocalChanges(), Eq(false));
+  tracker.IncrementSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker.HasLocalChanges(), Eq(true));
+  tracker.AckSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker.HasLocalChanges(), Eq(false));
+
+  // Test ack'ing of a mutliple times incremented sequence number.
+  tracker.IncrementSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker.HasLocalChanges(), Eq(true));
+  tracker.IncrementSequenceNumber(kSyncId);
+  tracker.IncrementSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker.HasLocalChanges(), Eq(true));
+  tracker.AckSequenceNumber(kSyncId);
+  EXPECT_THAT(tracker.HasLocalChanges(), Eq(false));
+}
+
 TEST(SyncedBookmarkTrackerTest, ShouldUpdateUponCommitResponseWithNewId) {
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
