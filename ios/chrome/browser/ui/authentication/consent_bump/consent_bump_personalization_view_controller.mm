@@ -29,6 +29,11 @@ const CGFloat kOptionsVerticalMargin = 16;
 @property(nonatomic, strong)
     NSLayoutConstraint* imageBackgroundViewHeightConstraint;
 
+// Array containing all the options presented by this ViewController.
+@property(nonatomic, copy) NSArray<ConsentBumpOptionButton*>* options;
+// Redefined as readwrite.
+@property(nonatomic, assign, readwrite) ConsentBumpOptionType selectedOption;
+
 @end
 
 @implementation ConsentBumpPersonalizationViewController
@@ -36,6 +41,8 @@ const CGFloat kOptionsVerticalMargin = 16;
 @synthesize scrollView = _scrollView;
 @synthesize imageBackgroundViewHeightConstraint =
     _imageBackgroundViewHeightConstraint;
+@synthesize options = _options;
+@synthesize selectedOption = _selectedOption;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -103,6 +110,7 @@ const CGFloat kOptionsVerticalMargin = 16;
                                           IDS_IOS_CONSENT_BUMP_NO_CHANGE_TEXT)];
   noChangeOption.type = ConsentBumpOptionTypeNoChange;
   noChangeOption.checked = YES;
+  self.selectedOption = ConsentBumpOptionTypeNoChange;
 
   ConsentBumpOptionButton* reviewOption = [ConsentBumpOptionButton
       consentBumpOptionButtonWithTitle:l10n_util::GetNSString(
@@ -119,7 +127,7 @@ const CGFloat kOptionsVerticalMargin = 16;
   turnOnOption.type = ConsentBumpOptionTypeTurnOn;
   turnOnOption.checked = NO;
 
-  NSArray<UIView*>* options = @[ noChangeOption, reviewOption, turnOnOption ];
+  self.options = @[ noChangeOption, reviewOption, turnOnOption ];
 
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self.view);
   AddSameConstraints(self.view, self.scrollView);
@@ -155,10 +163,12 @@ const CGFloat kOptionsVerticalMargin = 16;
 
   // Options positioning.
   UIView* viewAbove = nil;
-  for (UIView* option in options) {
+  for (ConsentBumpOptionButton* option in self.options) {
     option.translatesAutoresizingMaskIntoConstraints = NO;
     [container addSubview:option];
-    // TODO(crbug.com/866506): Add action for the option.
+    [option addTarget:self
+                  action:@selector(optionTapped:)
+        forControlEvents:UIControlEventTouchUpInside];
 
     if (viewAbove) {
       [option.topAnchor constraintEqualToAnchor:viewAbove.bottomAnchor].active =
@@ -173,10 +183,11 @@ const CGFloat kOptionsVerticalMargin = 16;
 
   // Positioning the first and last options.
   [NSLayoutConstraint activateConstraints:@[
-    [options[0].topAnchor constraintEqualToAnchor:text.bottomAnchor
-                                         constant:kOptionsVerticalMargin],
+    [self.options[0].topAnchor constraintEqualToAnchor:text.bottomAnchor
+                                              constant:kOptionsVerticalMargin],
     [container.bottomAnchor
-        constraintEqualToAnchor:options[options.count - 1].bottomAnchor
+        constraintEqualToAnchor:self.options[self.options.count - 1]
+                                    .bottomAnchor
                        constant:kOptionsVerticalMargin],
   ]];
 
@@ -203,6 +214,14 @@ const CGFloat kOptionsVerticalMargin = 16;
 }
 
 #pragma mark - Private
+
+- (void)optionTapped:(ConsentBumpOptionButton*)tappedOption {
+  for (ConsentBumpOptionButton* option in self.options) {
+    option.checked = NO;
+  }
+  tappedOption.checked = YES;
+  self.selectedOption = tappedOption.type;
+}
 
 // Updates constraints and content insets for the |scrollView| and
 // |imageBackgroundView| related to non-safe area.
