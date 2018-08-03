@@ -19,6 +19,8 @@
 
 namespace {
 
+constexpr char kPredictableFlag[] = "--predictable";
+
 class SnapshotThread : public blink::WebThread {
  public:
   bool IsCurrentThread() const override { return true; }
@@ -56,6 +58,9 @@ int main(int argc, char** argv) {
   base::MessageLoop message_loop;
   base::TaskScheduler::CreateAndStartWithDefaultParams("TakeSnapshot");
   mojo::core::Init();
+
+  // Set predictable flag in V8 to generate identical snapshot file.
+  v8::V8::SetFlagsFromString(kPredictableFlag, sizeof(kPredictableFlag) - 1);
 
   // Take a snapshot.
   SnapshotPlatform platform;
