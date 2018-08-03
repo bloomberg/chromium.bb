@@ -892,7 +892,7 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
 
   const int max_width = args[3]->ToInt32(args.GetIsolate())->Value();
   const int max_height = args[4]->ToInt32(args.GetIsolate())->Value();
-  const double fps = args[5]->NumberValue();
+  const double fps = args[5].As<v8::Number>()->Value();
 
   if (fps <= 1) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(

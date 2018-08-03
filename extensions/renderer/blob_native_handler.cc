@@ -48,7 +48,7 @@ void BlobNativeHandler::TakeBrowserProcessBlob(
   std::string type(*v8::String::Utf8Value(isolate, args[1]));
   blink::WebBlob blob = blink::WebBlob::CreateFromUUID(
       blink::WebString::FromUTF8(uuid), blink::WebString::FromUTF8(type),
-      args[2]->Int32Value());
+      args[2].As<v8::Int32>()->Value());
   args.GetReturnValue().Set(
       blob.ToV8Value(context()->v8_context()->Global(), isolate));
 }

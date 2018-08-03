@@ -66,7 +66,8 @@ void LoggingNativeHandler::ParseArgs(
     bool* check_value,
     std::string* error_message) {
   CHECK_LE(args.Length(), 2);
-  *check_value = args[0]->BooleanValue();
+  *check_value =
+      args[0]->BooleanValue(context()->v8_context()).FromMaybe(false);
   if (args.Length() == 2) {
     *error_message = "Error: " + std::string(*v8::String::Utf8Value(
                                      args.GetIsolate(), args[1]));

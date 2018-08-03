@@ -34,9 +34,12 @@ void SendRequestNatives::StartRequest(
   base::ElapsedTimer timer;
   CHECK_EQ(5, args.Length());
   std::string name = *v8::String::Utf8Value(args.GetIsolate(), args[0]);
-  bool has_callback = args[2]->BooleanValue();
-  bool for_io_thread = args[3]->BooleanValue();
-  bool preserve_null_in_objects = args[4]->BooleanValue();
+  bool has_callback =
+      args[2]->BooleanValue(context()->v8_context()).FromMaybe(false);
+  bool for_io_thread =
+      args[3]->BooleanValue(context()->v8_context()).FromMaybe(false);
+  bool preserve_null_in_objects =
+      args[4]->BooleanValue(context()->v8_context()).FromMaybe(false);
 
   int request_id = request_sender_->GetNextRequestId();
   args.GetReturnValue().Set(static_cast<int32_t>(request_id));

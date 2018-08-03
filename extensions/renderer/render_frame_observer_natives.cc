@@ -74,7 +74,7 @@ void RenderFrameObserverNatives::OnDocumentElementCreated(
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsFunction());
 
-  int frame_id = args[0]->Int32Value();
+  int frame_id = args[0].As<v8::Int32>()->Value();
 
   content::RenderFrame* frame = content::RenderFrame::FromRoutingID(frame_id);
   if (!frame) {

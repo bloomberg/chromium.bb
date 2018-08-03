@@ -41,14 +41,17 @@ void SetIconNatives::AddRoutes() {
 bool SetIconNatives::ConvertImageDataToBitmapValue(
     const v8::Local<v8::Object> image_data,
     v8::Local<v8::Value>* image_data_bitmap) {
-  v8::Isolate* isolate = context()->v8_context()->GetIsolate();
+  v8::Local<v8::Context> v8_context = context()->v8_context();
+  v8::Isolate* isolate = v8_context->GetIsolate();
   v8::Local<v8::Object> data =
       image_data->Get(v8::String::NewFromUtf8(isolate, "data"))
           ->ToObject(isolate);
-  int width =
-      image_data->Get(v8::String::NewFromUtf8(isolate, "width"))->Int32Value();
-  int height =
-      image_data->Get(v8::String::NewFromUtf8(isolate, "height"))->Int32Value();
+  int width = image_data->Get(v8::String::NewFromUtf8(isolate, "width"))
+                  ->Int32Value(v8_context)
+                  .FromMaybe(0);
+  int height = image_data->Get(v8::String::NewFromUtf8(isolate, "height"))
+                   ->Int32Value(v8_context)
+                   .FromMaybe(0);
 
   if (width <= 0 || height <= 0) {
     isolate->ThrowException(v8::Exception::Error(
@@ -65,8 +68,9 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
     return false;
   }
 
-  int data_length =
-      data->Get(v8::String::NewFromUtf8(isolate, "length"))->Int32Value();
+  int data_length = data->Get(v8::String::NewFromUtf8(isolate, "length"))
+                        ->Int32Value(v8_context)
+                        .FromMaybe(0);
   if (data_length != 4 * width * height) {
     isolate->ThrowException(
         v8::Exception::Error(v8::String::NewFromUtf8(isolate, kInvalidData)));
@@ -84,15 +88,27 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   uint32_t* pixels = bitmap.getAddr32(0, 0);
   for (int t = 0; t < width * height; t++) {
     // |data| is RGBA, pixels is ARGB.
-    pixels[t] = SkPreMultiplyColor(
-        ((data->Get(v8::Integer::New(isolate, 4 * t + 3))->Int32Value() & 0xFF)
-         << 24) |
-        ((data->Get(v8::Integer::New(isolate, 4 * t + 0))->Int32Value() & 0xFF)
-         << 16) |
-        ((data->Get(v8::Integer::New(isolate, 4 * t + 1))->Int32Value() & 0xFF)
-         << 8) |
-        ((data->Get(v8::Integer::New(isolate, 4 * t + 2))->Int32Value() & 0xFF)
-         << 0));
+    pixels[t] =
+        SkPreMultiplyColor(((data->Get(v8::Integer::New(isolate, 4 * t + 3))
+                                 ->Int32Value(v8_context)
+                                 .FromMaybe(0) &
+                             0xFF)
+                            << 24) |
+                           ((data->Get(v8::Integer::New(isolate, 4 * t + 0))
+                                 ->Int32Value(v8_context)
+                                 .FromMaybe(0) &
+                             0xFF)
+                            << 16) |
+                           ((data->Get(v8::Integer::New(isolate, 4 * t + 1))
+                                 ->Int32Value(v8_context)
+                                 .FromMaybe(0) &
+                             0xFF)
+                            << 8) |
+                           ((data->Get(v8::Integer::New(isolate, 4 * t + 2))
+                                 ->Int32Value(v8_context)
+                                 .FromMaybe(0) &
+                             0xFF)
+                            << 0));
   }
 
   // Construct the Value object.

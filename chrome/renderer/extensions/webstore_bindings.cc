@@ -123,10 +123,10 @@ void WebstoreBindings::Install(
   // or download progress listeners.
   int listener_mask = 0;
   CHECK(args[0]->IsBoolean());
-  if (args[0]->BooleanValue())
+  if (args[0].As<v8::Boolean>()->Value())
     listener_mask |= api::webstore::INSTALL_STAGE_LISTENER;
   CHECK(args[1]->IsBoolean());
-  if (args[1]->BooleanValue())
+  if (args[1].As<v8::Boolean>()->Value())
     listener_mask |= api::webstore::DOWNLOAD_PROGRESS_LISTENER;
 
   std::string preferred_store_link_url;

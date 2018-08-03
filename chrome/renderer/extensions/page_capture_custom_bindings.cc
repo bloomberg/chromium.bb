@@ -35,7 +35,7 @@ void PageCaptureCustomBindings::CreateBlob(
   blink::WebString path(
       blink::WebString::FromUTF8(*v8::String::Utf8Value(isolate, args[0])));
   blink::WebBlob blob =
-      blink::WebBlob::CreateFromFile(path, args[1]->Int32Value());
+      blink::WebBlob::CreateFromFile(path, args[1].As<v8::Int32>()->Value());
   args.GetReturnValue().Set(
       blob.ToV8Value(context()->v8_context()->Global(), isolate));
 }
@@ -48,7 +48,7 @@ void PageCaptureCustomBindings::SendResponseAck(
   content::RenderFrame* render_frame = context()->GetRenderFrame();
   if (render_frame) {
     render_frame->Send(new ExtensionHostMsg_ResponseAck(
-        render_frame->GetRoutingID(), args[0]->Int32Value()));
+        render_frame->GetRoutingID(), args[0].As<v8::Int32>()->Value()));
   }
 }
 
