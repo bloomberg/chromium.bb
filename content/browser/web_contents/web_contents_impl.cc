@@ -4908,6 +4908,11 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
 
   view_->RenderViewHostChanged(old_host, new_host);
 
+  // If this is an inner WebContents that has swapped views, we need to reattach
+  // it to its outer WebContents.
+  if (node_.outer_web_contents())
+    ReattachToOuterWebContentsFrame();
+
   // Ensure that the associated embedder gets cleared after a RenderViewHost
   // gets swapped, so we don't reuse the same embedder next time a
   // RenderViewHost is attached to this WebContents.
