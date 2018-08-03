@@ -1073,7 +1073,8 @@ class SSLPolicyTestCommittedInterstitials
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PolicyTest::SetUpCommandLine(command_line);
     if (AreCommittedInterstitialsEnabled()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
     }
     // Ensure SSL interstitials are capable of sending reports.
     variations::testing::VariationParamsManager::AppendVariationParams(
@@ -1154,6 +1155,7 @@ class SSLPolicyTestCommittedInterstitials
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SSLPolicyTestCommittedInterstitials);
 };
 
