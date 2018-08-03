@@ -23,6 +23,8 @@ source_set("consent_bump") {
 source_set("consent_bump_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "consent_bump_option_button.h",
+    "consent_bump_option_button.mm",
     "consent_bump_personalization_view_controller.h",
     "consent_bump_personalization_view_controller.mm",
     "consent_bump_view_controller.h",

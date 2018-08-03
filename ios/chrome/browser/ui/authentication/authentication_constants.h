@@ -27,6 +27,11 @@ extern const CGFloat kAuthenticationTitleColorAlpha;
 // Alpha for the text color.
 extern const CGFloat kAuthenticationTextColorAlpha;
 
+// Alpha for the separator color.
+extern const CGFloat kAuthenticationSeparatorColorAlpha;
+// Height of the separator.
+extern const CGFloat kAuthenticationSeparatorHeight;
+
 // Header image name.
 extern NSString* const kAuthenticationHeaderImageName;
 
