@@ -4352,10 +4352,17 @@ class WebViewFocusBrowserPluginSpecificTest
   }
 };
 
+// Flaky on Linux. See: https://crbug.com/870604.
+#if defined(OS_LINUX)
+#define MAYBE_TouchFocusesEmbedder DISABLED_TouchFocusesEmbedder
+#else
+#define MAYBE_TouchFocusesEmbedder TouchFocusesEmbedder
+#endif
+
 // The following test verifies that a views::WebView hosting an embedder
 // gains focus on touchstart.
 IN_PROC_BROWSER_TEST_F(WebViewFocusBrowserPluginSpecificTest,
-                       TouchFocusesEmbedder) {
+                       MAYBE_TouchFocusesEmbedder) {
   LoadAppWithGuest("web_view/accept_touch_events");
 
   content::WebContents* web_contents = GetEmbedderWebContents();
