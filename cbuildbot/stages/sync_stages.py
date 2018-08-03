@@ -37,6 +37,7 @@ from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cq_config
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import git
@@ -1791,14 +1792,14 @@ class PreCQLauncherStage(SyncStage):
     builds_history = db.GetBuildsHistory(
         build_configs, db.NUM_RESULTS_NO_LIMIT, start_date=start_date,
         final=True)
-    build_history_by_build_config = cros_build_lib.GroupByKey(
+    build_history_by_build_config = cros_collections.GroupByKey(
         builds_history, 'build_config')
 
     start_time = datetime.datetime.now() - datetime.timedelta(
         hours=self.PRE_CQ_SANITY_CHECK_PERIOD_HOURS)
     builds_requests = db.GetBuildRequestsForBuildConfigs(
         build_configs, start_time=start_time)
-    build_requests_by_build_config = cros_build_lib.GroupNamedtuplesByKey(
+    build_requests_by_build_config = cros_collections.GroupNamedtuplesByKey(
         builds_requests, 'request_build_config')
 
     sanity_check_build_configs = set()

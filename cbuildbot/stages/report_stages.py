@@ -25,6 +25,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import git
@@ -340,10 +341,10 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
     slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
     slave_failures = db.GetSlaveFailures(
         build_id, buildbucket_ids=slave_buildbucket_ids)
-    failures_by_build = cros_build_lib.GroupNamedtuplesByKey(
+    failures_by_build = cros_collections.GroupNamedtuplesByKey(
         slave_failures, 'build_id')
     for build_id, build_failures in sorted(failures_by_build.items()):
-      failures_by_stage = cros_build_lib.GroupNamedtuplesByKey(
+      failures_by_stage = cros_collections.GroupNamedtuplesByKey(
           build_failures, 'build_stage_id')
       # Surface a link to each slave stage that failed, in stage_id sorted
       # order.

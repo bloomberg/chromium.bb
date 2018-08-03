@@ -14,7 +14,7 @@ from chromite.lib import builder_status_lib
 from chromite.lib import clactions
 from chromite.lib import constants
 from chromite.lib import config_lib
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import patch as cros_patch
 from chromite.lib import triage_lib
@@ -285,7 +285,7 @@ class TriageRelevantChanges(object):
         self.master_build_id, self.db, self.buildbucket_info_dict)
     self.slave_changes_dict = self._GetRelevantChanges(
         self.slave_stages_dict)
-    self.change_relevant_slaves_dict = cros_build_lib.InvertDictionary(
+    self.change_relevant_slaves_dict = cros_collections.InvertDictionary(
         self.slave_changes_dict)
     self.change_passed_slaves_dict = (
         RelevantChanges.GetPreviouslyPassedSlavesForChanges(

@@ -16,7 +16,7 @@ import collections
 import datetime
 
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 
 
 BUILD_TYPE_MAP = {
@@ -89,7 +89,7 @@ def FillInBuildStatusesWithStages(db, build_statuses):
   ids = [status['id'] for status in build_statuses]
   all_stages = db.GetBuildsStages(ids)
 
-  stages_by_build_id = cros_build_lib.GroupByKey(all_stages, 'build_id')
+  stages_by_build_id = cros_collections.GroupByKey(all_stages, 'build_id')
 
   for status in build_statuses:
     status['stages'] = stages_by_build_id.get(status['id'], [])

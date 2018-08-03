@@ -14,7 +14,7 @@ from chromite.lib import buildbucket_lib
 from chromite.lib import build_failure_message
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import failure_message_lib
 from chromite.lib import metrics
@@ -319,7 +319,7 @@ class SlaveBuilderStatus(object):
 
     stage_failures = self.db.GetSlaveFailures(
         self.master_build_id, buildbucket_ids=slave_buildbucket_ids)
-    stage_failures_by_build = cros_build_lib.GroupNamedtuplesByKey(
+    stage_failures_by_build = cros_collections.GroupNamedtuplesByKey(
         stage_failures, 'build_config')
 
     failure_msg_manager = failure_message_lib.FailureMessageManager()

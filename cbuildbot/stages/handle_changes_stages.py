@@ -14,7 +14,7 @@ from chromite.lib import clactions
 from chromite.lib import clactions_metrics
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import hwtest_results
 from chromite.lib import metrics
@@ -176,7 +176,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       changes_by_slaves = changes_by_config.copy()
       # Exclude master build
       changes_by_slaves.pop(self._run.config.name, None)
-      slaves_by_change = cros_build_lib.InvertDictionary(changes_by_slaves)
+      slaves_by_change = cros_collections.InvertDictionary(changes_by_slaves)
       passed_in_history_slaves_by_change = (
           relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
               build_id, db, changes, slaves_by_change))

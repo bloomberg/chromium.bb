@@ -16,8 +16,8 @@ import sys
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_cidbcreds  # TODO: Move into lib???
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import uri_lib
 
@@ -139,7 +139,7 @@ class CLStatsEngine(object):
     for bid in self.builds_by_build_id:
       self.slave_builds_by_master_id[bid] = self.db.GetSlaveStatuses(bid)
 
-    self.slave_builds_by_config = cros_build_lib.GroupByKey(
+    self.slave_builds_by_config = cros_collections.GroupByKey(
         itertools.chain(*self.slave_builds_by_master_id.values()),
         'build_config')
 
