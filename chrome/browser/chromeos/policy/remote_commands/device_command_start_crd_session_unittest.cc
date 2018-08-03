@@ -76,12 +76,12 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
                       bool auth_code_success);
   ~StubCRDHostDelegate() override;
 
-  bool HasActiveSession() override;
+  bool HasActiveSession() const override;
   void TerminateSession(base::OnceClosure callback) override;
 
-  bool AreServicesReady() override;
-  bool IsRunningKiosk() override;
-  base::TimeDelta GetIdlenessPeriod() override;
+  bool AreServicesReady() const override;
+  bool IsRunningKiosk() const override;
+  base::TimeDelta GetIdlenessPeriod() const override;
 
   void FetchOAuthToken(
       DeviceCommandStartCRDSessionJob::OAuthTokenCallback success_callback,
@@ -128,7 +128,7 @@ StubCRDHostDelegate::StubCRDHostDelegate(bool has_active_session,
 
 StubCRDHostDelegate::~StubCRDHostDelegate() {}
 
-bool StubCRDHostDelegate::HasActiveSession() {
+bool StubCRDHostDelegate::HasActiveSession() const {
   return has_active_session_;
 }
 
@@ -137,15 +137,15 @@ void StubCRDHostDelegate::TerminateSession(base::OnceClosure callback) {
   std::move(callback).Run();
 }
 
-bool StubCRDHostDelegate::AreServicesReady() {
+bool StubCRDHostDelegate::AreServicesReady() const {
   return are_services_ready_;
 }
 
-bool StubCRDHostDelegate::IsRunningKiosk() {
+bool StubCRDHostDelegate::IsRunningKiosk() const {
   return is_running_kiosk_;
 }
 
-base::TimeDelta StubCRDHostDelegate::GetIdlenessPeriod() {
+base::TimeDelta StubCRDHostDelegate::GetIdlenessPeriod() const {
   return idleness_period_;
 }
 

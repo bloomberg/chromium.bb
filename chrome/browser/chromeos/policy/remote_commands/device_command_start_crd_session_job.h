@@ -56,19 +56,19 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
     virtual ~Delegate() {}
 
     // Check if there exists an active CRD session.
-    virtual bool HasActiveSession() = 0;
+    virtual bool HasActiveSession() const = 0;
 
     // Run |callback| once active CRD session is terminated.
     virtual void TerminateSession(base::OnceClosure callback) = 0;
 
     // Check if required system services are ready.
-    virtual bool AreServicesReady() = 0;
+    virtual bool AreServicesReady() const = 0;
 
     // Check if device is running in Kiosk mode.
-    virtual bool IsRunningKiosk() = 0;
+    virtual bool IsRunningKiosk() const = 0;
 
     // Return current user idleness period.
-    virtual base::TimeDelta GetIdlenessPeriod() = 0;
+    virtual base::TimeDelta GetIdlenessPeriod() const = 0;
 
     // Attempts to get OAuth token for CRD Host.
     virtual void FetchOAuthToken(OAuthTokenCallback success_callback,
