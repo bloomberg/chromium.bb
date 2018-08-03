@@ -37,8 +37,9 @@ class MachineLearningClientImpl : public MachineLearningClient {
  protected:
   // DBusClient:
   void Init(dbus::Bus* const bus) override {
-    ml_service_proxy_ = bus->GetObjectProxy(
-        ml::kMlServiceName, dbus::ObjectPath(ml::kMlServicePath));
+    ml_service_proxy_ =
+        bus->GetObjectProxy(ml::kMachineLearningServiceName,
+                            dbus::ObjectPath(ml::kMachineLearningServicePath));
   }
 
  private:
@@ -58,7 +59,7 @@ class MachineLearningClientImpl : public MachineLearningClient {
     }
 
     // Call the bootstrap D-Bus method.
-    dbus::MethodCall method_call(ml::kMlServiceName,
+    dbus::MethodCall method_call(ml::kMachineLearningInterfaceName,
                                  ml::kBootstrapMojoConnectionMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendFileDescriptor(fd.get());
