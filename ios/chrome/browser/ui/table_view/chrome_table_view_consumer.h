@@ -16,6 +16,15 @@
 // |configureCell:| on each cell.
 - (void)reconfigureCellsForItems:(NSArray*)items;
 
+// Reloads the cells corresponding to the given |items| by calling
+// reloadRowsAtIndexPaths with |rowAnimation| on the tableView for each of the
+// |items| indexPath, this will also trigger a |configureCell:| call on each
+// cell.
+// Use this method over |reconfigureCellsForItems| if the cell should be redrawn
+// after calling |configureCell:|.
+- (void)reloadCellsForItems:(NSArray*)items
+           withRowAnimation:(UITableViewRowAnimation)rowAnimation;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CHROME_TABLE_VIEW_CONSUMER_H_
