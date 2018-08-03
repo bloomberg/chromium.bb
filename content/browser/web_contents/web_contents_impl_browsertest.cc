@@ -551,8 +551,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   NavigateToURL(shell(), kWebUIUrl);
 
-  bool js_executed = content::ExecuteScript(shell(), kJSCodeForAppendingFrame);
-  EXPECT_TRUE(js_executed);
+  EXPECT_TRUE(content::ExecuteScript(shell(), kJSCodeForAppendingFrame));
 }
 
 // Observer class to track the creation of RenderFrameHost objects. It is used

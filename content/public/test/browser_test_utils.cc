@@ -157,8 +157,9 @@ class InterstitialObserver : public content::WebContentsObserver {
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
-                         const std::string& original_script,
+                         const std::string& script,
                          bool user_gesture,
+                         int world_id,
                          std::unique_ptr<base::Value>* result)
     WARN_UNUSED_RESULT;
 
@@ -168,15 +169,23 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& script,
                          bool user_gesture,
+                         int world_id,
                          std::unique_ptr<base::Value>* result) {
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
   DOMMessageQueue dom_message_queue(
       WebContents::FromRenderFrameHost(render_frame_host));
-  if (user_gesture) {
-    render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
-        base::UTF8ToUTF16(script));
+  base::string16 script16 = base::UTF8ToUTF16(script);
+  if (world_id == ISOLATED_WORLD_ID_GLOBAL) {
+    if (user_gesture)
+      render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16);
+    else
+      render_frame_host->ExecuteJavaScriptForTests(script16);
   } else {
-    render_frame_host->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script));
+    // Note that |user_gesture| here is ignored. We allow a value of |true|
+    // because it's the default, but in blink, the execution will occur with
+    // no user gesture.
+    render_frame_host->ExecuteJavaScriptInIsolatedWorld(
+        script16, RenderFrameHost::JavaScriptResultCallback(), world_id);
   }
   std::string json;
   if (!dom_message_queue.WaitForMessage(&json)) {
@@ -208,6 +217,8 @@ bool ExecuteScriptWithUserGestureControl(RenderFrameHost* frame,
   // depend on the message loop pumping done by ExecuteScriptHelper below (this
   // is fragile - these tests should wait on a more specific thing instead).
 
+  // TODO(nick): This function can't be replaced with a call to ExecJs(), since
+  // ExecJs calls eval() which might be blocked by the page's CSP.
   std::string expected_response = "ExecuteScript-" + base::GenerateGUID();
   std::string new_script = base::StringPrintf(
       R"( %s;  // Original script.
@@ -215,7 +226,8 @@ bool ExecuteScriptWithUserGestureControl(RenderFrameHost* frame,
       script.c_str(), expected_response.c_str());
 
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(frame, new_script, user_gesture, &value) ||
+  if (!ExecuteScriptHelper(frame, new_script, user_gesture,
+                           ISOLATED_WORLD_ID_GLOBAL, &value) ||
       !value.get()) {
     return false;
   }
@@ -224,43 +236,6 @@ bool ExecuteScriptWithUserGestureControl(RenderFrameHost* frame,
   std::string actual_response;
   if (value->GetAsString(&actual_response))
     DCHECK_EQ(expected_response, actual_response);
-
-  return true;
-}
-
-// Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
-                                        const int world_id,
-                                        const std::string& original_script,
-                                        std::unique_ptr<base::Value>* result)
-    WARN_UNUSED_RESULT;
-
-bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
-                                        const int world_id,
-                                        const std::string& script,
-                                        std::unique_ptr<base::Value>* result) {
-  // TODO(lukasza): Only get messages from the specific |render_frame_host|.
-  DOMMessageQueue dom_message_queue(
-      WebContents::FromRenderFrameHost(render_frame_host));
-  render_frame_host->ExecuteJavaScriptInIsolatedWorld(
-      base::UTF8ToUTF16(script),
-      content::RenderFrameHost::JavaScriptResultCallback(), world_id);
-  std::string json;
-  if (!dom_message_queue.WaitForMessage(&json)) {
-    DLOG(ERROR) << "Cannot communicate with DOMMessageQueue.";
-    return false;
-  }
-
-  // Nothing more to do for callers that ignore the returned JS value.
-  if (!result)
-    return true;
-
-  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  *result = reader.ReadToValue(json);
-  if (!*result) {
-    DLOG(ERROR) << reader.GetErrorMessage();
-    return false;
-  }
 
   return true;
 }
@@ -1139,52 +1114,27 @@ bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
                                    const std::string& script, double* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsDouble(result);
+  return ExecuteScriptHelper(adapter.render_frame_host(), script, true,
+                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
+         value && value->GetAsDouble(result);
 }
 
 bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
                                 const std::string& script, int* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsInteger(result);
+  return ExecuteScriptHelper(adapter.render_frame_host(), script, true,
+                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
+         value && value->GetAsInteger(result);
 }
 
 bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
                                  const std::string& script, bool* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsBoolean(result);
-}
-
-bool ExecuteScriptInIsolatedWorldAndExtractBool(
-    const ToRenderFrameHost& adapter,
-    const int world_id,
-    const std::string& script,
-    bool* result) {
-  DCHECK(result);
-  std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptInIsolatedWorldHelper(adapter.render_frame_host(), world_id,
-                                          script, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsBoolean(result);
+  return ExecuteScriptHelper(adapter.render_frame_host(), script, true,
+                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
+         value && value->GetAsBoolean(result);
 }
 
 bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
@@ -1192,12 +1142,9 @@ bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    std::string* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true, &value) ||
-      !value.get()) {
-    return false;
-  }
-
-  return value->GetAsString(result);
+  return ExecuteScriptHelper(adapter.render_frame_host(), script, true,
+                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
+         value && value->GetAsString(result);
 }
 
 bool ExecuteScriptWithoutUserGestureAndExtractDouble(
@@ -1207,7 +1154,7 @@ bool ExecuteScriptWithoutUserGestureAndExtractDouble(
   DCHECK(result);
   std::unique_ptr<base::Value> value;
   return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
-                             &value) &&
+                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
          value && value->GetAsDouble(result);
 }
 
@@ -1218,7 +1165,7 @@ bool ExecuteScriptWithoutUserGestureAndExtractInt(
   DCHECK(result);
   std::unique_ptr<base::Value> value;
   return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
-                             &value) &&
+                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
          value && value->GetAsInteger(result);
 }
 
@@ -1229,7 +1176,7 @@ bool ExecuteScriptWithoutUserGestureAndExtractBool(
   DCHECK(result);
   std::unique_ptr<base::Value> value;
   return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
-                             &value) &&
+                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
          value && value->GetAsBoolean(result);
 }
 
@@ -1240,8 +1187,339 @@ bool ExecuteScriptWithoutUserGestureAndExtractString(
   DCHECK(result);
   std::unique_ptr<base::Value> value;
   return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
-                             &value) &&
+                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
          value && value->GetAsString(result);
+}
+
+// EvalJsResult methods.
+EvalJsResult::EvalJsResult(base::Value value, const std::string& error)
+    : value(error.empty() ? std::move(value) : base::Value()), error(error) {}
+
+EvalJsResult::EvalJsResult(const EvalJsResult& other)
+    : value(other.value.Clone()), error(other.error) {}
+
+const std::string& EvalJsResult::ExtractString() const {
+  CHECK(error.empty())
+      << "Can't ExtractString() because the script encountered a problem: "
+      << error;
+  CHECK(value.is_string()) << "Can't ExtractString() because script result: "
+                           << value << "is not a string.";
+  return value.GetString();
+}
+
+int EvalJsResult::ExtractInt() const {
+  CHECK(error.empty())
+      << "Can't ExtractInt() because the script encountered a problem: "
+      << error;
+  CHECK(value.is_int()) << "Can't ExtractInt() because script result: " << value
+                        << "is not an int.";
+  return value.GetInt();
+}
+
+bool EvalJsResult::ExtractBool() const {
+  CHECK(error.empty())
+      << "Can't ExtractBool() because the script encountered a problem: "
+      << error;
+  CHECK(value.is_bool()) << "Can't ExtractBool() because script result: "
+                         << value << "is not a bool.";
+  return value.GetBool();
+}
+
+double EvalJsResult::ExtractDouble() const {
+  CHECK(error.empty())
+      << "Can't ExtractDouble() because the script encountered a problem: "
+      << error;
+  CHECK(value.is_double() || value.is_int())
+      << "Can't ExtractDouble() because script result: " << value
+      << "is not a double or int.";
+  return value.GetDouble();
+}
+
+base::ListValue EvalJsResult::ExtractList() const {
+  CHECK(error.empty())
+      << "Can't ExtractList() because the script encountered a problem: "
+      << error;
+  CHECK(value.is_list()) << "Can't ExtractList() because script result: "
+                         << value << "is not a list.";
+  return base::ListValue(value.GetList());
+}
+
+void PrintTo(const EvalJsResult& bar, ::std::ostream* os) {
+  if (!bar.error.empty()) {
+    *os << bar.error;
+  } else {
+    *os << bar.value;
+  }
+}
+
+namespace {
+
+// Parse a JS stack trace out of |js_error|, detect frames that match
+// |source_name|, and interleave the appropriate lines of source code from
+// |source| into the error report. This is meant to be useful for scripts that
+// are passed to ExecuteScript functions, and hence dynamically generated.
+//
+// An adjustment of |column_adjustment_for_line_one| characters is subtracted
+// when mapping positions from line 1 of |source|. This is to offset the effect
+// of boilerplate added by the script runner.
+//
+// TODO(nick): Elide snippets to 80 chars, since it is common for sources to not
+// include newlines.
+std::string AnnotateAndAdjustJsStackTraces(const std::string& js_error,
+                                           std::string source_name,
+                                           const std::string& source,
+                                           int column_adjustment_for_line_one) {
+  // Escape wildcards in |source_name| for use in MatchPattern.
+  base::ReplaceChars(source_name, "\\", "\\\\", &source_name);
+  base::ReplaceChars(source_name, "*", "\\*", &source_name);
+  base::ReplaceChars(source_name, "?", "\\?", &source_name);
+
+  // This vector maps line numbers to the corresponding text in |source|.
+  const std::vector<base::StringPiece> source_lines = base::SplitStringPiece(
+      source, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  // |source_frame_pattern| should match any line that looks like a stack frame
+  // from a source file named |source_name|.
+  const std::string source_frame_pattern =
+      base::StringPrintf("    at * (%s:*:*)", source_name.c_str());
+
+  // This is the amount of indentation that is applied to the lines of inserted
+  // annotations.
+  const std::string indent(8, ' ');
+  const base::StringPiece elision_mark = "";
+
+  // Loop over each line of |js_error|, and append each to |annotated_error| --
+  // possibly rewriting to include extra context.
+  std::ostringstream annotated_error;
+  for (const base::StringPiece& error_line : base::SplitStringPiece(
+           js_error, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    // Does this look like a stack frame whose URL source matches |source_name|?
+    if (base::MatchPattern(error_line, source_frame_pattern)) {
+      // When a match occurs, annotate the stack trace with the corresponding
+      // line from |source|, along with a ^^^ underneath, indicating the column
+      // position.
+      std::vector<base::StringPiece> error_line_parts = base::SplitStringPiece(
+          error_line, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+      CHECK(error_line_parts.size() >= 2);
+
+      int column_number = 0;
+      base::StringToInt(error_line_parts.back(), &column_number);
+      error_line_parts.pop_back();
+      int line_number = 0;
+      base::StringToInt(error_line_parts.back(), &line_number);
+      error_line_parts.pop_back();
+
+      // Protect against out-of-range matches.
+      if ((line_number > 0) && (column_number > 0) &&
+          static_cast<size_t>(line_number) <= source_lines.size()) {
+        // Apply adjustment requested by caller to columns on the first line.
+        // This allows us to add preamble boilerplate to the script, but still
+        // locate errors correctly.
+        if (line_number == 1 && column_number > column_adjustment_for_line_one)
+          column_number -= column_adjustment_for_line_one;
+
+        // Some source lines are huge. Elide |source_line| so that it doesn't
+        // occupy more than one actual line.
+        std::string source_line = source_lines[line_number - 1].as_string();
+
+        int max_column_number = 60 - indent.length();
+        if (column_number > max_column_number) {
+          source_line = source_line.substr(column_number - max_column_number);
+          column_number = max_column_number;
+          source_line.replace(0, elision_mark.length(), elision_mark.data(),
+                              elision_mark.length());
+        }
+
+        size_t max_length = 80 - indent.length();
+        if (source_line.length() > max_length) {
+          source_line =
+              source_line.substr(0, max_length - elision_mark.length());
+          elision_mark.AppendToString(&source_line);
+        }
+
+        annotated_error << base::JoinString(error_line_parts, ":") << ":"
+                        << line_number << ":" << column_number << "):\n"
+                        << indent << source_line << '\n'
+                        << indent << std::string(column_number - 1, ' ')
+                        << "^^^^^\n";
+        continue;
+      }
+    }
+    // This line was not rewritten -- just append it as-is.
+    annotated_error << error_line << "\n";
+  }
+  return annotated_error.str();
+}
+
+}  // namespace
+
+testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
+                                const std::string& script,
+                                int options,
+                                int world_id) {
+  CHECK(!(options & EXECUTE_SCRIPT_USE_MANUAL_REPLY))
+      << "USE_MANUAL_REPLY does not make sense with ExecJs.";
+
+  // ExecJs() doesn't care about the result, so disable promise resolution.
+  // Instead of using ExecJs() to wait for an async event, callers may use
+  // EvalJs() with a sentinel result value like "success".
+  options |= EXECUTE_SCRIPT_NO_RESOLVE_PROMISES;
+
+  // TODO(nick): Do we care enough about folks shooting themselves in the foot
+  // here with e.g. ASSERT_TRUE(ExecJs("window == window.top")) -- when they
+  // mean EvalJs -- to fail a CHECK() when eval_result.value.is_bool()?
+  EvalJsResult eval_result =
+      EvalJs(execution_target, script, options, world_id);
+
+  // NOTE: |eval_result.value| is intentionally ignored by ExecJs().
+  if (!eval_result.error.empty())
+    return testing::AssertionFailure() << eval_result.error;
+  return testing::AssertionSuccess();
+}
+
+EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
+                    const std::string& script,
+                    int options,
+                    int world_id) {
+  // The sourceURL= parameter provides a string that replaces <anonymous> in
+  // stack traces, if an Error is thrown. 'std::string' is meant to communicate
+  // that this is a dynamic argument originating from C++ code.
+  const char* kSourceURL = "__const_std::string&_script__";
+  std::string modified_script =
+      base::StringPrintf("%s;\n//# sourceURL=%s", script.c_str(), kSourceURL);
+
+  // An extra eval() indirection is used here to catch syntax errors and return
+  // them as assertion failures. This eval() operation deliberately occurs in
+  // the global scope, so 'var' declarations in |script| will persist for later
+  // script executions. (As an aside: global/local scope for eval depends on
+  // whether 'eval' is called directly or indirectly; 'window.eval()' is
+  // indirect).
+  //
+  // The call to eval() itself is inside a .then() handler so that syntax errors
+  // result in Promise rejection. Calling eval() either throws (in the event of
+  // a SyntaxError) or returns the script's completion value.
+  //
+  // The result of eval() (i.e., the statement completion value of |script|) is
+  // wrapped in an array and passed to a second .then() handler. If eval()
+  // returned a Promise and the |resolve_promises| option is set, this handler
+  // calls Promise.all to reply after the returned Promise resolves.
+  //
+  // If |script| evaluated successfully, the third.then() handler maps the
+  // resolved |result| of eval() to a |reply| that is a one-element list
+  // containing the value (this element can be any JSON-serializable type). If
+  // the manual reply option is being used, no reply is emitted after successful
+  // execution -- the script is expected to call send() itself. The call to
+  // Promise.reject() squelches this reply, and the final .then() handler is not
+  // called.
+  //
+  // If an uncaught error was thrown, or eval() returns a Promise that is
+  // rejected, the third .then() handler maps the |error| to a |reply| that is
+  // a string value.
+  //
+  // The fourth and final .then() handler passes the |reply| (whether
+  // successful or unsuccessful) to domAutomationController.send(), so that it's
+  // transmitted back here in browser process C++ land. A GUID token is also
+  // included, that protects against |script| directly calling
+  // domAutomationController.send() itself, which is disallowed in EvalJs.
+  bool use_automatic_reply = !(options & EXECUTE_SCRIPT_USE_MANUAL_REPLY);
+  bool resolve_promises = !(options & EXECUTE_SCRIPT_NO_RESOLVE_PROMISES);
+
+  std::string token = "EvalJs-" + base::GenerateGUID();
+  std::string runner_script = JsReplace(
+      R"(Promise.resolve($1)
+         .then(script => [window.eval(script)])
+         .then((result) => $2 ? Promise.all(result) : result )
+         .then((result) => $3 ? result : Promise.reject(),
+               (error) => 'a JavaScript error:' +
+                          (error && error.stack ? '\n' + error.stack
+                                                : ' "' + error + '"'))
+         .then((reply) => window.domAutomationController.send([$4, reply]));
+      //# sourceURL=EvalJs-runner.js)",
+      modified_script, resolve_promises, use_automatic_reply, token);
+
+  bool user_gesture = !(options & EXECUTE_SCRIPT_NO_USER_GESTURE);
+  std::ostringstream error_stream;
+  std::unique_ptr<base::Value> response;
+  if (!execution_target.render_frame_host()->IsRenderFrameLive()) {
+    error_stream << "Error: EvalJs won't work on an already-crashed frame.";
+  } else if (!ExecuteScriptHelper(execution_target.render_frame_host(),
+                                  runner_script, user_gesture, world_id,
+                                  &response)) {
+    error_stream << "Internal Error: ExecuteScriptHelper failed";
+  } else if (!response) {
+    error_stream << "Internal Error: no value";
+  } else {
+    bool is_reply_from_runner_script =
+        response->is_list() && response->GetList().size() == 2 &&
+        response->GetList()[0].is_string() &&
+        response->GetList()[0].GetString() == token;
+
+    bool is_error =
+        is_reply_from_runner_script && response->GetList()[1].is_string();
+    bool is_automatic_success_reply =
+        is_reply_from_runner_script && response->GetList()[1].is_list() &&
+        response->GetList()[1].GetList().size() == 1;
+
+    if (is_error) {
+      // This is a response generated by the error handler in our runner
+      // script. This occurs when the script throws an exception, or when
+      // eval throws a SyntaxError.
+      //
+      // Parse the stack trace here, and interleave lines of source code from
+      // |script| to aid debugging.
+      std::string error_text = response->GetList()[1].GetString();
+
+      if (base::StartsWith(error_text,
+                           "a JavaScript error:\nEvalError: Refused",
+                           base::CompareCase::SENSITIVE)) {
+        error_text =
+            "EvalJs encountered an EvalError, because eval() is blocked by the "
+            "document's CSP on this page. To test content that is protected by "
+            "CSP, consider using EvalJs with an isolated world. Details: " +
+            error_text;
+      }
+
+      CHECK(!error_text.empty());
+      error_stream << AnnotateAndAdjustJsStackTraces(error_text, kSourceURL,
+                                                     script, 0);
+    } else if (!use_automatic_reply) {
+      // When |script| itself calls domAutomationController.send() on success,
+      // |response| could be anything; so there's no more checking we can do:
+      // return |response| as success, with an empty error.
+      return EvalJsResult(std::move(*response), std::string());
+    } else if (is_automatic_success_reply) {
+      // Got a response from the runner script that indicates success (of the
+      // form [token, [completion_value]]. Return the completion value, with an
+      // empty error.
+      return EvalJsResult(std::move(response->GetList()[1].GetList()[0]),
+                          std::string());
+    } else {
+      // The response was not well-formed (it failed the token match), so it's
+      // not from our runner script. Fail with an explanation of the raw
+      // message. This allows us to reject other calls
+      // domAutomationController.send().
+      error_stream
+          << "Internal Error: expected a 2-element list of the form "
+          << "['" << token << "', [result]]; but got instead: " << *response
+          << " ... This is potentially because a script tried to call "
+             "domAutomationController.send itself -- that is only allowed "
+             "when using EvalJsWithManualReply().  When using EvalJs(), result "
+             "values are just the result of calling eval() on the script -- "
+             "the completion value is the value of the last executed "
+             "statement.  When using ExecJs(), there is no result value.";
+    }
+  }
+
+  // Something went wrong. Return an empty value and a non-empty error.
+  return EvalJsResult(base::Value(), error_stream.str());
+}
+
+EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
+                                   const std::string& script,
+                                   int options,
+                                   int world_id) {
+  return EvalJs(execution_target, script,
+                options | EXECUTE_SCRIPT_USE_MANUAL_REPLY, world_id);
 }
 
 namespace {
@@ -1432,23 +1710,26 @@ void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) {
   if (!rfh)
     return false;
+  // TODO(nick): This can't switch to EvalJs yet, because of hardcoded
+  // dependencies on 'pageLoadComplete' in some interstitial implementations.
   std::string result;
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(
-          rfh,
-          "(function() {"
-          "  var done = false;"
-          "  function checkState() {"
-          "    if (!done && document.readyState == 'complete') {"
-          "      done = true;"
-          "      window.domAutomationController.send('pageLoadComplete');"
-          "    }"
-          "  }"
-          "  checkState();"
-          "  document.addEventListener('readystatechange', checkState);"
-          "})();",
-          &result));
-  return result == "pageLoadComplete";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      rfh,
+      "(async function() {"
+      "  if (document.readyState != 'complete') {"
+      "    await new Promise((resolve) =>"
+      "      document.addEventListener('readystatechange', event => {"
+      "        if (document.readyState == 'complete') {"
+      "          resolve();"
+      "        }"
+      "      }));"
+      "  }"
+      "})().then(() => {"
+      "  window.domAutomationController.send('pageLoadComplete');"
+      "});",
+      &result));
+  EXPECT_EQ("pageLoadComplete", result);
+  return "pageLoadComplete" == result;
 }
 
 void EnableAccessibilityForWebContents(WebContents* web_contents) {
