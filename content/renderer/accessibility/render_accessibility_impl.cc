@@ -274,7 +274,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
   // Force the newly focused node to be re-serialized so we include its
   // inline text boxes.
   if (event == ax::mojom::Event::kFocus)
-    serializer_.DeleteClientSubtree(obj);
+    serializer_.InvalidateSubtree(obj);
 #endif
 
   // If some cell IDs have been added or removed, we need to update the whole
@@ -283,7 +283,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
       event == ax::mojom::Event::kChildrenChanged) {
     WebAXObject table_like_object = obj.ParentObject();
     if (!table_like_object.IsDetached()) {
-      serializer_.DeleteClientSubtree(table_like_object);
+      serializer_.InvalidateSubtree(table_like_object);
       HandleAXEvent(table_like_object, ax::mojom::Event::kChildrenChanged);
     }
   }
@@ -294,7 +294,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
       event == ax::mojom::Event::kChildrenChanged) {
     WebAXObject popup_like_object = obj.ParentObject();
     if (!popup_like_object.IsDetached()) {
-      serializer_.DeleteClientSubtree(popup_like_object);
+      serializer_.InvalidateSubtree(popup_like_object);
       HandleAXEvent(popup_like_object, ax::mojom::Event::kChildrenChanged);
     }
   }
@@ -459,7 +459,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       block = block.ParentObject();
     }
     if (!block.IsDetached() && !block.Equals(obj))
-      serializer_.DeleteClientSubtree(block);
+      serializer_.InvalidateSubtree(block);
 
     // Whenever there's a change within a table, invalidate the
     // whole table so that row and cell indexes are recomputed.
@@ -471,7 +471,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
              !ui::IsTableLikeRole(AXRoleFromBlink(table.Role())))
         table = table.ParentObject();
       if (!table.IsDetached())
-        serializer_.DeleteClientSubtree(table);
+        serializer_.InvalidateSubtree(table);
     }
 
     VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
@@ -744,7 +744,7 @@ void RenderAccessibilityImpl::OnLoadInlineTextBoxes(
 
   // This object may not be a leaf node. Force the whole subtree to be
   // re-serialized.
-  serializer_.DeleteClientSubtree(obj);
+  serializer_.InvalidateSubtree(obj);
 
   // Explicitly send a tree change update event now.
   HandleAXEvent(obj, ax::mojom::Event::kTreeChanged);
@@ -763,7 +763,7 @@ void RenderAccessibilityImpl::OnGetImageData(
   if (document.IsNull())
     return;
 
-  serializer_.DeleteClientSubtree(obj);
+  serializer_.InvalidateSubtree(obj);
   HandleAXEvent(obj, ax::mojom::Event::kImageFrameUpdated);
 }
 
