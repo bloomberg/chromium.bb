@@ -50,6 +50,7 @@ import java.util.List;
 class ContextualSuggestionsMediator
         implements EnabledStateMonitor.Observer, FetchHelper.Delegate, ListMenuButton.Delegate {
     private static final float INVALID_PERCENTAGE = -1f;
+    private static final int IPH_AUTO_DISMISS_TIMEOUT_MS = 6000;
     private static boolean sOverrideBrowserControlsHiddenForTesting;
 
     private final Profile mProfile;
@@ -602,7 +603,8 @@ class ContextualSuggestionsMediator
                     R.string.contextual_suggestions_in_product_help, rectProvider);
         }
 
-        mHelpBubble.setDismissOnTouchInteraction(true);
+        mHelpBubble.setDismissOnTouchInteraction(false);
+        mHelpBubble.setAutoDismissTimeout(IPH_AUTO_DISMISS_TIMEOUT_MS);
         mHelpBubble.addOnDismissListener(() -> {
             tracker.dismissed(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE);
             mHelpBubble = null;
