@@ -33,7 +33,7 @@ ConvertEffectiveConnectionType(
 // the network environment.
 class NetworkMetricsProvider
     : public MetricsProvider,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Class that provides |this| with the network quality estimator.
   class NetworkQualityEstimatorProvider {
@@ -82,8 +82,8 @@ class NetworkMetricsProvider
       ChromeUserMetricsExtension* uma_proto) override;
   void ProvideSystemProfileMetrics(SystemProfileProto* system_profile) override;
 
-  // ConnectionTypeObserver:
-  void OnConnectionTypeChanged(
+  // NetworkChangeObserver:
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   SystemProfileProto::Network::ConnectionType GetConnectionType() const;

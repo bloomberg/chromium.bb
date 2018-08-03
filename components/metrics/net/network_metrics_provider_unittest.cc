@@ -182,7 +182,7 @@ TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
 
   // Even with change in the connection type, effective connection types
   // should be reported as 2G.
-  network_metrics_provider.OnConnectionTypeChanged(
+  network_metrics_provider.OnNetworkChanged(
       net::NetworkChangeNotifier::CONNECTION_2G);
   network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G,
@@ -252,7 +252,7 @@ TEST_F(NetworkMetricsProviderTest, ConnectionTypeIsAmbiguous) {
 
   // When a connection type change callback is received, network change notifier
   // should be marked as initialized.
-  network_metrics_provider.OnConnectionTypeChanged(
+  network_metrics_provider.OnNetworkChanged(
       net::NetworkChangeNotifier::CONNECTION_2G);
   EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_2G,
             network_metrics_provider.connection_type_);
@@ -271,7 +271,7 @@ TEST_F(NetworkMetricsProviderTest, ConnectionTypeIsAmbiguous) {
   EXPECT_EQ(SystemProfileProto::Network::CONNECTION_2G,
             system_profile.network().connection_type());
 
-  network_metrics_provider.OnConnectionTypeChanged(
+  network_metrics_provider.OnNetworkChanged(
       net::NetworkChangeNotifier::CONNECTION_3G);
   EXPECT_TRUE(network_metrics_provider.connection_type_is_ambiguous_);
   EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);

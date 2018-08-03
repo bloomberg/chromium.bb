@@ -126,7 +126,7 @@ NetworkMetricsProvider::NetworkMetricsProvider(
       min_effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       max_effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_ptr_factory_(this) {
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
   if (connection_type_ != net::NetworkChangeNotifier::CONNECTION_UNKNOWN)
     network_change_notifier_initialized_ = true;
@@ -157,7 +157,7 @@ NetworkMetricsProvider::NetworkMetricsProvider(
 
 NetworkMetricsProvider::~NetworkMetricsProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 
   if (network_quality_estimator_provider_) {
     scoped_refptr<base::SequencedTaskRunner> network_quality_task_runner =
@@ -232,7 +232,7 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
     WriteWifiAccessPointProto(info, network);
 }
 
-void NetworkMetricsProvider::OnConnectionTypeChanged(
+void NetworkMetricsProvider::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // To avoid reporting an ambiguous connection type for users on flaky
