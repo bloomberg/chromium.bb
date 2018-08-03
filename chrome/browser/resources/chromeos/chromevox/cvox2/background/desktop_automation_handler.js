@@ -133,16 +133,20 @@ DesktopAutomationHandler.prototype = {
       return;
 
     // Decide whether to announce and sync this event.
-    if (!DesktopAutomationHandler.announceActions && evt.eventFrom == 'action')
+    if (!DesktopAutomationHandler.announceActions &&
+        evt.eventFrom == 'action' &&
+        EventSourceState.get() != EventSourceType.TOUCH_GESTURE)
       return;
 
     var prevRange = ChromeVoxState.instance.currentRange;
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
 
-    // Don't output if focused node hasn't changed.
+    // Don't output if focused node hasn't changed. Allow focus announcements
+    // when interacting via touch. Touch never sets focus without a double tap.
     if (prevRange && evt.type == 'focus' &&
-        ChromeVoxState.instance.currentRange.equals(prevRange))
+        ChromeVoxState.instance.currentRange.equals(prevRange) &&
+        EventSourceState.get() != EventSourceType.TOUCH_GESTURE)
       return;
 
     var output = new Output();
@@ -235,6 +239,8 @@ DesktopAutomationHandler.prototype = {
   onHover: function(evt) {
     if (!GestureCommandHandler.getEnabled())
       return;
+
+    EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
     var target = evt.target;
     if (!AutomationPredicate.object(target)) {

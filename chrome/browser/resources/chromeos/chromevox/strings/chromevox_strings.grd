@@ -3005,6 +3005,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A hint to the user on how to interact with the virtual on screen keyboard." name="IDS_CHROMEVOX_HINT_TOUCH_TYPE">
         Find a key, then lift to type
       </message>
+      <message desc="Hint for how to start editing a text field while exploring the screen using touch exploration." name="IDS_CHROMEVOX_HINT_DOUBLE_TAP_TO_EDIT">
+        Double tap to start editing
+      </message>
     </messages>
   </release>
 </grit>
