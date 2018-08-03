@@ -24,10 +24,18 @@ void GetKeyEquivalentAndModifierMaskFromAccelerator(
     cocoa_modifiers |= NSEventModifierFlagOption;
   if (accelerator.IsCmdDown())
     cocoa_modifiers |= NSEventModifierFlagCommand;
+
   unichar shifted_character;
+  unichar character;
   int result = ui::MacKeyCodeForWindowsKeyCode(
-      accelerator.key_code(), cocoa_modifiers, &shifted_character, nullptr);
-  DCHECK(result != -1);
+      accelerator.key_code(), cocoa_modifiers, &shifted_character, &character);
+  DCHECK_NE(result, -1);
+
+  // If the key equivalent is itself shifted, then drop Shift from the modifier
+  // flags, otherwise Shift will be required. E.g., curly braces and plus are
+  // both inherently shifted, so the key equivalents shouldn't require Shift.
+  if (shifted_character != character)
+    cocoa_modifiers &= ~NSEventModifierFlagShift;
   *key_equivalent = [NSString stringWithFormat:@"%C", shifted_character];
   *modifier_mask = cocoa_modifiers;
 }
