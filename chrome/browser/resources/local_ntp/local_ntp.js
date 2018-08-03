@@ -309,7 +309,11 @@ function renderTheme() {
                     info.imageHorizontalAlignment,
                     info.imageVerticalAlignment].join(' ').trim();
 
-  document.body.style.background = background;
+  // If a custom background has been selected the image will be applied to the
+  // custom-background element instead of the body.
+  if (!info.customBackgroundConfigured) {
+    document.body.style.background = background;
+  }
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
   var isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
@@ -318,7 +322,7 @@ function renderTheme() {
 
   if (info.customBackgroundConfigured) {
     var imageWithOverlay = [
-      customBackgrounds.CUSTOM_BACKGROUND_OVERLAY, info.imageUrl
+      customBackgrounds.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
     ].join(',').trim();
 
     if (imageWithOverlay != document.body.style.backgroundImage) {
@@ -326,10 +330,23 @@ function renderTheme() {
       customBackgrounds.clearAttribution();
     }
 
-    document.body.style.setProperty('background-image', imageWithOverlay);
+    // |image| and |imageWithOverlay| use the same url as their source. Waiting
+    // to display the custom background until |image| is fully loaded ensures
+    // that |imageWithOverlay| is also loaded.
+    $('custom-bg').style.backgroundImage = imageWithOverlay;
+    var image = new Image();
+    image.onload = function() {
+      $('custom-bg').style.opacity = '1';
+    };
+    image.src = info.imageUrl;
 
     customBackgrounds.setAttribution(
         info.attribution1, info.attribution2, info.attributionActionUrl);
+  } else {
+    $('custom-bg').style.opacity = '0';
+    window.setTimeout(function() {
+      $('custom-bg').style.backgroundImage = '';
+    }, 1000);
   }
 
   $(customBackgrounds.IDS.RESTORE_DEFAULT)
