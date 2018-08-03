@@ -62,10 +62,6 @@ void SignedExchangeRequestHandler::MaybeCreateLoader(
     const network::ResourceRequest& resource_request,
     ResourceContext* resource_context,
     LoaderCallback callback) {
-  // TODO(https://crbug.com/803774): Ask WebPackageFetchManager to get the
-  // ongoing matching SignedExchangeHandler which was created by a
-  // WebPackagePrefetcher.
-
   if (!signed_exchange_loader_) {
     std::move(callback).Run({});
     return;
@@ -89,9 +85,11 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   network::mojom::URLLoaderClientPtr client;
   *client_request = mojo::MakeRequest(&client);
 
-  // TODO(https://crbug.com/803774): Consider creating a new ThrottlingURLLoader
-  // or reusing the existing ThrottlingURLLoader by reattaching URLLoaderClient,
-  // to support SafeBrowsing checking of the content of the WebPackage.
+  // This lets the SignedExchangeLoader directly returns an artificial redirect
+  // to the downstream client without going through ThrottlingURLLoader, which
+  // means some checks like SafeBrowsing may not see the redirect. Given that
+  // the redirected request will be checked when it's restarted we suppose
+  // this is fine.
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       url_, response, std::move(client), url_loader->Unbind(),
       std::move(request_initiator_), url_loader_options_, load_flags_,
