@@ -37,6 +37,10 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
   if (!entry.download_info)
     return nullptr;
 
+  // DownloadDBEntry migrated from in-progress cache doesn't have Ids.
+  if (!entry.download_info->id)
+    return nullptr;
+
   base::Optional<InProgressInfo> in_progress_info =
       entry.download_info->in_progress_info;
   if (!in_progress_info)
@@ -452,8 +456,8 @@ void InProgressDownloadManager::StartDownloadWithItem(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableDownloadDB)) {
     download_db_cache_->AddOrReplaceEntry(CreateDownloadDBEntryFromItem(
-        *download, info->download_source, info->fetch_error_body,
-        info->request_headers));
+        *download, UkmInfo(info->download_source, GetUniqueDownloadId()),
+        info->fetch_error_body, info->request_headers));
     download->RemoveObserver(download_db_cache_.get());
     download->AddObserver(download_db_cache_.get());
   } else {
@@ -492,6 +496,8 @@ void InProgressDownloadManager::OnInitialized(
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
   for (const auto& entry : *entries) {
     auto item = CreateDownloadItemImpl(this, entry);
+    if (!item)
+      continue;
     item->AddObserver(download_db_cache_.get());
     in_progress_downloads_.emplace_back(std::move(item));
   }
@@ -525,4 +531,5 @@ std::vector<std::unique_ptr<download::DownloadItemImpl>>
 InProgressDownloadManager::TakeInProgressDownloads() {
   return std::move(in_progress_downloads_);
 }
+
 }  // namespace download

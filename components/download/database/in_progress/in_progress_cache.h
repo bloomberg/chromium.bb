@@ -6,6 +6,7 @@
 #define COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_IN_PROGRESS_CACHE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/optional.h"
 #include "components/download/database/in_progress/download_entry.h"
@@ -34,6 +35,9 @@ class InProgressCache {
 
   // Removes an entry.
   virtual void RemoveEntry(const std::string& guid) = 0;
+
+  // Returns all entries.
+  virtual std::vector<DownloadEntry> GetAllEntries() = 0;
 };
 
 }  // namespace download

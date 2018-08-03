@@ -361,7 +361,7 @@ DownloadEntry CreateDownloadEntryFromItem(
 
 DownloadDBEntry CreateDownloadDBEntryFromItem(
     const DownloadItem& item,
-    DownloadSource download_source,
+    const UkmInfo& ukm_info,
     bool fetch_error_body,
     const DownloadUrlParameters::RequestHeadersType& request_headers) {
   DownloadDBEntry entry;
@@ -397,7 +397,6 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(
 
   download_info.in_progress_info = in_progress_info;
 
-  UkmInfo ukm_info(download_source, GetUniqueDownloadId());
   download_info.ukm_info = ukm_info;
   entry.download_info = download_info;
   return entry;

@@ -5,7 +5,9 @@
 #include "components/download/internal/common/download_db_cache.h"
 
 #include "components/download/database/download_db.h"
+#include "components/download/database/download_db_conversions.h"
 #include "components/download/database/download_db_entry.h"
+#include "components/download/database/in_progress/download_entry.h"
 #include "components/download/public/common/download_utils.h"
 
 namespace download {
@@ -85,18 +87,11 @@ DownloadUrlParameters::RequestHeadersType GetRequestHeadersType(
   return in_progress_info->request_headers;
 }
 
-DownloadSource GetDownloadSource(base::Optional<DownloadDBEntry> entry) {
-  if (!entry)
-    return DownloadSource::UNKNOWN;
+UkmInfo GetUkmInfo(base::Optional<DownloadDBEntry> entry) {
+  if (entry && entry->download_info && entry->download_info->ukm_info)
+    return entry->download_info->ukm_info.value();
 
-  if (!entry->download_info)
-    return DownloadSource::UNKNOWN;
-
-  base::Optional<UkmInfo>& ukm_info = entry->download_info->ukm_info;
-  if (!ukm_info)
-    return DownloadSource::UNKNOWN;
-
-  return ukm_info->download_source;
+  return UkmInfo(DownloadSource::UNKNOWN, GetUniqueDownloadId());
 }
 
 void CleanUpInProgressEntry(DownloadDBEntry& entry) {
@@ -201,9 +196,9 @@ void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
   bool fetch_error_body = GetFetchErrorBody(current);
   DownloadUrlParameters::RequestHeadersType request_header_type =
       GetRequestHeadersType(current);
-  DownloadSource download_source = GetDownloadSource(current);
+  UkmInfo ukm_info = GetUkmInfo(current);
   DownloadDBEntry entry = CreateDownloadDBEntryFromItem(
-      *download, download_source, fetch_error_body, request_header_type);
+      *download, ukm_info, fetch_error_body, request_header_type);
   AddOrReplaceEntry(entry);
 }
 
@@ -238,6 +233,19 @@ void DownloadDBCache::OnDownloadDBEntriesLoaded(
 void DownloadDBCache::SetTimerTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   update_timer_.SetTaskRunner(task_runner);
+}
+
+void DownloadDBCache::MigrateFromInProgressCache(
+    const std::vector<DownloadEntry>& entries) {
+  DCHECK(initialized_);
+  DCHECK(entries_.empty());
+  std::vector<DownloadDBEntry> db_entries;
+  for (const auto& entry : entries) {
+    entries_[entry.guid] =
+        DownloadDBConversions::DownloadDBEntryFromDownloadEntry(entry);
+    db_entries.emplace_back(entries_[entry.guid]);
+  }
+  download_db_->AddOrReplaceEntries(db_entries);
 }
 
 }  //  namespace download
