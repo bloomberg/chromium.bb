@@ -321,6 +321,16 @@ static void RunScriptStreamingTask(
   streamer->StreamingCompleteOnBackgroundThread();
 }
 
+bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
+  if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
+    // Enable streaming for small scripts, but we must still check the BOM
+    // before starting streaming.
+    return resource_buffer_size >= kMaximumLengthOfBOM;
+  }
+  // Only stream larger scripts.
+  return resource_buffer_size >= small_script_threshold_;
+}
+
 void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
   DCHECK(IsMainThread());
   if (streaming_suppressed_)
@@ -330,14 +340,13 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
     // enough - wait until the next data chunk comes before deciding whether
     // to start the streaming.
     DCHECK(resource->ResourceBuffer());
-    if (resource->ResourceBuffer()->size() < small_script_threshold_)
+    if (!HasEnoughDataForStreaming(resource->ResourceBuffer()->size()))
       return;
     have_enough_data_for_streaming_ = true;
 
     {
       // Check for BOM (byte order marks), because that might change our
       // understanding of the data encoding.
-      constexpr size_t kMaximumLengthOfBOM = 4;
       char maybe_bom[kMaximumLengthOfBOM] = {};
       if (!resource->ResourceBuffer()->GetBytes(maybe_bom,
                                                 kMaximumLengthOfBOM)) {

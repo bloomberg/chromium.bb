@@ -120,6 +120,8 @@ class CORE_EXPORT ScriptStreamer final
   // Scripts whose first data chunk is smaller than this constant won't be
   // streamed. Non-const for testing.
   static size_t small_script_threshold_;
+  // Maximum size of the BOM marker.
+  static constexpr size_t kMaximumLengthOfBOM = 4;
 
   ScriptStreamer(ClassicPendingScript*,
                  ScriptState*,
@@ -128,6 +130,7 @@ class CORE_EXPORT ScriptStreamer final
 
   void StreamingComplete();
   void NotifyFinishedToClient();
+  bool HasEnoughDataForStreaming(size_t resource_buffer_size);
 
   Member<ClassicPendingScript> pending_script_;
   // Whether ScriptStreamer is detached from the Resource. In those cases, the
