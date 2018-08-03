@@ -22,23 +22,44 @@
 
 namespace {
 
-std::unique_ptr<language::LanguageModel> BuildDefaultLanguageModelFor(
-    ios::ChromeBrowserState* const chrome_state) {
+void PrepareLanguageModels(ios::ChromeBrowserState* const chrome_state,
+                           language::LanguageModelManager* const manager) {
   language::OverrideLanguageModel override_model_mode =
       language::GetOverrideLanguageModel();
 
+  // Create all of the models required based on the state of experiments. There
+  // may be more than one, the primary one is set below.
   if (override_model_mode == language::OverrideLanguageModel::HEURISTIC) {
-    return std::make_unique<language::HeuristicLanguageModel>(
-        chrome_state->GetPrefs(),
-        GetApplicationContext()->GetApplicationLocale(),
-        prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile);
+    manager->AddModel(
+        language::LanguageModelManager::ModelType::HEURISTIC,
+        std::make_unique<language::HeuristicLanguageModel>(
+            chrome_state->GetPrefs(),
+            GetApplicationContext()->GetApplicationLocale(),
+            prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile));
   }
 
   // language::OverrideLanguageModel::GEO is not supported on iOS yet.
 
-  return std::make_unique<language::BaselineLanguageModel>(
-      chrome_state->GetPrefs(), GetApplicationContext()->GetApplicationLocale(),
-      prefs::kAcceptLanguages);
+  if (override_model_mode == language::OverrideLanguageModel::DEFAULT) {
+    manager->AddModel(language::LanguageModelManager::ModelType::BASELINE,
+                      std::make_unique<language::BaselineLanguageModel>(
+                          chrome_state->GetPrefs(),
+                          GetApplicationContext()->GetApplicationLocale(),
+                          prefs::kAcceptLanguages));
+  }
+
+  // Set the primary Language Model to use based on the state of experiments.
+  switch (override_model_mode) {
+    case language::OverrideLanguageModel::HEURISTIC:
+      manager->SetPrimaryModel(
+          language::LanguageModelManager::ModelType::HEURISTIC);
+      break;
+    case language::OverrideLanguageModel::DEFAULT:
+    default:
+      manager->SetPrimaryModel(
+          language::LanguageModelManager::ModelType::BASELINE);
+      break;
+  }
 }
 
 }  // namespace
@@ -71,7 +92,7 @@ LanguageModelManagerFactory::BuildServiceInstanceFor(
       std::make_unique<language::LanguageModelManager>(
           chrome_state->GetPrefs(),
           GetApplicationContext()->GetApplicationLocale());
-  manager->SetDefaultModel(BuildDefaultLanguageModelFor(chrome_state));
+  PrepareLanguageModels(chrome_state, manager.get());
   return manager;
 }
 

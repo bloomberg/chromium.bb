@@ -43,7 +43,7 @@ WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
           this,
           WebViewTranslateRankerFactory::GetForBrowserState(browser_state_),
           WebViewLanguageModelManagerFactory::GetForBrowserState(browser_state_)
-              ->GetDefaultModel())),
+              ->GetPrimaryModel())),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get()) {

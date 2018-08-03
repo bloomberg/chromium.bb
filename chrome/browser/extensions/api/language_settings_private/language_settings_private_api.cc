@@ -532,7 +532,7 @@ LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
   Profile* profile = chrome_details_.GetProfile();
   language::LanguageModel* language_model =
       LanguageModelManagerFactory::GetForBrowserContext(profile)
-          ->GetDefaultModel();
+          ->GetPrimaryModel();
   return RespondNow(OneArgument(
       std::make_unique<base::Value>(TranslateService::GetTargetLanguage(
           profile->GetPrefs(), language_model))));

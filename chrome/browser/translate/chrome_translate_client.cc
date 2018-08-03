@@ -119,7 +119,7 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
               web_contents->GetBrowserContext()),
           LanguageModelManagerFactory::GetForBrowserContext(
               web_contents->GetBrowserContext())
-              ->GetDefaultModel())) {
+              ->GetPrimaryModel())) {
   translate_driver_.AddObserver(this);
   translate_driver_.set_translate_manager(translate_manager_.get());
 }
@@ -209,7 +209,7 @@ void ChromeTranslateClient::GetTranslateLanguages(
   *target = translate::TranslateManager::GetTargetLanguage(
       translate_prefs.get(), LanguageModelManagerFactory::GetInstance()
                                  ->GetForBrowserContext(profile)
-                                 ->GetDefaultModel());
+                                 ->GetPrimaryModel());
 }
 
 void ChromeTranslateClient::RecordTranslateEvent(
