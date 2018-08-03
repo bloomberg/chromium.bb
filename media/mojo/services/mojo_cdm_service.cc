@@ -53,8 +53,9 @@ MojoCdmService::~MojoCdmService() {
   context_->UnregisterCdm(cdm_id_);
 }
 
-void MojoCdmService::SetClient(mojom::ContentDecryptionModuleClientPtr client) {
-  client_ = std::move(client);
+void MojoCdmService::SetClient(
+    mojom::ContentDecryptionModuleClientAssociatedPtrInfo client) {
+  client_.Bind(std::move(client));
 }
 
 void MojoCdmService::Initialize(const std::string& key_system,

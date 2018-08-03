@@ -63,7 +63,9 @@ struct CdmKeyInformation {
 interface ContentDecryptionModule {
 
   // Sets ContentDecryptionModuleClient. Must be called before any other calls.
-  SetClient(ContentDecryptionModuleClient client);
+  // Use associated interface to ensure ordering, e.g. events on the client
+  // interface and promise fulfillment.
+  SetClient(associated ContentDecryptionModuleClient client);
 
   // Initializes the CDM. If initialization failed (e.g. |key_system| or
   // |cdm_config| is not supported), |result.success| will be false and |cdm_id|
