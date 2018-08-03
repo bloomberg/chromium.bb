@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -95,7 +96,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   };
 
   typedef std::vector<BluetoothUUID> UUIDList;
-  typedef std::unordered_set<BluetoothUUID, BluetoothUUIDHash> UUIDSet;
+  typedef base::flat_set<BluetoothUUID> UUIDSet;
   typedef std::unordered_map<BluetoothUUID,
                              std::vector<uint8_t>,
                              BluetoothUUIDHash>
