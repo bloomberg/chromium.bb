@@ -107,4 +107,12 @@ public class ActivityDelegate {
         }
         return false;
     }
+
+    public void onBackPressedAsync(Runnable notHandledRunnable) {
+        try {
+            mActivityDelegate.onBackPressedAsync(ObjectWrapper.wrap(notHandledRunnable));
+        } catch (RemoteException e) {
+            assert false;
+        }
+    }
 }

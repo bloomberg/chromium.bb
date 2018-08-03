@@ -172,6 +172,8 @@ public class CustomTabActivity extends ChromeActivity {
     private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
 
     @Nullable
+    private ModuleEntryPoint mModuleEntryPoint;
+    @Nullable
     private ActivityDelegate mModuleActivityDelegate;
     @Nullable
     private Runnable mLoadModuleCancelRunnable;
@@ -321,6 +323,8 @@ public class CustomTabActivity extends ChromeActivity {
     private void onModuleLoaded(@Nullable ModuleEntryPoint entryPoint) {
         mLoadModuleCancelRunnable = null;
         if (entryPoint == null) return;
+
+        mModuleEntryPoint = entryPoint;
 
         long createActivityDelegateStartTime = ModuleMetrics.now();
         mModuleActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
@@ -825,6 +829,7 @@ public class CustomTabActivity extends ChromeActivity {
             mModuleActivityDelegate.onDestroy();
             mModuleActivityDelegate = null;
         }
+        mModuleEntryPoint = null;
         ComponentName moduleComponentName = mIntentDataProvider.getModuleComponentName();
         if (moduleComponentName != null) {
             mConnection.getModuleLoader(moduleComponentName).maybeUnloadModule();
@@ -1010,8 +1015,16 @@ public class CustomTabActivity extends ChromeActivity {
 
         if (exitFullscreenIfShowing()) return true;
 
-        if (mModuleActivityDelegate != null && mModuleActivityDelegate.onBackPressed()) return true;
+        if (mModuleActivityDelegate != null && mModuleEntryPoint.getModuleVersion() >= 2) {
+            mModuleActivityDelegate.onBackPressedAsync(this::handleTabBackNavigation);
+            return true;
+        }
 
+        handleTabBackNavigation();
+        return true;
+    }
+
+    private void handleTabBackNavigation() {
         if (!getToolbarManager().back()) {
             if (getCurrentTabModel().getCount() > 1) {
                 getCurrentTabModel().closeTab(getActivityTab(), false, false, false);
@@ -1020,7 +1033,6 @@ public class CustomTabActivity extends ChromeActivity {
                 finishAndClose(false);
             }
         }
-        return true;
     }
 
     @Override
