@@ -19,8 +19,7 @@
 namespace net {
 
 class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
-    : public NetworkChangeNotifier,
-      public fuchsia::netstack::NotificationListener {
+    : public NetworkChangeNotifier {
  public:
   // Blocks execution until an initial interface list is received from
   // |netstack_|.
@@ -58,15 +57,10 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   // NetworkChangeNotifier implementation.
   ConnectionType GetCurrentConnectionType() const override;
 
-  // NotificationListener methods.
-  void OnInterfacesChanged(
-      fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) override;
-
   // The ConnectionType of the default network interface, stored as an atomic
   // 32-bit int for safe concurrent access.
   base::subtle::Atomic32 cached_connection_type_ = CONNECTION_NONE;
 
-  fidl::Binding<fuchsia::netstack::NotificationListener> listener_binding_;
   fuchsia::netstack::NetstackPtr netstack_;
 
   // Set of addresses from the previous query/update for the default interface.

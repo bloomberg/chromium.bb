@@ -43,25 +43,25 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia()
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     fuchsia::netstack::NetstackPtr netstack)
-    : listener_binding_(this), netstack_(std::move(netstack)) {
+    : netstack_(std::move(netstack)) {
   DCHECK(netstack_);
 
-  listener_binding_.set_error_handler([this]() {
-    LOG(ERROR) << "Lost connection to netstack.";
-    listener_binding_.set_error_handler(nullptr);
-    listener_binding_.Unbind();
-  });
-  netstack_->RegisterListener(listener_binding_.NewBinding());
+  netstack_.set_error_handler(
+      [this]() { LOG(ERROR) << "Lost connection to netstack."; });
+  netstack_.events().OnInterfacesChanged =
+      [this](fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
+        ProcessInterfaceList(base::OnceClosure(), std::move(interfaces));
+      };
 
-  // Wait until we get the interface list before proceeding, to prevent racy
-  // accesses of GetCurrentConnectionType().
-  base::RunLoop initialized_runloop;
+  // Fetch the interface list synchronously, so that an initial ConnectionType
+  // is available before we return.
+  base::RunLoop wait_for_interfaces;
   netstack_->GetInterfaces([
-    this, quit_closure = initialized_runloop.QuitClosure()
+    this, quit_closure = wait_for_interfaces.QuitClosure()
   ](fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
     ProcessInterfaceList(quit_closure, std::move(interfaces));
   });
-  initialized_runloop.Run();
+  wait_for_interfaces.Run();
 }
 
 NetworkChangeNotifierFuchsia::~NetworkChangeNotifierFuchsia() {
@@ -73,11 +73,6 @@ NetworkChangeNotifierFuchsia::GetCurrentConnectionType() const {
   ConnectionType type = static_cast<ConnectionType>(
       base::subtle::Acquire_Load(&cached_connection_type_));
   return type;
-}
-
-void NetworkChangeNotifierFuchsia::OnInterfacesChanged(
-    fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
-  ProcessInterfaceList(base::OnceClosure(), std::move(interfaces));
 }
 
 void NetworkChangeNotifierFuchsia::ProcessInterfaceList(
