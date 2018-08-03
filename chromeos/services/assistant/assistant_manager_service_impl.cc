@@ -601,12 +601,9 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
     Resolution resolution) {
   switch (resolution) {
     // Interaction ended normally.
-    // Note that TIMEOUT here does not refer to server timeout, but rather mic
-    // timeout due to speech inactivity. As this case does not require special
-    // UI logic, it is treated here as a normal interaction completion.
     case Resolution::NORMAL:
     case Resolution::NORMAL_WITH_FOLLOW_ON:
-    case Resolution::TIMEOUT:
+    case Resolution::NO_RESPONSE:
       interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kNormal);
@@ -620,11 +617,11 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
             mojom::AssistantInteractionResolution::kInterruption);
       });
       break;
-    // Interaction ended due to multi-device hotword loss.
-    case Resolution::NO_RESPONSE:
+    // Interaction ended due to mic timeout.
+    case Resolution::TIMEOUT:
       interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
-            mojom::AssistantInteractionResolution::kMultiDeviceHotwordLoss);
+            mojom::AssistantInteractionResolution::kMicTimeout);
       });
       break;
     // Interaction ended due to error.

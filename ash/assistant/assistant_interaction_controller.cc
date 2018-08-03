@@ -189,6 +189,14 @@ void AssistantInteractionController::OnInteractionFinished(
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
   assistant_interaction_model_.SetMicState(MicState::kClosed);
 
+  // If the interaction was finished due to mic timeout, we only want to clear
+  // the pending query/response state for that interaction.
+  if (resolution == AssistantInteractionResolution::kMicTimeout) {
+    assistant_interaction_model_.ClearPendingQuery();
+    assistant_interaction_model_.ClearPendingResponse();
+    return;
+  }
+
   // The interaction has finished, so we finalize the pending response if it
   // hasn't already been finalized.
   if (assistant_interaction_model_.pending_response())
