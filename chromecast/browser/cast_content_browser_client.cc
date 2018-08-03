@@ -29,6 +29,7 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
@@ -472,6 +473,11 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   if (renderer_config) {
     renderer_config->AppendSwitchesTo(command_line);
   }
+}
+
+std::string CastContentBrowserClient::GetAcceptLangs(
+    content::BrowserContext* context) {
+  return CastHttpUserAgentSettings::AcceptLanguage();
 }
 
 void CastContentBrowserClient::OverrideWebkitPrefs(
