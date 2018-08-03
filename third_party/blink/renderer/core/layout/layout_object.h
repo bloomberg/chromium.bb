@@ -619,6 +619,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual bool IsLayoutFlowThread() const { return false; }
   virtual bool IsLayoutInline() const { return false; }
   virtual bool IsLayoutEmbeddedContent() const { return false; }
+  virtual bool IsLayoutNGObject() const { return false; }
 
   bool IsDocumentElement() const {
     return GetDocument().documentElement() == node_;

@@ -18,6 +18,7 @@ class CORE_EXPORT LayoutNGFlexibleBox : public LayoutBlock {
   void UpdateBlockLayout(bool relayout_children) override;
 
   bool IsFlexibleBox() const final { return true; }
+  bool IsLayoutNGObject() const override { return true; }
   const char* GetName() const override { return "LayoutNGFlexibleBox"; }
 
  protected:

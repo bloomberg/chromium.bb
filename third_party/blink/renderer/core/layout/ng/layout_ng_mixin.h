@@ -30,6 +30,8 @@ class LayoutNGMixin : public Base {
   explicit LayoutNGMixin(Element* element);
   ~LayoutNGMixin() override;
 
+  bool IsLayoutNGObject() const override { return true; }
+
   NGInlineNodeData* TakeNGInlineNodeData() override;
   NGInlineNodeData* GetNGInlineNodeData() const override;
   void ResetNGInlineNodeData() override;
