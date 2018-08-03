@@ -53,11 +53,6 @@ void ProducerHost::OnConnectionError() {
 }
 
 void ProducerHost::OnConnect() {
-  // Register data sources with Perfetto here.
-
-  perfetto::DataSourceDescriptor descriptor;
-  descriptor.set_name(mojom::kTraceEventDataSourceName);
-  producer_endpoint_->RegisterDataSource(descriptor);
 }
 
 void ProducerHost::OnDisconnect() {
@@ -92,7 +87,13 @@ void ProducerHost::CreateDataSourceInstance(
 void ProducerHost::TearDownDataSourceInstance(
     perfetto::DataSourceInstanceID id) {
   if (producer_client_) {
-    producer_client_->TearDownDataSourceInstance(id);
+    producer_client_->TearDownDataSourceInstance(
+        id,
+        base::BindOnce(
+            [](ProducerHost* producer_host, perfetto::DataSourceInstanceID id) {
+              producer_host->producer_endpoint_->NotifyDataSourceStopped(id);
+            },
+            base::Unretained(this), id));
   }
 }
 
@@ -113,7 +114,10 @@ void ProducerHost::Flush(
 // inputs.
 void ProducerHost::CommitData(mojom::CommitDataRequestPtr data_request) {
   perfetto::CommitDataRequest native_data_request;
+
   // TODO(oysteine): Set up a TypeTrait for this instead of manual conversion.
+  native_data_request.set_flush_request_id(data_request->flush_request_id);
+
   for (auto& chunk : data_request->chunks_to_move) {
     auto* new_chunk = native_data_request.add_chunks_to_move();
     new_chunk->set_page(chunk->page);
@@ -143,6 +147,18 @@ void ProducerHost::CommitData(mojom::CommitDataRequestPtr data_request) {
   // TODO(oysteine): Pass through an optional callback for
   // tests to know when a commit is completed.
   producer_endpoint_->CommitData(native_data_request);
+}
+
+void ProducerHost::RegisterDataSource(
+    mojom::DataSourceRegistrationPtr registration_info) {
+  perfetto::DataSourceDescriptor descriptor;
+  descriptor.set_name(registration_info->name);
+  descriptor.set_will_notify_on_stop(registration_info->will_notify_on_stop);
+  producer_endpoint_->RegisterDataSource(descriptor);
+}
+
+void ProducerHost::NotifyFlushComplete(uint64_t flush_request_id) {
+  producer_endpoint_->NotifyFlushComplete(flush_request_id);
 }
 
 }  // namespace tracing

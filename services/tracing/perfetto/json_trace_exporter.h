@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/values.h"
 
 #include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
@@ -31,7 +32,9 @@ class JSONTraceExporter : public perfetto::Consumer {
   ~JSONTraceExporter() override;
 
   using OnTraceEventJSONCallback =
-      base::RepeatingCallback<void(const std::string& json, bool has_more)>;
+      base::RepeatingCallback<void(const std::string& json,
+                                   base::DictionaryValue* metadata,
+                                   bool has_more)>;
   void StopAndFlush(OnTraceEventJSONCallback callback);
 
   // perfetto::Consumer implementation.
@@ -39,7 +42,7 @@ class JSONTraceExporter : public perfetto::Consumer {
   // and to send finished protobufs over.
   void OnConnect() override;
   void OnDisconnect() override;
-  void OnTracingDisabled() override{};
+  void OnTracingDisabled() override;
   void OnTraceData(std::vector<perfetto::TracePacket> packets,
                    bool has_more) override;
 
@@ -48,6 +51,7 @@ class JSONTraceExporter : public perfetto::Consumer {
   bool has_output_json_preamble_ = false;
   bool has_output_first_event_ = false;
   std::string config_;
+  std::unique_ptr<base::DictionaryValue> metadata_;
 
   // Keep last to avoid edge-cases where its callbacks come in mid-destruction.
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>

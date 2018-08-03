@@ -48,7 +48,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
   void GetCategories(GetCategoriesCallback callback) override;
 
   virtual void AddMetadataGeneratorFunction(
-      MetadataGeneratorFunction generator) {}
+      MetadataGeneratorFunction generator) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TraceEventAgent);

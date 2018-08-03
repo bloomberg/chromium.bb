@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/json/json_writer.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -20,6 +22,78 @@ using TraceEvent = base::trace_event::TraceEvent;
 using TraceConfig = base::trace_event::TraceConfig;
 
 namespace tracing {
+
+TraceEventMetadataSource::TraceEventMetadataSource()
+    : DataSourceBase(mojom::kMetaDataSourceName),
+      origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+
+TraceEventMetadataSource::~TraceEventMetadataSource() = default;
+
+void TraceEventMetadataSource::AddGeneratorFunction(
+    MetadataGeneratorFunction generator) {
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+  base::AutoLock lock(lock_);
+  generator_functions_.push_back(generator);
+}
+
+void TraceEventMetadataSource::GenerateMetadata(
+    std::unique_ptr<perfetto::TraceWriter> trace_writer) {
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+
+  auto trace_packet = trace_writer->NewTracePacket();
+  protozero::MessageHandle<perfetto::protos::pbzero::ChromeEventBundle>
+      event_bundle(trace_packet->set_chrome_events());
+
+  base::AutoLock lock(lock_);
+  for (auto& generator : generator_functions_) {
+    std::unique_ptr<base::DictionaryValue> metadata_dict = generator.Run();
+    if (!metadata_dict) {
+      continue;
+    }
+
+    for (const auto& it : metadata_dict->DictItems()) {
+      auto* new_metadata = event_bundle->add_metadata();
+      new_metadata->set_name(it.first.c_str());
+
+      if (it.second.is_int()) {
+        new_metadata->set_int_value(it.second.GetInt());
+      } else if (it.second.is_bool()) {
+        new_metadata->set_bool_value(it.second.GetBool());
+      } else if (it.second.is_string()) {
+        new_metadata->set_string_value(it.second.GetString().c_str());
+      } else {
+        std::string json_value;
+        base::JSONWriter::Write(it.second, &json_value);
+        new_metadata->set_json_value(json_value.c_str());
+      }
+    }
+  }
+}
+
+void TraceEventMetadataSource::StartTracing(
+    ProducerClient* producer_client,
+    const mojom::DataSourceConfig& data_source_config) {
+  origin_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&TraceEventMetadataSource::GenerateMetadata,
+                                base::Unretained(this),
+                                producer_client->CreateTraceWriter(
+                                    data_source_config.target_buffer)));
+}
+
+void TraceEventMetadataSource::StopTracing(
+    base::OnceClosure stop_complete_callback) {
+  // We bounce a task off the origin_task_runner_ that the generator
+  // callbacks are run from, to make sure that GenerateMetaData() has finished
+  // running.
+  origin_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                        std::move(stop_complete_callback));
+}
+
+void TraceEventMetadataSource::Flush(
+    base::RepeatingClosure flush_complete_callback) {
+  origin_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                        std::move(flush_complete_callback));
+}
 
 class TraceEventDataSource::ThreadLocalEventSink {
  public:
@@ -169,6 +243,8 @@ class TraceEventDataSource::ThreadLocalEventSink {
     }
   }
 
+  void Flush() { trace_writer_->Flush(); }
+
  private:
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
 };
@@ -193,49 +269,86 @@ TraceEventDataSource* TraceEventDataSource::GetInstance() {
   return instance.get();
 }
 
-TraceEventDataSource::TraceEventDataSource() = default;
+TraceEventDataSource::TraceEventDataSource()
+    : DataSourceBase(mojom::kTraceEventDataSourceName) {}
 
 TraceEventDataSource::~TraceEventDataSource() = default;
 
 void TraceEventDataSource::StartTracing(
     ProducerClient* producer_client,
     const mojom::DataSourceConfig& data_source_config) {
-  base::AutoLock lock(lock_);
+  {
+    base::AutoLock lock(lock_);
 
-  DCHECK(!producer_client_);
-  producer_client_ = producer_client;
-  target_buffer_ = data_source_config.target_buffer;
+    DCHECK(!producer_client_);
+    producer_client_ = producer_client;
+    target_buffer_ = data_source_config.target_buffer;
+  }
 
   TraceLog::GetInstance()->SetAddTraceEventOverride(
-      &TraceEventDataSource::OnAddTraceEvent);
+      &TraceEventDataSource::OnAddTraceEvent,
+      &TraceEventDataSource::FlushCurrentThread);
 
   TraceLog::GetInstance()->SetEnabled(
       TraceConfig(data_source_config.trace_config), TraceLog::RECORDING_MODE);
 }
 
 void TraceEventDataSource::StopTracing(
-    base::RepeatingClosure stop_complete_callback) {
-  DCHECK(producer_client_);
+    base::OnceClosure stop_complete_callback) {
+  stop_complete_callback_ = std::move(stop_complete_callback);
 
-  {
-    base::AutoLock lock(lock_);
+  auto on_tracing_stopped_callback =
+      [](TraceEventDataSource* data_source,
+         const scoped_refptr<base::RefCountedString>&, bool has_more_events) {
+        if (has_more_events) {
+          return;
+        }
 
-    producer_client_ = nullptr;
-    target_buffer_ = 0;
+        TraceLog::GetInstance()->SetAddTraceEventOverride(nullptr, nullptr);
+
+        // TraceLog::CancelTracing will cause metadata events to be written;
+        // make sure we flush the TraceWriter for this thread (TraceLog will
+        // only call TraceEventDataSource::FlushCurrentThread for threads with
+        // a MessageLoop).
+        // TODO(oysteine): The perfetto service itself should be able to recover
+        // unreturned chunks so technically this can go away
+        // at some point, but seems needed for now.
+        FlushCurrentThread();
+
+        if (data_source->stop_complete_callback_) {
+          std::move(data_source->stop_complete_callback_).Run();
+        }
+      };
+
+  if (TraceLog::GetInstance()->IsEnabled()) {
+    // We call CancelTracing because we don't want/need TraceLog to do any of
+    // its own JSON serialization on its own.
+    TraceLog::GetInstance()->CancelTracing(base::BindRepeating(
+        on_tracing_stopped_callback, base::Unretained(this)));
+  } else {
+    on_tracing_stopped_callback(this, scoped_refptr<base::RefCountedString>(),
+                                false);
   }
 
-  TraceLog::GetInstance()->SetAddTraceEventOverride(nullptr);
+  base::AutoLock lock(lock_);
+  DCHECK(producer_client_);
+  producer_client_ = nullptr;
+  target_buffer_ = 0;
+}
 
-  // We call CancelTracing because we don't want/need TraceLog to do any of
-  // its own JSON serialization on its own
-  TraceLog::GetInstance()->CancelTracing(base::BindRepeating(
-      [](base::RepeatingClosure stop_complete_callback,
+void TraceEventDataSource::Flush(
+    base::RepeatingClosure flush_complete_callback) {
+  DCHECK(TraceLog::GetInstance()->IsEnabled());
+  TraceLog::GetInstance()->Flush(base::BindRepeating(
+      [](base::RepeatingClosure flush_complete_callback,
          const scoped_refptr<base::RefCountedString>&, bool has_more_events) {
-        if (!has_more_events && stop_complete_callback) {
-          stop_complete_callback.Run();
+        if (has_more_events) {
+          return;
         }
+
+        flush_complete_callback.Run();
       },
-      std::move(stop_complete_callback)));
+      std::move(flush_complete_callback)));
 }
 
 TraceEventDataSource::ThreadLocalEventSink*
@@ -266,10 +379,11 @@ void TraceEventDataSource::OnAddTraceEvent(const TraceEvent& trace_event) {
 }
 
 // static
-void TraceEventDataSource::ResetCurrentThreadForTesting() {
-  ThreadLocalEventSink* thread_local_event_sink =
+void TraceEventDataSource::FlushCurrentThread() {
+  auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
   if (thread_local_event_sink) {
+    thread_local_event_sink->Flush();
     delete thread_local_event_sink;
     ThreadLocalEventSinkSlot()->Set(nullptr);
   }

@@ -161,6 +161,7 @@ tracing::TraceEventAgent* TracingControllerImpl::GetTraceEventAgent() const {
 
 std::unique_ptr<base::DictionaryValue>
 TracingControllerImpl::GenerateMetadataDict() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto metadata_dict = std::make_unique<base::DictionaryValue>();
 
   // trace_config_ can be null if the tracing controller finishes flushing

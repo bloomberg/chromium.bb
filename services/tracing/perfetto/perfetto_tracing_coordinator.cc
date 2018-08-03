@@ -42,7 +42,9 @@ class PerfettoTracingCoordinator::TracingSession {
         &TracingSession::OnJSONTraceEventCallback, base::Unretained(this)));
   }
 
-  void OnJSONTraceEventCallback(const std::string& json, bool has_more) {
+  void OnJSONTraceEventCallback(const std::string& json,
+                                base::DictionaryValue* metadata,
+                                bool has_more) {
     if (stream_.is_valid()) {
       mojo::BlockingCopyFromString(json, stream_);
     }
@@ -50,7 +52,7 @@ class PerfettoTracingCoordinator::TracingSession {
     if (!has_more) {
       DCHECK(!stop_and_flush_callback_.is_null());
       base::ResetAndReturn(&stop_and_flush_callback_)
-          .Run(/*metadata=*/base::Value(base::Value::Type::DICTIONARY));
+          .Run(/*metadata=*/std::move(*metadata));
 
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, std::move(tracing_over_callback_));
