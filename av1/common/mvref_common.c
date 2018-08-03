@@ -431,6 +431,61 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   return 0;
 }
 
+static void process_compound_ref_mv_candidate(
+    const MB_MODE_INFO *const candidate, const AV1_COMMON *const cm,
+    const MV_REFERENCE_FRAME *const rf, int_mv ref_id[2][2],
+    int ref_id_count[2], int_mv ref_diff[2][2], int ref_diff_count[2]) {
+  for (int rf_idx = 0; rf_idx < 2; ++rf_idx) {
+    MV_REFERENCE_FRAME can_rf = candidate->ref_frame[rf_idx];
+
+    for (int cmp_idx = 0; cmp_idx < 2; ++cmp_idx) {
+      if (can_rf == rf[cmp_idx] && ref_id_count[cmp_idx] < 2) {
+        ref_id[cmp_idx][ref_id_count[cmp_idx]] = candidate->mv[rf_idx];
+        ++ref_id_count[cmp_idx];
+      } else if (can_rf > INTRA_FRAME && ref_diff_count[cmp_idx] < 2) {
+        int_mv this_mv = candidate->mv[rf_idx];
+        if (cm->ref_frame_sign_bias[can_rf] !=
+            cm->ref_frame_sign_bias[rf[cmp_idx]]) {
+          this_mv.as_mv.row = -this_mv.as_mv.row;
+          this_mv.as_mv.col = -this_mv.as_mv.col;
+        }
+        ref_diff[cmp_idx][ref_diff_count[cmp_idx]] = this_mv;
+        ++ref_diff_count[cmp_idx];
+      }
+    }
+  }
+}
+
+static void process_single_ref_mv_candidate(
+    const MB_MODE_INFO *const candidate, const AV1_COMMON *const cm,
+    MV_REFERENCE_FRAME ref_frame, uint8_t refmv_count[MODE_CTX_REF_FRAMES],
+    CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE]) {
+  for (int rf_idx = 0; rf_idx < 2; ++rf_idx) {
+    if (candidate->ref_frame[rf_idx] > INTRA_FRAME) {
+      int_mv this_mv = candidate->mv[rf_idx];
+      if (cm->ref_frame_sign_bias[candidate->ref_frame[rf_idx]] !=
+          cm->ref_frame_sign_bias[ref_frame]) {
+        this_mv.as_mv.row = -this_mv.as_mv.row;
+        this_mv.as_mv.col = -this_mv.as_mv.col;
+      }
+      int stack_idx;
+      for (stack_idx = 0; stack_idx < refmv_count[ref_frame]; ++stack_idx) {
+        const int_mv stack_mv = ref_mv_stack[ref_frame][stack_idx].this_mv;
+        if (this_mv.as_int == stack_mv.as_int) break;
+      }
+
+      if (stack_idx == refmv_count[ref_frame]) {
+        ref_mv_stack[ref_frame][stack_idx].this_mv = this_mv;
+
+        // TODO(jingning): Set an arbitrary small number here. The weight
+        // doesn't matter as long as it is properly initialized.
+        ref_mv_stack[ref_frame][stack_idx].weight = 2;
+        ++refmv_count[ref_frame];
+      }
+    }
+  }
+}
+
 static void setup_ref_mv_list(
     const AV1_COMMON *cm, const MACROBLOCKD *xd, MV_REFERENCE_FRAME ref_frame,
     uint8_t refmv_count[MODE_CTX_REF_FRAMES],
@@ -645,54 +700,16 @@ static void setup_ref_mv_list(
 
       for (int idx = 0; abs(max_row_offset) >= 1 && idx < mi_size;) {
         const MB_MODE_INFO *const candidate = xd->mi[-xd->mi_stride + idx];
-        const int candidate_bsize = candidate->sb_type;
-
-        for (int rf_idx = 0; rf_idx < 2; ++rf_idx) {
-          MV_REFERENCE_FRAME can_rf = candidate->ref_frame[rf_idx];
-
-          for (int cmp_idx = 0; cmp_idx < 2; ++cmp_idx) {
-            if (can_rf == rf[cmp_idx] && ref_id_count[cmp_idx] < 2) {
-              ref_id[cmp_idx][ref_id_count[cmp_idx]] = candidate->mv[rf_idx];
-              ++ref_id_count[cmp_idx];
-            } else if (can_rf > INTRA_FRAME && ref_diff_count[cmp_idx] < 2) {
-              int_mv this_mv = candidate->mv[rf_idx];
-              if (cm->ref_frame_sign_bias[can_rf] !=
-                  cm->ref_frame_sign_bias[rf[cmp_idx]]) {
-                this_mv.as_mv.row = -this_mv.as_mv.row;
-                this_mv.as_mv.col = -this_mv.as_mv.col;
-              }
-              ref_diff[cmp_idx][ref_diff_count[cmp_idx]] = this_mv;
-              ++ref_diff_count[cmp_idx];
-            }
-          }
-        }
-        idx += mi_size_wide[candidate_bsize];
+        process_compound_ref_mv_candidate(
+            candidate, cm, rf, ref_id, ref_id_count, ref_diff, ref_diff_count);
+        idx += mi_size_wide[candidate->sb_type];
       }
 
       for (int idx = 0; abs(max_col_offset) >= 1 && idx < mi_size;) {
         const MB_MODE_INFO *const candidate = xd->mi[idx * xd->mi_stride - 1];
-        const int candidate_bsize = candidate->sb_type;
-
-        for (int rf_idx = 0; rf_idx < 2; ++rf_idx) {
-          MV_REFERENCE_FRAME can_rf = candidate->ref_frame[rf_idx];
-
-          for (int cmp_idx = 0; cmp_idx < 2; ++cmp_idx) {
-            if (can_rf == rf[cmp_idx] && ref_id_count[cmp_idx] < 2) {
-              ref_id[cmp_idx][ref_id_count[cmp_idx]] = candidate->mv[rf_idx];
-              ++ref_id_count[cmp_idx];
-            } else if (can_rf > INTRA_FRAME && ref_diff_count[cmp_idx] < 2) {
-              int_mv this_mv = candidate->mv[rf_idx];
-              if (cm->ref_frame_sign_bias[can_rf] !=
-                  cm->ref_frame_sign_bias[rf[cmp_idx]]) {
-                this_mv.as_mv.row = -this_mv.as_mv.row;
-                this_mv.as_mv.col = -this_mv.as_mv.col;
-              }
-              ref_diff[cmp_idx][ref_diff_count[cmp_idx]] = this_mv;
-              ++ref_diff_count[cmp_idx];
-            }
-          }
-        }
-        idx += mi_size_high[candidate_bsize];
+        process_compound_ref_mv_candidate(
+            candidate, cm, rf, ref_id, ref_id_count, ref_diff, ref_diff_count);
+        idx += mi_size_high[candidate->sb_type];
       }
 
       // Build up the compound mv predictor
@@ -759,67 +776,17 @@ static void setup_ref_mv_list(
     for (int idx = 0; abs(max_row_offset) >= 1 && idx < mi_size &&
                       refmv_count[ref_frame] < MAX_MV_REF_CANDIDATES;) {
       const MB_MODE_INFO *const candidate = xd->mi[-xd->mi_stride + idx];
-      const int candidate_bsize = candidate->sb_type;
-
-      // TODO(jingning): Refactor the following code.
-      for (int rf_idx = 0; rf_idx < 2; ++rf_idx) {
-        if (candidate->ref_frame[rf_idx] > INTRA_FRAME) {
-          int_mv this_mv = candidate->mv[rf_idx];
-          if (cm->ref_frame_sign_bias[candidate->ref_frame[rf_idx]] !=
-              cm->ref_frame_sign_bias[ref_frame]) {
-            this_mv.as_mv.row = -this_mv.as_mv.row;
-            this_mv.as_mv.col = -this_mv.as_mv.col;
-          }
-          int stack_idx;
-          for (stack_idx = 0; stack_idx < refmv_count[ref_frame]; ++stack_idx) {
-            int_mv stack_mv = ref_mv_stack[ref_frame][stack_idx].this_mv;
-            if (this_mv.as_int == stack_mv.as_int) break;
-          }
-
-          if (stack_idx == refmv_count[ref_frame]) {
-            ref_mv_stack[ref_frame][stack_idx].this_mv = this_mv;
-
-            // TODO(jingning): Set an arbitrary small number here. The weight
-            // doesn't matter as long as it is properly initialized.
-            ref_mv_stack[ref_frame][stack_idx].weight = 2;
-            ++refmv_count[ref_frame];
-          }
-        }
-      }
-      idx += mi_size_wide[candidate_bsize];
+      process_single_ref_mv_candidate(candidate, cm, ref_frame, refmv_count,
+                                      ref_mv_stack);
+      idx += mi_size_wide[candidate->sb_type];
     }
 
     for (int idx = 0; abs(max_col_offset) >= 1 && idx < mi_size &&
                       refmv_count[ref_frame] < MAX_MV_REF_CANDIDATES;) {
       const MB_MODE_INFO *const candidate = xd->mi[idx * xd->mi_stride - 1];
-      const int candidate_bsize = candidate->sb_type;
-
-      // TODO(jingning): Refactor the following code.
-      for (int rf_idx = 0; rf_idx < 2; ++rf_idx) {
-        if (candidate->ref_frame[rf_idx] > INTRA_FRAME) {
-          int_mv this_mv = candidate->mv[rf_idx];
-          if (cm->ref_frame_sign_bias[candidate->ref_frame[rf_idx]] !=
-              cm->ref_frame_sign_bias[ref_frame]) {
-            this_mv.as_mv.row = -this_mv.as_mv.row;
-            this_mv.as_mv.col = -this_mv.as_mv.col;
-          }
-          int stack_idx;
-          for (stack_idx = 0; stack_idx < refmv_count[ref_frame]; ++stack_idx) {
-            int_mv stack_mv = ref_mv_stack[ref_frame][stack_idx].this_mv;
-            if (this_mv.as_int == stack_mv.as_int) break;
-          }
-
-          if (stack_idx == refmv_count[ref_frame]) {
-            ref_mv_stack[ref_frame][stack_idx].this_mv = this_mv;
-
-            // TODO(jingning): Set an arbitrary small number here. The weight
-            // doesn't matter as long as it is properly initialized.
-            ref_mv_stack[ref_frame][stack_idx].weight = 2;
-            ++refmv_count[ref_frame];
-          }
-        }
-      }
-      idx += mi_size_high[candidate_bsize];
+      process_single_ref_mv_candidate(candidate, cm, ref_frame, refmv_count,
+                                      ref_mv_stack);
+      idx += mi_size_high[candidate->sb_type];
     }
 
     for (int idx = 0; idx < refmv_count[ref_frame]; ++idx) {
