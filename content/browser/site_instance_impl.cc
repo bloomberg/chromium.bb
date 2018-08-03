@@ -249,13 +249,15 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   if (IsRendererDebugURL(url))
     return false;
 
-  // Any process can host an about:blank URL.  This check avoids a process
-  // transfer for browser-initiated navigations to about:blank in a dedicated
-  // process; without it, IsSuitableHost would consider this process unsuitable
-  // for about:blank when it compares origin locks.  Renderer-initiated
-  // navigations will handle about:blank navigations elsewhere and leave them
-  // in the source SiteInstance, along with about:srcdoc and data:.
-  if (url == url::kAboutBlankURL)
+  // Any process can host an about:blank URL, except the one used for error
+  // pages, which should not commit successful navigations.  This check avoids a
+  // process transfer for browser-initiated navigations to about:blank in a
+  // dedicated process; without it, IsSuitableHost would consider this process
+  // unsuitable for about:blank when it compares origin locks.
+  // Renderer-initiated navigations will handle about:blank navigations
+  // elsewhere and leave them in the source SiteInstance, along with
+  // about:srcdoc and data:.
+  if (url.IsAboutBlank() && site_ != GURL(kUnreachableWebDataURL))
     return false;
 
   // If the site URL is an extension (e.g., for hosted apps or WebUI) but the

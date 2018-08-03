@@ -2203,7 +2203,7 @@ crbug.com/665577 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-fram
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure Timeout ]
 crbug.com/665577 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
 
-crbug.com/599670 [ Win ] http/tests/devtools/resource-parameters-ipv6.js [ Pass Failure ]
+crbug.com/599670 [ Win ] http/tests/devtools/resource-parameters-ipv6.js [ Pass Failure Crash ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
@@ -2652,7 +2652,7 @@ crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
 crbug.com/808834 [ Linux Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Failure ]
 
 
-crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Pass Timeout ]
+crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Crash Pass Timeout ]
 
 
 # Untriaged failures after https://crrev.com/c/543695/.

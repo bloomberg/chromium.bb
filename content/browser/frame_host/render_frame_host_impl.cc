@@ -5273,25 +5273,48 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // Error pages may sometimes commit a URL in the wrong process, which requires
   // an exception for the CanCommitURL checks.  This is ok as long as the origin
   // is unique.
-  // TODO(creis): Kill the renderer if it claims an error page has a non-unique
-  // origin.
   bool is_permitted_error_page = false;
-  if (validated_params->origin.unique()) {
-    if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-            frame_tree_node_->IsMainFrame())) {
+  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+          frame_tree_node_->IsMainFrame())) {
+    if (site_instance_->GetSiteURL() == GURL(content::kUnreachableWebDataURL)) {
+      // Commits in the error page process must only be failures, otherwise
+      // successful navigations could commit documents from origins different
+      // than the chrome-error://chromewebdata/ one and violate expectations.
+      if (!validated_params->url_is_unreachable) {
+        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+        bad_message::ReceivedBadMessage(
+            process, bad_message::RFH_ERROR_PROCESS_NON_ERROR_COMMIT);
+        return false;
+      }
+
+      // Error pages must commit in a unique origin. Terminate the renderer
+      // process if this is violated.
+      if (!validated_params->origin.unique()) {
+        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+        bad_message::ReceivedBadMessage(
+            process, bad_message::RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT);
+        return false;
+      }
+
       // With error page isolation, any URL can commit in an error page process.
-      if (GetSiteInstance()->GetSiteURL() ==
-          GURL(content::kUnreachableWebDataURL)) {
-        is_permitted_error_page = true;
+      is_permitted_error_page = true;
+    }
+  } else {
+    // Without error page isolation, a blocked navigation is expected to
+    // commit in the old renderer process.  This may be true for subframe
+    // navigations even when error page isolation is enabled for main frames.
+    if (GetNavigationHandle() && GetNavigationHandle()->GetNetErrorCode() ==
+                                     net::ERR_BLOCKED_BY_CLIENT) {
+      // Since this is known to be an error page commit, verify it happened in
+      // a unique origin, terminating the renderer process otherwise.
+      if (!validated_params->origin.unique()) {
+        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+        bad_message::ReceivedBadMessage(
+            process, bad_message::RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT);
+        return false;
       }
-    } else {
-      // Without error page isolation, a blocked navigation is expected to
-      // commit in the old renderer process.  This may be true for subframe
-      // navigations even when error page isolation is enabled for main frames.
-      if (GetNavigationHandle() && GetNavigationHandle()->GetNetErrorCode() ==
-                                       net::ERR_BLOCKED_BY_CLIENT) {
-        is_permitted_error_page = true;
-      }
+
+      is_permitted_error_page = true;
     }
   }
 
