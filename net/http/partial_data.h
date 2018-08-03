@@ -129,7 +129,7 @@ class PartialData {
   // Returns the length to use when scanning the cache.
   int GetNextRangeLen();
 
-  // Completion routine for our callback.
+  // Completion routine for our callback.  Deletes |start|.
   void GetAvailableRangeCompleted(int64_t* start, int result);
 
   // The portion we're trying to get, either from cache or network.
