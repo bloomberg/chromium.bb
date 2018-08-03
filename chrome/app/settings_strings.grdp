@@ -435,7 +435,7 @@
       Linux (Beta)
     </message>
     <message name="IDS_SETTINGS_CROSTINI_LABEL" desc="The text associated with the primary section setting.">
-      Linux (Beta)
+      Linux
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SUBTEXT" desc="Description for the section for enabling and managing Crostini.">
       Run Linux tools, editors, and IDEs on your Chromebook.
