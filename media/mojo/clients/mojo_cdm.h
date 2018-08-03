@@ -21,6 +21,7 @@
 #include "media/base/cdm_session_tracker.h"
 #include "media/base/content_decryption_module.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -139,7 +140,7 @@ class MojoCdm : public ContentDecryptionModule,
 
   mojom::ContentDecryptionModulePtr remote_cdm_;
   mojom::InterfaceFactory* interface_factory_;
-  mojo::Binding<ContentDecryptionModuleClient> client_binding_;
+  mojo::AssociatedBinding<ContentDecryptionModuleClient> client_binding_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Protects |cdm_id_|, |decryptor_ptr_|, |decryptor_| and
