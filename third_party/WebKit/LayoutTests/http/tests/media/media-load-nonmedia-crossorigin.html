@@ -3,7 +3,8 @@
 <script src="/w3c/resources/testharness.js"></script>
 <script src="/w3c/resources/testharnessreport.js"></script>
 <script src="/media-resources/media-file.js"></script>
-<video></video>
+<video id=video1></video>
+<video id=video2 preload=none></video>
 <script>
 
 promise_test(async function() {
@@ -12,7 +13,7 @@ promise_test(async function() {
       let events = [];
       let current_state = -1;
       let current_buffered_string = "";
-      const video = document.querySelector("video");
+      const video = document.querySelector("#video1");
       function pollTagState() {
         const state = video.networkState;
         if (state != current_state) {
@@ -69,6 +70,17 @@ promise_test(async function() {
   console.log(existing_events.join(","));
   console.log(nonexisting_events.join(","));
   assert_equals(existing_events.join(","), nonexisting_events.join(","));
+});
+
+promise_test(async function() {
+    return new Promise(function(resolve, reject) {
+      const video = document.querySelector("#video2");
+      video.src = "http://localhost:8000/media/nonexistant.cgi";
+      function checkNetworkState() {
+        if (video.networkState == video.NETWORK_IDLE) resolve();
+      }
+      setInterval(checkNetworkState, 100);
+    });
 });
 
 </script>
