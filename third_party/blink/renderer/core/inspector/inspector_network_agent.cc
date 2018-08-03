@@ -1322,15 +1322,15 @@ void InspectorNetworkAgent::Enable() {
 
 Response InspectorNetworkAgent::disable() {
   DCHECK(!pending_request_);
-  enabled_.Set(false);
   instrumenting_agents_->removeInspectorNetworkAgent(this);
+  agent_state_.ClearAllFields();
   resources_data_->Clear();
   return Response::OK();
 }
 
 Response InspectorNetworkAgent::setExtraHTTPHeaders(
     std::unique_ptr<protocol::Network::Headers> headers) {
-  extra_request_headers_.ClearAll();
+  extra_request_headers_.Clear();
   std::unique_ptr<protocol::DictionaryValue> in = headers->toValue();
   for (size_t i = 0; i < in->size(); ++i) {
     const auto& entry = in->at(i);
@@ -1389,7 +1389,7 @@ void InspectorNetworkAgent::getResponseBody(
 
 Response InspectorNetworkAgent::setBlockedURLs(
     std::unique_ptr<protocol::Array<String>> urls) {
-  blocked_urls_.ClearAll();
+  blocked_urls_.Clear();
   for (size_t i = 0; i < urls->length(); i++)
     blocked_urls_.Set(urls->get(i), true);
   return Response::OK();

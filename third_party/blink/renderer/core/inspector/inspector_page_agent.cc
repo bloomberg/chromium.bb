@@ -527,8 +527,7 @@ Response InspectorPageAgent::enable() {
 }
 
 Response InspectorPageAgent::disable() {
-  enabled_.Set(false);
-  scripts_to_evaluate_on_load_.ClearAll();
+  agent_state_.ClearAllFields();
   script_to_evaluate_on_load_once_ = String();
   pending_script_to_evaluate_on_load_once_ = String();
   instrumenting_agents_->removeInspectorPageAgent(this);
