@@ -48,8 +48,7 @@ FakeGattDeviceServiceWinrt::FakeGattDeviceServiceWinrt(
     uint16_t attribute_handle)
     : bluetooth_test_winrt_(bluetooth_test_winrt),
       uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
-      attribute_handle_(attribute_handle),
-      characteristic_attribute_handle_(attribute_handle_) {}
+      attribute_handle_(attribute_handle) {}
 
 FakeGattDeviceServiceWinrt::~FakeGattDeviceServiceWinrt() = default;
 
@@ -161,13 +160,9 @@ FakeGattDeviceServiceWinrt::GetIncludedServicesForUuidWithCacheModeAsync(
 void FakeGattDeviceServiceWinrt::SimulateGattCharacteristic(
     base::StringPiece uuid,
     int properties) {
-  // In order to ensure attribute handles are unique across the Gatt Server
-  // we reserve sufficient address space for descriptors for each
-  // characteristic. We allocate space for 32 descriptors, which should be
-  // enough for tests.
-  fake_characteristics_.push_back(Make<FakeGattCharacteristicWinrt>(
-      bluetooth_test_winrt_, properties, uuid,
-      characteristic_attribute_handle_ += 0x20));
+  fake_characteristics_.push_back(
+      Make<FakeGattCharacteristicWinrt>(bluetooth_test_winrt_, properties, uuid,
+                                        characteristic_attribute_handle_++));
 }
 
 }  // namespace device
