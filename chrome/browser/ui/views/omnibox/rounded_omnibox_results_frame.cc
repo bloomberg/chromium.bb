@@ -86,6 +86,10 @@ class TopBackgroundView : public views::View {
   void OnMouseEvent(ui::MouseEvent* event) override {
     auto pair = GetParentWidgetAndEvent(this, event);
     pair.widget->OnMouseEvent(&pair.event);
+
+    // If the original event isn't marked as "handled" then it will propagate up
+    // the view hierarchy and might be double-handled. https://crbug.com/870341
+    event->SetHandled();
   }
 
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
@@ -226,8 +230,11 @@ void RoundedOmniboxResultsFrame::AddedToWidget() {
 #endif  // USE_AURA
 }
 
-// Note that these two functions are only called for the shadow area, as both
-// the omnibox proper and the results list have their own mouse handling.
+// Note: The OnMouseMoved function is only called for the shadow area, as mouse-
+// moved events are not dispatched through the view hierarchy but are direct-
+// dispatched by RootView. This OnMouseEvent function is on the dispatch path
+// for all mouse events of the window, so be careful to correctly mark events as
+// "handled" above in subviews.
 #if !defined(USE_AURA)
 
 // Note that mouse moved events can be dispatched through OnMouseEvent, but
