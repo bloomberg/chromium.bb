@@ -268,7 +268,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 return Calendar.getInstance();
             }
         };
-        mCalendar.execute();
+        mCalendar.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel() != null
