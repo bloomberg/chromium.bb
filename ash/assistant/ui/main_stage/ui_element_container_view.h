@@ -21,6 +21,7 @@ class AssistantHeaderView;
 class AssistantResponse;
 class AssistantTextElement;
 class AssistantUiElement;
+enum class AssistantUiElementType;
 
 // UiElementContainerView is the child of AssistantMainView concerned with
 // laying out text views and embedded card views in response to Assistant
@@ -35,6 +36,7 @@ class UiElementContainerView : public views::View,
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // AssistantInteractionModelObserver:
+  void OnCommittedQueryChanged(const AssistantQuery& query) override;
   void OnResponseChanged(const AssistantResponse& response) override;
   void OnResponseCleared() override;
 
@@ -69,6 +71,10 @@ class UiElementContainerView : public views::View,
   // Whether a UI element is currently being processed. If true, new UI elements
   // are added to |pending_ui_element_list_| and processed later.
   bool is_processing_ui_element_ = false;
+
+  // UI elements will be animated on their own layers. We track the desired
+  // opacity to which each layer should be animated.
+  std::vector<std::pair<ui::Layer*, float>> ui_element_layers_;
 
   // Weak pointer factory used for card rendering requests.
   base::WeakPtrFactory<UiElementContainerView> render_request_weak_factory_;

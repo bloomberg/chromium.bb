@@ -84,6 +84,8 @@ void SuggestionContainerView::InitLayout() {
 
 void SuggestionContainerView::OnResponseChanged(
     const AssistantResponse& response) {
+  OnResponseCleared();
+
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   for (const std::pair<int, const AssistantSuggestion*>& suggestion :
        response.GetSuggestions()) {

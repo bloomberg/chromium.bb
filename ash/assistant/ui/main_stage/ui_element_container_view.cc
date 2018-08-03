@@ -11,11 +11,20 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_header_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
+#include "ash/assistant/util/animation_util.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "base/base64.h"
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "ui/aura/window.h"
+#include "ui/compositor/layer_animator.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_observer.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 
@@ -24,9 +33,69 @@ namespace {
 // Appearance.
 constexpr int kPaddingHorizontalDip = 32;
 
+// Animation.
+constexpr float kCardElementAnimationFadeOutOpacity = 0.26f;
+constexpr float kTextElementAnimationFadeOutOpacity = 0.f;
+constexpr base::TimeDelta kUiElementAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(167);
+
+// WebContents.
 constexpr char kDataUriPrefix[] = "data:text/html;base64,";
 
+// CardElementViewHolder -------------------------------------------------------
+
+class CardElementViewHolder : public views::NativeViewHost,
+                              public views::ViewObserver {
+ public:
+  explicit CardElementViewHolder(views::View* card_element_view)
+      : card_element_view_(card_element_view) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+
+    params.name = GetClassName();
+    params.delegate = new views::WidgetDelegateView();
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+
+    child_widget_ = std::make_unique<views::Widget>();
+    child_widget_->Init(params);
+
+    contents_view_ = params.delegate->GetContentsView();
+    contents_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
+    contents_view_->AddChildView(card_element_view_);
+
+    card_element_view_->AddObserver(this);
+  }
+
+  ~CardElementViewHolder() override {
+    card_element_view_->RemoveObserver(this);
+  }
+
+  // views::NativeViewHost:
+  const char* GetClassName() const override { return "CardElementViewHolder"; }
+
+  // views::ViewObserver:
+  void OnViewPreferredSizeChanged(views::View* view) override {
+    contents_view_->SetPreferredSize(view->GetPreferredSize());
+    SetPreferredSize(view->GetPreferredSize());
+  }
+
+  void Attach() {
+    views::NativeViewHost::Attach(child_widget_->GetNativeView());
+  }
+
+ private:
+  views::View* const card_element_view_;  // Owned by WebContentsManager.
+
+  std::unique_ptr<views::Widget> child_widget_;
+
+  views::View* contents_view_ = nullptr;  // Owned by |child_widget_|.
+
+  DISALLOW_COPY_AND_ASSIGN(CardElementViewHolder);
+};
+
 }  // namespace
+
+// UiElementContainerView ------------------------------------------------------
 
 UiElementContainerView::UiElementContainerView(
     AssistantController* assistant_controller)
@@ -64,6 +133,21 @@ void UiElementContainerView::InitLayout() {
   AddChildView(assistant_header_view_.get());
 }
 
+void UiElementContainerView::OnCommittedQueryChanged(
+    const AssistantQuery& query) {
+  if (!assistant::ui::kIsMotionSpecEnabled)
+    return;
+
+  // When a query is committed, we fade out the views for the previous response
+  // until the next Assistant response has been received.
+  using namespace assistant::util;
+  for (const std::pair<ui::Layer*, float>& pair : ui_element_layers_) {
+    pair.first->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(CreateOpacityElement(
+            /*opacity=*/pair.second, kUiElementAnimationFadeOutDuration)));
+  }
+}
+
 void UiElementContainerView::OnResponseChanged(
     const AssistantResponse& response) {
   OnResponseCleared();
@@ -86,6 +170,8 @@ void UiElementContainerView::OnResponseCleared() {
   render_request_weak_factory_.InvalidateWeakPtrs();
 
   RemoveAllChildViews(/*delete_children=*/true);
+  ui_element_layers_.clear();
+
   AddChildView(assistant_header_view_.get());
 
   PreferredSizeChanged();
@@ -161,8 +247,21 @@ void UiElementContainerView::OnCardReady(
   // When the card has been rendered in the same process, its view is
   // available in the AnswerCardContentsRegistry's token-to-view map.
   if (app_list::AnswerCardContentsRegistry::Get()) {
-    AddChildView(app_list::AnswerCardContentsRegistry::Get()->GetView(
-        embed_token.value()));
+    CardElementViewHolder* view_holder = new CardElementViewHolder(
+        app_list::AnswerCardContentsRegistry::Get()->GetView(
+            embed_token.value()));
+
+    AddChildView(view_holder);
+    view_holder->Attach();
+
+    if (assistant::ui::kIsMotionSpecEnabled) {
+      // The view will be animated on its own layer, so we need to do some
+      // initial layer setup and cache the layer with its desired opacity.
+      view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
+      ui_element_layers_.push_back(
+          std::pair<ui::Layer*, float>(view_holder->native_view()->layer(),
+                                       kCardElementAnimationFadeOutOpacity));
+    }
   }
   // TODO(dmblack): Handle Mash case.
 
@@ -177,8 +276,18 @@ void UiElementContainerView::OnTextElementAdded(
     const AssistantTextElement* text_element) {
   DCHECK(!is_processing_ui_element_);
 
-  AddChildView(new AssistantTextElementView(text_element));
+  views::View* text_element_view = new AssistantTextElementView(text_element);
 
+  if (assistant::ui::kIsMotionSpecEnabled) {
+    // The view will be animated on its own layer, so we need to do some initial
+    // layer setup and cache the layer with its desired opacity.
+    text_element_view->SetPaintToLayer();
+    text_element_view->layer()->SetFillsBoundsOpaquely(false);
+    ui_element_layers_.push_back(std::pair<ui::Layer*, float>(
+        text_element_view->layer(), kTextElementAnimationFadeOutOpacity));
+  }
+
+  AddChildView(text_element_view);
   PreferredSizeChanged();
 }
 
