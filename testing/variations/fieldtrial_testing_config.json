@@ -4858,6 +4858,26 @@
             ]
         }
     ],
+    "WebSocketHandshakeReuseConnection": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebSocketHandshakeReuseConnection"
+                    ]
+                }
+            ]
+        }
+    ],
     "WheelScrollLatchingAndAsyncWheelEvents": [
         {
             "platforms": [
