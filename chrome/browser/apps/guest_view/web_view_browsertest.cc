@@ -1143,41 +1143,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadEmbedder) {
   ASSERT_TRUE(launched_again_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewBrowserPluginSpecificTest, AcceptTouchEvents) {
-  // This test only makes sense for non-OOPIF WebView, since with
-  // GuestViewCrossProcessFrames events are routed directly to the
-  // guest, so the embedder does not need to know about the installation of
-  // touch handlers.
-  ASSERT_FALSE(
-      base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
-
-  LoadAppWithGuest("web_view/accept_touch_events");
-
-  content::RenderViewHost* embedder_rvh =
-      GetEmbedderWebContents()->GetRenderViewHost();
-
-  bool embedder_has_touch_handler =
-      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
-  EXPECT_FALSE(embedder_has_touch_handler);
-
-  SendMessageToGuestAndWait("install-touch-handler", "installed-touch-handler");
-
-  // Note that we need to wait for the installed/registered touch handler to
-  // appear in browser process before querying |embedder_rvh|.
-  // In practice, since we do a roundrtip from browser process to guest and
-  // back, this is sufficient.
-  embedder_has_touch_handler =
-      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
-  EXPECT_TRUE(embedder_has_touch_handler);
-
-  SendMessageToGuestAndWait("uninstall-touch-handler",
-                            "uninstalled-touch-handler");
-  // Same as the note above about waiting.
-  embedder_has_touch_handler =
-      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
-  EXPECT_FALSE(embedder_has_touch_handler);
-}
-
 // This test ensures JavaScript errors ("Cannot redefine property") do not
 // happen when a <webview> is removed from DOM and added back.
 IN_PROC_BROWSER_TEST_F(WebViewTest, AddRemoveWebView_AddRemoveWebView) {

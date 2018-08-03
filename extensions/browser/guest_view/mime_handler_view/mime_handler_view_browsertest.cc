@@ -10,6 +10,8 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -19,6 +21,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
@@ -41,8 +44,7 @@ using guest_view::TestGuestViewManagerFactory;
 // The test extension id is set by the key value in the manifest.
 const char kExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
 
-class MimeHandlerViewTest : public extensions::ExtensionApiTest,
-                            public testing::WithParamInterface<bool> {
+class MimeHandlerViewTest : public extensions::ExtensionApiTest {
  public:
   MimeHandlerViewTest() {
     GuestViewManager::set_factory_for_testing(&factory_);
@@ -58,24 +60,6 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest,
     embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
         &MimeHandlerViewTest::MonitorRequest, base::Unretained(this)));
     ASSERT_TRUE(StartEmbeddedTestServer());
-  }
-
-  // TODO(ekaramad): These tests run for OOPIF guests too, except that they
-  // still use BrowserPlugin code path. They are activated to make sure we can
-  // still show PDF when the rest of the guests migrate to OOPIF. Eventually,
-  // MimeHandlerViewGuest will be based on OOPIF and we can remove this comment
-  // (https://crbug.com/642826).
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
-
-    bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kGuestViewCrossProcessFrames);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kGuestViewCrossProcessFrames);
-    }
   }
 
   // TODO(paulmeyer): This function is implemented over and over by the
@@ -142,27 +126,23 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest,
   int basic_count_ = 0;
 };
 
-INSTANTIATE_TEST_CASE_P(MimeHandlerViewTests,
-                        MimeHandlerViewTest,
-                        testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, PostMessage) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, PostMessage) {
   RunTest("test_postmessage.html");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Basic) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Basic) {
   RunTest("testBasic.csv");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Embedded) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Embedded) {
   RunTest("test_embedded.html");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Iframe) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
   RunTest("test_iframe.html");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Abort) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Abort) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // With the network service, abortStream isn't needed since we pass a Mojo
     // pipe to the renderer. If the plugin chooses to cancel the main request
@@ -177,28 +157,28 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Abort) {
   RunTest("testAbort.csv");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, NonAsciiHeaders) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, NonAsciiHeaders) {
   RunTest("testNonAsciiHeaders.csv");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, DataUrl) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, DataUrl) {
   const char* kDataUrlCsv = "data:text/csv;base64,Y29udGVudCB0byByZWFkCg==";
   RunTestWithUrl(GURL(kDataUrlCsv));
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, EmbeddedDataUrlObject) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlObject) {
   RunTest("test_embedded_data_url_object.html");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, EmbeddedDataUrlEmbed) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlEmbed) {
   RunTest("test_embedded_data_url_embed.html");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, EmbeddedDataUrlLong) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlLong) {
   RunTest("test_embedded_data_url_long.html");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, ResizeBeforeAttach) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, ResizeBeforeAttach) {
   // Delay the creation of the guest's WebContents in order to delay the guest's
   // attachment to the embedder. This will allow us to resize the <object> tag
   // after the guest is created, but before it is attached in
@@ -220,20 +200,20 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, ResizeBeforeAttach) {
 }
 
 // Regression test for crbug.com/587709.
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, SingleRequest) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, SingleRequest) {
   GURL url(embedded_test_server()->GetURL("/testBasic.csv"));
   RunTest("testBasic.csv");
   EXPECT_EQ(1, basic_count());
 }
 
 // Test that a mime handler view can keep a background page alive.
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BackgroundPage) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BackgroundPage) {
   extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
   extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   RunTest("testBackgroundPage.csv");
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, TargetBlankAnchor) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, TargetBlankAnchor) {
   RunTest("testTargetBlankAnchor.csv");
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
@@ -242,7 +222,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, TargetBlankAnchor) {
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BeforeUnload_NoDialog) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_NoDialog) {
   ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadNoDialog.csv"));
   auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
   content::PrepContentsForBeforeUnloadTest(web_contents);
@@ -257,7 +237,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BeforeUnload_NoDialog) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 }
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
   ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadShowDialog.csv"));
   auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
   content::PrepContentsForBeforeUnloadTest(web_contents);
@@ -274,4 +254,59 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
   EXPECT_TRUE(before_unload_dialog->is_before_unload_dialog());
   EXPECT_FALSE(before_unload_dialog->is_reload());
   before_unload_dialog->OnAccept(base::string16(), false);
+}
+
+// TODO(mcnee): These tests are BrowserPlugin specific. Once
+// MimeHandlerViewGuest is no longer based on BrowserPlugin, remove these tests.
+// (See https://crbug.com/533069 and https://crbug.com/659750). These category
+// of tests are solely testing BrowserPlugin features.
+class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
+ public:
+  MimeHandlerViewBrowserPluginSpecificTest() {}
+
+  ~MimeHandlerViewBrowserPluginSpecificTest() override {}
+
+ protected:
+  // None of these test create new tabs, so the embedder should be the first
+  // tab.
+  content::WebContents* GetEmbedderWebContents() {
+    return browser()->tab_strip_model()->GetWebContentsAt(0);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewBrowserPluginSpecificTest);
+};
+
+// This test verifies that when BrowserPlugin-based guest has touch handlers,
+// the embedder knows about it.
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
+                       AcceptTouchEvents) {
+  RunTest("testBasic.csv");
+  content::RenderViewHost* embedder_rvh =
+      GetEmbedderWebContents()->GetRenderViewHost();
+  bool embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_FALSE(embedder_has_touch_handler);
+
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(ExecuteScript(
+      guest_web_contents,
+      "document.addEventListener('touchstart', dummyTouchStartHandler);"));
+  // Wait until embedder has touch handlers.
+  while (!content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh)) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  ASSERT_TRUE(ExecuteScript(
+      guest_web_contents,
+      "document.removeEventListener('touchstart', dummyTouchStartHandler);"));
+  // Wait until embedder not longer has any touch handlers.
+  while (content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh)) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
 }
