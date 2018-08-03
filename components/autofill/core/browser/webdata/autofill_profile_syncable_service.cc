@@ -42,7 +42,7 @@ std::string LimitData(const std::string& data) {
   return sanitized_value;
 }
 
-void* UserDataKey() {
+void* AutofillProfileSyncableServiceUserDataKey() {
   // Use the address of a static that COMDAT folding won't ever fold
   // with something else.
   static int user_data_key = 0;
@@ -74,8 +74,9 @@ void AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
     AutofillWebDataBackend* webdata_backend,
     const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
-      UserDataKey(), base::WrapUnique(new AutofillProfileSyncableService(
-                         webdata_backend, app_locale)));
+      AutofillProfileSyncableServiceUserDataKey(),
+      base::WrapUnique(
+          new AutofillProfileSyncableService(webdata_backend, app_locale)));
 }
 
 // static
@@ -83,7 +84,8 @@ AutofillProfileSyncableService*
 AutofillProfileSyncableService::FromWebDataService(
     AutofillWebDataService* web_data_service) {
   return static_cast<AutofillProfileSyncableService*>(
-      web_data_service->GetDBUserData()->GetUserData(UserDataKey()));
+      web_data_service->GetDBUserData()->GetUserData(
+          AutofillProfileSyncableServiceUserDataKey()));
 }
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
