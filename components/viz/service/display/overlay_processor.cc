@@ -164,9 +164,9 @@ void OverlayProcessor::ProcessForOverlays(
   // Only if that fails, attempt hardware overlay strategies.
   Strategy* successful_strategy = nullptr;
   for (const auto& strategy : strategies_) {
-    if (!strategy->Attempt(output_color_matrix, resource_provider,
-                           render_passes->back().get(), candidates,
-                           content_bounds)) {
+    if (!strategy->Attempt(output_color_matrix, render_pass_background_filters,
+                           resource_provider, render_passes->back().get(),
+                           candidates, content_bounds)) {
       continue;
     }
     successful_strategy = strategy.get();

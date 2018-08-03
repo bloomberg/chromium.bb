@@ -36,6 +36,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     kMaxValue = kUnderlayCast,
   };
 
+  using FilterOperationsMap =
+      base::flat_map<RenderPassId, cc::FilterOperations*>;
+
   class VIZ_SERVICE_EXPORT Strategy {
    public:
     virtual ~Strategy() {}
@@ -43,11 +46,13 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
     // |render_passes|.
-    virtual bool Attempt(const SkMatrix44& output_color_matrix,
-                         DisplayResourceProvider* resource_provider,
-                         RenderPass* render_pass,
-                         OverlayCandidateList* candidates,
-                         std::vector<gfx::Rect>* content_bounds) = 0;
+    virtual bool Attempt(
+        const SkMatrix44& output_color_matrix,
+        const FilterOperationsMap& render_pass_background_filters,
+        DisplayResourceProvider* resource_provider,
+        RenderPass* render_pass,
+        OverlayCandidateList* candidates,
+        std::vector<gfx::Rect>* content_bounds) = 0;
 
     virtual StrategyType GetUMAEnum() const;
   };
@@ -59,9 +64,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   virtual void Initialize();
 
   gfx::Rect GetAndResetOverlayDamage();
-
-  using FilterOperationsMap =
-      base::flat_map<RenderPassId, cc::FilterOperations*>;
 
   // Attempt to replace quads from the specified root render pass with overlays
   // or CALayers. This must be called every frame.
