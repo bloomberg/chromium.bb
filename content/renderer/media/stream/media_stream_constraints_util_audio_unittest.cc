@@ -136,8 +136,8 @@ class MediaStreamConstraintsUtilAudioTest
     if (media_source.empty())
       return MEDIA_DEVICE_AUDIO_CAPTURE;
     else if (media_source == kMediaStreamSourceTab)
-      return MEDIA_TAB_AUDIO_CAPTURE;
-    return MEDIA_DESKTOP_AUDIO_CAPTURE;
+      return MEDIA_GUM_TAB_AUDIO_CAPTURE;
+    return MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
   }
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(

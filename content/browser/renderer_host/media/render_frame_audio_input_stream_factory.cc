@@ -126,9 +126,9 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
 
   WebContentsMediaCaptureId capture_id;
   if (WebContentsMediaCaptureId::Parse(device.id, &capture_id)) {
-    // For MEDIA_DESKTOP_AUDIO_CAPTURE, the source is selected from picker
-    // window, we do not mute the source audio.
-    // For MEDIA_TAB_AUDIO_CAPTURE, the probable use case is Cast, we mute
+    // For MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, the source is selected from
+    // picker window, we do not mute the source audio. For
+    // MEDIA_GUM_TAB_AUDIO_CAPTURE, the probable use case is Cast, we mute
     // the source audio.
     // TODO(qiangchen): Analyze audio constraints to make a duplicating or
     // diverting decision. It would give web developer more flexibility.
@@ -144,7 +144,7 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
         render_frame_host_, source_host, audio_params, shared_memory_count,
         capture_id.disable_local_echo, std::move(client));
 
-    if (device.type == MEDIA_DESKTOP_AUDIO_CAPTURE)
+    if (device.type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
   } else {
     factory->CreateInputStream(render_frame_host_, device.id, audio_params,
@@ -153,7 +153,7 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
 
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
-    if (device.type == MEDIA_DESKTOP_AUDIO_CAPTURE &&
+    if (device.type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
         (media::AudioDeviceDescription::IsLoopbackDevice(device.id))) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }

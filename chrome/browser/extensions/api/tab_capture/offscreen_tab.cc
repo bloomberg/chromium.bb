@@ -326,13 +326,13 @@ void OffscreenTab::RequestMediaAccessPermission(
           request.render_process_id,
           request.render_frame_id,
           extension_id)) {
-    if (request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
+    if (request.audio_type == content::MEDIA_GUM_TAB_AUDIO_CAPTURE) {
       devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_TAB_AUDIO_CAPTURE, std::string(), std::string()));
+          content::MEDIA_GUM_TAB_AUDIO_CAPTURE, std::string(), std::string()));
     }
-    if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+    if (request.video_type == content::MEDIA_GUM_TAB_VIDEO_CAPTURE) {
       devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));
+          content::MEDIA_GUM_TAB_VIDEO_CAPTURE, std::string(), std::string()));
     }
   }
 
@@ -351,8 +351,8 @@ bool OffscreenTab::CheckMediaAccessPermission(
     content::MediaStreamType type) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(),
             content::WebContents::FromRenderFrameHost(render_frame_host));
-  return type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-      type == content::MEDIA_TAB_VIDEO_CAPTURE;
+  return type == content::MEDIA_GUM_TAB_AUDIO_CAPTURE ||
+         type == content::MEDIA_GUM_TAB_VIDEO_CAPTURE;
 }
 
 void OffscreenTab::DidShowFullscreenWidget() {

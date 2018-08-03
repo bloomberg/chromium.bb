@@ -250,17 +250,20 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMediaAccessRequest) {
   EXPECT_CALL(*media_observer_,
               OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE,
                                          MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_TAB_AUDIO_CAPTURE,
-                                         MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_TAB_VIDEO_CAPTURE,
-                                         MEDIA_REQUEST_STATE_CLOSING));
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DESKTOP_VIDEO_CAPTURE,
+                                    _, _, _, _, MEDIA_GUM_TAB_AUDIO_CAPTURE,
                                     MEDIA_REQUEST_STATE_CLOSING));
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DESKTOP_AUDIO_CAPTURE,
+                                    _, _, _, _, MEDIA_GUM_TAB_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
                                     MEDIA_REQUEST_STATE_CLOSING));
   media_stream_manager_->CancelRequest(label);
   run_loop_.RunUntilIdle();
@@ -301,17 +304,20 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
   EXPECT_CALL(*media_observer_,
               OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE,
                                          MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_TAB_AUDIO_CAPTURE,
-                                         MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_TAB_VIDEO_CAPTURE,
-                                         MEDIA_REQUEST_STATE_CLOSING));
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DESKTOP_VIDEO_CAPTURE,
+                                    _, _, _, _, MEDIA_GUM_TAB_AUDIO_CAPTURE,
                                     MEDIA_REQUEST_STATE_CLOSING));
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DESKTOP_AUDIO_CAPTURE,
+                                    _, _, _, _, MEDIA_GUM_TAB_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
+                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
+                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
                                     MEDIA_REQUEST_STATE_CLOSING));
 
   media_stream_manager_->CancelRequest(label1);

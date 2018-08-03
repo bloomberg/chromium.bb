@@ -361,7 +361,7 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardDesktopCapture) {
                                       tab_strip_model_.get());
 
   content::MediaStreamDevices desktop_capture_devices{
-      content::MediaStreamDevice(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
+      content::MediaStreamDevice(content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
                                  "fake_media_device", "fake_media_device")};
   std::unique_ptr<content::MediaStreamUI> ui =
       MediaCaptureDevicesDispatcher::GetInstance()

@@ -423,10 +423,10 @@ bool MediaCaptureDevicesDispatcher::IsInsecureCapturingInProgress(
   for (const auto& handler : media_access_handlers_) {
     if (handler->SupportsStreamType(
             WebContentsFromIds(render_process_id, render_frame_id),
-            content::MEDIA_DESKTOP_VIDEO_CAPTURE, nullptr) ||
+            content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, nullptr) ||
         handler->SupportsStreamType(
             WebContentsFromIds(render_process_id, render_frame_id),
-            content::MEDIA_TAB_VIDEO_CAPTURE, nullptr)) {
+            content::MEDIA_GUM_TAB_VIDEO_CAPTURE, nullptr)) {
       if (ToCaptureAccessHandlerBase(handler.get())
               ->IsInsecureCapturingInProgress(render_process_id,
                                               render_frame_id))
@@ -454,8 +454,8 @@ void MediaCaptureDevicesDispatcher::OnSetCapturingLinkSecured(
     content::MediaStreamType stream_type,
     bool is_secure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (stream_type != content::MEDIA_TAB_VIDEO_CAPTURE &&
-      stream_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE)
+  if (stream_type != content::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
+      stream_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE)
     return;
 
   BrowserThread::PostTask(
@@ -472,8 +472,8 @@ void MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured(
     content::MediaStreamType stream_type,
     bool is_secure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (stream_type != content::MEDIA_TAB_VIDEO_CAPTURE &&
-      stream_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE)
+  if (stream_type != content::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
+      stream_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE)
     return;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

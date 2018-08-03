@@ -49,10 +49,10 @@ content::MediaStreamType ConvertVideoStreamType(
     case content::DesktopMediaID::TYPE_NONE:
       return content::MediaStreamType::MEDIA_NO_SERVICE;
     case content::DesktopMediaID::TYPE_WEB_CONTENTS:
-      return content::MediaStreamType::MEDIA_TAB_VIDEO_CAPTURE;
+      return content::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE;
     case content::DesktopMediaID::TYPE_SCREEN:
     case content::DesktopMediaID::TYPE_WINDOW:
-      return content::MediaStreamType::MEDIA_DESKTOP_VIDEO_CAPTURE;
+      return content::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
   }
 
   // To suppress compiler warning on Windows.
