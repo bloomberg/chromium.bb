@@ -261,6 +261,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
 
   float page_scale_ = 1.f;
 
+  bool use_zoom_for_dsf_enabled_;
+
   BrowserAccessibilityManagerAndroid* root_manager_;
 
   // Manages the connection between web contents and the RenderFrameHost that
