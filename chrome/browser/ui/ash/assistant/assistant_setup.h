@@ -7,6 +7,7 @@
 
 #include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace service_manager {
@@ -14,7 +15,8 @@ class Connector;
 }  // namespace service_manager
 
 // AssistantSetup is the class responsible for start Assistant OptIn flow.
-class AssistantSetup : public ash::mojom::AssistantSetup {
+class AssistantSetup : public ash::mojom::AssistantSetup,
+                       public arc::VoiceInteractionControllerClient::Observer {
  public:
   explicit AssistantSetup(service_manager::Connector* connector);
   ~AssistantSetup() override;
@@ -24,6 +26,9 @@ class AssistantSetup : public ash::mojom::AssistantSetup {
       StartAssistantOptInFlowCallback callback) override;
 
  private:
+  // arc::VoiceInteractionControllerClient::Observer overrides
+  void OnStateChanged(ash::mojom::VoiceInteractionState state) override;
+
   mojo::Binding<ash::mojom::AssistantSetup> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantSetup);

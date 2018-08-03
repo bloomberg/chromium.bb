@@ -4868,6 +4868,9 @@
   <message name="IDS_ASSISTANT_DONE_BUTTON" desc="Done button for asssitant optin flow.">
     Done
   </message>
+  <message name="IDS_ASSISTANT_HOTWORD_NOTIFICATION_TITLE" desc="Title for assistant hotword enable notification.">
+    Turn on 'Ok Google'
+  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">
