@@ -8,6 +8,7 @@ import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
+import("//build/timestamp.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -106,12 +107,23 @@ config("compiler") {
     cflags += [ "/Brepro" ]
   }
 
+  ldflags = []
+
+  if (use_lld) {
+    # lld defaults to writing the current time in the pe/coff header.
+    # For build reproducibility, pass an explicit timestamp. See
+    # build/compute_build_timestamp.py for how the timestamp is chosen.
+    # (link.exe also writes the current time, but it doesn't have a flag to
+    # override that behavior.)
+    ldflags += [ "/TIMESTAMP:" + build_timestamp ]
+  }
+
   if (!is_debug && !is_component_build) {
     # Enable standard linker optimizations like GC (/OPT:REF) and ICF in static
     # release builds. These are implied by /PROFILE below, but /PROFILE is
     # incompatible with /debug:fastlink and LLD ignores it as of this writing.
     # Release builds always want these optimizations, so enable them explicitly.
-    ldflags = [
+    ldflags += [
       "/OPT:REF",
       "/OPT:ICF",
       "/INCREMENTAL:NO",
