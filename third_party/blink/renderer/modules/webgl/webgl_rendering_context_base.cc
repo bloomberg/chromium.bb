@@ -30,6 +30,7 @@
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -1006,6 +1007,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     Platform::ContextType context_type)
     : CanvasRenderingContext(host, requested_attributes),
       context_group_(new WebGLContextGroup()),
+      is_origin_top_left_(false),
       is_hidden_(false),
       context_lost_mode_(kNotLostContext),
       auto_recovery_method_(kManual),
@@ -1220,6 +1222,13 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   GetDrawingBuffer()->ContextProvider()->SetErrorMessageCallback(
       WTF::BindRepeating(&WebGLRenderingContextBase::OnErrorMessage,
                          WrapWeakPersistent(this)));
+
+  // If the context has the flip_y extension, it will behave as having the
+  // origin of coordinates on the top left.
+  is_origin_top_left_ = GetDrawingBuffer()
+                            ->ContextProvider()
+                            ->GetCapabilities()
+                            .mesa_framebuffer_flip_y;
 
   // If WebGL 2, the PRIMITIVE_RESTART_FIXED_INDEX should be always enabled.
   // See the section <Primitive Restart is Always Enabled> in WebGL 2 spec:
@@ -1524,6 +1533,12 @@ void WebGLRenderingContextBase::RestoreColorMask() {
 void WebGLRenderingContextBase::MarkLayerComposited() {
   if (!isContextLost())
     GetDrawingBuffer()->ResetBuffersToAutoClear();
+}
+
+bool WebGLRenderingContextBase::IsOriginTopLeft() const {
+  if (isContextLost())
+    return false;
+  return is_origin_top_left_;
 }
 
 void WebGLRenderingContextBase::SetIsHidden(bool hidden) {

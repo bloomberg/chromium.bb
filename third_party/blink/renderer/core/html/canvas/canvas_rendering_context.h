@@ -91,6 +91,12 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   virtual ContextType GetContextType() const = 0;
   virtual bool IsComposited() const = 0;
   virtual bool IsAccelerated() const = 0;
+  virtual bool IsOriginTopLeft() const {
+    // Canvas contexts have the origin of coordinates on the top left corner.
+    // Accelerated resources (e.g. GPU textures) have their origin of
+    // coordinates in the uppper left corner.
+    return !IsAccelerated();
+  }
   virtual bool ShouldAntialias() const { return false; }
   virtual void SetIsHidden(bool) = 0;
   virtual bool isContextLost() const { return true; }
