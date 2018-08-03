@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -85,6 +86,7 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
      */
     public void setDescriptionText(CharSequence text) {
         mDescription.setText(text);
+        mDescription.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
     }
 
     /**
