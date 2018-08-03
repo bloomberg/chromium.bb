@@ -7,12 +7,10 @@ package org.chromium.chrome.browser.download.home.toolbar;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.TextView;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.download.ui.StorageSummary;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 
 import java.util.List;
@@ -21,7 +19,6 @@ import java.util.List;
  * Handles toolbar functionality for the download home.
  */
 public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
-    private StorageSummary mStorageSummary;
     private View mTitleBar;
 
     public DownloadHomeToolbar(Context context, AttributeSet attrs) {
@@ -33,9 +30,6 @@ public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mTitleBar = findViewById(R.id.title_bar);
-
-        TextView storageSummaryView = (TextView) findViewById(R.id.download_storage_summary);
-        mStorageSummary = new StorageSummary(storageSummaryView);
     }
 
     /**

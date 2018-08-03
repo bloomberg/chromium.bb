@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.home.storage.StorageSummaryProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
@@ -208,7 +210,7 @@ public class DownloadHistoryAdapter
     private String mSearchQuery = EMPTY_QUERY;
     // TODO(xingliu): Remove deprecated storage info. See https://crbug/853260.
     private SpaceDisplay mSpaceDisplay;
-    private StorageSummary mStorageSummary;
+    private StorageSummaryProvider mStorageSummaryProvider;
     private HeaderItem mSpaceDisplayHeaderItem;
     private HeaderItem mStorageSummaryHeaderItem;
     private boolean mIsSearching;
@@ -411,18 +413,25 @@ public class DownloadHistoryAdapter
     /**
      * Initialize space display view in storage info header and generate header item for it.
      */
-    void generateHeaderItems() {
+    private void generateHeaderItems() {
         mSpaceDisplay = new SpaceDisplay(null, this);
         View view = mSpaceDisplay.getViewContainer();
         registerAdapterDataObserver(mSpaceDisplay);
         mSpaceDisplayHeaderItem = new HeaderItem(0, view);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
-            View storageSummaryView = LayoutInflater.from(ContextUtils.getApplicationContext())
-                                              .inflate(R.layout.download_storage_summary, null);
-            mStorageSummary = new StorageSummary((TextView) storageSummaryView);
+            Context context = ContextUtils.getApplicationContext();
+            View storageSummaryView =
+                    LayoutInflater.from(context).inflate(R.layout.download_storage_summary, null);
+            mStorageSummaryProvider =
+                    new StorageSummaryProvider(context, this ::updateStorageInfo, null);
             mStorageSummaryHeaderItem = new HeaderItem(0, storageSummaryView);
         }
+    }
+
+    private void updateStorageInfo(String storageInfo) {
+        TextView storageSummaryView = (TextView) mStorageSummaryHeaderItem.getView();
+        storageSummaryView.setText(storageInfo);
     }
 
     /** Called when a new DownloadItem has been created by the native DownloadManager. */

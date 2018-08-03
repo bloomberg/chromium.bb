@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.download.home.empty.EmptyCoordinator;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
+import org.chromium.chrome.browser.download.home.storage.StorageCoordinator;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -44,6 +45,7 @@ public class DateOrderedListCoordinator {
         void canDelete(List<OfflineItem> items, Callback<Boolean> callback);
     }
 
+    private final StorageCoordinator mStorageCoordinator;
     private final FilterCoordinator mFilterCoordinator;
     private final EmptyCoordinator mEmptyCoordinator;
     private final DateOrderedListMediator mMediator;
@@ -75,13 +77,18 @@ public class DateOrderedListCoordinator {
         mEmptyCoordinator =
                 new EmptyCoordinator(context, prefetchProvider, mMediator.getEmptySource());
 
+        mStorageCoordinator = new StorageCoordinator(context, mMediator.getFilterSource());
+
         mFilterCoordinator =
                 new FilterCoordinator(context, prefetchProvider, mMediator.getFilterSource());
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
         mFilterCoordinator.addObserver(filterObserver);
         mFilterCoordinator.addObserver(mEmptyCoordinator);
 
-        decoratedModel.setHeader(new ViewListItem(Long.MAX_VALUE, mFilterCoordinator.getView()));
+        decoratedModel.addHeader(
+                new ViewListItem(Long.MAX_VALUE - 1L, mStorageCoordinator.getView()));
+        decoratedModel.addHeader(
+                new ViewListItem(Long.MAX_VALUE - 2L, mFilterCoordinator.getView()));
     }
 
     /** Tears down this coordinator. */
