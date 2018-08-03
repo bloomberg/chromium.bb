@@ -178,7 +178,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   PipelineStatus pipeline_status_;
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   VideoPixelFormat last_video_frame_format_;
-  ColorSpace last_video_frame_color_space_;
+  gfx::ColorSpace last_video_frame_color_space_;
   DummyTickClock dummy_clock_;
   PipelineMetadata metadata_;
   scoped_refptr<VideoFrame> last_frame_;

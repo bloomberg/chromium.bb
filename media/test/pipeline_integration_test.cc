@@ -2830,8 +2830,20 @@ TEST_F(PipelineIntegrationTest, BT709_VP9_WebM) {
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_I420);
-  EXPECT_COLOR_SPACE_EQ(last_video_frame_color_space_, COLOR_SPACE_HD_REC709);
+  EXPECT_COLOR_SPACE_EQ(last_video_frame_color_space_,
+                        gfx::ColorSpace::CreateREC709());
 }
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+// Verify that full-range H264 video has the right color space.
+TEST_F(PipelineIntegrationTest, Fullrange_H264) {
+  ASSERT_EQ(PIPELINE_OK, Start("blackwhite_yuvj420p.mp4"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_COLOR_SPACE_EQ(last_video_frame_color_space_,
+                        gfx::ColorSpace::CreateJpeg());
+}
+#endif
 
 TEST_F(PipelineIntegrationTest, HD_VP9_WebM) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-1280x720.webm"));
