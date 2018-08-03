@@ -79,3 +79,15 @@ void PasswordManagerInteractiveTestBase::VerifyPasswordIsSavedAndFilled(
     WaitForElementValue(username_id, kUsername);
   WaitForElementValue(password_id, kPassword);
 }
+
+// Erases all characters that have been typed into |field_id|.
+void PasswordManagerInteractiveTestBase::SimulateUserDeletingFieldContent(
+    const std::string& field_id) {
+  std::string focus("document.getElementById('" + field_id + "').focus();");
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), focus));
+  std::string select("document.getElementById('" + field_id + "').select();");
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), select));
+  content::SimulateKeyPress(WebContents(), ui::DomKey::BACKSPACE,
+                            ui::DomCode::BACKSPACE, ui::VKEY_BACK, false, false,
+                            false, false);
+}

@@ -30,6 +30,9 @@ class PasswordManagerInteractiveTestBase
                                       const std::string& password_id,
                                       const std::string& submission_script);
 
+  // Erases all characters that have been typed into |field_id|.
+  void SimulateUserDeletingFieldContent(const std::string& field_id);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerInteractiveTestBase);
 };
