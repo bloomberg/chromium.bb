@@ -1050,11 +1050,6 @@ def create_option_parser():
            'and returns without executing anything; use with -v to know what '
            'was done')
   parser.add_option(
-      '--no-clean', action='store_true',
-      help='Do not clean the cache automatically on startup. This is meant for '
-           'bots where a separate execution with --clean was done earlier so '
-           'doing it again is redundant')
-  parser.add_option(
       '--use-symlinks', action='store_true',
       help='Use symlinks instead of hardlinks')
   parser.add_option(
@@ -1243,14 +1238,7 @@ def main(args):
     for c in caches:
       c.cleanup()
     return 0
-
-  if not options.no_clean:
-    # Trim but do not clean (which is slower).
-    local_caching.trim_caches(
-        caches,
-        root,
-        min_free_space=options.min_free_space,
-        max_age_secs=MAX_AGE_SECS)
+  # Trimming *must* be done manually via periodic 'run_isolated.py --clean'.
 
   if not options.isolated and not args:
     parser.error('--isolated or command to run is required.')
@@ -1316,7 +1304,6 @@ def main(args):
     ]
     for path, name in caches:
       named_cache.install(path, name)
-    named_cache.trim()
     try:
       yield
     finally:
@@ -1328,11 +1315,12 @@ def main(args):
       # any other bot file that could not be removed.
       for path, name in caches:
         try:
+          # uninstall() doesn't trim but does call save() implicitly. Trimming
+          # *must* be done manually via periodic 'run_isolated.py --clean'.
           named_cache.uninstall(path, name)
         except local_caching.NamedCacheError:
           logging.exception('Error while removing named cache %r at %r. '
                             'The cache will be lost.', path, name)
-      named_cache.trim()
 
   extra_args = []
   command = []
