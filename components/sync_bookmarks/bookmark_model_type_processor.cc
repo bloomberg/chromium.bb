@@ -94,7 +94,9 @@ void BookmarkModelTypeProcessor::ConnectSync(
 
 void BookmarkModelTypeProcessor::DisconnectSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(worker_);
+  DVLOG(1) << "Disconnecting sync for Bookmarks";
+  worker_.reset();
 }
 
 void BookmarkModelTypeProcessor::GetLocalChanges(
