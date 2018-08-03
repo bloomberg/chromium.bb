@@ -15,19 +15,16 @@ namespace blink {
 
 using protocol::Response;
 
-namespace DeviceOrientationInspectorAgentState {
-static const char kAlpha[] = "alpha";
-static const char kBeta[] = "beta";
-static const char kGamma[] = "gamma";
-static const char kOverrideEnabled[] = "overrideEnabled";
-}
-
 DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent() = default;
 
 DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(
     InspectedFrames* inspected_frames)
     : inspected_frames_(inspected_frames),
-      sensor_agent_(new SensorInspectorAgent(inspected_frames->Root())) {}
+      sensor_agent_(new SensorInspectorAgent(inspected_frames->Root())),
+      enabled_(&agent_state_, /*default_value=*/false),
+      alpha_(&agent_state_, /*default_value=*/0.0),
+      beta_(&agent_state_, /*default_value=*/0.0),
+      gamma_(&agent_state_, /*default_value=*/0.0) {}
 
 void DeviceOrientationInspectorAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
@@ -44,11 +41,10 @@ Response DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
     double alpha,
     double beta,
     double gamma) {
-  state_->setBoolean(DeviceOrientationInspectorAgentState::kOverrideEnabled,
-                     true);
-  state_->setDouble(DeviceOrientationInspectorAgentState::kAlpha, alpha);
-  state_->setDouble(DeviceOrientationInspectorAgentState::kBeta, beta);
-  state_->setDouble(DeviceOrientationInspectorAgentState::kGamma, gamma);
+  enabled_.Set(true);
+  alpha_.Set(alpha);
+  beta_.Set(beta);
+  gamma_.Set(gamma);
   if (Controller()) {
     Controller()->SetOverride(
         DeviceOrientationData::Create(alpha, beta, gamma, false));
@@ -58,17 +54,11 @@ Response DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
 }
 
 Response DeviceOrientationInspectorAgent::clearDeviceOrientationOverride() {
-  state_->setBoolean(DeviceOrientationInspectorAgentState::kOverrideEnabled,
-                     false);
-  if (Controller())
-    Controller()->ClearOverride();
-  sensor_agent_->Disable();
-  return Response::OK();
+  return disable();
 }
 
 Response DeviceOrientationInspectorAgent::disable() {
-  state_->setBoolean(DeviceOrientationInspectorAgentState::kOverrideEnabled,
-                     false);
+  agent_state_.ClearAllFields();
   if (Controller())
     Controller()->ClearOverride();
   sensor_agent_->Disable();
@@ -76,20 +66,12 @@ Response DeviceOrientationInspectorAgent::disable() {
 }
 
 void DeviceOrientationInspectorAgent::Restore() {
-  if (!Controller())
+  if (!Controller() || !enabled_.Get())
     return;
-  if (state_->booleanProperty(
-          DeviceOrientationInspectorAgentState::kOverrideEnabled, false)) {
-    double alpha = 0;
-    state_->getDouble(DeviceOrientationInspectorAgentState::kAlpha, &alpha);
-    double beta = 0;
-    state_->getDouble(DeviceOrientationInspectorAgentState::kBeta, &beta);
-    double gamma = 0;
-    state_->getDouble(DeviceOrientationInspectorAgentState::kGamma, &gamma);
-    Controller()->SetOverride(
-        DeviceOrientationData::Create(alpha, beta, gamma, false));
-    sensor_agent_->SetOrientationSensorOverride(alpha, beta, gamma);
-  }
+  Controller()->SetOverride(DeviceOrientationData::Create(
+      alpha_.Get(), beta_.Get(), gamma_.Get(), false));
+  sensor_agent_->SetOrientationSensorOverride(alpha_.Get(), beta_.Get(),
+                                              gamma_.Get());
 }
 
 void DeviceOrientationInspectorAgent::DidCommitLoadForLocalFrame(

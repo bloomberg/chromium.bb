@@ -38,7 +38,10 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final
 
   Member<InspectedFrames> inspected_frames_;
   Member<SensorInspectorAgent> sensor_agent_;
-
+  InspectorAgentState::Boolean enabled_;
+  InspectorAgentState::Double alpha_;
+  InspectorAgentState::Double beta_;
+  InspectorAgentState::Double gamma_;
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationInspectorAgent);
 };
 
