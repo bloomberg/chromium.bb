@@ -82,7 +82,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
 
     @Override
     public void onCardTapped() {
-        SuggestionsMetrics.recordCardTapped();
+        if (!mArticle.isContextual()) SuggestionsMetrics.recordCardTapped();
         int windowDisposition = WindowOpenDisposition.CURRENT_TAB;
         mUiDelegate.getEventReporter().onSuggestionOpened(
                 mArticle, windowDisposition, mUiDelegate.getSuggestionsRanker());
