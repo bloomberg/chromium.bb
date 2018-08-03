@@ -21,8 +21,8 @@ enum TraceDataType {
   STRING
 };
 
-// Tracing agents, like |chrome|, |etw|, |battor|, and |cros|, use this
-// interface to register themselves to the tracing service.
+// Tracing agents, like |chrome|, |etw|, and |cros|, use this interface to
+// register themselves to the tracing service.
 //
 // This is a separate interface from |Coordinator| for security and privacy
 // reasons: although we want to let almost every process be able to send tracing
