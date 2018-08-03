@@ -797,14 +797,9 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
 
 void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
   for (const auto& surface : previous_contained_surfaces_) {
-    if (!contained_surfaces_.count(surface.first)) {
+    if (!contained_surfaces_.count(surface.first))
       // Release resources of removed surface.
-      auto it = surface_id_to_resource_child_id_.find(surface.first);
-      if (it != surface_id_to_resource_child_id_.end()) {
-        provider_->DestroyChild(it->second);
-        surface_id_to_resource_child_id_.erase(it);
-      }
-    }
+      ReleaseResources(surface.first);
   }
 }
 
