@@ -49,13 +49,7 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pVp9) {
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-// This fails on some Android devices: http://crbug.com/649199
-#if defined(OS_ANDROID)
-#define MAYBE_Yuv420pH264 DISABLED_Yuv420pH264
-#else
-#define MAYBE_Yuv420pH264 Yuv420pH264
-#endif
-IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pH264) {
+IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pH264) {
   RunColorTest("yuv420p.mp4");
 }
 
@@ -71,8 +65,7 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuvj420pH264) {
 }
 
 // This fails on ChromeOS: http://crbug.com/647400,
-// and Android: http://crbug.com/649199, http://crbug.com/649185.
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
 #define MAYBE_Yuv420pRec709H264 DISABLED_Yuv420pRec709H264
 #else
 #define MAYBE_Yuv420pRec709H264 Yuv420pRec709H264
