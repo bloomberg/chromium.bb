@@ -5768,13 +5768,18 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   struct lookahead_entry *lookahead_src = NULL;
   if (cm->current_video_frame > 0)
     lookahead_src = av1_lookahead_peek(cpi->lookahead, 0);
-  int use_show_existing =
-      !(lookahead_src != NULL &&
-        ((cpi->oxcf.error_resilient_mode |
-          ((lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT) != 0)) ||
-         (cpi->oxcf.s_frame_mode |
-          ((lookahead_src->flags & AOM_EFLAG_SET_S_FRAME) != 0))) &&
-        !(rc->frames_to_key == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY)));
+
+  int use_show_existing = 1;
+  if (lookahead_src != NULL) {
+    const int is_error_resilient =
+        cpi->oxcf.error_resilient_mode ||
+        (lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT);
+    const int is_s_frame = cpi->oxcf.s_frame_mode ||
+                           (lookahead_src->flags & AOM_EFLAG_SET_S_FRAME);
+    const int is_key_frame =
+        (rc->frames_to_key == 0) || (cpi->frame_flags & FRAMEFLAGS_KEY);
+    use_show_existing = !(is_error_resilient || is_s_frame) || is_key_frame;
+  }
 
   if (oxcf->pass == 2 && cm->show_existing_frame && use_show_existing) {
     // Manage the source buffer and flush out the source frame that has been
