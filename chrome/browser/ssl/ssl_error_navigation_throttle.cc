@@ -5,8 +5,9 @@
 #include "chrome/browser/ssl/ssl_error_navigation_throttle.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
@@ -33,8 +34,7 @@ SSLErrorNavigationThrottle::~SSLErrorNavigationThrottle() {}
 
 content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillFailRequest() {
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kCommittedInterstitials));
+  DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
   // If there was no certificate error, SSLInfo will be empty.
   int cert_status = handle->GetSSLInfo().cert_status;
@@ -59,8 +59,7 @@ SSLErrorNavigationThrottle::WillFailRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillProcessResponse() {
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kCommittedInterstitials));
+  DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
   // If there was no certificate error, SSLInfo will be empty.
   int cert_status = handle->GetSSLInfo().cert_status;

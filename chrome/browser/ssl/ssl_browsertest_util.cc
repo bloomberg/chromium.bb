@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ssl/ssl_browsertest_util.h"
 
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
@@ -21,8 +21,7 @@ namespace AuthState {
 void Check(const content::NavigationEntry& entry,
            int expected_authentication_state) {
   if (expected_authentication_state == AuthState::SHOWING_ERROR ||
-      (base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kCommittedInterstitials) &&
+      (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials) &&
        expected_authentication_state == AuthState::SHOWING_INTERSTITIAL)) {
     EXPECT_EQ(content::PAGE_TYPE_ERROR, entry.GetPageType());
   } else {

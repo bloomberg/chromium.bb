@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/strings/grit/components_strings.h"
@@ -30,6 +29,10 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest,
         https_expired_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpOnMainThread() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
+    }
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     https_expired_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
     https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
@@ -38,16 +41,9 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest,
     ASSERT_TRUE(https_expired_server_.Start());
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (GetParam()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
-    }
-  }
-
  protected:
   bool AreCommittedInterstitialsEnabled() {
-    return base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kCommittedInterstitials);
+    return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
   }
 
   void SetHelpCenterUrl(Browser* browser, const GURL& url) {
@@ -65,6 +61,7 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest,
  private:
   net::EmbeddedTestServer https_server_;
   net::EmbeddedTestServer https_expired_server_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelperTest);
 };
 

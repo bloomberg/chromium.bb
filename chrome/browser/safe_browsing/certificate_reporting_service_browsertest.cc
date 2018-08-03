@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/thread_test_helper.h"
 #include "base/time/clock.h"
@@ -20,7 +21,7 @@
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -125,7 +126,8 @@ class CertificateReportingServiceBrowserTest
         "ReportCertificateErrors", "ShowAndPossiblySend",
         {{"sendingThreshold", "1.0"}}, command_line);
     if (GetParam()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
     }
   }
 
@@ -248,6 +250,8 @@ class CertificateReportingServiceBrowserTest
   // all in flight reports should be completed or deleted because
   // of CleanUpOnIOThread().
   std::unique_ptr<EventHistogramTester> event_histogram_tester_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceBrowserTest);
 };
