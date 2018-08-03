@@ -475,13 +475,26 @@ void LocationBarView::Layout() {
 
   const int item_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
 
-  // We have an odd indent value because this is what matches the odd text
-  // indent value in OmniboxMatchCellView.
-  constexpr int kTextJogIndentDp = 11;
-  int leading_edit_item_padding =
-      OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled()
-          ? GetOmniboxPopupView()->IsOpen() ? kTextJogIndentDp : 0
-          : item_padding;
+  int leading_edit_item_padding = item_padding;
+  if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled()) {
+    // With jog enabled, the text should be indented only when the popup is open
+    // and the location icon view does *not* have a label. In most cases, we
+    // only care that the popup is open, in which case we indent to align with
+    // the text in the popup. But if there's text in the location icon view
+    // (which can happen with zero suggest, which continues to show security or
+    // EV cert text at the same time as the popup is open), the text in the
+    // omnibox can't align with the text of the suggestions, so the indent just
+    // moves the text for no apparent reason.
+
+    // TODO(jdonnelly): The better solution may be to remove the location icon
+    // text when zero suggest triggers.
+    const bool should_indent = GetOmniboxPopupView()->IsOpen() &&
+                               !location_icon_view_->ShouldShowLabel();
+    // We have an odd indent value because this is what matches the odd text
+    // indent value in OmniboxMatchCellView.
+    constexpr int kTextJogIndentDp = 11;
+    leading_edit_item_padding = should_indent ? kTextJogIndentDp : 0;
+  }
 
   // We always subtract the left padding of the OmniboxView itself to allow for
   // an extended I-beam click target without affecting actual layout.

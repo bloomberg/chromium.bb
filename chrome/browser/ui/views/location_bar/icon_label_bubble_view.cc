@@ -160,6 +160,10 @@ void IconLabelBubbleView::InkDropAnimationStarted() {
 void IconLabelBubbleView::InkDropRippleAnimationEnded(
     views::InkDropState state) {}
 
+bool IconLabelBubbleView::ShouldShowLabel() const {
+  return label_->visible() && !label_->text().empty();
+}
+
 void IconLabelBubbleView::SetLabel(const base::string16& label) {
   label_->SetText(label);
   separator_view_->SetVisible(ShouldShowSeparator());
@@ -171,10 +175,6 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
 
 void IconLabelBubbleView::OnBubbleCreated(views::Widget* bubble_widget) {
   bubble_widget->AddObserver(this);
-}
-
-bool IconLabelBubbleView::ShouldShowLabel() const {
-  return label_->visible() && !label_->text().empty();
 }
 
 bool IconLabelBubbleView::ShouldShowSeparator() const {
