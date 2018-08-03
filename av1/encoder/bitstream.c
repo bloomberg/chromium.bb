@@ -977,6 +977,56 @@ static void write_delta_q_params(AV1_COMP *cpi, const int mi_row,
   }
 }
 
+static void write_intra_prediction_modes(AV1_COMP *cpi, const int mi_row,
+                                         const int mi_col, int is_keyframe,
+                                         aom_writer *w) {
+  const AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCK *const x = &cpi->td.mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const PREDICTION_MODE mode = mbmi->mode;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+
+  // Y mode.
+  if (is_keyframe) {
+    const MB_MODE_INFO *const above_mi = xd->above_mbmi;
+    const MB_MODE_INFO *const left_mi = xd->left_mbmi;
+    write_intra_mode_kf(ec_ctx, mbmi, above_mi, left_mi, mode, w);
+  } else {
+    write_intra_mode(ec_ctx, bsize, mode, w);
+  }
+
+  // Y angle delta.
+  const int use_angle_delta = av1_use_angle_delta(bsize);
+  if (use_angle_delta && av1_is_directional_mode(mode)) {
+    write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_Y],
+                      ec_ctx->angle_delta_cdf[mode - V_PRED]);
+  }
+
+  // UV mode and UV angle delta.
+  if (!cm->seq_params.monochrome &&
+      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y)) {
+    const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
+    write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(xd), w);
+    if (uv_mode == UV_CFL_PRED)
+      write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
+    if (use_angle_delta && av1_is_directional_mode(get_uv_mode(uv_mode))) {
+      write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_UV],
+                        ec_ctx->angle_delta_cdf[uv_mode - V_PRED]);
+    }
+  }
+
+  // Palette.
+  if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {
+    write_palette_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
+  }
+
+  // Filter intra.
+  write_filter_intra_mode_info(cm, xd, mbmi, w);
+}
+
 static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                                 const int mi_col, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
@@ -1014,31 +1064,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   if (mbmi->skip_mode) return;
 
   if (!is_inter) {
-    write_intra_mode(ec_ctx, bsize, mode, w);
-    const int use_angle_delta = av1_use_angle_delta(bsize);
-
-    if (use_angle_delta && av1_is_directional_mode(mode)) {
-      write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_Y],
-                        ec_ctx->angle_delta_cdf[mode - V_PRED]);
-    }
-
-    if (!cm->seq_params.monochrome &&
-        is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                            xd->plane[1].subsampling_y)) {
-      const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
-      write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(xd), w);
-      if (uv_mode == UV_CFL_PRED)
-        write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
-      if (use_angle_delta && av1_is_directional_mode(get_uv_mode(uv_mode))) {
-        write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_UV],
-                          ec_ctx->angle_delta_cdf[uv_mode - V_PRED]);
-      }
-    }
-
-    if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
-      write_palette_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
-
-    write_filter_intra_mode_info(cm, xd, mbmi, w);
+    write_intra_prediction_modes(cpi, mi_row, mi_col, 0, w);
   } else {
     int16_t mode_ctx;
 
@@ -1184,11 +1210,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   const struct segmentation *const seg = &cm->seg;
   struct segmentation_probs *const segp = &ec_ctx->seg;
-  const MB_MODE_INFO *const above_mi = xd->above_mbmi;
-  const MB_MODE_INFO *const left_mi = xd->left_mbmi;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  const PREDICTION_MODE mode = mbmi->mode;
 
   if (seg->segid_preskip && seg->update_map)
     write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
@@ -1207,31 +1229,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
     if (is_intrabc_block(mbmi)) return;
   }
 
-  write_intra_mode_kf(ec_ctx, mbmi, above_mi, left_mi, mode, w);
-
-  const int use_angle_delta = av1_use_angle_delta(bsize);
-  if (use_angle_delta && av1_is_directional_mode(mode)) {
-    write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_Y],
-                      ec_ctx->angle_delta_cdf[mode - V_PRED]);
-  }
-
-  if (!cm->seq_params.monochrome &&
-      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y)) {
-    const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
-    write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(xd), w);
-    if (uv_mode == UV_CFL_PRED)
-      write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
-    if (use_angle_delta && av1_is_directional_mode(get_uv_mode(uv_mode))) {
-      write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_UV],
-                        ec_ctx->angle_delta_cdf[uv_mode - V_PRED]);
-    }
-  }
-
-  if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
-    write_palette_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
-
-  write_filter_intra_mode_info(cm, xd, mbmi, w);
+  write_intra_prediction_modes(cpi, mi_row, mi_col, 1, w);
 }
 
 #if CONFIG_RD_DEBUG
