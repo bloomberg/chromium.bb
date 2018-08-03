@@ -4,7 +4,7 @@
         "name": "memory.top_10_mobile/after_http_en_m_wikipedia_org_wiki_Science"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "memory.top_10_mobile/after_http_m_intl_taobao_com_group_purchase_html"
     },
     {
@@ -36,7 +36,7 @@
         "name": "memory.top_10_mobile/after_https_mobile_twitter_com_justinbieber_skip_interstitial_true"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "memory.top_10_mobile/after_https_www_google_co_uk_hl_en_q_science"
     },
     {
@@ -72,7 +72,7 @@
         "name": "memory.top_10_mobile/https_m_facebook_com_rihanna"
     },
     {
-        "duration": "27.0",
+        "duration": "28.0",
         "name": "memory.top_10_mobile/https_mobile_twitter_com_justinbieber_skip_interstitial_true"
     },
     {
@@ -84,11 +84,11 @@
         "name": "power.typical_10_mobile/http://de.m.wikipedia.org/wiki/K%C3%B6lner_Dom"
     },
     {
-        "duration": "80.0",
+        "duration": "81.0",
         "name": "power.typical_10_mobile/http://m.chiebukuro.yahoo.co.jp/detail/q10136829180"
     },
     {
-        "duration": "69.0",
+        "duration": "70.0",
         "name": "power.typical_10_mobile/http://m.ebay.com/itm/351157205404"
     },
     {
@@ -160,7 +160,7 @@
         "name": "system_health.common_mobile/background:tools:gmail"
     },
     {
-        "duration": "208.0",
+        "duration": "209.0",
         "name": "system_health.common_mobile/browse:chrome:newtab"
     },
     {
@@ -292,7 +292,7 @@
         "name": "system_health.common_mobile/load:media:youtube"
     },
     {
-        "duration": "68.0",
+        "duration": "69.0",
         "name": "system_health.common_mobile/load:news:cnn"
     },
     {
@@ -340,7 +340,7 @@
         "name": "system_health.common_mobile/load:search:yahoo"
     },
     {
-        "duration": "29.0",
+        "duration": "30.0",
         "name": "system_health.common_mobile/load:search:yandex"
     },
     {
@@ -360,11 +360,11 @@
         "name": "system_health.common_mobile/load:tools:dropbox"
     },
     {
-        "duration": "47.0",
+        "duration": "48.0",
         "name": "system_health.common_mobile/load:tools:gmail"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:tools:stackoverflow"
     },
     {
@@ -396,11 +396,11 @@
         "name": "system_health.memory_mobile/background:tools:gmail"
     },
     {
-        "duration": "177.0",
+        "duration": "180.0",
         "name": "system_health.memory_mobile/browse:chrome:newtab"
     },
     {
-        "duration": "51.0",
+        "duration": "52.0",
         "name": "system_health.memory_mobile/browse:chrome:omnibox"
     },
     {
@@ -500,7 +500,7 @@
         "name": "system_health.memory_mobile/load:games:lazors"
     },
     {
-        "duration": "46.0",
+        "duration": "47.0",
         "name": "system_health.memory_mobile/load:games:spychase"
     },
     {
@@ -512,7 +512,7 @@
         "name": "system_health.memory_mobile/load:media:facebook_photos"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.memory_mobile/load:media:google_images"
     },
     {
@@ -606,5 +606,73 @@
     {
         "duration": "290.0",
         "name": "system_health.memory_mobile/long_running:tools:gmail-foreground"
+    },
+    {
+        "duration": "141.0",
+        "name": "v8.browsing_mobile/browse:chrome:newtab"
+    },
+    {
+        "duration": "50.0",
+        "name": "v8.browsing_mobile/browse:chrome:omnibox"
+    },
+    {
+        "duration": "146.0",
+        "name": "v8.browsing_mobile/browse:media:facebook_photos"
+    },
+    {
+        "duration": "81.0",
+        "name": "v8.browsing_mobile/browse:media:flickr_infinite_scroll"
+    },
+    {
+        "duration": "125.0",
+        "name": "v8.browsing_mobile/browse:media:imgur"
+    },
+    {
+        "duration": "103.0",
+        "name": "v8.browsing_mobile/browse:news:cricbuzz"
+    },
+    {
+        "duration": "84.0",
+        "name": "v8.browsing_mobile/browse:news:qq"
+    },
+    {
+        "duration": "93.0",
+        "name": "v8.browsing_mobile/browse:news:reddit"
+    },
+    {
+        "duration": "423.0",
+        "name": "v8.browsing_mobile/browse:news:toi"
+    },
+    {
+        "duration": "88.0",
+        "name": "v8.browsing_mobile/browse:news:washingtonpost"
+    },
+    {
+        "duration": "167.0",
+        "name": "v8.browsing_mobile/browse:shopping:amazon"
+    },
+    {
+        "duration": "121.0",
+        "name": "v8.browsing_mobile/browse:social:facebook"
+    },
+    {
+        "duration": "146.0",
+        "name": "v8.browsing_mobile/browse:social:instagram"
+    },
+    {
+        "duration": "82.0",
+        "name": "v8.browsing_mobile/browse:social:twitter"
+    },
+    {
+        "duration": "83.0",
+        "name": "v8.browsing_mobile/browse:tools:maps"
+    },
+    {
+        "duration": "133.0",
+        "name": "speedometer/http://browserbench.org/Speedometer/"
+    },
+    {
+        "duration": "250.0",
+        "name": "speedometer2/Speedometer2"
     }
 ]
