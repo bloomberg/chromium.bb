@@ -1340,10 +1340,13 @@ public class LocationBarLayout extends FrameLayout
             @Override
             public void onRefineSuggestion(OmniboxSuggestion suggestion) {
                 stopAutocomplete(false);
-                mUrlCoordinator.setUrlBarData(
-                        UrlBarData.forNonUrlText(suggestion.getFillIntoEdit()),
+                boolean isUrlSuggestion = suggestion.isUrlSuggestion();
+                String refineText = suggestion.getFillIntoEdit();
+                if (!isUrlSuggestion) refineText = TextUtils.concat(refineText, " ").toString();
+
+                mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(refineText),
                         UrlBar.ScrollType.NO_SCROLL, UrlBarCoordinator.SelectionState.SELECT_END);
-                if (suggestion.isUrlSuggestion()) {
+                if (isUrlSuggestion) {
                     RecordUserAction.record("MobileOmniboxRefineSuggestion.Url");
                 } else {
                     RecordUserAction.record("MobileOmniboxRefineSuggestion.Search");
