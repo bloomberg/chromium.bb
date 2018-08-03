@@ -318,7 +318,8 @@ class Profile : public content::BrowserContext {
 
   // Returns whether the profile is new.  A profile is new if the browser has
   // not been shut down since the profile was created.
-  bool IsNewProfile();
+  // This method is virtual in order to be overridden for tests.
+  virtual bool IsNewProfile();
 
   // Checks whether sync is configurable by the user. Returns false if sync is
   // disallowed by the command line or controlled by configuration management.
