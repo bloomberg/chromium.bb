@@ -750,26 +750,26 @@ def UpdateClang(args):
   else:
     assert sys.platform.startswith('linux')
     platform = 'linux'
-  asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', platform)
+  rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', platform)
   if sys.platform == 'win32':
     # TODO(thakis): This too is due to compiler-rt being part of the checkout
     # on Windows, see TODO above COMPILER_RT_DIR.
-    asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
-                                       VERSION, 'lib', platform)
-  asan_rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
-                                     VERSION, 'lib', platform)
+    rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
+                                  VERSION, 'lib', platform)
+  rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', VERSION, 'lib',
+                                platform)
   # Blacklists:
-  CopyDirectoryContents(os.path.join(asan_rt_lib_src_dir, '..', '..', 'share'),
-                        os.path.join(asan_rt_lib_dst_dir, '..', '..', 'share'))
+  CopyDirectoryContents(os.path.join(rt_lib_src_dir, '..', '..', 'share'),
+                        os.path.join(rt_lib_dst_dir, '..', '..', 'share'))
   # Headers:
   if sys.platform != 'win32':
     CopyDirectoryContents(
         os.path.join(COMPILER_RT_BUILD_DIR, 'include/sanitizer'),
         os.path.join(LLVM_BUILD_DIR, 'lib/clang', VERSION, 'include/sanitizer'))
   # Static and dynamic libraries:
-  CopyDirectoryContents(asan_rt_lib_src_dir, asan_rt_lib_dst_dir)
+  CopyDirectoryContents(rt_lib_src_dir, rt_lib_dst_dir)
   if sys.platform == 'darwin':
-    for dylib in glob.glob(os.path.join(asan_rt_lib_dst_dir, '*.dylib')):
+    for dylib in glob.glob(os.path.join(rt_lib_dst_dir, '*.dylib')):
       # Fix LC_ID_DYLIB for the ASan dynamic libraries to be relative to
       # @executable_path.
       # TODO(glider): this is transitional. We'll need to fix the dylib
@@ -828,13 +828,16 @@ def UpdateClang(args):
       RunCommand(['ninja', 'asan', 'ubsan', 'profile'])
 
       # And copy them into the main build tree.
-      want = [
-          'lib/linux/*.so',  # ASan and UBSan shared libraries only.
-          'lib/linux/*profile*',  # Static profile libraries.
+      libs_want = [
+          'lib/linux/libclang_rt.asan-{0}-android.so',
+          'lib/linux/libclang_rt.ubsan_standalone-{0}-android.so',
+          'lib/linux/libclang_rt.profile-{0}-android.a',
       ]
-      for p in want:
-        for f in glob.glob(os.path.join(build_dir, p)):
-          shutil.copy(f, asan_rt_lib_dst_dir)
+      for arch in ['aarch64', 'arm']:
+        for p in libs_want:
+          lib_path = os.path.join(build_dir, p.format(arch))
+          if os.path.exists(lib_path):
+            shutil.copy(lib_path, rt_lib_dst_dir)
 
   # Run tests.
   if args.run_tests or use_head_revision:
