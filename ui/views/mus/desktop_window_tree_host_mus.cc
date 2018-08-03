@@ -915,7 +915,6 @@ void DesktopWindowTreeHostMus::HideImpl() {
 
   native_widget_delegate_->OnNativeWidgetVisibilityChanging(false);
   WindowTreeHostMus::HideImpl();
-  window()->Hide();
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 
