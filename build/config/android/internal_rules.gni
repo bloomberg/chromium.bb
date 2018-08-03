@@ -376,10 +376,6 @@ template("write_build_config") {
     if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
       args += [ "--proguard-enabled" ]
     }
-    if (defined(invoker.synchronized_proguard_enabled) &&
-        invoker.synchronized_proguard_enabled) {
-      args += [ "--synchronized-proguard-enabled" ]
-    }
     if (defined(invoker.proguard_output_jar_path)) {
       _rebased_proguard_output_jar_path =
           rebase_path(invoker.proguard_output_jar_path, root_build_dir)
