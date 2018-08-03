@@ -63,7 +63,7 @@ void InspectorWorkerAgent::Restore() {
   instrumenting_agents_->addInspectorWorkerAgent(this);
   for (const WTF::String& session_id : attached_session_ids_.Keys())
     GetFrontend()->detachedFromTarget(session_id);
-  attached_session_ids_.ClearAll();
+  attached_session_ids_.Clear();
   ConnectToAllProxies();
 }
 
@@ -72,9 +72,7 @@ Response InspectorWorkerAgent::disable() {
     DisconnectFromAllProxies(false);
     instrumenting_agents_->removeInspectorWorkerAgent(this);
   }
-  auto_attach_.Clear();
-  wait_for_debugger_on_start_.Clear();
-  attached_session_ids_.ClearAll();
+  agent_state_.ClearAllFields();
   return Response::OK();
 }
 
