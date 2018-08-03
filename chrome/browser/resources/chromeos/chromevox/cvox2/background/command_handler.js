@@ -495,6 +495,12 @@ CommandHandler.onCommand = function(command) {
           return false;
         }
 
+        if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE &&
+            AutomationPredicate.editText(actionNode)) {
+          actionNode.focus();
+          return false;
+        }
+
         while (actionNode.role == RoleType.INLINE_TEXT_BOX ||
                actionNode.role == RoleType.STATIC_TEXT)
           actionNode = actionNode.parent;

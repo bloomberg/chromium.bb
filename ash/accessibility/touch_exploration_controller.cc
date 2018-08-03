@@ -1023,17 +1023,6 @@ TouchExplorationController::CreateMouseMoveEvent(const gfx::PointF& location,
   // backing native event.
   flags |= ui::EF_IS_SYNTHESIZED;
 
-  // TODO(dmazzoni) http://crbug.com/391008 - get rid of this hack.
-  // This is a short-term workaround for the limitation that we're using
-  // the ChromeVox content script to process touch exploration events, but
-  // ChromeVox needs a way to distinguish between a real mouse move and a
-  // mouse move generated from touch exploration, so we have touch exploration
-  // pretend that the command key was down (which becomes the "meta" key in
-  // JavaScript). We can remove this hack when the ChromeVox content script
-  // goes away and native accessibility code sends a touch exploration
-  // event to the new ChromeVox background page via the automation api.
-  flags |= ui::EF_COMMAND_DOWN;
-
   std::unique_ptr<ui::MouseEvent> event(new ui::MouseEvent(
       ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), Now(), flags, 0));
   event->set_location_f(location);

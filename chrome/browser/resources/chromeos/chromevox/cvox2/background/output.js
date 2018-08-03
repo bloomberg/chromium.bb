@@ -1871,6 +1871,7 @@ Output.prototype = {
       return;
 
     var node = range.start.node;
+
     if (!node) {
       this.append_(buff, Msgs.getMsg('warning_no_current_range'));
       return;
@@ -1882,8 +1883,16 @@ Output.prototype = {
       return;
     }
 
-    if (type == EventType.HOVER ||
-        EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
+    if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
+      if (node.state[StateType.EDITABLE]) {
+        this.format_(
+            node,
+            node.state[StateType.FOCUSED] ? '@hint_is_editing' :
+                                            '@hint_double_tap_to_edit',
+            buff);
+        return;
+      }
+
       var isWithinVirtualKeyboard = AutomationUtil.getAncestors(node).find(
           (n) => n.role == RoleType.KEYBOARD);
       if (node.defaultActionVerb != 'none' && !isWithinVirtualKeyboard)
@@ -1902,7 +1911,6 @@ Output.prototype = {
 
     if (node.state[StateType.EDITABLE] && node.state[StateType.FOCUSED] &&
         !this.formatOptions_.braille) {
-      this.format_(node, '@hint_is_editing', buff);
       if (node.state[StateType.MULTILINE] ||
           node.state[StateType.RICHLY_EDITABLE])
         this.format_(node, '@hint_search_within_text_field', buff);
