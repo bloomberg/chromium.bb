@@ -1,9 +1,5 @@
 This is a testharness.js-based test.
-Found 519 tests; 398 PASS, 121 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS URL.searchParams getter
-PASS URL.searchParams updating, clearing
-PASS URL.searchParams setter, invalid values
-PASS URL.searchParams and URL.search setters, update propagation
+Found 515 tests; 394 PASS, 121 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar>
