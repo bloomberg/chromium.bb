@@ -1762,6 +1762,12 @@ const char kSuggestionsWithSubStringMatchDescription[] =
     "Match Autofill suggestions based on substrings (token prefixes) rather "
     "than just prefixes.";
 
+const char kSyncStandaloneTransportName[] = "Allow Sync standalone transport";
+const char kSyncStandaloneTransportDescription[] =
+    "If enabled, allows Chrome Sync to start in standalone transport mode. In "
+    "this mode, the Sync machinery can start without user opt-in, but only a "
+    "subset of data types are supported.";
+
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
