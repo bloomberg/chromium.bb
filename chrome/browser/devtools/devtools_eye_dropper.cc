@@ -34,7 +34,7 @@ DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
       last_cursor_y_(-1),
       host_(nullptr),
       use_video_capture_api_(
-          features::IsVizDisplayCompositorEnabled() ||
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
           base::FeatureList::IsEnabled(
               features::kUseVideoCaptureApiForDevToolsSnapshots)),
       weak_factory_(this) {

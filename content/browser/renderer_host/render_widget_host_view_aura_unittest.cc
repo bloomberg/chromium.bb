@@ -504,7 +504,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       return;
 
     view->delegated_frame_host_client_ = std::move(delegated_frame_host_client);
-    const bool enable_viz = features::IsVizDisplayCompositorEnabled();
+    const bool enable_viz =
+        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
     view->delegated_frame_host_ = nullptr;
     view->delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
         view->frame_sink_id_, view->delegated_frame_host_client_.get(),
@@ -3078,7 +3079,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       !features::IsAshInBrowserProcess()) {
     return;
   }
@@ -3385,7 +3386,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
 TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       !features::IsAshInBrowserProcess()) {
     return;
   }
@@ -3543,7 +3544,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        CompositorFrameSinkChange) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       !features::IsAshInBrowserProcess()) {
     return;
   }
@@ -3899,7 +3900,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
 TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       !features::IsAshInBrowserProcess()) {
     return;
   }
@@ -5840,7 +5841,7 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
 TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       !features::IsAshInBrowserProcess()) {
     return;
   }

@@ -5,13 +5,8 @@
 #include "components/viz/common/features.h"
 
 #include "base/command_line.h"
-#include "base/sys_info.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif
 
 namespace features {
 
@@ -57,7 +52,7 @@ bool IsSurfaceSynchronizationEnabled() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   return base::FeatureList::IsEnabled(kEnableSurfaceSynchronization) ||
          command_line->HasSwitch(switches::kEnableSurfaceSynchronization) ||
-         IsVizDisplayCompositorEnabled();
+         base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 
 bool IsSurfaceInvariantsViolationLoggingEnabled() {
@@ -67,7 +62,7 @@ bool IsSurfaceInvariantsViolationLoggingEnabled() {
 
 bool IsVizHitTestingDrawQuadEnabled() {
   return base::FeatureList::IsEnabled(kEnableVizHitTestDrawQuad) ||
-         IsVizDisplayCompositorEnabled();
+         base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 
 bool IsVizHitTestingEnabled() {
@@ -95,21 +90,7 @@ bool IsUsingSkiaRenderer() {
 bool IsUsingSkiaDeferredDisplayList() {
   return IsUsingSkiaRenderer() &&
          base::FeatureList::IsEnabled(kUseSkiaDeferredDisplayList) &&
-         IsVizDisplayCompositorEnabled();
-}
-
-bool IsVizDisplayCompositorEnabled() {
-// To work around current bugs, some Android configs do not allow for Viz to be
-// enabled.
-// TODO(cblume): Remove this once https://crbug.com/867453 is addressed.
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86_FAMILY)
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_KITKAT) {
-    return false;
-  }
-#endif  // defined(OS_ANDROID) && defined(ARCH_CPU_X86_FAMILY)
-
-  return base::FeatureList::IsEnabled(kVizDisplayCompositor);
+         base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 
 }  // namespace features

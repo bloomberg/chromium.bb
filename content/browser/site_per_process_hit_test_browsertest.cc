@@ -1797,7 +1797,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   // TODO(sunxd): Hit test regions are not submitted for overlapping surfaces,
   // causing /2 to fail outside of Viz. https::/crbug.com/846798
   if (base::FeatureList::IsEnabled(features::kEnableVizHitTestSurfaceLayer) &&
-      !features::IsVizDisplayCompositorEnabled()) {
+      !base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
     return;
   }
 
