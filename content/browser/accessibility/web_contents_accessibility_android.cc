@@ -350,6 +350,7 @@ WebContentsAccessibilityAndroid::WebContentsAccessibilityAndroid(
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       frame_info_initialized_(false),
+      use_zoom_for_dsf_enabled_(IsUseZoomForDSFEnabled()),
       root_manager_(nullptr),
       connector_(new Connector(web_contents, this)) {
   CollectStats();
@@ -550,7 +551,7 @@ bool WebContentsAccessibilityAndroid::OnHoverEvent(
   if (event.GetAction() != ui::MotionEvent::Action::HOVER_EXIT &&
       root_manager_) {
     gfx::PointF point =
-        IsUseZoomForDSFEnabled() ? event.GetPointPix() : event.GetPoint();
+        use_zoom_for_dsf_enabled_ ? event.GetPointPix() : event.GetPoint();
     point.Scale(1 / page_scale_);
     root_manager_->HitTest(gfx::ToFlooredPoint(point));
   }
@@ -694,10 +695,15 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
         base::android::ConvertUTF16ToJavaString(env, element_id));
   }
 
-  gfx::Rect absolute_rect = node->GetPageBoundsRect();
+  float dip_scale = use_zoom_for_dsf_enabled_
+                        ? 1 / root_manager_->device_scale_factor()
+                        : 1.0;
+  gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(node->GetPageBoundsRect(),
+                                                      dip_scale, dip_scale);
   gfx::Rect parent_relative_rect = absolute_rect;
   if (node->PlatformGetParent()) {
-    gfx::Rect parent_rect = node->PlatformGetParent()->GetPageBoundsRect();
+    gfx::Rect parent_rect = gfx::ScaleToEnclosingRect(
+        node->PlatformGetParent()->GetPageBoundsRect(), dip_scale, dip_scale);
     parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
   }
   bool is_root = node->PlatformGetParent() == NULL;
