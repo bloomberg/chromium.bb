@@ -23,7 +23,7 @@ class BaseSafeBrowsingErrorUI {
     SB_REASON_MALWARE,
     SB_REASON_HARMFUL,
     SB_REASON_PHISHING,
-    SB_REASON_TRICK_TO_BILL,
+    SB_REASON_BILLING,
   };
 
   struct SBErrorDisplayOptions {

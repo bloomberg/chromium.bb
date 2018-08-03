@@ -94,8 +94,8 @@ void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
       always_show_back_to_safety() ? false : !controller()->CanGoBack());
 
   load_time_data->SetBoolean(
-      "trick_to_bill", interstitial_reason() ==
-                           BaseSafeBrowsingErrorUI::SB_REASON_TRICK_TO_BILL);
+      "billing",
+      interstitial_reason() == BaseSafeBrowsingErrorUI::SB_REASON_BILLING);
 
   switch (interstitial_reason()) {
     case BaseSafeBrowsingErrorUI::SB_REASON_MALWARE:
@@ -107,8 +107,8 @@ void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
     case BaseSafeBrowsingErrorUI::SB_REASON_PHISHING:
       PopulatePhishingLoadTimeData(load_time_data);
       break;
-    case BaseSafeBrowsingErrorUI::SB_REASON_TRICK_TO_BILL:
-      PopulateTrickToBillLoadTimeData(load_time_data);
+    case BaseSafeBrowsingErrorUI::SB_REASON_BILLING:
+      PopulateBillingLoadTimeData(load_time_data);
       break;
   }
 
@@ -316,24 +316,24 @@ void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
                              is_extended_reporting_enabled());
 }
 
-void SafeBrowsingLoudErrorUI::PopulateTrickToBillLoadTimeData(
+void SafeBrowsingLoudErrorUI::PopulateBillingLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", false);
   load_time_data->SetBoolean("overridable", true);
   load_time_data->SetBoolean("hide_primary_button", false);
 
-  load_time_data->SetString(
-      "heading", l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_HEADING));
+  load_time_data->SetString("heading",
+                            l10n_util::GetStringUTF16(IDS_BILLING_HEADING));
   load_time_data->SetString(
       "primaryParagraph",
-      l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PRIMARY_PARAGRAPH));
+      l10n_util::GetStringUTF16(IDS_BILLING_PRIMARY_PARAGRAPH));
 
   load_time_data->SetString(
       "primaryButtonText",
-      l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PRIMARY_BUTTON));
+      l10n_util::GetStringUTF16(IDS_BILLING_PRIMARY_BUTTON));
   load_time_data->SetString(
       "proceedButtonText",
-      l10n_util::GetStringUTF16(IDS_TRICK_TO_BILL_PROCEED_BUTTON));
+      l10n_util::GetStringUTF16(IDS_BILLING_PROCEED_BUTTON));
 
   load_time_data->SetString("openDetails", "");
   load_time_data->SetString("closeDetails", "");
