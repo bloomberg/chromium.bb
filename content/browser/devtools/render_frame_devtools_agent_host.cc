@@ -477,7 +477,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
 
   if (sessions().size() == 1) {
     // Taking screenshots using the video capture API is done in TracingHandler.
-    if (!features::IsVizDisplayCompositorEnabled() &&
+    if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor) &&
         !base::FeatureList::IsEnabled(
             features::kUseVideoCaptureApiForDevToolsSnapshots)) {
       frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());

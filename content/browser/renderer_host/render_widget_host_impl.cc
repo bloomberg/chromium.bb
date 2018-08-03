@@ -419,7 +419,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   }
 
   enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
-  enable_viz_ = features::IsVizDisplayCompositorEnabled();
+  enable_viz_ = base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
 
   if (!enable_viz_) {
 #if !defined(OS_ANDROID)

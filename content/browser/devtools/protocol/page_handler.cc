@@ -207,7 +207,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       observer_(this),
       weak_factory_(this) {
   bool create_video_consumer =
-      features::IsVizDisplayCompositorEnabled() ||
+      base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       base::FeatureList::IsEnabled(
           features::kUseVideoCaptureApiForDevToolsSnapshots);
 #ifdef OS_ANDROID

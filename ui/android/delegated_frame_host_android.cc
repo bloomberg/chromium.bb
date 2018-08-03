@@ -58,7 +58,8 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
       client_(client),
       begin_frame_source_(this),
       enable_surface_synchronization_(enable_surface_synchronization),
-      enable_viz_(features::IsVizDisplayCompositorEnabled()),
+      enable_viz_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   DCHECK(view_);
   DCHECK(client_);

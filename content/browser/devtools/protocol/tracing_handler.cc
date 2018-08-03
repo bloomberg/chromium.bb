@@ -214,7 +214,7 @@ TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
       return_as_stream_(false),
       gzip_compression_(false),
       weak_factory_(this) {
-  if (features::IsVizDisplayCompositorEnabled() ||
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       base::FeatureList::IsEnabled(
           features::kUseVideoCaptureApiForDevToolsSnapshots)) {
     video_consumer_ =

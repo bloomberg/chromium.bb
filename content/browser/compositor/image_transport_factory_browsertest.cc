@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryTearDownBrowserTest,
 
   // TODO(crbug.com/844469): Delete after OOP-D is launched because GLHelper
   // and OwnedMailbox aren't used.
-  if (features::IsVizDisplayCompositorEnabled())
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
     return;
 
   // This test doesn't make sense in software compositing mode.
