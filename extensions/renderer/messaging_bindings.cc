@@ -196,8 +196,7 @@ void MessagingBindings::OpenChannelToExtension(
   info.source_url = context()->url();
   std::string channel_name = *v8::String::Utf8Value(isolate, args[1]);
   // TODO(devlin): Why is this not part of info?
-  bool include_tls_channel_id =
-      args.Length() > 2 ? args[2]->BooleanValue() : false;
+  bool include_tls_channel_id = args[2].As<v8::Boolean>()->Value();
 
   {
     SCOPED_UMA_HISTOGRAM_TIMER(
@@ -264,8 +263,8 @@ void MessagingBindings::OpenChannelToTab(
   ports_[js_id] = std::make_unique<ExtensionPort>(context(), port_id, js_id);
 
   ExtensionMsg_TabTargetConnectionInfo info;
-  info.tab_id = args[0]->Int32Value();
-  info.frame_id = args[1]->Int32Value();
+  info.tab_id = args[0].As<v8::Int32>()->Value();
+  info.frame_id = args[1].As<v8::Int32>()->Value();
   // TODO(devlin): Why is this not part of info?
   v8::Isolate* isolate = args.GetIsolate();
   std::string extension_id = *v8::String::Utf8Value(isolate, args[2]);

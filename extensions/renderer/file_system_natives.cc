@@ -92,8 +92,9 @@ void FileSystemNatives::GetFileEntry(
 
   CHECK(args[4]->IsBoolean());
   blink::WebDOMFileSystem::EntryType entry_type =
-      args[4]->BooleanValue() ? blink::WebDOMFileSystem::kEntryTypeDirectory
-                              : blink::WebDOMFileSystem::kEntryTypeFile;
+      args[4].As<v8::Boolean>()->Value()
+          ? blink::WebDOMFileSystem::kEntryTypeDirectory
+          : blink::WebDOMFileSystem::kEntryTypeFile;
 
   blink::WebLocalFrame* webframe =
       blink::WebLocalFrame::FrameForContext(context()->v8_context());

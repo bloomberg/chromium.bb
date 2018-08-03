@@ -136,10 +136,12 @@ v8::Local<v8::Value> MessageToV8(v8::Local<v8::Context> context,
 }
 
 int ExtractIntegerId(v8::Local<v8::Value> value) {
+  if (value->IsInt32())
+    return value.As<v8::Int32>()->Value();
+
   // Account for -0, which is a valid integer, but is stored as a number in v8.
-  DCHECK(value->IsNumber() &&
-         (value->IsInt32() || value.As<v8::Number>()->Value() == 0.0));
-  return value->Int32Value();
+  DCHECK(value->IsNumber() && value.As<v8::Number>()->Value() == 0.0);
+  return 0;
 }
 
 MessageOptions ParseMessageOptions(v8::Local<v8::Context> context,
@@ -173,7 +175,7 @@ MessageOptions ParseMessageOptions(v8::Local<v8::Context> context,
     if (!v8_include_tls_channel_id->IsUndefined()) {
       DCHECK(v8_include_tls_channel_id->IsBoolean());
       options.include_tls_channel_id =
-          v8_include_tls_channel_id->BooleanValue();
+          v8_include_tls_channel_id.As<v8::Boolean>()->Value();
     }
   }
 

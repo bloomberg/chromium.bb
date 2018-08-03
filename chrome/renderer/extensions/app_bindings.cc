@@ -46,7 +46,7 @@ void AppBindings::GetInstallState(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
-  int callback_id = args[0]->Int32Value();
+  int callback_id = args[0].As<v8::Int32>()->Value();
 
   app_core_.GetInstallState(
       context(), base::BindOnce(&AppBindings::OnAppInstallStateResponse,

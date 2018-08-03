@@ -141,7 +141,7 @@ void EventBindings::AttachEventHandler(
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsBoolean());
   AttachEvent(*v8::String::Utf8Value(args.GetIsolate(), args[0]),
-              args[1]->BooleanValue());
+              args[1].As<v8::Boolean>()->Value());
 }
 
 void EventBindings::AttachEvent(const std::string& event_name,
@@ -180,8 +180,8 @@ void EventBindings::DetachEventHandler(
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsBoolean());
   CHECK(args[2]->IsBoolean());
-  bool was_manual = args[1]->BooleanValue();
-  bool supports_lazy_listeners = args[2]->BooleanValue();
+  bool was_manual = args[1].As<v8::Boolean>()->Value();
+  bool supports_lazy_listeners = args[2].As<v8::Boolean>()->Value();
   DetachEvent(*v8::String::Utf8Value(args.GetIsolate(), args[0]),
               was_manual && supports_lazy_listeners);
 }
@@ -236,7 +236,7 @@ void EventBindings::AttachFilteredEvent(
     filter = base::DictionaryValue::From(std::move(filter_value));
   }
 
-  bool supports_lazy_listeners = args[2]->BooleanValue();
+  bool supports_lazy_listeners = args[2].As<v8::Boolean>()->Value();
 
   EventBookkeeper* bookkeeper = EventBookkeeper::Get();
   DCHECK(bookkeeper);
@@ -271,9 +271,9 @@ void EventBindings::DetachFilteredEventHandler(
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsBoolean());
   CHECK(args[2]->IsBoolean());
-  bool was_manual = args[1]->BooleanValue();
-  bool supports_lazy_listeners = args[2]->BooleanValue();
-  DetachFilteredEvent(args[0]->Int32Value(),
+  bool was_manual = args[1].As<v8::Boolean>()->Value();
+  bool supports_lazy_listeners = args[2].As<v8::Boolean>()->Value();
+  DetachFilteredEvent(args[0].As<v8::Int32>()->Value(),
                       was_manual && supports_lazy_listeners);
 }
 

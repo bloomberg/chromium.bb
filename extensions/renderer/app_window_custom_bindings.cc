@@ -44,8 +44,8 @@ void AppWindowCustomBindings::GetFrame(
   if (!args[0]->IsInt32() || !args[1]->IsBoolean())
     return;
 
-  int frame_id = args[0]->Int32Value();
-  bool notify_browser = args[1]->BooleanValue();
+  int frame_id = args[0].As<v8::Int32>()->Value();
+  bool notify_browser = args[1].As<v8::Boolean>()->Value();
 
   if (frame_id == MSG_ROUTING_NONE)
     return;
@@ -83,7 +83,7 @@ void AppWindowCustomBindings::ResumeParser(
     return;
   }
 
-  int frame_id = args[0]->Int32Value();
+  int frame_id = args[0].As<v8::Int32>()->Value();
   content::RenderFrame* app_frame =
       content::RenderFrame::FromRoutingID(frame_id);
   if (!app_frame) {
