@@ -16,20 +16,23 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+// To avoid symbol collisions in jumbo builds.
+namespace flat_tree_traversal_test {
 
 class FlatTreeTraversalTest : public PageTestBase,
                               private ScopedSlotInFlatTreeForTest,
                               ScopedIncrementalShadowDOMForTest {
  public:
   FlatTreeTraversalTest()
-      : ScopedSlotInFlatTreeForTest(false),
-        ScopedIncrementalShadowDOMForTest(false) {}
+      : ScopedSlotInFlatTreeForTest(true),
+        ScopedIncrementalShadowDOMForTest(true) {}
 
  protected:
   // Sets |mainHTML| to BODY element with |innerHTML| property and attaches
@@ -142,7 +145,8 @@ TEST_F(FlatTreeTraversalTest, childAt) {
         << "FlatTreeTraversal::index(FlatTreeTraversal(*shadowHost, " << index
         << "))";
     EXPECT_TRUE(FlatTreeTraversal::IsDescendantOf(*child, *shadow_host))
-        << "FlatTreeTraversal::isDescendantOf(*FlatTreeTraversal(*shadowHost, "
+        << "FlatTreeTraversal::isDescendantOf(*FlatTreeTraversal(*"
+           "shadowHost, "
         << index << "), *shadowHost)";
   }
   EXPECT_EQ(nullptr,
@@ -508,9 +512,9 @@ TEST_F(FlatTreeTraversalTest, redistribution) {
   // FlatTreeTraversal::traverseSiblings does not work for a node which is not
   // in a document flat tree.
   // e.g. The following test fails. The result of
-  // FlatTreeTraversal::previousSibling(*m11)) will be #m10, instead of nullptr.
-  // Element* m11 = body->querySelector("#m11");
-  // EXPECT_EQ(nullptr, FlatTreeTraversal::previousSibling(*m11));
+  // FlatTreeTraversal::previousSibling(*m11)) will be #m10, instead of
+  // nullptr. Element* m11 = body->querySelector("#m11"); EXPECT_EQ(nullptr,
+  // FlatTreeTraversal::previousSibling(*m11));
 }
 
 TEST_F(FlatTreeTraversalTest, v1Simple) {
@@ -541,12 +545,44 @@ TEST_F(FlatTreeTraversalTest, v1Simple) {
   EXPECT_TRUE(slot1);
   EXPECT_TRUE(slot2);
   EXPECT_EQ(shadow_child1, FlatTreeTraversal::FirstChild(*host));
-  EXPECT_EQ(child1, FlatTreeTraversal::NextSibling(*shadow_child1));
-  EXPECT_EQ(child2, FlatTreeTraversal::NextSibling(*child1));
-  EXPECT_EQ(shadow_child2, FlatTreeTraversal::NextSibling(*child2));
+  EXPECT_EQ(slot1, FlatTreeTraversal::NextSibling(*shadow_child1));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::NextSibling(*child1));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::NextSibling(*child2));
+  EXPECT_EQ(slot2, FlatTreeTraversal::NextSibling(*slot1));
+  EXPECT_EQ(shadow_child2, FlatTreeTraversal::NextSibling(*slot2));
 }
 
 TEST_F(FlatTreeTraversalTest, v1Redistribution) {
+  // composed tree:
+  // d1
+  // ├──/shadow-root
+  // │   └── d1-1
+  // │       ├──/shadow-root
+  // │       │   ├── d1-1-1
+  // │       │   ├── slot name=d1-1-s1
+  // │       │   ├── slot name=d1-1-s2
+  // │       │   └── d1-1-2
+  // │       ├── d1-2
+  // │       ├── slot id=d1-s0
+  // │       ├── slot name=d1-s1 slot=d1-1-s1
+  // │       ├── slot name=d1-s2
+  // │       ├── d1-3
+  // │       └── d1-4 slot=d1-1-s1
+  // ├── d2 slot=d1-s1
+  // ├── d3 slot=d1-s2
+  // ├── d4 slot=nonexistent
+  // └── d5
+
+  // flat tree:
+  // d1
+  // └── d1-1
+  //     ├── d1-1-1
+  //     ├── slot name=d1-1-s1
+  //     │   ├── slot name=d1-s1 slot=d1-1-s1
+  //     │   │   └── d2 slot=d1-s1
+  //     │   └── d1-4 slot=d1-1-s1
+  //     ├── slot name=d1-1-s2
+  //     └── d1-1-2
   const char* main_html =
       "<div id='d1'>"
       "<div id='d2' slot='d1-s1'></div>"
@@ -605,20 +641,24 @@ TEST_F(FlatTreeTraversalTest, v1Redistribution) {
   EXPECT_TRUE(d1s2);
   EXPECT_TRUE(d11s1);
   EXPECT_TRUE(d11s2);
+
   EXPECT_EQ(d11, FlatTreeTraversal::Next(*d1));
   EXPECT_EQ(d111, FlatTreeTraversal::Next(*d11));
-  EXPECT_EQ(d2, FlatTreeTraversal::Next(*d111));
+  EXPECT_EQ(d11s1, FlatTreeTraversal::Next(*d111));
+  EXPECT_EQ(d1s1, FlatTreeTraversal::Next(*d11s1));
+  EXPECT_EQ(d2, FlatTreeTraversal::Next(*d1s1));
   EXPECT_EQ(d14, FlatTreeTraversal::Next(*d2));
-  EXPECT_EQ(d112, FlatTreeTraversal::Next(*d14));
+  EXPECT_EQ(d11s2, FlatTreeTraversal::Next(*d14));
+  EXPECT_EQ(d112, FlatTreeTraversal::Next(*d11s2));
   EXPECT_EQ(d6, FlatTreeTraversal::Next(*d112));
 
   EXPECT_EQ(d112, FlatTreeTraversal::Previous(*d6));
 
   EXPECT_EQ(d11, FlatTreeTraversal::Parent(*d111));
   EXPECT_EQ(d11, FlatTreeTraversal::Parent(*d112));
-  EXPECT_EQ(d11, FlatTreeTraversal::Parent(*d2));
-  EXPECT_EQ(d11, FlatTreeTraversal::Parent(*d14));
-  EXPECT_EQ(nullptr, FlatTreeTraversal::Parent(*d3));
+  EXPECT_EQ(d1s1, FlatTreeTraversal::Parent(*d2));
+  EXPECT_EQ(d11s1, FlatTreeTraversal::Parent(*d14));
+  EXPECT_EQ(d1s2, FlatTreeTraversal::Parent(*d3));
   EXPECT_EQ(nullptr, FlatTreeTraversal::Parent(*d4));
 }
 
@@ -664,17 +704,20 @@ TEST_F(FlatTreeTraversalTest, v1FallbackContent) {
   Element* before = shadow_root->QuerySelector("#before");
   Element* after = shadow_root->QuerySelector("#after");
   Element* fallback_content = shadow_root->QuerySelector("p");
+  Element* slot = shadow_root->QuerySelector("slot");
 
   EXPECT_EQ(before, FlatTreeTraversal::FirstChild(*d1));
   EXPECT_EQ(after, FlatTreeTraversal::LastChild(*d1));
-  EXPECT_EQ(d1, FlatTreeTraversal::Parent(*fallback_content));
+  EXPECT_EQ(slot, FlatTreeTraversal::Parent(*fallback_content));
 
-  EXPECT_EQ(fallback_content, FlatTreeTraversal::NextSibling(*before));
-  EXPECT_EQ(after, FlatTreeTraversal::NextSibling(*fallback_content));
+  EXPECT_EQ(slot, FlatTreeTraversal::NextSibling(*before));
+  EXPECT_EQ(after, FlatTreeTraversal::NextSibling(*slot));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::NextSibling(*fallback_content));
   EXPECT_EQ(nullptr, FlatTreeTraversal::NextSibling(*after));
 
-  EXPECT_EQ(fallback_content, FlatTreeTraversal::PreviousSibling(*after));
-  EXPECT_EQ(before, FlatTreeTraversal::PreviousSibling(*fallback_content));
+  EXPECT_EQ(slot, FlatTreeTraversal::PreviousSibling(*after));
+  EXPECT_EQ(before, FlatTreeTraversal::PreviousSibling(*slot));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::PreviousSibling(*fallback_content));
   EXPECT_EQ(nullptr, FlatTreeTraversal::PreviousSibling(*before));
 }
 
@@ -696,17 +739,19 @@ TEST_F(FlatTreeTraversalTest, v1FallbackContentSkippedInTraversal) {
   Element* before = shadow_root->QuerySelector("#before");
   Element* after = shadow_root->QuerySelector("#after");
   Element* fallback_content = shadow_root->QuerySelector("p");
+  Element* slot = shadow_root->QuerySelector("slot");
 
   EXPECT_EQ(before, FlatTreeTraversal::FirstChild(*d1));
   EXPECT_EQ(after, FlatTreeTraversal::LastChild(*d1));
-  EXPECT_EQ(d1, FlatTreeTraversal::Parent(*span));
+  EXPECT_EQ(slot, FlatTreeTraversal::Parent(*span));
+  EXPECT_EQ(d1, FlatTreeTraversal::Parent(*slot));
 
-  EXPECT_EQ(span, FlatTreeTraversal::NextSibling(*before));
-  EXPECT_EQ(after, FlatTreeTraversal::NextSibling(*span));
+  EXPECT_EQ(slot, FlatTreeTraversal::NextSibling(*before));
+  EXPECT_EQ(after, FlatTreeTraversal::NextSibling(*slot));
   EXPECT_EQ(nullptr, FlatTreeTraversal::NextSibling(*after));
 
-  EXPECT_EQ(span, FlatTreeTraversal::PreviousSibling(*after));
-  EXPECT_EQ(before, FlatTreeTraversal::PreviousSibling(*span));
+  EXPECT_EQ(slot, FlatTreeTraversal::PreviousSibling(*after));
+  EXPECT_EQ(before, FlatTreeTraversal::PreviousSibling(*slot));
   EXPECT_EQ(nullptr, FlatTreeTraversal::PreviousSibling(*before));
 
   EXPECT_EQ(nullptr, FlatTreeTraversal::Parent(*fallback_content));
@@ -728,40 +773,33 @@ TEST_F(FlatTreeTraversalTest, v1AllFallbackContent) {
 
   AttachOpenShadowRoot(*d1, shadow_html);
   ShadowRoot* shadow_root = d1->OpenShadowRoot();
+  Element* slot_a = shadow_root->QuerySelector("slot[name=a]");
+  Element* slot_b = shadow_root->QuerySelector("slot[name=b]");
+  Element* slot_c = shadow_root->QuerySelector("slot[name=c]");
   Element* fallback_x = shadow_root->QuerySelector("#x");
   Element* fallback_y = shadow_root->QuerySelector("#y");
   Element* fallback_z = shadow_root->QuerySelector("#z");
 
-  EXPECT_EQ(fallback_x, FlatTreeTraversal::FirstChild(*d1));
-  EXPECT_EQ(fallback_z, FlatTreeTraversal::LastChild(*d1));
-  EXPECT_EQ(d1, FlatTreeTraversal::Parent(*fallback_x));
-  EXPECT_EQ(d1, FlatTreeTraversal::Parent(*fallback_y));
-  EXPECT_EQ(d1, FlatTreeTraversal::Parent(*fallback_z));
+  EXPECT_EQ(slot_a, FlatTreeTraversal::FirstChild(*d1));
+  EXPECT_EQ(slot_c, FlatTreeTraversal::LastChild(*d1));
 
-  EXPECT_EQ(fallback_y, FlatTreeTraversal::NextSibling(*fallback_x));
-  EXPECT_EQ(fallback_z, FlatTreeTraversal::NextSibling(*fallback_y));
+  EXPECT_EQ(fallback_x, FlatTreeTraversal::FirstChild(*slot_a));
+  EXPECT_EQ(fallback_y, FlatTreeTraversal::FirstChild(*slot_b));
+  EXPECT_EQ(fallback_z, FlatTreeTraversal::FirstChild(*slot_c));
+
+  EXPECT_EQ(slot_a, FlatTreeTraversal::Parent(*fallback_x));
+  EXPECT_EQ(slot_b, FlatTreeTraversal::Parent(*fallback_y));
+  EXPECT_EQ(slot_c, FlatTreeTraversal::Parent(*fallback_z));
+  EXPECT_EQ(d1, FlatTreeTraversal::Parent(*slot_a));
+
+  EXPECT_EQ(nullptr, FlatTreeTraversal::NextSibling(*fallback_x));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::NextSibling(*fallback_y));
   EXPECT_EQ(nullptr, FlatTreeTraversal::NextSibling(*fallback_z));
 
-  EXPECT_EQ(fallback_y, FlatTreeTraversal::PreviousSibling(*fallback_z));
-  EXPECT_EQ(fallback_x, FlatTreeTraversal::PreviousSibling(*fallback_y));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::PreviousSibling(*fallback_z));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::PreviousSibling(*fallback_y));
   EXPECT_EQ(nullptr, FlatTreeTraversal::PreviousSibling(*fallback_x));
 }
 
-TEST_F(FlatTreeTraversalTest, v0ParentDetailsInsertionPoint) {
-  const char* main_html = "<div><span></span></div>";
-  const char* shadow_html = "<content></content>";
-
-  SetupSampleHTML(main_html, shadow_html, 0);
-
-  Element* span = GetDocument().body()->QuerySelector("span");
-  ASSERT_TRUE(span);
-
-  FlatTreeTraversal::ParentTraversalDetails details;
-  EXPECT_FALSE(details.GetInsertionPoint());
-
-  ContainerNode* parent = FlatTreeTraversal::Parent(*span, &details);
-  ASSERT_TRUE(parent);
-  EXPECT_TRUE(details.GetInsertionPoint());
-}
-
+}  // namespace flat_tree_traversal_test
 }  // namespace blink
