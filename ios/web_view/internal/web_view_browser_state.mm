@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
@@ -29,6 +30,8 @@
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
 #include "ios/web_view/internal/language/web_view_language_model_manager_factory.h"
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
+#include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
@@ -161,6 +164,7 @@ void WebViewBrowserState::RegisterPrefs(
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   autofill::AutofillManager::RegisterProfilePrefs(pref_registry);
+  password_manager::PasswordManager::RegisterProfilePrefs(pref_registry);
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
@@ -176,6 +180,8 @@ void WebViewBrowserState::RegisterPrefs(
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   WebViewPersonalDataManagerFactory::GetInstance();
   WebViewWebDataServiceWrapperFactory::GetInstance();
+  WebViewPasswordManagerInternalsServiceFactory::GetInstance();
+  WebViewPasswordStoreFactory::GetInstance();
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_service.h"
@@ -31,6 +32,8 @@ class CWVPreferencesTest : public PlatformTest {
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry =
         new user_prefs::PrefRegistrySyncable;
     pref_registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabled, true);
+    pref_registry->RegisterBooleanPref(
+        password_manager::prefs::kCredentialsEnableService, true);
     pref_registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
 
     scoped_refptr<PersistentPrefStore> pref_store = new InMemoryPrefStore();
