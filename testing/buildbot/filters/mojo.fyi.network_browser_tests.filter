@@ -198,10 +198,6 @@
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
 
-# Switch test from using a custom net::URLRequestFileJob to using a test
-# URLLoaderFactory via SetNetworkFactoryForTesting.
--ErrorPageSniffTest.SniffSmallHttpErrorResponseAsDownload
-
 # http://crbug.com/809583
 # Switch Predictor from using ResourceThrottle and ResourceDispatcherHost to
 # using WebContentsObserver and NavigationHandle.

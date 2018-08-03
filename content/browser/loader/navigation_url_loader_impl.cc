@@ -937,17 +937,19 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           url_, head.headers.get(), head.mime_type);
       bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
 
+      bool is_download_if_not_handled_by_plugin =
+          !response_intercepted && (must_download || !known_mime_type);
+
 #if BUILDFLAG(ENABLE_PLUGINS)
       if (!response_intercepted && !must_download && !known_mime_type) {
         CheckPluginAndContinueOnReceiveResponse(
             head, std::move(url_loader_client_endpoints),
-            std::vector<WebPluginInfo>());
+            is_download_if_not_handled_by_plugin, std::vector<WebPluginInfo>());
         return;
       }
 #endif
 
-      is_download =
-          !response_intercepted && (must_download || !known_mime_type);
+      is_download = is_download_if_not_handled_by_plugin;
       is_stream = false;
 
       // If NetworkService is on, or an interceptor handled the request, the
@@ -1023,6 +1025,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   void CheckPluginAndContinueOnReceiveResponse(
       const network::ResourceResponseHead& head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      bool is_download_if_not_handled_by_plugin,
       const std::vector<WebPluginInfo>& plugins) {
     bool stale;
     WebPluginInfo plugin;
@@ -1041,13 +1044,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       PluginService::GetInstance()->GetPlugins(base::BindOnce(
           &URLLoaderRequestController::CheckPluginAndContinueOnReceiveResponse,
           weak_factory_.GetWeakPtr(), head,
-          std::move(url_loader_client_endpoints)));
+          std::move(url_loader_client_endpoints),
+          is_download_if_not_handled_by_plugin));
       return;
     }
 
-    bool is_download =
-        !has_plugin &&
-        (!head.headers || head.headers->response_code() / 100 == 2);
+    bool is_download = !has_plugin && is_download_if_not_handled_by_plugin;
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
                            nullptr, is_download, false /* is_stream */,
