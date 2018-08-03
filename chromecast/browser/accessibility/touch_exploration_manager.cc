@@ -15,6 +15,7 @@
 #include "extensions/browser/event_router.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
 
 namespace chromecast {
@@ -30,15 +31,37 @@ TouchExplorationManager::TouchExplorationManager(
       accessibility_focus_ring_controller_(accessibility_focus_ring_controller),
       accessibility_sound_delegate_(
           std::make_unique<AccessibilitySoundDelegateStub>()) {
+  DCHECK(root_window);
+  root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
   UpdateTouchExplorationState();
 }
 
 TouchExplorationManager::~TouchExplorationManager() {
+  root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
 }
 
 void TouchExplorationManager::Enable(bool enabled) {
   touch_exploration_enabled_ = enabled;
   UpdateTouchExplorationState();
+}
+
+ui::EventRewriteStatus TouchExplorationManager::RewriteEvent(
+    const ui::Event& event,
+    std::unique_ptr<ui::Event>* rewritten_event) {
+  if (touch_exploration_controller_) {
+    return touch_exploration_controller_->RewriteEvent(event, rewritten_event);
+  }
+  return ui::EVENT_REWRITE_CONTINUE;
+}
+
+ui::EventRewriteStatus TouchExplorationManager::NextDispatchEvent(
+    const ui::Event& last_event,
+    std::unique_ptr<ui::Event>* new_event) {
+  if (touch_exploration_controller_) {
+    return touch_exploration_controller_->NextDispatchEvent(last_event,
+                                                            new_event);
+  }
+  return ui::EVENT_REWRITE_CONTINUE;
 }
 
 void TouchExplorationManager::HandleAccessibilityGesture(
