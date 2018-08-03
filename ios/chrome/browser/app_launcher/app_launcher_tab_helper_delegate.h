@@ -14,14 +14,12 @@ class GURL;
 @protocol AppLauncherTabHelperDelegate
 
 // Launches application that has |URL| if possible (optionally after confirming
-// via dialog in case that the navigation transition type was link based on
-// |linkTapped| or if the application is facetime).
-// Returns NO if there is no such application available.
+// via dialog). Returns NO if there is no such application available.
 // TODO(crbug.com/850760): Change this method return to void, once the new
 // AppLauncherRefresh logic is always enabled.
 - (BOOL)appLauncherTabHelper:(AppLauncherTabHelper*)tabHelper
             launchAppWithURL:(const GURL&)URL
-                  linkTapped:(BOOL)linkTapped;
+              linkTransition:(BOOL)linkTransition;
 
 // Alerts the user that there have been repeated attempts to launch
 // the application. |completionHandler| is called with the user's

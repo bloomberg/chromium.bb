@@ -105,7 +105,7 @@ bool AppLauncherTabHelper::IsAppUrl(const GURL& url) {
 
 bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
                                               const GURL& source_page_url,
-                                              bool link_tapped) {
+                                              bool link_transition) {
   // Don't open external application if chrome is not active.
   if ([[UIApplication sharedApplication] applicationState] !=
       UIApplicationStateActive) {
@@ -128,7 +128,7 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
     case ExternalAppLaunchPolicyAllow: {
       return [delegate_ appLauncherTabHelper:this
                             launchAppWithURL:url
-                                  linkTapped:link_tapped];
+                              linkTransition:link_transition];
     }
     case ExternalAppLaunchPolicyPrompt: {
       is_prompt_active_ = true;
@@ -146,7 +146,7 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
               // is no need to check for |link_tapped|.
               [delegate_ appLauncherTabHelper:weak_this.get()
                              launchAppWithURL:copied_url
-                                   linkTapped:YES];
+                               linkTransition:YES];
             } else {
               // TODO(crbug.com/674649): Once non modal dialogs are implemented,
               // update this to always prompt instead of blocking the app.

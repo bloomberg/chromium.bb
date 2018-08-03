@@ -43,7 +43,7 @@ class AppLauncherTabHelper
   // method returns NO.
   bool RequestToLaunchApp(const GURL& url,
                           const GURL& source_page_url,
-                          bool link_tapped);
+                          bool link_transition);
 
   // web::WebStatePolicyDecider implementation
   bool ShouldAllowRequest(
