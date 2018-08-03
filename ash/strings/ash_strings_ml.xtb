@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="1823873187264960516">ഇതർനെറ്റ്: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">സഹായി (ലോഡുചെയ്യുന്നു...)</translation>
+<translation id="1841545962859478868">ഉപകരണ അഡ്‌മിൻ ഇനിപ്പറയുന്നവ നിരീക്ഷിച്ചേക്കാം:</translation>
 <translation id="1850504506766569011">Wi-Fi ഓഫുചെയ്‌തു.</translation>
 <translation id="1864454756846565995">USB-C ഉപകരണം (പുറകിലെ പോർട്ട്)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
+<translation id="7228479291753472782">വെബ്‌സൈറ്റിന് ജിയോലൊക്കേഷൻ, മൈക്രോഫോൺ, ക്യാമറ എന്നിവ പോലുള്ള ഫീച്ചറുകൾ ഉപയോഗിക്കാൻ കഴിയുമോ എന്ന് വ്യക്തമാക്കുന്ന ക്രമീകരണം കൈകാര്യം ചെയ്യുക.</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="726276584504105859">സ്പ്ലിറ്റ് സ്ക്രീൻ ഉപയോഗിക്കുന്നതിന് ഇവിടെ വലിച്ചിടുക</translation>
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">മറ്റൊരു ഡെസ്‌ക്‌ടോപ്പിലേക്ക് വിൻഡോകൾ നീക്കുന്നത് അപ്രതീക്ഷിതമായ പ്രവർത്തനരീതിയ്‌ക്ക് ഇടയാക്കാം. തുടർന്നുള്ള അറിയിപ്പുകൾ, വിൻഡോകൾ, ഡയലോഗുകൾ എന്നിവ ഡെസ്‌ക്‌‌ടോപ്പുകൾക്കിടയിൽ വിഭജിക്കപ്പെടാം.</translation>
 <translation id="7569509451529460200">Braille, ChromeVox എന്നിവ പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="7593891976182323525">തിരയൽ അല്ലെങ്കിൽ Shift</translation>
+<translation id="7604942372593434070">നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ഉടമ)</translation>
 <translation id="7647488630410863958">നിങ്ങളുടെ അറിയിപ്പുകൾ കാണാൻ ഉപകരണം അൺലോക്കുചെയ്യുക</translation>
 <translation id="7649070708921625228">സഹായം</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">ശക്തിയുള്ള സിഗ്നൽ</translation>
 <translation id="7842569679327885685">മുന്നറിയിപ്പ്: പരീക്ഷണാത്മക ഫീച്ചർ</translation>
 <translation id="7846634333498149051">കീബോർഡ്</translation>
+<translation id="790040513076446191">സ്വകാര്യത സംബന്ധിയായ ക്രമീകരണങ്ങൾ കൈകാര്യം ചെയ്യുക</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
 <translation id="7933084174919150729">പ്രാഥമിക പ്രൊഫൈലിന് മാത്രമേ Google സഹായി ലഭ്യമാകൂ.</translation>
 <translation id="79341161159229895">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="FIRST_PARENT_EMAIL" />, <ph name="SECOND_PARENT_EMAIL" /> എന്നിവരാണ്</translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">സ്വകാര്യ നെറ്റ്‌വര്‍ക്ക്</translation>
 <translation id="8152119955266188852">നിങ്ങൾ പൂർണ്ണ സ്‌ക്രീൻ മാഗ്നിഫയറിനുള്ള കുറുക്കുവഴി അമർത്തി. അത് ഓണാക്കണോ?</translation>
 <translation id="8190698733819146287">ഭാഷകൾ‌ ഇച്ഛാനുസൃതമാക്കി നല്‍‌കുക...</translation>
+<translation id="8191230140820435481">നിങ്ങളുടെ അപ്ലിക്കേഷനുകൾ, വിപുലീകരണങ്ങൾ, തീമുകൾ എന്നിവ നിയന്ത്രിക്കുക</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8297006494302853456">ദുര്‍ബലം</translation>
 <translation id="8308637677604853869">മുൻ മെനു</translation>

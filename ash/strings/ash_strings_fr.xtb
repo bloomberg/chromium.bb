@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (chargement…)</translation>
+<translation id="1841545962859478868">L'administrateur de cet appareil peut contrôler les éléments suivants :</translation>
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
 <translation id="1864454756846565995">Appareil USB de type C (port situé sur l'arrière de l'appareil)</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
@@ -326,6 +327,7 @@
 <translation id="7143207342074048698">Connexion en cours</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Manipule des paramètres qui déterminent si les sites Web peuvent utiliser des fonctionnalités telles que la géolocalisation, le microphone, l'appareil photo, etc.</translation>
 <translation id="7256634071279256947">Micro arrière</translation>
 <translation id="726276584504105859">Faire glisser ici pour utiliser l'écran partagé</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
@@ -342,6 +344,7 @@
 <translation id="7564874036684306347">Le déplacement de fenêtres vers un autre écran peut entraîner un comportement inattendu. Par exemple, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
+<translation id="7604942372593434070">Accède à votre activité de navigation</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
 <translation id="7647488630410863958">Déverrouiller l'appareil pour consulter vos notifications</translation>
 <translation id="7649070708921625228">Aide</translation>
@@ -356,6 +359,7 @@
 <translation id="7829386189513694949">Signal de forte intensité</translation>
 <translation id="7842569679327885685">Avertissement : Fonctionnalité expérimentale</translation>
 <translation id="7846634333498149051">Clavier</translation>
+<translation id="790040513076446191">Modifier les paramètres de confidentialité</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7933084174919150729">L'Assistant Google n'est disponible que pour le profil principal.</translation>
 <translation id="79341161159229895">Compte géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -374,6 +378,7 @@
 <translation id="8142699993796781067">Réseau privé</translation>
 <translation id="8152119955266188852">Vous avez utilisé le raccourci de la loupe plein écran. Voulez-vous l'activer ?</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
+<translation id="8191230140820435481">Gérer vos applications, vos extensions et vos thèmes</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8297006494302853456">Faible</translation>
 <translation id="8308637677604853869">Menu précédent</translation>

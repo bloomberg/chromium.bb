@@ -525,6 +525,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is left unset, the user can decide to use this function or not.
 
       This setting has been removed from <ph name="PRODUCT_NAME" /> 29 and higher versions.</translation>
+<translation id="2433412232489478893">This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME" /> is allowed for a user.
+
+      When this policy is not configured or set to True, users will be able to use Network File Shares.
+
+      When this policy is set to False, users will be unable to use Network File Shares.</translation>
 <translation id="2438609638493026652">Enables reporting of key events during Android app installation to Google. Events are captured only for apps whose installation was triggered via policy.
 
       If the policy is set to true, events will be logged.
@@ -606,6 +611,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2598508021807251719">Configures the locales <ph name="PRODUCT_OS_NAME" /> may be displayed in.
 
       If this policy is set, the user can only configure <ph name="PRODUCT_OS_NAME" /> to be displayed in one of the locales specified by this policy. If this policy is not set or set to an empty list, <ph name="PRODUCT_OS_NAME" /> can be displayed in all supported UI locales. If this policy is set to a list with invalid values, all invalid values will be ignored. If a user previously configured <ph name="PRODUCT_OS_NAME" /> to be displayed in a locale that is not allowed by this policy, the display locale will be switched to an allowed UI locale the next time the user signs in. If the user had configured preferred locales and one of the preferred locales is allowed by this policy, <ph name="PRODUCT_OS_NAME" /> will switch to this locale. Otherwise, <ph name="PRODUCT_OS_NAME" /> will switch to the first valid value specified by this policy, or to a fallback locale (currently en-US), if this policy only contains invalid entries.</translation>
+<translation id="2604182581880595781">Configure Network File Shares-related policies.</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Provides configurations for enterprise printers.
@@ -691,6 +697,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2823870601012066791">Windows registry location for <ph name="PRODUCT_OS_NAME" /> clients:</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
 <translation id="2838830882081735096">Disallow data migration and ARC</translation>
+<translation id="2839294585867804686">Network File Shares settings</translation>
 <translation id="2840269525054388612">Specifies the printers which a user can use.
 
       This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1188,6 +1195,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set, URL-keyed anonymised data collection will be enabled but the user will be able to change it.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Device sign-in screen locale</translation>
+<translation id="4264607809747169568">Contorls Network File Shares for ChromeOS availibility</translation>
 <translation id="427220754384423013">Specifies the printers which a user can use.
 
       This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1622,6 +1630,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       The policy value should be specified in milliseconds.</translation>
 <translation id="5511702823008968136">Enable Bookmark Bar</translation>
 <translation id="5512418063782665071">Home page URL</translation>
+<translation id="551639594034811656">This policy defines a list of percentages that will define the fraction of <ph name="PRODUCT_OS_NAME" /> devices in the OU to update per day starting from the day that the update is first discovered. The discovery time is later than the update published time, since it could be a while after the update publishing until the device checks for updates.
+
+      Each (day, percentage) pair contains which percentage of the fleet has to be updated by the given number of days since the update has been discovered. For example, if we have the pairs [(4, 40), (10, 70), (15, 100)], then 40% of the fleet should have been updated 4 days after seeing the update. 70% should be updated after 10 days, and so on.
+
+      If there is a value defined for this policy, updates will ignore the <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> policy and follow this policy instead.
+
+      If this list is empty, there will be no staging, and updates will be applied according to other device policies.
+
+      This policy does not apply for channel switches.</translation>
 <translation id="5523812257194833591">A public session to auto-login after a delay.
 
       If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The public session must already be configured (see |DeviceLocalAccounts|).
@@ -2550,6 +2567,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. However, users will still be able to facilitate SitePerProcess manually.
       If the policy is not configured, the user will be able to change this setting.
       </translation>
+<translation id="7902255855035461275">Patterns in this list will be matched against the security
+      origin of the requesting URL. If a match is found, access to video
+      capture devices will be granted without prompt.
+
+      NOTE: Until version 45, this policy was only supported in Kiosk mode.</translation>
 <translation id="7912255076272890813">Configure allowed app/extension types</translation>
 <translation id="7915236031252389808">You can specify a URL to a proxy .pac file here.
 

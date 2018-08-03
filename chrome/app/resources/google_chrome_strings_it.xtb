@@ -30,7 +30,7 @@
 <translation id="1682634494516646069">Google Chrome non è in grado di leggere e scrivere nella directory dei dati: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome è un browser web che apre pagine e applicazioni web con grande velocità. È veloce, stabile e facile da utilizzare. Esplora il Web in modo più sicuro grazie alla protezione contro malware e phishing incorporata in Google Chrome.</translation>
 <translation id="1718131156967340976">Seleziona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
-<translation id="1734234790201236882">Chrome salverà la password nel tuo account Google affinché tu non debba memorizzarla.</translation>
+<translation id="1734234790201236882">Chrome salverà la password nel tuo Account Google affinché tu non debba memorizzarla.</translation>
 <translation id="174539241580958092">Impossibile sincronizzare i dati in Google Chrome a causa di un errore durante l'accesso.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Ricevi assistenza per l'utilizzo di Chrome OS</translation>
@@ -251,7 +251,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="8129812357326543296">Informazioni su &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installa Chrome sul telefono. Invieremo un SMS al tuo telefono.</translation>
 <translation id="8183957050892517584">Chrome memorizzerà in sicurezza i tuoi dati personali affinché tu non debba digitarli di nuovo.</translation>
-<translation id="8226081633851087288">{0,plural, =0{Chrome OS verrà riavviato ora}=1{Chrome OS verrà riavviato tra 1 secondo}other{Chrome OS verrà riavviato tra # secondi}}</translation>
+<translation id="8226081633851087288">{0,plural, =0{Chrome OS verrà riavviato ora}=1{Chrome OS verrà riavviato tra un secondo}other{Chrome OS verrà riavviato tra # secondi}}</translation>
 <translation id="8255190535488645436">Google Chrome sta utilizzando videocamera e microfono.</translation>
 <translation id="8286862437124483331">Google Chrome sta cercando di visualizzare le password. Per consentire la visualizzazione, digita la tua password Windows.</translation>
 <translation id="8290100596633877290">Spiacenti, si è verificato un arresto anomalo di Google Chrome. Riavviarlo ora?</translation>
@@ -274,7 +274,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="870251953148363156">Aggiorna &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome non è in grado di determinare o impostare il browser predefinito</translation>
 <translation id="8736674169840206667">L'amministratore richiede il riavvio di Chrome per installare un aggiornamento</translation>
-<translation id="8791470158600044404">{0,plural, =1{Chrome OS verrà riavviato tra 1 minuto}other{Chrome OS verrà riavviato tra # minuti}}</translation>
+<translation id="8791470158600044404">{0,plural, =1{Chrome OS verrà riavviato tra un minuto}other{Chrome OS verrà riavviato tra # minuti}}</translation>
 <translation id="8796108026289707191">Google Chrome deve essere riavviato adesso.</translation>
 <translation id="8823341990149967727">Chrome non è aggiornato</translation>
 <translation id="884296878221830158">Controlla anche la pagina visualizzata all'avvio di Chrome o quando fai clic sul pulsante Pagina iniziale.</translation>

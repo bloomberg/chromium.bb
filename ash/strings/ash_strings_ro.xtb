@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (se încarcă...)</translation>
+<translation id="1841545962859478868">Este posibil ca administratorul dispozitivului să monitorizeze următoarele:</translation>
 <translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
 <translation id="1864454756846565995">Dispozitiv USB-C (portul din spate)</translation>
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME" /></translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Se conectează</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Controlează setările care precizează dacă site-urile pot utiliza funcții, cum ar fi localizarea geografică, microfonul, camera foto etc.</translation>
 <translation id="7256634071279256947">Microfonul din spate</translation>
 <translation id="726276584504105859">Trage aici pentru a folosi ecranul împărțit</translation>
 <translation id="7348093485538360975">Tastatură pe ecran</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Mutarea ferestrelor pe alt desktop poate duce la un comportament neașteptat. Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împărțite între ecrane.</translation>
 <translation id="7569509451529460200">Braille și ChromeVox sunt activate</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
+<translation id="7604942372593434070">Accesează activitatea de navigare</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietar)</translation>
 <translation id="7647488630410863958">Deblochează dispozitivul pentru a vedea notificările</translation>
 <translation id="7649070708921625228">Ajutor</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Semnal puternic</translation>
 <translation id="7842569679327885685">Avertisment: funcție experimentală</translation>
 <translation id="7846634333498149051">Tastatură</translation>
+<translation id="790040513076446191">Manipulează setările privind confidențialitatea</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="7933084174919150729">Asistentul Google este disponibil numai pentru profilul principal.</translation>
 <translation id="79341161159229895">Cont gestionat de <ph name="FIRST_PARENT_EMAIL" /> și de <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Rețea privată</translation>
 <translation id="8152119955266188852">Ai accesat comanda rapidă pentru lupa de ecran complet. Vrei să o activezi?</translation>
 <translation id="8190698733819146287">Personalizează limbile și modul de introducere...</translation>
+<translation id="8191230140820435481">Gestionează aplicațiile, extensiile și temele dvs.</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8297006494302853456">Slab</translation>
 <translation id="8308637677604853869">Meniul anterior</translation>

@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (s'està carregant...)</translation>
+<translation id="1841545962859478868">És possible que l'administrador del dispositiu supervisi el següent:</translation>
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">S'està connectant</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Manipula la configuració que determina si els llocs web poden utilitzar funcions com ara la geolocalització, el micròfon, la càmera, etc.</translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
 <translation id="726276584504105859">Arrossega-la aquí per utilitzar la pantalla dividida</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Moure finestres a un altre escriptori pot provocar un comportament imprevist. És possible que les notificacions, les finestres i els quadres de diàleg següents quedin dividits entre escriptoris.</translation>
 <translation id="7569509451529460200">S'ha activat el braille i ChromeVox</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
+<translation id="7604942372593434070">Accedeix a l'activitat de navegació</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietari)</translation>
 <translation id="7647488630410863958">Desbloqueja el dispositiu per veure les notificacions</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Senyal potent</translation>
 <translation id="7842569679327885685">Advertiment: funció experimental</translation>
 <translation id="7846634333498149051">Teclat</translation>
+<translation id="790040513076446191">Manipular la configuració relacionada amb la privadesa</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="7933084174919150729">L'Assistent de Google només està disponible per al perfil principal.</translation>
 <translation id="79341161159229895">Compte gestionat per <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Xarxa privada</translation>
 <translation id="8152119955266188852">Has premut la drecera de la lupa de pantalla completa. Vols activar-la?</translation>
 <translation id="8190698733819146287">Personalitza idiomes i introducció de text...</translation>
+<translation id="8191230140820435481">Gestionar les aplicacions, les extensions i els temes</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8297006494302853456">Feble</translation>
 <translation id="8308637677604853869">Menú anterior</translation>

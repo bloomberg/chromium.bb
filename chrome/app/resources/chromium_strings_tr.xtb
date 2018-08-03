@@ -128,7 +128,7 @@
 <translation id="5634636535844844681">Chromium, Windows 7 veya daha sonraki bir sürümü gerektirir.</translation>
 <translation id="5680901439334282664">Chromium'da oturum açın</translation>
 <translation id="5698481217667032250">Chromium'u bu dilde görüntüle</translation>
-<translation id="5712253116097046984">Yöneticiniz bu güncellemeyi uygulamak için Chromium OS'u yeniden başlatmanızı istiyor</translation>
+<translation id="5712253116097046984">Yöneticiniz bu güncellemeyi uygulamak için Chromium OS'i yeniden başlatmanızı istiyor</translation>
 <translation id="5726838626470692954">Yöneticinizin sizi Chromium'dan kaldırması ve daha sonra tekrar eklemesi gerekir.</translation>
 <translation id="5768914737813585044">Chromium OS'yi bu dilde görüntüle</translation>
 <translation id="5796460469508169315">Chromium neredeyse hazır.</translation>
@@ -147,7 +147,7 @@
 <translation id="6096348254544841612">Chromium'u özelleştirin ve kontrol edin. Güncelleme mevcut.</translation>
 <translation id="6120345080069858279">Chromium, şifrenizi Google Hesabınızda kaydedecek. Bu şekilde şifreyi hatırlamanız gerekmez.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> tehlikeli olduğu için Chromium tarafından engellendi.</translation>
-<translation id="620022061217911843">Yöneticiniz bu güncellemeyi uygulamak için Chromium OS'u yeniden başlatmanızı gerektiriyor</translation>
+<translation id="620022061217911843">Yöneticiniz bu güncellemeyi uygulamak için Chromium OS'i yeniden başlatmanızı gerektiriyor</translation>
 <translation id="6212496753309875659">Bu bilgisayarda Chromium'un daha yeni bir sürümü de var. Yazılım çalışmıyorsa, Chromium'u kaldırın ve tekrar deneyin.</translation>
 <translation id="6248213926982192922">Chromium varsayılan tarayıcı olsun</translation>
 <translation id="6268381023930128611">Chromium oturumunu kapatıyor musunuz?</translation>
@@ -201,10 +201,10 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <ph name="BEGIN_LINK_2" />Daha fazla bilgi edinin<ph name="END_LINK_2" />
 
 Daha fazla talimat için lütfen e-postanızı (<ph name="ACCOUNT_EMAIL" />) kontrol edin.</translation>
-<translation id="7448255348454382571">Chromium OS'u yeniden başlatın</translation>
+<translation id="7448255348454382571">Chromium OS'i yeniden başlatın</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium'un bu sitede kameranıza erişmesi için izin gerekiyor</translation>
-<translation id="7471302858145901434">{0,plural, =1{Chromium OS'u bir gün içinde yeniden başlatın}other{Chromium OS'u # gün içinde yeniden başlatın}}</translation>
+<translation id="7471302858145901434">{0,plural, =1{Chromium OS'i bir gün içinde yeniden başlatın}other{Chromium OS'i # gün içinde yeniden başlatın}}</translation>
 <translation id="7483335560992089831">Şu anda çalışan aynı Chromium sürümünü yükleyemezsiniz. Lütfen Chromium'u kapatın ve yeniden deneyin.</translation>
 <translation id="7549178288319965365">Chromium OS hakkında</translation>
 <translation id="7577193603922410712">Chromium için özel bir güvenlik güncellemesi uygulandı. Güncellemenin geçerli olması için cihazı şimdi yeniden başlatmalısınız (sekmeleriniz geri yüklenecektir).</translation>

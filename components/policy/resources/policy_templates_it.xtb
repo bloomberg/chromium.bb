@@ -1115,7 +1115,7 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 
       Se questa norma viene disattivata, la raccolta di dati anonimizzati con chiave URL non è mai attiva.
 
-      Se questa norma non viene impostata, a raccolta di dati anonimizzati con chiave URL verrà attivata, ma l'utente potrà modificare l'impostazione.</translation>
+      Se questa norma non viene impostata, la raccolta di dati anonimizzati con chiave URL verrà attivata, ma l'utente potrà modificare l'impostazione.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Lingua della schermata di accesso del dispositivo</translation>
 <translation id="427220754384423013">Consente di specificare le stampanti utilizzabili dagli utenti.

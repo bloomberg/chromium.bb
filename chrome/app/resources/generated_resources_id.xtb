@@ -791,7 +791,7 @@
 <translation id="2178098616815594724">Plugin <ph name="PEPPER_PLUGIN_NAME" /> di <ph name="PEPPER_PLUGIN_DOMAIN" /> ingin mengakses komputer Anda</translation>
 <translation id="2178614541317717477">CA Mencurigakan</translation>
 <translation id="218070003709087997">Gunakan angka untuk mengindikasikan jumlah salinan yang akan dicetak (1 sampai 999).</translation>
-<translation id="2183558561014688873">Mengakses Asisten setiap kali Anda mengucapkan "OK Google" saat perangkat aktif dan tidak terkunci</translation>
+<translation id="2183558561014688873">Mengakses Asisten setiap kali Anda mengucapkan "Ok Google" saat perangkat aktif dan tidak terkunci</translation>
 <translation id="2187895286714876935">Kesalahan Impor Sertifikat Server</translation>
 <translation id="2187906491731510095">Ekstensi diupdate</translation>
 <translation id="2188881192257509750">Buka <ph name="APPLICATION" /></translation>
@@ -2041,7 +2041,7 @@
 <translation id="4068776064906523561">Sidik jari yang disimpan</translation>
 <translation id="407173827865827707">Saat diklik</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: kesalahan saat masuk</translation>
-<translation id="4071828814509176232">“OK, Google”</translation>
+<translation id="4071828814509176232">“Ok Google”</translation>
 <translation id="4074900173531346617">Sertifikat Penandatangan Email</translation>
 <translation id="407520071244661467">Skala</translation>
 <translation id="4075639477629295004">Tidak dapat mentransmisikan <ph name="FILE_NAME" />.</translation>
@@ -2170,7 +2170,7 @@
 <translation id="428608937826130504">Item rak 8</translation>
 <translation id="4287502004382794929">Anda tidak memiliki cukup lisensi software untuk mendaftarkan perangkat ini. Hubungi pihak penjualan untuk membeli yang lainnya. Jika Anda yakin Anda tidak seharusnya mendapatkan pesan ini, hubungi dukungan.</translation>
 <translation id="4289540628985791613">Ikhtisar</translation>
-<translation id="4295072614469448764">Aplikasi tersedia di terminal Anda. Mungkin juga ada ikon di Peluncur.</translation>
+<translation id="4295072614469448764">Aplikasi tersedia di terminal Anda. Ikonnya juga mungkin tersedia di Peluncur.</translation>
 <translation id="4296575653627536209">Tambahkan Pengguna yang Dilindungi</translation>
 <translation id="4297219207642690536">Mulai ulang dan setel ulang</translation>
 <translation id="4297322094678649474">Ubah Bahasa</translation>
@@ -4169,7 +4169,6 @@
 <translation id="7387829944233909572">Dialog "Hapus data penjelajahan"</translation>
 <translation id="7388044238629873883">Anda hampir selesai!</translation>
 <translation id="7388222713940428051">Buka jendela Tamu</translation>
-<translation id="7391648274628927397">Bookmark telah ditambahkan untuk Anda</translation>
 <translation id="7392118418926456391">Pemindaian virus gagal</translation>
 <translation id="7392915005464253525">Buka kembali jendela yang tertutup</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> akan diluncurkan pada permulaan sistem dan tetap berjalan di latar meskipun Anda telah menutup semua jendela <ph name="PRODUCT_NAME" />.</translation>
@@ -4207,7 +4206,7 @@
 <translation id="7463006580194749499">Tambahkan pengguna</translation>
 <translation id="7464490149090366184">Gagal membuat file zip, item sudah ada: "$1"</translation>
 <translation id="7465778193084373987">Netscape Certificate Revocation URL</translation>
-<translation id="7469406957790636836">Untuk mengaktifkannya, terlebih dahulu aktifkan periksa ejaan di <ph name="BEGIN_LINK" />Bahasa dan masukan<ph name="END_LINK" /></translation>
+<translation id="7469406957790636836">Untuk mengaktifkannya, terlebih dahulu aktifkan fitur periksa ejaan di <ph name="BEGIN_LINK" />Bahasa dan masukan<ph name="END_LINK" /></translation>
 <translation id="7469894403370665791">Sambungkan ke jaringan ini secara otomatis</translation>
 <translation id="747114903913869239">Kesalahan: Tidak dapat mendekodekan ekstensi</translation>
 <translation id="7473753388963818366">Mari menyiapkan <ph name="DEVICE_TYPE" /> Anda</translation>

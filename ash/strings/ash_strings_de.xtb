@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (wird geladen…)</translation>
+<translation id="1841545962859478868">Der Geräteadministrator überwacht eventuell Folgendes:</translation>
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
 <translation id="1864454756846565995">USB-C-Gerät (Port hinten)</translation>
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME" /> gespiegelt...</translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
 <translation id="7165278925115064263">Alt + Umschalttaste + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
+<translation id="7228479291753472782">Einstellungen bearbeiten, die festlegen, ob Websites Funktionen wie die Standortbestimmung, das Mikrofon, die Kamera usw. verwenden dürfen</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="726276584504105859">Hierher ziehen, um den Bildschirm zu teilen</translation>
 <translation id="7348093485538360975">Bildschirmtastatur</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Das Verschieben von Fenstern auf einen anderen Desktop kann zu unerwartetem Verhalten führen. Nachfolgende Benachrichtigungen, Fenster und Dialogfelder werden unter Umständen zwischen den Desktops aufgeteilt.</translation>
 <translation id="7569509451529460200">Braille und ChromeVox sind aktiviert</translation>
 <translation id="7593891976182323525">Suchen oder Umschalttaste</translation>
+<translation id="7604942372593434070">Auf Ihre Browseraktivitäten zugreifen</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (Eigentümer)</translation>
 <translation id="7647488630410863958">Gerät entsperren, um Benachrichtigungen zu sehen</translation>
 <translation id="7649070708921625228">Hilfe</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Starkes Signal</translation>
 <translation id="7842569679327885685">Achtung: Experimentelle Funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="790040513076446191">Datenschutzeinstellungen bearbeiten</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7933084174919150729">Google Assistant ist nur für das Hauptprofil verfügbar.</translation>
 <translation id="79341161159229895">Konto verwaltet von <ph name="FIRST_PARENT_EMAIL" /> und <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Privates Netzwerk</translation>
 <translation id="8152119955266188852">Sie haben die Tastenkombination für die Vollbildlupe gedrückt. Möchten Sie sie aktivieren?</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
+<translation id="8191230140820435481">Apps, Erweiterungen und Designs verwalten</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8297006494302853456">Schwach</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>

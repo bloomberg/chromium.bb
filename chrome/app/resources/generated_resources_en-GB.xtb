@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Show Spelling and Grammar</translation>
 <translation id="1593594475886691512">Formatting...</translation>
 <translation id="159359590073980872">Image Cache</translation>
+<translation id="1593926297800505364">Save payment method</translation>
 <translation id="1598233202702788831">Updates are disabled by your administrator.</translation>
 <translation id="1600857548979126453">Access the page debugger backend</translation>
 <translation id="1601560923496285236">Apply</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Can't join the device to the domain. Make sure that you haven’t exceeded the number of devices that you can add.</translation>
 <translation id="1744108098763830590">background page</translation>
 <translation id="1745520510852184940">Always Do This</translation>
+<translation id="1746417874336251387">Offer new features that use your phone's connection to your Chromebook</translation>
 <translation id="174937106936716857">Total file count</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
 <translation id="1753905327828125965">Most Visited</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Not Before</translation>
 <translation id="1933809209549026293">Please connect a mouse or a keyboard. If you are using a Bluetooth device, make sure that it is ready to pair.</translation>
 <translation id="1936157145127842922">Show in Folder</translation>
+<translation id="1938351510777341717">External Command</translation>
 <translation id="1940546824932169984">Connected devices</translation>
 <translation id="1942765061641586207">Image resolution</translation>
+<translation id="1943097386230153518">Install new service</translation>
 <translation id="1944921356641260203">Update found</translation>
 <translation id="1951615167417147110">Scroll up one page</translation>
 <translation id="1954813140452229842">Error mounting share. Please check your credentials and try again.</translation>
@@ -1107,6 +1111,7 @@
 <translation id="2653659639078652383">Submit</translation>
 <translation id="265390580714150011">Field Value</translation>
 <translation id="2654166010170466751">Allow sites to install payment handlers</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Features vary by device</translation>
 <translation id="2660779039299703961">Event</translation>
 <translation id="266079277508604648">Can’t connect to printer. Check that the printer is turned on and is connected to your Chromebook by Wi-Fi or USB.</translation>
 <translation id="2661146741306740526">16 x 9</translation>
@@ -1213,6 +1218,7 @@
 <translation id="2803375539583399270">Enter PIN</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apps</translation>
+<translation id="2806891468525657116">Shortcut already exists</translation>
 <translation id="2807517655263062534">Files you download appear here</translation>
 <translation id="2809586584051668049">and <ph name="NUMBER_ADDITIONAL_DISABLED" /> more</translation>
 <translation id="281133045296806353">Created new window in existing browser session.</translation>
@@ -1599,6 +1605,7 @@
 <translation id="3428419049384081277">You're signed in!</translation>
 <translation id="3429275422858276529">Bookmark this page to easily find it later</translation>
 <translation id="3429599832623003132">$1 items</translation>
+<translation id="3430342160185525240">Enables the Assistant to show you notifications.</translation>
 <translation id="3432227430032737297">Remove all shown</translation>
 <translation id="3432757130254800023">Send audio and video to displays on the local network</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1963,6 +1970,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> in Control Panel.
 
   Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Can’t create shortcut</translation>
 <translation id="3943582379552582368">&amp;Back</translation>
 <translation id="3943857333388298514">Paste</translation>
 <translation id="3948116654032448504">&amp;Search <ph name="SEARCH_ENGINE" /> for Image</translation>
@@ -2270,6 +2278,7 @@
 <translation id="4481530544597605423">Unpaired devices</translation>
 <translation id="4482194545587547824">Google may use your browsing history to personalise Search and other Google services</translation>
 <translation id="4495419450179050807">Don't show on this page</translation>
+<translation id="4499718683476608392">Enable credit card Auto-fill to fill in forms in a single click</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> has crashed</translation>
 <translation id="450099669180426158">Exclamation mark icon</translation>
 <translation id="4501530680793980440">Confirm Removal</translation>
@@ -3114,6 +3123,7 @@
 <translation id="5752453871435543420">Chrome OS Cloud backup</translation>
 <translation id="5756163054456765343">Help centre</translation>
 <translation id="5759728514498647443">Documents that you send to print via <ph name="APP_NAME" /> can be read by <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Credit card settings</translation>
 <translation id="5763751966069581670">No USB devices found</translation>
 <translation id="5764483294734785780">Sa&amp;ve audio as...</translation>
 <translation id="57646104491463491">Date Modified</translation>
@@ -3185,6 +3195,7 @@
 <translation id="5855773610748894548">Oops, secure module error.</translation>
 <translation id="5856721540245522153">Enable debugging features</translation>
 <translation id="5857090052475505287">New Folder</translation>
+<translation id="585979798156957858">External Meta</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5860209693144823476">Tab 3</translation>
 <translation id="5860491529813859533">Turn on</translation>
@@ -3745,6 +3756,7 @@
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6718273304615422081">Zipping...</translation>
 <translation id="671928215901716392">Lock screen</translation>
+<translation id="6720847671508630642">Share the best of Android with your Chromebook automatically. Connect your phone so that you can text from your computer, share your phone's Internet connection and unlock your Chromebook screen.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">See the make and model of your Security Key</translation>
 <translation id="6721972322305477112">&amp;File</translation>
 <translation id="672213144943476270">Please unlock your profile before browsing as a guest.</translation>
@@ -3891,6 +3903,7 @@
 <translation id="6970856801391541997">Print Specific Pages</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
 <translation id="6973630695168034713">Folders</translation>
+<translation id="6974609594866392343">Offline demo mode</translation>
 <translation id="6976108581241006975">JavaScript console</translation>
 <translation id="6977381486153291903">Firmware revision</translation>
 <translation id="6978121630131642226">Search Engines</translation>
@@ -4168,7 +4181,6 @@
 <translation id="7387829944233909572">"Clear browsing data" dialogue</translation>
 <translation id="7388044238629873883">You've almost finished!</translation>
 <translation id="7388222713940428051">Open Guest window</translation>
-<translation id="7391648274628927397">A bookmark has been added for you</translation>
 <translation id="7392118418926456391">Virus scan failed</translation>
 <translation id="7392915005464253525">R&amp;eopen closed window</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> will launch at system startup and continue to run in the background, even once you've closed all other <ph name="PRODUCT_NAME" /> windows.</translation>
@@ -4486,6 +4498,7 @@
 <translation id="7857949311770343000">Is this the new tab page that you were expecting?</translation>
 <translation id="786073089922909430">Service: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Downloads</translation>
+<translation id="7864662577698025113">Add new service</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookies}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – Paired</translation>
 <translation id="7870730066603611552">Review sync options following setup</translation>
@@ -5000,6 +5013,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8666584013686199826">Ask when a site wants to access USB devices</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> is now full screen and has disabled your mouse cursor.</translation>
 <translation id="8669284339312441707">Warmer</translation>
+<translation id="8669919703154928649">Let Assistant show you notifications</translation>
 <translation id="8669949407341943408">Moving...</translation>
 <translation id="8671210955687109937">Can comment</translation>
 <translation id="8673026256276578048">Search the web...</translation>
@@ -5387,6 +5401,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="964286338916298286">Your IT administrator has disabled Chrome Goodies for your device.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Application}other{Applications}}</translation>
 <translation id="967007123645306417">This will sign you out of your Google accounts. Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google account. However, your existing data will remain stored in your Google account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Data stored</translation>
 <translation id="968000525894980488">Turn on Google Play services.</translation>
 <translation id="968174221497644223">Application cache</translation>
 <translation id="969096075394517431">Change languages</translation>

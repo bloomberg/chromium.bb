@@ -32,11 +32,13 @@
 <translation id="447252321002412580">Pomoci s vylepšováním funkcí a výkonu prohlížeče Chrome</translation>
 <translation id="4523886039239821078">Některé doplňky způsobují selhání prohlížeče Chrome. Prosím odinstalujte:</translation>
 <translation id="4615174829807303908">Odhlašujete se z účtu, který je spravován doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Touto akcí smažete svá data prohlížeče Chrome z tohoto zařízení, ve vašem účtu Google však vaše data zůstanou.</translation>
+<translation id="5240817131241497236">Nastavení, která v Chromu ovládají synchronizaci, personalizaci a další služby Google, se změnila. Může to mít dopad na vaše aktuální nastavení.</translation>
 <translation id="5389212809648216794">Google Chrome nemůže použít fotoaparát, protože jej právě používá jiná aplikace</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" /> lze kdykoliv upravit. Google může používat obsah na webech, které navštěvujete, interakce s prohlížečem a aktivity k personalizaci prohlížeče Chrome a služeb Google, jako jsou Překladač, Vyhledávání a reklamy.</translation>
 <translation id="5639704535586432836">Otevřete Nastavení &gt; Soukromí &gt; Fotoaparát &gt; Google Chrome a zapněte fotoaparát.</translation>
 <translation id="5642200033778930880">Google Chrome nemůže používat fotoaparát v režimu Split View</translation>
 <translation id="5703130498371792817">Jste s prohlížečem Chrome spokojeni? <ph name="BEGIN_LINK" />Ohodnoťte tuto aplikaci<ph name="END_LINK" />.</translation>
+<translation id="5854621639439811139">Tip pro Chrome. Některá tlačítka, například Zpět, Vpřed a Hledat, jsou teď v dolní části obrazovky.</translation>
 <translation id="6036420186814142909">Google Chrome obsahuje funkce, které pomáhají spravovat přenosy dat z internetu a umožňují zrychlit načítání webových stránek.
 <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Zde se objeví karty, které jste otevřeli v Chromu ve svých ostatních zařízeních.</translation>
@@ -55,4 +57,5 @@
 <translation id="8459495907675268833">Vybraná data byla z Chromu a synchronizovaných zařízení odstraněna. Na stránce history.google.com mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google, například vyhledávací dotazy a aktivita z ostatních služeb Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí webových služeb. Tyto služby můžete případně zakázat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Tip pro Chrome. Další možnosti karet zobrazíte podržením tlačítka Zobrazit karty, které najdete v dolní nebo horní části obrazovky.</translation>
 </translationbundle>

@@ -300,6 +300,11 @@
       Kapag iniwang hindi tinukoy ang isang setting, ang default na value ang gagamitin.
 
       Kapag hindi nakatakda ang patakarang ito, gagamitin ang mga default para sa lahat ng setting.</translation>
+<translation id="1958138414749279167">Ine-enable ang feature na AutoFill ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na awtomatikong kumpletuhin ang impormasyon ng address sa mga web form gamit ang dati nang na-store na impormasyon.
+
+      Kung naka-disable ang setting na ito, hindi kailanman magmumungkahi o magkukumpleto ang AutoFill ng impormasyon ng address, o hindi nito ise-save ang karagdagang impormasyon ng address na maaaring isumite ng user habang nagba-browse siya sa web.
+
+      Kung naka-enable o walang value ang setting na ito, makokontrol ng user ang AutoFill para sa mga address sa UI.</translation>
 <translation id="1960840544413786116">Kung papayagan ba ang mga certificate na naisyu ng mga lokal na trust anchor na walang subjectAlternativeName na extension</translation>
 <translation id="1964634611280150550">Hindi pinagana ang mode na incognito</translation>
 <translation id="1964802606569741174">Walang epekto ang patakarang ito sa YouTube app sa Android. Kung dapat ipatupad ang Safety Mode sa YouTube, hindi dapat payagan ang pag-install ng YouTube app sa Android.</translation>
@@ -1914,6 +1919,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6440051664870270040">Payagan ang mga site na sabay na mag-navigate at magbukas ng mga pop-up</translation>
 <translation id="6447948611083700881">Na-disable ang pag-backup at pag-restore</translation>
 <translation id="645425387487868471">I-enable ang pwersahang pag-sign in para sa <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">I-enable ang AutoFill para sa mga address</translation>
 <translation id="6473623140202114570">I-configure ang listahan ng mga domain kung saan hindi magti-trigger ng mga babala ang Ligtas na Pag-browse.</translation>
 <translation id="6491139795995924304">Payagan ang bluetooth sa device</translation>
 <translation id="6520802717075138474">Mag-import ng mga search engine mula sa default na browser sa unang pagtakbo</translation>

@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Pembantu (memuat...)</translation>
+<translation id="1841545962859478868">Pentadbir peranti boleh memantau perkara berikut:</translation>
 <translation id="1850504506766569011">Wi-Fi dimatikan.</translation>
 <translation id="1864454756846565995">Peranti USB-C (port belakang)</translation>
 <translation id="1882897271359938046">Mencerminkan <ph name="DISPLAY_NAME" /></translation>
@@ -326,6 +327,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7143207342074048698">Menyambung</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Manipulasi tetapan yang menentukan sama ada tapak web boleh menggunakan ciri seperti geolokasi, mikrofon, kamera dan sebagainya.</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Seret ke sini untuk menggunakan skrin pisah</translation>
 <translation id="7348093485538360975">Papan kekunci pada skrin</translation>
@@ -342,6 +344,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7564874036684306347">Tindakan memindahkan tetingkap ke desktop lain boleh menyebabkan gelagat yang tidak dijangka. Pemberitahuan, tetingkap dan dialog yang seterusnya mungkin dipisahkan antara desktop.</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox didayakan</translation>
 <translation id="7593891976182323525">Search atau Shift</translation>
+<translation id="7604942372593434070">Akses aktiviti penyemakan imbas anda</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (pemilik)</translation>
 <translation id="7647488630410863958">Buka kunci peranti untuk melihat pemberitahuan anda</translation>
 <translation id="7649070708921625228">Bantuan</translation>
@@ -356,6 +359,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7829386189513694949">Isyarat kuat</translation>
 <translation id="7842569679327885685">Amaran: Ciri percubaan</translation>
 <translation id="7846634333498149051">Papan kekunci</translation>
+<translation id="790040513076446191">Manipulasi tetapan yang berkaitan privasi</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>
 <translation id="7933084174919150729">Google Assistant hanya tersedia untuk profil utama.</translation>
 <translation id="79341161159229895">Akaun diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -374,6 +378,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8142699993796781067">Rangkaian persendirian</translation>
 <translation id="8152119955266188852">Anda menekan pintasan untuk penggadang skrin penuh. Adakah anda ingin menghidupkannya?</translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan input...</translation>
+<translation id="8191230140820435481">Uruskan apl, sambungan dan tema anda</translation>
 <translation id="8261506727792406068">Padam</translation>
 <translation id="8297006494302853456">Lemah</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>

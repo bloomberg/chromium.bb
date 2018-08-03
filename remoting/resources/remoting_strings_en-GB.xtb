@@ -136,6 +136,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="405887016757208221">The remote computer has failed to initialise the session. If problem persists please try to configure the host again.</translation>
 <translation id="4068946408131579958">All connections</translation>
 <translation id="409800995205263688">NOTE: Policy settings permit connections only between computers within your network.</translation>
+<translation id="4126409073460786861">After setup is complete, refresh this page, then you'll be able to access the computer by choosing your device and entering the PIN</translation>
 <translation id="4145029455188493639">Signed in as <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Some required components are missing. Please make sure that you have installed the latest version of the software and try again.</translation>
 <translation id="4156740505453712750">To protect access to this computer, please choose a PIN of <ph name="BOLD_START" />at least six digits<ph name="BOLD_END" />. This PIN will be required when connecting from another location.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">To</translation>
 <translation id="7019153418965365059">Unrecognised host error: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Remote Assistance</translation>
+<translation id="7026930240735156896">Follow the instructions to set up your computer for remote access</translation>
 <translation id="7038683108611689168">Help us improve Chromoting by allowing us to collect usage statistics and crash reports.</translation>
 <translation id="7067321367069083429">Screen acts like a touch screen</translation>
 <translation id="7116737094673640201">Welcome to Chrome Remote Desktop</translation>

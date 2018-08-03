@@ -400,6 +400,7 @@
 <translation id="1589055389569595240">शुद्धलेखन आणि व्याकरण दर्शवा</translation>
 <translation id="1593594475886691512">स्वरूपन करत आहे...</translation>
 <translation id="159359590073980872">इमेज कॅश  </translation>
+<translation id="1593926297800505364">पेमेंट पद्धत सेव्ह करा</translation>
 <translation id="1598233202702788831">आपल्‍या प्रशासकाने अपडेट अक्षम केली आहेत.</translation>
 <translation id="1600857548979126453">पृष्‍ठ ‍डीबगर बॅकएंडवर प्रवेश करा</translation>
 <translation id="1601560923496285236">लागू करा</translation>
@@ -510,6 +511,7 @@
 <translation id="1744060673522309905">डिव्हाइस डोमेनशी जोडू शकत नाही. तुम्हाला जोडता येऊ शकणाऱ्या डिव्हाइसची संख्या तुम्ही ओलांडलेली नाही याची खात्री करा.</translation>
 <translation id="1744108098763830590">पार्श्वभूमी पृष्ठ</translation>
 <translation id="1745520510852184940">हे नेहमी करा</translation>
+<translation id="1746417874336251387">तुमच्या Chromebook वर तुमच्या फोनचे कनेक्शन वापरणारी नवीन वैशिष्ट्ये ऑफर करते</translation>
 <translation id="174937106936716857">एकूण फाईल संख्या</translation>
 <translation id="175196451752279553">पु&amp;न्हा बंद टॅब उघडा</translation>
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
@@ -640,8 +642,10 @@
 <translation id="1932098463447129402">पूर्वी नाही</translation>
 <translation id="1933809209549026293">कृपया एक माउस किंवा एक कीबोर्ड कनेक्ट करा. आपण Bluetooth डिव्हाइस वापरत असल्यास, जोडण्यासाठी ते तयार असल्याचे सुनिश्चित करा.</translation>
 <translation id="1936157145127842922">फोल्डरमध्ये दर्शवा</translation>
+<translation id="1938351510777341717">बाह्य कमांड</translation>
 <translation id="1940546824932169984">कनेक्‍ट केलेले डिव्हाइस</translation>
 <translation id="1942765061641586207">इमेज रिझोल्यूशन</translation>
+<translation id="1943097386230153518">नवीन सेवा इंस्टॉल करा</translation>
 <translation id="1944921356641260203">अपडेट आढळले</translation>
 <translation id="1951615167417147110">एक पृष्ठ वर स्क्रोल करा</translation>
 <translation id="1954813140452229842">शेअर माउंट करताना एरर आली. कृपया तुमची क्रेडेंशियल तपासा आणि पुन्हा प्रयत्न करा.</translation>
@@ -1107,6 +1111,7 @@
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="265390580714150011">फील्ड मूल्य</translation>
 <translation id="2654166010170466751">पेमेंट हँडलर इंस्टॉल करण्यासाठी साइटना अनुमती द्या</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />वैशिष्ट्ये डिव्हाइसनुसार बदलतात</translation>
 <translation id="2660779039299703961">इव्‍हेंट</translation>
 <translation id="266079277508604648">प्रिंटरशी कनेक्ट करू शकत नाही. प्रिंटर चालू आहे का आणि तो वाय-फाय किंवा USB ने तुमच्या Chromebook शी कनेक्ट केला आहे का ते तपासा.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1213,6 +1218,7 @@
 <translation id="2803375539583399270">पिन एंटर करा</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">अॅप्लिकेशन</translation>
+<translation id="2806891468525657116">शॉर्टकट आधीच अस्तित्वात आहे</translation>
 <translation id="2807517655263062534">तुम्ही डाउनलोड केलेल्या फायली येथे दिसतात</translation>
 <translation id="2809586584051668049">आणि <ph name="NUMBER_ADDITIONAL_DISABLED" /> अधिक</translation>
 <translation id="281133045296806353">विद्यमान ब्राउझर सत्रात नवीन विंडो तयार केली.</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">तुम्ही साइन इन केलेले आहे!</translation>
 <translation id="3429275422858276529">हे पेज नंतर सहजपणे शोधण्यासाठी ते बुकमार्क करा</translation>
 <translation id="3429599832623003132">$1 आयटम</translation>
+<translation id="3430342160185525240">तुम्हाला सूचना दाखवण्यासाठी असिस्टंटला सुरू करते.</translation>
 <translation id="3432227430032737297">सर्व दर्शविलेले काढा</translation>
 <translation id="3432757130254800023">स्थानिक नेटवर्कच्या प्रदर्शनांवर ऑडिओ आणि व्हिडिओ पाठवा</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1964,6 +1971,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> वापरून तो अनइंस्टॉल करण्याची आवश्यकता आहे.
 
   आपण <ph name="CONTROL_PANEL_APPLET_NAME" /> प्रारंभ करू इच्छिता?</translation>
+<translation id="394183848452296464">शॉर्टकट तयार करू शकत नाही</translation>
 <translation id="3943582379552582368">&amp;मागील</translation>
 <translation id="3943857333388298514">पेस्ट करा</translation>
 <translation id="3948116654032448504">इमेज <ph name="SEARCH_ENGINE" /> वर शोधा</translation>
@@ -2270,6 +2278,7 @@
 <translation id="4481530544597605423">जोडणी वेगळी केलेली डिव्हाइस</translation>
 <translation id="4482194545587547824">शोध आणि इतर Google सेवा वैयक्तीकृत करण्यासाठी Google आपल्या ब्राउझिंग इतिहासाचा वापर करू शकते</translation>
 <translation id="4495419450179050807">या पृष्ठावर दर्शवू नका</translation>
+<translation id="4499718683476608392">एका क्लिकमध्ये फॉर्म भरण्यासाठी क्रेडिट कार्ड ऑटोफिल सुरू करा</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> क्रॅश झाले आहे</translation>
 <translation id="450099669180426158">उद्गार चिन्हाचे चिन्ह</translation>
 <translation id="4501530680793980440">काढून टाकण्याची पुष्टी करा</translation>
@@ -3115,6 +3124,7 @@
 <translation id="5752453871435543420">Chrome OS क्लाउड बॅकअप</translation>
 <translation id="5756163054456765343">म&amp;दत केंद्र</translation>
 <translation id="5759728514498647443">आपण <ph name="APP_NAME" /> द्वारे प्रिंट करण्यासाठी पाठविलेले दस्तऐवज <ph name="APP_NAME" /> द्वारे वाचले जाऊ शकतात.</translation>
+<translation id="5762172915276660232">क्रेडिट कार्ड सेटिंग्ज</translation>
 <translation id="5763751966069581670">कोणतेही USB डिव्हाइस सापडले नाहीत</translation>
 <translation id="5764483294734785780">म्हणून ऑडिओ ज&amp;तन करा...</translation>
 <translation id="57646104491463491">सुधारणा तारीख</translation>
@@ -3186,6 +3196,7 @@
 <translation id="5855773610748894548">अरेरे, सुरक्षित मॉड्यूल एरर</translation>
 <translation id="5856721540245522153">डीबगिंग वैशिष्ट्ये सक्षम करा</translation>
 <translation id="5857090052475505287">नवीन फोल्डर</translation>
+<translation id="585979798156957858">बाह्य मेटा</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5860209693144823476">टॅब 3</translation>
 <translation id="5860491529813859533">चालू करा</translation>
@@ -3748,6 +3759,7 @@
 <translation id="6710213216561001401">मागील</translation>
 <translation id="6718273304615422081">झिप करत आहे...</translation>
 <translation id="671928215901716392">लॉक स्क्रीन</translation>
+<translation id="6720847671508630642">Android ची उत्कृष्टता आपोआप तुमच्या Chromebook सोबत शेअर करा. तुमचा फोन कनेक्ट करून तुम्ही कॉंप्युटरवरून एसएमएस पाठवू शकता, तुमच्या फोनचे इंटरनेट कनेक्शन शेअर करू शकता आणि तुमच्या Chromebook ची स्क्रीन अनलॉक करू शकता. <ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />अधिक जाणून घ्या<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">तुमच्या सिक्युरिटी कीची निर्मिती आणि मॉडेल पहा</translation>
 <translation id="6721972322305477112">&amp;फाइल</translation>
 <translation id="672213144943476270">कृपया अतिथी म्हणून ब्राउझ करण्यापूर्वी आपले प्रोफाईल अनलॉक करा.</translation>
@@ -3894,6 +3906,7 @@
 <translation id="6970856801391541997">विशिष्ट पेज प्रिंट करा</translation>
 <translation id="6972180789171089114">ऑडिओ/व्हिडिओ</translation>
 <translation id="6973630695168034713">फोल्डर</translation>
+<translation id="6974609594866392343">ऑफलाइन डेमो मोड</translation>
 <translation id="6976108581241006975">JavaScript कन्सोल</translation>
 <translation id="6977381486153291903">फर्मवेयर पुनरावृत्ती</translation>
 <translation id="6978121630131642226">शोध इंजिने</translation>
@@ -4171,7 +4184,6 @@
 <translation id="7387829944233909572">"ब्राउझ केलेला डेटा क्लिअर करा" संवाद</translation>
 <translation id="7388044238629873883">आपण जवळपास पूर्ण केले!</translation>
 <translation id="7388222713940428051">अतिथी विंडो उघडा</translation>
-<translation id="7391648274628927397">तुमच्यासाठी बुकमार्क जोडला गेला आहे</translation>
 <translation id="7392118418926456391">व्हायरस स्कॅन अयशस्वी</translation>
 <translation id="7392915005464253525">बंद केलेली विंडो पु&amp;न्हा उघडा</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> सिस्टम सुरू करताना लाँच केले जाईल आणि एकदा आपण सर्व अन्य <ph name="PRODUCT_NAME" /> विंडो बंद केल्यावर देखील पार्श्वभूमीमध्ये चालू राहील.</translation>
@@ -4487,6 +4499,7 @@
 <translation id="7857949311770343000">आपण अपेक्षा करत होता ते हे नवीन पृष्ठ आहे?</translation>
 <translation id="786073089922909430">सेवा: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;डाउनलोड</translation>
+<translation id="7864662577698025113">नवीन सेवा जोडा</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{एक कुकी}one{# कुकी}other{# कुकी}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - जोडणी केली</translation>
 <translation id="7870730066603611552">सेटअपनंतर सिंक पर्यायांचे परीक्षण करा</translation>
@@ -5001,6 +5014,7 @@
 <translation id="8666584013686199826">साइटला केव्हा USB डिव्हाइस अॅक्सेस करायचे आहेत हे विचारा</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> आता फुलस्क्रीन असून आपला माऊस कर्सर अक्षम केला आहे.</translation>
 <translation id="8669284339312441707">गरम</translation>
+<translation id="8669919703154928649">असिस्टंटला तुम्हाला सूचना दाखवू द्या</translation>
 <translation id="8669949407341943408">हलवत आहे...</translation>
 <translation id="8671210955687109937">टिप्पणी देऊ शकत नाही</translation>
 <translation id="8673026256276578048">वेबवर शोधा...</translation>
@@ -5389,6 +5403,7 @@
 <translation id="964286338916298286">तुमच्या IT अॅडमिनिस्ट्रेटरने तुमच्या डिव्हाइससाठी Chrome Goodies बंद केले आहे.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{अॅप्लिकेशन}one{अॅप्लिकेशन}other{अॅप्लिकेशन}}</translation>
 <translation id="967007123645306417">हे तुम्हाला तुमच्या Google खात्यांवरून साइन आउट करेल. तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्जमध्ये केलेले बदल तुमच्या Google खात्याशी सिंक केले जाणार नाहीत. मात्र तुमचा सद्य डेटा तुमच्या Google खात्यामध्ये स्टोअर केलेला राहील आणि तो <ph name="BEGIN_LINK" />Google डॅशबोर्ड<ph name="END_LINK" /> वर व्यवस्थापित करता येईल.</translation>
+<translation id="967624055006145463">डेटा स्टोअर केला</translation>
 <translation id="968000525894980488">Google Play सेवा चालू करा.</translation>
 <translation id="968174221497644223">अॅप्लिकेशन कॅश  </translation>
 <translation id="969096075394517431">भाषा बदला</translation>

@@ -222,7 +222,7 @@
 <translation id="1316136264406804862">S'està cercant...</translation>
 <translation id="1316495628809031177">La sincronització està en pausa</translation>
 <translation id="1319979322914001937">Una aplicació que mostra un llista filtrada de les extensions de Chrome Web Store. Les extensions de la llista es poden instal·lar directament des de l'aplicació.</translation>
-<translation id="1322046419516468189">Consulta i gestiona les contrasenyes desades a <ph name="SAVED_PASSWORDS_STORE" /></translation>
+<translation id="1322046419516468189">Consulta i gestiona les contrasenyes desades al <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Inicieu la sessió a Chrome per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
 <translation id="1327074568633507428">Impressora a Google Cloud Print</translation>
 <translation id="1327977588028644528">Passarel·la</translation>
@@ -466,7 +466,7 @@
 <translation id="1673137583248014546"><ph name="URL" /> vol veure la marca i el model de la teva clau de seguretat</translation>
 <translation id="167832068858235403">menys vol.</translation>
 <translation id="1679068421605151609">Eines per a desenvolupadors</translation>
-<translation id="1680849702532889074">S'ha produït un error en instal·lar l'aplicació Linux.</translation>
+<translation id="1680849702532889074">S'ha produït un error en instal·lar l'aplicació per a Linux.</translation>
 <translation id="16815041330799488">No permetis que els llocs web vegin el text i les imatges copiats al porta-retalls</translation>
 <translation id="1682548588986054654">Finestra d'incògnit nova</translation>
 <translation id="168715261339224929">Per accedir a les adreces d'interès des de tots els dispositius, activa la sincronització.</translation>
@@ -1194,7 +1194,7 @@
 <translation id="2775104091073479743">Edita les empremtes digitals</translation>
 <translation id="2776441542064982094">Sembla que no hi ha cap dispositiu disponible per registrar-lo a la xarxa. Si el vostre dispositiu està encès i connectat a Internet, proveu de registrar-lo seguint les instruccions del manual.</translation>
 <translation id="2781692009645368755">Google Pay</translation>
-<translation id="2782104745158847185">S'ha produït un error en instal·lar l'aplicació Linux</translation>
+<translation id="2782104745158847185">S'ha produït un error en instal·lar l'aplicació per a Linux</translation>
 <translation id="2783298271312924866">Baixat</translation>
 <translation id="2783321960289401138">Crea una drecera...</translation>
 <translation id="2783829359200813069">Selecciona els tipus d'encriptació</translation>
@@ -2106,7 +2106,7 @@
 <translation id="4192273449750167573">Revisa la configuració a la pantalla següent</translation>
 <translation id="4193154014135846272">Document de Google</translation>
 <translation id="4194570336751258953">Activa la funció de tocar per fer clic</translation>
-<translation id="4195249722193633765">Instal·la l'aplicació Linux (versió beta)</translation>
+<translation id="4195249722193633765">Instal·la l'aplicació per a Linux (versió beta)</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
 <translation id="4195814663415092787">Continua des d'on ho vaig deixar</translation>
 <translation id="4197674956721858839">Selecció de ZIP</translation>
@@ -2324,7 +2324,7 @@
 <translation id="4576541033847873020">Vincula un dispositiu Bluetooth</translation>
 <translation id="4579581181964204535">No es pot emetre <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Confirmes que vols suprimir  $1 elements?</translation>
-<translation id="4582497162516204941">Instal·la Linux (versió beta)</translation>
+<translation id="4582497162516204941">Instal·la amb Linux (versió beta)</translation>
 <translation id="4582563038311694664">Restableix tota la configuració</translation>
 <translation id="4585793705637313973">Edita la pàgina</translation>
 <translation id="4589268276914962177">Terminal nou</translation>
@@ -2796,7 +2796,7 @@
 <translation id="529175790091471945">Formata aquest dispositiu</translation>
 <translation id="5292195676005197571">Per fer servir la majoria de les claus, només cal prémer el botó</translation>
 <translation id="5293170712604732402">Restableix la configuració als valors predeterminats originals</translation>
-<translation id="5297082477358294722">S'ha desat la contrasenya. Consulta i gestiona les contrasenyes desades a <ph name="SAVED_PASSWORDS_STORE" />.</translation>
+<translation id="5297082477358294722">S'ha desat la contrasenya. Consulta i gestiona les contrasenyes desades al <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creat per</translation>
 <translation id="5299109548848736476">Opció de no seguiment</translation>
 <translation id="5299682071747318445">Totes les dades s'encripten amb la vostra frase de contrasenya de sincronització</translation>
@@ -3066,7 +3066,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5677503058916217575">Idioma de la pàgina:</translation>
 <translation id="5677928146339483299">Bloquejades</translation>
 <translation id="5678550637669481956">S'ha concedit accés de lectura i d'escriptura a <ph name="VOLUME_NAME" />.</translation>
-<translation id="5678784840044122290">L'aplicació Linux estarà disponible al terminal i és possible que també inclogui una icona al menú d'aplicacions.</translation>
+<translation id="5678784840044122290">L'aplicació per a Linux estarà disponible al terminal i és possible que també inclogui una icona al menú d'aplicacions.</translation>
 <translation id="5678955352098267522">Llegir les dades del lloc <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identificador d'elements</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />No es pot desconnectar d'un arxiu o d'un disc virtual<ph name="END_BOLD" />
@@ -3162,7 +3162,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5832805196449965646">Afegeix una persona</translation>
 <translation id="583281660410589416">Desconegut</translation>
 <translation id="5832976493438355584">Bloquejat</translation>
-<translation id="5833397272224757657">Per a la personalització, utilitza el contingut dels llocs web que visites, així com l'activitat i les interaccions del navegador</translation>
+<translation id="5833397272224757657">Utilitza el contingut dels llocs web que visites, així com l'activitat i les interaccions del navegador per oferir una experiència personalitzada.</translation>
 <translation id="5833610766403489739">Aquest fitxer s'ha extraviat en algun lloc. Comproveu el paràmetre d'ubicació de les baixades i torneu-ho a provar.</translation>
 <translation id="5833726373896279253">Només el propietari d'aquesta configuració la pot modificar:</translation>
 <translation id="5834581999798853053">Queda cosa de <ph name="TIME" /> minuts</translation>
@@ -3216,7 +3216,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5908769186679515905">Impedeix que els llocs executin Flash</translation>
 <translation id="5910363049092958439">De&amp;sa la imatge com a...</translation>
 <translation id="5911737117543891828">Els fitxers temporals sense connexió de Google Drive se suprimiran. Els fitxers que hagis definit com a disponibles sense connexió no se suprimiran del dispositiu.</translation>
-<translation id="5911887972742538906">S'ha produït un error en instal·lar l'aplicació Linux.</translation>
+<translation id="5911887972742538906">S'ha produït un error en instal·lar l'aplicació per a Linux.</translation>
 <translation id="5912378097832178659">&amp;Edita els motors de cerca...</translation>
 <translation id="5914724413750400082">Mòdul (<ph name="MODULUS_NUM_BITS" /> bits):
   <ph name="MODULUS_HEX_DUMP" />
@@ -4004,7 +4004,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7127980134843952133">Historial de baixades</translation>
 <translation id="7131040479572660648">Llegir les dades dels llocs <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Afegeix la pà&amp;gina...</translation>
-<translation id="7133578150266914903">L'administrador vol revertir el dispositiu a una versió anterior (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133578150266914903">L'administrador està revertint el dispositiu a una versió anterior (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Fa el text més petit</translation>
 <translation id="7136694880210472378">Estableix com a predeterminat</translation>
 <translation id="7136984461011502314">Benvingut a <ph name="PRODUCT_NAME" /></translation>
@@ -4168,7 +4168,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7387829944233909572">Diàleg "Esborra les dades de navegació"</translation>
 <translation id="7388044238629873883">Gairebé heu acabat</translation>
 <translation id="7388222713940428051">Obre la finestra de convidat</translation>
-<translation id="7391648274628927397">S'ha afegit una adreça d'interès</translation>
 <translation id="7392118418926456391">S'ha produït un error en l'anàlisi antivirus</translation>
 <translation id="7392915005464253525">T&amp;orna a obrir la finestra tancada</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> s'iniciarà quan s'iniciï el sistema i continuarà executant-se en segon pla, fins i tot quan hàgiu tancat la resta de finestres de <ph name="PRODUCT_NAME" />.</translation>

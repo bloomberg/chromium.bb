@@ -32,11 +32,13 @@
 <translation id="447252321002412580">Help improve Chrome's features and performance</translation>
 <translation id="4523886039239821078">Some add-ons cause Chrome to crash. Please uninstall:</translation>
 <translation id="4615174829807303908">You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />. This will delete your Chrome data from this device, but your data will remain in your Google account.</translation>
+<translation id="5240817131241497236">The settings that control sync, personalisation and other Google services in Chrome have changed. This may affect your current settings.</translation>
 <translation id="5389212809648216794">Google Chrome can't use your camera because it's in use by another application</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /> can be customised at any time. Google may use content on sites that you visit, as well as browsing activity and interactions, to personalise Chrome and Google services such as Translate, Search and ads.</translation>
 <translation id="5639704535586432836">Open Settings &gt; Privacy &gt; Camera &gt; Google Chrome and turn on the camera.</translation>
 <translation id="5642200033778930880">Google Chrome can't use your camera in Split View mode</translation>
 <translation id="5703130498371792817">Enjoying Chrome? <ph name="BEGIN_LINK" />Rate this app<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Chrome tip. Some buttons are now at the bottom of your screen, such as Back, Forward and Search.</translation>
 <translation id="6036420186814142909">Google Chrome has features that help you manage your internet data and how quickly you're able to load web pages.
 <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
@@ -55,4 +57,5 @@
 <translation id="8459495907675268833">The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history like searches and activity from other Google services at history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chrome may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Chrome tip. For more tab options, press and hold the Show Tabs button in the toolbar, which is at the bottom or top of your screen.</translation>
 </translationbundle>

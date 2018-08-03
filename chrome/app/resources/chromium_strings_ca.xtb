@@ -124,13 +124,13 @@
 <translation id="5479196819031988440">Chromium OS no pot obrir aquesta pàgina.</translation>
 <translation id="5480860683791598150">Chromium necessita accedir a la teva ubicació per compartir-la amb aquest lloc web</translation>
 <translation id="549669000822060376">Espereu mentre Chromium instal·la les darreres actualitzacions del sistema.</translation>
-<translation id="5514308096618405748">Chrome OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS" />programari lliure addicional<ph name="END_LINK_CROS_OSS" />, així com Linux (versió beta).</translation>
+<translation id="5514308096618405748">Chrome OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS" />programari lliure<ph name="END_LINK_CROS_OSS" /> addicional, així com Linux (versió beta).</translation>
 <translation id="5529843986978123325">{0,plural, =1{Chromium OS es reiniciarà d'aquí a 1 minut}other{Chromium OS es reiniciarà d'aquí a # minuts}}</translation>
 <translation id="5631814766731275228">Nom i foto de Chromium</translation>
 <translation id="5634636535844844681">Chromium requereix Windows 7 o una versió posterior.</translation>
 <translation id="5680901439334282664">Inicia la sessió a Chromium</translation>
 <translation id="5698481217667032250">Mostra Chromium en aquest idioma</translation>
-<translation id="5712253116097046984">L'administrador recomana que reiniciïs Chromium OS per aplicar aquesta actualització</translation>
+<translation id="5712253116097046984">L'administrador demana que reiniciïs Chromium OS per aplicar aquesta actualització</translation>
 <translation id="5726838626470692954">El gestor t'ha de suprimir i tornar a afegir a Chromium.</translation>
 <translation id="5768914737813585044">Mostra Chromium OS en aquest idioma</translation>
 <translation id="5796460469508169315">Chromium ja està quasi llest.</translation>

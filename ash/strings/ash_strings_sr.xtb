@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
 <translation id="1823873187264960516">Етернет: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Помоћник (учитава се...)</translation>
+<translation id="1841545962859478868">Администратор уређаја може да прати следеће:</translation>
 <translation id="1850504506766569011">Wi-Fi је искључен.</translation>
 <translation id="1864454756846565995">Уређај са USB прикључком типа C (задњи порт)</translation>
 <translation id="1882897271359938046">Пресликавање у <ph name="DISPLAY_NAME" /></translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Повезивање</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Управљајте подешавањима која одређују да ли веб-сајтови могу да користе функције као што су геолоцирање, микрофон, камера итд.</translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
 <translation id="726276584504105859">Превуците овде да бисте користили подељени екран</translation>
 <translation id="7348093485538360975">Тастатура на екрану</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Премештање прозора на други рачунар може да доведе до неочекиваног понашања. Накнадна обавештења, прозори и дијалози ће можда бити подељени између рачунара.</translation>
 <translation id="7569509451529460200">Брајева азбука и ChromeVox су омогућени</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
+<translation id="7604942372593434070">Приступите активностима прегледања</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>
 <translation id="7647488630410863958">Откључајте уређај да бисте прегледали обавештења</translation>
 <translation id="7649070708921625228">Помоћ</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Јак сигнал</translation>
 <translation id="7842569679327885685">Упозорење: Експериментална функција</translation>
 <translation id="7846634333498149051">Тастатура</translation>
+<translation id="790040513076446191">Управљање подешавањима у вези са приватношћу</translation>
 <translation id="7904094684485781019">Администратор за овај налог је забранио вишеструко пријављивање.</translation>
 <translation id="7933084174919150729">Google помоћник је доступан само за примарни профил.</translation>
 <translation id="79341161159229895">Налогом управљају <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Приватна мрежа</translation>
 <translation id="8152119955266188852">Притиснули сте пречицу за лупу за цео екран. Желите ли да је укључите?</translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
+<translation id="8191230140820435481">Управљање апликацијама, додацима и темама</translation>
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8297006494302853456">Слаб</translation>
 <translation id="8308637677604853869">Претходни мени</translation>

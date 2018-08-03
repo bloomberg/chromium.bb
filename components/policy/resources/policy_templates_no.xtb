@@ -301,6 +301,11 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis en innstilling ikke angis, brukes en standardverdi.
 
       Hvis denne planen ikke angis, brukes standardverdiene for alle innstillingene.</translation>
+<translation id="1958138414749279167">Slår på autofyllfunksjonen i <ph name="PRODUCT_NAME" />og gjør det mulig for brukere å fylle ut adresseinformasjon i nettskjemaer automatisk ved hjelp av tidligere lagret informasjon.
+
+      Hvis denne innstillingen er av, gir ikke autofyllfunksjonen forslag, og den fyller ikke inn informasjon automatisk. Den lagrer heller ikke lenger informasjon som brukeren sender inn på nettet.
+
+      Hvis denne innstillingen er på eller ikke har noen verdi, kan brukeren kontrollere all funksjonalitet for autofyllfunksjonen i brukergrensesnittet.</translation>
 <translation id="1960840544413786116">Hvorvidt du vil tillate sertifikater som utstedes av lokale klareringsankre som mangler subjectAlternativeName-utvidelsen</translation>
 <translation id="1964634611280150550">Inkognitomodus er deaktivert</translation>
 <translation id="1964802606569741174">Denne regelen har ingen innvirkning på YouTube-appen for Android. Hvis du vil tvinge bruk av sikkerhetsmodus for YouTube, bør du ikke tillate installasjon av YouTube-appen for Android.</translation>
@@ -1901,6 +1906,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="6440051664870270040">Tillat at nettsteder navigerer og åpner forgrunnsvinduer samtidig</translation>
 <translation id="6447948611083700881">Sikkerhetskopiering og gjenoppretting er deaktivert</translation>
 <translation id="645425387487868471">Slå på tvunget pålogging for <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Slå på autofyll for adresser</translation>
 <translation id="6473623140202114570">Konfigurer listen over domener hvor Safe Browsing ikke utløser advarsler.</translation>
 <translation id="6491139795995924304">Tillat Bluetooth på enheten</translation>
 <translation id="6520802717075138474">Importér søkemotorer fra standard nettleser ved første kjøring</translation>

@@ -462,7 +462,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4860895144060829044">Telefonar</translation>
 <translation id="4874967477260347223">Licenças de multimédia</translation>
 <translation id="4875775213178255010">Sugestões de conteúdo</translation>
-<translation id="4876188919622883022">Vista simplificada</translation>
 <translation id="4878404682131129617">Falha ao estabelecer um túnel através do servidor proxy.</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="488187801263602086">Mudar o nome do ficheiro</translation>
@@ -521,7 +520,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminado</translation>
 <translation id="5372829067651257087">URL copiado.</translation>
-<translation id="5391532827096253100">A sua ligação a este site não é segura. Informações do site.</translation>
+<translation id="5391532827096253100">A sua ligação a este site não é segura. Informações do site</translation>
 <translation id="5400569084694353794">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="5403644198645076998">Permitir apenas determinados sites</translation>
 <translation id="5414836363063783498">A validar…</translation>
@@ -636,7 +635,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="618555311922999635">Painel de navegação aberto à altura total</translation>
 <translation id="6192333916571137726">Transferir ficheiro</translation>
 <translation id="6192792657125177640">Excepções</translation>
-<translation id="6206551242102657620">A ligação é segura. Informações do site.</translation>
+<translation id="6206551242102657620">A ligação é segura. Informações do site</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> não é o seu email?</translation>
 <translation id="6216432067784365534">Opções de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Desbloqueie para exportar as palavras-passe.</translation>
@@ -728,7 +727,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6914783257214138813">As suas palavras-passe serão visíveis para todas as pessoas que consigam ver o ficheiro exportado.</translation>
 <translation id="6942665639005891494">Altere a localização de transferência predefinida a qualquer momento ao utilizar a opção do menu Definições.</translation>
 <translation id="6945221475159498467">Selecionar</translation>
-<translation id="6963642900430330478">Esta página é perigosa. Informações do site.</translation>
+<translation id="6963642900430330478">Esta página é perigosa. Informações do site</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Repor definições de tradução</translation>

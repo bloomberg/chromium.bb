@@ -148,7 +148,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
 <translation id="4895437082222824641">Buka link di &amp;tab Chrome baru</translation>
 <translation id="4921569541910214635">Membagikan komputer? Kini Anda dapat menyiapkan Chrome seperti yang Anda inginkan.</translation>
-<translation id="4945319281866068441">{0,plural, =1{Mulai ulang Chrome OS dalam 1 hari}other{Mulai ulang Chrome OS dalam # hari}}</translation>
+<translation id="4945319281866068441">{0,plural, =1{Mulai ulang Chrome OS dalam satu hari}other{Mulai ulang Chrome OS dalam # hari}}</translation>
 <translation id="4953650215774548573">Setel Google Chrome sebagai browser default Anda</translation>
 <translation id="495931528404527476">Di Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>

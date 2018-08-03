@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ነቅቷል</translation>
 <translation id="1823873187264960516">ኤተርኔት፦ <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">ረዳት (በመጫን ላይ...)</translation>
+<translation id="1841545962859478868">የመሣሪያው አስተዳዳሪ የሚከተሉትን ሊከታተል ይችላል፦</translation>
 <translation id="1850504506766569011">Wi-Fi ጠፍቷል።</translation>
 <translation id="1864454756846565995">USB-C መሣሪያ (የኋላ ወደብ)</translation>
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME" /> በማንጸባረቅ ላይ</translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">በመያያዝ ላይ</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
+<translation id="7228479291753472782">ድር ጣቢያዎች እንደ ጂዮአካባቢ፣ ማይክሮፎን፣ ካሜራ፣ ወዘተ. ያሉ ባህሪያትን መጠቀም ይችሉ እንደሆነ የሚገልጹ ቅንብሮችን ይቆጣጠራል።</translation>
 <translation id="7256634071279256947">የኋላ ማይክሮፎን</translation>
 <translation id="726276584504105859">የተከፈለ ማያ ገጽን ለመጠቀም ወደዚህ ይጎትቱ</translation>
 <translation id="7348093485538360975">የታይታ የቁልፍ ሰሌዳ</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">መስኮትን ወደ ሌላ ዴስክቶፕ መውሰድ ያልተጠበቀ ባህሪን ሊያስከትል ይችላል። ተከትለው የሚመጡ ማሳወቂያዎችን፣ መስኮቶች እና መገናኛዎች በዴስክቶፖች መካከል ሊከፈሉ ይችላሉ።</translation>
 <translation id="7569509451529460200">ብሬይል እና ChromeVox ነቅተዋል</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
+<translation id="7604942372593434070">የአሰሳ እንቅስቃሴዎን ይድረሱ</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ባለቤት)</translation>
 <translation id="7647488630410863958">የእርስዎን ማሳወቂያዎች ለማየት መሣሪያውን ይክፈቱ</translation>
 <translation id="7649070708921625228">እገዛ</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">ጠንካራ ሲግናል</translation>
 <translation id="7842569679327885685">ማስጠንቀቂያ፦ የሙከራ ባህሪ</translation>
 <translation id="7846634333498149051">የቁልፍ ሰሌዳ</translation>
+<translation id="790040513076446191">ከግላዊነት ጋር የተገናኙ ቅንብሮችን ይቆጣጠሩ</translation>
 <translation id="7904094684485781019">የዚህ መለያ አስተዳዳሪ ባለብዙ መለያ መግባትን ከልክሏል።</translation>
 <translation id="7933084174919150729">Google ረዳቱ ለዋናው መገለጫ ብቻ የሚገኝ ነው።</translation>
 <translation id="79341161159229895">መለያው በ<ph name="FIRST_PARENT_EMAIL" /> እና <ph name="SECOND_PARENT_EMAIL" /> ነው የሚቀናበረው</translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">የግል አውታረ መረብ</translation>
 <translation id="8152119955266188852">የሙሉ ማያ ገጽ ማጉያውን አቋራጭ ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="8190698733819146287">ቋንቋዎችን እና ግብአቶችን አብጅ...</translation>
+<translation id="8191230140820435481">መተግበሪያዎችዎን፣ ቅጥያዎችዎን እና ገጽታዎችዎን ያቀናብራል</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8297006494302853456">ደካማ</translation>
 <translation id="8308637677604853869">ቀዳሚ ምናሌ</translation>

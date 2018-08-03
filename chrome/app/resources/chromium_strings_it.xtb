@@ -8,7 +8,7 @@
 <translation id="1170115874949214249">Installa Chromium sul telefono. Invieremo un SMS al tuo numero di telefono per il recupero dell'account.</translation>
 <translation id="1174473354587728743">Condividi un computer con altre persone? Ora puoi configurare Chromium come preferisci.</translation>
 <translation id="1185134272377778587">Informazioni su Chromium</translation>
-<translation id="1209657686917656928">{0,plural, =0{Chromium verrà riavviato ora}=1{Chromium verrà riavviato tra 1 secondo}other{Chromium verrà riavviato tra # secondi}}</translation>
+<translation id="1209657686917656928">{0,plural, =0{Chromium verrà riavviato ora}=1{Chromium verrà riavviato tra un secondo}other{Chromium verrà riavviato tra # secondi}}</translation>
 <translation id="1267419686153937460">{0,plural, =1{Riavvia Chromium entro un giorno}other{Riavvia Chromium entro # giorni}}</translation>
 <translation id="1298199220304005244">Ricevi assistenza per l'utilizzo di Chromium OS</translation>
 <translation id="1396446129537741364">Chromium sta cercando di visualizzare le password.</translation>
@@ -125,7 +125,7 @@
 <translation id="5480860683791598150">Chromium deve poter accedere alla tua posizione per condividerla con questo sito</translation>
 <translation id="549669000822060376">Attendi mentre Chromium installa gli aggiornamenti di sistema più recenti.</translation>
 <translation id="5514308096618405748">La realizzazione di Chrome OS è stata possibile grazie a <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> come Linux (beta).</translation>
-<translation id="5529843986978123325">{0,plural, =1{Chromium OS verrà riavviato tra 1 minuto}other{Chromium OS verrà riavviato tra # minuti}}</translation>
+<translation id="5529843986978123325">{0,plural, =1{Chromium OS verrà riavviato tra un minuto}other{Chromium OS verrà riavviato tra # minuti}}</translation>
 <translation id="5631814766731275228">Nome e immagine di Chromium</translation>
 <translation id="5634636535844844681">Chromium richiede Windows 7 o versioni successive.</translation>
 <translation id="5680901439334282664">accedi a Chromium</translation>
@@ -147,7 +147,7 @@
 <translation id="6072279588547424923">L'estensione <ph name="EXTENSION_NAME" /> è stata aggiunta a Chromium</translation>
 <translation id="608189560609172163">Impossibile sincronizzare i dati in Chromium a causa di un errore durante l'accesso.</translation>
 <translation id="6096348254544841612">È disponibile un nuovo aggiornamento.</translation>
-<translation id="6120345080069858279">Chromium salverà la password nel tuo account Google affinché tu non debba memorizzarla.</translation>
+<translation id="6120345080069858279">Chromium salverà la password nel tuo Account Google affinché tu non debba memorizzarla.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> è pericoloso, pertanto è stato bloccato da Chromium.</translation>
 <translation id="620022061217911843">L'amministratore richiede di riavviare Chromium OS per installare un aggiornamento</translation>
 <translation id="6212496753309875659">Questo computer ha già una versione più recente di Chromium. Se il software non funziona, disinstalla Chromium e riprova.</translation>
@@ -242,7 +242,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="8493179195440786826">Chromium non è aggiornato</translation>
 <translation id="85843667276690461">Ricevi assistenza per l'utilizzo di Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Tutti i diritti riservati.</translation>
-<translation id="8599548569518771270">{0,plural, =0{Chromium OS verrà riavviato ora}=1{Chromium verrà riavviato tra 1 secondo}other{Chromium OS verrà riavviato tra # secondi}}</translation>
+<translation id="8599548569518771270">{0,plural, =0{Chromium OS verrà riavviato ora}=1{Chromium verrà riavviato tra un secondo}other{Chromium OS verrà riavviato tra # secondi}}</translation>
 <translation id="8619360774459241877">Avvio di Chromium...</translation>
 <translation id="8621669128220841554">Installazione non riuscita a causa di un errore imprecisato. Scarica di nuovo Chromium.</translation>
 <translation id="8628626585870903697">Chromium non include il visualizzatore PDF necessario per la funzione Anteprima di stampa.</translation>

@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
 <translation id="1823873187264960516">이더넷: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">어시스턴트(로드 중...)</translation>
+<translation id="1841545962859478868">기기 관리자가 다음을 모니터링할 수 있습니다.</translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
 <translation id="1864454756846565995">USB-C 기기(후면 포트)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">연결 중</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
+<translation id="7228479291753472782">웹사이트에서 위치정보, 마이크, 카메라 등과 같은 기능을 사용할 수 있도록 할지 여부를 지정하는 설정을 조작합니다.</translation>
 <translation id="7256634071279256947">후면 마이크</translation>
 <translation id="726276584504105859">화면 분할을 사용하려면 여기를 드래그하세요.</translation>
 <translation id="7348093485538360975">터치 키보드</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다. 이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
+<translation id="7604942372593434070">탐색 활동에 액세스</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />(소유자)</translation>
 <translation id="7647488630410863958">기기를 잠금 해제하여 알림 보기</translation>
 <translation id="7649070708921625228">도움말</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">신호 강함</translation>
 <translation id="7842569679327885685">경고: 실험 기능</translation>
 <translation id="7846634333498149051">키보드</translation>
+<translation id="790040513076446191">개인정보 보호 관련 설정 조정</translation>
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
 <translation id="7933084174919150729">Google 어시스턴트는 기본 프로필에서만 사용할 수 있습니다.</translation>
 <translation id="79341161159229895">계정 관리자: <ph name="FIRST_PARENT_EMAIL" /> 및 <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">사설 네트워크</translation>
 <translation id="8152119955266188852">전체 화면 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
+<translation id="8191230140820435481">앱, 확장 프로그램 및 테마 관리</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8297006494302853456">약함</translation>
 <translation id="8308637677604853869">이전 메뉴</translation>

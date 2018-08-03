@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">智能助理（正在加载中…）</translation>
+<translation id="1841545962859478868">此设备的管理员可能会监控以下各项：</translation>
 <translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
 <translation id="1864454756846565995">USB-C 设备（背面端口）</translation>
 <translation id="1882897271359938046">正在镜像到<ph name="DISPLAY_NAME" /></translation>
@@ -326,6 +327,7 @@
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />秒后恢复到原分辨率</translation>
+<translation id="7228479291753472782">管理用于指定网站可否使用地理位置信息、麦克风、摄像头等功能的设置</translation>
 <translation id="7256634071279256947">后置麦克风</translation>
 <translation id="726276584504105859">拖到此处即可使用分屏模式</translation>
 <translation id="7348093485538360975">屏幕键盘</translation>
@@ -342,6 +344,7 @@
 <translation id="7564874036684306347">将窗口移至另一桌面可能会导致出现意外行为 - 后续的通知、窗口和对话框可能会被拆分到不同的桌面中。</translation>
 <translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
+<translation id="7604942372593434070">访问您的浏览活动</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">解锁设备即可查看您的通知</translation>
 <translation id="7649070708921625228">帮助</translation>
@@ -356,6 +359,7 @@
 <translation id="7829386189513694949">信号较强</translation>
 <translation id="7842569679327885685">警告：实验性功能</translation>
 <translation id="7846634333498149051">键盘</translation>
+<translation id="790040513076446191">管理隐私相关设置</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
 <translation id="7933084174919150729">Google 智能助理仅适用于主要个人资料。</translation>
 <translation id="79341161159229895">该帐号由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
@@ -374,6 +378,7 @@
 <translation id="8142699993796781067">专用网络</translation>
 <translation id="8152119955266188852">您按下了全屏放大镜的快捷键。要开启这项功能吗？</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
+<translation id="8191230140820435481">管理您的应用、扩展程序和主题背景</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8297006494302853456">弱</translation>
 <translation id="8308637677604853869">上一菜单</translation>

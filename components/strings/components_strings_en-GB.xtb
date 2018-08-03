@@ -488,6 +488,7 @@
 <translation id="4277028893293644418">Reset password</translation>
 <translation id="4280429058323657511">, exp <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Switch</translation>
+<translation id="4308131620840579419">Save all your cards in one place?</translation>
 <translation id="4312866146174492540">Block (default)</translation>
 <translation id="4325863107915753736">Failed to find article</translation>
 <translation id="4326324639298822553">Check your expiry date and try again</translation>
@@ -598,6 +599,7 @@
 <translation id="5190835502935405962">Bookmarks Bar</translation>
 <translation id="5201306358585911203">An embedded page on this page says</translation>
 <translation id="5205222826937269299">Name required</translation>
+<translation id="5215116848420601511">Payment methods and addresses using Google Pay</translation>
 <translation id="5222812217790122047">Email (required)</translation>
 <translation id="5230733896359313003">Delivery Address</translation>
 <translation id="5250209940322997802">'Connect to network'</translation>
@@ -674,6 +676,7 @@
 <translation id="5689199277474810259">Export to JSON</translation>
 <translation id="5689516760719285838">Location</translation>
 <translation id="570530837424789914">Manage...</translation>
+<translation id="5705882733397021510">Go back</translation>
 <translation id="57094364128775171">Suggest strong password…</translation>
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
 <translation id="5719499550583120431">Prepaid cards are accepted.</translation>
@@ -691,6 +694,7 @@
 <translation id="5810442152076338065">Your connection to <ph name="DOMAIN" /> is encrypted using an obsolete cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Redo Add</translation>
 <translation id="5838278095973806738">You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.</translation>
+<translation id="5863847714970149516">The page ahead may try to charge you money</translation>
 <translation id="5866257070973731571">Add Phone Number</translation>
 <translation id="5869405914158311789">This site can’t be reached</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
@@ -821,6 +825,7 @@
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
 <translation id="6989763994942163495">+ Show advanced settings</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">These charges could be one-off or recurring and may not be obvious.</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7050187094878475250">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate whose validity period is too long to be trustworthy.</translation>
 <translation id="7053983685419859001">Block</translation>
@@ -1085,6 +1090,7 @@
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8978053250194585037">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected phishing<ph name="END_LINK" /> on <ph name="SITE" />. Phishing sites pretend to be other websites to trick you.</translation>
+<translation id="8983003182662520383">Payment methods and addresses using Google Pay</translation>
 <translation id="8987927404178983737">Month</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">The site ahead contains harmful programs</translation>

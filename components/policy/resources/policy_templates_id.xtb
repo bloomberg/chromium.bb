@@ -1132,15 +1132,15 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs dari kebijakan 'DefaultKeygenSetting' jika disetel, atau dari konfigurasi pribadi pengguna.</translation>
 <translation id="4239720644496144453">Cache tidak digunakan untuk aplikasi Android. Jika beberapa pengguna memasang aplikasi Android yang sama, aplikasi akan didownload lagi untuk setiap pengguna.</translation>
-<translation id="4243336580717651045">Mengaktifkan pengumpulan data anonim yang dimasukkan dengan URL di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
+<translation id="4243336580717651045">Mengaktifkan pengumpulan data anonim yang menyertakan URL di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
-      Pengumpulan data anonim yang dimasukkan dengan URL mengirimkan URL halaman yang dibuka oleh pengguna ke Google untuk membuat penelusuran dan browsing lebih baik.
+      Pengumpulan data anonim yang menyertakan URL mengirimkan URL halaman yang dibuka oleh pengguna ke Google untuk membuat penelusuran dan browsing lebih baik.
 
-      Jika Anda mengaktifkan kebijakan ini, pengumpulan data anonim yang dimasukkan dengan URL selalu aktif.
+      Jika Anda mengaktifkan kebijakan ini, pengumpulan data anonim yang menyertakan URL selalu aktif.
 
-      Jika Anda menonaktifkan kebijakan ini, pengumpulan data anonim yang dimasukkan dengan URL tidak pernah aktif.
+      Jika Anda menonaktifkan kebijakan ini, pengumpulan data anonim yang menyertakan URL tidak pernah aktif.
 
-      Jika kebijakan ini dibiarkan tidak disetel, pengumpulan data anonim yang dimasukkan dengan URL akan diaktifkan, namun pengguna dapat mengubahnya.</translation>
+      Jika kebijakan ini dibiarkan tidak disetel, pengumpulan data anonim yang menyertakan URL akan diaktifkan, namun pengguna dapat mengubahnya.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Lokal layar login perangkat</translation>
 <translation id="427220754384423013">Menentukan printer yang dapat digunakan pengguna.
@@ -1765,7 +1765,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Cara yang disarankan untuk mengunci layar saat menganggur adalah dengan mengaktifkan penangguhan penguncian layar dan meminta <ph name="PRODUCT_OS_NAME" /> menangguhkan setelah penundaan waktu menganggur. Sebaiknya hanya gunakan kebijakan ini saat penguncian layar perlu terjadi jauh lebih awal dibandingkan penangguhan atau saat penangguhan ketika menganggur tidak diinginkan sama sekali.
 
           Nilai kebijakan harus ditetapkan dalam milidetik. Nilai dijepit agar kurang dari penundaan waktu menganggur.</translation>
-<translation id="6097601282776163274">Mengaktifkan pengumpulan data anonim yang dimasukkan dengan URL</translation>
+<translation id="6097601282776163274">Mengaktifkan pengumpulan data anonim yang menyertakan URL</translation>
 <translation id="6111936128861357925">Izinkan Game Dinosaur Easter Egg</translation>
 <translation id="6114416803310251055">tak lagi digunakan</translation>
 <translation id="6133088669883929098">Izinkan semua situs menggunakan pembuatan kunci</translation>

@@ -520,6 +520,11 @@
       Jei šis nustatymas nenustatomas, naudotojas galės nuspręsti, ar naudoti šią funkciją, ar ne.
 
       Šis nustatymas pašalintas iš 29 ir naujesnių „<ph name="PRODUCT_NAME" />“ versijų.</translation>
+<translation id="2433412232489478893">Ši politika valdo, ar „<ph name="PRODUCT_NAME" />“ tinklo failų bendrinimo įrenginių funkcija leidžiama naudotojui.
+
+      Kai ši politika nesukonfigūruota arba nustatyta kaip „Tiesa“, naudotojai gali naudoti tinklo failų bendrinimo įrenginius.
+
+      Kai ši politika nustatyta kaip „Netiesa“, naudotojai negali naudoti tinklo failų bendrinimo įrenginių.</translation>
 <translation id="2438609638493026652">Įgalinamas pagrindinių įvykių ataskaitų teikimas sistemoje „Google“ diegiant „Android“ programą. Užfiksuojami tik programų, kurių diegimas suaktyvintas naudojant šią politiką, įvykiai.
 
       Nustačius politiką į „true“, įvykiai bus registruojami.
@@ -601,6 +606,7 @@
 <translation id="2598508021807251719">Konfigūruojamos lokalės, kuriose galima pateikti „<ph name="PRODUCT_OS_NAME" />“.
 
       Jei ši politika nustatyta, naudotojas gali konfigūruoti, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikta tik vienoje iš lokalių, nurodytų pagal šią politiką. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, „<ph name="PRODUCT_OS_NAME" />“ galima pateikti visose palaikomose NS lokalėse. Jei ši politika nustatyta kaip sąrašas su netinkamomis vertėmis, visų netinkamų verčių nepaisoma. Jei naudotojas anksčiau sukonfigūravo, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikta pagal šią politiką neleidžiamoje lokalėje, pateikimo lokalė bus perjungta į leidžiamą NS lokalę kitą kartą naudotojui prisijungus. Jei naudotojas sukonfigūravo pageidaujamas lokales ir viena iš pageidaujamų lokalių leidžiama pagal šią politiką, „<ph name="PRODUCT_OS_NAME" />“ bus perjungta į šią lokalę. Priešingu atveju „<ph name="PRODUCT_OS_NAME" />“ bus taikoma pagal šią politiką nustatyta pirmoji tinkama vertė arba bus perjungta į atsarginę lokalę (šiuo metu „en-US“), jei šioje politikoje yra tik netinkami įrašai.</translation>
+<translation id="2604182581880595781">Konfigūruojama su tinklo failų bendrinimo įrenginiu susijusi politika.</translation>
 <translation id="2623014935069176671">Laukti pradinės naudotojo veiklos</translation>
 <translation id="262740370354162807">Įgalinti dokumentų pateikimą „<ph name="CLOUD_PRINT_NAME" />“</translation>
 <translation id="2627554163382448569">Nurodoma įmonės spausdintuvų konfigūracija.
@@ -686,6 +692,7 @@
 <translation id="2823870601012066791">„<ph name="PRODUCT_OS_NAME" />“ klientų „Windows“ registro vieta:</translation>
 <translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
 <translation id="2838830882081735096">Neleisti perkelti duomenų ir ARC</translation>
+<translation id="2839294585867804686">Tinklo failų bendrinimo įrenginių nustatymai</translation>
 <translation id="2840269525054388612">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
 
       Ši politika naudojama, tik jei pasirinktas politikos „<ph name="DEVICE_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_WHITELIST" />“
@@ -1181,6 +1188,7 @@
       Jei ši politika bus palikta nenustatyta, URL pagrįsto anonimizuotų duomenų rinkimo funkcija bus įgalinta, bet naudotojas galės ją pakeisti.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Įrenginio prisijungimo ekrano lokalė</translation>
+<translation id="4264607809747169568">Valdomas „Chrome“ OS skirtų tinklo failų bendrinimo įrenginių pasiekiamumas</translation>
 <translation id="427220754384423013">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
 
       Ši politika naudojama, tik jei pasirinktas politikos „<ph name="BULK_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_WHITELIST" />“.
@@ -1614,6 +1622,15 @@
       Politikos vertę reikia nurodyti milisekundėmis.</translation>
 <translation id="5511702823008968136">Įgalinti žymių juostą</translation>
 <translation id="5512418063782665071">Pagrindinio puslapio URL</translation>
+<translation id="551639594034811656">Ši politika apibrėžia procentinių verčių sąrašą, kur nurodoma OV įrenginių dalis („<ph name="PRODUCT_OS_NAME" />“), kurie bus atnaujinti per savaitę nuo pirmos naujinio aptikimo dienos. Aptikimo laikas yra vėlesnis nei naujinio paskelbimo laikas, nes paskelbus naujinį įrenginys gali tikrinti, ar yra naujinių, tik po tam tikro laiko
+
+      Kiekviena pora (diena, procentinė vertė) nurodo, kokia srauto procentinė dalis turi būti atnaujinta praėjus nurodytam skaičiui dienų nuo naujinio aptikimo dienos. Pvz., jei turime poras [(4, 40), (10, 70), (15, 100)], reiškia, 40 proc. srauto turi būti atnaujinta praėjus 4 dienoms nuo naujinio peržiūros dienos, 70 proc. turėtų būti atnaujinta praėjus 10 dienų ir t. t.
+
+      Jei šios politikos vertė nustatyta, naujiniai nepaisys politikos „<ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />“ ir vietoje to atsižvelgs į šią politiką.
+
+      Jei šis sąrašas tuščias, etapinis diegimas nebus naudojamas, o naujiniai bus pritaikyti atsižvelgiant į kitas įrenginių politikos nuostatas.
+
+      Ši politika netaikoma keičiant kanalus.</translation>
 <translation id="5523812257194833591">Vieša sesija, skirta automatiškai prijungti po delsos.
 
       Jei ši politika nenustatyta, prie nurodytos sesijos bus automatiškai prisijungta prisijungimo ekrane praėjus tam tikram laikui be naudotojo sąveikos. Vieša sesija jau turi būti sukonfigūruota (žr. |DeviceLocalAccounts|).
@@ -2543,6 +2560,11 @@
       Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOrigins“ ir „SitePerProcess“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“.
       Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
       </translation>
+<translation id="7902255855035461275">Šiame sąraše pateikti šablonai bus palyginti su užklausą pateikusio
+      URL saugos šaltiniu. Jei bus rasta atitiktis, galimybė pasiekti vaizdo įrašą
+      fiksuojančius įrenginius bus suteikta be raginimo.
+
+      PASTABA: iki 45 versijos programos ši politika buvo palaikoma tik įjungus viešojo terminalo režimą.</translation>
 <translation id="7912255076272890813">Konfigūruoti leidžiamus programų / plėtinių tipus</translation>
 <translation id="7915236031252389808">Čia galite nurodyti tarpinio serverio .pac failo URL.
 

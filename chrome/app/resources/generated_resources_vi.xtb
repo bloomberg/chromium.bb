@@ -791,7 +791,7 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> trên <ph name="PEPPER_PLUGIN_DOMAIN" /> muốn truy cập vào máy tính của bạn</translation>
 <translation id="2178614541317717477">Lộ CA</translation>
 <translation id="218070003709087997">Sử dụng một số để cho biết số bản cần in (1 đến 999).</translation>
-<translation id="2183558561014688873">Truy cập vào Trợ lý bất cứ lúc nào bạn nói "OK Google" khi thiết bị đang ở chế độ bật và mở khóa.</translation>
+<translation id="2183558561014688873">Khi thiết bị đang ở chế độ bật và mở khóa, nói "Ok Google" bất cứ lúc nào để sử dụng Trợ lý.</translation>
 <translation id="2187895286714876935">Lỗi nhập chứng chỉ máy chủ</translation>
 <translation id="2187906491731510095">Đã cập nhật tiện ích</translation>
 <translation id="2188881192257509750">Mở <ph name="APPLICATION" /></translation>
@@ -1220,7 +1220,7 @@
 <translation id="2812944337881233323">Thử đăng xuất và đăng nhập lại</translation>
 <translation id="2812989263793994277">Không hiển thị bất kỳ hình ảnh nào</translation>
 <translation id="2814489978934728345">Dừng tải trang này</translation>
-<translation id="281504910091592009">Xem và quản lý mật khẩu đã lưu trong <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của bạn</translation>
+<translation id="281504910091592009">Xem và quản lý các mật khẩu đã lưu trong <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của bạn</translation>
 <translation id="2815500128677761940">Thanh dấu trang</translation>
 <translation id="2815693974042551705">Thư mục dấu trang</translation>
 <translation id="2818476747334107629">Chi tiết về máy in</translation>
@@ -2170,7 +2170,7 @@
 <translation id="428608937826130504">Mục giá 8</translation>
 <translation id="4287502004382794929">Bạn không có đủ giấy phép phần mềm để đăng ký thiết bị này. Vui lòng liên hệ với bộ phận bán hàng để mua thêm. Nếu bạn nhận được thư này do nhầm lẫn, vui lòng liên hệ với bộ phận hỗ trợ.</translation>
 <translation id="4289540628985791613">Tổng quan</translation>
-<translation id="4295072614469448764">Ứng dụng này hiện đã có trong trạm thanh toán của bạn. Ngoài ra, có thể có một biểu tượng trong Trình chạy.</translation>
+<translation id="4295072614469448764">Ứng dụng này hiện đã có trong thiết bị của bạn. Ngoài ra, có thể có một biểu tượng trong Trình chạy.</translation>
 <translation id="4296575653627536209">Thêm người dùng được giám sát</translation>
 <translation id="4297219207642690536">Khởi động lại và đặt lại</translation>
 <translation id="4297322094678649474">Thay đổi ngôn ngữ</translation>
@@ -2571,7 +2571,7 @@
 <translation id="4953808748584563296">Hình đại diện màu cam mặc định</translation>
 <translation id="4955814292505481804">Hàng năm</translation>
 <translation id="4957949153200969297">Chỉ bật các tính năng liên quan đến <ph name="IDS_SHORT_PRODUCT_NAME" /> Sync</translation>
-<translation id="4959262764292427323">Các mật khẩu được lưu trong Tài khoản Google của bạn, vì vậy bạn có thể sử dụng các mật khẩu đó trên bất cứ thiết bị nào</translation>
+<translation id="4959262764292427323">Các mật khẩu được lưu trong Tài khoản Google của bạn, vì vậy, bạn có thể sử dụng các mật khẩu đó trên bất cứ thiết bị nào</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="496226124210045887">Thư mục bạn đã chọn chứa các tệp nhạy cảm. Bạn có chắc chắn muốn cấp quyền truy cập đọc vĩnh viễn "$1" cho thư mục này không?</translation>
 <translation id="4964455510556214366">Sắp xếp</translation>
@@ -3066,7 +3066,7 @@
 <translation id="5677503058916217575">Ngôn ngữ trang:</translation>
 <translation id="5677928146339483299">Bị chặn</translation>
 <translation id="5678550637669481956">Quyền truy cập đọc và ghi vào <ph name="VOLUME_NAME" /> đã được cấp.</translation>
-<translation id="5678784840044122290">Ứng dụng Linux sẽ có trong Trạm thanh toán của bạn và cũng có thể hiển thị một biểu tượng trong Trình chạy.</translation>
+<translation id="5678784840044122290">Ứng dụng Linux sẽ có trong Thiết bị của bạn và cũng có thể hiển thị một biểu tượng trong Trình chạy.</translation>
 <translation id="5678955352098267522">Đọc dữ liệu của bạn trên <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Số nhận dạng phần tử</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Không thể ngắt kết nối khỏi vùng lưu trữ hoặc ổ đĩa ảo<ph name="END_BOLD" />
@@ -4005,7 +4005,7 @@
 <translation id="7127980134843952133">Lịch sử tải xuống</translation>
 <translation id="7131040479572660648">Đọc dữ liệu của bạn trên <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Thêm tran&amp;g...</translation>
-<translation id="7133578150266914903">Quản trị viên đang khôi phục thiết bị này (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133578150266914903">Quản trị viên đang hạ cấp hệ điều hành của thiết bị này (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Thu nhỏ Văn bản</translation>
 <translation id="7136694880210472378">Đặt làm mặc định</translation>
 <translation id="7136984461011502314">Chào mừng bạn đến với <ph name="PRODUCT_NAME" /></translation>
@@ -4169,7 +4169,6 @@
 <translation id="7387829944233909572">Hộp thoại "Xóa dữ liệu duyệt web"</translation>
 <translation id="7388044238629873883">Bạn sắp hoàn tất!</translation>
 <translation id="7388222713940428051">Mở Cửa sổ khách</translation>
-<translation id="7391648274628927397">Chúng tôi đã thêm một dấu trang cho bạn</translation>
 <translation id="7392118418926456391">Quét vi-rút không thành công</translation>
 <translation id="7392915005464253525">&amp;Mở lại cửa sổ đã đóng</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> sẽ chạy khi khởi động hệ thống và tiếp tục chạy ở chế độ nền ngay cả khi bạn đã đóng tất cả các cửa sổ khác của <ph name="PRODUCT_NAME" />.</translation>
@@ -4207,7 +4206,7 @@
 <translation id="7463006580194749499">Thêm người</translation>
 <translation id="7464490149090366184">Nén không thành công, mục tồn tại: "$1"</translation>
 <translation id="7465778193084373987">ULR Thu hồi của Tổ chức Cấp Chứng chỉ Netscape</translation>
-<translation id="7469406957790636836">Để bật tính năng này, trước tiên hãy bật tính năng kiểm tra chính tả trong <ph name="BEGIN_LINK" />Ngôn ngữ và phương thức nhập<ph name="END_LINK" /></translation>
+<translation id="7469406957790636836">Để bật tính năng này, trước tiên hãy bật tính năng kiểm tra chính tả trong phần <ph name="BEGIN_LINK" />Ngôn ngữ và phương thức nhập<ph name="END_LINK" /></translation>
 <translation id="7469894403370665791">Tự động kết nối vào mạng này</translation>
 <translation id="747114903913869239">Lỗi: Không thể giải mã tiện ích</translation>
 <translation id="7473753388963818366">Hãy bắt đầu thiết lập <ph name="DEVICE_TYPE" /> của bạn</translation>
@@ -4563,7 +4562,7 @@
 <translation id="7974936243149753750">Quét thừa</translation>
 <translation id="7977551819349545646">Đang cập nhật Chromebox...</translation>
 <translation id="7978412674231730200">Khoá cá nhân</translation>
-<translation id="7978450511781612192">Tùy chọn này sẽ đăng xuất bạn khỏi Tài khoản Google. Dấu trang, lịch sử, mật khẩu và các dữ liệu khác của bạn sẽ không còn đồng bộ hóa nữa.</translation>
+<translation id="7978450511781612192">Việc này này sẽ đăng xuất bạn khỏi các Tài khoản Google. Dấu trang, lịch sử, mật khẩu và các dữ liệu khác của bạn sẽ không còn đồng bộ hóa nữa.</translation>
 <translation id="7979036127916589816">Lỗi Đồng bộ hóa</translation>
 <translation id="7980084013673500153">ID phần tử: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Tải trước các trang để tìm kiếm và duyệt web nhanh hơn</translation>
@@ -5022,7 +5021,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8698464937041809063">Bản vẽ Google</translation>
 <translation id="869884720829132584">Menu ứng dụng</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>
-<translation id="8699566574894671540">Để bật tính năng này, trước tiên hãy chọn mục cài đặt Kiểm tra chính tả trong khi nhập trong menu Chỉnh sửa</translation>
+<translation id="8699566574894671540">Để bật tính năng này, trước tiên hãy chọn mục Kiểm tra chính tả trong khi nhập trong menu Chỉnh sửa</translation>
 <translation id="870073306461175568">Chia sẻ tệp trong mạng</translation>
 <translation id="8701677791353449257">Tên thiết bị phải khớp với biểu thức chính quy <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Thao tác này mất nhiều thời gian hơn nhiều so với bình thường. Bạn có thể tiếp tục chờ hoặc hủy và thử lại sau.</translation>
@@ -5218,7 +5217,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9009369504041480176">Đang tải lên (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Luôn hiển thị biểu tượng</translation>
 <translation id="9011178328451474963">Tab sau cùng</translation>
-<translation id="9013707997379828817">Quản trị viên đã khôi phục thiết bị này. Vui lòng lưu các tệp quan trọng rồi khởi động lại. Tất cả dữ liệu trên thiết bị sẽ bị xóa.</translation>
+<translation id="9013707997379828817">Quản trị viên đã hạ cấp hệ điều hành của thiết bị này. Vui lòng lưu các tệp quan trọng rồi khởi động lại. Tất cả dữ liệu trên thiết bị sẽ bị xóa.</translation>
 <translation id="9014987600015527693">Hiển thị điện thoại khác</translation>
 <translation id="9018218886431812662">Đã cài đặt xong</translation>
 <translation id="901834265349196618">email</translation>

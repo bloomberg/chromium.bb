@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (a carregar...)</translation>
+<translation id="1841545962859478868">O gestor do dispositivo pode monitorizar o seguinte:</translation>
 <translation id="1850504506766569011">A ligação Wi-Fi está desativada.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">A espelhar para <ph name="DISPLAY_NAME" /></translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">A ligar</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Manipular definições que especificam se os Sites podem utilizar funcionalidades como a geolocalização, o microfone, a câmara, etc.</translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
 <translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>
 <translation id="7348093485538360975">Teclado no ecrã</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">A movimentação de janelas para outro ambiente de trabalho pode provocar um comportamento inesperado. É possível dividir as notificações, as janelas e as caixas de diálogo subsequentes entre ambientes de trabalho.</translation>
 <translation id="7569509451529460200">O braille e o ChromeVox estão ativados</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
+<translation id="7604942372593434070">Acesso à sua atividade de navegação</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
 <translation id="7647488630410863958">Desbloquear o dispositivo para ver as notificações</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Sinal forte</translation>
 <translation id="7842569679327885685">Aviso: funcionalidade experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
+<translation id="790040513076446191">Manipular as definições relacionadas com privacidade</translation>
 <translation id="7904094684485781019">O gestor desta conta removeu a permissão de início de sessão integrado.</translation>
 <translation id="7933084174919150729">O Assistente Google está disponível apenas no perfil principal.</translation>
 <translation id="79341161159229895">Conta gerida por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" />.</translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8152119955266188852">Premiu o atalho da lupa de ecrã inteiro. Pretende ativá-la?</translation>
 <translation id="8190698733819146287">Personalizar idiomas e introdução...</translation>
+<translation id="8191230140820435481">Gerir as suas aplicações, extensões e temas</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8297006494302853456">Fraca</translation>
 <translation id="8308637677604853869">Menu anterior</translation>

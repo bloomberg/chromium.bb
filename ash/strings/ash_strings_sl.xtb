@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Zaslonska tipkovnica omogočena</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Pomočnik (nalaganje ...)</translation>
+<translation id="1841545962859478868">Skrbnik naprave morda nadzira naslednje:</translation>
 <translation id="1850504506766569011">Wi-Fi je izklopljen.</translation>
 <translation id="1864454756846565995">Naprava USB-C (vrata zadaj)</translation>
 <translation id="1882897271359938046">Zrcaljenje na <ph name="DISPLAY_NAME" /></translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Vzpostavljanje povezave</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Spreminjanje nastavitev, ki določajo, ali smejo spletna mesta uporabljati funkcije, kot so geolokacija, mikrofon, fotoaparat ipd.</translation>
 <translation id="7256634071279256947">Zadnji mikrofon</translation>
 <translation id="726276584504105859">Povlecite sem za razdeljeni zaslon</translation>
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Če okna premaknete na drugo namizje, lahko pride do nepričakovanega delovanja. Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</translation>
 <translation id="7569509451529460200">Omogočena sta braillova pisava in ChromeVox</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
+<translation id="7604942372593434070">Dostop do dejavnosti brskanja</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (lastnik)</translation>
 <translation id="7647488630410863958">Če si želite ogledati obvestila, odklenite napravo</translation>
 <translation id="7649070708921625228">Pomoč</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Močan signal</translation>
 <translation id="7842569679327885685">Opozorilo: poskusna funkcija</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
+<translation id="790040513076446191">Upravljajte nastavitve zasebnosti</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
 <translation id="7933084174919150729">Pomočnik Google je na voljo samo za primarni profil.</translation>
 <translation id="79341161159229895">Račun upravljata <ph name="FIRST_PARENT_EMAIL" /> in <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Zasebno omrežje</translation>
 <translation id="8152119955266188852">Pritisnili ste bližnjico za celozaslonsko lupo. Ali jo želite vklopiti?</translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
+<translation id="8191230140820435481">Upravljajte aplikacije, razširitve in teme</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8297006494302853456">Šibek</translation>
 <translation id="8308637677604853869">Prejšnji meni</translation>

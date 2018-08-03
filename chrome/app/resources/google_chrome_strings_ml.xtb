@@ -34,7 +34,7 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome എന്നത് അതിവേഗത്തില്‍‌ വെബ്‌പേജുകളും അപ്ലിക്കേഷനുകളും പ്രവര്‍‌ത്തിപ്പിക്കുന്ന ഒരു വെബ് ബ്രൗസറാണ്. അത് വേഗതയുള്ളതും, സ്ഥിരതയുള്ളതും ഉപയോഗിക്കാൻ എളുപ്പവുമാണ്. Google Chrome-ലേക്ക് ബില്‍‌റ്റുചെയ്‌ത ക്ഷുദ്രവെയര്‍‌, ഫിഷിംഗ് പരിരക്ഷണം ഉപയോഗിച്ച് വെബ് കൂടുതൽ‍‌ സുരക്ഷിതമായി ബ്രൗസുചെയ്യുക.</translation>
 <translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> തിരഞ്ഞെടുക്കുക</translation>
-<translation id="1734234790201236882">നിങ്ങളുടെ Google അക്കൗണ്ടിൽ Chrome ഈ പാസ്‌വേഡ് സംരക്ഷിക്കും. നിങ്ങൾ അത് ഓർത്ത് വയ്ക്കേണ്ടതില്ല.</translation>
+<translation id="1734234790201236882">നിങ്ങളുടെ Google അക്കൗണ്ടിൽ Chrome ഈ പാസ്‌വേഡ് സംരക്ഷിക്കും. നിങ്ങൾ അത് ഓർത്ത് വയ്‌ക്കേണ്ടതില്ല.</translation>
 <translation id="174539241580958092">സൈൻ ഇൻ ചെയ്യുന്നതിലെ ഒരു പിശകിനാൽ Google Chrome-ന് നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കാനായില്ല.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS ഉപയോഗിച്ച് സഹായം തേടുക</translation>
@@ -152,7 +152,7 @@
 <translation id="4891791193823137474">പശ്ചാത്തലത്തില്‍ Google Chrome പ്രവര്‍ത്തിക്കാന്‍ അനുവദിക്കുക</translation>
 <translation id="4895437082222824641">പുതിയ Chrome &amp;ടാബിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="4921569541910214635">ഒരു കമ്പ്യൂട്ടർ പങ്കിടണോ? ഇപ്പോൾ നിങ്ങൾക്ക് ഇഷ്‌ടപ്പെട്ട രീതിയിൽ Chrome സജ്ജീകരിക്കാനാകും.</translation>
-<translation id="4945319281866068441">{0,plural, =1{ ഒരു ദിവസത്തിനുള്ളിൽ Chrome OS പുനഃരാരംഭിക്കും}other{# ദിവസത്തിനുള്ളിൽ Chrome OS പുനഃരാരംഭിക്കും}}</translation>
+<translation id="4945319281866068441">{0,plural, =1{ ഒരു ദിവസത്തിനുള്ളിൽ Chrome OS പുനഃരാരംഭിക്കുക}other{# ദിവസത്തിനുള്ളിൽ Chrome OS പുനഃരാരംഭിക്കുക}}</translation>
 <translation id="4953650215774548573">Google Chrome-നെ നിങ്ങളുടെ സ്ഥിര ബ്രൗസറായി സജ്ജീകരിക്കുക</translation>
 <translation id="495931528404527476">Chrome-ൽ</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -290,7 +290,7 @@
 <translation id="9026991721384951619">നിങ്ങളുടെ അക്കൗണ്ടിന്റെ സൈൻ ഇൻ വിശദാംശങ്ങൾ കാലഹരണപ്പെട്ടതിനാൽ Chrome OS-ന് നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കാനായില്ല.</translation>
 <translation id="9067395829937117663">Google Chrome-ന് Windows 7 അല്ലെങ്കിൽ അതിനുശേഷമുള്ള പതിപ്പ് ആവശ്യമാണ്.</translation>
 <translation id="9084668267983921457">സർട്ടിഫിക്കറ്റ് പരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു. Google Chrome-ൽ വീണ്ടും സൈൻ ഇൻ ചെയ്യുക അല്ലെങ്കിൽ കൂടുതൽ വിവരങ്ങൾക്ക് നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്ററെ ബന്ധപ്പെടുക. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="909149346112452267">{0,plural, =1{ഒരു മണിക്കൂറിൽ Chrome വീണ്ടും പുനഃരാരംഭിക്കും}other{Chrome OS # മണിക്കൂറിൽ പുനഃരാരംഭിക്കും}}</translation>
+<translation id="909149346112452267">{0,plural, =1{ഒരു മണിക്കൂറിൽ Chrome OS പുനഃരാരംഭിക്കും}other{Chrome OS # മണിക്കൂറിൽ പുനഃരാരംഭിക്കും}}</translation>
 <translation id="911206726377975832">നിങ്ങളുടെ ബ്രൌസിംഗ് ഡാറ്റയും ഇതോടൊപ്പം ഇല്ലാതാക്കണോ?</translation>
 <translation id="919706545465235479">സമന്വയിപ്പിക്കാൻ തുടങ്ങുന്നതിന് Chrome അപ്‌ഡേറ്റുചെയ്യുക</translation>
 <translation id="924447568950697217">Chrome-നെ നിങ്ങളുടെ ഡിഫോൾട്ട് ബ്രൗസറാക്കുക</translation>

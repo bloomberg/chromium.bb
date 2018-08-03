@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Ассистент (загрузка…)</translation>
+<translation id="1841545962859478868">Администратор устройства может просматривать следующую информацию:</translation>
 <translation id="1850504506766569011">Wi-Fi отключен</translation>
 <translation id="1864454756846565995">Устройство USB-C (порт сзади)</translation>
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME" /></translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Подключение</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Возврат к предыдущему разрешению через <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Изменение настроек, управляющих доступом сайтов к геоданным, микрофону, камере и другим функциям.</translation>
 <translation id="7256634071279256947">Основной микрофон</translation>
 <translation id="726276584504105859">Перетащите сюда, чтобы разделить экран</translation>
 <translation id="7348093485538360975">Экранная клавиатура</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">При переносе окон на другой рабочий стол иногда возникают ошибки. Уведомления и диалоговые окна могут появляться на разных рабочих столах.</translation>
 <translation id="7569509451529460200">Шрифт Брайля и функция ChromeVox включены</translation>
 <translation id="7593891976182323525">Search или Shift</translation>
+<translation id="7604942372593434070">Доступ к данным о посещенных веб-страницах</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (владелец)</translation>
 <translation id="7647488630410863958">Чтобы просмотреть уведомления, разблокируйте устройство</translation>
 <translation id="7649070708921625228">Справка</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">хороший сигнал</translation>
 <translation id="7842569679327885685">Внимание! Экспериментальная функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
+<translation id="790040513076446191">Управление настройками конфиденциальности</translation>
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="7933084174919150729">Google Ассистент доступен только в основном профиле</translation>
 <translation id="79341161159229895">Администраторы аккаунта: <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Частные сети</translation>
 <translation id="8152119955266188852">Вы нажали сочетание клавиш для полноэкранной лупы. Включить ее?</translation>
 <translation id="8190698733819146287">Настройки языков и ввода…</translation>
+<translation id="8191230140820435481">Управление приложениями, расширениями и темами</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8297006494302853456">Слабый</translation>
 <translation id="8308637677604853869">Предыдущее меню</translation>

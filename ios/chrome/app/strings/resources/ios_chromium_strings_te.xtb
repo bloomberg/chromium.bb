@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromium మీ ఫోటోలు లేదా వీడియోలకు ప్రాప్యతను కలిగి లేదు. iOS సెట్టింగ్‌లు &gt; గోప్యత &gt; ఫోటోల్లో ప్రాప్యతను ప్రారంభించండి.</translation>
 <translation id="4024541897090868497">మీ అన్ని పరికరాల్లో మీ ట్యాబ్‌లను పొందడం కోసం, Chromiumకి సైన్ ఇన్ చేయండి.</translation>
 <translation id="4241912885070669028">మీరు <ph name="SIGNOUT_MANAGED_DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ చేస్తున్నారు. దీని వలన మీ Chromium డేటా ఈ పరికరం నుండి తొలగించబడుతుంది, కానీ మీ డేటా మీ Google ఖాతాలో అలాగే ఉంటుంది.</translation>
+<translation id="4272892696084633551">Chromium ఫీచర్‌లు మరియు పనితీరును మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="4555020257205549924">ఈ లక్షణం ప్రారంభించినప్పుడు, Chromium ఇతర భాషల్లో వ్రాసిన పేజీలకు Google అనువాదం ఉపయోగించి అనువాదాన్ని ఆఫర్ చేస్తుంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">మీరు మీ ఇతర పరికరాల్లోని Chromiumలో తెరిచిన ట్యాబ్‌లు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="495292094137889840">Chromium QR స్కానర్ వినియోగం ప్రారంభించండి</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">మీరు <ph name="DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ ఇన్ చేస్తున్నారు మరియు దీని నిర్వాహకునికి మీ Chromium డేటాపై నియంత్రణను అందిస్తున్నారు. మీ డేటా శాశ్వతంగా ఈ ఖాతాకు అనుబంధించబడుతుంది. Chromium నుండి సైన్ అవుట్ చేయడం వలన ఈ పరికరం నుండి మీ డేటా తొలగించబడుతుంది, కానీ ఇది మీ Google ఖాతాలో అలాగే నిల్వ చేయబడి ఉంటుంది.</translation>
 <translation id="6068866989048414399">Chromium సేవా నిబంధనలు</translation>
 <translation id="6268381023930128611">Chromium నుండి సైన్ అవుట్ చేయాలా?</translation>
+<translation id="641451971369018375">బ్రౌజింగ్ మరియు Chromiumను మెరుగుపరచడానికి Googleను సంప్రదిస్తుంది</translation>
 <translation id="6424492062988593837">Chrome ఇప్పుడే మెరుగుపరచబడింది! క్రొత్త సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="6604711459180487467">మీ స్థానం ఆధారంగా Chromiumలో మెరుగైన అనుభవాన్ని పొందండి.</translation>
 <translation id="6626296268883197964">ఈ యాప్‌ని ఉపయోగించడం ద్వారా, మీరు Chromium <ph name="BEGIN_LINK_TOS" />సేవా నిబంధనలు<ph name="END_LINK_TOS" /> మరియు <ph name="BEGIN_LINK_PRIVACY" />గోప్యతా ప్రకటన<ph name="END_LINK_PRIVACY" />ని అంగీకరిస్తున్నారు.</translation>

@@ -182,7 +182,7 @@
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">選擇帳戶</translation>
-<translation id="2414672073755873541">這裡無內容</translation>
+<translation id="2414672073755873541">這裡沒有任何內容</translation>
 <translation id="2414886740292270097">深色</translation>
 <translation id="2416359993254398973">Chrome 需要相關權限，才能讓這個網站使用你的攝影機。</translation>
 <translation id="2426805022920575512">選擇其他帳戶</translation>
@@ -316,7 +316,7 @@
 <translation id="360207483134687714">協助我們改善 Chrome 的 VR 體驗</translation>
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3620176948598597475">重設會清除 Data Saver 的記錄，包含造訪過的網站清單。</translation>
-<translation id="3630011985153972676">允許 Chrome 透過設定的 Wi-Fi 連線為你下載文章。</translation>
+<translation id="3630011985153972676">允許 Chrome 透過 Wi-Fi 連線為你下載文章 (可自行啟用這項設定)。</translation>
 <translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
 <translation id="3661699943263275414">第三方網站可以儲存及讀取 Cookie 資料</translation>
@@ -462,7 +462,6 @@
 <translation id="4860895144060829044">撥號</translation>
 <translation id="4874967477260347223">媒體授權</translation>
 <translation id="4875775213178255010">內容建議</translation>
-<translation id="4876188919622883022">簡易檢視</translation>
 <translation id="4878404682131129617">無法透過 Proxy 伺服器建立通道</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="488187801263602086">重新命名檔案</translation>

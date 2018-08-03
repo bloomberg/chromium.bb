@@ -4000,7 +4000,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7127980134843952133">Historial de descargas</translation>
 <translation id="7131040479572660648">Leer tus datos en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Añadir pá&amp;gina...</translation>
-<translation id="7133578150266914903">El administrador va a instalar una versión anterior en este dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133578150266914903">Tu administrador va a instalar una versión anterior en este dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Reducir el tamaño del texto</translation>
 <translation id="7136694880210472378">Establecer como predeterminado</translation>
 <translation id="7136984461011502314">Te damos la bienvenida a <ph name="PRODUCT_NAME" /></translation>
@@ -4164,7 +4164,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7387829944233909572">Diálogo "Borrar datos de navegación"</translation>
 <translation id="7388044238629873883">Casi has terminado</translation>
 <translation id="7388222713940428051">Abrir ventana de invitado</translation>
-<translation id="7391648274628927397">Se ha añadido un marcador</translation>
 <translation id="7392118418926456391">Error en el análisis antivirus</translation>
 <translation id="7392915005464253525">Volv&amp;er a abrir ventana cerrada</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> empezará a ejecutarse cuando se inicie el sistema y seguirá ejecutándose en segundo plano aunque cierres todas las demás ventanas de <ph name="PRODUCT_NAME" />.</translation>
@@ -5213,7 +5212,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9009369504041480176">Subiendo (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Mostrar siempre el icono</translation>
 <translation id="9011178328451474963">Última pestaña</translation>
-<translation id="9013707997379828817">El administrador ha instalado una versión anterior en este dispositivo. Guarda los archivos importantes y, a continuación, reinícialo. Se eliminarán todos los datos del dispositivo.</translation>
+<translation id="9013707997379828817">Tu administrador ha instalado una versión anterior en este dispositivo. Guarda los archivos importantes y, a continuación, reinícialo. Se eliminarán todos los datos del dispositivo.</translation>
 <translation id="9014987600015527693">Mostrar otro teléfono</translation>
 <translation id="9018218886431812662">Instalación completada</translation>
 <translation id="901834265349196618">correo electrónico</translation>

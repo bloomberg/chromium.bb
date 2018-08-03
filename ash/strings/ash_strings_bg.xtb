@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Асистент (зарежда се...)</translation>
+<translation id="1841545962859478868">Администраторът на устройството може да наблюдава следното:</translation>
 <translation id="1850504506766569011">Wi-Fi е изключен.</translation>
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Свързва се</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Управление на настройките, които посочват дали уебсайтовете могат да използват функции като геолокация, микрофон, камера и др.</translation>
 <translation id="7256634071279256947">Заден микрофон</translation>
 <translation id="726276584504105859">Преместете тук с плъзгане, за да използвате режим за разделен екран</translation>
 <translation id="7348093485538360975">Екранна клавиатура</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Преместването на прозорци към друг работен плот може да предизвика неочаквано поведение. Последващите известия, прозорци и диалогови прозорци може да бъдат разделени между работните плотове.</translation>
 <translation id="7569509451529460200">Активирахте функцията за брайлово писмо и ChromeVox</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
+<translation id="7604942372593434070">Достъп до активността ви при сърфиране</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (собственик)</translation>
 <translation id="7647488630410863958">Отключете устройството, за да прегледате известията си</translation>
 <translation id="7649070708921625228">Помощ</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">силен сигнал</translation>
 <translation id="7842569679327885685">Предупреждение: Експериментална функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
+<translation id="790040513076446191">Манипулиране на свързаните с поверителността настройки</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="7933084174919150729">Google Асистент е налице само за основния потребителски профил.</translation>
 <translation id="79341161159229895">Профилът се управлява от <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Частна мрежа</translation>
 <translation id="8152119955266188852">Използвахте клавишната комбинация за лупата за увеличаване на целия екран. Искате ли да включите функцията?</translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
+<translation id="8191230140820435481">Управление на вашите приложения, разширения и теми</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8297006494302853456">Слаб</translation>
 <translation id="8308637677604853869">Предишно меню</translation>

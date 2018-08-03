@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
+<translation id="1841545962859478868">L'amministratore del dispositivo potrebbe monitorare i seguenti elementi:</translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
@@ -326,6 +327,7 @@
 <translation id="7143207342074048698">Connessione</translation>
 <translation id="7165278925115064263">ALT + MAIUSC + K</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Manipola le impostazioni che specificano se i siti web possono utilizzare funzioni come geolocalizzazione, microfono, fotocamera e così via.</translation>
 <translation id="7256634071279256947">Microfono posteriore</translation>
 <translation id="726276584504105859">Trascina qui per utilizzare la modalità Schermo diviso</translation>
 <translation id="7348093485538360975">Tastiera sullo schermo</translation>
@@ -342,6 +344,7 @@
 <translation id="7564874036684306347">Lo spostamento delle finestre su un altro desktop potrebbe causare comportamenti imprevisti. Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere divise tra i desktop.</translation>
 <translation id="7569509451529460200">Braille e ChromeVox attivati</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
+<translation id="7604942372593434070">Accedi alla tua attività di navigazione</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>
 <translation id="7647488630410863958">Sblocca il dispositivo per visualizzare le notifiche</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -356,6 +359,7 @@
 <translation id="7829386189513694949">Segnale forte</translation>
 <translation id="7842569679327885685">Avviso: funzione sperimentale</translation>
 <translation id="7846634333498149051">Tastiera</translation>
+<translation id="790040513076446191">Modifica delle impostazioni relative alla privacy</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="7933084174919150729">L'Assistente Google è disponibile solo per il profilo principale.</translation>
 <translation id="79341161159229895">Account gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -374,6 +378,7 @@
 <translation id="8142699993796781067">Rete privata</translation>
 <translation id="8152119955266188852">Hai premuto la scorciatoia per la lente d'ingrandimento a schermo intero. Vuoi attivarla?</translation>
 <translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
+<translation id="8191230140820435481">Gestire applicazioni, estensioni e temi</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8297006494302853456">Debole</translation>
 <translation id="8308637677604853869">Menu precedente</translation>

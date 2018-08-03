@@ -42,6 +42,7 @@
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (naglo-load...)</translation>
+<translation id="1841545962859478868">Maaaring subaybayan ng admin ng device ang mga sumusunod:</translation>
 <translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
 <translation id="1864454756846565995">USB-C device (port sa rear)</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
@@ -325,6 +326,7 @@
 <translation id="7143207342074048698">Kumokonekta</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7228479291753472782">Manipulahin ang mga setting na tumutukoy kung makakagamit ang mga website ng mga feature gaya ng geolocation, mikropono, camera, atbp.</translation>
 <translation id="7256634071279256947">Mikropono sa likod</translation>
 <translation id="726276584504105859">I-drag dito upang magamit ang split screen</translation>
 <translation id="7348093485538360975">Nasa screen na keyboard</translation>
@@ -341,6 +343,7 @@
 <translation id="7564874036684306347">Kapag inilipat ang mga window sa isa pang desktop, maaari itong magresulta sa hindi inaasahang gawi. Maaaring hatiin ang mga susunod na notification, window, at dialog sa pagitan ng mga desktop.</translation>
 <translation id="7569509451529460200">Na-enable ang Braille at ChromeVox</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
+<translation id="7604942372593434070">I-access ang iyong aktibidad sa pag-browse</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (may-ari)</translation>
 <translation id="7647488630410863958">I-unlock ang device upang tingnan ang iyong mga notification</translation>
 <translation id="7649070708921625228">Tulong</translation>
@@ -355,6 +358,7 @@
 <translation id="7829386189513694949">Malakas ang signal</translation>
 <translation id="7842569679327885685">Babala: Pang-eskperimentong feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
+<translation id="790040513076446191">Manipulahin ang mga setting kaugnay ng privacy</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="7933084174919150729">Available lang ang Google Assistant para sa pangunahing profile.</translation>
 <translation id="79341161159229895">Pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /> ang account</translation>
@@ -373,6 +377,7 @@
 <translation id="8142699993796781067">Pribadong network</translation>
 <translation id="8152119955266188852">Napindot mo ang shortcut para sa full-screen magnifier. Gusto mo ba itong i-on?</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
+<translation id="8191230140820435481">Pamahalaan ang iyong apps, mga extension, at tema</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8297006494302853456">Mahina</translation>
 <translation id="8308637677604853869">Nakaraang menu</translation>

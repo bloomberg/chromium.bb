@@ -229,7 +229,7 @@
 <translation id="2777555524387840389">Còn <ph name="SECONDS" /> giây</translation>
 <translation id="2781151931089541271">Còn 1 giây</translation>
 <translation id="2810645512293415242">Trang đơn giản giúp lưu dữ liệu và tải nhanh hơn.</translation>
-<translation id="281504910091592009">Xem và quản lý mật khẩu đã lưu trong <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của bạn</translation>
+<translation id="281504910091592009">Xem và quản lý các mật khẩu đã lưu trong <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của bạn</translation>
 <translation id="2818669890320396765">Để sử dụng dấu trang trên tất cả các thiết bị, hãy đăng nhập và bật tính năng đồng bộ hóa</translation>
 <translation id="2836148919159985482">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="2842985007712546952">Thư mục gốc</translation>
@@ -462,7 +462,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4860895144060829044">Gọi</translation>
 <translation id="4874967477260347223">Giấy phép phương tiện</translation>
 <translation id="4875775213178255010">Đề xuất nội dung</translation>
-<translation id="4876188919622883022">Chế độ xem đơn giản</translation>
 <translation id="4878404682131129617">Thiết lập đường hầm qua máy chủ proxy không thành công</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="488187801263602086">Đổi tên tệp</translation>
