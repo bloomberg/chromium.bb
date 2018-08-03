@@ -252,16 +252,10 @@ public class UrlBarTest {
             }
         });
         Assert.assertFalse(state.hasAutocomplete);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)) {
-            // Note: new model clears autocomplete text when non-IME change has been made.
-            // The autocomplete gets removed.
-            Assert.assertEquals("tast", state.textWithoutAutocomplete);
-            Assert.assertEquals("tast", state.textWithAutocomplete);
-        } else {
-            // The autocomplete gets committed.
-            Assert.assertEquals("tasting is fun", state.textWithoutAutocomplete);
-            Assert.assertEquals("tasting is fun", state.textWithAutocomplete);
-        }
+        // Clears autocomplete text when non-IME change has been made.
+        // The autocomplete gets removed.
+        Assert.assertEquals("tast", state.textWithoutAutocomplete);
+        Assert.assertEquals("tast", state.textWithAutocomplete);
 
         // Replace part of the autocomplete text.
         setTextAndVerifyNoAutocomplete(urlBar, "test");

@@ -50,6 +50,8 @@ import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.UrlBarCoordinator;
+import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -125,7 +127,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     private View mLocationBarFrameLayout;
     private View mTitleUrlContainer;
-    private UrlBar mUrlBar;
+    private TextView mUrlBar;
+    private UrlBarCoordinator mUrlCoordinator;
     private TextView mTitleBar;
     private TintedImageButton mSecurityButton;
     private LinearLayout mCustomActionButtons;
@@ -162,11 +165,12 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         super.onFinishInflate();
         setBackground(new ColorDrawable(ColorUtils.getDefaultThemeColor(
                 getResources(), FeatureUtilities.isChromeModernDesignEnabled(), false)));
-        mUrlBar = findViewById(R.id.url_bar);
+        mUrlBar = (TextView) findViewById(R.id.url_bar);
         mUrlBar.setHint("");
-        mUrlBar.setDelegate(this);
         mUrlBar.setEnabled(false);
-        mUrlBar.setAllowFocus(false);
+        mUrlCoordinator = new UrlBarCoordinator((UrlBar) mUrlBar);
+        mUrlCoordinator.setDelegate(this);
+        mUrlCoordinator.setAllowFocus(false);
         mTitleBar = findViewById(R.id.title_bar);
         mLocationBarFrameLayout = findViewById(R.id.location_bar_frame_layout);
         mTitleUrlContainer = findViewById(R.id.title_url_container);
@@ -396,7 +400,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public void setUrlToPageUrl() {
         if (getCurrentTab() == null) {
-            mUrlBar.setUrl(UrlBarData.EMPTY);
+            mUrlCoordinator.setUrlBarData(
+                    UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
             return;
         }
 
@@ -411,7 +416,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // is "about:blank". We should not display it.
         if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
                 || ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
-            mUrlBar.setUrl(UrlBarData.EMPTY);
+            mUrlCoordinator.setUrlBarData(
+                    UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
             return;
         }
         final CharSequence displayText;
@@ -437,7 +443,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             originEnd = displayText.length();
         }
 
-        mUrlBar.setUrl(UrlBarData.create(url, displayText, originStart, originEnd, url));
+        mUrlCoordinator.setUrlBarData(
+                UrlBarData.create(url, displayText, originStart, originEnd, url),
+                UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
     }
 
     @Override
@@ -461,7 +469,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         Resources resources = getResources();
         updateSecurityIcon();
         updateButtonsTint();
-        if (mUrlBar.setUseDarkTextColors(mUseDarkColors)) {
+        if (mUrlCoordinator.setUseDarkTextColors(mUseDarkColors)) {
             setUrlToPageUrl();
         }
 
@@ -599,7 +607,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback) {
-        mUrlBar.setCustomSelectionActionModeCallback(callback);
+        mUrlCoordinator.setActionModeCallback(callback);
     }
 
     private void updateLayoutParams() {
@@ -735,12 +743,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public boolean shouldForceLTR() {
         return true;
-    }
-
-    @Override
-    @UrlBar.ScrollType
-    public int getScrollType() {
-        return UrlBar.ScrollType.SCROLL_TO_TLD;
     }
 
     @Override

@@ -155,9 +155,6 @@ public class LocationBarPhone extends LocationBarLayout {
      */
     public void finishUrlFocusChange(boolean hasFocus) {
         if (!hasFocus) {
-            // Scroll to ensure the TLD is visible, if necessary.
-            if (getScrollType() == UrlBar.ScrollType.SCROLL_TO_TLD) mUrlBar.scrollDisplayText();
-
             // The animation rendering may not yet be 100% complete and hiding the keyboard makes
             // the animation quite choppy.
             postDelayed(new Runnable() {
@@ -209,7 +206,8 @@ public class LocationBarPhone extends LocationBarLayout {
         ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
         if (toolbarDataProvider == null) return;
 
-        if (!getToolbarDataProvider().shouldShowGoogleG(mUrlBar.getEditableText().toString())) {
+        if (!getToolbarDataProvider().shouldShowGoogleG(
+                    mUrlCoordinator.getTextWithAutocomplete())) {
             mGoogleGContainer.setVisibility(View.GONE);
             return;
         }

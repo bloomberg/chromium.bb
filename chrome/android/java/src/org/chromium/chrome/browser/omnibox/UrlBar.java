@@ -4,23 +4,21 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.Layout;
 import android.text.Selection;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
@@ -37,16 +35,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * The URL text entry view for the Omnibox.
@@ -66,12 +60,6 @@ public class UrlBar extends AutocompleteEditText {
     private static final int MAX_DISPLAYABLE_LENGTH = 4000;
     private static final int MAX_DISPLAYABLE_LENGTH_LOW_END = 1000;
 
-    /** The contents of the URL that precede the path/query after being formatted. */
-    private String mFormattedUrlLocation;
-
-    /** The contents of the URL that precede the path/query before formatting. */
-    private String mOriginalUrlLocation;
-
     private boolean mFirstDrawComplete;
 
     /**
@@ -81,7 +69,7 @@ public class UrlBar extends AutocompleteEditText {
     private int mUrlDirection;
 
     private UrlBarDelegate mUrlBarDelegate;
-
+    private UrlBarTextContextMenuDelegate mTextContextMenuDelegate;
     private UrlDirectionListener mUrlDirectionListener;
 
     /**
@@ -104,16 +92,6 @@ public class UrlBar extends AutocompleteEditText {
     private int mPreviousTldScrollResultXPosition;
     private float mPreviousFontSize;
 
-    private final int mDarkHintColor;
-    private final int mDarkDefaultTextColor;
-    private final int mDarkHighlightColor;
-
-    private final int mLightHintColor;
-    private final int mLightDefaultTextColor;
-    private final int mLightHighlightColor;
-
-    private Boolean mUseDarkColors;
-
     // Used as a hint to indicate the text may contain an ellipsize span.  This will be true if an
     // ellispize span was applied the last time the text changed.  A true value here does not
     // guarantee that the text does contain the span currently as newly set text may have cleared
@@ -127,16 +105,13 @@ public class UrlBar extends AutocompleteEditText {
     private float mDownEventViewTop;
 
     /**
-     * The character index in the displayed text where the origin starts. This is required to
-     * ensure that the end of the origin is not scrolled out of view for long hostnames.
-     */
-    private int mOriginStartIndex;
-
-    /**
      * The character index in the displayed text where the origin ends. This is required to
      * ensure that the end of the origin is not scrolled out of view for long hostnames.
      */
     private int mOriginEndIndex;
+
+    @ScrollType
+    private int mScrollType;
 
     /** What scrolling action should be taken after the URL bar text changes. **/
     @IntDef({ScrollType.NO_SCROLL, ScrollType.SCROLL_TO_TLD, ScrollType.SCROLL_TO_BEGINNING})
@@ -193,38 +168,33 @@ public class UrlBar extends AutocompleteEditText {
         boolean shouldForceLTR();
 
         /**
-         * @return What scrolling action should be performed after the URL text is modified.
-         */
-        @ScrollType
-        int getScrollType();
-
-        /**
          * @return Whether or not the copy/cut action should grab the underlying URL or just copy
          *         whatever's in the URL bar verbatim.
          */
         boolean shouldCutCopyVerbatim();
     }
 
+    /** Delegate that provides the additional functionality to the textual context menus. */
+    interface UrlBarTextContextMenuDelegate {
+        /** @return The text to be pasted into the UrlBar. */
+        @NonNull
+        String getTextToPaste();
+
+        /**
+         * Gets potential replacement text to be used instead of the current selected text for
+         * cut/copy actions.  If null is returned, the existing text will be cut or copied.
+         *
+         * @param currentText The current displayed text.
+         * @param selectionStart The selection start in the display text.
+         * @param selectionEnd The selection end in the display text.
+         * @return The text to be cut/copied instead of the currently selected text.
+         */
+        @Nullable
+        String getReplacementCutCopyText(String currentText, int selectionStart, int selectionEnd);
+    }
+
     public UrlBar(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        Resources resources = getResources();
-
-        mDarkDefaultTextColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
-        mDarkHintColor = ApiCompatibilityUtils.getColor(resources,
-                R.color.locationbar_dark_hint_text);
-        mDarkHighlightColor = getHighlightColor();
-
-        mLightDefaultTextColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_light_default_text);
-        mLightHintColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text);
-        mLightHighlightColor = ApiCompatibilityUtils.getColor(resources,
-                R.color.locationbar_light_selection_color);
-
-        setUseDarkTextColors(true);
-
         mUrlDirection = LAYOUT_DIRECTION_LOCALE;
 
         // The URL Bar is derived from an text edit class, and as such is focusable by
@@ -235,6 +205,19 @@ public class UrlBar extends AutocompleteEditText {
         // the first draw.
         setFocusable(false);
         setFocusableInTouchMode(false);
+
+        // The HTC Sense IME will attempt to autocomplete words in the Omnibox when Prediction is
+        // enabled.  We want to disable this feature and rely on the Omnibox's implementation.
+        // Their IME does not respect ~TYPE_TEXT_FLAG_AUTO_COMPLETE nor any of the other InputType
+        // options I tried, but setting the filter variation prevents it.  Sadly, it also removes
+        // the .com button, but the prediction was buggy as it would autocomplete words even when
+        // typing at the beginning of the omnibox text when other content was present (messing up
+        // what was previously there).  See bug: http://b/issue?id=6200071
+        String defaultIme = Settings.Secure.getString(
+                getContext().getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
+        if (defaultIme != null && defaultIme.contains("com.htc.android.htcime")) {
+            setInputType(getInputType() | InputType.TYPE_TEXT_VARIATION_FILTER);
+        }
 
         mGestureDetector =
                 new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
@@ -272,45 +255,10 @@ public class UrlBar extends AutocompleteEditText {
     }
 
     /**
-     * Specifies whether the URL bar should use dark text colors or light colors.
-     * @param useDarkColors Whether the text colors should be dark (i.e. appropriate for use
-     *                      on a light background).
-     * @return Whether this update resulted in a change from the previous state of text color state.
+     * Set the delegate to be used for text context menu actions.
      */
-    public boolean setUseDarkTextColors(boolean useDarkColors) {
-        if (mUseDarkColors != null && mUseDarkColors.booleanValue() == useDarkColors) return false;
-
-        mUseDarkColors = useDarkColors;
-        if (mUseDarkColors) {
-            setTextColor(mDarkDefaultTextColor);
-            setHighlightColor(mDarkHighlightColor);
-        } else {
-            setTextColor(mLightDefaultTextColor);
-            setHighlightColor(mLightHighlightColor);
-        }
-
-        // Note: Setting the hint text color only takes effect if there is not text in the URL bar.
-        //       To get around this, set the URL to empty before setting the hint color and revert
-        //       back to the previous text after.
-        boolean hasNonEmptyText = false;
-        Editable text = getText();
-        if (!TextUtils.isEmpty(text)) {
-            // Make sure the setText in this block does not affect the suggestions.
-            setIgnoreTextChangesForAutocomplete(true);
-            setText("");
-            hasNonEmptyText = true;
-        }
-        if (useDarkColors) {
-            setHintTextColor(mDarkHintColor);
-        } else {
-            setHintTextColor(mLightHintColor);
-        }
-        if (hasNonEmptyText) {
-            setText(text);
-            setIgnoreTextChangesForAutocomplete(false);
-        }
-
-        return true;
+    public void setTextContextMenuDelegate(UrlBarTextContextMenuDelegate delegate) {
+        mTextContextMenuDelegate = delegate;
     }
 
     @Override
@@ -577,17 +525,11 @@ public class UrlBar extends AutocompleteEditText {
 
     @Override
     public boolean onTextContextMenuItem(int id) {
-        if (id == android.R.id.paste) {
-            ClipboardManager clipboard = (ClipboardManager) getContext()
-                    .getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clipData = clipboard.getPrimaryClip();
-            if (clipData != null) {
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < clipData.getItemCount(); i++) {
-                    builder.append(clipData.getItemAt(i).coerceToText(getContext()));
-                }
-                String pasteString = OmniboxViewUtil.sanitizeTextForPaste(builder.toString());
+        if (mTextContextMenuDelegate == null) return super.onTextContextMenuItem(id);
 
+        if (id == android.R.id.paste) {
+            String pasteString = mTextContextMenuDelegate.getTextToPaste();
+            if (pasteString != null) {
                 int min = 0;
                 int max = getText().length();
 
@@ -602,157 +544,68 @@ public class UrlBar extends AutocompleteEditText {
                 Selection.setSelection(getText(), max);
                 getText().replace(min, max, pasteString);
                 onPaste();
-                return true;
             }
+            return true;
         }
 
-        if (mOriginalUrlLocation == null || mFormattedUrlLocation == null) {
-            return super.onTextContextMenuItem(id);
-        }
+        if ((id == android.R.id.cut || id == android.R.id.copy)
+                && !mUrlBarDelegate.shouldCutCopyVerbatim()) {
+            String currentText = getText().toString();
+            String replacementCutCopyText = mTextContextMenuDelegate.getReplacementCutCopyText(
+                    currentText, getSelectionStart(), getSelectionEnd());
+            if (replacementCutCopyText == null) return super.onTextContextMenuItem(id);
 
-        int selectedStartIndex = getSelectionStart();
-        int selectedEndIndex = getSelectionEnd();
-
-        // If we are copying/cutting the full previously formatted URL, reset the URL
-        // text before initiating the TextViews handling of the context menu.
-        //
-        // Example:
-        //    Original display text: www.example.com
-        //    Original URL:          http://www.example.com
-        //
-        // Editing State:
-        //    www.example.com/blah/foo
-        //    |<--- Selection --->|
-        //
-        // Resulting clipboard text should be:
-        //    http://www.example.com/blah/
-        //
-        // As long as the full original text was selected, it will replace that with the original
-        // URL and keep any further modifications by the user.
-        String currentText = getText().toString();
-        if (selectedStartIndex != 0 || (id != android.R.id.cut && id != android.R.id.copy)
-                || !currentText.startsWith(mFormattedUrlLocation)
-                || selectedEndIndex < mFormattedUrlLocation.length()
-                || mUrlBarDelegate.shouldCutCopyVerbatim()) {
-            return super.onTextContextMenuItem(id);
-        }
-
-        String newText =
-                mOriginalUrlLocation + currentText.substring(mFormattedUrlLocation.length());
-        selectedEndIndex =
-                selectedEndIndex - mFormattedUrlLocation.length() + mOriginalUrlLocation.length();
-
-        setIgnoreTextChangesForAutocomplete(true);
-        setText(newText);
-        setSelection(0, selectedEndIndex);
-        setIgnoreTextChangesForAutocomplete(false);
-
-        boolean retVal = super.onTextContextMenuItem(id);
-
-        if (getText().toString().equals(newText)) {
-            // Restore the old text if the operation didn't modify the text.
             setIgnoreTextChangesForAutocomplete(true);
-            setText(currentText);
-
-            // Move the cursor to the end.
-            setSelection(getText().length());
+            setText(replacementCutCopyText);
+            setSelection(0, replacementCutCopyText.length());
             setIgnoreTextChangesForAutocomplete(false);
+
+            boolean retVal = super.onTextContextMenuItem(id);
+
+            if (TextUtils.equals(getText(), replacementCutCopyText)) {
+                // Restore the old text if the operation did modify the text.
+                setIgnoreTextChangesForAutocomplete(true);
+                setText(currentText);
+
+                // Move the cursor to the end.
+                setSelection(getText().length());
+                setIgnoreTextChangesForAutocomplete(false);
+            }
+
+            return retVal;
+        }
+
+        return super.onTextContextMenuItem(id);
+    }
+
+    /**
+     * Specified how text should be scrolled within the UrlBar.
+     *
+     * @param scrollType What type of scroll should be applied to the text.
+     * @param scrollToIndex The index that should be scrolled to, which only applies to
+     *                      {@link ScrollType#SCROLL_TO_TLD}.
+     */
+    public void setScrollState(@ScrollType int scrollType, int scrollToIndex) {
+        if (scrollType == ScrollType.SCROLL_TO_TLD) {
+            mOriginEndIndex = scrollToIndex;
         } else {
-            // Keep the modified text, but clear the origin span.
-            mOriginStartIndex = 0;
             mOriginEndIndex = 0;
         }
-        return retVal;
+        mScrollType = scrollType;
+        scrollDisplayText();
     }
 
     /**
-     * Sets the text content of the URL bar.
+     * Scrolls the omnibox text to a position determined by the current scroll type.
      *
-     * @param urlBarData The contents of the URL bar, both for editing and displaying.
-     * @return Whether the visible text has changed.
+     * @see #setScrollState(int, int)
      */
-    public boolean setUrl(UrlBarData urlBarData) {
-        mOriginalUrlLocation = null;
-        mFormattedUrlLocation = null;
-        if (urlBarData.url != null) {
-            try {
-                // TODO(bauerb): Use |urlBarData.originEndIndex| for this instead?
-                URL javaUrl = new URL(urlBarData.url);
-                mFormattedUrlLocation =
-                        getUrlContentsPrePath(urlBarData.displayText.toString(), javaUrl.getHost());
-                mOriginalUrlLocation = getUrlContentsPrePath(urlBarData.url, javaUrl.getHost());
-            } catch (MalformedURLException mue) {
-                // Keep |mOriginalUrlLocation| and |mFormattedUrlLocation at null.
-            }
-        }
-
-        mOriginStartIndex = urlBarData.originStartIndex;
-        mOriginEndIndex = urlBarData.originEndIndex;
-
-        Editable previousText = getEditableText();
-        final CharSequence displayText;
-        if (urlBarData.editingText != null && isFocused()) {
-            displayText = urlBarData.editingText;
-        } else {
-            displayText = urlBarData.displayText;
-        }
-        setText(displayText);
-
-        boolean textChanged = !TextUtils.equals(previousText, getEditableText());
-        if (textChanged && !isFocused()) scrollDisplayText();
-        return textChanged;
-    }
-
-    @Override
-    protected boolean isNewTextEquivalentToExistingText(CharSequence newCharSequence) {
-        Spanned currentText = getEditableText();
-        if (currentText == null) return newCharSequence == null;
-
-        // Regardless of focus state, ensure the text content is the same.
-        if (!TextUtils.equals(currentText, newCharSequence)) return false;
-
-        if (isFocused()) {
-            // When focused if the existing text has emphasis spans, then clear that text as well as
-            // those spans should only apply when unfocused.
-            return currentText.getSpans(0, currentText.length(), UrlEmphasisSpan.class).length == 0;
-        }
-
-        // When not focused, compare the emphasis spans applied to the text to determine
-        // equality.  Internally, TextView applies many additional spans that need to be
-        // ignored for this comparison to be useful, so this is scoped to only the span types
-        // applied by our UI.
-        if (!(newCharSequence instanceof Spanned)) return false;
-
-        Spanned newText = (Spanned) newCharSequence;
-        UrlEmphasisSpan[] currentSpans =
-                currentText.getSpans(0, currentText.length(), UrlEmphasisSpan.class);
-        UrlEmphasisSpan[] newSpans = newText.getSpans(0, newText.length(), UrlEmphasisSpan.class);
-        if (currentSpans.length != newSpans.length) return false;
-        for (int i = 0; i < currentSpans.length; i++) {
-            UrlEmphasisSpan currentSpan = currentSpans[i];
-            UrlEmphasisSpan newSpan = newSpans[i];
-            if (!currentSpan.equals(newSpan)
-                    || currentText.getSpanStart(currentSpan) != newText.getSpanStart(newSpan)
-                    || currentText.getSpanEnd(currentSpan) != newText.getSpanEnd(newSpan)
-                    || currentText.getSpanFlags(currentSpan) != newText.getSpanFlags(newSpan)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Scrolls the omnibox text to a position determined by the call to
-     * {@link UrlBarDelegate#getScrollType}.
-     */
-    public void scrollDisplayText() {
-        @ScrollType
-        int scrollType = mUrlBarDelegate.getScrollType();
+    private void scrollDisplayText() {
         if (isLayoutRequested()) {
-            mPendingScroll = scrollType != ScrollType.NO_SCROLL;
+            mPendingScroll = mScrollType != ScrollType.NO_SCROLL;
             return;
         }
-        scrollDisplayTextInternal(scrollType);
+        scrollDisplayTextInternal(mScrollType);
     }
 
     /**
@@ -828,22 +681,6 @@ public class UrlBar extends AutocompleteEditText {
             return;
         }
 
-        if (mOriginStartIndex == mOriginEndIndex) {
-            scrollTo(0, getScrollY());
-            return;
-        }
-
-        // Do not scroll to the end of the host for URLs such as data:, javascript:, etc...
-        if (mOriginEndIndex == url.length()) {
-            Uri uri = Uri.parse(url.toString());
-            String scheme = uri.getScheme();
-            if (!TextUtils.isEmpty(scheme)
-                    && UrlBarData.UNSUPPORTED_SCHEMES_TO_SPLIT.contains(scheme)) {
-                scrollTo(0, getScrollY());
-                return;
-            }
-        }
-
         int measuredWidth = getMeasuredWidth() - (getPaddingLeft() + getPaddingRight());
         if (TextUtils.equals(url, previousTldScrollText)
                 && measuredWidth == previousTldScrollViewWidth
@@ -887,9 +724,9 @@ public class UrlBar extends AutocompleteEditText {
         super.onLayout(changed, left, top, right, bottom);
 
         if (mPendingScroll) {
-            scrollDisplayTextInternal(mUrlBarDelegate.getScrollType());
+            scrollDisplayTextInternal(mScrollType);
         } else if (mPreviousWidth != (right - left)) {
-            scrollDisplayTextInternal(mUrlBarDelegate.getScrollType());
+            scrollDisplayTextInternal(mScrollType);
             mPreviousWidth = right - left;
         }
     }
@@ -953,24 +790,6 @@ public class UrlBar extends AutocompleteEditText {
                 Editable.SPAN_INCLUSIVE_EXCLUSIVE);
     }
 
-    /**
-     * Returns the portion of the URL that precedes the path/query section of the URL.
-     *
-     * @param url The url to be used to find the preceding portion.
-     * @param host The host to be located in the URL to determine the location of the path.
-     * @return The URL contents that precede the path (or the passed in URL if the host is
-     *         not found).
-     */
-    private static String getUrlContentsPrePath(String url, String host) {
-        int hostIndex = url.indexOf(host);
-        if (hostIndex == -1) return url;
-
-        int pathIndex = url.indexOf('/', hostIndex);
-        if (pathIndex <= 0) return url;
-
-        return url.substring(0, pathIndex);
-    }
-
     @Override
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         // Certain OEM implementations of onInitializeAccessibilityNodeInfo trigger disk reads
@@ -997,7 +816,7 @@ public class UrlBar extends AutocompleteEditText {
     @Override
     public void replaceAllTextFromAutocomplete(String text) {
         if (DEBUG) Log.i(TAG, "replaceAllTextFromAutocomplete: " + text);
-        setUrl(UrlBarData.forNonUrlText(text));
+        setText(text);
     }
 
     @Override

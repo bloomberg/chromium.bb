@@ -9,7 +9,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Rect;
-import android.text.Selection;
 import android.util.AttributeSet;
 import android.util.Property;
 import android.view.MotionEvent;
@@ -216,7 +215,6 @@ public class LocationBarTablet extends LocationBarLayout {
                 mSecurityButton.setVisibility(VISIBLE);
             }
             UiUtils.hideKeyboard(mUrlBar);
-            Selection.setSelection(mUrlBar.getText(), 0);
             // Convert the keyboard back to resize mode (delay the change for an arbitrary
             // amount of time in hopes the keyboard will be completely hidden before making
             // this change).

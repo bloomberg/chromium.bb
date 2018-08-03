@@ -12,15 +12,15 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.util.List;
 
@@ -72,12 +72,6 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     }
 
     @Override
-    public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid) {
-        super.initializeControls(windowDelegate, windowAndroid);
-        setShowCachedZeroSuggestResults(true);
-    }
-
-    @Override
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
         setAutocompleteProfile(Profile.getLastUsedProfile().getOriginalProfile());
@@ -99,7 +93,9 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
                     mVoiceRecognitionHandler.isVoiceSearchEnabled());
         }
         if (isVoiceSearchIntent && mUrlBar.isFocused()) onUrlFocusChange(true);
-        if (!TextUtils.isEmpty(mUrlBar.getText())) onTextChangedForAutocomplete();
+        if (!TextUtils.isEmpty(mUrlCoordinator.getTextWithAutocomplete())) {
+            onTextChangedForAutocomplete();
+        }
 
         assert !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
         mPendingSearchPromoDecision = false;
@@ -119,12 +115,9 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
         // Clear the text regardless of the promo decision.  This allows the user to enter text
         // before native has been initialized and have it not be cleared one the delayed beginQuery
         // logic is performed.
-        mUrlBar.setIgnoreTextChangesForAutocomplete(true);
-        mUrlBar.setUrl(UrlBarData.forNonUrlText(optionalText == null ? "" : optionalText));
-        mUrlBar.setIgnoreTextChangesForAutocomplete(false);
-
-        mUrlBar.setCursorVisible(true);
-        mUrlBar.setSelection(0, mUrlBar.getText().length());
+        mUrlCoordinator.setUrlBarData(
+                UrlBarData.forNonUrlText(optionalText == null ? "" : optionalText),
+                UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
 
         if (mPendingSearchPromoDecision) {
             mPendingBeginQuery = true;
@@ -153,8 +146,12 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
         findViewById(R.id.url_action_container).setVisibility(View.VISIBLE);
     }
 
+    // TODO(tedchoc): Investigate focusing regardless of the search promo state and just ensure
+    //                we don't start processing non-cached suggestion requests until that state
+    //                is finalized after native has been initialized.
     private void focusTextBox() {
         if (!mUrlBar.hasFocus()) mUrlBar.requestFocus();
+        setShowCachedZeroSuggestResults(true);
 
         new Handler().post(new Runnable() {
             @Override
