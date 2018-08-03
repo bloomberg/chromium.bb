@@ -24,6 +24,7 @@ source_set("cells") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//components/bookmarks/browser:browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

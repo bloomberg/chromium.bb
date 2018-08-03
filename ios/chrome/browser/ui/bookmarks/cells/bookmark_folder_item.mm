@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
 
+#include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -202,10 +203,14 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
       self.accessoryView = [[UIImageView alloc]
           initWithImage:[UIImage imageNamed:@"bookmark_blue_check"]];
       break;
-    case TableViewBookmarkFolderAccessoryTypeDisclosureIndicator:
+    case TableViewBookmarkFolderAccessoryTypeDisclosureIndicator: {
       self.accessoryView = [[UIImageView alloc]
           initWithImage:[UIImage imageNamed:@"table_view_cell_chevron"]];
+      // TODO(crbug.com/870841): Use default accessory type.
+      if (base::i18n::IsRTL())
+        self.accessoryView.transform = CGAffineTransformMakeRotation(M_PI);
       break;
+    }
     case TableViewBookmarkFolderAccessoryTypeNone:
       self.accessoryView = nil;
       break;
