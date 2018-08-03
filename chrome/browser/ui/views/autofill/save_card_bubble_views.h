@@ -5,31 +5,25 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_BUBBLE_VIEWS_H_
 
-#include "base/macros.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
+#include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
-#include "ui/views/controls/styled_label_listener.h"
-#include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace content {
 class WebContents;
 }
 
-namespace views {
-class StyledLabel;
-class Textfield;
-}
-
 namespace autofill {
 
-// This class displays the "Save credit card?" bubble that is shown when the
-// user submits a form with a credit card number that Autofill has not
-// previously saved.
+// This class serves as a base view to any of the bubble views that are part of
+// the flow for when the user submits a form with a credit card number that
+// Autofill has not previously saved. The base view establishes the button
+// handlers, the calculated size, the Super G logo, testing methods, the
+// SyncPromoDelegate and the window title (controller eventually handles the
+// title for each sub-class).
 class SaveCardBubbleViews : public SaveCardBubbleView,
-                            public LocationBarBubbleDelegateView,
-                            public views::StyledLabelListener,
-                            public views::TextfieldController {
+                            public LocationBarBubbleDelegateView {
  public:
   // Bubble will be anchored to |anchor_view|.
   SaveCardBubbleViews(views::View* anchor_view,
@@ -48,8 +42,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   bool Cancel() override;
   bool Close() override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -60,18 +52,47 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
-
-  // views::TextfieldController:
-  void ContentsChanged(views::Textfield* sender,
-                       const base::string16& new_contents) override;
-
   // Returns the footnote view, so it can be searched for clickable views.
   // Exists for testing (specifically, browsertests).
   views::View* GetFootnoteViewForTesting();
+
+ protected:
+  // Delegate for the personalized sync promo view used when desktop identity
+  // consistency is enabled.
+  class SyncPromoDelegate : public BubbleSyncPromoDelegate {
+   public:
+    explicit SyncPromoDelegate(SaveCardBubbleController* controller);
+
+    // BubbleSyncPromoDelegate:
+    void OnEnableSync(const AccountInfo& account,
+                      bool is_default_promo_account) override;
+
+   private:
+    SaveCardBubbleController* controller_;
+
+    DISALLOW_COPY_AND_ASSIGN(SyncPromoDelegate);
+  };
+
+  // Create the dialog's content view containing everything except for the
+  // footnote.
+  virtual std::unique_ptr<views::View> CreateMainContentView();
+
+  // Set the footnote view so that its accessible for testing.
+  void SetFootnoteViewForTesting(views::View* footnote_view);
+
+  SaveCardBubbleController* controller() {
+    return controller_;
+  };  // Weak reference.
+
+  // Attributes IDs to the DialogClientView and its buttons.
+  void AssignIdsToDialogClientView();
+
+  // views::BubbleDialogDelegateView:
+  void Init() override;
+
+  std::unique_ptr<SyncPromoDelegate> sync_promo_delegate_;
+
+  ~SaveCardBubbleViews() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
@@ -80,32 +101,9 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
       SaveCardBubbleViewsFullFormBrowserTest,
       Upload_DecliningUploadDoesNotLogUserAcceptedCardOriginUMA);
 
-  // The current step of the save card flow.  Accounts for:
-  //  1) Local save vs. Upload save
-  //  2) Upload save can have all information or be missing CVC
-  enum CurrentFlowStep {
-    UNKNOWN_STEP,
-    LOCAL_SAVE_ONLY_STEP,
-    UPLOAD_SAVE_ONLY_STEP,
-  };
-
-  ~SaveCardBubbleViews() override;
-
-  CurrentFlowStep GetCurrentFlowStep() const;
-  // Creates the dialog's content view containing everything except for the
-  // footnote.
-  std::unique_ptr<views::View> CreateMainContentView();
-
-  // Attributes IDs to the DialogClientView and its buttons.
-  void AssignIdsToDialogClientView();
-
-  // views::BubbleDialogDelegateView:
-  void Init() override;
+  views::View* footnote_view_ = nullptr;
 
   SaveCardBubbleController* controller_;  // Weak reference.
-
-  views::View* footnote_view_ = nullptr;
-  views::Textfield* cardholder_name_textfield_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };

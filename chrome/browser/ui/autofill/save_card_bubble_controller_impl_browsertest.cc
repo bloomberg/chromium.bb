@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/ui/autofill/save_card_ui.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -17,6 +18,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
 
@@ -28,7 +30,12 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DialogBrowserTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndEnableFeature(features::kExperimentalUi);
+    scoped_feature_list_.InitWithFeatures(
+        // Enabled.
+        {::features::kExperimentalUi,
+         features::kAutofillSaveCardSignInAfterLocalSave},
+        // Disabled.
+        {});
   }
 
   std::unique_ptr<base::DictionaryValue> GetTestLegalMessage() {
@@ -61,17 +68,37 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
     controller_ = SaveCardBubbleControllerImpl::FromWebContents(web_contents);
     DCHECK(controller_);
 
-    // Behavior depends on the test case name (not the most robust, but it will
-    // do).
-    if (name == "Local") {
-      controller_->ShowBubbleForLocalSave(test::GetCreditCard(),
-                                          base::DoNothing());
-    } else {
-      bool should_request_name_from_user =
-          name == "Server_WithCardholderNameTextfield";
-      controller_->ShowBubbleForUpload(
-          test::GetMaskedServerCard(), GetTestLegalMessage(),
-          should_request_name_from_user, base::DoNothing());
+    bool should_request_name_from_user =
+        name.find("WithCardholderNameTextfield") != std::string::npos;
+
+    BubbleType bubble_type = BubbleType::INACTIVE;
+    if (name.find("Local") != std::string::npos)
+      bubble_type = BubbleType::LOCAL_SAVE;
+    if (name.find("Server") != std::string::npos)
+      bubble_type = BubbleType::UPLOAD_SAVE;
+    if (name.find("Promo") != std::string::npos)
+      bubble_type = BubbleType::SIGN_IN_PROMO;
+    if (name.find("Manage") != std::string::npos)
+      bubble_type = BubbleType::MANAGE_CARDS;
+
+    switch (bubble_type) {
+      case BubbleType::LOCAL_SAVE:
+        controller_->ShowBubbleForLocalSave(test::GetCreditCard(),
+                                            base::DoNothing());
+        break;
+      case BubbleType::UPLOAD_SAVE:
+        controller_->ShowBubbleForUpload(
+            test::GetMaskedServerCard(), GetTestLegalMessage(),
+            should_request_name_from_user, base::DoNothing());
+        break;
+      case BubbleType::SIGN_IN_PROMO:
+        controller_->ShowBubbleForSignInPromo();
+        break;
+      case BubbleType::MANAGE_CARDS:
+        controller_->ShowBubbleForManageCardsForTesting(test::GetCreditCard());
+        break;
+      case BubbleType::INACTIVE:
+        break;
     }
   }
 
@@ -99,6 +126,21 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Server) {
 // server, with an added textfield for entering/confirming cardholder name.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest,
                        InvokeUi_Server_WithCardholderNameTextfield) {
+  ShowAndVerifyUi();
+}
+
+// Invokes a sign-in promo bubble.
+// TODO(crbug.com/855186): This browsertest isn't emulating the environment
+//   quite correctly; disabling test for now until cause is found.
+/*
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Promo) {
+  ShowAndVerifyUi();
+}
+*/
+
+// Invokes a bubble displaying the card just saved and an option to
+// manage cards.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Manage) {
   ShowAndVerifyUi();
 }
 

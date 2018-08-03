@@ -415,6 +415,13 @@ const char kEnableAutofillSaveCardDialogUnlabeledExpirationDateDescription[] =
     "If enabled, expiration dates on the save card dialog (both local and "
     "upstream) are shown without an 'Exp:' label.";
 
+const char kEnableAutofillSaveCardSignInAfterLocalSaveName[] =
+    "Show Sign-In/Sync promo after saving a card locally";
+const char kEnableAutofillSaveCardSignInAfterLocalSaveDescription[] =
+    "If enabled, shows a sign in prompt to the user after the user "
+    "saves a card locally. This also introduces a Manage Cards bubble "
+    "which you can access from the card icon after saving a card.";
+
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
     "Send experiment flag IDs in calls to Google Payments";
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =

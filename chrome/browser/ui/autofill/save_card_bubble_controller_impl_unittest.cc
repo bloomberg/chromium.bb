@@ -11,14 +11,17 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
+#include "chrome/browser/ui/autofill/save_card_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_handle.h"
@@ -130,6 +133,8 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
         TestSaveCardBubbleControllerImpl::FromWebContents(
             browser()->tab_strip_model()->GetActiveWebContents()));
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   class TestSaveCardBubbleView final : public SaveCardBubbleView {
@@ -905,6 +910,83 @@ TEST_F(SaveCardBubbleControllerImplTest,
       histogram_tester
           .GetAllSamples("Autofill.SaveCreditCardPrompt.Local.EV_SECURE")
           .empty());
+}
+
+// Tests for Sign-In after Local Save.
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Local_FirstShow_SaveButton_SigninPromo) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardSignInAfterLocalSave);
+
+  ShowLocalBubble();
+  controller()->OnSaveButton();
+
+  // Sign-in promo should be shown after accepting local save.
+  EXPECT_EQ(BubbleType::SIGN_IN_PROMO, controller()->GetBubbleType());
+  EXPECT_NE(nullptr, controller()->save_card_bubble_view());
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Local_FirstShow_SaveButton_NoBubble) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCardSignInAfterLocalSave);
+
+  ShowLocalBubble();
+  controller()->OnSaveButton();
+
+  // When this flag is disabled, no promo should appear and
+  // the icon should go away.
+  EXPECT_FALSE(controller()->IsIconVisible());
+  EXPECT_EQ(nullptr, controller()->save_card_bubble_view());
+}
+
+// Tests for Manage Cards.
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_ManageCards) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardSignInAfterLocalSave);
+
+  ShowLocalBubble();
+  controller()->OnSaveButton();
+  CloseAndReshowBubble();
+
+  // After closing the sign-in promo, clicking the icon should bring
+  // up the Manage cards bubble.
+  EXPECT_EQ(BubbleType::MANAGE_CARDS, controller()->GetBubbleType());
+  EXPECT_NE(nullptr, controller()->save_card_bubble_view());
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_Close_Navigate) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardSignInAfterLocalSave);
+
+  ShowLocalBubble();
+  controller()->OnSaveButton();
+  CloseAndReshowBubble();
+  controller()->OnBubbleClosed();
+
+  controller()->set_elapsed(base::TimeDelta::FromSeconds(6));
+  controller()->SimulateNavigation();
+
+  // Icon should disappear after navigating away.
+  EXPECT_FALSE(controller()->IsIconVisible());
+  EXPECT_EQ(nullptr, controller()->save_card_bubble_view());
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Upload_FirstShow_SaveButton_NoSigninPromo) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardSignInAfterLocalSave);
+
+  ShowUploadBubble();
+  controller()->OnSaveButton();
+
+  // Icon should disappear after an upload save,
+  // even when this flag is enabled.
+  EXPECT_FALSE(controller()->IsIconVisible());
+  EXPECT_EQ(nullptr, controller()->save_card_bubble_view());
 }
 
 }  // namespace autofill

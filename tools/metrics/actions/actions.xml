@@ -16449,6 +16449,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromSaveCardBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the save card bubble.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromSettings">
   <owner>bzanotti@chromium.org</owner>
   <owner>gogerald@chromium.org</owner>
@@ -16540,6 +16549,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_ImpressionWithAccount_FromSaveCardBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with no account in the
+    save card bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE).
+  </description>
+</action>
+
 <action name="Signin_ImpressionWithAccount_FromSettings">
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -16616,6 +16636,17 @@ should be able to be added at any place in this file.
     Recorded when starting sign-in using the promo view, with no default
     account, from recent tabs
     (signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromSaveCardBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with no account in the
+    save card bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE).
   </description>
 </action>
 
@@ -16801,6 +16832,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_FromSaveCardBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE.
+  </description>
+</action>
+
 <action name="Signin_Signin_FromSettings">
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -16949,6 +16990,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNewAccount_FromSaveCardBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE, with a new
+    account.
+  </description>
+</action>
+
 <action name="Signin_SigninNewAccount_FromSettings">
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -17025,6 +17077,17 @@ should be able to be added at any place in this file.
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS, using another account
     than the default one.
+  </description>
+</action>
+
+<action name="Signin_SigninNotDefault_FromSaveCardBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE, using another
+    account than the default one.
   </description>
 </action>
 
@@ -17116,6 +17179,17 @@ should be able to be added at any place in this file.
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS, using the default
     account.
+  </description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromSaveCardBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE, using the
+    default account.
   </description>
 </action>
 
