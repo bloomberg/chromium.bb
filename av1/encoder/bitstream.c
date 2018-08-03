@@ -66,11 +66,11 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              aom_writer *const w, int plane,
                                              FRAME_COUNTS *counts);
 
-static void write_intra_mode_kf(FRAME_CONTEXT *frame_ctx,
-                                const MB_MODE_INFO *mi,
-                                const MB_MODE_INFO *above_mi,
-                                const MB_MODE_INFO *left_mi,
-                                PREDICTION_MODE mode, aom_writer *w) {
+static void write_intra_y_mode_kf(FRAME_CONTEXT *frame_ctx,
+                                  const MB_MODE_INFO *mi,
+                                  const MB_MODE_INFO *above_mi,
+                                  const MB_MODE_INFO *left_mi,
+                                  PREDICTION_MODE mode, aom_writer *w) {
   assert(!is_intrabc_block(mi));
   (void)mi;
   aom_write_symbol(w, mode, get_y_mode_cdf(frame_ctx, above_mi, left_mi),
@@ -836,8 +836,8 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   }
 }
 
-static void write_intra_mode(FRAME_CONTEXT *frame_ctx, BLOCK_SIZE bsize,
-                             PREDICTION_MODE mode, aom_writer *w) {
+static void write_intra_y_mode_nonkf(FRAME_CONTEXT *frame_ctx, BLOCK_SIZE bsize,
+                                     PREDICTION_MODE mode, aom_writer *w) {
   aom_write_symbol(w, mode, frame_ctx->y_mode_cdf[size_group_lookup[bsize]],
                    INTRA_MODES);
 }
@@ -992,9 +992,9 @@ static void write_intra_prediction_modes(AV1_COMP *cpi, const int mi_row,
   if (is_keyframe) {
     const MB_MODE_INFO *const above_mi = xd->above_mbmi;
     const MB_MODE_INFO *const left_mi = xd->left_mbmi;
-    write_intra_mode_kf(ec_ctx, mbmi, above_mi, left_mi, mode, w);
+    write_intra_y_mode_kf(ec_ctx, mbmi, above_mi, left_mi, mode, w);
   } else {
-    write_intra_mode(ec_ctx, bsize, mode, w);
+    write_intra_y_mode_nonkf(ec_ctx, bsize, mode, w);
   }
 
   // Y angle delta.
