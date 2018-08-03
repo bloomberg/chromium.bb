@@ -140,8 +140,6 @@ blink_core_sources("dom") {
     "first_letter_pseudo_element.h",
     "flat_tree_traversal.cc",
     "flat_tree_traversal.h",
-    "flat_tree_traversal_ng.cc",
-    "flat_tree_traversal_ng.h",
     "frame_request_callback_collection.cc",
     "frame_request_callback_collection.h",
     "global_event_handlers.h",
