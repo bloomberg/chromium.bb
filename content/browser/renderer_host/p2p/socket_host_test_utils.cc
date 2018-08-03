@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -178,7 +179,17 @@ int64_t FakeSocket::GetTotalReceivedBytes() const {
   return 0;
 }
 
-void CreateRandomPacket(std::vector<char>* packet) {
+FakeSocketClient::FakeSocketClient(
+    network::mojom::P2PSocketPtr socket,
+    network::mojom::P2PSocketClientRequest client_request)
+    : socket_(std::move(socket)), binding_(this, std::move(client_request)) {
+  binding_.set_connection_error_handler(
+      base::BindLambdaForTesting([&]() { connection_error_ = true; }));
+}
+
+FakeSocketClient::~FakeSocketClient() {}
+
+void CreateRandomPacket(std::vector<int8_t>* packet) {
   size_t size = kStunHeaderSize + rand() % 1000;
   packet->resize(size);
   for (size_t i = 0; i < size; i++) {
@@ -189,7 +200,7 @@ void CreateRandomPacket(std::vector<char>* packet) {
   (*packet)[0] = (*packet)[0] | 0x80;
 }
 
-static void CreateStunPacket(std::vector<char>* packet, uint16_t type) {
+static void CreateStunPacket(std::vector<int8_t>* packet, uint16_t type) {
   CreateRandomPacket(packet);
   *reinterpret_cast<uint16_t*>(&*packet->begin()) = base::HostToNet16(type);
   *reinterpret_cast<uint16_t*>(&*packet->begin() + 2) =
@@ -198,15 +209,15 @@ static void CreateStunPacket(std::vector<char>* packet, uint16_t type) {
       base::HostToNet32(kStunMagicCookie);
 }
 
-void CreateStunRequest(std::vector<char>* packet) {
+void CreateStunRequest(std::vector<int8_t>* packet) {
   CreateStunPacket(packet, kStunBindingRequest);
 }
 
-void CreateStunResponse(std::vector<char>* packet) {
+void CreateStunResponse(std::vector<int8_t>* packet) {
   CreateStunPacket(packet, kStunBindingResponse);
 }
 
-void CreateStunError(std::vector<char>* packet) {
+void CreateStunError(std::vector<int8_t>* packet) {
   CreateStunPacket(packet, kStunBindingError);
 }
 

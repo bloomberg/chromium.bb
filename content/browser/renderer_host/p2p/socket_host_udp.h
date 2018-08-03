@@ -19,11 +19,11 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/content_export.h"
-#include "content/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/diff_serv_code_point.h"
 #include "net/socket/udp_server_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/p2p_socket_type.h"
 #include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
 
 namespace net {
@@ -39,13 +39,15 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   typedef base::Callback<std::unique_ptr<net::DatagramServerSocket>(
       net::NetLog* net_log)>
       DatagramServerSocketFactory;
-  P2PSocketHostUdp(IPC::Sender* message_sender,
-                   int socket_id,
+  P2PSocketHostUdp(P2PSocketDispatcherHost* socket_dispatcher_host,
+                   network::mojom::P2PSocketClientPtr client,
+                   network::mojom::P2PSocketRequest socket,
                    P2PMessageThrottler* throttler,
                    net::NetLog* net_log,
                    const DatagramServerSocketFactory& socket_factory);
-  P2PSocketHostUdp(IPC::Sender* message_sender,
-                   int socket_id,
+  P2PSocketHostUdp(P2PSocketDispatcherHost* socket_dispatcher_host,
+                   network::mojom::P2PSocketClientPtr client,
+                   network::mojom::P2PSocketRequest socket,
                    P2PMessageThrottler* throttler,
                    net::NetLog* net_log);
   ~P2PSocketHostUdp() override;
@@ -54,16 +56,18 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   bool Init(const net::IPEndPoint& local_address,
             uint16_t min_port,
             uint16_t max_port,
-            const P2PHostAndIPEndPoint& remote_address) override;
-  void Send(const net::IPEndPoint& to,
-            const std::vector<char>& data,
-            const rtc::PacketOptions& options,
-            uint64_t packet_id,
-            const net::NetworkTrafficAnnotationTag traffic_annotation) override;
-  std::unique_ptr<P2PSocketHost> AcceptIncomingTcpConnection(
+            const network::P2PHostAndIPEndPoint& remote_address) override;
+
+  // network::mojom::P2PSocket implementation:
+  void AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address,
-      int id) override;
-  bool SetOption(P2PSocketOption option, int value) override;
+      network::mojom::P2PSocketClientPtr client,
+      network::mojom::P2PSocketRequest socket) override;
+  void Send(const std::vector<int8_t>& data,
+            const network::P2PPacketInfo& packet_info,
+            const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override;
+  void SetOption(network::P2PSocketOption option, int32_t value) override;
 
  private:
   friend class P2PSocketHostUdpTest;
@@ -72,7 +76,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
 
   struct PendingPacket {
     PendingPacket(const net::IPEndPoint& to,
-                  const std::vector<char>& content,
+                  const std::vector<int8_t>& content,
                   const rtc::PacketOptions& options,
                   uint64_t id,
                   const net::NetworkTrafficAnnotationTag traffic_annotation);

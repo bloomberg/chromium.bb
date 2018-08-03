@@ -15,10 +15,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
-#include "content/common/p2p_socket_type.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/p2p_socket_type.h"
 
 namespace network {
 class ProxyResolvingClientSocketFactory;
@@ -35,9 +35,10 @@ namespace content {
 
 class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
  public:
-  P2PSocketHostTcpBase(IPC::Sender* message_sender,
-                       int socket_id,
-                       P2PSocketType type,
+  P2PSocketHostTcpBase(P2PSocketDispatcherHost* socket_dispatcher_host,
+                       network::mojom::P2PSocketClientPtr client,
+                       network::mojom::P2PSocketRequest socket,
+                       network::P2PSocketType type,
                        net::URLRequestContextGetter* url_context,
                        network::ProxyResolvingClientSocketFactory*
                            proxy_resolving_socket_factory);
@@ -50,16 +51,18 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   bool Init(const net::IPEndPoint& local_address,
             uint16_t min_port,
             uint16_t max_port,
-            const P2PHostAndIPEndPoint& remote_address) override;
-  void Send(const net::IPEndPoint& to,
-            const std::vector<char>& data,
-            const rtc::PacketOptions& options,
-            uint64_t packet_id,
-            const net::NetworkTrafficAnnotationTag traffic_annotation) override;
-  std::unique_ptr<P2PSocketHost> AcceptIncomingTcpConnection(
+            const network::P2PHostAndIPEndPoint& remote_address) override;
+
+  // network::mojom::P2PSocket implementation:
+  void AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address,
-      int id) override;
-  bool SetOption(P2PSocketOption option, int value) override;
+      network::mojom::P2PSocketClientPtr client,
+      network::mojom::P2PSocketRequest socket) override;
+  void Send(const std::vector<int8_t>& data,
+            const network::P2PPacketInfo& packet_info,
+            const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override;
+  void SetOption(network::P2PSocketOption option, int32_t value) override;
 
  protected:
   struct SendBuffer {
@@ -79,12 +82,12 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   virtual int ProcessInput(char* input, int input_len) = 0;
   virtual void DoSend(
       const net::IPEndPoint& to,
-      const std::vector<char>& data,
+      const std::vector<int8_t>& data,
       const rtc::PacketOptions& options,
       const net::NetworkTrafficAnnotationTag traffic_annotation) = 0;
 
   void WriteOrQueue(SendBuffer& send_buffer);
-  void OnPacket(const std::vector<char>& data);
+  void OnPacket(const std::vector<int8_t>& data);
   void OnError();
 
  private:
@@ -106,7 +109,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   void OnOpen();
   bool DoSendSocketCreateMsg();
 
-  P2PHostAndIPEndPoint remote_address_;
+  network::P2PHostAndIPEndPoint remote_address_;
 
   std::unique_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
@@ -116,7 +119,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   bool write_pending_;
 
   bool connected_;
-  P2PSocketType type_;
+  network::P2PSocketType type_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   network::ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory_;
 
@@ -125,9 +128,10 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
 class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
  public:
-  P2PSocketHostTcp(IPC::Sender* message_sender,
-                   int socket_id,
-                   P2PSocketType type,
+  P2PSocketHostTcp(P2PSocketDispatcherHost* socket_dispatcher_host,
+                   network::mojom::P2PSocketClientPtr client,
+                   network::mojom::P2PSocketRequest socket,
+                   network::P2PSocketType type,
                    net::URLRequestContextGetter* url_context,
                    network::ProxyResolvingClientSocketFactory*
                        proxy_resolving_socket_factory);
@@ -138,7 +142,7 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
   int ProcessInput(char* input, int input_len) override;
   void DoSend(
       const net::IPEndPoint& to,
-      const std::vector<char>& data,
+      const std::vector<int8_t>& data,
       const rtc::PacketOptions& options,
       const net::NetworkTrafficAnnotationTag traffic_annotation) override;
 
@@ -152,9 +156,10 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
 // Formatting of messages is defined in RFC5766.
 class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
  public:
-  P2PSocketHostStunTcp(IPC::Sender* message_sender,
-                       int socket_id,
-                       P2PSocketType type,
+  P2PSocketHostStunTcp(P2PSocketDispatcherHost* socket_dispatcher_host,
+                       network::mojom::P2PSocketClientPtr client,
+                       network::mojom::P2PSocketRequest socket,
+                       network::P2PSocketType type,
                        net::URLRequestContextGetter* url_context,
                        network::ProxyResolvingClientSocketFactory*
                            proxy_resolving_socket_factory);
@@ -165,12 +170,12 @@ class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
   int ProcessInput(char* input, int input_len) override;
   void DoSend(
       const net::IPEndPoint& to,
-      const std::vector<char>& data,
+      const std::vector<int8_t>& data,
       const rtc::PacketOptions& options,
       const net::NetworkTrafficAnnotationTag traffic_annotation) override;
 
  private:
-  int GetExpectedPacketSize(const char* data, int len, int* pad_bytes);
+  int GetExpectedPacketSize(const int8_t* data, int len, int* pad_bytes);
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostStunTcp);
 };
