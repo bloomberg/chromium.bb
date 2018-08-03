@@ -821,12 +821,6 @@
       ],
       'test': 'content_unittests',
     },
-    'not_site_per_process_unit_tests': {
-      'args': [
-        '--disable-site-isolation-trials'
-      ],
-      'test': 'unit_tests',
-    },
     'sync_integration_tests': {},
     'unit_tests': {},
   },
@@ -1952,12 +1946,6 @@
       ],
       'test': 'content_unittests',
     },
-    'not_site_per_process_unit_tests': {
-      'args': [
-        '--disable-site-isolation-trials'
-      ],
-      'test': 'unit_tests',
-    },
   },
 
   'site_isolation_chromium_linux_gtests': {
@@ -1984,18 +1972,6 @@
         '--site-per-process',
       ],
       'test': 'extensions_unittests',
-    },
-    'not_site_per_process_interactive_ui_tests': {
-      'args': [
-        '--disable-site-isolation-trials'
-      ],
-      'test': 'interactive_ui_tests',
-    },
-    'not_site_per_process_sync_integration_tests': {
-      'args': [
-        '--disable-site-isolation-trials'
-      ],
-      'test': 'sync_integration_tests',
     },
   },
 

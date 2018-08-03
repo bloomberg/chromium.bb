@@ -1038,35 +1038,6 @@
       'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
-  'not_site_per_process_interactive_ui_tests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
-  'not_site_per_process_sync_integration_tests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
-  'not_site_per_process_unit_tests': {
-    'remove_from': [
-      # chromium.fyi
-      'Site Isolation Android',
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-  },
   'site_per_process_webkit_layout_tests': {
     'remove_from': [
       # chromium.linux
