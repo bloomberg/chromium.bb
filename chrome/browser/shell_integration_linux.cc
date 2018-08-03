@@ -52,36 +52,7 @@
 #include "ui/gfx/image/image_family.h"
 #include "url/gurl.h"
 
-namespace shell_integration {
-
-// Allows LaunchXdgUtility to join a process.
-// thread_restrictions.h assumes it to be in shell_integration namespace.
-class LaunchXdgUtilityScopedAllowBaseSyncPrimitives
-    : public base::ScopedAllowBaseSyncPrimitives {};
-
-bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
-  // xdg-settings internally runs xdg-mime, which uses mv to move newly-created
-  // files on top of originals after making changes to them. In the event that
-  // the original files are owned by another user (e.g. root, which can happen
-  // if they are updated within sudo), mv will prompt the user to confirm if
-  // standard input is a terminal (otherwise it just does it). So make sure it's
-  // not, to avoid locking everything up waiting for mv.
-  *exit_code = EXIT_FAILURE;
-  int devnull = open("/dev/null", O_RDONLY);
-  if (devnull < 0)
-    return false;
-
-  base::LaunchOptions options;
-  options.fds_to_remap.push_back(std::make_pair(devnull, STDIN_FILENO));
-  base::Process process = base::LaunchProcess(argv, options);
-  close(devnull);
-  if (!process.IsValid())
-    return false;
-  LaunchXdgUtilityScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
-  return process.WaitForExit(exit_code);
-}
-
-namespace {
+namespace shell_integration_linux {
 
 const char kXdgSettings[] = "xdg-settings";
 const char kXdgSettingsDefaultBrowser[] = "default-web-browser";
@@ -146,7 +117,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  argv.push_back(shell_integration_linux::GetDesktopName(env.get()));
+  argv.push_back(GetDesktopName(env.get()));
 
   int exit_code;
   bool ran_ok = LaunchXdgUtility(argv, &exit_code);
@@ -163,9 +134,10 @@ bool SetDefaultWebClient(const std::string& protocol) {
 // If |protocol| is empty this function checks if Chrome is the default browser,
 // otherwise it checks if Chrome is the default handler application for
 // |protocol|.
-DefaultWebClientState GetIsDefaultWebClient(const std::string& protocol) {
+shell_integration::DefaultWebClientState GetIsDefaultWebClient(
+    const std::string& protocol) {
 #if defined(OS_CHROMEOS)
-  return UNKNOWN_DEFAULT;
+  return shell_integration::UNKNOWN_DEFAULT;
 #else
   base::AssertBlockingAllowed();
 
@@ -180,7 +152,7 @@ DefaultWebClientState GetIsDefaultWebClient(const std::string& protocol) {
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  argv.push_back(shell_integration_linux::GetDesktopName(env.get()));
+  argv.push_back(GetDesktopName(env.get()));
 
   std::string reply;
   int success_code;
@@ -195,13 +167,13 @@ DefaultWebClientState GetIsDefaultWebClient(const std::string& protocol) {
 
   if (!ran_ok || success_code != EXIT_SUCCESS) {
     // xdg-settings failed: we can't determine or set the default browser.
-    return UNKNOWN_DEFAULT;
+    return shell_integration::UNKNOWN_DEFAULT;
   }
 
   // Allow any reply that starts with "yes".
   return base::StartsWith(reply, "yes", base::CompareCase::SENSITIVE)
-             ? IS_DEFAULT
-             : NOT_DEFAULT;
+             ? shell_integration::IS_DEFAULT
+             : shell_integration::NOT_DEFAULT;
 #endif
 }
 
@@ -219,54 +191,6 @@ std::string GetDesktopBaseName(const std::string& desktop_file_name) {
   }
   return desktop_file_name;
 }
-
-}  // namespace
-
-bool SetAsDefaultBrowser() {
-  return SetDefaultWebClient(std::string());
-}
-
-bool SetAsDefaultProtocolClient(const std::string& protocol) {
-  return SetDefaultWebClient(protocol);
-}
-
-DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
-  return SET_DEFAULT_UNATTENDED;
-}
-
-base::string16 GetApplicationNameForProtocol(const GURL& url) {
-  return base::ASCIIToUTF16("xdg-open");
-}
-
-DefaultWebClientState GetDefaultBrowser() {
-  return GetIsDefaultWebClient(std::string());
-}
-
-bool IsFirefoxDefaultBrowser() {
-  std::vector<std::string> argv;
-  argv.push_back(kXdgSettings);
-  argv.push_back("get");
-  argv.push_back(kXdgSettingsDefaultBrowser);
-
-  std::string browser;
-  // We don't care about the return value here.
-  base::GetAppOutput(base::CommandLine(argv), &browser);
-  return browser.find("irefox") != std::string::npos;
-}
-
-DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
-  return GetIsDefaultWebClient(protocol);
-}
-
-std::string GetWMClassFromAppName(std::string app_name) {
-  base::i18n::ReplaceIllegalCharactersInPath(&app_name, '_');
-  base::TrimString(app_name, "_", &app_name);
-  return app_name;
-}
-
-}  // namespace shell_integration
-
-namespace shell_integration_linux {
 
 namespace {
 
@@ -334,6 +258,39 @@ const char kAppListDesktopName[] = "chromium-app-list";
 #endif
 
 }  // namespace
+
+// Allows LaunchXdgUtility to join a process.
+// thread_restrictions.h assumes it to be in shell_integration_linux namespace.
+class LaunchXdgUtilityScopedAllowBaseSyncPrimitives
+    : public base::ScopedAllowBaseSyncPrimitives {};
+
+bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
+  // xdg-settings internally runs xdg-mime, which uses mv to move newly-created
+  // files on top of originals after making changes to them. In the event that
+  // the original files are owned by another user (e.g. root, which can happen
+  // if they are updated within sudo), mv will prompt the user to confirm if
+  // standard input is a terminal (otherwise it just does it). So make sure it's
+  // not, to avoid locking everything up waiting for mv.
+  *exit_code = EXIT_FAILURE;
+  int devnull = open("/dev/null", O_RDONLY);
+  if (devnull < 0)
+    return false;
+
+  base::LaunchOptions options;
+  options.fds_to_remap.push_back(std::make_pair(devnull, STDIN_FILENO));
+  base::Process process = base::LaunchProcess(argv, options);
+  close(devnull);
+  if (!process.IsValid())
+    return false;
+  LaunchXdgUtilityScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
+  return process.WaitForExit(exit_code);
+}
+
+std::string GetWMClassFromAppName(std::string app_name) {
+  base::i18n::ReplaceIllegalCharactersInPath(&app_name, '_');
+  base::TrimString(app_name, "_", &app_name);
+  return app_name;
+}
 
 base::FilePath GetDataWriteLocation(base::Environment* env) {
   return base::nix::GetXDGDirectory(env, "XDG_DATA_HOME", ".local/share");
@@ -419,8 +376,7 @@ base::FilePath GetChromeExePath() {
 
 std::string GetProgramClassName(const base::CommandLine& command_line,
                                 const std::string& desktop_file_name) {
-  std::string class_name =
-      shell_integration::GetDesktopBaseName(desktop_file_name);
+  std::string class_name = GetDesktopBaseName(desktop_file_name);
   std::string user_data_dir =
       command_line.GetSwitchValueNative(switches::kUserDataDir);
   // If the user launches with e.g. --user-data-dir=/tmp/my-user-data, set the
@@ -436,8 +392,7 @@ std::string GetProgramClassClass(const base::CommandLine& command_line,
                                  const std::string& desktop_file_name) {
   if (command_line.HasSwitch(switches::kWmClass))
     return command_line.GetSwitchValueASCII(switches::kWmClass);
-  std::string class_class =
-      shell_integration::GetDesktopBaseName(desktop_file_name);
+  std::string class_class = GetDesktopBaseName(desktop_file_name);
   if (!class_class.empty()) {
     // Capitalize the first character like gtk does.
     class_class[0] = base::ToUpperASCII(class_class[0]);
@@ -632,7 +587,7 @@ std::string GetDesktopFileContentsForCommand(
   if (no_display)
     g_key_file_set_string(key_file, kDesktopEntry, "NoDisplay", "true");
 
-  std::string wmclass = shell_integration::GetWMClassFromAppName(app_name);
+  std::string wmclass = GetWMClassFromAppName(app_name);
   g_key_file_set_string(key_file, kDesktopEntry, "StartupWMClass",
                         wmclass.c_str());
 
@@ -741,3 +696,43 @@ bool CreateAppListDesktopShortcut(
 #endif
 
 }  // namespace shell_integration_linux
+
+namespace shell_integration {
+
+bool SetAsDefaultBrowser() {
+  return shell_integration_linux::SetDefaultWebClient(std::string());
+}
+
+bool SetAsDefaultProtocolClient(const std::string& protocol) {
+  return shell_integration_linux::SetDefaultWebClient(protocol);
+}
+
+DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
+  return SET_DEFAULT_UNATTENDED;
+}
+
+base::string16 GetApplicationNameForProtocol(const GURL& url) {
+  return base::ASCIIToUTF16("xdg-open");
+}
+
+DefaultWebClientState GetDefaultBrowser() {
+  return shell_integration_linux::GetIsDefaultWebClient(std::string());
+}
+
+bool IsFirefoxDefaultBrowser() {
+  std::vector<std::string> argv;
+  argv.push_back(shell_integration_linux::kXdgSettings);
+  argv.push_back("get");
+  argv.push_back(shell_integration_linux::kXdgSettingsDefaultBrowser);
+
+  std::string browser;
+  // We don't care about the return value here.
+  base::GetAppOutput(base::CommandLine(argv), &browser);
+  return browser.find("irefox") != std::string::npos;
+}
+
+DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
+  return shell_integration_linux::GetIsDefaultWebClient(protocol);
+}
+
+}  // namespace shell_integration

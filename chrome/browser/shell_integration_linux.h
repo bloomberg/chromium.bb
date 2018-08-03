@@ -16,22 +16,6 @@ class CommandLine;
 class Environment;
 }
 
-// TODO(loyso): Move these helpers to shell_integration_linux namespace.
-namespace shell_integration {
-
-// Helper to launch xdg scripts. We don't want them to ask any questions on the
-// terminal etc. The function returns true if the utility launches and exits
-// cleanly, in which case |exit_code| returns the utility's exit code.
-// thread_restrictions.h assumes it to be in shell_integration namespace.
-bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code);
-
-// Windows that correspond to web apps need to have a deterministic (and
-// different) WMClass than normal chrome windows so the window manager groups
-// them as a separate application.
-std::string GetWMClassFromAppName(std::string app_name);
-
-}  // namespace shell_integration
-
 namespace shell_integration_linux {
 
 // Get the path to write user-specific application data files to, as specified
@@ -110,6 +94,17 @@ std::string GetDirectoryFileContents(const base::string16& title,
 bool CreateAppListDesktopShortcut(const std::string& wm_class,
                                   const std::string& title);
 #endif
+
+// Windows that correspond to web apps need to have a deterministic (and
+// different) WMClass than normal chrome windows so the window manager groups
+// them as a separate application.
+std::string GetWMClassFromAppName(std::string app_name);
+
+// Helper to launch xdg scripts. We don't want them to ask any questions on the
+// terminal etc. The function returns true if the utility launches and exits
+// cleanly, in which case |exit_code| returns the utility's exit code.
+// thread_restrictions.h assumes it to be in shell_integration namespace.
+bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code);
 
 namespace internal {
 
