@@ -19,7 +19,7 @@ class DEVICE_VR_EXPORT FakeVRServiceClient : public mojom::VRServiceClient {
   FakeVRServiceClient(mojom::VRServiceClientRequest request);
   ~FakeVRServiceClient() override;
 
-  void OnDisplayConnected(mojom::VRDisplayHostPtr display,
+  void OnDisplayConnected(mojom::XRDevicePtr device,
                           mojom::VRDisplayClientRequest request,
                           mojom::VRDisplayInfoPtr displayInfo) override;
   void SetLastDeviceId(unsigned int id);

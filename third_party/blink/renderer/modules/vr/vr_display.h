@@ -108,7 +108,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   friend class VRController;
 
   VRDisplay(NavigatorVR*,
-            device::mojom::blink::VRDisplayHostPtr,
+            device::mojom::blink::XRDevicePtr,
             device::mojom::blink::VRDisplayClientRequest);
 
   void Update(const device::mojom::blink::VRDisplayInfoPtr&);
@@ -219,7 +219,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
 
-  device::mojom::blink::VRDisplayHostPtr display_;
+  device::mojom::blink::XRDevicePtr device_ptr_;
 
   bool present_image_needs_copy_ = false;
 

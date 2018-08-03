@@ -12,11 +12,11 @@
 
 namespace vr {
 
-class VRDisplayHost;
+class XRDeviceImpl;
 
 // This class wraps a physical device's interfaces, and registers for events.
 // There is one BrowserXRRuntime per physical device runtime.
-// It manages browser-side handling of state, like which VRDisplayHost is
+// It manages browser-side handling of state, like which XRDeviceImpl is
 // listening for device activation.
 class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
  public:
@@ -26,16 +26,17 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
 
   device::mojom::XRRuntime* GetRuntime() { return runtime_.get(); }
 
-  // Methods called by VRDisplayHost to interact with the runtime's device.
-  void OnDisplayHostAdded(VRDisplayHost* display);
-  void OnDisplayHostRemoved(VRDisplayHost* display);
-  void ExitPresent(VRDisplayHost* display);
-  void RequestSession(
-      VRDisplayHost* display,
-      const device::mojom::XRRuntimeSessionOptionsPtr& options,
-      device::mojom::VRDisplayHost::RequestSessionCallback callback);
-  VRDisplayHost* GetPresentingDisplayHost() { return presenting_display_host_; }
-  void UpdateListeningForActivate(VRDisplayHost* display);
+  // Methods called by XRDeviceImpl to interact with the runtime's device.
+  void OnRendererDeviceAdded(XRDeviceImpl* device);
+  void OnRendererDeviceRemoved(XRDeviceImpl* device);
+  void ExitPresent(XRDeviceImpl* device);
+  void RequestSession(XRDeviceImpl* device,
+                      const device::mojom::XRRuntimeSessionOptionsPtr& options,
+                      device::mojom::XRDevice::RequestSessionCallback callback);
+  XRDeviceImpl* GetPresentingRendererDevice() {
+    return presenting_renderer_device_;
+  }
+  void UpdateListeningForActivate(XRDeviceImpl* device);
   device::mojom::VRDisplayInfoPtr GetVRDisplayInfo() {
     return display_info_.Clone();
   }
@@ -54,20 +55,20 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void StopImmersiveSession();
   void OnListeningForActivate(bool is_listening);
   void OnRequestSessionResult(
-      base::WeakPtr<VRDisplayHost> display,
+      base::WeakPtr<XRDeviceImpl> device,
       device::mojom::XRRuntimeSessionOptionsPtr options,
-      device::mojom::VRDisplayHost::RequestSessionCallback callback,
+      device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr immersive_session_controller);
 
   device::mojom::XRRuntimePtr runtime_;
   device::mojom::XRSessionControllerPtr immersive_session_controller_;
 
-  std::set<VRDisplayHost*> displays_;
+  std::set<XRDeviceImpl*> renderer_device_connections_;
   device::mojom::VRDisplayInfoPtr display_info_;
 
-  VRDisplayHost* listening_for_activation_display_host_ = nullptr;
-  VRDisplayHost* presenting_display_host_ = nullptr;
+  XRDeviceImpl* listening_for_activation_renderer_device_ = nullptr;
+  XRDeviceImpl* presenting_renderer_device_ = nullptr;
 
   mojo::Binding<device::mojom::XRRuntimeEventListener> binding_;
 

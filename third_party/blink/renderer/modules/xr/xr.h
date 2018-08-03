@@ -37,7 +37,7 @@ class XR final : public EventTargetWithInlineData,
   ScriptPromise requestDevice(ScriptState*);
 
   // XRServiceClient overrides.
-  void OnDisplayConnected(device::mojom::blink::VRDisplayHostPtr,
+  void OnDisplayConnected(device::mojom::blink::XRDevicePtr,
                           device::mojom::blink::VRDisplayClientRequest,
                           device::mojom::blink::VRDisplayInfoPtr) override;
 

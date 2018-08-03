@@ -39,13 +39,12 @@ const char kRequestFailed[] = "Request for XRSession failed.";
 
 }  // namespace
 
-XRDevice::XRDevice(
-    XR* xr,
-    device::mojom::blink::VRDisplayHostPtr display,
-    device::mojom::blink::VRDisplayClientRequest client_request,
-    device::mojom::blink::VRDisplayInfoPtr display_info)
+XRDevice::XRDevice(XR* xr,
+                   device::mojom::blink::XRDevicePtr device,
+                   device::mojom::blink::VRDisplayClientRequest client_request,
+                   device::mojom::blink::VRDisplayInfoPtr display_info)
     : xr_(xr),
-      display_(std::move(display)),
+      device_ptr_(std::move(device)),
       display_client_binding_(this, std::move(client_request)) {
   SetXRDisplayInfo(std::move(display_info));
 }
@@ -95,7 +94,7 @@ ScriptPromise XRDevice::supportsSession(
       device::mojom::blink::XRSessionOptions::New();
   session_options->immersive = options.immersive();
 
-  display_->SupportsSession(
+  device_ptr_->SupportsSession(
       std::move(session_options),
       WTF::Bind(&XRDevice::OnSupportsSessionReturned, WrapPersistent(this),
                 WrapPersistent(resolver)));
@@ -185,7 +184,7 @@ ScriptPromise XRDevice::requestSession(
   // TODO(offenwanger): Once device activation is sorted out for WebXR, either
   // pass in the value for metrics, or remove the value as soon as legacy API
   // has been removed.
-  display_->RequestSession(
+  device_ptr_->RequestSession(
       std::move(session_options), false /* triggered by display activate */,
       WTF::Bind(&XRDevice::OnRequestSessionReturned, WrapWeakPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(output_context),

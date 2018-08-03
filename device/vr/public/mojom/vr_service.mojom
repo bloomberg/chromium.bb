@@ -253,13 +253,13 @@ interface VRService {
 };
 
 interface VRServiceClient {
-  OnDisplayConnected(VRDisplayHost display, VRDisplayClient& request,
+  OnDisplayConnected(XRDevice device, VRDisplayClient& request,
                      VRDisplayInfo display_info);
 };
 
 // Provides a communication channel from the renderer to the browser-side host
 // of a (device/) VrDisplayImpl.
-interface VRDisplayHost {
+interface XRDevice {
   // Request to initialize a session in the browser process. The return value
   // indicates if the session was successfully initialized or not.
   // TODO(https://crbug.com/842025): Refactor VR device interfaces to better

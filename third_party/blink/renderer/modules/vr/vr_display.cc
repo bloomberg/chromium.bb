@@ -93,14 +93,13 @@ class VRDisplayFrameRequestCallback
 
 }  // namespace
 
-VRDisplay::VRDisplay(
-    NavigatorVR* navigator_vr,
-    device::mojom::blink::VRDisplayHostPtr display,
-    device::mojom::blink::VRDisplayClientRequest request)
+VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
+                     device::mojom::blink::XRDevicePtr device,
+                     device::mojom::blink::VRDisplayClientRequest request)
     : PausableObject(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
       capabilities_(new VRDisplayCapabilities()),
-      display_(std::move(display)),
+      device_ptr_(std::move(device)),
       display_client_binding_(this, std::move(request)) {
   PauseIfNeeded();  // Initialize SuspendabaleObject.
 
@@ -111,9 +110,10 @@ VRDisplay::VRDisplay(
   // Set in_on_display_activate to true, this will prevent the request present
   // from being logged.
   // TODO(offenwanger): clean up the logging when refactors are complete.
-  display_->RequestSession(std::move(options), true,
-                           WTF::Bind(&VRDisplay::OnMagicWindowRequestReturned,
-                                     WrapPersistent(this)));
+  device_ptr_->RequestSession(
+      std::move(options), true,
+      WTF::Bind(&VRDisplay::OnMagicWindowRequestReturned,
+                WrapPersistent(this)));
 }
 
 VRDisplay::~VRDisplay() = default;
@@ -231,7 +231,7 @@ void VRDisplay::RequestVSync() {
   if (!pending_vrdisplay_raf_)
     return;
   Document* doc = navigator_vr_->GetDocument();
-  if (!doc || !display_)
+  if (!doc || !device_ptr_)
     return;
   if (display_blurred_)
     return;
@@ -464,7 +464,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     // original request returns.
     pending_present_resolvers_.push_back(resolver);
   } else if (first_present) {
-    if (!display_) {
+    if (!device_ptr_) {
       ForceExitPresent();
       DOMException* exception =
           DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -482,7 +482,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     options->immersive = true;
     options->use_legacy_webvr_render_path = true;
 
-    display_->RequestSession(
+    device_ptr_->RequestSession(
         std::move(options), in_display_activate_,
         WTF::Bind(&VRDisplay::OnRequestSessionReturned, WrapPersistent(this)));
     pending_present_request_ = true;
@@ -559,13 +559,13 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
     return promise;
   }
 
-  if (!display_) {
+  if (!device_ptr_) {
     DOMException* exception = DOMException::Create(
         DOMExceptionCode::kInvalidStateError, "VRService is not available.");
     resolver->Reject(exception);
     return promise;
   }
-  display_->ExitPresent();
+  device_ptr_->ExitPresent();
 
   resolver->Resolve();
 
@@ -645,14 +645,14 @@ void VRDisplay::BeginPresent() {
 
 // Need to close service if exists and then free rendering context.
 void VRDisplay::ForceExitPresent() {
-  if (display_) {
-    display_->ExitPresent();
+  if (device_ptr_) {
+    device_ptr_->ExitPresent();
   }
   StopPresenting();
 }
 
 void VRDisplay::UpdateLayerBounds() {
-  if (!display_)
+  if (!device_ptr_)
     return;
 
   // Left eye defaults
@@ -711,7 +711,7 @@ scoped_refptr<Image> VRDisplay::GetFrameImage(
 void VRDisplay::submitFrame() {
   DVLOG(2) << __FUNCTION__;
 
-  if (!display_)
+  if (!device_ptr_)
     return;
   TRACE_EVENT1("gpu", "submitFrame", "frame", vr_frame_id_);
 

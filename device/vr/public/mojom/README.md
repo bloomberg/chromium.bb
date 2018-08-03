@@ -28,8 +28,9 @@ camera frame.
 VRService - lives in the browser process, corresponds to a single frame.  Root
 object to obtain other XR objects.
 
-VRDisplayHost - lives in the browser process.  Allows a client to start a
-session (either immersive/exclusive/presenting or magic window).
+XRDevice - lives in the browser process, implemented as XRDeviceImpl. Allows a
+client to start a session (either immersive/exclusive/presenting or
+non-immersive).
 
 VRServiceClient - lives in the renderer process.  Is notified when VRDisplays
 are connected.

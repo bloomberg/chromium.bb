@@ -56,7 +56,7 @@ struct XRRuntimeSessionOptions {
 
 // An XRRuntime may live in the browser process or a utility process.  The
 // browser process is the client, and may in turn expose device information to
-// render processes using vr_service interfaces, such as VRDisplayHost.
+// render processes using vr_service interfaces, such as XRDevice.
 interface XRRuntime {
   // Attempt to start a session. Called by the browser process, but the result
   // will probably be passed to the renderer process to allow getting data and

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_SERVICE_VR_DISPLAY_HOST_H_
-#define CHROME_BROWSER_VR_SERVICE_VR_DISPLAY_HOST_H_
+#ifndef CHROME_BROWSER_VR_SERVICE_XR_DEVICE_IMPL_H_
+#define CHROME_BROWSER_VR_SERVICE_XR_DEVICE_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -29,17 +29,17 @@ class BrowserXRRuntime;
 
 // The browser-side host for a device::VRDisplayImpl. Controls access to VR
 // APIs like poses and presentation.
-class VRDisplayHost : public device::mojom::VRDisplayHost {
+class XRDeviceImpl : public device::mojom::XRDevice {
  public:
-  VRDisplayHost(content::RenderFrameHost* render_frame_host,
-                device::mojom::VRServiceClient* service_client);
-  ~VRDisplayHost() override;
+  XRDeviceImpl(content::RenderFrameHost* render_frame_host,
+               device::mojom::VRServiceClient* service_client);
+  ~XRDeviceImpl() override;
 
-  // device::mojom::VRDisplayHost
+  // device::mojom::XRDevice
   void RequestSession(
       device::mojom::XRSessionOptionsPtr options,
       bool triggered_by_displayactive,
-      device::mojom::VRDisplayHost::RequestSessionCallback callback) override;
+      device::mojom::XRDevice::RequestSessionCallback callback) override;
   void SupportsSession(device::mojom::XRSessionOptionsPtr options,
                        SupportsSessionCallback callback) override;
   void ExitPresent() override;
@@ -62,7 +62,7 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   bool ListeningForActivate() { return listening_for_activate_; }
   bool InFocusedFrame() { return in_focused_frame_; }
 
-  base::WeakPtr<VRDisplayHost> GetWeakPtr() {
+  base::WeakPtr<XRDeviceImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
@@ -72,7 +72,7 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
 
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
   void OnMagicWindowSessionCreated(
-      device::mojom::VRDisplayHost::RequestSessionCallback callback,
+      device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr controller);
 
@@ -86,7 +86,7 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   bool listening_for_activate_ = false;
 
   content::RenderFrameHost* render_frame_host_;
-  mojo::Binding<device::mojom::VRDisplayHost> binding_;
+  mojo::Binding<device::mojom::XRDevice> binding_;
   device::mojom::VRDisplayClientPtr client_;
 
   mojo::InterfacePtrSet<device::mojom::XRSessionController>
@@ -99,11 +99,11 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   BrowserXRRuntime* non_immersive_runtime_ = nullptr;
   BrowserXRRuntime* ar_runtime_ = nullptr;
 
-  base::WeakPtrFactory<VRDisplayHost> weak_ptr_factory_;
+  base::WeakPtrFactory<XRDeviceImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(VRDisplayHost);
+  DISALLOW_COPY_AND_ASSIGN(XRDeviceImpl);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_SERVICE_VR_DISPLAY_HOST_H_
+#endif  // CHROME_BROWSER_VR_SERVICE_XR_DEVICE_IMPL_H_
