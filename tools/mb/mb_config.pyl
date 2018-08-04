@@ -215,7 +215,7 @@
       'VR Linux': 'vr_release_bot',
       'linux-tcmalloc-rel': 'tcmalloc_release_bot',
       'Win 10 Fast Ring': 'release_trybot',
-      'Windows deterministic': 'release_bot_x86_minimal_symbols',
+      'Windows deterministic': 'release_bot_x86_no_symbols',
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
       'win-annotator-rel': 'release_bot',
     },
@@ -1513,6 +1513,8 @@
     # both MSVC and clang.
     'release_bot_minimal_symbols': [ 'release_bot', 'minimal_symbols' ],
     'release_bot_x86_minimal_symbols': [ 'release_bot', 'x86', 'minimal_symbols' ],
+
+    'release_bot_x86_no_symbols': [ 'release_bot', 'x86', 'no_symbols' ],
 
     'release_bot_minimal_symbols_enable_archive_compression': [
       'release_bot', 'minimal_symbols', 'enable_archive_compression'
