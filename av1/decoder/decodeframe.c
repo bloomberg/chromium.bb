@@ -2321,6 +2321,10 @@ static void read_tile_info(AV1Decoder *const pbi,
     // tile to use for cdf update
     cm->context_update_tile_id =
         aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
+    if (cm->context_update_tile_id >= cm->tile_rows * cm->tile_cols) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Invalid context_update_tile_id");
+    }
     // tile size magnitude
     pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
   }
@@ -5233,6 +5237,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
+      assert(cm->context_update_tile_id < pbi->allocated_tiles);
       *cm->fc = pbi->tile_data[cm->context_update_tile_id].tctx;
       av1_reset_cdf_symbol_counters(cm->fc);
     }
