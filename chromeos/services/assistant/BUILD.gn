@@ -49,6 +49,8 @@ source_set("lib") {
       "assistant_settings_manager_impl.h",
       "platform/audio_input_provider_impl.cc",
       "platform/audio_input_provider_impl.h",
+      "platform/audio_output_provider_impl.cc",
+      "platform/audio_output_provider_impl.h",
       "platform/file_provider_impl.cc",
       "platform/file_provider_impl.h",
       "platform/network_provider_impl.cc",
@@ -106,7 +108,10 @@ source_set("tests") {
   ]
 
   if (enable_cros_libassistant) {
-    sources += [ "platform/system_provider_impl_unittest.cc" ]
+    sources += [
+      "platform/audio_output_provider_impl_unittest.cc",
+      "platform/system_provider_impl_unittest.cc",
+    ]
   }
 }
 

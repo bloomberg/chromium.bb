@@ -76,7 +76,7 @@ PlatformApiImpl::PlatformApiImpl(
     device::mojom::BatteryMonitorPtr battery_monitor,
     bool enable_hotword)
     : audio_input_provider_(connector, enable_hotword),
-      audio_output_provider_(CreateLibAssistantConfig(!enable_hotword), this),
+      audio_output_provider_(connector),
       system_provider_(std::move(battery_monitor)) {}
 
 PlatformApiImpl::~PlatformApiImpl() = default;
