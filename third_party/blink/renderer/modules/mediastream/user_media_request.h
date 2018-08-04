@@ -73,6 +73,7 @@ class MODULES_EXPORT UserMediaRequest final
 
   static UserMediaRequest* Create(ExecutionContext*,
                                   UserMediaController*,
+                                  WebUserMediaRequest::MediaType media_type,
                                   const MediaStreamConstraints& options,
                                   Callbacks*,
                                   MediaErrorState&);
@@ -94,6 +95,7 @@ class MODULES_EXPORT UserMediaRequest final
   void FailConstraint(const String& constraint_name, const String& message);
   void Fail(WebUserMediaRequest::Error name, const String& message);
 
+  WebUserMediaRequest::MediaType MediaRequestType() const;
   bool Audio() const;
   bool Video() const;
   WebMediaConstraints AudioConstraints() const;
@@ -115,10 +117,12 @@ class MODULES_EXPORT UserMediaRequest final
  private:
   UserMediaRequest(ExecutionContext*,
                    UserMediaController*,
+                   WebUserMediaRequest::MediaType media_type,
                    WebMediaConstraints audio,
                    WebMediaConstraints video,
                    Callbacks*);
 
+  WebUserMediaRequest::MediaType media_type_;
   WebMediaConstraints audio_;
   WebMediaConstraints video_;
   bool should_disable_hardware_noise_suppression_;

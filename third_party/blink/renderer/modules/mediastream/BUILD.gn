@@ -30,6 +30,8 @@ blink_modules_sources("mediastream") {
     "media_stream_track_content_hint.h",
     "media_stream_track_event.cc",
     "media_stream_track_event.h",
+    "navigator_display_media.cc",
+    "navigator_display_media.h",
     "navigator_media_stream.cc",
     "navigator_media_stream.h",
     "navigator_user_media.cc",

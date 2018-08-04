@@ -57,6 +57,11 @@ void WebUserMediaRequest::Reset() {
   private_.Reset();
 }
 
+WebUserMediaRequest::MediaType WebUserMediaRequest::MediaRequestType() const {
+  DCHECK(!IsNull());
+  return private_->MediaRequestType();
+}
+
 bool WebUserMediaRequest::Audio() const {
   DCHECK(!IsNull());
   return private_->Audio();

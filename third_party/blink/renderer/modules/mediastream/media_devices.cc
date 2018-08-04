@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -105,6 +104,16 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
 ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
                                          const MediaStreamConstraints& options,
                                          ExceptionState& exception_state) {
+  return SendUserMediaRequest(script_state,
+                              WebUserMediaRequest::MediaType::kUserMedia,
+                              options, exception_state);
+}
+
+ScriptPromise MediaDevices::SendUserMediaRequest(
+    ScriptState* script_state,
+    WebUserMediaRequest::MediaType media_type,
+    const MediaStreamConstraints& options,
+    ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   PromiseResolverCallbacks* callbacks =
       PromiseResolverCallbacks::Create(resolver);
@@ -121,7 +130,7 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
 
   MediaErrorState error_state;
   UserMediaRequest* request = UserMediaRequest::Create(
-      document, user_media, options, callbacks, error_state);
+      document, user_media, media_type, options, callbacks, error_state);
   if (!request) {
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {

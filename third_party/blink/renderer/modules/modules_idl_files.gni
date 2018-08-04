@@ -737,6 +737,7 @@ modules_dependency_idl_files =
           "mediasource/html_video_element_media_source.idl",
           "mediasource/url_media_source.idl",
           "mediastream/media_stream_track_content_hint.idl",
+          "mediastream/navigator_display_media.idl",
           "mediastream/navigator_media_stream.idl",
           "mediastream/navigator_user_media.idl",
           "mediastream/url_media_stream.idl",

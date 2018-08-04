@@ -564,6 +564,10 @@
       status: "experimental",
     },
     {
+      name: "GetDisplayMedia",
+      status: "experimental",
+    },
+    {
       name: "HeapCompaction",
       status: "stable",
     },
