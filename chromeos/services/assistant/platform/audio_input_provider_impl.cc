@@ -141,21 +141,30 @@ void AudioInputImpl::RemoveObserver(
 }
 
 void AudioInputImpl::SetMicState(bool mic_open) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!default_on_) {
-    if (mic_open)
-      source_->Start();
-    else
-      source_->Stop();
+    if (mic_open) {
+      task_runner_->PostTask(FROM_HERE,
+                             base::BindOnce(&AudioInputImpl::StartRecording,
+                                            weak_factory_.GetWeakPtr()));
+    } else {
+      task_runner_->PostTask(FROM_HERE,
+                             base::BindOnce(&AudioInputImpl::StopRecording,
+                                            weak_factory_.GetWeakPtr()));
+    }
   }
 }
 
 void AudioInputImpl::OnHotwordEnabled(bool enable) {
   default_on_ = enable;
-  if (default_on_)
-    source_->Start();
-  else
-    source_->Stop();
+  if (default_on_) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&AudioInputImpl::StartRecording,
+                                          weak_factory_.GetWeakPtr()));
+  } else {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&AudioInputImpl::StopRecording,
+                                          weak_factory_.GetWeakPtr()));
+  }
 }
 
 void AudioInputImpl::StartRecording() {
