@@ -40875,6 +40875,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="46" label="WorkerThreadTaskQueueDefault"/>
   <int value="47" label="WorkerThreadTaskQueueV8"/>
   <int value="48" label="WorkerThreadTaskQueueCompositor"/>
+  <int value="49" label="CompositorThreadTaskQueueInput"/>
+  <int value="50" label="NetworkingWithURLLoaderAnnotation"/>
+  <int value="51" label="WorkerAnimation"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">
