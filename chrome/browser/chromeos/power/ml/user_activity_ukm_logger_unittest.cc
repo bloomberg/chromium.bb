@@ -64,6 +64,7 @@ class UserActivityUkmLoggerTest : public testing::Test {
     prediction->set_decision_threshold(50);
     prediction->set_inactivity_score(60);
     prediction->set_model_applied(true);
+    prediction->set_response(UserActivityEvent::ModelPrediction::NO_DIM);
 
     user_activity_logger_delegate_ukm_.ukm_recorder_ = &recorder_;
   }
@@ -99,6 +100,7 @@ class UserActivityUkmLoggerTest : public testing::Test {
                                 UserActivity::kModelDecisionThresholdName, 50);
     recorder_.ExpectEntryMetric(entry, UserActivity::kModelInactivityScoreName,
                                 60);
+    recorder_.ExpectEntryMetric(entry, UserActivity::kModelResponseName, 1);
     recorder_.ExpectEntryMetric(entry, UserActivity::kMouseEventsInLastHourName,
                                 89);
     EXPECT_FALSE(recorder_.EntryHasMetric(entry, UserActivity::kOnBatteryName));
@@ -238,6 +240,11 @@ TEST_F(UserActivityUkmLoggerTest, TwoUserActivityEvents) {
   features->set_dim_to_screen_off_sec(20);
   features->set_time_since_last_mouse_sec(200);
 
+  UserActivityEvent::ModelPrediction* prediction =
+      user_activity_event2.mutable_model_prediction();
+  prediction->set_model_applied(false);
+  prediction->set_response(UserActivityEvent::ModelPrediction::MODEL_ERROR);
+
   LogActivity(user_activity_event_);
   LogActivity(user_activity_event2);
 
@@ -277,6 +284,12 @@ TEST_F(UserActivityUkmLoggerTest, TwoUserActivityEvents) {
       recorder_.EntryHasMetric(entry1, UserActivity::kTimeSinceLastKeyName));
   recorder_.ExpectEntryMetric(entry1, UserActivity::kTimeSinceLastMouseName,
                               200);
+  recorder_.ExpectEntryMetric(entry1, UserActivity::kModelResponseName, 2);
+  recorder_.ExpectEntryMetric(entry1, UserActivity::kModelAppliedName, 0);
+  EXPECT_FALSE(recorder_.EntryHasMetric(
+      entry1, UserActivity::kModelDecisionThresholdName));
+  EXPECT_FALSE(recorder_.EntryHasMetric(
+      entry1, UserActivity::kModelInactivityScoreName));
 
   EXPECT_EQ(0u, recorder_.GetEntriesByName(UserActivityId::kEntryName).size());
 }

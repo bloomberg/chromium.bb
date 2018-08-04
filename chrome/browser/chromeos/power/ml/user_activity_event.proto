@@ -179,14 +179,33 @@ message UserActivityEvent {
     optional int32 previous_positive_actions_count = 30;
   }  // next id = 31
 
+  // All fields except |model_applied| in ModelPrediction are populated by the
+  // model. |model_applied| is populated by the UserActivityManager when
+  // deciding whether to apply the model decision.
   message ModelPrediction {
-    // If |inactivity_score| < |decision_threshold| then dim will be deferred.
+    enum Response {
+      // Dim should go ahead.
+      DIM = 0;
+      // Dim should be deferred.
+      NO_DIM = 1;
+      // Model could fail to make a prediction due to various reasons, e.g. it
+      // could fail to load the preprocessor or process the features for
+      // inference.
+      MODEL_ERROR = 2;
+    }
+
+    // Both |inactivity_score| and |decision_threshold| are in the range of
+    // [0,100]. These values are the quantized versions of actual values used in
+    // making a model prediction, so that they can be logged later. If
+    // |inactivity_score| < |decision_threshold| then dim will be deferred.
     optional int32 decision_threshold = 1;
     // How likely user will remain inactive if screen is dimmed.
     optional int32 inactivity_score = 2;
     // Whether model decision (regardless if dim is to be deferred) is
-    // taken by powerd.
+    // taken by powerd. It is false if model response is MODEL_ERROR or if dim
+    // was deferred last time dim imminent occurred.
     optional bool model_applied = 3;
+    optional Response response = 4;
   }
 
   optional ModelParams params = 1;

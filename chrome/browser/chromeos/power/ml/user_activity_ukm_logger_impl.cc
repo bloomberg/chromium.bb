@@ -156,9 +156,16 @@ void UserActivityUkmLoggerImpl::LogActivity(const UserActivityEvent& event) {
   if (event.has_model_prediction()) {
     const UserActivityEvent::ModelPrediction& model_prediction =
         event.model_prediction();
-    user_activity.SetModelApplied(model_prediction.model_applied())
-        .SetModelDecisionThreshold(model_prediction.decision_threshold())
-        .SetModelInactivityScore(model_prediction.inactivity_score());
+    user_activity.SetModelResponse(model_prediction.response())
+        .SetModelApplied(model_prediction.model_applied());
+    if (model_prediction.response() ==
+            UserActivityEvent::ModelPrediction::DIM ||
+        model_prediction.response() ==
+            UserActivityEvent::ModelPrediction::NO_DIM) {
+      user_activity
+          .SetModelDecisionThreshold(model_prediction.decision_threshold())
+          .SetModelInactivityScore(model_prediction.inactivity_score());
+    }
   }
 
   user_activity.Record(ukm_recorder_);

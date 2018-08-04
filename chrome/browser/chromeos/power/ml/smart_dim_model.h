@@ -17,16 +17,10 @@ class SmartDimModel {
  public:
   virtual ~SmartDimModel() = default;
 
-  // Returns whether an upcoming dim should go ahead based on input |features|.
-  // If |inactive_probability_out| and |threshold_out| are non-null, also
-  // returns model confidence (probability that user will remain inactive if
-  // screen is dimmed now) and threshold: if probability >= threshold then model
-  // will return true for this function. Both |inactive_probability_out| and
-  // |threshold_out| are expected to be in the range of [0, 1.0] so that they
-  // can be logged as model results.
-  virtual bool ShouldDim(const UserActivityEvent::Features& features,
-                         float* inactive_probability_out,
-                         float* threshold_out) = 0;
+  // Returns a prediction whether an upcoming dim should go ahead based on input
+  // |features|.
+  virtual UserActivityEvent::ModelPrediction ShouldDim(
+      const UserActivityEvent::Features& features) = 0;
 };
 
 }  // namespace ml

@@ -13,17 +13,14 @@ SmartDimModelImpl::SmartDimModelImpl() = default;
 SmartDimModelImpl::~SmartDimModelImpl() = default;
 
 // TODO(jiameng): add impl.
-bool SmartDimModelImpl::ShouldDim(const UserActivityEvent::Features& features,
-                                  float* inactive_probability_out,
-                                  float* threshold_out) {
+UserActivityEvent::ModelPrediction SmartDimModelImpl::ShouldDim(
+    const UserActivityEvent::Features& features) {
   // Let dim go ahead before we have a model implementation in place.
-  if (inactive_probability_out) {
-    *inactive_probability_out = 1.0;
-  }
-  if (threshold_out) {
-    *threshold_out = 0.0;
-  }
-  return true;
+  UserActivityEvent::ModelPrediction prediction;
+  prediction.set_decision_threshold(0);
+  prediction.set_inactivity_score(100);
+  prediction.set_response(UserActivityEvent::ModelPrediction::DIM);
+  return prediction;
 }
 
 }  // namespace ml
