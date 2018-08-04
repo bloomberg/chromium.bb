@@ -576,7 +576,7 @@ function onDeleteCustomLinkDone(success) {
 function showNotification(msg) {
   $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
 
-  if (configData.isMDIconsEnabled || configData.isMDUIEnabled) {
+  if (configData.isMDIconsEnabled) {
     $(IDS.NOTIFICATION).classList.remove(CLASSES.HIDE_NOTIFICATION);
     // Timeout is required for the "float up" transition to work. Modifying the
     // "display" property prevents transitions from activating.
@@ -602,7 +602,7 @@ function showNotification(msg) {
  * Hides the pop-up notification.
  */
 function hideNotification() {
-  if (configData.isMDIconsEnabled || configData.isMDUIEnabled) {
+  if (configData.isMDIconsEnabled) {
     let notification = $(IDS.NOTIFICATION_CONTAINER);
     if (!notification.classList.contains(CLASSES.FLOAT_UP)) {
       return;
@@ -767,7 +767,12 @@ function handlePostMessage(event) {
               !args.showRestoreDefault);
     }
   } else if (cmd === 'tileBlacklisted') {
-    showNotification(configData.translatedStrings.linkRemovedMsg);
+    if (configData.isCustomLinksEnabled) {
+      showNotification(configData.translatedStrings.linkRemovedMsg);
+    } else {
+      showNotification(
+          configData.translatedStrings.thumbnailRemovedNotification);
+    }
     lastBlacklistedTile = args.tid;
 
     ntpApiHandle.deleteMostVisitedItem(args.tid);
@@ -790,21 +795,22 @@ function handlePostMessage(event) {
 
 
 /**
- * Enables Material Design styles for all of NTP.
- */
-function enableMD() {
-  document.body.classList.add(CLASSES.MATERIAL_DESIGN);
-  enableMDIcons();
-}
-
-
-/**
- * Enables Material Design styles for the Most Visited section.
+ * Enables Material Design styles for the Most Visited section. Implicitly
+ * enables Material Design for the rest of NTP.
  */
 function enableMDIcons() {
   $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
   $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
+  enableMD();
   addRippleAnimations();
+}
+
+
+/**
+ * Enables Material Design styles for all NTP components except Most Visited.
+ */
+function enableMD() {
+  document.body.classList.add(CLASSES.MATERIAL_DESIGN);
 }
 
 
@@ -924,10 +930,10 @@ function init() {
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
   if (configData.isGooglePage) {
-    if (configData.isMDUIEnabled) {
-      enableMD();
-    } else if (configData.isMDIconsEnabled) {
+    if (configData.isMDIconsEnabled || configData.isCustomLinksEnabled) {
       enableMDIcons();
+    } else if (configData.isMDUIEnabled) {
+      enableMD();
     }
 
     if (configData.isCustomLinksEnabled) {
