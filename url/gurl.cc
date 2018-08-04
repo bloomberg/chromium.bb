@@ -19,8 +19,6 @@
 
 namespace {
 
-static base::LazyInstance<std::string>::Leaky empty_string =
-    LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<GURL>::Leaky empty_gurl = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -166,7 +164,7 @@ const std::string& GURL::spec() const {
     return spec_;
 
   DCHECK(false) << "Trying to get the spec of an invalid URL!";
-  return empty_string.Get();
+  return base::EmptyString();
 }
 
 bool GURL::operator<(const GURL& other) const {
