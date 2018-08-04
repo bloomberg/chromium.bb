@@ -4,12 +4,15 @@
 
 #include "content/browser/media/capture/aura_window_video_capture_device.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "media/base/bind_to_current_loop.h"
@@ -31,14 +34,14 @@ class AuraWindowVideoCaptureDevice::WindowTracker
           AuraWindowVideoCaptureDevice::WindowTracker> {
  public:
   WindowTracker(base::WeakPtr<AuraWindowVideoCaptureDevice> device,
-                CursorRenderer* cursor_renderer,
+                MouseCursorOverlayController* cursor_controller,
                 const DesktopMediaID& source_id)
       : device_(std::move(device)),
         device_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        cursor_renderer_(cursor_renderer),
+        cursor_controller_(cursor_controller),
         target_type_(source_id.type) {
     DCHECK(device_task_runner_);
-    DCHECK(cursor_renderer_);
+    DCHECK(cursor_controller_);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -86,10 +89,11 @@ class AuraWindowVideoCaptureDevice::WindowTracker
           FROM_HERE,
           base::BindOnce(&FrameSinkVideoCaptureDevice::OnTargetChanged, device_,
                          target_window_->GetFrameSinkId()));
-      // Note: CursorRenderer runs on the UI thread. It's also important that
-      // SetTargetView() be called in the current stack while |target_window_|
-      // is known to be a valid pointer. http://crbug.com/818679
-      cursor_renderer_->SetTargetView(target_window_);
+      // Note: The MouseCursorOverlayController runs on the UI thread. It's also
+      // important that SetTargetView() be called in the current stack while
+      // |target_window_| is known to be a valid pointer.
+      // http://crbug.com/818679
+      cursor_controller_->SetTargetView(target_window_);
     } else {
       device_task_runner_->PostTask(
           FROM_HERE,
@@ -110,7 +114,7 @@ class AuraWindowVideoCaptureDevice::WindowTracker
         FROM_HERE,
         base::BindOnce(&FrameSinkVideoCaptureDevice::OnTargetPermanentlyLost,
                        device_));
-    cursor_renderer_->SetTargetView(nullptr);
+    cursor_controller_->SetTargetView(gfx::NativeView());
   }
 
  private:
@@ -120,8 +124,8 @@ class AuraWindowVideoCaptureDevice::WindowTracker
 
   // Owned by FrameSinkVideoCaptureDevice. This will be valid for the life of
   // WindowTracker because the WindowTracker deleter task will be posted to the
-  // UI thread before the CursorRenderer deleter task.
-  CursorRenderer* const cursor_renderer_;
+  // UI thread before the MouseCursorOverlayController deleter task.
+  MouseCursorOverlayController* const cursor_controller_;
 
   const DesktopMediaID::Type target_type_;
 
@@ -132,7 +136,8 @@ class AuraWindowVideoCaptureDevice::WindowTracker
 
 AuraWindowVideoCaptureDevice::AuraWindowVideoCaptureDevice(
     const DesktopMediaID& source_id)
-    : tracker_(new WindowTracker(AsWeakPtr(), cursor_renderer(), source_id)) {}
+    : tracker_(new WindowTracker(AsWeakPtr(), cursor_controller(), source_id)) {
+}
 
 AuraWindowVideoCaptureDevice::~AuraWindowVideoCaptureDevice() = default;
 

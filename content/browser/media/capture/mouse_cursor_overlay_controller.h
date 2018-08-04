@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -33,15 +34,7 @@ namespace content {
 // multiple threads.
 class CONTENT_EXPORT MouseCursorOverlayController {
  public:
-  // TODO(crbug.com/810133): Replace this stub interface with
-  // viz::mojom::FrameSinkVideoCaptureOverlay in a soon-upcoming change.
-  class Overlay {
-   public:
-    virtual ~Overlay() = default;
-    virtual void SetImageAndBounds(const SkBitmap& image,
-                                   const gfx::RectF& bounds) = 0;
-    virtual void SetBounds(const gfx::RectF& bounds) = 0;
-  };
+  using Overlay = viz::mojom::FrameSinkVideoCaptureOverlay;
 
   MouseCursorOverlayController();
   ~MouseCursorOverlayController();

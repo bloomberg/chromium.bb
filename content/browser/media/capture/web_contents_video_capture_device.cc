@@ -4,12 +4,15 @@
 
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -31,14 +34,14 @@ class WebContentsVideoCaptureDevice::FrameTracker
           WebContentsVideoCaptureDevice::FrameTracker> {
  public:
   FrameTracker(base::WeakPtr<WebContentsVideoCaptureDevice> device,
-               CursorRenderer* cursor_renderer,
+               MouseCursorOverlayController* cursor_controller,
                int render_process_id,
                int main_render_frame_id)
       : device_(std::move(device)),
         device_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        cursor_renderer_(cursor_renderer) {
+        cursor_controller_(cursor_controller) {
     DCHECK(device_task_runner_);
-    DCHECK(cursor_renderer_);
+    DCHECK(cursor_controller_);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -175,10 +178,10 @@ class WebContentsVideoCaptureDevice::FrameTracker
 
       if (native_view != target_native_view_) {
         target_native_view_ = native_view;
-        // Note: CursorRenderer runs on the UI thread. It's also important that
-        // SetTargetView() be called in the current stack while |native_view| is
-        // known to be a valid pointer. http://crbug.com/818679
-        cursor_renderer_->SetTargetView(native_view);
+        // Note: MouseCursorOverlayController runs on the UI thread. It's also
+        // important that SetTargetView() be called in the current stack while
+        // |native_view| is known to be a valid pointer. http://crbug.com/818679
+        cursor_controller_->SetTargetView(native_view);
       }
     } else {
       device_task_runner_->PostTask(
@@ -186,7 +189,7 @@ class WebContentsVideoCaptureDevice::FrameTracker
           base::BindOnce(
               &WebContentsVideoCaptureDevice::OnTargetPermanentlyLost,
               device_));
-      cursor_renderer_->SetTargetView(gfx::NativeView());
+      cursor_controller_->SetTargetView(gfx::NativeView());
     }
   }
 
@@ -196,8 +199,8 @@ class WebContentsVideoCaptureDevice::FrameTracker
 
   // Owned by FrameSinkVideoCaptureDevice. This will be valid for the life of
   // FrameTracker because the FrameTracker deleter task will be posted to the UI
-  // thread before the CursorRenderer deleter task.
-  CursorRenderer* const cursor_renderer_;
+  // thread before the MouseCursorOverlayController deleter task.
+  MouseCursorOverlayController* const cursor_controller_;
 
   viz::FrameSinkId target_frame_sink_id_;
   gfx::NativeView target_native_view_ = gfx::NativeView();
@@ -212,7 +215,7 @@ WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
     int render_process_id,
     int main_render_frame_id)
     : tracker_(new FrameTracker(AsWeakPtr(),
-                                cursor_renderer(),
+                                cursor_controller(),
                                 render_process_id,
                                 main_render_frame_id)) {}
 
