@@ -65,6 +65,7 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   void PerformAction(const ui::AXActionData& action) override;
 
   // WidgetObserver:
+  void OnWidgetClosing(Widget* widget) override;
   void OnWidgetDestroying(Widget* widget) override;
 
   // AXAuraObjCache::Delegate:
@@ -73,6 +74,7 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
                ax::mojom::Event event_type) override;
 
   void FlushForTesting();
+  Widget* widget_for_testing() { return widget_; }
 
  private:
   // Registers this object as a remote host for the parent AXHost.

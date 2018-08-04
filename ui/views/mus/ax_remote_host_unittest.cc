@@ -5,6 +5,7 @@
 #include "ui/views/mus/ax_remote_host.h"
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -137,6 +138,34 @@ TEST_F(AXRemoteHostTest, SendEventBeforeWidgetCreated) {
   AXRemoteHost* remote = CreateRemote(&service);
   views::View view;
   remote->HandleEvent(&view, ax::mojom::Event::kLocationChanged);
+  // No crash.
+}
+
+// Verifies that the AXRemoteHost stops monitoring widgets that are closed
+// asynchronously, like when ash requests close via DesktopWindowTreeHostMus.
+// https://crbug.com/869608
+TEST_F(AXRemoteHostTest, AsyncWidgetClose) {
+  TestAXHostService service(true /*automation_enabled*/);
+  AXRemoteHost* remote = CreateRemote(&service);
+  remote->FlushForTesting();
+
+  Widget* widget = new Widget();  // Owned by native widget.
+  Widget::InitParams params;
+  params.bounds = gfx::Rect(1, 2, 333, 444);
+  widget->Init(params);
+  widget->Show();
+
+  // AXRemoteHost is tracking the widget.
+  EXPECT_TRUE(remote->widget_for_testing());
+
+  // Asynchronously close the widget using Close() instead of CloseNow().
+  widget->Close();
+
+  // AXRemoteHost stops tracking the widget, even though it isn't destroyed yet.
+  EXPECT_FALSE(remote->widget_for_testing());
+
+  // Widget finishes closing.
+  base::RunLoop().RunUntilIdle();
   // No crash.
 }
 
