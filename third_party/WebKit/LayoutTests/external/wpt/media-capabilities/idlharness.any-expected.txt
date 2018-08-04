@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 63 tests; 37 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 63 tests; 43 PASS, 20 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idlharness
 PASS Test IDL implementation of Media Capabilities
 PASS Partial interface Navigator: original interface defined
@@ -34,12 +34,12 @@ PASS MediaCapabilities interface: existence and properties of interface prototyp
 PASS MediaCapabilities interface: existence and properties of interface prototype object's @@unscopables property
 PASS MediaCapabilities interface: operation decodingInfo(MediaDecodingConfiguration)
 PASS MediaCapabilities interface: operation encodingInfo(MediaEncodingConfiguration)
-FAIL MediaCapabilities must be primary interface of navigatior.mediaCapabilities assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: navigatior is not defined"
-FAIL Stringification of navigatior.mediaCapabilities assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: navigatior is not defined"
-FAIL MediaCapabilities interface: navigatior.mediaCapabilities must inherit property "decodingInfo(MediaDecodingConfiguration)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: navigatior is not defined"
-FAIL MediaCapabilities interface: calling decodingInfo(MediaDecodingConfiguration) on navigatior.mediaCapabilities with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: navigatior is not defined"
-FAIL MediaCapabilities interface: navigatior.mediaCapabilities must inherit property "encodingInfo(MediaEncodingConfiguration)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: navigatior is not defined"
-FAIL MediaCapabilities interface: calling encodingInfo(MediaEncodingConfiguration) on navigatior.mediaCapabilities with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: navigatior is not defined"
+PASS MediaCapabilities must be primary interface of navigator.mediaCapabilities
+PASS Stringification of navigator.mediaCapabilities
+PASS MediaCapabilities interface: navigator.mediaCapabilities must inherit property "decodingInfo(MediaDecodingConfiguration)" with the proper type
+PASS MediaCapabilities interface: calling decodingInfo(MediaDecodingConfiguration) on navigator.mediaCapabilities with too few arguments must throw TypeError
+PASS MediaCapabilities interface: navigator.mediaCapabilities must inherit property "encodingInfo(MediaEncodingConfiguration)" with the proper type
+PASS MediaCapabilities interface: calling encodingInfo(MediaEncodingConfiguration) on navigator.mediaCapabilities with too few arguments must throw TypeError
 FAIL ScreenLuminance interface: existence and properties of interface object assert_own_property: self does not have own property "ScreenLuminance" expected property "ScreenLuminance" missing
 FAIL ScreenLuminance interface object length assert_own_property: self does not have own property "ScreenLuminance" expected property "ScreenLuminance" missing
 FAIL ScreenLuminance interface object name assert_own_property: self does not have own property "ScreenLuminance" expected property "ScreenLuminance" missing
