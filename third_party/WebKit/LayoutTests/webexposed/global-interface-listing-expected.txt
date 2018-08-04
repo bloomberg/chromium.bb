@@ -4665,6 +4665,7 @@ interface Navigator
     getter xr
     method constructor
     method getBattery
+    method getDisplayMedia
     method getGamepads
     method getInstalledRelatedApps
     method getUserMedia

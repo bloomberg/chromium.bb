@@ -44,12 +44,14 @@ UserMediaClient::UserMediaClient(WebUserMediaClient* client)
     : client_(client) {}
 
 void UserMediaClient::RequestUserMedia(UserMediaRequest* request) {
-  if (client_) {
+  // TODO(emircan): Hook up kDisplayMedia calls.
+  if (client_ && request->MediaRequestType() !=
+                     WebUserMediaRequest::MediaType::kDisplayMedia) {
     client_->RequestUserMedia(request);
-  } else {
-    request->Fail(WebUserMediaRequest::Error::kNotSupported,
-                  "User Media support is disabled");
+    return;
   }
+  request->Fail(WebUserMediaRequest::Error::kNotSupported,
+                "User Media support is disabled");
 }
 
 void UserMediaClient::CancelUserMediaRequest(UserMediaRequest* request) {

@@ -60,6 +60,11 @@ class BLINK_EXPORT WebUserMediaRequest {
     kKillSwitchOn
   };
 
+  enum class MediaType {
+    kUserMedia,
+    kDisplayMedia,
+  };
+
   WebUserMediaRequest() = default;
   WebUserMediaRequest(const WebUserMediaRequest& request) { Assign(request); }
   ~WebUserMediaRequest() { Reset(); }
@@ -74,6 +79,7 @@ class BLINK_EXPORT WebUserMediaRequest {
   bool Equals(const WebUserMediaRequest&) const;
   void Assign(const WebUserMediaRequest&);
 
+  MediaType MediaRequestType() const;
   bool Audio() const;
   bool Video() const;
   WebMediaConstraints AudioConstraints() const;

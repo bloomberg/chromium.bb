@@ -362,6 +362,7 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
 UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
     UserMediaController* controller,
+    WebUserMediaRequest::MediaType media_type,
     const MediaStreamConstraints& options,
     Callbacks* callbacks,
     MediaErrorState& error_state) {
@@ -375,10 +376,17 @@ UserMediaRequest* UserMediaRequest::Create(
   if (error_state.HadException())
     return nullptr;
 
-  if (audio.IsNull() && video.IsNull()) {
-    error_state.ThrowTypeError(
-        "At least one of audio and video must be requested");
-    return nullptr;
+  switch (media_type) {
+    case WebUserMediaRequest::MediaType::kUserMedia: {
+      if (audio.IsNull() && video.IsNull()) {
+        error_state.ThrowTypeError(
+            "At least one of audio and video must be requested");
+        return nullptr;
+      }
+      break;
+    }
+    case WebUserMediaRequest::MediaType::kDisplayMedia:
+      break;
   }
 
   if (!audio.IsNull())
@@ -386,7 +394,8 @@ UserMediaRequest* UserMediaRequest::Create(
   if (!video.IsNull())
     CountVideoConstraintUses(context, video);
 
-  return new UserMediaRequest(context, controller, audio, video, callbacks);
+  return new UserMediaRequest(context, controller, media_type, audio, video,
+                              callbacks);
 }
 
 UserMediaRequest* UserMediaRequest::Create(
@@ -396,23 +405,27 @@ UserMediaRequest* UserMediaRequest::Create(
     V8NavigatorUserMediaSuccessCallback* success_callback,
     V8NavigatorUserMediaErrorCallback* error_callback,
     MediaErrorState& error_state) {
-  return Create(context, controller, options,
-                V8Callbacks::Create(success_callback, error_callback),
+  return Create(context, controller, WebUserMediaRequest::MediaType::kUserMedia,
+                options, V8Callbacks::Create(success_callback, error_callback),
                 error_state);
 }
 
 UserMediaRequest* UserMediaRequest::CreateForTesting(
     const WebMediaConstraints& audio,
     const WebMediaConstraints& video) {
-  return new UserMediaRequest(nullptr, nullptr, audio, video, nullptr);
+  return new UserMediaRequest(nullptr, nullptr,
+                              WebUserMediaRequest::MediaType::kUserMedia, audio,
+                              video, nullptr);
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    UserMediaController* controller,
+                                   WebUserMediaRequest::MediaType media_type,
                                    WebMediaConstraints audio,
                                    WebMediaConstraints video,
                                    Callbacks* callbacks)
     : ContextLifecycleObserver(context),
+      media_type_(media_type),
       audio_(audio),
       video_(video),
       should_disable_hardware_noise_suppression_(
@@ -431,6 +444,10 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
 }
 
 UserMediaRequest::~UserMediaRequest() = default;
+
+WebUserMediaRequest::MediaType UserMediaRequest::MediaRequestType() const {
+  return media_type_;
+}
 
 bool UserMediaRequest::Audio() const {
   return !audio_.IsNull();
