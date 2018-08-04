@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p/socket_host.h"
+#include "services/network/p2p/socket.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_byteorder.h"
-#include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
-#include "content/browser/renderer_host/p2p/socket_host_tcp.h"
-#include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
-#include "content/browser/renderer_host/p2p/socket_host_udp.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/p2p/socket_manager.h"
+#include "services/network/p2p/socket_tcp.h"
+#include "services/network/p2p/socket_tcp_server.h"
+#include "services/network/p2p/socket_udp.h"
 #include "services/network/proxy_resolving_client_socket_factory.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 #include "third_party/webrtc/media/base/turnutils.h"
@@ -79,13 +77,13 @@ static SocketErrorCode MapNetErrorToSocketErrorCode(int net_err) {
 }
 }  // namespace
 
-namespace content {
+namespace network {
 
-P2PSocketHost::P2PSocketHost(P2PSocketDispatcherHost* socket_dispatcher_host,
-                             network::mojom::P2PSocketClientPtr client,
-                             network::mojom::P2PSocketRequest socket,
-                             ProtocolType protocol_type)
-    : socket_dispatcher_host_(socket_dispatcher_host),
+P2PSocket::P2PSocket(P2PSocketManager* socket_manager,
+                     mojom::P2PSocketClientPtr client,
+                     mojom::P2PSocketRequest socket,
+                     ProtocolType protocol_type)
+    : socket_manager_(socket_manager),
       client_(std::move(client)),
       binding_(this, std::move(socket)),
       state_(STATE_UNINITIALIZED),
@@ -97,12 +95,12 @@ P2PSocketHost::P2PSocketHost(P2PSocketDispatcherHost* socket_dispatcher_host,
       send_bytes_delayed_max_(0),
       send_bytes_delayed_cur_(0),
       weak_ptr_factory_(this) {
-  binding_.set_connection_error_handler(base::BindOnce(
-      &P2PSocketHost::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&P2PSocket::OnConnectionError, base::Unretained(this)));
 }
 
-P2PSocketHost::~P2PSocketHost() {
-  if (protocol_type_ == P2PSocketHost::UDP) {
+P2PSocket::~P2PSocket() {
+  if (protocol_type_ == P2PSocket::UDP) {
     UMA_HISTOGRAM_COUNTS_10000("WebRTC.SystemMaxConsecutiveBytesDelayed_UDP",
                                send_bytes_delayed_max_);
   } else {
@@ -112,7 +110,7 @@ P2PSocketHost::~P2PSocketHost() {
 
   if (send_packets_total_ > 0) {
     int delay_rate = (send_packets_delayed_total_ * 100) / send_packets_total_;
-    if (protocol_type_ == P2PSocketHost::UDP) {
+    if (protocol_type_ == P2PSocket::UDP) {
       UMA_HISTOGRAM_PERCENTAGE("WebRTC.SystemPercentPacketsDelayed_UDP",
                                delay_rate);
     } else {
@@ -120,16 +118,13 @@ P2PSocketHost::~P2PSocketHost() {
                                delay_rate);
     }
   }
-
-  if (socket_dispatcher_host_)
-    socket_dispatcher_host_->SocketDestroyed(this);
 }
 
 // Verifies that the packet |data| has a valid STUN header.
 // static
-bool P2PSocketHost::GetStunPacketType(const int8_t* data,
-                                      int data_size,
-                                      StunMessageType* type) {
+bool P2PSocket::GetStunPacketType(const int8_t* data,
+                                  int data_size,
+                                  StunMessageType* type) {
   if (data_size < kStunHeaderSize) {
     return false;
   }
@@ -173,67 +168,60 @@ bool P2PSocketHost::GetStunPacketType(const int8_t* data,
 }
 
 // static
-bool P2PSocketHost::IsRequestOrResponse(StunMessageType type) {
+bool P2PSocket::IsRequestOrResponse(StunMessageType type) {
   return type == STUN_BINDING_REQUEST || type == STUN_BINDING_RESPONSE ||
-      type == STUN_ALLOCATE_REQUEST || type == STUN_ALLOCATE_RESPONSE;
+         type == STUN_ALLOCATE_REQUEST || type == STUN_ALLOCATE_RESPONSE;
 }
 
 // static
-void P2PSocketHost::ReportSocketError(int result, const char* histogram_name) {
+void P2PSocket::ReportSocketError(int result, const char* histogram_name) {
   SocketErrorCode error_code = MapNetErrorToSocketErrorCode(result);
   UMA_HISTOGRAM_ENUMERATION(histogram_name, static_cast<int>(error_code),
                             static_cast<int>(SocketErrorCode::ERR_OTHER) + 1);
 }
 
 // static
-P2PSocketHost* P2PSocketHost::Create(
-    P2PSocketDispatcherHost* socket_dispatcher_host,
-    network::mojom::P2PSocketClientPtr client,
-    network::mojom::P2PSocketRequest socket,
-    network::P2PSocketType type,
-    net::URLRequestContextGetter* url_context,
-    network::ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory,
+P2PSocket* P2PSocket::Create(
+    P2PSocketManager* socket_manager,
+    mojom::P2PSocketClientPtr client,
+    mojom::P2PSocketRequest socket,
+    P2PSocketType type,
+    net::NetLog* net_log,
+    ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory,
     P2PMessageThrottler* throttler) {
   switch (type) {
-    case network::P2P_SOCKET_UDP:
-      return new P2PSocketHostUdp(
-          socket_dispatcher_host, std::move(client), std::move(socket),
-          throttler, url_context->GetURLRequestContext()->net_log());
-    case network::P2P_SOCKET_TCP_SERVER:
-      return new P2PSocketHostTcpServer(socket_dispatcher_host,
-                                        std::move(client), std::move(socket),
-                                        network::P2P_SOCKET_TCP_CLIENT);
+    case P2P_SOCKET_UDP:
+      return new P2PSocketUdp(socket_manager, std::move(client),
+                              std::move(socket), throttler, net_log);
+    case P2P_SOCKET_TCP_SERVER:
+      return new P2PSocketTcpServer(socket_manager, std::move(client),
+                                    std::move(socket), P2P_SOCKET_TCP_CLIENT);
 
-    case network::P2P_SOCKET_STUN_TCP_SERVER:
-      return new P2PSocketHostTcpServer(socket_dispatcher_host,
-                                        std::move(client), std::move(socket),
-                                        network::P2P_SOCKET_STUN_TCP_CLIENT);
+    case P2P_SOCKET_STUN_TCP_SERVER:
+      return new P2PSocketTcpServer(socket_manager, std::move(client),
+                                    std::move(socket),
+                                    P2P_SOCKET_STUN_TCP_CLIENT);
 
-    case network::P2P_SOCKET_TCP_CLIENT:
-    case network::P2P_SOCKET_SSLTCP_CLIENT:
-    case network::P2P_SOCKET_TLS_CLIENT:
-      return new P2PSocketHostTcp(socket_dispatcher_host, std::move(client),
-                                  std::move(socket), type, url_context,
+    case P2P_SOCKET_TCP_CLIENT:
+    case P2P_SOCKET_SSLTCP_CLIENT:
+    case P2P_SOCKET_TLS_CLIENT:
+      return new P2PSocketTcp(socket_manager, std::move(client),
+                              std::move(socket), type,
+                              proxy_resolving_socket_factory);
+
+    case P2P_SOCKET_STUN_TCP_CLIENT:
+    case P2P_SOCKET_STUN_SSLTCP_CLIENT:
+    case P2P_SOCKET_STUN_TLS_CLIENT:
+      return new P2PSocketStunTcp(socket_manager, std::move(client),
+                                  std::move(socket), type,
                                   proxy_resolving_socket_factory);
-
-    case network::P2P_SOCKET_STUN_TCP_CLIENT:
-    case network::P2P_SOCKET_STUN_SSLTCP_CLIENT:
-    case network::P2P_SOCKET_STUN_TLS_CLIENT:
-      return new P2PSocketHostStunTcp(socket_dispatcher_host, std::move(client),
-                                      std::move(socket), type, url_context,
-                                      proxy_resolving_socket_factory);
   }
 
   NOTREACHED();
   return nullptr;
 }
 
-void P2PSocketHost::StartRtpDump(
-    bool incoming,
-    bool outgoing,
-    const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!packet_callback.is_null());
+void P2PSocket::StartRtpDump(bool incoming, bool outgoing) {
   DCHECK(incoming || outgoing);
 
   if (incoming) {
@@ -243,12 +231,9 @@ void P2PSocketHost::StartRtpDump(
   if (outgoing) {
     dump_outgoing_rtp_packet_ = true;
   }
-
-  packet_dump_callback_ = packet_callback;
 }
 
-void P2PSocketHost::StopRtpDump(bool incoming, bool outgoing) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void P2PSocket::StopRtpDump(bool incoming, bool outgoing) {
   DCHECK(incoming || outgoing);
 
   if (incoming) {
@@ -258,24 +243,21 @@ void P2PSocketHost::StopRtpDump(bool incoming, bool outgoing) {
   if (outgoing) {
     dump_outgoing_rtp_packet_ = false;
   }
-
-  if (!dump_incoming_rtp_packet_ && !dump_outgoing_rtp_packet_) {
-    packet_dump_callback_.Reset();
-  }
 }
 
-network::mojom::P2PSocketClientPtr P2PSocketHost::ReleaseClientForTesting() {
+mojom::P2PSocketClientPtr P2PSocket::ReleaseClientForTesting() {
   return std::move(client_);
 }
 
-network::mojom::P2PSocketRequest P2PSocketHost::ReleaseBindingForTesting() {
+mojom::P2PSocketRequest P2PSocket::ReleaseBindingForTesting() {
   return binding_.Unbind();
 }
 
-void P2PSocketHost::DumpRtpPacket(const int8_t* packet,
-                                  size_t length,
-                                  bool incoming) {
-  if (IsDtlsPacket(packet, length) || IsRtcpPacket(packet, length)) {
+void P2PSocket::DumpRtpPacket(const int8_t* packet,
+                              size_t length,
+                              bool incoming) {
+  if (!socket_manager_ || IsDtlsPacket(packet, length) ||
+      IsRtcpPacket(packet, length)) {
     return;
   }
 
@@ -297,60 +279,33 @@ void P2PSocketHost::DumpRtpPacket(const int8_t* packet,
     return;
   }
 
-  std::unique_ptr<uint8_t[]> header_buffer(new uint8_t[header_length]);
-  memcpy(header_buffer.get(), packet, header_length);
-
-  // Posts to the IO thread as the data members should be accessed on the IO
-  // thread only.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&P2PSocketHost::DumpRtpPacketOnIOThread,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(header_buffer),
-                     header_length, rtp_packet_length, incoming));
+  socket_manager_->DumpPacket(packet, header_length, rtp_packet_length,
+                              incoming);
 }
 
-void P2PSocketHost::DumpRtpPacketOnIOThread(
-    std::unique_ptr<uint8_t[]> packet_header,
-    size_t header_length,
-    size_t packet_length,
-    bool incoming) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if ((incoming && !dump_incoming_rtp_packet_) ||
-      (!incoming && !dump_outgoing_rtp_packet_) ||
-      packet_dump_callback_.is_null()) {
-    return;
-  }
-
-  // |packet_dump_callback_| must be called on the UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(packet_dump_callback_, std::move(packet_header),
-                     header_length, packet_length, incoming));
-}
-
-void P2PSocketHost::IncrementDelayedPackets() {
+void P2PSocket::IncrementDelayedPackets() {
   send_packets_delayed_total_++;
 }
 
-void P2PSocketHost::IncrementTotalSentPackets() {
+void P2PSocket::IncrementTotalSentPackets() {
   send_packets_total_++;
 }
 
-void P2PSocketHost::IncrementDelayedBytes(uint32_t size) {
+void P2PSocket::IncrementDelayedBytes(uint32_t size) {
   send_bytes_delayed_cur_ += size;
   if (send_bytes_delayed_cur_ > send_bytes_delayed_max_) {
     send_bytes_delayed_max_ = send_bytes_delayed_cur_;
   }
 }
 
-void P2PSocketHost::DecrementDelayedBytes(uint32_t size) {
+void P2PSocket::DecrementDelayedBytes(uint32_t size) {
   send_bytes_delayed_cur_ -= size;
   DCHECK_GE(send_bytes_delayed_cur_, 0);
 }
 
-void P2PSocketHost::OnConnectionError() {
-  delete this;
+void P2PSocket::OnConnectionError() {
+  if (socket_manager_)
+    socket_manager_->DestroySocket(this);
 }
 
-}  // namespace content
+}  // namespace network

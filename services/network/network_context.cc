@@ -72,6 +72,7 @@
 #include "services/network/mojo_net_log.h"
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
+#include "services/network/p2p/socket_manager.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
@@ -879,6 +880,20 @@ void NetworkContext::PreconnectSockets(uint32_t num_streams,
       base::saturated_cast<int32_t>(num_streams), request_info);
 }
 
+void NetworkContext::CreateP2PSocketManager(
+    mojom::P2PTrustedSocketManagerClientPtr client,
+    mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
+    mojom::P2PSocketManagerRequest socket_manager_request) {
+  std::unique_ptr<P2PSocketManager> socket_manager =
+      std::make_unique<P2PSocketManager>(
+          std::move(client), std::move(trusted_socket_manager),
+          std::move(socket_manager_request),
+          base::Bind(&NetworkContext::DestroySocketManager,
+                     base::Unretained(this)),
+          url_request_context_);
+  socket_managers_[socket_manager.get()] = std::move(socket_manager);
+}
+
 void NetworkContext::ResetURLLoaderFactories() {
   for (const auto& factory : url_loader_factories_)
     factory->ClearBindings();
@@ -1293,6 +1308,12 @@ GURL NetworkContext::GetHSTSRedirect(const GURL& original_url) {
   const char kNewScheme[] = "https";
   replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
   return original_url.ReplaceComponents(replacements);
+}
+
+void NetworkContext::DestroySocketManager(P2PSocketManager* socket_manager) {
+  auto iter = socket_managers_.find(socket_manager);
+  DCHECK(iter != socket_managers_.end());
+  socket_managers_.erase(iter);
 }
 
 }  // namespace network

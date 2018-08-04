@@ -88,6 +88,7 @@ mojom("mojom") {
     "network_service_test.mojom",
     "network_types.mojom",
     "p2p.mojom",
+    "p2p_trusted.mojom",
     "proxy_config.mojom",
     "proxy_config_with_annotation.mojom",
     "proxy_lookup_client.mojom",

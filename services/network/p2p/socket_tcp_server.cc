@@ -2,41 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
+#include "services/network/p2p/socket_tcp_server.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
-#include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/stream_socket.h"
+#include "services/network/p2p/socket_manager.h"
+#include "services/network/p2p/socket_tcp.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 
 namespace {
 const int kListenBacklog = 5;
 }  // namespace
 
-namespace content {
+namespace network {
 
-P2PSocketHostTcpServer::P2PSocketHostTcpServer(
-    P2PSocketDispatcherHost* socket_dispatcher_host,
-    network::mojom::P2PSocketClientPtr client,
-    network::mojom::P2PSocketRequest socket,
-    network::P2PSocketType client_type)
-    : P2PSocketHost(socket_dispatcher_host,
-                    std::move(client),
-                    std::move(socket),
-                    P2PSocketHost::TCP),
+P2PSocketTcpServer::P2PSocketTcpServer(P2PSocketManager* socket_manager,
+                                       mojom::P2PSocketClientPtr client,
+                                       mojom::P2PSocketRequest socket,
+                                       P2PSocketType client_type)
+    : P2PSocket(socket_manager,
+                std::move(client),
+                std::move(socket),
+                P2PSocket::TCP),
       client_type_(client_type),
       socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())),
-      accept_callback_(base::BindRepeating(&P2PSocketHostTcpServer::OnAccepted,
+      accept_callback_(base::BindRepeating(&P2PSocketTcpServer::OnAccepted,
                                            base::Unretained(this))) {}
 
-P2PSocketHostTcpServer::~P2PSocketHostTcpServer() {
+P2PSocketTcpServer::~P2PSocketTcpServer() {
   if (state_ == STATE_OPEN) {
     DCHECK(socket_.get());
     socket_.reset();
@@ -44,11 +43,10 @@ P2PSocketHostTcpServer::~P2PSocketHostTcpServer() {
 }
 
 // TODO(guidou): Add support for port range.
-bool P2PSocketHostTcpServer::Init(
-    const net::IPEndPoint& local_address,
-    uint16_t min_port,
-    uint16_t max_port,
-    const network::P2PHostAndIPEndPoint& remote_address) {
+bool P2PSocketTcpServer::Init(const net::IPEndPoint& local_address,
+                              uint16_t min_port,
+                              uint16_t max_port,
+                              const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
   int result = socket_->Listen(local_address, kListenBacklog);
@@ -60,7 +58,7 @@ bool P2PSocketHostTcpServer::Init(
 
   result = socket_->GetLocalAddress(&local_address_);
   if (result < 0) {
-    LOG(ERROR) << "P2PSocketHostTcpServer::Init(): can't to get local address: "
+    LOG(ERROR) << "P2PSocketTcpServer::Init(): can't to get local address: "
                << result;
     OnError();
     return false;
@@ -75,11 +73,11 @@ bool P2PSocketHostTcpServer::Init(
   return true;
 }
 
-std::unique_ptr<P2PSocketHostTcpBase>
-P2PSocketHostTcpServer::AcceptIncomingTcpConnectionInternal(
+std::unique_ptr<P2PSocketTcpBase>
+P2PSocketTcpServer::AcceptIncomingTcpConnectionInternal(
     const net::IPEndPoint& remote_address,
-    network::mojom::P2PSocketClientPtr client,
-    network::mojom::P2PSocketRequest request) {
+    mojom::P2PSocketClientPtr client,
+    mojom::P2PSocketRequest request) {
   auto it = accepted_sockets_.find(remote_address);
   if (it == accepted_sockets_.end())
     return nullptr;
@@ -87,15 +85,14 @@ P2PSocketHostTcpServer::AcceptIncomingTcpConnectionInternal(
   std::unique_ptr<net::StreamSocket> socket = std::move(it->second);
   accepted_sockets_.erase(it);
 
-  std::unique_ptr<P2PSocketHostTcpBase> result;
-  if (client_type_ == network::P2P_SOCKET_TCP_CLIENT) {
-    result.reset(new P2PSocketHostTcp(socket_dispatcher_host_,
-                                      std::move(client), std::move(request),
-                                      client_type_, nullptr, nullptr));
+  std::unique_ptr<P2PSocketTcpBase> result;
+  if (client_type_ == P2P_SOCKET_TCP_CLIENT) {
+    result.reset(new P2PSocketTcp(socket_manager_, std::move(client),
+                                  std::move(request), client_type_, nullptr));
   } else {
-    result.reset(new P2PSocketHostStunTcp(socket_dispatcher_host_,
-                                          std::move(client), std::move(request),
-                                          client_type_, nullptr, nullptr));
+    result.reset(new P2PSocketStunTcp(socket_manager_, std::move(client),
+                                      std::move(request), client_type_,
+                                      nullptr));
   }
   if (!result->InitAccepted(remote_address, std::move(socket)))
     return nullptr;
@@ -103,7 +100,7 @@ P2PSocketHostTcpServer::AcceptIncomingTcpConnectionInternal(
   return result;
 }
 
-void P2PSocketHostTcpServer::OnError() {
+void P2PSocketTcpServer::OnError() {
   socket_.reset();
 
   if (state_ == STATE_UNINITIALIZED || state_ == STATE_OPEN) {
@@ -114,7 +111,7 @@ void P2PSocketHostTcpServer::OnError() {
   state_ = STATE_ERROR;
 }
 
-void P2PSocketHostTcpServer::DoAccept() {
+void P2PSocketTcpServer::DoAccept() {
   while (true) {
     int result = socket_->Accept(&accept_socket_, accept_callback_);
     if (result == net::ERR_IO_PENDING) {
@@ -125,7 +122,7 @@ void P2PSocketHostTcpServer::DoAccept() {
   }
 }
 
-void P2PSocketHostTcpServer::HandleAcceptResult(int result) {
+void P2PSocketTcpServer::HandleAcceptResult(int result) {
   if (result < 0) {
     if (result != net::ERR_IO_PENDING)
       OnError();
@@ -142,34 +139,33 @@ void P2PSocketHostTcpServer::HandleAcceptResult(int result) {
   client_->IncomingTcpConnection(address);
 }
 
-void P2PSocketHostTcpServer::OnAccepted(int result) {
+void P2PSocketTcpServer::OnAccepted(int result) {
   HandleAcceptResult(result);
   if (result == net::OK)
     DoAccept();
 }
 
-void P2PSocketHostTcpServer::AcceptIncomingTcpConnection(
+void P2PSocketTcpServer::AcceptIncomingTcpConnection(
     const net::IPEndPoint& remote_address,
-    network::mojom::P2PSocketClientPtr client,
-    network::mojom::P2PSocketRequest request) {
-  std::unique_ptr<P2PSocketHostTcpBase> socket =
+    mojom::P2PSocketClientPtr client,
+    mojom::P2PSocketRequest request) {
+  std::unique_ptr<P2PSocketTcpBase> socket =
       AcceptIncomingTcpConnectionInternal(remote_address, std::move(client),
                                           std::move(request));
   if (socket)
-    socket_dispatcher_host_->AddAcceptedConnection(std::move(socket));
+    socket_manager_->AddAcceptedConnection(std::move(socket));
 }
 
-void P2PSocketHostTcpServer::Send(
+void P2PSocketTcpServer::Send(
     const std::vector<int8_t>& data,
-    const network::P2PPacketInfo& packet_info,
+    const P2PPacketInfo& packet_info,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   NOTREACHED();
   delete this;
 }
 
-void P2PSocketHostTcpServer::SetOption(network::P2PSocketOption option,
-                                       int32_t value) {
+void P2PSocketTcpServer::SetOption(P2PSocketOption option, int32_t value) {
   // Currently we don't have use case tcp server sockets are used for p2p.
 }
 
-}  // namespace content
+}  // namespace network

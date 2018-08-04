@@ -1855,7 +1855,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
 
   p2p_socket_dispatcher_host_ =
-      new P2PSocketDispatcherHost(GetID(), request_context.get());
+      std::make_unique<P2PSocketDispatcherHost>(GetID());
 
   AddFilter(new TraceMessageFilter(GetID()));
   AddFilter(new ResolveProxyMsgHelper(GetID()));
@@ -2034,8 +2034,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Unretained(storage_partition_impl_->GetAppCacheService()),
       GetID()));
 
-  registry->AddInterface(base::BindRepeating(
-      &P2PSocketDispatcherHost::BindRequest, p2p_socket_dispatcher_host_));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&P2PSocketDispatcherHost::BindRequest,
+                          base::Unretained(p2p_socket_dispatcher_host_.get())));
 
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
 
@@ -3393,18 +3395,13 @@ RenderProcessHostImpl::StartRtpDump(
     bool incoming,
     bool outgoing,
     const WebRtcRtpPacketCallback& packet_callback) {
-  if (!p2p_socket_dispatcher_host_.get())
-    return WebRtcStopRtpDumpCallback();
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&P2PSocketDispatcherHost::StartRtpDump,
-                                         p2p_socket_dispatcher_host_, incoming,
-                                         outgoing, packet_callback));
+  p2p_socket_dispatcher_host_->StartRtpDump(incoming, outgoing,
+                                            packet_callback);
 
   if (stop_rtp_dump_callback_.is_null()) {
     stop_rtp_dump_callback_ =
-        base::Bind(&P2PSocketDispatcherHost::StopRtpDumpOnUIThread,
-                   p2p_socket_dispatcher_host_);
+        base::Bind(&P2PSocketDispatcherHost::StopRtpDump,
+                   p2p_socket_dispatcher_host_->GetWeakPtr());
   }
   return stop_rtp_dump_callback_;
 }

@@ -16,6 +16,8 @@ import "services/network/public/mojom/ct_log_info.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/p2p.mojom";
+import "services/network/public/mojom/p2p_trusted.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/proxy_config_with_annotation.mojom";
 import "services/network/public/mojom/proxy_lookup_client.mojom";
@@ -532,6 +534,11 @@ interface NetworkContext {
                     url.mojom.Url url,
                     int32 load_flags,
                     bool privacy_mode_enabled);
+
+  // Creates a P2PSocketManager instance, used for WebRTC.
+  CreateP2PSocketManager(P2PTrustedSocketManagerClient client,
+                         P2PTrustedSocketManager& trusted_socket_manager,
+                         P2PSocketManager& socket_manager);
 
   // Destroys all URLLoaderFactory bindings, which should then be regenerated.
   // This should be called if there is a change to the proxies which should be

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p/socket_host_throttler.h"
+#include "services/network/p2p/socket_throttler.h"
 
 #include <utility>
 
 #include "third_party/webrtc/rtc_base/data_rate_limiter.h"
 #include "third_party/webrtc/rtc_base/timeutils.h"
 
-namespace content {
+namespace network {
 
-namespace  {
+namespace {
 
 const int kMaxIceMessageBandwidth = 256 * 1024;
 
@@ -20,16 +20,14 @@ const int kMaxIceMessageBandwidth = 256 * 1024;
 P2PMessageThrottler::P2PMessageThrottler()
     : rate_limiter_(new rtc::DataRateLimiter(kMaxIceMessageBandwidth, 1.0)) {}
 
-P2PMessageThrottler::~P2PMessageThrottler() {
-}
+P2PMessageThrottler::~P2PMessageThrottler() {}
 
 void P2PMessageThrottler::SetSendIceBandwidth(int bandwidth_kbps) {
   rate_limiter_.reset(new rtc::DataRateLimiter(bandwidth_kbps, 1.0));
 }
 
 bool P2PMessageThrottler::DropNextPacket(size_t packet_len) {
-  double now =
-      rtc::TimeNanos() / static_cast<double>(rtc::kNumNanosecsPerSec);
+  double now = rtc::TimeNanos() / static_cast<double>(rtc::kNumNanosecsPerSec);
   if (!rate_limiter_->CanUse(packet_len, now)) {
     // Exceeding the send rate, this packet should be dropped.
     return true;
@@ -39,4 +37,4 @@ bool P2PMessageThrottler::DropNextPacket(size_t packet_len) {
   return false;
 }
 
-}  // namespace content
+}  // namespace network

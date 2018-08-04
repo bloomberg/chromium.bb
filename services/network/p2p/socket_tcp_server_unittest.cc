@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
+#include "services/network/p2p/socket_tcp_server.h"
 
 #include <stdint.h>
 
@@ -11,9 +11,9 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/browser/renderer_host/p2p/socket_host_tcp.h"
-#include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "net/base/completion_once_callback.h"
+#include "services/network/p2p/socket_tcp.h"
+#include "services/network/p2p/socket_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,28 +82,28 @@ class FakeServerSocket : public net::ServerSocket {
 
 }  // namespace
 
-namespace content {
+namespace network {
 
-class P2PSocketHostTcpServerTest : public testing::Test {
+class P2PSocketTcpServerTest : public testing::Test {
  protected:
   void SetUp() override {
-    network::mojom::P2PSocketClientPtr socket_client;
+    mojom::P2PSocketClientPtr socket_client;
     auto socket_client_request = mojo::MakeRequest(&socket_client);
-    network::mojom::P2PSocketPtr socket;
+    mojom::P2PSocketPtr socket;
     auto socket_request = mojo::MakeRequest(&socket);
 
     fake_client_.reset(new FakeSocketClient(std::move(socket),
                                             std::move(socket_client_request)));
 
     socket_ = new FakeServerSocket();
-    socket_host_.reset(new P2PSocketHostTcpServer(
-        nullptr, std::move(socket_client), std::move(socket_request),
-        network::P2P_SOCKET_TCP_CLIENT));
+    socket_host_.reset(new P2PSocketTcpServer(nullptr, std::move(socket_client),
+                                              std::move(socket_request),
+                                              P2P_SOCKET_TCP_CLIENT));
     socket_host_->socket_.reset(socket_);
 
     EXPECT_CALL(*fake_client_.get(), SocketCreated(_, _)).Times(1);
 
-    network::P2PHostAndIPEndPoint dest;
+    P2PHostAndIPEndPoint dest;
     dest.ip_address = ParseAddress(kTestIpAddress1, kTestPort1);
 
     socket_host_->Init(ParseAddress(kTestLocalIpAddress, 0), 0, 0, dest);
@@ -112,16 +112,16 @@ class P2PSocketHostTcpServerTest : public testing::Test {
   }
 
   // Needed by the child classes because only this class is a friend
-  // of P2PSocketHostTcp.
-  net::StreamSocket* GetSocketFormTcpSocketHost(P2PSocketHostTcpBase* host) {
+  // of P2PSocketTcp.
+  net::StreamSocket* GetSocketFormTcpSocket(P2PSocketTcpBase* host) {
     return host->socket_.get();
   }
 
-  std::unique_ptr<P2PSocketHostTcpBase> AcceptIncomingTcpConnection(
+  std::unique_ptr<P2PSocketTcpBase> AcceptIncomingTcpConnection(
       const net::IPEndPoint& address) {
-    network::mojom::P2PSocketClientPtr socket_client;
+    mojom::P2PSocketClientPtr socket_client;
     auto socket_client_request = mojo::MakeRequest(&socket_client);
-    network::mojom::P2PSocketPtr socket;
+    mojom::P2PSocketPtr socket;
     auto socket_request = mojo::MakeRequest(&socket);
 
     return socket_host_->AcceptIncomingTcpConnectionInternal(
@@ -131,11 +131,11 @@ class P2PSocketHostTcpServerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   FakeServerSocket* socket_;  // Owned by |socket_host_|.
   std::unique_ptr<FakeSocketClient> fake_client_;
-  std::unique_ptr<P2PSocketHostTcpServer> socket_host_;
+  std::unique_ptr<P2PSocketTcpServer> socket_host_;
 };
 
 // Accept incoming connection.
-TEST_F(P2PSocketHostTcpServerTest, Accept) {
+TEST_F(P2PSocketTcpServerTest, Accept) {
   FakeSocket* incoming = new FakeSocket(nullptr);
   incoming->SetLocalAddress(ParseAddress(kTestLocalIpAddress, kTestPort1));
   net::IPEndPoint addr = ParseAddress(kTestIpAddress1, kTestPort1);
@@ -144,17 +144,15 @@ TEST_F(P2PSocketHostTcpServerTest, Accept) {
   EXPECT_CALL(*fake_client_.get(), IncomingTcpConnection(addr)).Times(1);
   socket_->AddIncoming(incoming);
 
-  std::unique_ptr<P2PSocketHostTcpBase> new_host(
-      AcceptIncomingTcpConnection(addr));
+  std::unique_ptr<P2PSocketTcpBase> new_host(AcceptIncomingTcpConnection(addr));
   ASSERT_TRUE(new_host.get() != nullptr);
-  EXPECT_EQ(incoming, GetSocketFormTcpSocketHost(new_host.get()));
+  EXPECT_EQ(incoming, GetSocketFormTcpSocket(new_host.get()));
 
-  new_host.release();  // Deletes itself on connection error.
   base::RunLoop().RunUntilIdle();
 }
 
 // Accept 2 simultaneous connections.
-TEST_F(P2PSocketHostTcpServerTest, Accept2) {
+TEST_F(P2PSocketTcpServerTest, Accept2) {
   FakeSocket* incoming1 = new FakeSocket(nullptr);
   incoming1->SetLocalAddress(ParseAddress(kTestLocalIpAddress, kTestPort1));
   net::IPEndPoint addr1 = ParseAddress(kTestIpAddress1, kTestPort1);
@@ -169,20 +167,18 @@ TEST_F(P2PSocketHostTcpServerTest, Accept2) {
   socket_->AddIncoming(incoming1);
   socket_->AddIncoming(incoming2);
 
-  std::unique_ptr<P2PSocketHostTcpBase> new_host1(
+  std::unique_ptr<P2PSocketTcpBase> new_host1(
       AcceptIncomingTcpConnection(addr1));
   ASSERT_TRUE(new_host1.get() != nullptr);
-  EXPECT_EQ(incoming1, GetSocketFormTcpSocketHost(
-      reinterpret_cast<P2PSocketHostTcp*>(new_host1.get())));
-  std::unique_ptr<P2PSocketHostTcpBase> new_host2(
+  EXPECT_EQ(incoming1, GetSocketFormTcpSocket(
+                           reinterpret_cast<P2PSocketTcp*>(new_host1.get())));
+  std::unique_ptr<P2PSocketTcpBase> new_host2(
       AcceptIncomingTcpConnection(addr2));
   ASSERT_TRUE(new_host2.get() != nullptr);
-  EXPECT_EQ(incoming2, GetSocketFormTcpSocketHost(
-      reinterpret_cast<P2PSocketHostTcp*>(new_host2.get())));
+  EXPECT_EQ(incoming2, GetSocketFormTcpSocket(
+                           reinterpret_cast<P2PSocketTcp*>(new_host2.get())));
 
-  new_host1.release();  // Deletes itself on connection error.
-  new_host2.release();  // Deletes itself on connection error.
   base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace content
+}  // namespace network
