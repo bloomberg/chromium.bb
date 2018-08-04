@@ -1021,6 +1021,21 @@ class RTCPeerConnectionHandler::Observer
     }
   }
 
+  void OnInterestingUsage(int usage_pattern) override {
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RTCPeerConnectionHandler::Observer::OnInterestingUsageImpl, this,
+            usage_pattern));
+  }
+
+  void OnInterestingUsageImpl(int usage_pattern) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    if (handler_) {
+      handler_->OnInterestingUsage(usage_pattern);
+    }
+  }
+
  private:
   const base::WeakPtr<RTCPeerConnectionHandler> handler_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
@@ -2173,6 +2188,10 @@ void RTCPeerConnectionHandler::OnIceCandidate(
   }
   if (!is_closed_)
     client_->DidGenerateICECandidate(std::move(web_candidate));
+}
+
+void RTCPeerConnectionHandler::OnInterestingUsage(int usage_pattern) {
+  client_->DidNoteInterestingUsage(usage_pattern);
 }
 
 webrtc::SessionDescriptionInterface*

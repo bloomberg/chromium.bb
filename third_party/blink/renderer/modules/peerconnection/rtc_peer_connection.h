@@ -234,6 +234,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void DidModifyTransceivers(std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
                              bool is_remote_description) override;
   void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) override;
+  void DidNoteInterestingUsage(int usage_pattern) override;
   void ReleasePeerConnectionHandler() override;
   void ClosePeerConnection() override;
 

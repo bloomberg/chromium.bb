@@ -79,6 +79,7 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
       std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
       bool is_remote_description) = 0;
   virtual void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
+  virtual void DidNoteInterestingUsage(int usage_pattern) = 0;
   virtual void ReleasePeerConnectionHandler() = 0;
   virtual void ClosePeerConnection();
 };
