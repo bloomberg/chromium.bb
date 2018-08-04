@@ -6,6 +6,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Pemberitahuan Privasi Google Chrome</translation>
 <translation id="1863312987075920112">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK_TOS" />Persyaratan Layanan<ph name="END_LINK_TOS" /> dan <ph name="BEGIN_LINK_PRIVACY" />Pemberitahuan Privasi<ph name="END_LINK_PRIVACY" /> Chrome.</translation>
+<translation id="1878302395768190018">Anda dapat menyesuaikan ini kapan saja di Setelan Chrome</translation>
 <translation id="2147651015520127414">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini.</translation>
 <translation id="2334084861041072223">Hak cipta <ph name="YEAR" /> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="2342981853652716282">Login ke Chrome untuk mendapatkan bookmark, sandi, dan lainnya di semua perangkat Anda.</translation>
@@ -38,6 +39,7 @@
 <translation id="5639704535586432836">Buka Setelan &gt; Privasi &gt; Kamera &gt; Google Chrome, lalu aktifkan kamera.</translation>
 <translation id="5642200033778930880">Google Chrome tidak dapat menggunakan kamera dalam mode Layar Terpisah</translation>
 <translation id="5703130498371792817">Suka menggunakan Chrome? <ph name="BEGIN_LINK" />Beri nilai aplikasi ini<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Tips Chrome. Beberapa tombol sekarang terdapat di bagian bawah layar, seperti Kembali, Teruskan, dan Telusuri.</translation>
 <translation id="6036420186814142909">Google Chrome memiliki fitur yang dapat membantu Anda mengelola data internet dan seberapa cepat Anda dapat memuat halaman web.
 <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Tab yang telah dibuka di Chrome pada perangkat lainnya akan muncul di sini.</translation>
@@ -56,4 +58,5 @@
 <translation id="8459495907675268833">Data yang dipilih telah dihapus dari Chrome dan perangkat yang disinkronkan. Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penelusuran dan aktivitas dari layanan Google lainnya di history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chrome dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan Anda. Anda dapat memilih untuk menonaktifkan layanan ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Tips Chrome. Untuk opsi tab lainnya, tekan dan tahan tombol Tampilkan Tab di toolbar, yang terdapat di bagian bawah atau atas layar.</translation>
 </translationbundle>

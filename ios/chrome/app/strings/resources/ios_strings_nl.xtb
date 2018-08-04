@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Hiermee wordt de voortgang van de huidige download gestopt.</translation>
 <translation id="1605658421715042784">Afbeelding kopiëren</translation>
 <translation id="1612730193129642006">Tabbladraster weergeven</translation>
+<translation id="162035744160882748">Synchronisatie, personalisatie en andere Google-services inschakelen</translation>
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="1646446875146297738">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
@@ -194,6 +195,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="4124987746317609294">Tijdsbereik</translation>
 <translation id="4172051516777682613">Altijd weergeven</translation>
 <translation id="418156467088430727">Offline versie bekijken op nieuw tabblad</translation>
+<translation id="4192273449750167573">Je instellingen op het volgende scherm controleren</translation>
 <translation id="4237682350741091554">Chrome-synchronisatie en -personalisatie beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Wachtwoordzin opgeven</translation>
 <translation id="4272631900155121838">Als je een QR-code wilt scannen, schakel je de camera in via Instellingen</translation>
@@ -285,6 +287,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="5938160824633642847">Je apparaat is bijna vol. Maak ruimte vrij en probeer het opnieuw.</translation>
 <translation id="5948291296578561264">Hiermee kun je foto's opslaan in je fotobibliotheek.</translation>
 <translation id="5955891643922670672">Offline versie bekijken</translation>
+<translation id="5957613098218939406">Meer opties</translation>
 <translation id="5964480694698977962">Nieuw incognitotabblad maken.</translation>
 <translation id="5965679971710331625">Je bent ingelogd</translation>
 <translation id="5982717868370722439">Bestaande gegevens toevoegen aan <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6797885426782475225">Gesproken zoekopdracht</translation>
 <translation id="6807889908376551050">Alles weergeven...</translation>
 <translation id="681368974849482173">Item gemaakt</translation>
+<translation id="685040365210406336">Geen wijzigingen aanbrengen</translation>
 <translation id="6896758677409633944">Kopieer</translation>
 <translation id="6903907808598579934">Synchronisatie inschakelen</translation>
 <translation id="6914783257214138813">Je wachtwoorden zijn zichtbaar voor iedereen die het geëxporteerde bestand kan bekijken.</translation>
@@ -373,6 +377,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent gedownload</translation>
 <translation id="7346909386216857016">OK, begrepen</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Ja, inschakelen</translation>
 <translation id="7425346204213733349">Wijzigingen in je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden niet meer gesynchroniseerd met je Google-account. Je bestaande gegevens blijven echter opgeslagen in je Google-account.</translation>
 <translation id="744343212394640790">Niet <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Provincie</translation>

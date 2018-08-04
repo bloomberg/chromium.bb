@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">詳細を報告する</translation>
 <translation id="1021110881106174305">利用可能なカード</translation>
 <translation id="1032854598605920125">時計回りに回転</translation>
+<translation id="1035334672863811645">Chrome にログイン</translation>
 <translation id="1038842779957582377">不明な名前</translation>
 <translation id="1050038467049342496">他のアプリを終了する</translation>
 <translation id="1055184225775184556">追加の取り消し（&amp;U）</translation>
@@ -488,6 +489,7 @@
 <translation id="4277028893293644418">パスワードを再設定</translation>
 <translation id="4280429058323657511">、有効期限: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">切り替え</translation>
+<translation id="4308131620840579419">すべてのカードを 1 か所で管理できます</translation>
 <translation id="4312866146174492540">ブロック（デフォルト）</translation>
 <translation id="4325863107915753736">記事が見つかりませんでした</translation>
 <translation id="4326324639298822553">有効期限の「日」を確認してもう一度お試しください</translation>
@@ -598,6 +600,7 @@
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="5201306358585911203">このページに埋め込まれているページの内容</translation>
 <translation id="5205222826937269299">名前は必須です</translation>
+<translation id="5215116848420601511">Google Pay のお支払い方法と住所</translation>
 <translation id="5222812217790122047">メールアドレスは必須です</translation>
 <translation id="5230733896359313003">配送先住所</translation>
 <translation id="5250209940322997802">「ネットワークに接続してください」</translation>
@@ -674,6 +677,7 @@
 <translation id="5689199277474810259">JSON にエクスポート</translation>
 <translation id="5689516760719285838">現在地</translation>
 <translation id="570530837424789914">管理...</translation>
+<translation id="5705882733397021510">戻る</translation>
 <translation id="57094364128775171">安全なパスワードを自動生成…</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5719499550583120431">プリペイド カードをご利用いただけます。</translation>
@@ -691,6 +695,7 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" /> への接続は古い暗号スイートにより暗号化されています。</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
 <translation id="5838278095973806738">このサイトでは機密情報（パスワード、クレジット カードなど）を入力しないでください。悪意のあるユーザーに情報が盗まれる恐れがあります。</translation>
+<translation id="5863847714970149516">表示しようとしているページでは課金される恐れがあります</translation>
 <translation id="5866257070973731571">電話番号の追加</translation>
 <translation id="5869405914158311789">このサイトにアクセスできません</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
@@ -821,6 +826,7 @@
 <translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
 <translation id="6989763994942163495">詳細設定を表示...</translation>
 <translation id="7012363358306927923">中国銀聯</translation>
+<translation id="7016992613359344582">料金の請求は 1 回限りの場合も毎月行われる場合もあり、課金されたかどうかわからないこともあります。</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーに提示された証明書の有効期限が長すぎて信頼性を確認できませんでした。</translation>
 <translation id="7053983685419859001">ブロック</translation>
@@ -1086,6 +1092,7 @@
 <translation id="8957210676456822347">キャプティブ ポータル認証</translation>
 <translation id="8971063699422889582">サーバーの証明書の有効期限が切れています。</translation>
 <translation id="8978053250194585037"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、<ph name="BEGIN_LINK" />フィッシング行為が検出されました<ph name="END_LINK" />。フィッシング サイトは、他のウェブサイトになりすましてユーザーを欺こうとするサイトです。</translation>
+<translation id="8983003182662520383">Google Pay のお支払い方法と住所</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">この先のサイトには有害なプログラムがあります</translation>

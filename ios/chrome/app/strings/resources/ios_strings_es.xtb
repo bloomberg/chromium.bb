@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Esta acción detendrá el progreso de la descarga actual.</translation>
 <translation id="1605658421715042784">Copiar imagen</translation>
 <translation id="1612730193129642006">Mostrar cuadrícula de pestañas</translation>
+<translation id="162035744160882748">Activar la sincronización, la personalización y otros servicios de Google</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1646446875146297738">Al habilitar la opción No realizar seguimiento, se incluirá una solicitud con tu tráfico de navegación. El efecto dependerá de si un sitio web responde a la solicitud y de cómo se interpreta esa solicitud.
 
@@ -194,6 +195,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="4124987746317609294">Intervalo de tiempo</translation>
 <translation id="4172051516777682613">Mostrar siempre</translation>
 <translation id="418156467088430727">Ver versión sin conexión en una nueva pestaña</translation>
+<translation id="4192273449750167573">Revisa tu configuración en la siguiente pantalla</translation>
 <translation id="4237682350741091554">Administra la personalización y la sincronización de Chrome en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Introduce tu frase de contraseña</translation>
 <translation id="4272631900155121838">Para escanear un código QR, habilita la cámara en Configuración</translation>
@@ -285,6 +287,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="5938160824633642847">Tu dispositivo está casi lleno. Libera espacio y vuelve a intentarlo.</translation>
 <translation id="5948291296578561264">Esta acción te permite guardar fotos en tu biblioteca.</translation>
 <translation id="5955891643922670672">Viendo versión sin conexión</translation>
+<translation id="5957613098218939406">Más opciones</translation>
 <translation id="5964480694698977962">Crear nueva pestaña de incógnito.</translation>
 <translation id="5965679971710331625">Has iniciado sesión</translation>
 <translation id="5982717868370722439">Añade los datos actuales a <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6797885426782475225">Búsqueda por voz</translation>
 <translation id="6807889908376551050">Mostrar todo...</translation>
 <translation id="681368974849482173">Elemento creado</translation>
+<translation id="685040365210406336">No hacer cambios</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Activar sincronización</translation>
 <translation id="6914783257214138813">Cualquier usuario que pueda ver el archivo exportado podrá ver tus contraseñas.</translation>
@@ -373,6 +377,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7336264872878993241"><ph name="PERCENT" />% descargado</translation>
 <translation id="7346909386216857016">Entendido</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Sí, acepto</translation>
 <translation id="7425346204213733349">Los cambios que hagas en los marcadores, el historial, las contraseñas y otras opciones no se sincronizarán con tu cuenta de Google. Sin embargo, tus datos actuales seguirán almacenados en tu cuenta.</translation>
 <translation id="744343212394640790">No soy <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Región</translation>

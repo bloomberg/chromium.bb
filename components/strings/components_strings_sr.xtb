@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Наведите додатне детаље</translation>
 <translation id="1021110881106174305">Прихваћене картице</translation>
 <translation id="1032854598605920125">Окрените у смеру казаљке на сату</translation>
+<translation id="1035334672863811645">пријавите се у Chrome</translation>
 <translation id="1038842779957582377">непознато име</translation>
 <translation id="1050038467049342496">Затворите друге апликације</translation>
 <translation id="1055184225775184556">&amp;Опозови додавање</translation>
@@ -488,6 +489,7 @@
 <translation id="4277028893293644418">Ресетујте лозинку</translation>
 <translation id="4280429058323657511">, истиче <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Пређи</translation>
+<translation id="4308131620840579419">Желите ли да сачувате све картице на једном месту?</translation>
 <translation id="4312866146174492540">Блокирај (подразумевано)</translation>
 <translation id="4325863107915753736">Нисмо успели да пронађемо чланак</translation>
 <translation id="4326324639298822553">Проверите датум истека и пробајте поново</translation>
@@ -598,6 +600,7 @@
 <translation id="5190835502935405962">Трака са обележивачима</translation>
 <translation id="5201306358585911203">Уграђена страница на овој веб-страници наводи:</translation>
 <translation id="5205222826937269299">Име је обавезно</translation>
+<translation id="5215116848420601511">Начини плаћања и адресе из Google Pay-а</translation>
 <translation id="5222812217790122047">Имејл је обавезан</translation>
 <translation id="5230733896359313003">Адреса за слање</translation>
 <translation id="5250209940322997802">„Повежите се на мрежу“</translation>
@@ -674,6 +677,7 @@
 <translation id="5689199277474810259">Извези у JSON</translation>
 <translation id="5689516760719285838">Локација</translation>
 <translation id="570530837424789914">Управљајте...</translation>
+<translation id="5705882733397021510">Назад</translation>
 <translation id="57094364128775171">Предложи јаку лозинку…</translation>
 <translation id="5710435578057952990">Идентитет овог веб-сајта није верификован.</translation>
 <translation id="5719499550583120431">Прихватају се припејд картице.</translation>
@@ -691,6 +695,7 @@
 <translation id="5810442152076338065">Веза са доменом <ph name="DOMAIN" /> је шифрована помоћу застарелог пакета за шифровање.</translation>
 <translation id="5813119285467412249">&amp;Понови додавање</translation>
 <translation id="5838278095973806738">Немојте да уносите осетљиве информације на овом сајту (на пример, лозинке или кредитне картице) јер нападачи могу да их украду.</translation>
+<translation id="5863847714970149516">Следећа страница може да покуша да вам нешто наплати</translation>
 <translation id="5866257070973731571">Додајте број телефона</translation>
 <translation id="5869405914158311789">Овај сајт није доступан</translation>
 <translation id="5869522115854928033">Сачуване лозинке</translation>
@@ -820,6 +825,7 @@
 <translation id="6973656660372572881">Наведени су и фиксни прокси сервери и URL адреса .pac скрипте.</translation>
 <translation id="6989763994942163495">Прикажи напредна подешавања...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Те наплате могу да буду једнократне или периодичне и можда нису одмах видљиве.</translation>
 <translation id="7029809446516969842">Лозинке</translation>
 <translation id="7050187094878475250">Покушали сте да посетите <ph name="DOMAIN" />, али је сервер представио сертификат са периодом важења који је предугачак да би био поуздан.</translation>
 <translation id="7053983685419859001">Блокирај</translation>
@@ -1085,6 +1091,7 @@
 <translation id="8957210676456822347">Овлашћење на улазном порталу</translation>
 <translation id="8971063699422889582">Сертификат сервера је истекао.</translation>
 <translation id="8978053250194585037">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило „пецање“<ph name="END_LINK" /> на <ph name="SITE" />. Сајтови са „пецањем“ се представљају као неки други веб-сајтови да би вас преварили.</translation>
+<translation id="8983003182662520383">Начини плаћања и адресе из Google Pay-а</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Сајт који ћете посетити садржи штетне програме</translation>

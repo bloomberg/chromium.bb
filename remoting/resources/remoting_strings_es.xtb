@@ -136,6 +136,7 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="405887016757208221">El equipo remoto no ha podido inicializar la sesión. Si el problema persiste, prueba a volver a configurar el host.</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="409800995205263688">NOTA: la configuración de la política solo permite establecer conexiones entre ordenadores de tu misma red.</translation>
+<translation id="4126409073460786861">Cuando hayas completado la configuración, podrás acceder al ordenador seleccionando tu dispositivo e introduciendo el PIN</translation>
 <translation id="4145029455188493639">Has iniciado sesión como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Faltan algunos componentes requeridos. Asegúrate de haber instalado la última versión del software y vuelve a intentarlo.</translation>
 <translation id="4156740505453712750">Debes elegir un PIN de <ph name="BOLD_START" />al menos seis dígitos<ph name="BOLD_END" /> para proteger el acceso a este ordenador. Se solicitará ese PIN cada vez que se establezca conexión con ese ordenador desde otra ubicación.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="7019153418965365059">Error de host no reconocido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Asistencia remota</translation>
+<translation id="7026930240735156896">Sigue las instrucciones para configurar el acceso remoto a tu ordenador</translation>
 <translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting autorizando la recopilación de estadísticas de uso e informes sobre fallos.</translation>
 <translation id="7067321367069083429">La pantalla hace de pantalla táctil</translation>
 <translation id="7116737094673640201">Te damos la bienvenida a Escritorio Remoto de Chrome</translation>

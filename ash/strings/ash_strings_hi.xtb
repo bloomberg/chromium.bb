@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> को जोड़ा गया</translation>
 <translation id="1056775291175587022">कोई नेटवर्क नहीं</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">सुलभता सेटिंग दिखाएं</translation>
 <translation id="1104621072296271835">साथ मिलकर आपके डिवाइस और बेहतर काम करते हैं</translation>
 <translation id="112308213915226829">अलमारी को स्वत: छिपाएं</translation>
 <translation id="1153356358378277386">युग्‍मित डिवाइस</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">कमज़ोर सिग्नल</translation>
 <translation id="1293264513303784526">USB-C डिवाइस (बायां पोर्ट)</translation>
+<translation id="1302880136325416935">ब्लूटूथ सेटिंग दिखाएं. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">दाएं</translation>
 <translation id="1351937230027495976">मेन्यू छोटा करें</translation>
 <translation id="1383876407941801731">खोज</translation>
 <translation id="1467432559032391204">बाएं</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">लॉन्चर</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{सूचना सेटिंग दिखाएं. किसी एक ऐप्लिकेशन के लिए सूचनाएं बंद हैं}one{सूचना सेटिंग दिखाएं. # ऐप्लिकेशन के लिए सूचनाएं बंद हैं}other{सूचना सेटिंग दिखाएं. # ऐप्लिकेशन के लिए सूचनाएं बंद हैं}}</translation>
 <translation id="1525508553941733066">ख़ारिज करें</translation>
 <translation id="1537254971476575106">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा</translation>
 <translation id="15373452373711364">बड़ा माउस कर्सर</translation>
 <translation id="1550523713251050646">अधिक विकल्पों के लिए क्लिक करें</translation>
 <translation id="1567387640189251553">आपके पिछली बार डाले गए पासवर्ड के बाद से एक अलग कीबोर्ड कनेक्ट किया गया है. यह आपके कीस्ट्रोक चुराने की कोशिश कर सकता है.</translation>
+<translation id="1570871743947603115">ब्लूटूथ टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">इस उपयोगकर्ता को हटाएं</translation>
 <translation id="1621499497873603021">बैटरी के खाली होने में शेष समय, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">माफ़ करें, आपके पासवर्ड की अभी भी पुष्टि नहीं हो पाई है. नोट: अगर आपने हाल ही में अपना पासवर्ड बदला है, तो आपके साइन आउट होते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का इस्तेमाल करें.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">उंगली की पहचान नहीं हो सकी</translation>
 <translation id="1746730358044914197">इनपुट विधियों को आपका व्यवस्थापक कॉन्फ़िगर करता है.</translation>
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
+<translation id="1761222317188459878">नेटवर्क कनेक्शन टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">ईथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (सेवा लोड हो रही है...)</translation>
 <translation id="1841545962859478868">डिवाइस व्यवस्थापक इन चीज़ों की निगरानी कर सकता है:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">यह डिवाइस <ph name="DOMAIN" /> द्वारा प्रबंधित है.</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="2067602449040652523">कीबोर्ड की रोशनी</translation>
+<translation id="2075212959500165896">कई बार कोशिश की गई. बाद में कोशिश करें.</translation>
 <translation id="2081529251031312395">$1 अभी भी बाद में साइन इन कर सकता है.</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
 <translation id="2135456203358955318">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">टॉगल विंडो का संक्षिप्त विवरण</translation>
 <translation id="2338501278241028356">आस-पास के डिवाइस खोजने के लिए ब्लूटूथ चालू करें</translation>
 <translation id="2339073806695260576">नोट लेने, स्क्रीनशॉट लेने, लेज़र पॉइंटर या आवर्धक ग्लास का इस्तेमाल करने के लिए शेल्फ़ पर मौजूद स्टाइलस बटन पर टैप करें.</translation>
+<translation id="2341729377289034582">लंबवत पर लॉक किया गया</translation>
 <translation id="2352467521400612932">स्टाइलस की सेटिंग</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
 <translation id="2359808026110333948">जारी रखें</translation>
 <translation id="2365393535144473978">मोबाइल डेटा सक्षम करने से ब्लूटूथ सक्षम हो जाएगा.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">परेशान न करें को टॉगल करें</translation>
 <translation id="2412593942846481727">अपडेट मौजूद है</translation>
+<translation id="2416346634399901812"><ph name="NETWORK_NAME" /> से कनेक्ट है</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
 <translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">कनेक्शन जोड़ें</translation>
 <translation id="2961963223658824723">कुछ गड़बड़ी हो गई. कुछ सेकंड में फिर से कोशिश करें.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">कास्ट डिवाइस दिखाएं.</translation>
 <translation id="2996462380875591307">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा चालू है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+D फिर से दबाएं.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" />, <ph name="DOMAIN" /> के द्वारा प्रबंधित एक सार्वजनिक सत्र है</translation>
 <translation id="3000461861112256445">मोनो ऑडियो</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3151786313568798007">अभिविन्‍यास</translation>
 <translation id="3153444934357957346">एक से ज़्यादा साइन-इन की सुविधा में आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{किसी डिवाइस से कनेक्ट है}one{# डिवाइस से कनेक्ट है}other{# डिवाइस से कनेक्ट है}}</translation>
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">अतिथि</translation>
@@ -160,6 +171,7 @@
 <translation id="3784455785234192852">लॉक करें</translation>
 <translation id="3798670284305777884">स्पीकर (आंतरिक)</translation>
 <translation id="380165613292957338">नमस्ते, मैं आपके लिए क्या कर सकती हूं?</translation>
+<translation id="383629559565718788">कीबोर्ड सेटिंग दिखाएं</translation>
 <translation id="3846575436967432996">कोई नेटवर्क जानकारी उपलब्ध नहीं</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="3891340733213178823">साइन आउट करने के लिए दो बार Ctrl+Shift+Q दबाएं.</translation>
@@ -175,8 +187,10 @@
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4200057768455216496">आपने 'सामग्री को बड़ा दिखाने वाली डॉक की गई सेवा' का शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
 <translation id="4217571870635786043">लिखवाना</translation>
+<translation id="4261870227682513959">सूचना सेटिंग दिखाएं. सूचनाएं बंद हैं</translation>
 <translation id="4274921305979314545">अपने Chromebook को अपने फ़ोन से कनेक्ट करें</translation>
 <translation id="4279490309300973883">मिरर करना</translation>
+<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> चालू हो रहा है</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">आवर्धक ग्लास</translation>
@@ -240,6 +254,7 @@
 <translation id="5673434351075758678">अपनी सेटिंग सिंक करने के बाद "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />".</translation>
 <translation id="574392208103952083">मध्यम</translation>
 <translation id="5744083938413354016">टैप करके खींचना</translation>
+<translation id="5750765938512549687">ब्लूटूथ बंद है</translation>
 <translation id="5777841717266010279">स्‍क्रीन साझाकरण बंद करें?</translation>
 <translation id="57838592816432529">म्यूट करें</translation>
 <translation id="5805697420284793859">विंडो मैनेजर</translation>
@@ -273,12 +288,14 @@
 <translation id="615957422585914272">ऑन-स्क्रीन कीबोर्ड दिखाएं</translation>
 <translation id="6164005077879661055">'निगरानी में रखे गए इस उपयोगकर्ता' को हटाने के बाद, निगरानी में रखे गए उपयोगकर्ता से जुड़ीं सभी फ़ाइलें और 'स्थानीय डेटा' हमेशा के लिए मिट जाएंगे. 'निगरानी में रखे गए इस उपयोगकर्ता' की देखी गईं वेबसाइटें और सेटिंग <ph name="MANAGEMENT_URL" /> पर प्रबंधक को अब भी दिखेंगी.</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
+<translation id="6254629735336163724">क्षैतिज पर लॉक किया गया</translation>
 <translation id="6259254695169772643">चुनने के लिए अपने स्टाइलस का इस्तेमाल करें</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: सक्रिय हो रहा है...</translation>
 <translation id="6284232397434400372">रिज़ॉल्यूशन बदला गया</translation>
 <translation id="6297287540776456956">कोई क्षेत्र चुनने के लिए स्टाइलस का उपयोग करें</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> को <ph name="ROTATION" /> पर घुमाया गया</translation>
 <translation id="632744581670418035">कीबोर्ड ओवरले</translation>
+<translation id="6376931439017688372">ब्लूटूथ चालू है</translation>
 <translation id="639644700271529076">CAPS LOCK बंद है</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">सभी पूरे हो गए</translation>
@@ -322,6 +339,7 @@
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="7067196344162293536">स्वत: घुमाएं</translation>
 <translation id="7076293881109082629">प्रवेश किया जा रहा है...</translation>
+<translation id="7092922358121866860">नाइट लाइट की सेटिंग दिखाएं</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
 <translation id="7131634465328662194">आप अपने आप साइन आउट कर जाएंगे.</translation>
 <translation id="7143207342074048698">कनेक्‍ट हो रहा है</translation>
@@ -357,6 +375,7 @@
 <translation id="7798302898096527229">रद्द करने के लिए Search या Shift दबाएं.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> और <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">मज़बूत सिग्नल</translation>
+<translation id="7842211907556571265"><ph name="NETWORK_NAME" /> से कनेक्ट हो रहा है</translation>
 <translation id="7842569679327885685">चेतावनी: यह फ़ीचर प्रयोग के लिए है</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
 <translation id="790040513076446191">निजता-संबंधी सेटिंग में हेरफेर करें</translation>
@@ -397,18 +416,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8513108775083588393">स्क्रीन का अपने आप दिशा बदलना (अॉटो-रोटेट)</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
+<translation id="8627191004499078455"><ph name="DEVICE_NAME" /> से कनेक्ट है</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शेष</translation>
 <translation id="8649101189709089199">चुनें और सुनें</translation>
 <translation id="8652175077544655965">सेटिंग बंद करें</translation>
+<translation id="8653151467777939995">सूचना सेटिंग दिखाएं. सूचनाएं चालू हैं</translation>
+<translation id="8664753092453405566">नेटवर्क सूची दिखाएं. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>
 <translation id="8683506306463609433">'परफ़ॉर्मेंस ट्रेसिंग' चालू है</translation>
 <translation id="8734991477317290293">यह आपके कीस्ट्रोक चुराने की कोशिश कर सकता है</translation>
+<translation id="8735953464173050365">कीबोर्ड सेटिंग दिखाएं. <ph name="KEYBOARD_NAME" /> चुना गया है</translation>
+<translation id="875593634123171288">VPN सेटिंग दिखाएं</translation>
 <translation id="8809737090443522491">किसी ऐप्लिकेशन या दस्तावेज़ का नाम लिखें</translation>
 <translation id="8814190375133053267">वाई-फ़ाई </translation>
 <translation id="8825534185036233643">दो से अधिक प्रदर्शनों की मिररिंग समर्थित नहीं है.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">वापस जाएं बटन</translation>
+<translation id="8843682306134542540">रोटेशन लॉक टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">ऐप दो-स्क्रीन मोड में काम नहीं करता है.</translation>
 <translation id="8874184842967597500">कनेक्ट नहीं है</translation>

@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">అదనపు వివరాలను అందించండి</translation>
 <translation id="1021110881106174305">ఆమోదించబడే కార్డ్‌లు</translation>
 <translation id="1032854598605920125">సవ్యదిశలో తిప్పు</translation>
+<translation id="1035334672863811645">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="1038842779957582377">తెలియని పేరు</translation>
 <translation id="1050038467049342496">ఇతర అనువర్తనాలను మూసివేయండి</translation>
 <translation id="1055184225775184556">&amp;జోడించడాన్ని రద్దు చేయి</translation>
@@ -809,6 +810,7 @@
 <translation id="6897140037006041989">వినియోగదారు ప్రతినిధి</translation>
 <translation id="6903319715792422884"><ph name="BEGIN_WHITEPAPER_LINK" />కొంత సిస్టమ్ సమాచారం మరియు పేజీ కంటెంట్‌<ph name="END_WHITEPAPER_LINK" />ను Googleకి పంపడం ద్వారా సురక్షిత బ్రౌజింగ్‌ని మెరుగుపరచడంలో సహాయపడండి. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">వినియోగదారు:</translation>
+<translation id="6944692733090228304"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> నిర్వహించని ఒక సైట్‌లో మీరు మీ పాస్‌వర్డ్‌ని నమోదు చేసారు. మీ ఖాతాని రక్షించడం కోసం, మీ పాస్‌వర్డ్‌ని ఇతర యాప్‌లు మరియు సైట్‌లలో తిరిగి ఉపయోగించవద్దు.</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
 <translation id="6948701128805548767">పికప్ పద్ధతులు మరియు అవసరాలను చూడాలంటే, చిరునామాని ఎంచుకోండి</translation>
 <translation id="6949872517221025916">పాస్‌వర్డ్‌ను రీసెట్ చేయండి</translation>
@@ -1034,6 +1036,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం పట్టింది.</translation>
 <translation id="8503559462189395349">Chrome పాస్‌వర్డ్‌లు</translation>
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
+<translation id="8508648098325802031">శోధన చిహ్నం</translation>
 <translation id="8543181531796978784">మీరు <ph name="BEGIN_ERROR_LINK" />గుర్తింపు సమస్యను నివేదించవచ్చు<ph name="END_ERROR_LINK" /> లేదా మీకు మీ భద్రతకు పొంచి ఉన్న ప్రమాదాలు అర్థం అయ్యి ఉంటే, <ph name="BEGIN_LINK" />ఈ అసురక్షిత సైట్‌ను సందర్శించండి<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">ప్రశ్నలు ఏమైనా ఉన్నాయా? మీ ప్రొఫైల్‌ను పర్యవేక్షించే వ్యక్తిని సంప్రదించండి.</translation>
 <translation id="8553075262323480129">పేజీ భాష నిర్థారించలేకపోయినందున అనువాదం విఫలమైంది.</translation>

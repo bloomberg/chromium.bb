@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Proporcioneu més informació</translation>
 <translation id="1021110881106174305">Targetes acceptades</translation>
 <translation id="1032854598605920125">Gira en el sentit de les agulles del rellotge</translation>
+<translation id="1035334672863811645">Inicia la sessió a Chrome</translation>
 <translation id="1038842779957582377">nom desconegut</translation>
 <translation id="1050038467049342496">Tanca altres aplicacions</translation>
 <translation id="1055184225775184556">&amp;Desfés l'addició</translation>
@@ -488,6 +489,7 @@
 <translation id="4277028893293644418">Restableix la contrasenya</translation>
 <translation id="4280429058323657511">, caduca el dia <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Canvia</translation>
+<translation id="4308131620840579419">Vols desar totes les teves targetes en un sol lloc?</translation>
 <translation id="4312866146174492540">Bloqueja (opció predeterminada)</translation>
 <translation id="4325863107915753736">No s'ha pogut trobar l'article</translation>
 <translation id="4326324639298822553">Comprova la data de caducitat i torna-ho a provar</translation>
@@ -598,6 +600,7 @@
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="5201306358585911203">Una pàgina inserida en aquesta pàgina diu</translation>
 <translation id="5205222826937269299">El nom és obligatori</translation>
+<translation id="5215116848420601511">Formes de pagament i adreces que fan servir Google Pay</translation>
 <translation id="5222812217790122047">El correu electrònic és obligatori</translation>
 <translation id="5230733896359313003">Adreça d'enviament</translation>
 <translation id="5250209940322997802">"Connecteu-vos a la xarxa"</translation>
@@ -674,6 +677,7 @@
 <translation id="5689199277474810259">Exporta a JSON</translation>
 <translation id="5689516760719285838">Ubicació</translation>
 <translation id="570530837424789914">Gestiona...</translation>
+<translation id="5705882733397021510">Enrere</translation>
 <translation id="57094364128775171">Suggereix una contrasenya segura…</translation>
 <translation id="5710435578057952990">La identitat d'aquest lloc web no ha estat verificada.</translation>
 <translation id="5719499550583120431">S'accepten targetes de prepagament.</translation>
@@ -691,6 +695,7 @@
 <translation id="5810442152076338065">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge obsolet.</translation>
 <translation id="5813119285467412249">&amp;Refés l'addició</translation>
 <translation id="5838278095973806738">No introdueixis informació sensible en aquest lloc (com ara contrasenyes o targetes de crèdit), ja que alguns atacants podrien robar-la.</translation>
+<translation id="5863847714970149516">És possible que la pàgina següent provi de fer-te algun càrrec</translation>
 <translation id="5866257070973731571">Afegeix un número de telèfon</translation>
 <translation id="5869405914158311789">No es pot accedir a aquest lloc</translation>
 <translation id="5869522115854928033">Contrasenyes desades</translation>
@@ -821,6 +826,7 @@
 <translation id="6973656660372572881">S'especifiquen tant els servidors intermediaris fixos com un URL d'script .pac.</translation>
 <translation id="6989763994942163495">Mostra la configuració avançada...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Aquests càrrecs poden ser únics o periòdics i és possible que no s'indiquin d'una manera evident.</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
 <translation id="7050187094878475250">Heu provat de connectar-vos a <ph name="DOMAIN" />, però el servidor ha presentat un certificat amb un període de validesa massa gran per poder confiar-hi.</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
@@ -1085,6 +1091,7 @@
 <translation id="8957210676456822347">Autorització de portals captius</translation>
 <translation id="8971063699422889582">El certificat del servidor ha caducat.</translation>
 <translation id="8978053250194585037">Navegació segura de Google ha <ph name="BEGIN_LINK" />detectat recentment activitat de pesca<ph name="END_LINK" /> a <ph name="SITE" />. Els llocs web de pesca es fan passar per altres llocs web per enganyar-te.</translation>
+<translation id="8983003182662520383">Formes de pagament i adreces que fan servir Google Pay</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Aquest lloc web conté programes perjudicials</translation>

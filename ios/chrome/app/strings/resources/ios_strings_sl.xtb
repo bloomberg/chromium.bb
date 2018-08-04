@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">S tem boste prekinili trenutni prenos.</translation>
 <translation id="1605658421715042784">Kopiraj sliko</translation>
 <translation id="1612730193129642006">Prikaz mreže zavihkov</translation>
+<translation id="162035744160882748">Vklop sinhronizacije, prilagajanja in drugih Googlovih storitev</translation>
 <translation id="1644574205037202324">Zgodovina</translation>
 <translation id="1646446875146297738">Omogočena možnost »Ne sledi« pomeni, da bo v vaš promet brskanja vključena zahteva. Morebiten učinek je odvisen od tega, ali se spletno mesto odzove na zahtevo in kako si jo razlaga.
 
@@ -193,6 +194,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="4124987746317609294">Časovno obdobje</translation>
 <translation id="4172051516777682613">Vedno pokaži</translation>
 <translation id="418156467088430727">Ogled različice brez povezave na novem zavihku</translation>
+<translation id="4192273449750167573">Pregled nastavitev na naslednjem zaslonu</translation>
 <translation id="4237682350741091554">Upravljanje sinhronizacije za Chrome in prilagajanja v <ph name="BEGIN_LINK" />Nastavitvah<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Vnos gesla</translation>
 <translation id="4272631900155121838">Če želite optično prebrati kodo QR, v nastavitvah omogočite fotoaparat</translation>
@@ -283,6 +285,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5938160824633642847">Shramba naprave je skoraj polna. Sprostite prostor in poskusite znova.</translation>
 <translation id="5948291296578561264">S tem je mogoče shranjevati fotografije v knjižnico fotografij.</translation>
 <translation id="5955891643922670672">Ogled različice brez povezave</translation>
+<translation id="5957613098218939406">Več možnosti</translation>
 <translation id="5964480694698977962">Create new incognito tab.</translation>
 <translation id="5965679971710331625">Prijavljeni ste</translation>
 <translation id="5982717868370722439">Dodajanje obstoječih podatkov v račun <ph name="USER_EMAIL" />.</translation>
@@ -342,6 +345,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6797885426782475225">Glasovno iskanje</translation>
 <translation id="6807889908376551050">Pokaži vse ...</translation>
 <translation id="681368974849482173">Item created</translation>
+<translation id="685040365210406336">Brez sprememb</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6903907808598579934">Vklopi sinhronizacijo</translation>
 <translation id="6914783257214138813">Gesla bodo vidna vsakomur, ki si lahko ogleda izvoženo datoteko z gesli.</translation>
@@ -371,6 +375,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7336264872878993241">Preneseno: <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">V redu, razumem</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Da, sem za</translation>
 <translation id="7425346204213733349">Spremembe zaznamkov, zgodovine, gesel in drugih nastavitev ne bodo več sinhronizirane z Google Računom. Obstoječi podatki bodo še naprej shranjeni v Google Računu.</translation>
 <translation id="744343212394640790">Nisem <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Regija</translation>

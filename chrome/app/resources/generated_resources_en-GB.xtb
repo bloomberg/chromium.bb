@@ -2557,7 +2557,6 @@
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> wants to communicate with the extension "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accept</translation>
-<translation id="4920350943031252905">Run Linux tools, editors and IDEs on your Chromebook.</translation>
 <translation id="4920887663447894854">The following sites have been blocked from tracking your location on this page:</translation>
 <translation id="492299503953721473">Remove Android apps</translation>
 <translation id="4923279099980110923">Yes, I want to help</translation>
@@ -3505,6 +3504,7 @@
 <translation id="6327785803543103246">Web proxy auto-discovery</translation>
 <translation id="6333064448949140209">File will be sent to Google for debugging</translation>
 <translation id="6333834492048057036">Focus address bar for search</translation>
+<translation id="6336451774241870485">New private tab</translation>
 <translation id="6339668969738228384">Create a new profile for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Couldn’t connect with the server. Please check your network connection and try again. If the problem persists, restart your Chromebook.</translation>
 <translation id="6340071272923955280">Internet Printing Protocol (IPPS)</translation>
@@ -3686,6 +3686,7 @@
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">File info</translation>
 <translation id="6607831829715835317">More too&amp;ls</translation>
+<translation id="6610147964972079463">Close private tabs</translation>
 <translation id="6612358246767739896">Protected content</translation>
 <translation id="6613452264606394692">Get back here fast by bookmarking this page</translation>
 <translation id="6614893213975402384">Install updates &amp; apps. By continuing, you agree that this device may also automatically download and install updates and apps from Google, your operator and your device's manufacturer, possibly using mobile data. Some of these apps may offer in-app purchases. You can remove these apps at any time. <ph name="BEGIN_LINK1" />Learn More<ph name="END_LINK1" /></translation>

@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Ihihinto nito ang lahat ng progreso para sa iyong kasalukuyang pag-download.</translation>
 <translation id="1605658421715042784">Kopyahin ang Larawan</translation>
 <translation id="1612730193129642006">Ipakita ang Grid ng Tab</translation>
+<translation id="162035744160882748">I-on ang pag-sync, pag-personalize, at iba pang serbisyo ng Google</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1646446875146297738">Ang pag-enable sa ‘Huwag Subaybayan’ ay nangangahulugan na may isasamang kahilingan sa iyong trapiko sa pagba-browse. Ang anumang epekto ay nakadepende kung tumutugon man ang website sa kahilingan, at kung paano nabibigyan ng kahulugan ang kahilingan.
 
@@ -194,6 +195,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="4124987746317609294">Sakop na Oras</translation>
 <translation id="4172051516777682613">Palaging ipakita</translation>
 <translation id="418156467088430727">Tingnan ang Offline na Bersyon sa Bagong Tab</translation>
+<translation id="4192273449750167573">Suriin ang iyong mga setting sa susunod na screen</translation>
 <translation id="4237682350741091554">Pamahalaan ang Chrome Sync at pag-personalize sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Ilagay ang Passphrase</translation>
 <translation id="4272631900155121838">Upang mag-scan ng QR code, i-enable ang camera mula sa mga setting</translation>
@@ -285,6 +287,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="5938160824633642847">Malapit nang mapuno ang iyong device. Magbakante ng espasyo at subukang muli.</translation>
 <translation id="5948291296578561264">Binibigyang-daan ka nito na mag-save ng mga larawan sa iyong library ng larawan.</translation>
 <translation id="5955891643922670672">Tinitingnan ang Offline na Bersyon</translation>
+<translation id="5957613098218939406">Higit Pang Mga Opsyon</translation>
 <translation id="5964480694698977962">Gumawa ng bagong tab na incognito.</translation>
 <translation id="5965679971710331625">Naka-sign in ka</translation>
 <translation id="5982717868370722439">Idagdag ang kasalukuyang data sa <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6797885426782475225">Paghahanap Gamit ang Boses</translation>
 <translation id="6807889908376551050">Ipakita Lahat...</translation>
 <translation id="681368974849482173">Nagawa ang item</translation>
+<translation id="685040365210406336">Huwag gumawa ng mga pagbabago</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6903907808598579934">I-on ang pag-sync</translation>
 <translation id="6914783257214138813">Makikita ng sinumang makakatingin sa na-export na file ang iyong mga password.</translation>
@@ -373,6 +377,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7336264872878993241"><ph name="PERCENT" /> (na) porsyento ang na-download na</translation>
 <translation id="7346909386216857016">Ok, nakuha ko</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Oo, sali ako</translation>
 <translation id="7425346204213733349">Hindi na masi-sync sa iyong Google Account ang mga pagbabago sa iyong mga bookmark, history, password at iba pang setting. Gayunpaman, mananatiling nakaimbak sa iyong Google account ang iyong kasalukuyang data.</translation>
 <translation id="744343212394640790">Hindi <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Estado / County</translation>

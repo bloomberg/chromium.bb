@@ -136,6 +136,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="405887016757208221">Komputerowi zdalnemu nie udało się zainicjować sesji. Jeśli problem nie zniknie, spróbuj ponownie skonfigurować hosta.</translation>
 <translation id="4068946408131579958">Wszystkie połączenia</translation>
 <translation id="409800995205263688">UWAGA: ustawienia zasad zezwalają wyłącznie na połączenia między komputerami w Twojej sieci.</translation>
+<translation id="4126409073460786861">Po zakończeniu konfiguracji odśwież tę stronę. Gdy to zrobisz, dostęp do komputera będzie można uzyskiwać, wybierając urządzenie i wpisując kod PIN.</translation>
 <translation id="4145029455188493639">W tej chwili używasz konta <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Brak niektórych wymaganych komponentów. Upewnij się, że masz zainstalowaną najnowszą wersję oprogramowania, i spróbuj ponownie.</translation>
 <translation id="4156740505453712750">Aby zabezpieczyć dostęp do tego komputera, wybierz PIN złożony z <ph name="BOLD_START" />co najmniej sześciu cyfr<ph name="BOLD_END" />. Będzie on wymagany przy łączeniu się z innej lokalizacji.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Do</translation>
 <translation id="7019153418965365059">Nieznany błąd hosta: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Pomoc zdalna</translation>
+<translation id="7026930240735156896">Wykonaj te instrukcje, by skonfigurować komputer do dostępu zdalnego</translation>
 <translation id="7038683108611689168">Pomóż nam udoskonalić Chromoting, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
 <translation id="7067321367069083429">Ekran działa jak ekran dotykowy</translation>
 <translation id="7116737094673640201">Witamy w Pulpicie zdalnym Chrome</translation>

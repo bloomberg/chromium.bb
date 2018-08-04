@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Cette action arrêtera le téléchargement en cours.</translation>
 <translation id="1605658421715042784">Copier l'image</translation>
 <translation id="1612730193129642006">Afficher la grille d'onglets</translation>
+<translation id="162035744160882748">Activer la synchronisation, la personnalisation et d'autres services Google</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1646446875146297738">Si vous activez la fonctionnalité "Interdire le suivi", une demande sera incluse dans le trafic de navigation. Le résultat dépend de l'obtention d'une réponse de la part du site Web, ainsi que de la façon dont celle-ci est interprétée.
 
@@ -194,6 +195,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="4124987746317609294">Période</translation>
 <translation id="4172051516777682613">Toujours afficher</translation>
 <translation id="418156467088430727">Afficher version hors connexion dans nouvel onglet</translation>
+<translation id="4192273449750167573">Consulter vos paramètres sur l'écran suivant</translation>
 <translation id="4237682350741091554">Gérer la synchronisation et la personnalisation de Chrome dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Saisir la phrase secrète</translation>
 <translation id="4272631900155121838">Pour scanner un code QR, activez l'appareil photo depuis les paramètres</translation>
@@ -285,6 +287,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5938160824633642847">Votre appareil est presque saturé. Libérez de l'espace et réessayez.</translation>
 <translation id="5948291296578561264">Cela vous permet d'enregistrer des photos dans votre photothèque.</translation>
 <translation id="5955891643922670672">Affichage de la version hors connexion</translation>
+<translation id="5957613098218939406">Plus d'options</translation>
 <translation id="5964480694698977962">Créer un onglet de navigation privée</translation>
 <translation id="5965679971710331625">Vous êtes connecté</translation>
 <translation id="5982717868370722439">Ajoutez les données existantes au compte <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6797885426782475225">Recherche vocale</translation>
 <translation id="6807889908376551050">Tout afficher…</translation>
 <translation id="681368974849482173">Élément créé</translation>
+<translation id="685040365210406336">Ne rien modifier</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6914783257214138813">Toute personne ayant accès au fichier exporté pourra voir ces mots de passe.</translation>
@@ -373,6 +377,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7336264872878993241"><ph name="PERCENT" /> % téléchargés</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">J'accepte</translation>
 <translation id="7425346204213733349">Les modifications apportées à vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisées avec votre compte Google. Vos données seront cependant maintenues sur votre compte Google.</translation>
 <translation id="744343212394640790">Autre que <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">État/Comté</translation>

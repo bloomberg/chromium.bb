@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Berikan detail tambahan</translation>
 <translation id="1021110881106174305">Kartu yang diterima</translation>
 <translation id="1032854598605920125">Putar searah jarum jam</translation>
+<translation id="1035334672863811645">masuk ke Chrome</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
 <translation id="1050038467049342496">Tutup aplikasi lain</translation>
 <translation id="1055184225775184556">&amp;Urungkan Penambahan</translation>
@@ -488,6 +489,7 @@
 <translation id="4277028893293644418">Setel ulang sandi</translation>
 <translation id="4280429058323657511">, kedaluwarsa <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Alihkan</translation>
+<translation id="4308131620840579419">Simpan semua kartu Anda di satu tempat?</translation>
 <translation id="4312866146174492540">Blokir (default)</translation>
 <translation id="4325863107915753736">Gagal menemukan artikel</translation>
 <translation id="4326324639298822553">Periksa tanggal kedaluwarsa dan coba lagi</translation>
@@ -598,6 +600,7 @@
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="5201306358585911203">Halaman tersemat di halaman ini menyatakan</translation>
 <translation id="5205222826937269299">Nama wajib diisi</translation>
+<translation id="5215116848420601511">Metode pembayaran dan alamat yang menggunakan Google Pay</translation>
 <translation id="5222812217790122047">Email wajib diisi</translation>
 <translation id="5230733896359313003">Alamat Pengiriman</translation>
 <translation id="5250209940322997802">"Sambungkan ke jaringan"</translation>
@@ -674,6 +677,7 @@
 <translation id="5689199277474810259">Ekspor ke JSON</translation>
 <translation id="5689516760719285838">Lokasi</translation>
 <translation id="570530837424789914">Kelola...</translation>
+<translation id="5705882733397021510">Kembali</translation>
 <translation id="57094364128775171">Sarankan sandi yang kuat…</translation>
 <translation id="5710435578057952990">Identitas situs Web ini belum diverifikasi.</translation>
 <translation id="5719499550583120431">Kartu prabayar diterima.</translation>
@@ -691,6 +695,7 @@
 <translation id="5810442152076338065">Sambungan Anda ke <ph name="DOMAIN" /> dienkripsi menggunakan cipher suite yang sudah usang.</translation>
 <translation id="5813119285467412249">&amp;Ulangi Penambahan</translation>
 <translation id="5838278095973806738">Jangan masukkan informasi sensitif apa pun di situs ini (misalnya, sandi atau kartu kredit), karena penyerang dapat mencurinya.</translation>
+<translation id="5863847714970149516">Halaman berikutnya mungkin mencoba menagih Anda.</translation>
 <translation id="5866257070973731571">Tambahkan Nomor Telepon</translation>
 <translation id="5869405914158311789">Situs ini tidak dapat dijangkau</translation>
 <translation id="5869522115854928033">Sandi tersimpan</translation>
@@ -821,6 +826,7 @@
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
 <translation id="6989763994942163495">Tampilkan setelan lanjutan...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Tagihan ini bisa hanya satu kali atau berulang, dan mungkin tidak pasti.</translation>
 <translation id="7029809446516969842">Sandi</translation>
 <translation id="7050187094878475250">Anda berusaha menjangkau <ph name="DOMAIN" />, namun server memberikan sertifikat yang masa berlakunya terlalu lama untuk dapat dipercaya.</translation>
 <translation id="7053983685419859001">Blokir</translation>
@@ -1085,6 +1091,7 @@
 <translation id="8957210676456822347">Otorisasi Portal Tawanan</translation>
 <translation id="8971063699422889582">Sertifikat server telah kedaluwarsa.</translation>
 <translation id="8978053250194585037">Google Safe Browsing baru-baru ini <ph name="BEGIN_LINK" />mendeteksi phishing<ph name="END_LINK" /> di <ph name="SITE" />. Situs phishing berpura-pura menjadi situs lain untuk mengelabui Anda.</translation>
+<translation id="8983003182662520383">Metode Pembayaran dan Alamat yang Menggunakan Google Pay</translation>
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Situs yang akan dibuka berisi program berbahaya</translation>

@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Forneça mais detalhes</translation>
 <translation id="1021110881106174305">Cartões admitidos</translation>
 <translation id="1032854598605920125">Rodar para a direita</translation>
+<translation id="1035334672863811645">inicie sessão no Chrome</translation>
 <translation id="1038842779957582377">nome desconhecido</translation>
 <translation id="1050038467049342496">Fechar outras aplicações</translation>
 <translation id="1055184225775184556">&amp;Anular adição</translation>
@@ -488,6 +489,7 @@
 <translation id="4277028893293644418">Repor palavra-passe</translation>
 <translation id="4280429058323657511">, exp. <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Mudar</translation>
+<translation id="4308131620840579419">Pretende guardar todos os seus cartões num único local?</translation>
 <translation id="4312866146174492540">Bloquear (predefinição)</translation>
 <translation id="4325863107915753736">Falha ao encontrar o artigo</translation>
 <translation id="4326324639298822553">Verifique a data de validade e tente novamente</translation>
@@ -598,6 +600,7 @@
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="5201306358585911203">Uma página incorporada nesta página diz</translation>
 <translation id="5205222826937269299">Nome obrigatório</translation>
+<translation id="5215116848420601511">Métodos de pagamento e endereços com o Google Pay</translation>
 <translation id="5222812217790122047">Email obrigatório</translation>
 <translation id="5230733896359313003">Endereço de envio</translation>
 <translation id="5250209940322997802">"Ligar à rede"</translation>
@@ -674,6 +677,7 @@
 <translation id="5689199277474810259">Exportar para JSON</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="570530837424789914">Gerir…</translation>
+<translation id="5705882733397021510">Retroceder</translation>
 <translation id="57094364128775171">Sugerir palavra-passe forte…</translation>
 <translation id="5710435578057952990">A identidade deste Web site não foi verificada.</translation>
 <translation id="5719499550583120431">Os cartões pré-pagos são admitidos.</translation>
@@ -691,6 +695,7 @@
 <translation id="5810442152076338065">A sua ligação a <ph name="DOMAIN" /> está encriptada através de um conjunto de cifras obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Refazer adição</translation>
 <translation id="5838278095973806738">Não deve introduzir informações confidenciais neste site (por exemplo, palavras-passe ou números de cartões de crédito), porque podem ser roubadas por atacantes.</translation>
+<translation id="5863847714970149516">A próxima página pode tentar cobrar-lhe dinheiro</translation>
 <translation id="5866257070973731571">Adicionar número de telefone</translation>
 <translation id="5869405914158311789">Não é possível aceder a este site</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
@@ -821,6 +826,7 @@
 <translation id="6973656660372572881">Foram especificados servidores proxy fixos e um URL de script .pac.</translation>
 <translation id="6989763994942163495">Mostrar definições avançadas...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Estas cobranças podem ser únicas ou recorrentes e podem não ser óbvias.</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="7050187094878475250">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado cujo período de validade é demasiado longo para ser fidedigno.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -1085,6 +1091,7 @@
 <translation id="8957210676456822347">Autorização de portal cativo</translation>
 <translation id="8971063699422889582">O certificado do servidor expirou.</translation>
 <translation id="8978053250194585037">A Navegação segura do Google <ph name="BEGIN_LINK" />detetou phishing<ph name="END_LINK" /> recentemente em <ph name="SITE" />. Os sites de phishing simulam ser outros Websites para o enganar.</translation>
+<translation id="8983003182662520383">Métodos de pagamento e endereços com o Google Pay</translation>
 <translation id="8987927404178983737">Mês</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">O site que se segue contém programas prejudiciais</translation>

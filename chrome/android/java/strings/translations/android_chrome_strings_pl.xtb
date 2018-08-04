@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">Dodaję aplikację <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Ze stron internetowych</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="1054301162707478098">Jesteś w trybie prywatnym.</translation>
 <translation id="10614374240317010">Nigdy nie zapisane</translation>
 <translation id="1068672505746868501">Nigdy nie tłumacz stron, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">Więcej języków</translation>
 <translation id="124678866338384709">Zamknij bieżącą kartę</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">Po zamknięciu wszystkich kart prywatnych wyświetlane na nich strony nie pozostawią żadnych śladów w historii przeglądarki, magazynie plików cookie ani historii wyszukiwania. Pobrane pliki i utworzone zakładki zostaną zachowane.
+
+To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywatny, Twój pracodawca, dostawca internetu czy administratorzy odwiedzanych stron mogą dowiedzieć się, co przeglądasz.</translation>
 <translation id="127138278192656016">Używaj synchronizacji i wszystkich usług</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1283039547216852943">Kliknij, by rozwinąć</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">Elementy sterowania stroną na pełnym ekranie</translation>
 <translation id="2038563949887743358">Włącz opcję „Wersja na komputer”</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB innych aplikacji</translation>
+<translation id="2055670718290744343">Akcelerator szukania</translation>
 <translation id="2063713494490388661">Kliknij, by wyszukać</translation>
 <translation id="2079545284768500474">Cofnij</translation>
 <translation id="2082238445998314030">Wynik <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">Synchronizacja i usługi Google</translation>
 <translation id="2259659629660284697">Eksportuj hasła…</translation>
 <translation id="2268044343513325586">Zawęź</translation>
+<translation id="2280910239864711607">Otwórz nową kartę w trybie prywatnym</translation>
 <translation id="2286841657746966508">Adres rozliczeniowy</translation>
 <translation id="230115972905494466">Nie znaleziono zgodnych urządzeń</translation>
 <translation id="2315043854645842844">Wybieranie certyfikatu klienta nie jest obsługiwane przez ten system operacyjny.</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">Zezwól na użycie JavaScriptu w określonej witrynie.</translation>
 <translation id="2625189173221582860">Hasło zostało skopiowane</translation>
 <translation id="2631006050119455616">Zaoszczędzono</translation>
+<translation id="2633278372998075009">Karty prywatne</translation>
 <translation id="2647434099613338025">Dodaj język</translation>
 <translation id="2650751991977523696">Czy pobrać plik ponownie?</translation>
 <translation id="2653659639078652383">Prześlij</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">Jeśli nie pamiętasz hasła lub chcesz zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Aplikacja internetowa</translation>
+<translation id="3234355010754616171">Nowa karta prywatna</translation>
 <translation id="3236059992281584593">Pozostała minuta</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Dodaj stronę do zakładek</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">Zamknij wszystkie karty incognito</translation>
 <translation id="3365671512111106261">Niedostępne, gdy Oszczędzanie danych jest włączone</translation>
 <translation id="3367813778245106622">Zaloguj się ponownie, by rozpocząć synchronizację</translation>
+<translation id="3377025655491224618">Karta prywatna</translation>
 <translation id="3384347053049321195">Udostępnij zdjęcie</translation>
 <translation id="3386292677130313581">Pytaj, zanim udostępnisz stronom swoją lokalizację (zalecane)</translation>
 <translation id="3387650086002190359">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu błędów systemu plików.</translation>
@@ -385,6 +394,7 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4209895695669353772">Aby uzyskać dostęp do spersonalizowanej treści proponowanej przez Google, włącz synchronizację</translation>
 <translation id="4226663524361240545">Powiadomienia będą sygnalizowane wibracjami</translation>
 <translation id="4242533952199664413">Otwórz ustawienia</translation>
+<translation id="4243710787042215766">Otwórz na karcie prywatnej</translation>
 <translation id="424864128008805179">Wylogować z Chrome?</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
@@ -465,6 +475,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4878404682131129617">Nie udało się utworzyć tunelu przez serwer proxy</translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="488187801263602086">Zmień nazwę pliku</translation>
+<translation id="4883379392681899581">Wyłącz tryb prywatny</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
 <translation id="4910889077668685004">Aplikacje do płatności</translation>
 <translation id="4913161338056004800">Resetuj statystyki</translation>
@@ -506,6 +517,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="5224771365102442243">Z wideo</translation>
 <translation id="5233638681132016545">Nowa karta</translation>
 <translation id="5240817131241497236">Zostały zmienione ustawienia synchronizacji, personalizacji i innych usług Google w Chrome. Może to wpłynąć na Twoje bieżące ustawienia.</translation>
+<translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Ustawienia<ph name="END_LINK1" /> możesz zmienić w dowolnym momencie. Google może korzystać z zawartości odwiedzanych przez Ciebie stron oraz informacji o Twojej aktywności i interakcjach w przeglądarce, by personalizować Chrome i inne usługi Google takie jak Tłumacz, wyszukiwarka czy reklamy.</translation>
 <translation id="5271967389191913893">Na tym urządzeniu nie można otworzyć treści, które chcesz pobrać.</translation>
 <translation id="528192093759286357">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="5284584623296338184">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje istniejące dane będą jednak nadal na nim przechowywane.</translation>
@@ -591,6 +603,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5833397272224757657">Zawartość otwieranych stron oraz informacje o Twoich interakcjach i aktywności w przeglądarce zostaną wykorzystane do personalizacji</translation>
 <translation id="5833984609253377421">Udostępnij link</translation>
+<translation id="584427517463557805">Wybrana karta prywatna</translation>
 <translation id="5854790677617711513">Sprzed ponad 30 dni</translation>
 <translation id="5858741533101922242">Chrome nie może włączyć adaptera Bluetooth</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
@@ -620,6 +633,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6075798973483050474">Edytuj stronę główną</translation>
 <translation id="60923314841986378">Pozostało: <ph name="HOURS" /> godz.</translation>
 <translation id="60924377787140961">Wkrótce pojawi się więcej artykułów. Życzymy miłego popołudnia.</translation>
+<translation id="6099151465289169210">Przełączono do kart prywatnych</translation>
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
 <translation id="6111020039983847643">użyte dane</translation>
 <translation id="6112702117600201073">Odświeżam stronę</translation>
@@ -649,6 +663,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6320088164292336938">Wibracje</translation>
 <translation id="6324034347079777476">Synchronizacja systemu Android jest wyłączona</translation>
 <translation id="6333140779060797560">Udostępnij przez: <ph name="APPLICATION" /></translation>
+<translation id="6336451774241870485">Nowa karta prywatna</translation>
 <translation id="6337234675334993532">Szyfrowanie</translation>
 <translation id="6341580099087024258">Pytaj, gdzie zapisać pliki</translation>
 <translation id="6343192674172527289">Brak pobranych plików</translation>
@@ -686,6 +701,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6593061639179217415">Wersja na komputer</translation>
 <translation id="6600954340915313787">Skopiowana do Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6610147964972079463">Zamknij karty prywatne</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="6627583120233659107">Edytuj folder</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
@@ -789,6 +805,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7453467225369441013">Wylogowuje z większości stron internetowych. Nie wyloguje Cię z konta Google.</translation>
 <translation id="7454641608352164238">Za mało miejsca</translation>
 <translation id="7455923816558154057">Kliknij, by wyświetlić</translation>
+<translation id="7465104139234185284">Zamknij wszystkie karty prywatne</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7475192538862203634">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nie znaleziono karty SD. Może brakować niektórych Twoich plików.</translation>
@@ -884,6 +901,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB pobranych plików</translation>
 <translation id="8249310407154411074">Przenieś na początek</translation>
 <translation id="8250920743982581267">Dokumenty</translation>
+<translation id="825412236959742607">Ta strona używa zbyt dużo pamięci, dlatego Chrome usunął część jej zawartości.</translation>
 <translation id="8260126382462817229">Spróbuj zalogować się jeszcze raz</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8266862848225348053">Miejsce zapisywania pobranych plików</translation>
@@ -979,6 +997,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9070377983101773829">Rozpocznij wyszukiwanie głosowe</translation>
 <translation id="9071742570345586758">Aby oglądać treści rzeczywistości wirtualnej, zainstaluj Usługi Google VR</translation>
 <translation id="9074336505530349563">Aby uzyskać dostęp do spersonalizowanej treści proponowanej przez Google, zaloguj się i włącz synchronizację</translation>
+<translation id="9080642952018487277">Włącz tryb prywatny</translation>
 <translation id="9086455579313502267">Nie można uzyskać dostępu do sieci</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB pobranych plików</translation>
 <translation id="9100505651305367705">Proponuj wyświetlanie artykułów w widoku uproszczonym, gdy jest obsługiwany</translation>

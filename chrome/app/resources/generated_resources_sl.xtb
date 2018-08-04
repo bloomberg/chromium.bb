@@ -2327,7 +2327,7 @@
 <translation id="4576541033847873020">Seznanitev naprave Bluetooth</translation>
 <translation id="4579581181964204535">Ni mogoče predvajati <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Ali ste prepričani, da želite izbrisati $1 elementov?</translation>
-<translation id="4582497162516204941">Namestitev z Linuxom (beta)</translation>
+<translation id="4582497162516204941">Namestitev v Linuxu (beta)</translation>
 <translation id="4582563038311694664">Ponastavi vse nastavitve</translation>
 <translation id="4585793705637313973">Urejanje strani</translation>
 <translation id="4589268276914962177">Nov terminal</translation>
@@ -2549,7 +2549,6 @@
 <translation id="4917385247580444890">Močan</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> želi vzpostaviti povezavo z razširitvijo »<ph name="EXTENSION_NAME" />«</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
-<translation id="4920350943031252905">Izvajanje orodij, urejevalnikov in IDE-jev za Linux v Chromebooku.</translation>
 <translation id="4920887663447894854">Zaradi blokade ta spletna mesta ne morejo slediti vaši lokaciji na tej strani:</translation>
 <translation id="492299503953721473">Odstrani aplikacije za Android</translation>
 <translation id="4923279099980110923">Da, želim pomagati</translation>
@@ -4034,6 +4033,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7175353351958621980">Naloženo iz:</translation>
 <translation id="7180611975245234373">Osveži</translation>
 <translation id="7180865173735832675">Prilagodi</translation>
+<translation id="7182359331070524176">Izberite album v Googlu Foto</translation>
 <translation id="7186088072322679094">Ohrani v orodni vrstici</translation>
 <translation id="7187428571767585875">Vnosi v register, ki bodo odstranjeni ali spremenjeni:</translation>
 <translation id="7189234443051076392">Poskrbite, da je v napravi dovolj prostora</translation>

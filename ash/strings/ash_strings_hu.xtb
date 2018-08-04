@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> hozzáadva</translation>
 <translation id="1056775291175587022">Nincs hálózat</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">A kisegítő lehetőségekhez tartozó beállítások megjelenítése</translation>
 <translation id="1104621072296271835">Eszközei együtt még jobban működnek</translation>
 <translation id="112308213915226829">Polc automatikus elrejtése</translation>
 <translation id="1153356358378277386">Párosított eszközök</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Gyenge jel</translation>
 <translation id="1293264513303784526">C típusú USB-vel kompatibilis eszköz (bal oldali port)</translation>
+<translation id="1302880136325416935">Bluetooth-beállítások megjelenítése. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Jobbra</translation>
 <translation id="1351937230027495976">Menü összecsukása</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1467432559032391204">Balra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Indító</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{Értesítési beállítások megjelenítése. Az értesítések egyetlen alkalmazásnál vannak kikapcsolva}other{Értesítési beállítások megjelenítése. Az értesítések # alkalmazásnál ki vannak kapcsolva}}</translation>
 <translation id="1525508553941733066">ELVETÉS</translation>
 <translation id="1537254971476575106">Teljes képernyős nagyító</translation>
 <translation id="15373452373711364">Nagy egérmutató</translation>
 <translation id="1550523713251050646">Kattintson további lehetőségekért</translation>
 <translation id="1567387640189251553">A jelszó utolsó megadása óta új billentyűzetet csatlakoztattak. Előfordulhat, hogy így kísérlik meg a billentyűleütések rögzítését.</translation>
+<translation id="1570871743947603115">Bluetooth ki- és bekapcsolása. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Felhasználó eltávolítása</translation>
 <translation id="1621499497873603021">Akkumulátor lemerüléséig hátralévő idő: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Sajnos a jelszó ellenőrzése még mindig nem sikerült. Megjegyzés: ha a közelmúltban módosította jelszavát, az új jelszó beállítása a kijelentkezés után megy végbe, ezért itt a régi jelszót használja.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">Nem sikerült felismerni</translation>
 <translation id="1746730358044914197">A rendszergazda állította be a beviteli módszereket.</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
+<translation id="1761222317188459878">Hálózati kapcsolat ki- és bekapcsolása. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Segéd (betöltés…)</translation>
 <translation id="1841545962859478868">Az eszköz rendszergazdája figyelheti a következőket:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN" /> domain kezeli.</translation>
 <translation id="2050339315714019657">Álló</translation>
 <translation id="2067602449040652523">Billentyűzet világossága</translation>
+<translation id="2075212959500165896">Túl sok próbálkozás. Próbálja újra később.</translation>
 <translation id="2081529251031312395">$1 később be tud jelentkezni.</translation>
 <translation id="2127372758936585790">Kis teljesítményű töltő</translation>
 <translation id="2135456203358955318">Dokkolt nagyító</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">Ablakáttekintési mód váltása</translation>
 <translation id="2338501278241028356">Kapcsolja be a Bluetooth-t a közeli eszközök felfedezéséhez</translation>
 <translation id="2339073806695260576">Koppintson a polcon az érintőceruza gombra, ha jegyzetet vagy képernyőképet szeretne készíteni, illetve ha a lézermutatót vagy a nagyítót kívánja használni.</translation>
+<translation id="2341729377289034582">Függőleges helyzetben zárolva</translation>
 <translation id="2352467521400612932">Az érintőceruza beállításai</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktiválása</translation>
 <translation id="2359808026110333948">Folytatás</translation>
 <translation id="2365393535144473978">A mobiladat-kapcsolat engedélyezésével a Bluetooth is bekapcsol.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">A Ne zavarjanak funkció átkapcsolása</translation>
 <translation id="2412593942846481727">Rendelkezésre áll frissítés</translation>
+<translation id="2416346634399901812">Kapcsolódva a(z) <ph name="NETWORK_NAME" /> hálózathoz</translation>
 <translation id="2429753432712299108">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Mielőtt elfogadná, ellenőrizze, hogy ez a biztonsági kód látható-e azon az eszközön is: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Értesítések</translation>
 <translation id="2484513351006226581">A billentyűzetkiosztás átváltásához nyomja meg a(z) <ph name="KEYBOARD_SHORTCUT" /> billentyűparancsot.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">Kapcsolat hozzáadása</translation>
 <translation id="2961963223658824723">Valami nem sikerült. Próbálja újra néhány másodperc múlva.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">Cast-eszközök megjelenítése.</translation>
 <translation id="2996462380875591307">Dokkolt nagyító bekapcsolva. A kikapcsoláshoz nyomja le ismét a Ctrl+Keresés+D billentyűparancsot.</translation>
 <translation id="2999742336789313416">A(z) <ph name="DISPLAY_NAME" /> egy <ph name="DOMAIN" /> által kezelt nyilvános munkamenet</translation>
 <translation id="3000461861112256445">Monó hang</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">Mobiladatok</translation>
 <translation id="3151786313568798007">Tájolás</translation>
 <translation id="3153444934357957346">Legfeljebb <ph name="MULTI_PROFILE_USER_LIMIT" /> fiókot használhat a többfiókos bejelentkezés során.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Egy eszközhöz csatlakoztatva}other{# eszközhöz csatlakoztatva}}</translation>
 <translation id="3236488194889173876">Nem áll rendelkezésre mobilhálózat</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Vendég</translation>
@@ -160,6 +171,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="3784455785234192852">Zárolás</translation>
 <translation id="3798670284305777884">Hangszóró (belső)</translation>
 <translation id="380165613292957338">Üdvözlöm. Miben segíthetek?</translation>
+<translation id="383629559565718788">Billentyűzetbeállítások megjelenítése</translation>
 <translation id="3846575436967432996">Nem áll rendelkezésre hálózati információ</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3891340733213178823">Nyomja meg a Ctrl+Shift+Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
@@ -175,8 +187,10 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4072264167173457037">Közepes jel</translation>
 <translation id="4200057768455216496">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="4217571870635786043">Diktálás</translation>
+<translation id="4261870227682513959">Az értesítési beállítások megjelenítése. Az értesítések ki vannak kapcsolva</translation>
 <translation id="4274921305979314545">Csatlakozás a Chromebookhoz telefonjával</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
+<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> aktiválása</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Nagyító</translation>
@@ -240,6 +254,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5673434351075758678">Módosítás <ph name="FROM_LOCALE" /> nyelvről <ph name="TO_LOCALE" /> nyelvre a beállítások szinkronizálása után.</translation>
 <translation id="574392208103952083">Közepes</translation>
 <translation id="5744083938413354016">Érintéssel húzás</translation>
+<translation id="5750765938512549687">Kikapcsolt Bluetooth</translation>
 <translation id="5777841717266010279">Leállítja a képernyőmegosztást?</translation>
 <translation id="57838592816432529">Némítás</translation>
 <translation id="5805697420284793859">Ablakkezelő</translation>
@@ -273,12 +288,14 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="615957422585914272">A képernyő-billentyűzet megjelenítése</translation>
 <translation id="6164005077879661055">Amikor ezt a felügyelt felhasználót eltávolítják, minden hozzá tartozó fájl és helyi adat véglegesen törlődik. A felügyelt felhasználó felkeresett webhelyeit és beállításait a kezelő továbbra is láthatja a következő címen: <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">További információ</translation>
+<translation id="6254629735336163724">Vízszintes helyzetben zárolva</translation>
 <translation id="6259254695169772643">A kiválasztáshoz használja az érintőceruzát</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiválás...</translation>
 <translation id="6284232397434400372">A felbontás módosult</translation>
 <translation id="6297287540776456956">Terület kijelöléséhez használja az érintőceruzát</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> elfordult erre: <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Billentyűzetkiosztás</translation>
+<translation id="6376931439017688372">A Bluetooth be van kapcsolva</translation>
 <translation id="639644700271529076">A CAPS LOCK ki van kapcsolva</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Elkészült</translation>
@@ -322,6 +339,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
 <translation id="7067196344162293536">Automatikus forgatás</translation>
 <translation id="7076293881109082629">Bejelentkezés</translation>
+<translation id="7092922358121866860">Az Éjszakai fényhez tartozó beállítások megjelenítése</translation>
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
 <translation id="7131634465328662194">A rendszer automatikusan kijelentkezteti.</translation>
 <translation id="7143207342074048698">Csatlakozás</translation>
@@ -357,6 +375,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7798302898096527229">A kikapcsoláshoz nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> és <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Erős jel</translation>
+<translation id="7842211907556571265">Csatlakozás a(z) <ph name="NETWORK_NAME" /> hálózathoz</translation>
 <translation id="7842569679327885685">Figyelem! Kísérleti funkció</translation>
 <translation id="7846634333498149051">Billentyűzet</translation>
 <translation id="790040513076446191">Adatvédelemmel kapcsolatos beállítások módosítása</translation>
@@ -397,18 +416,24 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Újracsatlakozás…</translation>
 <translation id="8513108775083588393">Automatikus forgatás</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
+<translation id="8627191004499078455">Csatlakozva a(z) <ph name="DEVICE_NAME" /> eszközhöz</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> maradt</translation>
 <translation id="8649101189709089199">Felolvasás</translation>
 <translation id="8652175077544655965">Beállítások bezárása</translation>
+<translation id="8653151467777939995">Az értesítési beállítások megjelenítése. Az értesítések be vannak kapcsolva</translation>
+<translation id="8664753092453405566">A hálózatok listájának megjelenítése. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Kis teljesítményű töltő csatlakoztatva</translation>
 <translation id="8683506306463609433">A teljesítménykövetés aktív</translation>
 <translation id="8734991477317290293">Előfordulhat, hogy így kísérlik meg a billentyűleütések rögzítését</translation>
+<translation id="8735953464173050365">A billentyűzet beállításainak megjelenítése. <ph name="KEYBOARD_NAME" /> van kiválasztva</translation>
+<translation id="875593634123171288">VPN-beállítások megjelenítése</translation>
 <translation id="8809737090443522491">Írja be a kívánt alkalmazás vagy dokumentum nevét.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">A böngésző nem támogatja a tükrözést kettőnél több megjelenítő esetén.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Vissza gomb</translation>
+<translation id="8843682306134542540">Váltás a forgatás zárolásának állapotai közt. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Keresés+Esc</translation>
 <translation id="8870509716567206129">Az alkalmazás nem támogatja az osztott képernyős nézetet.</translation>
 <translation id="8874184842967597500">Nincs csatlakozva</translation>

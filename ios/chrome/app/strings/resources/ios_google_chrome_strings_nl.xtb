@@ -6,6 +6,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Privacybeleid voor Google Chrome</translation>
 <translation id="1863312987075920112">Als je deze app gebruikt, ga je akkoord met de <ph name="BEGIN_LINK_TOS" />Servicevoorwaarden<ph name="END_LINK_TOS" /> en het <ph name="BEGIN_LINK_PRIVACY" />Privacybeleid<ph name="END_LINK_PRIVACY" /> van Chrome.</translation>
+<translation id="1878302395768190018">Je kunt dit op elk gewenst moment aanpassen in de Chrome-instellingen</translation>
 <translation id="2147651015520127414">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="2342981853652716282">Log in bij Chrome om je bladwijzers, wachtwoorden en meer op al je apparaten op te halen.</translation>
@@ -38,6 +39,7 @@
 <translation id="5639704535586432836">Open Instellingen &gt; Privacy &gt; Camera &gt; Google Chrome en zet de camera aan.</translation>
 <translation id="5642200033778930880">Google Chrome kan je camera niet gebruiken in de modus 'Gesplitste weergave'</translation>
 <translation id="5703130498371792817">Ben je fan van Chrome? <ph name="BEGIN_LINK" />Beoordeel deze app<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Chrome-tip. Sommige knoppen zoals Terug, Vooruit en Zoeken worden nu onderaan het scherm weergegeven.</translation>
 <translation id="6036420186814142909">Google Chrome bevat functies die je helpen je internetgegevens te beheren en te bepalen hoe snel je webpagina's kunt laden.
 <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Tabbladen die je op andere apparaten in Chrome hebt geopend, worden hier weergegeven.</translation>
@@ -56,4 +58,5 @@
 <translation id="8459495907675268833">De geselecteerde gegevens zijn verwijderd uit Chrome en van gesynchroniseerde apparaten. Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekopdrachten en activiteit uit andere Google-services) beschikbaar zijn via history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chrome kan webservices gebruiken om je browse-ervaring te verbeteren. Je kunt deze services eventueel uitschakelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Chrome-tip. Voor meer tabbladopties tik je op de werkbalk onder- of bovenaan het scherm op de knop 'Tabbladen weergeven' en houd je deze knop vast.</translation>
 </translationbundle>

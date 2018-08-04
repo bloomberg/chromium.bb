@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Denne handling stopper den aktuelle download.</translation>
 <translation id="1605658421715042784">Kopiér billede</translation>
 <translation id="1612730193129642006">Vis fanegitter</translation>
+<translation id="162035744160882748">Aktivér synkronisering, tilpasning og andre Google-tjenester</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1646446875146297738">Hvis du aktiverer "Spor ikke", medtages der en anmodning i din browsertrafik. Anmodningens virkning afhænger af, om et website reagerer på den, og hvordan anmodningen fortolkes.
 
@@ -194,6 +195,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="4124987746317609294">Tidsinterval</translation>
 <translation id="4172051516777682613">Vis altid</translation>
 <translation id="418156467088430727">Se offlineversion på en ny fane</translation>
+<translation id="4192273449750167573">Gennemgå dine indstillinger på næste skærm</translation>
 <translation id="4237682350741091554">Administrer Chrome-synkronisering og -tilpasning i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Angiv adgangssætning</translation>
 <translation id="4272631900155121838">Aktivér kameraet i Indstillinger for at scanne en QR-kode</translation>
@@ -285,6 +287,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5938160824633642847">Din enhed er ved at løbe tør for plads. Frigør plads, og prøv igen.</translation>
 <translation id="5948291296578561264">Dermed kan du gemme fotos i din fotosamling.</translation>
 <translation id="5955891643922670672">Viser offlineversion</translation>
+<translation id="5957613098218939406">Flere valgmuligheder</translation>
 <translation id="5964480694698977962">Opret ny inkognitofane.</translation>
 <translation id="5965679971710331625">Du er logget ind</translation>
 <translation id="5982717868370722439">Føj eksisterende data til <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6797885426782475225">Talesøgning</translation>
 <translation id="6807889908376551050">Vis alle...</translation>
 <translation id="681368974849482173">Elementet blev oprettet</translation>
+<translation id="685040365210406336">Undlad at foretage nogen ændringer</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Aktivér synkronisering</translation>
 <translation id="6914783257214138813">Dine adgangskoder vil være synlige for alle, der kan se den eksporterede fil.</translation>
@@ -373,6 +377,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent er downloadet</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">Webadresse</translation>
+<translation id="741204030948306876">Ja tak</translation>
 <translation id="7425346204213733349">Ændringer af dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto. Dine eksisterende data er dog stadig gemt på din Google-konto.</translation>
 <translation id="744343212394640790">Ikke <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Delstat/amt</translation>

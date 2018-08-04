@@ -251,6 +251,7 @@
 <translation id="8179874765710681175">Chrome をスマートフォンにインストールしませんか。Google よりスマートフォンに SMS をお送りします。</translation>
 <translation id="8183957050892517584">Chrome でユーザーの情報が安全に保存されるので、再度入力する必要がなくなります。</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS は今すぐ再起動されます}=1{Chrome OS は 1 秒後に再起動されます}other{Chrome OS は # 秒後に再起動されます}}</translation>
+<translation id="825412236959742607">このページは大量のメモリを使用しているため、Chrome により一部のコンテンツが削除されました。</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="8290100596633877290">エラー: Google Chrome で問題が発生しました。今すぐ再起動しますか？</translation>

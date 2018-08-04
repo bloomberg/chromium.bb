@@ -222,7 +222,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1316136264406804862">Vyhledávání...</translation>
 <translation id="1316495628809031177">Synchronizace je pozastavena</translation>
 <translation id="1319979322914001937">Aplikace, která zobrazuje filtrovaný seznam rozšíření v Internetovém obchodu Chrome. Rozšíření v seznamu lze nainstalovat přímo z této aplikace.</translation>
-<translation id="1322046419516468189">Uložená hesla můžete zobrazit a spravovat v: <ph name="SAVED_PASSWORDS_STORE" /></translation>
+<translation id="1322046419516468189">K zobrazení a správě uložených hesel můžete použít svůj <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="1327074568633507428">Tiskárna ve službě Google Cloud Print</translation>
 <translation id="1327977588028644528">Brána</translation>
@@ -2555,7 +2555,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4917385247580444890">Silný</translation>
 <translation id="4918021164741308375">Web <ph name="ORIGIN" /> chce komunikovat s rozšířením <ph name="EXTENSION_NAME" /></translation>
 <translation id="4918086044614829423">Přijmout</translation>
-<translation id="4920350943031252905">Spouštějte na svém Chromebooku nástroje, editory a prostředí IDE pro Linux.</translation>
 <translation id="4920887663447894854">Těmto webům bylo na této stránce zakázáno sledování vaší polohy.</translation>
 <translation id="492299503953721473">Odstranit aplikace Android</translation>
 <translation id="4923279099980110923">Ano, chci pomoci</translation>
@@ -2802,7 +2801,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="529175790091471945">Naformátovat toto zařízení</translation>
 <translation id="5292195676005197571">Většinu klíčů lze použít stisknutím tlačítka</translation>
 <translation id="5293170712604732402">Obnovit nastavení na původní výchozí hodnoty</translation>
-<translation id="5297082477358294722">Heslo bylo uloženo. Uložená hesla můžete zobrazit a spravovat v: <ph name="SAVED_PASSWORDS_STORE" />.</translation>
+<translation id="5297082477358294722">Heslo bylo uloženo. K zobrazení a správě uložených hesel můžete použít svůj <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Autor motivu</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
 <translation id="5299682071747318445">Všechny údaje jsou šifrovány pomocí vlastního hesla pro synchronizaci.</translation>
@@ -3502,6 +3501,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6327785803543103246">Automatické zjišťování webového proxy serveru</translation>
 <translation id="6333064448949140209">Soubor bude odeslán do Googlu k ladění</translation>
 <translation id="6333834492048057036">Přejít na adresní řádek za účelem vyhledávání</translation>
+<translation id="6336451774241870485">Nová soukromá karta</translation>
 <translation id="6339668969738228384">Vytvořit nový profil pro uživatele <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">K serveru se nelze se připojit. Zkontrolujte připojení k síti a zkuste to znovu. Pokud problém přetrvává, restartujte Chromebook.</translation>
 <translation id="6340071272923955280">Internet Printing Protocol (IPPS)</translation>
@@ -3683,6 +3683,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6606070663386660533">Karta 8</translation>
 <translation id="6607272825297743757">Informace o souboru</translation>
 <translation id="6607831829715835317">Další nástro&amp;je</translation>
+<translation id="6610147964972079463">Zavřít soukromé karty</translation>
 <translation id="6612358246767739896">Chráněný obsah</translation>
 <translation id="6613452264606394692">Přidejte si stránku do záložek, abyste sem mohli rychle přejít</translation>
 <translation id="6614893213975402384">Instalace aktualizací a aplikací. Pokračováním vyjadřujete souhlas s tím, že toto zařízení může také automaticky stahovat a instalovat aktualizace a aplikace od společnosti Google, operátora a výrobce zařízení, a v případě potřeby k tomu smí používat mobilní datové připojení. Některé z těchto aplikací mohou nabízet nákupy v aplikaci. Tyto aplikace můžete kdykoliv odstranit. <ph name="BEGIN_LINK1" />Další informace<ph name="END_LINK1" /></translation>

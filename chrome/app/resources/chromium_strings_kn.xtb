@@ -123,7 +123,7 @@
 <translation id="5480860683791598150">ಈ ಸೈಟ್‌ ಜೊತೆಗೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chromium ಗೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸುವ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="549669000822060376">ದಯವಿಟ್ಟು ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chromium ಸ್ಥಾಪಿಸುವಾಗ ಕಾಯಿರಿ.</translation>
 <translation id="5514308096618405748">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS" />ಓಪನ್ ಸೋರ್ಸ್ ಸಾಫ್ಟ್‌ವೇರ್‌<ph name="END_LINK_CROS_OSS" /> ನಿಂದ Chrome OS ನ ರಚನೆ ಸಾಧ್ಯವಾಯಿತು. ಹಾಗೆಯೇ Linux (ಬೀಟಾ) ನದೂ ಸಹ.</translation>
-<translation id="5529843986978123325">{0,plural, =1{1 ನಿಮಿಷದಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{ # ನಿಮಿಷಗಳಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{ # ನಿಮಿಷಗಳಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
+<translation id="5529843986978123325">{0,plural, =1{1 ನಿಮಿಷದಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ನಿಮಿಷಗಳಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ನಿಮಿಷಗಳಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="5631814766731275228">Chromium ಹೆಸರು ಮತ್ತು ಚಿತ್ರ</translation>
 <translation id="5634636535844844681">Chromium ಗೆ Windows 7 ಅಥವಾ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
 <translation id="5680901439334282664">Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
@@ -226,6 +226,7 @@
 <translation id="8157153840442649507">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="81770708095080097">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chromium ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="8222496066431494154">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chromium ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಖಾತೆ ಮರುಪ್ರಾಪ್ತಿ ಫೋನ್ ಸಂಖ್ಯೆ‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ: <ph name="PHONE_NUMBER" /></translation>
+<translation id="825412236959742607">ಈ ಪುಟವು ತೀರಾ ಹೆಚ್ಚು ಮೆಮೊರಿಯನ್ನು ಬಳಸುತ್ತದೆ, ಆದ್ದರಿಂದ Chrome ಕೆಲವು ವಿಷಯಗಳನ್ನು ತೆಗೆದುಹಾಕಿದೆ.</translation>
 <translation id="8269379391216269538">Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="8290862415967981663">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹೀಗಾಗಿ Chromium ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="8330519371938183845">ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ Chromium ಅನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>

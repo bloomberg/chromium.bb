@@ -136,6 +136,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="405887016757208221">リモート パソコンでセッションを初期化できませんでした。引き続き問題が発生する場合は、ホストを設定し直してみてください。</translation>
 <translation id="4068946408131579958">すべての接続</translation>
 <translation id="409800995205263688">注: ポリシー設定に基づき、接続が許可されるのはこのネットワーク内のパソコン間のみとなります。</translation>
+<translation id="4126409073460786861">設定が完了したら、このページを更新します。更新後のページでデバイスを選択して PIN を入力すると、パソコンにアクセスできます</translation>
 <translation id="4145029455188493639"><ph name="EMAIL_ADDRESS" /> としてログインしています。</translation>
 <translation id="4155497795971509630">必要なコンポーネントが見つかりません。インストールしているソフトウェアのバージョンが最新であることを確認し、もう一度お試しください。</translation>
 <translation id="4156740505453712750">このパソコンへのアクセスを保護するには、<ph name="BOLD_START" />6 桁以上<ph name="BOLD_END" />の PIN を選択してください。この PIN は別の場所から接続するときに必要となります。</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">To</translation>
 <translation id="7019153418965365059">不明なホストエラー: <ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">リモート サポート</translation>
+<translation id="7026930240735156896">画面の説明に沿ってパソコンをリモート アクセス用に設定します</translation>
 <translation id="7038683108611689168">Chromoting の改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
 <translation id="7067321367069083429">画面がタッチ スクリーンとして機能します</translation>
 <translation id="7116737094673640201">Chrome リモート デスクトップへようこそ</translation>

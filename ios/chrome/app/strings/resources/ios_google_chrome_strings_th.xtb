@@ -6,6 +6,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Google Chrome</translation>
 <translation id="1863312987075920112">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ<ph name="BEGIN_LINK_TOS" />ข้อกำหนดในการให้บริการ<ph name="END_LINK_TOS" />และ<ph name="BEGIN_LINK_PRIVACY" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK_PRIVACY" />ของ Chrome</translation>
+<translation id="1878302395768190018">ปรับแต่งการตั้งค่านี้ได้ทุกเมื่อในการตั้งค่า Chrome</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="2334084861041072223">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2342981853652716282">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์ก รหัสผ่าน และข้อมูลอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -38,6 +39,7 @@
 <translation id="5639704535586432836">เปิดการตั้งค่า &gt; ความเป็นส่วนตัว &gt; กล้อง &gt; Google Chrome เพื่อเปิดกล้องถ่ายรูป</translation>
 <translation id="5642200033778930880">Google Chrome ไม่สามารถใช้กล้องถ่ายรูปในโหมด Split View</translation>
 <translation id="5703130498371792817">หากคุณชอบ Chrome โปรด<ph name="BEGIN_LINK" />ให้คะแนนแอปนี้<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">เคล็ดลับสำหรับ Chrome ตอนนี้บางปุ่มแสดงอยู่ที่ด้านล่างของหน้าจอแล้ว เช่น ปุ่มกลับ ไปข้างหน้า และค้นหา</translation>
 <translation id="6036420186814142909">Google Chrome มีฟีเจอร์ที่ช่วยให้คุณสามารถจัดการข้อมูลอินเทอร์เน็ตและระดับความเร็วที่คุณสามารถใช้ในการโหลดหน้าเว็บ
 <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">แท็บที่คุณเปิดไว้ใน Chrome ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
@@ -56,4 +58,5 @@
 <translation id="8459495907675268833">ระบบได้นำข้อมูลที่เลือกไว้ออกจาก Chrome และอุปกรณ์ที่ซิงค์แล้ว บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ เช่น การค้นหาและกิจกรรมจากบริการอื่นๆ ของ Google ที่ history.google.com</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chrome อาจใช้บริการเว็บเพื่อปรับปรุงประสบการณ์การท่องเว็บของคุณ คุณสามารถเลือกปิดบริการเหล่านี้ได้ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">เคล็ดลับสำหรับ Chrome ถ้าต้องการดูตัวเลือกแท็บเพิ่มเติม ให้กดปุ่ม "แสดงแท็บ" ค้างไว้ในแถบเครื่องมือ ซึ่งอยู่ที่ด้านล่างหรือด้านบนของหน้าจอ</translation>
 </translationbundle>

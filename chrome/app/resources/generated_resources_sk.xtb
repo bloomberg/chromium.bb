@@ -2178,7 +2178,7 @@ dotyku</translation>
 <translation id="428608937826130504">8. položka na poličke</translation>
 <translation id="4287502004382794929">Nemáte dostatočný počet softvérových licencií na registráciu tohto zariadenia. Kontaktujte obchodné oddelenie a kúpte si ďalšie. Ak sa domnievate, že ide o chybu, kontaktujte podporu.</translation>
 <translation id="4289540628985791613">Prehľad</translation>
-<translation id="4295072614469448764">Aplikácia je k dispozícii v termináli. V spúšťači sa môže tiež objaviť jej ikona.</translation>
+<translation id="4295072614469448764">Aplikácia je k dispozícii v termináli. V Spúšťači sa môže tiež objaviť jej ikona.</translation>
 <translation id="4296575653627536209">Pridať kontrolovaného používateľa</translation>
 <translation id="4297219207642690536">Reštartovať a resetovať</translation>
 <translation id="4297322094678649474">Zmeniť jazyky</translation>
@@ -2558,7 +2558,6 @@ dotyku</translation>
 <translation id="4917385247580444890">Silné</translation>
 <translation id="4918021164741308375">Web <ph name="ORIGIN" /> chce komunikovať s rozšírením <ph name="EXTENSION_NAME" /></translation>
 <translation id="4918086044614829423">Prijať</translation>
-<translation id="4920350943031252905">Spustite nástroje, editory aj Linux a súbory IDE vo svojom Chromebooku.</translation>
 <translation id="4920887663447894854">Tieto webové stránky majú zablokované sledovanie vašej polohy na tejto stránke:</translation>
 <translation id="492299503953721473">Odstrániť aplikácie pre Android</translation>
 <translation id="4923279099980110923">Áno, chcem pomôcť</translation>
@@ -3075,7 +3074,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5677503058916217575">Jazyk stránky:</translation>
 <translation id="5677928146339483299">Zablokované</translation>
 <translation id="5678550637669481956">Bol udelený prístup k médiu <ph name="VOLUME_NAME" /> s povolením čítať a zapisovať.</translation>
-<translation id="5678784840044122290">Aplikácia Linux bude k dispozícii v termináli a jej ikona sa môže tiež zobraziť v spúšťači.</translation>
+<translation id="5678784840044122290">Aplikácia Linux bude k dispozícii v termináli a jej ikona sa môže tiež zobraziť v Spúšťači.</translation>
 <translation id="5678955352098267522">Čítať vaše údaje na: <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identifikátor obsahu</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Nedá sa odpojiť od archívu či virtuálneho disku<ph name="END_BOLD" />
@@ -3506,6 +3505,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6327785803543103246">Automatické zisťovanie webového proxy servera</translation>
 <translation id="6333064448949140209">Súbor bude odoslaný Googlu na účely ladenia</translation>
 <translation id="6333834492048057036">Zamerať na panel s adresou za účelom vyhľadávania</translation>
+<translation id="6336451774241870485">Nová súkromná karta</translation>
 <translation id="6339668969738228384">Vytvoriť nový profil pre používateľa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Nepodarilo sa pripojiť k serveru. Skontrolujte sieťové pripojenie a skúste to znova. Ak problém pretrváva, reštartujte Chromebook.</translation>
 <translation id="6340071272923955280">Protokol IPP (IPPS)</translation>
@@ -3687,6 +3687,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6606070663386660533">Karta 8</translation>
 <translation id="6607272825297743757">Informácie o súbore</translation>
 <translation id="6607831829715835317">Ďalšie nástro&amp;je</translation>
+<translation id="6610147964972079463">Zavrieť súkromné karty</translation>
 <translation id="6612358246767739896">Chránený obsah</translation>
 <translation id="6613452264606394692">Vráťte sa sem rýchlejšie tak, že stránku uložíte ako záložku</translation>
 <translation id="6614893213975402384">Inštalácia aktualizácií a aplikácií. Pokračovaním vyjadrujete súhlas s tým, že toto zariadenie môže tiež automaticky sťahovať a inštalovať aktualizácie a aplikácie od Googlu, operátora a výrobcu zariadenia a v prípade potreby pri tom môže používať mobilné dáta. Niektoré z týchto aplikácií môžu ponúkať nákupy v aplikácii. Tieto aplikácie môžete kedykoľvek odstrániť. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>

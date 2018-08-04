@@ -510,6 +510,11 @@
       Als je deze instelling niet instelt, kan de gebruiker bepalen of de functie wordt gebruikt.
 
       Deze instelling is verwijderd uit <ph name="PRODUCT_NAME" /> 29 en hogere versies.</translation>
+<translation id="2433412232489478893">Dit beleid bepaalt of de functie Network File Shares voor <ph name="PRODUCT_NAME" /> is toegestaan voor een gebruiker.
+
+      Wanneer dit beleid niet is geconfigureerd of is ingesteld op 'true' (waar), kunnen gebruikers Network File Shares gebruiken.
+
+      Wanneer dit beleid is ingesteld op 'false' (onwaar), kunnen gebruikers Network File Shares niet gebruiken.</translation>
 <translation id="2438609638493026652">Hiermee schakel je de rapportage aan Google in van belangrijke gebeurtenissen tijdens de installatie van Android-apps. Gebeurtenissen worden alleen geregistreerd voor apps waarvan de installatie via beleid is geactiveerd.
 
       Als het beleid is ingesteld op True (Waar), worden gebeurtenissen geregistreerd.
@@ -591,6 +596,7 @@
 <translation id="2598508021807251719">Hiermee wordt ingesteld in welke talen <ph name="PRODUCT_OS_NAME" /> kan worden weergegeven.
 
       Als dit beleid is ingesteld, kan de gebruiker alleen instellen dat <ph name="PRODUCT_OS_NAME" /> wordt weergegeven in een van de talen die is opgenomen in dit beleid. Als dit beleid niet is ingesteld of op een lege lijst is ingesteld, kan <ph name="PRODUCT_OS_NAME" /> worden weergegeven in alle ondersteunde weergavetalen. Als dit beleid is ingesteld op een lijst met ongeldige waarden, worden alle ongeldige waarden genegeerd. Als een gebruiker eerder had ingesteld dat <ph name="PRODUCT_OS_NAME" /> wordt weergegeven in een bepaalde taal die niet is toegestaan door dit beleid, wordt de weergavetaal de volgende keer dat de gebruiker inlogt, ingesteld op een taal die wel is toegestaan. Als de gebruiker voorkeurstalen had ingesteld en een van de voorkeurstalen is toegestaan door dit beleid, schakelt <ph name="PRODUCT_OS_NAME" /> over naar deze taal. Als de gebruiker geen voorkeurstalen had ingesteld, schakelt <ph name="PRODUCT_OS_NAME" /> over naar de eerste geldige waarde die door het beleid is bepaald, of anders naar de standaardtaal (momenteel en-US) als het beleid alleen ongeldige talen bevat.</translation>
+<translation id="2604182581880595781">Beleid met betrekking tot Network File Shares configureren.</translation>
 <translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
 <translation id="2627554163382448569">Hiermee worden configuraties geleverd voor zakelijke printers.
@@ -676,6 +682,7 @@
 <translation id="2823870601012066791">Locatie van Windows-register voor <ph name="PRODUCT_OS_NAME" />-clients:</translation>
 <translation id="2824715612115726353">Incognitomodus inschakelen</translation>
 <translation id="2838830882081735096">Gegevensmigratie en ARC niet toestaan</translation>
+<translation id="2839294585867804686">Instellingen voor Network File Shares</translation>
 <translation id="2840269525054388612">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
 
       Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_WHITELIST" /> is gekozen voor <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1172,6 +1179,7 @@
       Als dit beleid niet wordt ingesteld, worden aan URL's gekoppelde, geanonimiseerde gegevens verzameld, maar kan de gebruiker dit wijzigen.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4261820385751181068">Taal voor inlogscherm van apparaat</translation>
+<translation id="4264607809747169568">Beheert Network File Shares voor Chrome OS-beschikbaarheid</translation>
 <translation id="427220754384423013">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
 
       Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_WHITELIST" /> is gekozen voor <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1600,6 +1608,15 @@
       De beleidswaarde moet worden opgegeven in milliseconden.</translation>
 <translation id="5511702823008968136">Bladwijzerbalk inschakelen</translation>
 <translation id="5512418063782665071">URL van homepage</translation>
+<translation id="551639594034811656">Dit beleid definieert een lijst van percentages. Deze percentages bepalen welk deel van <ph name="PRODUCT_OS_NAME" />-apparaten in de OE per week moet worden geüpdatet vanaf de dag waarop de update voor het eerst wordt ontdekt. De update wordt later ontdekt dan deze wordt gepubliceerd, aangezien het even kan duren voordat het apparaat controleert op updates.
+
+      Elk (dag, percentage)-paar geeft aan welk percentage van de apparaten moet worden geüpdatet binnen het opgegeven aantal dagen nadat de update is ontdekt. Als we bijvoorbeeld de paren [(4, 40), (10, 70), (15, 100)] hebben, moet 40% van de apparaten zijn geüpdatet binnen vier dagen nadat de update is ontdekt. 70% moet na tien dagen zijn geüpdatet, enzovoort.
+
+      Als er voor dit beleid een waarde is ingesteld, negeren updates het beleid <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> en wordt in plaats daarvan dit beleid gevolgd.
+
+      Als deze lijst leeg is, vindt het updaten niet gefaseerd plaats en worden updates toegepast volgens ander apparaatbeleid.
+
+      Dit beleid is niet van toepassing op kanaalwisselingen.</translation>
 <translation id="5523812257194833591">Een openbare sessie om automatisch in te loggen na een vertraging.
 
       Als dit beleid is ingesteld, wordt de opgegeven sessie automatisch ingelogd na een tijdsperiode zonder gebruikersinteractie op het inlogscherm is verstreken. De openbare sessie moet al zijn geconfigureerd (zie |DeviceLocalAccounts|).
@@ -2523,6 +2540,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
       Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
       </translation>
+<translation id="7902255855035461275">Patronen in deze lijst worden vergeleken met de beveiligingsoorsprong van de aanvragende URL. Als een overeenkomst wordt gevonden, wordt toegang tot apparaten voor het vastleggen van video zonder prompt toegestaan.
+
+      OPMERKING: Tot versie 45 werd dit beleid alleen ondersteund in de kioskmodus.</translation>
 <translation id="7912255076272890813">Toegestane typen apps/extensies configureren</translation>
 <translation id="7915236031252389808">Je kunt hier een URL naar een PAC-bestand voor de proxy opgeven.
 

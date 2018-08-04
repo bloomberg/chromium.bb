@@ -302,6 +302,11 @@
       Ett standardvärde används om en inställning inte specificeras.
 
       Om principen inte ställs in används standardvärden för alla inställningar.</translation>
+<translation id="1958138414749279167">Aktiverar funktionen Autofyll i <ph name="PRODUCT_NAME" /> så att användarna kan fylla i webbformulär automatiskt med adressuppgifter som har sparats sedan tidigare.
+
+      Om inställningen inaktiveras visas inga förslag med Autofyll och inga adressuppgifter fylls i. Ytterligare adressuppgifter som användaren kan ange på webben sparas inte heller.
+
+      Om inställningen aktiveras eller lämnas utan värde kan användarna själva styra Autofyll för adresser i användargränssnittet.</translation>
 <translation id="1960840544413786116">Om certifikat som utfärdats av lokala tillitsankare och saknar tillägget subjectAlternativeName tillåts eller inte</translation>
 <translation id="1964634611280150550">Inkognitoläget är inaktiverat</translation>
 <translation id="1964802606569741174">Den här principen gäller inte YouTube-appen för Android. Om Säkert läge på YouTube ska vara obligatoriskt bör du blockera möjligheten att installera YouTube-appen för Android.</translation>
@@ -1928,6 +1933,7 @@
 <translation id="6440051664870270040">Tillåt att webbplatser navigerar och öppnar popup-fönster samtidigt</translation>
 <translation id="6447948611083700881">Säkerhetskopiering och återställning har inaktiverats</translation>
 <translation id="645425387487868471">Aktivera tvingad inloggning för <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Aktivera autofyll för adresser</translation>
 <translation id="6473623140202114570">Konfigurera listan över domäner där Säker webbsökning inte utlöser varningar.</translation>
 <translation id="6491139795995924304">Tillåt Bluetooth på enheten</translation>
 <translation id="6520802717075138474">Importera sökmotorer från standardwebbläsaren första gången den körs</translation>

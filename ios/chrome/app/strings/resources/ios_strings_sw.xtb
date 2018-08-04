@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Hatua hii itasimamisha upakuaji wako wote wa sasa.</translation>
 <translation id="1605658421715042784">Nakili Picha</translation>
 <translation id="1612730193129642006">Onyesha Gridi ya Kichupo</translation>
+<translation id="162035744160882748">Washa usawazishaji, mapendeleo na huduma nyingine za Google</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1646446875146297738">Kuwasha ‘Usifuatilie’ kunamaanisha kuwa ombi litajumuishwa kwenye rekodi yako ya shughuli za kuvinjari. Athari zozote zinategemea iwapo tovuti itajibu ombi, na namna ombi likatavyofasiriwa. 
 
@@ -194,6 +195,7 @@ Kwa mfano, tovuti nyingine zinaweza kujibu ombi hili kwa kukuonyesha matangazo y
 <translation id="4124987746317609294">Masafa ya Muda</translation>
 <translation id="4172051516777682613">Onyesha kila mara</translation>
 <translation id="418156467088430727">Tazama Toleo la Nje ya Mtandao ktk Kichupo Kipya</translation>
+<translation id="4192273449750167573">Kagua mipangilio yako kwenye skrini inayofuata</translation>
 <translation id="4237682350741091554">Dhibiti Usawazishaji wa Chrome na uboreshaji katika <ph name="BEGIN_LINK" />Mipangilio<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Weka Kauli ya Siri</translation>
 <translation id="4272631900155121838">Ili kuchanganua msimbo wa QR, washa kamera kwenye mipangilio</translation>
@@ -285,6 +287,7 @@ Lazima Handoff iwashwe pia katika sehemu ya Jumla ya Mipangilio, na lazima vifaa
 <translation id="5938160824633642847">Nafasi ya kifaa chako inakaribia kujaa. Tafadhali futa baadhi vipengee ili upate nafasi kisha ujaribu tena.</translation>
 <translation id="5948291296578561264">Hatua hii inakuruhusu uhifadhi picha kwenye maktaba ya picha.</translation>
 <translation id="5955891643922670672">Unasoma Toleo la Nje ya Mtandao</translation>
+<translation id="5957613098218939406">Chaguo Zaidi</translation>
 <translation id="5964480694698977962">Unda kichupo fiche kipya.</translation>
 <translation id="5965679971710331625">Umeingia katika akaunti</translation>
 <translation id="5982717868370722439">Ongeza data iliyopo kwenye <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6797885426782475225">Kutafuta kwa Kutamka</translation>
 <translation id="6807889908376551050">Onyesha Zote...</translation>
 <translation id="681368974849482173">Umeunda kipengee</translation>
+<translation id="685040365210406336">Usifanye mabadiliko</translation>
 <translation id="6896758677409633944">Nakili</translation>
 <translation id="6903907808598579934">Washa kipengele cha kusawazisha</translation>
 <translation id="6914783257214138813">Mtu yeyote anayeweza kuona faili uliyohamisha ataona manenosiri yako.</translation>
@@ -373,6 +377,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7336264872878993241">Faili imepakuliwa asilimia <ph name="PERCENT" /></translation>
 <translation id="7346909386216857016">Sawa, nimeelewa</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Ndiyo, ninakubali</translation>
 <translation id="7425346204213733349">Mabadiliko kwenye alamisho, historia, manenosiri na mipangilio yako mingine haitasawazishwa tena kwenye Akaunti yako ya Google. Hata hivyo, data yako iliyopo itaendelea kuhifadhiwa katika Akaunti yako ya Google.</translation>
 <translation id="744343212394640790">Wewe si <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Jimbo / Mkoa</translation>

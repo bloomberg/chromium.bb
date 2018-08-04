@@ -126,7 +126,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5479196819031988440">„Chromium“ OS negali atidaryti šio puslapio.</translation>
 <translation id="5480860683791598150">„Chromium“ reikia leidimo, kad galėtų naudoti jūsų vietovės informaciją ir bendrinti ją su šia svetaine</translation>
 <translation id="549669000822060376">Palaukite, kol „Chromium“ įdiegs naujausius sistemos naujinius.</translation>
-<translation id="5514308096618405748">„Chrome“ OS (kaip ir „Linux“ (beta vers.)) pasiekiama naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS" />atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="5514308096618405748">„Chrome“ OS (kaip ir „Linux“ (beta vers.) pasiekiama naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS" />atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="5529843986978123325">{0,plural, =1{„Chromium“ OS bus paleista iš naujo po 1 minutės}one{„Chromium“ OS bus paleista iš naujo po # minutės}few{„Chromium“ OS bus paleista iš naujo po # minučių}many{„Chromium“ OS bus paleista iš naujo po # minutės}other{„Chromium“ OS bus paleista iš naujo po # minučių}}</translation>
 <translation id="5631814766731275228">„Chromium“ pavadinimas ir paveikslėlis</translation>
 <translation id="5634636535844844681">Kad būtų galima naudoti „Chromium“, reikalinga 7 ar naujesnės versijos „Windows“.</translation>

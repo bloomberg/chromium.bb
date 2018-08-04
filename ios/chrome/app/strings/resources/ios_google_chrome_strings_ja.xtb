@@ -6,6 +6,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome のプライバシーに関するお知らせ</translation>
 <translation id="1863312987075920112">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK_TOS" />利用規約<ph name="END_LINK_TOS" />と<ph name="BEGIN_LINK_PRIVACY" />プライバシーに関するお知らせ<ph name="END_LINK_PRIVACY" />に同意したことになります。</translation>
+<translation id="1878302395768190018">この設定は Chrome の [設定] ページでいつでもカスタマイズできます</translation>
 <translation id="2147651015520127414">このウェブサイトの証明書が <ph name="ISSUER" /> 発行のものであると確認されました。</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2342981853652716282">Chrome にログインすれば、ブックマーク、パスワード、その他の設定をどの端末からでもご利用いただけます。</translation>
@@ -38,6 +39,7 @@
 <translation id="5639704535586432836">[設定] &gt; [プライバシー] &gt; [カメラ] &gt; [Google Chrome] の順に選択し、カメラをオンにします。</translation>
 <translation id="5642200033778930880">Google Chrome では、分割表示モードでカメラを使用することはできません</translation>
 <translation id="5703130498371792817">Chrome の使用感はいかがですか？<ph name="BEGIN_LINK" />このアプリを評価してください。<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Chrome の使い方のヒント: 戻る、進む、検索など一部のボタンは画面の下部に表示されるようになりました。</translation>
 <translation id="6036420186814142909">Google Chromeには、インターネットのデータやウェブページの読み込み速度を管理できる機能があります。
 <ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">他の端末の Chrome で開いているタブがここに表示されます。</translation>
@@ -56,4 +58,5 @@
 <translation id="8459495907675268833">選択したデータが Chrome から削除され、同期された端末からも削除されました。他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が history.google.com に残ることがあります。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chromeは、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。これらのサービスは無効にすることもできます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Chrome の使い方のヒント: タブのオプションをさらに表示するには、画面の下部または上部のツールバーにある [タブを表示] を押し続けます。</translation>
 </translationbundle>

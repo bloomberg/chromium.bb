@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">S'està afegint <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De llocs web</translation>
 <translation id="1049743911850919806">Incògnit</translation>
+<translation id="1054301162707478098">Has passat al mode privat.</translation>
 <translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
 <translation id="1068672505746868501">No tradueixis mai les pàgines en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">Més idiomes</translation>
 <translation id="124678866338384709">Tanca la pestanya actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">Les pàgines que visualitzes a les pestanyes privades no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerques un cop tanquis totes les pestanyes privades. Tots els fitxers que baixis o les adreces d'interès que creïs es conservaran.
+
+Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet i els llocs web que visitis poden veure la teva navegació privada.</translation>
 <translation id="127138278192656016">Fes servir la sincronització i tots els serveis</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1283039547216852943">Toca per desplegar</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">Controls de pantalla completa</translation>
 <translation id="2038563949887743358">Activa Mostra com a ordinador</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB en altres aplicacions</translation>
+<translation id="2055670718290744343">Accelerador de la cerca</translation>
 <translation id="2063713494490388661">Toca per cercar</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">Sincronització i serveis de Google</translation>
 <translation id="2259659629660284697">Exporta les contrasenyes…</translation>
 <translation id="2268044343513325586">Restringeix</translation>
+<translation id="2280910239864711607">Obre una pestanya nova en mode privat</translation>
 <translation id="2286841657746966508">Adreça de facturació</translation>
 <translation id="230115972905494466">No s'ha trobat cap dispositiu compatible</translation>
 <translation id="2315043854645842844">El sistema operatiu no permet seleccionar el certificat del client.</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">Permet JavaScript en un lloc concret.</translation>
 <translation id="2625189173221582860">S'ha copiat la contrasenya</translation>
 <translation id="2631006050119455616">Dades desades</translation>
+<translation id="2633278372998075009">Pestanyes privades</translation>
 <translation id="2647434099613338025">Afegir un idioma</translation>
 <translation id="2650751991977523696">Vols tornar a baixar el fitxer?</translation>
 <translation id="2653659639078652383">Envia</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">Si oblideu la frase de contrasenya o voleu canviar aquesta configuració, <ph name="BEGIN_LINK" />restabliu la sincronització<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Micròfon</translation>
 <translation id="3232754137068452469">Aplicació web</translation>
+<translation id="3234355010754616171">Pestanya privada nova</translation>
 <translation id="3236059992281584593">Queda 1 minut</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Afegeix aquesta pàgina a les adreces d'interès</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">Tanca totes les pestanyes d'incògnit</translation>
 <translation id="3365671512111106261">No està disponible quan l'extensió Economitzador de dades està activada</translation>
 <translation id="3367813778245106622">Torna a iniciar la sessió per començar la sincronització</translation>
+<translation id="3377025655491224618">Pestanya privada</translation>
 <translation id="3384347053049321195">Comparteix la imatge</translation>
 <translation id="3386292677130313581">Pregunta abans de permetre que els llocs sàpiguen la meva ubicació (opció recomanada)</translation>
 <translation id="3387650086002190359">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa d'errors amb el sistema de fitxers.</translation>
@@ -385,6 +394,7 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4209895695669353772">Perquè Google et suggereixi contingut personalitzat, activa la sincronització</translation>
 <translation id="4226663524361240545">És possible que les notificacions facin vibrar el dispositiu</translation>
 <translation id="4242533952199664413">Obre la configuració</translation>
+<translation id="4243710787042215766">Obre en una pestanya privada</translation>
 <translation id="424864128008805179">Voleu tancar la sessió de Chrome?</translation>
 <translation id="4256782883801055595">Llicències de programari lliure</translation>
 <translation id="4259722352634471385">S'ha bloquejat la navegació: <ph name="URL" /></translation>
@@ -465,6 +475,7 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4878404682131129617">S'ha produït un error en establir un túnel mitjançant el servidor intermediari</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="488187801263602086">Canvia el nom del fitxer</translation>
+<translation id="4883379392681899581">Surt del mode privat</translation>
 <translation id="4885273946141277891">No s'admet aquest nombre d'instàncies de Chrome.</translation>
 <translation id="4910889077668685004">Aplicacions de pagament</translation>
 <translation id="4913161338056004800">Restableix les estadístiques</translation>
@@ -506,6 +517,7 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="5224771365102442243">Amb vídeo</translation>
 <translation id="5233638681132016545">Pestanya nova</translation>
 <translation id="5240817131241497236">La configuració que controla la sincronització, la personalització i altres serveis de Google a Chrome ha canviat. Això pot afectar la teva configuració actual.</translation>
+<translation id="5264003212305142034">La <ph name="BEGIN_LINK1" />configuració<ph name="END_LINK1" /> es pot personalitzar en qualsevol moment. Google pot utilitzar contingut dels llocs web que visites, així com l'activitat i les interaccions al navegador per personalitzar Chrome i els serveis de Google, com ara el Traductor, la Cerca i els anuncis.</translation>
 <translation id="5271967389191913893">El dispositiu no pot obrir el contingut que s'ha de baixar.</translation>
 <translation id="528192093759286357">Arrossegueu la pantalla des de la part superior i toqueu el botó Enrere per sortir de la pantalla completa.</translation>
 <translation id="5284584623296338184">Els canvis fets a les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració es deixaran de sincronitzar amb el vostre compte de Google. No obstant això, les dades actuals hi continuaran emmagatzemades.</translation>
@@ -591,6 +603,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="583281660410589416">Desconegut</translation>
 <translation id="5833397272224757657">Utilitza el contingut dels llocs web que visites, així com l'activitat i les interaccions del navegador per oferir una experiència personalitzada.</translation>
 <translation id="5833984609253377421">Comparteix l'enllaç</translation>
+<translation id="584427517463557805">Pestanya privada seleccionada</translation>
 <translation id="5854790677617711513">Anterior a 30 dies</translation>
 <translation id="5858741533101922242">Chrome no pot activar l'adaptador Bluetooth</translation>
 <translation id="5860033963881614850">Desactivat</translation>
@@ -620,6 +633,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="6075798973483050474">Editar la pàgina d'inici</translation>
 <translation id="60923314841986378">Queden <ph name="HOURS" /> hores</translation>
 <translation id="60924377787140961">Aviat es mostraran més articles. Que tinguis una bona tarda.</translation>
+<translation id="6099151465289169210">S'ha canviat a les pestanyes privades</translation>
 <translation id="6108923351542677676">Configuració en curs...</translation>
 <translation id="6111020039983847643">dades utilitzades</translation>
 <translation id="6112702117600201073">S'està actualitzant la pàgina</translation>
@@ -649,6 +663,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6320088164292336938">Vibració</translation>
 <translation id="6324034347079777476">La sincronització del sistema Android està desactivada</translation>
 <translation id="6333140779060797560">Comparteix mitjançant <ph name="APPLICATION" />.</translation>
+<translation id="6336451774241870485">Pestanya privada nova</translation>
 <translation id="6337234675334993532">Encriptació</translation>
 <translation id="6341580099087024258">Pregunta on es desen els fitxers</translation>
 <translation id="6343192674172527289">No s'ha trobat cap baixada</translation>
@@ -686,6 +701,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6593061639179217415">Lloc web per a ordinador</translation>
 <translation id="6600954340915313787">Copiada de Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6610147964972079463">Tanca les pestanyes privades</translation>
 <translation id="6612358246767739896">Contingut protegit</translation>
 <translation id="6627583120233659107">Edita la carpeta</translation>
 <translation id="6643016212128521049">Esborra</translation>
@@ -789,6 +805,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7453467225369441013">Et tanca la sessió de la majoria de llocs web, però no la del compte de Google.</translation>
 <translation id="7454641608352164238">No hi ha prou espai</translation>
 <translation id="7455923816558154057">Toca per veure-ho</translation>
+<translation id="7465104139234185284">Tanca totes les pestanyes privades</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7475192538862203634">Si això passa sovint, proveu aquests <ph name="BEGIN_LINK" />suggeriments<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">La targeta SD no s'ha trobat. Pot ser que faltin alguns fitxers.</translation>
@@ -884,6 +901,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB en baixades</translation>
 <translation id="8249310407154411074">Mou a la part superior</translation>
 <translation id="8250920743982581267">Documents</translation>
+<translation id="825412236959742607">Com que aquesta pàgina fa servir massa memòria, Chrome n'ha suprimit contingut.</translation>
 <translation id="8260126382462817229">Torna a iniciar la sessió</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8266862848225348053">Ubicació de baixada</translation>
@@ -979,6 +997,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="9070377983101773829">Inicia la cerca per veu</translation>
 <translation id="9071742570345586758">Per veure contingut en realitat virtual, instal·la els Serveis RV de Google</translation>
 <translation id="9074336505530349563">Perquè Google et suggereixi contingut personalitzat, inicia la sessió i activa la sincronització</translation>
+<translation id="9080642952018487277">Activa el mode privat</translation>
 <translation id="9086455579313502267">No es pot accedir a la xarxa</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> kB en baixades</translation>
 <translation id="9100505651305367705">Proposa mostrar articles en visualització simplificada, quan s'admeti</translation>

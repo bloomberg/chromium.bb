@@ -6,6 +6,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Informativa sulla privacy di Google Chrome</translation>
 <translation id="1863312987075920112">Se usi questa applicazione, accetti i <ph name="BEGIN_LINK_TOS" />Termini di servizio<ph name="END_LINK_TOS" /> e l'<ph name="BEGIN_LINK_PRIVACY" />Informativa sulla privacy<ph name="END_LINK_PRIVACY" /> di Chrome.</translation>
+<translation id="1878302395768190018">Puoi personalizzare questa opzione in qualsiasi momento nelle Impostazioni di Chrome</translation>
 <translation id="2147651015520127414">Chrome ha verificato che <ph name="ISSUER" /> ha emesso il certificato del sito web.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="2342981853652716282">Accedi a Chrome per trovare i tuoi preferiti, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
@@ -38,6 +39,7 @@
 <translation id="5639704535586432836">Apri impostazioni &gt; Privacy &gt; Fotocamera &gt; Google Chrome e attiva la videocamera.</translation>
 <translation id="5642200033778930880">Google Chrome non può utilizzare la videocamera in modalità Visualizzazione divisa</translation>
 <translation id="5703130498371792817">Ti piace Chrome? <ph name="BEGIN_LINK" />Valuta questa app<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Suggerimento per Chrome. Alcuni pulsanti ora si trovano nella parte inferiore della schermata, ad esempio Indietro, Avanti e Cerca.</translation>
 <translation id="6036420186814142909">Google Chrome offre funzioni che ti consentono di gestire i tuoi dati Internet e la velocità di caricamento delle pagine web.
 <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>
@@ -56,4 +58,5 @@
 <translation id="8459495907675268833">I dati selezionati sono stati rimossi da Chrome e dai dispositivi sincronizzati. Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, ad esempio ricerche e attività, di altri servizi Google alla pagina history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chrome potrebbe utilizzare servizi web per migliorare la tua esperienza di navigazione. Se preferisci, puoi disattivare questi servizi. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Suggerimento per Chrome. Per vedere più opzioni sulla scheda, tieni premuto il pulsante Mostra schede della barra degli strumenti, che si trova nella parte inferiore o superiore della schermata.</translation>
 </translationbundle>

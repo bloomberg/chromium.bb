@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Aanvullende gegevens verzenden</translation>
 <translation id="1021110881106174305">Geaccepteerde kaarten</translation>
 <translation id="1032854598605920125">Rechtsom draaien</translation>
+<translation id="1035334672863811645">inloggen bij Chrome</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
 <translation id="1050038467049342496">Andere apps sluiten</translation>
 <translation id="1055184225775184556">&amp;Toevoegen ongedaan maken</translation>
@@ -484,6 +485,7 @@
 <translation id="4277028893293644418">Wachtwoord opnieuw instellen</translation>
 <translation id="4280429058323657511">, vervalt <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Overschakelen</translation>
+<translation id="4308131620840579419">Al je kaarten op één plek opslaan?</translation>
 <translation id="4312866146174492540">Blokkeren (standaard)</translation>
 <translation id="4325863107915753736">Kan artikel niet vinden</translation>
 <translation id="4326324639298822553">Controleer de vervaldatum en probeer het opnieuw</translation>
@@ -594,6 +596,7 @@
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="5201306358585911203">Een ingesloten pagina op deze pagina meldt het volgende</translation>
 <translation id="5205222826937269299">Naam vereist</translation>
+<translation id="5215116848420601511">Betaalmethoden en adressen die Google Pay gebruiken</translation>
 <translation id="5222812217790122047">E-mailadres vereist</translation>
 <translation id="5230733896359313003">Verzendadres</translation>
 <translation id="5250209940322997802">'Verbinding maken met netwerk'</translation>
@@ -670,6 +673,7 @@
 <translation id="5689199277474810259">Exporteren naar JSON</translation>
 <translation id="5689516760719285838">Locatie</translation>
 <translation id="570530837424789914">Beheren...</translation>
+<translation id="5705882733397021510">Terug</translation>
 <translation id="57094364128775171">Sterk wachtwoord voorstellen…</translation>
 <translation id="5710435578057952990">De identiteit van deze website is niet geverifieerd.</translation>
 <translation id="5719499550583120431">Prepaidkaarten worden geaccepteerd.</translation>
@@ -687,6 +691,7 @@
 <translation id="5810442152076338065">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een verouderde Cipher Suite.</translation>
 <translation id="5813119285467412249">&amp;Opnieuw toevoegen</translation>
 <translation id="5838278095973806738">Je moet geen gevoelige gegevens (zoals wachtwoorden of creditcards) opgeven op deze site omdat ze kunnen worden gestolen door aanvallers.</translation>
+<translation id="5863847714970149516">Op de komende pagina kan worden geprobeerd kosten in rekening te brengen</translation>
 <translation id="5866257070973731571">Telefoonnummer toevoegen</translation>
 <translation id="5869405914158311789">Deze site is niet bereikbaar</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
@@ -816,6 +821,7 @@
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Deze kosten kunnen eenmalig of terugkerend zijn en zijn mogelijk niet duidelijk.</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
 <translation id="7050187094878475250">Je hebt geprobeerd <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat gepresenteerd waarvan de geldigheidsperiode te lang is om betrouwbaar te zijn.</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
@@ -1080,6 +1086,7 @@
 <translation id="8957210676456822347">Autorisatie van captive portal</translation>
 <translation id="8971063699422889582">Het servercertificaat is verlopen.</translation>
 <translation id="8978053250194585037">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />phishing gedetecteerd<ph name="END_LINK" /> op <ph name="SITE" />. Phishingsites doen zich voor als een andere website om je te misleiden.</translation>
+<translation id="8983003182662520383">Betaalmethoden en adressen die Google Pay gebruiken</translation>
 <translation id="8987927404178983737">Maand</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">De volgende site bevat schadelijke programma's</translation>

@@ -136,6 +136,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="405887016757208221">Impossibile inizializzare la sessione sul computer remoto. Se il problema persiste, riprova a configurare l'host.</translation>
 <translation id="4068946408131579958">Tutte le connessioni</translation>
 <translation id="409800995205263688">NOTA. Le impostazioni dei criteri consentono connessioni solo tra computer all'interno della tua rete.</translation>
+<translation id="4126409073460786861">Una volta completata la configurazione, per accedere al computer dovrai scegliere il dispositivo e inserire il codice PIN.</translation>
 <translation id="4145029455188493639">Accesso eseguito come <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Mancano alcuni componenti obbligatori. Verifica che sia installata la versione più recente del software e riprova.</translation>
 <translation id="4156740505453712750">Per proteggere l'accesso a questo computer, scegli un PIN di <ph name="BOLD_START" />almeno sei cifre<ph name="BOLD_END" />. Questo PIN sarà richiesto quando ti connetti da un'altra posizione.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">A</translation>
 <translation id="7019153418965365059">Errore host non riconosciuto: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistenza remota</translation>
+<translation id="7026930240735156896">Segui le istruzioni per configurare il computer per l'accesso remoto</translation>
 <translation id="7038683108611689168">Aiutaci a migliorare Chromoting consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="7067321367069083429">Lo schermo funge da touch screen</translation>
 <translation id="7116737094673640201">Benvenuto in Chrome Remote Desktop</translation>

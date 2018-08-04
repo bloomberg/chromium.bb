@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> adicionado</translation>
 <translation id="1056775291175587022">Nenhuma rede</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">Mostrar definições de acessibilidade</translation>
 <translation id="1104621072296271835">Os seus dispositivos funcionam ainda melhor juntos</translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Sinal fraco</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta esquerda)</translation>
+<translation id="1302880136325416935">Mostrar definições de Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Direita</translation>
 <translation id="1351937230027495976">Reduzir menu</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1467432559032391204">Esquerda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Iniciador</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar definições de notificação. As notificações estão desativadas para uma aplicação}other{Mostrar definições de notificação. As notificações estão desativadas para # aplicações}}</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
 <translation id="1537254971476575106">Lupa de ecrã inteiro</translation>
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1550523713251050646">Clicar para obter mais opções</translation>
 <translation id="1567387640189251553">Foi ligado um teclado diferente desde a última vez que introduziu a palavra-passe. É possível que esteja a tentar roubar os seus toques de teclas.</translation>
+<translation id="1570871743947603115">Ativar/desativar Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Remover este utilizador</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Lamentamos, mas ainda não foi possível validar a sua palavra-passe. Nota: se alterou a palavra-passe recentemente, a nova palavra-passe será aplicada quando terminar sessão. Utilize a palavra-passe antiga aqui.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">Não reconhecida</translation>
 <translation id="1746730358044914197">Os métodos de introdução são configurados pelo gestor.</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
+<translation id="1761222317188459878">Ativar/desativar ligação de rede. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (a carregar...)</translation>
 <translation id="1841545962859478868">O gestor do dispositivo pode monitorizar o seguinte:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">Este aparelho é gerido por <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brilho do teclado</translation>
+<translation id="2075212959500165896">Demasiadas tentativas. Tente novamente mais tarde.</translation>
 <translation id="2081529251031312395">$1 pode iniciar sessão mais tarde.</translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="2135456203358955318">Lupa ancorada</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">Ativar/desativar vista geral das janelas</translation>
 <translation id="2338501278241028356">Ativar o Bluetooth para detetar dispositivos próximos</translation>
 <translation id="2339073806695260576">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã, utilizar o ponteiro de laser ou a lupa.</translation>
+<translation id="2341729377289034582">Bloqueado na vertical</translation>
 <translation id="2352467521400612932">Definições da caneta stylus</translation>
 <translation id="2354174487190027830">A ativar <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2365393535144473978">A ativação dos dados móveis ativa o Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">Ativar/desativar opção Não incomodar</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
+<translation id="2416346634399901812">Ligado a <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Antes de aceitar, confirme que esta chave está indicada nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2484513351006226581">Prima <ph name="KEYBOARD_SHORTCUT" /> para mudar o esquema do teclado.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">Adicionar ligação</translation>
 <translation id="2961963223658824723">Ocorreu um erro. Tente novamente dentro de alguns segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">Mostrar dispositivos de transmissão.</translation>
 <translation id="2996462380875591307">Lupa ancorada ativada. Prima Ctrl + Pesquisa + D novamente para a desativar.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> é uma sessão pública gerida por <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Áudio mono</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">Dados móveis</translation>
 <translation id="3151786313568798007">Orientação</translation>
 <translation id="3153444934357957346">Apenas pode ter, no máximo, <ph name="MULTI_PROFILE_USER_LIMIT" /> contas no início de sessão integrado.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ligado a um dispositivo}other{Ligado a # dispositivos}}</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Convidado</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3798670284305777884">Altifalante (interno)</translation>
 <translation id="380165613292957338">Olá, como posso ajudar?</translation>
+<translation id="383629559565718788">Mostrar definições do teclado</translation>
 <translation id="3846575436967432996">Não existem informações de rede disponíveis</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">Sinal médio</translation>
 <translation id="4200057768455216496">Premiu o atalho da lupa ancorada. Pretende ativá-la?</translation>
 <translation id="4217571870635786043">Ditado</translation>
+<translation id="4261870227682513959">Mostrar definições de notificação. As notificações estão desativadas</translation>
 <translation id="4274921305979314545">Associe o seu Chromebook ao seu telemóvel.</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
+<translation id="4292681942966152062">A ativar <ph name="NETWORK_NAME" />…</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
@@ -239,6 +253,7 @@
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas definições.</translation>
 <translation id="574392208103952083">Médio</translation>
 <translation id="5744083938413354016">Arrastamento através do toque</translation>
+<translation id="5750765938512549687">Bluetooth desativado</translation>
 <translation id="5777841717266010279">Parar a partilha do ecrã?</translation>
 <translation id="57838592816432529">Desativar som</translation>
 <translation id="5805697420284793859">Gestor de janelas</translation>
@@ -272,12 +287,14 @@
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6164005077879661055">Todos os ficheiros e dados locais associados ao utilizador supervisionado serão definitivamente eliminados depois de este utilizador supervisionado ser removido. Os Sites visitados e as definições deste utilizador supervisionado poderão continuar visíveis para o gestor em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6254629735336163724">Bloqueado na horizontal</translation>
 <translation id="6259254695169772643">Utilize a caneta stylus para selecionar.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: a ativar...</translation>
 <translation id="6284232397434400372">Resolução alterada</translation>
 <translation id="6297287540776456956">Utilizar a canela stylus para selecionar uma área</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi rodado para <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Sobreposição de teclado</translation>
+<translation id="6376931439017688372">Bluetooth ativado</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Tudo concluído</translation>
@@ -321,6 +338,7 @@
 <translation id="7066646422045619941">Esta rede foi desativada pelo gestor.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
 <translation id="7076293881109082629">Iniciar sessão</translation>
+<translation id="7092922358121866860">Mostrar definições de Luz noturna</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira esquerda)</translation>
 <translation id="7131634465328662194">A sessão será terminada automaticamente.</translation>
 <translation id="7143207342074048698">A ligar</translation>
@@ -356,6 +374,7 @@
 <translation id="7798302898096527229">Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
+<translation id="7842211907556571265">A ligar a <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Aviso: funcionalidade experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
 <translation id="790040513076446191">Manipular as definições relacionadas com privacidade</translation>
@@ -396,18 +415,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: a restabelecer ligação...</translation>
 <translation id="8513108775083588393">Rotação automática</translation>
 <translation id="8517041960877371778">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado.</translation>
+<translation id="8627191004499078455">Ligado a <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8649101189709089199">Selecionar para falar</translation>
 <translation id="8652175077544655965">Fechar definições</translation>
+<translation id="8653151467777939995">Mostrar definições de notificação. As notificações estão ativadas</translation>
+<translation id="8664753092453405566">Mostrar lista de redes. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
 <translation id="8683506306463609433">O rastreio do desempenho está ativo.</translation>
 <translation id="8734991477317290293">É possível que esteja a tentar roubar os seus toques de teclas.</translation>
+<translation id="8735953464173050365">Mostrar definições do teclado. <ph name="KEYBOARD_NAME" /> está selecionado</translation>
+<translation id="875593634123171288">Mostrar definições da VPN</translation>
 <translation id="8809737090443522491">Introduza o nome de uma aplicação ou de um documento.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">O espelhamento com mais do que dois ecrãs não é suportado.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Botão Anterior</translation>
+<translation id="8843682306134542540">Ativar/desativar bloqueio de rotação. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
 <translation id="8870509716567206129">A aplicação não é compatível com o ecrã dividido.</translation>
 <translation id="8874184842967597500">Sem ligação</translation>

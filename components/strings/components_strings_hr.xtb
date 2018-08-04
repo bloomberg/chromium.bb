@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Navedite dodatne pojedinosti</translation>
 <translation id="1021110881106174305">Prihvaćene kartice</translation>
 <translation id="1032854598605920125">Zakretanje u smjeru kazaljke na satu</translation>
+<translation id="1035334672863811645">prijavite se na Chrome</translation>
 <translation id="1038842779957582377">nepoznati naziv</translation>
 <translation id="1050038467049342496">Zatvorite ostale aplikacije</translation>
 <translation id="1055184225775184556">&amp;Poništi dodavanje</translation>
@@ -487,6 +488,7 @@
 <translation id="4277028893293644418">Poništi zaporku</translation>
 <translation id="4280429058323657511">, istek <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Prebaci</translation>
+<translation id="4308131620840579419">Spremiti sve kartice na jedno mjesto?</translation>
 <translation id="4312866146174492540">Blokiraj (zadano)</translation>
 <translation id="4325863107915753736">Članak nije pronađen</translation>
 <translation id="4326324639298822553">Provjerite datum isteka, pa pokušajte ponovo</translation>
@@ -597,6 +599,7 @@
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="5201306358585911203">Na ugrađenoj stranici na ovoj stranici navodi se sljedeće</translation>
 <translation id="5205222826937269299">Ime je obavezno</translation>
+<translation id="5215116848420601511">Načini plaćanja i adrese s Google Paya</translation>
 <translation id="5222812217790122047">E-pošta (obavezno)</translation>
 <translation id="5230733896359313003">Adresa za dostavu</translation>
 <translation id="5250209940322997802">"Povezivanje s mrežom"</translation>
@@ -673,6 +676,7 @@
 <translation id="5689199277474810259">Izvezi u JSON</translation>
 <translation id="5689516760719285838">Lokacija</translation>
 <translation id="570530837424789914">Upravljajte...</translation>
+<translation id="5705882733397021510">Natrag</translation>
 <translation id="57094364128775171">Predloži snažnu zaporku…</translation>
 <translation id="5710435578057952990">Identitet ove web lokacije nije ovjeren.</translation>
 <translation id="5719499550583120431">Prihvaćaju se pretplatne kartice.</translation>
@@ -690,6 +694,7 @@
 <translation id="5810442152076338065">Vaša veza s domenom <ph name="DOMAIN" /> kriptirana je zastarjelim kriptografskim paketom.</translation>
 <translation id="5813119285467412249">&amp;Ponovi dodavanje</translation>
 <translation id="5838278095973806738">Na ovu web-lokaciju nemojte unositi osjetljive podatke (na primjer, zaporke ili kreditne kartice) jer su je možda ukrali napadači.</translation>
+<translation id="5863847714970149516">Stranica koja će se otvoriti može vam pokušati nešto naplatiti</translation>
 <translation id="5866257070973731571">Dodajte telefonski broj</translation>
 <translation id="5869405914158311789">Web-lokacija ne može se dohvatiti</translation>
 <translation id="5869522115854928033">Spremljene zaporke</translation>
@@ -820,6 +825,7 @@
 <translation id="6973656660372572881">Određeni su fiksni proxy poslužitelji i URL .pac skripte.</translation>
 <translation id="6989763994942163495">Pokaži napredne postavke...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Ta terećenja mogu biti jednokratna ili ponavljajuća i možda nisu odmah vidljiva.</translation>
 <translation id="7029809446516969842">Zaporke</translation>
 <translation id="7050187094878475250">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je poslužitelj pružio certifikat koji nije pouzdan zbog predugog razdoblja valjanosti.</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
@@ -1085,6 +1091,7 @@
 <translation id="8957210676456822347">Autorizacija obaveznog portala za autentifikaciju</translation>
 <translation id="8971063699422889582">Istekao je certifikat poslužitelja.</translation>
 <translation id="8978053250194585037">Google sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />otkrilo krađu identiteta<ph name="END_LINK" /> na web-lokaciji <ph name="SITE" />. Web-lokacije za krađu identiteta predstavljaju se kao druge web-lokacije kako bi vas prevarile.</translation>
+<translation id="8983003182662520383">Načini plaćanja i adrese s Google Paya</translation>
 <translation id="8987927404178983737">Mjesec</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Sljedeća web-lokacija sadrži štetne programe</translation>

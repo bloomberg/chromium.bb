@@ -293,6 +293,11 @@
       如果沒有任何設定值，將會自動採用預設值。
 
       如未設定這項政策，所有設定將自動套用預設值。</translation>
+<translation id="1958138414749279167">啟用 <ph name="PRODUCT_NAME" /> 的自動填入功能，並允許使用者利用先前儲存的地址資訊自動填寫網路表單。
+
+      如果停用這項設定，自動填入功能就不會提出填寫建議或填入地址資訊，也無法儲存使用者在瀏覽網路時提交的其他地址資訊。
+
+      如果啟用這項設定或未設定任何值，使用者就能透過 UI 控制地址資訊的自動填入功能。</translation>
 <translation id="1960840544413786116">是否允許由本機信任錨點核發但缺少 subjectAlternativeName 延伸的憑證</translation>
 <translation id="1964634611280150550">無痕模式已停用</translation>
 <translation id="1964802606569741174">這項政策對 Android YouTube 應用程式沒有影響。如要強制採用 YouTube 安全模式，則必須禁止下載 Android YouTube 應用程式。</translation>
@@ -1837,6 +1842,7 @@
 <translation id="6440051664870270040">允許同時在多個網站中進行瀏覽及開啟彈出式視窗</translation>
 <translation id="6447948611083700881">備份與還原功能已停用</translation>
 <translation id="645425387487868471">啟用 <ph name="PRODUCT_NAME" /> 的強制登入功能</translation>
+<translation id="6464074037294098618">啟用地址的自動填入功能</translation>
 <translation id="6473623140202114570">設定安全瀏覽功能在哪些網域中不會觸發警告。</translation>
 <translation id="6491139795995924304">允許在裝置上使用藍牙功能</translation>
 <translation id="6520802717075138474">第一次執行時從預設瀏覽器匯入搜尋引擎</translation>

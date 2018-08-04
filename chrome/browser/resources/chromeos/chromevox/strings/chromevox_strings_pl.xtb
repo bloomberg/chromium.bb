@@ -156,6 +156,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="2462626033734746142">Grupa przycisków radiowych</translation>
 <translation id="2471138580042810658">Nagłówek 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{gwiazdka}few{# znaki gwiazdki}many{# znaków gwiazdki}other{# asterisks}}</translation>
+<translation id="249330843868392562">Otwórz ustawienia zamiany tekstu na mowę</translation>
 <translation id="2523609930580546572">Samouczek ChromeVox</translation>
 <translation id="2525706221823668172">Skróty klawiszowe na Chromebooku</translation>
 <translation id="2549392850788122959">Klawisz <ph name="KEY" /> został zresetowany.</translation>
@@ -753,6 +754,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="7241683698754534149">Otwórz długi opis na nowej karcie</translation>
 <translation id="7248671827512403053">Aplikacja</translation>
 <translation id="725969808843520477">Następny przycisk opcji</translation>
+<translation id="7261612856573623172">Systemowy głos zamiany tekstu na mowę</translation>
 <translation id="7269119382257320590">Bez interpunkcji</translation>
 <translation id="7273174640290488576">Pusty</translation>
 <translation id="7274770952766771364">Odsyłacz</translation>

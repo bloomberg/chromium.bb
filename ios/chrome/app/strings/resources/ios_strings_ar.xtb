@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">سيؤدي ذلك إلى إيقاف تقدّم جميع عمليات التنزيل الحالية.</translation>
 <translation id="1605658421715042784">نسخ الصورة</translation>
 <translation id="1612730193129642006">عرض شبكة علامة التبويب</translation>
+<translation id="162035744160882748">‏تفعيل المزامنة والتخصيص وخدمات Google الأخرى</translation>
 <translation id="1644574205037202324">السجل</translation>
 <translation id="1646446875146297738">إن تفعيل "عدم التتبع" يعني تضمين طلب في حركة بيانات التصفح. ويعتمد أي تأثير يحدث على ما إذا كان موقع الويب سيستجيب للطلب، وكيفية تفسيره للطلب.
 
@@ -194,6 +195,7 @@
 <translation id="4124987746317609294">النطاق الزمني</translation>
 <translation id="4172051516777682613">الإظهار دائمًا</translation>
 <translation id="418156467088430727">عرض إصدار بلا إنترنت في علامة تبويب جديدة</translation>
+<translation id="4192273449750167573">مراجعة الإعدادات في الشاشة التالية</translation>
 <translation id="4237682350741091554">‏إدارة مزامنة Chrome والتخصيص في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">إدخال عبارة المرور</translation>
 <translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تفعيل الكاميرا من الإعدادات</translation>
@@ -285,6 +287,7 @@
 <translation id="5938160824633642847">جهازك ممتلئ تقريبًا. يمكنك إخلاء بعض المساحة وإعادة المحاولة.</translation>
 <translation id="5948291296578561264">يسمح لك ذلك بحفظ الصور في مكتبة صورك.</translation>
 <translation id="5955891643922670672">عرض النسخة بلا إنترنت</translation>
+<translation id="5957613098218939406">خيارات إضافية</translation>
 <translation id="5964480694698977962">إنشاء علامة تبويب جديدة للتصفح المتخفي.</translation>
 <translation id="5965679971710331625">تم تسجيل الدخول</translation>
 <translation id="5982717868370722439">يمكنك إضافة البيانات الحالية إلى <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@
 <translation id="6797885426782475225">البحث الصوتي</translation>
 <translation id="6807889908376551050">إظهار الكل...</translation>
 <translation id="681368974849482173">تم إنشاء العنصر</translation>
+<translation id="685040365210406336">عدم إجراء أي تغييرات</translation>
 <translation id="6896758677409633944">نسخ</translation>
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
 <translation id="6914783257214138813">ستكون كلمات مرورك مرئية لأي شخص يمكنه الاطلاع على الملف الذي تم تصديره.</translation>
@@ -373,6 +377,7 @@
 <translation id="7336264872878993241">تم تنزيل <ph name="PERCENT" /> بالمائة</translation>
 <translation id="7346909386216857016">موافق، حسنًا</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
+<translation id="741204030948306876">نعم، موافق</translation>
 <translation id="7425346204213733349">‏لن تتم بعد ذلك مزامنة التغييرات الطارئة على الإشارات المرجعية والسجل وكلمات المرور وغيرها من الإعدادات إلى حسابك في Google. ومع ذلك، ستظل بياناتك الحالية مخزنة في حسابك في Google.</translation>
 <translation id="744343212394640790">ليس <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">الولاية/المقاطعة</translation>

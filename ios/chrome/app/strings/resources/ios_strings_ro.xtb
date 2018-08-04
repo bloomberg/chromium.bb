@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Aceasta va opri progresul descărcării actuale.</translation>
 <translation id="1605658421715042784">Copiază imaginea</translation>
 <translation id="1612730193129642006">Afișează Grila de file</translation>
+<translation id="162035744160882748">Activează sincronizarea, personalizarea și alte servicii Google</translation>
 <translation id="1644574205037202324">Istoric</translation>
 <translation id="1646446875146297738">Dacă activezi funcția „Nu urmări” înseamnă că în traficul de navigare va fi inclusă o solicitare. Efectele depind de răspunsul site-ului la solicitare și de modul în care solicitarea este interpretată.
 
@@ -194,6 +195,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="4124987746317609294">Interval de timp</translation>
 <translation id="4172051516777682613">Afișați întotdeauna</translation>
 <translation id="418156467088430727">Vezi versiunea offline într-o filă nouă</translation>
+<translation id="4192273449750167573">Examinează setările pe ecranul următor</translation>
 <translation id="4237682350741091554">Gestionează Sincronizarea Chrome și personalizarea în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Introdu expresia de acces</translation>
 <translation id="4272631900155121838">Pentru a scana un cod QR, activează camera foto din setări</translation>
@@ -285,6 +287,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5938160824633642847">Dispozitivul este aproape plin. Eliberează spațiu și încearcă din nou.</translation>
 <translation id="5948291296578561264">Astfel, poți să salvezi fotografiile în fototecă.</translation>
 <translation id="5955891643922670672">Se afișează versiunea offline</translation>
+<translation id="5957613098218939406">Mai multe opțiuni</translation>
 <translation id="5964480694698977962">Creează o filă incognito nouă.</translation>
 <translation id="5965679971710331625">Te-ai conectat</translation>
 <translation id="5982717868370722439">Adaugă datele existente în <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6797885426782475225">Căutare vocală</translation>
 <translation id="6807889908376551050">Afișați toate...</translation>
 <translation id="681368974849482173">Element creat</translation>
+<translation id="685040365210406336">Nu face modificări</translation>
 <translation id="6896758677409633944">Copiază</translation>
 <translation id="6903907808598579934">Activează sincronizarea</translation>
 <translation id="6914783257214138813">Parolele vor fi vizibile pentru toți cei care pot vedea fișierul exportat.</translation>
@@ -373,6 +377,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7336264872878993241"><ph name="PERCENT" />% descărcat</translation>
 <translation id="7346909386216857016">OK, am înțeles</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
+<translation id="741204030948306876">Da, accept</translation>
 <translation id="7425346204213733349">Modificările marcajelor, istoricului, parolelor sau ale altor setări nu vor mai fi sincronizate cu Contul Google. Totuși, datele existente vor rămâne stocate în Contul Google.</translation>
 <translation id="744343212394640790">Nu ca <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stat/Județ</translation>

@@ -503,6 +503,11 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
       Jika setelan ini tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.
 
       Setelan ini telah dibuang dari <ph name="PRODUCT_NAME" /> 29 dan versi yang lebih tinggi.</translation>
+<translation id="2433412232489478893">Kebijakan ini mengontrol apakah fitur Berbagi File Jaringan untuk <ph name="PRODUCT_NAME" /> diizinkan untuk pengguna.
+
+      Jika kebijakan ini tidak dikonfigurasi atau disetel ke True, pengguna dapat menggunakan fitur Berbagi File Jaringan.
+
+      Jika kebijakan ini disetel ke False, pengguna tidak dapat menggunakan fitur Berbagi File Jaringan.</translation>
 <translation id="2438609638493026652">Mengaktifkan pelaporan peristiwa penting selama penginstalan aplikasi Android ke Google. Peristiwa direkam hanya untuk aplikasi yang penginstalannya dipicu melalui kebijakan.
 
       Jika kebijakan disetel ke true, peristiwa akan dicatat dalam log.
@@ -582,6 +587,7 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="2598508021807251719">Mengonfigurasi lokal yang digunakan untuk menampilkan <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel, pengguna hanya dapat mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan di salah satu lokal yang ditentukan oleh kebijakan tersebut. Jika kebijakan ini tidak disetel atau disetel ke daftar kosong, <ph name="PRODUCT_OS_NAME" /> dapat ditampilkan di semua lokal yang didukung. Jika kebijakan ini disetel ke daftar yang memuat nilai yang tidak valid, maka semua nilai yang tidak valid akan diabaikan. Jika sebelumnya pengguna telah mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan dalam bahasa yang tidak diizinkan oleh kebijakan ini, lokal tampilan akan dialihkan ke lokal yang diizinkan saat berikutnya pengguna login. Jika pengguna telah mengonfigurasi beberapa lokal pilihan, dan salah satu lokal pilihan itu diizinkan oleh kebijakan ini, <ph name="PRODUCT_OS_NAME" /> akan dialihkan ke lokal tersebut. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan dialihkan ke nilai valid pertama yang ditentukan oleh kebijakan ini, atau ke lokal alternatif yang telah ditentukan (saat ini en-US), jika kebijakan ini hanya memuat entri yang tidak valid.</translation>
+<translation id="2604182581880595781">Mengonfigurasi kebijakan terkait fitur Berbagi File Jaringan.</translation>
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Memberikan konfigurasi untuk printer perusahaan.
@@ -661,6 +667,7 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="2823870601012066791">Lokasi registry Windows untuk klien <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
 <translation id="2838830882081735096">Jangan izinkan migrasi data dan ARC</translation>
+<translation id="2839294585867804686">Pengaturan Berbagi File Jaringan</translation>
 <translation id="2840269525054388612">Menentukan printer yang dapat digunakan pengguna.
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1143,6 +1150,7 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
       Jika kebijakan ini dibiarkan tidak disetel, pengumpulan data anonim yang menyertakan URL akan diaktifkan, namun pengguna dapat mengubahnya.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Lokal layar login perangkat</translation>
+<translation id="4264607809747169568">Mengontrol fitur Berbagi File Jaringan untuk ketersediaan Chrome OS</translation>
 <translation id="427220754384423013">Menentukan printer yang dapat digunakan pengguna.
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1544,6 +1552,15 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Nilai kebijakan sebaiknya ditentukan dalam milidetik.</translation>
 <translation id="5511702823008968136">Aktifkan Bilah Bookmark</translation>
 <translation id="5512418063782665071">URL beranda</translation>
+<translation id="551639594034811656">Kebijakan ini menentukan daftar persentase yang akan menentukan jumlah perangkat <ph name="PRODUCT_OS_NAME" /> di OU untuk diupdate per hari sejak hari pertama update ditemukan. Waktu penemuan lebih lama daripada waktu publikasi update, karena publikasi update mungkin agak lama hingga perangkat memeriksa apakah ada update.
+
+      Tiap pasangan (hari, persentase) berisi persentase fleet mana yang harus diupdate menurut jumlah hari tertentu sejak update ditemukan. Misalnya, jika ada pasangan [(4, 40), (10, 70), (15, 100)], maka 40% fleet harus diupdate 4 hari setelah update ditemukan. 70% harus diupdate setelah 10 hari, dan seterusnya.
+
+      Jika ada nilai yang ditentukan untuk kebijakan ini, update akan mengabaikan kebijakan <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> dan mengikuti kebijakan ini.
+
+      Jika daftar ini kosong, tidak akan ada persiapan dan update akan diterapkan menurut kebijakan perangkat lain.
+
+      Kebijakan ini tidak berlaku untuk peralihan channel.</translation>
 <translation id="5523812257194833591">Sesi publik untuk masuk secara otomatis setelah penundaan.
 
       Jika kebijakan ini disetel, sesi yang ditentukan akan secara otomatis masuk setelah jangka waktu tersebut berlalu pada layar masuk tanpa interaksi pengguna. Sesi publik harus sudah dikonfigurasi (lihat |DeviceLocalAccounts|).
@@ -2438,6 +2455,11 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
       Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan SitePerProcess secara manual.
       Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
       </translation>
+<translation id="7902255855035461275">Pola dalam daftar ini akan dicocokan dengan asal
+      keamanan URL yang meminta.  Jika ditemukan kecocokan, akses ke perangkat
+      yang merekam audio akan diberikan tanpa permintaan.
+
+      CATATAN: Hingga versi 45, kebijakan ini hanya didukung dalam mode Kios.</translation>
 <translation id="7912255076272890813">Konfigurasikan jenis aplikasi/ekstensi yang diizinkan</translation>
 <translation id="7915236031252389808">Anda dapat menetapkan URL ke file .pac proxy di sini.
 

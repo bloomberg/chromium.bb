@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">Fornisci ulteriori dettagli</translation>
 <translation id="1021110881106174305">Carte di credito accettate</translation>
 <translation id="1032854598605920125">Ruota in senso orario</translation>
+<translation id="1035334672863811645">accedi a Chrome</translation>
 <translation id="1038842779957582377">nome sconosciuto</translation>
 <translation id="1050038467049342496">Chiudi altre app</translation>
 <translation id="1055184225775184556">&amp;Annulla aggiunta</translation>
@@ -485,6 +486,7 @@
 <translation id="4277028893293644418">Reimposta password</translation>
 <translation id="4280429058323657511">, scad.: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Cambia</translation>
+<translation id="4308131620840579419">Salvare tutte le schede in un unico posto?</translation>
 <translation id="4312866146174492540">Blocca (predefinita)</translation>
 <translation id="4325863107915753736">Impossibile trovare l'articolo</translation>
 <translation id="4326324639298822553">Controlla la data di scadenza e riprova</translation>
@@ -595,6 +597,7 @@
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
 <translation id="5201306358585911203">Una pagina incorporata in questa pagina dice</translation>
 <translation id="5205222826937269299">Nome obbligatorio</translation>
+<translation id="5215116848420601511">Metodi di pagamento e indirizzi che utilizzano Google Pay</translation>
 <translation id="5222812217790122047">Email obbligatoria</translation>
 <translation id="5230733896359313003">Indirizzo di spedizione</translation>
 <translation id="5250209940322997802">"Collegati alla rete"</translation>
@@ -671,6 +674,7 @@
 <translation id="5689199277474810259">Esporta in JSON</translation>
 <translation id="5689516760719285838">Posizione</translation>
 <translation id="570530837424789914">Gestisci…</translation>
+<translation id="5705882733397021510">Indietro</translation>
 <translation id="57094364128775171">Suggerisci password efficace…</translation>
 <translation id="5710435578057952990">L'identità di questo sito web non è stata verificata.</translation>
 <translation id="5719499550583120431">Le carte prepagate sono accettate.</translation>
@@ -688,6 +692,7 @@
 <translation id="5810442152076338065">La connessione a <ph name="DOMAIN" /> è criptata tramite un pacchetto di crittografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
 <translation id="5838278095973806738">Non dovresti inserire dati sensibili in questo sito (ad esempio password o carte di credito) perché potrebbero essere intercettati da utenti malintenzionati.</translation>
+<translation id="5863847714970149516">La pagina che segue potrebbe tentare di addebitarti dei costi</translation>
 <translation id="5866257070973731571">Aggiungi numero di telefono</translation>
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
 <translation id="5869522115854928033">Password salvate</translation>
@@ -817,6 +822,7 @@
 <translation id="6973656660372572881">Sono stati specificati sia i server proxy fissi che un URL script .pac.</translation>
 <translation id="6989763994942163495">Mostra impostazioni avanzate...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">L'addebito potrebbe essere singolo oppure ricorrente e potrebbe non essere evidente.</translation>
 <translation id="7029809446516969842">Password</translation>
 <translation id="7050187094878475250">Hai tentato di visitare il sito <ph name="DOMAIN" />, ma il server ha presentato un certificato con periodo di validità troppo lungo per poter essere ritenuto attendibile.</translation>
 <translation id="7053983685419859001">Blocca</translation>
@@ -1081,6 +1087,7 @@
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>
 <translation id="8978053250194585037">La funzione Google Navigazione sicura <ph name="BEGIN_LINK" />ha rilevato di recente attività di phishing<ph name="END_LINK" /> sul sito <ph name="SITE" />. I siti di phishing si spacciano per altri siti web per ingannarti.</translation>
+<translation id="8983003182662520383">Metodi di pagamento e indirizzi che utilizzano Google Pay</translation>
 <translation id="8987927404178983737">Mese</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Il sito che stai per visitare contiene programmi dannosi</translation>

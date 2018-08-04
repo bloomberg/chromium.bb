@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">スペルと文法を表示</translation>
 <translation id="1593594475886691512">フォーマット中...</translation>
 <translation id="159359590073980872">画像キャッシュ</translation>
+<translation id="1593926297800505364">お支払い方法を保存</translation>
 <translation id="1598233202702788831">更新は管理者によって無効になっています。</translation>
 <translation id="1600857548979126453">ページ デバッガ バックエンドにアクセスする</translation>
 <translation id="1601560923496285236">適用</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">端末をドメインに追加できません。追加できる端末の上限数を超えていないかご確認ください。</translation>
 <translation id="1744108098763830590">バックグラウンド ページ</translation>
 <translation id="1745520510852184940">常に翻訳する</translation>
+<translation id="1746417874336251387">スマートフォンと Chromebook の接続を使用する新しい機能を利用できます</translation>
 <translation id="174937106936716857">合計ファイル数</translation>
 <translation id="175196451752279553">閉じたタブを開く(&amp;R)</translation>
 <translation id="1753905327828125965">よくアクセスするページ</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">開始時刻</translation>
 <translation id="1933809209549026293">マウスまたはキーボードを接続してください。Bluetooth デバイスを使用している場合は、ペア設定できる状態であることを確認してください。</translation>
 <translation id="1936157145127842922">フォルダで表示</translation>
+<translation id="1938351510777341717">外部コマンド</translation>
 <translation id="1940546824932169984">接続済みの端末</translation>
 <translation id="1942765061641586207">画像解像度</translation>
+<translation id="1943097386230153518">新しいサービスをインストール</translation>
 <translation id="1944921356641260203">アップデートが見つかりました</translation>
 <translation id="1951615167417147110">1 ページ上にスクロールする</translation>
 <translation id="1954813140452229842">共有フォルダのマウントエラー。認証情報を確認してもう一度お試しください。</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">送信</translation>
 <translation id="265390580714150011">フィールド値</translation>
 <translation id="2654166010170466751">サイトに支払いハンドラのインストールを許可</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />機能は端末によって異なります</translation>
 <translation id="2660779039299703961">イベント</translation>
 <translation id="266079277508604648">プリンタに接続できません。プリンタの電源が入っていて、Wi-Fi または USB 経由で Chromebook に接続されていることを確認してください。</translation>
 <translation id="2661146741306740526">16×9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">PIN を入力</translation>
 <translation id="2805646850212350655">Microsoft 暗号化ファイル システム</translation>
 <translation id="2805756323405976993">アプリ</translation>
+<translation id="2806891468525657116">ショートカットがすでに存在します</translation>
 <translation id="2807517655263062534">ダウンロードしたファイルがここに表示されます</translation>
 <translation id="2809586584051668049">、他 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 件</translation>
 <translation id="281133045296806353">既存のブラウザ セッションに新しいウィンドウが作成されました。</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">ログインしました</translation>
 <translation id="3429275422858276529">後で見つけやすいようにこのページをブックマークできます</translation>
 <translation id="3429599832623003132">$1 アイテム</translation>
+<translation id="3430342160185525240">アシスタントの通知を有効にします。</translation>
 <translation id="3432227430032737297">表示中のサイトをすべて削除</translation>
 <translation id="3432757130254800023">映像と音声をローカル ネットワーク経由でディスプレイに送信する</translation>
 <translation id="3432762828853624962">共有ワーカー</translation>
@@ -1964,6 +1971,7 @@
 <ph name="CONTROL_PANEL_APPLET_NAME" /> を使用してプログラムをアンインストールする必要があります。
 
 <ph name="CONTROL_PANEL_APPLET_NAME" /> を開きますか？</translation>
+<translation id="394183848452296464">ショートカットを作成できません</translation>
 <translation id="3943582379552582368">戻る(&amp;B)</translation>
 <translation id="3943857333388298514">貼り付け</translation>
 <translation id="3948116654032448504"><ph name="SEARCH_ENGINE" /> で画像を検索(&amp;S)</translation>
@@ -2271,6 +2279,7 @@
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
 <translation id="4482194545587547824">検索やその他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
 <translation id="4495419450179050807">このページに表示しない</translation>
+<translation id="4499718683476608392">フォームにクレジット カード情報をワンクリックで自動入力できるようにします</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> で問題が発生しました</translation>
 <translation id="450099669180426158">感嘆符アイコン</translation>
 <translation id="4501530680793980440">削除の確認</translation>
@@ -2549,7 +2558,6 @@
 <translation id="4917385247580444890">強い</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> が拡張機能「<ph name="EXTENSION_NAME" />」との通信をリクエストしています</translation>
 <translation id="4918086044614829423">承諾</translation>
-<translation id="4920350943031252905">Chromebook で Linux のツール、エディタ、IDE を実行します。</translation>
 <translation id="4920887663447894854">以下のサイトは、このページ内であなたの現在地を追跡できないようブロックされています:</translation>
 <translation id="492299503953721473">Android アプリを削除</translation>
 <translation id="4923279099980110923">はい、協力します</translation>
@@ -3115,6 +3123,7 @@
 <translation id="5752453871435543420">Chrome OS のクラウド バックアップ</translation>
 <translation id="5756163054456765343">ヘルプセンター(&amp;E)</translation>
 <translation id="5759728514498647443">「<ph name="APP_NAME" />」を使用して印刷に送信したドキュメントは「<ph name="APP_NAME" />」で読めます。</translation>
+<translation id="5762172915276660232">クレジット カードの設定</translation>
 <translation id="5763751966069581670">USB デバイスが見つかりませんでした</translation>
 <translation id="5764483294734785780">名前を付けてオーディオを保存(&amp;V)...</translation>
 <translation id="57646104491463491">更新日</translation>
@@ -3186,6 +3195,7 @@
 <translation id="5855773610748894548">セキュア モジュール エラー。</translation>
 <translation id="5856721540245522153">デバッグ機能を有効にする</translation>
 <translation id="5857090052475505287">新しいフォルダ</translation>
+<translation id="585979798156957858">外部メタキー</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5860209693144823476">タブ 3</translation>
 <translation id="5860491529813859533">オンにする</translation>
@@ -3495,6 +3505,7 @@
 <translation id="6327785803543103246">ウェブプロキシ自動検出</translation>
 <translation id="6333064448949140209">ファイルはデバッグのため Google に送信されます</translation>
 <translation id="6333834492048057036">検索のためアドレスバーにフォーカスを移動</translation>
+<translation id="6336451774241870485">新しいプライベート タブ</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> の新しいプロフィールを作成します</translation>
 <translation id="6340017061976355871">サーバーに接続できませんでした。ネットワーク接続を確認してもう一度お試しください。問題が解決しない場合は、Chromebook を再起動してください。</translation>
 <translation id="6340071272923955280">インターネット印刷プロトコル（IPPS）</translation>
@@ -3676,6 +3687,7 @@
 <translation id="6606070663386660533">タブ 8</translation>
 <translation id="6607272825297743757">ファイル情報</translation>
 <translation id="6607831829715835317">その他のツール(&amp;L)</translation>
+<translation id="6610147964972079463">プライベート タブを閉じる</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6613452264606394692">このページをブックマークすると、すばやくこのページに戻ることができます</translation>
 <translation id="6614893213975402384">アップデートとアプリをインストールします。続行すると、Google、携帯通信会社、端末の製造元からのアップデートやアプリも端末で自動的にダウンロードおよびインストールされる場合があることについて、同意したものと見なされます（ダウンロードの際にはモバイルデータ通信が使用される可能性もあります）。こうしたアプリの一部ではアプリ内購入をすすめられる場合があります。こうしたアプリはいつでも削除できます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
@@ -3746,6 +3758,7 @@
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6718273304615422081">圧縮しています...</translation>
 <translation id="671928215901716392">画面をロック</translation>
+<translation id="6720847671508630642">Android の便利な機能を自動的に Chromebook で共有できます。スマートフォンと接続して、パソコンからメッセージを送信したり、スマートフォンのインターネット接続を共有したり、Chromebook の画面のロックを解除したりすることが可能です。<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">セキュリティ キーのメーカーとモデルの読み取り</translation>
 <translation id="6721972322305477112">ファイル(&amp;F)</translation>
 <translation id="672213144943476270">ゲストとしてブラウジングするにはまずプロフィールのロックを解除してください。</translation>
@@ -3892,6 +3905,7 @@
 <translation id="6970856801391541997">指定したページを印刷</translation>
 <translation id="6972180789171089114">音声または動画</translation>
 <translation id="6973630695168034713">フォルダ</translation>
+<translation id="6974609594866392343">オフライン デモモード</translation>
 <translation id="6976108581241006975">JavaScript コンソール</translation>
 <translation id="6977381486153291903">ファームウェア リビジョン</translation>
 <translation id="6978121630131642226">検索エンジン</translation>
@@ -4034,6 +4048,7 @@
 <translation id="7175353351958621980">ロード元:</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="7180865173735832675">カスタマイズ</translation>
+<translation id="7182359331070524176">Google フォトアルバムを選択</translation>
 <translation id="7186088072322679094">ツールバーに残す</translation>
 <translation id="7187428571767585875">削除または変更されるレジストリ項目:</translation>
 <translation id="7189234443051076392">端末に十分な空き容量があることを確認してください</translation>
@@ -4486,6 +4501,7 @@
 <translation id="7857949311770343000">この新しいタブ ページでよろしいですか？</translation>
 <translation id="786073089922909430">サービス: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">ダウンロード(&amp;D)</translation>
+<translation id="7864662577698025113">新しいサービスを追加</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 件の Cookie}other{# 件の Cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - ペア設定済み</translation>
 <translation id="7870730066603611552">設定後に同期オプションを確認する</translation>
@@ -5000,6 +5016,7 @@
 <translation id="8666584013686199826">サイトから USB デバイスへのアクセス許可を求められたときに確認する</translation>
 <translation id="8667328578593601900">現在 <ph name="FULLSCREEN_ORIGIN" /> は全画面表示で、マウス カーソルは無効です。</translation>
 <translation id="8669284339312441707">暖色</translation>
+<translation id="8669919703154928649">アシスタントの通知を許可する</translation>
 <translation id="8669949407341943408">移動しています...</translation>
 <translation id="8671210955687109937">閲覧者（コメント可）</translation>
 <translation id="8673026256276578048">ウェブ検索...</translation>
@@ -5387,6 +5404,7 @@
 <translation id="964286338916298286">お使いのデバイスの Chrome 特典は IT 管理者によって無効にされています。</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{アプリケーション}other{アプリケーション}}</translation>
 <translation id="967007123645306417">この操作を行うと Google アカウントからログアウトします。ブックマーク、履歴、パスワードなどの設定に行った変更は Google アカウントと同期されなくなります。ただし、既存のデータは Google アカウントに保存されたまま残り、<ph name="BEGIN_LINK" />Google ダッシュボード<ph name="END_LINK" />で管理できます。</translation>
+<translation id="967624055006145463">保存データ</translation>
 <translation id="968000525894980488">Google Play 開発者サービスを有効にします。</translation>
 <translation id="968174221497644223">アプリケーション キャッシュ</translation>
 <translation id="969096075394517431">言語を変更</translation>

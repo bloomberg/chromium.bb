@@ -2549,7 +2549,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4917385247580444890">Puternic</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> dorește să comunice cu extensia „<ph name="EXTENSION_NAME" />”</translation>
 <translation id="4918086044614829423">Accept</translation>
-<translation id="4920350943031252905">Rulează instrumentele, aplicațiile de editare și IDE-urile Linux pe Chromebook.</translation>
 <translation id="4920887663447894854">Urmărirea locației pe această pagină a fost blocată pentru următoarele site-uri:</translation>
 <translation id="492299503953721473">Elimină aplicațiile Android</translation>
 <translation id="4923279099980110923">Da, doresc să ajut</translation>
@@ -4005,7 +4004,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7127980134843952133">Istoricul descărcărilor</translation>
 <translation id="7131040479572660648">Citește datele de pe <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Adăugați pa&amp;gina...</translation>
-<translation id="7133578150266914903">Administratorul îți resetează acest dispozitiv (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133578150266914903">Administratorul restabilește o versiune anterioară a OS de pe acest dispozitiv (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Micșorează textul</translation>
 <translation id="7136694880210472378">Setează ca prestabilit</translation>
 <translation id="7136984461011502314">Bun venit la <ph name="PRODUCT_NAME" /></translation>
@@ -5217,7 +5216,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9009369504041480176">Se încarcă (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Afișează întotdeauna pictograma</translation>
 <translation id="9011178328451474963">Ultima filă</translation>
-<translation id="9013707997379828817">Administratorul a resetat acest dispozitiv. Salvează fișierele importante, apoi repornește-l. Toate datele de pe dispozitiv vor fi șterse.</translation>
+<translation id="9013707997379828817">Administratorul a restabilit o versiune anterioară a OS de pe acest dispozitiv. Salvează fișierele importante, apoi repornește-l. Toate datele de pe dispozitiv vor fi șterse.</translation>
 <translation id="9014987600015527693">Vezi alt telefon</translation>
 <translation id="9018218886431812662">Instalare finalizată</translation>
 <translation id="901834265349196618">e-mail</translation>

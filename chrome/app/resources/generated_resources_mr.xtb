@@ -2557,7 +2557,6 @@
 <translation id="4917385247580444890">मजबूत</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" विस्ताराशी संवाद प्रस्थापित करू इच्छित आहे</translation>
 <translation id="4918086044614829423">स्वीकारा</translation>
-<translation id="4920350943031252905">तुमच्या Chromebook वर Linux टूल, संपादक, आणि IDE रन करा.</translation>
 <translation id="4920887663447894854">या पृष्ठावर आपले स्थान ट्रॅक करण्यापासून खालील साइट अवरोधित केल्या गेल्या आहेत:</translation>
 <translation id="492299503953721473">Android अॅप्स काढा</translation>
 <translation id="4923279099980110923">होय, मी मदत घेऊ इच्छितो</translation>
@@ -3507,6 +3506,7 @@
 <translation id="6327785803543103246">वेब प्रॉक्सी स्वयं शोध</translation>
 <translation id="6333064448949140209">फाईल डीबग करण्यासाठी Google कडे पाठविली जाईल</translation>
 <translation id="6333834492048057036">शोधासाठी अ‍ॅड्रेस बार वर फोकस करा</translation>
+<translation id="6336451774241870485">नवीन खाजगी टॅब</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> साठी एक नवीन प्रोफाइल तयार करा</translation>
 <translation id="6340017061976355871">सर्व्हरशी कनेक्ट करता आले नाही. कृपया तुमचे नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा. समस्या तशीच राहिल्यास, तुमचे Chromebook रीस्टार्ट करा.</translation>
 <translation id="6340071272923955280">इंटरनेट प्रिंट प्रोटोकॉल (IPPS)</translation>
@@ -3689,6 +3689,7 @@
 <translation id="6606070663386660533">टॅब 8</translation>
 <translation id="6607272825297743757">फाईल माहिती</translation>
 <translation id="6607831829715835317">अधिक साध&amp;ने</translation>
+<translation id="6610147964972079463">खाजगी टॅब बंद करा</translation>
 <translation id="6612358246767739896">संरक्षित सामग्री</translation>
 <translation id="6613452264606394692">या पेजला बुकमार्क करून येथे जलद परत या</translation>
 <translation id="6614893213975402384">अपडेट आणि अ‍ॅप्स इंस्टॉल करा. पुढे सुरु ठेवून, तुम्ही सहमती देता की हे डिव्हाइस शक्यतो सेल्युलर डेटा वापरुन Google, तुमचा वाहक आणि तुमच्या डिव्हाइसच्या निर्मात्याकडून अपडेट आणि अॅप्ससुद्धा अापोआप डाउनलोड आणि इंस्टॉल करू शकते. <ph name="BEGIN_LINK1" />अधिक जाणून घ्या<ph name="END_LINK1" /></translation>

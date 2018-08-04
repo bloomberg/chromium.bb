@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Mostra ortografia e grammatica</translation>
 <translation id="1593594475886691512">Formattazione in corso...</translation>
 <translation id="159359590073980872">Cache immagini</translation>
+<translation id="1593926297800505364">Salva il metodo di pagamento</translation>
 <translation id="1598233202702788831">Gli aggiornamenti sono stati disattivati dall'amministratore.</translation>
 <translation id="1600857548979126453">Accesso al backend del debugger delle pagine</translation>
 <translation id="1601560923496285236">Applica</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Impossibile aggiungere il dispositivo al dominio. Assicurati di non avere superato il numero di dispositivi che puoi aggiungere.</translation>
 <translation id="1744108098763830590">pagina di sfondo</translation>
 <translation id="1745520510852184940">Traduci sempre</translation>
+<translation id="1746417874336251387">Offre nuove funzionalità che usano la connessione del telefono per il Chromebook</translation>
 <translation id="174937106936716857">Numero totale di file</translation>
 <translation id="175196451752279553">R&amp;iapri scheda chiusa</translation>
 <translation id="1753905327828125965">Più visitati</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Non prima</translation>
 <translation id="1933809209549026293">Collega un mouse o una tastiera. Se utilizzi un dispositivo Bluetooth, assicurati che sia pronto per essere accoppiato.</translation>
 <translation id="1936157145127842922">Mostra nella cartella</translation>
+<translation id="1938351510777341717">Comando esterno</translation>
 <translation id="1940546824932169984">Dispositivi collegati</translation>
 <translation id="1942765061641586207">Risoluzione dell'immagine</translation>
+<translation id="1943097386230153518">Installa nuovo servizio</translation>
 <translation id="1944921356641260203">Aggiornamento trovato</translation>
 <translation id="1951615167417147110">Scorri una pagina</translation>
 <translation id="1954813140452229842">Errore durante il montaggio della condivisione. Verifica le tue credenziali e riprova.</translation>
@@ -1107,6 +1111,7 @@
 <translation id="2653659639078652383">Invia</translation>
 <translation id="265390580714150011">Valore campo</translation>
 <translation id="2654166010170466751">Consenti ai siti di installare gestori dei pagamenti</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Le funzionalità variano in base al dispositivo</translation>
 <translation id="2660779039299703961">Evento</translation>
 <translation id="266079277508604648">Impossibile connettere la stampante. Verifica che sia accesa e collegata al Chromebook tramite Wi-Fi o USB.</translation>
 <translation id="2661146741306740526">16 x 9</translation>
@@ -1213,6 +1218,7 @@
 <translation id="2803375539583399270">Inserisci PIN</translation>
 <translation id="2805646850212350655">Crittografia file system Microsoft</translation>
 <translation id="2805756323405976993">App</translation>
+<translation id="2806891468525657116">Scorciatoia già presente</translation>
 <translation id="2807517655263062534">I file scaricati vengono mostrati qui</translation>
 <translation id="2809586584051668049">e altre <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">È stata creata una nuova finestra nella sessione corrente del browser.</translation>
@@ -1597,6 +1603,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3428419049384081277">Hai eseguito l'accesso.</translation>
 <translation id="3429275422858276529">Aggiungi questa pagina ai preferiti per trovarla facilmente in seguito</translation>
 <translation id="3429599832623003132">$1 elementi</translation>
+<translation id="3430342160185525240">Consente all'assistente di mostrarti le notifiche.</translation>
 <translation id="3432227430032737297">Rimuovi tutti i cookie visualizzati</translation>
 <translation id="3432757130254800023">Invio di audio e video agli schermi sulla rete locale</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1961,6 +1968,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
   <ph name="CONTROL_PANEL_APPLET_NAME" /> nel Pannello di controllo.
 
   Vuoi avviare <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Impossibile creare scorciatoie</translation>
 <translation id="3943582379552582368">&amp;Indietro</translation>
 <translation id="3943857333388298514">Incolla</translation>
 <translation id="3948116654032448504">&amp;Cerca l'immagine su <ph name="SEARCH_ENGINE" /></translation>
@@ -2268,6 +2276,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4481530544597605423">Dispositivi disaccoppiati</translation>
 <translation id="4482194545587547824">Google può utilizzare la tua cronologia di navigazione per personalizzare la Ricerca e altri servizi Google</translation>
 <translation id="4495419450179050807">Non visualizzare in questa pagina</translation>
+<translation id="4499718683476608392">Attiva la Compilazione automatica per la carta di credito per compilare i moduli con un singolo clic</translation>
 <translation id="4500114933761911433">Arresto anomalo di <ph name="PLUGIN_NAME" /></translation>
 <translation id="450099669180426158">Icona punto esclamativo</translation>
 <translation id="4501530680793980440">Conferma rimozione</translation>
@@ -2546,7 +2555,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> vuole comunicare con l'estensione "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accetto</translation>
-<translation id="4920350943031252905">Esegui strumenti, editor e IDE di Linux sul tuo Chromebook.</translation>
 <translation id="4920887663447894854">Il monitoraggio della tua posizione da parte dei seguenti siti è stato bloccato su questa pagina:</translation>
 <translation id="492299503953721473">Rimuovi app Android</translation>
 <translation id="4923279099980110923">Sì, desidero dare il mio contributo</translation>
@@ -3111,6 +3119,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5752453871435543420">Backup nella cloud Chrome OS</translation>
 <translation id="5756163054456765343">Centro assistenza</translation>
 <translation id="5759728514498647443">I documenti inviati alla stampante tramite <ph name="APP_NAME" /> possono essere letti da <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Impostazioni per la carta di credito</translation>
 <translation id="5763751966069581670">Nessun dispositivo USB trovato</translation>
 <translation id="5764483294734785780">Sal&amp;va audio come...</translation>
 <translation id="57646104491463491">Data ultima modifica</translation>
@@ -3182,6 +3191,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5855773610748894548">Spiacenti, errore del modulo per la sicurezza.</translation>
 <translation id="5856721540245522153">Attiva funzioni di debug</translation>
 <translation id="5857090052475505287">Nuova cartella</translation>
+<translation id="585979798156957858">Meta esterno</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5860209693144823476">Scheda 3</translation>
 <translation id="5860491529813859533">Attiva</translation>
@@ -3491,6 +3501,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6327785803543103246">Rilevamento automatico proxy web</translation>
 <translation id="6333064448949140209">Il file sarà inviato a Google per il debug</translation>
 <translation id="6333834492048057036">Attivazione della barra degli indirizzi per la ricerca</translation>
+<translation id="6336451774241870485">Nuova scheda privata</translation>
 <translation id="6339668969738228384">Crea un nuovo profilo per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Impossibile connettersi al server. Controlla la connessione di rete e riprova. Se il problema persiste, riavvia il Chromebook.</translation>
 <translation id="6340071272923955280">Protocollo di stampa Internet (IPPS)</translation>
@@ -3672,6 +3683,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6606070663386660533">Scheda 8</translation>
 <translation id="6607272825297743757">Info sul file</translation>
 <translation id="6607831829715835317">A&amp;ltri strumenti</translation>
+<translation id="6610147964972079463">Chiudi schede private</translation>
 <translation id="6612358246767739896">Contenuti protetti</translation>
 <translation id="6613452264606394692">Aggiungi questa pagina ai preferiti per ritrovarla rapidamente</translation>
 <translation id="6614893213975402384">Installa aggiornamenti e app. Se continui, accetti che questo dispositivo possa anche scaricare e installare automaticamente aggiornamenti e app di Google, del tuo operatore e del produttore del dispositivo, utilizzando anche la rete dati. Alcune di queste app potrebbero offrire acquisti in-app. Puoi rimuovere tali app in qualsiasi momento. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
@@ -3742,6 +3754,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6718273304615422081">Compressione...</translation>
 <translation id="671928215901716392">Blocco schermo</translation>
+<translation id="6720847671508630642">Condividi automaticamente il meglio di Android con il tuo Chromebook. Connetti il telefono per poter mandare SMS dal computer, condividere la connessione a Internet del telefono e sbloccare lo schermo del Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Accedere a marca e modello del token di sicurezza</translation>
 <translation id="6721972322305477112">&amp;File</translation>
 <translation id="672213144943476270">Sblocca il tuo profilo prima di navigare come ospite.</translation>
@@ -3888,6 +3901,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6970856801391541997">Stampa pagine specifiche</translation>
 <translation id="6972180789171089114">Audio/video</translation>
 <translation id="6973630695168034713">Cartelle</translation>
+<translation id="6974609594866392343">Modalità demo offline</translation>
 <translation id="6976108581241006975">Console JavaScript</translation>
 <translation id="6977381486153291903">Revisione firmware</translation>
 <translation id="6978121630131642226">Motori di ricerca</translation>
@@ -4030,6 +4044,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7175353351958621980">Caricamento da:</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="7180865173735832675">Personalizza</translation>
+<translation id="7182359331070524176">Seleziona un album di Google Foto</translation>
 <translation id="7186088072322679094">Mantieni in barra degli strumenti</translation>
 <translation id="7187428571767585875">Voci del registro da rimuovere o modificare:</translation>
 <translation id="7189234443051076392">Assicurati di avere spazio sufficiente sul dispositivo</translation>
@@ -4479,6 +4494,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7857949311770343000">È la pagina Nuova scheda prevista?</translation>
 <translation id="786073089922909430">Servizio: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Download</translation>
+<translation id="7864662577698025113">Aggiungi nuovo servizio</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" />, accoppiato</translation>
 <translation id="7870730066603611552">Controlla le opzioni di sincronizzazione dopo la configurazione</translation>
@@ -4993,6 +5009,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8666584013686199826">Chiedi conferma quando un sito vuole accedere ai dispositivi USB</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> ora è a schermo intero e ha disattivato il puntatore del mouse.</translation>
 <translation id="8669284339312441707">Più calda</translation>
+<translation id="8669919703154928649">Consenti all'assistente di mostrarti notifiche</translation>
 <translation id="8669949407341943408">Spostamento...</translation>
 <translation id="8671210955687109937">Può commentare</translation>
 <translation id="8673026256276578048">Cerca nel Web...</translation>
@@ -5380,6 +5397,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="964286338916298286">Il tuo amministratore IT ha disattivato i vantaggi offerti da Chrome per il tuo dispositivo.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Applicazione}other{Applicazioni}}</translation>
 <translation id="967007123645306417">I tuoi account Google verranno scollegati. Le modifiche apportate a preferiti, cronologia, password e altre impostazioni non verranno più sincronizzate con il tuo account Google. I dati esistenti rimarranno invece memorizzati nel tuo account Google e potranno essere gestiti su <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Dati memorizzati</translation>
 <translation id="968000525894980488">Attiva Google Play Services.</translation>
 <translation id="968174221497644223">Cache applicazione</translation>
 <translation id="969096075394517431">Cambia le lingue</translation>

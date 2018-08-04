@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Isso interromperá todo o progresso do download atual.</translation>
 <translation id="1605658421715042784">Copiar imagem</translation>
 <translation id="1612730193129642006">Mostrar grade das guias</translation>
+<translation id="162035744160882748">Ativar sincronização, personalização e outros serviços do Google</translation>
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1646446875146297738">A ativação da opção "Não rastrear" significa que uma solicitação será incluída com seu tráfego de navegação. Qualquer efeito depende de o website responder ou não à solicitação e da forma que a solicitação é interpretada.
 
@@ -195,6 +196,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="4124987746317609294">Intervalo de tempo</translation>
 <translation id="4172051516777682613">Sempre mostrar</translation>
 <translation id="418156467088430727">Ver versão off-line em uma nova guia</translation>
+<translation id="4192273449750167573">Revisar as configurações na próxima tela</translation>
 <translation id="4237682350741091554">Gerenciar a sincronização e a personalização do Chrome em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Informar senha longa</translation>
 <translation id="4272631900155121838">Para ler um código QR, ative a câmera nas configurações</translation>
@@ -286,6 +288,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5938160824633642847">Seu dispositivo está quase cheio. Libere espaço e tente novamente.</translation>
 <translation id="5948291296578561264">Isso permite que você salve fotos na sua biblioteca de fotos.</translation>
 <translation id="5955891643922670672">Exibindo a versão off-line</translation>
+<translation id="5957613098218939406">Mais opções</translation>
 <translation id="5964480694698977962">Criar nova guia anônima.</translation>
 <translation id="5965679971710331625">Você está conectado</translation>
 <translation id="5982717868370722439">Adicionar dados já existentes à conta <ph name="USER_EMAIL" />.</translation>
@@ -345,6 +348,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6797885426782475225">Pesquisa por voz</translation>
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Item criado</translation>
+<translation id="685040365210406336">Não fazer alterações</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar a sincronização</translation>
 <translation id="6914783257214138813">Suas senhas ficarão visíveis para qualquer pessoa que tiver acesso ao arquivo exportado.</translation>
@@ -374,6 +378,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento baixados</translation>
 <translation id="7346909386216857016">Ok, entendi.</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Sim</translation>
 <translation id="7425346204213733349">Alterações feitas nos seus favoritos, histórico, senhas e outras configurações não serão mais sincronizadas com sua Conta do Google. No entanto, os dados já existentes permanecerão armazenados na Conta do Google.</translation>
 <translation id="744343212394640790">Não sou <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Estado/Prov.</translation>

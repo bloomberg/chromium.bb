@@ -503,6 +503,11 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si no s'estableix aquesta opció, l'usuari pot decidir si vol fer servir aquesta funció o no.
 
       Aquesta configuració s'ha suprimit a la versió 29 i versions posteriors de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2433412232489478893">Aquesta política controla si es permet utilitzar la funció Ús compartit dels fitxers de la xarxa per a <ph name="PRODUCT_NAME" /> als usuaris.
+
+      Si aquesta política no es configura o s'estableix en "true", els usuaris podran fer servir la funció Ús compartit dels fitxers de la xarxa.
+
+      Si aquesta política s'estableix en "false", els usuaris no podran fer servir la funció Ús compartit dels fitxers de la xarxa.</translation>
 <translation id="2438609638493026652">Permet informar Google d'esdeveniments clau durant la instal·lació d'aplicacions per a Android. Només es capturen esdeveniments si la instal·lació d'aplicacions s'activa mitjançant la política.
 
       Si la política s'estableix en "true", es registren esdeveniments.
@@ -580,6 +585,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2598508021807251719">Estableix les configuracions regionals en què es pot mostrar <ph name="PRODUCT_OS_NAME" />.
 
       Si aquesta política s'estableix, l'usuari només podrà configurar <ph name="PRODUCT_OS_NAME" /> perquè es mostri en una de les configuracions regionals especificades per aquesta política. Si aquesta política no s'estableix o s'estableix en una llista buida, <ph name="PRODUCT_OS_NAME" /> es podrà mostrar en totes les configuracions regionals admeses per a IU. Si aquesta política s'estableix en una llista amb valors no vàlids, tots els valors no vàlids s'ignoraran. Si un usuari ha configurat prèviament <ph name="PRODUCT_OS_NAME" /> perquè es mostri en un idioma que aquesta política no admet, la configuració regional de visualització canviarà a una configuració regional permesa per a la IU la propera vegada que l'usuari iniciï la sessió. Si l'usuari havia establert configuracions regionals preferides i aquesta política n'admet una, <ph name="PRODUCT_OS_NAME" /> canviarà a aquesta configuració regional. En canvi, si aquesta política només conté entrades no vàlides, <ph name="PRODUCT_OS_NAME" /> canviarà al primer valor vàlid que especifiqui aquesta política o a una configuració regional alternativa (actualment, en-US).</translation>
+<translation id="2604182581880595781">Configura les polítiques relacionades amb la funció Ús compartit dels fitxers de la xarxa.</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona configuracions per a les impressores d'empresa.
@@ -658,6 +664,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2823870601012066791">Ubicació del registre de Windows per a clients amb <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2838830882081735096">No permetis la migració de dades i ARC</translation>
+<translation id="2839294585867804686">Configuració de la funció Ús compartit dels fitxers de la xarxa</translation>
 <translation id="2840269525054388612">Especifica les impressores que un usuari pot fer servir.
 
       Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1136,6 +1143,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política es deixa sense definir, la recopilació de dades anònimes amb URL s'activarà però l'usuari podrà canviar aquesta opció.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuració regional de la pantalla d'inici de sessió del dispositiu</translation>
+<translation id="4264607809747169568">Controla si la funció Ús compartit dels fitxers de la xarxa estarà disponible per a Chrome OS</translation>
 <translation id="427220754384423013">Especifica les impressores que un usuari pot fer servir.
 
       Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1534,6 +1542,15 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       El valor de la política s'ha d'especificar en mil·lisegons.</translation>
 <translation id="5511702823008968136">Activa la barra d'adreces d'interès</translation>
 <translation id="5512418063782665071">URL de la pàgina d'inici</translation>
+<translation id="551639594034811656">Aquesta política defineix una llista de percentatges que determinen quina part dels dispositius <ph name="PRODUCT_OS_NAME" /> de l'UO cal actualitzar diàriament a partir del dia en què l'actualització es detecta per primer cop. El moment de detecció és posterior al de publicació, ja que pot passar una estona des que es publica l'actualització fins que el dispositiu comprova si hi ha actualitzacions.
+
+      Cada parell (dies, percentatge) indica el percentatge de dispositius que s'ha d'actualitzar en el termini de dies transcorreguts des que es detecta l'actualització. Per exemple, si tenim els parells [(4, 40), (10, 70), (15, 100)], el 40% dels dispositius s'ha d'actualitzar 4 dies després de detectar-se l'actualització, el 70% s'ha d'actualitzar passats 10 dies i així successivament.
+
+      Si es defineix un valor per a aquesta política, les actualitzacions ignoraran la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> i seguiran aquesta.
+
+      Si aquesta llista està buida, les actualitzacions no es faran per fases, sinó que s'aplicaran tenint en compte les polítiques d'altres dispositius.
+
+      Aquesta política no s'aplica als canvis de canal.</translation>
 <translation id="5523812257194833591">Sessió pública per iniciar la sessió automàticament després d'un retard.
 
       Si aquesta política es defineix, s'iniciarà automàticament la sessió especificada després d'un període de temps a la pantalla d'inici de sessió sense interacció de l'usuari. La sessió pública ja ha d'estar configurada (consulteu |DeviceLocalAccounts|).
@@ -2418,6 +2435,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si la política es desactiva, no es produirà l'aïllament explícit de cap lloc web i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran continuar activant SitePerProcess manualment.
       Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
       </translation>
+<translation id="7902255855035461275">Els patrons d'aquesta llista es compararan amb l'origen de seguretat
+      de l'URL que has sol·licitat. Si es troba alguna coincidència, es permetrà l'accés
+      als dispositius de captura de vídeo sense confirmació.
+
+      NOTA: fins a la versió 45, aquesta política només s'admetia en mode quiosc.</translation>
 <translation id="7912255076272890813">Configuració dels tipus d'aplicacions i d'extensions permeses</translation>
 <translation id="7915236031252389808">Permet especificar l'URL d'un fitxer .pac del servidor intermediari.
 
