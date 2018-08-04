@@ -178,6 +178,10 @@ def main():
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
   parser.add_argument('--non-telemetry',
                       help='Type of perf test', type=bool, default=False)
+  parser.add_argument('--gtest-benchmark-name',
+                      help='Name of the gtest benchmark', type=str,
+                      required=False)
+
   parser.add_argument('--benchmarks',
                       help='Comma separated list of benchmark names'
                       ' to run in lieu of indexing into our benchmark bot maps',
@@ -194,8 +198,13 @@ def main():
   return_code = 0
 
   if args.non_telemetry:
-    # For non telemetry tests the benchmark name is the name of the executable.
-    benchmark_name = rest_args[0]
+    benchmark_name = args.gtest_benchmark_name
+    # Fallback to use the name of the executable if flag isn't set.
+    # TODO(crbug.com/870899): remove fallback logic and raise parser error if
+    # -non-telemetry is set but --gtest-benchmark-name is not set once pinpoint
+    # is converted to always pass --gtest-benchmark-name flag.
+    if not benchmark_name:
+      benchmark_name = rest_args[0]
     return_code, charts, output_json = run_gtest_perf_test.execute_perf_test(
         args, rest_args)
 
