@@ -876,7 +876,8 @@ void GraphicsLayer::SetContentsToImage(
     }
     image_layer_->SetImage(std::move(paint_image), matrix,
                            image_orientation.UsesWidthAsHeight());
-    image_layer_->SetContentsOpaque(image->CurrentFrameKnownToBeOpaque());
+    // Image layers can not be marked as opaque due to crbug.com/870857.
+    image_layer_->SetContentsOpaque(false);
     UpdateContentsRect();
   } else if (image_layer_) {
     UnregisterContentsLayer(image_layer_.get());
