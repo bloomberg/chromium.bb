@@ -60,6 +60,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #endif
@@ -476,12 +477,19 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
     session->AttachToAgent(agent_ptr_);
 
   if (sessions().size() == 1) {
-    // Taking screenshots using the video capture API is done in TracingHandler.
-    if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor) &&
-        !base::FeatureList::IsEnabled(
-            features::kUseVideoCaptureApiForDevToolsSnapshots)) {
+    bool use_video_capture_api =
+        base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+        base::FeatureList::IsEnabled(
+            features::kUseVideoCaptureApiForDevToolsSnapshots);
+#ifdef OS_ANDROID
+    // Video capture API cannot be used on Android WebView.
+    if (!CompositorImpl::IsInitialized())
+      use_video_capture_api = false;
+#endif
+    // When video capture API is used, don't instantiate
+    // DevToolsFrameTraceRecorder. Taking snapshots happens in TracingHandler.
+    if (!use_video_capture_api)
       frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
-    }
     GrantPolicy();
 #if defined(OS_ANDROID)
     GetWakeLock()->RequestWakeLock();
