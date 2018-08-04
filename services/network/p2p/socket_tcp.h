@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_H_
-#define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_H_
+#ifndef SERVICES_NETWORK_P2P_SOCKET_TCP_H_
+#define SERVICES_NETWORK_P2P_SOCKET_TCP_H_
 
 #include <stdint.h>
 
@@ -11,58 +11,53 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/renderer_host/p2p/socket_host.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/p2p/socket.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
-
-namespace network {
-class ProxyResolvingClientSocketFactory;
-}  // namespace network
 
 namespace net {
 class DrainableIOBuffer;
 class GrowableIOBuffer;
 class StreamSocket;
-class URLRequestContextGetter;
 }  // namespace net
 
-namespace content {
+namespace network {
+class ProxyResolvingClientSocketFactory;
 
-class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
+class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpBase : public P2PSocket {
  public:
-  P2PSocketHostTcpBase(P2PSocketDispatcherHost* socket_dispatcher_host,
-                       network::mojom::P2PSocketClientPtr client,
-                       network::mojom::P2PSocketRequest socket,
-                       network::P2PSocketType type,
-                       net::URLRequestContextGetter* url_context,
-                       network::ProxyResolvingClientSocketFactory*
-                           proxy_resolving_socket_factory);
-  ~P2PSocketHostTcpBase() override;
+  P2PSocketTcpBase(
+      P2PSocketManager* socket_manager,
+      mojom::P2PSocketClientPtr client,
+      mojom::P2PSocketRequest socket,
+      P2PSocketType type,
+      ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory);
+  ~P2PSocketTcpBase() override;
 
   bool InitAccepted(const net::IPEndPoint& remote_address,
                     std::unique_ptr<net::StreamSocket> socket);
 
-  // P2PSocketHost overrides.
+  // P2PSocket overrides.
   bool Init(const net::IPEndPoint& local_address,
             uint16_t min_port,
             uint16_t max_port,
-            const network::P2PHostAndIPEndPoint& remote_address) override;
+            const P2PHostAndIPEndPoint& remote_address) override;
 
-  // network::mojom::P2PSocket implementation:
-  void AcceptIncomingTcpConnection(
-      const net::IPEndPoint& remote_address,
-      network::mojom::P2PSocketClientPtr client,
-      network::mojom::P2PSocketRequest socket) override;
+  // mojom::P2PSocket implementation:
+  void AcceptIncomingTcpConnection(const net::IPEndPoint& remote_address,
+                                   mojom::P2PSocketClientPtr client,
+                                   mojom::P2PSocketRequest socket) override;
   void Send(const std::vector<int8_t>& data,
-            const network::P2PPacketInfo& packet_info,
+            const P2PPacketInfo& packet_info,
             const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
-  void SetOption(network::P2PSocketOption option, int32_t value) override;
+  void SetOption(P2PSocketOption option, int32_t value) override;
 
  protected:
   struct SendBuffer {
@@ -91,8 +86,8 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   void OnError();
 
  private:
-  friend class P2PSocketHostTcpTestBase;
-  friend class P2PSocketHostTcpServerTest;
+  friend class P2PSocketTcpTestBase;
+  friend class P2PSocketTcpServerTest;
 
   void DidCompleteRead(int result);
   void DoRead();
@@ -109,7 +104,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   void OnOpen();
   bool DoSendSocketCreateMsg();
 
-  network::P2PHostAndIPEndPoint remote_address_;
+  P2PHostAndIPEndPoint remote_address_;
 
   std::unique_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
@@ -119,24 +114,22 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   bool write_pending_;
 
   bool connected_;
-  network::P2PSocketType type_;
-  scoped_refptr<net::URLRequestContextGetter> url_context_;
-  network::ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory_;
+  P2PSocketType type_;
+  ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcpBase);
+  DISALLOW_COPY_AND_ASSIGN(P2PSocketTcpBase);
 };
 
-class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
+class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcp : public P2PSocketTcpBase {
  public:
-  P2PSocketHostTcp(P2PSocketDispatcherHost* socket_dispatcher_host,
-                   network::mojom::P2PSocketClientPtr client,
-                   network::mojom::P2PSocketRequest socket,
-                   network::P2PSocketType type,
-                   net::URLRequestContextGetter* url_context,
-                   network::ProxyResolvingClientSocketFactory*
-                       proxy_resolving_socket_factory);
+  P2PSocketTcp(
+      P2PSocketManager* socket_manager,
+      mojom::P2PSocketClientPtr client,
+      mojom::P2PSocketRequest socket,
+      P2PSocketType type,
+      ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory);
 
-  ~P2PSocketHostTcp() override;
+  ~P2PSocketTcp() override;
 
  protected:
   int ProcessInput(char* input, int input_len) override;
@@ -147,24 +140,24 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
       const net::NetworkTrafficAnnotationTag traffic_annotation) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcp);
+  DISALLOW_COPY_AND_ASSIGN(P2PSocketTcp);
 };
 
-// P2PSocketHostStunTcp class provides the framing of STUN messages when used
+// P2PSocketStunTcp class provides the framing of STUN messages when used
 // with TURN. These messages will not have length at front of the packet and
 // are padded to multiple of 4 bytes.
 // Formatting of messages is defined in RFC5766.
-class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
+class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketStunTcp
+    : public P2PSocketTcpBase {
  public:
-  P2PSocketHostStunTcp(P2PSocketDispatcherHost* socket_dispatcher_host,
-                       network::mojom::P2PSocketClientPtr client,
-                       network::mojom::P2PSocketRequest socket,
-                       network::P2PSocketType type,
-                       net::URLRequestContextGetter* url_context,
-                       network::ProxyResolvingClientSocketFactory*
-                           proxy_resolving_socket_factory);
+  P2PSocketStunTcp(
+      P2PSocketManager* socket_manager,
+      mojom::P2PSocketClientPtr client,
+      mojom::P2PSocketRequest socket,
+      P2PSocketType type,
+      ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory);
 
-  ~P2PSocketHostStunTcp() override;
+  ~P2PSocketStunTcp() override;
 
  protected:
   int ProcessInput(char* input, int input_len) override;
@@ -177,10 +170,9 @@ class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
  private:
   int GetExpectedPacketSize(const int8_t* data, int len, int* pad_bytes);
 
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketHostStunTcp);
+  DISALLOW_COPY_AND_ASSIGN(P2PSocketStunTcp);
 };
 
+}  // namespace network
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_H_
+#endif  // SERVICES_NETWORK_P2P_SOCKET_TCP_H_

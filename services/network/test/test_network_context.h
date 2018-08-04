@@ -118,6 +118,10 @@ class TestNetworkContext : public mojom::NetworkContext {
                          const GURL& url,
                          int32_t load_flags,
                          bool privacy_mode_enabled) override {}
+  void CreateP2PSocketManager(
+      mojom::P2PTrustedSocketManagerClientPtr client,
+      mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
+      mojom::P2PSocketManagerRequest socket_manager_request) override {}
   void ResetURLLoaderFactories() override {}
 };
 

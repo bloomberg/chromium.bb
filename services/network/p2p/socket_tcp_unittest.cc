@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p/socket_host_tcp.h"
+#include "services/network/p2p/socket_tcp.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,12 +12,12 @@
 #include "base/sys_byteorder.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/p2p/socket_test_utils.h"
 #include "services/network/proxy_resolving_client_socket_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,18 +27,17 @@ using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Return;
 
-namespace content {
+namespace network {
 
-class P2PSocketHostTcpTestBase : public testing::Test {
+class P2PSocketTcpTestBase : public testing::Test {
  protected:
-  explicit P2PSocketHostTcpTestBase(network::P2PSocketType type)
-      : socket_type_(type) {}
+  explicit P2PSocketTcpTestBase(P2PSocketType type) : socket_type_(type) {}
 
   void SetUp() override {
-    network::mojom::P2PSocketClientPtr socket_client;
+    mojom::P2PSocketClientPtr socket_client;
     auto socket_client_request = mojo::MakeRequest(&socket_client);
 
-    network::mojom::P2PSocketPtr socket;
+    mojom::P2PSocketPtr socket;
     auto socket_request = mojo::MakeRequest(&socket);
 
     fake_client_.reset(new FakeSocketClient(std::move(socket),
@@ -46,14 +45,14 @@ class P2PSocketHostTcpTestBase : public testing::Test {
 
     EXPECT_CALL(*fake_client_.get(), SocketCreated(_, _)).Times(1);
 
-    if (socket_type_ == network::P2P_SOCKET_TCP_CLIENT) {
-      socket_host_.reset(new P2PSocketHostTcp(
-          nullptr, std::move(socket_client), std::move(socket_request),
-          network::P2P_SOCKET_TCP_CLIENT, nullptr, nullptr));
+    if (socket_type_ == P2P_SOCKET_TCP_CLIENT) {
+      socket_host_.reset(new P2PSocketTcp(nullptr, std::move(socket_client),
+                                          std::move(socket_request),
+                                          P2P_SOCKET_TCP_CLIENT, nullptr));
     } else {
-      socket_host_.reset(new P2PSocketHostStunTcp(
+      socket_host_.reset(new P2PSocketStunTcp(
           nullptr, std::move(socket_client), std::move(socket_request),
-          network::P2P_SOCKET_STUN_TCP_CLIENT, nullptr, nullptr));
+          P2P_SOCKET_STUN_TCP_CLIENT, nullptr));
     }
 
     socket_ = new FakeSocket(&sent_data_);
@@ -65,7 +64,7 @@ class P2PSocketHostTcpTestBase : public testing::Test {
     local_address_ = ParseAddress(kTestLocalIpAddress, kTestPort1);
 
     socket_host_->remote_address_ = dest_;
-    socket_host_->state_ = P2PSocketHost::STATE_CONNECTING;
+    socket_host_->state_ = P2PSocket::STATE_CONNECTING;
     socket_host_->OnConnected(net::OK);
     base::RunLoop().RunUntilIdle();
   }
@@ -81,48 +80,46 @@ class P2PSocketHostTcpTestBase : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string sent_data_;
   FakeSocket* socket_;  // Owned by |socket_host_|.
-  std::unique_ptr<P2PSocketHostTcpBase> socket_host_;
+  std::unique_ptr<P2PSocketTcpBase> socket_host_;
   std::unique_ptr<FakeSocketClient> fake_client_;
 
   net::IPEndPoint local_address_;
-  network::P2PHostAndIPEndPoint dest_;
-  network::P2PSocketType socket_type_;
+  P2PHostAndIPEndPoint dest_;
+  P2PSocketType socket_type_;
 };
 
-class P2PSocketHostTcpTest : public P2PSocketHostTcpTestBase {
+class P2PSocketTcpTest : public P2PSocketTcpTestBase {
  protected:
-  P2PSocketHostTcpTest()
-      : P2PSocketHostTcpTestBase(network::P2P_SOCKET_TCP_CLIENT) {}
+  P2PSocketTcpTest() : P2PSocketTcpTestBase(P2P_SOCKET_TCP_CLIENT) {}
 };
 
-class P2PSocketHostStunTcpTest : public P2PSocketHostTcpTestBase {
+class P2PSocketStunTcpTest : public P2PSocketTcpTestBase {
  protected:
-  P2PSocketHostStunTcpTest()
-      : P2PSocketHostTcpTestBase(network::P2P_SOCKET_STUN_TCP_CLIENT) {}
+  P2PSocketStunTcpTest() : P2PSocketTcpTestBase(P2P_SOCKET_STUN_TCP_CLIENT) {}
 };
 
 // Verify that we can send STUN message and that they are formatted
 // properly.
-TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
+TEST_F(P2PSocketTcpTest, SendStunNoAuth) {
   EXPECT_CALL(*fake_client_.get(), SendComplete(_)).Times(3);
 
   rtc::PacketOptions options;
   std::vector<int8_t> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(
-      packet1, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet1, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet2;
   CreateStunResponse(&packet2);
   socket_host_->Send(
-      packet2, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet2, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet3;
   CreateStunError(&packet3);
   socket_host_->Send(
-      packet3, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet3, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::string expected_data;
@@ -140,26 +137,26 @@ TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
 
 // Verify that we can receive STUN messages from the socket, and that
 // the messages are parsed properly.
-TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
+TEST_F(P2PSocketTcpTest, ReceiveStun) {
   EXPECT_CALL(*fake_client_.get(), SendComplete(_)).Times(3);
 
   rtc::PacketOptions options;
   std::vector<int8_t> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(
-      packet1, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet1, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet2;
   CreateStunResponse(&packet2);
   socket_host_->Send(
-      packet2, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet2, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet3;
   CreateStunError(&packet3);
   socket_host_->Send(
-      packet3, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet3, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::string received_data;
@@ -190,12 +187,12 @@ TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
 
 // Verify that we can't send data before we've received STUN response
 // from the other side.
-TEST_F(P2PSocketHostTcpTest, SendDataNoAuth) {
+TEST_F(P2PSocketTcpTest, SendDataNoAuth) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
   socket_host_->Send(
-      packet, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   EXPECT_EQ(0U, sent_data_.size());
@@ -206,15 +203,14 @@ TEST_F(P2PSocketHostTcpTest, SendDataNoAuth) {
 }
 
 // Verify that SetOption() doesn't crash after an error.
-TEST_F(P2PSocketHostTcpTest, SetOptionAfterError) {
+TEST_F(P2PSocketTcpTest, SetOptionAfterError) {
   // Get the sender into the error state.
   socket_host_->Send(
-      {1, 2, 3, 4},
-      network::P2PPacketInfo(dest_.ip_address, rtc::PacketOptions(), 0),
+      {1, 2, 3, 4}, P2PPacketInfo(dest_.ip_address, rtc::PacketOptions(), 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Verify that SetOptions() fails, but doesn't crash.
-  socket_host_->SetOption(network::P2P_SOCKET_OPT_RCVBUF, 2048);
+  socket_host_->SetOption(P2P_SOCKET_OPT_RCVBUF, 2048);
 
   base::RunLoop().RunUntilIdle();
 
@@ -223,7 +219,7 @@ TEST_F(P2PSocketHostTcpTest, SetOptionAfterError) {
 
 // Verify that we can send data after we've received STUN response
 // from the other side.
-TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
+TEST_F(P2PSocketTcpTest, SendAfterStunRequest) {
   // Receive packet from |dest_|.
   std::vector<int8_t> request_packet;
   CreateStunRequest(&request_packet);
@@ -242,7 +238,7 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
   socket_host_->Send(
-      packet, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::string expected_data;
@@ -255,7 +251,7 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
 }
 
 // Verify that asynchronous writes are handled correctly.
-TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
+TEST_F(P2PSocketTcpTest, AsyncWrites) {
   socket_->set_async_write(true);
 
   EXPECT_CALL(*fake_client_.get(), SendComplete(_)).Times(2);
@@ -265,13 +261,13 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
   CreateStunRequest(&packet1);
 
   socket_host_->Send(
-      packet1, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet1, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet2;
   CreateStunResponse(&packet2);
   socket_host_->Send(
-      packet2, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet2, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
@@ -287,7 +283,7 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(P2PSocketHostTcpTest, PacketIdIsPropagated) {
+TEST_F(P2PSocketTcpTest, PacketIdIsPropagated) {
   socket_->set_async_write(true);
 
   const int32_t kRtcPacketId = 1234;
@@ -304,7 +300,7 @@ TEST_F(P2PSocketHostTcpTest, PacketIdIsPropagated) {
   CreateStunRequest(&packet1);
 
   socket_host_->Send(
-      packet1, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet1, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
@@ -316,7 +312,7 @@ TEST_F(P2PSocketHostTcpTest, PacketIdIsPropagated) {
   EXPECT_EQ(expected_data, sent_data_);
 }
 
-TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
+TEST_F(P2PSocketTcpTest, SendDataWithPacketOptions) {
   std::vector<int8_t> request_packet;
   CreateStunRequest(&request_packet);
 
@@ -336,7 +332,7 @@ TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
   // Make it a RTP packet.
   *reinterpret_cast<uint16_t*>(&*packet.begin()) = base::HostToNet16(0x8000);
   socket_host_->Send(
-      packet, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::string expected_data;
@@ -350,26 +346,26 @@ TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
 
 // Verify that we can send STUN message and that they are formatted
 // properly.
-TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
+TEST_F(P2PSocketStunTcpTest, SendStunNoAuth) {
   EXPECT_CALL(*fake_client_.get(), SendComplete(_)).Times(3);
 
   rtc::PacketOptions options;
   std::vector<int8_t> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(
-      packet1, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet1, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet2;
   CreateStunResponse(&packet2);
   socket_host_->Send(
-      packet2, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet2, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet3;
   CreateStunError(&packet3);
   socket_host_->Send(
-      packet3, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet3, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::string expected_data;
@@ -384,26 +380,26 @@ TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
 
 // Verify that we can receive STUN messages from the socket, and that
 // the messages are parsed properly.
-TEST_F(P2PSocketHostStunTcpTest, ReceiveStun) {
+TEST_F(P2PSocketStunTcpTest, ReceiveStun) {
   EXPECT_CALL(*fake_client_.get(), SendComplete(_)).Times(3);
 
   rtc::PacketOptions options;
   std::vector<int8_t> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(
-      packet1, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet1, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet2;
   CreateStunResponse(&packet2);
   socket_host_->Send(
-      packet2, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet2, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet3;
   CreateStunError(&packet3);
   socket_host_->Send(
-      packet3, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet3, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::string received_data;
@@ -431,12 +427,12 @@ TEST_F(P2PSocketHostStunTcpTest, ReceiveStun) {
 
 // Verify that we can't send data before we've received STUN response
 // from the other side.
-TEST_F(P2PSocketHostStunTcpTest, SendDataNoAuth) {
+TEST_F(P2PSocketStunTcpTest, SendDataNoAuth) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
   socket_host_->Send(
-      packet, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   EXPECT_EQ(0U, sent_data_.size());
@@ -447,7 +443,7 @@ TEST_F(P2PSocketHostStunTcpTest, SendDataNoAuth) {
 }
 
 // Verify that asynchronous writes are handled correctly.
-TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
+TEST_F(P2PSocketStunTcpTest, AsyncWrites) {
   socket_->set_async_write(true);
 
   EXPECT_CALL(*fake_client_.get(), SendComplete(_)).Times(2);
@@ -456,13 +452,13 @@ TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
   std::vector<int8_t> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(
-      packet1, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet1, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   std::vector<int8_t> packet2;
   CreateStunResponse(&packet2);
   socket_host_->Send(
-      packet2, network::P2PPacketInfo(dest_.ip_address, options, 0),
+      packet2, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
@@ -475,15 +471,15 @@ TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
 }
 
 // When pseudo-tls is used (e.g. for P2P_SOCKET_SSLTCP_CLIENT),
-// network::ProxyResolvingClientSocket::Connect() won't be called twice.
+// ProxyResolvingClientSocket::Connect() won't be called twice.
 // Regression test for crbug.com/840797.
-TEST(P2PSocketHostTcpWithPseudoTlsTest, Basic) {
+TEST(P2PSocketTcpWithPseudoTlsTest, Basic) {
   base::test::ScopedTaskEnvironment scoped_task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
-  network::mojom::P2PSocketClientPtr socket_client;
+  mojom::P2PSocketClientPtr socket_client;
   auto socket_client_request = mojo::MakeRequest(&socket_client);
-  network::mojom::P2PSocketPtr socket;
+  mojom::P2PSocketPtr socket;
   auto socket_request = mojo::MakeRequest(&socket);
 
   FakeSocketClient fake_client2(std::move(socket),
@@ -494,7 +490,7 @@ TEST(P2PSocketHostTcpWithPseudoTlsTest, Basic) {
   net::MockClientSocketFactory mock_socket_factory;
   context.set_client_socket_factory(&mock_socket_factory);
   context.Init();
-  network::ProxyResolvingClientSocketFactory factory(&context);
+  ProxyResolvingClientSocketFactory factory(&context);
 
   base::StringPiece ssl_client_hello =
       jingle_glue::FakeSSLClientSocket::GetSslClientHello();
@@ -512,10 +508,10 @@ TEST(P2PSocketHostTcpWithPseudoTlsTest, Basic) {
       net::MockConnect(net::SYNCHRONOUS, net::OK, server_addr));
   mock_socket_factory.AddSocketDataProvider(&data_provider);
 
-  P2PSocketHostTcp host(nullptr, std::move(socket_client),
-                        std::move(socket_request),
-                        network::P2P_SOCKET_SSLTCP_CLIENT, nullptr, &factory);
-  network::P2PHostAndIPEndPoint dest;
+  P2PSocketTcp host(nullptr, std::move(socket_client),
+                    std::move(socket_request), P2P_SOCKET_SSLTCP_CLIENT,
+                    &factory);
+  P2PHostAndIPEndPoint dest;
   dest.ip_address = server_addr;
   bool success = host.Init(net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0),
                            0, 0, dest);
@@ -526,26 +522,25 @@ TEST(P2PSocketHostTcpWithPseudoTlsTest, Basic) {
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
 }
 
-class P2PSocketHostTcpWithTlsTest
-    : public testing::TestWithParam<
-          std::tuple<net::IoMode, network::P2PSocketType>> {};
+class P2PSocketTcpWithTlsTest
+    : public testing::TestWithParam<std::tuple<net::IoMode, P2PSocketType>> {};
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    P2PSocketHostTcpWithTlsTest,
+    P2PSocketTcpWithTlsTest,
     ::testing::Combine(::testing::Values(net::SYNCHRONOUS, net::ASYNC),
-                       ::testing::Values(network::P2P_SOCKET_TLS_CLIENT,
-                                         network::P2P_SOCKET_STUN_TLS_CLIENT)));
+                       ::testing::Values(P2P_SOCKET_TLS_CLIENT,
+                                         P2P_SOCKET_STUN_TLS_CLIENT)));
 
 // Tests that if a socket type satisfies IsTlsClientSocket(), TLS connection is
 // established.
-TEST_P(P2PSocketHostTcpWithTlsTest, Basic) {
+TEST_P(P2PSocketTcpWithTlsTest, Basic) {
   base::test::ScopedTaskEnvironment scoped_task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
-  network::mojom::P2PSocketClientPtr socket_client;
+  mojom::P2PSocketClientPtr socket_client;
   auto socket_client_request = mojo::MakeRequest(&socket_client);
-  network::mojom::P2PSocketPtr socket;
+  mojom::P2PSocketPtr socket;
   auto socket_request = mojo::MakeRequest(&socket);
 
   FakeSocketClient fake_client2(std::move(socket),
@@ -556,9 +551,9 @@ TEST_P(P2PSocketHostTcpWithTlsTest, Basic) {
   net::MockClientSocketFactory mock_socket_factory;
   context.set_client_socket_factory(&mock_socket_factory);
   context.Init();
-  network::ProxyResolvingClientSocketFactory factory(&context);
+  ProxyResolvingClientSocketFactory factory(&context);
   const net::IoMode io_mode = std::get<0>(GetParam());
-  const network::P2PSocketType socket_type = std::get<1>(GetParam());
+  const P2PSocketType socket_type = std::get<1>(GetParam());
   // OnOpen() calls DoRead(), so populate the mock socket with a pending read.
   net::MockRead reads[] = {
       net::MockRead(net::SYNCHRONOUS, net::ERR_IO_PENDING)};
@@ -571,17 +566,17 @@ TEST_P(P2PSocketHostTcpWithTlsTest, Basic) {
   mock_socket_factory.AddSocketDataProvider(&data_provider);
   mock_socket_factory.AddSSLSocketDataProvider(&ssl_socket_provider);
 
-  std::unique_ptr<P2PSocketHostTcpBase> host;
-  if (socket_type == network::P2P_SOCKET_STUN_TLS_CLIENT) {
-    host = std::make_unique<P2PSocketHostStunTcp>(
-        nullptr, std::move(socket_client), std::move(socket_request),
-        socket_type, nullptr, &factory);
-  } else {
-    host = std::make_unique<P2PSocketHostTcp>(nullptr, std::move(socket_client),
+  std::unique_ptr<P2PSocketTcpBase> host;
+  if (socket_type == P2P_SOCKET_STUN_TLS_CLIENT) {
+    host = std::make_unique<P2PSocketStunTcp>(nullptr, std::move(socket_client),
                                               std::move(socket_request),
-                                              socket_type, nullptr, &factory);
+                                              socket_type, &factory);
+  } else {
+    host = std::make_unique<P2PSocketTcp>(nullptr, std::move(socket_client),
+                                          std::move(socket_request),
+                                          socket_type, &factory);
   }
-  network::P2PHostAndIPEndPoint dest;
+  P2PHostAndIPEndPoint dest;
   dest.ip_address = server_addr;
   bool success = host->Init(net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0),
                             0, 0, dest);
@@ -593,4 +588,4 @@ TEST_P(P2PSocketHostTcpWithTlsTest, Basic) {
   EXPECT_TRUE(ssl_socket_provider.ConnectDataConsumed());
 }
 
-}  // namespace content
+}  // namespace network

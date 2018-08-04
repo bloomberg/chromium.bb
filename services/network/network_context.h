@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -56,6 +57,7 @@ namespace network {
 class CookieManager;
 class ExpectCTReporter;
 class NetworkService;
+class P2PSocketManager;
 class ProxyLookupRequest;
 class ResolveHostRequest;
 class ResourceScheduler;
@@ -219,6 +221,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          const GURL& url,
                          int32_t load_flags,
                          bool privacy_mode_enabled) override;
+  void CreateP2PSocketManager(
+      mojom::P2PTrustedSocketManagerClientPtr client,
+      mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
+      mojom::P2PSocketManagerRequest socket_manager_request) override;
   void ResetURLLoaderFactories() override;
 
   // Destroys |request| when a proxy lookup completes.
@@ -265,6 +271,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   GURL GetHSTSRedirect(const GURL& original_url);
 
+  void DestroySocketManager(P2PSocketManager* socket_manager);
+
   NetworkService* const network_service_;
 
   std::unique_ptr<ResourceScheduler> resource_scheduler_;
@@ -309,6 +317,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::set<std::unique_ptr<cors::CORSURLLoaderFactory>,
            base::UniquePtrComparator>
       url_loader_factories_;
+
+  base::flat_map<P2PSocketManager*, std::unique_ptr<P2PSocketManager>>
+      socket_managers_;
 
   mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
 

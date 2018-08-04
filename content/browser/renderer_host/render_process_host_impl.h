@@ -763,7 +763,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
                   BrowserThread::DeleteOnIOThread>
       audio_output_stream_factory_context_;
 
-  scoped_refptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
+  std::unique_ptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
 
   // Must be accessed on UI thread.
   std::vector<int> aec_dump_consumers_;

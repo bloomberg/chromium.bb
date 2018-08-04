@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
+#include "services/network/p2p/socket_test_utils.h"
 
 #include <stddef.h>
 
@@ -15,24 +15,22 @@
 #include "net/base/ip_address.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
+namespace network {
+
 const int kStunHeaderSize = 20;
 const uint16_t kStunBindingRequest = 0x0001;
 const uint16_t kStunBindingResponse = 0x0102;
 const uint16_t kStunBindingError = 0x0111;
 const uint32_t kStunMagicCookie = 0x2112A442;
 
-MockIPCSender::MockIPCSender() { }
-MockIPCSender::~MockIPCSender() { }
-
 FakeSocket::FakeSocket(std::string* written_data)
     : read_pending_(false),
       input_pos_(0),
       written_data_(written_data),
       async_write_(false),
-      write_pending_(false) {
-}
+      write_pending_(false) {}
 
-FakeSocket::~FakeSocket() { }
+FakeSocket::~FakeSocket() {}
 
 void FakeSocket::AppendInputData(const char* data, int data_size) {
   input_data_.insert(input_data_.end(), data, data + data_size);
@@ -61,9 +59,9 @@ int FakeSocket::Read(net::IOBuffer* buf,
                      int buf_len,
                      net::CompletionOnceCallback callback) {
   DCHECK(buf);
-  if (input_pos_ < static_cast<int>(input_data_.size())){
-    int result = std::min(buf_len,
-                          static_cast<int>(input_data_.size()) - input_pos_);
+  if (input_pos_ < static_cast<int>(input_data_.size())) {
+    int result =
+        std::min(buf_len, static_cast<int>(input_data_.size()) - input_pos_);
     memcpy(buf->data(), &(*input_data_.begin()) + input_pos_, result);
     input_pos_ += result;
     return result;
@@ -95,8 +93,8 @@ int FakeSocket::Write(
   }
 
   if (written_data_) {
-    written_data_->insert(written_data_->end(),
-                          buf->data(), buf->data() + buf_len);
+    written_data_->insert(written_data_->end(), buf->data(),
+                          buf->data() + buf_len);
   }
   return buf_len;
 }
@@ -107,8 +105,8 @@ void FakeSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf,
   write_pending_ = false;
 
   if (written_data_) {
-    written_data_->insert(written_data_->end(),
-                          buf->data(), buf->data() + buf_len);
+    written_data_->insert(written_data_->end(), buf->data(),
+                          buf->data() + buf_len);
   }
   std::move(callback).Run(buf_len);
 }
@@ -179,9 +177,8 @@ int64_t FakeSocket::GetTotalReceivedBytes() const {
   return 0;
 }
 
-FakeSocketClient::FakeSocketClient(
-    network::mojom::P2PSocketPtr socket,
-    network::mojom::P2PSocketClientRequest client_request)
+FakeSocketClient::FakeSocketClient(mojom::P2PSocketPtr socket,
+                                   mojom::P2PSocketClientRequest client_request)
     : socket_(std::move(socket)), binding_(this, std::move(client_request)) {
   binding_.set_connection_error_handler(
       base::BindLambdaForTesting([&]() { connection_error_ = true; }));
@@ -226,3 +223,5 @@ net::IPEndPoint ParseAddress(const std::string& ip_str, uint16_t port) {
   EXPECT_TRUE(ip.AssignFromIPLiteral(ip_str));
   return net::IPEndPoint(ip, port);
 }
+
+}  // namespace network

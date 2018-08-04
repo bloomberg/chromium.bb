@@ -9,8 +9,6 @@ static_library("jingle_glue") {
   sources = [
     "glue/chrome_async_socket.cc",
     "glue/chrome_async_socket.h",
-    "glue/fake_ssl_client_socket.cc",
-    "glue/fake_ssl_client_socket.h",
     "glue/resolving_client_socket_factory.h",
     "glue/task_pump.cc",
     "glue/task_pump.h",
@@ -25,6 +23,7 @@ static_library("jingle_glue") {
     "//third_party/webrtc_overrides",
   ]
   deps = [
+    ":jingle_fake_socket",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
@@ -40,6 +39,19 @@ static_library("jingle_glue") {
     ]
     deps -= [ "//services/network:network_service" ]
   }
+}
+
+# These files are separated into their own target to avoid a circular dependency
+# since services/network depends on this.
+static_library("jingle_fake_socket") {
+  sources = [
+    "glue/fake_ssl_client_socket.cc",
+    "glue/fake_ssl_client_socket.h",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
 }
 
 # A library for sending and receiving peer-issued notifications.

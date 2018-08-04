@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_UDP_H_
-#define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_UDP_H_
+#ifndef SERVICES_NETWORK_P2P_SOCKET_UDP_H_
+#define SERVICES_NETWORK_P2P_SOCKET_UDP_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,15 +14,15 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/renderer_host/p2p/socket_host.h"
-#include "content/common/content_export.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/diff_serv_code_point.h"
 #include "net/socket/udp_server_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/p2p/socket.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
 #include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
 
@@ -30,47 +30,46 @@ namespace net {
 class NetLog;
 }  // namespace net
 
-namespace content {
+namespace network {
 
 class P2PMessageThrottler;
 
-class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
+class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
  public:
   typedef base::Callback<std::unique_ptr<net::DatagramServerSocket>(
       net::NetLog* net_log)>
       DatagramServerSocketFactory;
-  P2PSocketHostUdp(P2PSocketDispatcherHost* socket_dispatcher_host,
-                   network::mojom::P2PSocketClientPtr client,
-                   network::mojom::P2PSocketRequest socket,
-                   P2PMessageThrottler* throttler,
-                   net::NetLog* net_log,
-                   const DatagramServerSocketFactory& socket_factory);
-  P2PSocketHostUdp(P2PSocketDispatcherHost* socket_dispatcher_host,
-                   network::mojom::P2PSocketClientPtr client,
-                   network::mojom::P2PSocketRequest socket,
-                   P2PMessageThrottler* throttler,
-                   net::NetLog* net_log);
-  ~P2PSocketHostUdp() override;
+  P2PSocketUdp(P2PSocketManager* socket_manager,
+               mojom::P2PSocketClientPtr client,
+               mojom::P2PSocketRequest socket,
+               P2PMessageThrottler* throttler,
+               net::NetLog* net_log,
+               const DatagramServerSocketFactory& socket_factory);
+  P2PSocketUdp(P2PSocketManager* socket_manager,
+               mojom::P2PSocketClientPtr client,
+               mojom::P2PSocketRequest socket,
+               P2PMessageThrottler* throttler,
+               net::NetLog* net_log);
+  ~P2PSocketUdp() override;
 
-  // P2PSocketHost overrides.
+  // P2PSocket overrides.
   bool Init(const net::IPEndPoint& local_address,
             uint16_t min_port,
             uint16_t max_port,
-            const network::P2PHostAndIPEndPoint& remote_address) override;
+            const P2PHostAndIPEndPoint& remote_address) override;
 
-  // network::mojom::P2PSocket implementation:
-  void AcceptIncomingTcpConnection(
-      const net::IPEndPoint& remote_address,
-      network::mojom::P2PSocketClientPtr client,
-      network::mojom::P2PSocketRequest socket) override;
+  // mojom::P2PSocket implementation:
+  void AcceptIncomingTcpConnection(const net::IPEndPoint& remote_address,
+                                   mojom::P2PSocketClientPtr client,
+                                   mojom::P2PSocketRequest socket) override;
   void Send(const std::vector<int8_t>& data,
-            const network::P2PPacketInfo& packet_info,
+            const P2PPacketInfo& packet_info,
             const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
-  void SetOption(network::P2PSocketOption option, int32_t value) override;
+  void SetOption(P2PSocketOption option, int32_t value) override;
 
  private:
-  friend class P2PSocketHostUdpTest;
+  friend class P2PSocketUdpTest;
 
   typedef std::set<net::IPEndPoint> ConnectedPeerSet;
 
@@ -127,9 +126,9 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   // Callback object that returns a new socket when invoked.
   DatagramServerSocketFactory socket_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketHostUdp);
+  DISALLOW_COPY_AND_ASSIGN(P2PSocketUdp);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_UDP_H_
+#endif  // SERVICES_NETWORK_P2P_SOCKET_UDP_H_

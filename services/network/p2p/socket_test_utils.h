@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TEST_UTILS_H_
-#define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TEST_UTILS_H_
+#ifndef SERVICES_NETWORK_P2P_SOCKET_TEST_UTILS_H_
+#define SERVICES_NETWORK_P2P_SOCKET_TEST_UTILS_H_
 
 #include <stdint.h>
 
@@ -11,7 +11,6 @@
 #include <tuple>
 #include <vector>
 
-#include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
@@ -22,19 +21,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace network {
+
 const char kTestLocalIpAddress[] = "123.44.22.4";
 const char kTestIpAddress1[] = "123.44.22.31";
 const uint16_t kTestPort1 = 234;
 const char kTestIpAddress2[] = "133.11.22.33";
 const uint16_t kTestPort2 = 543;
-
-class MockIPCSender : public IPC::Sender {
- public:
-  MockIPCSender();
-  ~MockIPCSender() override;
-
-  MOCK_METHOD1(Send, bool(IPC::Message* msg));
-};
 
 class FakeSocket : public net::StreamSocket {
  public:
@@ -100,16 +93,16 @@ class FakeSocket : public net::StreamSocket {
   net::NetLogWithSource net_log_;
 };
 
-class FakeSocketClient : public network::mojom::P2PSocketClient {
+class FakeSocketClient : public mojom::P2PSocketClient {
  public:
-  FakeSocketClient(network::mojom::P2PSocketPtr socket,
-                   network::mojom::P2PSocketClientRequest client_request);
+  FakeSocketClient(mojom::P2PSocketPtr socket,
+                   mojom::P2PSocketClientRequest client_request);
   ~FakeSocketClient() override;
 
-  // network::mojom::P2PSocketClient interface.
+  // mojom::P2PSocketClient interface.
   MOCK_METHOD2(SocketCreated,
                void(const net::IPEndPoint&, const net::IPEndPoint&));
-  MOCK_METHOD1(SendComplete, void(const network::P2PSendPacketMetrics&));
+  MOCK_METHOD1(SendComplete, void(const P2PSendPacketMetrics&));
   MOCK_METHOD1(IncomingTcpConnection, void(const net::IPEndPoint&));
   MOCK_METHOD3(DataReceived,
                void(const net::IPEndPoint&,
@@ -119,8 +112,8 @@ class FakeSocketClient : public network::mojom::P2PSocketClient {
   bool connection_error() { return connection_error_; }
 
  private:
-  network::mojom::P2PSocketPtr socket_;
-  mojo::Binding<network::mojom::P2PSocketClient> binding_;
+  mojom::P2PSocketPtr socket_;
+  mojo::Binding<mojom::P2PSocketClient> binding_;
   bool connection_error_ = false;
 };
 
@@ -141,4 +134,6 @@ MATCHER_P2(MatchSendPacketMetrics, rtc_packet_id, test_start_time, "") {
          arg.send_time <= base::TimeTicks::Now();
 }
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TEST_UTILS_H_
+}  // namespace network
+
+#endif  // SERVICES_NETWORK_P2P_SOCKET_TEST_UTILS_H_

@@ -117,7 +117,7 @@ component("cpp_base") {
     "//mojo/public/mojom/base",
     "//net",
     "//services/network/public/mojom:mojom_shared",
-    "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc/rtc_base",
     "//third_party/webrtc_overrides",
     "//third_party/webrtc_overrides:init_webrtc",
   ]
