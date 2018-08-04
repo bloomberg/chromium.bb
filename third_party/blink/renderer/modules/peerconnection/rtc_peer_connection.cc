@@ -37,6 +37,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
@@ -2189,6 +2190,14 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
   ScheduleDispatchEvent(
       RTCDataChannelEvent::Create(EventTypeNames::datachannel, channel));
   has_data_channels_ = true;
+}
+
+void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
+  Document* document = ToDocument(GetExecutionContext());
+  ukm::SourceId source_id = document->UkmSourceID();
+  ukm::builders::WebRTC_AddressHarvesting(source_id)
+      .SetUsagePattern(usage_pattern)
+      .Record(document->UkmRecorder());
 }
 
 void RTCPeerConnection::ReleasePeerConnectionHandler() {

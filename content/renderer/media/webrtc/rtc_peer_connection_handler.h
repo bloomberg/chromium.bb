@@ -217,6 +217,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                       int sdp_mline_index,
                       int component,
                       int address_family);
+  void OnInterestingUsage(int usage_pattern);
 
  private:
   // Record info about the first SessionDescription from the local and
