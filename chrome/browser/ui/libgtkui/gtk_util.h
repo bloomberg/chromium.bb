@@ -35,6 +35,10 @@ namespace libgtkui {
 extern const color_utils::HSL kDefaultTintFrameIncognito;
 extern const color_utils::HSL kDefaultTintFrameIncognitoInactive;
 
+// Default background tab tints
+extern const color_utils::HSL kDefaultTintBackgroundTab;
+extern const color_utils::HSL kDefaultTintBackgroundTabIncognito;
+
 extern const SkColor kInvalidColorIdColor;
 extern const SkColor kURLTextColor;
 
