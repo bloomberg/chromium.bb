@@ -4,6 +4,10 @@
 
 package org.chromium.chromecast.base;
 
+import android.annotation.SuppressLint;
+
+import java.util.Objects;
+
 /**
  * Represents a structure containing an instance of both A and B.
  *
@@ -43,6 +47,21 @@ public class Both<A, B> {
                 .append(", ")
                 .append(this.second.toString())
                 .toString();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof Both) {
+            Both<?, ?> that = (Both<?, ?>) other;
+            return this.first.equals(that.first) && this.second.equals(that.second);
+        }
+        return false;
+    }
+
+    @SuppressLint("NewApi")
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.first, this.second);
     }
 
     /**
