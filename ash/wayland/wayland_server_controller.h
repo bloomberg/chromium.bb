@@ -20,6 +20,7 @@ class Server;
 
 namespace ash {
 
+class ArcInputMethodSurfaceManager;
 class ArcNotificationSurfaceManagerImpl;
 
 class WaylandServerController {
@@ -43,6 +44,8 @@ class WaylandServerController {
 
   std::unique_ptr<ArcNotificationSurfaceManagerImpl>
       arc_notification_surface_manager_;
+  std::unique_ptr<ArcInputMethodSurfaceManager>
+      arc_input_method_surface_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandServerController);
 };

@@ -6,6 +6,8 @@ import("//build/config/ui.gni")
 
 static_library("arc") {
   sources = [
+    "arc_input_method_surface_manager.cc",
+    "arc_input_method_surface_manager.h",
     "arc_virtual_keyboard_container_layout_manager.cc",
     "arc_virtual_keyboard_container_layout_manager.h",
   ]
@@ -13,6 +15,7 @@ static_library("arc") {
   deps = [
     "//ash/public/cpp",
     "//base",
+    "//components/exo",
     "//ui/aura",
     "//ui/gfx/geometry",
   ]
