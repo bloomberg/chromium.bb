@@ -14,6 +14,33 @@
 
 namespace device {
 
+namespace {
+
+// Checks whether the incoming MakeCredential request has ClientPin option that
+// is compatible with the Chrome's CTAP2 implementation. According to the CTAP
+// spec, CTAP2 authenticators that have client pin set will always error out on
+// MakeCredential request when "pinAuth" parameter in the request is not set. As
+// ClientPin is not supported on Chrome yet, this check allows Chrome to avoid
+// such failures if possible by defaulting to U2F request when user verification
+// is not required and the device supports U2F protocol.
+// TODO(hongjunchoi): Remove this once ClientPin command is implemented.
+// See: https://crbug.com/870892
+bool IsClientPinOptionCompatible(const FidoDevice* device,
+                                 const CtapMakeCredentialRequest& request) {
+  if (request.user_verification_required())
+    return true;
+
+  DCHECK(device && device->device_info());
+  bool client_pin_set =
+      device->device_info()->options().client_pin_availability() ==
+      AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;
+  bool supports_u2f = base::ContainsKey(device->device_info()->versions(),
+                                        ProtocolVersion::kU2f);
+  return !client_pin_set || !supports_u2f;
+}
+
+}  // namespace
+
 MakeCredentialTask::MakeCredentialTask(
     FidoDevice* device,
     CtapMakeCredentialRequest request_parameter,
@@ -27,7 +54,8 @@ MakeCredentialTask::~MakeCredentialTask() = default;
 
 void MakeCredentialTask::StartTask() {
   if (base::FeatureList::IsEnabled(kNewCtap2Device) &&
-      device()->supported_protocol() == ProtocolVersion::kCtap) {
+      device()->supported_protocol() == ProtocolVersion::kCtap &&
+      IsClientPinOptionCompatible(device(), request_parameter_)) {
     MakeCredential();
   } else {
     U2fRegister();
