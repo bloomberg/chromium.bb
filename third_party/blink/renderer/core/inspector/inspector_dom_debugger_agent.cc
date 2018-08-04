@@ -216,9 +216,7 @@ void InspectorDOMDebuggerAgent::Trace(blink::Visitor* visitor) {
 Response InspectorDOMDebuggerAgent::disable() {
   SetEnabled(false);
   dom_breakpoints_.clear();
-  xhr_breakpoints_.ClearAll();
-  pause_on_all_xhrs_.Clear();
-  event_listener_breakpoints_.ClearAll();
+  agent_state_.ClearAllFields();
   return Response::OK();
 }
 

@@ -212,10 +212,6 @@ class CORE_EXPORT InspectorAgentState {
       session_state_->EnqueueUpdate(prefix_key_ + key, WTF::String());
     }
 
-    // TODO(johannes): Remove this method after callers are migrated to
-    // ::Clear().
-    void ClearAll() { Clear(); }
-
     // Clears the entire field.
     void Clear() override {
       // TODO(johannes): Handle this in a single update.
