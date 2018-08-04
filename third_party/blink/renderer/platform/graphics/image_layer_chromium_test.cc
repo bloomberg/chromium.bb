@@ -131,7 +131,9 @@ TEST(ImageLayerChromiumTest, opaqueImages) {
 
   graphics_layer->SetContentsToImage(opaque_image.get(),
                                      Image::kUnspecifiedDecode);
-  ASSERT_TRUE(graphics_layer->ContentsLayer()->contents_opaque());
+  // This would normally have contents_opaque set but due to crbug.com/870857,
+  // we cannot set image layers as having contents_opaque.
+  ASSERT_FALSE(graphics_layer->ContentsLayer()->contents_opaque());
 
   graphics_layer->SetContentsToImage(non_opaque_image.get(),
                                      Image::kUnspecifiedDecode);
