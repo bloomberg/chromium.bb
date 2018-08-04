@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS Test css-conditional IDL implementation
 PASS Partial interface CSSRule: original interface defined
-FAIL Partial interface CSS: original interface defined assert_true: Original CSS definition should have type interface expected true got false
+PASS Partial namespace CSS: original namespace defined
 PASS CSSGroupingRule interface: existence and properties of interface object
 PASS CSSGroupingRule interface object length
 PASS CSSGroupingRule interface object name
