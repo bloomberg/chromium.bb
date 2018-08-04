@@ -11,36 +11,10 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/bookmark_model_metadata.pb.h"
+#include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
 namespace sync_bookmarks {
-
-namespace {
-
-sync_pb::EntitySpecifics SpecificsFromBookmarkNode(
-    const bookmarks::BookmarkNode* node) {
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
-  bm_specifics->set_url(node->url().spec());
-  // TODO(crbug.com/516866): Set the favicon.
-  bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
-  bm_specifics->set_creation_time_us(
-      node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
-
-  bm_specifics->set_icon_url(node->icon_url() ? node->icon_url()->spec()
-                                              : std::string());
-  if (node->GetMetaInfoMap()) {
-    for (const std::pair<std::string, std::string>& pair :
-         *node->GetMetaInfoMap()) {
-      sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
-      meta_info->set_key(pair.first);
-      meta_info->set_value(pair.second);
-    }
-  }
-  return specifics;
-}
-
-}  // namespace
 
 BookmarkLocalChangesBuilder::BookmarkLocalChangesBuilder(
     const SyncedBookmarkTracker* const bookmark_tracker)
@@ -90,7 +64,7 @@ BookmarkLocalChangesBuilder::BuildCommitRequests(size_t max_entries) const {
       data.unique_position = metadata->unique_position();
       // Assign specifics only for the non-deletion case. In case of deletion,
       // EntityData should contain empty specifics to indicate deletion.
-      data.specifics = SpecificsFromBookmarkNode(node);
+      data.specifics = CreateSpecificsFromBookmarkNode(node);
     }
     request.entity = data.PassToPtr();
     request.sequence_number = metadata->sequence_number();
