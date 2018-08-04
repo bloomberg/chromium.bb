@@ -1839,7 +1839,8 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
     case PARTITION_HORZ_A:
     case PARTITION_HORZ_B:
     case PARTITION_HORZ_4:
-    case PARTITION_VERT_4: assert(0 && "Cannot handle extended partiton types");
+    case PARTITION_VERT_4:
+      assert(0 && "Cannot handle extended partition types");
     default: assert(0); break;
   }
 
