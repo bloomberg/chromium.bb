@@ -1067,6 +1067,11 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_TOOLBAR] = tab_color;
   colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
 
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB] =
+      color_utils::HSLShift(tab_color, kDefaultTintBackgroundTab);
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
+      color_utils::HSLShift(tab_color, kDefaultTintBackgroundTabIncognito);
+
   colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
 
