@@ -147,6 +147,10 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
 }
 
 MusClient::~MusClient() {
+  // Tear down accessibility before WindowTreeClient to ensure window tree
+  // cleanup doesn't trigger accessibility events.
+  ax_remote_host_.reset();
+
   // ~WindowTreeClient calls back to us (we're its delegate), destroy it while
   // we are still valid.
   owned_window_tree_client_.reset();

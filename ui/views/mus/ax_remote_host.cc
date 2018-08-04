@@ -114,15 +114,26 @@ void AXRemoteHost::PerformAction(const ui::AXActionData& action_data) {
   tree_source_->HandleAccessibleAction(action_data);
 }
 
+void AXRemoteHost::OnWidgetClosing(Widget* widget) {
+  // In the typical case, clean up early during widget close. Waiting until
+  // widget destroy can sometimes lead to crashes due to AX window visibility
+  // events being triggered during close. https://crbug.com/869608
+  DCHECK_EQ(widget_, widget);
+  StopMonitoringWidget();
+}
+
 void AXRemoteHost::OnWidgetDestroying(Widget* widget) {
+  // Widgets can be deleted without being closed, which is common in tests
+  // and possible in production.
   DCHECK_EQ(widget_, widget);
   StopMonitoringWidget();
 }
 
 void AXRemoteHost::OnChildWindowRemoved(AXAuraObjWrapper* parent) {
-  if (!enabled_)
+  if (!enabled_ || !widget_)
     return;
 
+  DCHECK(tree_source_);
   if (!parent)
     parent = tree_source_->GetRoot();
 
@@ -174,6 +185,7 @@ void AXRemoteHost::Disable() {
 
 void AXRemoteHost::SendEvent(AXAuraObjWrapper* aura_obj,
                              ax::mojom::Event event_type) {
+  DCHECK(aura_obj);
   if (!enabled_ || !tree_serializer_)
     return;
 
