@@ -61,9 +61,12 @@ void AssistantClient::MaybeInit(service_manager::Connector* connector) {
 }
 
 void AssistantClient::OnAssistantStatusChanged(bool running) {
+  // |running| means assistent mojom service is running. This maps to
+  // |STOPPED| and |NOT_READY|. |RUNNING| maps to UI is shown and an assistant
+  // session is running.
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
-      running ? ash::mojom::VoiceInteractionState::RUNNING
-              : ash::mojom::VoiceInteractionState::STOPPED);
+      running ? ash::mojom::VoiceInteractionState::STOPPED
+              : ash::mojom::VoiceInteractionState::NOT_READY);
 }
 
 void AssistantClient::RequestAssistantStructure(

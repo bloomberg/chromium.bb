@@ -203,6 +203,10 @@ void AssistantUiController::OnUrlOpened(const GURL& url) {
 
 void AssistantUiController::OnUiVisibilityChanged(bool visible,
                                                   AssistantSource source) {
+  Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
+      visible ? mojom::VoiceInteractionState::RUNNING
+              : mojom::VoiceInteractionState::STOPPED);
+
   if (visible)
     return;
 
