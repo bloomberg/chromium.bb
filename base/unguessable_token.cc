@@ -5,6 +5,7 @@
 #include "base/unguessable_token.h"
 
 #include "base/format_macros.h"
+#include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 
@@ -24,6 +25,12 @@ UnguessableToken UnguessableToken::Create() {
   // base version directly, and to prevent the dependency from base/ to crypto/.
   base::RandBytes(&token, sizeof(token));
   return token;
+}
+
+// static
+const UnguessableToken& UnguessableToken::Null() {
+  static const NoDestructor<UnguessableToken> null_token;
+  return *null_token;
 }
 
 // static
