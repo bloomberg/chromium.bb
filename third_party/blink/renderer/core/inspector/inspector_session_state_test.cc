@@ -194,7 +194,7 @@ TEST(InspectorSessionStateTest, MapFields) {
     EXPECT_EQ("updated message for key 2", maps_agent.strings_.Get("key2"));
     EXPECT_EQ("new message for key 3", maps_agent.strings_.Get("key3"));
 
-    maps_agent.strings_.ClearAll();
+    maps_agent.strings_.Clear();
 
     dev_tools_session.ApplyUpdates(session_state.TakeUpdates());
   }

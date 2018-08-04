@@ -227,7 +227,7 @@ Response InspectorLogAgent::startViolationsReport(
   if (!performance_monitor_)
     return Response::Error("Violations are not supported for this target");
   performance_monitor_->UnsubscribeAll(this);
-  violation_thresholds_.ClearAll();
+  violation_thresholds_.Clear();
   for (size_t i = 0; i < settings->length(); ++i) {
     const WTF::String& name = settings->get(i)->getName();
     double threshold = settings->get(i)->getThreshold();
@@ -242,7 +242,7 @@ Response InspectorLogAgent::startViolationsReport(
 }
 
 Response InspectorLogAgent::stopViolationsReport() {
-  violation_thresholds_.ClearAll();
+  violation_thresholds_.Clear();
   if (!performance_monitor_)
     return Response::Error("Violations are not supported for this target");
   performance_monitor_->UnsubscribeAll(this);
