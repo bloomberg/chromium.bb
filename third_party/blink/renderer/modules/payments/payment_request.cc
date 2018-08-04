@@ -776,7 +776,7 @@ PaymentRequest* PaymentRequest::Create(
 PaymentRequest::~PaymentRequest() = default;
 
 ScriptPromise PaymentRequest::show(ScriptState* script_state) {
-  if (!payment_provider_.is_bound() || show_resolver_) {
+  if (!payment_provider_.is_bound() || accept_resolver_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            "Already called show() once"));
@@ -807,8 +807,8 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
 
   payment_provider_->Show(is_user_gesture);
 
-  show_resolver_ = ScriptPromiseResolver::Create(script_state);
-  return show_resolver_->Promise();
+  accept_resolver_ = ScriptPromiseResolver::Create(script_state);
+  return accept_resolver_->Promise();
 }
 
 ScriptPromise PaymentRequest::abort(ScriptState* script_state) {
@@ -826,7 +826,7 @@ ScriptPromise PaymentRequest::abort(ScriptState* script_state) {
                              "has resolved or rejected"));
   }
 
-  if (!show_resolver_ && !retry_resolver_) {
+  if (!GetPendingAcceptPromiseResolver()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
@@ -840,7 +840,7 @@ ScriptPromise PaymentRequest::abort(ScriptState* script_state) {
 }
 
 ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state) {
-  if (!payment_provider_.is_bound() || show_resolver_ || retry_resolver_ ||
+  if (!payment_provider_.is_bound() || GetPendingAcceptPromiseResolver() ||
       can_make_payment_resolver_ || !script_state->ContextIsValid()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -854,7 +854,7 @@ ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state) {
 }
 
 bool PaymentRequest::HasPendingActivity() const {
-  return show_resolver_ || retry_resolver_ || complete_resolver_;
+  return GetPendingAcceptPromiseResolver() || complete_resolver_;
 }
 
 const AtomicString& PaymentRequest::InterfaceName() const {
@@ -1019,7 +1019,7 @@ void PaymentRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(options_);
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_response_);
-  visitor->Trace(show_resolver_);
+  visitor->Trace(accept_resolver_);
   visitor->Trace(retry_resolver_);
   visitor->Trace(complete_resolver_);
   visitor->Trace(abort_resolver_);
@@ -1205,15 +1205,15 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     // PaymentResponse::complete(String), which will be forwarded over the mojo
     // connection to display a success or failure message to the user.
     retry_resolver_.Clear();
-  } else if (show_resolver_) {
+  } else if (accept_resolver_) {
     payment_response_ = new PaymentResponse(std::move(response),
                                             shipping_address_.Get(), this, id_);
-    show_resolver_->Resolve(payment_response_);
+    accept_resolver_->Resolve(payment_response_);
 
     // Do not close the mojo connection here. The merchant website should call
     // PaymentResponse::complete(String), which will be forwarded over the mojo
     // connection to display a success or failure message to the user.
-    show_resolver_.Clear();
+    accept_resolver_.Clear();
   }
 }
 
@@ -1291,7 +1291,7 @@ void PaymentRequest::OnComplete() {
 
 void PaymentRequest::OnAbort(bool aborted_successfully) {
   DCHECK(abort_resolver_);
-  DCHECK(show_resolver_ || retry_resolver_);
+  DCHECK(GetPendingAcceptPromiseResolver());
 
   if (!aborted_successfully) {
     abort_resolver_->Reject(DOMException::Create(
@@ -1351,7 +1351,7 @@ void PaymentRequest::OnCompleteTimeout(TimerBase*) {
 void PaymentRequest::ClearResolversAndCloseMojoConnection() {
   complete_timer_.Stop();
   complete_resolver_.Clear();
-  show_resolver_.Clear();
+  accept_resolver_.Clear();
   retry_resolver_.Clear();
   abort_resolver_.Clear();
   can_make_payment_resolver_.Clear();
@@ -1360,8 +1360,8 @@ void PaymentRequest::ClearResolversAndCloseMojoConnection() {
   payment_provider_.reset();
 }
 
-ScriptPromiseResolver* PaymentRequest::GetPendingAcceptPromiseResolver() {
-  return retry_resolver_ ? retry_resolver_.Get() : show_resolver_.Get();
+ScriptPromiseResolver* PaymentRequest::GetPendingAcceptPromiseResolver() const {
+  return retry_resolver_ ? retry_resolver_.Get() : accept_resolver_.Get();
 }
 
 }  // namespace blink
