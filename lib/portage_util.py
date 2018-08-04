@@ -487,8 +487,12 @@ class EBuild(object):
     is_blacklisted = False
     has_test = False
     for line in fileinput.input(ebuild_path):
-      if line.startswith('inherit ') and 'cros-workon' in line:
-        is_workon = True
+      if line.startswith('inherit '):
+        eclasses = line.split()
+        if 'cros-workon' in eclasses:
+          is_workon = True
+        if 'cros-common.mk' in eclasses:
+          has_test = True
       elif line.startswith('KEYWORDS='):
         for keyword in line.split('=', 1)[1].strip("\"'").split():
           if not keyword.startswith('~') and keyword != '-*':
