@@ -209,7 +209,6 @@ static_library("test_support") {
     ]
     if (current_toolchain == host_toolchain) {
       data_deps += [ ":do_generate_fontconfig_caches" ]
-      data += [ "$root_out_dir/fontconfig_caches/" ]
     }
   }
 
@@ -379,7 +378,8 @@ if (is_linux) {
       ]
       args = []
       outputs = [
-        "$root_out_dir/fontconfig_caches/STAMP",
+        "$root_out_dir/fontconfig_caches/",
+        "$root_out_dir/test_fonts/.uuid",
       ]
     }
   }
