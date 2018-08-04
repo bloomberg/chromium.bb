@@ -348,9 +348,15 @@ if (is_android) {
     java_test_dir = "//chromecast/base/java/test"
     java_files = [
       "$java_test_dir/org/chromium/chromecast/base/BothTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ControllerTest.java",
       "$java_test_dir/org/chromium/chromecast/base/CircularBufferTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ItertoolsTest.java",
-      "$java_test_dir/org/chromium/chromecast/base/ObservableAndControllerTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ObservableAndTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ObservableAndThenTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ObservableFilterTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ObservableMapTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ObservableMiscellaneousTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/ObservableNotTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ReactiveRecorderTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ObserversTest.java",
       "$java_test_dir/org/chromium/chromecast/base/UnitTest.java",

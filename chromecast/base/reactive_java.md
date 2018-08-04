@@ -952,14 +952,14 @@ under the hood to know when to notify.
 ### Testing
 
 One of the most important aspects of using `Observable`s is that they are very
-testable. The `Observable` cleanly separates the concerns of *mutating* program
-state and *responding to* program state. Reactors, or observers, registered in
-`watch()` methods tend to be **functional**, i.e. with no side effects, though
-this isn't a strict requirement (see the above section).
+testable. Although `Observer`s themselves are not pure-functional (i.e. they
+tend to mutate program state), this is done in such a way that the mutations in
+the form of state transitions in `Observable`s are easy to track, and therefore
+easy to test.
 
 If you write a class that implements `Observable` or returns an `Observable` in
 one of its methods, it's easy to test the events it emits by using the
-`ReactiveRecorder` test utility function. This class, which is only allowed in
+`ReactiveRecorder` test utility module. This class, which is only allowed in
 tests, provides a fluent interface for describing the expected output of an
 `Observable`.
 
@@ -988,7 +988,7 @@ public class FlipFlopTest {
         ReactiveRecorder recorder = ReactiveRecorder.record(f);
         f.flip();
         // A single activation should have been emitted.
-        recorder.verify().entered().end();
+        recorder.verify().opened(Unit.unit()).end();
     }
 
     @Test
@@ -998,17 +998,40 @@ public class FlipFlopTest {
         f.flip();
         f.flip();
         // Expect an activation followed by a deactivation.
-        recorder.verify().entered().exited().end();
+        recorder.verify().opened(Unit.unit()).closed(Unit.unit()).end();
     }
 }
 ```
 
-`ReactiveRecorder`'s `entered()` and `exited()` methods can also take arguments
-to perform assertions on the activation data. `ReactiveRecorder.record()` can
-also take arbitrarily many `Observable` arguments and receive the events of all
-of the given `Observable`s. In this case, the `entered()` and `exited()` methods
-have overloads that take an `Observable` as an argument, which can be used to
-assert *which* `Observable` emitted an event.
+The `ReactiveRecorder` class works by calling `watch()` on the given
+`Observable` and storing the activations and deactivations it observes in a
+list. The `verify()` method opens a domain-specific language for performing
+assertions on the activation data, using `opened()` and `closed()` to check
+which data has been activated and deactivated. The transitions recorded must
+occur in the same order as the `opened()` and `closed()` calls to pass the test.
+The `end()` method asserts that no more transitions occurred.
+
+You can test behaviors that should occur when closing a `watch()` scope by
+calling `recorder.unsubscribe()`. For example, every `Observable` implementation
+should close all existing `Scopes` emitted from an `Observer` when that
+`Observer`'s `watch()` scope is closed:
+
+```java
+    @Test
+    public void testUnsubscribeCloses() {
+        FlipFlop f = new FlipFlop();
+        ReactiveRecorder recorder = ReactiveRecorder.record(f);
+        f.flip();
+        // Clear the record; we don't care about the activation from flip().
+        recorder.reset();
+        recorder.unsubscribe();
+        // Unsubscribing should implicitly close the scope.
+        recorder.verify().closed(Unit.unit()).end();
+    }
+```
+
+Once a `ReactiveRecorder` unsubscribes, it will not get any new events from the
+`Observable` it was recording.
 
 ## When to use Observables
 

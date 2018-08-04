@@ -50,6 +50,15 @@ public class BothTest {
     }
 
     @Test
+    public void testBothEquals() {
+        assertTrue(Both.both("a", "b").equals(Both.both("a", "b")));
+        assertFalse(Both.both("a", "b").equals(Both.both("b", "b")));
+        assertFalse(Both.both("a", "b").equals(Both.both("a", "a")));
+        assertFalse(Both.both(1, 2).equals(Both.both("a", "b")));
+        assertFalse(Both.both("hi", 0).equals(new Object()));
+    }
+
+    @Test
     public void testUseGetFirstAsMethodReference() {
         Both<Integer, String> x = Both.both(1, "one");
         Function<Both<Integer, String>, Integer> getFirst = Both::getFirst;

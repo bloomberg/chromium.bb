@@ -28,85 +28,56 @@ public class ReactiveRecorderTest {
         controller.set(Unit.unit());
         controller.reset();
         controller.set(Unit.unit());
-        recorder.verify().entered(Unit.unit()).exited().end();
+        recorder.verify().opened(Unit.unit()).closed(Unit.unit()).end();
     }
 
     @Test(expected = AssertionError.class)
-    public void testFailEnteredWrongValue() {
+    public void testFailOpenedWrongValue() {
         Controller<String> controller = new Controller<>();
         ReactiveRecorder recorder = ReactiveRecorder.record(controller);
         controller.set("actual");
-        recorder.verify().entered("expected");
+        recorder.verify().opened("expected");
     }
 
     @Test(expected = AssertionError.class)
-    public void testFailEnteredGotExit() {
+    public void testFailOpenedGotClosed() {
         Controller<String> controller = new Controller<>();
         controller.set("before");
         ReactiveRecorder recorder = ReactiveRecorder.record(controller).reset();
         controller.set("after");
-        recorder.verify().entered("after");
+        recorder.verify().opened("after");
     }
 
     @Test(expected = AssertionError.class)
-    public void testFailExitedGotEnter() {
+    public void testFailClosedGotOpened() {
         Controller<Unit> controller = new Controller<>();
         ReactiveRecorder recorder = ReactiveRecorder.record(controller);
         controller.set(Unit.unit());
-        recorder.verify().exited();
+        recorder.verify().closed(Unit.unit());
     }
 
     @Test(expected = AssertionError.class)
-    public void testEnteredWrongObservable() {
-        Controller<Unit> controller = new Controller<>();
-        Controller<Unit> wrong = new Controller<>();
-        ReactiveRecorder recorder = ReactiveRecorder.record(controller, wrong);
-        controller.set(Unit.unit());
-        recorder.verify().entered(wrong, Unit.unit());
-    }
-
-    @Test(expected = AssertionError.class)
-    public void testExitedWrongObservable() {
-        Controller<Unit> controller = new Controller<>();
-        Controller<Unit> wrong = new Controller<>();
-        ReactiveRecorder recorder = ReactiveRecorder.record(controller, wrong);
-        controller.set(Unit.unit());
-        wrong.set(Unit.unit());
-        recorder.reset();
-        controller.reset();
-        recorder.verify().exited(wrong);
+    public void testFailGetNotificationsAfterUnsubscribe() {
+        Controller<String> controller = new Controller<>();
+        ReactiveRecorder recorder = ReactiveRecorder.record(controller);
+        recorder.unsubscribe();
+        controller.set("unexpected");
+        recorder.verify().opened("unexpected");
     }
 
     @Test
-    public void testHappyPathForOneObservable() {
+    public void testHappyPath() {
         Controller<Unit> controller = new Controller<>();
         ReactiveRecorder recorder = ReactiveRecorder.record(controller);
         controller.set(Unit.unit());
         controller.reset();
         controller.set(Unit.unit());
         controller.reset();
-        recorder.verify().entered().exited().entered().exited().end();
-    }
-
-    @Test
-    public void testHappyPathForManyObservables() {
-        Controller<String> a = new Controller<>();
-        Controller<String> b = new Controller<>();
-        Controller<String> c = new Controller<>();
-        ReactiveRecorder recorder = ReactiveRecorder.record(a, b, c);
-        a.set("a");
-        b.set("b");
-        c.set("c");
-        b.reset();
-        a.reset();
-        c.reset();
         recorder.verify()
-                .entered(a, "a")
-                .entered(b, "b")
-                .entered(c, "c")
-                .exited(b)
-                .exited(a)
-                .exited(c)
+                .opened(Unit.unit())
+                .closed(Unit.unit())
+                .opened(Unit.unit())
+                .closed(Unit.unit())
                 .end();
     }
 }
