@@ -19,9 +19,14 @@ class Rect;
 class Size;
 }
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}  // namespace gpu
+
 namespace viz {
 class ContextProvider;
-class GLHelper;
 }
 
 namespace content {
@@ -39,8 +44,8 @@ class CONTENT_EXPORT ReflectorTexture {
   scoped_refptr<OwnedMailbox> mailbox() { return mailbox_; }
 
  private:
+  gpu::gles2::GLES2Interface* const gl_;
   scoped_refptr<OwnedMailbox> mailbox_;
-  std::unique_ptr<viz::GLHelper> gl_helper_;
   uint32_t texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ReflectorTexture);
@@ -48,4 +53,4 @@ class CONTENT_EXPORT ReflectorTexture {
 
 }  // namespace content
 
-#endif
+#endif  // CONTENT_BROWSER_COMPOSITOR_REFLECTOR_TEXTURE_H_

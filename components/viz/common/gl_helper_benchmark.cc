@@ -22,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -205,57 +206,6 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
       }
     }
   }
-}
-
-// This is more of a test utility than a test.
-// Put an PNG image called "testimage.png" in your
-// current directory, then run this test. It will
-// create testoutput_Q_P.png, where Q is the scaling
-// mode and P is the scaling percentage taken from
-// the table below.
-TEST_F(GLHelperBenchmark, DISABLED_ScaleTestImage) {
-  int percents[] = {
-      230, 180, 150, 110, 90, 70, 50, 49, 40, 20, 10,
-  };
-
-  SkBitmap input;
-  LoadPngFileToSkBitmap(base::FilePath(FILE_PATH_LITERAL("testimage.png")),
-                        &input);
-
-  uint32_t framebuffer;
-  gl_->GenFramebuffers(1, &framebuffer);
-  uint32_t src_texture;
-  gl_->GenTextures(1, &src_texture);
-  const gfx::Size src_size(input.width(), input.height());
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-  gl_->BindTexture(GL_TEXTURE_2D, src_texture);
-  gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src_size.width(),
-                  src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                  input.getPixels());
-
-  for (size_t q = 0; q < arraysize(kQualities); q++) {
-    for (size_t p = 0; p < arraysize(percents); p++) {
-      const gfx::Size dst_size(input.width() * percents[p] / 100,
-                               input.height() * percents[p] / 100);
-      uint32_t dst_texture = helper_->CopyAndScaleTexture(
-          src_texture, src_size, dst_size, false, kQualities[q]);
-
-      SkBitmap output_pixels;
-      output_pixels.allocN32Pixels(dst_size.width(), dst_size.height());
-
-      helper_->ReadbackTextureSync(
-          dst_texture, gfx::Rect(0, 0, dst_size.width(), dst_size.height()),
-          static_cast<unsigned char*>(output_pixels.getPixels()),
-          kN32_SkColorType);
-      gl_->DeleteTextures(1, &dst_texture);
-      std::string filename = base::StringPrintf("testoutput_%s_%d.ppm",
-                                                kQualityNames[q], percents[p]);
-      VLOG(0) << "Writing " << filename;
-      SaveToFile(&output_pixels, base::FilePath::FromUTF8Unsafe(filename));
-    }
-  }
-  gl_->DeleteTextures(1, &src_texture);
-  gl_->DeleteFramebuffers(1, &framebuffer);
 }
 
 }  // namespace viz

@@ -4,7 +4,6 @@
 
 #include "content/browser/compositor/reflector_texture.h"
 
-#include "components/viz/common/gl_helper.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -13,36 +12,43 @@
 namespace content {
 
 ReflectorTexture::ReflectorTexture(viz::ContextProvider* context_provider)
-    : texture_id_(0) {
-  viz::GLHelper* shared_helper =
-      ImageTransportFactory::GetInstance()->GetGLHelper();
-  mailbox_ = new OwnedMailbox(shared_helper);
-  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+    : gl_(context_provider->ContextGL()), texture_id_(0) {
+  mailbox_ = new OwnedMailbox(gl_);
 
-  gl_helper_.reset(new viz::GLHelper(gl, context_provider->ContextSupport()));
-
-  texture_id_ = gl_helper_->ConsumeMailboxToTexture(mailbox_->mailbox(),
-                                                    mailbox_->sync_token());
+  if (!mailbox_->mailbox().IsZero()) {
+    if (mailbox_->sync_token().HasData())
+      gl_->WaitSyncTokenCHROMIUM(mailbox_->sync_token().GetConstData());
+    texture_id_ =
+        gl_->CreateAndConsumeTextureCHROMIUM(mailbox_->mailbox().name);
+  }
 }
 
 ReflectorTexture::~ReflectorTexture() {
-  gl_helper_->DeleteTexture(texture_id_);
+  if (texture_id_ != 0)
+    gl_->DeleteTextures(1, &texture_id_);
 }
 
 void ReflectorTexture::CopyTextureFullImage(const gfx::Size& size) {
-  gl_helper_->CopyTextureFullImage(texture_id_, size);
+  gl_->BindTexture(GL_TEXTURE_2D, texture_id_);
+  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, size.width(),
+                      size.height(), 0);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
   // Insert a barrier to make the copy show up in the mirroring compositor's
-  // mailbox. Since the the compositor contexts and the
-  // ImageTransportFactory's
-  // GLHelper are all on the same GPU channel, this is sufficient instead of
+  // mailbox. Since the the compositor contexts and the ImageTransportFactory's
+  // GL context are all on the same GPU channel, this is sufficient instead of
   // plumbing through a sync point.
-  gl_helper_->InsertOrderingBarrier();
+  gl_->OrderingBarrierCHROMIUM();
 }
 
 void ReflectorTexture::CopyTextureSubImage(const gfx::Rect& rect) {
-  gl_helper_->CopyTextureSubImage(texture_id_, rect);
+  gl_->BindTexture(GL_TEXTURE_2D, texture_id_);
+  gl_->CopyTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.x(),
+                         rect.y(), rect.width(), rect.height());
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
   // Insert a barrier for the same reason above.
-  gl_helper_->InsertOrderingBarrier();
+  gl_->OrderingBarrierCHROMIUM();
 }
 
 }  // namespace content

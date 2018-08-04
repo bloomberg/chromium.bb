@@ -4,9 +4,10 @@
 
 #include "components/viz/service/display_embedder/buffer_queue.h"
 
+#include <utility>
+
 #include "base/containers/adapters.h"
 #include "build/build_config.h"
-#include "components/viz/common/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -23,7 +24,6 @@ BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
                          uint32_t texture_target,
                          uint32_t internal_format,
                          gfx::BufferFormat format,
-                         GLHelper* gl_helper,
                          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                          gpu::SurfaceHandle surface_handle)
     : gl_(gl),
@@ -32,7 +32,6 @@ BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
       texture_target_(texture_target),
       internal_format_(internal_format),
       format_(format),
-      gl_helper_(gl_helper),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       surface_handle_(surface_handle) {
   DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(internal_format,
@@ -70,9 +69,25 @@ void BufferQueue::CopyBufferDamage(int texture,
                                    int source_texture,
                                    const gfx::Rect& new_damage,
                                    const gfx::Rect& old_damage) {
-  gl_helper_->CopySubBufferDamage(texture_target_, texture, source_texture,
-                                  SkRegion(gfx::RectToSkIRect(new_damage)),
-                                  SkRegion(gfx::RectToSkIRect(old_damage)));
+  SkRegion region(gfx::RectToSkIRect(old_damage));
+  if (!region.op(gfx::RectToSkIRect(new_damage), SkRegion::kDifference_Op))
+    return;
+
+  GLuint dst_framebuffer = 0;
+  gl_->GenFramebuffers(1, &dst_framebuffer);
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, dst_framebuffer);
+  gl_->BindTexture(texture_target_, texture);
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            texture_target_, source_texture, 0);
+  for (SkRegion::Iterator it(region); !it.done(); it.next()) {
+    const SkIRect& rect = it.rect();
+    gl_->CopyTexSubImage2D(texture_target_, 0, rect.x(), rect.y(), rect.x(),
+                           rect.y(), rect.width(), rect.height());
+  }
+  gl_->BindTexture(texture_target_, 0);
+  gl_->Flush();
+  if (dst_framebuffer != 0)
+    gl_->DeleteFramebuffers(1, &dst_framebuffer);
 }
 
 void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
@@ -116,7 +131,7 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
   }
   UpdateBufferDamage(damage);
   in_flight_surfaces_.push_back(std::move(current_surface_));
-  // Some things reset the framebuffer (CopySubBufferDamage, some GLRenderer
+  // Some things reset the framebuffer (CopyBufferDamage, some GLRenderer
   // paths), so ensure we restore it here.
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
 }

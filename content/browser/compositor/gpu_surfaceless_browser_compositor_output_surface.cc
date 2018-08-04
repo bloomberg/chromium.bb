@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
@@ -50,11 +49,9 @@ GpuSurfacelessBrowserCompositorOutputSurface::
   // implementation.
   capabilities_.max_frames_pending = 2;
 
-  gl_helper_.reset(new viz::GLHelper(context_provider_->ContextGL(),
-                                     context_provider_->ContextSupport()));
   buffer_queue_.reset(new viz::BufferQueue(
       context_provider_->ContextGL(), target, internalformat, format,
-      gl_helper_.get(), gpu_memory_buffer_manager_, surface_handle));
+      gpu_memory_buffer_manager_, surface_handle));
   buffer_queue_->Initialize();
 }
 

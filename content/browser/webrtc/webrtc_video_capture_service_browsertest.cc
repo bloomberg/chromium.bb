@@ -6,7 +6,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -46,7 +45,7 @@ namespace {
 class InvokeClosureOnDelete
     : public video_capture::mojom::ScopedAccessPermission {
  public:
-  InvokeClosureOnDelete(base::OnceClosure closure)
+  explicit InvokeClosureOnDelete(base::OnceClosure closure)
       : closure_(std::move(closure)) {}
 
   ~InvokeClosureOnDelete() override { std::move(closure_).Run(); }
@@ -98,14 +97,12 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
     CHECK(context_provider_);
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
     CHECK(gl);
-    auto gl_helper = std::make_unique<viz::GLHelper>(
-        context_provider_->ContextGL(), context_provider_->ContextSupport());
 
     const uint8_t kDarkFrameByteValue = 0;
     const uint8_t kLightFrameByteValue = 200;
-    CreateDummyRgbFrame(gl, gl_helper.get(), kDarkFrameByteValue,
+    CreateDummyRgbFrame(gl, kDarkFrameByteValue,
                         &dummy_frame_0_mailbox_holder_);
-    CreateDummyRgbFrame(gl, gl_helper.get(), kLightFrameByteValue,
+    CreateDummyRgbFrame(gl, kLightFrameByteValue,
                         &dummy_frame_1_mailbox_holder_);
   }
 
@@ -169,7 +166,6 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
 
  private:
   void CreateDummyRgbFrame(gpu::gles2::GLES2Interface* gl,
-                           viz::GLHelper* gl_helper,
                            uint8_t value_for_all_rgb_bytes,
                            std::vector<gpu::MailboxHolder>* target) {
     const int32_t kBytesPerRGBPixel = 3;
@@ -187,16 +183,25 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
         target->push_back(gpu::MailboxHolder());
         continue;
       }
-      auto texture_id = gl_helper->CreateTexture();
-      auto mailbox_holder =
-          gl_helper->ProduceMailboxHolderFromTexture(texture_id);
 
+      GLuint texture_id = 0;
+      gl->GenTextures(1, &texture_id);
       gl->BindTexture(GL_TEXTURE_2D, texture_id);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
       gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDummyFrameDimensions.width(),
                      kDummyFrameDimensions.height(), 0, GL_RGB,
                      GL_UNSIGNED_BYTE, dummy_frame_data.get());
       gl->BindTexture(GL_TEXTURE_2D, 0);
-      target->push_back(std::move(mailbox_holder));
+
+      gpu::Mailbox mailbox;
+      gl->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
+      gpu::SyncToken sync_token;
+      gl->GenSyncTokenCHROMIUM(sync_token.GetData());
+
+      target->push_back(gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D));
     }
     gl->ShallowFlushCHROMIUM();
     CHECK_EQ(gl->GetError(), static_cast<GLenum>(GL_NO_ERROR));

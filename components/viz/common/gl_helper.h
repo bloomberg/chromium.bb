@@ -7,13 +7,12 @@
 
 #include <memory>
 
-#include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -27,8 +26,6 @@ namespace gpu {
 class ContextSupport;
 struct Mailbox;
 }  // namespace gpu
-
-class SkRegion;
 
 namespace viz {
 
@@ -131,12 +128,14 @@ class ScopedTextureBinder : ScopedBinder<Target> {
   }
 };
 
-class GLHelperReadbackSupport;
 class I420Converter;
 class ReadbackYUVInterface;
 
 // Provides higher level operations on top of the gpu::gles2::GLES2Interface
 // interfaces.
+//
+// TODO(crbug.com/870036): DEPRECATED. Please contact the crbug owner before
+// adding any new dependencies on this code.
 class VIZ_COMMON_EXPORT GLHelper {
  public:
   GLHelper(gpu::gles2::GLES2Interface* gl,
@@ -159,118 +158,35 @@ class VIZ_COMMON_EXPORT GLHelper {
     SCALER_QUALITY_BEST = 3,
   };
 
-  // Copies the block of pixels specified with |src_subrect| from |src_texture|,
-  // scales it to |dst_size|, and writes it into |out|.
-  // |src_size| is the size of |src_texture|. The result is in |out_color_type|
-  // format and is potentially flipped vertically to make it a correct image
-  // representation.  |callback| is invoked with the copy result when the copy
-  // operation has completed.
-  // Note that the src_texture will have the min/mag filter set to GL_LINEAR
-  // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-  void CropScaleReadbackAndCleanTexture(
-      GLuint src_texture,
-      const gfx::Size& src_size,
-      const gfx::Size& dst_size,
-      unsigned char* out,
-      const SkColorType out_color_type,
-      const base::Callback<void(bool)>& callback,
-      GLHelper::ScalerQuality quality);
-
-  // Copies the all pixels from the texture in |src_mailbox| of |src_size|,
-  // scales it to |dst_size|, and writes it into |out|. The result is in
-  // |out_color_type| format and is potentially flipped vertically to make it a
-  // correct image representation. |callback| is invoked with the copy result
-  // when the copy operation has completed.
-  // Note that the texture bound to src_mailbox will have the min/mag filter set
-  // to GL_LINEAR and wrap_s/t set to CLAMP_TO_EDGE in this call. src_mailbox is
-  // assumed to be GL_TEXTURE_2D.
-  void CropScaleReadbackAndCleanMailbox(
-      const gpu::Mailbox& src_mailbox,
-      const gpu::SyncToken& sync_token,
-      const gfx::Size& src_size,
-      const gfx::Size& dst_size,
-      unsigned char* out,
-      const SkColorType out_color_type,
-      const base::Callback<void(bool)>& callback,
-      GLHelper::ScalerQuality quality);
-
-  // Copies the texture data out of |texture| into |out|.  |size| is the
+  // Copies the texture data out of |texture| into |out|.  |dst_size| is the
   // size of the texture.  No post processing is applied to the pixels.  The
-  // texture is assumed to have a format of GL_RGBA with a pixel type of
-  // GL_UNSIGNED_BYTE.  This is a blocking call that calls glReadPixels on the
-  // current OpenGL context.
-  void ReadbackTextureSync(GLuint texture,
-                           const gfx::Rect& src_rect,
-                           unsigned char* out,
-                           SkColorType format);
-
+  // texture is assumed to have a format of GL_RGBA or GL_BGRA_EXT with a pixel
+  // type of GL_UNSIGNED_BYTE.
+  //
+  // TODO(crbug.com/870036): DEPRECATED. This will be moved to be closer to its
+  // one caller soon.
   void ReadbackTextureAsync(GLuint texture,
                             const gfx::Size& dst_size,
                             unsigned char* out,
                             SkColorType color_type,
-                            const base::Callback<void(bool)>& callback);
-
-  // Creates a scaled copy of the specified texture. |src_size| is the size of
-  // the texture and |dst_size| is the size of the resulting copy.
-  // Note that the |texture| will have the min/mag filter set to GL_LINEAR
-  // and wrap_s/t set to CLAMP_TO_EDGE in this call. Returns 0 on invalid
-  // arguments.
-  GLuint CopyAndScaleTexture(GLuint texture,
-                             const gfx::Size& src_size,
-                             const gfx::Size& dst_size,
-                             bool vertically_flip_texture,
-                             ScalerQuality quality);
-
-  // Returns the shader compiled from the source.
-  GLuint CompileShaderFromSource(const GLchar* source, GLenum type);
-
-  // Copies all pixels from |previous_texture| into |texture| that are
-  // inside the region covered by |old_damage| but not part of |new_damage|.
-  void CopySubBufferDamage(GLenum target,
-                           GLuint texture,
-                           GLuint previous_texture,
-                           const SkRegion& new_damage,
-                           const SkRegion& old_damage);
-
-  // Simply creates a texture.
-  GLuint CreateTexture();
-  // Deletes a texture.
-  void DeleteTexture(GLuint texture_id);
-
-  // Inserts a fence sync, flushes, and generates a sync token.
-  void GenerateSyncToken(gpu::SyncToken* sync_token);
-
-  // Wait for the sync token before executing further GL commands.
-  void WaitSyncToken(const gpu::SyncToken& sync_token);
+                            base::OnceCallback<void(bool)> callback);
 
   // Creates a mailbox holder that is attached to the given texture id, with a
   // sync point to wait on before using the mailbox. Returns a holder with an
   // empty mailbox on failure.
   // Note the texture is assumed to be GL_TEXTURE_2D.
+  //
+  // TODO(crbug.com/870036): DEPRECATED. This will be moved to be closer to its
+  // one caller soon.
   gpu::MailboxHolder ProduceMailboxHolderFromTexture(GLuint texture_id);
 
   // Creates a texture and consumes a mailbox into it. Returns 0 on failure.
   // Note the mailbox is assumed to be GL_TEXTURE_2D.
+  //
+  // TODO(crbug.com/870036): DEPRECATED. This will be moved to be closer to its
+  // one caller soon.
   GLuint ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
                                  const gpu::SyncToken& sync_token);
-
-  // Resizes the texture's size to |size|.
-  void ResizeTexture(GLuint texture, const gfx::Size& size);
-
-  // Copies the framebuffer data given in |rect| to |texture|.
-  void CopyTextureSubImage(GLuint texture, const gfx::Rect& rect);
-
-  // Copies the all framebuffer data to |texture|. |size| specifies the
-  // size of the framebuffer.
-  void CopyTextureFullImage(GLuint texture, const gfx::Size& size);
-
-  // Flushes GL commands.
-  void Flush();
-
-  // Force commands in the current command buffer to be executed before commands
-  // in other command buffers from the same process (ie channel to the GPU
-  // process).
-  void InsertOrderingBarrier();
 
   // Caches all intermediate textures and programs needed to scale any subset of
   // a source texture at a fixed scaling ratio.
@@ -427,7 +343,7 @@ class VIZ_COMMON_EXPORT GLHelper {
   // WARNING: The returned ReadbackYUVInterface instance assumes both this
   // GLHelper and its GLES2Interface/ContextSupport will outlive it!
   //
-  // TODO(crbug/754872): DEPRECATED. This will be removed soon, in favor of
+  // TODO(crbug.com/870036): DEPRECATED. This will be removed soon, in favor of
   // CreateI420Converter().
   std::unique_ptr<ReadbackYUVInterface> CreateReadbackPipelineYUV(
       bool vertically_flip_texture,
@@ -435,19 +351,14 @@ class VIZ_COMMON_EXPORT GLHelper {
 
   // Returns a ReadbackYUVInterface instance that is lazily created and owned by
   // this class. |use_mrt| is always true for these instances.
+  //
+  // TODO(crbug.com/870036): DEPRECATED. This will be moved to be closer to its
+  // one caller soon.
   ReadbackYUVInterface* GetReadbackPipelineYUV(bool vertically_flip_texture);
 
   // Returns the maximum number of draw buffers available,
   // 0 if GL_EXT_draw_buffers is not available.
   GLint MaxDrawBuffers();
-
-  // Checks whether the readbback is supported for texture with the
-  // matching config. This doesnt check for cross format readbacks.
-  bool IsReadbackConfigSupported(SkColorType texture_format);
-
-  // Returns a GLHelperReadbackSupport instance, for querying platform readback
-  // capabilities and to determine the more-performant configurations.
-  GLHelperReadbackSupport* GetReadbackSupport();
 
  protected:
   class CopyTextureToImpl;
@@ -456,8 +367,6 @@ class VIZ_COMMON_EXPORT GLHelper {
   void InitCopyTextToImpl();
   // Creates |scaler_impl_| if NULL.
   void InitScalerImpl();
-  // Creates |readback_support_| if NULL.
-  void LazyInitReadbackSupportImpl();
 
   enum ReadbackSwizzle { kSwizzleNone = 0, kSwizzleBGRA };
 
@@ -465,9 +374,12 @@ class VIZ_COMMON_EXPORT GLHelper {
   gpu::ContextSupport* context_support_;
   std::unique_ptr<CopyTextureToImpl> copy_texture_to_impl_;
   std::unique_ptr<GLHelperScaling> scaler_impl_;
-  std::unique_ptr<GLHelperReadbackSupport> readback_support_;
   std::unique_ptr<ReadbackYUVInterface> shared_readback_yuv_flip_;
   std::unique_ptr<ReadbackYUVInterface> shared_readback_yuv_noflip_;
+
+  // Memoized result for MaxDrawBuffers(), if >= 0. Otherwise, MaxDrawBuffers()
+  // will need to query the GL implementation.
+  GLint max_draw_buffers_ = -1;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLHelper);
@@ -531,7 +443,7 @@ class VIZ_COMMON_EXPORT I420Converter {
 // and read back a texture from the GPU into CPU-accessible RAM. A single
 // readback pipeline can handle multiple outstanding readbacks at the same time.
 //
-// TODO(crbug/754872): DEPRECATED. This will be removed soon, in favor of
+// TODO(crbug.com/870036): DEPRECATED. This will be removed soon, in favor of
 // I420Converter and readback implementation in GLRendererCopier.
 class VIZ_COMMON_EXPORT ReadbackYUVInterface {
  public:
@@ -573,7 +485,7 @@ class VIZ_COMMON_EXPORT ReadbackYUVInterface {
                            int v_plane_row_stride_bytes,
                            unsigned char* v_plane_data,
                            const gfx::Point& paste_location,
-                           const base::Callback<void(bool)>& callback) = 0;
+                           base::OnceCallback<void(bool)> callback) = 0;
 };
 
 }  // namespace viz

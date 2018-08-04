@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
@@ -63,7 +62,6 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   // GLOutputSurface:
   void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;
 
-  GLHelper gl_helper_;
   std::unique_ptr<BufferQueue> buffer_queue_;
 
   gfx::Size reshape_size_;
