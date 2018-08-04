@@ -4212,6 +4212,12 @@ be describing additional metrics about the same event.
       dim will be deferred.
     </summary>
   </metric>
+  <metric name="ModelResponse">
+    <summary>
+      Whether the model recommends the screen dim should be deferred (NO_DIM) or
+      allowed (DIM), or encountered an error (MODEL_ERROR).
+    </summary>
+  </metric>
   <metric name="MouseEventsInLastHour">
     <summary>
       The number of mouse events reported as user activity in the last hour.

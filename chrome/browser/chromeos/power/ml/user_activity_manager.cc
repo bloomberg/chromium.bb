@@ -193,30 +193,27 @@ void UserActivityManager::OnIdleEventObserved(
   ExtractFeatures(activity_data);
   if (base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
       smart_dim_model_) {
-    float inactivity_probability = -1;
-    float threshold = -1;
-    const bool should_dim = smart_dim_model_->ShouldDim(
-        features_, &inactivity_probability, &threshold);
-    DCHECK(inactivity_probability >= 0 && inactivity_probability <= 1.0)
-        << inactivity_probability;
-    DCHECK(threshold >= 0 && threshold <= 1.0) << threshold;
-
-    UserActivityEvent::ModelPrediction model_prediction;
-    // If previous dim was deferred, then model decision will not be applied
-    // to this event.
-    model_prediction.set_model_applied(!dim_deferred_);
-    model_prediction.set_decision_threshold(round(threshold * 100));
-    model_prediction.set_inactivity_score(round(inactivity_probability * 100));
-    model_prediction_ = model_prediction;
+    // Decide whether to defer the imminent screen dim.
+    UserActivityEvent::ModelPrediction model_prediction =
+        smart_dim_model_->ShouldDim(features_);
 
     // Only defer the dim if the model predicts so and also if the dim was not
     // previously deferred.
-    if (should_dim || dim_deferred_) {
-      dim_deferred_ = false;
-    } else {
+    if (model_prediction.response() ==
+            UserActivityEvent::ModelPrediction::NO_DIM &&
+        !dim_deferred_) {
       power_manager_client_->DeferScreenDim();
       dim_deferred_ = true;
+      model_prediction.set_model_applied(true);
+    } else {
+      // Either model predicts dim or model fails, or it was previously dimmed.
+      dim_deferred_ = false;
+      model_prediction.set_model_applied(
+          model_prediction.response() ==
+              UserActivityEvent::ModelPrediction::DIM &&
+          !dim_deferred_);
     }
+    model_prediction_ = model_prediction;
   }
   waiting_for_final_action_ = true;
 }

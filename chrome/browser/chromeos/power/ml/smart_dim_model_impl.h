@@ -20,9 +20,8 @@ class SmartDimModelImpl : public SmartDimModel {
   ~SmartDimModelImpl() override;
 
   // chromeos::power::ml::SmartDimModel overrides:
-  bool ShouldDim(const UserActivityEvent::Features& features,
-                 float* inactive_probability_out,
-                 float* threshold_out) override;
+  UserActivityEvent::ModelPrediction ShouldDim(
+      const UserActivityEvent::Features& features) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmartDimModelImpl);
