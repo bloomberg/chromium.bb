@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Time će se zaustaviti trenutačno preuzimanje i izbrisati sve što je dosad preuzeto.</translation>
 <translation id="1605658421715042784">Kopiraj sliku</translation>
 <translation id="1612730193129642006">Prikaz rešetke kartice</translation>
+<translation id="162035744160882748">Uključite sinkronizaciju, prilagodbu i druge Googleove usluge</translation>
 <translation id="1644574205037202324">Povijest</translation>
 <translation id="1646446875146297738">Ako omogućite "Nemoj pratiti", taj će se zahtjev slati uz vaš promet pregledavanja. Učinak ovisi o tome hoće li web-lokacija reagirati na taj zahtjev i kako će se on tumačiti.
 
@@ -194,6 +195,7 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="4124987746317609294">Vremenski raspon</translation>
 <translation id="4172051516777682613">Uvijek prikaži</translation>
 <translation id="418156467088430727">Prikaži offline verziju na novoj kartici</translation>
+<translation id="4192273449750167573">Pregledajte svoje postavke na sljedećem zaslonu</translation>
 <translation id="4237682350741091554">Sinkronizacijom Chromea i prilagodbom možete upravljati na stranici <ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Unesite šifru</translation>
 <translation id="4272631900155121838">Da biste skenirali QR kod, omogućite fotoaparat u postavkama</translation>
@@ -285,6 +287,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="5938160824633642847">Uređaj je gotovo pun. Oslobodite prostor i pokušajte ponovo.</translation>
 <translation id="5948291296578561264">To vam omogućuje da spremite fotografije u zbirku fotografija.</translation>
 <translation id="5955891643922670672">Prikaz offline verzije</translation>
+<translation id="5957613098218939406">Više opcija</translation>
 <translation id="5964480694698977962">Otvori novu anonimnu karticu.</translation>
 <translation id="5965679971710331625">Prijavili ste se</translation>
 <translation id="5982717868370722439">Dodavanje postojećih podataka na račun <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="6797885426782475225">Glasovno pretraživanje</translation>
 <translation id="6807889908376551050">Prikaži sve...</translation>
 <translation id="681368974849482173">Stavka je stvorena</translation>
+<translation id="685040365210406336">Ne mijenjaj</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6903907808598579934">Uključi sinkronizaciju</translation>
 <translation id="6914783257214138813">Vaše zaporke bit će vidljive svima koji vide izvezenu datoteku.</translation>
@@ -373,6 +377,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7336264872878993241"><ph name="PERCENT" /> posto preuzeto</translation>
 <translation id="7346909386216857016">Dobro, shvaćam</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Da, u redu</translation>
 <translation id="7425346204213733349">Promjene oznaka, povijesti, zaporki i drugih postavki više se neće sinkronizirati s vašim Google računom. No vaši postojeći podaci ostat će pohranjeni na vašem Google računu.</translation>
 <translation id="744343212394640790">Nisam <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Županija</translation>

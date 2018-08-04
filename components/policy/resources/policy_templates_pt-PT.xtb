@@ -519,6 +519,11 @@
       Se esta definição não for definida, o utilizador poderá decidir utilizar esta função ou não.
 
       Esta definição foi removida do <ph name="PRODUCT_NAME" /> 29 e versões superiores.</translation>
+<translation id="2433412232489478893">Esta política controla se a funcionalidade Partilhas de ficheiros na rede para o <ph name="PRODUCT_NAME" /> é permitida para um utilizador.
+
+      Se esta política não estiver configurada ou estiver definida como verdadeira, os utilizadores podem utilizar as Partilhas de ficheiros na rede.
+
+      Se esta política estiver definida como falsa, os utilizadores não podem utilizar as Partilhas de ficheiros na rede.</translation>
 <translation id="2438609638493026652">Ativa a comunicação dos eventos principais durante a instalação de aplicações para Android no Google. Os eventos são capturados apenas para as aplicações cuja instalação foi acionada através da política.
 
       Se a política estiver definida como verdadeira, os eventos são registados.
@@ -596,6 +601,7 @@
 <translation id="2598508021807251719">Configura os locais em que o <ph name="PRODUCT_OS_NAME" /> pode ser apresentado.
 
       Se esta política estiver definida, o utilizador pode configurar a apresentação do <ph name="PRODUCT_OS_NAME" /> apenas num dos locais especificados por esta política. Se esta política não for definida ou for definida com uma lista vazia, o <ph name="PRODUCT_OS_NAME" /> pode ser apresentado em todos os locais da IU compatíveis. Se esta política estiver definida com uma lista com valores inválidos, os mesmos serão ignorados. Se um utilizador configurou o <ph name="PRODUCT_OS_NAME" /> anteriormente de forma a ser apresentado num local não permitido por esta política, o local da apresentação será alterado para um local da IU permitido da próxima vez que o utilizador iniciar sessão. Se o utilizador tiver configurado locais preferidos e um destes for permitido por esta política, o <ph name="PRODUCT_OS_NAME" /> mudará para esse local. Caso contrário, o <ph name="PRODUCT_OS_NAME" /> mudará para o primeiro valor válido especificado por esta política ou para um local alternativo (atualmente, en-US), se esta política incluir apenas entradas inválidas.</translation>
+<translation id="2604182581880595781">Configure as políticas relacionadas com a Partilha de ficheiros na rede.</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do utilizador</translation>
 <translation id="262740370354162807">Permitir o envio de documentos para o <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Fornece configurações para impressoras empresariais.
@@ -674,6 +680,7 @@
 <translation id="2823870601012066791">Localização da base de dados de registo do Windows para os clientes <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
 <translation id="2838830882081735096">Não permitir a migração de dados nem ARC</translation>
+<translation id="2839294585867804686">Definições das Partilhas de ficheiros na rede</translation>
 <translation id="2840269525054388612">Especifica as impressoras disponíveis para um utilizador.
 
       Esta política é apenas utilizada se <ph name="PRINTERS_WHITELIST" /> for selecionado para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1155,6 +1162,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não estiver definida, a recolha de dados anónimos com chave de URL é ativada, mas o utilizador pode alterá-la.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4261820385751181068">Local do ecrã de início de sessão do dispositivo</translation>
+<translation id="4264607809747169568">Controla a disponibilidade das Partilhas de ficheiros na rede para o Chrome OS</translation>
 <translation id="427220754384423013">Especifica as impressoras disponíveis para um utilizador.
 
       Esta política é apenas utilizada se <ph name="PRINTERS_WHITELIST" /> for selecionado para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1556,6 +1564,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       O valor da política deverá ser especificado em milissegundos.</translation>
 <translation id="5511702823008968136">Ativar Barra de Marcadores</translation>
 <translation id="5512418063782665071">URL da página inicial</translation>
+<translation id="551639594034811656">Esta política define uma lista de percentagens que definem a fração de dispositivos <ph name="PRODUCT_OS_NAME" /> na UO a atualizar por dia, com início a partir do dia em que a atualização é detetada pela primeira vez. A hora da deteção é posterior à hora da publicação da atualização, uma vez que pode demorar algum tempo após a publicação da atualização até que o dispositivo verifique a existência de atualizações.
+
+      Cada par (dia, percentagem) contém a percentagem da frota que tem de ser atualizada até ao dia de números indicado após a deteção da atualização. Por exemplo, se tivermos os pares [(4, 40), (10, 70), (15, 100)], significa que 40% da frota deveria ter sido atualizada 4 dias após a deteção da atualização, 70% deveria ter sido atualizada 10 dias depois e assim sucessivamente.
+
+      Se existir algum valor definido para esta política, as atualizações ignoram a política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> e seguem esta política.
+
+      Se esta lista estiver vazia, as atualizações não são experimentais e são aplicadas de acordo com as outras políticas do dispositivo.
+
+      Esta política não se aplica às mudanças de canais.</translation>
 <translation id="5523812257194833591">O início automático de uma sessão pública após um atraso.
 
       Se esta política estiver definida, a sessão especificada será iniciada automaticamente após ter decorrido um período de tempo no ecrã de início de sessão sem a interação do utilizador. A sessão pública já tem de estar configurada (ver |DeviceLocalAccounts|).
@@ -2450,6 +2467,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política estiver desativada, não ocorre um isolamento de sites explícito e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores continuam a poder ativar SitePerProcess manualmente.
       Se a política não estiver configurada, o utilizador pode alterar esta definição.
       </translation>
+<translation id="7902255855035461275">Os padrões nesta lista vão ser comparados com a origem
+      de segurança do URL que faz o pedido. Caso seja encontrada uma correspondência,
+      o acesso a dispositivos de captura de vídeo é concedido imediatamente.
+
+      NOTA: até à versão 45, esta política apenas era suportada no modo quiosque.</translation>
 <translation id="7912255076272890813">Configurar tipos de aplicações/extensões permitidos</translation>
 <translation id="7915236031252389808">Pode especificar um URL para um ficheiro .pac de proxy aqui.
 

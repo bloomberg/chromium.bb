@@ -23,6 +23,7 @@
 <translation id="3605252743693911722">Faça login no Chromium para ver seus favoritos, senhas e muito mais em todos os seus dispositivos.</translation>
 <translation id="3805899903892079518">O Chromium não têm acesso às suas fotos ou seus vídeos. Permita o acesso em "Configurações do iOS" &gt; "Privacidade" &gt; "Fotos".</translation>
 <translation id="4024541897090868497">Para ter suas guias em todos os seus dispositivos, faça login no Chromium.</translation>
+<translation id="4157467675761413638">Dica do Chromium. Para ver mais opções de guias, toque no botão "Exibir guias" na barra de ferramentas, na parte superior ou inferior da tela, e mantenha-o pressionado.</translation>
 <translation id="4241912885070669028">Você está saindo de uma conta gerenciada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Os dados do Chromium serão excluídos deste dispositivo, mas permanecerão na sua Conta do Google.</translation>
 <translation id="4272892696084633551">Ajude a melhorar os recursos e o desempenho do Chromium</translation>
 <translation id="4555020257205549924">Quando este recurso está ativado, o Chromium oferece a tradução de páginas escritas em outros idiomas usando o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -45,6 +46,7 @@
 <translation id="7357211569052832586">Os dados selecionados foram removidos do Chromium e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em history.google.com.</translation>
 <translation id="7400689562045506105">Use o Chromium em qualquer lugar</translation>
 <translation id="7674213385180944843">Abra Ajustes &gt; Privacidade &gt; Câmera &gt; Chromium e ative a câmera.</translation>
+<translation id="7746854981345936341">Dica do Chromium. Alguns botões agora estão na parte inferior da tela, como "Voltar", "Avançar" e "Pesquisar".</translation>
 <translation id="786327964234957808">Você está trocando a conta de sincronização de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os dados do Chromium são gerenciados por <ph name="DOMAIN" />. Eles serão excluídos deste dispositivo, mas permanecerão no <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Dica: <ph name="BEGIN_LINK" />mova o Chromium para a dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Melhore sua experiência do Google no Chromium de acordo com seu local.</translation>

@@ -155,6 +155,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2462626033734746142">Gruppo pulsanti di opzione</translation>
 <translation id="2471138580042810658">Intestazione 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisco}other{# asterischi}}</translation>
+<translation id="249330843868392562">Apri impostazioni di sintesi vocale</translation>
 <translation id="2523609930580546572">Tutorial di ChromeVox</translation>
 <translation id="2525706221823668172">Scorciatoie da tastiera di Chromebook</translation>
 <translation id="2549392850788122959">Il tasto <ph name="KEY" /> è stato reimpostato.</translation>
@@ -752,6 +753,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="7241683698754534149">Apri descrizione lunga in una nuova scheda</translation>
 <translation id="7248671827512403053">Applicazione</translation>
 <translation id="725969808843520477">Pulsante di opzione successivo</translation>
+<translation id="7261612856573623172">Voce del sistema per la sintesi vocale</translation>
 <translation id="7269119382257320590">Nessuna punteggiatura</translation>
 <translation id="7273174640290488576">Vuota</translation>
 <translation id="7274770952766771364">Riferimento note</translation>

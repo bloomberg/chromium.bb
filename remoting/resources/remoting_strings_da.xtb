@@ -136,6 +136,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="405887016757208221">Fjerncomputeren har ikke startet sessionen. Hvis problemet fortsætter, kan du prøve at konfigurere hosten igen.</translation>
 <translation id="4068946408131579958">Alle forbindelser</translation>
 <translation id="409800995205263688">BEMÆRK! Politikindstillingerne tillader kun forbindelser mellem computere inden for dit netværk.</translation>
+<translation id="4126409073460786861">Opdater denne side, når konfigurationen er fuldført. Du kan derefter få adgang til computeren ved at vælge din enhed og angive pinkoden.</translation>
 <translation id="4145029455188493639">Du er logget ind som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Nogle obligatoriske komponenter mangler. Kontrollér, at du har installeret den nyeste version af softwaren, og prøv igen.</translation>
 <translation id="4156740505453712750">Beskyt adgangen til denne computer ved at vælge en pinkode på <ph name="BOLD_START" />mindst seks cifre<ph name="BOLD_END" />. Denne pinkode skal indtastes, når du opretter forbindelse fra et andet sted.</translation>
@@ -270,6 +271,7 @@ Pc</translation>
 <translation id="6998989275928107238">Til</translation>
 <translation id="7019153418965365059">Fejl – hosten genkendes ikke: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Fjernsupport</translation>
+<translation id="7026930240735156896">Følg vejledningen for at konfigurere din computer til fjernadgang</translation>
 <translation id="7038683108611689168">Hjælp os med at forbedre Chromoting ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
 <translation id="7067321367069083429">Skærmen fungerer som touchskærm</translation>
 <translation id="7116737094673640201">Velkommen til Chrome Fjernskrivebord</translation>

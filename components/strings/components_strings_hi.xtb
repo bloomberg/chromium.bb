@@ -6,6 +6,7 @@
 <translation id="1015730422737071372">अतिरिक्त विवरण प्रदान करें</translation>
 <translation id="1021110881106174305">स्वीकार्य कार्ड</translation>
 <translation id="1032854598605920125">घड़ी की दिशा में घुमाएं</translation>
+<translation id="1035334672863811645">Chrome में प्रवेश करें</translation>
 <translation id="1038842779957582377">अज्ञात नाम</translation>
 <translation id="1050038467049342496">दूूूूसरे ऐप्लिकेशन बंद करें</translation>
 <translation id="1055184225775184556">&amp;जोड़ना वापस लाएं</translation>
@@ -488,6 +489,7 @@
 <translation id="4277028893293644418">पासवर्ड रीसेट करें</translation>
 <translation id="4280429058323657511">, समाप्ति दिनांक <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">बदलें</translation>
+<translation id="4308131620840579419">अपने सभी कार्ड एक ही जगह सेव करना चाहते हैं?</translation>
 <translation id="4312866146174492540">अवरुद्ध करें (डिफ़ॉल्ट)</translation>
 <translation id="4325863107915753736">लेख ढूंढ़ने में विफल</translation>
 <translation id="4326324639298822553">अपना समाप्ति दिनांक जाँचें और फिर से कोशिश करें</translation>
@@ -598,6 +600,7 @@
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="5201306358585911203">इस पेज पर एम्बेड किए गए पेज का कहना है कि</translation>
 <translation id="5205222826937269299">नाम आवश्यक है</translation>
+<translation id="5215116848420601511">Google Pay का इस्तेमाल करने वाले भुगतान के तरीके और पते</translation>
 <translation id="5222812217790122047">ईमेल आवश्यक है</translation>
 <translation id="5230733896359313003">शिपिंग पता</translation>
 <translation id="5250209940322997802">"नेटवर्क से कनेक्ट करें"</translation>
@@ -674,6 +677,7 @@
 <translation id="5689199277474810259">JSON में निर्यात करें</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="570530837424789914">प्रबंधित करें...</translation>
+<translation id="5705882733397021510">वापस जाएं</translation>
 <translation id="57094364128775171">मज़बूत पासवर्ड सुझाएं…</translation>
 <translation id="5710435578057952990">इस वेबसाइट की पहचान सत्यापित नहीं की गई है.</translation>
 <translation id="5719499550583120431">प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
@@ -691,6 +695,7 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" /> से आपके कनेक्शन को किसी अप्रचलित सिफ़र सुइट का उपयोग करके एन्‍क्रिप्‍ट किया गया है.</translation>
 <translation id="5813119285467412249">&amp;जोड़ना फिर से करें</translation>
 <translation id="5838278095973806738">आपको इस साइट पर कोई भी संवेदनशील जानकारी (उदाहरण के लिए, पासवर्ड या क्रेडिट कार्ड) नहीं डालनी चाहिए, क्योंकि उसे हमलावर चुरा सकते हैं.</translation>
+<translation id="5863847714970149516">आगे आने वाला पेज आपसे शुल्क लेने की कोशिश कर सकता है</translation>
 <translation id="5866257070973731571">फ़ोन नंबर जोड़ें</translation>
 <translation id="5869405914158311789">इस साइट तक नहीं पहुंचा जा सकता</translation>
 <translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
@@ -821,6 +826,7 @@
 <translation id="6973656660372572881">फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और .pac स्‍क्रिप्‍ट URL दोनों ही बताए गए हैं.</translation>
 <translation id="6989763994942163495">अतिरिक्त सेटिंग दिखाएं...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">ये शुल्क एक बार लगने वाले या बार-बार लगने वाले हो सकते हैं और हो सकता है कि इनके बारे में स्पष्ट जानकारी न दी जाए.</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7050187094878475250">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया था, लेकिन सर्वर ने ऐसा प्रमाणपत्र प्रस्‍तुत किया जिसकी मान्‍यता अवधि विश्‍वसनीय होने के लिए बहुत लंबी है.</translation>
 <translation id="7053983685419859001">अवरोधित करें</translation>
@@ -1086,6 +1092,7 @@
 <translation id="8957210676456822347">कैप्‍टिव पोर्टल प्राधिकरण</translation>
 <translation id="8971063699422889582">सर्वर के प्रमाणपत्र की समय-सीमा समाप्त हो चुकी है.</translation>
 <translation id="8978053250194585037">Google सुरक्षित ब्राउज़िंग को <ph name="SITE" /> पर हाल ही में <ph name="BEGIN_LINK" />फ़िशिंग का पता चला है<ph name="END_LINK" />. फ़िशिंग साइटें आपको भ्रमित करने के लिए अन्य वेबसाइटें होने का दिखावा करती हैं.</translation>
+<translation id="8983003182662520383">Google Pay का इस्तेमाल करने वाले भुगतान के तरीके और पते</translation>
 <translation id="8987927404178983737">माह</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">साइट में आगे हानिकारक प्रोग्राम हैं</translation>

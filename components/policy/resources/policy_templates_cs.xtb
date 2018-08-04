@@ -1141,7 +1141,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
 Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="4239720644496144453">Pro aplikace Android se mezipaměť nepoužívá. Pokud několik uživatelů nainstaluje stejnou aplikaci Android, stáhne se aplikace pro každého uživatele znovu.</translation>
-<translation id="4243336580717651045">Zapne v prohlížeči <ph name="PRODUCT_NAME" /> shromažďování anonymizovaných dat přidružených k adresám URL a znemožňuje uživatelům toto nastavení změnit.
+<translation id="4243336580717651045">Zapne v prohlížeči <ph name="PRODUCT_NAME" /> shromažďování anonymizovaných dat přidružených k adresám URL a znemožní uživatelům toto nastavení změnit.
 
       Při shromažďování anonymizovaných dat přidružených k adresám URL se adresy URL navštívených stránek odesílají do Googlu kvůli usnadnění vyhledávání a prohlížení.
 

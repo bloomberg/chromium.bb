@@ -136,6 +136,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="405887016757208221">L'ordinador remot no ha pogut inicialitzar la sessió. Si el problema continua, torneu a configurar l'amfitrió.</translation>
 <translation id="4068946408131579958">Totes les connexions</translation>
 <translation id="409800995205263688">NOTA: La configuració de la política només permet connexions entre ordinadors de la vostra xarxa.</translation>
+<translation id="4126409073460786861">Un cop finalitzada la configuració, actualitza aquesta pàgina i podràs accedir a l'ordinador triant el dispositiu i introduint-hi el PIN</translation>
 <translation id="4145029455188493639">Has iniciat la sessió com a <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Falten alguns components necessaris. Assegureu-vos que hàgiu instal·lat la versió més recent del programari i torneu-ho a provar.</translation>
 <translation id="4156740505453712750">Per protegir l'accés a aquest ordinador, trieu un PIN de <ph name="BOLD_START" />sis dígits com a mínim<ph name="BOLD_END" />. Necessitareu aquest PIN per connectar-vos a aquest ordinador des d'una altra ubicació.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Per a</translation>
 <translation id="7019153418965365059">Error d'amfitrió no reconegut: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistència remota</translation>
+<translation id="7026930240735156896">Segueix les instruccions per configurar l'accés remot a l'ordinador</translation>
 <translation id="7038683108611689168">Ajudeu-nos a millorar Chromoting: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="7067321367069083429">La pantalla fa de pantalla tàctil</translation>
 <translation id="7116737094673640201">Et donem la benvinguda a Escriptori remot de Chrome</translation>

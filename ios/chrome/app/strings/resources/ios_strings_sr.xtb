@@ -23,7 +23,7 @@
 <translation id="127138278192656016">Користите синхронизацију и све услуге</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1323735185997015385">Избриши</translation>
-<translation id="132390688737681464">Save and Fill Addresses (Чувај и уноси адресе)</translation>
+<translation id="132390688737681464">Чувај и уноси адресе</translation>
 <translation id="132683371494960526">Додирните двапут да бисте променили надређени директоријум.</translation>
 <translation id="1340643665687018190">Затвори мени</translation>
 <translation id="1375321115329958930">Сачуване лозинке</translation>
@@ -39,11 +39,12 @@
 <translation id="152234381334907219">Никада се не чува</translation>
 <translation id="1540800554400757039">1. ред за адресу</translation>
 <translation id="1545749641540134597">Скенирајте QR кôд</translation>
-<translation id="1558704936695638228">Press and hold for more tab options (Притисните и задржите ако желите више опција за картице)</translation>
+<translation id="1558704936695638228">Притисните и задржите ако желите више опција за картице</translation>
 <translation id="1580783302095112590">Имејл је послата.</translation>
 <translation id="1582732959743469162">На тај начин ћете потпуно зауставити тренутно преузимање.</translation>
 <translation id="1605658421715042784">Копирај слику</translation>
 <translation id="1612730193129642006">Show Tab Grid (Прикажи координатну мрежу картице)</translation>
+<translation id="162035744160882748">Укључите синхронизацију, персонализацију и друге Google услуге</translation>
 <translation id="1644574205037202324">Историја</translation>
 <translation id="1646446875146297738">Омогућавање опције „Не прати“ значи да ће захтев бити укључен уз саобраћај прегледања. Све последице зависе од тога да ли веб-сајт одговара на захтев и како се захтев тумачи.
 
@@ -194,6 +195,7 @@
 <translation id="4124987746317609294">Временски опсег</translation>
 <translation id="4172051516777682613">Увек прикажи</translation>
 <translation id="418156467088430727">Прикажи офлајн верзију на новој картици</translation>
+<translation id="4192273449750167573">Прегледајте подешавања на следећем екрану</translation>
 <translation id="4237682350741091554">Управљајте синхронизацијом и персонализацијом за Chrome у <ph name="BEGIN_LINK" />подешавањима<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Унесите приступну фразу</translation>
 <translation id="4272631900155121838">Да бисте скенирали QR кôд, омогућите камеру у подешавањима</translation>
@@ -240,7 +242,7 @@
 <translation id="5062321486222145940">Инсталирај Google диск</translation>
 <translation id="5083464117946352670">Није могуће утврдити величину датотеке.</translation>
 <translation id="5094827893301452931">Твит је довршен.</translation>
-<translation id="5123982333065001601">Save and Fill Credit Cards (Чувај и уноси кредитне картице)</translation>
+<translation id="5123982333065001601">Чувај и уноси кредитне картице</translation>
 <translation id="5173593619615111996">Затвори све картице без архивирања</translation>
 <translation id="5181140330217080051">Преузимање</translation>
 <translation id="5186185447130319458">Приватно</translation>
@@ -285,6 +287,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5938160824633642847">Уређај је скоро пун. Ослободите простор и пробајте поново.</translation>
 <translation id="5948291296578561264">Ово вам омогућава да чувате слике у фототеци.</translation>
 <translation id="5955891643922670672">Прегледате офлајн верзију</translation>
+<translation id="5957613098218939406">Још опција</translation>
 <translation id="5964480694698977962">Направи нову картицу без архивирања.</translation>
 <translation id="5965679971710331625">Пријављени сте</translation>
 <translation id="5982717868370722439">Додајте постојеће податке на <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6797885426782475225">Гласовна претрага</translation>
 <translation id="6807889908376551050">Прикажи све...</translation>
 <translation id="681368974849482173">Ставка је направљена</translation>
+<translation id="685040365210406336">Не уноси никакве промене</translation>
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="6903907808598579934">Укључи синхронизацију</translation>
 <translation id="6914783257214138813">Лозинке ће бити видљиве свима који могу да виде извезену датотеку.</translation>
@@ -373,6 +377,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7336264872878993241">Проценат преузимања: <ph name="PERCENT" /></translation>
 <translation id="7346909386216857016">Важи</translation>
 <translation id="7400418766976504921">URL адреса</translation>
+<translation id="741204030948306876">Да, омогући</translation>
 <translation id="7425346204213733349">Промене обележивача, историје, лозинки и других подешавања се више неће синхронизовати са Google налогом. Међутим, постојећи подаци ће остати сачувани на Google налогу.</translation>
 <translation id="744343212394640790">Нисам <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Држава/земља</translation>

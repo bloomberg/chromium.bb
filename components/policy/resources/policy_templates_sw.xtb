@@ -288,6 +288,11 @@ Sera hii hukuruhusu kusanidi jinsi <ph name="PRODUCT_OS_NAME" /> hufanya kazi ku
 Kama mpangilio usipobainishwa, thamani chaguomsingi inatumika.
 
 Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
+<translation id="1958138414749279167">Huwasha kipengele cha Kujaza Kiotomatiki cha <ph name="PRODUCT_NAME" /> na kuruhusu watumiaji wajaze kiotomatiki maelezo ya anwani katika fomu za wavuti wakitumia maelezo waliyohifadhi awali.
+
+      Iwapo mipangilio hii imezimwa, kipengele cha Kujaza Kiotomatiki hakitawahi kupendekeza wala kujaza maelezo ya anwani. Pia hakitahifadhi maelezo ya ziada ya anwani ambayo huenda mtumiaji atawasilisha anapovinjari wavuti.
+
+      Iwapo mipangilio hii imewashwa au haina thamani yoyote, mtumiaji ataweza kudhibiti kipengele cha Kujaza Kiotomatiki kwa anwani kwenye kiolesura.</translation>
 <translation id="1960840544413786116">Ikiwa utaruhusu vyeti vilivyotolewa na nanga za ndani zinazoaminika visivyo na kiendelezi cha subjectAlternativeName</translation>
 <translation id="1964634611280150550">Hali fiche imezimwa</translation>
 <translation id="1964802606569741174">Sera hii haiathiri progamu ya Android YouTube. Ikiwa Hali ya Usalama kwenye YouTube inapaswa kutekelezwa, kusakinishwa kwa programu ya Android YouTube haipaswi kuruhusiwa.</translation>
@@ -496,6 +501,11 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
      Ukiwasha au kuzima mipangilio hii, watumiaji hawawezi kubadilisha au kubatilisha mipangilio hii.
      Ikiwa mipangilio hii itaachwa bila kuwekwa mtumiaji anaweza kuamua kutumia au kutotumia chaguo hizi za kukokotoa. 
      Mipangilio hii imeondolewa kwenye <ph name="PRODUCT_NAME" /> 29 na matoleo mapya zaidi.</translation>
+<translation id="2433412232489478893">Sera hii inadhibiti iwapo kipengele cha Faili za Kushiriki katika Mtandao kwenye <ph name="PRODUCT_NAME" /> kinaruhusiwa kwa mtumiaji.
+
+      Iwapo hujaweka mipangilio ya sera hii au umeiweka kuwa Ndiyo, watumiaji wataweza kutumia Faili za Kushiriki katika Mtandao.
+
+      Iwapo umeweka sera hii kuwa Sivyo, watumiaji hawataweza kutumia Faili za Kushiriki katika Mtandao.</translation>
 <translation id="2438609638493026652">Huruhusu kuripotiwa kwa matukio muhimu wakati wa kusakinisha programu ya Android kwenye Google. Matukio hurekodiwa tu kwa programu ambazo usakinishaji wake unatokana na sera.
       
 Ikiwa sera imewekwa kuwa ndivyo, matukio yatarekodiwa.
@@ -577,6 +587,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 <translation id="2598508021807251719">Huweka mipangilio ya lugha ambazo huenda zikatumika kuonyesha <ph name="PRODUCT_OS_NAME" />.
 
       Ikiwa sera hii imewekwa, mtumiaji anaweza tu kuweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> ili ionyeshwe katika mojawapo ya lugha zilizobainishwa kwenye sera hii. Ikiwa sera hii haijawekwa au imewekewa kuwa orodha isiyo na chochote, <ph name="PRODUCT_OS_NAME" /> inaweza kuonyeshwa katika lugha zote zinazotumika. Ikiwa sera hii imewekewa kuwa orodha yenye thamani zisizo sahihi, thamani zote zisizo sahihi zitapuuzwa. Ikiwa mtumiaji aliweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> awali ili ionyeshwe katika lugha isiyokubalika na sera hii, lugha inayotumika kuonyesha itabadilishwa iwe lugha ya kiolesura inayokubalika mtumiaji atakapoingia tena katika akaunti. Ikiwa mtumiaji alikuwa ameweka lugha zinazopendelewa na mojawapo ya lugha zinazopendelewa imeruhusiwa na sera hii, <ph name="PRODUCT_OS_NAME" /> itatumia lugha hii. Vinginevyo, <ph name="PRODUCT_OS_NAME" /> itabadilisha itumie thamani ya kwanza inayoweza kutumika na iliyobainishwa kwenye sera hii au kwenye lugha mbadala (kwa sasa ni en-US), ikiwa sera hii ina maelezo ambayo si sahihi pekee.</translation>
+<translation id="2604182581880595781">Weka mipangilio ya sera zinazohusiana na Faili ya Kushiriki katika Mtandao.</translation>
 <translation id="2623014935069176671">Subiri shughuli ya kwanza ya mtumiaji</translation>
 <translation id="262740370354162807">Wezesha uwasilishaji wa nyaraka kwenye <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Hutoa mipangilio ya printa za biashara.
@@ -662,6 +673,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 <translation id="2823870601012066791">Eneo la sajili ya Windows la viteja vya <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Washa hali Fiche</translation>
 <translation id="2838830882081735096">Usiruhusu uhamishaji data na ARC</translation>
+<translation id="2839294585867804686">Mipangilio ya Faili za Kushiriki katika Mtandao</translation>
 <translation id="2840269525054388612">Hubainisha printa ambazo mtumiaji anaweza kutumia.
 
       Sera hii hutumika tu ikiwa mipangilio ya <ph name="PRINTERS_WHITELIST" /> imechaguliwa katika <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1160,6 +1172,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
       Sera hii isipowekwa, kipengele cha ukusanyaji wa faragha wa data ukitumia ufunguo wa URL kitabaki kikiwa kimewashwa lakini mtumiaji ataweza kukibadilisha.</translation>
 <translation id="4250680216510889253">La</translation>
 <translation id="4261820385751181068">Lugha ya skrini ya kuingia katika kifaa</translation>
+<translation id="4264607809747169568">Hudhibiti Faili za Kushiriki katika Mtandao kwa ajili ya upatikanaji wa ChromeOS</translation>
 <translation id="427220754384423013">Hubainisha printa ambazo mtumiaji anaweza kutumia.
 
       Sera hii hutumika tu ikiwa mipangilio ya <ph name="PRINTERS_WHITELIST" /> imechaguliwa katika <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1587,6 +1600,15 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Thamani ya sera inafaa kubainishwa katika milisekunde.</translation>
 <translation id="5511702823008968136">Wezesha Upau wa Alamisho</translation>
 <translation id="5512418063782665071">URL ya ukurasa wa kwanza</translation>
+<translation id="551639594034811656">Sera hii hufafanua orodha ya asilimia ambazo zitabaini sehemu ya vifaa vya <ph name="PRODUCT_OS_NAME" /> katika OU vitakavyosasishwa kila siku kuanzia siku ambapo sasisho limegunduliwa. Wakati wa kugundua ni wa baadaye ikilinganishwa na wakati ambao sasisho limechapishwa, kwa kuwa inaweza kuwa muda mfupi uliopita baada ya kuchapisha sasisho hadi wakati kifaa kitakapokagua masasisho.
+
+      Kila jozi (siku, asilimia) linajumuisha kiasi cha asilimia ya kikundi ambacho kimesasishwa kufikia idadi fulani ya siku kuanzia wakati sasisho limegunduliwa. Kwa mfano, iwapo tuna majozi ya [(4, 40), (10, 70), (15, 100)], inaamanisha kuwa 40% ya kundi inapaswa kuwa imesasishwa siku 4 baada ya kuona sasisho. 70% inapaswa kusasishwa baada ya siku 10 na kadhalika.
+
+      Iwapo kuna thamani inayobainishwa katika sera hii, masasisho hayatazingatia sera ya <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> na yatafuata sera hii badala yake.
+
+      Iwapo orodha hii haina maudhui, mchakato hautaanzishwa na masasisho yatatumika kulingana na sera za vifaa vingine.
+
+      Sera hii haitumiki katika swichi za vituo.</translation>
 <translation id="5523812257194833591">Kipindi cha uma cha kuingia otomatiki baada ya kuchelewa.
 
       Endapo sera imewekwa, kipindi kilichobainishwa kitawekewa kumbukumbu kiotomatiki baada ya kipindi cha muda kupita katika skrini ya kuingia bila muingiliano wa mtumiaji. Kipindi cha umma lazima kiwe kimesanidiwa tayari (tazama |DeviceLocalAccounts|).
@@ -1894,6 +1916,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 <translation id="6440051664870270040">Ruhusu tovuti zivinjari kwa wakati mmoja na zifungue madirisha ibukizi</translation>
 <translation id="6447948611083700881">Vipengele vya kuhifadhi nakala na kurejesha vimezimwa</translation>
 <translation id="645425387487868471">Washa kulazimisha kuingia katika akaunti ya <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Washa kipengele cha Kujaza Kiotomatiki kwa anwani</translation>
 <translation id="6473623140202114570">Weka mipangilio ya orodha ya vikoa ambavyo kipengele cha Kuvinjari Salama hakisababishi onyo.</translation>
 <translation id="6491139795995924304">Ruhusu Bluetooth kwenye kifaa</translation>
 <translation id="6520802717075138474">Leta injini za utafutaji kutoka kwenye kivinjari chaguomsingi wakati wa uendeshaji wa kwanza</translation>
@@ -2511,6 +2534,7 @@ KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye And
     Ikiwa sera imezimwa, hakuna Utengaji kwa kila Tovuti uliobainishwa wazi utakaotokea na majaribio ya sehemu za IsolateOrigins na SitePerProcess yatazimwa. Watumaji bado wataweza kuwasha SitePerProcess wenyewe.
      Ikiwa mipangilio ya sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
       </translation>
+<translation id="7902255855035461275">Michoro katika orodha hii italinganishwa dhidi ya asili ya usalama wa ombi la URL.  Ikilingana, idhini ya kufikia vifaa vya kurekodi video itatolewa bila ombi. KUMBUKA: Kabla ya toleo la 45, sera hii ilitumika katika hali ya Skrini nzima pekee.</translation>
 <translation id="7912255076272890813">Sanidi aina za programu/viendelezi zinazoruhusiwa</translation>
 <translation id="7915236031252389808">Unaweza kubainisha URL ya seva mbadala ya faili ya .pac hapa.
 

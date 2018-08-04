@@ -136,6 +136,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="405887016757208221">De externe computer kan de sessie niet initialiseren. Als het probleem blijft optreden, configureer je de host opnieuw.</translation>
 <translation id="4068946408131579958">Alle verbindingen</translation>
 <translation id="409800995205263688">OPMERKING: beleidsinstellingen staan alleen verbindingen tussen computers binnen je netwerk toe.</translation>
+<translation id="4126409073460786861">Nadat het instellen is voltooid, vernieuw je deze pagina. Vervolgens kun je toegang tot de computer krijgen door je apparaat te kiezen en de pincode op te geven.</translation>
 <translation id="4145029455188493639">Ingelogd als <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Er ontbreken enkele vereiste componenten. Controleer of de nieuwste versie van de software is geïnstalleerd en probeer het opnieuw.</translation>
 <translation id="4156740505453712750">Om de toegang tot deze computer te beschermen, kies je een pincode van <ph name="BOLD_START" />ten minste zes cijfers<ph name="BOLD_END" />. Je moet deze pincode opgeven wanneer je verbinding maakt vanaf een andere locatie.</translation>
@@ -270,6 +271,7 @@ Pc</translation>
 <translation id="6998989275928107238">Aan</translation>
 <translation id="7019153418965365059">Onbekende hostfout: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Externe ondersteuning</translation>
+<translation id="7026930240735156896">Volg de instructies om je computer in te stellen voor externe toegang</translation>
 <translation id="7038683108611689168">Help ons Chromoting te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
 <translation id="7067321367069083429">Scherm werkt als een touchscreen</translation>
 <translation id="7116737094673640201">Welkom bij Chrome Remote Desktop</translation>

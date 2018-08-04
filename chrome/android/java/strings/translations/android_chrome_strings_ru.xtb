@@ -520,7 +520,7 @@
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="5345040418939504969">Закладка "<ph name="BOOKMARK_TITLE" />" удалена</translation>
 <translation id="5372829067651257087">URL скопирован.</translation>
-<translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте.</translation>
+<translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте</translation>
 <translation id="5400569084694353794">Работая с приложением, вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403644198645076998">Разрешить доступ только к определенным сайтам</translation>
 <translation id="5414836363063783498">Проверка…</translation>
@@ -635,7 +635,7 @@
 <translation id="618555311922999635">Панель навигации открыта полностью</translation>
 <translation id="6192333916571137726">Скачивание файла</translation>
 <translation id="6192792657125177640">Исключения</translation>
-<translation id="6206551242102657620">Подключение защищено. Информация о сайте.</translation>
+<translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6221633008163990886">Чтобы экспортировать пароли, разблокируйте экран</translation>
@@ -727,7 +727,7 @@
 <translation id="6914783257214138813">Ваши пароли будут видны всем, у кого есть доступ к файлу экспорта.</translation>
 <translation id="6942665639005891494">Вы можете в любой момент изменить расположение скачиваемых файлов по умолчанию, воспользовавшись меню "Настройки".</translation>
 <translation id="6945221475159498467">Выбрать</translation>
-<translation id="6963642900430330478">Эта страница представляет опасность. Информация о сайте.</translation>
+<translation id="6963642900430330478">Эта страница представляет опасность. Информация о сайте</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6978479750597523876">Сбросить настройки перевода</translation>

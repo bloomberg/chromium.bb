@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">با این کار کل پیشرفت بارگیری کنونی‌تان متوقف خواهد شد.</translation>
 <translation id="1605658421715042784">کپی تصویر</translation>
 <translation id="1612730193129642006">نمایش شبکه برگه</translation>
+<translation id="162035744160882748">‏روشن کردن همگام‌سازی، شخصی‌سازی و سرویس‌های دیگر Google</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1646446875146297738">فعال کردن «ردیابی نشود» بدین معناست که درخواستی در ترافیک مرور شما لحاظ خواهد شد. هر گونه تأثیر به این بستگی دارد که وب‌سایت به درخواست پاسخ می‌دهد یا نه و درخواست چگونه تفسیر می‌شود.
 
@@ -195,6 +196,7 @@
 <translation id="4124987746317609294">محدوده زمانی</translation>
 <translation id="4172051516777682613">همیشه نشان داده شود</translation>
 <translation id="418156467088430727">مشاهده نسخه آفلاین در برگه جدید</translation>
+<translation id="4192273449750167573">تنظیماتتان را در صفحه بعد مرور کنید</translation>
 <translation id="4237682350741091554">‏«همگام‌سازی Chrome» و شخصی‌سازی را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> مدیریت کنید</translation>
 <translation id="424315890655130736">عبارت ورود را وارد کنید</translation>
 <translation id="4272631900155121838">‏برای اسکن کردن کد QR، دوربین را در تنظیمات فعال کنید</translation>
@@ -286,6 +288,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5938160824633642847">دستگاهتان تقریباً پر است. فضا آزاد کنید و دوباره امتحان کنید.</translation>
 <translation id="5948291296578561264">با این کار می‌توانید عکس‌ها را در کتابخانه عکستان ذخیره کنید.</translation>
 <translation id="5955891643922670672">درحال مشاهده نسخه آفلاین</translation>
+<translation id="5957613098218939406">گزینه‌های بیشتر</translation>
 <translation id="5964480694698977962">ایجاد برگه ناشناس جدید</translation>
 <translation id="5965679971710331625">در سیستم هستید</translation>
 <translation id="5982717868370722439">افزودن داده‌های موجود به <ph name="USER_EMAIL" />.</translation>
@@ -345,6 +348,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6797885426782475225">جستجوی گفتاری</translation>
 <translation id="6807889908376551050">نمایش همه...</translation>
 <translation id="681368974849482173">مورد ایجاد شد</translation>
+<translation id="685040365210406336">تغییری ایجاد نشود</translation>
 <translation id="6896758677409633944">کپی</translation>
 <translation id="6903907808598579934">روشن کردن همگام‌سازی</translation>
 <translation id="6914783257214138813">گذرواژه‌های شما برای همه افرادی که می‌توانند فایل صادرشده را ببینید، نمایان خواهند بود.</translation>
@@ -374,6 +378,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7336264872878993241"><ph name="PERCENT" /> درصد بارگیری شد</translation>
 <translation id="7346909386216857016">بله متوجه شدم.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
+<translation id="741204030948306876">بله، موافقم</translation>
 <translation id="7425346204213733349">‏تغییرات در نشانک‌ها، سابقه، گذرواژه و سایر تنظیمات دیگر با حساب Google شما همگام‌سازی نخواهند شد. با این حال، داده‌های موجودتان در حساب Google شما باقی خواهند ماند.</translation>
 <translation id="744343212394640790"><ph name="EMAIL" />، نشانی ایمیل من نیست</translation>
 <translation id="7454057999980797137">ایالت / استان</translation>

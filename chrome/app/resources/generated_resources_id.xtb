@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Tampilkan Ejaan dan Grammar</translation>
 <translation id="1593594475886691512">Pemformatan...</translation>
 <translation id="159359590073980872">Cache Gambar</translation>
+<translation id="1593926297800505364">Simpan metode pembayaran</translation>
 <translation id="1598233202702788831">Pembaruan dinonaktifkan oleh administrator.</translation>
 <translation id="1600857548979126453">Mengakses backend debugger halaman</translation>
 <translation id="1601560923496285236">Terapkan</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Tidak dapat menggabungkan perangkat ke domain. Pastikan Anda tidak melampaui jumlah perangkat yang dapat ditambahkan.</translation>
 <translation id="1744108098763830590">halaman latar belakang</translation>
 <translation id="1745520510852184940">Selalu Lakukan Tindakan Ini</translation>
+<translation id="1746417874336251387">Tawarkan fitur baru yang menggunakan sambungan internet ponsel ke Chromebook</translation>
 <translation id="174937106936716857">Jumlah file total</translation>
 <translation id="175196451752279553">Buka k&amp;embali tab yang tertutup</translation>
 <translation id="1753905327828125965">Sering Dibuka</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Tidak Sebelum</translation>
 <translation id="1933809209549026293">Sambungkan mouse atau keyboard. Jika Anda menggunakan perangkat Bluetooth, pastikan perangkat siap disandingkan.</translation>
 <translation id="1936157145127842922">Tampilkan dalam Folder</translation>
+<translation id="1938351510777341717">External Command</translation>
 <translation id="1940546824932169984">Perangkat yang terhubung</translation>
 <translation id="1942765061641586207">Resolusi gambar</translation>
+<translation id="1943097386230153518">Instal layanan baru</translation>
 <translation id="1944921356641260203">Pembaruan ditemukan</translation>
 <translation id="1951615167417147110">Gulir ke atas satu halaman</translation>
 <translation id="1954813140452229842">Error saat memasang URL berbagi. Periksa kredensial Anda dan coba lagi.</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="265390580714150011">Nilai Bidang</translation>
 <translation id="2654166010170466751">Izinkan situs menginstal penangan pembayaran</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Fitur berbeda menurut perangkat</translation>
 <translation id="2660779039299703961">Acara</translation>
 <translation id="266079277508604648">Tidak dapat terhubung ke printer. Harap periksa apakah printer sudah diaktifkan dan terhubung ke Chromebook dengan Wi-Fi atau USB.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">Masukkan PIN</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apl</translation>
+<translation id="2806891468525657116">Pintasan sudah ada</translation>
 <translation id="2807517655263062534">File yang Anda download muncul di sini</translation>
 <translation id="2809586584051668049">dan <ph name="NUMBER_ADDITIONAL_DISABLED" /> lainnya</translation>
 <translation id="281133045296806353">Jendela baru dibuat pada sesi browser yang ada.</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">Anda sudah login</translation>
 <translation id="3429275422858276529">Bookmark halaman ini agar mudah ditemukan nanti</translation>
 <translation id="3429599832623003132">$1 item</translation>
+<translation id="3430342160185525240">Mengaktifkan Asisten untuk menampilkan notifikasi.</translation>
 <translation id="3432227430032737297">Buang Semua Yang Ditampilkan</translation>
 <translation id="3432757130254800023">Kirim audio dan video ke layar di jaringan lokal</translation>
 <translation id="3432762828853624962">Pekerja Bersama</translation>
@@ -1964,6 +1971,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> di Panel Kontrol.
 
   Apakah Anda ingin memulai <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Tidak dapat membuat pintasan</translation>
 <translation id="3943582379552582368">&amp;Mundur</translation>
 <translation id="3943857333388298514">Sisipkan</translation>
 <translation id="3948116654032448504">&amp;Telusuri <ph name="SEARCH_ENGINE" /> untuk Gambar</translation>
@@ -2271,6 +2279,7 @@
 <translation id="4481530544597605423">Perangkat tidak tersambung</translation>
 <translation id="4482194545587547824">Google dapat menggunakan histori penjelajahan Anda untuk mempersonalisasi Penelusuran dan layanan Google lainnya</translation>
 <translation id="4495419450179050807">Jangan tampilkan pada halaman ini</translation>
+<translation id="4499718683476608392">Aktifkan IsiOtomatis kartu kredit untuk mengisi formulir dengan sekali klik</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> telah error</translation>
 <translation id="450099669180426158">Ikon tanda seru</translation>
 <translation id="4501530680793980440">Konfirmasi Penghapusan</translation>
@@ -2549,7 +2558,6 @@
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ingin berkomunikasi dengan ekstensi "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Terima</translation>
-<translation id="4920350943031252905">Menjalankan fitur, editor, dan IDE Linus di Chromebook Anda.</translation>
 <translation id="4920887663447894854">Situs berikut telah dicekal agar tidak melacak lokasi Anda pada halaman ini:</translation>
 <translation id="492299503953721473">Hapus aplikasi Android</translation>
 <translation id="4923279099980110923">Ya, saya ingin membantu</translation>
@@ -3115,6 +3123,7 @@
 <translation id="5752453871435543420">Cadangan Awan Chrome OS</translation>
 <translation id="5756163054456765343">Pusat bantuan</translation>
 <translation id="5759728514498647443">Dokumen yang Anda kirim untuk dicetak melalui <ph name="APP_NAME" /> dapat dibaca oleh <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Setelan kartu kredit</translation>
 <translation id="5763751966069581670">Tidak ada perangkat USB yang ditemukan</translation>
 <translation id="5764483294734785780">Sim&amp;pan audio sebagai...</translation>
 <translation id="57646104491463491">Tanggal Dimodifikasi</translation>
@@ -3186,6 +3195,7 @@
 <translation id="5855773610748894548">Maaf, terjadi error pada modul aman.</translation>
 <translation id="5856721540245522153">Aktifkan fitur debug</translation>
 <translation id="5857090052475505287">Folder Baru</translation>
+<translation id="585979798156957858">Meta Eksternal</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
 <translation id="5860209693144823476">Tab 3</translation>
 <translation id="5860491529813859533">Aktifkan</translation>
@@ -3495,6 +3505,7 @@
 <translation id="6327785803543103246">Penemuan otomatis proksi web</translation>
 <translation id="6333064448949140209">File akan dikirim ke Google untuk proses debug</translation>
 <translation id="6333834492048057036">Memfokuskan bilah alamat untuk penelusuran</translation>
+<translation id="6336451774241870485">Tab rahasia yang baru</translation>
 <translation id="6339668969738228384">Buat profil baru untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Tidak dapat terhubung dengan server. Harap periksa koneksi jaringan dan coba lagi. Jika masalah berlanjut, nyalakan ulang Chromebook.</translation>
 <translation id="6340071272923955280">Protokol Pencetakan Internet (IPPS)</translation>
@@ -3676,6 +3687,7 @@
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">Info file</translation>
 <translation id="6607831829715835317">Fitur &amp;lainnya</translation>
+<translation id="6610147964972079463">Tutup tab rahasia</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="6613452264606394692">Kembali ke halaman secara cepat dengan mem-bookmark halaman ini</translation>
 <translation id="6614893213975402384">Instal update &amp; aplikasi. Dengan melanjutkan, Anda menyetujui bahwa perangkat ini juga dapat mendownload serta menginstal update dan aplikasi secara otomatis dari Google, operator, dan produsen perangkat, yang kemungkinan menggunakan kuota. Sebagian aplikasi ini mungkin menawarkan pembelian dalam aplikasi. Anda dapat menghapus aplikasi tersebut kapan saja. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
@@ -3746,6 +3758,7 @@
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6718273304615422081">Membuat file zip...</translation>
 <translation id="671928215901716392">Kunci layar</translation>
+<translation id="6720847671508630642">Bagikan fitur terbaik Android ke Chromebook secara otomatis. Sambungkan ponsel agar Anda dapat mengirim SMS dari komputer, membagikan sambungan internet ponsel, dan membuka kunci layar Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Pelajari lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Lihat merek dan model Kunci Keamanan Anda</translation>
 <translation id="6721972322305477112">&amp;Berkas</translation>
 <translation id="672213144943476270">Buka kunci profil sebelum menjelajah sebagai tamu.</translation>
@@ -3892,6 +3905,7 @@
 <translation id="6970856801391541997">Cetak Halaman Khusus</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
 <translation id="6973630695168034713">Folder</translation>
+<translation id="6974609594866392343">Mode demo offline</translation>
 <translation id="6976108581241006975">Konsol JavaScript</translation>
 <translation id="6977381486153291903">Revisi firmware</translation>
 <translation id="6978121630131642226">Mesin Telusur</translation>
@@ -4486,6 +4500,7 @@
 <translation id="7857949311770343000">Apakah ini halaman tab baru yang Anda harapkan?</translation>
 <translation id="786073089922909430">Layanan: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">Un&amp;duhan</translation>
+<translation id="7864662577698025113">Tambahkan layanan baru</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Disandingkan</translation>
 <translation id="7870730066603611552">Tinjau opsi sinkronisasi setelah penyiapan</translation>
@@ -5000,6 +5015,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8666584013686199826">Tanyakan saat situs ingin mengakses perangkat USB</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> sekarang dalam mode layar penuh dan telah menonaktifkan kursor mouse Anda.</translation>
 <translation id="8669284339312441707">Hangat</translation>
+<translation id="8669919703154928649">Izinkan Asisten menampilkan notifikasi</translation>
 <translation id="8669949407341943408">Memindahkan...</translation>
 <translation id="8671210955687109937">Dapat berkomentar</translation>
 <translation id="8673026256276578048">Telusuri Web...</translation>
@@ -5387,6 +5403,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="964286338916298286">Administrator IT telah menonaktifkan Chrome Goodies untuk perangkat Anda.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplikasi}other{Aplikasi}}</translation>
 <translation id="967007123645306417">Tindakan ini akan membuat Anda logout dari akun Google. Perubahan pada bookmark, histori, sandi, dan setelan lainnya tidak akan disinkronkan lagi dengan Akun Google Anda. Namun, data yang sudah ada akan tetap disimpan di Akun Google dan dapat dikelola di <ph name="BEGIN_LINK" />Google Dasbor<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Data disimpan</translation>
 <translation id="968000525894980488">Aktifkan layanan Google Play.</translation>
 <translation id="968174221497644223">Cache aplikasi</translation>
 <translation id="969096075394517431">Ubah bahasa</translation>

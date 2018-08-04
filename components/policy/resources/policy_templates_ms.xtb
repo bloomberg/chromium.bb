@@ -525,6 +525,11 @@
       Jika tetapan ini dibiarkan tanpa ditetapkan, pengguna boleh memutuskan untuk menggunakan fungsi ini atau tidak.
 
       Tetapan ini telah dialih keluar daripada <ph name="PRODUCT_NAME" /> 29 dan versi yang lebih tinggi.</translation>
+<translation id="2433412232489478893">Dasar ini mengawal sama ada ciri Perkongsian Fail Rangkaian <ph name="PRODUCT_NAME" /> dibenarkan untuk pengguna.
+
+      Apabila dasar ini tidak dikonfigurasi atau ditetapkan kepada Benar, pengguna akan dapat menggunakan Perkongsian Fail Rangkaian.
+
+      Apabila dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat menggunakan Perkongsian Fail Rangkaian.</translation>
 <translation id="2438609638493026652">Mendayakan pelaporan acara penting semasa pemasangan apl Android pada Google. Acara dirakam hanya untuk apl yang dimulakan pemasangannya melalui dasar.
 
       Jika dasar ditetapkan kepada benar, acara akan dilog.
@@ -606,6 +611,7 @@
 <translation id="2598508021807251719">Mengkonfigurasi tempat peristiwa yang digunakan <ph name="PRODUCT_OS_NAME" /> dalam paparan.
 
       Jika dasar ini ditetapkan, pengguna hanya boleh mengkonfigurasi <ph name="PRODUCT_OS_NAME" /> supaya dipaparkan dalam salah satu tempat peristiwa yang dinyatakan oleh dasar ini. Jika dasar ini tidak ditetapkan atau ditetapkan kepada senarai kosong, <ph name="PRODUCT_OS_NAME" /> boleh dipaparkan dalam semua tempat peristiwa UI yang disokong. Jika dasar ini ditetapkan kepada senarai dengan nilai yang tidak sah, semua nilai tidak sah akan diabaikan. Jika sebelum ini pengguna telah mengkonfigurasi <ph name="PRODUCT_OS_NAME" /> supaya dipaparkan dalam tempat peristiwa yang tidak dibenarkan oleh dasar ini, tempat peristiwa paparan akan ditukar kepada tempat peristiwa UI yang dibenarkan apabila pengguna log masuk selepas ini. Jika pengguna telah mengkonfigurasi tempat peristiwa pilihan dan salah satu tempat peristiwa pilihan itu dibenarkan oleh dasar ini, <ph name="PRODUCT_OS_NAME" /> akan beralih kepada tempat peristiwa ini. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih kepada nilai sah pertama yang dinyatakan oleh dasar ini atau kepada tempat peristiwa sebelumnya (pada masa ini en-US), jika dasar ini hanya mengandungi masukan yang tidak sah.</translation>
+<translation id="2604182581880595781">Konfigurasikan dasar yang berkaitan dengan Perkongsian Fail Rangkaian.</translation>
 <translation id="2623014935069176671">Tunggu aktiviti pengguna awal</translation>
 <translation id="262740370354162807">Dayakan penyerahan dokumen pada <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Menyediakan konfigurasi untuk pencetak perusahaan.
@@ -689,6 +695,7 @@
 <translation id="2823870601012066791">Lokasi pendaftaran Windows untuk pelanggan <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
 <translation id="2838830882081735096">Tidak membenarkan penghijrahan data dan ARC</translation>
+<translation id="2839294585867804686">Tetapan Perkongsian Fail Rangkaian</translation>
 <translation id="2840269525054388612">Menentukan pencetak yang boleh digunakan oleh pengguna.
 
       Dasar ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1185,6 +1192,7 @@
       Jika dasar ini dibiarkan tanpa ditetapkan, pengumpulan data awanama termasuk URL akan didayakan, tetapi pengguna akan dapat menukarnya.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Tempat peristiwa skrin log masuk peranti</translation>
+<translation id="4264607809747169568">Mengawal Perkongsian Fail Rangkaian untuk ketersediaan OS Chrome</translation>
 <translation id="427220754384423013">Menentukan pencetak yang boleh digunakan oleh pengguna.
 
       Dasar ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1614,6 +1622,15 @@
       Nilai dasar ini harus ditetapkan dalam milisaat.</translation>
 <translation id="5511702823008968136">Dayakan Bar Penanda Halaman</translation>
 <translation id="5512418063782665071">URL halaman utama</translation>
+<translation id="551639594034811656">Dasar ini mentakrifkan senarai peratusan yang akan menentukan pecahan peranti <ph name="PRODUCT_OS_NAME" /> dalam OU yang akan dikemas kini setiap minggu bermula dari hari kemas kini itu mula-mula ditemui. Masa penemuan adalah lebih kemudian daripada masa kemas kini diterbitkan memandangkan peranti menyemak kemas kini beberapa ketika selepas kemas kini itu diterbitkan.
+
+      Setiap pasangan (hari, peratusan) mengandungi peratusan himpunan yang perlu dikemas kini mengikut bilangan hari yang dinyatakan sejak kemas kini ditemui. Contohnya, jika kami mempunyai pasangan [(4, 40), (10, 70), (15, 100)], maka 40% daripada himpunan seharusnya telah dikemas kini 4 hari selepas kemas kini ditemui. 70% harus dikemas kini selepas 10 hari dan begitulah seterusnya.
+
+      Jika terdapat nilai yang ditakrifkan untuk dasar ini, kemas kini akan mengabaikan dasar <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> dan mematuhi dasar ini.
+
+      Jika senarai ini kosong, tidak akan ada pemeringkatan dan kemas kini akan dibuat mengikut dasar peranti lain.
+
+      Penukaran saluran tidak tertakluk pada dasar ini.</translation>
 <translation id="5523812257194833591">Sesi terbuka untuk log masuk automatik selepas kelewatan.
 
       Jika dasar ini ditetapkan, sesi yang dinyatakan akan log masuk secara automatik selepas berlalunya suatu tempoh pada skrin log masuk tanpa interaksi pengguna. Sesi terbuka hendaklah telah dikonfigurasi (lihat |DeviceLocalAccounts|).
@@ -2546,6 +2563,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
       Jika dasar ini tidak dikonfiguraskan, pengguna akan dapat mengubah tetapan ini.
       </translation>
+<translation id="7902255855035461275">Pola dalam senarai ini akan dipadankan dengan keselamatan
+      asal URL yang meminta.  Jika padanan ditemui, akses kepada peranti
+      yang merakam video akan diberi tanpa gesaan.
+
+      NOTA: Dasar ini hanya disokong dalam mod Kios sehingga versi 45.</translation>
 <translation id="7912255076272890813">Konfigurasi jenis apl/sambungan yang dibenarkan</translation>
 <translation id="7915236031252389808">Anda boleh menetapkan URL untuk fail .pac proksi di sini.
 

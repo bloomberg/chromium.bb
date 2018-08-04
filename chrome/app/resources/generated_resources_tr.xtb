@@ -2549,7 +2549,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4917385247580444890">Güçlü</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" />, "<ph name="EXTENSION_NAME" />" uzantısıyla iletişim kurmak istiyor</translation>
 <translation id="4918086044614829423">Kabul et</translation>
-<translation id="4920350943031252905">Linux araçları, düzenleyicileri ve IDE'lerini Chromebook'unuzda çalıştırır.</translation>
 <translation id="4920887663447894854">Aşağıdaki sitelerin bu sayfadaki konumunuzu izlemesi engellendi:</translation>
 <translation id="492299503953721473">Android uygulamalarını kaldır</translation>
 <translation id="4923279099980110923">Evet, yardımcı olmak istiyorum</translation>
@@ -4035,6 +4034,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7175353351958621980">Yükleme kaynağı:</translation>
 <translation id="7180611975245234373">Yenile</translation>
 <translation id="7180865173735832675">Özelleştir</translation>
+<translation id="7182359331070524176">Google Fotoğraflar albümü seçin</translation>
 <translation id="7186088072322679094">Araç Çubuğunda Tut</translation>
 <translation id="7187428571767585875">Kaldırılacak veya değiştirilecek kayıt defteri girişleri:</translation>
 <translation id="7189234443051076392">Cihazınızda yeterli alan bulunduğundan emin olun</translation>

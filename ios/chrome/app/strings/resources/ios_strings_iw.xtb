@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">הפעולה תפסיק את ההורדה הנוכחית.</translation>
 <translation id="1605658421715042784">העתקת התמונה</translation>
 <translation id="1612730193129642006">הצג רשת כרטיסיות</translation>
+<translation id="162035744160882748">‏הפעלת סינכרון, התאמה אישית ושירותים אחרים של Google</translation>
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="1646446875146297738">המשמעות של הפעלת 'ללא מעקב' היא שהבקשה תיכלל בתנועת הגלישה שלך. התוצאה בפועל תלויה בתגובה של האתר לבקשה ובפרשנות שהוא מייחס לה, אם בכלל. 
 
@@ -194,6 +195,7 @@
 <translation id="4124987746317609294">טווח זמן</translation>
 <translation id="4172051516777682613">הצג תמיד</translation>
 <translation id="418156467088430727">הצג גרסה לא מקוונת בכרטיסייה חדשה</translation>
+<translation id="4192273449750167573">אפשר לבדוק את ההגדרות במסך הבא</translation>
 <translation id="4237682350741091554">‏נהל את סנכרון Chrome וההתאמה האישית ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">הזנת ביטוי סיסמה</translation>
 <translation id="4272631900155121838">‏כדי לסרוק את קוד ה-QR, הפעל את המצלמה דרך ההגדרות</translation>
@@ -285,6 +287,7 @@
 <translation id="5938160824633642847">המכשיר שלך כמעט מלא. צריך לפנות מקום ולנסות שוב.</translation>
 <translation id="5948291296578561264">מאפשר לך לשמור תמונות בספריית התמונות.</translation>
 <translation id="5955891643922670672">מציג גרסה לא מקוונת</translation>
+<translation id="5957613098218939406">אפשרויות נוספות</translation>
 <translation id="5964480694698977962">יצירת כרטיסייה חדשה של גלישה בסתר.</translation>
 <translation id="5965679971710331625">אתה מחובר</translation>
 <translation id="5982717868370722439">הוסף נתונים קיימים אל <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@
 <translation id="6797885426782475225">חיפוש קולי</translation>
 <translation id="6807889908376551050">הצג הכל...</translation>
 <translation id="681368974849482173">הפריט נוצר</translation>
+<translation id="685040365210406336">לא לבצע שינויים</translation>
 <translation id="6896758677409633944">העתק</translation>
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6914783257214138813">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות את הסיסמאות שלך.</translation>
@@ -373,6 +377,7 @@
 <translation id="7336264872878993241">הושלמה הורדה של <ph name="PERCENT" /> אחוז</translation>
 <translation id="7346909386216857016">בסדר, הבנתי</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
+<translation id="741204030948306876">כן, אני רוצה</translation>
 <translation id="7425346204213733349">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות נוספות לא יסונכרנו עוד עם חשבון Google שלך. עם זאת, הנתונים הקיימים עדיין יאוחסנו בחשבון Google שלך.</translation>
 <translation id="744343212394640790">אני לא <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">מדינה / ארץ</translation>

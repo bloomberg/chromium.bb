@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Dette stopper all fremdriften for den aktive nedlastingen.</translation>
 <translation id="1605658421715042784">Kopiér bildet</translation>
 <translation id="1612730193129642006">Vis fanerutenett</translation>
+<translation id="162035744160882748">Slå på synkronisering, personlig tilpasning og andre Google-tjenester</translation>
 <translation id="1644574205037202324">Logg</translation>
 <translation id="1646446875146297738">Hvis du aktiverer «Ikke spor», blir en forespørsel sendt med nettlesertrafikken din. Eventuelle virkninger avhenger av om nettstedet svarer på forespørselen, og hvordan forespørselen tolkes.
 
@@ -194,6 +195,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="4124987746317609294">Tidsperiode</translation>
 <translation id="4172051516777682613">Vis alltid</translation>
 <translation id="418156467088430727">Se versjonen uten nett i en ny fane</translation>
+<translation id="4192273449750167573">Gjennomgå innstillingene dine på den neste skjermen</translation>
 <translation id="4237682350741091554">Administrer Chrome-synkronsering og personlig tilpasning i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Skriv inn passordfrasen</translation>
 <translation id="4272631900155121838">For å skanne QR-koder, slå på kameraet i innstillingene</translation>
@@ -285,6 +287,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5938160824633642847">Enheten er nesten full. Frigjør plass og prøv på nytt.</translation>
 <translation id="5948291296578561264">Da kan du lagre bilder i bildebiblioteket ditt.</translation>
 <translation id="5955891643922670672">Du ser en versjon uten nett</translation>
+<translation id="5957613098218939406">Flere alternativer</translation>
 <translation id="5964480694698977962">Åpne en ny inkognitofane.</translation>
 <translation id="5965679971710331625">Du er pålogget</translation>
 <translation id="5982717868370722439">Legg til eksisterende data i <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6797885426782475225">Talesøk</translation>
 <translation id="6807889908376551050">Vis alle</translation>
 <translation id="681368974849482173">Elementet er opprettet</translation>
+<translation id="685040365210406336">Ikke gjør noen endringer</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Slå på synkronisering</translation>
 <translation id="6914783257214138813">Passordene dine blir synlige for alle som kan se den eksporterte filen.</translation>
@@ -373,6 +377,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosent fullført</translation>
 <translation id="7346909386216857016">Greit</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
+<translation id="741204030948306876">Ja, jeg er med</translation>
 <translation id="7425346204213733349">Endringer i bokmerkene, loggoppføringene, passordene og de andre innstillingene dine blir ikke synkronisert med Google-kontoen din lenger. Data som allerede er lagret i Google-kontoen din, blir imidlertid ikke fjernet.</translation>
 <translation id="744343212394640790">Ikke <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Fylke/kommune</translation>

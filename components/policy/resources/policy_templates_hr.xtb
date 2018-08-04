@@ -513,6 +513,11 @@
       Ako se ta postavka ne postavi, korisnici mogu upotrebljavati tu funkciju prema želji.
 
       Ta je postavka uklonjena iz verzije <ph name="PRODUCT_NAME" /> 29 i novijih verzija.</translation>
+<translation id="2433412232489478893">To pravilo određuje je li korisniku dopuštena značajka mrežnog dijeljenja datoteka za <ph name="PRODUCT_NAME" />.
+
+      Ako se pravilo ne konfigurira ili se postavi na True, korisnici će moći upotrebljavati mrežno dijeljenje datoteka.
+
+      Ako se pravilo postavi na False, korisnici neće moći upotrebljavati mrežno dijeljenje datoteka.</translation>
 <translation id="2438609638493026652">Omogućuje izvještavanje o ključnim događajima tijekom instalacije Android aplikacije na Googleu. Događaji se bilježe samo za aplikacije čija je instalacija pokrenuta putem pravila.
 
       Ako je pravilo postavljeno na "true", događaji će biti zabilježeni.
@@ -590,6 +595,7 @@
 <translation id="2598508021807251719">Konfigurira jezike na kojima se <ph name="PRODUCT_OS_NAME" /> može prikazivati.
 
       Ako se to pravilo postavi, korisnik može konfigurirati da se <ph name="PRODUCT_OS_NAME" /> prikazuje samo na jednom od jezika navedenih ovim pravilom. Ako se to pravilo ne postavi ili se postavi na prazan popis, moguće je prikazivati <ph name="PRODUCT_OS_NAME" /> na svim podržanim jezicima korisničkog sučelja. Ako se to pravilo postavi na popis s nevažećim vrijednostima, sve će se nevažeće vrijednosti zanemariti. Ako je korisnik prethodno konfigurirao da se <ph name="PRODUCT_OS_NAME" /> prikazuje na jeziku koji nije dopušten ovim pravilom, jezik prikaza prebacit će se na dopušteni jezik korisničkog sučelja sljedeći put kada se korisnik prijavi. Ako je korisnik konfigurirao preferirane jezike i jedan od njih dopušten je ovim pravilom, <ph name="PRODUCT_OS_NAME" /> prelazi na taj jezik. U suprotnom, <ph name="PRODUCT_OS_NAME" /> prelazi na prvu važeću vrijednost navedenu tim pravilom ili na zamjenski jezik (trenutačno en-US), ako pravilo sadrži samo nevažeće unose.</translation>
+<translation id="2604182581880595781">Konfiguriranje pravila povezanih s mrežnim dijeljenjem datoteka.</translation>
 <translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Pruža konfiguracije za pisače tvrtki.
@@ -669,6 +675,7 @@
 <translation id="2823870601012066791">Lokacija Windows registra za <ph name="PRODUCT_OS_NAME" /> klijente:</translation>
 <translation id="2824715612115726353">Omogući anonimni način</translation>
 <translation id="2838830882081735096">Onemogući premještanje podataka i ARC</translation>
+<translation id="2839294585867804686">Postavke mrežnog dijeljenja datoteka</translation>
 <translation id="2840269525054388612">Određuje pisače koje korisnik može upotrebljavati.
 
       To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_WHITELIST" /> odabrano za <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1147,6 +1154,7 @@
       Ako se to pravilo ne postavi, prikupljanje anonimiziranih podataka zaključano URL-om bit će omogućeno, no korisnik će to moći promijeniti.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Oznaka zemlje/jezika za zaslon za prijavu na uređaju</translation>
+<translation id="4264607809747169568">Određuje dostupnost mrežnog dijeljenja datoteka za OS Chrome</translation>
 <translation id="427220754384423013">Određuje pisače koje korisnik može upotrebljavati.
 
       To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_WHITELIST" /> odabrano za <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1554,6 +1562,15 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Vrijednost pravila treba odrediti u milisekundama.</translation>
 <translation id="5511702823008968136">Omogući traku Knjižne oznake</translation>
 <translation id="5512418063782665071">URL početne stranice</translation>
+<translation id="551639594034811656">Pravilom se definira popis postotaka kojim će se definirati udio <ph name="PRODUCT_OS_NAME" /> uređaja u organizacijskoj jedinici za dnevno ažuriranje počevši od dana otkrivanja ažuriranja. Vrijeme otkrivanja kasnije je od vremena objavljivanja ažuriranja jer nakon objavljivanja ažuriranja može proći neko vrijeme dok uređaj ne potraži ažuriranja.
+
+      Svaki par (dan, postotak) sadrži postotak flote koji se treba ažurirati za određeni broj dana od vremena otkrivanja ažuriranja. Na primjer, ako su parovi [(4, 40), (10, 70), (15, 100)], to znači da se 40% flote treba ažurirati u roku od četiri dana od otkrivanja ažuriranja, 70% treba se ažurirati u roku od 10 dana i tako dalje.
+
+      Ako se za ovo pravilo definira vrijednost, ažuriranja će zanemariti pravilo <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> i slijediti ovo pravilo.
+
+      Ako je popis prazan, neće biti postupnog uvođenja i ažuriranja će se primijeniti prema drugim pravilima za uređaje.
+
+      Pravilo se ne primjenjuje na prebacivanje kanala.</translation>
 <translation id="5523812257194833591">Automatska prijava u javnu sesiju nakon odgode.
 
       Ako je ovo pravilo postavljeno, automatski će se prijavljivati u navedenu sesiju nakon isteka vremenskog razdoblja bez interakcije korisnika na zaslonu za prijavu. Javna sesija mora biti već konfigurirana (pogledajte |DeviceLocalAccounts|).
@@ -2440,6 +2457,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije pravila IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess.
       Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
       </translation>
+<translation id="7902255855035461275">Uzorci na tom popisu usporedit će se sa sigurnosnim izvorištem
+      URL-a koji šalje zahtjev. Ako se pronađe podudaranje, pristup uređajima
+      za snimanje videozapisa dopuštat će se bez upita.
+
+      NAPOMENA: do verzije 45 to je pravilo bilo podržano samo u načinu kioska.</translation>
 <translation id="7912255076272890813">Konfiguriraj dopuštene vrste aplikacija/proširenja</translation>
 <translation id="7915236031252389808">Ovdje možete navesti URL za .pac datoteku proxy poslužitelja.
 

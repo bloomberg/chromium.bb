@@ -251,6 +251,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8179874765710681175">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke ponsel Anda.</translation>
 <translation id="8183957050892517584">Chrome akan meyimpan informasi pribadi Anda dengan aman sehingga Anda tidak perlu mengetiknya lagi.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS akan dimulai ulang sekarang}=1{Chrome OS akan dimulai ulang dalam 1 detik}other{Chrome OS akan dimulai ulang dalam # detik}}</translation>
+<translation id="825412236959742607">Halaman ini menggunakan terlalu banyak memori, sehingga Chrome menghapus sebagian konten.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>
 <translation id="8286862437124483331">Google Chrome mencoba menampilkan sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="8290100596633877290">Aduh! Google Chrome ngadat. Luncurkan ulang sekarang?</translation>

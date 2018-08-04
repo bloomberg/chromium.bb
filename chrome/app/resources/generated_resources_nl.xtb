@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Toon spelling en grammatica</translation>
 <translation id="1593594475886691512">Formatteren...</translation>
 <translation id="159359590073980872">Cache met afbeeldingen</translation>
+<translation id="1593926297800505364">Betaalmethode opslaan</translation>
 <translation id="1598233202702788831">Updates zijn uitgeschakeld door je beheerder.</translation>
 <translation id="1600857548979126453">Back-end voor foutopsporing van pagina openen</translation>
 <translation id="1601560923496285236">Toepassen</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Kan het apparaat niet aan het domein koppelen. Zorg ervoor dat je het aantal apparaten dat je kunt toevoegen niet overschrijdt.</translation>
 <translation id="1744108098763830590">achtergrondpagina</translation>
 <translation id="1745520510852184940">Dit altijd doen</translation>
+<translation id="1746417874336251387">Nieuwe functies aanbieden die de verbinding van je telefoon met je Chromebook gebruiken</translation>
 <translation id="174937106936716857">Totaal aantal bestanden</translation>
 <translation id="175196451752279553">Gesloten tabblad opni&amp;euw openen</translation>
 <translation id="1753905327828125965">Meest bezocht</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Niet vóór</translation>
 <translation id="1933809209549026293">Sluit een muis of een toetsenbord aan. Als je een Bluetooth-apparaat gebruikt, zorg je ervoor dat dit kan worden gekoppeld.</translation>
 <translation id="1936157145127842922">Weergeven in map</translation>
+<translation id="1938351510777341717">Externe opdracht</translation>
 <translation id="1940546824932169984">Verbonden apparaten</translation>
 <translation id="1942765061641586207">Afbeeldingsresolutie</translation>
+<translation id="1943097386230153518">Nieuwe service installeren</translation>
 <translation id="1944921356641260203">Update gevonden</translation>
 <translation id="1951615167417147110">Eén pagina omhoog bladeren</translation>
 <translation id="1954813140452229842">Fout bij het activeren van de fileshare. Controleer je inloggegevens en probeer het opnieuw.</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="265390580714150011">Veldwaarde</translation>
 <translation id="2654166010170466751">Toestaan dat sites betalingshandlers installeren</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Functies verschillen per apparaat</translation>
 <translation id="2660779039299703961">Gebeurtenis</translation>
 <translation id="266079277508604648">Verbinding met printer niet mogelijk. Controleer of de printer is ingeschakeld en via wifi of USB is verbonden met je Chromebook.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">Pincode opgeven</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apps</translation>
+<translation id="2806891468525657116">Snelkoppeling bestaat al</translation>
 <translation id="2807517655263062534">Bestanden die je downloadt, worden hier weergegeven</translation>
 <translation id="2809586584051668049">en <ph name="NUMBER_ADDITIONAL_DISABLED" /> meer</translation>
 <translation id="281133045296806353">Er is een nieuw venster gemaakt in de bestaande browsersessie.</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">Je bent ingelogd.</translation>
 <translation id="3429275422858276529">Stel een bladwijzer in voor deze pagina zodat je de pagina later makkelijk kunt terugvinden</translation>
 <translation id="3429599832623003132">$1 items</translation>
+<translation id="3430342160185525240">Hiermee kan de Assistent je meldingen laten zien.</translation>
 <translation id="3432227430032737297">Alle weergegeven verwijderen</translation>
 <translation id="3432757130254800023">Audio en video verzenden naar displays in het lokale netwerk</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1964,6 +1971,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> in het Configuratiescherm.
 
   Wil je <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
+<translation id="394183848452296464">Kan snelkoppeling niet maken</translation>
 <translation id="3943582379552582368">&amp;Vorige</translation>
 <translation id="3943857333388298514">Plak</translation>
 <translation id="3948116654032448504">&amp;Afbeelding zoeken in <ph name="SEARCH_ENGINE" /></translation>
@@ -2271,6 +2279,7 @@
 <translation id="4481530544597605423">Ontkoppelde apparaten</translation>
 <translation id="4482194545587547824">Google kan je browsegeschiedenis gebruiken om Google Zoeken en andere Google-services te personaliseren</translation>
 <translation id="4495419450179050807">Niet op deze pagina weergeven</translation>
+<translation id="4499718683476608392">Automatisch aanvullen van creditcardgegevens inschakelen om formulieren met één klik in te vullen</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> is gecrasht</translation>
 <translation id="450099669180426158">Uitroeptekenpictogram</translation>
 <translation id="4501530680793980440">Verwijderen bevestigen</translation>
@@ -2549,7 +2558,6 @@
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> wil communiceren met de extensie '<ph name="EXTENSION_NAME" />'</translation>
 <translation id="4918086044614829423">Accepteren</translation>
-<translation id="4920350943031252905">Voer Linux-tools, -editors en -IDE's op je Chromebook uit.</translation>
 <translation id="4920887663447894854">De volgende sites kunnen je locatie op deze pagina niet bijhouden:</translation>
 <translation id="492299503953721473">Android-apps verwijderen</translation>
 <translation id="4923279099980110923">Ja, ik wil helpen</translation>
@@ -3116,6 +3124,7 @@
 <translation id="5752453871435543420">Cloudback-up van Chrome OS</translation>
 <translation id="5756163054456765343">H&amp;elpcentrum</translation>
 <translation id="5759728514498647443">Documenten die je via <ph name="APP_NAME" /> verzendt om af te drukken, kunnen door <ph name="APP_NAME" /> worden gelezen.</translation>
+<translation id="5762172915276660232">Creditcardinstellingen</translation>
 <translation id="5763751966069581670">Geen USB-apparaten gevonden</translation>
 <translation id="5764483294734785780">Audio op&amp;slaan als...</translation>
 <translation id="57646104491463491">Bijgewerkt op</translation>
@@ -3187,6 +3196,7 @@
 <translation id="5855773610748894548">Fout met beveiligde module.</translation>
 <translation id="5856721540245522153">Foutopsporingsfuncties inschakelen</translation>
 <translation id="5857090052475505287">Nieuwe map</translation>
+<translation id="585979798156957858">Externe meta</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="5860209693144823476">Tabblad 3</translation>
 <translation id="5860491529813859533">Inschakelen</translation>
@@ -3496,6 +3506,7 @@
 <translation id="6327785803543103246">Webproxy automatisch vinden</translation>
 <translation id="6333064448949140209">Bestanden worden naar Google gestuurd voor foutopsporing</translation>
 <translation id="6333834492048057036">Focus op adresbalk voor zoeken</translation>
+<translation id="6336451774241870485">Nieuw privétabblad</translation>
 <translation id="6339668969738228384">Een nieuw profiel maken voor <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Kan geen verbinding maken met de server. Controleer de netwerkverbinding en probeer het opnieuw. Als het probleem blijft optreden, start je de Chromebook opnieuw op.</translation>
 <translation id="6340071272923955280">Internetafdrukprotocol (IPPS)</translation>
@@ -3677,6 +3688,7 @@
 <translation id="6606070663386660533">Tabblad 8</translation>
 <translation id="6607272825297743757">Bestandsinformatie</translation>
 <translation id="6607831829715835317">Meer hu&amp;lpprogramma's</translation>
+<translation id="6610147964972079463">Privétabbladen sluiten</translation>
 <translation id="6612358246767739896">Beveiligde content</translation>
 <translation id="6613452264606394692">Keer hier snel terug door een bladwijzer voor deze pagina in te stellen</translation>
 <translation id="6614893213975402384">Updates en apps installeren. Als je doorgaat, ga je ermee akkoord dat dit apparaat ook automatisch updates en apps van Google, je provider en de fabrikant van dit apparaat kan downloaden en installeren, en dat hiervoor mogelijk mobiele data worden gebruikt. Sommige van deze apps kunnen in-app-aankopen aanbieden. Je kunt deze apps op elk gewenst moment verwijderen. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
@@ -3747,6 +3759,7 @@
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6718273304615422081">Inpakken...</translation>
 <translation id="671928215901716392">Scherm vergrendelen</translation>
+<translation id="6720847671508630642">Deel het beste van Android automatisch met je Chromebook. Koppel je telefoon zodat je kunt sms'en vanaf je computer, de internetverbinding van je telefoon kunt delen en je Chromebook-scherm kunt ontgrendelen.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Het merk en het model van je beveiligingssleutel bekijken</translation>
 <translation id="6721972322305477112">&amp;Archief</translation>
 <translation id="672213144943476270">Ontgrendel je profiel voordat je browst als gast.</translation>
@@ -3893,6 +3906,7 @@
 <translation id="6970856801391541997">Specifieke pagina's afdrukken</translation>
 <translation id="6972180789171089114">Audio/video</translation>
 <translation id="6973630695168034713">Mappen</translation>
+<translation id="6974609594866392343">Offline demomodus</translation>
 <translation id="6976108581241006975">JavaScript-console</translation>
 <translation id="6977381486153291903">Firmwarerevisie</translation>
 <translation id="6978121630131642226">Zoekmachines</translation>
@@ -4486,6 +4500,7 @@
 <translation id="7857949311770343000">Is dit de nieuwe pagina met tabbladen die je had verwacht?</translation>
 <translation id="786073089922909430">Service: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Downloads</translation>
+<translation id="7864662577698025113">Nieuwe service toevoegen</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookies}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - gekoppeld</translation>
 <translation id="7870730066603611552">Synchronisatieopties bekijken na de installatie</translation>
@@ -5000,6 +5015,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8666584013686199826">Goedkeuring vragen wanneer een site toegang wil hebben tot USB-apparaten</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> is nu een volledig scherm en heeft je muisaanwijzer uitgeschakeld.</translation>
 <translation id="8669284339312441707">Warmer</translation>
+<translation id="8669919703154928649">Toestaan dat de Assistent je meldingen laat zien</translation>
 <translation id="8669949407341943408">Verplaatsen…</translation>
 <translation id="8671210955687109937">Mag reageren</translation>
 <translation id="8673026256276578048">Zoeken op internet...</translation>
@@ -5388,6 +5404,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="964286338916298286">Je IT-beheerder heeft Chrome-extra's uitgeschakeld voor je apparaat.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{App}other{Apps}}</translation>
 <translation id="967007123645306417">Hiermee word je uitgelogd van je Google-accounts. Wijzigingen in je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden niet meer gesynchroniseerd met je Google-account. Je bestaande gegevens blijven echter opgeslagen in je Google-account en kunnen worden beheerd via <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Opgeslagen gegevens</translation>
 <translation id="968000525894980488">Schakel Google Play-services in.</translation>
 <translation id="968174221497644223">Applicatiecache</translation>
 <translation id="969096075394517431">Talen wijzigen</translation>

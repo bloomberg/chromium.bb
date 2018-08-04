@@ -2549,7 +2549,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> souhaite communiquer avec l'extension "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="4918086044614829423">Accepter</translation>
-<translation id="4920350943031252905">Exécutez les outils, les éditeurs et les IDE Linux sur votre Chromebook.</translation>
 <translation id="4920887663447894854">Le suivi de votre position géographique sur cette page a été bloqué pour les sites suivants :</translation>
 <translation id="492299503953721473">Supprimer des applications Android</translation>
 <translation id="4923279099980110923">Je souhaite apporter mon aide</translation>
@@ -4035,6 +4034,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7175353351958621980">Chargé depuis :</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7180865173735832675">Personnaliser</translation>
+<translation id="7182359331070524176">Sélectionner un album Google Photos</translation>
 <translation id="7186088072322679094">Garder dans la barre d'outils</translation>
 <translation id="7187428571767585875">Entrées de registre à supprimer ou à modifier :</translation>
 <translation id="7189234443051076392">Assurez-vous de disposer de suffisamment d'espace sur votre appareil</translation>

@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Verrà interrotto l'avanzamento del tuo download attuale.</translation>
 <translation id="1605658421715042784">Copia immagine</translation>
 <translation id="1612730193129642006">Mostra griglia schede</translation>
+<translation id="162035744160882748">Attiva la sincronizzazione, la personalizzazione e altri servizi Google</translation>
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="1646446875146297738">Se attivi "Non tenere traccia", viene inclusa una richiesta con il tuo traffico di navigazione. Gli eventuali effetti dipendono dalla risposta o meno di un sito web alla richiesta e dalla modalità di interpretazione della richiesta.
 
@@ -194,6 +195,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="4124987746317609294">Intervallo di tempo</translation>
 <translation id="4172051516777682613">Mostra sempre</translation>
 <translation id="418156467088430727">Visualizza versione offline in una nuova scheda</translation>
+<translation id="4192273449750167573">Controlla le impostazioni nella prossima schermata</translation>
 <translation id="4237682350741091554">Gestisci la funzione Sincronizzazione Chrome e la personalizzazione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Inserisci passphrase</translation>
 <translation id="4272631900155121838">Per eseguire la scansione di un codice QR, attiva la videocamera dalle impostazioni</translation>
@@ -285,6 +287,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5938160824633642847">Il dispositivo è quasi pieno. Libera spazio e riprova.</translation>
 <translation id="5948291296578561264">In questo modo puoi salvare le foto nella raccolta di foto.</translation>
 <translation id="5955891643922670672">È visualizzata la versione offline</translation>
+<translation id="5957613098218939406">Altre opzioni</translation>
 <translation id="5964480694698977962">Crea nuova scheda in incognito.</translation>
 <translation id="5965679971710331625">Hai eseguito l'accesso</translation>
 <translation id="5982717868370722439">Aggiungi dati esistenti a <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6797885426782475225">Ricerca vocale</translation>
 <translation id="6807889908376551050">Mostra tutte...</translation>
 <translation id="681368974849482173">Elemento creato</translation>
+<translation id="685040365210406336">Non apportare modifiche</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6914783257214138813">Le tue password saranno visibili a chiunque abbia accesso al file esportato.</translation>
@@ -373,6 +377,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Sì, accetto</translation>
 <translation id="7425346204213733349">Le modifiche ai preferiti, alla cronologia, alle password e ad altre impostazioni non verranno più sincronizzate con il tuo account Google. Tuttavia, i dati esistenti rimarranno memorizzati.</translation>
 <translation id="744343212394640790">Non sono <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stato/contea</translation>

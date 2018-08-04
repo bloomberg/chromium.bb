@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Tunjukkan Ejaan dan Tatabahasa</translation>
 <translation id="1593594475886691512">Memformatkan...</translation>
 <translation id="159359590073980872">Cache Imej</translation>
+<translation id="1593926297800505364">Simpan kaedah pembayaran</translation>
 <translation id="1598233202702788831">Kemas kini dilumpuhkan oleh pentadbir anda</translation>
 <translation id="1600857548979126453">Akses bahagian belakang penyahpepijat halaman</translation>
 <translation id="1601560923496285236">Gunakan</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Tidak dapat menghubungkan peranti ke domain. Pastikan anda belum melebihi jumlah peranti yang boleh ditambahkan.</translation>
 <translation id="1744108098763830590">halaman latar belakang</translation>
 <translation id="1745520510852184940">Sentiasa Terjemahkan</translation>
+<translation id="1746417874336251387">Tawarkan ciri baharu yang menggunakan sambungan telefon anda ke Chromebook anda</translation>
 <translation id="174937106936716857">Jumlah kiraan fail</translation>
 <translation id="175196451752279553">B&amp;uka semula tab yang ditutup</translation>
 <translation id="1753905327828125965">Paling Kerap Dilawati</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Bukan Sebelum</translation>
 <translation id="1933809209549026293">Sila sambungkan tetikus atau papan kekunci. Jika anda menggunakan peranti Buetooth, pastikan ia sedia untuk digandingkan.</translation>
 <translation id="1936157145127842922">Paparkan dalam Folder</translation>
+<translation id="1938351510777341717">Perintah Luaran</translation>
 <translation id="1940546824932169984">Peranti yang disambungkan</translation>
 <translation id="1942765061641586207">Peleraian imej</translation>
+<translation id="1943097386230153518">Pasang perkhidmatan baharu</translation>
 <translation id="1944921356641260203">Kemas kini ditemui</translation>
 <translation id="1951615167417147110">Tatal ke atas satu halaman</translation>
 <translation id="1954813140452229842">Ralat melekapkan perkongsian. Sila semak bukti kelayakan anda dan cuba lagi.</translation>
@@ -1109,6 +1113,7 @@
 <translation id="2653659639078652383">Serah</translation>
 <translation id="265390580714150011">Nilai Medan</translation>
 <translation id="2654166010170466751">Benarkan tapak untuk memasang pengendali pembayaran</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Ciri berbeza-beza mengikut peranti</translation>
 <translation id="2660779039299703961">Acara</translation>
 <translation id="266079277508604648">Tidak dapat menyambungkan pencetak. Pastikan pencetak dihidupkan dan disambungkan kepada Chromebook anda melalui Wi-Fi atau USB.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1215,6 +1220,7 @@
 <translation id="2803375539583399270">Masukkan PIN</translation>
 <translation id="2805646850212350655">Sistem Fail Penyulitan Microsoft</translation>
 <translation id="2805756323405976993">Apl</translation>
+<translation id="2806891468525657116">Pintasan sudah wujud</translation>
 <translation id="2807517655263062534">Fail yang anda muat turun dipaparkan di sini</translation>
 <translation id="2809586584051668049">dan <ph name="NUMBER_ADDITIONAL_DISABLED" /> lagi</translation>
 <translation id="281133045296806353">Mencipta tetingkap baharu dalam sesi penyemak imbas yang sedia ada.</translation>
@@ -1601,6 +1607,7 @@
 <translation id="3428419049384081277">Anda sudah log masuk!</translation>
 <translation id="3429275422858276529">Tandai halaman ini agar mudah dicari kemudian</translation>
 <translation id="3429599832623003132">$1 item</translation>
+<translation id="3430342160185525240">Mendayakan Assistant untuk menunjukkan pemberitahuan kepada anda.</translation>
 <translation id="3432227430032737297">Alih Keluar Semua Yang Ditunjukkan</translation>
 <translation id="3432757130254800023">Hantar audio dan video untuk disiarkan pada rangkaian tempatan</translation>
 <translation id="3432762828853624962">Pekerja Kongsi</translation>
@@ -1965,6 +1972,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> dalam Panel Kawalan.
 
   Adakah anda ingin memulakan <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Tidak dapat membuat pintasan</translation>
 <translation id="3943582379552582368">&amp;Kembali</translation>
 <translation id="3943857333388298514">Tampal</translation>
 <translation id="3948116654032448504">&amp;Cari Imej di <ph name="SEARCH_ENGINE" /></translation>
@@ -2272,6 +2280,7 @@
 <translation id="4481530544597605423">Peranti dinyahganding</translation>
 <translation id="4482194545587547824">Google boleh menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian dan perkhidmatan Google yang lain.</translation>
 <translation id="4495419450179050807">Jangan paparkan pada halaman ini</translation>
+<translation id="4499718683476608392">Dayakan Autolengkap kad kredit untuk mengisi borang dengan satu klikan</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> telah ranap</translation>
 <translation id="450099669180426158">Ikon tanda seru</translation>
 <translation id="4501530680793980440">Sahkan Pengalihan Keluar</translation>
@@ -2550,7 +2559,6 @@
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ingin berkomunikasi dengan sambungan "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Terima</translation>
-<translation id="4920350943031252905">Jalankan alatan, editor dan IDE Linux pada Chromebook anda.</translation>
 <translation id="4920887663447894854">Tapak berikut telah disekat daripada menjejaki lokasi anda pada halaman ini:</translation>
 <translation id="492299503953721473">Alih keluar apl Android</translation>
 <translation id="4923279099980110923">Ya, saya ingin membantu</translation>
@@ -3116,6 +3124,7 @@
 <translation id="5752453871435543420">Sandaran Awan OS Chrome</translation>
 <translation id="5756163054456765343">P&amp;usat bantuan</translation>
 <translation id="5759728514498647443">Dokumen yang anda hantar untuk dicetak melalui <ph name="APP_NAME" /> boleh dibaca oleh <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Tetapan kad kredit</translation>
 <translation id="5763751966069581670">Tiada peranti USB ditemui</translation>
 <translation id="5764483294734785780">Si&amp;mpan audio sebagai...</translation>
 <translation id="57646104491463491">Tarikh Diubah Suai</translation>
@@ -3187,6 +3196,7 @@
 <translation id="5855773610748894548">Oops, ralat modul selamat.</translation>
 <translation id="5856721540245522153">Dayakan ciri penyahpepijatan</translation>
 <translation id="5857090052475505287">Folder Baharu</translation>
+<translation id="585979798156957858">Meta Luaran</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5860209693144823476">Tab 3</translation>
 <translation id="5860491529813859533">Hidupkan</translation>
@@ -3496,6 +3506,7 @@
 <translation id="6327785803543103246">Autopenemuan proksi web</translation>
 <translation id="6333064448949140209">Fail akan dihantar kepada Google untuk dinyahpepijat</translation>
 <translation id="6333834492048057036">Fokus bar alamat untuk carian</translation>
+<translation id="6336451774241870485">Tab peribadi baharu</translation>
 <translation id="6339668969738228384">Buat profil baharu untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Tidak dapat menyambung ke pelayan. Sila semak sambungan rangkaian anda dan cuba lagi. Sekiranya masalah ini berterusan, mulakan semula Chromebook anda.</translation>
 <translation id="6340071272923955280">Protokol Cetakan Internet (IPPS)</translation>
@@ -3677,6 +3688,7 @@
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">Maklumat fail</translation>
 <translation id="6607831829715835317">Lagi al&amp;at</translation>
+<translation id="6610147964972079463">Tutup tab peribadi</translation>
 <translation id="6612358246767739896">Kandungan yang dilindungi</translation>
 <translation id="6613452264606394692">Tandai halaman ini untuk kembali ke sini dengan cepat</translation>
 <translation id="6614893213975402384">Pasang kemas kini &amp; apl. Dengan meneruskan, anda bersetuju bahawa peranti ini mungkin turut memuat turun dan memasang kemas kini serta apl secara automatik daripada Google, pembawa anda dan pengeluar peranti anda mungkin menggunakan data selular. Sesetengah apl ini mungkin menawarkan pembelian dalam apl. Anda boleh mengalih keluar apl ini pada bila-bila masa. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
@@ -3747,6 +3759,7 @@
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6718273304615422081">Mengezip...</translation>
 <translation id="671928215901716392">Kunci skrin</translation>
+<translation id="6720847671508630642">Kongsi ciri terbaik Android dengan Chromebook anda secara automatik. Sambungkan telefon anda agar anda dapat menghantar teks dari komputer anda, berkongsi sambungan Internet telefon anda dan membuka kunci skrin Chromebook anda. <ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />Ketahui lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Lihat jenama dan model Kunci Keselamatan anda</translation>
 <translation id="6721972322305477112">&amp;Fail</translation>
 <translation id="672213144943476270">Sila buka kunci profil anda sebelum menyemak imbas sebagai tetamu.</translation>
@@ -3893,6 +3906,7 @@
 <translation id="6970856801391541997">Cetak Halaman Tertentu</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
 <translation id="6973630695168034713">Folder</translation>
+<translation id="6974609594866392343">Mod tunjuk cara luar talian</translation>
 <translation id="6976108581241006975">Konsol JavaScript</translation>
 <translation id="6977381486153291903">Semakan perisian tegar</translation>
 <translation id="6978121630131642226">Enjin Carian</translation>
@@ -4487,6 +4501,7 @@
 <translation id="7857949311770343000">Adakah ini halaman tab baharu yang anda jangkakan?</translation>
 <translation id="786073089922909430">Perkhidmatan: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Muat turun</translation>
+<translation id="7864662577698025113">Tambah perkhidmatan baharu</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 kuki}other{# kuki}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Digandingkan</translation>
 <translation id="7870730066603611552">Semak pilihan penyegerakan selepas persediaan</translation>
@@ -5002,6 +5017,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8666584013686199826">Tanya apabila tapak mahu mengakses peranti USB</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> kini dipaparkan dalam skrin penuh dan telah melumpuhkan kursor tetikus.</translation>
 <translation id="8669284339312441707">Hangat</translation>
+<translation id="8669919703154928649">Benarkan Assistant menunjukkan pemberitahuan kepada anda</translation>
 <translation id="8669949407341943408">Bergerak...</translation>
 <translation id="8671210955687109937">Boleh ulas</translation>
 <translation id="8673026256276578048">Cari di Web...</translation>
@@ -5389,6 +5405,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="964286338916298286">Pentadbir IT anda telah melumpuhkan Chrome Goodies untuk peranti anda.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplikasi}other{Aplikasi}}</translation>
 <translation id="967007123645306417">Ini akan melog anda keluar daripada akaun Google anda. Perubahan kepada penanda halaman, sejarah, kata laluan dan tetapan anda yang lain tidak akan disegerakkan ke Akaun Google anda lagi. Walau bagaimanapun, data sedia ada akan kekal disimpan dalam Akaun Google anda dan boleh diuruskan di <ph name="BEGIN_LINK" />Papan Pemuka Google<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Data disimpan</translation>
 <translation id="968000525894980488">Hidupkan perkhidmatan Google Play.</translation>
 <translation id="968174221497644223">Cache aplikasi</translation>
 <translation id="969096075394517431">Tukar bahasa</translation>

@@ -6,6 +6,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome – Adatvédelmi közlemény</translation>
 <translation id="1863312987075920112">Az alkalmazás használatával elfogadja a Chrome <ph name="BEGIN_LINK_TOS" />Általános Szerződési Feltételeit<ph name="END_LINK_TOS" /> és <ph name="BEGIN_LINK_PRIVACY" />Adatvédelmi közleményét<ph name="END_LINK_PRIVACY" />.</translation>
+<translation id="1878302395768190018">Ezt bármikor személyre szabhatja a Chrome beállításaiban</translation>
 <translation id="2147651015520127414">A Chrome ellenőrizte, hogy a(z) <ph name="ISSUER" /> adta ki ezt a webhelytanúsítványt.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Minden jog fenntartva.</translation>
 <translation id="2342981853652716282">Jelentkezzen be a Chrome-ba, hogy az összes eszközén hozzáférhessen könyvjelzőihez, jelszavaihoz és más beállításaihoz.</translation>
@@ -38,6 +39,7 @@
 <translation id="5639704535586432836">Nyissa meg a Beállítások &gt; Adatvédelem &gt; Kamera &gt; Google Chrome elemet, és kapcsolja be a kamerát.</translation>
 <translation id="5642200033778930880">A Google Chrome Osztott nézet módban nem tudja használni a kamerát</translation>
 <translation id="5703130498371792817">Kedveli a Chrome-ot? <ph name="BEGIN_LINK" />Értékelje az alkalmazást<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Tipp a Chrome használatához. Egyes gombok (például a Vissza, az Előre vagy a Keresés) mostantól a képernyő alján jelennek meg.</translation>
 <translation id="6036420186814142909">A Google Chrome számos olyan funkciót biztosít, amelyek segítik internetes adatainak kezelésében, illetve a weboldalak betöltési gyorsaságának beállításában.
 <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">A más eszközökön futó Chrome böngészőben megnyitott lapok itt jelennek meg.</translation>
@@ -56,4 +58,5 @@
 <translation id="8459495907675268833">A kiválasztott adatokat eltávolítottuk a Chrome-ból és a szinkronizált eszközökről. Előfordulhat, hogy Google-fiókjában (a history.google.com címen) még szerepelnek a böngészési előzmények egyéb formái, így például a keresések és egyéb tevékenységek más Google-szolgáltatásokból.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Előfordulhat, hogy a Google Chrome internetes szolgáltatásokat használ böngészési élménye javítására. Lehetősége van e szolgáltatások letiltására. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Tipp a Chrome használatához. A további lapbeállításokhoz tartsa lenyomva az eszköztárban lévő Lapok megjelenítése gombot, amely a képernyő alsó vagy felső részén található.</translation>
 </translationbundle>

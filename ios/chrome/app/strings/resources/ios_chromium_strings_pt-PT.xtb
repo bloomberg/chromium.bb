@@ -23,6 +23,7 @@
 <translation id="3605252743693911722">Inicie sessão no Chromium para obter os seus marcadores, palavras-passe e muito mais em todos os dispositivos.</translation>
 <translation id="3805899903892079518">O Chromium não tem acesso aos seus vídeos ou fotos. Ative o acesso nas Definições do iOS &gt; Privacidade &gt; Fotos.</translation>
 <translation id="4024541897090868497">Para obter os seus separadores em todos os dispositivos, inicie sessão no Chromium.</translation>
+<translation id="4157467675761413638">Sugestão para o Chromium: para obter mais opções de separadores, prima sem soltar o botão Mostrar separadores na barra de ferramentas, que se encontra na parte superior ou inferior do ecrã.</translation>
 <translation id="4241912885070669028">Está a terminar sessão numa conta gerida por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Esta ação elimina os seus dados do Chromium deste dispositivo, embora permaneçam na Conta Google.</translation>
 <translation id="4272892696084633551">Ajudar a melhorar as funcionalidades e o desempenho do Chromium</translation>
 <translation id="4555020257205549924">Se esta funcionalidade estiver ativada, o Chromium oferecer-se-á para traduzir páginas escritas noutros idiomas com o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -45,6 +46,7 @@
 <translation id="7357211569052832586">Os dados selecionados foram removidos do Chromium e dos dispositivos sincronizados. A sua Conta Google pode ter outras formas do histórico de navegação, como pesquisas e atividade de outros serviços Google, em history.google.com.</translation>
 <translation id="7400689562045506105">Utilizar o Chromium em todas as plataformas</translation>
 <translation id="7674213385180944843">Abra Definições &gt; Privacidade &gt; Câmara &gt; Chromium e ative a câmara.</translation>
+<translation id="7746854981345936341">Sugestão para o Chromium: alguns botões encontram-se agora na parte inferior do ecrã, como Retroceder, Avançar e Pesquisar.</translation>
 <translation id="786327964234957808">Está a mudar a sincronização de contas de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os seus dados do Chromium existentes são geridos por <ph name="DOMAIN" />. Esta ação eliminará os dados deste dispositivo, mas os dados permanecerão em <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Sugestão: <ph name="BEGIN_LINK" />mova o Chromium para a Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Obter uma melhor experiência no Chromium com base na sua localização.</translation>

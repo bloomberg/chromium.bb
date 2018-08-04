@@ -507,6 +507,11 @@
       Se essa configuração não for definida, o usuário poderá optar por usar essa função ou não.
 
       Essa configuração foi removida do <ph name="PRODUCT_NAME" /> 29 e de versões superiores.</translation>
+<translation id="2433412232489478893">Esta política controla se o recurso de Compartilhamento de arquivos de rede do <ph name="PRODUCT_NAME" /> é permitido para um usuário.
+
+      Quando esta política não for configurada ou for definida como verdadeira, os usuários poderão usar o Compartilhamento de arquivos de rede.
+
+      Quando esta política for definida como falsa, os usuários não poderão usar o Compartilhamento de arquivos de rede.</translation>
 <translation id="2438609638493026652">Ativa a geração de relatórios dos principais eventos durante a instalação do app Android no Google. Os eventos são capturados apenas para os apps cuja instalação foi acionada por meio da política.
 
       Se a política estiver definida como verdadeira, os eventos serão registrados.
@@ -584,6 +589,7 @@
 <translation id="2598508021807251719">Configura as localidades em que o <ph name="PRODUCT_OS_NAME" /> pode ser exibido.
 
       Se esta política for definida, o usuário só poderá configurar o <ph name="PRODUCT_OS_NAME" /> para ser exibido em uma das localidades especificadas por esta política. Se esta política não for definida ou for definida como uma lista vazia, o <ph name="PRODUCT_OS_NAME" /> poderá ser exibido em todas as localidades de IU disponíveis. Se esta política for definida como uma lista com valores inválidos, todos os valores inválidos serão ignorados. Se um usuário tiver configurado anteriormente o <ph name="PRODUCT_OS_NAME" /> para ser exibido em uma localidade que não seja permitida por esta política, a localidade de exibição será alternada para uma localidade de IU permitida na próxima vez que o usuário fizer login. Se o usuário tiver configurado localidades preferenciais, e uma delas for permitida por esta política, o <ph name="PRODUCT_OS_NAME" /> será alternado para essa localidade. Caso contrário, o <ph name="PRODUCT_OS_NAME" /> passará para o primeiro valor válido especificado por esta política ou para a localidade substituta (atualmente, en-US) se a política incluir apenas entradas inválidas.</translation>
+<translation id="2604182581880595781">Configurar políticas relacionadas ao Compartilhamento de arquivos de rede.</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Fornece configurações para impressoras corporativas.
@@ -661,6 +667,7 @@
 <translation id="2823870601012066791">Local de registro do Windows para clientes do <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anônima</translation>
 <translation id="2838830882081735096">Bloquear migração de dados e ARC</translation>
+<translation id="2839294585867804686">Configurações do Compartilhamento de arquivos de rede</translation>
 <translation id="2840269525054388612">Especifica as impressoras que um usuário pode usar.
 
       Esta política só será usada se <ph name="PRINTERS_WHITELIST" /> for escolhida para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1140,6 +1147,7 @@
       Se essa política não for configurada, a coleta de dados anônimos inseridos no URL estará ativa, mas o usuário poderá alterar isso.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4261820385751181068">Localidade da tela de login do dispositivo</translation>
+<translation id="4264607809747169568">Controla o Compartilhamento de arquivos de rede para disponibilidade do ChromeOS</translation>
 <translation id="427220754384423013">Especifica as impressoras que um usuário pode usar.
 
       Esta política só será usada se <ph name="PRINTERS_WHITELIST" /> for escolhida para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1536,6 +1544,15 @@
       O valor da política deve ser especificado em milissegundos.</translation>
 <translation id="5511702823008968136">Ativar a barra de favoritos</translation>
 <translation id="5512418063782665071">URL da página inicial</translation>
+<translation id="551639594034811656">Esta política define uma lista de porcentagens que determina a fração dos dispositivos <ph name="PRODUCT_OS_NAME" /> na UO a ser atualizada diariamente a partir do dia em que a atualização é descoberta pela primeira vez. A descoberta acontece após a publicação da atualização, já que o dispositivo pode levar algum tempo para procurar por atualizações.
+
+      Cada par (dia, porcentagem) contém a indicação da porcentagem da frota a ser atualizada por um determinado número de dias desde a descoberta da atualização. Por exemplo, se tivermos os pares [(4, 40), (10, 70), (15, 100)], então 40% da frota deverá ter sido atualizada quatro dias após a visualização da atualização, 70% deverá ter sido atualizada após 10 dias, e assim por diante.
+
+      Se houver um valor definido para esta política, as atualizações ignorarão a <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> e seguirão esta política.
+
+      Se a lista estiver vazia, não haverá uma fase de testes, e as atualizações serão aplicadas de acordo com outras políticas do dispositivo.
+
+      Esta política não se aplica a trocas de canais.</translation>
 <translation id="5523812257194833591">Uma sessão pública para o login automático após um intervalo.
 
       Se esta política for definida, automaticamente ocorrerá o login na sessão especificada após haver transcorrido um período sem interação do usuário na tela de login. A sessão pública já deve estar configurada (consulte |DeviceLocalAccounts|).
@@ -2429,6 +2446,11 @@
       Se a política estiver desativada, nenhum isolamento de sites ocorrerá, e as versões de teste de IsolateOrigins e SitePerProcess serão desativadas. Os usuários ainda poderão ativar SitePerProcess manualmente.
       Se a política não estiver configurada, o usuário conseguirá alterar essa configuração.
       </translation>
+<translation id="7902255855035461275">Os padrões desta lista serão comparados com a origem de
+      segurança do URL solicitante. Se uma correspondência for encontrada, o acesso aos
+      dispositivos de captura de vídeo será concedido sem solicitação.
+
+      OBSERVAÇÃO: até a versão 45, esta política era compatível apenas com o modo quiosque.</translation>
 <translation id="7912255076272890813">Configurar tipos permitidos de aplicativo/extensão</translation>
 <translation id="7915236031252389808">É possível especificar um URL para um arquivo proxy .pac aqui.
 

@@ -2550,7 +2550,6 @@
 <translation id="4917385247580444890">Сильный</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> запрашивает доступ к расширению "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Принять</translation>
-<translation id="4920350943031252905">Запускайте инструменты, редакторы и интегрированные среды разработки Linux на вашем устройстве Chromebook.</translation>
 <translation id="4920887663447894854">Вы запретили передачу ваших геоданных следующим сайтам:</translation>
 <translation id="492299503953721473">Удалить приложения для Android</translation>
 <translation id="4923279099980110923">Да, отправить файл на анализ</translation>
@@ -4035,6 +4034,7 @@
 <translation id="7175353351958621980">Загружено из:</translation>
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7180865173735832675">Настроить</translation>
+<translation id="7182359331070524176">Выберите альбом в Google Фото</translation>
 <translation id="7186088072322679094">Сохранить на Панели инструментов</translation>
 <translation id="7187428571767585875">Записи реестра, которые будут удалены или изменены:</translation>
 <translation id="7189234443051076392">Убедитесь, что на вашем устройстве достаточно свободного места.</translation>

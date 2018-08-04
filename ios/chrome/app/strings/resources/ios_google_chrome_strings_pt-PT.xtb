@@ -6,6 +6,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Aviso de Privacidade do Google Chrome</translation>
 <translation id="1863312987075920112">Ao utilizar esta aplicação, aceita os <ph name="BEGIN_LINK_TOS" />Termos de Utilização<ph name="END_LINK_TOS" /> e o <ph name="BEGIN_LINK_PRIVACY" />Aviso de Privacidade<ph name="END_LINK_PRIVACY" /> do Chrome.</translation>
+<translation id="1878302395768190018">Pode personalizar em qualquer altura nas Definições do Chrome</translation>
 <translation id="2147651015520127414">O Chrome confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2342981853652716282">Inicie sessão no Chrome para obter os seus marcadores, palavras-passe e muito mais em todos os dispositivos.</translation>
@@ -38,6 +39,7 @@
 <translation id="5639704535586432836">Abra Definições &gt; Privacidade &gt; Câmara &gt; Google Chrome e ative a câmara.</translation>
 <translation id="5642200033778930880">O Google Chrome não pode utilizar a câmara no modo Vista dividida</translation>
 <translation id="5703130498371792817">Está a gostar do Chrome? <ph name="BEGIN_LINK" />Classifique esta aplicação<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Sugestão para o Chrome: alguns botões encontram-se agora na parte inferior do ecrã, como Retroceder, Avançar e Pesquisar.</translation>
 <translation id="6036420186814142909">O Google Chrome inclui funcionalidades que o/a ajudam a gerir os seus dados de Internet e a velocidade com que as páginas Web são carregadas. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Os separadores que abriu no Chrome nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="6600954340915313787">Copiado para o Chrome</translation>
@@ -55,4 +57,5 @@
 <translation id="8459495907675268833">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. A sua Conta Google pode ter outras formas do histórico de navegação, como pesquisas e atividade de outros serviços Google, em history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">O Google Chrome poderá utilizar serviços Web para melhorar a sua experiência de navegação. Poderá optar por desativar estes serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Sugestão para o Chrome: para obter mais opções de separadores, prima sem soltar o botão Mostrar separadores na barra de ferramentas, que se encontra na parte superior ou inferior do ecrã.</translation>
 </translationbundle>

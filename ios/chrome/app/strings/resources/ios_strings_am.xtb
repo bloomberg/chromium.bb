@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">ይህ መተግበሪያ ለአሁኑ ውርድዎ ሁሉንም ሂደት ያቆማል።</translation>
 <translation id="1605658421715042784">ምስሉን ገልብጥ</translation>
 <translation id="1612730193129642006">የትር ፍርግርግ አሳይ</translation>
+<translation id="162035744160882748">ስምረትን፣ ግላዊነት ማላበስን እና ሌሎች የGoogle አገልግሎቶችን ያብሩ</translation>
 <translation id="1644574205037202324">ታሪክ</translation>
 <translation id="1646446875146297738">«አትከታተል»ን ማንቃት ማለት አንድ ጥያቄ ከአሰሳ ትራፊክዎ ጋር አብሮ ይካተታል ማለት ነው። ማንኛውም ውጤት አንድ ድር ጣቢያ ለጥያቄው መልስ መስጠቱ ላይ እና ጥያቄው በተተረጎመበት መንገድ ላይ የሚወሰን ይሆናል። 
 
@@ -194,6 +195,7 @@
 <translation id="4124987746317609294">የጊዜ ወሰን</translation>
 <translation id="4172051516777682613">ሁልጊዜ አሳይ</translation>
 <translation id="418156467088430727">የመስመር ውጭ ስሪቱን በአዲስ ትር ውስጥ ይመልከቱ</translation>
+<translation id="4192273449750167573">ቅንብሮችዎን በቀጣዩ ማያ ገጽ ላይ ይገምግሙ</translation>
 <translation id="4237682350741091554">Chrome ስምረትን እና ግላዊነት ማለበስን በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ ያቀናብሩ</translation>
 <translation id="424315890655130736">የይለፍ ሐረግ ያስገቡ</translation>
 <translation id="4272631900155121838">የQR ኮድን ለመቃኘት፣ ካሜራውን በቅንብሮች ውስጥ ያንቁ</translation>
@@ -285,6 +287,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="5938160824633642847">ይህ መሣሪያ ሊሞላ ትንሽ ነው የቀረው። ቦታ ያስለቅቁና እንደገና ይሞክሩ።</translation>
 <translation id="5948291296578561264">ይህ ፎቶዎችን ወደ የፎቶ ቤተ-መጽሔፍትዎ እንዲያስቀምጡ ያስችልዎታል።</translation>
 <translation id="5955891643922670672">የመስመር ውጭ ስሪቱን በመመልከት ላይ</translation>
+<translation id="5957613098218939406">ተጨማሪ አማራጮች</translation>
 <translation id="5964480694698977962">አዲስ ማንነት የማያሳውቅ ትር ፍጠር።</translation>
 <translation id="5965679971710331625">ወደ መለያ ገብተዋል</translation>
 <translation id="5982717868370722439">ነባሩን ውሂብ ወደ <ph name="USER_EMAIL" /> ያክሉ።</translation>
@@ -344,6 +347,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6797885426782475225">የድምፅ ፍለጋ</translation>
 <translation id="6807889908376551050">ሁሉንም አሳይ...</translation>
 <translation id="681368974849482173">ንጥል ተፈጥሯል</translation>
+<translation id="685040365210406336">ምንም ለውጦችን አያደርጉ</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
 <translation id="6903907808598579934">ስምረትን አብራ</translation>
 <translation id="6914783257214138813">የእርስዎ የይለፍ ቃላት ወደ ውጭ የተላከውን ፋይልን መመልከት ለሚችል ማንኛውም ሰው የሚታዩ ይሆናሉ።</translation>
@@ -373,6 +377,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7336264872878993241"><ph name="PERCENT" /> በመቶ ወርዷል</translation>
 <translation id="7346909386216857016">እሺ፣ ገባኝ</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">አዎ፣ ገብቼያለሁ</translation>
 <translation id="7425346204213733349">በእርስዎ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ላይ የተደረጉ ለውጦች ከአሁን በኋላ ከእርስዎ የGoogle መለያ ጋር አይሠምሩም። ሆኖም ግን ነባር ውሂብዎ በእርስዎ የGoogle መለያ ላይ እንደተከማቸ ይቆያል።</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> አይደለም</translation>
 <translation id="7454057999980797137">ግዛት / አውራጃ</translation>

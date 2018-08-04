@@ -302,6 +302,11 @@
       Jei nustatymas nenurodytas, naudojama numatytoji vertė.
 
       Jei ši politika nenustatyta, naudojami numatytieji nustatymai.</translation>
+<translation id="1958138414749279167">Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai užpildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., adreso informaciją.
+
+      Jei šis nustatymas išjungtas, Automatinio pildymo funkcija niekada nesiūlys ir automatiškai nepildys adreso informacijos, taip pat neišsaugos papildomos adreso informacijos, kurią naudotojas gali pateikti naršydamas žiniatinklyje.
+
+      Jei šis nustatymas įgalintas arba vertė nenustatyta, naudotojas galės valdyti adreso informacijos Automatinio pildymo funkciją naudotojo sąsajoje.</translation>
 <translation id="1960840544413786116">Ar leidžiami sertifikatai, išduoti naudojant vietinius patikimus prieraišus, kuriuose nėra plėtinio „subjectAlternativeName“</translation>
 <translation id="1964634611280150550">Inkognito režimas neleidžiamas</translation>
 <translation id="1964802606569741174">Ši politika neturi įtakos „Android“ skirtai „YouTube“ programai. Jei turėtų būti taikomi „YouTube“ saugos nustatymai, „Android“ skirtos „YouTube“ programos diegimas turėtų būti neleidžiamas.</translation>
@@ -1942,6 +1947,7 @@
 <translation id="6440051664870270040">Leisti svetainėms vienu metu naršyti ir atidaryti iššokančiuosius langus</translation>
 <translation id="6447948611083700881">Atsarginis kopijavimas ir atkūrimas išjungtas</translation>
 <translation id="645425387487868471">Įgalinti „<ph name="PRODUCT_NAME" />“ priverstinį prisijungimą</translation>
+<translation id="6464074037294098618">Adresų automatinio pildymo funkcijos įgalinimas</translation>
 <translation id="6473623140202114570">Domenų, kuriuose Saugaus naršymo funkcija nesuaktyvins įspėjimų, sąrašo konfigūravimas.</translation>
 <translation id="6491139795995924304">Leisti „Bluetooth“ įrenginyje</translation>
 <translation id="6520802717075138474">Importuoti paieškos variklius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>

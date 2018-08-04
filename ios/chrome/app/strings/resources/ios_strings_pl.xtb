@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">Spowoduje to zatrzymanie bieżącego pobierania.</translation>
 <translation id="1605658421715042784">Kopiuj obraz</translation>
 <translation id="1612730193129642006">Pokaż układ kart</translation>
+<translation id="162035744160882748">Włącz synchronizację, personalizację i inne usługi Google</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1646446875146297738">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
 
@@ -194,6 +195,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="4124987746317609294">Zakres czasowy</translation>
 <translation id="4172051516777682613">Zawsze pokazuj</translation>
 <translation id="418156467088430727">Wyświetl wersję offline w nowej karcie</translation>
+<translation id="4192273449750167573">Przejrzyj ustawienia na następnym ekranie</translation>
 <translation id="4237682350741091554">Zarządzaj synchronizacją Chrome i personalizacją w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Wpisz hasło</translation>
 <translation id="4272631900155121838">Aby zeskanować kod QR, włącz aparat w ustawieniach</translation>
@@ -285,6 +287,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5938160824633642847">Na urządzeniu brakuje wolnego miejsca. Zwolnij miejsce i spróbuj ponownie.</translation>
 <translation id="5948291296578561264">Umożliwia zapisywanie zdjęć w ich bibliotece.</translation>
 <translation id="5955891643922670672">Wyświetlam wersję offline</translation>
+<translation id="5957613098218939406">Więcej opcji</translation>
 <translation id="5964480694698977962">Utwórz nową kartę incognito.</translation>
 <translation id="5965679971710331625">Jesteś zalogowany</translation>
 <translation id="5982717868370722439">Dodaj istniejące dane do konta <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6797885426782475225">Wyszukiwanie głosowe</translation>
 <translation id="6807889908376551050">Pokaż wszystkie...</translation>
 <translation id="681368974849482173">Utworzono element</translation>
+<translation id="685040365210406336">Nie wprowadzaj żadnych zmian</translation>
 <translation id="6896758677409633944">Kopiuj</translation>
 <translation id="6903907808598579934">Włącz synchronizację</translation>
 <translation id="6914783257214138813">Twoje hasła będą widoczne dla każdego, kto może zobaczyć wyeksportowany plik.</translation>
@@ -373,6 +377,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7336264872878993241">Pobrano <ph name="PERCENT" /> procent</translation>
 <translation id="7346909386216857016">Rozumiem</translation>
 <translation id="7400418766976504921">Adres URL</translation>
+<translation id="741204030948306876">Tak</translation>
 <translation id="7425346204213733349">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje istniejące dane będą jednak nadal na nim przechowywane.</translation>
 <translation id="744343212394640790">Konto <ph name="EMAIL" /> nie jest moje</translation>
 <translation id="7454057999980797137">Stan/region</translation>

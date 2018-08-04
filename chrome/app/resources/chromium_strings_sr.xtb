@@ -126,7 +126,7 @@
 <translation id="5479196819031988440">Chromium ОС не може да отвори ову страницу.</translation>
 <translation id="5480860683791598150">Chromium тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
-<translation id="5514308096618405748">Chrome ОС је омогућен захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтверу са отвореним кодом<ph name="END_LINK_CROS_OSS" />, као и Linux (бета).</translation>
+<translation id="5514308096618405748">Chrome ОС је омогућен захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтверу са отвореним кодом<ph name="END_LINK_CROS_OSS" />, као што је Linux (бета).</translation>
 <translation id="5529843986978123325">{0,plural, =1{Chromium ОС ће се рестартовати за 1 минут}one{Chromium ОС ће се рестартовати за # минут}few{Chromium ОС ће се рестартовати за # минута}other{Chromium ОС ће се рестартовати за # минута}}</translation>
 <translation id="5631814766731275228">Назив и слика Chromium профила</translation>
 <translation id="5634636535844844681">За Chromium је потребан Windows 7 или новија верзија.</translation>
@@ -234,6 +234,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8157153840442649507">Chromium се приказује на овом језику</translation>
 <translation id="81770708095080097">Ова датотека је опасна, па ју је Chromium блокирао.</translation>
 <translation id="8222496066431494154">Инсталирајте Chromium на телефону. Послаћемо вам SMS на број телефона за враћање приступа налогу: <ph name="PHONE_NUMBER" /></translation>
+<translation id="825412236959742607">Ова страница користи превише меморије, па је Chrome уклонио одређени садржај.</translation>
 <translation id="8269379391216269538">Помозите нам да побољшамо Chromium</translation>
 <translation id="8290862415967981663">Ова датотека је можда опасна, па ју је Chromium блокирао.</translation>
 <translation id="8330519371938183845">Пријавите се да бисте синхронизовали и персонализовали Chromium на свим уређајима</translation>

@@ -302,6 +302,11 @@
       Kui seadet ei määrata, siis kasutatakse vaikeväärtust.
 
       Kui seda reeglit ei määrata, siis kasutatakse kõikide seadete jaoks vaikevalikuid.</translation>
+<translation id="1958138414749279167">Lubab rakenduse <ph name="PRODUCT_NAME" /> automaattäite funktsiooni ja võimaldab kasutajatel aadressiteabe automaatselt veebivormidele sisestada, kasutades varem salvestatud teavet.
+
+      Selle seade keelamisel ei anna automaattäite funktsioon soovitusi ega sisesta aadressiteavet. Samuti ei salvesta see aadressi lisateavet, mille kasutaja võib veebi sirvimisel esitada.
+
+      Selle seade lubamisel või määramata jätmisel saab kasutaja kasutajaliideses aadresside automaattäite funktsiooni juhtida.</translation>
 <translation id="1960840544413786116">Kas lubada kohalike usaldusvõtmete väljastatud sertifikaadid, millel puudub laiend subjectAlternativeName?</translation>
 <translation id="1964634611280150550">Inkognito režiim on keelatud</translation>
 <translation id="1964802606569741174">See reegel ei mõjuta Androidi YouTube'i rakendust. Kui ohutusrežiim on sisse lülitatud, tuleks YouTube jõustada ja Androidi YouTube'i rakenduse installimine keelata.</translation>
@@ -517,6 +522,11 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
       Kui jätate seade määramata, saavad kasutajad otsustada, kas seda funktsiooni kasutada või mitte.
 
       Toote <ph name="PRODUCT_NAME" /> 29-st ja uuematest versioonidest on see seade eemaldatud.</translation>
+<translation id="2433412232489478893">Reegel määrab, kas teenuse <ph name="PRODUCT_NAME" /> failide võrguhoidlate funktsioon on kasutaja jaoks lubatud.
+
+      Kui reegel on seadistamata või seatud väärtusele Tõene, saavad kasutajad failide võrguhoidlaid kasutada.
+
+      Kui reegel on seatud väärtusele Väär, ei saa kasutajad failide võrguhoidlaid kasutada.</translation>
 <translation id="2438609638493026652">Võimaldab Androidi rakenduse installimise ajal saata Google'ile teavitusi oluliste sündmuste kohta. Sündmused jäädvustatakse ainult rakenduste puhul, mille installimine käivitati reegli kaudu.
 
       Kui reegel on määratud väärtusele Tõene, siis sündmused logitakse.
@@ -599,6 +609,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="2598508021807251719">Seadistab lokaadid, kus tohib operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kuvada.
 
       Kui reegel on määratud, saab kasutaja seadistada operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> nii, et seda tohiks kuvada ainult selle reegliga määratud lokaatides. Kui reegel on määramata või määratud on tühi loend, tohib operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kuvada kõikides toetatud lokaatides. Kui reegli jaoks on määratud sobimatute väärtustega loend, eiratakse kõiki sobimatuid väärtusi. Kui kasutaja oli operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> valinud kuvatava keele, mis ei ole selle reegli kohaselt lubatud, määratakse kasutaja järgmisel sisselogimisel lubatud kuvatav lokaat. Kui kasutaja oli seadistanud eelistatud lokaadid ja üks eelistatud lokaatidest on selle reegli alusel lubatud, aktiveeritakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> see lokaat. Muul juhul kasutatakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> reegli esimest sobivat väärtust või varulokaati (praegu en-US), kui reegel sisaldab ainult sobimatuid kirjeid.</translation>
+<translation id="2604182581880595781">Failide võrguhoidlatega seotud reeglite seadistamine.</translation>
 <translation id="2623014935069176671">Kasutaja esmase tegevuse ootamine</translation>
 <translation id="262740370354162807">Luba dokumentide saatmine teenusesse <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Määrab seadistused ettevõtte printeritele.
@@ -684,6 +695,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="2823870601012066791">Windowsi registri asukoht operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> klientide puhul:</translation>
 <translation id="2824715612115726353">Luba inkognitorežiim</translation>
 <translation id="2838830882081735096">Keela andmete üleviimine ja ARC</translation>
+<translation id="2839294585867804686">Failide võrguhoidlate seaded</translation>
 <translation id="2840269525054388612">Määrab printerid, mida kasutaja saab kasutada.
 
       Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_WHITELIST" />
@@ -1171,6 +1183,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui jätate selle reegli määramata, on URL-i võtmetega anonüümsete andmete kogumine lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4261820385751181068">Seadme sisselogimisekraani lokaat</translation>
+<translation id="4264607809747169568">Juhib failide võrguhoidlate saadavalolekut Chrome OS-is</translation>
 <translation id="427220754384423013">Määrab printerid, mida kasutaja saab kasutada.
 
       Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="BULK_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_WHITELIST" />.
@@ -1602,6 +1615,15 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Reegli väärtus peab olema määratud millisekundites.</translation>
 <translation id="5511702823008968136">Luba järjehoidjariba</translation>
 <translation id="5512418063782665071">Avalehe URL</translation>
+<translation id="551639594034811656">See reegel määrab loendi protsentidest, mis sätestavad OU operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete murdosa, mida alates värskenduse leidmisest kord nädalas värskendatakse. Avastamisaeg on hilisem kui värskenduse avaldamise aeg, kuna pärast värskenduse avaldamist võib seadmel kuluda värskenduste otsimiseks pisut aega.
+
+      Iga paar (päev, protsent) määrab, milline protsent seadetest tuleb värskendada määratud päevade arvu jooksul pärast värskenduse leidmist. Näiteks paaride {(4, 40), (10, 70), (15, 100)] puhul peab 40% seadmetest olema värskendatud 4 päeva jooksul pärast värskenduse leidmist, 70% 10 päeva jooksul jne.
+
+      Kui reegli väärtus on määratud, eiravad värskendused reeglit <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> ja järgivad selle asemel seda reeglit.
+
+      Kui loend on tühi, siis kontrollimist ei kasutata ja värskendused rakendatakse seadme muude eeskirjade alusel.
+
+      Reegel ei kehti kanalivahetuste puhul.</translation>
 <translation id="5523812257194833591">Avalik seanss automaatseks sisselogimiseks pärast viivitust.
 
       Kui selle reegli määrate, logitakse määratud seanssi automaatselt sisse pärast teatud perioodi möödumist sisselogimisekraanil ilma kasutaja interaktsioonita. Avalik seanss peab olema juba seadistatud (vt |DeviceLocalAccounts|).
@@ -1914,6 +1936,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6440051664870270040">Saitidel samaaegse navigeerimise ja hüpikakende avamise lubamine</translation>
 <translation id="6447948611083700881">Varundamine ja taastamine on keelatud</translation>
 <translation id="645425387487868471">Teenusesse <ph name="PRODUCT_NAME" /> sundsisselogimise lubamine</translation>
+<translation id="6464074037294098618">Aadresside automaattäite lubamine</translation>
 <translation id="6473623140202114570">Seadistage loend domeenidest, kus Google'i ohutu sirvimise funktsioon hoiatusi ei käivita.</translation>
 <translation id="6491139795995924304">Luba Bluetooth seadmes</translation>
 <translation id="6520802717075138474">Impordi otsingumootorid vaikebrauserist esimesel käitamisel</translation>
@@ -2536,6 +2559,11 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui reegel on keelatud, ei toimu selget saidi isoleerimist ning reeglite IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli SitePerProcess siiski käsitsi lubada.
       Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
       </translation>
+<translation id="7902255855035461275">Selles loendis olevaid mustreid võrreldakse taotleva URL-i
+      algse turvalisusega. Vaste leidmisel antakse juurdepääs
+      videosalvestusseadmetele ilma küsimata.
+
+      MÄRKUS. Versioonini 45 toetati seda reeglit ainult kioskirežiimis.</translation>
 <translation id="7912255076272890813">Seadista lubatud rakenduste/laienduste tüübid</translation>
 <translation id="7915236031252389808">Siin saate määrata puhverserveri PAC-faili URL-i.
 

@@ -127,7 +127,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="5479196819031988440">OS Chromium ne more odpreti te strani.</translation>
 <translation id="5480860683791598150">Chromium potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom</translation>
 <translation id="549669000822060376">Počakajte, da Chromium namesti najnovejše sistemske posodobitve.</translation>
-<translation id="5514308096618405748">OS Chrome omogoča dodatna <ph name="BEGIN_LINK_CROS_OSS" />odprtokodna programska oprema<ph name="END_LINK_CROS_OSS" />, kot je Linux (beta).</translation>
+<translation id="5514308096618405748">OS Chrome omogoča dodatna <ph name="BEGIN_LINK_CROS_OSS" />odprtokodna programska oprema<ph name="END_LINK_CROS_OSS" />, enako kot Linux (beta).</translation>
 <translation id="5529843986978123325">{0,plural, =1{OS Chromium se bo znova zagnal čez 1 minuto}one{OS Chromium se bo znova zagnal čez # minuto}two{OS Chromium se bo znova zagnal čez # minuti}few{OS Chromium se bo znova zagnal čez # minute}other{OS Chromium se bo znova zagnal čez # minut}}</translation>
 <translation id="5631814766731275228">Ime in slika za Chromium</translation>
 <translation id="5634636535844844681">Za Chromium potrebujete Windows 7 ali novejši.</translation>

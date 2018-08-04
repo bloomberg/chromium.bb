@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">This will stop all progress for your current download.</translation>
 <translation id="1605658421715042784">Copy image</translation>
 <translation id="1612730193129642006">Show Tab Grid</translation>
+<translation id="162035744160882748">Turn on sync, personalisation and other Google services</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1646446875146297738">Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
 
@@ -194,6 +195,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="4124987746317609294">Time Range</translation>
 <translation id="4172051516777682613">Always show</translation>
 <translation id="418156467088430727">View Offline Version in New Tab</translation>
+<translation id="4192273449750167573">Review your settings on the next screen</translation>
 <translation id="4237682350741091554">Manage Chrome Sync and personalisation in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Enter Passphrase</translation>
 <translation id="4272631900155121838">To scan a QR code, enable the camera from settings</translation>
@@ -285,6 +287,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5938160824633642847">Your device is almost full. Free up space and try again.</translation>
 <translation id="5948291296578561264">This lets you save photos to your photo library.</translation>
 <translation id="5955891643922670672">Viewing Offline Version</translation>
+<translation id="5957613098218939406">More Options</translation>
 <translation id="5964480694698977962">Create new incognito tab.</translation>
 <translation id="5965679971710331625">You're signed in</translation>
 <translation id="5982717868370722439">Add existing data to <ph name="USER_EMAIL" />.</translation>
@@ -344,6 +347,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6797885426782475225">Voice Search</translation>
 <translation id="6807889908376551050">Show All...</translation>
 <translation id="681368974849482173">Item created</translation>
+<translation id="685040365210406336">Make no changes</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6903907808598579934">Turn on sync</translation>
 <translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
@@ -373,6 +377,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7336264872878993241"><ph name="PERCENT" /> percent downloaded</translation>
 <translation id="7346909386216857016">OK, got it</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">Yes, I'm in</translation>
 <translation id="7425346204213733349">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account.</translation>
 <translation id="744343212394640790">Not <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">State / County</translation>

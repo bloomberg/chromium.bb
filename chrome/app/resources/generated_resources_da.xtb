@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Vis stavning og grammatik</translation>
 <translation id="1593594475886691512">Formaterer...</translation>
 <translation id="159359590073980872">Billedcache</translation>
+<translation id="1593926297800505364">Gem betalingsmetode</translation>
 <translation id="1598233202702788831">Opdateringer er deaktiveret af din administrator.</translation>
 <translation id="1600857548979126453">Få adgang til administration af fejlfinding på siden</translation>
 <translation id="1601560923496285236">Anvend</translation>
@@ -508,6 +509,7 @@
 <translation id="1744060673522309905">Enheden kunne ikke knyttes til domænet. Sørg for, at du ikke har overskredet antallet af enheder, du kan tilføje.</translation>
 <translation id="1744108098763830590">baggrundsside</translation>
 <translation id="1745520510852184940">Gør altid dette</translation>
+<translation id="1746417874336251387">Tilbyder nye funktioner, der anvender din telefons forbindelse til din Chromebook</translation>
 <translation id="174937106936716857">Samlet antal filer</translation>
 <translation id="175196451752279553">G&amp;enåbn lukket fane</translation>
 <translation id="1753905327828125965">Mest besøgte</translation>
@@ -638,8 +640,10 @@
 <translation id="1932098463447129402">Ikke før</translation>
 <translation id="1933809209549026293">Tilslut en mus eller et tastatur. Hvis du bruger en Bluetooth-enhed, skal du kontrollere, at den er parat til parring.</translation>
 <translation id="1936157145127842922">Vis i mappe</translation>
+<translation id="1938351510777341717">Ekstern kommando</translation>
 <translation id="1940546824932169984">Tilsluttede enheder</translation>
 <translation id="1942765061641586207">Billedopløsning</translation>
+<translation id="1943097386230153518">Installer ny tjeneste</translation>
 <translation id="1944921356641260203">En opdatering er fundet</translation>
 <translation id="1951615167417147110">Rul en side op</translation>
 <translation id="1954813140452229842">Der opstod en fejl ved anvendelse af deling. Tjek dine loginoplysninger, og prøv igen.</translation>
@@ -1106,6 +1110,7 @@
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="265390580714150011">Feltværdi</translation>
 <translation id="2654166010170466751">Tillad, at websites installerer betalingshandlere</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Funktionerne varierer afhængigt af enheden</translation>
 <translation id="2660779039299703961">Hændelse</translation>
 <translation id="266079277508604648">Der kan ikke oprettes forbindelse til printeren. Tjek, at printeren er tændt og tilsluttet din Chromebook via Wi-Fi eller USB.</translation>
 <translation id="2661146741306740526">16 x 9</translation>
@@ -1212,6 +1217,7 @@
 <translation id="2803375539583399270">Angiv pinkode</translation>
 <translation id="2805646850212350655">Filsystem til Microsoft-kryptering</translation>
 <translation id="2805756323405976993">Apps</translation>
+<translation id="2806891468525657116">Genvejen findes allerede</translation>
 <translation id="2807517655263062534">Dine downloadede filer vises her</translation>
 <translation id="2809586584051668049">og <ph name="NUMBER_ADDITIONAL_DISABLED" /> mere</translation>
 <translation id="281133045296806353">Der blev oprettet et nyt vindue i den aktuelle browsersession.</translation>
@@ -1598,6 +1604,7 @@
 <translation id="3428419049384081277">Du er logget ind</translation>
 <translation id="3429275422858276529">Tilføj denne side som bogmærke, så du nemt kan finde den igen</translation>
 <translation id="3429599832623003132">$1 elementer</translation>
+<translation id="3430342160185525240">Giver Google Assistent tilladelse til at vise dig underretninger.</translation>
 <translation id="3432227430032737297">Fjern alle viste</translation>
 <translation id="3432757130254800023">Send lyd og video til visninger på det lokale netværk</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1962,6 +1969,7 @@
 <ph name="CONTROL_PANEL_APPLET_NAME" /> i kontrolpanelet.
 
 Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Genvejen kan ikke oprettes</translation>
 <translation id="3943582379552582368">&amp;Tilbage</translation>
 <translation id="3943857333388298514">Indsæt</translation>
 <translation id="3948116654032448504">&amp;Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
@@ -2269,6 +2277,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4481530544597605423">Ikke-parrede enheder</translation>
 <translation id="4482194545587547824">Google bruger muligvis din browserhistorik til at personliggøre Søgning og andre Google-tjenester</translation>
 <translation id="4495419450179050807">Vis ikke på denne side</translation>
+<translation id="4499718683476608392">Aktivér AutoFyld for kreditkort for at udfylde formularer med et enkelt klik</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> er gået ned</translation>
 <translation id="450099669180426158">Ikon for udråbstegn</translation>
 <translation id="4501530680793980440">Bekræft fjernelse</translation>
@@ -2547,7 +2556,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4917385247580444890">Stærk</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ønsker at kommunikere med udvidelsen "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accepter</translation>
-<translation id="4920350943031252905">Kør Linux-værktøjer, -redigeringsværktøjer og -IDE'er på din Chromebook.</translation>
 <translation id="4920887663447894854">Følgende websites kan ikke spore din placering på denne side:</translation>
 <translation id="492299503953721473">Fjern Android-apps</translation>
 <translation id="4923279099980110923">Ja. Jeg vil gerne hjælpe</translation>
@@ -3113,6 +3121,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5752453871435543420">Sikkerhedskopiering i skyen for Chrome OS</translation>
 <translation id="5756163054456765343">H&amp;jælp</translation>
 <translation id="5759728514498647443">De dokumenter, du sender til udskrift via <ph name="APP_NAME" />, kan læses af <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Indstillinger for kreditkort</translation>
 <translation id="5763751966069581670">Der blev ikke fundet nogen USB-enheder</translation>
 <translation id="5764483294734785780">&amp;Gem lyd som...</translation>
 <translation id="57646104491463491">Dato for ændring</translation>
@@ -3184,6 +3193,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5855773610748894548">Ups, der er en fejl i forbindelse med sikkerhedsmodulet.</translation>
 <translation id="5856721540245522153">Aktivér fejlfindingsfunktioner</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
+<translation id="585979798156957858">Ekstern metatast</translation>
 <translation id="5860033963881614850">Fra</translation>
 <translation id="5860209693144823476">Fane 3</translation>
 <translation id="5860491529813859533">Aktivér</translation>
@@ -3494,6 +3504,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6327785803543103246">Automatisk registrering af webproxy</translation>
 <translation id="6333064448949140209">Filen sendes til Google til fejlretning</translation>
 <translation id="6333834492048057036">Fokuser adresselinje i søgetilstand</translation>
+<translation id="6336451774241870485">Ny privat fane</translation>
 <translation id="6339668969738228384">Opret en ny profil for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Der kunne ikke oprettes forbindelse til serveren. Tjek din netværksforbindelse, og prøv igen. Genstart din Chromebook, hvis problemet fortsætter.</translation>
 <translation id="6340071272923955280">Internet Printing Protocol (IPPS)</translation>
@@ -3675,6 +3686,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6606070663386660533">Fane 8</translation>
 <translation id="6607272825297743757">Filoplysninger</translation>
 <translation id="6607831829715835317">F&amp;lere værktøjer</translation>
+<translation id="6610147964972079463">Luk private faner</translation>
 <translation id="6612358246767739896">Beskyttet indhold</translation>
 <translation id="6613452264606394692">Tilføj denne side som bogmærke, så du hurtigt kan vende tilbage hertil</translation>
 <translation id="6614893213975402384">Installer opdateringer og apps. Hvis du fortsætter, accepterer du, at denne enhed også kan downloade og installere opdateringer og apps automatisk fra Google, dit mobilselskab og producenten af din enhed. Dette kan ske ved hjælp af mobildata. Nogle af disse apps tilbyder muligvis køb i appen. Du kan til enhver tid fjerne disse apps. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
@@ -3745,6 +3757,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6718273304615422081">Komprimerer...</translation>
 <translation id="671928215901716392">Lås skærmen</translation>
+<translation id="6720847671508630642">Del automatisk det bedste fra Android med din Chromebook. Tilknyt din telefon, så du kan sende sms-beskeder fra din computer, dele din telefons internetforbindelse og låse skærmen op på din Chromebook.<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Se din sikkerhedsnøgles fabrikat og model</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
 <translation id="672213144943476270">Lås din profil op, før du kan bruge internettet som gæst.</translation>
@@ -3891,6 +3904,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6970856801391541997">Udskriv bestemte sider</translation>
 <translation id="6972180789171089114">Lyd/video</translation>
 <translation id="6973630695168034713">Mapper</translation>
+<translation id="6974609594866392343">Offline demotilstand</translation>
 <translation id="6976108581241006975">JavaScript-konsol</translation>
 <translation id="6977381486153291903">Firmwarerevision</translation>
 <translation id="6978121630131642226">Søgemaskiner</translation>
@@ -4033,6 +4047,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7175353351958621980">Indlæst fra:</translation>
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7180865173735832675">Tilpas</translation>
+<translation id="7182359331070524176">Vælg et Google Fotos-album</translation>
 <translation id="7186088072322679094">Behold på værktøjslinjen</translation>
 <translation id="7187428571767585875">Registreringsposter, der skal fjernes eller ændres:</translation>
 <translation id="7189234443051076392">Sørg for, at der er nok ledig plads på din enhed</translation>
@@ -4483,6 +4498,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7857949311770343000">Er dette den forventede side Ny fane?</translation>
 <translation id="786073089922909430">Tjeneste: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Downloads</translation>
+<translation id="7864662577698025113">Tilføj ny tjeneste</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}one{# cookie}other{# cookies}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> er parret</translation>
 <translation id="7870730066603611552">Gennemgå indstillingerne for synkronisering efter konfigurationen</translation>
@@ -4997,6 +5013,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8666584013686199826">Spørg om tilladelse, når et website vil have adgang til USB-enheder</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> er nu i fuld skærm og har deaktiveret din musemarkør.</translation>
 <translation id="8669284339312441707">Varm</translation>
+<translation id="8669919703154928649">Tillad, at Google Assistent viser underretninger</translation>
 <translation id="8669949407341943408">Flytter…</translation>
 <translation id="8671210955687109937">Kan kommentere</translation>
 <translation id="8673026256276578048">Søg på nettet...</translation>
@@ -5385,6 +5402,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="964286338916298286">Din it-administrator har deaktiveret Chrome Goodies for din enhed.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{App}one{App}other{Apps}}</translation>
 <translation id="967007123645306417">Du logges ud af dine Google-konti. Ændringer af bogmærker, historik, adgangskoder og andre indstillinger synkroniseres ikke længere med din Google-konto. Dine eksisterende data er dog stadig gemt på din Google-konto og kan administreres i <ph name="BEGIN_LINK" />Google Betjeningspanel<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Lagrede data</translation>
 <translation id="968000525894980488">Aktivér Google Play-tjenester.</translation>
 <translation id="968174221497644223">Applikationscache</translation>
 <translation id="969096075394517431">Skift sprog</translation>

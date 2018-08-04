@@ -283,6 +283,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se un'impostazione non viene specificata, viene utilizzato un valore predefinito.
 
       Se questa norma non viene impostata, vengono utilizzati i valori predefiniti per tutte le impostazioni.</translation>
+<translation id="1958138414749279167">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e permette agli utenti di eseguire il completamento automatico dell'indirizzo nei moduli web utilizzando informazioni memorizzate in precedenza.
+
+      Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati relativi all'indirizzo, né salverà altre informazioni relative ad altri indirizzi che l'utente potrebbe inviare durante la navigazione sul Web.
+
+      Se questa impostazione è attivata o non è impostata su alcun valore, l'utente potrà gestire la funzione Compilazione automatica per gli indirizzi nell'interfaccia utente.</translation>
 <translation id="1960840544413786116">Consente di stabilire se consentire i certificati privi dell'estensione subjectAlternativeName emessi dai trust anchor locali</translation>
 <translation id="1964634611280150550">Modalità di navigazione in incognito non attiva</translation>
 <translation id="1964802606569741174">Questa norma non ha effetto sull'app YouTube per Android. Se è necessario applicare la modalità di protezione di YouTube, l'installazione dell'app YouTube per Android non deve essere consentita.</translation>
@@ -489,6 +494,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se l'impostazione non viene impostata, l'utente può decidere se utilizzare o meno la funzione.
 
       L'impostazione è stata rimossa da <ph name="PRODUCT_NAME" /> 29 e versioni successive.</translation>
+<translation id="2433412232489478893">Questa norma controlla se per un utente è consentita o meno la funzione Condivisioni file di rete per <ph name="PRODUCT_NAME" />.
+
+      Quando questa norma non è configurata o è impostata su True, gli utenti possono utilizzare la funzione Condivisioni file di rete.
+
+      Quando questa norma è impostata su False, gli utenti non possono utilizzare la funzione Network File Shares.</translation>
 <translation id="2438609638493026652">Attiva la segnalazione di eventi chiave durante l'installazione di app Android a Google. Gli eventi vengono acquisiti solo per le app la cui installazione è stata lanciata tramite norma.
 
       Se la norma viene impostata su True, gli eventi saranno registrati.
@@ -566,6 +576,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2598508021807251719">Questa norma consente di configurare le impostazioni internazionali che possono essere visualizzate in <ph name="PRODUCT_OS_NAME" />.
 
       Se questa norma viene impostata, l'utente potrà configurare soltanto una delle impostazioni internazionali di <ph name="PRODUCT_OS_NAME" /> specificate da questa norma. Se la norma non viene impostata o viene impostato un elenco vuoto, <ph name="PRODUCT_OS_NAME" /> potrà essere visualizzato in tutte le impostazioni internazionali dell'interfaccia utente supportate. Se per questa norma viene impostato un elenco contenente valori non validi, tutti i valori non validi verranno ignorati. Se un utente aveva precedentemente configurato un'impostazione internazionale di <ph name="PRODUCT_OS_NAME" /> non consentita da questa norma, all'accesso successivo l'impostazione internazionale visualizzata verrà sostituita con una impostazione internazionale dell'interfaccia utente consentita. Se l'utente aveva configurato delle impostazioni internazionali preferite e una di queste è consentita da questa norma, in <ph name="PRODUCT_OS_NAME" /> verrà usata tale impostazione internazionale. In caso contrario, in <ph name="PRODUCT_OS_NAME" /> verrà usato il primo valore valido specificato da questa norma oppure, se la norma contiene soltanto voci non valide, verrà usata un'impostazione internazionale di riserva (attualmente en-US).</translation>
+<translation id="2604182581880595781">Configura le norme relative alla funzione Condivisioni file di rete</translation>
 <translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Consente di specificare le configurazioni delle stampanti aziendali.
@@ -645,6 +656,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2823870601012066791">Posizione del Registro di sistema di Windows per client <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Attiva modalità di navigazione in incognito</translation>
 <translation id="2838830882081735096">Non consentire migrazione dei dati e ARC</translation>
+<translation id="2839294585867804686">Impostazioni di Condivisioni file di rete</translation>
 <translation id="2840269525054388612">Consente di specificare le stampanti utilizzabili dagli utenti.
 
       Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" /> per la norma <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1118,6 +1130,7 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
       Se questa norma non viene impostata, la raccolta di dati anonimizzati con chiave URL verrà attivata, ma l'utente potrà modificare l'impostazione.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Lingua della schermata di accesso del dispositivo</translation>
+<translation id="4264607809747169568">Consente di controllare la disponibilità della funzione Condivisioni file di rete per Chrome OS</translation>
 <translation id="427220754384423013">Consente di specificare le stampanti utilizzabili dagli utenti.
 
       Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" /> per la norma <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1510,6 +1523,15 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="5511702823008968136">Attiva barra dei Preferiti</translation>
 <translation id="5512418063782665071">URL pagina iniziale</translation>
+<translation id="551639594034811656">Questa norma definisce un elenco di percentuali che definiranno la frazione dei dispositivi di <ph name="PRODUCT_OS_NAME" /> nell'UO da aggiornare ogni giorno a partire dal giorno in cui l'aggiornamento viene rilevato la prima volta. L'ora del rilevamento è successiva all'ora in cui l'aggiornamento viene pubblicato, perché potrebbe passare del tempo tra la pubblicazione dell'aggiornamento e il momento in cui il dispositivo controlla la disponibilità di aggiornamenti.
+
+      Ogni coppia (giorno, percentuale) contiene la percentuale dei gruppi da aggiornare entro il numero di giorni stabilito a partire dal giorno in cui l'aggiornamento viene rilevato. Ad esempio, se abbiamo le coppie [(4, 40), (10, 70), (15, 100)], allora il 40% dei gruppi deve essere aggiornato entro 4 giorni dal rilevamento dell'aggiornamento; il 70% deve essere aggiornato dopo 10 giorni e così via.
+
+      Se viene definito un valore per questa norma, gli aggiornamenti ignoreranno la norma <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> e seguiranno invece questa norma.
+
+      Se quest'elenco è vuoto, non viene eseguita alcuna gestione temporanea e gli aggiornamenti vengono applicati in base alle altre norme del dispositivo.
+
+      Questa norma non viene applicata agli switch del canale.</translation>
 <translation id="5523812257194833591">Una sessione pubblica a cui accedere automaticamente dopo un ritardo.
 
       Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. La sessione pubblica deve essere già configurata (vedi |DeviceLocalAccounts|).
@@ -1801,6 +1823,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="6440051664870270040">Consenti ai siti di navigare e aprire popup contemporaneamente</translation>
 <translation id="6447948611083700881">Backup e ripristino disabilitati</translation>
 <translation id="645425387487868471">Attiva l'accesso forzato per <ph name="PRODUCT_NAME" /></translation>
+<translation id="6464074037294098618">Attiva la Compilazione automatica per gli indirizzi</translation>
 <translation id="6473623140202114570">Configura l'elenco di domini sui quali Navigazione sicura non attiverà avvisi.</translation>
 <translation id="6491139795995924304">Consenti Bluetooth sul dispositivo</translation>
 <translation id="6520802717075138474">Importa motori di ricerca dal browser predefinito alla prima esecuzione</translation>
@@ -2389,6 +2412,11 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
       Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
       </translation>
+<translation id="7902255855035461275">I pattern di questo elenco verranno confrontati con
+      l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi
+      di acquisizione video verrà concesso senza richieste.
+
+      NOTA: fino alla versione 45, questa norma era supportata soltanto in modalità kiosk.</translation>
 <translation id="7912255076272890813">Configura tipi di app/estensioni consentiti</translation>
 <translation id="7915236031252389808">Qui puoi specificare un URL che rimanda a un file proxy .pac.
 

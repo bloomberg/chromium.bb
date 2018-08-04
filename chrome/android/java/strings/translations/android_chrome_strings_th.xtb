@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">กำลังเพิ่ม <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">จากเว็บไซต์</translation>
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
+<translation id="1054301162707478098">คุณเข้าสู่โหมดส่วนตัวแล้ว</translation>
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="1068672505746868501">ไม่ต้องแปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">ภาษาเพิ่มเติม</translation>
 <translation id="124678866338384709">ปิดแท็บปัจจุบัน</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">หน้าที่คุณดูในแท็บส่วนตัวจะไม่เก็บอยู่ในประวัติของเบราว์เซอร์ ที่จัดเก็บคุกกี้ หรือประวัติการค้นหาหลังจากที่คุณปิดแท็บส่วนตัวทั้งหมดแล้ว แต่จะมีการเก็บไฟล์ที่คุณดาวน์โหลดหรือบุ๊กมาร์กที่คุณสร้างไว้
+
+อย่างไรก็ตาม คนอื่นจะยังมองเห็นคุณ การเข้าสู่โหมดส่วนตัวไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้าง ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="127138278192656016">ใช้การซิงค์และบริการทั้งหมด</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1283039547216852943">แตะเพื่อขยาย</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB จากแอปอื่นๆ</translation>
+<translation id="2055670718290744343">ตัวเร่งการค้นหา</translation>
 <translation id="2063713494490388661">แตะเพื่อค้นหา</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">การซิงค์และบริการของ Google</translation>
 <translation id="2259659629660284697">ส่งออกรหัสผ่าน…</translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
+<translation id="2280910239864711607">เปิดแท็บใหม่ในโหมดส่วนตัว</translation>
 <translation id="2286841657746966508">ที่อยู่สำหรับเรียกเก็บเงิน</translation>
 <translation id="230115972905494466">ไม่พบอุปกรณ์ที่เข้ากันได้</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">อนุญาต JavaScript สำหรับเว็บไซต์ใดเว็บไซต์หนึ่ง</translation>
 <translation id="2625189173221582860">คัดลอกรหัสผ่านแล้ว</translation>
 <translation id="2631006050119455616">ประหยัดได้</translation>
+<translation id="2633278372998075009">แท็บส่วนตัว</translation>
 <translation id="2647434099613338025">เพิ่มภาษา</translation>
 <translation id="2650751991977523696">ดาวน์โหลดไฟล์อีกครั้งไหม</translation>
 <translation id="2653659639078652383">ส่ง</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ ให้<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
 <translation id="3232754137068452469">เว็บแอป</translation>
+<translation id="3234355010754616171">แท็บส่วนตัวใหม่</translation>
 <translation id="3236059992281584593">เหลือ 1 นาที</translation>
 <translation id="3244271242291266297">ดด</translation>
 <translation id="3254409185687681395">บุ๊กมาร์กหน้านี้</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">ปิดแท็บไม่ระบุตัวตนทั้งหมด</translation>
 <translation id="3365671512111106261">ใช้งานไม่ได้เมื่อเปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="3367813778245106622">ลงชื่อเข้าใช้อีกครั้งเพื่อเริ่มซิงค์</translation>
+<translation id="3377025655491224618">แท็บส่วนตัว</translation>
 <translation id="3384347053049321195">แชร์รูปภาพ</translation>
 <translation id="3386292677130313581">ถามก่อนจะอนุญาตให้เว็บไซต์ทราบตำแหน่งของคุณ (แนะนำ)</translation>
 <translation id="3387650086002190359">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเกิดข้อผิดพลาดกับระบบไฟล์</translation>
@@ -385,6 +394,7 @@
 <translation id="4209895695669353772">เปิดการซิงค์เพื่อรับคำแนะนำเนื้อหาที่ปรับเปลี่ยนในแบบของคุณจาก Google</translation>
 <translation id="4226663524361240545">การแจ้งเตือนอาจทำให้อุปกรณ์สั่น</translation>
 <translation id="4242533952199664413">เปิดการตั้งค่า</translation>
+<translation id="4243710787042215766">เปิดในแท็บส่วนตัว</translation>
 <translation id="424864128008805179">ต้องการออกจากระบบ Chrome ไหม</translation>
 <translation id="4256782883801055595">ใบอนุญาตโอเพนซอร์ส</translation>
 <translation id="4259722352634471385">มีการบล็อกการนำทาง: <ph name="URL" /></translation>
@@ -465,6 +475,7 @@
 <translation id="4878404682131129617">สร้างช่องทางผ่านพร็อกซีเซิร์ฟเวอร์ไม่ได้</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="488187801263602086">เปลี่ยนชื่อไฟล์</translation>
+<translation id="4883379392681899581">ออกจากโหมดส่วนตัว</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
 <translation id="4910889077668685004">แอปชำระเงิน</translation>
 <translation id="4913161338056004800">รีเซ็ตสถิติ</translation>
@@ -506,6 +517,7 @@
 <translation id="5224771365102442243">มีวิดีโอ</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
 <translation id="5240817131241497236">การตั้งค่าที่ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และบริการอื่นๆ ของ Google ใน Chrome มีการเปลี่ยนแปลง ซึ่งอาจส่งผลต่อการตั้งค่าปัจจุบันของคุณ</translation>
+<translation id="5264003212305142034">คุณปรับแต่ง<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" />ได้ทุกเมื่อ Google อาจใช้เนื้อหาในเว็บไซต์ที่คุณเข้าชม รวมถึงการโต้ตอบและกิจกรรมในเบราว์เซอร์เพื่อปรับ Chrome และบริการอื่นๆ ของ Google อย่างเช่น แปลภาษา, Search และโฆษณาให้เหมาะกับคุณ</translation>
 <translation id="5271967389191913893">อุปกรณ์ไม่สามารถเปิดเนื้อหาที่จะดาวน์โหลดได้</translation>
 <translation id="528192093759286357">ลากจากด้านบน แล้วแตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="5284584623296338184">การเปลี่ยนแปลงบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะไม่ซิงค์กับบัญชี Google ของคุณอีกต่อไป อย่างไรก็ตาม ข้อมูลที่คุณมีจะยังคงจัดเก็บอยู่ในบัญชี Google ของคุณ</translation>
@@ -591,6 +603,7 @@
 <translation id="583281660410589416">ไม่รู้จัก</translation>
 <translation id="5833397272224757657">ใช้เนื้อหาในเว็บไซต์ที่คุณเข้าชม รวมถึงกิจกรรมและการโต้ตอบในเบราว์เซอร์เพื่อการปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="5833984609253377421">แชร์ลิงก์</translation>
+<translation id="584427517463557805">แท็บส่วนตัวที่เลือกไว้</translation>
 <translation id="5854790677617711513">เกิน 30 วัน</translation>
 <translation id="5858741533101922242">Chrome ไม่สามารถเปิดอะแดปเตอร์บลูทูธ</translation>
 <translation id="5860033963881614850">ปิด</translation>
@@ -620,6 +633,7 @@
 <translation id="6075798973483050474">แก้ไขหน้าแรก</translation>
 <translation id="60923314841986378">เหลือ <ph name="HOURS" /> ชั่วโมง</translation>
 <translation id="60924377787140961">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามบ่าย</translation>
+<translation id="6099151465289169210">เปลี่ยนเป็นแท็บส่วนตัวแล้ว</translation>
 <translation id="6108923351542677676">กำลังดำเนินการตั้งค่า…</translation>
 <translation id="6111020039983847643">อินเทอร์เน็ตที่ใช้</translation>
 <translation id="6112702117600201073">กำลังรีเฟรชหน้า</translation>
@@ -649,6 +663,7 @@
 <translation id="6320088164292336938">สั่น</translation>
 <translation id="6324034347079777476">ปิดใช้การซิงค์ระบบ Android อยู่</translation>
 <translation id="6333140779060797560">แชร์ผ่าน <ph name="APPLICATION" /></translation>
+<translation id="6336451774241870485">แท็บส่วนตัวใหม่</translation>
 <translation id="6337234675334993532">การเข้ารหัส</translation>
 <translation id="6341580099087024258">ถามว่าจะให้บันทึกไฟล์ไว้ที่ใด</translation>
 <translation id="6343192674172527289">ไม่พบการดาวน์โหลด</translation>
@@ -686,6 +701,7 @@
 <translation id="6593061639179217415">ไซต์เวอร์ชันเดสก์ท็อป</translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6610147964972079463">ปิดแท็บส่วนตัว</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="6627583120233659107">แก้ไขโฟลเดอร์</translation>
 <translation id="6643016212128521049">ล้าง</translation>
@@ -789,6 +805,7 @@
 <translation id="7453467225369441013">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="7454641608352164238">พื้นที่ว่างไม่พอ</translation>
 <translation id="7455923816558154057">แตะเพื่อดู</translation>
+<translation id="7465104139234185284">ปิดแท็บส่วนตัวทั้งหมด</translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7475192538862203634">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
 <translation id="7475688122056506577">ไม่พบการ์ด SD ไฟล์บางไฟล์อาจหายไป</translation>
@@ -884,6 +901,7 @@
 <translation id="8220488350232498290">พื้นที่ที่ใช้ไปสำหรับการดาวน์โหลด <ph name="GIGABYTES" /> GB</translation>
 <translation id="8249310407154411074">เลื่อนไปบนสุด</translation>
 <translation id="8250920743982581267">เอกสาร</translation>
+<translation id="825412236959742607">หน้านี้ใช้หน่วยความจำมากเกินไป Chrome จึงนำเนื้อหาบางส่วนออก</translation>
 <translation id="8260126382462817229">ลองลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8266862848225348053">ตำแหน่งที่ดาวน์โหลด</translation>
@@ -979,6 +997,7 @@
 <translation id="9070377983101773829">เริ่มค้นหาด้วยเสียง</translation>
 <translation id="9071742570345586758">หากต้องการดูเนื้อหา Virtual Reality โปรดติดตั้งบริการ VR ของ Google</translation>
 <translation id="9074336505530349563">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับคำแนะนำเนื้อหาที่ปรับเปลี่ยนในแบบของคุณจาก Google</translation>
+<translation id="9080642952018487277">เข้าสู่โหมดส่วนตัว</translation>
 <translation id="9086455579313502267">ไม่สามารถเข้าถึงเครือข่าย</translation>
 <translation id="9099018167121903954">พื้นที่ที่ใช้ไปสำหรับการดาวน์โหลด <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">เสนอการแสดงบทความในมุมมองอย่างง่าย ในกรณีที่บทความทำได้</translation>

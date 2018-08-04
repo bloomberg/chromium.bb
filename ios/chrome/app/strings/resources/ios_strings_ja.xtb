@@ -44,6 +44,7 @@
 <translation id="1582732959743469162">この操作を行うと、現在進行中のダウンロードは停止します。</translation>
 <translation id="1605658421715042784">画像をコピー</translation>
 <translation id="1612730193129642006">タブをグリッド表示</translation>
+<translation id="162035744160882748">同期、カスタマイズ、その他の Google サービスを有効にする</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1646446875146297738">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがそのリクエストに応じるかどうか、およびそのリクエストがどのように解釈されるかによって異なります。
 
@@ -194,6 +195,7 @@
 <translation id="4124987746317609294">期間</translation>
 <translation id="4172051516777682613">常に表示</translation>
 <translation id="418156467088430727">オフライン版を新しいタブで表示</translation>
+<translation id="4192273449750167573">次の画面で設定を確認する</translation>
 <translation id="4237682350741091554">[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で Chrome 同期とパーソナライズを管理できます</translation>
 <translation id="424315890655130736">パスフレーズの入力</translation>
 <translation id="4272631900155121838">QR コードをスキャンするには、設定でカメラを有効にしてください</translation>
@@ -285,6 +287,7 @@
 <translation id="5938160824633642847">端末の空き容量が少なくなっています。空き容量を増やしてからもう一度お試しください。</translation>
 <translation id="5948291296578561264">フォト ライブラリに写真を保存します。</translation>
 <translation id="5955891643922670672">オフライン版を表示しています</translation>
+<translation id="5957613098218939406">その他のオプション</translation>
 <translation id="5964480694698977962">新しいシークレット タブを作成。</translation>
 <translation id="5965679971710331625">ログイン中のアカウント</translation>
 <translation id="5982717868370722439">既存のデータを <ph name="USER_EMAIL" /> に追加します。</translation>
@@ -344,6 +347,7 @@
 <translation id="6797885426782475225">音声検索</translation>
 <translation id="6807889908376551050">すべて表示...</translation>
 <translation id="681368974849482173">作成済みのアイテム</translation>
+<translation id="685040365210406336">変更を行わない</translation>
 <translation id="6896758677409633944">コピー</translation>
 <translation id="6903907808598579934">同期を有効にする</translation>
 <translation id="6914783257214138813">エクスポートしたファイルを閲覧できるユーザーにパスワードを知られてしまう可能性があります。</translation>
@@ -373,6 +377,7 @@
 <translation id="7336264872878993241"><ph name="PERCENT" />%ダウンロード</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="741204030948306876">有効にする</translation>
 <translation id="7425346204213733349">今後、ブックマーク、履歴、パスワード、その他の設定に行った変更は Google アカウントに同期されません。ただし、既存のデータは Google アカウントに保存されたままとなります。</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> ではありません</translation>
 <translation id="7454057999980797137">州/都道府県</translation>

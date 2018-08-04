@@ -2558,7 +2558,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4917385247580444890">Stiprus</translation>
 <translation id="4918021164741308375">„<ph name="ORIGIN" />“ nori užmegzti ryšį su plėtiniu „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="4918086044614829423">Priimti</translation>
-<translation id="4920350943031252905">Paleiskite „Linux“ įrankius, redagavimo priemones ir IDE savo „Chromebook“.</translation>
 <translation id="4920887663447894854">Šios svetainės buvo užblokuotos, kad nebūtų galima šiame puslapyje stebėti jūsų vietovės:</translation>
 <translation id="492299503953721473">Pašalinti „Android“ programas</translation>
 <translation id="4923279099980110923">Taip, noriu padėti</translation>
@@ -3507,6 +3506,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6327785803543103246">Automatinis žiniatinklio tarpinio serverio aptikimas</translation>
 <translation id="6333064448949140209">Failas bus išsiųstas į sistemą „Google“ atlikti derinimą</translation>
 <translation id="6333834492048057036">Aktyvinti adreso juostą ir ieškoti</translation>
+<translation id="6336451774241870485">Naujas privatus skirtukas</translation>
 <translation id="6339668969738228384">Kurti naują <ph name="USER_EMAIL_ADDRESS" /> profilį</translation>
 <translation id="6340017061976355871">Nepavyko užmegzti ryšio su serveriu. Patikrinkite tinklo ryšį ir bandykite dar kartą. Jei problema išlieka, paleiskite „Chromebook“ iš naujo.</translation>
 <translation id="6340071272923955280">Spausdinimo internetu protokolas (IPPS)</translation>
@@ -3688,6 +3688,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6606070663386660533">8 skirtukas</translation>
 <translation id="6607272825297743757">Failo informacija</translation>
 <translation id="6607831829715835317">Daugiau įrank&amp;ių</translation>
+<translation id="6610147964972079463">Uždaryti privačius skirtuk.</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="6613452264606394692">Grįžkite čia greičiau ir patogiau pasižymėję šį puslapį</translation>
 <translation id="6614893213975402384">Įdiekite naujinius ir programas. Tęsdami sutinkate, kad šis įrenginys taip pat gali automatiškai atsisiųsti ir įdiegti naujinius bei programas iš „Google“, operatoriaus ir įrenginio gamintojo (gali būti naudojami mobiliojo ryšio duomenys). Kai kurios programos gali siūlyti įsigyti pirkinių programoje. Šias programas galite bet kada pašalinti. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
@@ -4048,6 +4049,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7175353351958621980">Įkelta iš:</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7180865173735832675">Tinkinti</translation>
+<translation id="7182359331070524176">Pasirinkite „Google“ nuotraukų albumą</translation>
 <translation id="7186088072322679094">Laikyti įrankių juostoje</translation>
 <translation id="7187428571767585875">Registro vertės, kurios bus pašalintos arba pakeistos:</translation>
 <translation id="7189234443051076392">Įsitikinkite, kad įrenginyje yra pakankamai vietos</translation>

@@ -136,6 +136,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="405887016757208221">Komputer jarak jauh gagal melakukan inisialisasi sesi. Jika masalah tetap ada, coba konfigurasi ulang host.</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">CATATAN: Setelan kebijakan hanya mengizinkan sambungan antar-komputer dalam jaringan Anda.</translation>
+<translation id="4126409073460786861">Setelah penyiapan selesai, refresh halaman ini, maka Anda dapat mengakses komputer dengan memilih perangkat dan memasukkan PIN</translation>
 <translation id="4145029455188493639">Login sebagai <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Beberapa komponen yang diperlukan tidak ada. Pastikan Anda memasang software versi terbaru dan coba lagi.</translation>
 <translation id="4156740505453712750">Untuk melindungi akses ke komputer ini, gunakan PIN <ph name="BOLD_START" />setidaknya enam digit<ph name="BOLD_END" />. PIN ini akan diperlukan saat menyambung dari lokasi lainnya.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Kepada</translation>
 <translation id="7019153418965365059">Kesalahan host tidak dikenal: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Bantuan Jarak Jauh</translation>
+<translation id="7026930240735156896">Ikuti petunjuk menyiapkan komputer untuk akses jarak jauh</translation>
 <translation id="7038683108611689168">Bantu kami meningkatkan Chromoting dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
 <translation id="7067321367069083429">Layar berfungsi seperti layar sentuh</translation>
 <translation id="7116737094673640201">Selamat Datang di Chrome Desktop Jarak Jauh</translation>

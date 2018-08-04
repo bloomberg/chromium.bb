@@ -136,6 +136,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="405887016757208221">Kaugarvutil ei õnnestunud seanssi lähtestada. Kui probleem püsib, proovige hosti uuesti seadistada.</translation>
 <translation id="4068946408131579958">Kõik ühendused</translation>
 <translation id="409800995205263688">MÄRKUS: reegli seaded lubavad luua ühenduse ainult teie võrku kuuluvate arvutite vahel.</translation>
+<translation id="4126409073460786861">Kui seadistus on lõpule viidud, tuleb teil arvutile juurdepääsemiseks valida seade ja sisestada PIN-kood</translation>
 <translation id="4145029455188493639">Sisse logitud kasutajana <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Mõned vajalikud komponendid on puudu. Veenduge, et installitud oleks tarkvara uusim versioon, ja proovige uuesti.</translation>
 <translation id="4156740505453712750">Arvuti kaitsmiseks valige PIN-kood, mis koosneb <ph name="BOLD_START" />vähemalt kuuest numbrist<ph name="BOLD_END" />. PIN-kood tuleb sisestada muust asukohast ühenduse loomisel.</translation>
@@ -270,6 +271,7 @@ Lauaarvuti</translation>
 <translation id="6998989275928107238">Kellele</translation>
 <translation id="7019153418965365059">Tundmatu hostiviga: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Kaugabi</translation>
+<translation id="7026930240735156896">Järgige juhiseid, et seadistada arvutis kaugjuurdepääs</translation>
 <translation id="7038683108611689168">Aidake meil rakendust Chromoting täiustada, lubades kasutusstatistika ja krahhiaruannete kogumise.</translation>
 <translation id="7067321367069083429">Ekraan toimib puuteekraanina</translation>
 <translation id="7116737094673640201">Tere tulemast kasutama Chrome Remote Desktopi!</translation>

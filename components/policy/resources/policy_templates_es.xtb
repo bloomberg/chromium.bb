@@ -520,6 +520,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta opción, el usuario podrá decidir si quiere o no utilizar esta función.
 
       Esta opción se ha eliminado de la versión 29 y versiones posteriores de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2433412232489478893">Esta política controla si los usuarios pueden usar la función Uso compartido de archivos del sistema de <ph name="PRODUCT_NAME" />.
+
+      Si esta política no está configurada o tiene asignado el valor "True", los usuarios podrán usar esta función.
+
+      En cambio, si tiene asignado el valor "False", no podrán usarla.</translation>
 <translation id="2438609638493026652">Habilita el envío de informes de eventos clave durante la instalación de aplicaciones para Android a Google. Solo se registran eventos de aplicaciones cuya instalación haya provocado la política.
 
       Si se le asigna el valor "True" a la política, se registrarán los eventos.
@@ -601,6 +606,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2598508021807251719">Establece las configuraciones regionales en las que puede mostrarse <ph name="PRODUCT_OS_NAME" />.
 
       Si asigna a esta política una lista de configuraciones regionales, el usuario solo podrá mostrar <ph name="PRODUCT_OS_NAME" /> en una de esas configuraciones. Si no asigna ninguna configuración regional a esta política o le asigna una lista vacía, <ph name="PRODUCT_OS_NAME" /> se podrá mostrar en cualquier configuración de IU admitida. Si se asigna a esta política una lista con configuraciones regionales no válidas, los valores que no sean válidos se ignorarán. Si un usuario ya había configurado <ph name="PRODUCT_OS_NAME" /> anteriormente en un idioma no permitido por esta política, la configuración regional se cambiará a otra permitida la próxima vez que el usuario inicie sesión. Si el usuario había establecido configuraciones regionales de preferencia y una de ellas está permitida por esta política, <ph name="PRODUCT_OS_NAME" /> se mostrará en dicha configuración. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará a la primera configuración regional válida especificada por esta política, o bien a una alternativa (actualmente en-US) si ninguna de las entradas de la política es válida.</translation>
+<translation id="2604182581880595781">Configura las políticas relacionadas con Uso compartido de archivos del sistema.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
@@ -689,6 +695,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2823870601012066791">Ubicación del registro de Windows para clientes de <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Habilitar modo de incógnito</translation>
 <translation id="2838830882081735096">No permitir la migración de datos ni ARC</translation>
+<translation id="2839294585867804686">Configuración de Uso compartido de archivos del sistema</translation>
 <translation id="2840269525054388612">Especifica las impresoras que puede utilizar un usuario.
 
       Esta política solo se usará si se asigna <ph name="PRINTERS_WHITELIST" /> a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1185,6 +1192,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si dejas esta política sin configurar, la recogida de datos anónima con clave de URL se habilitará, pero el usuario podrá cambiar la opción.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional para la pantalla de inicio de sesión del dispositivo</translation>
+<translation id="4264607809747169568">Controla si Uso compartido de archivos del sistema estará disponible en Chrome OS</translation>
 <translation id="427220754384423013">Especifica las impresoras que puede utilizar un usuario.
 
 
@@ -1620,6 +1628,15 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       El valor de la política se debe especificar en milisegundos.</translation>
 <translation id="5511702823008968136">Habilitar barra de marcadores</translation>
 <translation id="5512418063782665071">URL de la página de inicio</translation>
+<translation id="551639594034811656">Esta política define una lista de porcentajes que determinan qué parte de dispositivos <ph name="PRODUCT_OS_NAME" /> de la UO se actualizarán semanalmente a partir del día en el que se descubra la actualización. El momento de descubrimiento es posterior al momento de la publicación de la actualización, ya que puede haber pasado un tiempo desde que se publica la actualización hasta que el dispositivo busca actualizaciones.
+
+      Cada par (día, porcentaje) indica el porcentaje de dispositivos que hay que actualizar entre el número de días desde que se descubrió la actualización. Por ejemplo, los pares [(4, 40), (10, 70), (15, 100)] indican que el 40 % de los dispositivos se debería haber actualizado 4 después de ver la actualización, el 70 % se debería haber actualizado 10 días después, etc.
+
+      Si se ha asignado un valor a esta política, las actualizaciones ignorarán la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> y seguirán esta.
+
+      Si esta lista está vacía, no se hará un lanzamiento progresivo y las actualizaciones se aplicarán de acuerdo con otras políticas de dispositivos.
+
+      Esta política no se aplica a los cambios de canal.</translation>
 <translation id="5523812257194833591">Permite indicar una sesión pública para el inicio de sesión automático después de una espera.
 
       Si se establece esta política, se iniciará automáticamente la sesión especificada una vez que haya transcurrido un tiempo sin que el usuario haya realizado ninguna acción en la pantalla de inicio de sesión. La sesión pública tendrá que estar configurada previamente (ver | DeviceLocalAccounts|).
@@ -2558,6 +2575,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si se inhabilita, no se aplica ningún aislamiento de sitios web explícito y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política SitePerProcess manualmente.
       Si no se configura la política, el usuario podrá cambiar esta opción.
       </translation>
+<translation id="7902255855035461275">Los patrones de esta lista se compararán con el origen de seguridad de la URL solicitante. Si se encuentra alguna coincidencia, se concederá acceso a dispositivos de captura de vídeo sin solicitarlo.
+
+NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</translation>
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
 <translation id="7915236031252389808">Permite especificar la URL de un archivo .pac de proxy.
 

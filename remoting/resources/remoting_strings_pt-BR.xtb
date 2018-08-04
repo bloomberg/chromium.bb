@@ -136,6 +136,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="405887016757208221">O computador remoto apresentou uma falha ao inicializar a sessão. Se o problema persistir, tente configurar o host novamente.</translation>
 <translation id="4068946408131579958">Todas as conexões</translation>
 <translation id="409800995205263688">OBSERVAÇÃO: as configurações da política permitem conexão apenas entre computadores em sua rede.</translation>
+<translation id="4126409073460786861">Depois de concluir a configuração, atualize esta página para poder acessar o computador escolhendo seu dispositivo e digitando o PIN</translation>
 <translation id="4145029455188493639">Conectado como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Alguns componentes obrigatórios não foram encontrados. Certifique-se de que você esteja executando a última versão do software e tente novamente.</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, selecione um PIN de <ph name="BOLD_START" />pelo menos seis dígitos<ph name="BOLD_END" />. Este PIN será necessário para estabelecer conexão a partir de outro local.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="7019153418965365059">Erro de host não reconhecido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistência remota</translation>
+<translation id="7026930240735156896">Siga as instruções para configurar seu computador para acesso remoto</translation>
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting por meio da coleta de estatísticas de uso e de relatórios de falhas.</translation>
 <translation id="7067321367069083429">A tela atua como uma touchscreen</translation>
 <translation id="7116737094673640201">Bem-vindo à Área de trabalho remota do Google Chrome</translation>

@@ -278,6 +278,11 @@
       如果某个设置未指定，系统会为其使用默认值。
 
       如果此政策未设置，系统会为所有设置使用默认值。</translation>
+<translation id="1958138414749279167">启用 <ph name="PRODUCT_NAME" /> 的“自动填充”功能，并允许用户使用以前存储的地址信息在网络表单中自动填写相应信息。
+
+      如果停用了此设置，“自动填充”功能便绝不会提供相关建议或填充地址信息，也不会保存用户可能会在浏览网页时提交的其他地址信息。
+
+      如果启用了此设置或未设定任何值，用户将能够控制是否要在界面中自动填充地址信息。</translation>
 <translation id="1960840544413786116">是否允许使用由本地信任锚颁发的缺少 subjectAlternativeName 扩展项的证书</translation>
 <translation id="1964634611280150550">隐身模式已停用</translation>
 <translation id="1964802606569741174">此政策对 Android 版 YouTube 应用没有任何影响。如果应在 YouTube 中强制启用安全模式，则应禁止安装 Android 版 YouTube 应用。</translation>
@@ -1793,6 +1798,7 @@
 <translation id="6440051664870270040">允许网站在导航的同时打开弹出式窗口</translation>
 <translation id="6447948611083700881">已停用备份和恢复服务</translation>
 <translation id="645425387487868471">为 <ph name="PRODUCT_NAME" /> 启用强制登录功能</translation>
+<translation id="6464074037294098618">自动填充地址信息</translation>
 <translation id="6473623140202114570">配置安全浏览功能在哪些网域中不会触发警告。</translation>
 <translation id="6491139795995924304">允许在设备上使用蓝牙功能</translation>
 <translation id="6520802717075138474">首次运行时，从默认浏览器导入搜索引擎</translation>

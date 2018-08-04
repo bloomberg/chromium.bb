@@ -136,6 +136,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="405887016757208221">O computador remoto não conseguiu inicializar a sessão. Se o problema persistir, experimente configurar o anfitrião novamente.</translation>
 <translation id="4068946408131579958">Todas as ligações</translation>
 <translation id="409800995205263688">NOTA: as definições da política permitem ligações apenas entre computadores da sua rede.</translation>
+<translation id="4126409073460786861">Quando a configuração estiver concluída, atualize esta página para poder aceder ao computador ao escolher o seu dispositivo e introduzir o PIN.</translation>
 <translation id="4145029455188493639">Com sessão iniciada como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Faltam alguns componentes necessários. Certifique-se de que tem a versão mais recente do software instalada e tente novamente.</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, escolha um PIN de <ph name="BOLD_START" />pelo menos seis dígitos<ph name="BOLD_END" />. Este PIN será necessário quando ligar a partir de outra localização.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="7019153418965365059">Erro de anfitrião não reconhecido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistência Remota</translation>
+<translation id="7026930240735156896">Siga as instruções para configurar o computador para acesso remoto.</translation>
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
 <translation id="7067321367069083429">O ecrã funciona como um ecrã tátil</translation>
 <translation id="7116737094673640201">Bem-vindo ao Ambiente de Trabalho Remoto do Chrome</translation>

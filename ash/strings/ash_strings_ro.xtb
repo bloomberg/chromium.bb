@@ -211,7 +211,7 @@
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4924411785043111640">Repornește și resetează</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
-<translation id="5069971504769299223">Managerul de dispozitive poate să îți monitorizeze activitatea.</translation>
+<translation id="5069971504769299223">Managerul de dispozitiv poate să îți monitorizeze activitatea.</translation>
 <translation id="5136175204352732067">Altă tastatură conectată</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5207949376430453814">Evidențiază cursorul pentru text</translation>
@@ -225,7 +225,7 @@
 <translation id="544691375626129091">Toți utilizatorii disponibili au fost deja adăugați la această sesiune.</translation>
 <translation id="5457599981699367932">Navighează ca invitat</translation>
 <translation id="54609108002486618">Gestionat</translation>
-<translation id="5496819745535887422">Administratorul îți resetează dispozitivul. Toate datele vor fi șterse după repornirea dispozitivului.</translation>
+<translation id="5496819745535887422">Administratorul restabilește o versiune anterioară a SO de pe dispozitiv. Toate datele vor fi șterse după repornirea dispozitivului.</translation>
 <translation id="553675580533261935">Se iese din sesiune</translation>
 <translation id="5537725057119320332">Proiectează</translation>
 <translation id="5548285847212963613">Extensia „<ph name="EXTENSION_NAME" />” te poate ajuta să te conectezi la această rețea.</translation>
@@ -418,7 +418,7 @@
 <translation id="8984179138335769204">Lansare rapidă</translation>
 <translation id="8995603266996330174">Gestionat de <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Este disponibilă o actualizare Adobe Flash Player</translation>
-<translation id="9056839673611986238">Dispozitivul va fi resetat</translation>
+<translation id="9056839673611986238">SO de pe dispozitiv va fi adus la o versiune anterioară</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Microfonul este în uz.</translation>
