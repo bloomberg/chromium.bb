@@ -167,9 +167,10 @@ class Target(object):
           return True
         time.sleep(_ATTACH_RETRY_INTERVAL)
     finally:
+      # Redirect logs to /dev/null. run_package.py will use SSH+dlog to get
+      # logs from the machine to console.
       if self._system_logs_reader:
-        self._system_logs_reader.Close()
-        self._system_logs_reader = None
+        self._system_logs_reader.RedirectTo(open('/dev/null', 'w'));
 
     logging.error('Timeout limit reached.')
 
