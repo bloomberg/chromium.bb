@@ -2201,10 +2201,6 @@ jumbo_split_static_library("ui") {
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
 
-    if (enable_rlz) {
-      deps += [ "//chrome/browser:rlz" ]
-    }
-
     if (!is_official_build) {
       sources += [
         "webui/chromeos/emulator/device_emulator_message_handler.cc",
