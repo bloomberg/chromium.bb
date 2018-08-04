@@ -42,6 +42,10 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 
+#ifdef OS_ANDROID
+#include "content/browser/renderer_host/compositor_impl_android.h"
+#endif
+
 namespace content {
 namespace protocol {
 
@@ -214,9 +218,16 @@ TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
       return_as_stream_(false),
       gzip_compression_(false),
       weak_factory_(this) {
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+  bool use_video_capture_api =
+      base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       base::FeatureList::IsEnabled(
-          features::kUseVideoCaptureApiForDevToolsSnapshots)) {
+          features::kUseVideoCaptureApiForDevToolsSnapshots);
+#ifdef OS_ANDROID
+  // Video capture API cannot be used on Android WebView.
+  if (!CompositorImpl::IsInitialized())
+    use_video_capture_api = false;
+#endif
+  if (use_video_capture_api) {
     video_consumer_ =
         std::make_unique<DevToolsVideoConsumer>(base::BindRepeating(
             &TracingHandler::OnFrameFromVideoConsumer, base::Unretained(this)));
