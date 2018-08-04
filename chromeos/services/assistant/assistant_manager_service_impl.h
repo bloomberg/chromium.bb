@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-// TODO(xiaohuic): replace with "base/macros.h" once we remove
-// libassistant/contrib dependency.
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/threading/thread.h"
@@ -21,7 +19,6 @@
 #include "chromeos/services/assistant/assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "libassistant/contrib/core/macros.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "libassistant/shared/public/device_state_listener.h"

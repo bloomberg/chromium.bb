@@ -11,14 +11,11 @@
 #include <vector>
 
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
+#include "chromeos/services/assistant/platform/audio_output_provider_impl.h"
 #include "chromeos/services/assistant/platform/file_provider_impl.h"
 #include "chromeos/services/assistant/platform/network_provider_impl.h"
 #include "chromeos/services/assistant/platform/system_provider_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-// TODO(xiaohuic): replace with "base/macros.h" once we remove
-// libassistant/contrib dependency.
-#include "libassistant/contrib/core/macros.h"
-#include "libassistant/contrib/platform/audio/output/audio_output_provider_impl.h"
 #include "libassistant/shared/public/platform_api.h"
 #include "libassistant/shared/public/platform_auth.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
@@ -86,7 +83,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   };
 
   AudioInputProviderImpl audio_input_provider_;
-  assistant_contrib::AudioOutputProviderImpl audio_output_provider_;
+  AudioOutputProviderImpl audio_output_provider_;
   DummyAuthProvider auth_provider_;
   FileProviderImpl file_provider_;
   NetworkProviderImpl network_provider_;
