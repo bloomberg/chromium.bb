@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -1164,19 +1165,45 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
   return cache_entry;
 }
 
+namespace {
+GLuint CompileShaderFromSource(GLES2Interface* gl,
+                               const GLchar* source,
+                               GLenum type) {
+  GLuint shader = gl->CreateShader(type);
+  GLint length = base::checked_cast<GLint>(strlen(source));
+  gl->ShaderSource(shader, 1, &source, &length);
+  gl->CompileShader(shader);
+  GLint compile_status = 0;
+  gl->GetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
+  if (!compile_status) {
+    GLint log_length = 0;
+    gl->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+    if (log_length) {
+      std::unique_ptr<GLchar[]> log(new GLchar[log_length]);
+      GLsizei returned_log_length = 0;
+      gl->GetShaderInfoLog(shader, log_length, &returned_log_length, log.get());
+      LOG(ERROR) << std::string(log.get(), returned_log_length);
+    }
+    gl->DeleteShader(shader);
+    return 0;
+  }
+  return shader;
+}
+}  // namespace
+
 void ShaderProgram::Setup(const GLchar* vertex_shader_text,
                           const GLchar* fragment_shader_text) {
   // Shaders to map the source texture to |dst_texture_|.
-  GLuint vertex_shader =
-      helper_->CompileShaderFromSource(vertex_shader_text, GL_VERTEX_SHADER);
+  const GLuint vertex_shader =
+      CompileShaderFromSource(gl_, vertex_shader_text, GL_VERTEX_SHADER);
   if (vertex_shader == 0)
     return;
 
   gl_->AttachShader(program_, vertex_shader);
   gl_->DeleteShader(vertex_shader);
 
-  GLuint fragment_shader = helper_->CompileShaderFromSource(
-      fragment_shader_text, GL_FRAGMENT_SHADER);
+  const GLuint fragment_shader =
+      CompileShaderFromSource(gl_, fragment_shader_text, GL_FRAGMENT_SHADER);
   if (fragment_shader == 0)
     return;
   gl_->AttachShader(program_, fragment_shader);

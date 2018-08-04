@@ -91,9 +91,11 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryTearDownBrowserTest,
   if (factory->IsGpuCompositingDisabled())
     return;
 
-  viz::GLHelper* helper = factory->GetGLHelper();
-  ASSERT_TRUE(helper);
-  mailbox_ = base::MakeRefCounted<OwnedMailbox>(helper);
+  gpu::gles2::GLES2Interface* const gl = factory->GetContextFactory()
+                                             ->SharedMainThreadContextProvider()
+                                             ->ContextGL();
+  ASSERT_TRUE(gl);
+  mailbox_ = base::MakeRefCounted<OwnedMailbox>(gl);
   EXPECT_FALSE(mailbox_->mailbox().IsZero());
 
   // See TearDown() for the test expectation that |mailbox_| has been reset.

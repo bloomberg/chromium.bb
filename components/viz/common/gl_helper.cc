@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
@@ -19,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "components/viz/common/gl_helper_readback_support.h"
 #include "components/viz/common/gl_helper_scaling.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -132,9 +132,7 @@ class I420ConverterImpl : public I420Converter {
 
 }  // namespace
 
-typedef GLHelperReadbackSupport::FormatSupport FormatSupport;
-
-// Implements GLHelper::CropScaleReadbackAndCleanTexture and encapsulates
+// Implements texture consumption/readback and encapsulates
 // the data needed for it.
 class GLHelper::CopyTextureToImpl
     : public base::SupportsWeakPtr<GLHelper::CopyTextureToImpl> {
@@ -145,17 +143,7 @@ class GLHelper::CopyTextureToImpl
       : gl_(gl),
         context_support_(context_support),
         helper_(helper),
-        flush_(gl),
-        max_draw_buffers_(0) {
-    const GLubyte* extensions = gl_->GetString(GL_EXTENSIONS);
-    if (!extensions)
-      return;
-    std::string extensions_string =
-        " " + std::string(reinterpret_cast<const char*>(extensions)) + " ";
-    if (extensions_string.find(" GL_EXT_draw_buffers ") != std::string::npos) {
-      gl_->GetIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &max_draw_buffers_);
-    }
-  }
+        flush_(gl) {}
   ~CopyTextureToImpl() { CancelRequests(); }
 
   GLuint ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
@@ -163,25 +151,11 @@ class GLHelper::CopyTextureToImpl
     return helper_->ConsumeMailboxToTexture(mailbox, sync_token);
   }
 
-  void CropScaleReadbackAndCleanTexture(
-      GLuint src_texture,
-      const gfx::Size& src_size,
-      const gfx::Size& dst_size,
-      unsigned char* out,
-      const SkColorType out_color_type,
-      const base::Callback<void(bool)>& callback,
-      GLHelper::ScalerQuality quality);
-
-  void ReadbackTextureSync(GLuint texture,
-                           const gfx::Rect& src_rect,
-                           unsigned char* out,
-                           SkColorType format);
-
   void ReadbackTextureAsync(GLuint texture,
                             const gfx::Size& dst_size,
                             unsigned char* out,
                             SkColorType color_type,
-                            const base::Callback<void(bool)>& callback);
+                            base::OnceCallback<void(bool)> callback);
 
   // Reads back bytes from the currently bound frame buffer.
   // Note that dst_size is specified in bytes, not pixels.
@@ -192,7 +166,7 @@ class GLHelper::CopyTextureToImpl
                      GLenum format,
                      GLenum type,
                      size_t bytes_per_pixel,
-                     const base::Callback<void(bool)>& callback);
+                     base::OnceCallback<void(bool)> callback);
 
   void ReadbackPlane(const gfx::Size& texture_size,
                      int row_stride_bytes,
@@ -200,30 +174,14 @@ class GLHelper::CopyTextureToImpl
                      int size_shift,
                      const gfx::Rect& paste_rect,
                      ReadbackSwizzle swizzle,
-                     const base::Callback<void(bool)>& callback);
-
-  GLuint CopyAndScaleTexture(GLuint texture,
-                             const gfx::Size& src_size,
-                             const gfx::Size& dst_size,
-                             bool vertically_flip_texture,
-                             GLHelper::ScalerQuality quality);
+                     base::OnceCallback<void(bool)> callback);
 
   std::unique_ptr<ReadbackYUVInterface> CreateReadbackPipelineYUV(
       bool flip_vertically,
       bool use_mrt);
 
-  // Returns the maximum number of draw buffers available,
-  // 0 if GL_EXT_draw_buffers is not available.
-  GLint MaxDrawBuffers() const { return max_draw_buffers_; }
-
-  FormatSupport GetReadbackConfig(SkColorType color_type,
-                                  bool can_swizzle,
-                                  GLenum* format,
-                                  GLenum* type,
-                                  size_t* bytes_per_pixel);
-
  private:
-  // A single request to CropScaleReadbackAndCleanTexture.
+  // Represents the state of a single readback request.
   // The main thread can cancel the request, before it's handled by the helper
   // thread, by resetting the texture and pixels fields. Alternatively, the
   // thread marks that it handles the request by resetting the pixels field
@@ -235,13 +193,13 @@ class GLHelper::CopyTextureToImpl
             size_t bytes_per_row_,
             size_t row_stride_bytes_,
             unsigned char* pixels_,
-            const base::Callback<void(bool)>& callback_)
+            base::OnceCallback<void(bool)> callback_)
         : done(false),
           size(size_),
           bytes_per_row(bytes_per_row_),
           row_stride_bytes(row_stride_bytes_),
           pixels(pixels_),
-          callback(callback_),
+          callback(std::move(callback_)),
           buffer(0),
           query(0) {}
 
@@ -251,7 +209,7 @@ class GLHelper::CopyTextureToImpl
     size_t bytes_per_row;
     size_t row_stride_bytes;
     unsigned char* pixels;
-    base::Callback<void(bool)> callback;
+    base::OnceCallback<void(bool)> callback;
     GLuint buffer;
     GLuint query;
   };
@@ -267,7 +225,7 @@ class GLHelper::CopyTextureToImpl
       while (!requests_.empty()) {
         Request* request = requests_.front();
         requests_.pop();
-        request->callback.Run(request->result);
+        std::move(request->callback).Run(request->result);
         delete request;
       }
     }
@@ -309,7 +267,7 @@ class GLHelper::CopyTextureToImpl
                      int v_plane_row_stride_bytes,
                      unsigned char* v_plane_data,
                      const gfx::Point& paste_location,
-                     const base::Callback<void(bool)>& callback) override;
+                     base::OnceCallback<void(bool)> callback) override;
 
    private:
     GLES2Interface* gl_;
@@ -334,42 +292,13 @@ class GLHelper::CopyTextureToImpl
     DISALLOW_COPY_AND_ASSIGN(ReadbackYUVImpl);
   };
 
-  // Copies everything from |src_texture| (of size |src_size|),
-  // scales it to |dst_size|, writes it into a texture, and returns its ID.
-  // |src_size| is the size of |src_texture|.
-  GLuint ScaleTexture(GLuint src_texture,
-                      const gfx::Size& src_size,
-                      const gfx::Size& dst_size,
-                      bool vertically_flip_texture,
-                      bool swizzle,
-                      SkColorType color_type,
-                      GLHelper::ScalerQuality quality);
-
-  // Converts each four consecutive pixels of the source texture into one pixel
-  // in the result texture with each pixel channel representing the grayscale
-  // color of one of the four original pixels:
-  // R1G1B1A1 R2G2B2A2 R3G3B3A3 R4G4B4A4 -> X1X2X3X4
-  // The resulting texture is still an RGBA texture (which is ~4 times narrower
-  // than the original). If rendered directly, it wouldn't show anything useful,
-  // but the data in it can be used to construct a grayscale image.
-  // |encoded_texture_size| is the exact size of the resulting RGBA texture. It
-  // is equal to src_size.width()/4 rounded upwards. Some channels in the last
-  // pixel ((-src_size.width()) % 4) to be exact) are padding and don't contain
-  // useful data.
-  // If swizzle is set to true, the transformed pixels are reordered:
-  // R1G1B1A1 R2G2B2A2 R3G3B3A3 R4G4B4A4 -> X3X2X1X4.
-  GLuint EncodeTextureAsGrayscale(GLuint src_texture,
-                                  const gfx::Size& src_size,
-                                  gfx::Size* const encoded_texture_size,
-                                  bool vertically_flip_texture,
-                                  bool swizzle);
-
-  static void nullcallback(bool success) {}
   void ReadbackDone(Request* request, size_t bytes_per_pixel);
   void FinishRequest(Request* request,
                      bool result,
                      FinishRequestHelper* helper);
   void CancelRequests();
+
+  bool IsBGRAReadbackSupported();
 
   GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
@@ -380,7 +309,21 @@ class GLHelper::CopyTextureToImpl
   ScopedFlush flush_;
 
   base::queue<Request*> request_queue_;
-  GLint max_draw_buffers_;
+
+  // Lazily set by IsBGRAReadbackSupported().
+  enum {
+    BGRA_SUPPORT_UNKNOWN,
+    BGRA_SUPPORTED,
+    BGRA_NOT_SUPPORTED
+  } bgra_support_ = BGRA_SUPPORT_UNKNOWN;
+
+  // A run-once test is lazy executed in CreateReadbackPipelineYUV(), to
+  // determine whether the GL_BGRA_EXT format is preferred for readback.
+  enum {
+    BGRA_PREFERENCE_UNKNOWN,
+    BGRA_PREFERRED,
+    BGRA_NOT_PREFERRED
+  } bgra_preference_ = BGRA_PREFERENCE_UNKNOWN;
 };
 
 std::unique_ptr<GLHelper::ScalerInterface> GLHelper::CreateScaler(
@@ -395,69 +338,6 @@ std::unique_ptr<GLHelper::ScalerInterface> GLHelper::CreateScaler(
                                     flipped_source, flip_output, swizzle);
 }
 
-GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
-    GLuint src_texture,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size,
-    bool vertically_flip_texture,
-    bool swizzle,
-    SkColorType color_type,
-    GLHelper::ScalerQuality quality) {
-  if (src_size.IsEmpty() || dst_size.IsEmpty())
-    return 0;
-
-  GLuint dst_texture = 0u;
-  gl_->GenTextures(1, &dst_texture);
-  {
-    GLenum format = GL_RGBA, type = GL_UNSIGNED_BYTE;
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dst_texture);
-
-    // Use GL_RGBA for destination/temporary texture unless we're working with
-    // 16-bit data
-    if (color_type == kRGB_565_SkColorType) {
-      format = GL_RGB;
-      type = GL_UNSIGNED_SHORT_5_6_5;
-    }
-    gl_->TexImage2D(GL_TEXTURE_2D, 0, format, dst_size.width(),
-                    dst_size.height(), 0, format, type, nullptr);
-  }
-
-  const std::unique_ptr<ScalerInterface> scaler = helper_->CreateScaler(
-      quality, gfx::Vector2d(src_size.width(), src_size.height()),
-      gfx::Vector2d(dst_size.width(), dst_size.height()), false,
-      vertically_flip_texture, swizzle);
-  scaler->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
-                gfx::Rect(dst_size));
-  return dst_texture;
-}
-
-GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
-    GLuint src_texture,
-    const gfx::Size& src_size,
-    gfx::Size* const encoded_texture_size,
-    bool vertically_flip_texture,
-    bool swizzle) {
-  GLuint dst_texture = 0u;
-  gl_->GenTextures(1, &dst_texture);
-  // The size of the encoded texture.
-  *encoded_texture_size =
-      gfx::Size((src_size.width() + 3) / 4, src_size.height());
-  {
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dst_texture);
-    gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, encoded_texture_size->width(),
-                    encoded_texture_size->height(), 0, GL_RGBA,
-                    GL_UNSIGNED_BYTE, nullptr);
-  }
-
-  helper_->InitScalerImpl();
-  const std::unique_ptr<ScalerInterface> planerizer =
-      helper_->scaler_impl_->CreateGrayscalePlanerizer(
-          false, vertically_flip_texture, swizzle);
-  planerizer->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
-                    gfx::Rect(*encoded_texture_size));
-  return dst_texture;
-}
-
 void GLHelper::CopyTextureToImpl::ReadbackAsync(
     const gfx::Size& dst_size,
     size_t bytes_per_row,
@@ -466,10 +346,10 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
     GLenum format,
     GLenum type,
     size_t bytes_per_pixel,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   TRACE_EVENT0("gpu.capture", "GLHelper::CopyTextureToImpl::ReadbackAsync");
-  Request* request =
-      new Request(dst_size, bytes_per_row, row_stride_bytes, out, callback);
+  Request* request = new Request(dst_size, bytes_per_row, row_stride_bytes, out,
+                                 std::move(callback));
   request_queue_.push(request);
   request->buffer = 0u;
 
@@ -491,129 +371,25 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
                                      AsWeakPtr(), request, bytes_per_pixel));
 }
 
-void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
-    GLuint src_texture,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size,
-    unsigned char* out,
-    const SkColorType out_color_type,
-    const base::Callback<void(bool)>& callback,
-    GLHelper::ScalerQuality quality) {
-  GLenum format, type;
-  size_t bytes_per_pixel;
-  SkColorType readback_color_type = out_color_type;
-  // Single-component textures are not supported by all GPUs, so  we implement
-  // kAlpha_8_SkColorType support here via a special encoding (see below) using
-  // a 32-bit texture to represent an 8-bit image.
-  // Thus we use generic 32-bit readback in this case.
-  if (out_color_type == kAlpha_8_SkColorType) {
-    readback_color_type = kRGBA_8888_SkColorType;
-  }
-
-  FormatSupport supported = GetReadbackConfig(readback_color_type, true,
-                                              &format, &type, &bytes_per_pixel);
-
-  if (supported == GLHelperReadbackSupport::NOT_SUPPORTED) {
-    callback.Run(false);
-    return;
-  }
-
-  GLuint texture = src_texture;
-
-  // Scale texture if needed
-  // Optimization: SCALER_QUALITY_FAST is just a single bilinear pass, which we
-  // can do just as well in EncodeTextureAsGrayscale, which we will do if
-  // out_color_type is kAlpha_8_SkColorType, so let's skip the scaling step
-  // in that case.
-  bool scale_texture = out_color_type != kAlpha_8_SkColorType ||
-                       quality != GLHelper::SCALER_QUALITY_FAST;
-  if (scale_texture) {
-    // Don't swizzle during the scale step for kAlpha_8_SkColorType.
-    // We will swizzle in the encode step below if needed.
-    bool scale_swizzle = out_color_type == kAlpha_8_SkColorType
-                             ? false
-                             : supported == GLHelperReadbackSupport::SWIZZLE;
-    texture =
-        ScaleTexture(src_texture, src_size, dst_size, true, scale_swizzle,
-                     out_color_type == kAlpha_8_SkColorType ? kN32_SkColorType
-                                                            : out_color_type,
-                     quality);
-    if (!texture) {
-      callback.Run(false);
-      return;
-    }
-  }
-
-  gfx::Size readback_texture_size = dst_size;
-  // Encode texture to grayscale if needed.
-  if (out_color_type == kAlpha_8_SkColorType) {
-    // Do the vertical flip here if we haven't already done it when we scaled
-    // the texture.
-    bool encode_as_grayscale_vertical_flip = !scale_texture;
-    // EncodeTextureAsGrayscale by default creates a texture which should be
-    // read back as RGBA, so need to swizzle if the readback format is BGRA.
-    bool encode_as_grayscale_swizzle = format == GL_BGRA_EXT;
-    GLuint tmp_texture = EncodeTextureAsGrayscale(
-        texture, dst_size, &readback_texture_size,
-        encode_as_grayscale_vertical_flip, encode_as_grayscale_swizzle);
-    // If the scaled texture was created - delete it
-    if (scale_texture)
-      gl_->DeleteTextures(1, &texture);
-    texture = tmp_texture;
-    DCHECK(texture);
-  }
-
-  // Readback the pixels of the resulting texture
-  ScopedFramebuffer dst_framebuffer(gl_);
-  ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
-                                                             dst_framebuffer);
-  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                            texture, 0);
-
-  size_t bytes_per_row = out_color_type == kAlpha_8_SkColorType
-                             ? dst_size.width()
-                             : dst_size.width() * bytes_per_pixel;
-
-  ReadbackAsync(readback_texture_size, bytes_per_row, bytes_per_row, out,
-                format, type, bytes_per_pixel, callback);
-  gl_->DeleteTextures(1, &texture);
-}
-
-void GLHelper::CopyTextureToImpl::ReadbackTextureSync(GLuint texture,
-                                                      const gfx::Rect& src_rect,
-                                                      unsigned char* out,
-                                                      SkColorType color_type) {
-  GLenum format, type;
-  size_t bytes_per_pixel;
-  FormatSupport supported =
-      GetReadbackConfig(color_type, false, &format, &type, &bytes_per_pixel);
-  if (supported == GLHelperReadbackSupport::NOT_SUPPORTED) {
-    return;
-  }
-
-  ScopedFramebuffer dst_framebuffer(gl_);
-  ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
-                                                             dst_framebuffer);
-  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                            texture, 0);
-  gl_->ReadPixels(src_rect.x(), src_rect.y(), src_rect.width(),
-                  src_rect.height(), format, type, out);
-}
-
 void GLHelper::CopyTextureToImpl::ReadbackTextureAsync(
     GLuint texture,
     const gfx::Size& dst_size,
     unsigned char* out,
     SkColorType color_type,
-    const base::Callback<void(bool)>& callback) {
-  GLenum format, type;
-  size_t bytes_per_pixel;
-  FormatSupport supported =
-      GetReadbackConfig(color_type, false, &format, &type, &bytes_per_pixel);
-  if (supported == GLHelperReadbackSupport::NOT_SUPPORTED) {
-    callback.Run(false);
+    base::OnceCallback<void(bool)> callback) {
+  constexpr size_t kBytesPerPixel = 4;
+
+  GLenum format;
+  if (color_type == kRGBA_8888_SkColorType) {
+    format = GL_RGBA;
+  } else if (color_type == kBGRA_8888_SkColorType &&
+             IsBGRAReadbackSupported()) {
+    format = GL_BGRA_EXT;
+  } else {
+    // Note: It's possible the GL implementation supports other readback types.
+    // However, as of this writing, no caller of this method will request a
+    // different |color_type| (i.e., requiring using some other GL format).
+    std::move(callback).Run(false);
     return;
   }
 
@@ -623,19 +399,9 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureAsync(
   ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                             texture, 0);
-  ReadbackAsync(dst_size, dst_size.width() * bytes_per_pixel,
-                dst_size.width() * bytes_per_pixel, out, format, type,
-                bytes_per_pixel, callback);
-}
-
-GLuint GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
-    GLuint src_texture,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size,
-    bool vertically_flip_texture,
-    GLHelper::ScalerQuality quality) {
-  return ScaleTexture(src_texture, src_size, dst_size, vertically_flip_texture,
-                      false, kRGBA_8888_SkColorType, quality);
+  ReadbackAsync(dst_size, dst_size.width() * kBytesPerPixel,
+                dst_size.width() * kBytesPerPixel, out, format,
+                GL_UNSIGNED_BYTE, kBytesPerPixel, std::move(callback));
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackDone(Request* finished_request,
@@ -709,15 +475,20 @@ void GLHelper::CopyTextureToImpl::CancelRequests() {
   }
 }
 
-FormatSupport GLHelper::CopyTextureToImpl::GetReadbackConfig(
-    SkColorType color_type,
-    bool can_swizzle,
-    GLenum* format,
-    GLenum* type,
-    size_t* bytes_per_pixel) {
-  helper_->LazyInitReadbackSupportImpl();
-  return helper_->readback_support_->GetReadbackConfig(
-      color_type, can_swizzle, format, type, bytes_per_pixel);
+bool GLHelper::CopyTextureToImpl::IsBGRAReadbackSupported() {
+  if (bgra_support_ == BGRA_PREFERENCE_UNKNOWN) {
+    bgra_support_ = BGRA_NOT_SUPPORTED;
+    if (auto* extensions = gl_->GetString(GL_EXTENSIONS)) {
+      const std::string extensions_string =
+          " " + std::string(reinterpret_cast<const char*>(extensions)) + " ";
+      if (extensions_string.find(" GL_EXT_read_format_bgra ") !=
+          std::string::npos) {
+        bgra_support_ = BGRA_SUPPORTED;
+      }
+    }
+  }
+
+  return bgra_support_ == BGRA_SUPPORTED;
 }
 
 GLHelper::GLHelper(GLES2Interface* gl, gpu::ContextSupport* context_support)
@@ -725,84 +496,14 @@ GLHelper::GLHelper(GLES2Interface* gl, gpu::ContextSupport* context_support)
 
 GLHelper::~GLHelper() {}
 
-void GLHelper::CropScaleReadbackAndCleanTexture(
-    GLuint src_texture,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size,
-    unsigned char* out,
-    const SkColorType out_color_type,
-    const base::Callback<void(bool)>& callback,
-    GLHelper::ScalerQuality quality) {
-  InitCopyTextToImpl();
-  copy_texture_to_impl_->CropScaleReadbackAndCleanTexture(
-      src_texture, src_size, dst_size, out, out_color_type, callback, quality);
-}
-
-void GLHelper::CropScaleReadbackAndCleanMailbox(
-    const gpu::Mailbox& src_mailbox,
-    const gpu::SyncToken& sync_token,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size,
-    unsigned char* out,
-    const SkColorType out_color_type,
-    const base::Callback<void(bool)>& callback,
-    GLHelper::ScalerQuality quality) {
-  GLuint mailbox_texture = ConsumeMailboxToTexture(src_mailbox, sync_token);
-  CropScaleReadbackAndCleanTexture(mailbox_texture, src_size, dst_size, out,
-                                   out_color_type, callback, quality);
-  gl_->DeleteTextures(1, &mailbox_texture);
-}
-
-void GLHelper::ReadbackTextureSync(GLuint texture,
-                                   const gfx::Rect& src_rect,
-                                   unsigned char* out,
-                                   SkColorType format) {
-  InitCopyTextToImpl();
-  copy_texture_to_impl_->ReadbackTextureSync(texture, src_rect, out, format);
-}
-
-void GLHelper::ReadbackTextureAsync(
-    GLuint texture,
-    const gfx::Size& dst_size,
-    unsigned char* out,
-    SkColorType color_type,
-    const base::Callback<void(bool)>& callback) {
+void GLHelper::ReadbackTextureAsync(GLuint texture,
+                                    const gfx::Size& dst_size,
+                                    unsigned char* out,
+                                    SkColorType color_type,
+                                    base::OnceCallback<void(bool)> callback) {
   InitCopyTextToImpl();
   copy_texture_to_impl_->ReadbackTextureAsync(texture, dst_size, out,
-                                              color_type, callback);
-}
-
-GLuint GLHelper::CopyAndScaleTexture(GLuint texture,
-                                     const gfx::Size& src_size,
-                                     const gfx::Size& dst_size,
-                                     bool vertically_flip_texture,
-                                     ScalerQuality quality) {
-  InitCopyTextToImpl();
-  return copy_texture_to_impl_->CopyAndScaleTexture(
-      texture, src_size, dst_size, vertically_flip_texture, quality);
-}
-
-GLuint GLHelper::CompileShaderFromSource(const GLchar* source, GLenum type) {
-  GLuint shader = gl_->CreateShader(type);
-  GLint length = base::checked_cast<GLint>(strlen(source));
-  gl_->ShaderSource(shader, 1, &source, &length);
-  gl_->CompileShader(shader);
-  GLint compile_status = 0;
-  gl_->GetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
-  if (!compile_status) {
-    GLint log_length = 0;
-    gl_->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
-    if (log_length) {
-      std::unique_ptr<GLchar[]> log(new GLchar[log_length]);
-      GLsizei returned_log_length = 0;
-      gl_->GetShaderInfoLog(shader, log_length, &returned_log_length,
-                            log.get());
-      LOG(ERROR) << std::string(log.get(), returned_log_length);
-    }
-    gl_->DeleteShader(shader);
-    return 0;
-  }
-  return shader;
+                                              color_type, std::move(callback));
 }
 
 void GLHelper::InitCopyTextToImpl() {
@@ -818,61 +519,22 @@ void GLHelper::InitScalerImpl() {
     scaler_impl_.reset(new GLHelperScaling(gl_, this));
 }
 
-void GLHelper::LazyInitReadbackSupportImpl() {
-  // Lazily initialize |readback_support_|.
-  if (!readback_support_)
-    readback_support_.reset(new GLHelperReadbackSupport(gl_));
-}
-
 GLint GLHelper::MaxDrawBuffers() {
-  InitCopyTextToImpl();
-  return copy_texture_to_impl_->MaxDrawBuffers();
-}
-
-void GLHelper::CopySubBufferDamage(GLenum target,
-                                   GLuint texture,
-                                   GLuint previous_texture,
-                                   const SkRegion& new_damage,
-                                   const SkRegion& old_damage) {
-  SkRegion region(old_damage);
-  if (region.op(new_damage, SkRegion::kDifference_Op)) {
-    ScopedFramebuffer dst_framebuffer(gl_);
-    ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
-                                                               dst_framebuffer);
-    gl_->BindTexture(target, texture);
-    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
-                              previous_texture, 0);
-    for (SkRegion::Iterator it(region); !it.done(); it.next()) {
-      const SkIRect& rect = it.rect();
-      gl_->CopyTexSubImage2D(target, 0, rect.x(), rect.y(), rect.x(), rect.y(),
-                             rect.width(), rect.height());
+  if (max_draw_buffers_ < 0) {
+    max_draw_buffers_ = 0;
+    const GLubyte* extensions = gl_->GetString(GL_EXTENSIONS);
+    if (extensions) {
+      const std::string extensions_string =
+          " " + std::string(reinterpret_cast<const char*>(extensions)) + " ";
+      if (extensions_string.find(" GL_EXT_draw_buffers ") !=
+          std::string::npos) {
+        gl_->GetIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &max_draw_buffers_);
+        DCHECK_GE(max_draw_buffers_, 0);
+      }
     }
-    gl_->BindTexture(target, 0);
-    gl_->Flush();
   }
-}
 
-GLuint GLHelper::CreateTexture() {
-  GLuint texture = 0u;
-  gl_->GenTextures(1, &texture);
-  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  return texture;
-}
-
-void GLHelper::DeleteTexture(GLuint texture_id) {
-  gl_->DeleteTextures(1, &texture_id);
-}
-
-void GLHelper::GenerateSyncToken(gpu::SyncToken* sync_token) {
-  gl_->GenSyncTokenCHROMIUM(sync_token->GetData());
-}
-
-void GLHelper::WaitSyncToken(const gpu::SyncToken& sync_token) {
-  gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  return max_draw_buffers_;
 }
 
 gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
@@ -881,7 +543,7 @@ gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
   gl_->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
 
   gpu::SyncToken sync_token;
-  GenerateSyncToken(&sync_token);
+  gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
 
   return gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D);
 }
@@ -891,35 +553,9 @@ GLuint GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
   if (mailbox.IsZero())
     return 0;
   if (sync_token.HasData())
-    WaitSyncToken(sync_token);
+    gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   GLuint texture = gl_->CreateAndConsumeTextureCHROMIUM(mailbox.name);
   return texture;
-}
-
-void GLHelper::ResizeTexture(GLuint texture, const gfx::Size& size) {
-  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-  gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.width(), size.height(), 0,
-                  GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-}
-
-void GLHelper::CopyTextureSubImage(GLuint texture, const gfx::Rect& rect) {
-  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-  gl_->CopyTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.x(),
-                         rect.y(), rect.width(), rect.height());
-}
-
-void GLHelper::CopyTextureFullImage(GLuint texture, const gfx::Size& size) {
-  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, size.width(),
-                      size.height(), 0);
-}
-
-void GLHelper::Flush() {
-  gl_->Flush();
-}
-
-void GLHelper::InsertOrderingBarrier() {
-  gl_->OrderingBarrierCHROMIUM();
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackPlane(
@@ -929,13 +565,13 @@ void GLHelper::CopyTextureToImpl::ReadbackPlane(
     int size_shift,
     const gfx::Rect& paste_rect,
     ReadbackSwizzle swizzle,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   const size_t offset = row_stride_bytes * (paste_rect.y() >> size_shift) +
                         (paste_rect.x() >> size_shift);
   ReadbackAsync(texture_size, paste_rect.width() >> size_shift,
                 row_stride_bytes, data + offset,
                 (swizzle == kSwizzleBGRA) ? GL_BGRA_EXT : GL_RGBA,
-                GL_UNSIGNED_BYTE, 4, callback);
+                GL_UNSIGNED_BYTE, 4, std::move(callback));
 }
 
 I420Converter::I420Converter() = default;
@@ -1130,7 +766,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
     int v_plane_row_stride_bytes,
     unsigned char* v_plane_data,
     const gfx::Point& paste_location,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK(!(paste_location.x() & 1));
   DCHECK(!(paste_location.y() & 1));
 
@@ -1151,29 +787,20 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
                               GL_TEXTURE_2D, texture, 0);
   };
   SetUpAndBindFramebuffer(y_readback_framebuffer_, y_);
-  copy_impl_->ReadbackPlane(GetYPlaneTextureSize(output_rect.size()),
-                            y_plane_row_stride_bytes, y_plane_data, 0,
-                            paste_rect, swizzle_, base::Bind(&nullcallback));
+  copy_impl_->ReadbackPlane(
+      GetYPlaneTextureSize(output_rect.size()), y_plane_row_stride_bytes,
+      y_plane_data, 0, paste_rect, swizzle_, base::DoNothing::Once<bool>());
   SetUpAndBindFramebuffer(u_readback_framebuffer_, u_);
   const gfx::Size chroma_texture_size =
       GetChromaPlaneTextureSize(output_rect.size());
   copy_impl_->ReadbackPlane(chroma_texture_size, u_plane_row_stride_bytes,
                             u_plane_data, 1, paste_rect, swizzle_,
-                            base::Bind(&nullcallback));
+                            base::DoNothing::Once<bool>());
   SetUpAndBindFramebuffer(v_readback_framebuffer_, v_);
   copy_impl_->ReadbackPlane(chroma_texture_size, v_plane_row_stride_bytes,
-                            v_plane_data, 1, paste_rect, swizzle_, callback);
+                            v_plane_data, 1, paste_rect, swizzle_,
+                            std::move(callback));
   gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {
-  LazyInitReadbackSupportImpl();
-  GLenum format, type;
-  size_t bytes_per_pixel;
-  FormatSupport support = readback_support_->GetReadbackConfig(
-      color_type, false, &format, &type, &bytes_per_pixel);
-
-  return (support == GLHelperReadbackSupport::SUPPORTED);
 }
 
 std::unique_ptr<I420Converter> GLHelper::CreateI420Converter(
@@ -1185,29 +812,57 @@ std::unique_ptr<I420Converter> GLHelper::CreateI420Converter(
   InitScalerImpl();
   return std::make_unique<I420ConverterImpl>(
       gl_, scaler_impl_.get(), flipped_source, flip_output, swizzle,
-      use_mrt && (copy_texture_to_impl_->MaxDrawBuffers() >= 2));
+      use_mrt && (MaxDrawBuffers() >= 2));
 }
 
 std::unique_ptr<ReadbackYUVInterface>
 GLHelper::CopyTextureToImpl::CreateReadbackPipelineYUV(bool flip_vertically,
                                                        bool use_mrt) {
   helper_->InitScalerImpl();
-  // Just query if the best readback configuration needs a swizzle In
-  // ReadbackPlane() we will choose GL_RGBA/GL_BGRA_EXT based on swizzle
-  GLenum format, type;
-  size_t bytes_per_pixel;
-  FormatSupport supported = GetReadbackConfig(kRGBA_8888_SkColorType, true,
-                                              &format, &type, &bytes_per_pixel);
-  DCHECK((format == GL_RGBA || format == GL_BGRA_EXT) &&
-         type == GL_UNSIGNED_BYTE);
 
-  ReadbackSwizzle swizzle = kSwizzleNone;
-  if (supported == GLHelperReadbackSupport::SWIZZLE)
-    swizzle = kSwizzleBGRA;
+  if (bgra_preference_ == BGRA_PREFERENCE_UNKNOWN) {
+    if (IsBGRAReadbackSupported()) {
+      // Test whether GL_BRGA_EXT is preferred for readback by creating a test
+      // texture, binding it to a framebuffer as a color attachment, and then
+      // querying the implementation for the framebuffer's readback format.
+      constexpr int kTestSize = 64;
+      GLuint texture = 0;
+      gl_->GenTextures(1, &texture);
+      gl_->BindTexture(GL_TEXTURE_2D, texture);
+      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kTestSize, kTestSize, 0,
+                      GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      GLuint framebuffer = 0;
+      gl_->GenFramebuffers(1, &framebuffer);
+      gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+      gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                GL_TEXTURE_2D, texture, 0);
+      GLint readback_format = 0;
+      GLint readback_type = 0;
+      gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &readback_format);
+      gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &readback_type);
+      if (readback_format == GL_BGRA_EXT && readback_type == GL_UNSIGNED_BYTE) {
+        bgra_preference_ = BGRA_PREFERRED;
+      } else {
+        bgra_preference_ = BGRA_NOT_PREFERRED;
+      }
+      if (framebuffer != 0)
+        gl_->DeleteFramebuffers(1, &framebuffer);
+      if (texture != 0)
+        gl_->DeleteTextures(1, &texture);
+    } else {
+      bgra_preference_ = BGRA_NOT_PREFERRED;
+    }
+  }
 
+  const ReadbackSwizzle swizzle =
+      (bgra_preference_ == BGRA_PREFERRED) ? kSwizzleBGRA : kSwizzleNone;
   return std::make_unique<ReadbackYUVImpl>(
       gl_, this, helper_->scaler_impl_.get(), flip_vertically, swizzle,
-      use_mrt && (max_draw_buffers_ >= 2));
+      use_mrt && (helper_->MaxDrawBuffers() >= 2));
 }
 
 std::unique_ptr<ReadbackYUVInterface> GLHelper::CreateReadbackPipelineYUV(
@@ -1236,11 +891,6 @@ ReadbackYUVInterface* GLHelper::GetReadbackPipelineYUV(
   }
   DCHECK(!yuv_reader->scaler());
   return yuv_reader;
-}
-
-GLHelperReadbackSupport* GLHelper::GetReadbackSupport() {
-  LazyInitReadbackSupportImpl();
-  return readback_support_.get();
 }
 
 }  // namespace viz

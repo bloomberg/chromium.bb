@@ -13,20 +13,20 @@
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/compositor/compositor.h"
 
-namespace viz {
-class GLHelper;
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
 }
 
 namespace content {
 
-
 // This class holds a texture id and gpu::Mailbox, and deletes the texture
-// id when the object itself is destroyed. Should only be created if a GLHelper
-// exists on the ImageTransportFactory.
+// id when the object itself is destroyed.
 class CONTENT_EXPORT OwnedMailbox : public base::RefCounted<OwnedMailbox>,
                                     public ui::ContextFactoryObserver {
  public:
-  explicit OwnedMailbox(viz::GLHelper* gl_helper);
+  explicit OwnedMailbox(gpu::gles2::GLES2Interface* gl);
 
   const gpu::MailboxHolder& holder() const { return mailbox_holder_; }
   const gpu::Mailbox& mailbox() const { return mailbox_holder_.mailbox; }
@@ -47,9 +47,9 @@ class CONTENT_EXPORT OwnedMailbox : public base::RefCounted<OwnedMailbox>,
  private:
   friend class base::RefCounted<OwnedMailbox>;
 
+  gpu::gles2::GLES2Interface* const gl_;
   uint32_t texture_id_;
   gpu::MailboxHolder mailbox_holder_;
-  viz::GLHelper* gl_helper_;
 };
 
 }  // namespace content

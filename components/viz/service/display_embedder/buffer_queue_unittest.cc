@@ -12,7 +12,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -115,7 +114,6 @@ class MockBufferQueue : public BufferQueue {
                     target,
                     kBufferQueueInternalformat,
                     kBufferQueueFormat,
-                    nullptr,
                     gpu_memory_buffer_manager,
                     kFakeSurfaceHandle) {}
   MOCK_METHOD4(CopyBufferDamage,
@@ -277,7 +275,7 @@ std::unique_ptr<BufferQueue> CreateBufferQueue(
     gpu::gles2::GLES2Interface* gl,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   std::unique_ptr<BufferQueue> buffer_queue(new BufferQueue(
-      gl, target, kBufferQueueInternalformat, kBufferQueueFormat, nullptr,
+      gl, target, kBufferQueueInternalformat, kBufferQueueFormat,
       gpu_memory_buffer_manager, kFakeSurfaceHandle));
   buffer_queue->Initialize();
   return buffer_queue;
@@ -342,14 +340,9 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
   std::unique_ptr<BufferQueue> output_surface;
   gpu_memory_buffer_manager.reset(new StubGpuMemoryBufferManager);
 
-  std::unique_ptr<GLHelper> gl_helper;
-  gl_helper.reset(new GLHelper(context_provider->ContextGL(),
-                               context_provider->ContextSupport()));
-
   output_surface.reset(new BufferQueue(
       context_provider->ContextGL(), GL_TEXTURE_2D,
       kBufferQueueInternalformat, kBufferQueueFormat,
-      gl_helper.get(),
       gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
   output_surface->Initialize();
   output_surface->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);

@@ -4,26 +4,36 @@
 
 #include "content/browser/compositor/owned_mailbox.h"
 
-#include "base/logging.h"
-#include "components/viz/common/gl_helper.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace content {
 
-OwnedMailbox::OwnedMailbox(viz::GLHelper* gl_helper)
-    : texture_id_(0), gl_helper_(gl_helper) {
-  texture_id_ = gl_helper_->CreateTexture();
-  mailbox_holder_ = gl_helper_->ProduceMailboxHolderFromTexture(texture_id_);
-  // The texture target is not exposed on this class, as GLHelper assumes
-  // GL_TEXTURE_2D.
-  DCHECK_EQ(mailbox_holder_.texture_target,
-            static_cast<uint32_t>(GL_TEXTURE_2D));
+OwnedMailbox::OwnedMailbox(gpu::gles2::GLES2Interface* gl)
+    : gl_(gl), texture_id_(0) {
+  DCHECK(gl_);
+
+  // Create the texture.
+  static_assert(sizeof(texture_id_) == sizeof(GLuint),
+                "need to adjust type of texture_id_ in its declaration");
+  gl_->GenTextures(1, &texture_id_);
+  gl_->BindTexture(GL_TEXTURE_2D, texture_id_);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
+  // Initialize the MailboxHolder for the texture.
+  gl_->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_holder_.mailbox.name);
+  gl_->GenSyncTokenCHROMIUM(mailbox_holder_.sync_token.GetData());
+  mailbox_holder_.texture_target = GL_TEXTURE_2D;
+
   ImageTransportFactory::GetInstance()->GetContextFactory()->AddObserver(this);
 }
 
 OwnedMailbox::~OwnedMailbox() {
-  if (gl_helper_)
-    Destroy();
+  Destroy();
 }
 
 void OwnedMailbox::UpdateSyncToken(const gpu::SyncToken& sync_token) {
@@ -32,18 +42,20 @@ void OwnedMailbox::UpdateSyncToken(const gpu::SyncToken& sync_token) {
 }
 
 void OwnedMailbox::Destroy() {
+  if (texture_id_ == 0)
+    return;
+
   ImageTransportFactory::GetInstance()->GetContextFactory()->RemoveObserver(
       this);
-  gl_helper_->WaitSyncToken(mailbox_holder_.sync_token);
-  gl_helper_->DeleteTexture(texture_id_);
+
+  gl_->WaitSyncTokenCHROMIUM(mailbox_holder_.sync_token.GetConstData());
+  gl_->DeleteTextures(1, &texture_id_);
   texture_id_ = 0;
   mailbox_holder_ = gpu::MailboxHolder();
-  gl_helper_ = nullptr;
 }
 
 void OwnedMailbox::OnLostSharedContext() {
-  if (gl_helper_)
-    Destroy();
+  Destroy();
 }
 
 void OwnedMailbox::OnLostVizProcess() {}

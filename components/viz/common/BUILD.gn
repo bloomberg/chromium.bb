@@ -53,8 +53,6 @@ viz_component("common") {
     "frame_sinks/delay_based_time_source.h",
     "gl_helper.cc",
     "gl_helper.h",
-    "gl_helper_readback_support.cc",
-    "gl_helper_readback_support.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
     "gpu/context_cache_controller.cc",

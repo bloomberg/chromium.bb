@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_COMPOSITOR_GPU_SURFACELESS_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <vector>
 
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -16,7 +17,6 @@ class GpuMemoryBufferManager;
 
 namespace viz {
 class BufferQueue;
-class GLHelper;
 }
 
 namespace content {
@@ -61,7 +61,6 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   bool use_gpu_fence_;
   unsigned gpu_fence_id_;
 
-  std::unique_ptr<viz::GLHelper> gl_helper_;
   std::unique_ptr<viz::BufferQueue> buffer_queue_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
 };
