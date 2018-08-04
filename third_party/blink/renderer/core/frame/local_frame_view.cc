@@ -169,6 +169,7 @@ constexpr size_t kCssFragmentIdentifierPrefixLength =
 // EnsureUkmTimeAggregator().
 enum class UkmMetricNames {
   kCompositing,
+  kCompositingCommit,
   kIntersectionObservation,
   kPaint,
   kPrePaint,
@@ -2524,8 +2525,8 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
   DCHECK(layout_view);
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
-                             UkmMetricNames::kCompositing);
+    SCOPED_UMA_AND_UKM_TIMER("Blink.CompositingCommit.UpdateTime",
+                             UkmMetricNames::kCompositingCommit);
     layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
   } else {
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -4439,8 +4440,8 @@ UkmTimeAggregator& LocalFrameView::EnsureUkmTimeAggregator() {
         frame_->GetDocument()->UkmRecorder(),
         // Note that changing the order or values of the following vector
         // requires changing the UkmMetricNames enum.
-        {"Compositing", "IntersectionObservation", "Paint", "PrePaint",
-         "StyleAndLayout"},
+        {"Compositing", "CompositingCommit", "IntersectionObservation", "Paint",
+         "PrePaint", "StyleAndLayout"},
         TimeDelta::FromSeconds(30)));
   }
   return *ukm_time_aggregator_;
