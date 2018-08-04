@@ -141,6 +141,8 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name",
+          "net_perftests",
           "--non-telemetry=true",
           "--migrated-test=true"
         ],
@@ -226,6 +228,8 @@
       },
       {
         "args": [
+          "--gtest-benchmark-name",
+          "views_perftests",
           "--non-telemetry=true",
           "--migrated-test=true"
         ],
@@ -271,6 +275,8 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name",
+          "load_library_perf_tests",
           "--non-telemetry=true",
           "--migrated-test=true"
         ],

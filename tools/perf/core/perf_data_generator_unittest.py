@@ -104,7 +104,8 @@ class PerfDataGeneratorTest(unittest.TestCase):
     expected_generated_test = {
         'override_compile_targets': ['angle_perftest'],
         'isolate_name': 'angle_perftest',
-        'args': ['--non-telemetry=true', '--migrated-test=true'],
+        'args': ['--gtest-benchmark-name', 'angle_perftest',
+                 '--non-telemetry=true', '--migrated-test=true'],
         'trigger_script': {
           'args': [
             '--multiple-dimension-script-verbose',
