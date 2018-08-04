@@ -133,7 +133,7 @@ class MODULES_EXPORT PaymentRequest final
   // be resolved if the user accepts or aborts the payment request.
   // The pending promise can be [[acceptPromise]] or [[retryPromise]] in the
   // spec.
-  ScriptPromiseResolver* GetPendingAcceptPromiseResolver();
+  ScriptPromiseResolver* GetPendingAcceptPromiseResolver() const;
 
   PaymentOptions options_;
   Member<PaymentAddress> shipping_address_;
@@ -142,7 +142,7 @@ class MODULES_EXPORT PaymentRequest final
   String shipping_option_;
   String shipping_type_;
   HashSet<String> method_names_;
-  Member<ScriptPromiseResolver> show_resolver_;
+  Member<ScriptPromiseResolver> accept_resolver_;
   Member<ScriptPromiseResolver> complete_resolver_;
   Member<ScriptPromiseResolver> retry_resolver_;
   Member<ScriptPromiseResolver> abort_resolver_;
