@@ -515,6 +515,18 @@ be describing additional metrics about the same event.
       the event period.
     </summary>
   </metric>
+  <metric name="CompositingCommit.Average">
+    <summary>
+      The average time taken by the compositing commit at the end of the blink
+      lifecycle, in microseconds in the event period.
+    </summary>
+  </metric>
+  <metric name="CompositingCommit.WorstCase">
+    <summary>
+      The longest single time taken by the compositing commit at the end of the
+      blink lifecycle, in microseconds in the event period.
+    </summary>
+  </metric>
   <metric name="IntersectionObservation.Average">
     <summary>
       The average time taken to compute IntersectionObserver observations in
