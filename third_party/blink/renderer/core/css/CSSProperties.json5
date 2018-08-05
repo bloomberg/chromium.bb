@@ -3246,7 +3246,6 @@
     {
       name: "transform-box",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSTransformBox",
       field_template: "keyword",
       keywords: ["fill-box", "view-box"],
       default_value: "view-box",
