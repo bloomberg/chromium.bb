@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim_model.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
