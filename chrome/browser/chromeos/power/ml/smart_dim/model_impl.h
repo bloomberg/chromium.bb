@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POWER_ML_SMART_DIM_MODEL_IMPL_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim_model.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 
 namespace chromeos {
 namespace power {
