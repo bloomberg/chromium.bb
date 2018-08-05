@@ -128,7 +128,9 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
       // If GpuMemoryBuffer allocation failed (https://crbug.com/554541), then
       // we don't have anything to give to the display compositor, but also no
       // way to report an error, so we just make a texture but don't bind
-      // anything to it..
+      // anything to it. Many blink layout tests on macOS fail to have no
+      // |gpu_memory_buffer_| here, so any error reporting will spam console
+      // logs (https://crbug.com/871031).
       if (gpu_memory_buffer_) {
         backing_->image_id = gl->CreateImageCHROMIUM(
             gpu_memory_buffer_->AsClientBuffer(), resource_size_.width(),
@@ -141,7 +143,7 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
                                     backing_->image_id);
       gl->BindTexImage2DCHROMIUM(backing_->texture_target, backing_->image_id);
     }
-    if (resource_color_space_.IsValid()) {
+    if (backing_->image_id && resource_color_space_.IsValid()) {
       gl->SetColorSpaceMetadataCHROMIUM(
           backing_->texture_id,
           reinterpret_cast<GLColorSpace>(&resource_color_space_));
