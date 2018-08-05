@@ -183,7 +183,7 @@ public class WebappDataStorage {
                 callback.onDataRetrieved(result);
             }
         }
-                .execute();
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
