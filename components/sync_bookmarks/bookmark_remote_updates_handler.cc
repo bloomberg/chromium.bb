@@ -71,6 +71,51 @@ int ComputeChildNodeIndex(const bookmarks::BookmarkNode* parent,
   return parent->child_count();
 }
 
+void ApplyRemoteUpdate(
+    const syncer::UpdateResponseData& update,
+    const SyncedBookmarkTracker::Entity* tracked_entity,
+    const SyncedBookmarkTracker::Entity* new_parent_tracked_entity,
+    bookmarks::BookmarkModel* model,
+    SyncedBookmarkTracker* tracker) {
+  const syncer::EntityData& update_entity = update.entity.value();
+  DCHECK(!update_entity.is_deleted());
+  DCHECK(tracked_entity);
+  DCHECK(new_parent_tracked_entity);
+  DCHECK(model);
+  DCHECK(tracker);
+  const bookmarks::BookmarkNode* node = tracked_entity->bookmark_node();
+  const bookmarks::BookmarkNode* old_parent = node->parent();
+  const bookmarks::BookmarkNode* new_parent =
+      new_parent_tracked_entity->bookmark_node();
+
+  if (update_entity.is_folder != node->is_folder()) {
+    DLOG(ERROR) << "Could not update node. Remote node is a "
+                << (update_entity.is_folder ? "folder" : "bookmark")
+                << " while local node is a "
+                << (node->is_folder() ? "folder" : "bookmark");
+    return;
+  }
+  UpdateBookmarkNodeFromSpecifics(update_entity.specifics.bookmark(), node,
+                                  model);
+  // Compute index information before updating the |tracker|.
+  const int old_index = old_parent->GetIndexOf(node);
+  const int new_index =
+      ComputeChildNodeIndex(new_parent, update_entity.unique_position, tracker);
+  tracker->Update(update_entity.id, update.response_version,
+                  update_entity.modification_time,
+                  update_entity.unique_position, update_entity.specifics);
+
+  if (new_parent == old_parent &&
+      (new_index == old_index || new_index == old_index + 1)) {
+    // Node hasn't moved. No more work to do.
+    return;
+  }
+  // Node has moved to another position under the same parent. Update the model.
+  // BookmarkModel takes care of placing the node in the correct position if the
+  // node is move to the left. (i.e. no need to subtract one from |new_index|).
+  model->Move(node, new_parent, new_index);
+}
+
 }  // namespace
 
 BookmarkRemoteUpdatesHandler::BookmarkRemoteUpdatesHandler(
@@ -85,10 +130,25 @@ void BookmarkRemoteUpdatesHandler::Process(
     const syncer::UpdateResponseDataList& updates) {
   for (const syncer::UpdateResponseData* update : ReorderUpdates(&updates)) {
     const syncer::EntityData& update_entity = update->entity.value();
-    // TODO(crbug.com/516866): Check |update_entity| for sanity.
-    // 1. Has bookmark specifics or no specifics in case of delete.
-    // 2. All meta info entries in the specifics have unique keys.
-    // 3. Unique position is valid.
+    // Only non deletions and non premanent node should have valid specifics and
+    // unique positions.
+    if (!update_entity.is_deleted() &&
+        update_entity.parent_id != kBookmarksRootId) {
+      if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
+                                    update_entity.is_folder)) {
+        // Ignore updates with invalid specifics.
+        DLOG(ERROR)
+            << "Couldn't process an update bookmark with an invalid specifics.";
+        continue;
+      }
+      if (!syncer::UniquePosition::FromProto(update_entity.unique_position)
+               .IsValid()) {
+        // Ignore updates with invalid unique position.
+        DLOG(ERROR) << "Couldn't process an update bookmark with an invalid "
+                       "unique position.";
+        continue;
+      }
+    }
     const SyncedBookmarkTracker::Entity* tracked_entity =
         bookmark_tracker_->GetEntityForSyncId(update_entity.id);
     if (update_entity.is_deleted()) {
@@ -212,12 +272,10 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteCreate(
                    "should have been merged during intial sync.";
     return;
   }
-  if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
-                                update_entity.is_folder)) {
-    // Ignore creations with invalid specifics.
-    DLOG(ERROR) << "Couldn't add bookmark with an invalid specifics.";
-    return;
-  }
+
+  DCHECK(IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
+                                  update_entity.is_folder));
+
   const bookmarks::BookmarkNode* parent_node = GetParentNode(update_entity);
   if (!parent_node) {
     // If we cannot find the parent, we can do nothing.
@@ -255,12 +313,9 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
             bookmark_tracker_->GetEntityForSyncId(update_entity.id));
   // Must not be a deletion.
   DCHECK(!update_entity.is_deleted());
-  if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
-                                update_entity.is_folder)) {
-    // Ignore updates with invalid specifics.
-    DLOG(ERROR) << "Couldn't update bookmark with an invalid specifics.";
-    return;
-  }
+
+  DCHECK(IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
+                                  update_entity.is_folder));
   if (tracked_entity->IsUnsynced()) {
     // TODO(crbug.com/516866): Handle conflict resolution.
     return;
@@ -295,33 +350,8 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
                               update_entity.specifics);
     return;
   }
-  if (update_entity.is_folder != node->is_folder()) {
-    DLOG(ERROR) << "Could not update node. Remote node is a "
-                << (update_entity.is_folder ? "folder" : "bookmark")
-                << " while local node is a "
-                << (node->is_folder() ? "folder" : "bookmark");
-    return;
-  }
-  UpdateBookmarkNodeFromSpecifics(update_entity.specifics.bookmark(), node,
-                                  bookmark_model_);
-  // Compute index information before updating the |bookmark_tracker_|.
-  const int old_index = old_parent->GetIndexOf(node);
-  const int new_index = ComputeChildNodeIndex(
-      new_parent, update_entity.unique_position, bookmark_tracker_);
-  bookmark_tracker_->Update(update_entity.id, update.response_version,
-                            update_entity.modification_time,
-                            update_entity.unique_position,
-                            update_entity.specifics);
-
-  if (new_parent == old_parent &&
-      (new_index == old_index || new_index == old_index + 1)) {
-    // Node hasn't moved. No more work to do.
-    return;
-  }
-  // Node has moved to another position under the same parent. Update the model.
-  // BookmarkModel takes care of placing the node in the correct position if the
-  // node is move to the left. (i.e. no need to subtract one from |new_index|).
-  bookmark_model_->Move(node, new_parent, new_index);
+  ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
+                    bookmark_tracker_);
 }
 
 void BookmarkRemoteUpdatesHandler::ProcessRemoteDelete(
