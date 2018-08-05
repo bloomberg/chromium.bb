@@ -136,7 +136,7 @@ public class WebappRegistry {
                 if (callback != null) callback.onWebappDataStorageRetrieved(storage);
             }
         }
-                .execute();
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
