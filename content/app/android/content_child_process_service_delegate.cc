@@ -46,16 +46,16 @@ class ChildProcessSurfaceManager : public gpu::ScopedSurfaceRequestConduit,
   }
 
   // Overriden from ScopedSurfaceRequestConduit:
-  void ForwardSurfaceTextureForSurfaceRequest(
+  void ForwardSurfaceOwnerForSurfaceRequest(
       const base::UnguessableToken& request_token,
-      const gl::SurfaceTexture* surface_texture) override {
+      const gpu::SurfaceOwner* surface_owner) override {
     JNIEnv* env = base::android::AttachCurrentThread();
 
     content::
-        Java_ContentChildProcessServiceDelegate_forwardSurfaceTextureForSurfaceRequest(
+        Java_ContentChildProcessServiceDelegate_forwardSurfaceForSurfaceRequest(
             env, service_impl_,
             base::android::UnguessableTokenAndroid::Create(env, request_token),
-            surface_texture->j_surface_texture());
+            surface_owner->CreateJavaSurface().j_surface());
   }
 
   // Overridden from GpuSurfaceLookup:

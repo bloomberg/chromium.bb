@@ -9,6 +9,7 @@
 #define GPU_CONFIG_GPU_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "gpu/gpu_export.h"
 
 namespace features {
@@ -22,6 +23,10 @@ GPU_EXPORT extern const base::Feature kDefaultEnableOopRasterization;
 GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
 GPU_EXPORT extern const base::Feature kDirectCompositionOverlays;
+
+#if defined(OS_ANDROID)
+GPU_EXPORT extern const base::Feature kAImageReaderMediaPlayer;
+#endif  // defined(OS_ANDROID)
 
 }  // namespace features
 

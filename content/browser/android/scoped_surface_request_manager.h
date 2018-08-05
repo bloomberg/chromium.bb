@@ -49,9 +49,9 @@ class CONTENT_EXPORT ScopedSurfaceRequestManager
   // Implementation of ScopedSurfaceRequestConduit.
   // To be used in the single process case.
   // Can be called from any thread.
-  void ForwardSurfaceTextureForSurfaceRequest(
+  void ForwardSurfaceOwnerForSurfaceRequest(
       const base::UnguessableToken& request_token,
-      const gl::SurfaceTexture* surface_texture) override;
+      const gpu::SurfaceOwner* surface_owner) override;
 
   void clear_requests_for_testing() { request_callbacks_.clear(); }
 

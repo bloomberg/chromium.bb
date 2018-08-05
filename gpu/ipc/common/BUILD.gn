@@ -108,6 +108,7 @@ source_set("ipc_common_sources") {
       "gpu_memory_buffer_impl_android_hardware_buffer.cc",
       "gpu_memory_buffer_impl_android_hardware_buffer.h",
     ]
+    visibility += [ "//media/gpu:gpu" ]
   }
 
   configs += [
@@ -135,8 +136,12 @@ source_set("ipc_common_sources") {
 
   if (is_android) {
     sources += [
+      "android/android_image_reader_utils.cc",
+      "android/android_image_reader_utils.h",
       "android/scoped_surface_request_conduit.cc",
       "android/scoped_surface_request_conduit.h",
+      "android/surface_owner_android.cc",
+      "android/surface_owner_android.h",
       "gpu_surface_lookup.cc",
       "gpu_surface_lookup.h",
       "gpu_surface_tracker.cc",

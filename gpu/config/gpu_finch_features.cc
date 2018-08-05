@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 #include "gpu/config/gpu_finch_features.h"
 
-#include "build/build_config.h"
-
 namespace features {
 
 // Enable GPU Rasterization by default. This can still be overridden by
@@ -40,5 +38,11 @@ const base::Feature kDefaultPassthroughCommandDecoder{
 // --enable-direct-composition-layers and --disable-direct-composition-layers.
 const base::Feature kDirectCompositionOverlays{
     "DirectCompositionOverlays", base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+// Use android AImageReader when playing videos with MediaPlayer.
+const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features
