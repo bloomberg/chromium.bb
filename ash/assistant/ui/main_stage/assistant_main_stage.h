@@ -17,9 +17,14 @@ namespace ui {
 class CallbackLayerAnimationObserver;
 }  // namespace ui
 
+namespace views {
+class Label;
+}  // namespace views
+
 namespace ash {
 
 class AssistantController;
+class AssistantProgressIndicator;
 class AssistantQueryView;
 class SuggestionContainerView;
 class UiElementContainerView;
@@ -57,8 +62,9 @@ class AssistantMainStage : public views::View,
   void InitLayout(AssistantController* assistant_controller);
   void InitContentLayoutContainer(AssistantController* assistant_controller);
   void InitQueryLayoutContainer(AssistantController* assistant_controller);
+  void InitOverlayLayoutContainer();
 
-  void UpdateActiveQueryViewSpacer();
+  void UpdateTopPadding();
   void UpdateQueryViewTransform(views::View* query_view);
   void UpdateSuggestionContainer();
 
@@ -74,21 +80,31 @@ class AssistantMainStage : public views::View,
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  views::View* active_query_view_spacer_;          // Owned by view hierarchy.
-  views::View* query_layout_container_;            // Owned by view hierarchy.
-  SuggestionContainerView* suggestion_container_;  // Owned by view hierarchy.
-  UiElementContainerView* ui_element_container_;   // Owned by view hierarchy.
+  // Content layout container and children. Owned by view hierarchy.
+  views::View* content_layout_container_;
+  UiElementContainerView* ui_element_container_;
+  SuggestionContainerView* suggestion_container_;
 
-  // Owned by view hierarchy.
+  // Query layout container and children. Owned by view hierarchy.
+  views::View* query_layout_container_;
   AssistantQueryView* active_query_view_ = nullptr;
   AssistantQueryView* committed_query_view_ = nullptr;
   AssistantQueryView* pending_query_view_ = nullptr;
+
+  // Overlay layout container and children. Owned by view hierarchy.
+  views::View* overlay_layout_container_;
+  views::Label* greeting_label_;
+  AssistantProgressIndicator* progress_indicator_;
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver>
       active_query_exit_animation_observer_;
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver>
       suggestion_container_animation_observer_;
+
+  // True if this is the first query received for the current Assistant UI
+  // session, false otherwise.
+  bool is_first_query_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMainStage);
 };

@@ -12,17 +12,15 @@
 
 namespace views {
 class BoxLayout;
-class Label;
 }  // namespace views
 
 namespace ash {
 
 class AssistantController;
-class AssistantProgressIndicator;
 class BaseLogoView;
 
 // AssistantHeaderView is the child of UiElementContainerView which provides
-// the Assistant icon. On first launch, it also displays a greeting to the user.
+// the Assistant icon.
 class AssistantHeaderView : public views::View,
                             public AssistantInteractionModelObserver,
                             public AssistantUiModelObserver {
@@ -32,7 +30,6 @@ class AssistantHeaderView : public views::View,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
   void ChildVisibilityChanged(views::View* child) override;
 
   // AssistantInteractionModelObserver:
@@ -49,8 +46,6 @@ class AssistantHeaderView : public views::View,
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
   BaseLogoView* molecule_icon_;       // Owned by view hierarchy.
-  views::Label* greeting_label_;      // Owned by view hierarchy.
-  AssistantProgressIndicator* progress_indicator_;  // Owned by view hierarchy.
 
   // True if this is the first query response received for the current Assistant
   // UI session, false otherwise.

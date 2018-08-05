@@ -8,15 +8,20 @@
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_container_view.h"
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 #include "ash/assistant/util/animation_util.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/time/time.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
@@ -24,6 +29,11 @@
 namespace ash {
 
 namespace {
+
+// Appearance.
+constexpr int kGreetingLabelMarginTopDip = 32;
+constexpr int kProgressIndicatorMarginLeftDip = 32;
+constexpr int kProgressIndicatorMarginTopDip = 40;
 
 // Animation.
 // TODO(dmblack): Rename these constants to refer to the specific views they are
@@ -44,9 +54,21 @@ constexpr base::TimeDelta kAnimationTranslateUpDelay =
 constexpr base::TimeDelta kAnimationTranslateUpDuration =
     base::TimeDelta::FromMilliseconds(333);
 
+// Greeting animation.
+constexpr base::TimeDelta kGreetingAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(83);
+
 // Pending query animation.
 constexpr base::TimeDelta kPendingQueryAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(433);
+
+// Progress animation.
+constexpr base::TimeDelta kProgressAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(233);
+constexpr base::TimeDelta kProgressAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kProgressAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(83);
 
 // Suggestion container animation.
 constexpr int kSuggestionContainerAnimationTranslationDip = 22;
@@ -155,7 +177,7 @@ void AssistantMainStage::ChildVisibilityChanged(views::View* child) {
 
 void AssistantMainStage::OnViewBoundsChanged(views::View* view) {
   if (view == active_query_view_) {
-    UpdateActiveQueryViewSpacer();
+    UpdateTopPadding();
   } else if (view == committed_query_view_) {
     UpdateQueryViewTransform(committed_query_view_);
   } else if (view == pending_query_view_) {
@@ -187,31 +209,26 @@ void AssistantMainStage::InitLayout(AssistantController* assistant_controller) {
 
   InitContentLayoutContainer(assistant_controller);
   InitQueryLayoutContainer(assistant_controller);
+  InitOverlayLayoutContainer();
 }
 
 void AssistantMainStage::InitContentLayoutContainer(
     AssistantController* assistant_controller) {
-  // Note that we will observe children of |content_layout_container| to handle
+  // Note that we will observe children of |content_layout_container_| to handle
   // preferred size and visibility change events in AssistantMainStage. This is
-  // necessary because |content_layout_container| may not change size in
+  // necessary because |content_layout_container_| may not change size in
   // response to these events, necessitating an explicit layout pass.
-  views::View* content_layout_container = new views::View();
+  content_layout_container_ = new views::View();
 
-  views::BoxLayout* layout_manager = content_layout_container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical));
-
-  // Active query spacer.
-  // Note: This view reserves layout space for |active_query_view_|,
-  // dynamically mirroring its preferred size and visibility.
-  active_query_view_spacer_ = new views::View();
-  active_query_view_spacer_->AddObserver(this);
-  content_layout_container->AddChildView(active_query_view_spacer_);
+  views::BoxLayout* layout_manager =
+      content_layout_container_->SetLayoutManager(
+          std::make_unique<views::BoxLayout>(
+              views::BoxLayout::Orientation::kVertical));
 
   // UI element container.
   ui_element_container_ = new UiElementContainerView(assistant_controller);
   ui_element_container_->AddObserver(this);
-  content_layout_container->AddChildView(ui_element_container_);
+  content_layout_container_->AddChildView(ui_element_container_);
 
   layout_manager->SetFlexForView(ui_element_container_, 1);
 
@@ -223,9 +240,9 @@ void AssistantMainStage::InitContentLayoutContainer(
   suggestion_container_->SetPaintToLayer();
   suggestion_container_->layer()->SetFillsBoundsOpaquely(false);
 
-  content_layout_container->AddChildView(suggestion_container_);
+  content_layout_container_->AddChildView(suggestion_container_);
 
-  AddChildView(content_layout_container);
+  AddChildView(content_layout_container_);
 }
 
 void AssistantMainStage::InitQueryLayoutContainer(
@@ -242,7 +259,105 @@ void AssistantMainStage::InitQueryLayoutContainer(
   AddChildView(query_layout_container_);
 }
 
+void AssistantMainStage::InitOverlayLayoutContainer() {
+  // The overlay layout container is a view which is laid out on top of both
+  // the content and query layout containers. As such, its children appear over
+  // top of and do not cause repositioning to any of content/query layout's
+  // underlying views. Events pass through the overlay layout container.
+  overlay_layout_container_ = new views::View();
+  overlay_layout_container_->set_can_process_events_within_subtree(false);
+  overlay_layout_container_->SetLayoutManager(std::make_unique<StackLayout>());
+
+  // Greeting label.
+  greeting_label_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
+  greeting_label_->SetAutoColorReadabilityEnabled(false);
+  greeting_label_->SetBorder(views::CreateEmptyBorder(/*top=*/32, 0, 0, 0));
+  greeting_label_->SetEnabledColor(kTextColorPrimary);
+  greeting_label_->SetFontList(
+      assistant::ui::GetDefaultFontList()
+          .DeriveWithSizeDelta(8)
+          .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  greeting_label_->SetHorizontalAlignment(
+      gfx::HorizontalAlignment::ALIGN_CENTER);
+  greeting_label_->SetMultiLine(true);
+
+  // The greeting label will be animated on its own layer.
+  greeting_label_->SetPaintToLayer();
+  greeting_label_->layer()->SetFillsBoundsOpaquely(false);
+
+  overlay_layout_container_->AddChildView(greeting_label_);
+
+  // Progress indicator.
+  progress_indicator_ = new AssistantProgressIndicator();
+  progress_indicator_->SetBorder(
+      views::CreateEmptyBorder(kProgressIndicatorMarginTopDip, 0, 0, 0));
+
+  // The progress indicator will be animated on its own layer.
+  progress_indicator_->SetPaintToLayer();
+  progress_indicator_->layer()->SetFillsBoundsOpaquely(false);
+  progress_indicator_->layer()->SetOpacity(0.f);
+
+  overlay_layout_container_->AddChildView(progress_indicator_);
+
+  AddChildView(overlay_layout_container_);
+}
+
 void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
+  // When the motion spec is disabled and a query is committed, we...
+  if (!assistant::ui::kIsMotionSpecEnabled) {
+    // ...hide the greeting label...
+    greeting_label_->layer()->SetOpacity(0.f);
+
+    const int overlay_width = overlay_layout_container_->width();
+    const int indicator_width = progress_indicator_->width();
+    const int translation = -(overlay_width - indicator_width) / 2 +
+                            kProgressIndicatorMarginLeftDip;
+
+    gfx::Transform transform;
+    transform.Translate(translation, 0);
+
+    // ...and show the progress indicator, having translated it from being
+    // center aligned, to left aligned in its parent.
+    progress_indicator_->layer()->SetTransform(transform);
+    progress_indicator_->layer()->SetOpacity(1.f);
+  } else {
+    // When the motion spec is enabled we...
+    using namespace assistant::util;
+
+    if (is_first_query_) {
+      // ...hide the greeting label (for the first query)...
+      greeting_label_->layer()->GetAnimator()->StartAnimation(
+          CreateLayerAnimationSequence(
+              CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
+    }
+
+    // ...and always show the progress indicator.
+    progress_indicator_->layer()->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(
+            // Delay...
+            ui::LayerAnimationElement::CreatePauseElement(
+                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                kProgressAnimationFadeInDelay),
+            // ...then fade in.
+            CreateOpacityElement(1.f, kProgressAnimationFadeInDuration)));
+
+    // After the first query, the progress indicator should be left aligned.
+    if (!is_first_query_) {
+      const int overlay_width = overlay_layout_container_->width();
+      const int indicator_width = progress_indicator_->width();
+      const int translation = -(overlay_width - indicator_width) / 2 +
+                              kProgressIndicatorMarginLeftDip;
+
+      gfx::Transform transform;
+      transform.Translate(translation, 0);
+
+      progress_indicator_->layer()->SetTransform(transform);
+    }
+  }
+
+  is_first_query_ = false;
+
   // The pending query has been committed. Update our pointers.
   committed_query_view_ = pending_query_view_;
   pending_query_view_ = nullptr;
@@ -294,7 +409,7 @@ void AssistantMainStage::OnActivateQuery() {
              CreateOpacityElement(1.f, kAnimationFadeInDuration))});
   }
 
-  UpdateActiveQueryViewSpacer();
+  UpdateTopPadding();
   UpdateSuggestionContainer();
 }
 
@@ -339,7 +454,7 @@ bool AssistantMainStage::OnActiveQueryExitAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   // The exited active query view will always be the first child of its parent.
   delete query_layout_container_->child_at(0);
-  UpdateActiveQueryViewSpacer();
+  UpdateTopPadding();
 
   // Return false to prevent the observer from destroying itself.
   return false;
@@ -397,17 +512,30 @@ void AssistantMainStage::OnPendingQueryCleared() {
 }
 
 void AssistantMainStage::OnResponseChanged(const AssistantResponse& response) {
+  // When the response changes, we hide the progress indicator.
+  if (!assistant::ui::kIsMotionSpecEnabled) {
+    progress_indicator_->layer()->SetOpacity(0.f);
+    return;
+  }
+
+  // Animate the progress indicator to 0% opacity.
+  using namespace assistant::util;
+  progress_indicator_->layer()->GetAnimator()->StartAnimation(
+      CreateLayerAnimationSequence(
+          CreateOpacityElement(0.f, kProgressAnimationFadeOutDuration)));
+
   // If the motion spec is enabled, we only consider the query active once
   // the response has been received. When the motion spec is disabled, we
   // immediately activate the query as it is committed.
-  if (assistant::ui::kIsMotionSpecEnabled)
-    OnActivateQuery();
+  OnActivateQuery();
 }
 
 void AssistantMainStage::OnUiVisibilityChanged(bool visible,
                                                AssistantSource source) {
   if (visible)
     return;
+
+  is_first_query_ = true;
 
   delete active_query_view_;
   active_query_view_ = nullptr;
@@ -418,15 +546,39 @@ void AssistantMainStage::OnUiVisibilityChanged(bool visible,
   delete pending_query_view_;
   pending_query_view_ = nullptr;
 
-  UpdateActiveQueryViewSpacer();
+  greeting_label_->layer()->SetOpacity(1.f);
+
+  progress_indicator_->layer()->SetOpacity(0.f);
+  progress_indicator_->layer()->SetTransform(gfx::Transform());
+
+  UpdateTopPadding();
   UpdateSuggestionContainer();
 }
 
-void AssistantMainStage::UpdateActiveQueryViewSpacer() {
-  // The spacer reserves room in the layout for the active query view, so it
-  // needs to match its size.
-  active_query_view_spacer_->SetPreferredSize(
-      active_query_view_ ? active_query_view_->size() : gfx::Size());
+void AssistantMainStage::UpdateTopPadding() {
+  // We need to apply top padding to the content and overlay layout containers
+  // to reserve space for the active query view.
+  const int top_padding = active_query_view_ ? active_query_view_->height() : 0;
+
+  // Apply top padding to the content layout container by applying an empty
+  // border to the UI element container, its first child.
+  ui_element_container_->SetBorder(
+      views::CreateEmptyBorder(top_padding, 0, 0, 0));
+
+  // Force a layout/paint pass.
+  content_layout_container_->Layout();
+  content_layout_container_->SchedulePaint();
+
+  // Apply top padding to the overlay layout container by applying an empty
+  // border to its children.
+  greeting_label_->SetBorder(views::CreateEmptyBorder(
+      kGreetingLabelMarginTopDip + top_padding, 0, 0, 0));
+  progress_indicator_->SetBorder(views::CreateEmptyBorder(
+      kProgressIndicatorMarginTopDip + top_padding, 0, 0, 0));
+
+  // Force a layout/paint pass.
+  overlay_layout_container_->Layout();
+  overlay_layout_container_->SchedulePaint();
 }
 
 void AssistantMainStage::UpdateQueryViewTransform(views::View* query_view) {
