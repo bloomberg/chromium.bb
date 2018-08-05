@@ -5690,6 +5690,13 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
     }
   }
 
+#if defined(OS_MACOSX)
+  // Aggressively call glFlush on macOS. This is the only fix that has been
+  // found so far to avoid crashes on Intel drivers.
+  // https://crbug.com/863817
+  context_->FlushForDriverCrashWorkaround();
+#endif
+
   *entries_processed = process_pos;
 
   if (error::IsError(result)) {
