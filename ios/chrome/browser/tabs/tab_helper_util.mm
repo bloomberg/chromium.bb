@@ -104,8 +104,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   favicon::WebFaviconDriver::CreateForWebState(
       web_state,
       ios::FaviconServiceFactory::GetForBrowserState(
-          original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
-      ios::HistoryServiceFactory::GetForBrowserState(
           original_browser_state, ServiceAccessType::IMPLICIT_ACCESS));
   history::WebStateTopSitesObserver::CreateForWebState(
       web_state,

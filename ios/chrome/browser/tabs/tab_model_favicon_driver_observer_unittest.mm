@@ -111,8 +111,7 @@ TabModelFaviconDriverObserverTest::CreateAndInsertTab() {
   TabIdTabHelper::CreateForWebState(web_state.get());
   LegacyTabHelper::CreateForWebState(web_state.get());
   favicon::WebFaviconDriver::CreateForWebState(web_state.get(),
-                                               /*favicon_service=*/nullptr,
-                                               /*history_service=*/nullptr);
+                                               /*favicon_service=*/nullptr);
 
   favicon::FaviconDriver* favicon_driver =
       favicon::WebFaviconDriver::FromWebState(web_state.get());

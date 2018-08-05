@@ -14,7 +14,6 @@
 #include "components/favicon/core/favicon_handler.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_url.h"
-#include "components/history/core/browser/history_service.h"
 
 namespace favicon {
 namespace {
@@ -27,9 +26,8 @@ const bool kEnableTouchIcon = false;
 
 }  // namespace
 
-FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service,
-                                     history::HistoryService* history_service)
-    : favicon_service_(favicon_service), history_service_(history_service) {
+FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service)
+    : favicon_service_(favicon_service) {
   if (!favicon_service_)
     return;
 

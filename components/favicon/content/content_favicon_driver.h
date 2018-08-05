@@ -34,8 +34,7 @@ class ContentFaviconDriver
   ~ContentFaviconDriver() override;
 
   static void CreateForWebContents(content::WebContents* web_contents,
-                                   FaviconService* favicon_service,
-                                   history::HistoryService* history_service);
+                                   FaviconService* favicon_service);
 
   // Returns the current tab's favicon URLs. If this is empty,
   // DidUpdateFaviconURL has not yet been called for the current navigation.
@@ -54,8 +53,7 @@ class ContentFaviconDriver
 
  protected:
   ContentFaviconDriver(content::WebContents* web_contents,
-                       FaviconService* favicon_service,
-                       history::HistoryService* history_service);
+                       FaviconService* favicon_service);
 
  private:
   friend class content::WebContentsUserData<ContentFaviconDriver>;

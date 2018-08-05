@@ -37,16 +37,13 @@ using ImageDownloadCallback =
 namespace favicon {
 
 // static
-void WebFaviconDriver::CreateForWebState(
-    web::WebState* web_state,
-    FaviconService* favicon_service,
-    history::HistoryService* history_service) {
+void WebFaviconDriver::CreateForWebState(web::WebState* web_state,
+                                         FaviconService* favicon_service) {
   if (FromWebState(web_state))
     return;
 
-  web_state->SetUserData(UserDataKey(),
-                         base::WrapUnique(new WebFaviconDriver(
-                             web_state, favicon_service, history_service)));
+  web_state->SetUserData(UserDataKey(), base::WrapUnique(new WebFaviconDriver(
+                                            web_state, favicon_service)));
 }
 
 gfx::Image WebFaviconDriver::GetFavicon() const {
@@ -152,9 +149,8 @@ void WebFaviconDriver::OnFaviconDeleted(
 }
 
 WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,
-                                   FaviconService* favicon_service,
-                                   history::HistoryService* history_service)
-    : FaviconDriverImpl(favicon_service, history_service),
+                                   FaviconService* favicon_service)
+    : FaviconDriverImpl(favicon_service),
       image_fetcher_(web_state->GetBrowserState()->GetSharedURLLoaderFactory()),
       web_state_(web_state) {
   web_state_->AddObserver(this);

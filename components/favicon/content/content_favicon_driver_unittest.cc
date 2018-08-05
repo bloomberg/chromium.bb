@@ -52,7 +52,7 @@ class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
     RenderViewHostTestHarness::SetUp();
 
     ContentFaviconDriver::CreateForWebContents(web_contents(),
-                                               &favicon_service_, nullptr);
+                                               &favicon_service_);
   }
 
   content::WebContentsTester* web_contents_tester() {

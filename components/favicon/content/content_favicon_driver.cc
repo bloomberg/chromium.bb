@@ -9,7 +9,6 @@
 #include "components/favicon/content/favicon_url_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_url.h"
-#include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
@@ -40,14 +39,13 @@ void ExtractManifestIcons(
 // static
 void ContentFaviconDriver::CreateForWebContents(
     content::WebContents* web_contents,
-    FaviconService* favicon_service,
-    history::HistoryService* history_service) {
+    FaviconService* favicon_service) {
   if (FromWebContents(web_contents))
     return;
 
-  web_contents->SetUserData(
-      UserDataKey(), base::WrapUnique(new ContentFaviconDriver(
-                         web_contents, favicon_service, history_service)));
+  web_contents->SetUserData(UserDataKey(),
+                            base::WrapUnique(new ContentFaviconDriver(
+                                web_contents, favicon_service)));
 }
 
 void ContentFaviconDriver::SaveFaviconEvenIfInIncognito() {
@@ -58,10 +56,8 @@ void ContentFaviconDriver::SaveFaviconEvenIfInIncognito() {
 
   // Make sure the page is in history, otherwise adding the favicon does
   // nothing.
-  if (!history_service())
-    return;
   GURL page_url = entry->GetURL();
-  history_service()->AddPageNoVisitForBookmark(page_url, entry->GetTitle());
+  favicon_service()->AddPageNoVisitForBookmark(page_url, entry->GetTitle());
 
   const content::FaviconStatus& favicon_status = entry->GetFavicon();
   if (!favicon_service() || !favicon_status.valid ||
@@ -109,12 +105,10 @@ GURL ContentFaviconDriver::GetActiveURL() {
   return entry ? entry->GetURL() : GURL();
 }
 
-ContentFaviconDriver::ContentFaviconDriver(
-    content::WebContents* web_contents,
-    FaviconService* favicon_service,
-    history::HistoryService* history_service)
+ContentFaviconDriver::ContentFaviconDriver(content::WebContents* web_contents,
+                                           FaviconService* favicon_service)
     : content::WebContentsObserver(web_contents),
-      FaviconDriverImpl(favicon_service, history_service),
+      FaviconDriverImpl(favicon_service),
       document_on_load_completed_(false) {}
 
 ContentFaviconDriver::~ContentFaviconDriver() {
