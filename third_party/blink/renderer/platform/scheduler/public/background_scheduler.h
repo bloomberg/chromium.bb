@@ -7,7 +7,7 @@
 
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task_scheduler/task_traits.h"
+#include "base/task/task_traits_forward.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
