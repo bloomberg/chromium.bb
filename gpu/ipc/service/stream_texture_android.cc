@@ -56,7 +56,7 @@ bool StreamTexture::Create(CommandBufferStub* owner_stub,
 StreamTexture::StreamTexture(CommandBufferStub* owner_stub,
                              int32_t route_id,
                              uint32_t texture_id)
-    : surface_texture_(gl::SurfaceTexture::Create(texture_id)),
+    : surface_owner_(SurfaceOwner::Create(texture_id)),
       size_(0, 0),
       has_pending_frame_(false),
       owner_stub_(owner_stub),
@@ -67,7 +67,7 @@ StreamTexture::StreamTexture(CommandBufferStub* owner_stub,
   owner_stub->AddDestructionObserver(this);
   memset(current_matrix_, 0, sizeof(current_matrix_));
   owner_stub->channel()->AddRoute(route_id, owner_stub->sequence_id(), this);
-  surface_texture_->SetFrameAvailableCallback(base::Bind(
+  surface_owner_->SetFrameAvailableCallback(base::BindRepeating(
       &StreamTexture::OnFrameAvailable, weak_factory_.GetWeakPtr()));
 }
 
@@ -80,9 +80,9 @@ StreamTexture::~StreamTexture() {
 
 // gpu::gles2::GLStreamTextureMatrix implementation
 void StreamTexture::GetTextureMatrix(float xform[16]) {
-  if (surface_texture_) {
+  if (surface_owner_) {
     UpdateTexImage();
-    surface_texture_->GetTransformMatrix(current_matrix_);
+    surface_owner_->GetTransformMatrix(current_matrix_);
   }
   memcpy(xform, current_matrix_, sizeof(current_matrix_));
   YInvertMatrix(xform);
@@ -96,7 +96,7 @@ void StreamTexture::OnWillDestroyStub(bool have_context) {
 
   // If the owner goes away, there is no need to keep the SurfaceTexture around.
   // The GL texture will keep working regardless with the currently bound frame.
-  surface_texture_ = NULL;
+  surface_owner_ = NULL;
 }
 
 std::unique_ptr<ui::ScopedMakeCurrent> StreamTexture::MakeStubCurrent() {
@@ -112,14 +112,14 @@ std::unique_ptr<ui::ScopedMakeCurrent> StreamTexture::MakeStubCurrent() {
 }
 
 void StreamTexture::UpdateTexImage() {
-  DCHECK(surface_texture_.get());
+  DCHECK(surface_owner_.get());
   DCHECK(owner_stub_);
 
   if (!has_pending_frame_) return;
 
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current(MakeStubCurrent());
 
-  surface_texture_->UpdateTexImage();
+  surface_owner_->UpdateTexImage();
 
   has_pending_frame_ = false;
 
@@ -143,7 +143,7 @@ bool StreamTexture::CopyTexImage(unsigned target) {
   if (target != GL_TEXTURE_EXTERNAL_OES)
     return false;
 
-  if (!owner_stub_ || !surface_texture_.get())
+  if (!owner_stub_ || !surface_owner_.get())
     return false;
 
   GLint texture_id;
@@ -215,8 +215,8 @@ void StreamTexture::OnForwardForSurfaceRequest(
     return;
 
   ScopedSurfaceRequestConduit::GetInstance()
-      ->ForwardSurfaceTextureForSurfaceRequest(request_token,
-                                               surface_texture_.get());
+      ->ForwardSurfaceOwnerForSurfaceRequest(request_token,
+                                             surface_owner_.get());
 }
 
 bool StreamTexture::BindTexImage(unsigned target) {

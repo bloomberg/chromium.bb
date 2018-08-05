@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
+#include "gpu/ipc/common/android/surface_owner_android.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ui/gl/android/surface_texture.h"
@@ -79,7 +80,7 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
 
   void UpdateTexImage();
 
-  // Called when a new frame is available for the SurfaceTexture.
+  // Called when a new frame is available for the SurfaceOwner.
   void OnFrameAvailable();
 
   // IPC::Listener implementation:
@@ -90,12 +91,12 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
   void OnForwardForSurfaceRequest(const base::UnguessableToken& request_token);
   void OnSetSize(const gfx::Size& size) { size_ = size; }
 
-  scoped_refptr<gl::SurfaceTexture> surface_texture_;
+  std::unique_ptr<SurfaceOwner> surface_owner_;
 
-  // Current transform matrix of the surface texture.
+  // Current transform matrix of the surface owner.
   float current_matrix_[16];
 
-  // Current size of the surface texture.
+  // Current size of the surface owner.
   gfx::Size size_;
 
   // Whether a new frame is available that we should update to.

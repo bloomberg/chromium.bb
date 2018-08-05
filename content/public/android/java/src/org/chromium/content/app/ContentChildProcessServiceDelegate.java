@@ -6,7 +6,6 @@ package org.chromium.content.app;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -211,14 +210,11 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void forwardSurfaceTextureForSurfaceRequest(
-            UnguessableToken requestToken, SurfaceTexture surfaceTexture) {
+    private void forwardSurfaceForSurfaceRequest(UnguessableToken requestToken, Surface surface) {
         if (mGpuCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");
             return;
         }
-
-        Surface surface = new Surface(surfaceTexture);
 
         try {
             mGpuCallback.forwardSurfaceForSurfaceRequest(requestToken, surface);

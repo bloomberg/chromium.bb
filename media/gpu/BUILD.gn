@@ -197,6 +197,7 @@ component("gpu") {
     libs += [ "android" ]
     deps += [
       # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
+      "//gpu/ipc/common:ipc_common_sources",
       "//media/mojo:buildflags",
       "//services/service_manager/public/cpp:cpp",
       "//third_party/libyuv",

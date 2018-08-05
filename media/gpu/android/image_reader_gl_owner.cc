@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "gpu/ipc/common/android/android_image_reader_utils.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
@@ -57,13 +58,13 @@ ImageReaderGLOwner::ImageReaderGLOwner(GLuint texture_id)
   // Set the width, height and format to some default value. This parameters
   // are/maybe overriden by the producer sending buffers to this imageReader's
   // Surface.
-  int32_t width = 1, height = 1, maxImages = 3;
+  int32_t width = 1, height = 1, max_images = 3;
   AIMAGE_FORMATS format = AIMAGE_FORMAT_YUV_420_888;
   AImageReader* reader = nullptr;
 
   // Create a new reader for images of the desired size and format.
   media_status_t return_code =
-      loader_.AImageReader_new(width, height, format, maxImages, &reader);
+      loader_.AImageReader_new(width, height, format, max_images, &reader);
   if (return_code != AMEDIA_OK) {
     LOG(ERROR) << " Image reader creation failed.";
     if (return_code == AMEDIA_ERROR_INVALID_PARAMETER)
@@ -140,10 +141,10 @@ void ImageReaderGLOwner::UpdateTexImage() {
 
   // Acquire the latest image asynchronously
   AImage* image = nullptr;
-  int acquireFenceFd = 0;
+  int acquire_fence_fd = -1;
   media_status_t return_code = AMEDIA_OK;
   return_code = loader_.AImageReader_acquireLatestImageAsync(
-      image_reader_, &image, &acquireFenceFd);
+      image_reader_, &image, &acquire_fence_fd);
 
   // TODO(http://crbug.com/846050).
   // Need to add some better error handling if below error occurs. Currently we
@@ -178,6 +179,7 @@ void ImageReaderGLOwner::UpdateTexImage() {
       NOTREACHED();
       return;
   }
+  base::ScopedFD scoped_acquire_fence_fd(acquire_fence_fd);
 
   // If there is no new image simply return. At this point previous image will
   // still be bound to the texture.
@@ -185,89 +187,20 @@ void ImageReaderGLOwner::UpdateTexImage() {
     return;
   }
 
-  // If we have a new Image, delete the previously acquired image (if any).
-  if (current_image_) {
-    // Delete the image synchronously. Create and insert a fence signal.
-    std::unique_ptr<gl::GLFenceAndroidNativeFenceSync> android_native_fence =
-        gl::GLFenceAndroidNativeFenceSync::CreateForGpuFence();
-    if (!android_native_fence) {
-      LOG(ERROR) << "Failed to create android native fence sync object.";
-      return;
-    }
-    std::unique_ptr<gfx::GpuFence> gpu_fence =
-        android_native_fence->GetGpuFence();
-    if (!gpu_fence) {
-      LOG(ERROR) << "Unable to get a gpu fence object.";
-      return;
-    }
-    gfx::GpuFenceHandle fence_handle =
-        gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
-    if (fence_handle.is_null()) {
-      LOG(ERROR) << "Gpu fence handle is null";
-      return;
-    }
-    loader_.AImage_deleteAsync(current_image_, fence_handle.native_fd.fd);
-    current_image_ = nullptr;
-  }
+  // If we have a new Image, delete the previously acquired image.
+  if (!gpu::DeleteAImageAsync(current_image_, &loader_))
+    return;
 
   // Make the newly acuired image as current image.
   current_image_ = image;
 
-  // If acquireFenceFd is -1, we do not need synchronization fence and image is
-  // ready to be used immediately. Else we need to create a sync fence which is
-  // used to signal when the buffer/image is ready to be consumed.
-  if (acquireFenceFd != -1) {
-    // Create a new egl sync object using the acquireFenceFd.
-    EGLint attribs[] = {EGL_SYNC_NATIVE_FENCE_FD_ANDROID, acquireFenceFd,
-                        EGL_NONE};
-    std::unique_ptr<gl::GLFenceEGL> egl_fence(
-        gl::GLFenceEGL::Create(EGL_SYNC_NATIVE_FENCE_ANDROID, attribs));
-
-    // Insert the fence sync gl command using the helper class in
-    // gl_fence_egl.h.
-    if (egl_fence == nullptr) {
-      LOG(ERROR) << " Failed to created egl fence object ";
-      return;
-    }
-    DCHECK(egl_fence);
-
-    // Make the server wait and not the client.
-    egl_fence->ServerWait();
-  }
-
-  // Get the hardware buffer from the image.
-  AHardwareBuffer* buffer = nullptr;
-  DCHECK(current_image_);
-  if (loader_.AImage_getHardwareBuffer(current_image_, &buffer) != AMEDIA_OK) {
-    LOG(ERROR) << "hardware buffer is null";
+  // Insert an EGL fence and make server wait for image to be available.
+  if (!gpu::InsertEglFenceAndWait(std::move(scoped_acquire_fence_fd)))
     return;
-  }
 
-  // Create a egl image from the hardware buffer. Get the image size to create
-  // egl image.
-  int32_t image_height = 0, image_width = 0;
-  if (loader_.AImage_getWidth(current_image_, &image_width) != AMEDIA_OK) {
-    LOG(ERROR) << "image width is null OR image has been deleted";
+  // Create EGL image from the AImage and bind it to the texture.
+  if (!gpu::CreateAndBindEglImage(current_image_, texture_id_, &loader_))
     return;
-  }
-  if (loader_.AImage_getHeight(current_image_, &image_height) != AMEDIA_OK) {
-    LOG(ERROR) << "image height is null OR image has been deleted";
-    return;
-  }
-  gfx::Size image_size(image_width, image_height);
-  scoped_refptr<gl::GLImageAHardwareBuffer> egl_image(
-      new gl::GLImageAHardwareBuffer(image_size));
-  if (!egl_image->Initialize(buffer, false)) {
-    LOG(ERROR) << "Failed to create EGL image ";
-    egl_image = nullptr;
-    return;
-  }
-
-  // Now bind this egl image to the texture target GL_TEXTURE_EXTERNAL_OES. Note
-  // that once the egl image is bound, it can be destroyed safely without
-  // affecting the rendering using this texture image.
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
-  egl_image->BindTexImage(GL_TEXTURE_EXTERNAL_OES);
 }
 
 void ImageReaderGLOwner::GetTransformMatrix(float mtx[]) {
