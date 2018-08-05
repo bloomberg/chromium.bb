@@ -631,24 +631,24 @@ template("test_runner_script") {
           "--android-manifest-path",
           rebase_path(invoker.android_manifest_path, root_build_dir),
         ]
-      }
-
-      if (defined(invoker.package_name)) {
+      } else if (defined(invoker.package_name)) {
         test_runner_args += [
           "--package-name",
           invoker.package_name,
         ]
-
-        deps += [ ":${invoker.test_suite}__build_config" ]
-        _junit_binary_build_config =
-            "${target_gen_dir}/${invoker.test_suite}.build_config"
-        _rebased_build_config =
-            rebase_path("$_junit_binary_build_config", root_build_dir)
-        test_runner_args += [
-          "--resource-zips",
-          "@FileArg($_rebased_build_config:resources:dependency_zips)",
-        ]
+      } else {
+        assert(false, "Must specify a package_name or android_manifest_path")
       }
+
+      deps += [ ":${invoker.test_suite}__build_config" ]
+      _junit_binary_build_config =
+          "${target_gen_dir}/${invoker.test_suite}.build_config"
+      _rebased_build_config =
+          rebase_path("$_junit_binary_build_config", root_build_dir)
+      test_runner_args += [
+        "--resource-zips",
+        "@FileArg($_rebased_build_config:resources:dependency_zips)",
+      ]
 
       test_runner_args += [
         "--robolectric-runtime-deps-dir",
