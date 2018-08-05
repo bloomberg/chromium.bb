@@ -312,17 +312,6 @@ static inline bool TransformUsesBoxSize(const ComputedStyle& style) {
 static FloatRect ComputeTransformReferenceBox(const SVGElement& element) {
   const LayoutObject& layout_object = *element.GetLayoutObject();
   const ComputedStyle& style = layout_object.StyleRef();
-  if (!RuntimeEnabledFeatures::CSSTransformBoxEnabled()) {
-    FloatRect reference_box = layout_object.ObjectBoundingBox();
-    // Set the reference origin to zero when transform-origin (x/y) has a
-    // non-percentage unit.
-    const TransformOrigin& transform_origin = style.GetTransformOrigin();
-    if (transform_origin.X().GetType() != kPercent)
-      reference_box.SetX(0);
-    if (transform_origin.Y().GetType() != kPercent)
-      reference_box.SetY(0);
-    return reference_box;
-  }
   if (style.TransformBox() == ETransformBox::kFillBox)
     return layout_object.ObjectBoundingBox();
   DCHECK_EQ(style.TransformBox(), ETransformBox::kViewBox);

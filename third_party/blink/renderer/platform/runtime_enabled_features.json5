@@ -340,10 +340,6 @@
       status: "experimental",
     },
     {
-      name: "CSSTransformBox",
-      status: "stable",
-    },
-    {
       name: "CSSVariables2",
       status: "experimental",
     },
