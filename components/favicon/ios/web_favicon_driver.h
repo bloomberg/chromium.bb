@@ -27,8 +27,7 @@ class WebFaviconDriver : public web::WebStateObserver,
   ~WebFaviconDriver() override;
 
   static void CreateForWebState(web::WebState* web_state,
-                                FaviconService* favicon_service,
-                                history::HistoryService* history_service);
+                                FaviconService* favicon_service);
 
   // FaviconDriver implementation.
   gfx::Image GetFavicon() const override;
@@ -55,9 +54,7 @@ class WebFaviconDriver : public web::WebStateObserver,
  private:
   friend class web::WebStateUserData<WebFaviconDriver>;
 
-  WebFaviconDriver(web::WebState* web_state,
-                   FaviconService* favicon_service,
-                   history::HistoryService* history_service);
+  WebFaviconDriver(web::WebState* web_state, FaviconService* favicon_service);
 
   // web::WebStateObserver implementation.
   void DidFinishNavigation(web::WebState* web_state,

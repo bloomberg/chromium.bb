@@ -14,10 +14,6 @@
 
 class GURL;
 
-namespace history {
-class HistoryService;
-}
-
 namespace favicon {
 
 class FaviconService;
@@ -41,8 +37,7 @@ class FaviconDriverImpl : public FaviconDriver,
   bool HasPendingTasksForTest();
 
  protected:
-  FaviconDriverImpl(FaviconService* favicon_service,
-                    history::HistoryService* history_service);
+  explicit FaviconDriverImpl(FaviconService* favicon_service);
   ~FaviconDriverImpl() override;
 
   // Informs FaviconService that the favicon for |url| is out of date. If
@@ -56,15 +51,12 @@ class FaviconDriverImpl : public FaviconDriver,
                           const GURL& manifest_url);
 
  protected:
-  history::HistoryService* history_service() { return history_service_; }
-
   FaviconService* favicon_service() { return favicon_service_; }
 
  private:
-  // KeyedServices used by FaviconDriverImpl. They may be null during testing,
-  // but if they are defined, they must outlive the FaviconDriverImpl.
+  // KeyedService used by FaviconDriverImpl. It may be null during testing,
+  // but if it is defined, it must outlive the FaviconDriverImpl.
   FaviconService* favicon_service_;
-  history::HistoryService* history_service_;
 
   // FaviconHandlers used to download the different kind of favicons.
   std::vector<std::unique_ptr<FaviconHandler>> handlers_;

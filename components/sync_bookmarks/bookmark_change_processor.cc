@@ -20,7 +20,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/syncable/change_record.h"
 #include "components/sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
@@ -929,16 +928,14 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
     syncer::SyncClient* sync_client,
     const GURL& icon_url,
     const scoped_refptr<base::RefCountedMemory>& bitmap_data) {
-  history::HistoryService* history = sync_client->GetHistoryService();
   favicon::FaviconService* favicon_service = sync_client->GetFaviconService();
 
   // Some tests (that use FakeSyncClient) use no services.
-  if (history == nullptr)
+  if (favicon_service == nullptr)
     return;
 
-  DCHECK(favicon_service);
-  history->AddPageNoVisitForBookmark(bookmark_node->url(),
-                                     bookmark_node->GetTitle());
+  favicon_service->AddPageNoVisitForBookmark(bookmark_node->url(),
+                                             bookmark_node->GetTitle());
 
   GURL icon_url_to_use = icon_url;
 

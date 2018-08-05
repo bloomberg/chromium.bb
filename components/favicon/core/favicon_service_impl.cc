@@ -224,6 +224,12 @@ void FaviconServiceImpl::SetImportedFavicons(
   history_service_->SetImportedFavicons(favicon_usage);
 }
 
+void FaviconServiceImpl::AddPageNoVisitForBookmark(
+    const GURL& url,
+    const base::string16& title) {
+  history_service_->AddPageNoVisitForBookmark(url, title);
+}
+
 void FaviconServiceImpl::MergeFavicon(
     const GURL& page_url,
     const GURL& icon_url,
