@@ -134,9 +134,10 @@ void SyncedBookmarkTracker::Update(
     const sync_pb::EntitySpecifics& specifics) {
   DCHECK_GT(specifics.ByteSize(), 0);
   auto it = sync_id_to_entities_map_.find(sync_id);
+  DCHECK(it != sync_id_to_entities_map_.end());
   Entity* entity = it->second.get();
   DCHECK(entity);
-  entity->metadata()->set_server_id(sync_id);
+  DCHECK_EQ(entity->metadata()->server_id(), sync_id);
   entity->metadata()->set_server_version(server_version);
   entity->metadata()->set_modification_time(
       syncer::TimeToProtoTime(modification_time));
@@ -225,7 +226,7 @@ SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
        sync_id_to_entities_map_) {
     Entity* entity = pair.second.get();
     if (entity->metadata()->is_deleted()) {
-      // Deletion are stored sorted in |ordered_local_tombstones_| and will be
+      // Deletions are stored sorted in |ordered_local_tombstones_| and will be
       // added later.
       continue;
     }

@@ -65,7 +65,7 @@ class BookmarkRemoteUpdatesHandler {
   void ProcessRemoteUpdate(const syncer::UpdateResponseData& update,
                            const SyncedBookmarkTracker::Entity* tracked_entity);
 
-  // Process a remote delete of a bookmark node. |update_entity| must not be a
+  // Processes a remote delete of a bookmark node. |update_entity| must not be a
   // deletion. |tracked_entity| is the tracked entity for that server_id. It is
   // passed as a dependency instead of performing a lookup inside
   // ProcessRemoteDelete() to avoid wasting CPU cycles for doing another lookup
