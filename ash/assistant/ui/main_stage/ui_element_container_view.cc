@@ -18,6 +18,8 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/callback_layer_animation_observer.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/box_layout.h"
@@ -33,9 +35,17 @@ namespace {
 // Appearance.
 constexpr int kPaddingHorizontalDip = 32;
 
-// Animation.
+// Card element animation.
 constexpr float kCardElementAnimationFadeOutOpacity = 0.26f;
+
+// Text element animation.
 constexpr float kTextElementAnimationFadeOutOpacity = 0.f;
+
+// UI element animation.
+constexpr base::TimeDelta kUiElementAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kUiElementAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(250);
 constexpr base::TimeDelta kUiElementAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(167);
 
@@ -103,6 +113,11 @@ class CardElementViewHolder : public views::NativeViewHost,
 UiElementContainerView::UiElementContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
+      ui_elements_exit_animation_observer_(
+          std::make_unique<ui::CallbackLayerAnimationObserver>(
+              /*animation_ended_callback=*/base::BindRepeating(
+                  &UiElementContainerView::OnAllUiElementsExitAnimationEnded,
+                  base::Unretained(this)))),
       render_request_weak_factory_(this) {
   InitLayout();
 
@@ -153,19 +168,38 @@ void UiElementContainerView::OnCommittedQueryChanged(
 
 void UiElementContainerView::OnResponseChanged(
     const AssistantResponse& response) {
-  OnResponseCleared();
-
-  for (const std::unique_ptr<AssistantUiElement>& ui_element :
-       response.GetUiElements()) {
-    // If we are processing a UI element we need to pend the incoming elements
-    // instead of handling them immediately.
-    if (is_processing_ui_element_) {
-      pending_ui_element_list_.push_back(ui_element.get());
-      continue;
-    }
-
-    OnUiElementAdded(ui_element.get());
+  // If the motion spec is disabled, we clear any previous response and then
+  // add the new response in a single step.
+  if (!assistant::ui::kIsMotionSpecEnabled) {
+    OnResponseCleared();
+    OnResponseAdded(response);
+    return;
   }
+
+  // If the motion spec is enabled but we haven't cached any layers, there is
+  // nothing to animate off stage so we can proceed to add the new response.
+  if (ui_element_layers_.empty()) {
+    OnResponseAdded(response);
+    return;
+  }
+
+  using namespace assistant::util;
+
+  // There is a previous response on stage, so we'll animate it off before
+  // adding the new response. The new response will be added upon invocation of
+  // the exit animation ended callback.
+  for (const std::pair<ui::Layer*, float> pair : ui_element_layers_) {
+    StartLayerAnimationSequence(
+        pair.first->GetAnimator(),
+        // Fade out the opacity to 0%.
+        CreateLayerAnimationSequence(
+            CreateOpacityElement(0.f, kUiElementAnimationFadeOutDuration)),
+        // Observe the animation.
+        ui_elements_exit_animation_observer_.get());
+  }
+
+  // Set the observer to active so that we receive callback events.
+  ui_elements_exit_animation_observer_->SetActive();
 }
 
 void UiElementContainerView::OnResponseCleared() {
@@ -184,6 +218,65 @@ void UiElementContainerView::OnResponseCleared() {
   // We can clear any pending UI elements as they are no longer relevant.
   pending_ui_element_list_.clear();
   SetProcessingUiElement(false);
+}
+
+void UiElementContainerView::OnResponseAdded(
+    const AssistantResponse& response) {
+  for (const std::unique_ptr<AssistantUiElement>& ui_element :
+       response.GetUiElements()) {
+    // If we are processing a UI element we need to pend the incoming elements
+    // instead of handling them immediately.
+    if (is_processing_ui_element_) {
+      pending_ui_element_list_.push_back(ui_element.get());
+      continue;
+    }
+    OnUiElementAdded(ui_element.get());
+  }
+
+  // If we're no longer processing any UI elements, then all UI elements have
+  // been successfully added.
+  if (!is_processing_ui_element_)
+    OnAllUiElementsAdded();
+}
+
+void UiElementContainerView::OnAllUiElementsAdded() {
+  DCHECK(!is_processing_ui_element_);
+
+  // If the motion spec is disabled, there's nothing to do because the views
+  // do not need to be animated in.
+  if (!assistant::ui::kIsMotionSpecEnabled)
+    return;
+
+  using namespace assistant::util;
+
+  // Now that we've received and added all UI elements for the current query
+  // response, we can animate them in.
+  for (const std::pair<ui::Layer*, float>& pair : ui_element_layers_) {
+    // We fade in the views to full opacity after a slight delay.
+    pair.first->GetAnimator()->StartAnimation(CreateLayerAnimationSequence(
+        ui::LayerAnimationElement::CreatePauseElement(
+            ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+            kUiElementAnimationFadeInDelay),
+        CreateOpacityElement(1.f, kUiElementAnimationFadeInDuration)));
+  }
+}
+
+bool UiElementContainerView::OnAllUiElementsExitAnimationEnded(
+    const ui::CallbackLayerAnimationObserver& observer) {
+  // All UI elements have finished their exit animations so its safe to perform
+  // clearing of their views and managed resources.
+  OnResponseCleared();
+
+  const AssistantResponse* response =
+      assistant_controller_->interaction_controller()->model()->response();
+
+  // If there is a response present (and there should be), it is safe to add it
+  // now that we've cleared the previous content from the stage.
+  if (response)
+    OnResponseAdded(*response);
+
+  // Return false to prevent the observer from destroying itself.
+  return false;
 }
 
 void UiElementContainerView::OnUiElementAdded(
@@ -259,8 +352,13 @@ void UiElementContainerView::OnCardReady(
 
     if (assistant::ui::kIsMotionSpecEnabled) {
       // The view will be animated on its own layer, so we need to do some
-      // initial layer setup and cache the layer with its desired opacity.
+      // initial layer setup. We're going to fade the view in, so hide it.
       view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
+      view_holder->native_view()->layer()->SetOpacity(0.f);
+
+      // We cache the layer for the view for use during animations and cache
+      // its desired opacity that we'll animate to while processing the next
+      // query response.
       ui_element_layers_.push_back(
           std::pair<ui::Layer*, float>(view_holder->native_view()->layer(),
                                        kCardElementAnimationFadeOutOpacity));
@@ -283,9 +381,14 @@ void UiElementContainerView::OnTextElementAdded(
 
   if (assistant::ui::kIsMotionSpecEnabled) {
     // The view will be animated on its own layer, so we need to do some initial
-    // layer setup and cache the layer with its desired opacity.
+    // layer setup. We're going to fade the view in, so hide it.
     text_element_view->SetPaintToLayer();
     text_element_view->layer()->SetFillsBoundsOpaquely(false);
+    text_element_view->layer()->SetOpacity(0.f);
+
+    // We cache the layer for the view for use during animations and cache its
+    // desired opacity that we'll animate to while processing the next query
+    // response.
     ui_element_layers_.push_back(std::pair<ui::Layer*, float>(
         text_element_view->layer(), kTextElementAnimationFadeOutOpacity));
   }
@@ -308,11 +411,18 @@ void UiElementContainerView::SetProcessingUiElement(bool is_processing) {
 }
 
 void UiElementContainerView::ProcessPendingUiElements() {
+  DCHECK(!is_processing_ui_element_);
+
   while (!is_processing_ui_element_ && !pending_ui_element_list_.empty()) {
     const AssistantUiElement* ui_element = pending_ui_element_list_.front();
     pending_ui_element_list_.pop_front();
     OnUiElementAdded(ui_element);
   }
+
+  // If we're no longer processing any UI elements, then all UI elements have
+  // been successfully added.
+  if (!is_processing_ui_element_)
+    OnAllUiElementsAdded();
 }
 
 void UiElementContainerView::ReleaseAllCards() {

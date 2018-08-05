@@ -13,6 +13,10 @@
 #include "base/macros.h"
 #include "ui/views/view.h"
 
+namespace ui {
+class CallbackLayerAnimationObserver;
+}  // namespace ui
+
 namespace ash {
 
 class AssistantCardElement;
@@ -43,6 +47,10 @@ class UiElementContainerView : public views::View,
  private:
   void InitLayout();
 
+  void OnResponseAdded(const AssistantResponse& response);
+  void OnAllUiElementsAdded();
+  bool OnAllUiElementsExitAnimationEnded(
+      const ui::CallbackLayerAnimationObserver& observer);
   void OnUiElementAdded(const AssistantUiElement* ui_element);
   void OnCardElementAdded(const AssistantCardElement* card_element);
   void OnCardReady(const base::Optional<base::UnguessableToken>& embed_token);
@@ -73,8 +81,12 @@ class UiElementContainerView : public views::View,
   bool is_processing_ui_element_ = false;
 
   // UI elements will be animated on their own layers. We track the desired
-  // opacity to which each layer should be animated.
+  // opacity to which each layer should be animated when processing the next
+  // query response.
   std::vector<std::pair<ui::Layer*, float>> ui_element_layers_;
+
+  std::unique_ptr<ui::CallbackLayerAnimationObserver>
+      ui_elements_exit_animation_observer_;
 
   // Weak pointer factory used for card rendering requests.
   base::WeakPtrFactory<UiElementContainerView> render_request_weak_factory_;
