@@ -58,40 +58,28 @@ void SurfaceDependencyTracker::OnSurfaceDependenciesChanged(
 
   for (const FrameSinkId& frame_sink_id : removed_dependencies) {
     auto it = blocked_surfaces_from_dependency_.find(frame_sink_id);
-    it->second.erase(surface->surface_id());
-    if (it->second.empty())
-      blocked_surfaces_from_dependency_.erase(it);
+    if (it != blocked_surfaces_from_dependency_.end()) {
+      it->second.erase(surface->surface_id());
+      if (it->second.empty())
+        blocked_surfaces_from_dependency_.erase(it);
+    }
   }
 }
 
 void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
   surfaces_with_missing_dependencies_.erase(surface->surface_id());
 
-  // If the surface being destroyed doesn't have a pending frame then we have
-  // nothing to do here.
-  if (!surface->HasPendingFrame())
-    return;
+  base::flat_set<FrameSinkId> removed_dependencies;
+  for (const SurfaceId& surface_id : surface->activation_dependencies())
+    removed_dependencies.insert(surface_id.frame_sink_id());
 
-  for (const SurfaceId& surface_id : surface->activation_dependencies()) {
-    auto it =
-        blocked_surfaces_from_dependency_.find(surface_id.frame_sink_id());
-    if (it == blocked_surfaces_from_dependency_.end())
-      continue;
-
-    auto& blocked_surface_ids = it->second;
-    auto blocked_surface_ids_it =
-        blocked_surface_ids.find(surface->surface_id());
-    if (blocked_surface_ids_it != blocked_surface_ids.end()) {
-      blocked_surface_ids.erase(surface->surface_id());
-      if (blocked_surface_ids.empty())
-        blocked_surfaces_from_dependency_.erase(surface_id.frame_sink_id());
-    }
-  }
+  OnSurfaceDependenciesChanged(surface, {}, removed_dependencies);
 
   // Pretend that the discarded surface's SurfaceId is now available to
   // unblock dependencies because we now know the surface will never activate.
   NotifySurfaceIdAvailable(surface->surface_id());
 }
+
 void SurfaceDependencyTracker::OnFrameSinkInvalidated(
     const FrameSinkId& frame_sink_id) {
   // We now know the frame sink will never generated any more frames,
