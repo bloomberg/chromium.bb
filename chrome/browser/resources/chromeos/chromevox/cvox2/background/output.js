@@ -573,6 +573,7 @@ Output.RULES = {
           @describe_index($posInSet, $setSize)
           @describe_depth($hierarchicalLevel)`
     },
+    unknown: {speak: ``},
     window: {
       enter: `@describe_window($name)`,
       speak: `@describe_window($name) $earcon(OBJECT_OPEN)`
@@ -1766,10 +1767,16 @@ Output.prototype = {
     var parentRole = (Output.ROLE_INFO_[node.role] || {}).inherits;
     var parentRoleBlock = eventBlock[parentRole || ''] || {};
 
-    var format =
-        roleBlock.speak || parentRoleBlock.speak || eventBlock['default'].speak;
-    if (this.formatOptions_.braille)
-      format = roleBlock.braille || parentRoleBlock.braille || format;
+    var format = roleBlock.speak !== undefined ?
+        roleBlock.speak :
+        parentRoleBlock.speak !== undefined ? parentRoleBlock.speak :
+                                              eventBlock['default'].speak;
+    if (this.formatOptions_.braille) {
+      format = roleBlock.braille !== undefined ?
+          roleBlock.braille :
+          parentRoleBlock.braille !== undefined ? parentRoleBlock.braille :
+                                                  format;
+    }
 
     this.format_(node, format, buff, prevNode);
 

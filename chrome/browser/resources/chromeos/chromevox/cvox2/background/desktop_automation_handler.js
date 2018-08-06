@@ -248,6 +248,14 @@ DesktopAutomationHandler.prototype = {
                    target, Dir.FORWARD, AutomationPredicate.object) ||
           target;
     }
+
+    while (target && !AutomationPredicate.object(target))
+      target = target.parent;
+
+
+    if (!target)
+      return;
+
     if (ChromeVoxState.instance.currentRange &&
         target == ChromeVoxState.instance.currentRange.start.node)
       return;
