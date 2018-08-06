@@ -13,10 +13,48 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "media/audio/audio_device_description.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
+
+namespace {
+
+// A mojom::RendererAudioInputStreamFactoryClient that holds a
+// AudioLoopbackStreamCreator::StreamCreatedCallback. The callback runs when the
+// requested audio stream is created.
+class StreamCreatedCallbackAdapter final
+    : public mojom::RendererAudioInputStreamFactoryClient {
+ public:
+  explicit StreamCreatedCallbackAdapter(
+      const AudioLoopbackStreamCreator::StreamCreatedCallback& callback)
+      : callback_(callback) {
+    DCHECK(callback_);
+  }
+
+  ~StreamCreatedCallbackAdapter() override {}
+
+  // mojom::RendererAudioInputStreamFactoryClient implementation.
+  void StreamCreated(
+      media::mojom::AudioInputStreamPtr stream,
+      media::mojom::AudioInputStreamClientRequest client_request,
+      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
+      bool initially_muted,
+      const base::Optional<base::UnguessableToken>& stream_id) override {
+    DCHECK(!initially_muted);  // Loopback streams shouldn't be started muted.
+    callback_.Run(std::move(stream), std::move(client_request),
+                  std::move(data_pipe));
+  }
+
+ private:
+  const AudioLoopbackStreamCreator::StreamCreatedCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(StreamCreatedCallbackAdapter);
+};
+
+}  // namespace
 
 ForwardingAudioStreamFactory::ForwardingAudioStreamFactory(
     WebContents* web_contents,
@@ -27,7 +65,6 @@ ForwardingAudioStreamFactory::ForwardingAudioStreamFactory(
       broker_factory_(std::move(broker_factory)),
       group_id_(base::UnguessableToken::Create()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(web_contents);
   DCHECK(broker_factory_);
 }
 
@@ -57,8 +94,8 @@ void ForwardingAudioStreamFactory::CreateInputStream(
     mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const int process_id = frame->GetProcess()->GetID();
-  const int frame_id = frame->GetRoutingID();
+  const int process_id = frame ? frame->GetProcess()->GetID() : -1;
+  const int frame_id = frame ? frame->GetRoutingID() : -1;
   inputs_
       .insert(broker_factory_->CreateAudioInputStreamBroker(
           process_id, frame_id, device_id, params, shared_memory_count,
@@ -111,7 +148,6 @@ void ForwardingAudioStreamFactory::CreateLoopbackStream(
     bool mute_source,
     mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(frame);
   DCHECK(frame_of_source_web_contents);
 
   TRACE_EVENT_BEGIN1("audio", "CreateLoopbackStream", "group",
@@ -125,8 +161,8 @@ void ForwardingAudioStreamFactory::CreateLoopbackStream(
     return;
   }
 
-  const int process_id = frame->GetProcess()->GetID();
-  const int frame_id = frame->GetRoutingID();
+  const int process_id = frame ? frame->GetProcess()->GetID() : -1;
+  const int frame_id = frame ? frame->GetRoutingID() : -1;
   inputs_
       .insert(broker_factory_->CreateAudioLoopbackStreamBroker(
           process_id, frame_id,
@@ -143,6 +179,28 @@ void ForwardingAudioStreamFactory::CreateLoopbackStream(
                        ->GetAudioStreamFactory()
                        ->group_id()
                        .GetLowForSerialization());
+}
+
+void ForwardingAudioStreamFactory::CreateInProcessLoopbackStream(
+    RenderFrameHost* frame_of_source_web_contents,
+    const media::AudioParameters& params,
+    uint32_t shared_memory_count,
+    const AudioLoopbackStreamCreator::StreamCreatedCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  mojom::RendererAudioInputStreamFactoryClientPtr client;
+  mojo::MakeStrongBinding(
+      std::make_unique<StreamCreatedCallbackAdapter>(callback),
+      mojo::MakeRequest(&client));
+  if (frame_of_source_web_contents) {
+    CreateLoopbackStream(nullptr, frame_of_source_web_contents, params,
+                         shared_memory_count, true /* mute_source */,
+                         std::move(client));
+  } else {
+    // A null |frame_of_source_web_contents| requests system-wide loopback.
+    CreateInputStream(
+        nullptr, media::AudioDeviceDescription::kLoopbackWithMuteDeviceId,
+        params, shared_memory_count, false /* enable_agc*/, std::move(client));
+  }
 }
 
 void ForwardingAudioStreamFactory::SetMuted(bool muted) {
@@ -176,8 +234,10 @@ void ForwardingAudioStreamFactory::CleanupStreamsBelongingTo(
     RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const int process_id = render_frame_host->GetProcess()->GetID();
-  const int frame_id = render_frame_host->GetRoutingID();
+  const int process_id =
+      render_frame_host ? render_frame_host->GetProcess()->GetID() : -1;
+  const int frame_id =
+      render_frame_host ? render_frame_host->GetRoutingID() : -1;
 
   TRACE_EVENT_BEGIN2("audio", "CleanupStreamsBelongingTo", "group",
                      group_id_.GetLowForSerialization(), "process id",

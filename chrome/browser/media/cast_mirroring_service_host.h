@@ -10,6 +10,10 @@
 #include "components/mirroring/mojom/resource_provider.mojom.h"
 #include "content/public/browser/desktop_media_id.h"
 
+namespace content {
+class AudioLoopbackStreamCreator;
+}  // namespace content
+
 namespace mirroring {
 
 // CastMirroringServiceHost starts/stops a mirroring session through Mirroring
@@ -19,6 +23,7 @@ namespace mirroring {
 class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
                                        public mojom::ResourceProvider {
  public:
+  // |source_media_id| indicates the mirroring source.
   explicit CastMirroringServiceHost(content::DesktopMediaID source_media_id);
 
   ~CastMirroringServiceHost() override;
@@ -30,6 +35,8 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
              mojom::CastMessageChannelRequest inbound_channel) override;
 
  private:
+  friend class CastMirroringServiceHostBrowserTest;
+
   // ResourceProvider implementation.
   void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) override;
@@ -44,6 +51,8 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
 
   // Describes the media source for this mirroring session.
   const content::DesktopMediaID source_media_id_;
+
+  std::unique_ptr<content::AudioLoopbackStreamCreator> audio_stream_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMirroringServiceHost);
 };

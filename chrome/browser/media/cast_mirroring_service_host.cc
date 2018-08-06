@@ -12,6 +12,7 @@
 #include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/net/default_network_context_params.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
+#include "content/public/browser/audio_loopback_stream_creator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
@@ -111,7 +112,36 @@ void CastMirroringServiceHost::CreateAudioStream(
     mojom::AudioStreamCreatorClientPtr client,
     const media::AudioParameters& params,
     uint32_t total_segments) {
-  // TODO(xjz): Implementation will be added in a later CL.
+  content::WebContents* source_web_contents = nullptr;
+  if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
+    source_web_contents = content::WebContents::FromRenderFrameHost(
+        content::RenderFrameHost::FromID(
+            source_media_id_.web_contents_id.render_process_id,
+            source_media_id_.web_contents_id.main_render_frame_id));
+    if (!source_web_contents) {
+      VLOG(1) << "Failed to create audio stream: Invalid source.";
+      return;
+    }
+  }
+
+  if (!audio_stream_creator_) {
+    audio_stream_creator_ = content::AudioLoopbackStreamCreator::
+        CreateInProcessAudioLoopbackStreamCreator();
+  }
+  audio_stream_creator_->CreateLoopbackStream(
+      source_web_contents, params, total_segments,
+      base::BindRepeating(
+          [](mojom::AudioStreamCreatorClientPtr client,
+             media::mojom::AudioInputStreamPtr stream,
+             media::mojom::AudioInputStreamClientRequest client_request,
+             media::mojom::ReadOnlyAudioDataPipePtr data_pipe) {
+            // TODO(xjz): Remove |initially_muted| argument from
+            // mojom::AudioStreamCreatorClient::StreamCreated().
+            client->StreamCreated(std::move(stream), std::move(client_request),
+                                  std::move(data_pipe),
+                                  false /* initially_muted */);
+          },
+          base::Passed(&client)));
 }
 
 void CastMirroringServiceHost::ConnectToRemotingSource(

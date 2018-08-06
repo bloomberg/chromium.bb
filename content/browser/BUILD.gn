@@ -1112,6 +1112,8 @@ jumbo_source_set("browser") {
     "media/flinging_renderer.h",
     "media/forwarding_audio_stream_factory.cc",
     "media/forwarding_audio_stream_factory.h",
+    "media/in_process_audio_loopback_stream_creator.cc",
+    "media/in_process_audio_loopback_stream_creator.h",
     "media/media_devices_permission_checker.cc",
     "media/media_devices_permission_checker.h",
     "media/media_devices_util.cc",
