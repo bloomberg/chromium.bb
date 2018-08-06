@@ -345,6 +345,8 @@ class MockMojoProxyResolverFactory
 
   void ClearBlockedClients();
 
+  void RespondToBlockedClientsWithResult(net::Error error);
+
  private:
   // Overridden from proxy_resolver::mojom::ProxyResolver:
   void CreateResolver(
@@ -398,6 +400,13 @@ void MockMojoProxyResolverFactory::WakeWaiter() {
 
 void MockMojoProxyResolverFactory::ClearBlockedClients() {
   blocked_clients_.clear();
+}
+
+void MockMojoProxyResolverFactory::RespondToBlockedClientsWithResult(
+    net::Error error) {
+  for (const auto& client : blocked_clients_) {
+    (*client)->ReportResult(error);
+  }
 }
 
 void MockMojoProxyResolverFactory::CreateResolver(
@@ -682,18 +691,71 @@ TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_ResolverDisconnected) {
   scoped_refptr<net::PacFileData> pac_script(
       net::PacFileData::FromUTF8(kScriptData));
   std::unique_ptr<net::ProxyResolverFactory::Request> request;
+
+  // When the ResolverRequest pipe is dropped, the ProxyResolverFactory should
+  // still wait to get an error from the client pipe.
   net::TestCompletionCallback callback;
   EXPECT_EQ(
-      net::ERR_PAC_SCRIPT_TERMINATED,
-      callback.GetResult(proxy_resolver_factory_mojo_->CreateProxyResolver(
-          pac_script, &proxy_resolver_mojo_, callback.callback(), &request)));
+      net::ERR_IO_PENDING,
+      proxy_resolver_factory_mojo_->CreateProxyResolver(
+          pac_script, &proxy_resolver_mojo_, callback.callback(), &request));
   EXPECT_TRUE(request);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback.have_result());
+
+  mock_proxy_resolver_factory_->RespondToBlockedClientsWithResult(
+      net::ERR_PAC_SCRIPT_FAILED);
+  EXPECT_EQ(net::ERR_PAC_SCRIPT_FAILED, callback.WaitForResult());
+}
+
+// The resolver pipe is dropped, but the client is told the request succeeded
+// (This could happen if a proxy resolver is created successfully, but then the
+// proxy crashes before the client reads the success message).
+TEST_F(ProxyResolverFactoryMojoTest,
+       CreateProxyResolver_ResolverDisconnectedButClientSucceeded) {
+  mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
+      CreateProxyResolverAction::DropResolver(kScriptData));
+
+  scoped_refptr<net::PacFileData> pac_script(
+      net::PacFileData::FromUTF8(kScriptData));
+  std::unique_ptr<net::ProxyResolverFactory::Request> request;
+
+  // When the ResolverRequest pipe is dropped, the ProxyResolverFactory
+  // shouldn't notice, and should just continue to wait for a response on the
+  // other pipe.
+  net::TestCompletionCallback callback;
+  EXPECT_EQ(
+      net::ERR_IO_PENDING,
+      proxy_resolver_factory_mojo_->CreateProxyResolver(
+          pac_script, &proxy_resolver_mojo_, callback.callback(), &request));
+  EXPECT_TRUE(request);
+  mock_proxy_resolver_factory_->WaitForNextRequest();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback.have_result());
+
+  // The client pipe reports success!
+  mock_proxy_resolver_factory_->RespondToBlockedClientsWithResult(net::OK);
+  EXPECT_EQ(net::OK, callback.WaitForResult());
+
+  // Proxy resolutions should fail with ERR_PAC_SCRIPT_TERMINATED, however. That
+  // error should normally cause the ProxyResolutionService to destroy the
+  // resolver.
+  net::ProxyInfo results;
+  std::unique_ptr<net::ProxyResolver::Request> pac_request;
+  EXPECT_EQ(net::ERR_PAC_SCRIPT_TERMINATED,
+            callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
+                GURL(kExampleUrl), &results,
+                base::BindOnce(
+                    &ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
+                    base::Unretained(this), callback.callback()),
+                &pac_request, net::NetLogWithSource())));
 }
 
 TEST_F(ProxyResolverFactoryMojoTest,
        CreateProxyResolver_ResolverDisconnected_DeleteRequestInCallback) {
   mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
-      CreateProxyResolverAction::DropResolver(kScriptData));
+      CreateProxyResolverAction::DropClient(kScriptData));
 
   scoped_refptr<net::PacFileData> pac_script(
       net::PacFileData::FromUTF8(kScriptData));
@@ -703,8 +765,8 @@ TEST_F(ProxyResolverFactoryMojoTest,
       net::ERR_PAC_SCRIPT_TERMINATED,
       callback.GetResult(proxy_resolver_factory_mojo_->CreateProxyResolver(
           pac_script, &proxy_resolver_mojo_,
-          base::Bind(&DeleteResolverFactoryRequestCallback, &request,
-                     callback.callback()),
+          base::BindOnce(&DeleteResolverFactoryRequestCallback, &request,
+                         callback.callback()),
           &request)));
 }
 
@@ -871,13 +933,13 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_DeleteInCallback) {
   net::TestCompletionCallback callback;
   std::unique_ptr<net::ProxyResolver::Request> request;
   net::NetLogWithSource net_log;
-  EXPECT_EQ(
-      net::OK,
-      callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
-          GURL(kExampleUrl), &results,
-          base::Bind(&ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
-                     base::Unretained(this), callback.callback()),
-          &request, net_log)));
+  EXPECT_EQ(net::OK,
+            callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
+                GURL(kExampleUrl), &results,
+                base::BindOnce(
+                    &ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
+                    base::Unretained(this), callback.callback()),
+                &request, net_log)));
 }
 
 TEST_F(ProxyResolverFactoryMojoTest,
@@ -890,13 +952,13 @@ TEST_F(ProxyResolverFactoryMojoTest,
   net::TestCompletionCallback callback;
   std::unique_ptr<net::ProxyResolver::Request> request;
   net::NetLogWithSource net_log;
-  EXPECT_EQ(
-      net::ERR_PAC_SCRIPT_TERMINATED,
-      callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
-          GURL(kExampleUrl), &results,
-          base::Bind(&ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
-                     base::Unretained(this), callback.callback()),
-          &request, net_log)));
+  EXPECT_EQ(net::ERR_PAC_SCRIPT_TERMINATED,
+            callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
+                GURL(kExampleUrl), &results,
+                base::BindOnce(
+                    &ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
+                    base::Unretained(this), callback.callback()),
+                &request, net_log)));
 }
 
 TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_DnsRequest) {
