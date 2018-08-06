@@ -889,6 +889,8 @@ bool LayoutView::RecalcOverflowAfterStyleChange() {
       SetMayNeedPaintInvalidation();
     GetFrameView()->AdjustViewSize();
     SetNeedsPaintPropertyUpdate();
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
   }
   return result;
 }

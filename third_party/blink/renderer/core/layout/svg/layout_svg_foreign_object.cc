@@ -180,6 +180,9 @@ void LayoutSVGForeignObject::StyleDidChange(StyleDifference diff,
                     SVGLayoutSupport::IsOverflowHidden(StyleRef()))) {
     // See NeedsOverflowClip() in PaintPropertyTreeBuilder for the reason.
     SetNeedsPaintPropertyUpdate();
+
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
   }
 }
 

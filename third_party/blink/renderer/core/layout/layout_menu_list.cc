@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -77,6 +78,8 @@ void LayoutMenuList::UpdateInnerStyle() {
   inner_block_->SetStyleInternal(std::move(inner_style));
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
   SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 void LayoutMenuList::CreateInnerBlock() {
@@ -101,6 +104,8 @@ void LayoutMenuList::CreateInnerBlock() {
 
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
   SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 bool LayoutMenuList::HasOptionStyleChanged(
@@ -168,6 +173,8 @@ void LayoutMenuList::AddChild(LayoutObject* new_child,
 
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
   SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 void LayoutMenuList::RemoveChild(LayoutObject* old_child) {
@@ -275,6 +282,8 @@ void LayoutMenuList::SetText(const String& s) {
   }
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
   SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 String LayoutMenuList::GetText() const {

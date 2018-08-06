@@ -198,6 +198,9 @@ void LayoutSVGRoot::UpdateLayout() {
       viewport_may_have_changed) {
     SetMayNeedPaintInvalidationSubtree();
     SetNeedsPaintPropertyUpdate();
+
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
   }
 
   SVGSVGElement* svg = ToSVGSVGElement(GetNode());
@@ -362,6 +365,8 @@ void LayoutSVGRoot::DescendantIsolationRequirementsChanged(
       break;
   }
   SetNeedsPaintPropertyUpdate();
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 void LayoutSVGRoot::InsertedIntoTree() {
