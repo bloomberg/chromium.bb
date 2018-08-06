@@ -132,8 +132,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   base::sequence_manager::TaskQueue::QueuePriority ComputePriority(
       MainThreadTaskQueue* task_queue) const;
 
+  ukm::SourceId GetUkmSourceId() override;
   ukm::UkmRecorder* GetUkmRecorder();
-  ukm::SourceId GetUkmSourceId();
 
   // FrameTaskQueueController::Delegate implementation.
   void OnTaskQueueCreated(

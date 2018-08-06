@@ -38,13 +38,16 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
         frame_type_(FrameScheduler::FrameType::kSubframe),
         is_cross_origin_(false),
         is_exempt_from_throttling_(false) {}
+
   FakeFrameScheduler(PageScheduler* page_scheduler,
                      bool is_page_visible,
                      bool is_frame_visible,
                      FrameScheduler::FrameType frame_type,
                      bool is_cross_origin,
-                     bool is_exempt_from_throttling)
-      : page_scheduler_(page_scheduler),
+                     bool is_exempt_from_throttling,
+                     FrameScheduler::Delegate* delegate)
+      : FrameSchedulerImpl(nullptr, nullptr, delegate, nullptr, frame_type),
+        page_scheduler_(page_scheduler),
         is_page_visible_(is_page_visible),
         is_frame_visible_(is_frame_visible),
         frame_type_(frame_type),
@@ -61,7 +64,7 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
     std::unique_ptr<FakeFrameScheduler> Build() {
       return std::make_unique<FakeFrameScheduler>(
           page_scheduler_, is_page_visible_, is_frame_visible_, frame_type_,
-          is_cross_origin_, is_exempt_from_throttling_);
+          is_cross_origin_, is_exempt_from_throttling_, delegate_);
     }
 
     Builder& SetPageScheduler(PageScheduler* page_scheduler) {
@@ -94,6 +97,11 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
       return *this;
     }
 
+    Builder& SetDelegate(FrameScheduler::Delegate* delegate) {
+      delegate_ = delegate;
+      return *this;
+    }
+
    private:
     PageScheduler* page_scheduler_ = nullptr;
     bool is_page_visible_ = false;
@@ -102,6 +110,7 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
         FrameScheduler::FrameType::kMainFrame;
     bool is_cross_origin_ = false;
     bool is_exempt_from_throttling_ = false;
+    FrameScheduler::Delegate* delegate_ = nullptr;
   };
 
   // FrameScheduler implementation:

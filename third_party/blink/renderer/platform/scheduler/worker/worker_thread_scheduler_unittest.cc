@@ -3,15 +3,18 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/child/process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 
 using testing::ElementsAreArray;
 
@@ -60,6 +63,20 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
                               nullptr),
         clock_(clock_),
         timeline_(timeline) {}
+
+  WorkerThreadSchedulerForTest(
+      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
+      const base::TickClock* clock_,
+      std::vector<std::string>* timeline,
+      WorkerSchedulerProxy* proxy)
+      : WorkerThreadScheduler(WebThreadType::kTestThread,
+                              std::move(manager),
+                              proxy),
+        clock_(clock_),
+        timeline_(timeline) {}
+
+  using ThreadSchedulerImpl::SetUkmTaskSamplingRateForTest;
+  using WorkerThreadScheduler::SetUkmRecorderForTest;
 
  private:
   bool CanEnterLongIdlePeriod(
@@ -368,6 +385,113 @@ TEST_F(WorkerThreadSchedulerTest, TestLongIdlePeriodTimeline) {
                                      "RunUntilIdle end @ 385"};
 
   EXPECT_THAT(timeline_, ElementsAreArray(expected_timeline));
+}
+
+namespace {
+
+class FrameSchedulerDelegateWithUkmSourceId : public FrameScheduler::Delegate {
+ public:
+  FrameSchedulerDelegateWithUkmSourceId(ukm::SourceId source_id)
+      : source_id_(source_id) {}
+
+  ~FrameSchedulerDelegateWithUkmSourceId() override {}
+
+  ukm::UkmRecorder* GetUkmRecorder() override { return nullptr; }
+
+  ukm::SourceId GetUkmSourceId() override { return source_id_; }
+
+ private:
+  ukm::SourceId source_id_;
+};
+
+}  // namespace
+
+class WorkerThreadSchedulerWithProxyTest : public testing::Test {
+ public:
+  WorkerThreadSchedulerWithProxyTest()
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {
+    frame_scheduler_delegate_ =
+        std::make_unique<FrameSchedulerDelegateWithUkmSourceId>(42);
+    frame_scheduler_ = FakeFrameScheduler::Builder()
+                           .SetIsPageVisible(false)
+                           .SetFrameType(FrameScheduler::FrameType::kSubframe)
+                           .SetIsCrossOrigin(true)
+                           .SetDelegate(frame_scheduler_delegate_.get())
+                           .Build();
+    frame_scheduler_->SetCrossOrigin(true);
+
+    worker_scheduler_proxy_ =
+        std::make_unique<WorkerSchedulerProxy>(frame_scheduler_.get());
+
+    scheduler_ = std::make_unique<WorkerThreadSchedulerForTest>(
+        base::sequence_manager::SequenceManagerForTest::Create(
+            nullptr, task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMockTickClock()),
+        task_environment_.GetMockTickClock(), &timeline_,
+        worker_scheduler_proxy_.get());
+
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
+
+    scheduler_->Init();
+  }
+
+  ~WorkerThreadSchedulerWithProxyTest() override = default;
+
+  void TearDown() override {
+    task_environment_.FastForwardUntilNoTasksRemain();
+  }
+
+ protected:
+  base::test::ScopedTaskEnvironment task_environment_;
+  std::vector<std::string> timeline_;
+  std::unique_ptr<FrameScheduler::Delegate> frame_scheduler_delegate_;
+  std::unique_ptr<FrameScheduler> frame_scheduler_;
+  std::unique_ptr<WorkerSchedulerProxy> worker_scheduler_proxy_;
+  std::unique_ptr<WorkerThreadSchedulerForTest> scheduler_;
+  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
+  scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkerThreadSchedulerWithProxyTest);
+};
+
+TEST_F(WorkerThreadSchedulerWithProxyTest, UkmTaskRecording) {
+  internal::ProcessState::Get()->is_process_backgrounded = true;
+
+  std::unique_ptr<ukm::TestUkmRecorder> owned_ukm_recorder =
+      std::make_unique<ukm::TestUkmRecorder>();
+  ukm::TestUkmRecorder* ukm_recorder = owned_ukm_recorder.get();
+
+  scheduler_->SetUkmTaskSamplingRateForTest(1);
+  scheduler_->SetUkmRecorderForTest(std::move(owned_ukm_recorder));
+
+  base::sequence_manager::FakeTask task(
+      static_cast<int>(TaskType::kJavascriptTimer));
+  base::sequence_manager::FakeTaskTiming task_timing(
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(200),
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(700),
+      base::ThreadTicks() + base::TimeDelta::FromMilliseconds(250),
+      base::ThreadTicks() + base::TimeDelta::FromMilliseconds(500));
+
+  scheduler_->OnTaskCompleted(nullptr, task, task_timing);
+
+  auto entries = ukm_recorder->GetEntriesByName("RendererSchedulerTask");
+
+  EXPECT_EQ(entries.size(), static_cast<size_t>(1));
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      entries[0], "ThreadType", static_cast<int>(WebThreadType::kTestThread));
+  ukm::TestUkmRecorder::ExpectEntryMetric(entries[0], "RendererBackgrounded",
+                                          true);
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      entries[0], "TaskType", static_cast<int>(TaskType::kJavascriptTimer));
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      entries[0], "FrameStatus",
+      static_cast<int>(FrameStatus::kCrossOriginBackground));
+  ukm::TestUkmRecorder::ExpectEntryMetric(entries[0], "TaskDuration", 500000);
+  ukm::TestUkmRecorder::ExpectEntryMetric(entries[0], "TaskCPUDuration",
+                                          250000);
 }
 
 }  // namespace worker_thread_scheduler_unittest
