@@ -125,6 +125,13 @@ const ui::ResourceBundle::FontStyle kItemTextFontStyle =
 const float kAllAppsOpacityStartPx = 8.0f;
 const float kAllAppsOpacityEndPx = 144.0f;
 
+// Delta applied to font size of all AppListSearchResult titles.
+const int kSearchResultTitleTextSizeDelta = 2;
+
+// Font style for AppListSearchResultTileItemViews that are not suggested apps.
+const ui::ResourceBundle::FontStyle kSearchResultTitleFontStyle =
+    ui::ResourceBundle::BaseFont;
+
 // The UMA histogram that logs usage of suggested and regular apps.
 const char kAppListAppLaunched[] = "Apps.AppListAppLaunched";
 

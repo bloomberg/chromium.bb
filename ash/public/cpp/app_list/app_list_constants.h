@@ -73,6 +73,10 @@ ASH_PUBLIC_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
 ASH_PUBLIC_EXPORT extern const float kAllAppsOpacityStartPx;
 ASH_PUBLIC_EXPORT extern const float kAllAppsOpacityEndPx;
 
+ASH_PUBLIC_EXPORT extern const int kSearchResultTitleTextSizeDelta;
+ASH_PUBLIC_EXPORT extern const ui::ResourceBundle::FontStyle
+    kSearchResultTitleFontStyle;
+
 // The different ways that the app list can transition from PEEKING to
 // FULLSCREEN_ALL_APPS. These values are written to logs.  New enum
 // values can be added, but existing enums must never be renumbered or deleted

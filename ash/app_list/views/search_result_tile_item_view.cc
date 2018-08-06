@@ -49,6 +49,11 @@ constexpr int kSearchRatingStarSize = 12;
 constexpr int kSearchRatingStarHorizontalSpacing = 1;
 constexpr int kSearchRatingStarVerticalSpacing = 2;
 
+// Delta applied to the font size of SearchResultTile rating.
+constexpr int kSearchRatingTextSizeDelta = 1;
+// Delta applied to the font size of SearchResultTile price.
+constexpr int kSearchPriceTextSizeDelta = 1;
+
 constexpr int kIconSelectedSize = 56;
 constexpr int kIconSelectedCornerRadius = 4;
 // Icon selected color, #000 8%.
@@ -192,13 +197,44 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
     if (rating_) {
       rating_->SetBackground(
           views::CreateSolidBackground(kCardBackgroundColor));
+      if (!IsSuggestedAppTile()) {
+        // App search results use different fonts than AppList apps.
+        rating_->SetFontList(
+            ui::ResourceBundle::GetSharedInstance()
+                .GetFontList(kSearchResultTitleFontStyle)
+                .DeriveWithSizeDelta(kSearchRatingTextSizeDelta));
+        rating_->SetLineHeight(rating_->font_list().GetHeight());
+      } else {
+        rating_->SetFontList(font);
+        rating_->SetLineHeight(font.GetHeight());
+      }
     }
     if (price_) {
       price_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
+      if (!IsSuggestedAppTile()) {
+        // App search results use different fonts than AppList apps.
+        price_->SetFontList(
+            ui::ResourceBundle::GetSharedInstance()
+                .GetFontList(kSearchResultTitleFontStyle)
+                .DeriveWithSizeDelta(kSearchPriceTextSizeDelta));
+        price_->SetLineHeight(price_->font_list().GetHeight());
+      } else {
+        price_->SetFontList(font);
+        price_->SetLineHeight(font.GetHeight());
+      }
     }
     title_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
-    title_->SetFontList(font);
-    title_->SetLineHeight(font.GetHeight());
+    if (!IsSuggestedAppTile()) {
+      // App search results use different fonts than AppList apps.
+      title_->SetFontList(
+          ui::ResourceBundle::GetSharedInstance()
+              .GetFontList(kSearchResultTitleFontStyle)
+              .DeriveWithSizeDelta(kSearchResultTitleTextSizeDelta));
+      title_->SetLineHeight(title_->font_list().GetHeight());
+    } else {
+      title_->SetFontList(font);
+      title_->SetLineHeight(font.GetHeight());
+    }
     title_->SetEnabledColor(kSearchTitleColor);
   }
 
