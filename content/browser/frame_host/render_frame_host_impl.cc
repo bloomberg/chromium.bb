@@ -3542,8 +3542,15 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                         ->GetVideoDecodePerfHistory()
                         ->GetSaveCallback();
   }
+
   registry_->AddInterface(base::BindRepeating(
-      &media::MediaMetricsProvider::Create, std::move(save_stats_cb)));
+      &media::MediaMetricsProvider::Create, frame_tree_node_->IsMainFrame(),
+      base::BindRepeating(
+          &RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource,
+          // This callback is only executed when Create() is called, during
+          // which the lifetime of the |delegate_| is guaranteed.
+          base::Unretained(delegate_)),
+      std::move(save_stats_cb)));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableGpuBenchmarking)) {

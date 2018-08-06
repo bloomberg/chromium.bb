@@ -19,8 +19,8 @@
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/geometry/size.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -65,13 +65,13 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // This callback will silently fail if called after |this| is destroyed.
   // Saving is generally fire-and-forget, but |save_done_cb| may be provided
   // for tests to know the save is complete.
-  using SaveCallback = base::RepeatingCallback<void(
-      const url::Origin& untrusted_top_frame_origin,
-      bool is_top_frame,
-      mojom::PredictionFeatures features,
-      mojom::PredictionTargets targets,
-      uint64_t player_id,
-      base::OnceClosure save_done_cb)>;
+  using SaveCallback =
+      base::RepeatingCallback<void(ukm::SourceId source_id,
+                                   bool is_top_frame,
+                                   mojom::PredictionFeatures features,
+                                   mojom::PredictionTargets targets,
+                                   uint64_t player_id,
+                                   base::OnceClosure save_done_cb)>;
   SaveCallback GetSaveCallback();
 
   // Clear all history from the underlying database. Run |clear_done_cb| when
@@ -111,7 +111,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   void OnDatabaseInit(bool success);
 
   // Initiate saving of the provided record. See GetSaveCallback().
-  void SavePerfRecord(const url::Origin& untrusted_top_frame_origin,
+  void SavePerfRecord(ukm::SourceId source_id,
                       bool is_top_frame,
                       mojom::PredictionFeatures features,
                       mojom::PredictionTargets targets,
@@ -132,7 +132,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // of the GetPerfInfo() API. Comparison is recorded via UKM. Then saves the
   // |new_*| performance stats to the database.
   void OnGotStatsForSave(
-      const url::Origin& top_frame_origin,
+      ukm::SourceId source_id,
       bool is_top_frame,
       uint64_t player_id,
       const VideoDecodeStatsDB::VideoDescKey& video_key,
@@ -147,7 +147,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
 
   // Report UKM metrics to grade the claims of the API by evaluating how well
   // |past_stats| predicts |new_stats|.
-  void ReportUkmMetrics(const url::Origin& top_frame_origin,
+  void ReportUkmMetrics(ukm::SourceId source_id,
                         bool is_top_frame,
                         uint64_t player_id,
                         const VideoDecodeStatsDB::VideoDescKey& video_key,

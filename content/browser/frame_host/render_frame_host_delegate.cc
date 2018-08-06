@@ -126,4 +126,9 @@ Visibility RenderFrameHostDelegate::GetVisibility() const {
   return Visibility::HIDDEN;
 }
 
+ukm::SourceId RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource()
+    const {
+  return ukm::kInvalidSourceId;
+}
+
 }  // namespace content

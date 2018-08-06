@@ -579,12 +579,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.GetString().Utf8()));
   load_start_time_ = base::TimeTicks::Now();
 
-  // URL is used for UKM reporting. Privacy requires we only report origin of
-  // the top frame. |is_top_frame| signals how to interpret the origin.
-  // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  media_metrics_provider_->Initialize(load_type == kLoadTypeMediaSource,
-                                      frame_ == frame_->Top(),
-                                      frame_->Top()->GetSecurityOrigin());
+  media_metrics_provider_->Initialize(load_type == kLoadTypeMediaSource);
 
   // Media source pipelines can start immediately.
   if (load_type == kLoadTypeMediaSource) {

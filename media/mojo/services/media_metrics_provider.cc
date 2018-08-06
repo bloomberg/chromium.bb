@@ -18,8 +18,13 @@ constexpr char kInvalidInitialize[] = "Initialize() was not called correctly.";
 static uint64_t g_player_id = 0;
 
 MediaMetricsProvider::MediaMetricsProvider(
+    bool is_top_frame,
+    ukm::SourceId source_id,
     VideoDecodePerfHistory::SaveCallback save_cb)
-    : player_id_(g_player_id++), save_cb_(save_cb) {}
+    : player_id_(g_player_id++),
+      is_top_frame_(is_top_frame),
+      source_id_(source_id),
+      save_cb_(std::move(save_cb)) {}
 
 MediaMetricsProvider::~MediaMetricsProvider() {
   // UKM may be unavailable in content_shell or other non-chrome/ builds; it
@@ -29,11 +34,7 @@ MediaMetricsProvider::~MediaMetricsProvider() {
   if (!ukm_recorder || !initialized_)
     return;
 
-  const ukm::SourceId source_id = ukm_recorder->GetNewSourceID();
-
-  // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  ukm_recorder->UpdateSourceURL(source_id, untrusted_top_origin_.GetURL());
-  ukm::builders::Media_WebMediaPlayerState builder(source_id);
+  ukm::builders::Media_WebMediaPlayerState builder(source_id_);
   builder.SetPlayerID(player_id_);
   builder.SetIsTopFrame(is_top_frame_);
   builder.SetIsEME(is_eme_);
@@ -51,24 +52,23 @@ MediaMetricsProvider::~MediaMetricsProvider() {
 }
 
 // static
-void MediaMetricsProvider::Create(VideoDecodePerfHistory::SaveCallback save_cb,
+void MediaMetricsProvider::Create(bool is_top_frame,
+                                  GetSourceIdCallback get_source_id_cb,
+                                  VideoDecodePerfHistory::SaveCallback save_cb,
                                   mojom::MediaMetricsProviderRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<MediaMetricsProvider>(std::move(save_cb)),
+      std::make_unique<MediaMetricsProvider>(
+          is_top_frame, get_source_id_cb.Run(), std::move(save_cb)),
       std::move(request));
 }
 
-void MediaMetricsProvider::Initialize(bool is_mse,
-                                      bool is_top_frame,
-                                      const url::Origin& untrusted_top_origin) {
+void MediaMetricsProvider::Initialize(bool is_mse) {
   if (initialized_) {
     mojo::ReportBadMessage(kInvalidInitialize);
     return;
   }
 
   is_mse_ = is_mse;
-  is_top_frame_ = is_top_frame;
-  untrusted_top_origin_ = untrusted_top_origin;
   initialized_ = true;
 }
 
@@ -108,10 +108,10 @@ void MediaMetricsProvider::AcquireWatchTimeRecorder(
     return;
   }
 
-  mojo::MakeStrongBinding(std::make_unique<WatchTimeRecorder>(
-                              std::move(properties), untrusted_top_origin_,
-                              is_top_frame_, player_id_),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<WatchTimeRecorder>(std::move(properties), source_id_,
+                                          is_top_frame_, player_id_),
+      std::move(request));
 }
 
 void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
@@ -121,15 +121,14 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
     return;
   }
 
-  if (save_cb_.is_null()) {
+  if (!save_cb_) {
     DVLOG(3) << __func__ << " Ignoring request, SaveCallback is null";
     return;
   }
 
-  mojo::MakeStrongBinding(
-      std::make_unique<VideoDecodeStatsRecorder>(
-          untrusted_top_origin_, is_top_frame_, player_id_, save_cb_),
-      std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<VideoDecodeStatsRecorder>(
+                              save_cb_, source_id_, is_top_frame_, player_id_),
+                          std::move(request));
 }
 
 }  // namespace media

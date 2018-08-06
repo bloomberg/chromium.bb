@@ -272,6 +272,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Get the UKM source ID for current content. This is used for providing
   // data about the content to the URL-keyed metrics service.
+  // Note: This is also exposed by the RenderFrameHostDelegate.
   virtual ukm::SourceId GetUkmSourceIdForLastCommittedSource() const;
 
   // Notifies the delegate that a focused editable element has been touched

@@ -236,9 +236,7 @@ class WatchTimeReporterTest
         mojom::VideoDecodeStatsRecorderRequest request) override {
       FAIL();
     }
-    void Initialize(bool is_mse,
-                    bool is_top_frame,
-                    const url::Origin& untrusted_top_origin) override {}
+    void Initialize(bool is_mse) override {}
     void OnError(PipelineStatus status) override {}
     void SetIsEME() override {}
     void SetTimeToMetadata(base::TimeDelta elapsed) override {}

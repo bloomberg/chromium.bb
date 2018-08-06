@@ -27,6 +27,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_WIN)
@@ -377,6 +378,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Returns the visibility of the delegate.
   virtual Visibility GetVisibility() const;
+
+  // Get the UKM source ID for current content. This is used for providing
+  // data about the content to the URL-keyed metrics service.
+  // Note: This is also exposed by the RenderWidgetHostDelegate.
+  virtual ukm::SourceId GetUkmSourceIdForLastCommittedSource() const;
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

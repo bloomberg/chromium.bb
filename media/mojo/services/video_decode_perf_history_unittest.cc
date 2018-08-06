@@ -193,7 +193,7 @@ class VideoDecodePerfHistoryTest : public testing::Test {
     return targets;
   }
 
-  void SavePerfRecord(const url::Origin& untrusted_top_frame_origin,
+  void SavePerfRecord(const url::Origin& origin,
                       bool is_top_frame,
                       mojom::PredictionFeatures features,
                       mojom::PredictionTargets targets,
@@ -202,9 +202,12 @@ class VideoDecodePerfHistoryTest : public testing::Test {
     // save completes.
     base::OnceClosure save_done_cb;
 
-    perf_history_->GetSaveCallback().Run(untrusted_top_frame_origin,
-                                         is_top_frame, features, targets,
-                                         player_id, std::move(save_done_cb));
+    const ukm::SourceId source_id = test_recorder_->GetNewSourceID();
+    test_recorder_->UpdateSourceURL(source_id, origin.GetURL());
+
+    perf_history_->GetSaveCallback().Run(source_id, is_top_frame, features,
+                                         targets, player_id,
+                                         std::move(save_done_cb));
   }
 
  protected:

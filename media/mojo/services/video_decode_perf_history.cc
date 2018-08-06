@@ -175,13 +175,12 @@ VideoDecodePerfHistory::SaveCallback VideoDecodePerfHistory::GetSaveCallback() {
                              weak_ptr_factory_.GetWeakPtr());
 }
 
-void VideoDecodePerfHistory::SavePerfRecord(
-    const url::Origin& untrusted_top_frame_origin,
-    bool is_top_frame,
-    mojom::PredictionFeatures features,
-    mojom::PredictionTargets targets,
-    uint64_t player_id,
-    base::OnceClosure save_done_cb) {
+void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
+                                            bool is_top_frame,
+                                            mojom::PredictionFeatures features,
+                                            mojom::PredictionTargets targets,
+                                            uint64_t player_id,
+                                            base::OnceClosure save_done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__
            << base::StringPrintf(
@@ -200,8 +199,8 @@ void VideoDecodePerfHistory::SavePerfRecord(
   if (db_init_status_ != COMPLETE) {
     init_deferred_api_calls_.push_back(base::BindOnce(
         &VideoDecodePerfHistory::SavePerfRecord, weak_ptr_factory_.GetWeakPtr(),
-        untrusted_top_frame_origin, is_top_frame, std::move(features),
-        std::move(targets), player_id, std::move(save_done_cb)));
+        source_id, is_top_frame, std::move(features), std::move(targets),
+        player_id, std::move(save_done_cb)));
     InitDatabase();
     return;
   }
@@ -217,13 +216,12 @@ void VideoDecodePerfHistory::SavePerfRecord(
   db_->GetDecodeStats(
       video_key,
       base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForSave,
-                     weak_ptr_factory_.GetWeakPtr(), untrusted_top_frame_origin,
-                     is_top_frame, player_id, video_key, new_stats,
-                     std::move(save_done_cb)));
+                     weak_ptr_factory_.GetWeakPtr(), source_id, is_top_frame,
+                     player_id, video_key, new_stats, std::move(save_done_cb)));
 }
 
 void VideoDecodePerfHistory::OnGotStatsForSave(
-    const url::Origin& untrusted_top_frame_origin,
+    ukm::SourceId source_id,
     bool is_top_frame,
     uint64_t player_id,
     const VideoDecodeStatsDB::VideoDescKey& video_key,
@@ -240,8 +238,8 @@ void VideoDecodePerfHistory::OnGotStatsForSave(
     return;
   }
 
-  ReportUkmMetrics(untrusted_top_frame_origin, is_top_frame, player_id,
-                   video_key, new_stats, past_stats.get());
+  ReportUkmMetrics(source_id, is_top_frame, player_id, video_key, new_stats,
+                   past_stats.get());
 
   // TODO(dalecurtis): Abort stats recording if db_ is in read-only mode.
 
@@ -267,7 +265,7 @@ void VideoDecodePerfHistory::OnSaveDone(base::OnceClosure save_done_cb,
 }
 
 void VideoDecodePerfHistory::ReportUkmMetrics(
-    const url::Origin& untrusted_top_frame_origin,
+    ukm::SourceId source_id,
     bool is_top_frame,
     uint64_t player_id,
     const VideoDecodeStatsDB::VideoDescKey& video_key,
@@ -282,11 +280,7 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
   if (!ukm_recorder)
     return;
 
-  const ukm::SourceId source_id = ukm_recorder->GetNewSourceID();
   ukm::builders::Media_VideoDecodePerfRecord builder(source_id);
-
-  // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  ukm_recorder->UpdateSourceURL(source_id, untrusted_top_frame_origin.GetURL());
   builder.SetVideo_InTopFrame(is_top_frame);
   builder.SetVideo_PlayerID(player_id);
 
