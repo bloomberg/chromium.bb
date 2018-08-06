@@ -33,14 +33,16 @@ namespace content {
 // outstanding proxy resolve requests with the proxy service. It also deletes
 // the stored IPC::Message pointers for pending requests.
 //
-// This object does most of its work, and destroys itself, on the UI thread.
+// This object does most of its work on the UI thread. It holds onto a
+// self-reference as long as there's a pending Mojo call, as losing its last
+// reference on the IO thread with an open mojo pipe that lives on the UI
+// thread leads to problems.
 class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter,
                                              network::mojom::ProxyLookupClient {
  public:
   explicit ResolveProxyMsgHelper(int render_process_host_id);
 
   // BrowserMessageFilter implementation
-  void OnDestruct() const override;
   void OverrideThreadForMessage(const IPC::Message& message,
                                 BrowserThread::ID* thread) override;
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -93,6 +95,12 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter,
   // FIFO queue of pending requests. The first entry is always the current one.
   using PendingRequestList = base::circular_deque<PendingRequest>;
   PendingRequestList pending_requests_;
+
+  // Self-reference. Owned as long as there's an outstanding proxy lookup.
+  // Needed to shut down safely, since this class is refcounted, with some
+  // references owned on multiple threads, while |binding_| lives on the UI
+  // thread, and may receive callbacks there whenever there's a pending request.
+  scoped_refptr<ResolveProxyMsgHelper> owned_self_;
 
   // Binding for the currently in-progress request, if any.
   mojo::Binding<network::mojom::ProxyLookupClient> binding_;
