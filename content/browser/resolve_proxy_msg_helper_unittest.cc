@@ -21,11 +21,18 @@ namespace content {
 
 class TestResolveProxyMsgHelper : public ResolveProxyMsgHelper {
  public:
-  explicit TestResolveProxyMsgHelper(IPC::Listener* listener)
+  // Incoming ProxyLookupClientPtrs are written to |proxy_lookup_client|.
+  explicit TestResolveProxyMsgHelper(
+      IPC::Listener* listener,
+      network::mojom::ProxyLookupClientPtr* proxy_lookup_client)
       : ResolveProxyMsgHelper(0 /* renderer_process_host_id */),
-        listener_(listener) {}
+        listener_(listener),
+        proxy_lookup_client_(proxy_lookup_client) {}
 
   bool Send(IPC::Message* message) override {
+    // Shouldn't be calling Send() if there are no live references to |this|.
+    EXPECT_TRUE(HasAtLeastOneRef());
+
     listener_->OnMessageReceived(*message);
     delete message;
     return true;
@@ -35,19 +42,14 @@ class TestResolveProxyMsgHelper : public ResolveProxyMsgHelper {
       const GURL& url,
       network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {
     // Only one request should be send at a time.
-    EXPECT_FALSE(proxy_lookup_client_);
+    EXPECT_FALSE(*proxy_lookup_client_);
 
     if (fail_to_send_request_)
       return false;
 
     pending_url_ = url;
-    proxy_lookup_client_ = std::move(proxy_lookup_client);
+    *proxy_lookup_client_ = std::move(proxy_lookup_client);
     return true;
-  }
-
-  network::mojom::ProxyLookupClientPtr ClaimProxyLookupClient() {
-    EXPECT_TRUE(proxy_lookup_client_);
-    return std::move(proxy_lookup_client_);
   }
 
   const GURL& pending_url() const { return pending_url_; }
@@ -63,7 +65,7 @@ class TestResolveProxyMsgHelper : public ResolveProxyMsgHelper {
 
   bool fail_to_send_request_ = false;
 
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client_;
+  network::mojom::ProxyLookupClientPtr* proxy_lookup_client_;
   GURL pending_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResolveProxyMsgHelper);
@@ -82,7 +84,9 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
   };
 
   ResolveProxyMsgHelperTest()
-      : helper_(base::MakeRefCounted<TestResolveProxyMsgHelper>(this)) {
+      : helper_(base::MakeRefCounted<TestResolveProxyMsgHelper>(
+            this,
+            &proxy_lookup_client_)) {
     test_sink_.AddFilter(this);
   }
 
@@ -115,6 +119,8 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
   scoped_refptr<TestResolveProxyMsgHelper> helper_;
   std::unique_ptr<PendingResult> pending_result_;
 
+  network::mojom::ProxyLookupClientPtr proxy_lookup_client_;
+
   IPC::TestSink test_sink_;
 };
 
@@ -136,12 +142,11 @@ TEST_F(ResolveProxyMsgHelperTest, Sequential) {
 
   // There should be a pending proxy lookup request. Respond to it.
   EXPECT_EQ(url1, helper_->pending_url());
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client =
-      helper_->ClaimProxyLookupClient();
-  ASSERT_TRUE(proxy_lookup_client);
+  ASSERT_TRUE(proxy_lookup_client_);
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("result1:80");
-  proxy_lookup_client->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -152,10 +157,10 @@ TEST_F(ResolveProxyMsgHelperTest, Sequential) {
   helper_->OnResolveProxy(url2, msg2);
 
   EXPECT_EQ(url2, helper_->pending_url());
-  proxy_lookup_client = helper_->ClaimProxyLookupClient();
-  ASSERT_TRUE(proxy_lookup_client);
+  ASSERT_TRUE(proxy_lookup_client_);
   proxy_info.UseNamedProxy("result2:80");
-  proxy_lookup_client->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -166,10 +171,9 @@ TEST_F(ResolveProxyMsgHelperTest, Sequential) {
   helper_->OnResolveProxy(url3, msg3);
 
   EXPECT_EQ(url3, helper_->pending_url());
-  proxy_lookup_client = helper_->ClaimProxyLookupClient();
-  ASSERT_TRUE(proxy_lookup_client);
+  ASSERT_TRUE(proxy_lookup_client_);
   proxy_info.UseNamedProxy("result3:80");
-  proxy_lookup_client->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -196,12 +200,11 @@ TEST_F(ResolveProxyMsgHelperTest, QueueRequests) {
 
   // Complete first request.
   EXPECT_EQ(url1, helper_->pending_url());
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client =
-      helper_->ClaimProxyLookupClient();
-  ASSERT_TRUE(proxy_lookup_client);
+  ASSERT_TRUE(proxy_lookup_client_);
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("result1:80");
-  proxy_lookup_client->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -211,10 +214,10 @@ TEST_F(ResolveProxyMsgHelperTest, QueueRequests) {
 
   // Complete second request.
   EXPECT_EQ(url2, helper_->pending_url());
-  proxy_lookup_client = helper_->ClaimProxyLookupClient();
-  ASSERT_TRUE(proxy_lookup_client);
+  ASSERT_TRUE(proxy_lookup_client_);
   proxy_info.UseNamedProxy("result2:80");
-  proxy_lookup_client->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -224,10 +227,9 @@ TEST_F(ResolveProxyMsgHelperTest, QueueRequests) {
 
   // Complete third request.
   EXPECT_EQ(url3, helper_->pending_url());
-  proxy_lookup_client = helper_->ClaimProxyLookupClient();
-  ASSERT_TRUE(proxy_lookup_client);
+  ASSERT_TRUE(proxy_lookup_client_);
   proxy_info.UseNamedProxy("result3:80");
-  proxy_lookup_client->OnProxyLookupComplete(proxy_info);
+  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -236,7 +238,7 @@ TEST_F(ResolveProxyMsgHelperTest, QueueRequests) {
   clear_pending_result();
 }
 
-// Delete the helper while a request is in progress, and others are pending.
+// Delete the helper while a request is in progress and others are pending.
 TEST_F(ResolveProxyMsgHelperTest, CancelPendingRequests) {
   GURL url1("http://www.google1.com/");
   GURL url2("http://www.google2.com/");
@@ -256,19 +258,27 @@ TEST_F(ResolveProxyMsgHelperTest, CancelPendingRequests) {
 
   // Check the first request is pending.
   EXPECT_EQ(url1, helper_->pending_url());
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client =
-      helper_->ClaimProxyLookupClient();
-  base::RunLoop run_loop;
-  proxy_lookup_client.set_connection_error_handler(run_loop.QuitClosure());
+  ASSERT_TRUE(proxy_lookup_client_);
 
-  // Delete the underlying ResolveProxyMsgHelper -- this should cancel all
-  // the requests which are outstanding.
+  // Release a reference. The |helper_| will not be deleted, since there's a
+  // pending resolution.
   helper_ = nullptr;
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(proxy_lookup_client_.is_bound());
+  EXPECT_FALSE(proxy_lookup_client_.encountered_error());
 
-  // The pending request sent to the proxy resolver should have been cancelled.
-  run_loop.Run();
+  // Send Mojo message on the pipe.
+  net::ProxyInfo proxy_info;
+  proxy_info.UseNamedProxy("result1:80");
+  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
 
-  EXPECT_TRUE(pending_result() == nullptr);
+  // Spinning the message loop results in the helper being destroyed and closing
+  // the pipe.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(!proxy_lookup_client_.is_bound() ||
+              proxy_lookup_client_.encountered_error());
+  // The result should not have been sent.
+  EXPECT_FALSE(pending_result());
 
   // It should also be the case that msg1, msg2, msg3 were deleted by the
   // cancellation. (Else will show up as a leak).
@@ -285,10 +295,8 @@ TEST_F(ResolveProxyMsgHelperTest, RequestFails) {
 
   // There should be a pending proxy lookup request. Respond to it.
   EXPECT_EQ(url, helper_->pending_url());
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client =
-      helper_->ClaimProxyLookupClient();
-  ASSERT_TRUE(proxy_lookup_client);
-  proxy_lookup_client->OnProxyLookupComplete(base::nullopt);
+  ASSERT_TRUE(proxy_lookup_client_);
+  proxy_lookup_client_->OnProxyLookupComplete(base::nullopt);
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -309,10 +317,8 @@ TEST_F(ResolveProxyMsgHelperTest, PipeClosed) {
   // There should be a pending proxy lookup request. Respond to it by closing
   // the pipe.
   EXPECT_EQ(url, helper_->pending_url());
-  network::mojom::ProxyLookupClientPtr proxy_lookup_client =
-      helper_->ClaimProxyLookupClient();
-  ASSERT_TRUE(proxy_lookup_client);
-  proxy_lookup_client.reset();
+  ASSERT_TRUE(proxy_lookup_client_);
+  proxy_lookup_client_.reset();
   base::RunLoop().RunUntilIdle();
 
   // Check result.
@@ -338,6 +344,42 @@ TEST_F(ResolveProxyMsgHelperTest, FailToSendRequest) {
   EXPECT_EQ(false, pending_result()->result);
   EXPECT_EQ("", pending_result()->proxy_list);
   clear_pending_result();
+}
+
+// Make sure if mojo callback is invoked after last externally owned reference
+// is released, there is no crash.
+// Regression test for https://crbug.com/870675
+TEST_F(ResolveProxyMsgHelperTest, Lifetime) {
+  GURL url("http://www.google1.com/");
+
+  // Messages are deleted by the sink.
+  IPC::Message* msg = GenerateReply();
+
+  helper_->OnResolveProxy(url, msg);
+
+  // There should be a pending proxy lookup request. Respond to it.
+  EXPECT_EQ(url, helper_->pending_url());
+  ASSERT_TRUE(proxy_lookup_client_);
+
+  // Release the |helper_| pointer. The object should keep a reference to
+  // itself, so should not be deleted.
+  helper_ = nullptr;
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(proxy_lookup_client_.is_bound());
+  EXPECT_FALSE(proxy_lookup_client_.encountered_error());
+
+  // Send Mojo message on the pipe.
+  net::ProxyInfo proxy_info;
+  proxy_info.UseNamedProxy("result1:80");
+  proxy_lookup_client_->OnProxyLookupComplete(proxy_info);
+
+  // Spinning the message loop results in the helper being destroyed and closing
+  // the pipe.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(!proxy_lookup_client_.is_bound() ||
+              proxy_lookup_client_.encountered_error());
+  // The result should not have been sent.
+  EXPECT_FALSE(pending_result());
 }
 
 }  // namespace content

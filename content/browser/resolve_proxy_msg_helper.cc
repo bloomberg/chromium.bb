@@ -21,11 +21,6 @@ ResolveProxyMsgHelper::ResolveProxyMsgHelper(int render_process_host_id)
       render_process_host_id_(render_process_host_id),
       binding_(this) {}
 
-void ResolveProxyMsgHelper::OnDestruct() const {
-  // Have to delete on the UI thread, since Mojo objects aren't threadsafe.
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
-}
-
 void ResolveProxyMsgHelper::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
@@ -56,7 +51,10 @@ void ResolveProxyMsgHelper::OnResolveProxy(const GURL& url,
   }
 }
 
-ResolveProxyMsgHelper::~ResolveProxyMsgHelper() = default;
+ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
+  DCHECK(!owned_self_);
+  DCHECK(!binding_.is_bound());
+}
 
 void ResolveProxyMsgHelper::StartPendingRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -69,6 +67,7 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   binding_.set_connection_error_handler(
       base::BindOnce(&ResolveProxyMsgHelper::OnProxyLookupComplete,
                      base::Unretained(this), base::nullopt));
+  owned_self_ = this;
   if (!SendRequestToNetworkService(pending_requests_.front().url,
                                    std::move(proxy_lookup_client))) {
     OnProxyLookupComplete(base::nullopt);
@@ -97,6 +96,15 @@ void ResolveProxyMsgHelper::OnProxyLookupComplete(
   DCHECK(!pending_requests_.empty());
 
   binding_.Close();
+
+  // If all references except |owned_self_| have been released, just release
+  // the last reference, without doing anything.
+  if (HasOneRef()) {
+    scoped_refptr<ResolveProxyMsgHelper> self = std::move(owned_self_);
+    return;
+  }
+
+  owned_self_ = nullptr;
 
   // Clear the current (completed) request.
   PendingRequest completed_req = std::move(pending_requests_.front());
