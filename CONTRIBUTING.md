@@ -55,12 +55,16 @@ Tracking patches and following up
 ---------------------------------
 
 [Wayland Patchwork](http://patchwork.freedesktop.org/project/wayland/list/) is
-used for tracking patches to Wayland and Weston. Xwayland patches are tracked
-with the [Xorg project](https://patchwork.freedesktop.org/project/Xorg/list/)
-instead. Libinput patches, even though they use the same mailing list as
+used for tracking patches to Wayland. Xwayland patches are tracked with the
+[Xorg project](https://patchwork.freedesktop.org/project/Xorg/list/)
+instead. Weston uses
+[GitLab merge requests](https://gitlab.freedesktop.org/wayland/weston/merge_requests)
+for code review, and does not use mailing list review at all.
+
+Libinput patches, even though they use the same mailing list as
 Wayland, are not tracked in the Wayland Patchwork.
 
-The following applies only to Wayland and Weston.
+The following applies only to Wayland.
 
 If a patch is not found in Patchwork, there is a high possibility for it to be
 forgotten. Patches attached to bug reports or not arriving to the mailing list
@@ -93,8 +97,8 @@ The following patch states are found in Patchwork:
     Request for comments, not meant to be merged as is.
 
 - **Not applicable**:
-    The email was not actually a patch, or the patch is not for Wayland or
-    Weston. Libinput patches are usually automatically ignored by Wayland
+    The email was not actually a patch, or the patch is not for Wayland.
+    Libinput patches are usually automatically ignored by Wayland
     Patchwork, but if they get through, they will be marked as Not
     applicable.
 
@@ -121,7 +125,7 @@ shown.
 
 There is also a command line interface to Patchwork called `pwclient`, see
 http://patchwork.freedesktop.org/project/wayland/
-for links where to get it and the sample `.pwclientrc` for Wayland/Weston.
+for links where to get it and the sample `.pwclientrc` for Wayland.
 
 
 Coding style
