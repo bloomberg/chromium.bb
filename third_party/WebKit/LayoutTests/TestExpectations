@@ -4511,7 +4511,7 @@ crbug.com/840881 virtual/service-worker-servicification/external/wpt/service-wor
 crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Pass Timeout ]
 
 # Sheriff 2018-04-13
-crbug.com/832842 [ Win7 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure ]
+crbug.com/832842 [ Win7 Linux ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure ]
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833655 [ Linux ] virtual/new-remote-playback-pipeline/media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833655 [ Linux ] virtual/video-surface-layer/media/controls/closed-captions-dynamic-update.html [ Skip ]
