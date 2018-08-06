@@ -43587,8 +43587,8 @@ Called by update_net_trust_anchors.py.-->
 <enum name="SigninRefreshTokenRevocationRequestProgress">
   <int value="0" label="Request Created"/>
   <int value="1" label="Request Started"/>
-  <int value="2" label="Request Succeeded"/>
-  <int value="3" label="Request Failed"/>
+  <int value="2" label="Request Failed"/>
+  <int value="3" label="Request Succeeded"/>
 </enum>
 
 <enum name="SigninRequestHeaderOperation">
