@@ -22,13 +22,6 @@
 
 namespace resource_coordinator {
 
-namespace {
-
-constexpr base::TimeDelta kDefaultMeasurementInterval =
-    base::TimeDelta::FromMinutes(10);
-
-}  // namespace
-
 constexpr base::TimeDelta RenderProcessProbeImpl::kUninitializedCPUTime;
 
 // static
@@ -42,38 +35,16 @@ bool RenderProcessProbe::IsEnabled() {
   // Check that service_manager is active, GRC is enabled,
   // and render process CPU profiling is enabled.
   return content::ServiceManagerConnection::GetForProcess() != nullptr &&
-         resource_coordinator::IsResourceCoordinatorEnabled() &&
-         base::FeatureList::IsEnabled(features::kGRCRenderProcessCPUProfiling);
+         resource_coordinator::IsResourceCoordinatorEnabled();
 }
 
 RenderProcessProbeImpl::RenderProcessInfo::RenderProcessInfo() = default;
 
 RenderProcessProbeImpl::RenderProcessInfo::~RenderProcessInfo() = default;
 
-RenderProcessProbeImpl::RenderProcessProbeImpl()
-    : interval_(kDefaultMeasurementInterval) {
-  UpdateWithFieldTrialParams();
-}
+RenderProcessProbeImpl::RenderProcessProbeImpl() {}
 
 RenderProcessProbeImpl::~RenderProcessProbeImpl() = default;
-
-void RenderProcessProbeImpl::StartGatherCycle() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(siggi): It irks me to have this bit of policy embedded here.
-  //     I feel this should be moved to the caller...
-  if (!RenderProcessProbeImpl::IsEnabled()) {
-    return;
-  }
-
-  DCHECK(!is_gather_cycle_started_);
-
-  is_gather_cycle_started_ = true;
-  if (!is_gathering_) {
-    timer_.Start(
-        FROM_HERE, base::TimeDelta(), this,
-        &RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread);
-  }
-}
 
 void RenderProcessProbeImpl::StartSingleGather() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -81,10 +52,7 @@ void RenderProcessProbeImpl::StartSingleGather() {
   if (is_gathering_)
     return;
 
-  // If the gather cycle is started this measurement will go through early,
-  // and the interval between measurements will be shortened.
-  timer_.Start(FROM_HERE, base::TimeDelta(), this,
-               &RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread);
+  RegisterAliveRenderProcessesOnUIThread();
 }
 
 void RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread() {
@@ -230,28 +198,19 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
   UMA_HISTOGRAM_TIMES("ResourceCoordinator.Measurement.Duration",
                       batch->batch_ended_time - batch->batch_started_time);
 
-  // TODO(siggi): UMA record measurement time.
-  bool should_restart = DispatchMetrics(std::move(batch));
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&RenderProcessProbeImpl::FinishCollectionOnUIThread,
-                     base::Unretained(this), should_restart));
+                     base::Unretained(this), std::move(batch)));
 }
 
-void RenderProcessProbeImpl::FinishCollectionOnUIThread(bool restart_cycle) {
+void RenderProcessProbeImpl::FinishCollectionOnUIThread(
+    mojom::ProcessResourceMeasurementBatchPtr batch) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(is_gathering_);
   is_gathering_ = false;
 
-  if (restart_cycle && is_gather_cycle_started_) {
-    timer_.Start(
-        FROM_HERE, interval_, this,
-        &RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread);
-  } else {
-    is_gather_cycle_started_ = false;
-  }
-
-  AfterFinishCollectionOnUIThread();
+  DispatchMetricsOnUIThread(std::move(batch));
 }
 
 void RenderProcessProbeImpl::RegisterRenderProcesses() {
@@ -302,14 +261,6 @@ base::ProcessId RenderProcessProbeImpl::GetProcessId(
   return info.process.Pid();
 }
 
-void RenderProcessProbeImpl::UpdateWithFieldTrialParams() {
-  int64_t interval_ms = GetGRCRenderProcessCPUProfilingIntervalInMs();
-
-  if (interval_ms > 0) {
-    interval_ = base::TimeDelta::FromMilliseconds(interval_ms);
-  }
-}
-
 SystemResourceCoordinator*
 RenderProcessProbeImpl::EnsureSystemResourceCoordinator() {
   if (!system_resource_coordinator_) {
@@ -324,16 +275,14 @@ RenderProcessProbeImpl::EnsureSystemResourceCoordinator() {
   return system_resource_coordinator_.get();
 }
 
-bool RenderProcessProbeImpl::DispatchMetrics(
+void RenderProcessProbeImpl::DispatchMetricsOnUIThread(
     mojom::ProcessResourceMeasurementBatchPtr batch) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SystemResourceCoordinator* system_resource_coordinator =
       EnsureSystemResourceCoordinator();
 
   if (system_resource_coordinator && !batch->measurements.empty())
     system_resource_coordinator->DistributeMeasurementBatch(std::move(batch));
-
-  return true;
 }
 
 }  // namespace resource_coordinator

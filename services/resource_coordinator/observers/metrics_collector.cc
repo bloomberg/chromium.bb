@@ -16,8 +16,6 @@
 
 namespace resource_coordinator {
 
-const size_t kDefaultMaxCPUUsageMeasurements = 30u;
-
 // Audio is considered to have started playing if the page has never
 // previously played audio, or has been silent for at least one minute.
 const base::TimeDelta kMaxAudioSlientTimeout = base::TimeDelta::FromMinutes(1);
@@ -54,8 +52,7 @@ size_t GetNumCoresidentTabs(const PageCoordinationUnitImpl* page_cu) {
   return coresident_tabs.size() - 1;
 }
 
-MetricsCollector::MetricsCollector()
-    : max_ukm_cpu_usage_measurements_(kDefaultMaxCPUUsageMeasurements) {
+MetricsCollector::MetricsCollector() {
   UpdateWithFieldTrialParams();
 }
 
@@ -135,15 +132,7 @@ void MetricsCollector::OnProcessPropertyChanged(
     const ProcessCoordinationUnitImpl* process_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
-  if (property_type == mojom::PropertyType::kCPUUsage) {
-    for (auto* page_cu : process_cu->GetAssociatedPageCoordinationUnits()) {
-      if (IsCollectingCPUUsageForUkm(page_cu->id())) {
-        RecordCPUUsageForUkm(page_cu->id(), page_cu->GetCPUUsage(),
-                             GetNumCoresidentTabs(page_cu));
-      }
-    }
-  } else if (property_type ==
-             mojom::PropertyType::kExpectedTaskQueueingDuration) {
+  if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration) {
     for (auto* page_cu : process_cu->GetAssociatedPageCoordinationUnits()) {
       if (IsCollectingExpectedQueueingTimeForUkm(page_cu->id())) {
         int64_t expected_queueing_time;
@@ -213,31 +202,11 @@ bool MetricsCollector::ShouldReportMetrics(
   return page_cu->TimeSinceLastNavigation() > kMetricsReportDelayTimeout;
 }
 
-bool MetricsCollector::IsCollectingCPUUsageForUkm(
-    const CoordinationUnitID& page_cu_id) {
-  const UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
-
-  return state.ukm_source_id != ukm::kInvalidSourceId &&
-         state.num_cpu_usage_measurements < max_ukm_cpu_usage_measurements_;
-}
-
 bool MetricsCollector::IsCollectingExpectedQueueingTimeForUkm(
     const CoordinationUnitID& page_cu_id) {
   UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
   return state.ukm_source_id != ukm::kInvalidSourceId &&
          ++state.num_unreported_eqt_measurements >= frequency_ukm_eqt_reported_;
-}
-
-void MetricsCollector::RecordCPUUsageForUkm(
-    const CoordinationUnitID& page_cu_id,
-    double cpu_usage,
-    size_t num_coresident_tabs) {
-  UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
-
-  ukm::builders::CPUUsageMeasurement(state.ukm_source_id)
-      .SetCPUUsage(cpu_usage)
-      .SetNumberOfCoresidentTabs(num_coresident_tabs)
-      .Record(coordination_unit_graph().ukm_recorder());
 }
 
 void MetricsCollector::RecordExpectedQueueingTimeForUkm(
@@ -257,19 +226,10 @@ void MetricsCollector::UpdateUkmSourceIdForPage(
 
   state.ukm_source_id = ukm_source_id;
   // Updating the |ukm_source_id| restarts usage collection.
-  state.num_cpu_usage_measurements = 0u;
   state.num_unreported_eqt_measurements = 0u;
 }
 
 void MetricsCollector::UpdateWithFieldTrialParams() {
-  int64_t interval_ms = GetGRCRenderProcessCPUProfilingIntervalInMs();
-  int64_t duration_ms = GetGRCRenderProcessCPUProfilingDurationInMs();
-
-  if (interval_ms > 0 && duration_ms > 0 && duration_ms >= interval_ms) {
-    max_ukm_cpu_usage_measurements_ =
-        static_cast<size_t>(duration_ms / interval_ms);
-  }
-
   frequency_ukm_eqt_reported_ = base::GetFieldTrialParamByFeatureAsInt(
       ukm::kUkmFeature, "FrequencyUKMExpectedQueueingTime",
       kDefaultFrequencyUkmEQTReported);

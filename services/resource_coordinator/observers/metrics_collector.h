@@ -91,18 +91,13 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   };
 
   struct UkmCollectionState {
-    size_t num_cpu_usage_measurements = 0u;
     int num_unreported_eqt_measurements = 0u;
     ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
   };
 
   bool ShouldReportMetrics(const PageCoordinationUnitImpl* page_cu);
-  bool IsCollectingCPUUsageForUkm(const CoordinationUnitID& page_cu_id);
   bool IsCollectingExpectedQueueingTimeForUkm(
       const CoordinationUnitID& page_cu_id);
-  void RecordCPUUsageForUkm(const CoordinationUnitID& page_cu_id,
-                            double cpu_usage,
-                            size_t num_coresident_tabs);
   void RecordExpectedQueueingTimeForUkm(const CoordinationUnitID& page_cu_id,
                                         int64_t expected_queueing_time);
   void UpdateUkmSourceIdForPage(const CoordinationUnitID& page_cu_id,
@@ -114,7 +109,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   // already reported to avoid reporting multiple metrics.
   std::map<CoordinationUnitID, MetricsReportRecord> metrics_report_record_map_;
   std::map<CoordinationUnitID, UkmCollectionState> ukm_collection_state_map_;
-  size_t max_ukm_cpu_usage_measurements_ = 0u;
   // The number of reports to wait before reporting ExpectedQueueingTime. For
   // example, if |frequency_ukm_eqt_reported_| is 2, then the first value is not
   // reported, the second one is, the third one isn't, etc.
