@@ -38,6 +38,7 @@ using ukm::builders::Memory_Experimental;
 namespace {
 
 const char kEffectiveSize[] = "effective_size";
+const char kSize[] = "size";
 const char kAllocatedObjectsSize[] = "allocated_objects_size";
 const bool kLargeMetric = true;
 
@@ -117,18 +118,18 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      kLargeMetric, kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
      &Memory_Experimental::SetPartitionAlloc_AllocatedObjects},
     {"partition_alloc/partitions/array_buffer",
-     "PartitionAlloc.Partitions.ArrayBuffer", kLargeMetric, kEffectiveSize,
+     "PartitionAlloc.Partitions.ArrayBuffer", kLargeMetric, kSize,
      EmitTo::kUkmAndUmaAsSize,
      &Memory_Experimental::SetPartitionAlloc_Partitions_ArrayBuffer},
     {"partition_alloc/partitions/buffer", "PartitionAlloc.Partitions.Buffer",
-     kLargeMetric, kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     kLargeMetric, kSize, EmitTo::kUkmAndUmaAsSize,
      &Memory_Experimental::SetPartitionAlloc_Partitions_Buffer},
     {"partition_alloc/partitions/fast_malloc",
-     "PartitionAlloc.Partitions.FastMalloc", kLargeMetric, kEffectiveSize,
+     "PartitionAlloc.Partitions.FastMalloc", kLargeMetric, kSize,
      EmitTo::kUkmAndUmaAsSize,
      &Memory_Experimental::SetPartitionAlloc_Partitions_FastMalloc},
     {"partition_alloc/partitions/layout", "PartitionAlloc.Partitions.Layout",
-     kLargeMetric, kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     kLargeMetric, kSize, EmitTo::kUkmAndUmaAsSize,
      &Memory_Experimental::SetPartitionAlloc_Partitions_Layout},
     {"site_storage", "SiteStorage", kLargeMetric, kEffectiveSize,
      EmitTo::kUkmAndUmaAsSize, &Memory_Experimental::SetSiteStorage},

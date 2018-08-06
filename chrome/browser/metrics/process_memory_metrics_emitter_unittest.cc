@@ -189,7 +189,7 @@ void PopulateRendererMetrics(
   SetAllocatorDumpMetric(pmd, "blink_objects/Node", "object_count",
                          metrics_mb_or_count["NumberOfNodes"]);
   SetAllocatorDumpMetric(
-      pmd, "partition_alloc/partitions/array_buffer", "effective_size",
+      pmd, "partition_alloc/partitions/array_buffer", "size",
       metrics_mb_or_count["PartitionAlloc.Partitions.ArrayBuffer"] * 1024 *
           1024);
 
