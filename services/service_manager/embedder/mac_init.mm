@@ -19,6 +19,12 @@ void InitializeMac() {
     // application:openFile:], because they are handled directly. @"NO" looks
     // like a mistake, but the value really is supposed to be a string.
     @"NSTreatUnknownArgumentsAsOpen" : @"NO",
+
+    // Don't allow the browser process to enter AppNap. Doing so will result in
+    // large number of queued IPCs from renderers, potentially so many that
+    // Chrome is unusable for a long period after returning from sleep.
+    // https://crbug.com/871235.
+    @"NSAppSleepDisabled" : @YES,
   }];
 }
 
