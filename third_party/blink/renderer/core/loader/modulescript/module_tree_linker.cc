@@ -188,21 +188,11 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   visited_set_.insert(url);
 
   // Step 2. Perform the internal module script graph fetching procedure given
-  // ... with the top-level module fetch flag set. ...
-  // TODO(domfarolino): We should refrain from storing referrer as a generated
-  // blink::Referrer for a couple reasons (https://crbug.com/863769):
-  // 1.) It is awkward that now both ModuleScriptFetchRequest::Referrer and
-  // ScriptFetchOptions have a referrer_policy member from this point forward.
-  // 2.) We can instead just set the referrer string here to
-  // Referrer::ClientReferrerString, communicate this to the ResourceRequest in
-  // ModuleScriptLoader::FetchInternal, and generate the final referrer in
-  // BaseFetchContext::AddAdditionalRequestHeaders.
-  ModuleScriptFetchRequest request(
-      url, destination_, options,
-      SecurityPolicy::GenerateReferrer(
-          options.GetReferrerPolicy(), url,
-          fetch_client_settings_object_->GetOutgoingReferrer()),
-      TextPosition::MinimumPosition());
+  // url, settings object, destination, options, settings object, visited set,
+  // "client", and with the top-level module fetch flag set.
+  ModuleScriptFetchRequest request(url, destination_, options,
+                                   Referrer::ClientReferrerString(),
+                                   TextPosition::MinimumPosition());
 
   InitiateInternalModuleScriptGraphFetching(
       request, ModuleGraphLevel::kTopLevelModuleFetch);
@@ -394,15 +384,9 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
     // procedure given url, fetch client settings object, destination, options,
     // module script's settings object, visited set, module script's base URL,
     // and with the top-level module fetch flag unset. ...
-    // TODO(domfarolino): We should set ModuleScriptFetchRequest's referrer
-    // string without generating a full blink::Referrer. The final generated
-    // referrer string should be generated down in BaseFetchContext.
-    // See https://crbug.com/863769.
-    ModuleScriptFetchRequest request(
-        urls[i], destination_, options,
-        SecurityPolicy::GenerateReferrer(options.GetReferrerPolicy(), urls[i],
-                                         module_script->BaseURL().GetString()),
-        positions[i]);
+    ModuleScriptFetchRequest request(urls[i], destination_, options,
+                                     module_script->BaseURL().GetString(),
+                                     positions[i]);
     InitiateInternalModuleScriptGraphFetching(
         request, ModuleGraphLevel::kDependentModuleFetch);
   }

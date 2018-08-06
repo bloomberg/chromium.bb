@@ -128,7 +128,7 @@ void ModuleScriptLoader::FetchInternal(
 
   if (level == ModuleGraphLevel::kDependentModuleFetch) {
     options.initiator_info.imported_module_referrer =
-        module_request.GetReferrer().referrer;
+        module_request.ReferrerString();
     options.initiator_info.position = module_request.GetReferrerPosition();
   }
 
@@ -145,10 +145,8 @@ void ModuleScriptLoader::FetchInternal(
   // cryptographic nonce, ..." [spec text]
   fetch_params.SetContentSecurityPolicyNonce(options_.Nonce());
 
-  // [SMSR] "... its referrer policy to options's referrer policy.
-  // TODO(domfarolino): Implement this so we can set ResourceRequest's referrer
-  // string and referrer policy separately, and have the final referrer string
-  // generated in BaseFetchContext. See https://crbug.com/863769.
+  // [SMSR] "... its referrer policy to options's referrer policy." [spec text]
+  // Note: For now this is done below with SetHTTPReferrer()
 
   // Step 5. "... mode is "cors", ..."
   // [SMSR] "... and its credentials mode to options's credentials mode."
@@ -158,10 +156,17 @@ void ModuleScriptLoader::FetchInternal(
       options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]
-  // TODO(domfarolino): Use ResourceRequest::SetReferrerString here instead
-  // of SetHTTPReferrer. See https://crbug.com/863769.
+  // Note: For now this is done below with SetHTTPReferrer()
+  String referrer_string = module_request.ReferrerString();
+  if (referrer_string == Referrer::ClientReferrerString())
+    referrer_string = fetch_client_settings_object->GetOutgoingReferrer();
+
+  // TODO(domfarolino): Stop storing ResourceRequest's referrer as a
+  // blink::Referrer (https://crbug.com/850813).
   fetch_params.MutableResourceRequest().SetHTTPReferrer(
-      module_request.GetReferrer());
+      SecurityPolicy::GenerateReferrer(
+          module_request.Options().GetReferrerPolicy(),
+          fetch_params.GetResourceRequest().Url(), referrer_string));
 
   // Step 5. "... and client is fetch client settings object." [spec text]
   // -> set by ResourceFetcher

@@ -544,8 +544,7 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
       ScriptFetchOptions(params.nonce, integrity_metadata, params.integrity,
                          kNotParserInserted, credentials_mode,
                          params.referrer_policy),
-      Referrer(Referrer::NoReferrer(), params.referrer_policy),
-      TextPosition::MinimumPosition());
+      Referrer::NoReferrer(), TextPosition::MinimumPosition());
 
   // Step 11. "Fetch a single module script given url, settings object,
   // destination, options, settings object, "client", and with the top-level
