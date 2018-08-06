@@ -178,7 +178,9 @@ def load_tests(loader, standard_tests, pattern):
     # Prefetch WPR archive needed by the stories set to avoid race condition
     # when feching them when tests are run in parallel.
     # See crbug.com/700426 for more details.
-    stories_set.wpr_archive_info.DownloadArchivesIfNeeded()
+    story_names = [s.name for s in stories_set if not s.is_local]
+    stories_set.wpr_archive_info.DownloadArchivesIfNeeded(
+        story_names=story_names)
 
     for story_to_smoke_test in stories_set.stories:
       suite.addTest(
