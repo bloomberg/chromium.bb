@@ -405,8 +405,10 @@ void SearchTabHelper::OnSetCustomBackgroundURLWithAttributions(
 void SearchTabHelper::FileSelected(const base::FilePath& path,
                                    int index,
                                    void* params) {
-  if (instant_service_)
+  if (instant_service_) {
+    profile()->set_last_selected_directory(path.DirName());
     instant_service_->SelectLocalBackgroundImage(path);
+  }
 
   select_file_dialog_ = nullptr;
 }
