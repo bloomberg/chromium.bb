@@ -1144,6 +1144,13 @@
       'Win7 FYI Debug (AMD)',
     ],
   },
+  'telemetry_unittests': {
+    'modifications': {
+      'Win10 Tests x64 (dbg)': {
+        'experiment_percentage': 100,  # crbug.com/870673
+      }
+    }
+  },
   'telemetry_perf_unittests': {
     'modifications': {
       # chromium.android
