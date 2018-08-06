@@ -284,7 +284,7 @@ body.alternate-logo #logo-non-white {
 }
 
 #fakebox-container {
-  margin: 0 auto 8px auto;
+  margin: 0 auto 0 auto;
   width: var(--content-width);
 }
 
