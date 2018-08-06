@@ -21,6 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -553,14 +554,7 @@ bool IsArcStatsReportingEnabled() {
 }
 
 bool IsArcDemoModeSetupFlow() {
-  chromeos::LoginDisplayHost* const host =
-      chromeos::LoginDisplayHost::default_host();
-  if (!host)
-    return false;
-
-  const chromeos::WizardController* const wizard_controller =
-      host->GetWizardController();
-  return wizard_controller && wizard_controller->is_in_demo_mode_setup_flow();
+  return chromeos::DemoSetupController::IsOobeDemoSetupFlowInProgress();
 }
 
 void UpdateArcFileSystemCompatibilityPrefIfNeeded(

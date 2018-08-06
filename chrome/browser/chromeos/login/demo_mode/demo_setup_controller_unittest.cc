@@ -4,8 +4,12 @@
 
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 
-#include "base/files/file_util.h"
+#include <memory>
+
+#include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -20,26 +24,27 @@
 using chromeos::test::DemoModeSetupResult;
 using chromeos::test::MockDemoModeOfflineEnrollmentHelperCreator;
 using chromeos::test::MockDemoModeOnlineEnrollmentHelperCreator;
+using chromeos::test::SetupDummyOfflinePolicyDir;
 using testing::_;
 
 namespace chromeos {
 
 namespace {
 
-class MockDemoSetupControllerDelegate : public DemoSetupController::Delegate {
+class DemoSetupControllerTestHelper {
  public:
-  MockDemoSetupControllerDelegate()
+  DemoSetupControllerTestHelper()
       : run_loop_(std::make_unique<base::RunLoop>()) {}
-  ~MockDemoSetupControllerDelegate() override = default;
+  virtual ~DemoSetupControllerTestHelper() = default;
 
-  void OnSetupError(bool fatal) override {
+  void OnSetupError(DemoSetupController::DemoSetupError error) {
     EXPECT_FALSE(succeeded_.has_value());
     succeeded_ = false;
-    fatal_ = fatal;
+    error_ = error;
     run_loop_->Quit();
   }
 
-  void OnSetupSuccess() override {
+  void OnSetupSuccess() {
     EXPECT_FALSE(succeeded_.has_value());
     succeeded_ = true;
     run_loop_->Quit();
@@ -54,7 +59,9 @@ class MockDemoSetupControllerDelegate : public DemoSetupController::Delegate {
   }
 
   // Returns true if it receives a fatal error.
-  bool IsErrorFatal() const { return fatal_; }
+  bool IsErrorFatal() const {
+    return error_ == DemoSetupController::DemoSetupError::kFatal;
+  }
 
   void Reset() {
     succeeded_.reset();
@@ -63,44 +70,12 @@ class MockDemoSetupControllerDelegate : public DemoSetupController::Delegate {
 
  private:
   base::Optional<bool> succeeded_;
-  bool fatal_ = false;
+  DemoSetupController::DemoSetupError error_ =
+      DemoSetupController::DemoSetupError::kRecoverable;
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDemoSetupControllerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DemoSetupControllerTestHelper);
 };
-
-bool SetupDummyOfflineDir(const std::string& account_id,
-                          base::ScopedTempDir* temp_dir) {
-  if (!temp_dir->CreateUniqueTempDir()) {
-    LOG(ERROR) << "Failed to create unique tempdir";
-    return false;
-  }
-
-  if (base::WriteFile(temp_dir->GetPath().AppendASCII("device_policy"), "",
-                      0) != 0) {
-    LOG(ERROR) << "Failed to create device_policy file";
-    return false;
-  }
-
-  // We use MockCloudPolicyStore for the device local account policy in the
-  // tests, thus actual policy content can be empty. account_id is specified
-  // since it is used by DemoSetupController to look up the store.
-  std::string policy_blob;
-  if (!account_id.empty()) {
-    enterprise_management::PolicyData policy_data;
-    policy_data.set_username(account_id);
-    enterprise_management::PolicyFetchResponse policy;
-    policy.set_policy_data(policy_data.SerializeAsString());
-    policy_blob = policy.SerializeAsString();
-  }
-  if (base::WriteFile(temp_dir->GetPath().AppendASCII("local_account_policy"),
-                      policy_blob.data(), policy_blob.size()) !=
-      static_cast<int>(policy_blob.size())) {
-    LOG(ERROR) << "Failed to create local_account_policy file";
-    return false;
-  }
-  return true;
-}
 
 }  // namespace
 
@@ -113,8 +88,8 @@ class DemoSetupControllerTest : public testing::Test {
     SystemSaltGetter::Initialize();
     DBusThreadManager::Initialize();
     DeviceSettingsService::Initialize();
-    delegate_ = std::make_unique<MockDemoSetupControllerDelegate>();
-    tested_controller_ = std::make_unique<DemoSetupController>(delegate_.get());
+    helper_ = std::make_unique<DemoSetupControllerTestHelper>();
+    tested_controller_ = std::make_unique<DemoSetupController>();
   }
 
   void TearDown() override {
@@ -123,7 +98,7 @@ class DemoSetupControllerTest : public testing::Test {
     DeviceSettingsService::Shutdown();
   }
 
-  std::unique_ptr<MockDemoSetupControllerDelegate> delegate_;
+  std::unique_ptr<DemoSetupControllerTestHelper> helper_;
   std::unique_ptr<DemoSetupController> tested_controller_;
 
  private:
@@ -134,7 +109,7 @@ class DemoSetupControllerTest : public testing::Test {
 
 TEST_F(DemoSetupControllerTest, OfflineSuccess) {
   base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(SetupDummyOfflineDir("test", &temp_dir));
+  ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOfflineEnrollmentHelperCreator<
@@ -145,8 +120,16 @@ TEST_F(DemoSetupControllerTest, OfflineSuccess) {
           &mock_store, &policy::MockCloudPolicyStore::NotifyStoreLoaded));
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
-  tested_controller_->EnrollOffline(temp_dir.GetPath());
-  EXPECT_TRUE(delegate_->WaitResult(true));
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(true));
 }
 
 TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyLoadFailure) {
@@ -158,15 +141,23 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyLoadFailure) {
   EXPECT_CALL(mock_store, Store(_)).Times(0);
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
-  tested_controller_->EnrollOffline(
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->SetOfflineDataDirForTest(
       base::FilePath(FILE_PATH_LITERAL("/no/such/path")));
-  EXPECT_TRUE(delegate_->WaitResult(false));
-  EXPECT_FALSE(delegate_->IsErrorFatal());
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_FALSE(helper_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
   base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(SetupDummyOfflineDir("test", &temp_dir));
+  ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOfflineEnrollmentHelperCreator<
@@ -177,27 +168,43 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
           &mock_store, &policy::MockCloudPolicyStore::NotifyStoreError));
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
-  tested_controller_->EnrollOffline(temp_dir.GetPath());
-  EXPECT_TRUE(delegate_->WaitResult(false));
-  EXPECT_TRUE(delegate_->IsErrorFatal());
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_TRUE(helper_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
   base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(SetupDummyOfflineDir("", &temp_dir));
+  ASSERT_TRUE(SetupDummyOfflinePolicyDir("", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOfflineEnrollmentHelperCreator<
           DemoModeSetupResult::SUCCESS>);
 
-  tested_controller_->EnrollOffline(temp_dir.GetPath());
-  EXPECT_TRUE(delegate_->WaitResult(false));
-  EXPECT_TRUE(delegate_->IsErrorFatal());
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_TRUE(helper_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, OfflineError) {
   base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(SetupDummyOfflineDir("test", &temp_dir));
+  ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
@@ -206,43 +213,79 @@ TEST_F(DemoSetupControllerTest, OfflineError) {
   EXPECT_CALL(mock_store, Store(_)).Times(0);
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
-  tested_controller_->EnrollOffline(temp_dir.GetPath());
-  EXPECT_TRUE(delegate_->WaitResult(false));
-  EXPECT_FALSE(delegate_->IsErrorFatal());
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_FALSE(helper_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, OnlineSuccess) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
 
-  tested_controller_->EnrollOnline();
-  EXPECT_TRUE(delegate_->WaitResult(true));
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOnline);
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(true));
 }
 
 TEST_F(DemoSetupControllerTest, OnlineError) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
 
-  tested_controller_->EnrollOnline();
-  EXPECT_TRUE(delegate_->WaitResult(false));
-  EXPECT_FALSE(delegate_->IsErrorFatal());
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOnline);
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_FALSE(helper_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, EnrollTwice) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
 
-  tested_controller_->EnrollOnline();
-  EXPECT_TRUE(delegate_->WaitResult(false));
-  EXPECT_FALSE(delegate_->IsErrorFatal());
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOnline);
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
 
-  delegate_->Reset();
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_FALSE(helper_->IsErrorFatal());
+
+  helper_->Reset();
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
 
-  tested_controller_->EnrollOnline();
-  EXPECT_TRUE(delegate_->WaitResult(true));
+  tested_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOnline);
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(true));
 }
 
 }  //  namespace chromeos

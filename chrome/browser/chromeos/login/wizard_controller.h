@@ -44,6 +44,7 @@ namespace login {
 class NetworkStateHelper;
 }  // namespace login
 
+class DemoSetupController;
 class ErrorScreen;
 struct Geoposition;
 class LoginDisplayHost;
@@ -106,7 +107,10 @@ class WizardController : public BaseScreenDelegate,
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
   //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES
+  //    chromeos::OobeScreen::SCREEN_OOBE_NETWORK
   //    chromeos::OobeScreen::SCREEN_OOBE_EULA
+  //    chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE
+  //    chromeos::OobeScreen::SCREEN_OOBE_UPDATE
   //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_SETUP
   void StartDemoModeSetup();
 
@@ -127,15 +131,18 @@ class WizardController : public BaseScreenDelegate,
   // reworked at hackaton.
   void EnableUserImageScreenReturnToPreviousHack();
 
+  // Returns current DemoSetupController if demo setup flow is in progress or
+  // nullptr otherwise.
+  DemoSetupController* demo_setup_controller() const {
+    return demo_setup_controller_.get();
+  }
+
   // Returns a pointer to the current screen or nullptr if there's no such
   // screen.
   BaseScreen* current_screen() const { return current_screen_; }
 
   // Returns true if the current wizard instance has reached the login screen.
   bool login_screen_started() const { return login_screen_started_; }
-
-  // Whether demo mode setup OOBE flow is currently in progress.
-  bool is_in_demo_mode_setup_flow() const { return is_in_demo_setup_flow_; }
 
   // Returns a given screen. Creates it lazily.
   BaseScreen* GetScreen(OobeScreen screen);
@@ -434,16 +441,6 @@ class WizardController : public BaseScreenDelegate,
 
   bool is_in_session_oobe_ = false;
 
-  // Whether the currently presented flow is Demo Mode setup.
-  bool is_in_demo_setup_flow_ = false;
-
-  // TODO(agawronska): Refactor |is_in_demo_setup_flow_| and
-  // |is_offline_demo_setup_| to DemoSetupController and use it here to
-  // determine demo setup configuration.
-  // Whether offline demo setup was chosen as a part of
-  // demo mode setup. Should be check together with |is_in_demo_setup_flow_|.
-  bool is_offline_demo_setup_ = false;
-
   // Indicates that once image selection screen finishes we should return to
   // a previous screen instead of proceeding with usual flow.
   bool user_image_screen_return_to_previous_hack_ = false;
@@ -479,6 +476,10 @@ class WizardController : public BaseScreenDelegate,
 
   // Helper for network realted operations.
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
+
+  // Controller of the demo mode setup. It has the lifetime of the single demo
+  // mode setup flow.
+  std::unique_ptr<DemoSetupController> demo_setup_controller_;
 
   // Maps screen names to last time of their shows.
   std::map<std::string, base::Time> screen_show_times_;

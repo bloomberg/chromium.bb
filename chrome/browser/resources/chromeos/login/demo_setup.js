@@ -13,40 +13,20 @@ Polymer({
   behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
-    /**
-     * Whether offline demo mode is enabled. If it is disabled offline setup
-     * option will not be shown in UI.
-     */
-    offlineDemoModeEnabled_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * Whether offline demo setup was selected. Available setup types: online
-     * and offline.
-     */
-    isOfflineSetup_: {
-      type: Boolean,
-      value: false,
-    },
-
     /** Ordered array of screen ids that are a part of demo setup flow. */
     screens_: {
       type: Array,
       readonly: true,
       value: function() {
-        return [
-          'demoSetupSettingsDialog', 'demoSetupProgressDialog',
-          'demoSetupErrorDialog'
-        ];
+        return ['demoSetupProgressDialog', 'demoSetupErrorDialog'];
       },
     },
   },
 
-  /** Resets demo setup flow to the initial screen. */
+  /** Resets demo setup flow to the initial screen and starts setup. */
   reset: function() {
-    this.showScreen_(this.screens_[0]);
+    this.showScreen_('demoSetupProgressDialog');
+    chrome.send('login.DemoSetupScreen.userActed', ['start-setup']);
   },
 
   /** Called after resources are updated. */
@@ -72,19 +52,6 @@ Polymer({
    */
   showScreenForTesting: function(id) {
     this.showScreen_(id);
-  },
-
-  /**
-   * Shows progress dialog and starts demo setup.
-   * @private
-   */
-  startSetup_: function() {
-    this.showScreen_('demoSetupProgressDialog');
-    if (this.isOfflineSetup_) {
-      chrome.send('login.DemoSetupScreen.userActed', ['offline-setup']);
-    } else {
-      chrome.send('login.DemoSetupScreen.userActed', ['online-setup']);
-    }
   },
 
   /**
@@ -114,21 +81,11 @@ Polymer({
   },
 
   /**
-   * Next button click handler.
-   * @private
-   */
-  onNextClicked_: function() {
-    const selected = this.$.setupGroup.selected;
-    this.isOfflineSetup_ = (selected == 'offlineSetup');
-    this.startSetup_();
-  },
-
-  /**
    * Retry button click handler.
    * @private
    */
   onRetryClicked_: function() {
-    this.startSetup_();
+    this.reset();
   },
 
   /**

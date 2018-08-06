@@ -10,26 +10,31 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
   return {
     EXTERNAL_API: ['onSetupFinished'],
 
+    /**
+     * Demo setup module.
+     * @private
+     */
+    demoSetupModule_: null,
+
+
     /** @override */
     decorate: function() {
-      var demoSetupScreen = $('demo-setup-content');
-      demoSetupScreen.offlineDemoModeEnabled_ =
-          loadTimeData.getValue('offlineDemoModeEnabled');
+      this.demoSetupModule_ = $('demo-setup-content');
     },
 
     /** Returns a control which should receive an initial focus. */
     get defaultControl() {
-      return $('demo-setup-content');
+      return this.demoSetupModule_;
     },
 
     /** Called after resources are updated. */
     updateLocalizedContent: function() {
-      $('demo-setup-content').updateLocalizedContent();
+      this.demoSetupModule_.updateLocalizedContent();
     },
 
     /** @override */
-    onBeforeShow: function(data) {
-      $('demo-setup-content').reset();
+    onBeforeShow: function() {
+      this.demoSetupModule_.reset();
     },
 
     /**
@@ -39,7 +44,7 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
      *  populated if setup finished with an error.
      */
     onSetupFinished: function(isSuccess, message) {
-      $('demo-setup-content').onSetupFinished(isSuccess, message);
+      this.demoSetupModule_.onSetupFinished(isSuccess, message);
     },
   };
 });

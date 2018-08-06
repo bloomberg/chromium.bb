@@ -1,10 +1,10 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 
-#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -25,6 +25,11 @@ constexpr char kDemoRequisition[] = "cros-demo-mode";
 constexpr char kOfflineDevicePolicyFileName[] = "device_policy";
 constexpr char kOfflineDeviceLocalAccountPolicyFileName[] =
     "local_account_policy";
+
+// The policy blob data for offline demo-mode is embedded into the filesystem.
+// TODO(mukai, agawronska): fix this when switching to dm-verity image.
+constexpr const base::FilePath::CharType kOfflineDemoModeDir[] =
+    FILE_PATH_LITERAL("/usr/share/chromeos-assets/demo_mode_resources/policy");
 
 bool CheckOfflinePolicyFilesExist(const base::FilePath& policy_dir,
                                   std::string* message) {
@@ -93,22 +98,48 @@ constexpr char DemoSetupController::kDemoModeDomain[];
 bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
   const WizardController* const wizard_controller =
       WizardController::default_controller();
-  return wizard_controller && wizard_controller->is_in_demo_mode_setup_flow();
+  return wizard_controller &&
+         wizard_controller->demo_setup_controller() != nullptr;
 }
 
-DemoSetupController::DemoSetupController(Delegate* delegate)
-    : delegate_(delegate), weak_ptr_factory_(this) {
-  DCHECK(delegate_);
-}
+DemoSetupController::DemoSetupController() : weak_ptr_factory_(this) {}
 
 DemoSetupController::~DemoSetupController() {
   if (device_local_account_policy_store_)
     device_local_account_policy_store_->RemoveObserver(this);
 }
 
-void DemoSetupController::EnrollOnline() {
+bool DemoSetupController::IsOfflineEnrollment() const {
+  return enrollment_type_ && *enrollment_type_ == EnrollmentType::kOffline;
+}
+
+void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
+                                 OnSetupError on_setup_error) {
+  DCHECK(enrollment_type_)
+      << "Enrollment type needs to be explicitly set before calling Enroll()";
   DCHECK_EQ(mode_, policy::EnrollmentConfig::MODE_NONE);
   DCHECK(!enrollment_helper_);
+
+  on_setup_success_ = std::move(on_setup_success);
+  on_setup_error_ = std::move(on_setup_error);
+
+  switch (*enrollment_type_) {
+    case EnrollmentType::kOnline:
+      EnrollOnline();
+      return;
+    case EnrollmentType::kOffline: {
+      const base::FilePath offline_data_dir =
+          policy_dir_for_tests_.empty() ? base::FilePath(kOfflineDemoModeDir)
+                                        : policy_dir_for_tests_;
+      EnrollOffline(offline_data_dir);
+      return;
+    }
+    default:
+      NOTREACHED() << "Unknown demo mode enrollment type";
+  }
+}
+
+void DemoSetupController::EnrollOnline() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   connector->GetDeviceCloudPolicyManager()->SetDeviceRequisition(
@@ -124,8 +155,6 @@ void DemoSetupController::EnrollOnline() {
 }
 
 void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
-  DCHECK_EQ(mode_, policy::EnrollmentConfig::MODE_NONE);
-  DCHECK(!enrollment_helper_);
   DCHECK(policy_dir_.empty());
   policy_dir_ = policy_dir;
   mode_ = policy::EnrollmentConfig::MODE_OFFLINE_DEMO;
@@ -145,7 +174,7 @@ void DemoSetupController::OnOfflinePolicyFilesExisted(std::string* message,
   DCHECK(!policy_dir_.empty());
 
   if (!ok) {
-    SetupFailed(*message, false);
+    SetupFailed(*message, DemoSetupError::kRecoverable);
     return;
   }
 
@@ -172,12 +201,13 @@ void DemoSetupController::OnEnrollmentError(policy::EnrollmentStatus status) {
           "validation_status: %d lock_status: %d",
           status.status(), status.client_status(), status.store_status(),
           status.validation_status(), status.lock_status()),
-      false);
+      DemoSetupError::kRecoverable);
 }
 
 void DemoSetupController::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
-  SetupFailed(base::StringPrintf("Other error: %d", error), false);
+  SetupFailed(base::StringPrintf("Other error: %d", error),
+              DemoSetupError::kRecoverable);
 }
 
 void DemoSetupController::OnDeviceEnrolled(
@@ -200,7 +230,8 @@ void DemoSetupController::OnDeviceEnrolled(
     return;
   }
   Reset();
-  delegate_->OnSetupSuccess();
+  if (!on_setup_success_.is_null())
+    std::move(on_setup_success_).Run();
 }
 
 void DemoSetupController::OnMultipleLicensesAvailable(
@@ -221,18 +252,25 @@ void DemoSetupController::SetDeviceLocalAccountPolicyStoreForTest(
   device_local_account_policy_store_ = store;
 }
 
+void DemoSetupController::SetOfflineDataDirForTest(
+    const base::FilePath& offline_dir) {
+  policy_dir_for_tests_ = offline_dir;
+}
+
 void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
     base::Optional<std::string> blob) {
   if (!blob.has_value()) {
     // This is very unlikely to happen since the file existence is already
     // checked as CheckOfflinePolicyFilesExist.
-    SetupFailed("Policy file for the device local account not found", true);
+    SetupFailed("Policy file for the device local account not found",
+                DemoSetupError::kFatal);
     return;
   }
 
   enterprise_management::PolicyFetchResponse policy;
   if (!policy.ParseFromString(blob.value())) {
-    SetupFailed("Error parsing local account policy blob.", true);
+    SetupFailed("Error parsing local account policy blob.",
+                DemoSetupError::kFatal);
     return;
   }
 
@@ -240,7 +278,8 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
   enterprise_management::PolicyData policy_data;
   if (policy.policy_data().empty() ||
       !policy_data.ParseFromString(policy.policy_data())) {
-    SetupFailed("Error parsing local account policy data.", true);
+    SetupFailed("Error parsing local account policy data.",
+                DemoSetupError::kFatal);
     return;
   }
 
@@ -252,17 +291,20 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
   }
 
   if (!device_local_account_policy_store_) {
-    SetupFailed("Can't find the store for the local account policy.", true);
+    SetupFailed("Can't find the store for the local account policy.",
+                DemoSetupError::kFatal);
     return;
   }
   device_local_account_policy_store_->AddObserver(this);
   device_local_account_policy_store_->Store(policy);
 }
 
-void DemoSetupController::SetupFailed(const std::string& message, bool fatal) {
+void DemoSetupController::SetupFailed(const std::string& message,
+                                      DemoSetupError error) {
   Reset();
-  LOG(ERROR) << message << " fatal=" << fatal;
-  delegate_->OnSetupError(fatal);
+  LOG(ERROR) << message << " fatal=" << (error == DemoSetupError::kFatal);
+  if (!on_setup_error_.is_null())
+    std::move(on_setup_error_).Run(error);
 }
 
 void DemoSetupController::Reset() {
@@ -281,12 +323,14 @@ void DemoSetupController::Reset() {
 void DemoSetupController::OnStoreLoaded(policy::CloudPolicyStore* store) {
   DCHECK_EQ(store, device_local_account_policy_store_);
   Reset();
-  delegate_->OnSetupSuccess();
+  if (!on_setup_success_.is_null())
+    std::move(on_setup_success_).Run();
 }
 
 void DemoSetupController::OnStoreError(policy::CloudPolicyStore* store) {
   DCHECK_EQ(store, device_local_account_policy_store_);
-  SetupFailed("Failed to store the local account policy", true);
+  SetupFailed("Failed to store the local account policy",
+              DemoSetupError::kFatal);
 }
 
 }  //  namespace chromeos
