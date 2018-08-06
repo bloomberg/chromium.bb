@@ -66,8 +66,13 @@ bool ImmersiveGestureHandlerClassic::CanDrag(ui::GestureEvent* event) {
   if (!base::FeatureList::IsEnabled(ash::features::kDragAppsInTabletMode))
     return false;
 
-  aura::Window* window(static_cast<aura::Window*>(event->target()));
-  // Only process the event if its target is the native window of
+  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
+      static_cast<aura::Window*>(event->target()));
+  if (!widget)
+    return false;
+
+  aura::Window* window = widget->GetNativeWindow();
+  // Only process the event if its target has the same native window as
   // |immersive_fullscreen_controller_->widget()|.
   if (window != immersive_fullscreen_controller_->widget()->GetNativeWindow())
     return false;

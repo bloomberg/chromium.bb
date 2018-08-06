@@ -33,7 +33,7 @@ class ASH_EXPORT TabletModeAppWindowDragController {
 
  private:
   // Gesture window drag related functions. Used in DragWindowFromTop.
-  void StartWindowDrag(ui::GestureEvent* event);
+  bool StartWindowDrag(ui::GestureEvent* event);
   void UpdateWindowDrag(ui::GestureEvent* event);
   void EndWindowDrag(ui::GestureEvent* event,
                      wm::WmToplevelWindowEventHandler::DragResult result);

@@ -18,7 +18,9 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_resizer.h"
@@ -26,8 +28,8 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller_test_api.h"
-#include "base/debug/stack_trace.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/paint/display_item_list.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
@@ -1062,6 +1064,65 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   event_generator->PressLeftButton();
   shell_surface->StartDrag(HTTOP, gfx::Point(0, 0));
   ASSERT_FALSE(window_state->is_dragged());
+}
+
+// Test the functionalities of dragging a window from top in tablet mode.
+TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
+  UpdateDisplay("800x600");
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(ash::features::kDragAppsInTabletMode);
+  ash::Shell* shell = ash::Shell::Get();
+  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  std::unique_ptr<Surface> surface(new Surface());
+  const gfx::Size window_size(800, 552);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(window_size)));
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  shell_surface->SetMaximized();
+  surface->Attach(buffer.get());
+  shell_surface->SetGeometry(gfx::Rect(window_size));
+  surface->Commit();
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ASSERT_TRUE(ash::wm::GetWindowState(window)->IsMaximized());
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  surface->Commit();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+
+  // Drag the window by a small amount of distance will maximize the window
+  // again.
+  const gfx::Point start(0, 0);
+  gfx::Point end(0, 10);
+  event_generator->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(100), 2);
+  EXPECT_TRUE(ash::wm::GetWindowState(window)->IsMaximized());
+
+  // FLING the window with large veloicty (larger than
+  // kFlingToOverviewThreshold) will drop the window into overview.
+  EXPECT_FALSE(shell->window_selector_controller()->IsSelecting());
+  end = gfx::Point(0, 210);
+  const base::TimeDelta duration =
+      event_generator->CalculateScrollDurationForFlingVelocity(
+          start, end,
+          ash::TabletModeAppWindowDragController::kFlingToOverviewThreshold +
+              10.f,
+          200);
+  event_generator->GestureScrollSequence(start, end, duration, 200);
+  EXPECT_TRUE(shell->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(shell->window_selector_controller()
+                  ->window_selector()
+                  ->IsWindowInOverview(window));
+
+  // Drag the window long enough (pass one fourth of the screen vertical
+  // height) to snap the window to splitscreen.
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(shell->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(ash::wm::GetWindowState(window)->IsMaximized());
+  event_generator->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(100), 20);
+  EXPECT_EQ(ash::wm::GetWindowState(window)->GetStateType(),
+            ash::mojom::WindowStateType::LEFT_SNAPPED);
 }
 
 namespace {
