@@ -60,10 +60,8 @@ TabletModeAppWindowDragController::~TabletModeAppWindowDragController() =
 
 bool TabletModeAppWindowDragController::DragWindowFromTop(
     ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    StartWindowDrag(event);
-    return true;
-  }
+  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
+    return StartWindowDrag(event);
 
   if (!drag_delegate_->dragged_window())
     return false;
@@ -83,10 +81,16 @@ bool TabletModeAppWindowDragController::DragWindowFromTop(
   return false;
 }
 
-void TabletModeAppWindowDragController::StartWindowDrag(
+bool TabletModeAppWindowDragController::StartWindowDrag(
     ui::GestureEvent* event) {
-  drag_delegate_->StartWindowDrag(static_cast<aura::Window*>(event->target()),
+  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
+      static_cast<aura::Window*>(event->target()));
+  if (!widget)
+    return false;
+
+  drag_delegate_->StartWindowDrag(widget->GetNativeWindow(),
                                   GetEventLocationInScreen(event));
+  return true;
 }
 
 void TabletModeAppWindowDragController::UpdateWindowDrag(

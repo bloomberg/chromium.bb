@@ -2154,6 +2154,30 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   EXPECT_FALSE(current_grid->new_selector_item_widget_for_testing());
 }
 
+class TestWindowDelegateWithWidget : public views::WidgetDelegate {
+ public:
+  TestWindowDelegateWithWidget(bool can_activate)
+      : can_activate_(can_activate) {}
+  ~TestWindowDelegateWithWidget() override = default;
+
+  // views::WidgetDelegate:
+  void DeleteDelegate() override { delete this; }
+  views::Widget* GetWidget() override { return widget_; }
+  const views::Widget* GetWidget() const override { return widget_; }
+  bool CanActivate() const override { return can_activate_; }
+  bool CanResize() const override { return true; }
+  bool CanMaximize() const override { return true; }
+  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
+
+  void set_widget(views::Widget* widget) { widget_ = widget; }
+
+ private:
+  bool can_activate_ = false;
+  views::Widget* widget_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWindowDelegateWithWidget);
+};
+
 class SplitViewAppDraggingTest : public SplitViewControllerTest {
  public:
   SplitViewAppDraggingTest() = default;
@@ -2172,11 +2196,18 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
   }
 
  protected:
-  aura::Window* CreateAppWindow(const gfx::Rect& bounds) {
-    aura::Window* window = CreateWindow(bounds);
-    window->SetProperty(aura::client::kAppType,
-                        static_cast<int>(ash::AppType::CHROME_APP));
-    return window;
+  std::unique_ptr<aura::Window> CreateTestWindowWithWidget(
+      bool can_activate = true) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+    params.show_state = ui::SHOW_STATE_MAXIMIZED;
+    views::Widget* widget = new views::Widget;
+    std::unique_ptr<TestWindowDelegateWithWidget> widget_delegate =
+        std::make_unique<TestWindowDelegateWithWidget>(can_activate);
+    widget_delegate->set_widget(widget);
+    params.delegate = widget_delegate.release();
+    widget->Init(params);
+    widget->Show();
+    return base::WrapUnique<aura::Window>(widget->GetNativeView());
   }
 
   // Sends a gesture scroll sequence to TabletModeAppWindowDragController.
@@ -2236,13 +2267,38 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
   DISALLOW_COPY_AND_ASSIGN(SplitViewAppDraggingTest);
 };
 
+// Tests that drag the window that cannot be snapped from top of the display
+// will not snap the window into splitscreen.
+TEST_F(SplitViewAppDraggingTest, DragNoneActiveMaximizedWindow) {
+  UpdateDisplay("800x600");
+  std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget(false);
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  gfx::Rect display_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+  const float long_scroll_delta = display_bounds.height() / 4 + 5;
+
+  gfx::Point start = gfx::Point(0, 0);
+  // Drag the window that cannot be snapped long enough, the window will be
+  // restored back to maximized.
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(
+      window_selector_controller->window_selector()->IsWindowInOverview(
+          window.get()));
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+}
+
 // Tests the functionalities that are related to dragging a maximized window
 // into splitscreen.
-TEST_F(SplitViewAppDraggingTest, DragMaximizedWindow) {
+TEST_F(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
   UpdateDisplay("800x600");
-  std::unique_ptr<aura::Window> window(
-      CreateAppWindow(gfx::Rect(0, 0, 500, 500)));
-  wm::GetWindowState(window.get())->Maximize();
+  std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget();
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
   gfx::Rect display_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
@@ -2272,24 +2328,6 @@ TEST_F(SplitViewAppDraggingTest, DragMaximizedWindow) {
             SplitViewController::LEFT_SNAPPED);
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
 
-  // Drag the window that cannot be snapped long enough, the window will be
-  // restored back to maximized.
-  aura::test::TestWindowDelegate* delegate =
-      static_cast<aura::test::TestWindowDelegate*>(window->delegate());
-  delegate->set_minimum_size(
-      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  timestamp = base::TimeTicks::Now();
-  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
-  window_selector_controller = Shell::Get()->window_selector_controller();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
-  EXPECT_FALSE(
-      window_selector_controller->window_selector()->IsWindowInOverview(
-          window.get()));
-  EndScrollSequence(start, long_scroll_delta, timestamp, window.get());
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
-  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
-
   // FLING the window with small velocity (smaller than
   // kFlingToOverviewThreshold) will not able to drop the window into overview.
   timestamp = base::TimeTicks::Now();
@@ -2318,8 +2356,7 @@ TEST_F(SplitViewAppDraggingTest, DragMaximizedWindow) {
 // Tests the shelf visibility when a fullscreened window is being dragged.
 TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
   UpdateDisplay("800x600");
-  std::unique_ptr<aura::Window> window(
-      CreateAppWindow(gfx::Rect(0, 0, 500, 500)));
+  std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget();
   ShelfLayoutManager* shelf_layout_manager =
       AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
   gfx::Rect display_bounds =
