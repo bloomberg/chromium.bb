@@ -21,7 +21,6 @@ UI_BASE_EXPORT extern const base::Feature kEnableStylusVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature kEnableVirtualKeyboardMdUi;
 UI_BASE_EXPORT extern const base::Feature kEnableVirtualKeyboardUkm;
 UI_BASE_EXPORT extern const base::Feature kExperimentalUi;
-UI_BASE_EXPORT extern const base::Feature kSecondaryUiMd;
 UI_BASE_EXPORT extern const base::Feature kSystemKeyboardLock;
 UI_BASE_EXPORT extern const base::Feature kTouchableAppContextMenu;
 UI_BASE_EXPORT extern const base::Feature kNotificationIndicator;

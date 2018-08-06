@@ -953,9 +953,6 @@ extern const char kSavePreviousDocumentResourcesUntilOnLoad[];
 extern const char kScrollPredictionName[];
 extern const char kScrollPredictionDescription[];
 
-extern const char kSecondaryUiMd[];
-extern const char kSecondaryUiMdDescription[];
-
 extern const char kServiceWorkerPaymentAppsName[];
 extern const char kServiceWorkerPaymentAppsDescription[];
 

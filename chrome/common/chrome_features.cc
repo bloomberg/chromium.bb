@@ -501,8 +501,7 @@ const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_MACOSX)
-// Whether to show all dialogs with toolkit-views on Mac, rather than Cocoa. A
-// subset of "pilot" dialogs can be enabled with kSecondaryUiMd.
+// Whether to show all dialogs with toolkit-views on Mac, rather than Cocoa.
 const base::Feature kShowAllDialogsWithViewsToolkit{
     "ShowAllDialogsWithViewsToolkit", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)

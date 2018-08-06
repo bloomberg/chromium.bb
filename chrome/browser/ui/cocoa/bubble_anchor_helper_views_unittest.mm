@@ -59,10 +59,6 @@ using BubbleAnchorHelperViewsTest = views::ViewsTestBase;
 // Test that KeepBubbleAnchored(..) actually keeps the bubble anchored upon a
 // resize of the parent window.
 TEST_F(BubbleAnchorHelperViewsTest, AnchoringFixed) {
-  // Use MD anchoring since the arithmetic is simpler (no arrows).
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kSecondaryUiMd);
-
   // Released when closed.
   NSRect parent_frame = NSMakeRect(100, 200, 300, 400);
   NSWindow* parent =
@@ -125,10 +121,6 @@ TEST_F(BubbleAnchorHelperViewsTest, AnchoringFixed) {
 // Test that KeepBubbleAnchored(..) actually keeps the bubble anchored upon
 // resizing the child window.
 TEST_F(BubbleAnchorHelperViewsTest, AnchoringChildResize) {
-  // Use MD anchoring since the arithmetic is simpler (no arrows).
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kSecondaryUiMd);
-
   NSRect parent_frame = NSMakeRect(100, 200, 300, 400);
   // Released when closed.
   NSWindow* parent =
