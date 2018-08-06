@@ -9,6 +9,7 @@ aggregate_vector_icons("ash_public_vector_icons") {
   icon_directory = "."
 
   icons = [
+    "notification_assistant.icon",
     "notification_captive_portal.icon",
     "notification_cellular_alert.icon",
     "notification_download.icon",
