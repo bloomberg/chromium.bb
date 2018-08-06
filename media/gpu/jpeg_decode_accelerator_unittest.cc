@@ -842,7 +842,6 @@ TEST_F(JpegDecodeAcceleratorTest, PerfSW) {
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   base::CommandLine::Init(argc, argv);
-  mojo::core::Init();
   base::ShadowingAtExitManager at_exit_manager;
 
   // Needed to enable DVLOG through --vmodule.

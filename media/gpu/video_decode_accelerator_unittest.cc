@@ -1573,6 +1573,8 @@ class VDATestSuite : public base::TestSuite {
 
   int Run() {
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
+    mojo::core::Init();  // Required only for Win7 tests.
+
     // For windows the decoding thread initializes the media foundation decoder
     // which uses COM. We need the thread to be a UI thread.
     // On Ozone, the backend initializes the event system using a UI
@@ -1608,7 +1610,6 @@ class VDATestSuite : public base::TestSuite {
 }  // namespace media
 
 int main(int argc, char** argv) {
-  mojo::core::Init();
   media::VDATestSuite test_suite(argc, argv);
 
   // Needed to enable DVLOG through --vmodule.

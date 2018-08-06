@@ -33,7 +33,6 @@
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/vaapi/vaapi_jpeg_encode_accelerator.h"
 #include "media/video/jpeg_encode_accelerator.h"
-#include "mojo/core/embedder/embedder.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
@@ -636,7 +635,6 @@ TEST_F(JpegEncodeAcceleratorTest, CodedSizeAlignment) {
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   base::CommandLine::Init(argc, argv);
-  mojo::core::Init();
   base::ShadowingAtExitManager at_exit_manager;
 
   // Needed to enable DVLOG through --vmodule.
