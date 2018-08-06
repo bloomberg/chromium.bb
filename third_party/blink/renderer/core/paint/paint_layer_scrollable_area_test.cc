@@ -376,7 +376,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
 
-  // Change the background to transparent
+  // Change the background to opaque
   scroller->setAttribute(HTMLNames::styleAttr,
                          "background: white local content-box;");
   GetDocument().View()->UpdateAllLifecyclePhases();

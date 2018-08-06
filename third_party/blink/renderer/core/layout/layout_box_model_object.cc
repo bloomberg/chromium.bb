@@ -317,6 +317,8 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   } else if (had_transform_related_property != HasTransformRelatedProperty()) {
     // This affects whether to create transform node.
     SetNeedsPaintPropertyUpdate();
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
   }
 
   if (Layer()) {

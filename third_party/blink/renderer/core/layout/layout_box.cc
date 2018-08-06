@@ -336,8 +336,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
       // overflowClipRect(), and border radii, so we update properties on
       // border size or radii change.
       if (!old_style->BorderSizeEquals(new_style) ||
-          !old_style->RadiiEqual(new_style))
+          !old_style->RadiiEqual(new_style)) {
         SetNeedsPaintPropertyUpdate();
+        if (Layer())
+          Layer()->SetNeedsCompositingInputsUpdate();
+      }
     }
   }
 

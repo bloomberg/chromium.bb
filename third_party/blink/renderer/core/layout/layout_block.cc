@@ -291,6 +291,8 @@ void LayoutBlock::UpdateFromStyle() {
     // The overflow clip paint property depends on whether overflow clip is
     // present so we need to update paint properties if this changes.
     SetNeedsPaintPropertyUpdate();
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
   }
   SetHasOverflowClip(should_clip_overflow);
 }

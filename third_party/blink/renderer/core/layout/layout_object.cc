@@ -2084,6 +2084,9 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
                     diff.BackdropFilterChanged() || diff.CssClipChanged() ||
                     diff.BlendModeChanged())) {
     SetNeedsPaintPropertyUpdate();
+    if (HasLayer() && IsBoxModelObject()) {
+      ToLayoutBoxModelObject(this)->Layer()->SetNeedsCompositingInputsUpdate();
+    }
   }
 }
 

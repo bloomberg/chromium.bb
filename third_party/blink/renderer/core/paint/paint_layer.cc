@@ -3159,12 +3159,35 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
   const ComputedStyle& new_style = GetLayoutObject().StyleRef();
 
+  if (diff.CompositingReasonsChanged()) {
+    SetNeedsCompositingInputsUpdate();
+  } else {
+    // For querying stale GetCompositingState().
+    DisableCompositingQueryAsserts disable;
+
+    // Compositing inputs update is required when the PaintLayer is currently
+    // composited. This is because even style changes as simple as background
+    // color change, or pointer-events state change, can update compositing
+    // state.
+    if (old_style && GetCompositingState() == kPaintsIntoOwnBacking)
+      SetNeedsCompositingInputsUpdate();
+  }
+
+  // A scroller that changes background color might become opaque or not
+  // opaque, which in turn affects whether it can be composited on low-DPI
+  // screens.
+  if (GetScrollableArea() && GetScrollableArea()->ScrollsOverflow() &&
+      diff.HasDifference()) {
+    SetNeedsCompositingInputsUpdate();
+  }
+
+  // HasNonContainedAbsolutePositionDescendant depends on position changes.
+  if (!old_style || old_style->GetPosition() != new_style.GetPosition())
+    MarkAncestorChainForDescendantDependentFlagsUpdate();
+
   UpdateTransform(old_style, new_style);
   UpdateFilters(old_style, new_style);
   UpdateClipPath(old_style, new_style);
-
-  SetNeedsCompositingInputsUpdate();
-  GetLayoutObject().SetNeedsPaintPropertyUpdate();
 
   if (!NeedsRepaint()) {
     if (diff.ZIndexChanged()) {
