@@ -187,6 +187,11 @@
 -IOThreadBrowserTestWithHangingPacRequest.Shutdown
 -ProxySettingsApiTest.ProxyEventsParseError
 
+# http://crbug.com/721414
+# TODO(rockot): add support for webRequest API.
+# Note WebRequestUnloadImmediately is disabled on Linux
+-ExtensionWebRequestApiTest.WebRequestUnloadImmediately
+
 # http://crbug.com/827582
 # Editing response cookies through headers with webRequest is not supported with
 # the network service.
