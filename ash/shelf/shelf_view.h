@@ -29,6 +29,10 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
+namespace ash {
+class TabletModeController;
+}
+
 namespace ui {
 class SimpleMenuModel;
 }
@@ -110,7 +114,8 @@ class ASH_EXPORT ShelfView : public views::View,
                              public views::ContextMenuController,
                              public views::FocusTraversable,
                              public views::BoundsAnimatorObserver,
-                             public app_list::ApplicationDragAndDropHost {
+                             public app_list::ApplicationDragAndDropHost,
+                             public ash::TabletModeObserver {
  public:
   ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget);
   ~ShelfView() override;
@@ -178,6 +183,10 @@ class ASH_EXPORT ShelfView : public views::View,
                            views::View* replaced_view,
                            const gfx::Vector2d& cursor_offset_from_center,
                            float scale_factor) override;
+
+  // Overridden from ash::TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   void CreateDragIconProxyByLocationWithNoAnimation(
       const gfx::Point& origin_in_screen_coordinates,
@@ -529,6 +538,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The view which gets replaced by our drag icon proxy.
   views::View* drag_replaced_view_ = nullptr;
+
+  // Observes tablet mode changing.
+  ScopedObserver<ash::TabletModeController, ash::TabletModeObserver>
+      tablet_mode_observer_;
 
   // True when the icon was dragged off the shelf.
   bool dragged_off_shelf_ = false;

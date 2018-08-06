@@ -1966,7 +1966,31 @@ TEST_F(ShelfViewTest, ShelfViewShowsContextMenu) {
   generator->MoveMouseTo(shelf_view_->GetBoundsInScreen().CenterPoint());
   generator->PressRightButton();
   generator->ReleaseRightButton();
+
   EXPECT_TRUE(test_api_->CloseMenu());
+}
+
+TEST_F(ShelfViewTest, TabletModeStartAndEndClosesContextMenu) {
+  // Show a context menu on the shelf
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(shelf_view_->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
+
+  // Start tablet mode, which should close the menu.
+  shelf_view_->OnTabletModeStarted();
+
+  // Attempt to close the menu, which should already be closed.
+  EXPECT_FALSE(test_api_->CloseMenu());
+
+  // Show another context menu on the shelf.
+  generator->MoveMouseTo(shelf_view_->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
+
+  // End tablet mode, which should close the menu.
+  shelf_view_->OnTabletModeEnded();
+
+  // Attempt to close the menu, which should already be closed.
+  EXPECT_FALSE(test_api_->CloseMenu());
 }
 
 // Tests that the app list button shows a context menu on right click when
