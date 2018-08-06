@@ -28,10 +28,7 @@ const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kMp4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"'";
-
-#if !defined(OS_ANDROID)
 const char kMp4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"'";
-#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
@@ -105,9 +102,6 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-
-// TODO(chcunningham): Figure out why this is flaky on android. crbug/607841
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
   base::StringPairs query_params;
   query_params.push_back(
@@ -119,7 +113,6 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
   RunMediaTestPage("mse_different_containers.html", query_params, media::kEnded,
                    true);
 }
-#endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
   base::StringPairs query_params;
