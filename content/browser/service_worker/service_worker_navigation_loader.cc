@@ -25,7 +25,7 @@ namespace {
 
 std::string ComposeFetchEventResultString(
     ServiceWorkerFetchDispatcher::FetchEventResult result,
-    const ServiceWorkerResponse& response) {
+    const blink::mojom::FetchAPIResponse& response) {
   if (result == ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback)
     return "Fallback to network";
   std::stringstream stream;
@@ -281,7 +281,7 @@ void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
 void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     blink::ServiceWorkerStatusCode status,
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
-    const ServiceWorkerResponse& response,
+    blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
     scoped_refptr<ServiceWorkerVersion> version) {
@@ -291,7 +291,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
       "ServiceWorker", "ServiceWorkerNavigationLoader::DidDispatchFetchEvent",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
       blink::ServiceWorkerStatusToString(status), "result",
-      ComposeFetchEventResultString(fetch_result, response));
+      ComposeFetchEventResultString(fetch_result, *response));
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
 
@@ -319,19 +319,20 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
 
   // A response with status code 0 is Blink telling us to respond with
   // network error.
-  if (response.status_code == 0) {
+  if (response->status_code == 0) {
     ReturnNetworkError();
     return;
   }
 
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartResponse,
-                          weak_factory_.GetWeakPtr(), response, version,
-                          std::move(body_as_stream), std::move(body_as_blob)));
+                          weak_factory_.GetWeakPtr(), std::move(response),
+                          version, std::move(body_as_stream),
+                          std::move(body_as_blob)));
 }
 
 void ServiceWorkerNavigationLoader::StartResponse(
-    const ServiceWorkerResponse& response,
+    blink::mojom::FetchAPIResponsePtr response,
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
@@ -345,9 +346,9 @@ void ServiceWorkerNavigationLoader::StartResponse(
                      base::Unretained(this)));
   url_loader_client_ = std::move(client);
 
-  ServiceWorkerLoaderHelpers::SaveResponseInfo(response, &response_head_);
+  ServiceWorkerLoaderHelpers::SaveResponseInfo(*response, &response_head_);
   ServiceWorkerLoaderHelpers::SaveResponseHeaders(
-      response.status_code, response.status_text, response.headers,
+      response->status_code, response->status_text, response->headers,
       &response_head_);
 
   response_head_.did_service_worker_navigation_preload =

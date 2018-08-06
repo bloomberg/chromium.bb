@@ -46,7 +46,7 @@ class BlobCompleteCaller : public blink::mojom::BlobReaderClient {
 void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
     const int status_code,
     const std::string& status_text,
-    const ServiceWorkerHeaderMap& headers,
+    const base::flat_map<std::string, std::string>& headers,
     network::ResourceResponseHead* out_head) {
   // Build a string instead of using HttpResponseHeaders::AddHeader on
   // each header, since AddHeader has O(n^2) performance.
@@ -82,7 +82,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
 
 // static
 void ServiceWorkerLoaderHelpers::SaveResponseInfo(
-    const ServiceWorkerResponse& response,
+    const blink::mojom::FetchAPIResponse& response,
     network::ResourceResponseHead* out_head) {
   out_head->was_fetched_via_service_worker = true;
   out_head->was_fallback_required_by_service_worker = false;
@@ -90,7 +90,10 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
   out_head->response_type_via_service_worker = response.response_type;
   out_head->response_time = response.response_time;
   out_head->is_in_cache_storage = response.is_in_cache_storage;
-  out_head->cache_storage_cache_name = response.cache_storage_cache_name;
+  if (response.cache_storage_cache_name)
+    out_head->cache_storage_cache_name = *(response.cache_storage_cache_name);
+  else
+    out_head->cache_storage_cache_name.clear();
   out_head->cors_exposed_header_names = response.cors_exposed_header_names;
   out_head->did_service_worker_navigation_preload = false;
 }

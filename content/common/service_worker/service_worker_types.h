@@ -121,10 +121,8 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   bool is_history_navigation = false;
 };
 
-// Roughly corresponds to the Fetch API's Response type. This struct has several
-// users:
-// - Service Worker API: The renderer sends the browser this type to
-// represent the response a service worker provided to FetchEvent#respondWith.
+// Roughly corresponds to the Fetch API's Response type. This struct has only
+// one user:
 // - Background Fetch API: Uses this type to represent responses to background
 // fetches.
 // Note that the Fetch API does not use this type; it uses ResourceResponse
@@ -158,9 +156,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   std::string status_text;
   network::mojom::FetchResponseType response_type;
   ServiceWorkerHeaderMap headers;
-  // |blob_uuid| and |blob_size| are set when the body is a blob. For other
-  // types of responses, the body is provided separately in Mojo IPC via
-  // ServiceWorkerFetchResponseCallback.
+  // |blob_uuid| and |blob_size| are set when the body is a blob.
   std::string blob_uuid;
   uint64_t blob_size;
   scoped_refptr<storage::BlobHandle> blob;

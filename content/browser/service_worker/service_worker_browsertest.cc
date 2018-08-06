@@ -105,7 +105,7 @@ const int kV8CacheTimeStampDataSize =
 struct FetchResult {
   blink::ServiceWorkerStatusCode status;
   ServiceWorkerFetchDispatcher::FetchEventResult result;
-  ServiceWorkerResponse response;
+  blink::mojom::FetchAPIResponsePtr response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 };
 
@@ -611,7 +611,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   void FetchOnRegisteredWorker(
       ServiceWorkerFetchDispatcher::FetchEventResult* result,
-      ServiceWorkerResponse* response,
+      blink::mojom::FetchAPIResponsePtr* response,
       std::unique_ptr<storage::BlobDataHandle>* blob_data_handle) {
     blob_context_ = ChromeBlobStorageContext::GetFor(
         shell()->web_contents()->GetBrowserContext());
@@ -627,7 +627,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     fetch_run_loop.Run();
     ASSERT_TRUE(prepare_result);
     *result = fetch_result.result;
-    *response = fetch_result.response;
+    *response = std::move(fetch_result.response);
     *blob_data_handle = std::move(fetch_result.blob_data_handle);
     ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, fetch_result.status);
   }
@@ -962,7 +962,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       FetchResult* out_result,
       blink::ServiceWorkerStatusCode actual_status,
       ServiceWorkerFetchDispatcher::FetchEventResult actual_result,
-      const ServiceWorkerResponse& actual_response,
+      blink::mojom::FetchAPIResponsePtr actual_response,
       blink::mojom::ServiceWorkerStreamHandlePtr /* stream */,
       blink::mojom::BlobPtr /* blob */,
       scoped_refptr<ServiceWorkerVersion> worker) {
@@ -971,11 +971,12 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     fetch_dispatcher_.reset();
     out_result->status = actual_status;
     out_result->result = actual_result;
-    out_result->response = actual_response;
-    if (!actual_response.blob_uuid.empty()) {
+    out_result->response = std::move(actual_response);
+    if (out_result->response->blob) {
+      DCHECK(!out_result->response->blob->uuid.empty());
       out_result->blob_data_handle =
           blob_context->context()->GetBlobDataFromUUID(
-              actual_response.blob_uuid);
+              out_result->response->blob->uuid);
     }
     if (!quit.is_null())
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit);
@@ -1346,7 +1347,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutWorkerInEvent) {
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   StartServerAndNavigateToSetup();
   ServiceWorkerFetchDispatcher::FetchEventResult result;
-  ServiceWorkerResponse response;
+  blink::mojom::FetchAPIResponsePtr response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   InstallTestHelper("/service_worker/fetch_event.js",
                     blink::ServiceWorkerStatusCode::kOk);
@@ -1356,12 +1357,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
-  EXPECT_EQ(301, response.status_code);
-  EXPECT_EQ("Moved Permanently", response.status_text);
-  ServiceWorkerHeaderMap expected_headers;
+  EXPECT_EQ(301, response->status_code);
+  EXPECT_EQ("Moved Permanently", response->status_text);
+  base::flat_map<std::string, std::string> expected_headers;
   expected_headers["content-language"] = "fi";
   expected_headers["content-type"] = "text/html; charset=UTF-8";
-  EXPECT_EQ(expected_headers, response.headers);
+  EXPECT_EQ(expected_headers, response->headers);
 
   std::string body;
   RunOnIOThread(base::BindOnce(&ReadResponseBody, &body,
@@ -1373,8 +1374,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        FetchEvent_ResponseViaCache) {
   StartServerAndNavigateToSetup();
   ServiceWorkerFetchDispatcher::FetchEventResult result;
-  ServiceWorkerResponse response1;
-  ServiceWorkerResponse response2;
+  blink::mojom::FetchAPIResponsePtr response1;
+  blink::mojom::FetchAPIResponsePtr response2;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   const base::Time start_time(base::Time::Now());
   InstallTestHelper("/service_worker/fetch_event_response_via_cache.js",
@@ -1385,27 +1386,29 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   FetchOnRegisteredWorker(&result, &response1, &blob_data_handle);
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
-  EXPECT_EQ(200, response1.status_code);
-  EXPECT_EQ("OK", response1.status_text);
-  EXPECT_TRUE(response1.response_time >= start_time);
-  EXPECT_FALSE(response1.is_in_cache_storage);
-  EXPECT_EQ(std::string(), response2.cache_storage_cache_name);
+  EXPECT_EQ(200, response1->status_code);
+  EXPECT_EQ("OK", response1->status_text);
+  EXPECT_TRUE(response1->response_time >= start_time);
+  EXPECT_FALSE(response1->is_in_cache_storage);
+  ASSERT_TRUE(response1->cache_storage_cache_name);
+  EXPECT_EQ(std::string(), *response1->cache_storage_cache_name);
 
   FetchOnRegisteredWorker(&result, &response2, &blob_data_handle);
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
-  EXPECT_EQ(200, response2.status_code);
-  EXPECT_EQ("OK", response2.status_text);
-  EXPECT_EQ(response1.response_time, response2.response_time);
-  EXPECT_TRUE(response2.is_in_cache_storage);
-  EXPECT_EQ("cache_name", response2.cache_storage_cache_name);
+  EXPECT_EQ(200, response2->status_code);
+  EXPECT_EQ("OK", response2->status_text);
+  EXPECT_EQ(response1->response_time, response2->response_time);
+  EXPECT_TRUE(response2->is_in_cache_storage);
+  ASSERT_TRUE(response2->cache_storage_cache_name);
+  EXPECT_EQ("cache_name", *response2->cache_storage_cache_name);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        FetchEvent_respondWithRejection) {
   StartServerAndNavigateToSetup();
   ServiceWorkerFetchDispatcher::FetchEventResult result;
-  ServiceWorkerResponse response;
+  blink::mojom::FetchAPIResponsePtr response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   InstallTestHelper("/service_worker/fetch_event_rejected.js",
                     blink::ServiceWorkerStatusCode::kOk);
@@ -1432,7 +1435,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
-  EXPECT_EQ(0, response.status_code);
+  EXPECT_EQ(0, response->status_code);
 
   ASSERT_FALSE(blob_data_handle);
 }

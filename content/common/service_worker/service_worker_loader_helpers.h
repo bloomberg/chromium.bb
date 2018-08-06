@@ -5,11 +5,12 @@
 #ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_LOADER_HELPERS_H_
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_LOADER_HELPERS_H_
 
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 
 namespace network {
 struct ResourceRequest;
@@ -24,12 +25,13 @@ class ServiceWorkerLoaderHelpers {
  public:
   // Populates |out_head->headers| with the given |status_code|, |status_text|,
   // and |headers|.
-  static void SaveResponseHeaders(const int status_code,
-                                  const std::string& status_text,
-                                  const ServiceWorkerHeaderMap& headers,
-                                  network::ResourceResponseHead* out_head);
+  static void SaveResponseHeaders(
+      const int status_code,
+      const std::string& status_text,
+      const base::flat_map<std::string, std::string>& headers,
+      network::ResourceResponseHead* out_head);
   // Populates |out_head| (except for headers) with given |response|.
-  static void SaveResponseInfo(const ServiceWorkerResponse& response,
+  static void SaveResponseInfo(const blink::mojom::FetchAPIResponse& response,
                                network::ResourceResponseHead* out_head);
 
   // Returns a redirect info if |response_head| is an redirect response.

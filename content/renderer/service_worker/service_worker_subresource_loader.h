@@ -75,18 +75,18 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       base::Optional<blink::ServiceWorkerStatusCode> status);
 
   // mojom::ServiceWorkerFetchResponseCallback overrides:
-  void OnResponse(const ServiceWorkerResponse& response,
+  void OnResponse(blink::mojom::FetchAPIResponsePtr response,
                   base::Time dispatch_event_time) override;
-  void OnResponseBlob(const ServiceWorkerResponse& response,
+  void OnResponseBlob(blink::mojom::FetchAPIResponsePtr response,
                       blink::mojom::BlobPtr blob,
                       base::Time dispatch_event_time) override;
   void OnResponseStream(
-      const ServiceWorkerResponse& response,
+      blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       base::Time dispatch_event_time) override;
   void OnFallback(base::Time dispatch_event_time) override;
 
-  void StartResponse(const ServiceWorkerResponse& response,
+  void StartResponse(blink::mojom::FetchAPIResponsePtr response,
                      blink::mojom::BlobPtr body_as_blob,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
 

@@ -44,6 +44,32 @@ void ReceiveRequestHandler(
   *out_handler = std::move(handler);
 }
 
+blink::mojom::FetchAPIResponsePtr OkResponse() {
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->status_code = 200;
+  response->status_text = "OK";
+  response->response_type = network::mojom::FetchResponseType::kDefault;
+  return response;
+}
+
+blink::mojom::FetchAPIResponsePtr ErrorResponse() {
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->status_code = 0;
+  response->response_type = network::mojom::FetchResponseType::kDefault;
+  response->error = blink::mojom::ServiceWorkerResponseError::kPromiseRejected;
+  return response;
+}
+
+blink::mojom::FetchAPIResponsePtr RedirectResponse(
+    const std::string& redirect_location_header) {
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->status_code = 301;
+  response->status_text = "Moved Permanently";
+  response->response_type = network::mojom::FetchResponseType::kDefault;
+  response->headers["Location"] = redirect_location_header;
+  return response;
+}
+
 // NavigationPreloadLoaderClient mocks the renderer-side URLLoaderClient for the
 // navigation preload network request performed by the browser. In production
 // code, this is ServiceWorkerContextClient::NavigationPreloadRequest,
@@ -102,21 +128,14 @@ class NavigationPreloadLoaderClient final
 
     // Simulate passing the navigation preload response to
     // FetchEvent#respondWith.
+    auto response = blink::mojom::FetchAPIResponse::New();
+    response->url_list =
+        std::vector<GURL>(response_head_.url_list_via_service_worker);
+    response->status_code = response_head_.headers->response_code();
+    response->status_text = response_head_.headers->GetStatusText();
+    response->response_type = response_head_.response_type_via_service_worker;
     response_callback_->OnResponseStream(
-        ServiceWorkerResponse(
-            std::make_unique<std::vector<GURL>>(
-                response_head_.url_list_via_service_worker),
-            response_head_.headers->response_code(),
-            response_head_.headers->GetStatusText(),
-            response_head_.response_type_via_service_worker,
-            std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-            0 /* blob_size */, nullptr /* blob */,
-            blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-            false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */,
-            std::make_unique<
-                ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-        std::move(stream_handle), base::Time::Now());
+        std::move(response), std::move(stream_handle), base::Time::Now());
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::Time::Now());
@@ -246,35 +265,15 @@ class Helper : public EmbeddedWorkerTestHelper {
             std::move(response_callback), std::move(finish_callback));
         return;
       case ResponseMode::kBlob:
-        response_callback->OnResponseBlob(
-            ServiceWorkerResponse(
-                std::make_unique<std::vector<GURL>>(), 200, "OK",
-                network::mojom::FetchResponseType::kDefault,
-                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-                0 /* blob_size */, nullptr /* blob */,
-                blink::mojom::ServiceWorkerResponseError::kUnknown,
-                base::Time(), false /* response_is_in_cache_storage */,
-                std::string() /* response_cache_storage_cache_name */,
-                std::make_unique<
-                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            std::move(blob_body_), base::Time::Now());
+        response_callback->OnResponseBlob(OkResponse(), std::move(blob_body_),
+                                          base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
         return;
       case ResponseMode::kStream:
         response_callback->OnResponseStream(
-            ServiceWorkerResponse(
-                std::make_unique<std::vector<GURL>>(), 200, "OK",
-                network::mojom::FetchResponseType::kDefault,
-                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-                0 /* blob_size */, nullptr /* blob */,
-                blink::mojom::ServiceWorkerResponseError::kUnknown,
-                base::Time(), false /* response_is_in_cache_storage */,
-                std::string() /* response_cache_storage_cache_name */,
-                std::make_unique<
-                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            std::move(stream_handle_), base::Time::Now());
+            OkResponse(), std::move(stream_handle_), base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
@@ -286,19 +285,7 @@ class Helper : public EmbeddedWorkerTestHelper {
                  base::Time::Now());
         return;
       case ResponseMode::kErrorResponse:
-        response_callback->OnResponse(
-            ServiceWorkerResponse(
-                std::make_unique<std::vector<GURL>>(), 0 /* status_code */,
-                "" /* status_text */,
-                network::mojom::FetchResponseType::kDefault,
-                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-                0 /* blob_size */, nullptr /* blob */,
-                blink::mojom::ServiceWorkerResponseError::kPromiseRejected,
-                base::Time(), false /* response_is_in_cache_storage */,
-                std::string() /* response_cache_storage_cache_name */,
-                std::make_unique<
-                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            base::Time::Now());
+        response_callback->OnResponse(ErrorResponse(), base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
                  base::Time::Now());
@@ -327,34 +314,12 @@ class Helper : public EmbeddedWorkerTestHelper {
         return;
       case ResponseMode::kEarlyResponse:
         finish_callback_ = std::move(finish_callback);
-        response_callback->OnResponse(
-            ServiceWorkerResponse(
-                std::make_unique<std::vector<GURL>>(), 200, "OK",
-                network::mojom::FetchResponseType::kDefault,
-                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-                0 /* blob_size */, nullptr /* blob */,
-                blink::mojom::ServiceWorkerResponseError::kUnknown,
-                base::Time(), false /* response_is_in_cache_storage */,
-                std::string() /* response_cache_storage_cache_name */,
-                std::make_unique<
-                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            base::Time::Now());
+        response_callback->OnResponse(OkResponse(), base::Time::Now());
         // Now the caller must call FinishWaitUntil() to finish the event.
         return;
       case ResponseMode::kRedirect:
-        auto headers = std::make_unique<ServiceWorkerHeaderMap>();
-        (*headers)["location"] = redirected_url_.spec();
-        response_callback->OnResponse(
-            ServiceWorkerResponse(
-                std::make_unique<std::vector<GURL>>(), 301, "Moved Permanently",
-                network::mojom::FetchResponseType::kDefault, std::move(headers),
-                "" /* blob_uuid */, 0 /* blob_size */, nullptr /* blob */,
-                blink::mojom::ServiceWorkerResponseError::kUnknown,
-                base::Time(), false /* response_is_in_cache_storage */,
-                std::string() /* response_cache_storage_cache_name */,
-                std::make_unique<
-                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            base::Time::Now());
+        response_callback->OnResponse(RedirectResponse(redirected_url_.spec()),
+                                      base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());

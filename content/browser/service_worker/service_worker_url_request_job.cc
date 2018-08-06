@@ -658,7 +658,7 @@ void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     blink::ServiceWorkerStatusCode status,
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
-    const ServiceWorkerResponse& response,
+    blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
     scoped_refptr<ServiceWorkerVersion> version) {
@@ -708,9 +708,9 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 
   // A response with status code 0 is Blink telling us to respond with network
   // error.
-  if (response.status_code == 0) {
-    RecordStatusZeroResponseError(response.error);
-    NotifyStartError(ServiceWorkerResponseErrorToNetStatus(response.error));
+  if (response->status_code == 0) {
+    RecordStatusZeroResponseError(response->error);
+    NotifyStartError(ServiceWorkerResponseErrorToNetStatus(response->error));
     return;
   }
 
@@ -730,7 +730,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // Process stream using Mojo's data pipe.
   if (!body_as_stream.is_null()) {
     SetResponseBodyType(STREAM);
-    SetResponse(response);
+    SetResponse(std::move(response));
     data_pipe_reader_.reset(new ServiceWorkerDataPipeReader(
         this, version, std::move(body_as_stream)));
     data_pipe_reader_->Start();
@@ -742,10 +742,11 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // it's alive.
   // TODO(falken): Can we just read |body_as_blob| directly like in
   // ServiceWorkerNavigationLoader?
-  if (!response.blob_uuid.empty() && blob_storage_context_) {
+  if (response->blob && blob_storage_context_) {
+    DCHECK(!response->blob->uuid.empty());
     SetResponseBodyType(BLOB);
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
-        blob_storage_context_->GetBlobDataFromUUID(response.blob_uuid);
+        blob_storage_context_->GetBlobDataFromUUID(response->blob->uuid);
     if (!blob_data_handle) {
       // The renderer gave us a bad blob UUID.
       RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_BLOB);
@@ -756,7 +757,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     blob_reader_->Start(std::move(blob_data_handle), request()->context());
   }
 
-  SetResponse(response);
+  SetResponse(std::move(response));
   if (!blob_reader_) {
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_HEADERS_ONLY_RESPONSE);
     CommitResponseHeader();
@@ -764,31 +765,36 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 }
 
 void ServiceWorkerURLRequestJob::SetResponse(
-    const ServiceWorkerResponse& response) {
-  response_url_list_ = response.url_list;
-  fetch_response_type_ = response.response_type;
-  cors_exposed_header_names_ = response.cors_exposed_header_names;
-  response_time_ = response.response_time;
-  CreateResponseHeader(response.status_code, response.status_text,
-                       response.headers);
+    blink::mojom::FetchAPIResponsePtr response) {
+  response_url_list_ = std::move(response->url_list);
+  fetch_response_type_ = response->response_type;
+  cors_exposed_header_names_ = std::move(response->cors_exposed_header_names);
+  response_time_ = response->response_time;
+  CreateResponseHeader(response->status_code, response->status_text,
+                       std::move(response->headers));
   load_timing_info_.receive_headers_end = base::TimeTicks::Now();
 
-  response_is_in_cache_storage_ = response.is_in_cache_storage;
-  response_cache_storage_cache_name_ = response.cache_storage_cache_name;
+  response_is_in_cache_storage_ = response->is_in_cache_storage;
+  if (response->cache_storage_cache_name) {
+    response_cache_storage_cache_name_ =
+        std::move(*(response->cache_storage_cache_name));
+  } else {
+    response_cache_storage_cache_name_.clear();
+  }
 }
 
 void ServiceWorkerURLRequestJob::CreateResponseHeader(
     int status_code,
     const std::string& status_text,
-    const ServiceWorkerHeaderMap& headers) {
+    ResponseHeaderMap headers) {
   // Build a string instead of using HttpResponseHeaders::AddHeader on
   // each header, since AddHeader has O(n^2) performance.
   std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,
                                      status_text.c_str()));
-  for (const auto& item : headers) {
-    buf.append(item.first);
+  for (auto& item : headers) {
+    buf.append(std::move(item.first));
     buf.append(": ");
-    buf.append(item.second);
+    buf.append(std::move(item.second));
     buf.append("\r\n");
   }
   buf.append("\r\n");
@@ -809,8 +815,8 @@ void ServiceWorkerURLRequestJob::CommitResponseHeader() {
 void ServiceWorkerURLRequestJob::DeliverErrorResponse() {
   // TODO(falken): Print an error to the console of the ServiceWorker and of
   // the requesting page.
-  CreateResponseHeader(
-      500, "Service Worker Response Error", ServiceWorkerHeaderMap());
+  CreateResponseHeader(500, "Service Worker Response Error",
+                       ResponseHeaderMap());
   CommitResponseHeader();
 }
 
@@ -831,7 +837,7 @@ void ServiceWorkerURLRequestJob::FinalizeFallbackToRenderer() {
   if (ShouldRecordResult())
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_FALLBACK_FOR_CORS);
   CreateResponseHeader(400, "Service Worker Fallback Required",
-                       ServiceWorkerHeaderMap());
+                       ResponseHeaderMap());
   response_type_ = ResponseType::FALLBACK_TO_RENDERER;
   CommitResponseHeader();
 }
