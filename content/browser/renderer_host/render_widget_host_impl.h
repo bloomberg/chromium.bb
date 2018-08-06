@@ -717,6 +717,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);
 
+  // Called on delayed response from the renderer by either
+  // 1) |hang_monitor_timeout_| (slow to ack input events) or
+  // 2) NavigationHandle::OnCommitTimeout (slow to commit).
+  void RendererIsUnresponsive(
+      base::RepeatingClosure restart_hang_monitor_timeout);
+
+  // Called if we know the renderer is responsive. When we currently think the
+  // renderer is unresponsive, this will clear that state and call
+  // NotifyRendererResponsive.
+  void RendererIsResponsive();
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -794,17 +805,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // destructor is called as well.
   void Destroy(bool also_delete);
 
-  // Called by |input_event_ack_timeout_| on delayed response from the renderer.
-  void RendererIsUnresponsive();
-
   // Called by |new_content_rendering_timeout_| if a renderer has loaded new
   // content but failed to produce a compositor frame in a defined time.
   void ClearDisplayedGraphics();
-
-  // Called if we know the renderer is responsive. When we currently think the
-  // renderer is unresponsive, this will clear that state and call
-  // NotifyRendererResponsive.
-  void RendererIsResponsive();
 
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);
@@ -887,6 +890,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderWidgetHostDelegate::RendererUnresponsive if the unresponsiveness
   // was noticed because of input event ack timeout.
   void RestartInputEventAckTimeoutIfNecessary();
+
+  // Called by |input_event_ack_timeout_| when an input event timed out without
+  // getting an ack from the renderer.
+  void OnInputEventAckTimeout();
 
   void SetupInputRouter();
 
