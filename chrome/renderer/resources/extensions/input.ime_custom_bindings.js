@@ -11,13 +11,11 @@ var registerArgumentMassager = bindingUtil ?
     $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
     require('event_bindings').registerArgumentMassager;
 
-// TODO(crbug.com/733825): These bindings have some issues.
-
-var inputIme;
+var keyEventHandled;
 registerArgumentMassager('input.ime.onKeyEvent',
                          function(args, dispatch) {
   var keyData = args[1];
-  var result = false;
+  var result = undefined;
   try {
     // dispatch() is weird - it returns an object {results: array<results>} iff
     // there is at least one result value that !== undefined. Since onKeyEvent
@@ -27,25 +25,22 @@ registerArgumentMassager('input.ime.onKeyEvent',
     if (dispatchResult && dispatchResult.results)
       result = dispatchResult.results[0];
   } catch (e) {
+    result = false;
     console.error('Error in event handler for onKeyEvent: ' + e.stack);
   }
-  if (!inputIme.onKeyEvent.async)
-    inputIme.keyEventHandled(keyData.requestId, result);
+  if (result !== undefined) {
+    keyEventHandled(keyData.requestId, !!result);
+  }
 });
 
 binding.registerCustomHook(function(api) {
- inputIme = api.compiledApi;
+  keyEventHandled = api.compiledApi.keyEventHandled;
 
-  var originalAddListener = inputIme.onKeyEvent.addListener;
-  inputIme.onKeyEvent.addListener = function(cb, opt_extraInfo) {
-    inputIme.onKeyEvent.async = false;
-    if (opt_extraInfo instanceof Array) {
-      for (var i = 0; i < opt_extraInfo.length; ++i) {
-        if (opt_extraInfo[i] == 'async') {
-          inputIme.onKeyEvent.async = true;
-        }
-      }
-    }
+  // TODO(shuchen): override onKeyEvent.addListener only for compatibility.
+  // This should be removed after the IME extension doesn't rely on the
+  // additional "async" parameter.
+  var originalAddListener = api.compiledApi.onKeyEvent.addListener;
+  api.compiledApi.onKeyEvent.addListener = function(cb, opt_extraInfo) {
     $Function.call(originalAddListener, this, cb);
   };
 

@@ -97,11 +97,6 @@
         "description": "The screen type under which the IME is activated."
       },
       {
-        "id": "CallbackStyle",
-        "type": "string",
-        "enum": ["async"]
-      },
-      {
         "id": "MouseButton",
         "type": "string",
         "description": "Which mouse buttons was clicked.",
@@ -752,7 +747,7 @@
       {
         "name": "onKeyEvent",
         "type": "function",
-        "description": "Fired when a key event is sent from the operating system. The event will be sent to the extension if this extension owns the active IME.",
+        "description": "Fired when a key event is sent from the operating system. The event will be sent to the extension if this extension owns the active IME. The listener function should return true if the event was handled false if it was not.  If the event will be evaluated asynchronously, this function must return undefined and the IME must later call keyEventHandled() with the result.",
         "platforms": ["chromeos", "win", "linux"],
         "options": {
           "supportsFilters": false,
@@ -772,20 +767,9 @@
             "description": "Data on the key event"
           }
         ],
-        "extraParameters": [
-          {
-            "type": "array",
-            "optional": true,
-            "name": "extraInfoSpec",
-            "description": "Array of extra information that specifies how the callback is invoked.",
-            "items": {
-              "$ref": "CallbackStyle"
-            }
-          }
-        ],
         "returns": {
           "type": "boolean",
-          "description": "True if the keystroke was handled, false if not.  This function should always return a value if |async| is not specified.",
+          "description": "True if the keystroke was handled, false if not. Or returns undefined if the extension decides to call keyEventHandled explicitly.",
           "optional": true
         }
       },
