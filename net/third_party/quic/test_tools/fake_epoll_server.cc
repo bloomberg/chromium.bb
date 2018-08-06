@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quic/test_tools/mock_epoll_server.h"
+#include "net/third_party/quic/test_tools/fake_epoll_server.h"
 
 namespace quic {
 namespace test {
@@ -15,11 +15,11 @@ int64_t FakeTimeEpollServer::NowInUsec() const {
   return now_in_usec_;
 }
 
-MockEpollServer::MockEpollServer() : until_in_usec_(-1) {}
+FakeEpollServer::FakeEpollServer() : until_in_usec_(-1) {}
 
-MockEpollServer::~MockEpollServer() = default;
+FakeEpollServer::~FakeEpollServer() = default;
 
-int MockEpollServer::epoll_wait_impl(int epfd,
+int FakeEpollServer::epoll_wait_impl(int epfd,
                                      struct epoll_event* events,
                                      int max_events,
                                      int timeout_in_ms) {

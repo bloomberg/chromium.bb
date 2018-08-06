@@ -1404,7 +1404,6 @@ TEST_P(EndToEndTest, ClientSuggestsRTT) {
 }
 
 TEST_P(EndToEndTest, ClientSuggestsIgnoredRTT) {
-  SetQuicReloadableFlag(quic_no_irtt, true);
   // Client suggests initial RTT, but also specifies NRTT, so it's not used.
   const QuicTime::Delta kInitialRTT = QuicTime::Delta::FromMicroseconds(20000);
   client_config_.SetInitialRoundTripTimeUsToSend(kInitialRTT.ToMicroseconds());
@@ -2914,6 +2913,41 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
   if (!BothSidesSupportStatelessRejects()) {
     VerifyCleanConnection(true);
   }
+}
+
+// Regression test for b/111515567
+TEST_P(EndToEndTest, AgreeOnStopWaiting) {
+  ASSERT_TRUE(Initialize());
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
+  server_thread_->Pause();
+  QuicConnection* server_connection = GetServerConnection();
+  // Verify client and server connections agree on the value of
+  // no_stop_waiting_frames.
+  EXPECT_EQ(QuicConnectionPeer::GetNoStopWaitingFrames(client_connection),
+            QuicConnectionPeer::GetNoStopWaitingFrames(server_connection));
+  server_thread_->Resume();
+}
+
+// Regression test for b/111515567
+TEST_P(EndToEndTest, AgreeOnStopWaitingWithNoStopWaitingOption) {
+  QuicTagVector options;
+  options.push_back(kNSTP);
+  client_config_.SetConnectionOptionsToSend(options);
+  ASSERT_TRUE(Initialize());
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
+  server_thread_->Pause();
+  QuicConnection* server_connection = GetServerConnection();
+  // Verify client and server connections agree on the value of
+  // no_stop_waiting_frames.
+  EXPECT_EQ(QuicConnectionPeer::GetNoStopWaitingFrames(client_connection),
+            QuicConnectionPeer::GetNoStopWaitingFrames(server_connection));
+  server_thread_->Resume();
 }
 
 TEST_P(EndToEndTest, ReleaseHeadersStreamBufferWhenIdle) {

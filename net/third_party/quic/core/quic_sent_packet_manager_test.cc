@@ -1304,7 +1304,6 @@ TEST_P(QuicSentPacketManagerTest, RetransmissionTimeout) {
 }
 
 TEST_P(QuicSentPacketManagerTest, RetransmissionTimeoutOnePacket) {
-  SetQuicReloadableFlag(quic_one_rto, true);
   // Set the 1RTO connection option.
   QuicConfig client_config;
   QuicTagVector options;

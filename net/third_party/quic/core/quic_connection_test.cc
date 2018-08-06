@@ -6997,7 +6997,6 @@ TEST_P(QuicConnectionTest, ValidStatelessResetToken) {
 }
 
 TEST_P(QuicConnectionTest, WriteBlockedWithInvalidAck) {
-  SetQuicReloadableFlag(quic_validate_ack_largest_observed, true);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, _, _));
 

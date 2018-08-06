@@ -5,7 +5,7 @@
 #include "net/third_party/quic/platform/impl/quic_epoll_clock.h"
 
 #include "net/third_party/quic/platform/api/quic_test.h"
-#include "net/third_party/quic/test_tools/mock_epoll_server.h"
+#include "net/third_party/quic/test_tools/fake_epoll_server.h"
 
 namespace quic {
 namespace test {
@@ -13,7 +13,7 @@ namespace test {
 class QuicEpollClockTest : public QuicTest {};
 
 TEST_F(QuicEpollClockTest, ApproximateNowInUsec) {
-  MockEpollServer epoll_server;
+  FakeEpollServer epoll_server;
   QuicEpollClock clock(&epoll_server);
 
   epoll_server.set_now_in_usec(1000000);
@@ -34,7 +34,7 @@ TEST_F(QuicEpollClockTest, ApproximateNowInUsec) {
 }
 
 TEST_F(QuicEpollClockTest, NowInUsec) {
-  MockEpollServer epoll_server;
+  FakeEpollServer epoll_server;
   QuicEpollClock clock(&epoll_server);
 
   epoll_server.set_now_in_usec(1000000);

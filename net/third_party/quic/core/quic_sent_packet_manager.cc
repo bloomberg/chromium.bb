@@ -100,10 +100,7 @@ QuicSentPacketManager::~QuicSentPacketManager() {}
 void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasReceivedInitialRoundTripTimeUs() &&
       config.ReceivedInitialRoundTripTimeUs() > 0) {
-    if (GetQuicReloadableFlag(quic_no_irtt) &&
-        config.HasClientSentConnectionOption(kNRTT, perspective_)) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_no_irtt);
-    } else {
+    if (!config.HasClientSentConnectionOption(kNRTT, perspective_)) {
       SetInitialRtt(QuicTime::Delta::FromMicroseconds(
           config.ReceivedInitialRoundTripTimeUs()));
     }
@@ -180,9 +177,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(k1TLP, perspective_)) {
     max_tail_loss_probes_ = 1;
   }
-  if (GetQuicReloadableFlag(quic_one_rto) &&
-      config.HasClientSentConnectionOption(k1RTO, perspective_)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_one_rto);
+  if (config.HasClientSentConnectionOption(k1RTO, perspective_)) {
     max_rto_packets_ = 1;
   }
   if (config.HasClientSentConnectionOption(kTLPR, perspective_)) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_
-#define NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_
+#ifndef NET_THIRD_PARTY_QUIC_TEST_TOOLS_FAKE_EPOLL_SERVER_H_
+#define NET_THIRD_PARTY_QUIC_TEST_TOOLS_FAKE_EPOLL_SERVER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,7 +19,7 @@
 namespace quic {
 namespace test {
 
-// Unlike the full MockEpollServer, this only lies about the time but lets
+// Unlike the full FakeEpollServer, this only lies about the time but lets
 // fd events operate normally.  Usefully when interacting with real backends
 // but wanting to skip forward in time to trigger timeouts.
 class FakeTimeEpollServer : public net::EpollServer {
@@ -53,12 +53,12 @@ class FakeTimeEpollServer : public net::EpollServer {
   DISALLOW_COPY_AND_ASSIGN(FakeTimeEpollServer);
 };
 
-class MockEpollServer : public FakeTimeEpollServer {
+class FakeEpollServer : public FakeTimeEpollServer {
  public:  // type definitions
   using EventQueue = std::unordered_multimap<int64_t, struct epoll_event>;
 
-  MockEpollServer();
-  ~MockEpollServer() override;
+  FakeEpollServer();
+  ~FakeEpollServer() override;
 
   // time_in_usec is the time at which the event specified
   // by 'ee' will be delivered. Note that it -is- possible
@@ -106,10 +106,10 @@ class MockEpollServer : public FakeTimeEpollServer {
   EventQueue event_queue_;
   int64_t until_in_usec_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockEpollServer);
+  DISALLOW_COPY_AND_ASSIGN(FakeEpollServer);
 };
 
 }  // namespace test
 }  // namespace quic
 
-#endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_
+#endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_FAKE_EPOLL_SERVER_H_
