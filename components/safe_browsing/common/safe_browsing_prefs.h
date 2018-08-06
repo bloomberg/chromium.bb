@@ -25,6 +25,9 @@ extern const char kSafeBrowsingEnabled[];
 extern const char kSafeBrowsingExtendedReportingOptInAllowed[];
 
 // A dictionary mapping incident types to a dict of incident key:digest pairs.
+// The key is a string: a filename or pref name. Digests are 4 bytes. This pref
+// is only set/updated if Chrome (Windows only) notices certain security
+// incidents, e.g. the user downloaded binaries with invalid signatures.
 extern const char kSafeBrowsingIncidentsSent[];
 
 // Boolean that is true when the SafeBrowsing interstitial should not allow
@@ -49,21 +52,25 @@ extern const char kSafeBrowsingScoutGroupSelected[];
 extern const char kSafeBrowsingScoutReportingEnabled[];
 
 // Dictionary containing safe browsing triggers and the list of times they have
-// fired recently.
+// fired recently. The keys are TriggerTypes (4-byte ints) and the values are
+// lists of doubles.
 extern const char kSafeBrowsingTriggerEventTimestamps[];
 
 // Dictionary that records the origin and navigation ID pairs of unhandled sync
-// password reuses.
+// password reuses. The keys are origin strings and the ID values are 8-byte
+// ints. Only set/update if a Chrome Sync user reuses their Gaia password on
+// phishing site.
 extern const char kSafeBrowsingUnhandledSyncPasswordReuses[];
 
 // List of domains where Safe Browsing should trust. That means Safe Browsing
 // won't check for malware/phishing/Uws on resources on these domains, or
-// trigger warnings.
+// trigger warnings. Used for enterprise only.
 extern const char kSafeBrowsingWhitelistDomains[];
 
 // String indicating the URL where password protection service should send user
 // to change their password if they've been phished. Password protection service
-// also captures new password on this page in a change password event.
+// also captures new password on this page in a change password event. Used for
+// enterprise only.
 extern const char kPasswordProtectionChangePasswordURL[];
 
 // List of string indicating the URL(s) users use to log in. Password protection
