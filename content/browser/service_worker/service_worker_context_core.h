@@ -152,6 +152,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                          const ServiceWorkerClientInfo& client_info) override;
   void OnControlleeRemoved(ServiceWorkerVersion* version,
                            const std::string& client_uuid) override;
+  void OnNoControllees(ServiceWorkerVersion* version) override;
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
   ServiceWorkerStorage* storage() { return storage_.get(); }

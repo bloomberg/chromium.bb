@@ -248,6 +248,7 @@ void ServiceWorkerContextWatcher::OnRunningStateChanged(
 
 void ServiceWorkerContextWatcher::OnVersionStateChanged(
     int64_t version_id,
+    const GURL& scope,
     content::ServiceWorkerVersion::Status status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto it = version_info_map_.find(version_id);
@@ -332,6 +333,7 @@ void ServiceWorkerContextWatcher::OnReportConsoleMessage(
 
 void ServiceWorkerContextWatcher::OnControlleeAdded(
     int64_t version_id,
+    const GURL& scope,
     const std::string& uuid,
     const ServiceWorkerClientInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -344,6 +346,7 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
 }
 
 void ServiceWorkerContextWatcher::OnControlleeRemoved(int64_t version_id,
+                                                      const GURL& scope,
                                                       const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto it = version_info_map_.find(version_id);

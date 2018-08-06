@@ -749,7 +749,7 @@ void ServiceWorkerContextCore::OnVersionStateChanged(
     ServiceWorkerVersion* version) {
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnVersionStateChanged,
-      version->version_id(), version->status());
+      version->version_id(), version->scope(), version->status());
 }
 
 void ServiceWorkerContextCore::OnDevToolsRoutingIdChanged(
@@ -807,9 +807,9 @@ void ServiceWorkerContextCore::OnControlleeAdded(
     ServiceWorkerVersion* version,
     const std::string& client_uuid,
     const ServiceWorkerClientInfo& client_info) {
-  observer_list_->Notify(FROM_HERE,
-                         &ServiceWorkerContextCoreObserver::OnControlleeAdded,
-                         version->version_id(), client_uuid, client_info);
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextCoreObserver::OnControlleeAdded,
+      version->version_id(), version->scope(), client_uuid, client_info);
 }
 
 void ServiceWorkerContextCore::OnControlleeRemoved(
@@ -817,7 +817,13 @@ void ServiceWorkerContextCore::OnControlleeRemoved(
     const std::string& client_uuid) {
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnControlleeRemoved,
-                         version->version_id(), client_uuid);
+                         version->version_id(), version->scope(), client_uuid);
+}
+
+void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextCoreObserver::OnNoControllees,
+                         version->version_id(), version->scope());
 }
 
 ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {

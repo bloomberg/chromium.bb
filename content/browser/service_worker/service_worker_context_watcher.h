@@ -89,6 +89,7 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
       content::EmbeddedWorkerStatus running_status) override;
   void OnVersionStateChanged(
       int64_t version_id,
+      const GURL& scope,
       content::ServiceWorkerVersion::Status status) override;
   void OnVersionDevToolsRoutingIdChanged(int64_t version_id,
                                          int process_id,
@@ -102,9 +103,11 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
   void OnReportConsoleMessage(int64_t version_id,
                               const ConsoleMessage& message) override;
   void OnControlleeAdded(int64_t version_id,
+                         const GURL& scope,
                          const std::string& uuid,
                          const ServiceWorkerClientInfo& info) override;
   void OnControlleeRemoved(int64_t version_id,
+                           const GURL& scope,
                            const std::string& uuid) override;
   void OnRegistrationCompleted(int64_t registration_id,
                                const GURL& pattern) override;

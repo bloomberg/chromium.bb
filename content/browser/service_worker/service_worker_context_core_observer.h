@@ -64,6 +64,7 @@ class ServiceWorkerContextCoreObserver {
   virtual void OnRunningStateChanged(int64_t version_id,
                                      EmbeddedWorkerStatus running_status) {}
   virtual void OnVersionStateChanged(int64_t version_id,
+                                     const GURL& scope,
                                      ServiceWorkerVersion::Status status) {}
   virtual void OnVersionDevToolsRoutingIdChanged(int64_t version_id,
                                                  int process_id,
@@ -76,10 +77,13 @@ class ServiceWorkerContextCoreObserver {
   virtual void OnReportConsoleMessage(int64_t version_id,
                                       const ConsoleMessage& message) {}
   virtual void OnControlleeAdded(int64_t version_id,
+                                 const GURL& scope,
                                  const std::string& uuid,
                                  const ServiceWorkerClientInfo& info) {}
   virtual void OnControlleeRemoved(int64_t version_id,
+                                   const GURL& scope,
                                    const std::string& uuid) {}
+  virtual void OnNoControllees(int64_t version_id, const GURL& scope) {}
   // Called when the ServiceWorkerContainer.register() promise is resolved.
   //
   // This is called before the service worker registration is persisted to

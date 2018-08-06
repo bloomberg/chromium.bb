@@ -137,6 +137,7 @@ class ServiceWorkerActivationObserver
 
   // ServiceWorkerContextCoreObserver overrides.
   void OnVersionStateChanged(int64_t version_id,
+                             const GURL& scope,
                              ServiceWorkerVersion::Status) override {
     if (context_->GetLiveVersion(version_id)->status() ==
         ServiceWorkerVersion::ACTIVATED) {
