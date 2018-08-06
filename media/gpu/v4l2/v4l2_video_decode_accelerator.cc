@@ -1268,7 +1268,9 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
   while (!input_ready_queue_.empty()) {
     const int buffer = input_ready_queue_.front();
     InputRecord& input_record = input_buffer_map_[buffer];
-    if (input_record.input_id == kFlushBufferId && decoder_cmd_supported_) {
+
+    bool flush_handled = false;
+    if (input_record.input_id == kFlushBufferId) {
       // Send the flush command after all input buffers are dequeued. This makes
       // sure all previous resolution changes have been handled because the
       // driver must hold the input buffer that triggers resolution change. The
@@ -1279,27 +1281,37 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
       // yet. Also, V4L2VDA calls STREAMOFF and STREAMON after resolution
       // change. They implicitly send a V4L2_DEC_CMD_STOP and V4L2_DEC_CMD_START
       // to the decoder.
-      if (input_buffer_queued_count_ == 0) {
-        input_ready_queue_.pop();
-        free_input_buffers_.push_back(buffer);
-        input_record.input_id = -1;
-        if (coded_size_.IsEmpty() || !input_streamon_) {
-          // (1) If coded_size_.IsEmpty(), no output buffer could have been
-          // allocated and there is nothing to flush. We can NotifyFlushDone()
-          // immediately, without requesting flush to the driver via
-          // SendDecoderCmdStop().
-          // (2) If input stream is off, we will never get the output buffer
-          // with V4L2_BUF_FLAG_LAST. We should NotifyFlushDone().
-          NotifyFlushDoneIfNeeded();
-        } else if (!SendDecoderCmdStop()) {
-          return;
-        }
-      } else {
+      if (input_buffer_queued_count_ > 0)
         break;
+
+      if (coded_size_.IsEmpty() || !input_streamon_) {
+        // In these situations, we should call NotifyFlushDone() immediately:
+        // (1) If coded_size_.IsEmpty(), no output buffer could have been
+        // allocated and there is nothing to flush.
+        // (2) If input stream is off, we will never get the output buffer
+        // with V4L2_BUF_FLAG_LAST.
+        VLOGF(2) << "Nothing to flush. Notify flush done directly.";
+        NofityFlushDone();
+        flush_handled = true;
+      } else if (decoder_cmd_supported_) {
+        if (!SendDecoderCmdStop())
+          return;
+        flush_handled = true;
       }
-    } else if (!EnqueueInputRecord())
-      return;
+    }
+    if (flush_handled) {
+      // Recycle the buffer directly if we already handled the flush request.
+      input_ready_queue_.pop();
+      free_input_buffers_.push_back(buffer);
+      input_record.input_id = -1;
+    } else {
+      // Enqueue an input buffer, or an empty flush buffer if decoder cmd
+      // is not supported and there may be buffers to be flushed.
+      if (!EnqueueInputRecord())
+        return;
+    }
   }
+
   if (old_inputs_queued == 0 && input_buffer_queued_count_ != 0) {
     // We just started up a previously empty queue.
     // Queue state changed; signal interrupt.
@@ -1693,14 +1705,17 @@ void V4L2VideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
   if (!StartDevicePoll())
     return;
 
+  NofityFlushDone();
+  // While we were flushing, we early-outed DecodeBufferTask()s.
+  ScheduleDecodeBufferTaskIfNeeded();
+}
+
+void V4L2VideoDecodeAccelerator::NofityFlushDone() {
   decoder_delay_bitstream_buffer_id_ = -1;
   decoder_flushing_ = false;
   VLOGF(2) << "returning flush";
   child_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Client::NotifyFlushDone, client_));
-
-  // While we were flushing, we early-outed DecodeBufferTask()s.
-  ScheduleDecodeBufferTaskIfNeeded();
 }
 
 bool V4L2VideoDecodeAccelerator::IsDecoderCmdSupported() {
