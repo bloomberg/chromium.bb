@@ -55,24 +55,20 @@ class VideoFrameTexture : public base::RefCounted<VideoFrameTexture> {
 };
 
 struct RenderingHelperParams {
-  RenderingHelperParams();
-  RenderingHelperParams(const RenderingHelperParams& other);
-  ~RenderingHelperParams();
-
   // The target rendering FPS. A value of 0 makes the RenderingHelper return
   // frames immediately.
-  int rendering_fps;
+  int rendering_fps = 0;
 
   // The number of windows. We play each stream in its own window
   // on the screen.
-  int num_windows;
+  int num_windows = 0;
 
   // The members below are only used for the thumbnail mode where all frames
   // are rendered in sequence onto one FBO for comparison/verification purposes.
 
   // Whether the frames are rendered as scaled thumbnails within a
   // larger FBO that is in turn rendered to the window.
-  bool render_as_thumbnails;
+  bool render_as_thumbnails = false;
   // The size of the FBO containing all visible thumbnails.
   gfx::Size thumbnails_page_size;
   // The size of each thumbnail within the FBO.
@@ -117,9 +113,6 @@ class RenderingHelper {
   // more video frames.
   void Flush(size_t window_id);
 
-  // Get the platform specific handle to the OpenGL display.
-  void* GetGLDisplay();
-
   // Get the GL context.
   gl::GLContext* GetGLContext();
 
@@ -131,14 +124,14 @@ class RenderingHelper {
   struct RenderedVideo {
 
     // True if there won't be any new video frames comming.
-    bool is_flushing;
+    bool is_flushing = false;
 
     // The number of frames need to be dropped to catch up the rendering. We
     // always keep the last remaining frame in pending_frames even after it
     // has been rendered, so that we have something to display if the client
     // is falling behind on providing us with new frames during timer-driven
     // playback.
-    int frames_to_drop;
+    int frames_to_drop = 0;
 
     // The video frames pending for rendering.
     base::queue<scoped_refptr<VideoFrameTexture>> pending_frames;
