@@ -279,7 +279,9 @@ class CORE_EXPORT InspectorDOMAgent final
 
  private:
   void SetDocument(Document*);
-  void InnerEnable();
+  // Unconditionally enables the agent, even if |enabled_.Get()==true|.
+  // For idempotence, call enable().
+  void EnableAndReset();
 
   // Node-related methods.
   typedef HeapHashMap<Member<Node>, int> NodeToIdMap;
@@ -347,6 +349,7 @@ class CORE_EXPORT InspectorDOMAgent final
   Member<InspectorHistory> history_;
   Member<DOMEditor> dom_editor_;
   bool suppress_attribute_modified_event_;
+  InspectorAgentState::Boolean enabled_;
   DISALLOW_COPY_AND_ASSIGN(InspectorDOMAgent);
 };
 

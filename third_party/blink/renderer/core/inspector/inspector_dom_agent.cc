@@ -90,10 +90,6 @@ using namespace HTMLNames;
 using protocol::Maybe;
 using protocol::Response;
 
-namespace DOMAgentState {
-static const char kDomAgentEnabled[] = "domAgentEnabled";
-};
-
 namespace {
 
 const size_t kMaxTextSize = 10000;
@@ -242,14 +238,14 @@ InspectorDOMAgent::InspectorDOMAgent(
       dom_listener_(nullptr),
       document_node_to_id_map_(new NodeToIdMap()),
       last_node_id_(1),
-      suppress_attribute_modified_event_(false) {}
+      suppress_attribute_modified_event_(false),
+      enabled_(&agent_state_, /*default_value=*/false) {}
 
 InspectorDOMAgent::~InspectorDOMAgent() = default;
 
 void InspectorDOMAgent::Restore() {
-  if (!Enabled())
-    return;
-  InnerEnable();
+  if (enabled_.Get())
+    EnableAndReset();
 }
 
 HeapVector<Member<Document>> InspectorDOMAgent::Documents() {
@@ -274,12 +270,16 @@ void InspectorDOMAgent::SetDocument(Document* doc) {
   DiscardFrontendBindings();
   document_ = doc;
 
-  if (!Enabled())
+  if (!enabled_.Get())
     return;
 
   // Immediately communicate 0 document or document that has finished loading.
   if (!doc || !doc->Parsing())
     GetFrontend()->documentUpdated();
+}
+
+bool InspectorDOMAgent::Enabled() const {
+  return enabled_.Get();
 }
 
 void InspectorDOMAgent::ReleaseDanglingNodes() {
@@ -448,8 +448,8 @@ Response InspectorDOMAgent::AssertEditableElement(int node_id,
   return Response::OK();
 }
 
-void InspectorDOMAgent::InnerEnable() {
-  state_->setBoolean(DOMAgentState::kDomAgentEnabled, true);
+void InspectorDOMAgent::EnableAndReset() {
+  enabled_.Set(true);
   history_ = new InspectorHistory();
   dom_editor_ = new DOMEditor(history_.Get());
   document_ = inspected_frames_->Root()->GetDocument();
@@ -457,19 +457,15 @@ void InspectorDOMAgent::InnerEnable() {
 }
 
 Response InspectorDOMAgent::enable() {
-  if (!Enabled())
-    InnerEnable();
+  if (!enabled_.Get())
+    EnableAndReset();
   return Response::OK();
 }
 
-bool InspectorDOMAgent::Enabled() const {
-  return state_->booleanProperty(DOMAgentState::kDomAgentEnabled, false);
-}
-
 Response InspectorDOMAgent::disable() {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM agent hasn't been enabled");
-  state_->setBoolean(DOMAgentState::kDomAgentEnabled, false);
+  enabled_.Clear();
   instrumenting_agents_->removeInspectorDOMAgent(this);
   history_.Clear();
   dom_editor_.Clear();
@@ -482,8 +478,7 @@ Response InspectorDOMAgent::getDocument(
     Maybe<bool> pierce,
     std::unique_ptr<protocol::DOM::Node>* root) {
   // Backward compatibility. Mark agent as enabled when it requests document.
-  if (!Enabled())
-    InnerEnable();
+  enable();
 
   if (!document_)
     return Response::Error("Document is not available");
@@ -504,7 +499,7 @@ Response InspectorDOMAgent::getFlattenedDocument(
     Maybe<int> depth,
     Maybe<bool> pierce,
     std::unique_ptr<protocol::Array<protocol::DOM::Node>>* nodes) {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM agent hasn't been enabled");
 
   if (!document_)
@@ -964,7 +959,7 @@ Response InspectorDOMAgent::performSearch(
     Maybe<bool> optional_include_user_agent_shadow_dom,
     String* search_id,
     int* result_count) {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM agent is not enabled");
 
   // FIXME: Few things are missing here:
@@ -1224,7 +1219,7 @@ Response InspectorDOMAgent::moveTo(int node_id,
 }
 
 Response InspectorDOMAgent::undo() {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM agent is not enabled");
   DummyExceptionStateForTesting exception_state;
   history_->Undo(exception_state);
@@ -1232,7 +1227,7 @@ Response InspectorDOMAgent::undo() {
 }
 
 Response InspectorDOMAgent::redo() {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM agent is not enabled");
   DummyExceptionStateForTesting exception_state;
   history_->Redo(exception_state);
@@ -1317,7 +1312,7 @@ Response InspectorDOMAgent::getNodeForLocation(
     int y,
     Maybe<bool> optional_include_user_agent_shadow_dom,
     int* node_id) {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM agent is not enabled");
   bool include_user_agent_shadow_dom =
       optional_include_user_agent_shadow_dom.fromMaybe(false);
@@ -1812,7 +1807,7 @@ void InspectorDOMAgent::DOMContentLoadedEventFired(LocalFrame* frame) {
 
   // Re-push document once it is loaded.
   DiscardFrontendBindings();
-  if (Enabled())
+  if (enabled_.Get())
     GetFrontend()->documentUpdated();
 }
 
@@ -2145,7 +2140,7 @@ Node* InspectorDOMAgent::NodeForPath(const String& path) {
 
 Response InspectorDOMAgent::pushNodeByPathToFrontend(const String& path,
                                                      int* node_id) {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM agent is not enabled");
   if (Node* node = NodeForPath(path))
     *node_id = PushNodePathToFrontend(node);
@@ -2157,7 +2152,7 @@ Response InspectorDOMAgent::pushNodeByPathToFrontend(const String& path,
 Response InspectorDOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>> backend_node_ids,
     std::unique_ptr<protocol::Array<int>>* result) {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM agent is not enabled");
   *result = protocol::Array<int>::create();
   for (size_t index = 0; index < backend_node_ids->length(); ++index) {
