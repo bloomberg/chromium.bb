@@ -888,13 +888,13 @@ inline CSSIdentifierValue::CSSIdentifierValue(TextRenderingMode e)
       value_id_ = CSSValueAuto;
       break;
     case kOptimizeSpeed:
-      value_id_ = CSSValueOptimizeSpeed;
+      value_id_ = CSSValueOptimizespeed;
       break;
     case kOptimizeLegibility:
-      value_id_ = CSSValueOptimizeLegibility;
+      value_id_ = CSSValueOptimizelegibility;
       break;
     case kGeometricPrecision:
-      value_id_ = CSSValueGeometricPrecision;
+      value_id_ = CSSValueGeometricprecision;
       break;
   }
 }
@@ -904,11 +904,11 @@ inline TextRenderingMode CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
       return kAutoTextRendering;
-    case CSSValueOptimizeSpeed:
+    case CSSValueOptimizespeed:
       return kOptimizeSpeed;
-    case CSSValueOptimizeLegibility:
+    case CSSValueOptimizelegibility:
       return kOptimizeLegibility;
-    case CSSValueGeometricPrecision:
+    case CSSValueGeometricprecision:
       return kGeometricPrecision;
     default:
       break;
@@ -1192,10 +1192,10 @@ inline CSSIdentifierValue::CSSIdentifierValue(EColorRendering e)
       value_id_ = CSSValueAuto;
       break;
     case CR_OPTIMIZESPEED:
-      value_id_ = CSSValueOptimizeSpeed;
+      value_id_ = CSSValueOptimizespeed;
       break;
     case CR_OPTIMIZEQUALITY:
-      value_id_ = CSSValueOptimizeQuality;
+      value_id_ = CSSValueOptimizequality;
       break;
   }
 }
@@ -1203,9 +1203,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(EColorRendering e)
 template <>
 inline EColorRendering CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
-    case CSSValueOptimizeSpeed:
+    case CSSValueOptimizespeed:
       return CR_OPTIMIZESPEED;
-    case CSSValueOptimizeQuality:
+    case CSSValueOptimizequality:
       return CR_OPTIMIZEQUALITY;
     case CSSValueAuto:
       return CR_AUTO;
@@ -1303,13 +1303,13 @@ inline CSSIdentifierValue::CSSIdentifierValue(EShapeRendering e)
       value_id_ = CSSValueAuto;
       break;
     case SR_OPTIMIZESPEED:
-      value_id_ = CSSValueOptimizeSpeed;
+      value_id_ = CSSValueOptimizespeed;
       break;
     case SR_CRISPEDGES:
-      value_id_ = CSSValueCrispEdges;
+      value_id_ = CSSValueCrispedges;
       break;
     case SR_GEOMETRICPRECISION:
-      value_id_ = CSSValueGeometricPrecision;
+      value_id_ = CSSValueGeometricprecision;
       break;
   }
 }
@@ -1319,11 +1319,11 @@ inline EShapeRendering CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
       return SR_AUTO;
-    case CSSValueOptimizeSpeed:
+    case CSSValueOptimizespeed:
       return SR_OPTIMIZESPEED;
-    case CSSValueCrispEdges:
+    case CSSValueCrispedges:
       return SR_CRISPEDGES;
-    case CSSValueGeometricPrecision:
+    case CSSValueGeometricprecision:
       return SR_GEOMETRICPRECISION;
     default:
       break;

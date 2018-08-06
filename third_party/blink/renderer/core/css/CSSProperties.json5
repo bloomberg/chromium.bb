@@ -791,7 +791,7 @@
       inherited: true,
       font: true,
       type_name: "TextRenderingMode",
-      keywords: ["auto", "optimizeSpeed", "optimizeLegibility", "geometricPrecision"],
+      keywords: ["auto", "optimizespeed", "optimizelegibility", "geometricprecision"],
       typedom_types: ["Keyword"],
       priority: "High",
     },
@@ -1452,7 +1452,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
-      keywords: ["auto", "optimizeSpeed", "optimizeQuality"],
+      keywords: ["auto", "optimizespeed", "optimizequality"],
       typedom_types: ["Keyword"],
     },
     {
@@ -1870,7 +1870,7 @@
       field_group: "*",
       field_template: "keyword",
       keywords: [
-        "auto", "optimizeSpeed", "optimizeQuality",
+        "auto", "optimizespeed", "optimizequality",
         "-webkit-optimize-contrast", "pixelated"
       ],
       typedom_types: ["Keyword"],
@@ -2881,7 +2881,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
-      keywords: ["auto", "optimizeSpeed", "crispEdges", "geometricPrecision"],
+      keywords: ["auto", "optimizespeed", "crispedges", "geometricprecision"],
       typedom_types: ["Keyword"],
     },
     {

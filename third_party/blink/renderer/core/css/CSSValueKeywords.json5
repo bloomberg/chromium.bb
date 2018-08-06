@@ -824,9 +824,15 @@
 
     // text-rendering
     //auto
-    "optimizeSpeed",
-    "optimizeLegibility",
-    "geometricPrecision",
+    "optimizespeed",
+    "optimizelegibility",
+    "geometricprecision",
+
+    // shape-rendering
+    //auto
+    //optimizespeed
+    //geometricprecision
+    "crispedges",
 
     // -webkit-color-adjust
     "economy",
@@ -887,8 +893,8 @@
 
     // image-rendering
     //auto
-    //optimizeSpeed
-    "optimizeQuality",
+    //optimizespeed
+    "optimizequality",
     "pixelated",
     "-webkit-optimize-contrast",
 
