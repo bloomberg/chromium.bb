@@ -26,10 +26,4 @@ QuicWallTime MockClock::WallNow() const {
   return QuicWallTime::FromUNIXSeconds((now_ - QuicTime::Zero()).ToSeconds());
 }
 
-base::TimeTicks MockClock::NowInTicks() const {
-  base::TimeTicks ticks;
-  return ticks + base::TimeDelta::FromMicroseconds(
-                     (now_ - QuicTime::Zero()).ToMicroseconds());
-}
-
 }  // namespace quic
