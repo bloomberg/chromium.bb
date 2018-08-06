@@ -42,6 +42,12 @@ bool ExtractSyncEntity(ReadTransaction* trans,
   entity->set_name(entry.GetServerNonUniqueName());
   entity->set_deleted(entry.GetServerIsDel());
   entity->set_client_defined_unique_tag(entry.GetUniqueClientTag());
+  // Required fields for bookmarks only.
+  entity->set_folder(entry.GetServerIsDir());
+  entity->set_parent_id_string(entry.GetServerParentId().GetServerId());
+  *entity->mutable_unique_position() =
+      entry.GetServerUniquePosition().ToProto();
+  entity->set_server_defined_unique_tag(entry.GetUniqueServerTag());
 
   // It looks like there are fancy other ways to get e.g. passwords specifics
   // out of Entry. Do we need to special-case them when we ship those types?
@@ -61,7 +67,6 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
                                        UserShare* user_share,
                                        ModelTypeWorker* worker,
                                        int batch_size) {
-  DCHECK_NE(BOOKMARKS, type);
   DCHECK_NE(PASSWORDS, type);
   ReadTransaction trans(FROM_HERE, user_share);
 
