@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_option_button.h"
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_option_type.h"
 
 // View controller displaying the Personalization screen.
 @interface ConsentBumpPersonalizationViewController : UIViewController
