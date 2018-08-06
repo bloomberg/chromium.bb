@@ -25,7 +25,9 @@ def get_files_to_compare(build_dir, recursive=False):
   # TODO(maruel): Add '.pdb'.
   allowed = frozenset(
       ('', '.apk', '.app', '.dll', '.dylib', '.exe', '.nexe', '.so'))
-  non_x_ok_exts = frozenset(('.apk', '.isolated'))
+
+  # .bin is for the V8 snapshot files natives_blob.bin, snapshot_blob.bin
+  non_x_ok_exts = frozenset(('.apk', '.bin', '.isolated', '.zip'))
   def check(f):
     if not os.path.isfile(f):
       return False
