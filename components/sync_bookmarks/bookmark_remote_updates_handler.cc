@@ -9,10 +9,12 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/protocol/unique_position.pb.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 
@@ -151,6 +153,17 @@ void BookmarkRemoteUpdatesHandler::Process(
     }
     const SyncedBookmarkTracker::Entity* tracked_entity =
         bookmark_tracker_->GetEntityForSyncId(update_entity.id);
+    if (tracked_entity && tracked_entity->metadata()->server_version() >=
+                              update->response_version) {
+      // Seen this update before; just ignore it.
+      continue;
+    }
+    // TODO(crbug.com/516866): Handle the case of conflict as a result of
+    // re-encryption request.
+    if (tracked_entity && tracked_entity->IsUnsynced()) {
+      ProcessConflict(*update, tracked_entity);
+      continue;
+    }
     if (update_entity.is_deleted()) {
       ProcessRemoteDelete(update_entity, tracked_entity);
       continue;
@@ -316,10 +329,7 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
 
   DCHECK(IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
                                   update_entity.is_folder));
-  if (tracked_entity->IsUnsynced()) {
-    // TODO(crbug.com/516866): Handle conflict resolution.
-    return;
-  }
+  DCHECK(!tracked_entity->IsUnsynced());
 
   const bookmarks::BookmarkNode* node = tracked_entity->bookmark_node();
   const bookmarks::BookmarkNode* old_parent = node->parent();
@@ -381,6 +391,111 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteDelete(
   RemoveEntityAndChildrenFromTracker(node);
   // Remove the node and its children from the model.
   bookmark_model_->Remove(node);
+}
+
+void BookmarkRemoteUpdatesHandler::ProcessConflict(
+    const syncer::UpdateResponseData& update,
+    const SyncedBookmarkTracker::Entity* tracked_entity) {
+  const syncer::EntityData& update_entity = update.entity.value();
+  // TODO(crbug.com/516866): Add basic unit test for this function.
+
+  // Can only conflict with existing nodes.
+  DCHECK(tracked_entity);
+  DCHECK_EQ(tracked_entity,
+            bookmark_tracker_->GetEntityForSyncId(update_entity.id));
+
+  if (tracked_entity->metadata()->is_deleted() && update_entity.is_deleted()) {
+    // Both have been deleted, delete the corresponding entity from the tracker.
+    bookmark_tracker_->Remove(update_entity.id);
+    DLOG(WARNING) << "Conflict: CHANGES_MATCH";
+    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
+                              syncer::ConflictResolution::CHANGES_MATCH,
+                              syncer::ConflictResolution::TYPE_SIZE);
+    return;
+  }
+
+  if (update_entity.is_deleted()) {
+    // Only remote has been deleted. Local wins. Record that we received the
+    // update from the server but leave the pending commit intact.
+    bookmark_tracker_->UpdateServerVersion(update_entity.id,
+                                           update.response_version);
+    DLOG(WARNING) << "Conflict: USE_LOCAL";
+    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
+                              syncer::ConflictResolution::USE_LOCAL,
+                              syncer::ConflictResolution::TYPE_SIZE);
+    return;
+  }
+
+  if (tracked_entity->metadata()->is_deleted()) {
+    // Only local node has been deleted. It should be restored from the server
+    // data as a remote creation.
+    bookmark_tracker_->Remove(update_entity.id);
+    ProcessRemoteCreate(update);
+    DLOG(WARNING) << "Conflict: USE_REMOTE";
+    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
+                              syncer::ConflictResolution::USE_REMOTE,
+                              syncer::ConflictResolution::TYPE_SIZE);
+    return;
+  }
+
+  // No deletions, there are potentially conflicting updates.
+  const bookmarks::BookmarkNode* node = tracked_entity->bookmark_node();
+  const bookmarks::BookmarkNode* old_parent = node->parent();
+
+  const SyncedBookmarkTracker::Entity* new_parent_entity =
+      bookmark_tracker_->GetEntityForSyncId(update_entity.parent_id);
+  // The |new_parent_entity| could be null in some racy conditions.  For
+  // example, when a client A moves a node and deletes the old parent and
+  // commits, and then updates the node again, and at the same time client B
+  // updates before receiving the move updates. The client B update will arrive
+  // at client A after the parent entity has been deleted already.
+  if (!new_parent_entity) {
+    DLOG(ERROR) << "Could not update node. Parent node doesn't exist: "
+                << update_entity.parent_id;
+    return;
+  }
+  const bookmarks::BookmarkNode* new_parent =
+      new_parent_entity->bookmark_node();
+  // |new_parent| would be null if the parent has been deleted locally and not
+  // committed yet. Deletions are excuted recusively, so a parent deletions
+  // entails child deletion, and if this child has been updated on another
+  // client, this would cause conflict.
+  if (!new_parent) {
+    DLOG(ERROR)
+        << "Could not update node. Parent node has been deleted already.";
+    return;
+  }
+  // Either local and remote data match or server wins, and in both cases we
+  // should squash any pending commits.
+  bookmark_tracker_->AckSequenceNumber(update_entity.id);
+
+  // Node update could be either in the node data (e.g. title or
+  // unique_position), or it could be that the node has moved under another
+  // parent without any data change. Should check both the data and the parent
+  // to confirm that no updates to the model are needed.
+  if (tracked_entity->MatchesDataIgnoringParent(update_entity) &&
+      new_parent == old_parent) {
+    bookmark_tracker_->Update(update_entity.id, update.response_version,
+                              update_entity.modification_time,
+                              update_entity.unique_position,
+                              update_entity.specifics);
+
+    // The changes are identical so there isn't a real conflict.
+    DLOG(WARNING) << "Conflict: CHANGES_MATCH";
+    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
+                              syncer::ConflictResolution::CHANGES_MATCH,
+                              syncer::ConflictResolution::TYPE_SIZE);
+    return;
+  }
+
+  // Conflict where data don't match and no remote deletion, and hence server
+  // wins. Update the model from server data.
+  DLOG(WARNING) << "Conflict: USE_REMOTE";
+  UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
+                            syncer::ConflictResolution::USE_REMOTE,
+                            syncer::ConflictResolution::TYPE_SIZE);
+  ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
+                    bookmark_tracker_);
 }
 
 void BookmarkRemoteUpdatesHandler::RemoveEntityAndChildrenFromTracker(

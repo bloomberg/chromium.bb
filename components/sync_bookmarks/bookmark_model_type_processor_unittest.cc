@@ -41,7 +41,8 @@ struct BookmarkInfo {
 
 syncer::UpdateResponseData CreateUpdateResponseData(
     const BookmarkInfo& bookmark_info,
-    const syncer::UniquePosition& unique_position) {
+    const syncer::UniquePosition& unique_position,
+    int response_version) {
   syncer::EntityData data;
   data.id = bookmark_info.server_id;
   data.parent_id = bookmark_info.parent_id;
@@ -59,8 +60,7 @@ syncer::UpdateResponseData CreateUpdateResponseData(
 
   syncer::UpdateResponseData response_data;
   response_data.entity = data.PassToPtr();
-  // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data.response_version = response_version;
   return response_data;
 }
 
@@ -104,11 +104,12 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
   updates.push_back(
       CreateUpdateResponseData({kBookmarkBarId, std::string(), std::string(),
                                 kBookmarksRootId, kBookmarkBarTag},
-                               pos));
+                               pos, /*response_version=*/0));
   for (BookmarkInfo bookmark : bookmarks) {
     pos = syncer::UniquePosition::After(pos,
                                         syncer::UniquePosition::RandomSuffix());
-    updates.push_back(CreateUpdateResponseData(bookmark, pos));
+    updates.push_back(
+        CreateUpdateResponseData(bookmark, pos, /*response_version=*/0));
   }
   // TODO(crbug.com/516866): Remove after a proper positioning for remote
   // updates is implemented. Reversing the updates because the sorting algorithm
@@ -174,7 +175,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
   updates.push_back(
       CreateUpdateResponseData({kBookmarkBarId, std::string(), std::string(),
                                 kBookmarksRootId, kBookmarkBarTag},
-                               kRandomPosition));
+                               kRandomPosition, /*response_version=*/0));
 
   // Add update for another node under the bookmarks bar.
   const std::string kNodeId = "node_id";
@@ -183,7 +184,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
   updates.push_back(
       CreateUpdateResponseData({kNodeId, kTitle, kUrl, kBookmarkBarId,
                                 /*server_tag=*/std::string()},
-                               kRandomPosition));
+                               kRandomPosition, /*response_version=*/0));
 
   const bookmarks::BookmarkNode* bookmarkbar =
       bookmark_model()->bookmark_bar_node();
@@ -224,7 +225,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   updates.push_back(
       CreateUpdateResponseData({kNodeId, kNewTitle, kNewUrl, kBookmarkBarId,
                                 /*server_tag=*/std::string()},
-                               kRandomPosition));
+                               kRandomPosition, /*response_version=*/1));
 
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 
@@ -259,7 +260,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
   updates.push_back(
       CreateUpdateResponseData({kNodeId, kTitle, kUrl, kBookmarkBarId,
                                 /*server_tag=*/std::string()},
-                               kRandomPosition));
+                               kRandomPosition, /*response_version=*/1));
   updates[0].response_version++;
 
   EXPECT_CALL(*schedule_save_closure(), Run());

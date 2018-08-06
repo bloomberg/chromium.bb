@@ -73,6 +73,15 @@ class BookmarkRemoteUpdatesHandler {
   void ProcessRemoteDelete(const syncer::EntityData& update_entity,
                            const SyncedBookmarkTracker::Entity* tracked_entity);
 
+  // Processes a conflict where the bookmark has been changed both locally and
+  // remotely. It applies the general policy the server wins expcet in the case
+  // of remote deletions in which local wins. |tracked_entity| is the tracked
+  // entity for that server_id. It is passed as a dependency instead of
+  // performing a lookup inside ProcessRemoteDelete() to avoid wasting CPU
+  // cycles for doing another lookup (this code runs on the UI thread).
+  void ProcessConflict(const syncer::UpdateResponseData& update,
+                       const SyncedBookmarkTracker::Entity* tracked_entity);
+
   // Recursively removes the entities corresponding to |node| and its children
   // from |bookmark_tracker_|.
   void RemoveEntityAndChildrenFromTracker(const bookmarks::BookmarkNode* node);

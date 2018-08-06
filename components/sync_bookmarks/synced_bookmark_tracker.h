@@ -106,6 +106,9 @@ class SyncedBookmarkTracker {
               const sync_pb::UniquePosition& unique_position,
               const sync_pb::EntitySpecifics& specifics);
 
+  // Updates the server version of an existing entry for the |sync_id|.
+  void UpdateServerVersion(const std::string& sync_id, int64_t server_version);
+
   // This class maintains the order of calls to this method and the same order
   // is gauaranteed when returning local changes in
   // GetEntitiesWithLocalChanges() as well as in BuildBookmarkModelMetadata().
@@ -145,6 +148,11 @@ class SyncedBookmarkTracker {
                                 const std::string& new_id,
                                 int64_t acked_sequence_number,
                                 int64_t server_version);
+
+  // Set the value of |EntityMetadata.acked_sequence_number| in the entity with
+  // |sync_id| to be equal to |EntityMetadata.sequence_number| such that it is
+  // not returned in GetEntitiesWithLocalChanges().
+  void AckSequenceNumber(const std::string& sync_id);
 
   // Whether the tracker is empty or not.
   bool IsEmpty() const;
