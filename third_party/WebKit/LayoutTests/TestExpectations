@@ -4846,3 +4846,4 @@ crbug.com/862806 [ Linux ] css3/filters/effect-drop-shadow-hw.html [ Pass Timeou
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure ]
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure ]
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure ]
+crbug.com/869726 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
