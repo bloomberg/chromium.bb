@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
+#include "third_party/blink/renderer/platform/heap/v8_heap_controller.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -29,8 +30,8 @@ class TraceWrapperV8Reference;
 // reachable wrappers. V8 calls this visitor during its garbage collection,
 // see v8::EmbedderHeapTracer.
 class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
-    : public v8::EmbedderHeapTracer,
-      public ScriptWrappableVisitor {
+    : public ScriptWrappableVisitor,
+      public V8HeapController {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ScriptWrappableMarkingVisitor);
 
  public:
@@ -69,7 +70,6 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   bool WrapperTracingInProgress() const { return tracing_in_progress_; }
 
   // v8::EmbedderHeapTracer interface.
-
   void TracePrologue() override;
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&
                                 internal_fields_of_potential_wrappers) override;
@@ -81,8 +81,10 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   void EnterFinalPause() override;
   size_t NumberOfWrappersToTrace() override;
 
-  // ScriptWrappableVisitor interface.
+  // V8HeapController interface.
+  void FinalizeAndCleanup() override;
 
+  // ScriptWrappableVisitor interface.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override;
   void VisitWithWrappers(void*, TraceDescriptor) override;
   void Visit(DOMWrapperMap<ScriptWrappable>*,

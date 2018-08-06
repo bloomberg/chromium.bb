@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/heap/v8_heap_controller.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -622,12 +623,11 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
-  std::unique_ptr<ScriptWrappableMarkingVisitor> visitor(
-      new ScriptWrappableMarkingVisitor(isolate));
-  V8PerIsolateData::From(isolate)->SetScriptWrappableMarkingVisitor(
-      std::move(visitor));
+  V8PerIsolateData::From(isolate)->SetV8HeapController(
+      std::unique_ptr<V8HeapController>{
+          new ScriptWrappableMarkingVisitor(isolate)});
   isolate->SetEmbedderHeapTracer(
-      V8PerIsolateData::From(isolate)->GetScriptWrappableMarkingVisitor());
+      V8PerIsolateData::From(isolate)->GetV8HeapController());
 
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
 
