@@ -136,6 +136,19 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   void SimulateGattCharacteristic(BluetoothRemoteGattService* service,
                                   const std::string& uuid,
                                   int properties) override;
+  void SimulateGattNotifySessionStarted(
+      BluetoothRemoteGattCharacteristic* characteristic) override;
+  void SimulateGattNotifySessionStartError(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
+  void SimulateGattNotifySessionStopped(
+      BluetoothRemoteGattCharacteristic* characteristic) override;
+  void SimulateGattNotifySessionStopError(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
+  void SimulateGattCharacteristicChanged(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value) override;
   void SimulateGattCharacteristicRead(
       BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
@@ -165,6 +178,7 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   void OnFakeBluetoothGattDisconnect();
   void OnFakeBluetoothCharacteristicReadValue();
   void OnFakeBluetoothCharacteristicWriteValue(std::vector<uint8_t> value);
+  void OnFakeBluetoothGattSetCharacteristicNotification(NotifyValueState state);
   void OnFakeBluetoothDescriptorReadValue();
   void OnFakeBluetoothDescriptorWriteValue(std::vector<uint8_t> value);
 
