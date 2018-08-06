@@ -79,9 +79,9 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 - (void)testOpeningServicesWhileSignedIn {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
   prefService->SetBoolean(kUnifiedConsentGiven, false);
-  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   [self openGoogleServicesSettings];
   [self assertSyncEverythingSection];
   [self assertPersonalizedServicesCollapsed:NO];
@@ -96,9 +96,9 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 - (void)testOpeningServicesWhileSignedInAndConsentGiven {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
   prefService->SetBoolean(kUnifiedConsentGiven, true);
-  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   [self openGoogleServicesSettings];
   [self assertSyncEverythingSection];
   [self assertPersonalizedServicesCollapsed:YES];
