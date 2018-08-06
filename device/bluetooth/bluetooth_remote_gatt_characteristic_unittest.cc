@@ -3013,11 +3013,15 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #define MAYBE_GetDescriptors_FindNone DISABLED_GetDescriptors_FindNone
 #endif
 #if defined(OS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
-       GetDescriptors_FindNone) {
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GetDescriptors_FindNone) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetDescriptors_FindNone) {
 #endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   EXPECT_EQ(0u, characteristic1_->GetDescriptors().size());
@@ -3030,12 +3034,17 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetDescriptors_FindNone) {
   DISABLED_GetDescriptors_and_GetDescriptor
 #endif
 #if defined(OS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        GetDescriptors_and_GetDescriptor) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_GetDescriptors_and_GetDescriptor) {
 #endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   // Add several Descriptors:
@@ -3047,6 +3056,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   SimulateGattDescriptor(characteristic1_, uuid2.canonical_value());
   SimulateGattDescriptor(characteristic2_, uuid3.canonical_value());
   SimulateGattDescriptor(characteristic2_, uuid4.canonical_value());
+  base::RunLoop().RunUntilIdle();
 
   // Verify that GetDescriptor can retrieve descriptors again by ID,
   // and that the same Descriptor is returned when searched by ID.
@@ -3084,10 +3094,15 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #define MAYBE_GetDescriptorsByUUID DISABLED_GetDescriptorsByUUID
 #endif
 #if defined(OS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only, GetDescriptorsByUUID) {
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GetDescriptorsByUUID) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetDescriptorsByUUID) {
 #endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   // Add several Descriptors:
@@ -3098,6 +3113,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetDescriptorsByUUID) {
   SimulateGattDescriptor(characteristic1_, id2.canonical_value());
   SimulateGattDescriptor(characteristic2_, id3.canonical_value());
   SimulateGattDescriptor(characteristic2_, id3.canonical_value());
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(characteristic2_->GetDescriptorsByUUID(id3).at(0)->GetIdentifier(),
             characteristic2_->GetDescriptorsByUUID(id3).at(1)->GetIdentifier());

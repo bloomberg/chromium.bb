@@ -120,7 +120,7 @@ class FakeGattDeviceServiceWinrt
 
   std::vector<Microsoft::WRL::ComPtr<FakeGattCharacteristicWinrt>>
       fake_characteristics_;
-  uint16_t characteristic_attribute_handle_ = 0;
+  uint16_t characteristic_attribute_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGattDeviceServiceWinrt);
 };

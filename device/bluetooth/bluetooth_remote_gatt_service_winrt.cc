@@ -91,10 +91,16 @@ void BluetoothRemoteGattServiceWinrt::UpdateCharacteristics(
 
     std::string identifier = characteristic->GetIdentifier();
     auto iter = characteristics_.find(identifier);
-    if (iter != characteristics_.end())
-      characteristics.emplace(std::move(*iter));
-    else
-      characteristics.emplace(std::move(identifier), std::move(characteristic));
+    if (iter != characteristics_.end()) {
+      iter = characteristics.emplace(std::move(*iter)).first;
+    } else {
+      iter = characteristics
+                 .emplace(std::move(identifier), std::move(characteristic))
+                 .first;
+    }
+
+    static_cast<BluetoothRemoteGattCharacteristicWinrt*>(iter->second.get())
+        ->UpdateDescriptors(gatt_discoverer);
   }
 
   std::swap(characteristics, characteristics_);

@@ -147,6 +147,8 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   void SimulateGattCharacteristicWriteError(
       BluetoothRemoteGattCharacteristic* characteristic,
       BluetoothRemoteGattService::GattErrorCode error_code) override;
+  void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
+                              const std::string& uuid) override;
   void DeleteDevice(BluetoothDevice* device) override;
 
   void OnFakeBluetoothDeviceConnectGattCalled();

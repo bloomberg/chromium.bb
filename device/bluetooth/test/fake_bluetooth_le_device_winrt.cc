@@ -15,6 +15,7 @@
 #include "base/win/async_operation.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/test/bluetooth_test_win.h"
+#include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
 #include "device/bluetooth/test/fake_gatt_device_service_winrt.h"
 #include "device/bluetooth/test/fake_gatt_device_services_result_winrt.h"
 
@@ -198,8 +199,11 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
 void FakeBluetoothLEDeviceWinrt::SimulateGattServicesDiscovered(
     const std::vector<std::string>& uuids) {
   for (const auto& uuid : uuids) {
+    // Attribute handles need to be unique for a given BLE device. Increasing by
+    // a large number ensures enough address space for the contained
+    // characteristics and descriptors.
     fake_services_.push_back(Make<FakeGattDeviceServiceWinrt>(
-        bluetooth_test_winrt_, uuid, service_attribute_handle_++));
+        bluetooth_test_winrt_, uuid, service_attribute_handle_ += 0x0400));
   }
 
   DCHECK(gatt_services_callback_);
@@ -234,6 +238,23 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattCharacteristic(
           ->GetDeviceServiceForTesting());
   DCHECK(fake_service);
   fake_service->SimulateGattCharacteristic(uuid, properties);
+
+  SimulateGattServicesChanged();
+  DCHECK(gatt_services_callback_);
+  std::move(gatt_services_callback_)
+      .Run(Make<FakeGattDeviceServicesResultWinrt>(fake_services_));
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattDescriptor(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    const std::string& uuid) {
+  // Simulate the fake descriptor on the GATT service and trigger a GATT
+  // re-scan via GattServicesChanged().
+  auto* const fake_characteristic = static_cast<FakeGattCharacteristicWinrt*>(
+      static_cast<BluetoothRemoteGattCharacteristicWinrt*>(characteristic)
+          ->GetCharacteristicForTesting());
+  DCHECK(fake_characteristic);
+  fake_characteristic->SimulateGattDescriptor(uuid);
 
   SimulateGattServicesChanged();
   DCHECK(gatt_services_callback_);
