@@ -37,9 +37,9 @@ class MarkRequestCompleteTask : public DatabaseTask {
  private:
   void StoreResponse(base::OnceClosure done_closure);
 
-  void PopulateResponseBody(ServiceWorkerResponse* response);
+  void PopulateResponseBody(blink::mojom::FetchAPIResponse* response);
 
-  void DidOpenCache(std::unique_ptr<ServiceWorkerResponse> response,
+  void DidOpenCache(blink::mojom::FetchAPIResponsePtr response,
                     base::OnceClosure done_closure,
                     CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);

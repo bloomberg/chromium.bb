@@ -19,44 +19,6 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
-namespace mojo {
-
-// TODO(leonhsl): Deprecate this converter once we replace usages of
-// content::ServiceWorkerResponse with blink::mojom::FetchAPIResponse in
-// background_fetch codes.
-template <>
-struct TypeConverter<blink::mojom::FetchAPIResponsePtr,
-                     content::ServiceWorkerResponse> {
-  static blink::mojom::FetchAPIResponsePtr Convert(
-      const content::ServiceWorkerResponse& input) {
-    blink::mojom::SerializedBlobPtr blob;
-    if (input.blob) {
-      blob = blink::mojom::SerializedBlob::New();
-      blob->uuid = input.blob_uuid;
-      blob->size = input.blob_size;
-      blob->blob = input.blob->TakeBlobPtr().PassInterface();
-    }
-    blink::mojom::SerializedBlobPtr side_data_blob;
-    if (input.side_data_blob) {
-      side_data_blob = blink::mojom::SerializedBlob::New();
-      side_data_blob->uuid = input.side_data_blob_uuid;
-      side_data_blob->size = input.side_data_blob_size;
-      side_data_blob->blob =
-          input.side_data_blob->TakeBlobPtr().PassInterface();
-    }
-    base::flat_map<std::string, std::string> headers(input.headers.begin(),
-                                                     input.headers.end());
-    return blink::mojom::FetchAPIResponse::New(
-        input.url_list, input.status_code, input.status_text,
-        input.response_type, headers, std::move(blob), input.error,
-        input.response_time, input.cache_storage_cache_name,
-        input.cors_exposed_header_names, input.is_in_cache_storage,
-        std::move(side_data_blob));
-  }
-};
-
-}  // namespace mojo
-
 namespace content {
 
 namespace background_fetch {
@@ -97,7 +59,7 @@ void MarkRequestCompleteTask::Start() {
 }
 
 void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
-  auto response = std::make_unique<ServiceWorkerResponse>();
+  auto response = blink::mojom::FetchAPIResponse::New();
   response->url_list = request_info_->GetURLChain();
   // TODO(crbug.com/838837): fill error and cors_exposed_header_names in
   // response.
@@ -129,7 +91,7 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
 }
 
 void MarkRequestCompleteTask::PopulateResponseBody(
-    ServiceWorkerResponse* response) {
+    blink::mojom::FetchAPIResponse* response) {
   // Include the status code, status text and the response's body as a blob
   // when this is allowed by the CORS protocol.
   response->status_code = request_info_->GetResponseCode();
@@ -164,19 +126,16 @@ void MarkRequestCompleteTask::PopulateResponseBody(
   if (!blob_data_handle)
     return;
 
-  response->blob_uuid = blob_data_handle->uuid();
-  response->blob_size = blob_data_handle->size();
-  blink::mojom::BlobPtr blob_ptr;
+  response->blob = blink::mojom::SerializedBlob::New();
+  response->blob->uuid = blob_data_handle->uuid();
+  response->blob->size = blob_data_handle->size();
   storage::BlobImpl::Create(
       std::make_unique<storage::BlobDataHandle>(*blob_data_handle),
-      MakeRequest(&blob_ptr));
-
-  response->blob =
-      base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+      MakeRequest(&response->blob->blob));
 }
 
 void MarkRequestCompleteTask::DidOpenCache(
-    std::unique_ptr<ServiceWorkerResponse> response,
+    blink::mojom::FetchAPIResponsePtr response,
     base::OnceClosure done_closure,
     CacheStorageCacheHandle handle,
     blink::mojom::CacheStorageError error) {
@@ -193,7 +152,7 @@ void MarkRequestCompleteTask::DidOpenCache(
   // We need to keep the handle refcounted while the write is happening,
   // so it's passed along to the callback.
   handle.value()->Put(
-      std::move(request), blink::mojom::FetchAPIResponse::From(*response),
+      std::move(request), std::move(response),
       base::BindOnce(&MarkRequestCompleteTask::DidWriteToCache,
                      weak_factory_.GetWeakPtr(), std::move(handle),
                      std::move(done_closure)));
