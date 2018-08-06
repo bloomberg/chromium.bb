@@ -228,6 +228,12 @@ def _RunAntTest(java_tests_src_dir, test_filter, chromedriver_path,
 
 def PrintTestResults(results):
   """Prints the given results in a format recognized by the buildbot."""
+
+  # If no results that means something went wrong and we should return non zero value
+  if len(results) == 0:
+    print 'No tests were run'
+    return 1
+
   failures = []
   failure_names = []
   for result in results:
