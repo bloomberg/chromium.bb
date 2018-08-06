@@ -75,10 +75,12 @@ ExtractOAuth2TokenPairResponse(const std::string& data) {
   if (!dict->GetStringWithoutPathExpansion("id_token", &id_token)) {
     LOG(ERROR) << "Missing ID token on refresh token fetch response.";
   }
-  bool is_child_account = gaia::IsChildAccountFromIdToken(id_token);
+  gaia::TokenServiceFlags service_flags = gaia::ParseServiceFlags(id_token);
 
   return std::make_unique<const GaiaAuthConsumer::ClientOAuthResult>(
-      refresh_token, access_token, expires_in_secs, is_child_account);
+      refresh_token, access_token, expires_in_secs,
+      service_flags.is_child_account,
+      service_flags.is_under_advanced_protection);
 }
 
 void GetCookiesFromResponse(

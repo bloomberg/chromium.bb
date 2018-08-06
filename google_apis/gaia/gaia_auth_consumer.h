@@ -45,7 +45,8 @@ class GaiaAuthConsumer {
     ClientOAuthResult(const std::string& new_refresh_token,
                       const std::string& new_access_token,
                       int new_expires_in_secs,
-                      bool is_child_account);
+                      bool is_child_account,
+                      bool is_under_advanced_protection);
     ClientOAuthResult(const ClientOAuthResult& other);
     ~ClientOAuthResult();
 
@@ -63,6 +64,9 @@ class GaiaAuthConsumer {
 
     // Whether the authenticated user is a child account.
     bool is_child_account;
+
+    // Whether the authenticated user is in advanced protection program.
+    bool is_under_advanced_protection;
   };
 
   // Possible server responses to a token revocation request.

@@ -10,13 +10,18 @@
 
 // This file holds methods decodes the id token received for OAuth2 token
 // endpoint, and derive useful information from it, such as whether the account
-// is a child account.
+// is a child account, and whether this account is under advanced protection.
 
 namespace gaia {
 
-// Detects if the signed-in account is a child account from service flags
-// retrieved in the ID token.
-bool IsChildAccountFromIdToken(const std::string& id_token);
+// Service flags extracted from ID token.
+struct TokenServiceFlags {
+  bool is_child_account = false;
+  bool is_under_advanced_protection = false;
+};
+
+// Parses service flag from ID token.
+TokenServiceFlags ParseServiceFlags(const std::string& id_token);
 
 }  // namespace gaia
 

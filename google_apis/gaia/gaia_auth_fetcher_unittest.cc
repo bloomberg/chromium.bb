@@ -331,7 +331,8 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
   EXPECT_CALL(consumer, OnClientOAuthCode("test-code")).Times(0);
   EXPECT_CALL(consumer,
               OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
-                  "rt1", "at1", 3600, false /* is_child_account */)))
+                  "rt1", "at1", 3600, false /* is_child_account */,
+                  false /* is_advanced_protection */)))
       .Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());
@@ -357,7 +358,8 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccessNoTokenFetch) {
   EXPECT_CALL(consumer, OnClientOAuthCode("test-code")).Times(1);
   EXPECT_CALL(consumer,
               OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
-                  "", "", 0, false /* is_child_account */)))
+                  "", "", 0, false /* is_child_account */,
+                  false /* is_advanced_protection */)))
       .Times(0);
 
   net::TestURLFetcherFactory factory;
