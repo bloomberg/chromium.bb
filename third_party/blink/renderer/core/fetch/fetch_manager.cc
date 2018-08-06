@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
@@ -900,6 +901,12 @@ void FetchManager::Loader::Failed(const String& message) {
         ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
   }
   if (resolver_) {
+    // This ScriptForbiddenScope forcibly punt the reject task to prevent the
+    // promise reject microtask to be queued synchronously during
+    // DocumentLoader detach.
+    // TODO(crbug.com/868592) Fix this properly.
+    ScriptForbiddenScope forbid;
+
     ScriptState* state = resolver_->GetScriptState();
     ScriptState::Scope scope(state);
     resolver_->Reject(V8ThrowException::CreateTypeError(state->GetIsolate(),
