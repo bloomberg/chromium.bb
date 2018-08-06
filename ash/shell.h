@@ -31,7 +31,6 @@ class PrefService;
 
 namespace aura {
 class RootWindow;
-class UserActivityForwarder;
 class Window;
 }  // namespace aura
 
@@ -810,10 +809,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplayConfigurationObserver> display_configuration_observer_;
 
   std::unique_ptr<ScreenPinningController> screen_pinning_controller_;
-
-  // Forwards user activity ui::mojom::UserActivityMonitor to
-  // |user_activity_detector_|. Only initialized for mash.
-  std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
 
   std::unique_ptr<PeripheralBatteryNotifier> peripheral_battery_notifier_;
   std::unique_ptr<PowerEventObserver> power_event_observer_;
