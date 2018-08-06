@@ -6,12 +6,16 @@
 
 #include <memory>
 
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_suggestion_chip_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
@@ -47,9 +51,9 @@ int SuggestionChipContainerView::DoUpdate() {
     return num_results();
 
   // Clear all current suggestion chips.
-  for (size_t i = 0; i < suggestion_chip_views.size(); ++i)
-    delete suggestion_chip_views[i];
-  suggestion_chip_views.clear();
+  for (size_t i = 0; i < suggestion_chip_views_.size(); ++i)
+    delete suggestion_chip_views_[i];
+  suggestion_chip_views_.clear();
 
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
@@ -62,11 +66,11 @@ int SuggestionChipContainerView::DoUpdate() {
     SearchResultSuggestionChipView* chip =
         new SearchResultSuggestionChipView(view_delegate_);
     chip->SetSearchResult(result);
-    suggestion_chip_views.emplace_back(chip);
+    suggestion_chip_views_.emplace_back(chip);
   }
 
   Layout();
-  return num_results();
+  return suggestion_chip_views_.size();
 }
 
 const char* SuggestionChipContainerView::GetClassName() const {
@@ -81,7 +85,7 @@ void SuggestionChipContainerView::Layout() {
   RemoveAllChildViews(false /* delete_children */);
   int total_width = 0;
   const int max_width = GetContentsBounds().width();
-  for (auto* chip : suggestion_chip_views) {
+  for (auto* chip : suggestion_chip_views_) {
     const int chip_width = chip->GetPreferredSize().width();
     if (chip_width + total_width > max_width)
       break;
@@ -90,6 +94,34 @@ void SuggestionChipContainerView::Layout() {
   }
 
   views::View::Layout();
+}
+
+bool SuggestionChipContainerView::OnKeyPressed(const ui::KeyEvent& event) {
+  // Let the FocusManager handle Left/Right keys.
+  if (!CanProcessUpDownKeyTraversal(event))
+    return false;
+
+  // Up key moves focus to the search box. Down key moves focus to the first
+  // app.
+  views::View* v = nullptr;
+  if (event.key_code() == ui::VKEY_UP) {
+    v = contents_view_->GetSearchBoxView()->search_box();
+  } else {
+    // The first app is the next to this view's last focusable view.
+    views::View* last_focusable_view =
+        GetFocusManager()->GetNextFocusableView(this, nullptr, true, false);
+    v = GetFocusManager()->GetNextFocusableView(last_focusable_view, nullptr,
+                                                false, false);
+  }
+  if (v)
+    v->RequestFocus();
+  return true;
+}
+
+void SuggestionChipContainerView::DisableFocusForShowingActiveFolder(
+    bool disabled) {
+  for (auto* chip : suggestion_chip_views_)
+    chip->suggestion_chip_view()->SetEnabled(!disabled);
 }
 
 bool SuggestionChipContainerView::IgnoreUpdateAndLayout() const {

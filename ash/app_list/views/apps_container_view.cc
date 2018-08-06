@@ -110,7 +110,7 @@ void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
   // Disable all the items behind the folder so that they will not be reached
   // during focus traversal.
   contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
-  apps_grid_view_->DisableFocusForShowingActiveFolder(true);
+  DisableFocusForShowingActiveFolder(true);
 }
 
 void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
@@ -118,12 +118,12 @@ void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
     return;
 
   SetShowState(SHOW_APPS, folder_item ? true : false);
-  apps_grid_view_->DisableFocusForShowingActiveFolder(false);
+  DisableFocusForShowingActiveFolder(false);
 }
 
 void AppsContainerView::ResetForShowApps() {
   SetShowState(SHOW_APPS, false);
-  apps_grid_view_->DisableFocusForShowingActiveFolder(false);
+  DisableFocusForShowingActiveFolder(false);
 }
 
 void AppsContainerView::SetDragAndDropHostOfCurrentAppList(
@@ -138,7 +138,7 @@ void AppsContainerView::ReparentFolderItemTransit(
   if (app_list_folder_view_->IsAnimationRunning())
     return;
   SetShowState(SHOW_ITEM_REPARENT, false);
-  apps_grid_view_->DisableFocusForShowingActiveFolder(false);
+  DisableFocusForShowingActiveFolder(false);
 }
 
 bool AppsContainerView::IsInFolderView() const {
@@ -155,6 +155,11 @@ void AppsContainerView::UpdateControlVisibility(AppListViewState app_list_state,
   apps_grid_view_->UpdateControlVisibility(app_list_state, is_in_drag);
   page_switcher_->SetVisible(
       app_list_state == AppListViewState::FULLSCREEN_ALL_APPS || is_in_drag);
+  if (suggestion_chip_container_view_) {
+    suggestion_chip_container_view_->SetVisible(
+        app_list_state == AppListViewState::FULLSCREEN_ALL_APPS ||
+        app_list_state == AppListViewState::PEEKING || is_in_drag);
+  }
 }
 
 void AppsContainerView::UpdateOpacity() {
@@ -486,6 +491,14 @@ void AppsContainerView::UpdateSuggestionChips() {
           ->view_delegate()
           ->GetSearchModel()
           ->results());
+}
+
+void AppsContainerView::DisableFocusForShowingActiveFolder(bool disabled) {
+  if (suggestion_chip_container_view_) {
+    suggestion_chip_container_view_->DisableFocusForShowingActiveFolder(
+        disabled);
+  }
+  apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
 }
 
 }  // namespace app_list

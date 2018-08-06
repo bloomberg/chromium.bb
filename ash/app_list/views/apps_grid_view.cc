@@ -914,6 +914,10 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   const AppListViewState state =
       contents_view_->app_list_view()->app_list_state();
   const bool arrow_up = event.key_code() == ui::VKEY_UP;
+
+  if (is_new_style_launcher_enabled_)
+    return HandleVerticalFocusMovement(arrow_up);
+
   if (state == AppListViewState::PEEKING)
     return HandleFocusMovementInPeekingState(arrow_up);
 
@@ -1596,6 +1600,61 @@ bool AppsGridView::HandleFocusMovementInFullscreenAllAppsState(bool arrow_up) {
         ->RequestFocus();
   }
   return true;
+}
+
+bool AppsGridView::HandleVerticalFocusMovement(bool arrow_up) {
+  views::View* focused = GetFocusManager()->GetFocusedView();
+  if (focused->GetClassName() != AppListItemView::kViewClassName)
+    return false;
+
+  const GridIndex source_index =
+      GetIndexOfView(static_cast<const AppListItemView*>(focused));
+  int target_page = source_index.page;
+  int target_row = source_index.slot / cols_ + (arrow_up ? -1 : 1);
+  int target_col = source_index.slot % cols_;
+
+  if (target_row < 0) {
+    // Move focus to the last row of previous page if target row is negative.
+    --target_page;
+
+    // |target_page| may be invalid which makes |target_row| invalid, but
+    // |target_row| will not be used if |target_page| is invalid.
+    target_row = (GetItemsNumOfPage(target_page) - 1) / cols_;
+  } else if (target_row > (GetItemsNumOfPage(target_page) - 1) / cols_) {
+    // Move focus to the first row of next page if target row is beyond range.
+    ++target_page;
+    target_row = 0;
+  }
+
+  if (target_page < 0) {
+    // Move focus up outside the apps grid if target page is negative.
+    views::View* v = GetFocusManager()->GetNextFocusableView(
+        view_model_.view_at(0), nullptr, true, false);
+    DCHECK(v);
+    v->RequestFocus();
+    return true;
+  }
+
+  if (target_page >= pagination_model_.total_pages()) {
+    // Move focus down outside the apps grid if target page is beyond range.
+    views::View* v = GetFocusManager()->GetNextFocusableView(
+        view_model_.view_at(view_model_.view_size() - 1), nullptr, false,
+        false);
+    DCHECK(v);
+    v->RequestFocus();
+    return true;
+  }
+
+  GridIndex target_index(target_page, target_row * cols_ + target_col);
+
+  // Ensure the focus is within the range of the target page.
+  target_index.slot =
+      std::min(GetItemsNumOfPage(target_page) - 1, target_index.slot);
+  if (IsValidIndex(target_index)) {
+    GetViewAtIndex(target_index)->RequestFocus();
+    return true;
+  }
+  return false;
 }
 
 void AppsGridView::UpdateColsAndRowsForFolder() {
@@ -2317,7 +2376,7 @@ bool AppsGridView::IsPointWithinBottomDragBuffer(
       display.bounds().bottom() -
       (contents_view_->app_list_view()->is_side_shelf()
            ? 0
-           : AppListConfig::instance().shelf_height());
+           : (display.bounds().bottom() - display.work_area().bottom()));
 
   return point_in_screen.y() > kBottomDragBufferMin &&
          point_in_screen.y() < kBottomDragBufferMax;
@@ -2790,6 +2849,21 @@ void AppsGridView::UpdateTilePadding() {
           ? (content_size.height() - rows_per_page_ * tile_size.height()) /
                 ((rows_per_page_ - 1) * 2)
           : 0;
+}
+
+int AppsGridView::GetItemsNumOfPage(int page) const {
+  DCHECK(is_new_style_launcher_enabled_);
+  if (page < 0 || page >= pagination_model_.total_pages())
+    return 0;
+
+  if (IsAppsGridGapEnabled())
+    return view_structure_.items_on_page(page);
+
+  if (page < pagination_model_.total_pages() - 1)
+    return TilesPerPage(page);
+
+  return item_list_->item_count() -
+         (pagination_model_.total_pages() - 1) * TilesPerPage(0);
 }
 
 }  // namespace app_list

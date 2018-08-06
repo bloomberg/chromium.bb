@@ -11,6 +11,7 @@
 
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/macros.h"
@@ -27,9 +28,10 @@
 namespace app_list {
 namespace test {
 
-class KeyPressCounterView : public views::View {
+class KeyPressCounterView : public ContentsView {
  public:
-  KeyPressCounterView() : count_(0) {}
+  explicit KeyPressCounterView(AppListView* app_list_view)
+      : ContentsView(app_list_view), count_(0) {}
   ~KeyPressCounterView() override {}
 
   int GetCountAndReset() {
@@ -71,7 +73,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     view_.reset(new SearchBoxView(this, &view_delegate_, app_list_view()));
     view_->Init();
     widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
-    counter_view_ = new KeyPressCounterView();
+    counter_view_ = new KeyPressCounterView(app_list_view_);
     widget_->GetContentsView()->AddChildView(view());
     widget_->GetContentsView()->AddChildView(counter_view_);
     view()->set_contents_view(counter_view_);

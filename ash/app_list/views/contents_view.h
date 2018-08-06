@@ -122,6 +122,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   AppListView* app_list_view() const { return app_list_view_; }
 
+  ExpandArrowView* expand_arrow_view() const { return expand_arrow_view_; }
+
   // Returns the pagination model for the ContentsView.
   const PaginationModel& pagination_model() { return pagination_model_; }
 

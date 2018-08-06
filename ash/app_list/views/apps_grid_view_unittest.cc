@@ -27,8 +27,10 @@
 #include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_tile_item_view.h"
+#include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/app_list/views/suggestions_container_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -143,23 +145,35 @@ class TestSuggestedSearchResult : public TestSearchResult {
 struct TestParams {
   bool is_rtl_enabled;
   bool is_apps_grid_gap_enabled;
+  bool is_new_style_launcher_enabled;
 };
 
 const TestParams kAppsGridViewTestParams[] = {
-    {false /* is_rtl_enabled */, false /* is_apps_grid_gap_enabled */},
-    {true, false},
+    {false /* is_rtl_enabled */, false /* is_apps_grid_gap_enabled */,
+     false /* is_new_style_launcher_enabled */},
+    {false, false, true},
+    {true, false, false},
+    {true, false, true},
 };
 
 const TestParams kAppsGridViewDragTestParams[] = {
-    {false /* is_rtl_enabled */, false /* is_apps_grid_gap_enabled */},
-    {true, false},
-    {false, true},
-    {true, true},
+    {false /* is_rtl_enabled */, false /* is_apps_grid_gap_enabled */,
+     false /* is_apps_grid_gap_enabled */},
+    {false, false, true},
+    {true, false, false},
+    {true, false, true},
+    {false, true, false},
+    {false, true, true},
+    {true, true, false},
+    {true, true, true},
 };
 
 const TestParams kAppsGridGapTestParams[] = {
-    {false /* is_rtl_enabled */, true /* is_apps_grid_gap_enabled */},
-    {true, true},
+    {false /* is_rtl_enabled */, true /* is_apps_grid_gap_enabled */,
+     false /* is_apps_grid_gap_enabled */},
+    {false, true, true},
+    {true, true, false},
+    {true, true, true},
 };
 
 }  // namespace
@@ -173,12 +187,28 @@ class AppsGridViewTest : public views::ViewsTestBase,
   // testing::Test overrides:
   void SetUp() override {
     AppListView::SetShortAnimationForTesting(true);
-    views::ViewsTestBase::SetUp();
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
     if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
       is_rtl_ = GetParam().is_rtl_enabled;
       if (is_rtl_)
         base::i18n::SetICUDefaultLocale("he");
+
+      is_apps_grid_gap_enabled_ = GetParam().is_apps_grid_gap_enabled;
+      is_new_style_launcher_enabled_ = GetParam().is_new_style_launcher_enabled;
     }
+    if (is_apps_grid_gap_enabled_) {
+      enabled_features.emplace_back(features::kEnableAppsGridGapFeature);
+    } else {
+      disabled_features.emplace_back(features::kEnableAppsGridGapFeature);
+    }
+    if (is_new_style_launcher_enabled_) {
+      enabled_features.emplace_back(features::kEnableNewStyleLauncher);
+    } else {
+      disabled_features.emplace_back(features::kEnableNewStyleLauncher);
+    }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    views::ViewsTestBase::SetUp();
     gfx::NativeView parent = GetContext();
     // Ensure that parent is big enough to show the full AppListView.
     parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
@@ -193,14 +223,21 @@ class AppsGridViewTest : public views::ViewsTestBase,
 
     model_ = delegate_->GetTestModel();
     search_model_ = delegate_->GetSearchModel();
-    suggestions_container_ = apps_grid_view_->suggestions_container_for_test();
+    if (is_new_style_launcher_enabled_) {
+      suggestions_container_ = contents_view_->GetAppsContainerView()
+                                   ->suggestion_chip_container_view_for_test();
+    } else {
+      suggestions_container_ =
+          apps_grid_view_->suggestions_container_for_test();
+    }
+
     expand_arrow_view_ = apps_grid_view_->expand_arrow_view_for_test();
     for (size_t i = 0; i < kNumOfSuggestedApps; ++i) {
       search_model_->results()->Add(
           std::make_unique<TestSuggestedSearchResult>());
     }
     // Needed to update suggestions from |model_|.
-    apps_grid_view_->ResetForShowApps();
+    suggestions_container_->Update();
     app_list_view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
     app_list_view_->Layout();
 
@@ -296,7 +333,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   AppListView* app_list_view_ = nullptr;    // Owned by native widget.
   AppsGridView* apps_grid_view_ = nullptr;  // Owned by |app_list_view_|.
   ContentsView* contents_view_ = nullptr;   // Owned by |app_list_view_|.
-  SuggestionsContainerView* suggestions_container_ =
+  SearchResultContainerView* suggestions_container_ =
       nullptr;                                    // Owned by |apps_grid_view_|.
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by |apps_grid_view_|.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
@@ -305,6 +342,8 @@ class AppsGridViewTest : public views::ViewsTestBase,
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   bool is_rtl_ = false;
   bool test_with_fullscreen_ = true;
+  bool is_apps_grid_gap_enabled_ = false;
+  bool is_new_style_launcher_enabled_ = false;
 
  private:
   // Restores the locale to default when destructor is called.
@@ -312,6 +351,8 @@ class AppsGridViewTest : public views::ViewsTestBase,
 
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardController keyboard_controller_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
 };
@@ -350,13 +391,15 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestAppsGridViewFolderDelegate);
 };
 
-TEST_F(AppsGridViewTest, CreatePage) {
+TEST_P(AppsGridViewTest, CreatePage) {
   // Fully populates a page.
   const int kPages = 1;
 
   EXPECT_EQ(kNumOfSuggestedApps, suggestions_container_->num_results());
-  int kExpectedTilesOnFirstPage =
-      apps_grid_view_->cols() * (apps_grid_view_->rows_per_page() - 1);
+  // For new style launcher, each page has the same number of rows.
+  const int kExpectedTilesOnFirstPage =
+      apps_grid_view_->cols() * (apps_grid_view_->rows_per_page() -
+                                 (is_new_style_launcher_enabled_ ? 0 : 1));
   EXPECT_EQ(kExpectedTilesOnFirstPage, GetTilesPerPage(kPages - 1));
 
   model_->PopulateApps(kPages * GetTilesPerPage(kPages - 1));
@@ -676,24 +719,7 @@ class AppsGridViewDragTest : public AppsGridViewTest {
   AppsGridViewDragTest() = default;
   ~AppsGridViewDragTest() override = default;
 
-  // testing::Test overrides:
-  void SetUp() override {
-    if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
-      is_apps_grid_gap_enabled_ = GetParam().is_apps_grid_gap_enabled;
-      if (is_apps_grid_gap_enabled_) {
-        scoped_feature_list_.InitWithFeatures(
-            {app_list::features::kEnableAppsGridGapFeature}, {});
-      }
-    }
-    AppsGridViewTest::SetUp();
-  }
-
- protected:
-  bool is_apps_grid_gap_enabled_ = false;
-
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewDragTest);
 };
 
@@ -845,12 +871,12 @@ TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolderWithMovement) {
 
 // Test reordering items via dragging.
 TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
-  // Using a simulated 2x3 layout for the test. The first row is occupied by
-  // suggested apps, so just populate 4 apps.
-  apps_grid_view_->SetLayout(2, 3);
-  model_->PopulateApps(4);
-  EXPECT_EQ(4u, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
+  // The default layout is 5x4, populate 7 apps so that we have second row to
+  // test dragging item to second row.
+  model_->PopulateApps(7);
+  contents_view_->GetAppsContainerView()->Layout();
+  EXPECT_EQ(7u, model_->top_level_item_list()->item_count());
+  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3,Item 4,Item 5,Item 6"),
             model_->GetModelContent());
 
   // Dragging an item towards its neighbours should not reorder until the drag
@@ -867,21 +893,23 @@ TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
   drag_vector.set_x(-half_tile_width - 4);
   SimulateDrag(AppsGridView::MOUSE, top_right, top_right + drag_vector);
   apps_grid_view_->EndDrag(false);
-  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
+  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3,Item 4,Item 5,Item 6"),
             model_->GetModelContent());
   TestAppListItemViewIndice();
 
   // Drag left, past the folder dropping circle.
   gfx::Vector2d last_drag_vector(drag_vector);
-  drag_vector.set_x(-3 * half_tile_width + 4);
+  drag_vector.set_x(-2 * half_tile_width -
+                    AppListConfig::instance().folder_dropping_circle_radius() -
+                    4);
   SimulateDrag(AppsGridView::MOUSE, top_right + last_drag_vector,
                top_right + drag_vector);
   apps_grid_view_->EndDrag(false);
-  EXPECT_EQ(std::string("Item 1,Item 0,Item 2,Item 3"),
+  EXPECT_EQ(std::string("Item 1,Item 0,Item 2,Item 3,Item 4,Item 5,Item 6"),
             model_->GetModelContent());
   TestAppListItemViewIndice();
 
-  // Drag down, between apps 2 and 3. The gap should open up, making space for
+  // Drag down, between apps 5 and 6. The gap should open up, making space for
   // app 1 in the bottom left.
   last_drag_vector = drag_vector;
   drag_vector.set_x(-half_tile_width);
@@ -889,7 +917,7 @@ TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
   SimulateDrag(AppsGridView::MOUSE, top_right + last_drag_vector,
                top_right + drag_vector);
   apps_grid_view_->EndDrag(false);
-  EXPECT_EQ(std::string("Item 0,Item 2,Item 1,Item 3"),
+  EXPECT_EQ(std::string("Item 0,Item 2,Item 3,Item 4,Item 5,Item 1,Item 6"),
             model_->GetModelContent());
   TestAppListItemViewIndice();
 
@@ -901,7 +929,7 @@ TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
   SimulateDrag(AppsGridView::MOUSE, top_right + last_drag_vector,
                top_right + drag_vector);
   apps_grid_view_->EndDrag(false);
-  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
+  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3,Item 4,Item 5,Item 6"),
             model_->GetModelContent());
   TestAppListItemViewIndice();
 
@@ -912,7 +940,7 @@ TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
   SimulateDrag(AppsGridView::MOUSE, top_right + last_drag_vector,
                top_right + drag_vector);
   apps_grid_view_->EndDrag(false);
-  EXPECT_EQ(std::string("Item 0,Item 2,Item 3,Item 1"),
+  EXPECT_EQ(std::string("Item 0,Item 2,Item 3,Item 4,Item 5,Item 6,Item 1"),
             model_->GetModelContent());
   TestAppListItemViewIndice();
 }

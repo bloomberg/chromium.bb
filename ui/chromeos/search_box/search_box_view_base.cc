@@ -293,12 +293,6 @@ gfx::Size SearchBoxViewBase::CalculatePreferredSize() const {
   return gfx::Size(kSearchBoxPreferredWidth, kSearchBoxPreferredHeight);
 }
 
-bool SearchBoxViewBase::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  if (contents_view_)
-    return contents_view_->OnMouseWheel(event);
-  return false;
-}
-
 void SearchBoxViewBase::OnEnabledChanged() {
   search_box_->SetEnabled(enabled());
   if (close_button_)

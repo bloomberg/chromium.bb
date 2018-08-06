@@ -39,6 +39,8 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
 
+  SuggestionChipView* suggestion_chip_view() { return suggestion_chip_view_; }
+
  private:
   // Updates the suggestion chip view's title and icon.
   void UpdateSuggestionChipView();

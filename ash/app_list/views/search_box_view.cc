@@ -16,6 +16,7 @@
 #include "ash/app_list/resources/grit/app_list_resources.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -84,6 +85,7 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
     : search_box::SearchBoxViewBase(delegate),
       view_delegate_(view_delegate),
       app_list_view_(app_list_view),
+      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()),
       weak_ptr_factory_(this) {
   set_is_tablet_mode(app_list_view->is_tablet_mode());
   if (features::IsZeroStateSuggestionsEnabled())
@@ -101,9 +103,9 @@ void SearchBoxView::ClearSearch() {
 }
 
 views::View* SearchBoxView::GetSelectedViewInContentsView() {
-  if (!contents_view())
+  if (!contents_view_)
     return nullptr;
-  return static_cast<ContentsView*>(contents_view())->GetSelectedView();
+  return contents_view_->GetSelectedView();
 }
 
 void SearchBoxView::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
@@ -235,16 +237,27 @@ void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   // If focus is in search box view, up key moves focus to the last element of
-  // contents view, while down key moves focus to the first element of contents
-  // view.
-  ContentsView* contents = static_cast<ContentsView*>(contents_view());
-  AppListPage* page = contents->GetPageView(contents->GetActivePageIndex());
+  // contents view if new style launcher is not enabled while it moves focus to
+  // expand arrow if the feature is enabled. Down key moves focus to the first
+  // element of contents view.
+  AppListPage* page =
+      contents_view_->GetPageView(contents_view_->GetActivePageIndex());
+  views::View* arrow_view = contents_view_->expand_arrow_view();
   views::View* v = event->key_code() == ui::VKEY_UP
-                       ? page->GetLastFocusableView()
+                       ? (arrow_view && arrow_view->IsFocusable()
+                              ? arrow_view
+                              : page->GetLastFocusableView())
                        : page->GetFirstFocusableView();
+
   if (v)
     v->RequestFocus();
   event->SetHandled();
+}
+
+bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  if (contents_view_)
+    return contents_view_->OnMouseWheel(event);
+  return false;
 }
 
 void SearchBoxView::UpdateBackground(double progress,
@@ -290,15 +303,15 @@ void SearchBoxView::UpdateOpacity() {
   // the app list from collapsed(0) to peeking(1) state. When the fraction
   // changes from |kOpacityStartFraction| to |kOpaticyEndFraction|, the opacity
   // of searchbox changes from 0.f to 1.0f.
-  ContentsView* contents = static_cast<ContentsView*>(contents_view());
-  if (!contents->GetPageView(contents->GetActivePageIndex())
+  if (!contents_view_->GetPageView(contents_view_->GetActivePageIndex())
            ->ShouldShowSearchBox()) {
     return;
   }
   const int shelf_height = AppListConfig::instance().shelf_height();
   float fraction =
-      std::max<float>(0, contents->app_list_view()->GetCurrentAppListHeight() -
-                             shelf_height) /
+      std::max<float>(
+          0, contents_view_->app_list_view()->GetCurrentAppListHeight() -
+                 shelf_height) /
       (AppListConfig::instance().peeking_app_list_height() - shelf_height);
 
   float opacity =
@@ -307,13 +320,13 @@ void SearchBoxView::UpdateOpacity() {
                         0.f),
                1.0f);
 
-  AppListView* app_list_view = contents->app_list_view();
+  AppListView* app_list_view = contents_view_->app_list_view();
   bool should_restore_opacity =
       !app_list_view->is_in_drag() &&
       (app_list_view->app_list_state() != AppListViewState::CLOSED);
   // Restores the opacity of searchbox if the gesture dragging ends.
   this->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
-  contents->search_results_page_view()->layer()->SetOpacity(
+  contents_view_->search_results_page_view()->layer()->SetOpacity(
       should_restore_opacity ? 1.0f : opacity);
 }
 
@@ -471,9 +484,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
       // Hitting Enter when focus is on search box opens the first result.
       ui::KeyEvent event(key_event);
       views::View* first_result_view =
-          static_cast<ContentsView*>(contents_view())
-              ->search_results_page_view()
-              ->first_result_view();
+          contents_view_->search_results_page_view()->first_result_view();
       if (first_result_view)
         first_result_view->OnKeyEvent(&event);
       return true;

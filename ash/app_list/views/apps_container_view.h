@@ -84,6 +84,9 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // list.
   gfx::Rect GetSearchBoxExpectedBounds() const;
 
+  SuggestionChipContainerView* suggestion_chip_container_view_for_test() {
+    return suggestion_chip_container_view_;
+  }
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
     return folder_background_view_;
@@ -108,6 +111,10 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   // Updates suggestion chips from app list model.
   void UpdateSuggestionChips();
+
+  // Suggestion chips and apps grid view become unfocusable if |disabled| is
+  // true. This is used to trap focus within the folder when it is opened.
+  void DisableFocusForShowingActiveFolder(bool disabled);
 
   ContentsView* contents_view_;  // Not owned.
 
