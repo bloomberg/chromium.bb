@@ -33,6 +33,6 @@
 // As such approach A was preferred : the landing process will wait for all 3
 // CLs to be LGTM'ed in approach A and then land them switfly back-to-back.
 
-#include "base/task_scheduler/lazy_task_runner.h"
+#include "base/task/lazy_task_runner.h"
 
 #endif  // BASE_TASK_LAZY_TASK_RUNNER_FORWARD_H_

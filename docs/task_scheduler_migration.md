@@ -4,7 +4,7 @@
 
 ## Overview
 
-[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h)
+[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
 was introduced to Chrome in Q1. The API is fully documented under [Threading and
 Tasks in Chrome](threading_and_tasks.md). This page will go into more details
 about how to migrate callers of existing APIs to TaskScheduler.
@@ -136,6 +136,6 @@ assigned files by:
 * Everything in a file/component needs to run on the same sequence but there
   isn't a clear place to own/access the common SequencedTaskRunner =>
   base::Lazy(Sequenced|SingleThread|COMSTA)TaskRunner.
-* For anything else, ping [base/task_scheduler/OWNERS](https://cs.chromium.org/chromium/src/base/task_scheduler/OWNERS)
+* For anything else, ping [base/task/task_scheduler/OWNERS](https://cs.chromium.org/chromium/src/base/task/task_scheduler/OWNERS)
   or [scheduler-dev@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/scheduler-dev),
   thanks!

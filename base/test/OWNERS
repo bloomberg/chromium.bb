@@ -1,5 +1,3 @@
-per-file *task_scheduler*=file://base/task_scheduler/OWNERS
-
 # Metrics-related test utilites:
 per-file *scoped_feature_list*=file://base/metrics/OWNERS
 

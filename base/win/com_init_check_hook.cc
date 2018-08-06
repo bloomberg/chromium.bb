@@ -243,7 +243,7 @@ class HookManager {
     // evaluate your threading guarantees and dispatch your work with
     // base::CreateCOMSTATaskRunnerWithTraits().
     //
-    // If you need MTA support, ping //base/task_scheduler/OWNERS.
+    // If you need MTA support, ping //base/task/task_scheduler/OWNERS.
     AssertComInitialized(
         "CoCreateInstance calls in Chromium require explicit COM "
         "initialization via base::CreateCOMSTATaskRunnerWithTraits() or "
