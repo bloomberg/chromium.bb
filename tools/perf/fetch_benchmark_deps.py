@@ -35,8 +35,8 @@ def _FetchDependenciesIfNeeded(story_set):
     return
 
   # Download WPR files.
-  if any(not story.is_local for story in story_set):
-    story_set.wpr_archive_info.DownloadArchivesIfNeeded()
+  story_names = [s.name for s in story_set if not s.is_local]
+  story_set.wpr_archive_info.DownloadArchivesIfNeeded(story_names=story_names)
 
 
 def _EnumerateDependencies(story_set):
