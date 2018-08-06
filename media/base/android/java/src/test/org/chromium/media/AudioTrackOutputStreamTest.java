@@ -6,6 +6,7 @@ package org.chromium.media;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import android.media.AudioFormat;
 import android.media.AudioTrack;
@@ -180,7 +181,7 @@ public class AudioTrackOutputStreamTest {
         List<Byte> generatedData = provider.getGeneratedData();
         List<Byte> receivedData = provider.getReceivedData();
 
-        assertEquals(6 * provider.getBufferSize(), generatedData.size());
+        assertTrue(6 * provider.getBufferSize() <= generatedData.size());
         assertArrayEquals(generatedData.toArray(), receivedData.toArray());
 
         stream.stop();
