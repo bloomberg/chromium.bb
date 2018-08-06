@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(
-      `Tests that FailedToParseScriptSource event is raised after compile script with syntax error.\n`);
+      `Tests that ParsedScriptSource event is raised after compile script with syntax error.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
   await TestRunner.evaluateInPagePromise(`
@@ -20,7 +20,7 @@
   SourcesTestRunner.runDebuggerTestSuite([
     function testScriptParsedEvent(next) {
       TestRunner.debuggerModel.addEventListener(
-          SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+          SDK.DebuggerModel.Events.ParsedScriptSource, scriptFailedToParse);
       TestRunner.evaluateInPage('addScript(\'resources/script-failed-to-parse.js\')');
 
       function scriptFailedToParse(event) {
@@ -28,7 +28,7 @@
         if (script.sourceURL.indexOf('script-failed-to-parse.js') !== -1) {
           TestRunner.addResult('Event with script-failed-to-parse.js received');
           TestRunner.debuggerModel.removeEventListener(
-              SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+              SDK.DebuggerModel.Events.ParsedScriptSource, scriptFailedToParse);
           next();
         }
       }
