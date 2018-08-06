@@ -1149,7 +1149,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundOpacity) {
   // 70%.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   ui::Layer* background_layer =
-      GetAppListView()->app_list_background_shield_for_test()->layer();
+      GetAppListView()->GetAppListBackgroundShieldForTest()->layer();
   EXPECT_EQ(0.7f, background_layer->opacity());
 
   // Turn on tablet mode. The background sheild opacity should be 10%.
@@ -1162,7 +1162,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundBlur) {
   // Show app list in non-tablet mode. The background blur should be enabled.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   ui::Layer* background_layer =
-      GetAppListView()->app_list_background_shield_for_test()->layer();
+      GetAppListView()->GetAppListBackgroundShieldForTest()->layer();
   EXPECT_GT(background_layer->background_blur(), 0.0f);
 
   // Turn on tablet mode. The background blur should be disabled.

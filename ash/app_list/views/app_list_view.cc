@@ -254,6 +254,42 @@ class TransitionAnimationObserver : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TransitionAnimationObserver);
 };
 
+// The view for the app list background shield which changes color and radius.
+class AppListBackgroundShieldView : public views::View {
+ public:
+  AppListBackgroundShieldView()
+      : color_(AppListView::kDefaultBackgroundColor), corner_radius_(0) {
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  ~AppListBackgroundShieldView() override = default;
+
+  void UpdateColor(SkColor color) {
+    color_ = color;
+    SchedulePaint();
+  }
+
+  void UpdateCornerRadius(int corner_radius) {
+    corner_radius_ = corner_radius;
+    SchedulePaint();
+  }
+
+  // Overridden from views::View:
+  void OnPaint(gfx::Canvas* canvas) override {
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(color_);
+    canvas->DrawRoundRect(GetContentsBounds(), corner_radius_, flags);
+  }
+
+ private:
+  SkColor color_;
+  int corner_radius_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListBackgroundShieldView);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListView::TestApi
 
@@ -435,11 +471,14 @@ class AppListView::FullscreenWidgetObserver : views::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(FullscreenWidgetObserver);
 };
 
+views::View* AppListView::GetAppListBackgroundShieldForTest() {
+  return app_list_background_shield_;
+}
+
 void AppListView::InitContents(int initial_apps_page) {
   // The shield view that colors/blurs the background of the app list and
   // makes it transparent.
-  app_list_background_shield_ = new views::View;
-  app_list_background_shield_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  app_list_background_shield_ = new AppListBackgroundShieldView();
   app_list_background_shield_->layer()->SetOpacity(
       is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity);
   SetBackgroundShieldColor();
@@ -1515,7 +1554,7 @@ void AppListView::SetBackgroundShieldColor() {
   GetWallpaperProminentColors(base::BindOnce(
       [](base::WeakPtr<AppListView> self,
          const std::vector<SkColor>& prominent_colors) {
-        self->app_list_background_shield_->layer()->SetColor(
+        self->app_list_background_shield_->UpdateColor(
             GetBackgroundShieldColor(prominent_colors));
       },
       weak_ptr_factory_.GetWeakPtr()));
@@ -1565,20 +1604,7 @@ void AppListView::UpdateBackgroundRadius() {
         kAppListPeekingBackgroundRadius, kAppListFullscreenBackgroundRadius);
   }
 
-  // Resetting mask layer is heavy operation, so avoid doing so if radius does
-  // not change.
-  static int previous_background_radius = -1;
-  if (previous_background_radius == background_radius)
-    return;
-
-  app_list_background_mask_ = views::Painter::CreatePaintedLayer(
-      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                  background_radius));
-  app_list_background_mask_->layer()->SetFillsBoundsOpaquely(false);
-  app_list_background_mask_->layer()->SetBounds(GetContentsBounds());
-  app_list_background_shield_->layer()->SetMaskLayer(
-      app_list_background_mask_->layer());
-  previous_background_radius = background_radius;
+  app_list_background_shield_->UpdateCornerRadius(background_radius);
 }
 
 }  // namespace app_list
