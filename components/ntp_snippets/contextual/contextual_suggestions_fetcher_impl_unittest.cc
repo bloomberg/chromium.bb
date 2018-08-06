@@ -147,17 +147,35 @@ std::string SerializedResponseProto(const std::string& peek_text,
 
 }  // namespace
 
+class TestUrlKeyedDataCollectionConsentHelper
+    : public unified_consent::UrlKeyedDataCollectionConsentHelper {
+ public:
+  TestUrlKeyedDataCollectionConsentHelper() = default;
+  ~TestUrlKeyedDataCollectionConsentHelper() override = default;
+
+  bool IsEnabled() override { return is_enabled_; }
+  void SetIsEnabled(bool enabled) { is_enabled_ = enabled; }
+
+ private:
+  bool is_enabled_ = false;
+};
+
 class ContextualSuggestionsFetcherTest : public testing::Test {
  public:
   ContextualSuggestionsFetcherTest() {
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_factory_);
+    auto consent_helper =
+        std::make_unique<TestUrlKeyedDataCollectionConsentHelper>();
+    consent_helper_ = consent_helper.get();
     fetcher_ = std::make_unique<ContextualSuggestionsFetcherImpl>(
-        shared_url_loader_factory_, "en");
+        shared_url_loader_factory_, std::move(consent_helper), "en");
   }
 
   ~ContextualSuggestionsFetcherTest() override {}
+
+  void SetUp() override { consent_helper()->SetIsEnabled(true); }
 
   void SetFakeResponse(const std::string& response_data,
                        net::HttpStatusCode response_code = net::HTTP_OK,
@@ -192,10 +210,15 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
 
   TestURLLoaderFactory* test_factory() { return &test_factory_; }
 
+  TestUrlKeyedDataCollectionConsentHelper* consent_helper() {
+    return consent_helper_;
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   network::TestURLLoaderFactory test_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  TestUrlKeyedDataCollectionConsentHelper* consent_helper_;
   std::unique_ptr<ContextualSuggestionsFetcherImpl> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsFetcherTest);
@@ -410,6 +433,42 @@ TEST_F(ContextualSuggestionsFetcherTest, RequestHeaderSetCorrectly) {
 
   histogram_tester.ExpectTotalCount(
       "ContextualSuggestions.FetchRequestProtoSizeKB", 1);
+}
+
+TEST_F(ContextualSuggestionsFetcherTest, CookiesIncludedWhenConsentIsEnabled) {
+  network::ResourceRequest last_resource_request;
+
+  test_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        last_resource_request = request;
+      }));
+
+  SetFakeResponse(SerializedResponseProto("Peek Text", DefaultClusters()));
+
+  MockClustersCallback callback;
+  SendAndAwaitResponse(GURL("http://www.article.com/"), &callback);
+
+  int load_flags = last_resource_request.load_flags;
+  EXPECT_EQ(0, load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
+}
+
+TEST_F(ContextualSuggestionsFetcherTest, CookiesExcludedWhenConsentIsDisabled) {
+  consent_helper()->SetIsEnabled(false);
+  network::ResourceRequest last_resource_request;
+
+  test_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        last_resource_request = request;
+      }));
+
+  SetFakeResponse(SerializedResponseProto("Peek Text", DefaultClusters()));
+
+  MockClustersCallback callback;
+  SendAndAwaitResponse(GURL("http://www.article.com/"), &callback);
+
+  int load_flags = last_resource_request.load_flags;
+  EXPECT_EQ(net::LOAD_DO_NOT_SEND_COOKIES,
+            load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, ProtocolError) {

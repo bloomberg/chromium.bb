@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetch.h"
 
 #include "base/base64.h"
@@ -179,8 +181,11 @@ ContextualSuggestionsResult ResultFromResponse(
 
 ContextualSuggestionsFetch::ContextualSuggestionsFetch(
     const GURL& url,
-    const std::string& bcp_language_code)
-    : url_(url), bcp_language_code_(bcp_language_code) {}
+    const std::string& bcp_language_code,
+    bool include_cookies)
+    : url_(url),
+      bcp_language_code_(bcp_language_code),
+      include_cookies_(include_cookies) {}
 
 ContextualSuggestionsFetch::~ContextualSuggestionsFetch() = default;
 
@@ -252,11 +257,11 @@ ContextualSuggestionsFetch::MakeURLLoader() const {
   auto resource_request = std::make_unique<network::ResourceRequest>();
 
   resource_request->url = GURL(GetFetchEndpoint());
-  // TODO(pnoland): include cookies once the suggestions endpoint can make use
-  // of them.
-  resource_request->load_flags =
-      net::LOAD_BYPASS_CACHE | net::LOAD_DO_NOT_SAVE_COOKIES |
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  int cookie_flag = include_cookies_ ? 0 : net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->load_flags = net::LOAD_BYPASS_CACHE |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES | cookie_flag |
+                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
   resource_request->headers = MakeHeaders();
   resource_request->method = "GET";
 
