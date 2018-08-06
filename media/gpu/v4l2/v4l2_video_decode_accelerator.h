@@ -300,6 +300,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // called any time a relevant queue could potentially be emptied: see
   // function definition.
   void NotifyFlushDoneIfNeeded();
+  // Notify the client of a flush completion.
+  void NofityFlushDone();
   // Returns true if VIDIOC_DECODER_CMD is supported.
   bool IsDecoderCmdSupported();
   // Send V4L2_DEC_CMD_START to the driver. Return true if success.
