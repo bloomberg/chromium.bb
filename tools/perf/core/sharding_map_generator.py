@@ -10,7 +10,7 @@ and benchmarks indexed by story. E.g.
 {
   "0": {
     "benchmarks": [
-      "battor.steady_state": {},
+      "power.desktop": {},
       "rendering.mobile": {
         "begin": 0,
         "end": 104
