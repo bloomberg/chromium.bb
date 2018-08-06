@@ -64,23 +64,6 @@ Node* FlatTreeTraversal::TraverseChild(const Node& node,
   return child;
 }
 
-// This needs only for v0
-// Node* FlatTreeTraversalNg::ResolveDistributionStartingAt(
-//     const Node* node,
-//     TraversalDirection direction) {
-//   if (!node)
-//     return nullptr;
-//   for (const Node* sibling = node; sibling;
-//        sibling = (direction == kTraversalDirectionForward
-//                       ? sibling->nextSibling()
-//                       : sibling->previousSibling())) {
-//     if (node->IsInV0ShadowTree())
-//       return V0ResolveDistributionStartingAt(*sibling, direction);
-//     return const_cast<Node*>(sibling);
-//   }
-//   return nullptr;
-// }
-
 Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
     const Node& node,
     TraversalDirection direction) {
@@ -125,13 +108,6 @@ Node* FlatTreeTraversal::TraverseSiblings(const Node& node,
     if (Node* found = V0ResolveDistributionStartingAt(*sibling, direction))
       return found;
   }
-
-  // // Slotted nodes are already handled in traverseSiblingsForV1HostChild()
-  // // above, here is for fallback contents.
-  // if (auto* slot = ToHTMLSlotElementOrNull(node.parentElement())) {
-  //   if (slot->SupportsAssignment() && slot->AssignedNodes().IsEmpty())
-  //     return TraverseSiblings(*slot, direction);
-  // }
   return nullptr;
 }
 
