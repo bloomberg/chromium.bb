@@ -37,6 +37,26 @@ const char kLsbRelease[] =
     "CHROMEOS_RELEASE_NAME=Chrome OS\n"
     "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
+TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
+  content::TestBrowserThreadBundle thread_bundle;
+  TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
+  EXPECT_EQ("Downloads",
+            GetDownloadLocationText(&profile, "/home/chronos/user/Downloads"));
+  EXPECT_EQ("Downloads",
+            GetDownloadLocationText(
+                &profile, "/home/chronos/u-0123456789abcdef/Downloads"));
+  EXPECT_EQ("Google Drive \u203a foo",
+            GetDownloadLocationText(
+                &profile, "/special/drive-0123456789abcdef/root/foo"));
+  EXPECT_EQ("Play files \u203a foo \u203a bar",
+            GetDownloadLocationText(
+                &profile, "/run/arc/sdcard/write/emulated/0/foo/bar"));
+  EXPECT_EQ("Linux files \u203a foo",
+            GetDownloadLocationText(
+                &profile,
+                "/media/fuse/crostini_0123456789abcdef_termina_penguin/foo"));
+}
+
 TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;

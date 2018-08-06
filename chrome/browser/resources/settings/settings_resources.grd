@@ -567,6 +567,7 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_BROWSER_PROXY_JS"
                  file="downloads_page/downloads_browser_proxy.js"
+                 preprocess="true"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_HTML"
                  file="downloads_page/downloads_page.html"

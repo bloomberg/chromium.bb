@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../controls/controlled_button.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="downloads_browser_proxy.html">
@@ -29,7 +30,7 @@
             [[prefs.download.default_directory.value]]
 </if>
 <if expr="chromeos">
-            [[getDownloadLocation_(prefs.download.default_directory.value)]]
+            [[downloadLocation_]]
 </if>
           </div>
         </div>
