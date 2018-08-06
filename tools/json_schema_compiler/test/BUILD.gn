@@ -9,7 +9,7 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 
 assert(enable_extensions)
 
-json_schema_api("api") {
+generated_types("generated_types") {
   visibility = [ ":*" ]
 
   sources = [
@@ -34,7 +34,6 @@ json_schema_api("api") {
     "simple_api.json",
   ]
 
-  schemas = true
   root_namespace = "test::api::%(namespace)s"
 
   deps = [
@@ -79,7 +78,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":api",
+    ":generated_types",
     "//base",
     "//testing/gtest",
   ]

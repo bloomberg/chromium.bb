@@ -31,10 +31,9 @@ root_namespace = "extensions::cast::api::%(namespace)s"
 
 extensions_api_uncompiled_sources = [ "extension.json" ]
 
-json_schema_api("api") {
+json_schema_api("generated_api_strings_bundle") {
   sources = schema_sources
   uncompiled_sources = extensions_api_uncompiled_sources
-  schemas = true
   bundle = true
   bundle_name = "Cast"
   uncompiled_bundle_schema_sources = [ "tts.json" ]
@@ -43,19 +42,30 @@ json_schema_api("api") {
   deps = [
     "//extensions/common/api",
   ]
+  visibility = [ ":api" ]
 }
 
-json_schema_api("api_registration") {
+json_schema_api("generated_api_registration_bundle") {
   sources = schema_sources
   impl_dir = "//chromecast/browser/extensions/api"
   bundle_registration = true
   bundle_name = "Cast"
 
   deps = [
-    ":api",
     "//extensions/common",
     "//extensions/common/api",
   ]
+  visibility = [ ":api" ]
+}
+
+generated_types("generated_api_types") {
+  sources = schema_sources
+  schema_include_rules = extensions_api_schema_include_rules
+
+  deps = [
+    "//extensions/common/api",
+  ]
+  visibility = [ ":api" ]
 }
 
 json_features("cast_api_features") {
@@ -79,6 +89,16 @@ json_features("cast_manifest_features") {
   method_name = "AddCastManifestFeatures"
   sources = [
     "_manifest_features.json",
+  ]
+}
+
+# Public Targets
+
+group("api") {
+  public_deps = [
+    ":generated_api_registration_bundle",
+    ":generated_api_strings_bundle",
+    ":generated_api_types",
   ]
 }
 
