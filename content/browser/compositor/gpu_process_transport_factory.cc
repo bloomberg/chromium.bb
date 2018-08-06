@@ -266,7 +266,7 @@ CreateOverlayCandidateValidator(
       ozone_platform->GetOverlayManager();
   if (!command_line->HasSwitch(switches::kEnableHardwareOverlays) &&
       overlay_manager->SupportsOverlays()) {
-    enable_overlay_flag = "single-fullscreen,single-on-top";
+    enable_overlay_flag = "single-fullscreen,single-on-top,underlay";
   }
   if (!enable_overlay_flag.empty()) {
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
