@@ -104,10 +104,11 @@ class WebRtcAudioDebugRecordingsBrowserTest
   ~WebRtcAudioDebugRecordingsBrowserTest() override {}
 };
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 // Renderer crashes under Android: https://crbug.com/820934.
 // Failures on Android M. https://crbug.com/535728.
+// Flaky on Linux: https://crbug.com/871182
 #define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #else
 #define MAYBE_CallWithAudioDebugRecordings CallWithAudioDebugRecordings
@@ -252,10 +253,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 // Renderer crashes under Android: https://crbug.com/820934.
 // Failures on Android M. https://crbug.com/535728.
+// Flaky on Linux: https://crbug.com/871182
 #define MAYBE_TwoCallsWithAudioDebugRecordings \
   DISABLED_TwoCallsWithAudioDebugRecordings
 #else
