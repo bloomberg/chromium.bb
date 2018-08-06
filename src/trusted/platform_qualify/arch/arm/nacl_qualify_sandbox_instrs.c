@@ -59,19 +59,19 @@ int NaClQualifySandboxInstrs(void) {
   /* Each of the following should trap, successively executing
      each else clause, never the fallthrough. */
   if (0 == sigsetjmp(try_state, 1)) {
-    asm(".word " NACL_TO_STRING(NACL_INSTR_ARM_LITERAL_POOL_HEAD) "\n");
+    __asm__(".word " NACL_TO_STRING(NACL_INSTR_ARM_LITERAL_POOL_HEAD) "\n");
     fell_through = 1;
   } else if (0 == sigsetjmp(try_state, 1)) {
-    asm(".word " NACL_TO_STRING(NACL_INSTR_ARM_BREAKPOINT) "\n");
+    __asm__(".word " NACL_TO_STRING(NACL_INSTR_ARM_BREAKPOINT) "\n");
     fell_through = 1;
   } else if (0 == sigsetjmp(try_state, 1)) {
-    asm(".word " NACL_TO_STRING(NACL_INSTR_ARM_HALT_FILL) "\n");
+    __asm__(".word " NACL_TO_STRING(NACL_INSTR_ARM_HALT_FILL) "\n");
     fell_through = 1;
   } else if (0 == sigsetjmp(try_state, 1)) {
-    asm(".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n");
+    __asm__(".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n");
     fell_through = 1;
   } else if (0 == sigsetjmp(try_state, 1)) {
-    asm(".word " NACL_TO_STRING(NACL_INSTR_ARM_FAIL_VALIDATION) "\n");
+    __asm__(".word " NACL_TO_STRING(NACL_INSTR_ARM_FAIL_VALIDATION) "\n");
     fell_through = 1;
   }
 

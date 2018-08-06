@@ -40,7 +40,7 @@ int NaClQualifyFpu(void) {
       uint64_t v[2] __attribute__((aligned(16)));
     } x = { { 0x0d0e0a0d0b0e0e0fULL, 0x1f1e1e1d1f1a1c1eULL } },
       y = { { 0x1010101010101010ULL, 0x1010101010101010ULL } };
-    asm(".fpu neon\n"
+    __asm__(".fpu neon\n"
         "vldm %3, {d28-d29}\n"  /* q14 = x */
         "vldm %4, {d30-d31}\n"  /* q15 = y */
         "vadd.i64 q15, q14, q15\n"  /* q15 += q14 */

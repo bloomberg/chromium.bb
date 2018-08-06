@@ -121,7 +121,7 @@ static void signal_catch(int sig) {
  * best register allocation possible.
  */
 #define LOAD_TEST(instr, address, offset_constraint, offset) do {       \
-    asm(instr " %[Rt], [%[Rn], %[off]]\n"                               \
+    __asm__(instr " %[Rt], [%[Rn], %[off]]\n"                           \
         : [Rt] "=&r" (out)                                              \
         : [Rn] "r" (address), [off] offset_constraint (offset),         \
           "m" (*(const Value *) (address + offset)));                   \
@@ -146,7 +146,7 @@ enum { CANARY = 0x69 };
       data.misalign[i] = CANARY;                                        \
     for (i = 0; i < sizeof(Value) - o; ++i)                             \
       data.pad[i] = CANARY;                                             \
-    asm(instr " %[Rt], [%[Rn], %[off]]\n"                               \
+    __asm__(instr " %[Rt], [%[Rn], %[off]]\n"                           \
         : "=m" (data)                                                   \
         : [Rt] "r" (val), [Rn] "r" (address),                           \
           [off] offset_constraint (offset));                            \
