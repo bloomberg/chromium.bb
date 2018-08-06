@@ -53,9 +53,10 @@ identity::IdentityManager* IdentityManagerFactory::GetForProfile(
 
 // static
 identity::IdentityManager* IdentityManagerFactory::GetForProfileIfExists(
-    Profile* profile) {
+    const Profile* profile) {
   return static_cast<IdentityManagerWrapper*>(
-      GetInstance()->GetServiceForBrowserContext(profile, false));
+      GetInstance()->GetServiceForBrowserContext(const_cast<Profile*>(profile),
+                                                 false));
 }
 
 // static
