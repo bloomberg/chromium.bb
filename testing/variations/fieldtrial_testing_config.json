@@ -4693,6 +4693,25 @@
             ]
         }
     ],
+    "WebPaymentsJustInTimePaymentApp": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebPaymentsJustInTimePaymentApp"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebRTC-ApmGainController2Limiter": [
         {
             "platforms": [
