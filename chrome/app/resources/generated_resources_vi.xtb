@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Hiển thị Chính tả và Ngữ pháp</translation>
 <translation id="1593594475886691512">Đang định dạng...</translation>
 <translation id="159359590073980872">Bộ nhớ đệm hình ảnh</translation>
+<translation id="1593926297800505364">Lưu phương thức thanh toán</translation>
 <translation id="1598233202702788831">Quản trị viên của bạn đã tắt bản cập nhật.</translation>
 <translation id="1600857548979126453">Truy cập chương trình phụ trợ trình gỡ lỗi trang</translation>
 <translation id="1601560923496285236">Áp dụng</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Không thể kết hợp thiết bị với miền. Hãy đảm bảo số thiết bị bạn thêm không vượt quá giới hạn.</translation>
 <translation id="1744108098763830590">trang nền</translation>
 <translation id="1745520510852184940">Luôn làm điều này</translation>
+<translation id="1746417874336251387">Cung cấp các tính năng mới có thể sử dụng kết nối của điện thoại với Chromebook của bạn</translation>
 <translation id="174937106936716857">Tổng số lượng tệp</translation>
 <translation id="175196451752279553">&amp;Mở lại tab đã đóng</translation>
 <translation id="1753905327828125965">Truy cập nhiều nhất</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Không được Trước</translation>
 <translation id="1933809209549026293">Hãy kết nối chuột hoặc bàn phím. Nếu bạn đang sử dụng thiết bị Bluetooth, hãy đảm bảo thiết bị đã sẵn sàng ghép nối.</translation>
 <translation id="1936157145127842922">Hiển thị trong Thư mục</translation>
+<translation id="1938351510777341717">Lệnh bên ngoài</translation>
 <translation id="1940546824932169984">Thiết bị đã kết nối</translation>
 <translation id="1942765061641586207">Độ phân giải hình ảnh</translation>
+<translation id="1943097386230153518">Cài đặt dịch vụ mới</translation>
 <translation id="1944921356641260203">Đã tìm thấy bản cập nhật</translation>
 <translation id="1951615167417147110">Cuộn lên một trang</translation>
 <translation id="1954813140452229842">Lỗi khi kết nối với thư mục chia sẻ. Vui lòng kiểm tra thông tin đăng nhập của bạn rồi thử lại.</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="265390580714150011">Giá trị Trường</translation>
 <translation id="2654166010170466751">Cho phép các trang web cài đặt trình xử lý thanh toán</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Các tính năng có thể thay đổi tùy theo thiết bị</translation>
 <translation id="2660779039299703961">Sự kiện</translation>
 <translation id="266079277508604648">Không thể kết nối với máy in. Hãy kiểm tra để đảm bảo rằng bạn đã bật máy in cũng như đã kết nối máy in với Chromebook qua Wi-Fi hoặc USB.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">Nhập mã PIN</translation>
 <translation id="2805646850212350655">Hệ thống Tệp Mã hóa của Microsoft</translation>
 <translation id="2805756323405976993">Ứng dụng</translation>
+<translation id="2806891468525657116">Lối tắt đã tồn tại</translation>
 <translation id="2807517655263062534">Các tệp bạn tải xuống sẽ xuất hiện ở đây</translation>
 <translation id="2809586584051668049">và <ph name="NUMBER_ADDITIONAL_DISABLED" /> mục khác</translation>
 <translation id="281133045296806353">Đã tạo cửa sổ mới trong phiên trình duyệt hiện có.</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">Bạn đã đăng nhập!</translation>
 <translation id="3429275422858276529">Đánh dấu trang này để dễ dàng tìm kiếm về sau</translation>
 <translation id="3429599832623003132">$1 mục</translation>
+<translation id="3430342160185525240">Bật Trợ lý để hiển thị thông báo cho bạn.</translation>
 <translation id="3432227430032737297">Xóa tất cả cookie hiển thị</translation>
 <translation id="3432757130254800023">Gửi âm thanh và video tới màn hình trên mạng cục bộ</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1964,6 +1971,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> trong Bảng điều khiển.
 
   Bạn có muốn khởi động <ph name="CONTROL_PANEL_APPLET_NAME" /> không?</translation>
+<translation id="394183848452296464">Không thể tạo lối tắt</translation>
 <translation id="3943582379552582368">&amp;Quay lại</translation>
 <translation id="3943857333388298514">Dán</translation>
 <translation id="3948116654032448504">&amp;Tìm kiếm hình ảnh trên <ph name="SEARCH_ENGINE" /></translation>
@@ -2271,6 +2279,7 @@
 <translation id="4481530544597605423">Thiết bị được hủy ghép nối</translation>
 <translation id="4482194545587547824">Google có thể sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm và các dịch vụ khác của Google.</translation>
 <translation id="4495419450179050807">Không hiển thị trên trang này</translation>
+<translation id="4499718683476608392">Bật tính năng Tự động điền thẻ tín dụng để điền vào các biểu mẫu chỉ bằng một lần nhấp</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> đã bị lỗi</translation>
 <translation id="450099669180426158">Biểu tượng dấu chấm than</translation>
 <translation id="4501530680793980440">Xác nhận xóa</translation>
@@ -3114,6 +3123,7 @@
 <translation id="5752453871435543420">Sao lưu Chrome OS Cloud</translation>
 <translation id="5756163054456765343">Trung tâm trợ g&amp;iúp</translation>
 <translation id="5759728514498647443">Tài liệu bạn gửi để in qua <ph name="APP_NAME" /> có thể đọc được bằng <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Tùy chọn cài đặt thẻ tín dụng</translation>
 <translation id="5763751966069581670">Không tìm thấy thiết bị USB nào</translation>
 <translation id="5764483294734785780">Lư&amp;u âm thanh thành...</translation>
 <translation id="57646104491463491">Ngày Sửa đổi</translation>
@@ -3185,6 +3195,7 @@
 <translation id="5855773610748894548">Rất tiếc, mô-đun an toàn bị lỗi.</translation>
 <translation id="5856721540245522153">Bật tính năng gỡ lỗi</translation>
 <translation id="5857090052475505287">Thư mục Mới</translation>
+<translation id="585979798156957858">Meta bên ngoài</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5860209693144823476">Tab 3</translation>
 <translation id="5860491529813859533">Bật</translation>
@@ -3494,6 +3505,7 @@
 <translation id="6327785803543103246">Tự động phát hiện proxy web</translation>
 <translation id="6333064448949140209">Tệp sẽ được gửi tới Google để được gỡ lỗi</translation>
 <translation id="6333834492048057036">Tập trung vào thanh địa chỉ để tìm kiếm</translation>
+<translation id="6336451774241870485">Tab riêng tư mới</translation>
 <translation id="6339668969738228384">Tạo hồ sơ mới cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Không thể kết nối với máy chủ. Vui lòng kiểm tra kết nối mạng của bạn và thử lại. Nếu sự cố vẫn tiếp diễn, hãy khởi động lại Chromebook.</translation>
 <translation id="6340071272923955280">Giao thức in qua Internet (IPPS)</translation>
@@ -3675,6 +3687,7 @@
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">Thông tin tệp</translation>
 <translation id="6607831829715835317">Côn&amp;g cụ khác</translation>
+<translation id="6610147964972079463">Đóng tab riêng tư</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6613452264606394692">Quay lại đây nhanh chóng bằng cách đánh dấu trang này</translation>
 <translation id="6614893213975402384">Cài đặt bản cập nhật và ứng dụng. Bằng việc tiếp tục, bạn đồng ý rằng thiết bị này cũng có thể tự động tải xuống và cài đặt các bản cập nhật cũng như ứng dụng từ Google, nhà mạng và nhà sản xuất thiết bị bằng cách sử dụng dữ liệu di động. Một vài ứng dụng có thể cung cấp tùy chọn mua hàng trong ứng dụng. Bạn có thể xóa những ứng dụng này bất kỳ lúc nào. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
@@ -3745,6 +3758,7 @@
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6718273304615422081">Đang nén...</translation>
 <translation id="671928215901716392">Khóa màn hình</translation>
+<translation id="6720847671508630642">Tự động chia sẻ những tính năng ưu việt nhất của Android với Chromebook của bạn. Kết nối điện thoại để bạn có thể nhắn tin từ máy tính, dùng chung kết nối Internet của điện thoại và mở khóa màn hình Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Xem nhãn hiệu và kiểu Khóa bảo mật của bạn</translation>
 <translation id="6721972322305477112">&amp;Tệp</translation>
 <translation id="672213144943476270">Vui lòng mở khóa hồ sơ của bạn trước khi duyệt với tư cách khách.</translation>
@@ -3891,6 +3905,7 @@
 <translation id="6970856801391541997">In các trang cụ thể</translation>
 <translation id="6972180789171089114">Âm thanh/video</translation>
 <translation id="6973630695168034713">Thư mục</translation>
+<translation id="6974609594866392343">Chế độ minh họa ngoại tuyến</translation>
 <translation id="6976108581241006975">Bảng điều khiển JavaScript</translation>
 <translation id="6977381486153291903">Hiệu chỉnh chương trình cơ sở</translation>
 <translation id="6978121630131642226">Công cụ Tìm kiếm</translation>
@@ -4485,6 +4500,7 @@
 <translation id="7857949311770343000">Đây có phải là trang tab mới bạn muốn không?</translation>
 <translation id="786073089922909430">Dịch vụ: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Tải xuống</translation>
+<translation id="7864662577698025113">Thêm dịch vụ mới</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Đã ghép nối</translation>
 <translation id="7870730066603611552">Xem lại các tùy chọn đồng bộ hóa sau khi thiết lập</translation>
@@ -4999,6 +5015,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8666584013686199826">Hỏi khi một trang web muốn truy cập vào các thiết bị USB</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> hiện ở chế độ toàn màn hình và đã tắt con trỏ chuột của bạn.</translation>
 <translation id="8669284339312441707">Ấm hơn</translation>
+<translation id="8669919703154928649">Cho phép Trợ lý hiển thị thông báo cho bạn</translation>
 <translation id="8669949407341943408">Đang di chuyển...</translation>
 <translation id="8671210955687109937">Có thể nhận xét</translation>
 <translation id="8673026256276578048">Tìm kiếm Web...</translation>
@@ -5386,6 +5403,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="964286338916298286">Quản trị viên CNTT đã tắt các Ưu đãi của Chrome trên thiết bị của bạn.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Ứng dụng}other{Các ứng dụng}}</translation>
 <translation id="967007123645306417">Thao tác này sẽ đăng xuất bạn khỏi tài khoản Google. Các thay đổi đối với dấu trang, lịch sử, mật khẩu và các mục cài đặt khác sẽ không đồng bộ hóa với Tài khoản Google của bạn nữa. Tuy nhiên, dữ liệu hiện có sẽ vẫn được lưu trữ trong Tài khoản Google của bạn và có thể quản lý trên <ph name="BEGIN_LINK" />Trang tổng quan Google<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Dữ liệu đã lưu trữ</translation>
 <translation id="968000525894980488">Bật dịch vụ của Google Play.</translation>
 <translation id="968174221497644223">Bộ nhớ đệm của ứng dụng</translation>
 <translation id="969096075394517431">Thay đổi ngôn ngữ</translation>

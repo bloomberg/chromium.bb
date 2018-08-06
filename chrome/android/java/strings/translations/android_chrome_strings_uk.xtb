@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">Додається <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">З веб-сайтів</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
+<translation id="1054301162707478098">Ви перейшли в приватний режим.</translation>
 <translation id="10614374240317010">Ніколи не зберігалося</translation>
 <translation id="1068672505746868501">Ніколи не перекладати сторінки такою мовою: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">Інші мови</translation>
 <translation id="124678866338384709">Закрити поточну вкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">Сторінки, які ви переглядаєте на приватних вкладках, не реєструються в історії веб-переглядача чи історії пошуку й не залишають файлів cookie, коли ви закриваєте всі приватні вкладки. Усі завантажені файли чи створені закладки зберігаються.
+
+Проте ви не можете сховати все. Навіть у приватному режимі ваш роботодавець, постачальник послуг Інтернету чи адміністратори веб-сайтів, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="127138278192656016">Використовувати синхронізацію та всі сервіси</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">Керування повноекранним режимом</translation>
 <translation id="2038563949887743358">Увімкнути опцію "Запитувати версію сайту для комп’ютера"</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> ГБ використовується іншими додатками</translation>
+<translation id="2055670718290744343">Прискорювач пошуку</translation>
 <translation id="2063713494490388661">Торкніться, щоб шукати</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">Синхронізація та сервіси Google</translation>
 <translation id="2259659629660284697">Експортувати паролі…</translation>
 <translation id="2268044343513325586">Уточнити</translation>
+<translation id="2280910239864711607">Відкрити нову вкладку в приватному режимі</translation>
 <translation id="2286841657746966508">Розрахункова адреса</translation>
 <translation id="230115972905494466">Сумісних пристроїв не знайдено</translation>
 <translation id="2315043854645842844">Операційна система не підтримує сертифікат, вибраний на стороні клієнта.</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">Увімкнути Javascript на певному сайті.</translation>
 <translation id="2625189173221582860">Пароль скопійовано</translation>
 <translation id="2631006050119455616">Збережено</translation>
+<translation id="2633278372998075009">Приватні вкладки</translation>
 <translation id="2647434099613338025">Додати мову</translation>
 <translation id="2650751991977523696">Завантажити файл ще раз?</translation>
 <translation id="2653659639078652383">Надіслати</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">Якщо ви забули парольну фразу або хочете змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Мікрофон</translation>
 <translation id="3232754137068452469">Веб-додаток</translation>
+<translation id="3234355010754616171">Нова приватна вкладка</translation>
 <translation id="3236059992281584593">Залишилась 1 хв</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3254409185687681395">Додати цю сторінку до закладок</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">Закрити всі анонімні вікна</translation>
 <translation id="3365671512111106261">Недоступно, коли ввімкнено Заощадження трафіку</translation>
 <translation id="3367813778245106622">Увійдіть знову, щоб почати синхронізацію</translation>
+<translation id="3377025655491224618">Приватна вкладка</translation>
 <translation id="3384347053049321195">Поділитися зображенням</translation>
 <translation id="3386292677130313581">Запитувати, перш ніж дозволити сайтам визначати ваше місцезнаходження (рекомендується)</translation>
 <translation id="3387650086002190359">Файл <ph name="FILE_NAME" /> не завантажено через помилки файлової системи.</translation>
@@ -385,6 +394,7 @@
 <translation id="4209895695669353772">Щоб отримувати персоналізовані пропозиції від Google, увімкніть синхронізацію</translation>
 <translation id="4226663524361240545">Коли надходитимуть сповіщення, пристрій може вібрувати</translation>
 <translation id="4242533952199664413">Відкрити налаштування</translation>
+<translation id="4243710787042215766">Відкрити в приватній вкладці</translation>
 <translation id="424864128008805179">Вийти з Chrome?</translation>
 <translation id="4256782883801055595">Ліцензії ПЗ з відкритим кодом</translation>
 <translation id="4259722352634471385">Веб-сторінку <ph name="URL" /> заблоковано</translation>
@@ -465,6 +475,7 @@
 <translation id="4878404682131129617">Не вдалося налагодити зв’язок через проксі-сервер</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="488187801263602086">Перейменувати файл</translation>
+<translation id="4883379392681899581">Вийти з приватного режиму</translation>
 <translation id="4885273946141277891">Забагато копій Chrome.</translation>
 <translation id="4910889077668685004">Додатки для платежів</translation>
 <translation id="4913161338056004800">Скинути дані статистики</translation>
@@ -506,6 +517,7 @@
 <translation id="5224771365102442243">З відео</translation>
 <translation id="5233638681132016545">Нова вкладка</translation>
 <translation id="5240817131241497236">Змінилися налаштування, які керують синхронізацією, персоналізацією й іншими службами Google у Chrome. Це може вплинути на поточні налаштування.</translation>
+<translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Налаштування<ph name="END_LINK1" /> можна будь-коли змінити. Google може використовувати вміст відвіданих сайтів, дані веб-перегляду й інші дії, щоб персоналізувати Chrome та інші сервіси Google, як-от Перекладач, Пошук і оголошення.</translation>
 <translation id="5271967389191913893">Вміст, який ви хочете завантажити, не можна відкрити на цьому пристрої.</translation>
 <translation id="528192093759286357">Щоб вийти з повноекранного режиму, проведіть пальцем по екрану згори вниз і торкніться кнопки "Назад".</translation>
 <translation id="5284584623296338184">Зміни в закладках, історії, паролях та інших налаштуваннях більше не синхронізуватимуться з вашим обліковим записом Google. Однак наявні дані залишаться у вашому обліковому записі Google.</translation>
@@ -591,6 +603,7 @@
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5833397272224757657">Використовує вміст відвіданих сайтів, активність у веб-переглядачі та взаємодії для персоналізації</translation>
 <translation id="5833984609253377421">Поділитися посиланням</translation>
+<translation id="584427517463557805">Вибрано приватну вкладку</translation>
 <translation id="5854790677617711513">Понад 30 днів тому</translation>
 <translation id="5858741533101922242">Chrome не може ввімкнути адаптер Bluetooth</translation>
 <translation id="5860033963881614850">Вимк.</translation>
@@ -620,6 +633,7 @@
 <translation id="6075798973483050474">Змінити домашню сторінку</translation>
 <translation id="60923314841986378">Залишилося <ph name="HOURS" /> год</translation>
 <translation id="60924377787140961">Згодом тут з’являться інші статті. Гарного дня.</translation>
+<translation id="6099151465289169210">Ви перейшли на приватні вкладки</translation>
 <translation id="6108923351542677676">Виконується налаштування…</translation>
 <translation id="6111020039983847643">використаний трафік</translation>
 <translation id="6112702117600201073">Оновлення сторінки</translation>
@@ -649,6 +663,7 @@
 <translation id="6320088164292336938">Вібросигнал</translation>
 <translation id="6324034347079777476">Синхронізацію системи Android вимкнено</translation>
 <translation id="6333140779060797560">Надіслати через <ph name="APPLICATION" /></translation>
+<translation id="6336451774241870485">Нова приватна вкладка</translation>
 <translation id="6337234675334993532">Шифрування</translation>
 <translation id="6341580099087024258">Запитувати, де зберігати файли</translation>
 <translation id="6343192674172527289">Завантаження не знайдено</translation>
@@ -686,6 +701,7 @@
 <translation id="6593061639179217415">Версія для комп’ютера</translation>
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
+<translation id="6610147964972079463">Закрити приватні вкладки</translation>
 <translation id="6612358246767739896">Захищений вміст</translation>
 <translation id="6627583120233659107">Редагувати папку</translation>
 <translation id="6643016212128521049">Очистити</translation>
@@ -789,6 +805,7 @@
 <translation id="7453467225369441013">Ви вийдете з більшості сайтів, але не вийдете з облікового запису Google.</translation>
 <translation id="7454641608352164238">Замало місця</translation>
 <translation id="7455923816558154057">Торкніться, щоб переглянути</translation>
+<translation id="7465104139234185284">Закрити всі приватні вкладки</translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7475192538862203634">Якщо ви часто бачите таку сторінку, скористайтеся цими <ph name="BEGIN_LINK" />пропозиціями<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Карту SD не знайдено. Деякі файли можуть бути відсутні.</translation>
@@ -884,6 +901,7 @@
 <translation id="8220488350232498290">Завантажено <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="8249310407154411074">На початок</translation>
 <translation id="8250920743982581267">Документи</translation>
+<translation id="825412236959742607">Ця сторінка використовує забагато пам’яті, тому веб-переглядач Chrome вилучив деякий вміст.</translation>
 <translation id="8260126382462817229">Спробуйте ввійти ще раз</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8266862848225348053">Папка для завантажень</translation>
@@ -979,6 +997,7 @@
 <translation id="9070377983101773829">Почати голосовий пошук</translation>
 <translation id="9071742570345586758">Щоб переглядати вміст віртуальної реальності, установіть Google VR-сервіси</translation>
 <translation id="9074336505530349563">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
+<translation id="9080642952018487277">Перейти в приватний режим</translation>
 <translation id="9086455579313502267">Неможливо отримати доступ до мережі</translation>
 <translation id="9099018167121903954">Завантажено <ph name="KILOBYTES" /> КБ</translation>
 <translation id="9100505651305367705">Пропонувати статті в режимі спрощеного перегляду, якщо він підтримується</translation>

@@ -136,6 +136,7 @@
 <translation id="405887016757208221">원격 컴퓨터가 세션을 초기화하는 데 실패했습니다. 문제가 지속되면 호스트를 다시 구성해 보시기 바랍니다.</translation>
 <translation id="4068946408131579958">모든 연결</translation>
 <translation id="409800995205263688">참고: 정책 설정에 따라 네트워크 내에 있는 컴퓨터 간의 연결만 허용됩니다.</translation>
+<translation id="4126409073460786861">설정이 완료된 후 이 페이지를 새로고침하면 기기를 선택하고 PIN을 입력하여 컴퓨터에 액세스할 수 있습니다.</translation>
 <translation id="4145029455188493639"><ph name="EMAIL_ADDRESS" /> 계정으로 로그인했습니다.</translation>
 <translation id="4155497795971509630">일부 필수 구성요소가 누락되었습니다. 소프트웨어의 최신 버전을 설치했는지 확인한 뒤 다시 시도해주세요.</translation>
 <translation id="4156740505453712750">액세스 제한을 통해 이 컴퓨터를 보호하려면 <ph name="BOLD_START" />최소 6자리<ph name="BOLD_END" />의 PIN을 선택하세요. 이 PIN은 다른 위치에서 연결할 때 필요합니다.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">받는사람</translation>
 <translation id="7019153418965365059">알 수 없는 호스트 오류입니다. <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">원격 지원</translation>
+<translation id="7026930240735156896">안내에 따라 컴퓨터에서 원격으로 액세스할 수 있도록 설정하세요.</translation>
 <translation id="7038683108611689168">사용 통계 및 비정상 종료 보고서 수집을 허용하여 Chromoting 개선에 참여하겠습니다.</translation>
 <translation id="7067321367069083429">화면이 터치스크린처럼 작동합니다</translation>
 <translation id="7116737094673640201">Chrome 원격 데스크톱에 오신 것을 환영합니다.</translation>

@@ -30,7 +30,7 @@
 <translation id="1682634494516646069">Google Chrome kan ikke lese og skrive til sin egen datakatalog: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome er en nettleser som kjører nettsider og programmer i ekspressfart. Den er rask, stabil og enkel å bruke. Google Chrome har innebygd beskyttelse mot skadelig programvare og svindelforsøk (nettfisking), slik at du kan føle deg tryggere når du surfer på nettet.</translation>
 <translation id="1718131156967340976">Velg <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
-<translation id="1734234790201236882">Chrome vil lagre passordet i Google-kontoen din, så du trenger ikke å huske det.</translation>
+<translation id="1734234790201236882">Chrome lagrer passordet i Google-kontoen din, så du trenger ikke å huske det.</translation>
 <translation id="174539241580958092">Google Chrome kunne ikke synkronisere dataene dine på grunn av en påloggingsfeil.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Få hjelp med å bruke Chrome OS</translation>
@@ -250,7 +250,8 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installer Chrome på telefonen din. Vi sender deg en SMS.</translation>
 <translation id="8183957050892517584">Chrome lagrer personopplysningene dine sikkert, slik at du slipper å skrive dem inn på nytt.</translation>
-<translation id="8226081633851087288">{0,plural, =0{Chrome OS vil nå starte på nytt}=1{Chrome OS vil starte på nytt om 1 sekund}other{Chrome OS vil starte på nytt om # sekunder}}</translation>
+<translation id="8226081633851087288">{0,plural, =0{Chrome OS starter nå på nytt}=1{Chrome OS starter på nytt om 1 sekund}other{Chrome OS starter på nytt om # sekunder}}</translation>
+<translation id="825412236959742607">Denne siden bruker for mye minne, så har Chrome fjernet noe av innholdet.</translation>
 <translation id="8255190535488645436">Google Chrome bruker kameraet og mikrofonen din.</translation>
 <translation id="8286862437124483331">Google Chrome forsøker å vise passord. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="8290100596633877290">Google Chrome har fått et programstopp. Vil du starte på nytt nå?</translation>
@@ -273,7 +274,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="870251953148363156">Oppdater &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome kan ikke fastslå eller angi standardnettleseren</translation>
 <translation id="8736674169840206667">Administratoren din krever at du starter Chrome på nytt for at en oppdatering skal tas i bruk</translation>
-<translation id="8791470158600044404">{0,plural, =1{Chrome OS vil starte på nytt om 1 minutt}other{Chrome OS vil starte på nytt om # minutter}}</translation>
+<translation id="8791470158600044404">{0,plural, =1{Chrome OS startr på nytt om 1 minutt}other{Chrome OS starter på nytt om # minutter}}</translation>
 <translation id="8796108026289707191">Du bør starte Google Chrome på nytt nå.</translation>
 <translation id="8823341990149967727">Chrome er utdatert</translation>
 <translation id="884296878221830158">Den styrer også hvilken side som vises når du starter Chrome eller klikker på Startside-knappen.</translation>
@@ -282,7 +283,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="9026991721384951619">Chrome OS kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="9067395829937117663">Google Chrome krever Windows 7 eller nyere.</translation>
 <translation id="9084668267983921457">Autentiseringssertifikatet mislyktes. Logg på Google Chrome på nytt, eller kontakt administratoren din for å få mer informasjon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="909149346112452267">{0,plural, =1{Chrome OS vil starte på nytt om én time}other{Chrome OS vil starte på nytt om # timer}}</translation>
+<translation id="909149346112452267">{0,plural, =1{Chrome OS starter på nytt om én time}other{Chrome OS starter på nytt om # timer}}</translation>
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="919706545465235479">Oppdater Chrome for å starte synkroniseringen</translation>
 <translation id="924447568950697217">Bruk Chrome som standard nettleser</translation>

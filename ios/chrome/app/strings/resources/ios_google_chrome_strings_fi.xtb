@@ -39,6 +39,7 @@
 <translation id="5639704535586432836">Avaa Asetukset &gt; Tietosuoja &gt; Kamera &gt; Google Chrome ja ota kamera käyttöön.</translation>
 <translation id="5642200033778930880">Google Chrome ei voi käyttää kameraa jaetussa näkymässä.</translation>
 <translation id="5703130498371792817">Pidätkö Chromesta? <ph name="BEGIN_LINK" />Arvostele tämä sovellus<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Chrome-vinkki: Takaisin, Seuraava, Haku ja jotkin muut painikkeet löytyvät nyt näytön alareunasta.</translation>
 <translation id="6036420186814142909">Google Chrome sisältää ominaisuuksia, joiden avulla voit hallita tiedonsiirtoasi ja verkkosivujen latausnopeutta.
 <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Muilla laitteilla Chromessa avaamasi välilehdet näytetään täällä.</translation>
@@ -57,4 +58,5 @@
 <translation id="8459495907675268833">Valitut tiedot on poistettu Chromesta ja synkronoiduilta laitteilta. Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toimintaa muista Google-palveluista, osoitteessa history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chrome voi käyttää verkkopalveluita selauskokemuksesi parantamiseen. Voit halutessasi poistaa nämä palvelut käytöstä. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Chrome-vinkki: Voit avata välilehtien lisäasetukset painamalla ylä- tai alapalkissa olevaa Näytä välilehdet ‑painiketta pitkään.</translation>
 </translationbundle>

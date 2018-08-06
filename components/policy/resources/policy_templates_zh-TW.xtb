@@ -510,6 +510,11 @@
       如果你未設定這項政策，使用者可以自行決定是否要使用這項功能。
 
       我們已於 <ph name="PRODUCT_NAME" /> 版本 29 及更高版本中移除這項設定。</translation>
+<translation id="2433412232489478893">這項政策可控管是否要允許使用者在 <ph name="PRODUCT_NAME" />使用網路檔案共用功能。
+
+      如果未設定這項政策，或是將這項政策設定為「True」，使用者將可以使用網路檔案共用功能。
+
+      如果將這項政策設定為「False」，則使用者將無法使用網路檔案共用功能。</translation>
 <translation id="2438609638493026652">允許將 Android 應用程式安裝期間的重要事件回報給 Google。系統只會記錄透過政策觸發的應用程式安裝事件。
 
       如果將這項政策設為 true，系統就會記錄事件。
@@ -587,6 +592,7 @@
 <translation id="2598508021807251719">控制 <ph name="PRODUCT_OS_NAME" />顯示語言的語言代碼。
 
       如果設定這項政策，使用者就只能將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為這項政策指定的其中一個語言代碼。如果未設定這項政策，或是設定了空白清單，則可將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為任一支援的語言代碼。如果將這項政策設為無效值清單，所有無效的值都會遭到忽略。如果使用者先前設定的 <ph name="PRODUCT_OS_NAME" />顯示語言代碼不是這項政策所允許的值，當使用者下次登入時，顯示語言代碼將切換成允許的 UI 語言代碼。如果使用者已設定偏好的語言代碼，而其中一個偏好的語言代碼是這項政策所允許的值，<ph name="PRODUCT_OS_NAME" />將改用該語言代碼，否則 <ph name="PRODUCT_OS_NAME" />將改用這項政策指定的第一個有效值，或是在這項政策指定的值均無效時改用備用語言代碼 (目前為 en-US)。</translation>
+<translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
 <translation id="2627554163382448569">為企業印表機進行設定。
@@ -666,6 +672,7 @@
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />用戶端的 Windows 登錄檔位置：</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
 <translation id="2838830882081735096">不允許資料遷移和 ARC</translation>
+<translation id="2839294585867804686">網路檔案共用功能設定</translation>
 <translation id="2840269525054388612">指定哪些印表機是可以使用的。
 
       只有在為 <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_WHITELIST" /> 的情況下，這項政策才有作用。
@@ -1145,6 +1152,7 @@
       如果未設定這項政策，系統將啟用輸入網址匿名資料收集功能，但使用者可以變更這項設定。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4261820385751181068">裝置登入畫面語言代碼</translation>
+<translation id="4264607809747169568">控管是否允許在 Chrome 作業系統使用網路檔案共用功能</translation>
 <translation id="427220754384423013">指定哪些印表機是可以使用的。
 
       只有在為 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_WHITELIST" /> 的情況下，這項政策才有作用。
@@ -1546,6 +1554,15 @@
       該政策的指定值單位為毫秒。</translation>
 <translation id="5511702823008968136">啟用書籤列</translation>
 <translation id="5512418063782665071">首頁網址</translation>
+<translation id="551639594034811656">這項政策是用來定義一份百分比清單，藉此指定首次偵測到更新的當天開始起算的各天內，機構單位中應安裝更新的 <ph name="PRODUCT_OS_NAME" />裝置百分比。偵測到更新的時間會晚於更新發佈時間，因為更新發佈後，裝置可能要經過一段時間才會檢查是否有更新。
+
+      每組 (天數, 百分比) 配對代表自偵測到更新當天起的指定天數內，必須完成更新的裝置百分比。舉例來說，如果有以下配對：[(4, 40), (10, 70), (15, 100)]，即表示偵測到更新後的 4 天內，應完成 40% 的裝置更新，10 天內應完成 70% 的裝置更新，依此類推。
+
+      如果為這項政策定義了任何值，更新會忽略 <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> 政策並改為遵循這項政策。
+
+      如果這份清單未包含任何內容，系統就不會分階段安裝更新，而會依其他裝置政策套用更新。
+
+      版本切換不適用這項政策。</translation>
 <translation id="5523812257194833591">要在延遲時間過後自動登入的公開工作階段。
 
       如果設定這項政策，系統會在使用者於登入畫面停止互動後的一段時間過後，自動登入指定的工作階段。你必須已設定公開工作階段 (請參閱 |DeviceLocalAccounts|)。
@@ -2438,6 +2455,11 @@
       如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 SitePerProcess。
       如果未設定這項政策，使用者將可以變更這項設定。
       </translation>
+<translation id="7902255855035461275">系統會將這份清單中的模式與要求網址的安全性
+      來源進行比對。如果找到相符的結果，系統就會授權存取
+      影片擷取裝置，並且不會提示使用者。
+
+      注意：45 以下的版本僅在執行 Kiosk 模式時才支援這項政策。</translation>
 <translation id="7912255076272890813">設定允許的應用程式/擴充功能類型</translation>
 <translation id="7915236031252389808">您可以在這裡為 Proxy .pac 檔案指定網址。
 

@@ -518,6 +518,11 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne innstillingen ikke angis, kan brukere bestemme om de vil bruke den eller ikke.
 
       Denne innstillingen er fjernet fra <ph name="PRODUCT_NAME" /> 29 og nyere versjoner.</translation>
+<translation id="2433412232489478893">Denne retningslinjen kontrollerer om delte nettverksressurser-funksjonen for <ph name="PRODUCT_NAME" /> er tillatt for en bruker.
+   
+      Hvis denne retningslinjen ikke er konfigurert eller satt til Sann, vil brukeren ha mulighet til å bruke delte nettverksressurser.
+
+      Hvis denne retningslinjen er satt til Usann, vil ikke brukere ha mulighet til å bruke delte nettverksressurser.</translation>
 <translation id="2438609638493026652">Slår på rapportering av viktige hendelser under Android-appinstallasjoner til Google. Hendelser registreres bare for apper som ble installert på grunn av en regel.
 
       Hvis regelen er satt til «True» (sann), blir hendelser loggført.
@@ -599,6 +604,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2598508021807251719">Konfigurerer hvilke lokaliteter <ph name="PRODUCT_OS_NAME" /> kan vises i.
 
       Hvis denne regelen er angitt, kan brukeren bare konfigurere <ph name="PRODUCT_OS_NAME" /> til å vises i en av lokalitetene som er angitt av denne regelen. Hvis regelen ikke er angitt eller er angitt med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises i alle UI-lokalitetene som støttes. Hvis regelen er angitt med en liste med ugyldige verdier, ignoreres alle de ugyldige verdiene. Hvis en bruker tidligere konfigurerte <ph name="PRODUCT_OS_NAME" /> til å bli vist på en lokalitet som ikke tillates av denne regelen, byttes den viste lokaliteten til en tillatt UI-lokalitet neste gang brukeren logger på. Hvis brukeren har konfigurert foretrukne lokaliteter og en av de foretrukne lokalitetene tillates av denne regelen, bytter <ph name="PRODUCT_OS_NAME" /> til denne lokaliteten. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien angitt av denne regelen eller til en reservelokalitet (en-US) hvis denne regelen bare inneholder ugyldige oppføringer.</translation>
+<translation id="2604182581880595781">Konfigurer delte nettverksresurser relatert til retningslinjene.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Gir konfigurasjoner for bedriftsskrivere.
@@ -682,6 +688,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2823870601012066791">Plasseringen av Windows-registeret for <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="2838830882081735096">Ikke tillat dataoverføring og ARC</translation>
+<translation id="2839294585867804686">Innstillinger for delte nettverksressurser</translation>
 <translation id="2840269525054388612">Angir skriverne som en bruker kan bruke.
 
       Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1168,6 +1175,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne retningslinjen ikke angis, vil anonymisert datainnsamling med nettadressenøkkel være aktivert, men brukeren kan endre på det.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4261820385751181068">Lokalitet for påloggingsskjermen på enheten</translation>
+<translation id="4264607809747169568">Kontroller tilgjengeligheten til delte nettverksressurser for ChromeOS</translation>
 <translation id="427220754384423013">Angir skriverne som en bruker kan bruke.
 
       Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1594,6 +1602,15 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Retningslinjeverdien må spesifiseres i millisekunder.</translation>
 <translation id="5511702823008968136">Aktiver bokmerkerad</translation>
 <translation id="5512418063782665071">Nettadresse for startside</translation>
+<translation id="551639594034811656">Denne retningslinjen definerer en liste med prosenter som definerer hvor stor andel av <ph name="PRODUCT_OS_NAME" />-enheter i OU som må oppdateres per dag, starter fra den dagen oppdateringen ble oppdaget. Oppdagelsestidspunktet er senere enn tidspunktet for utgivelsen av oppdateringen, siden det kan ta litt tid før enheten sjekker etter oppdateringen.
+
+      Hver (dag, prosent)-par inneholder hvilken prosent av systemet som må oppdateres innen det angitte antall dager etter oppdagelsen av oppdateringen. For eksempel, hvis vi har parene [(4, 40), (10, 70), (15, 100)], må 40% av systemene bli oppdatert innen 4 dager etter oppdagelsen av oppdateringen. 70% må være ferdig etter 10 dag, osv.
+
+      Hvis det ikke er angitt en verdi for denne retningslinjen, vil oppdateringene ignorere <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />-retningslinjen og følge denne retningslinjen istedet.
+
+      Hvis denne listen er tom, vil det ikke gjennomføres noen fase og oppdateringene vil installeres i henhold til andre enhetsinnstillinger.
+
+     Denne retningslinjen gjelder ikke for kanalbrytere.</translation>
 <translation id="5523812257194833591">Automatisk pålogging til offentlig økt etter en gitt tid.
 
       Hvis denne innstillingen angis, skjer det en automatisk pålogging etter en gitt periode av brukerinaktivitet. Den offentlige økten må allerede være konfigurert (se |DeviceLocalAccounts|).
@@ -2528,6 +2545,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis regelen er deaktivert, er det ingen nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
       Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
       </translation>
+<translation id="7902255855035461275">Mønstrene i denne listen sammenlignes med sikkerhetskilden
+      til nettadressen forespørselen kommer fra. Hvis det finnes samsvar, blir 
+      tilgang til videoopptaksenheter gitt uten forespørsel på forhånd.
+
+      MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</translation>
 <translation id="7912255076272890813">Konfigurer tillatte typer apper og utvidelser</translation>
 <translation id="7915236031252389808">Du kan angi nettadressen til en .pac-fil for en proxy-tjener her.
 

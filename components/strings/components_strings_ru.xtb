@@ -488,6 +488,7 @@
 <translation id="4277028893293644418">Сбросить пароль</translation>
 <translation id="4280429058323657511">, действует до <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Переключиться</translation>
+<translation id="4308131620840579419">Сохранить все карты в одном аккаунте?</translation>
 <translation id="4312866146174492540">Блокировать (по умолчанию)</translation>
 <translation id="4325863107915753736">Не удалось найти статью</translation>
 <translation id="4326324639298822553">Проверьте срок действия и повторите попытку</translation>
@@ -598,6 +599,7 @@
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5201306358585911203">Подтвердите действие</translation>
 <translation id="5205222826937269299">Введите имя или название</translation>
+<translation id="5215116848420601511">Способы оплаты и адреса из Google Pay</translation>
 <translation id="5222812217790122047">Введите адрес электронной почты</translation>
 <translation id="5230733896359313003">Адрес доставки</translation>
 <translation id="5250209940322997802">"Подключитесь к сети"</translation>
@@ -674,6 +676,7 @@
 <translation id="5689199277474810259">Экспортировать как JSON</translation>
 <translation id="5689516760719285838">Геоданные</translation>
 <translation id="570530837424789914">Управление…</translation>
+<translation id="5705882733397021510">Назад</translation>
 <translation id="57094364128775171">Сгенерировать надежный пароль</translation>
 <translation id="5710435578057952990">Идентификационные данные этого сайта не проверены.</translation>
 <translation id="5719499550583120431">Принимаются карты предоплаты.</translation>
@@ -691,6 +694,7 @@
 <translation id="5810442152076338065">Соединение с <ph name="DOMAIN" /> зашифровано с помощью устаревшего набора шифров.</translation>
 <translation id="5813119285467412249">&amp;Повторить добавление</translation>
 <translation id="5838278095973806738">Не сообщайте этому сайту конфиденциальную информацию (например, пароли и номера банковских карт). К ней могут получить доступ злоумышленники.</translation>
+<translation id="5863847714970149516">При открытии этой страницы с вашего счета могут быть списаны средства</translation>
 <translation id="5866257070973731571">Добавьте номер телефона</translation>
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
@@ -821,6 +825,7 @@
 <translation id="6973656660372572881">Указаны как фиксированные прокси-серверы, так и URL PAC-скриптов.</translation>
 <translation id="6989763994942163495">Показать дополнительные настройки</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Списание может быть разовым или повторяющимся без каких-либо уведомлений.</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7050187094878475250">Вы попытались перейти на сайт <ph name="DOMAIN" />, но сервер предоставил не заслуживающий доверия сертификат со слишком долгим сроком действия.</translation>
 <translation id="7053983685419859001">Блокировать</translation>
@@ -1085,6 +1090,7 @@
 <translation id="8957210676456822347">Авторизация через адаптивный портал</translation>
 <translation id="8971063699422889582">Сертификат сервера устарел.</translation>
 <translation id="8978053250194585037">Функция "Google Безопасный просмотр" недавно <ph name="BEGIN_LINK" />обнаружила попытку фишинга<ph name="END_LINK" /> на сайте <ph name="SITE" />. Будьте внимательны! Мошенники часто создают веб-страницы, похожие на знакомые вам сайты.</translation>
+<translation id="8983003182662520383">Способы оплаты и адреса из Google Pay</translation>
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Сайт содержит нежелательное ПО</translation>

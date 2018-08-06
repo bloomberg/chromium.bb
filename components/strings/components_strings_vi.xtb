@@ -489,6 +489,7 @@
 <translation id="4277028893293644418">Đặt lại mật khẩu</translation>
 <translation id="4280429058323657511">, hết hạn <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Chuyển</translation>
+<translation id="4308131620840579419">Lưu tất cả thẻ của bạn ở cùng một nơi?</translation>
 <translation id="4312866146174492540">Chặn (mặc định)</translation>
 <translation id="4325863107915753736">Không tìm được bài viết</translation>
 <translation id="4326324639298822553">Kiểm tra ngày hết hạn của bạn và thử lại</translation>
@@ -599,6 +600,7 @@
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="5201306358585911203">Một trang được nhúng trên trang này cho biết</translation>
 <translation id="5205222826937269299">Cần có tên</translation>
+<translation id="5215116848420601511">Địa chỉ và phương thức thanh toán sử dụng Google Pay</translation>
 <translation id="5222812217790122047">Cần có email</translation>
 <translation id="5230733896359313003">Địa chỉ giao hàng</translation>
 <translation id="5250209940322997802">"Kết nối với mạng"</translation>
@@ -675,6 +677,7 @@
 <translation id="5689199277474810259">Xuất sang định dạng JSON</translation>
 <translation id="5689516760719285838">Vị trí</translation>
 <translation id="570530837424789914">Quản lý...</translation>
+<translation id="5705882733397021510">Quay lại</translation>
 <translation id="57094364128775171">Đề xuất mật khẩu mạnh…</translation>
 <translation id="5710435578057952990">Nhận dạng trang web này chưa được xác minh.</translation>
 <translation id="5719499550583120431">Thẻ trả trước được chấp nhận.</translation>
@@ -692,6 +695,7 @@
 <translation id="5810442152076338065">Kết nối của bạn tới <ph name="DOMAIN" /> được mã hóa bằng bộ số 0 đã lỗi thời.</translation>
 <translation id="5813119285467412249">&amp;Làm lại thêm</translation>
 <translation id="5838278095973806738">Bạn không nên nhập bất kỳ thông tin nhạy cảm nào trên trang web này (ví dụ: mật khẩu hoặc thẻ tín dụng), vì những kẻ tấn công có thể đánh cắp thông tin đó.</translation>
+<translation id="5863847714970149516">Trang phía trước có thể tìm cách tính phí bạn</translation>
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
@@ -822,6 +826,7 @@
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
 <translation id="6989763994942163495">Hiển thị cài đặt nâng cao...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Các khoản phí này có thể là khoản thu một lần hoặc định kỳ và có thể không rõ ràng.</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7050187094878475250">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ đã hiển thị chứng chỉ có thời gian hiệu lực quá dài để có thể tin cậy.</translation>
 <translation id="7053983685419859001">Chặn</translation>
@@ -1087,6 +1092,7 @@
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8978053250194585037">Tính năng Duyệt web an toàn của Google gần đây đã <ph name="BEGIN_LINK" />phát hiện dấu hiệu lừa đảo<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web lừa đảo sẽ giả mạo các trang web khác để đánh lừa bạn.</translation>
+<translation id="8983003182662520383">Địa chỉ và phương thức thanh toán sử dụng Google Pay</translation>
 <translation id="8987927404178983737">Tháng</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Trang web sắp truy cập chứa chương trình độc hại</translation>

@@ -156,6 +156,7 @@
 <translation id="2462626033734746142">라디오 버튼 그룹</translation>
 <translation id="2471138580042810658">제목 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{별표}other{별표 #개}}</translation>
+<translation id="249330843868392562">TTS(텍스트 음성 변환) 설정 열기</translation>
 <translation id="2523609930580546572">ChromeVox 가이드</translation>
 <translation id="2525706221823668172">Chromebook 단축키</translation>
 <translation id="2549392850788122959"><ph name="KEY" />이(가) 재설정되었습니다.</translation>
@@ -753,6 +754,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7241683698754534149">새 탭에서 자세한 설명 열기</translation>
 <translation id="7248671827512403053">애플리케이션</translation>
 <translation id="725969808843520477">다음 라디오 버튼</translation>
+<translation id="7261612856573623172">시스템 TTS(텍스트 음성 변환) 음성</translation>
 <translation id="7269119382257320590">구두점을 읽지 않음</translation>
 <translation id="7273174640290488576">비어 있음</translation>
 <translation id="7274770952766771364">참고 자료</translation>

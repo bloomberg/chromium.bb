@@ -39,6 +39,7 @@
 <translation id="5639704535586432836">‏Settings (تنظیمات) &gt; Privacy (حریم خصوصی) &gt; Camera (دوربین) &gt; Google Chrome را باز کنید و دوربین را روشن کنید.</translation>
 <translation id="5642200033778930880">‏Google Chrome نمی‌تواند از دوربین درحالت Split View (نمای تقسیم) استفاده کند</translation>
 <translation id="5703130498371792817">‏از Chrome لذت می‌برید؟ <ph name="BEGIN_LINK" />به این برنامه رتبه بدهید<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">‏نکته Chrome. بعضی از دکمه‌ها مثل Back (برگشت)، Forward (به جلو) و Search (جستجو) اکنون در پایین صفحه هستند.</translation>
 <translation id="6036420186814142909">‏Google Chrome دارای قابلیت‌هایی است که به شما کمک می‌کند داده‌های اینترنت و سرعت بارگیری صفحه‌های وبتان را مدیریت کنید.
 <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">‏برگه‌هایی که در دستگاه‌های دیگر در Chrome باز کرده‌اید، در اینجا نمایان می‌شوند.</translation>
@@ -57,4 +58,5 @@
 <translation id="8459495907675268833">‏داده‌های انتخاب‌‌شده از Chrome و دستگاه‌های همگام‌سازی‌شده حذف شدند. ممکن است اشکال دیگری از سابقه مرورتان در حساب Google شما وجود داشته باشد، مانند جستجو‌ها و فعالیت دیگر سرویس‌های Google در history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">‏ممکن است Google Chrome برای بهبود تجربه مرور شما از سرویس‌های وب استفاده کند. می‌توانید به صورت اختیاری این سرویس‌ها را غیرفعال کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">‏نکته Chrome. برای دیدن گزینه‌های بیشتر برگه، دکمه «نمایش برگه‌ها» را در نوارابزار (در پایین یا بالای صفحه است) فشار دهید و نگه دارید.</translation>
 </translationbundle>

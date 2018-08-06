@@ -136,6 +136,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="405887016757208221">Échec de l'initialisation de la session par l'ordinateur distant. Si le problème persiste, veuillez réessayer de configurer l'hôte.</translation>
 <translation id="4068946408131579958">Toutes les connexions</translation>
 <translation id="409800995205263688">REMARQUE : Les paramètres des règles n'autorisent que les connexions entre les ordinateurs de votre réseau.</translation>
+<translation id="4126409073460786861">Une fois la configuration terminée, actualisez la page. Vous pourrez alors accéder à l'ordinateur en choisissant votre appareil et en saisissant le code d'accès</translation>
 <translation id="4145029455188493639">Connecté en tant que <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Certains composants nécessaires sont introuvables. Veuillez vous assurer que vous utilisez la dernière version du logiciel, puis réessayer.</translation>
 <translation id="4156740505453712750">Pour protéger l'accès à cet ordinateur, veuillez choisir un code d'accès d'<ph name="BOLD_START" />au moins six chiffres<ph name="BOLD_END" />. Ce code d'accès sera demandé lors d'une connexion depuis un autre appareil.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">À</translation>
 <translation id="7019153418965365059">Erreur d'hôte non reconnue : <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistance à distance</translation>
+<translation id="7026930240735156896">Suivez les instructions pour configurer votre ordinateur pour l'accès à distance</translation>
 <translation id="7038683108611689168">Aidez-nous à améliorer Google Chromoting en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
 <translation id="7067321367069083429">L'écran se comporte comme un écran tactile</translation>
 <translation id="7116737094673640201">Bienvenue dans le bureau à distance Chrome</translation>

@@ -39,6 +39,7 @@
 <translation id="5639704535586432836">‏افتح الإعدادات &gt; الخصوصية &gt; الكاميرا &gt; Google Chrome وشغِّل الكاميرا.</translation>
 <translation id="5642200033778930880">‏يتعذر على Google Chrome استخدام الكاميرا في وضع تقسيم العرض</translation>
 <translation id="5703130498371792817">‏هل تستمتع باستخدام Chrome؟ <ph name="BEGIN_LINK" />قيّم هذا التطبيق<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">‏نصيحة لاستخدام Chrome: تظهر حاليًّا بعض الأزرار في أسفل الشاشة، مثل زر "الرجوع" و"التالي" و"البحث".</translation>
 <translation id="6036420186814142909">‏يشتمل Google Chrome على ميزات من شأنها مساعدتك على إدارة بيانات الإنترنت والوقوف على مدى السرعة التي يمكنك تحميل صفحات الويب من خلالها.
 <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
@@ -57,4 +58,5 @@
 <translation id="8459495907675268833">‏تمت إزالة البيانات المُحددة من متصفح Chrome والأجهزة التي تمت مزامنتها. قد يحتوي حسابك في Google على نماذج أخرى من سجل التصفح، مثل عمليات البحث والأنشطة من خدمات Google الأخرى في history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">‏قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح. ويمكنك بشكل اختياري إيقاف هذه الخدمات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">‏نصيحة لاستخدام Chrome: لمزيد من خيارات علامات التبويب، يمكنك الضغط مع الاستمرار على الزر "عرض علامات التبويب" في شريط الأدوات الموجود أسفل الشاشة أو أعلاها.</translation>
 </translationbundle>

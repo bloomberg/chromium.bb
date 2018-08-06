@@ -524,6 +524,11 @@
       Om ingen inställning anges kan användaren välja att använda eller inte använda denna funktion.
 
       Den här inställningen har tagits bort från och med version 29 av <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2433412232489478893">Principen styr om funktionen Network File Share i <ph name="PRODUCT_NAME" /> är tillåten för användare.
+
+      När principen inte är konfigurerad eller har ställts in på Sant kan användarna använda Network File Share.
+
+      När principen har ställts in på Falskt kan användarna inte använda Network File Share.</translation>
 <translation id="2438609638493026652">Aktiverar rapportering av centrala händelser vid installation av Android-appar till Google. Händelser registreras bara för appar som installerats via en princip.
 
       Om principen är inställd på sant loggas händelser.
@@ -605,6 +610,7 @@
 <translation id="2598508021807251719">Konfigurerar de språk som <ph name="PRODUCT_OS_NAME" /> får visas på.
 
       Om principen har ställts in får användaren bara välja någon av de språkkoder som har angetts i principen som visningsspråk i <ph name="PRODUCT_OS_NAME" />. Om principen har lämnats utan inställning eller ställts in på en tom lista kan <ph name="PRODUCT_OS_NAME" /> visas på alla språk som användargränssnittet har stöd för. Om en lista med ogiltiga värden anges för principen ignoreras de ogiltiga värdena. Om en användare tidigare har ställt in <ph name="PRODUCT_OS_NAME" /> på en språkkod som inte är tillåten enligt denna princip byts visningsspråket ut mot ett tillåtet gränssnittsspråk nästa gång användaren loggar in. Om användaren har konfigurerat föredragna språkkoder och en av dem är tillåten enligt denna princip används den språkkoden i <ph name="PRODUCT_OS_NAME" />. I annat fall används det första giltiga värdet i denna princip eller, om principen bara innehåller ogiltiga värden, en standardspråkkod (för närvarande en-US) i <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="2604182581880595781">Konfigurera principer relaterade till Network File Share.</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Tillhandahåller skrivarkonfigurationer för företagsenheter.
@@ -690,6 +696,7 @@
 <translation id="2823870601012066791">Windows-registerplats för <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
 <translation id="2838830882081735096">Tillåt inte datamigrering och ARC</translation>
+<translation id="2839294585867804686">Inställningar för Network File Share</translation>
 <translation id="2840269525054388612">Anger vilka skrivare som får användas.
 
       Den här principen används bara när <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_WHITELIST" />.
@@ -1187,6 +1194,7 @@
       Om principen lämnas utan inställning aktiveras insamling av anonymiserad data kopplad till webbadresser men användaren kan ändra detta.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4261820385751181068">Språkkod för enhetens inloggningsskärm</translation>
+<translation id="4264607809747169568">Styr om Network File Share är tillgängligt i ChromeOS</translation>
 <translation id="427220754384423013">Anger vilka skrivare som får användas.
 
       Den här principen används bara när <ph name="BULK_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_WHITELIST" />.
@@ -1620,6 +1628,15 @@
       Policyvärdet ska anges i millisekunder.</translation>
 <translation id="5511702823008968136">Aktivera bokmärkesfältet</translation>
 <translation id="5512418063782665071">Webbadress för startsida</translation>
+<translation id="551639594034811656">Med den här principen definieras en lista med procentvärden som anger hur stor andel av organisationsenhetens <ph name="PRODUCT_OS_NAME" />-enheter som ska uppdateras per dag från den dag då uppdateringen hittades. Tiden när uppdateringen hittas är senare än uppdateringens publiceringsdatum, eftersom det kan dröja ett tag efter publiceringen innan enheten söker efter uppdateringar.
+
+      Varje värdepar av typen (dag, procentandel) anger hur stor del av det totala antalet enheter som måste ha uppdaterats efter det angivna antalet dagar efter att uppdateringen hittades. Om listan till exempel består av paren [(4, 40), (10, 70), (15, 100)] ska 40 % av enheterna ha uppdaterats fyra dagar efter att uppdateringen hittades, 70 % av dem ska ha uppdaterats efter tio dagar och så vidare.
+
+      Om ett värde har definierats för principen ignoreras principen <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> för uppdateringar och den här principen gäller i stället.
+
+      Om listan är tom görs ingen lansering i etapper och uppdateringarna tillämpas utifrån andra enhetsprinciper.
+
+      Principen gäller inte för kanalbyten.</translation>
 <translation id="5523812257194833591">En offentlig session för att logga in automatiskt efter en fördröjning.
 
       Om policyn har angetts kommer den angivna sessionen automatiskt att loggas in efter att en viss tid har förflutit på inloggningsskärmen utan åtgärder från användaren. Den offentliga sessionen måste redan vara konfigurerad (se |DeviceLocalAccounts|).
@@ -2552,6 +2569,11 @@
       Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera SitePerProcess manuellt.
       Om principen inte konfigureras kan användaren ändra inställningen.
       </translation>
+<translation id="7902255855035461275">Mönster i den här listan matchas mot den begärande
+      webbadressens säkerhetsursprung. Om det blir en träff får
+      adressen åtkomst till videoinspelningsenheter utan meddelande.
+
+      OBS! Före version 45 stöddes den här principen enbart i kioskläge.</translation>
 <translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
 <translation id="7915236031252389808">Här kan du ange webbadressen till en PAC-fil för proxy.
 

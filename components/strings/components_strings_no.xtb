@@ -489,6 +489,7 @@
 <translation id="4277028893293644418">Tilbakestill passordet</translation>
 <translation id="4280429058323657511">, utløper <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Bytt</translation>
+<translation id="4308131620840579419">Alle kortene dine på ett sted?</translation>
 <translation id="4312866146174492540">Blokkér (standard)</translation>
 <translation id="4325863107915753736">Artikkelen ble ikke funnet</translation>
 <translation id="4326324639298822553">Kontrollér utløpsdatoen, og prøv igjen</translation>
@@ -599,6 +600,7 @@
 <translation id="5190835502935405962">Bokmerkerad</translation>
 <translation id="5201306358585911203">På en innebygd side på denne siden står det</translation>
 <translation id="5205222826937269299">Navn er obligatorisk</translation>
+<translation id="5215116848420601511">Betalingsmåter og adresser ved bruk av Google Pay</translation>
 <translation id="5222812217790122047">E-post er obligatorisk</translation>
 <translation id="5230733896359313003">Leveringsadresse</translation>
 <translation id="5250209940322997802">«Koble til nettverk»</translation>
@@ -675,6 +677,7 @@
 <translation id="5689199277474810259">Eksportér til JSON</translation>
 <translation id="5689516760719285838">Sted</translation>
 <translation id="570530837424789914">Administrer…</translation>
+<translation id="5705882733397021510">Tilbake</translation>
 <translation id="57094364128775171">Foreslå et sterkt passord…</translation>
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
 <translation id="5719499550583120431">Forhåndsbetalte kort godtas.</translation>
@@ -692,6 +695,7 @@
 <translation id="5810442152076338065">Tilkoblingen til <ph name="DOMAIN" /> er kryptert med en foreldet chifferserie.</translation>
 <translation id="5813119285467412249">&amp;Legg til likevel</translation>
 <translation id="5838278095973806738">Du bør ikke oppgi sensitiv informasjon på dette nettstedet (for eksempel passord eller kredittkort) fordi den kan bli stjålet av angripere.</translation>
+<translation id="5863847714970149516">Siden som kommer kan prøve å belaste deg for penger</translation>
 <translation id="5866257070973731571">Legg til telefonnummer</translation>
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
@@ -822,6 +826,7 @@
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
 <translation id="6989763994942163495">Vis avanserte innstillinger</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Disse belastningene kan være engangs eller gjentakende, og kan være skjult.</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7050187094878475250">Du prøvde å nå <ph name="DOMAIN" />. Tjeneren presenterte et sertifikat som har en gyldighetsperiode som er for lang til å være pålitelig.</translation>
 <translation id="7053983685419859001">Blokkér</translation>
@@ -1086,6 +1091,7 @@
 <translation id="8957210676456822347">Captive Portal-autorisasjon</translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
 <translation id="8978053250194585037">Google Safe Browsing <ph name="BEGIN_LINK" />oppdaget nylig nettfisking<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder for nettfisking er laget for å ligne på andre nettsteder, for å prøve å lure deg.</translation>
+<translation id="8983003182662520383">Betalingsmåter og adresser ved bruk av Google Pay</translation>
 <translation id="8987927404178983737">Måned</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Nettstedet du er i ferd med å åpne, inneholder skadelige programmer</translation>

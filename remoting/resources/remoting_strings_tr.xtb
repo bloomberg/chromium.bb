@@ -136,6 +136,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="405887016757208221">Uzak bilgisayar, oturumu ilk kullanıma hazırlayamadı. Sorun devam ederse lütfen ana makineyi tekrar yapılandırmayı deneyin.</translation>
 <translation id="4068946408131579958">Tüm bağlantılar</translation>
 <translation id="409800995205263688">NOT: Politika ayarları, yalnızca ağınızdaki bilgisayarlar arasındaki bağlantılara izin veriyor.</translation>
+<translation id="4126409073460786861">Kurulum tamamlandıktan sonra bu sayfayı yenileyin. Ardından cihazınızı seçip PIN'i girerek bilgisayara erişebilirsiniz</translation>
 <translation id="4145029455188493639"><ph name="EMAIL_ADDRESS" /> olarak oturum açtınız.</translation>
 <translation id="4155497795971509630">Bazı gerekli bileşenler eksik. Lütfen yazılımın en son sürümünü yüklediğinizden emin olun ve tekrar deneyin.</translation>
 <translation id="4156740505453712750">Bu bilgisayara erişimi korumak için lütfen <ph name="BOLD_START" />en az altı basamaklı<ph name="BOLD_END" /> bir PIN seçin. Başka bir yerden bağlanırken bu PIN gerekecektir.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Nereye</translation>
 <translation id="7019153418965365059">Tanınmayan ana makine hatası: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Uzaktan Yardım</translation>
+<translation id="7026930240735156896">Bilgisayarınıza uzaktan erişimi kurmak için talimatları uygulayın</translation>
 <translation id="7038683108611689168">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chromoting'i daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="7067321367069083429">Ekran dokunmatik ekran gibi çalışır</translation>
 <translation id="7116737094673640201">Chrome Chrome Uzaktan Masaüstü'ne hoş geldiniz</translation>

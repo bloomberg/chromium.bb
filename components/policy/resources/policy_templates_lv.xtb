@@ -526,6 +526,11 @@
       Ja šis iestatījums nav iestatīts, lietotāji var izlemt, vai izmantot šo funkciju.
 
       Šis iestatījums ir noņemts pārlūkā <ph name="PRODUCT_NAME" /> 29 un jaunākās versijās.</translation>
+<translation id="2433412232489478893">Šī politika nosaka, vai lietotājam ir atļauta tīkla failu kopīgošanas funkcija lietošanai ar <ph name="PRODUCT_NAME" />.
+
+      Ja šī politika nav konfigurēta vai tai nav iestatīta vērtība “True”, lietotāji varēs izmantot tīkla failu kopīgošanas ierīces.
+
+      Ja šai politikai ir iestatīta vērtība “False”, lietotāji nevarēs izmantot tīkla failu kopīošanas ierīces.</translation>
 <translation id="2438609638493026652">Iespējo galveno notikumu ziņošanu Google serveriem Android lietotņu instalēšanas laikā. Notikumi tiek reģistrēti tikai lietotnēm, kuru instalēšana tika aktivizēta, izmantojot politiku.
 
       Ja politikai ir iestatīta vērtība “true”, notikumi tiks reģistrēti.
@@ -607,6 +612,7 @@
 <translation id="2598508021807251719">Konfigurē operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlojuma lokalizācijas.
 
       Ja šī politika ir iestatīta, lietotājs var konfigurēt operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlošanu vienā no šajā rakstā norādītajām lokalizācijām. Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, operētājsistēma <ph name="PRODUCT_OS_NAME" /> var tikt attēlota visās atbalstītajās lietotāja saskarnes lokalizācijās. Ja politikai iestatītajā sarakstā ir nederīgas vērtības, tās tiks ignorētas. Ja lietotājs iepriekš konfigurēja operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlošanu lokalizācijā, kas šajā politikā nav atļauta, nākamajā lietotāja pierakstīšanās reizē attēlojuma lokalizācija tiks mainīta uz politikā atļautu lietotāja saskarnes lokalizāciju. Ja lietotājs iepriekš konfigurēja vēlamās lokalizācijas un viena no vēlamajām lokalizācijām ir atļauta šajā politikā, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks izmantota attiecīgā lokalizācija. Ja vēlamā lokalizācija nav iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tika izmantota pirmā derīgā politikā norādītā vērtība vai atkāpšanās lokalizācija (šobrīd “en-US”), ja politikā ir norādītas nederīgas vērtības.</translation>
+<translation id="2604182581880595781">Konfigurēt ar tīkla failu kopīgošanas ierīcēm saistīto politiku.</translation>
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Nodrošina konfigurāciju uzņēmuma printeriem.
@@ -692,6 +698,7 @@
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> klientu Windows reģistra vieta:</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
 <translation id="2838830882081735096">Aizliegt datu migrēšanu un ARC</translation>
+<translation id="2839294585867804686">Tīkla failu kopīgošanas ierīču iestatījumi</translation>
 <translation id="2840269525054388612">Norāda printerus, ko lietotājs var izmantot.
 
       Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
@@ -1182,6 +1189,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika nav iestatīta, uz vietrāžiem URL balstīta anonimizētu datu apkopošana ir iespējota, taču lietotājs to varēs mainīt.</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="4261820385751181068">Ierīces pierakstīšanās ekrāna lokalizācija</translation>
+<translation id="4264607809747169568">Kontrolē tīkla failu kopīgošanas ierīces ChromeOS pieejamībai</translation>
 <translation id="427220754384423013">Norāda printerus, ko lietotājs var izmantot.
 
       Šī politika tiek izmantota tikai tad, ja parametram <ph name="BULK_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
@@ -1617,6 +1625,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Politikas vērtība ir jānorāda milisekundēs.</translation>
 <translation id="5511702823008968136">Iespējo grāmatzīmju joslu</translation>
 <translation id="5512418063782665071">Sākumlapas URL</translation>
+<translation id="551639594034811656">Šī politika nosaka procentuālo daļu sarakstu, kas definēs daļu no <ph name="PRODUCT_OS_NAME" /> OV ierīcēm, kuras atjaunināt katru dienu, sākot no dienas, kad atjauninājums tiek atklāts. Atklāšanas laiks ir vēlāks par atjauninājuma publicēšanas laiku, jo pēc atjauninājuma publicēšanas var paiet laiks, līdz ierīce pārbauda atjauninājumus.
+
+      Katrs (diena, procentālā daļa) pāris satur informāciju par to, kāda pārvaldības procentuālā daļa ir jāatjaunina norādītajā dienu skaitā kopš atjauninājuma atklāšanas. Piemēram, ja ir pāri [(4, 40), (10, 70), (15, 100)], tad 40% no pārvaldības būtu jāatjaunina 4 dienas pēc atjaunināšanas. 70% jāatjaunina pēc 10 dienām utt.
+
+      Ja šai politikai ir noteikta vērtība, atjauninājumi ignorē <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> politiku un ievēro šo politiku.
+
+      Ja šis saraksts ir tukšs, izstādīšana netiks veikta, un jauninājumi tiks piemēroti saskaņā ar citu ierīču politiku.
+
+      Šī politika neattiecas uz kanālu slēdžiem.</translation>
 <translation id="5523812257194833591">Publiska sesija, kurā pēc aizkaves veikt automātisku pieteikšanos.
 
       Ja šī politika ir iestatīta, pēc tam, kad noteiktu laika periodu lietotājs pieteikšanās ekrānā nebūs veicis nekādas darbības, notiks automātiska pieteikšanās norādītajā sesijā. Publiskajai sesijai jau ir jābūt konfigurētai (skatiet politiku |DeviceLocalAccounts|).
@@ -2544,6 +2561,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja politika ir atspējota, neviena saite netiks izolēta un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku SitePerProcess.
       Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
       </translation>
+<translation id="7902255855035461275">Šajā sarakstā pieejamajiem šabloniem tiek meklēta atbilstība pieprasītā URL
+      drošības avotam. Ja tiek atrasta atbilstība, piekļuve video
+      ierakstīšanas ierīcēm tiek nodrošināta bez uzaicinājuma.
+
+      PIEZĪME. Līdz 45. versijai šī politika tika atbalstīta tikai kioska režīmā.</translation>
 <translation id="7912255076272890813">Atļauto lietotņu/paplašinājumu veidu konfigurēšana</translation>
 <translation id="7915236031252389808">Šeit varat norādīt starpniekservera .pac faila vietrādi URL.
 

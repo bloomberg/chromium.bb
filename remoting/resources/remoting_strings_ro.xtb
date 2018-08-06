@@ -136,6 +136,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="405887016757208221">Computerul la distanță nu a putut să inițializeze sesiunea. Dacă problema persistă, încearcă să configurezi gazda din nou.</translation>
 <translation id="4068946408131579958">Toate conexiunile</translation>
 <translation id="409800995205263688">NOTĂ: setările politicii permit conexiuni numai între computerele din rețeaua dvs.</translation>
+<translation id="4126409073460786861">După ce ai terminat configurarea, actualizează pagina și vei putea accesa computerul dacă alegi dispozitivul și introduci codul PIN</translation>
 <translation id="4145029455188493639">Conectat(ă) ca <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Unele componente necesare lipsesc. Asigură-te că ai instalată cea mai recentă versiune a software-ului și încearcă din nou.</translation>
 <translation id="4156740505453712750">Pentru a proteja accesul la acest computer, alegeți un cod PIN format din <ph name="BOLD_START" />cel puțin șase cifre<ph name="BOLD_END" />. Acest cod PIN va fi necesar când vă conectați din altă locație.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">La</translation>
 <translation id="7019153418965365059">Eroare nerecunoscută a gazdei: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Asistență la distanță</translation>
+<translation id="7026930240735156896">Urmează instrucțiunile ca să configurezi computerul pentru accesul la distanță</translation>
 <translation id="7038683108611689168">Ajutați-ne să îmbunătățim Chromoting, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>
 <translation id="7067321367069083429">Ecranul funcționează ca un ecran tactil</translation>
 <translation id="7116737094673640201">Bun venit la Desktop la distanță Chrome</translation>

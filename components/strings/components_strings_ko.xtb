@@ -489,6 +489,7 @@
 <translation id="4277028893293644418">비밀번호 재설정</translation>
 <translation id="4280429058323657511">, 만료일 <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">전환</translation>
+<translation id="4308131620840579419">모든 카드를 한곳에 보관하시겠어요?</translation>
 <translation id="4312866146174492540">차단(기본값)</translation>
 <translation id="4325863107915753736">도움말을 찾지 못했습니다.</translation>
 <translation id="4326324639298822553">만료일을 확인한 후 다시 시도해 주세요.</translation>
@@ -599,6 +600,7 @@
 <translation id="5190835502935405962">북마크바</translation>
 <translation id="5201306358585911203">이 페이지에 삽입된 페이지 내용:</translation>
 <translation id="5205222826937269299">이름은 필수입니다.</translation>
+<translation id="5215116848420601511">Google Pay에 사용되는 결제 수단 및 주소</translation>
 <translation id="5222812217790122047">이메일은 필수입니다.</translation>
 <translation id="5230733896359313003">배송지 주소</translation>
 <translation id="5250209940322997802">'네트워크에 연결'</translation>
@@ -675,6 +677,7 @@
 <translation id="5689199277474810259">JSON 형식으로 내보내기</translation>
 <translation id="5689516760719285838">위치</translation>
 <translation id="570530837424789914">관리...</translation>
+<translation id="5705882733397021510">뒤로</translation>
 <translation id="57094364128775171">강력한 비밀번호 추천...</translation>
 <translation id="5710435578057952990">이 웹사이트의 주소가 확인되지 않았습니다.</translation>
 <translation id="5719499550583120431">선불카드를 사용할 수 있습니다.</translation>
@@ -692,6 +695,7 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" />에 대한 연결이 더 이상 사용되지 않는 암호화 기술을 사용하여 암호화됩니다.</translation>
 <translation id="5813119285467412249">추가 다시 실행(&amp;R)</translation>
 <translation id="5838278095973806738">이 사이트에 입력하는 비밀번호나 신용카드 번호 등의 정보는 공격자에 의해 도난당할 수 있습니다.</translation>
+<translation id="5863847714970149516">앞 페이지에서 금액을 청구할 수 있습니다.</translation>
 <translation id="5866257070973731571">전화번호 추가</translation>
 <translation id="5869405914158311789">사이트에 연결할 수 없음</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
@@ -822,6 +826,7 @@
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
 <translation id="6989763994942163495">고급 설정 표시</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">이러한 청구는 일회성일 수도 있고 반복적일 수도 있으며 명확하지 않을 수도 있습니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" />에 접속하려고 했지만 서버가 제시한 인증서의 유효 기간이 너무 길어서 신뢰할 수 없습니다.</translation>
 <translation id="7053983685419859001">차단</translation>
@@ -1085,6 +1090,7 @@
 <translation id="8957210676456822347">캡티브 포털 승인</translation>
 <translation id="8971063699422889582">서버 인증서가 만료되었습니다.</translation>
 <translation id="8978053250194585037">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />피싱을 감지<ph name="END_LINK" />했습니다. 피싱 사이트는 사용자를 속이기 위해 다른 웹사이트인 것처럼 가장합니다.</translation>
+<translation id="8983003182662520383">Google Pay에 사용되는 결제 수단 및 주소</translation>
 <translation id="8987927404178983737">월</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">방문하려는 사이트에 유해한 프로그램이 있습니다.</translation>

@@ -1,7 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="111880247472081232">Teksti puhuttuna- ja Tekstistä puheeksi ‑asetuksesi yhdistettiin yleisiksi Tekstistä puheeksi ‑asetuksiksi.</translation>
 <translation id="1197088940767939838">Oranssi</translation>
+<translation id="1273314450961659276">Tekstistä puheeksi ‑asetukset</translation>
+<translation id="1498542103351704084">Teksti puhuttuna ‑asetukset päivitetty</translation>
 <translation id="1555130319947370107">Sininen</translation>
 <translation id="1666326070478924810">Teksti puhuttuna ‑asetukset</translation>
 <translation id="1966649499058910679">Korosta jokainen sana kun se lausutaan</translation>
@@ -9,11 +12,14 @@
 <translation id="2714180132046334502">Tumma tausta</translation>
 <translation id="27349076983469322">Vaalea tausta</translation>
 <translation id="335581015389089642">Puhe</translation>
+<translation id="3784184786832188702">Teksti puhuttuna käyttää nyt yleisiä Tekstistä puheeksi ‑asetuksia.</translation>
 <translation id="5901630391730855834">Keltainen</translation>
 <translation id="6017514345406065928">Vihreä</translation>
 <translation id="6475604559827479857">Sanojen korostusväri:</translation>
 <translation id="6837853484260746864">Valitse ääni:</translation>
+<translation id="7261612856573623172">Järjestelmän Tekstistä puheeksi ‑ääni</translation>
 <translation id="7768784765476638775">Teksti puhuttuna</translation>
 <translation id="7914870167134465181">Korostus</translation>
+<translation id="8324974933005349667">Personoi Tekstistä puheeksi ‑asetukset</translation>
 <translation id="992256792861109788">Vaaleanpunainen</translation>
 </translationbundle>

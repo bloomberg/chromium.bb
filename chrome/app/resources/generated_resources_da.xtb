@@ -4057,7 +4057,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7196835305346730603">Søger efter Chromeboxes i nærheden...</translation>
 <translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Dette er generelle oplysninger om din enhed og om, hvordan du bruger den (f.eks. batteriniveau, appforbrug og netværksforbindelse). Dataene bruges til at forbedre Googles produkter og tjenester for alle. Visse samlede oplysninger hjælper også partnere som f.eks. Android-udviklere med at forbedre deres apps og produkter.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Hvis du deaktiverer denne funktion, påvirker det ikke enhedens evne til at sende de oplysninger, der skal bruges til vigtige tjenester som f.eks. systemopdateringer og sikkerhed.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Du kan administrere denne funktion i Indstillinger &gt; Google. Vælg Forbrug og diagnostik i menuen.<ph name="END_PARAGRAPH3" /></translation>
+    <ph name="BEGIN_PARAGRAPH3" />Du kan administrere denne funktion i Indstillinger &gt; Google. Vælg Brug og diagnostik i menuen.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7199158086730159431">Få H&amp;jælp</translation>
 <translation id="7200083590239651963">Vælg konfiguration</translation>
 <translation id="7201014958346994077">Linux-filerne kan ikke ses</translation>

@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> சேர்க்கப்பட்டது</translation>
 <translation id="1056775291175587022">நெட்வொர்க்குகள் இல்லை</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">அணுகல்தன்மை அமைப்புகளைக் காண்பிக்கும்</translation>
 <translation id="1104621072296271835">இணைத்தால், உங்கள் சாதனங்கள் இன்னும் சிறப்பாக வேலை செய்யும்</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
 <translation id="1153356358378277386">இணைத்த சாதனங்கள்</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">வலுவற்ற சிக்னல்</translation>
 <translation id="1293264513303784526">USB-C சாதனம் (இடது போர்ட்)</translation>
+<translation id="1302880136325416935">புளூடூத் அமைப்புகளைக் காண்பிக்கும். <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">வலது</translation>
 <translation id="1351937230027495976">மெனுவைச் சுருக்கு</translation>
 <translation id="1383876407941801731">தேடல்</translation>
 <translation id="1467432559032391204">இடது</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">துவக்கி</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{அறிவிப்பு அமைப்புகளைக் காண்பிக்கும். ஓர் ஆப்ஸுக்கு அறிவிப்புகள் முடக்கப்பட்டுள்ளன}other{அறிவிப்பு அமைப்புகளைக் காண்பிக்கும். # ஆப்ஸுக்கு அறிவிப்புகள் முடக்கப்பட்டுள்ளன}}</translation>
 <translation id="1525508553941733066">நிராகரி</translation>
 <translation id="1537254971476575106">முழுத்திரைப் பெரிதாக்கி</translation>
 <translation id="15373452373711364">பெரிய மவுஸ் இடஞ்சுட்டி</translation>
 <translation id="1550523713251050646">மேலும் விருப்பங்களுக்குக் கிளிக் செய்யவும்</translation>
 <translation id="1567387640189251553">நீங்கள் கடைசியாகக் கடவுச்சொல்லை உள்ளிட்ட பிறகு வேறொரு விசைப்பலகை இணைக்கப்பட்டுள்ளது. அது உங்கள் விசை அழுத்தங்களைத் திருட முயற்சித்துக் கொண்டிருக்கக்கூடும்.</translation>
+<translation id="1570871743947603115">புளூடூத்தை நிலைமாற்றும். <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">இவரை அகற்று</translation>
 <translation id="1621499497873603021">இன்னும் <ph name="TIME_LEFT" /> இல் பேட்டரி காலியாகிவிடும்</translation>
 <translation id="1658406695958299976">மன்னிக்கவும், உங்கள் கடவுச்சொல் இன்னும் சரிபார்க்கப்படவில்லை. குறிப்பு: உங்கள் கடவுச்சொல்லைச் சமீபத்தில் மாற்றியிருந்தால், நீங்கள் வெளியேறியவுடன் புதிய கடவுச்சொல் பயன்படுத்தப்படும், இங்கு பழைய கடவுச்சொல்லைப் பயன்படுத்தவும்.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">அடையாளங்காண முடியவில்லை</translation>
 <translation id="1746730358044914197">உள்ளீட்டு முறைகளை உங்கள் நிர்வாகி உள்ளமைத்துள்ளார்.</translation>
 <translation id="1747827819627189109">ஆன்ஸ்க்ரீன் விசைப்பலகை இயக்கப்பட்டது</translation>
+<translation id="1761222317188459878">நெட்வொர்க் இணைப்பை நிலைமாற்றும். <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">ஈதர்நெட்: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">அசிஸ்டண்ட் (ஏற்றுகிறது...)</translation>
 <translation id="1841545962859478868">பின்வருவனவற்றைச் சாதன நிர்வாகி கண்காணிக்கக்கூடும்:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390"><ph name="DOMAIN" /> ஆல் இந்த சாதனம் நிர்வகிக்கப்படுகிறது.</translation>
 <translation id="2050339315714019657">செங்குத்து நிலை</translation>
 <translation id="2067602449040652523">விசைப்பலகை ஒளிர்வு</translation>
+<translation id="2075212959500165896">பலமுறை முயன்றுவிட்டீர்கள். பிறகு முயலவும்.</translation>
 <translation id="2081529251031312395">$1 ஆல் பிறகு உள்நுழைய முடியும்.</translation>
 <translation id="2127372758936585790">குறைந்த சக்திகொண்ட சார்ஜர்</translation>
 <translation id="2135456203358955318">டாக் செய்யப்பட்ட பெரிதாக்கி</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">சாளர மேலோட்டத்தை நிலைமாற்று</translation>
 <translation id="2338501278241028356">அருகிலுள்ள சாதனங்களைக் கண்டறிய, புளூடூத்தை இயக்கவும்</translation>
 <translation id="2339073806695260576">குறிப்பெடுக்க, ஸ்கிரீன் ஷாட்டை எடுக்க, லேசர் பாயிண்டர் அல்லது உருப்பெருக்கி ஆகியவற்றைப் பயன்படுத்த, ஷெல்ஃபில் உள்ள ஸ்டைலஸ் பட்டனைத் தட்டவும்.</translation>
+<translation id="2341729377289034582">செங்குத்து நிலையில் பூட்டப்பட்டது</translation>
 <translation id="2352467521400612932">ஸ்டைலஸ் அமைப்புகள்</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ஐச் செயல்படுத்துகிறது</translation>
 <translation id="2359808026110333948">தொடர்க</translation>
 <translation id="2365393535144473978">மொபைல் டேட்டாவை இயக்கினால், புளூடூத் இயக்கப்படும்.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">“தொந்தரவு செய்ய வேண்டாம்” நிலையை நிலைமாற்றும்</translation>
 <translation id="2412593942846481727">புதுப்பிப்பு உள்ளது</translation>
+<translation id="2416346634399901812"><ph name="NETWORK_NAME" /> உடன் இணைக்கப்பட்டுள்ளது</translation>
 <translation id="2429753432712299108">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. ஏற்றுக்கொள்வதற்கு முன்னர், இந்தக் கடவுச்சொல் அந்தச் சாதனத்தில் காண்பிக்கப்பட்டது என்பதை உறுதிப்படுத்தவும்: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">அறிவிப்புகள்</translation>
 <translation id="2484513351006226581">விசைப்பலகைத் தளவமைப்பை மாற்ற, <ph name="KEYBOARD_SHORTCUT" /> விசையை அழுத்தவும்.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">இணைப்பைச் சேர்</translation>
 <translation id="2961963223658824723">ஏதோ தவறாகிவிட்டது. சில வினாடிகள் கழித்து மீண்டும் முயலவும்.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">அனுப்பும் சாதனங்களைக் காண்பிக்கும்.</translation>
 <translation id="2996462380875591307">டாக் செய்யப்பட்ட பெரிதாக்கி இயக்கப்பட்டது. அதை முடக்க, Ctrl+Search+Dயை மீண்டும் அழுத்தவும்.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ஆனது <ph name="DOMAIN" /> ஆல் நிர்வகிக்கப்படும் பொது அமர்வாகும்</translation>
 <translation id="3000461861112256445">மோனோ ஆடியோ</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">மொபைல் டேட்டா</translation>
 <translation id="3151786313568798007">திசையமைப்பு</translation>
 <translation id="3153444934357957346">பல உள்நுழைவில் <ph name="MULTI_PROFILE_USER_LIMIT" /> கணக்குகள் வரை மட்டுமே வைத்திருக்கலாம்.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ஒரு சாதனத்துடன் இணைக்கப்பட்டுள்ளது}other{# சாதனங்களுடன் இணைக்கப்பட்டுள்ளது}}</translation>
 <translation id="3236488194889173876">மொபைல் நெட்வொர்க் இல்லை</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">விருந்தினர்</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">பூட்டு</translation>
 <translation id="3798670284305777884">ஸ்பீக்கர் (அகம்)</translation>
 <translation id="380165613292957338">வணக்கம், நான் எவ்வாறு உதவலாம்?</translation>
+<translation id="383629559565718788">விசைப்பலகை அமைப்புகளைக் காண்பிக்கும்</translation>
 <translation id="3846575436967432996">நெட்வொர்க் தகவல் எதுவும் இல்லை</translation>
 <translation id="385051799172605136">முந்தைய பக்கம்</translation>
 <translation id="3891340733213178823">வெளியேற Ctrl+Shift+Q ஐ இருமுறை அழுத்தவும்.</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">நடுத்தரமான சிக்னல்</translation>
 <translation id="4200057768455216496">டாக் செய்யப்பட்ட பெரிதாக்கியின் ஷார்ட்கட்டை அழுத்தியுள்ளீர்கள். அதை இயக்க விரும்புகிறீர்களா?</translation>
 <translation id="4217571870635786043">சொல்வதை எழுதுவது</translation>
+<translation id="4261870227682513959">அறிவிப்பு அமைப்புகளைக் காண்பிக்கும். அறிவிப்புகள் முடக்கப்பட்டுள்ளன</translation>
 <translation id="4274921305979314545">உங்கள் Chromebookகை ஃபோனுடன் இணைக்கவும்</translation>
 <translation id="4279490309300973883">பிரதிபலிக்கிறது</translation>
+<translation id="4292681942966152062"><ph name="NETWORK_NAME" />ஐச் செயல்படுத்துகிறது</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">உருப்பெருக்கி</translation>
@@ -239,6 +253,7 @@
 <translation id="5673434351075758678">அமைப்புகளை ஒத்திசைத்த பின்னர், "<ph name="FROM_LOCALE" />" இலிருந்து "<ph name="TO_LOCALE" />"க்கு மாற்றப்பட்டது.</translation>
 <translation id="574392208103952083">நடுநிலை</translation>
 <translation id="5744083938413354016">தட்டி நகர்த்துதல்</translation>
+<translation id="5750765938512549687">புளூடூத் முடக்கப்பட்டுள்ளது</translation>
 <translation id="5777841717266010279">திரைப் பகிர்வதை நிறுத்தவா?</translation>
 <translation id="57838592816432529">ஒலியடக்கு</translation>
 <translation id="5805697420284793859">சாளர நிர்வாகி</translation>
@@ -272,12 +287,14 @@
 <translation id="615957422585914272">ஆன்-ஸ்கிரீன் விசைப்பலகையைக் காட்டு</translation>
 <translation id="6164005077879661055">இந்தக் கண்காணிக்கப்படும் பயனர் அகற்றப்பட்டவுடன் கண்காணிக்கப்படும் பயனருடன் தொடர்புடைய எல்லா கோப்புகளும், அகத் தரவும் நிரந்தரமாக நீக்கப்படும். இந்தக் கண்காணிக்கப்படும் பயனர் பார்வையிட்ட இணையதளங்களையும் அமைப்புகளையும் <ph name="MANAGEMENT_URL" /> இல் இன்னும் நிர்வாகியால் பார்க்க முடியும்.</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
+<translation id="6254629735336163724">கிடைமட்ட நிலையில் பூட்டப்பட்டது</translation>
 <translation id="6259254695169772643">தேர்ந்தெடுக்க, ஸ்டைலஸைப் பயன்படுத்தலாம்</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: செயல்படுத்துகிறது...</translation>
 <translation id="6284232397434400372">தெளிவு மாற்றப்பட்டது</translation>
 <translation id="6297287540776456956">பகுதியைத் தேர்ந்தெடுக்க, ஸ்டைஸைப் பயன்படுத்தவும்</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> ஆகச் சுழற்றப்பட்டது</translation>
 <translation id="632744581670418035">விசைப்பலகை மேல்தோற்றம்</translation>
+<translation id="6376931439017688372">புளூடூத் இயக்கப்பட்டுள்ளது</translation>
 <translation id="639644700271529076">CAPS LOCK முடக்கப்பட்டுள்ளது</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">அனைத்தும் காட்டப்பட்டன</translation>
@@ -321,6 +338,7 @@
 <translation id="7066646422045619941">இந்த நெட்வொர்க் உங்கள் நிர்வாகியால் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="7067196344162293536">தானியங்கு சுழற்றல்</translation>
 <translation id="7076293881109082629">உள்நுழைகிறீர்கள்</translation>
+<translation id="7092922358121866860">நைட் லைட் அமைப்புகளைக் காண்பிக்கும்</translation>
 <translation id="7098389117866926363">USB-C சாதனம் (பின்பக்கம் உள்ள இடது போர்ட்)</translation>
 <translation id="7131634465328662194">நீங்கள் தானாக வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="7143207342074048698">இணைத்தல்</translation>
@@ -356,6 +374,7 @@
 <translation id="7798302898096527229">ரத்துசெய்ய, தேடல் அல்லது ஷிஃப்ட் விசையை அழுத்தவும்.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> மற்றும் <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">வலுவான சிக்னல்</translation>
+<translation id="7842211907556571265"><ph name="NETWORK_NAME" /> உடன் இணைக்கிறது</translation>
 <translation id="7842569679327885685">எச்சரிக்கை: சோதனை அம்சம்</translation>
 <translation id="7846634333498149051">விசைப்பலகை</translation>
 <translation id="790040513076446191">தனியுரிமைத் தொடர்பான அமைப்புகளை கையாளலாம்</translation>
@@ -396,18 +415,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: மீண்டும் இணைக்கிறது...</translation>
 <translation id="8513108775083588393">தானாகச் சுழற்று</translation>
 <translation id="8517041960877371778">இயக்கப்பட்டிருக்கும் போது உங்கள் <ph name="DEVICE_TYPE" /> இல் சார்ஜ் ஏறாது.</translation>
+<translation id="8627191004499078455"><ph name="DEVICE_NAME" /> உடன் இணைக்கப்பட்டுள்ளது</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> மீதமுள்ளது</translation>
 <translation id="8649101189709089199">பேசும் திரை</translation>
 <translation id="8652175077544655965">அமைப்புகளை மூடும்</translation>
+<translation id="8653151467777939995">அறிவிப்பு அமைப்புகளைக் காண்பிக்கும். அறிவிப்புகள் இயக்கப்பட்டுள்ளன</translation>
+<translation id="8664753092453405566">நெட்வொர்க் பட்டியலைக் காண்பிக்கும். <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">குறைந்த சக்தியிலான சார்ஜர் இணைக்கப்பட்டுள்ளது</translation>
 <translation id="8683506306463609433">செயல்திறன் டிரேஸிங் இயக்கத்தில்</translation>
 <translation id="8734991477317290293">அது உங்கள் விசை அழுத்தங்களைத் திருட முயற்சித்துக் கொண்டிருக்கக்கூடும்</translation>
+<translation id="8735953464173050365">விசைப்பலகை அமைப்புகளைக் காண்பிக்கும். <ph name="KEYBOARD_NAME" /> தேர்ந்தெடுக்கப்பட்டுள்ளது</translation>
+<translation id="875593634123171288">VPN அமைப்புகளைக் காண்பிக்கும்</translation>
 <translation id="8809737090443522491">பயன்பாடு அல்லது ஆவணத்தின் பெயரை உள்ளிடவும்</translation>
 <translation id="8814190375133053267">வைஃபை</translation>
 <translation id="8825534185036233643">இரண்டிற்கும் மேற்பட்ட திரைகளில் பிரதிபலிப்பது ஆதரிக்கப்படவில்லை.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">முந்தையது பொத்தான்</translation>
+<translation id="8843682306134542540">சுழற்சிப் பூட்டை நிலைமாற்றும். <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">திரையைப் பிரிப்பதைப் பயன்பாடு ஆதரிக்கவில்லை.</translation>
 <translation id="8874184842967597500">இணைக்கப்படவில்லை</translation>

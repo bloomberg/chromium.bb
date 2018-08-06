@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Show Spelling and Grammar</translation>
 <translation id="1593594475886691512">Nagpo-format...</translation>
 <translation id="159359590073980872">Cache ng Larawan</translation>
+<translation id="1593926297800505364">I-save ang paraan ng pagbabayad</translation>
 <translation id="1598233202702788831">Na-disable ng iyong administrator ang mga update.</translation>
 <translation id="1600857548979126453">I-access ang backend ng debugger ng pahina</translation>
 <translation id="1601560923496285236">Ilapat</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Hindi maisama ang device sa domain. Tiyaking hindi mo nalampasan ang bilang ng mga device na maaari mong idagdag.</translation>
 <translation id="1744108098763830590">pahina ng background</translation>
 <translation id="1745520510852184940">Palagi Itong Gawin</translation>
+<translation id="1746417874336251387">Mag-alok ng mga bagong feature na gumagamit ng koneksyon ng iyong telepono sa Chromebook mo</translation>
 <translation id="174937106936716857">Kabuuang bilang ng file</translation>
 <translation id="175196451752279553">M&amp;uling buksan ang nakasarang tab</translation>
 <translation id="1753905327828125965">Most Visited</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Hindi Bago</translation>
 <translation id="1933809209549026293">Mangyaring magkonekta ng isang mouse o keyboard. Kung gumagamit ka ng Bluetooth device, tiyakin na ito ay handa na upang ipares.</translation>
 <translation id="1936157145127842922">Ipakita sa Folder</translation>
+<translation id="1938351510777341717">External na Command</translation>
 <translation id="1940546824932169984">Mga nakakonektang device</translation>
 <translation id="1942765061641586207">Resolution ng larawan</translation>
+<translation id="1943097386230153518">Mag-install ng bagong serbisyo</translation>
 <translation id="1944921356641260203">May nahanap na update</translation>
 <translation id="1951615167417147110">Mag-scroll up ng isang pahina</translation>
 <translation id="1954813140452229842">Nagka-error sa pag-mount ng share. Pakitingnan ang iyong mga kredensyal at subukang muli.</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="265390580714150011">Field Value</translation>
 <translation id="2654166010170466751">Payagan ang mga site na mag-install ng mga tagapangasiwa ng pagbabayad</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Nag-iiba-iba ang feature depende sa device</translation>
 <translation id="2660779039299703961">Kaganapan</translation>
 <translation id="266079277508604648">Hindi makakonekta sa printer. Tiyaking naka-on ang printer at nakakonekta ito sa iyong Chromebook sa pamamagitan ng Wi-Fi o USB.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">Ilagay ang PIN</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Mga App</translation>
+<translation id="2806891468525657116">Mayroon nang ganitong shortcut</translation>
 <translation id="2807517655263062534">Dito lalabas ang mga file na iyong ida-download</translation>
 <translation id="2809586584051668049">at <ph name="NUMBER_ADDITIONAL_DISABLED" /> pa</translation>
 <translation id="281133045296806353">Lumikha ng bagong window sa umiiral nang session ng browser.</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">Naka-sign in ka!</translation>
 <translation id="3429275422858276529">I-bookmark ang page na ito upang madali itong mahanap sa ibang pagkakaton</translation>
 <translation id="3429599832623003132">Mga $1 na item</translation>
+<translation id="3430342160185525240">Ine-enable ang Assistant na magpakita sa iyo ng mga notification.</translation>
 <translation id="3432227430032737297">Alisin ang Lahat ng Ipinapakita</translation>
 <translation id="3432757130254800023">Magpadala ng audio at video sa mga display sa lokal na network</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1964,6 +1971,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> sa Control Panel.
 
   Gusto mo bang simulan ang <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Hindi makagawa ng shortcut</translation>
 <translation id="3943582379552582368">&amp;Bumalik</translation>
 <translation id="3943857333388298514">Paste</translation>
 <translation id="3948116654032448504">&amp;Maghanap sa <ph name="SEARCH_ENGINE" /> para sa Larawan</translation>
@@ -2271,6 +2279,7 @@
 <translation id="4481530544597605423">Mga hindi nakapares na device</translation>
 <translation id="4482194545587547824">Maaaring gamitin ng Google ang iyong history ng pagba-browse upang ma-personalize ang Search at iba pang mga serbisyo ng Google</translation>
 <translation id="4495419450179050807">Huwag ipakita sa pahinang ito</translation>
+<translation id="4499718683476608392">Ine-enable ang Autofill ng credit card para mapunan ang mga form sa isang pag-click</translation>
 <translation id="4500114933761911433">Nag-crash ang <ph name="PLUGIN_NAME" /></translation>
 <translation id="450099669180426158">Icon na exclamation mark</translation>
 <translation id="4501530680793980440">Kumpirmahin ang Pag-alis</translation>
@@ -3114,6 +3123,7 @@
 <translation id="5752453871435543420">Backup sa Chrome OS Cloud</translation>
 <translation id="5756163054456765343">Help center</translation>
 <translation id="5759728514498647443">Ang mga dokumentong ipinadadala mo upang i-print sa pamamagitan ng <ph name="APP_NAME" /> ay maaaring buksan ng <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Mga setting ng credit card</translation>
 <translation id="5763751966069581670">Walang nahanap na USB device</translation>
 <translation id="5764483294734785780">I-sa&amp;ve ang audio bilang...</translation>
 <translation id="57646104491463491">Petsa nang Binago</translation>
@@ -3185,6 +3195,7 @@
 <translation id="5855773610748894548">Oops, nagkaroon ng error sa secure na module.</translation>
 <translation id="5856721540245522153">I-enable ang mga feature para sa pagde-debug</translation>
 <translation id="5857090052475505287">Bagong Folder</translation>
+<translation id="585979798156957858">External na Meta</translation>
 <translation id="5860033963881614850">Naka-off</translation>
 <translation id="5860209693144823476">Tab 3</translation>
 <translation id="5860491529813859533">I-on</translation>
@@ -3494,6 +3505,7 @@
 <translation id="6327785803543103246">Web proxy autodiscovery</translation>
 <translation id="6333064448949140209">Ipapadala ang file sa Google para sa pagde-debug</translation>
 <translation id="6333834492048057036">I-focus ang address bar para sa paghahanap</translation>
+<translation id="6336451774241870485">Bagong pribadong tab</translation>
 <translation id="6339668969738228384">Gumawa ng bagong profile para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Hindi makakonekta sa server. Pakitingnan ang iyong koneksyon sa network at subukang muli. Kung magpapatuloy ang problema, i-restart ang Chromebook mo.</translation>
 <translation id="6340071272923955280">Internet Printing Protocol (IPPS)</translation>
@@ -3675,6 +3687,7 @@
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">Impormasyon ng file</translation>
 <translation id="6607831829715835317">Higit pang mga too&amp;l</translation>
+<translation id="6610147964972079463">Isara ang mga pribadong tab</translation>
 <translation id="6612358246767739896">Pinoprotektahang content</translation>
 <translation id="6613452264606394692">Makabalik dito nang mabilis sa pamamagitan ng pag-bookmark sa page na ito</translation>
 <translation id="6614893213975402384">Mag-install ng mga update at app. Sa pamamagitan ng pagpapatuloy, sumasang-ayon ka na maaari ring awtomatikong mag-download at mag-install ang device na ito ng mga update at app mula sa Google, iyong carrier, at manufacturer ng device mo, na posibleng gamit ang cellular data. Maaaring nag-aalok ang ilan sa mga app na ito ng mga in-app na pagbili. Maaari mong alisin ang mga app na ito anumang oras. <ph name="BEGIN_LINK1" />Matuto Pa<ph name="END_LINK1" /></translation>
@@ -3745,6 +3758,7 @@
 <translation id="6710213216561001401">Nakaraan</translation>
 <translation id="6718273304615422081">Nagzi-zip...</translation>
 <translation id="671928215901716392">I-lock ang screen</translation>
+<translation id="6720847671508630642">Awtomatikong ibahagi ang pinakamahusay na kakayahan ng Android sa iyong Chromebook. Ikonekta ang iyong telepono nang sa gayon ay makapag-text ka mula sa computer mo, maibahagi ang koneksyon sa internet ng iyong telepono, at ma-unlock ang screen ng Chromebook mo.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Tingnan ang manufacturer at modelo ng iyong Security Key</translation>
 <translation id="6721972322305477112">&amp;File</translation>
 <translation id="672213144943476270">Paki-unlock ang iyong profile bago mag-browse bilang bisita.</translation>
@@ -3891,6 +3905,7 @@
 <translation id="6970856801391541997">I-print ang Mga Tiyak na Pahina</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
 <translation id="6973630695168034713">Mga Folder</translation>
+<translation id="6974609594866392343">Offline na demo mode</translation>
 <translation id="6976108581241006975">&amp;JavaScript console</translation>
 <translation id="6977381486153291903">Rebisyon ng firmware</translation>
 <translation id="6978121630131642226">Mga Search Engine</translation>
@@ -4485,6 +4500,7 @@
 <translation id="7857949311770343000">Ito ba ang page ng bagong tab na inaasahan mo?</translation>
 <translation id="786073089922909430">Serbisyo: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Mga download</translation>
+<translation id="7864662577698025113">Magdagdag ng bagong serbisyo</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}one{# cookie}other{# na cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Nakapares</translation>
 <translation id="7870730066603611552">Suriin ang mga opsyon sa pag-sync pagkatapos ng pag-set up</translation>
@@ -5000,6 +5016,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8666584013686199826">Magtanong kapag gusto ng isang site na i-access ang mga USB device</translation>
 <translation id="8667328578593601900">Nasa full screen na ngayon ang <ph name="FULLSCREEN_ORIGIN" /> at hindi pinagana ang cursor ng iyong mouse.</translation>
 <translation id="8669284339312441707">Warmer</translation>
+<translation id="8669919703154928649">Payagan ang Assistant na magpakita sa iyo ng mga notification</translation>
 <translation id="8669949407341943408">Inililipat...</translation>
 <translation id="8671210955687109937">Makakapagkomento</translation>
 <translation id="8673026256276578048">Hanapan ang Web...</translation>
@@ -5388,6 +5405,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="964286338916298286">Na-disable ng iyong IT administrator ang Chrome Goodies para sa device mo.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Application}one{Application}other{na Application}}</translation>
 <translation id="967007123645306417">Dahil dito, masa-sign out ka sa iyong mga Google account. Hindi na masi-sync sa Google Account mo ang mga pagbabago sa iyong mga bookmark, history, mga password, at iba pang setting. Gayunpaman, mananatiling naka-store ang kasalukuyan mong data sa iyong Google Account at mapapamahalaan ito sa <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Naka-store na data</translation>
 <translation id="968000525894980488">I-on ang mga serbisyo ng Google Play.</translation>
 <translation id="968174221497644223">Cache ng application</translation>
 <translation id="969096075394517431">Palitan ang mga wika</translation>

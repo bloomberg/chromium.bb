@@ -398,6 +398,7 @@
 <translation id="1589055389569595240">نمایش املا و گرامر</translation>
 <translation id="1593594475886691512">در حال قالب‌بندی...</translation>
 <translation id="159359590073980872">حافظهٔ پنهان تصویر</translation>
+<translation id="1593926297800505364">ذخیره روش پرداخت</translation>
 <translation id="1598233202702788831">سرپرست سیستم شما به‌روزرسانی‌ها را غیرفعال کرده است.</translation>
 <translation id="1600857548979126453">دسترسی به مرحله پایانی اشکال‌زدای صفحه</translation>
 <translation id="1601560923496285236">اعمال</translation>
@@ -508,6 +509,7 @@
 <translation id="1744060673522309905">نمی‌توان دستگاه را به دامنه وصل کرد. مطمئن شوید بیشتر از تعداد مجاز دستگاه اضافه نکرده‌اید.</translation>
 <translation id="1744108098763830590">صفحه پس‌زمینه</translation>
 <translation id="1745520510852184940">این کار همیشه انجام شود</translation>
+<translation id="1746417874336251387">‏ارائه ویژگی‌های جدید که از اتصال تلفن به Chromebook استفاده می‌کند</translation>
 <translation id="174937106936716857">تعداد کل فایل‌ها</translation>
 <translation id="175196451752279553">با&amp;ز کردن مجدد برگه بسته</translation>
 <translation id="1753905327828125965">بیشترین موارد بازدید شده</translation>
@@ -638,8 +640,10 @@
 <translation id="1932098463447129402">نه قبل از</translation>
 <translation id="1933809209549026293">لطفاً موشواره یا صفحه‌کلیدی را وصل کنید. اگر از دستگاه بلوتوث استفاده می‌کنید، مطمئن شوید آماده مرتبط‌سازی است.</translation>
 <translation id="1936157145127842922">نمایش در پوشه</translation>
+<translation id="1938351510777341717">فرمان خارجی</translation>
 <translation id="1940546824932169984">دستگاه‌های متصل</translation>
 <translation id="1942765061641586207">وضوح تصویر</translation>
+<translation id="1943097386230153518">نصب سرویس جدید</translation>
 <translation id="1944921356641260203">به‌روزرسانی پیدا شد</translation>
 <translation id="1951615167417147110">یک صفحه بالا بروید</translation>
 <translation id="1954813140452229842">هنگام نشاندن دستگاه ذخیره‌سازی متصل به شبکه خطایی روی داد. لطفاً اطلاعات کاربری را بررسی کنید و دوباره امتحان کنید.</translation>
@@ -1104,6 +1108,7 @@
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="265390580714150011">مقدار قسمت</translation>
 <translation id="2654166010170466751">اجازه به سایت‌ها برای نصب کنتر‌ل‌کننده‌های پرداخت</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />ویژگی‌ها براساس دستگاه متفاوت است</translation>
 <translation id="2660779039299703961">رویداد</translation>
 <translation id="266079277508604648">‏چاپگر متصل نشد. بررسی کنید چاپگر روشن و ازطریق Wi-Fi یا USB به Chromebook متصل باشد.</translation>
 <translation id="2661146741306740526">۱۶x۹</translation>
@@ -1210,6 +1215,7 @@
 <translation id="2803375539583399270">پین را وارد کنید</translation>
 <translation id="2805646850212350655">‏سیستم فایل رمزگذاری Microsoft</translation>
 <translation id="2805756323405976993">برنامه‌ها</translation>
+<translation id="2806891468525657116">میان‌بر از قبل وجود دارد</translation>
 <translation id="2807517655263062534">فایل‌هایی که بارگیری می‌کنید اینجا نشان داده می‌شود</translation>
 <translation id="2809586584051668049">و <ph name="NUMBER_ADDITIONAL_DISABLED" /> مورد دیگر</translation>
 <translation id="281133045296806353">پنجرهٔ جدید ایجاد شده در جلسه مرورگر فعلی.</translation>
@@ -1596,6 +1602,7 @@
 <translation id="3428419049384081277">وارد سیستم شده‌اید!</translation>
 <translation id="3429275422858276529">این صفحه را نشانک‌گذاری کنید تا بعداً آن را به‌آسانی پیدا کنید</translation>
 <translation id="3429599832623003132">$1 مورد</translation>
+<translation id="3430342160185525240">به «دستیار» امکان می‌دهد اعلان نشان دهد.</translation>
 <translation id="3432227430032737297">حذف همه موارد نشان‌ داده‌شده</translation>
 <translation id="3432757130254800023">ارسال صوت و تصویر برای نمایش در شبکه محلی</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1960,6 +1967,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> در صفحه کنترل آن را حذف کنید.
 
   آیا می‌خواهید <ph name="CONTROL_PANEL_APPLET_NAME" /> را شروع کنید؟</translation>
+<translation id="394183848452296464">نمی‌توان میان‌بر ایجاد کرد</translation>
 <translation id="3943582379552582368">&amp;برگشت</translation>
 <translation id="3943857333388298514">جاگذاری</translation>
 <translation id="3948116654032448504">&amp;جستجوی <ph name="SEARCH_ENGINE" /> برای تصویر</translation>
@@ -2267,6 +2275,7 @@
 <translation id="4481530544597605423">دستگاه‌های لغو ارتباط‌شده</translation>
 <translation id="4482194545587547824">‏Google ممکن است از سابقه مرورتان برای شخصی‌سازی جستجو و سایر سرویس‌های Google استفاده کند.</translation>
 <translation id="4495419450179050807">در این صفحه نشان داده نشود</translation>
+<translation id="4499718683476608392">به تکمیل خودکار کارت اعتباری امکان می‌دهد فرم‌ها را با یک کلیک پر کند</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> خراب شده است</translation>
 <translation id="450099669180426158">نماد علامت تعجب</translation>
 <translation id="4501530680793980440">تأیید حذف</translation>
@@ -3110,6 +3119,7 @@
 <translation id="5752453871435543420">‏نسخه پشتیبان Chrome OS Cloud</translation>
 <translation id="5756163054456765343">مرکز را&amp;هنمایی</translation>
 <translation id="5759728514498647443">اسنادی که از طریق <ph name="APP_NAME" /> برای چاپ ارسال می‌کنید، می‌توانند توسط <ph name="APP_NAME" /> خوانده شوند.</translation>
+<translation id="5762172915276660232">تنظیمات کارت اعتباری</translation>
 <translation id="5763751966069581670">‏هیچ دستگاه USB پیدا نشد</translation>
 <translation id="5764483294734785780">ذ&amp;خیره فایل صوتی به‌عنوان...</translation>
 <translation id="57646104491463491">تاریخ تغییر</translation>
@@ -3181,6 +3191,7 @@
 <translation id="5855773610748894548">وای، خطای مدول امن.</translation>
 <translation id="5856721540245522153">فعال کردن ویژگی‌های رفع اشکال</translation>
 <translation id="5857090052475505287">پوشهٔ جدید</translation>
+<translation id="585979798156957858">فراداده خارجی</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5860209693144823476">برگه ۳</translation>
 <translation id="5860491529813859533">روشن کردن</translation>
@@ -3490,6 +3501,7 @@
 <translation id="6327785803543103246">کشف خودکار پراکسی وب</translation>
 <translation id="6333064448949140209">‏فایل برای اشکال‌زدایی به Google ارسال خواهد شد</translation>
 <translation id="6333834492048057036">تمرکز نوار آدرس برای جستجو</translation>
+<translation id="6336451774241870485">برگه خصوصی جدید</translation>
 <translation id="6339668969738228384">ایجاد نمایه جدیدی برای <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">‏به سرور متصل نشد. لطفاً اتصال شبکه‌تان را بررسی کرده و دوباره امتحان کنید. اگر مشکل برطرف نشد، Chromebook خود را بازراه‌اندازی کنید.</translation>
 <translation id="6340071272923955280">‏پروتکل چاپ اینترنتی (IPPS)</translation>
@@ -3671,6 +3683,7 @@
 <translation id="6606070663386660533">برگه ۸</translation>
 <translation id="6607272825297743757">اطلاعات فایل</translation>
 <translation id="6607831829715835317">ا&amp;بزارهای بیشتر</translation>
+<translation id="6610147964972079463">بستن برگه‌های خصوصی</translation>
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="6613452264606394692">با نشانک‌گذاری این صفحه، سریع به اینجا بازگردید</translation>
 <translation id="6614893213975402384">‏نصب به‌روزرسانی‌ها و برنامه‌ها. با ادامه دادن، موافقت می‌کنید که این دستگاه نیز بتواند به‌طور خودکار به‌روزرسانی‌ها و برنامه‌ها را از Google، شرکت مخابراتی و سازنده دستگاه (احتمالاً با استفاده از داده شبکه تلفن همراه) بارگیری و نصب کند. ممکن است بعضی از این برنامه‌ها خریدهای درون‌برنامه پیشنهاد دهند. هرزمان خواستید می‌توانید این برنامه‌ها را حذف کنید. <ph name="BEGIN_LINK1" />بیشتر بدانید<ph name="END_LINK1" /></translation>
@@ -3741,6 +3754,7 @@
 <translation id="6710213216561001401">قبلی</translation>
 <translation id="6718273304615422081">در حال فشرده سازی ...</translation>
 <translation id="671928215901716392">قفل صفحه</translation>
+<translation id="6720847671508630642">‏بهترین‌های Android را به‌طور خودکار با Chromebook هم‌رسانی کنید. تلفنتان را مرتبط کنید تا بتوانید از رایانه پیام نوشتاری ارسال کنید، اتصال اینترنت تلفن را به اشتراک بگذارید و قفل صفحه Chromebook را باز کنید.<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">ساخت و مدل «کلید امنیتی» خود را ببینید</translation>
 <translation id="6721972322305477112">&amp;فایل</translation>
 <translation id="672213144943476270">لطفاً قبل از مرور به‌عنوان مهمان، قفل نمایه‌تان را باز کنید.</translation>
@@ -3887,6 +3901,7 @@
 <translation id="6970856801391541997">صفحات خاص چاپ</translation>
 <translation id="6972180789171089114">صوتی/تصویری</translation>
 <translation id="6973630695168034713">پوشه‌ها</translation>
+<translation id="6974609594866392343">حالت نمایشی آفلاین</translation>
 <translation id="6976108581241006975">کنسول جاوا اسکریپت</translation>
 <translation id="6977381486153291903">بازبینی سفت‌افزار</translation>
 <translation id="6978121630131642226">موتورهای جستجو</translation>
@@ -4481,6 +4496,7 @@
 <translation id="7857949311770343000">این صفحه برگه جدیدی است که منتظرش بودید؟</translation>
 <translation id="786073089922909430">سرویس: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;فایلهای بارگیری‌شده</translation>
+<translation id="7864662577698025113">افزودن سرویس جدید</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{۱ کوکی}one{# کوکی}other{# کوکی}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - مرتبط</translation>
 <translation id="7870730066603611552">مرور گزینه‌های همگام‌سازی به دنبال راه‌اندازی</translation>
@@ -4995,6 +5011,7 @@
 <translation id="8666584013686199826">‏وقتی سایتی می‌خواهد به دستگاه‌های USB دسترسی پیدا کند سؤال شود</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> در حال حاضر تمام صفحه است و مکان‌نمای ماوس شما را غیرفعال کرده است.</translation>
 <translation id="8669284339312441707">گرم‌تر</translation>
+<translation id="8669919703154928649">به «دستیار» اجازه دهید اعلان نشان دهد</translation>
 <translation id="8669949407341943408">در حال انتقال...</translation>
 <translation id="8671210955687109937">می‌تواند نظر بدهد</translation>
 <translation id="8673026256276578048">جستجوی وب…</translation>
@@ -5382,6 +5399,7 @@
 <translation id="964286338916298286">‏سرپرست IT شما Chrome Goodies را برای دستگاهتان غیرفعال کرده است.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{برنامه}one{برنامه}other{برنامه}}</translation>
 <translation id="967007123645306417">‏با این کار از سیستم همه حساب‌های Google خارج می‌شوید. تغییرات ایجادشده در نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات، دیگر با حساب Google شما همگام‌سازی نخواهد شد. بااین‌وجود، داده‌های کنونی در حساب Google شما باقی خواهد ماند و می‌توانید در <ph name="BEGIN_LINK" />داشبورد Google<ph name="END_LINK" /> آن‌ها را مدیریت کنید.</translation>
+<translation id="967624055006145463">داده ذخیره شد</translation>
 <translation id="968000525894980488">‏«خدمات Google Play» را روشن کنید.</translation>
 <translation id="968174221497644223">حافظه پنهان برنامه</translation>
 <translation id="969096075394517431">تغییر زبان‌ها</translation>

@@ -533,6 +533,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si vous ne définissez pas ce paramètre, les utilisateurs peuvent choisir d'appliquer cette fonctionnalité ou non.
 
       Ce paramètre a été supprimé de <ph name="PRODUCT_NAME" /> 29 et versions ultérieures.</translation>
+<translation id="2433412232489478893">Cette règle permet de déterminer si la fonctionnalité Partages de fichiers en réseau pour <ph name="PRODUCT_NAME" /> est autorisée pour un utilisateur.
+
+      Si cette règle n'est pas configurée ou si elle est définie sur "True", les utilisateurs peuvent utiliser la fonctionnalité Partages de fichiers en réseau.
+
+      Si cette règle est définie sur "False", les utilisateurs ne peuvent pas utiliser la fonctionnalité Partages de fichiers en réseau.</translation>
 <translation id="2438609638493026652">Permet de signaler des événements clés à Google pendant l'installation d'une application Android. Les événements ne sont enregistrés que pour les applications dont l'installation a été déclenchée via des règles.
 
       Si cette règle est définie sur "True", les événements sont enregistrés.
@@ -614,6 +619,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2598508021807251719">Permet de configurer les langues dans lesquelles <ph name="PRODUCT_OS_NAME" /> peut s'afficher.
 
       Si cette règle est définie, l'utilisateur ne peut configurer l'affichage de <ph name="PRODUCT_OS_NAME" /> que dans l'une des langues spécifiées dans cette règle. Si cette dernière n'est pas configurée ou si elle est définie sur une liste vide, <ph name="PRODUCT_OS_NAME" /> peut s'afficher dans toutes les langues compatibles de l'interface utilisateur. Si cette règle est définie sur une liste contenant des valeurs non valides, ces dernières sont toutes ignorées. Si un utilisateur a auparavant configuré l'affichage de <ph name="PRODUCT_OS_NAME" /> dans une langue non autorisée par cette règle, la langue d'affichage est remplacée par une langue autorisée lors de la prochaine connexion de l'utilisateur. Si l'utilisateur a configuré des langues préférées et que l'une d'entre elles est autorisée par cette règle, <ph name="PRODUCT_OS_NAME" /> s'affiche dans cette langue. Sinon, <ph name="PRODUCT_OS_NAME" /> s'affiche dans la langue définie par la première valeur valide spécifiée par cette règle, ou dans une langue de remplacement (actuellement, en-US), si cette règle contient uniquement des entrées non valides.</translation>
+<translation id="2604182581880595781">Configurer les règles associées à la fonctionnalité Partages de fichiers en réseau.</translation>
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
@@ -699,6 +705,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 <translation id="2823870601012066791">Emplacement du registre Windows pour les clients <ph name="PRODUCT_OS_NAME" /> :</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
 <translation id="2838830882081735096">Interdire la migration de données et ARC</translation>
+<translation id="2839294585867804686">Paramètres de la fonctionnalité Partages de fichiers en réseau</translation>
 <translation id="2840269525054388612">Indique les imprimantes auxquelles un utilisateur a accès.
 
       Cette règle est utilisée uniquement si <ph name="PRINTERS_WHITELIST" /> est sélectionné pour <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1186,7 +1193,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 
           Si cette règle n'est pas définie, la valeur globale par défaut est utilisée pour tous les sites, et déterminée à partir de la règle "DefaultKeygenSetting" si celle-ci est définie, ou à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="4239720644496144453">Le cache n'est pas utilisé pour les applications Android. Si plusieurs utilisateurs installent la même application Android, celle-ci sera à nouveau téléchargée pour chacun d'eux.</translation>
-<translation id="4243336580717651045">Activer la collecte des données anonymes incluant les URL dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
+<translation id="4243336580717651045">Permet d'activer la collecte des données anonymes incluant les URL dans <ph name="PRODUCT_NAME" /> et empêche l'utilisateur de modifier ce paramètre.
 
       La collecte des données anonymes incluant les URL transmet les URL des pages que l'utilisateur a visitées à Google pour améliorer vos recherches et votre navigation.
 
@@ -1197,6 +1204,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Si vous ne configurez pas cette règle, la collecte des données anonymes incluant les URL est activée, mais l'utilisateur pourra la modifier.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4261820385751181068">Paramètres régionaux de l'écran de connexion de l'appareil</translation>
+<translation id="4264607809747169568">Vérifie la disponibilité de la fonctionnalité Partages de fichiers en réseau pour Chrome OS</translation>
 <translation id="427220754384423013">Indique les imprimantes auxquelles un utilisateur a accès.
 
       Cette règle est utilisée uniquement si <ph name="PRINTERS_WHITELIST" /> est sélectionné pour <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1630,6 +1638,15 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Notez que la valeur de cette règle se mesure en millisecondes.</translation>
 <translation id="5511702823008968136">Activer le barre de favoris</translation>
 <translation id="5512418063782665071">URL de la page d'accueil</translation>
+<translation id="551639594034811656">Cette règle dresse une liste de pourcentages qui définit la fraction d'appareils <ph name="PRODUCT_OS_NAME" /> de l'unité organisationnelle qui doivent être mis à jour, par jour, à compter de la date où la mise à jour est détectée pour la première fois. La date de détection est postérieure à la date de publication de la mise à jour, car un certain temps peut s'écouler avant que l'appareil ne recherche des mises à jour après la publication de la mise à jour.
+
+      Chaque paire (jour, pourcentage) contient le pourcentage du parc qui doit être mis à jour en fonction du nombre de jours écoulés depuis la détection de la mise à jour. Par exemple, dans le cas des paires [(4, 40), (10, 70), (15, 100)], il faut que 40 % du parc ait été mis à jour 4 jours après la détection de la mise à jour, 70 % après 10 jours, et ainsi de suite.
+
+      Si cette règle est définie sur une valeur, elle s'applique à la place de la règle <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />
+
+      Si cette liste est vide, il n'y a pas de déploiement par étapes et les mises à jour sont appliquées en fonction des autres règles des appareils.
+
+      Cette règle ne concerne pas les changements de version.</translation>
 <translation id="5523812257194833591">Session publique à laquelle le système se connecte automatiquement après l'expiration du délai d'inactivité de l'utilisateur.
 
       Si cette règle est définie, le système se connecte automatiquement à la session spécifiée après expiration du délai d'inactivité. La session publique doit être configurée au préalable (voir |DeviceLocalAccounts|).
@@ -2565,6 +2582,11 @@ au maximum si un utilisateur se sert de l'appareil.
       Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOrigins et de SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement.
       Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
       </translation>
+<translation id="7902255855035461275">Les modèles de cette liste sont rapprochés de la source de sécurité
+      de l'URL à l'origine de la demande. En cas de correspondance, l'accès
+      aux appareils d'enregistrement vidéo est autorisé sans confirmation requise.
+
+      REMARQUE : Avant la version 45, cette règle n'était compatible qu'avec le mode Kiosque.</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
 <translation id="7915236031252389808">Vous pouvez indiquer ici une URL pointant vers un fichier .pac de proxy.
 

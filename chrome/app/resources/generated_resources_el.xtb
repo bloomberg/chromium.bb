@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Εμφάνιση Ορθογραφικού και Γραμματικού Ελέγχου</translation>
 <translation id="1593594475886691512">Μορφοποίηση…</translation>
 <translation id="159359590073980872">Προσωρινή μνήμη εικόνας</translation>
+<translation id="1593926297800505364">Αποθήκευση τρόπου πληρωμής</translation>
 <translation id="1598233202702788831">Οι ενημερώσεις έχουν απενεργοποιηθεί από τον διαχειριστή σας.</translation>
 <translation id="1600857548979126453">Πρόσβαση στο σύστημα υποστήριξης εντοπισμού σφαλμάτων σελίδων</translation>
 <translation id="1601560923496285236">Εφαρμογή</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Δεν είναι δυνατή η σύνδεση της συσκευής στον τομέα. Βεβαιωθείτε ότι δεν έχετε υπερβεί τον αριθμό των συσκευών που μπορείτε να προσθέσετε.</translation>
 <translation id="1744108098763830590">σελίδα παρασκηνίου</translation>
 <translation id="1745520510852184940">Να γίνεται πάντα</translation>
+<translation id="1746417874336251387">Προσφέρετε νέες λειτουργίες που χρησιμοποιούν τη σύνδεση του τηλεφώνου σας με το Chromebook</translation>
 <translation id="174937106936716857">Συνολικός αριθμός αρχείων</translation>
 <translation id="175196451752279553">Ε&amp;παναφορά καρτέλας που έχει κλείσει</translation>
 <translation id="1753905327828125965">Πιο Δημοφιλή</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Όχι πριν από</translation>
 <translation id="1933809209549026293">Συνδέστε ένα ποντίκι ή ένα πληκτρολόγιο. Εάν χρησιμοποιείτε συσκευή Bluetooth, βεβαιωθείτε ότι είναι έτοιμη για σύζευξη.</translation>
 <translation id="1936157145127842922">Εμφάνιση στο φάκελο</translation>
+<translation id="1938351510777341717">Εξωτερικό πλήκτρο Command</translation>
 <translation id="1940546824932169984">Συνδεδεμένες συσκευές</translation>
 <translation id="1942765061641586207">Ανάλυση εικόνας</translation>
+<translation id="1943097386230153518">Εγκατάσταση νέας υπηρεσίας</translation>
 <translation id="1944921356641260203">Βρέθηκε ενημέρωση</translation>
 <translation id="1951615167417147110">Κύλιση προς τα επάνω κατά μία σελίδα</translation>
 <translation id="1954813140452229842">Σφάλμα κατά την προσάρτηση του συστήματος κοινοποίησης. Ελέγξτε τα διαπιστευτήριά σας και προσπαθήστε ξανά.</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="265390580714150011">Τιμή πεδίου</translation>
 <translation id="2654166010170466751">Να επιτρέπεται σε ιστοτόπους η εγκατάσταση δεικτών χειρισμού για πληρωμές</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Οι λειτουργίες διαφέρουν ανά συσκευή</translation>
 <translation id="2660779039299703961">Συμβάν</translation>
 <translation id="266079277508604648">Δεν είναι δυνατή η σύνδεση του εκτυπωτή. Βεβαιωθείτε ότι ο εκτυπωτής είναι ενεργοποιημένος και ότι είναι συνδεδεμένος στο Chromebook μέσω Wi-Fi ή USB.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">Εισαγωγή PIN</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Εφαρμογές </translation>
+<translation id="2806891468525657116">Η συντόμευση υπάρχει ήδη</translation>
 <translation id="2807517655263062534">Τα αρχεία που κατεβάζετε εμφανίζονται εδώ</translation>
 <translation id="2809586584051668049">και ακόμη <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Δημιουργήθηκε νέο παράθυρο σε υπάρχουσα περίοδο σύνδεσης του προγράμματος περιήγησης.</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">Είστε συνδεδεμένοι!</translation>
 <translation id="3429275422858276529">Προσθέστε σελιδοδείκτη σε αυτήν τη σελίδα, για να την εντοπίσετε εύκολα αργότερα</translation>
 <translation id="3429599832623003132">$1 στοιχεία</translation>
+<translation id="3430342160185525240">Επιτρέπει στον Βοηθό να εμφανίζει ειδοποιήσεις.</translation>
 <translation id="3432227430032737297">Κατάργηση όλων όσων εμφανίζονται</translation>
 <translation id="3432757130254800023">Αποστολή ήχου και βίντεο σε οθόνες στο τοπικό δίκτυο</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1964,6 +1971,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> στον Πίνακα ελέγχου.
 
    Θέλετε να γίνει εκκίνηση του <ph name="CONTROL_PANEL_APPLET_NAME" />;</translation>
+<translation id="394183848452296464">Δεν είναι δυνατή η δημιουργία συντόμευσης</translation>
 <translation id="3943582379552582368">&amp;Πίσω</translation>
 <translation id="3943857333388298514">Επικόλληση</translation>
 <translation id="3948116654032448504">&amp;Αναζήτηση <ph name="SEARCH_ENGINE" /> για εικόνα</translation>
@@ -2271,6 +2279,7 @@
 <translation id="4481530544597605423">Συσκευές στις οποίες διακόπηκε η σύζευξη</translation>
 <translation id="4482194545587547824">Η Google μπορεί να χρησιμοποιεί το ιστορικό περιήγησής σας για να εξατομικεύει την Αναζήτηση και άλλες υπηρεσίες Google</translation>
 <translation id="4495419450179050807">Να μην γίνεται εμφάνιση σε αυτήν τη σελίδα</translation>
+<translation id="4499718683476608392">Ενεργοποίηση Αυτόματης συμπλήρωσης στοιχείων πιστωτικής κάρτας για τη συμπλήρωση φορμών με ένα μόνο κλικ</translation>
 <translation id="4500114933761911433">Η προσθήκη <ph name="PLUGIN_NAME" /> παρουσίασε σφάλμα</translation>
 <translation id="450099669180426158">Εικονίδιο θαυμαστικού</translation>
 <translation id="4501530680793980440">Επιβεβαίωση κατάργησης</translation>
@@ -3115,6 +3124,7 @@
 <translation id="5752453871435543420">Αντίγραφο ασφαλείας στο cloud για το Chrome OS</translation>
 <translation id="5756163054456765343">Κέντρο βοήθειας</translation>
 <translation id="5759728514498647443">Είναι δυνατή η ανάγνωση των εγγράφων που στέλνετε για εκτύπωση μέσω <ph name="APP_NAME" /> με την εφαρμογή <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Ρυθμίσεις πιστωτικής κάρτας</translation>
 <translation id="5763751966069581670">Δεν βρέθηκαν συσκευές USB</translation>
 <translation id="5764483294734785780">Αποθή&amp;κευση ήχου ως...</translation>
 <translation id="57646104491463491">Ημερομηνία τροποποίησης</translation>
@@ -3186,6 +3196,7 @@
 <translation id="5855773610748894548">Δυστυχώς, παρουσιάστηκε σφάλμα στην ασφαλή λειτουργική μονάδα.</translation>
 <translation id="5856721540245522153">Ενεργοποίηση λειτουργιών εντοπισμού σφαλμάτων</translation>
 <translation id="5857090052475505287">Νέος φάκελος</translation>
+<translation id="585979798156957858">Εξωτερικά μεταδεδομένα</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5860209693144823476">Καρτέλα 3</translation>
 <translation id="5860491529813859533">Ενεργοποίηση</translation>
@@ -3495,6 +3506,7 @@
 <translation id="6327785803543103246">Αυτόματη ανακάλυψη διακομιστή μεσολάβησης ιστού</translation>
 <translation id="6333064448949140209">Το αρχείο θα σταλεί στην Google για εντοπισμό σφαλμάτων</translation>
 <translation id="6333834492048057036">Γραμμή διευθύνσεων εστίασης για αναζήτηση</translation>
+<translation id="6336451774241870485">Νέα καρτέλα ιδιωτικής περιήγησης</translation>
 <translation id="6339668969738228384">Δημιουργία νέου προφίλ για τη διεύθυνση <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Δεν ήταν δυνατή η σύνδεση με τον διακομιστή. Ελέγξτε τη σύνδεση δικτύου και δοκιμάστε ξανά. Εάν το πρόβλημα παραμένει, επανεκκινήστε το Chromebook.</translation>
 <translation id="6340071272923955280">Πρωτόκολλο εκτύπωσης στο διαδίκτυο (IPPS)</translation>
@@ -3676,6 +3688,7 @@
 <translation id="6606070663386660533">Καρτέλα 8</translation>
 <translation id="6607272825297743757">Πληροφορίες αρχείου</translation>
 <translation id="6607831829715835317">Περισσότερα εργαλεία</translation>
+<translation id="6610147964972079463">Κλείσιμο ιδιωτικών καρτελών</translation>
 <translation id="6612358246767739896">Προστατευμένο περιεχόμενο</translation>
 <translation id="6613452264606394692">Προσθέστε σελιδοδείκτη σε αυτήν τη σελίδα για να επιστρέψετε εδώ γρήγορα</translation>
 <translation id="6614893213975402384">Εγκατάσταση ενημερώσεων και εφαρμογών. Εάν συνεχίσετε, αποδέχεστε ότι η συσκευή ενδέχεται επίσης να κατεβάζει και να εγκαθιστά αυτόματα ενημερώσεις και εφαρμογές από την Google, την εταιρεία κινητής τηλεφωνίας και τον κατασκευαστή της συσκευής, πιθανόν με τη χρήση δεδομένων κινητής τηλεφωνίας. Ορισμένες από αυτές τις εφαρμογές μπορεί να προσφέρουν αγορές εντός εφαρμογής. Μπορείτε να καταργήσετε αυτές τις εφαρμογές ανά πάσα στιγμή. <ph name="BEGIN_LINK1" />Μάθετε περισσότερα<ph name="END_LINK1" /></translation>
@@ -3746,6 +3759,7 @@
 <translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="6718273304615422081">Συμπίεση…</translation>
 <translation id="671928215901716392">Κλείδωμα οθόνης</translation>
+<translation id="6720847671508630642">Μοιραστείτε αυτόματα τις καλύτερες λειτουργίες του Android με το Chromebook. Συνδέστε το τηλέφωνό σας, για να μπορείτε να στέλνετε μηνύματα κειμένου από τον υπολογιστή σας, να μοιράζεστε τη σύνδεση του τηλεφώνου σας στο διαδίκτυο και να ξεκλειδώνετε την οθόνη του Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Προβολή της κατασκευής και του μοντέλου του Κλειδιού ασφαλείας</translation>
 <translation id="6721972322305477112">&amp;Αρχείο</translation>
 <translation id="672213144943476270">Ξεκλειδώστε το προφίλ σας προτού ξεκινήσετε την περιήγηση ως επισκέπτης.</translation>
@@ -3892,6 +3906,7 @@
 <translation id="6970856801391541997">Εκτύπωση συγκεκριμένων σελίδων</translation>
 <translation id="6972180789171089114">Ήχος/Βίντεο</translation>
 <translation id="6973630695168034713">Φάκελοι</translation>
+<translation id="6974609594866392343">Λειτουργία επίδειξης εκτός σύνδεσης</translation>
 <translation id="6976108581241006975">Κονσόλα JavaScript</translation>
 <translation id="6977381486153291903">Έκδοση υλικολογισμικού</translation>
 <translation id="6978121630131642226">Μηχανές αναζήτησης</translation>
@@ -4486,6 +4501,7 @@
 <translation id="7857949311770343000">Είναι αυτή η σελίδα νέας καρτέλας που περιμένατε να δείτε;</translation>
 <translation id="786073089922909430">Υπηρεσία: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Λήψεις</translation>
+<translation id="7864662577698025113">Προσθήκη νέας υπηρεσίας</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookie}}</translation>
 <translation id="786957569166715433">Έγινε σύζευξη της συσκευής <ph name="DEVICE_NAME" /></translation>
 <translation id="7870730066603611552">Έλεγχος επιλογών συγχρονισμού μετά τη ρύθμιση</translation>
@@ -5000,6 +5016,7 @@
 <translation id="8666584013686199826">Να γίνεται ερώτηση όταν κάποιος ιστότοπος θέλει να αποκτήσει πρόσβαση σε συσκευές USB</translation>
 <translation id="8667328578593601900">Το <ph name="FULLSCREEN_ORIGIN" /> είναι τώρα πλήρης οθόνη και έχει απενεργοποιήσει τον δείκτη του ποντικιού σας.</translation>
 <translation id="8669284339312441707">Θερμότερο</translation>
+<translation id="8669919703154928649">Επιτρέψτε στον Βοηθό να εμφανίζει ειδοποιήσεις</translation>
 <translation id="8669949407341943408">Μετακίνηση…</translation>
 <translation id="8671210955687109937">Δυνατότητα σχολιασμού</translation>
 <translation id="8673026256276578048">Αναζήτηση στον Ιστό...</translation>
@@ -5385,6 +5402,7 @@
 <translation id="964286338916298286">Ο διαχειριστής τεχνολογιών πληροφορικής της συσκευής σας απενεργοποίησε τα Καλούδια Chrome για τη συσκευή σας.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Εφαρμογή}other{Εφαρμογές}}</translation>
 <translation id="967007123645306417">Με αυτήν την ενέργεια, θα αποσυνδεθείτε από όλους τους Λογαριασμούς σας Google. Οι αλλαγές στους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης και σε άλλες ρυθμίσεις δεν θα συγχρονίζονται πλέον με το Λογαριασμό σας Google. Ωστόσο, τα υπάρχοντα δεδομένα σας θα παραμείνουν αποθηκευμένα στον Λογαριασμό σας Google και η διαχείρισή τους μπορεί να πραγματοποιείται στον <ph name="BEGIN_LINK" />Πίνακα ελέγχου Google<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Αποθηκευμένα δεδομένα</translation>
 <translation id="968000525894980488">Ενεργοποίηση των Υπηρεσιών Google Play.</translation>
 <translation id="968174221497644223">Προσωρινή μνήμη εφαρμογής</translation>
 <translation id="969096075394517431">Αλλαγή γλωσσών</translation>

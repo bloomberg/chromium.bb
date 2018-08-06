@@ -922,7 +922,7 @@
 <translation id="2367199180085172140">File Share जोड़ें</translation>
 <translation id="2367972762794486313">ऐप्स  दिखाएं</translation>
 <translation id="2369536625682139252">कुकी को छोड़कर, <ph name="SITE" /> का स्टोर किया हुआ सारा डेटा मिटा दिया जाएगा.</translation>
-<translation id="237058345584060620">अपनी चाबी को इस डिवाइस से जोड़ें ताकि आप अपने खाते में साइन इन करने के लिए इसका इस्तेमाल कर सकें</translation>
+<translation id="237058345584060620">अपनी 'सुरक्षा चाबी' को इस डिवाइस से जोड़ें ताकि आप अपने खाते में साइन इन करने के लिए इसका इस्तेमाल कर सकें</translation>
 <translation id="2371076942591664043">&amp;पू्र्ण होने पर खोलें</translation>
 <translation id="2376559921867170420">आपका Chromebook सेट अप हो जाने पर, किसी भी समय अपनी Assistant से मदद पाने के लिए Assistant बटन दबाएं या "OK Google" बोलें.</translation>
 <translation id="2377319039870049694">'सूची की तरह देखें' पर स्विच करें</translation>
@@ -1019,7 +1019,7 @@
 <translation id="2520644704042891903">उपलब्ध सॉकेट की प्रतीक्षा की जा रही है...</translation>
 <translation id="252219247728877310">घटक अपडेट नहीं किया गया</translation>
 <translation id="2522791476825452208">बहुत पास है</translation>
-<translation id="2523184218357549926">आपके जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है</translation>
+<translation id="2523184218357549926">आप जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है</translation>
 <translation id="2525250408503682495">Kryptonite! कियोस्क ऐप्स  का cryptohome माउंट नहीं किया जा सका.</translation>
 <translation id="2526277209479171883">इंस्टॉल करें और जारी रखें</translation>
 <translation id="2526590354069164005">डेस्कटॉप</translation>
@@ -1095,7 +1095,7 @@
 <translation id="2633199387167390344"><ph name="NAME" /> डिस्क मेमोरी के <ph name="USAGE" /> एमबी का उपयोग कर रहा है.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" निकालें?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> स्थापना पूर्ण नहीं कर सका, लेकिन इसकी डिस्क चित्र से चलना जारी रहेगा.</translation>
-<translation id="2633326789677284179">अपनी चाबी के पीछे प्रिंट किया हुआ नाम देखें</translation>
+<translation id="2633326789677284179">अपनी 'सुरक्षा चाबी' के पीछे प्रिंट किया हुआ नाम देखें</translation>
 <translation id="2635276683026132559">हस्ताक्षर</translation>
 <translation id="2636625531157955190">Chrome, चित्र तक नहीं पहुंच पा रहा.</translation>
 <translation id="2638087589890736295">सिंक शुरू करने के लिए पासफ़्रेज़ की आवश्यकता होती है</translation>
@@ -1412,7 +1412,7 @@
 <translation id="3090819949319990166">बाहरी crx फ़ाइल की <ph name="TEMP_CRX_FILE" /> में कॉपी नहीं बनाई जा सकती.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" युग्मित किया गया</translation>
 <translation id="3101709781009526431">दिनांक और समय</translation>
-<translation id="3104900172193317662">अपनी सुरक्षा चाबी का इस्तेमाल करने दें</translation>
+<translation id="3104900172193317662">अपनी 'सुरक्षा चाबी' का इस्तेमाल करने दें</translation>
 <translation id="310671807099593501">साइट ब्लूटूथ का इस्तेमाल कर रही है</translation>
 <translation id="3115128645424181617">आपका फ़ोन नहीं मिल पा रहा है. पक्का करें कि वह पहुंच में है और ब्लूटूथ चालू है.</translation>
 <translation id="3115147772012638511">संचय की प्रतीक्षा कर रहा है...</translation>
@@ -3241,7 +3241,7 @@
 <translation id="5924047253200400718">सहायता प्राप्त करें<ph name="SCANNING_STATUS" /></translation>
 <translation id="5924527146239595929">नई फ़ोटो लें या मौजूदा फ़ोटो या आइकॉन चुनें.
     <ph name="LINE_BREAK" />
-    यह तस्वीर Chromebook साइन इन स्क्रीन और लॉक स्क्रीन पर दिखाई देगी.</translation>
+    यह तस्वीर Chromebook के साइन इन स्क्रीन और लॉक स्क्रीन पर दिखाई देगी.</translation>
 <translation id="5925147183566400388">प्रमाणन अभ्यास कथन पॉइंटर</translation>
 <translation id="592880897588170157">PDF फ़ाइलों को Chrome में अपने आप खोलने के बजाय उन्हें डाउनलोड करें</translation>
 <translation id="5931146425219109062">आप जिन वेबसाइट पर जाते हैं, उन पर मौजूद अपना सभी डेटा पढ़ें और बदलें</translation>
@@ -3564,7 +3564,7 @@
 <translation id="642282551015776456">यह नाम कि‍सी फ़ाइल या फ़ोल्‍डर के लि‍ए उपयोग नहीं कि‍या जा सकता</translation>
 <translation id="642469772702851743">इस डिवाइस (क्रमांक: <ph name="SERIAL_NUMBER" />) को मालिक ने लॉक कर दिया था.</translation>
 <translation id="6426200009596957090">ChromeVox सेटिंग खोलें</translation>
-<translation id="6427415464407526111">अपनी सुरक्षा चाबी चुनें</translation>
+<translation id="6427415464407526111">अपनी 'सुरक्षा चाबी' चुनें</translation>
 <translation id="6429384232893414837">अपडेट में गड़बड़ी</translation>
 <translation id="6430814529589430811">Base64 में एन्कोड किया गया ASCII, सिर्फ़ एक प्रमाणपत्र</translation>
 <translation id="6431217872648827691">आपके Google पासवर्ड के द्वारा 
@@ -4859,7 +4859,7 @@
 <translation id="8435395510592618362"><ph name="APP_NAME" /> के ज़रिए अपनी पहचान की पुष्टि करें</translation>
 <translation id="843760761634048214">क्रेडिट कार्ड सहेजें</translation>
 <translation id="8438328416656800239">किसी स्मार्ट ब्राउज़र पर जाएं</translation>
-<translation id="8438566539970814960">खोजों और ब्राउज़िेंग को बेहतर बनाएं</translation>
+<translation id="8438566539970814960">खोजों और ब्राउज़िंग को बेहतर बनाएं</translation>
 <translation id="8439506636278576865">इस भाषा में पृष्ठों का अनुवाद करने का ऑफ़र दें</translation>
 <translation id="8440630305826533614">Linux ऐप्लिकेशन</translation>
 <translation id="8446884382197647889">अधिक जानें</translation>
@@ -5216,7 +5216,7 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - क्रैश हो गया है</translation>
 <translation id="8983677657449185470">सुरक्षित ब्राउज़िंग को बेहतर बनाने में सहायता करें</translation>
 <translation id="8984654317541110628">फ़ाइल शेयर यूआरएल</translation>
-<translation id="8984872292925913496">अपनी चाबी के पीछे दिया गया छह अंकों वाला पिन देखें</translation>
+<translation id="8984872292925913496">अपनी 'सुरक्षा चाबी' के पीछे दिया गया छह अंकों वाला पिन देखें</translation>
 <translation id="8986362086234534611">भूल जाएं</translation>
 <translation id="8986494364107987395">'इस्तेमाल के आंकड़े' और 'खराबी रिपोर्ट' Google को अपने आप भेजे जाने की अनुमति दें</translation>
 <translation id="8987927404178983737">माह</translation>

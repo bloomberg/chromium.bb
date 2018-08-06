@@ -23,6 +23,7 @@
 <translation id="3605252743693911722">Logga in i Chromium om du vill få dina bokmärken, lösenord med mera på alla dina enheter.</translation>
 <translation id="3805899903892079518">Chromium har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Sekretess &gt; Foton.</translation>
 <translation id="4024541897090868497">Logga in i Chromium om du vill få tillgång till flikarna på alla enheter.</translation>
+<translation id="4157467675761413638">Tips för Chromium. Tryck länge på Visa flikar i verktygsfältet så visas fler flikalternativ. Du hittar verktygsfältet längst ned eller högst upp på skärmen.</translation>
 <translation id="4241912885070669028">Du håller på att logga ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Åtgärden raderar din data i Chromium från den här enheten, men den finns kvar på Google-kontot.</translation>
 <translation id="4272892696084633551">Bidra till att förbättra Chromiums funktioner och prestanda</translation>
 <translation id="4555020257205549924">När den här funktionen har aktiverats visas alternativet i Chromium att översätta sidor som är skrivna på andra språk med hjälp av Google Översätt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
@@ -45,6 +46,7 @@
 <translation id="7357211569052832586">Den data som markerades har tagits bort från Chromium och från synkroniserade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på history.google.com, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
 <translation id="7400689562045506105">Använd Chromium överallt</translation>
 <translation id="7674213385180944843">Öppna Inställningar &gt; Sekretess &gt; Kamera &gt; Chromium och aktivera kameran.</translation>
+<translation id="7746854981345936341">Tips för Chromium. Vissa knappar finns nu längst ned på skärmen, till exempel bakåtknappen, framåtknappen och Sök.</translation>
 <translation id="786327964234957808">Du håller på att byta synkroniseringskonto från <ph name="USER_EMAIL1" /> till <ph name="USER_EMAIL2" />. Befintlig data i Chromium hanteras av <ph name="DOMAIN" />. Åtgärden raderar din data från den här enheten men den finns kvar på <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Tips! <ph name="BEGIN_LINK" />Flytta Chromium till Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Ange din plats och få en bättre upplevelse av Google när du använder Chromium.</translation>

@@ -156,6 +156,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2462626033734746142">Pangkat ng radio button</translation>
 <translation id="2471138580042810658">Heading 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisk}one{# asterisk}other{# na asterisk}}</translation>
+<translation id="249330843868392562">Buksan ang mga setting ng text-to-speech</translation>
 <translation id="2523609930580546572">Tutorial sa ChromeVox</translation>
 <translation id="2525706221823668172">Mga keyboard shortcut sa Chromebook</translation>
 <translation id="2549392850788122959">Na-reset ang <ph name="KEY" />.</translation>
@@ -753,6 +754,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="7241683698754534149">Magbukas ng mahabang paglalarawan sa isang bagong tab</translation>
 <translation id="7248671827512403053">Application</translation>
 <translation id="725969808843520477">Susunod na radio button</translation>
+<translation id="7261612856573623172">Text-to-Speech voice ng system</translation>
 <translation id="7269119382257320590">Walang bantas</translation>
 <translation id="7273174640290488576">Blangko</translation>
 <translation id="7274770952766771364">Sanggunian sa tala</translation>

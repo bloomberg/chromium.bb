@@ -251,6 +251,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8179874765710681175">Installieren Sie Chrome auf Ihrem Smartphone. Wir senden Ihnen eine SMS.</translation>
 <translation id="8183957050892517584">Ihre personenbezogenen Daten werden von Chrome sicher gespeichert. Dadurch brauchen Sie sie nicht noch einmal einzugeben.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS wird jetzt neu gestartet}=1{Chrome OS wird in 1 Sekunde neu gestartet}other{Chrome OS wird in # Sekunden neu gestartet}}</translation>
+<translation id="825412236959742607">Diese Seite benötigt zu viel Arbeitsspeicher. Darum hat Chrome einige Inhalte entfernt.</translation>
 <translation id="8255190535488645436">Google Chrome verwendet Ihre Kamera und Ihr Mikrofon.</translation>
 <translation id="8286862437124483331">Google Chrome möchte Passwörter anzeigen. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="8290100596633877290">Google Chrome ist abgestürzt. Jetzt neu starten?</translation>

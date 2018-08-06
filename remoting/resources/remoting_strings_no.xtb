@@ -136,6 +136,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="405887016757208221">Den eksterne datamaskinen kunne ikke initialisere økten. Hvis problemet vedvarer, kan du prøve å konfigurere verten på nytt.</translation>
 <translation id="4068946408131579958">Alle tilkoblinger</translation>
 <translation id="409800995205263688">MERK: I henhold til lokale retningslinjer er tilkobling tillatt bare mellom datamaskiner i nettverket ditt.</translation>
+<translation id="4126409073460786861">Når konfigureringen er fullført, last inn denne siden på nytt, og du vil kunne bruke datamaskinen ved å velge enhet og skrive inn PIN-koden.</translation>
 <translation id="4145029455188493639">Logget på som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Det mangler noen nødvendige komponenter. Kontrollér at du kjører den nyeste versjonen av programvaren, og prøv på nytt.</translation>
 <translation id="4156740505453712750">For å beskytte tilgangen til denne datamaskinen må du velge en PIN-kode bestående av <ph name="BOLD_START" />minst seks tall<ph name="BOLD_END" />. Denne PIN-koden kreves når man kobler til fra en annen posisjon.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Til</translation>
 <translation id="7019153418965365059">Ukjent vertsfeil: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Fjernhjelp</translation>
+<translation id="7026930240735156896">Følg instrukjonene for å konfigurere datamaskinen din for ekstern tilgang.</translation>
 <translation id="7038683108611689168">Hjelp oss med å gjøre Chromoting bedre ved å samle inn bruksstatistikk og programstopprapporter.</translation>
 <translation id="7067321367069083429">Skjermen fungerer som en berøringsskjerm</translation>
 <translation id="7116737094673640201">Velkommen til Chrome Eksternt skrivebord</translation>

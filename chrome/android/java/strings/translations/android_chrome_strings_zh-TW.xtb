@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">正在新增「<ph name="WEBAPK_NAME" />」...</translation>
 <translation id="1041308826830691739">來自網站</translation>
 <translation id="1049743911850919806">無痕模式</translation>
+<translation id="1054301162707478098">你已啟用私密模式。</translation>
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1068672505746868501">一律不翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">更多語言</translation>
 <translation id="124678866338384709">關閉目前的分頁</translation>
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">你關閉所有私密分頁後，你在其中瀏覽過的網頁都不會保留在瀏覽器記錄、Cookie 儲存庫或搜尋記錄中，但系統仍會保留你下載的所有檔案或是你建立的所有書籤。
+
+不過，這並不代表你完全沒有瀏覽記錄。使用私密模式時，你的雇主、網際網路服務供應商和你所造訪的網站仍然可以追蹤你的瀏覽記錄。</translation>
 <translation id="127138278192656016">使用同步處理功能和所有服務</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">輕觸即可展開</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">全螢幕網站控制</translation>
 <translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
 <translation id="2045104531052923016">其他應用程式佔 <ph name="GIGABYTES" /> GB</translation>
+<translation id="2055670718290744343">搜尋加速器</translation>
 <translation id="2063713494490388661">輕觸搜尋</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">同步處理和 Google 服務</translation>
 <translation id="2259659629660284697">匯出密碼…</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
+<translation id="2280910239864711607">在私密模式下開啟新分頁</translation>
 <translation id="2286841657746966508">帳單地址</translation>
 <translation id="230115972905494466">找不到相容的裝置</translation>
 <translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">允許特定網站執行 JavaScript。</translation>
 <translation id="2625189173221582860">已複製密碼</translation>
 <translation id="2631006050119455616">已節省</translation>
+<translation id="2633278372998075009">私密分頁</translation>
 <translation id="2647434099613338025">新增語言</translation>
 <translation id="2650751991977523696">要再次下載檔案嗎？</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3232754137068452469">網路應用程式</translation>
+<translation id="3234355010754616171">新私密分頁</translation>
 <translation id="3236059992281584593">還剩 1 分鐘</translation>
 <translation id="3244271242291266297">月</translation>
 <translation id="3254409185687681395">把此頁加入書籤</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
 <translation id="3365671512111106261">開啟 Data Saver 時無法使用這項設定</translation>
 <translation id="3367813778245106622">如要開始同步處理，請重新登入</translation>
+<translation id="3377025655491224618">私密分頁</translation>
 <translation id="3384347053049321195">分享圖片</translation>
 <translation id="3386292677130313581">允許網站存取您的位置資訊前，必須先詢問您 (建議)</translation>
 <translation id="3387650086002190359">檔案系統發生錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
@@ -385,6 +394,7 @@
 <translation id="4209895695669353772">如要取得個人化的 Google 推薦內容，請開啟同步處理功能</translation>
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
 <translation id="4242533952199664413">開啟設定</translation>
+<translation id="4243710787042215766">在私密分頁中開啟</translation>
 <translation id="424864128008805179">要登出 Chrome 嗎？</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL" /></translation>
@@ -465,6 +475,7 @@
 <translation id="4878404682131129617">無法透過 Proxy 伺服器建立通道</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="488187801263602086">重新命名檔案</translation>
+<translation id="4883379392681899581">退出私密模式</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
 <translation id="4910889077668685004">付款應用程式</translation>
 <translation id="4913161338056004800">重設統計資料</translation>
@@ -506,6 +517,7 @@
 <translation id="5224771365102442243">含有影片</translation>
 <translation id="5233638681132016545">新增分頁</translation>
 <translation id="5240817131241497236">Chrome 的同步處理、個人化功能和其他 Google 服務控制設定已變更。這可能影響你目前的設定。</translation>
+<translation id="5264003212305142034">你隨時可以調整<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />。Google 可能會根據你所造訪網站的內容、瀏覽器互動行為和瀏覽活動，提供個人化的 Chrome 體驗和 Google 服務體驗，例如翻譯、搜尋和廣告。</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
 <translation id="528192093759286357">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="5284584623296338184">您更改過的書籤、歷史記錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
@@ -591,6 +603,7 @@
 <translation id="583281660410589416">未知</translation>
 <translation id="5833397272224757657">使用你所造訪網站的內容、瀏覽器活動和瀏覽器互動行為，提供個人化的使用體驗</translation>
 <translation id="5833984609253377421">分享連結</translation>
+<translation id="584427517463557805">已選取的私密分頁</translation>
 <translation id="5854790677617711513">超過 30 天前</translation>
 <translation id="5858741533101922242">Chrome 無法開啟藍牙轉接器</translation>
 <translation id="5860033963881614850">關閉</translation>
@@ -620,6 +633,7 @@
 <translation id="6075798973483050474">編輯首頁</translation>
 <translation id="60923314841986378">還剩 <ph name="HOURS" /> 小時</translation>
 <translation id="60924377787140961">系統即將顯示更多文章供你閱覽，陪你度過美好的午後時光！</translation>
+<translation id="6099151465289169210">已切換成私密分頁</translation>
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6111020039983847643">數據用量</translation>
 <translation id="6112702117600201073">重新整理網頁</translation>
@@ -649,6 +663,7 @@
 <translation id="6320088164292336938">震動</translation>
 <translation id="6324034347079777476">Android 系統同步處理功能已停用</translation>
 <translation id="6333140779060797560">透過 <ph name="APPLICATION" /> 分享</translation>
+<translation id="6336451774241870485">新私密分頁</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="6341580099087024258">詢問檔案儲存位置</translation>
 <translation id="6343192674172527289">找不到下載內容</translation>
@@ -686,6 +701,7 @@
 <translation id="6593061639179217415">電腦版網站</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6610147964972079463">關閉私密分頁</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6627583120233659107">編輯資料夾</translation>
 <translation id="6643016212128521049">清除</translation>
@@ -789,6 +805,7 @@
 <translation id="7453467225369441013">你會從大多數網站登出，但不會因此登出 Google 帳戶。</translation>
 <translation id="7454641608352164238">空間不足</translation>
 <translation id="7455923816558154057">輕觸即可查看</translation>
+<translation id="7465104139234185284">關閉所有私密分頁</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7475192538862203634">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
 <translation id="7475688122056506577">找不到 SD 卡。部分檔案可能會遺失。</translation>
@@ -884,6 +901,7 @@
 <translation id="8220488350232498290">下載內容佔 <ph name="GIGABYTES" /> GB</translation>
 <translation id="8249310407154411074">移至頂端</translation>
 <translation id="8250920743982581267">文件</translation>
+<translation id="825412236959742607">這個網頁使用了過多記憶體，因此 Chrome 移除了部分內容。</translation>
 <translation id="8260126382462817229">請嘗試重新登入</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8266862848225348053">下載位置</translation>
@@ -979,6 +997,7 @@
 <translation id="9070377983101773829">開始語音搜尋</translation>
 <translation id="9071742570345586758">如要查看虛擬實境內容，請安裝 Google VR 服務</translation>
 <translation id="9074336505530349563">如要取得個人化的 Google 推薦內容，請登入並開啟同步處理功能</translation>
+<translation id="9080642952018487277">進入私密模式</translation>
 <translation id="9086455579313502267">無法存取網路</translation>
 <translation id="9099018167121903954">下載內容佔 <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">詢問是否以簡易模式顯示支援這項功能的文章</translation>

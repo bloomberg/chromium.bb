@@ -255,6 +255,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8179874765710681175">Instalējiet pārlūkprogrammu Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru.</translation>
 <translation id="8183957050892517584">Chrome droši saglabās jūsu privāto informāciju, lai tā vairs nebūtu atkārtoti jāievada.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Operētājsistēma Chrome OS tiks restartēta tūlīt}=1{Operētājsistēma Chrome OS tiks restartēta pēc 1 sekundes}zero{Operētājsistēma Chrome OS tiks restartēta pēc # sekundēm}one{Operētājsistēma Chrome OS tiks restartēta pēc # sekundes}other{Operētājsistēma Chrome OS tiks restartēta pēc # sekundēm}}</translation>
+<translation id="825412236959742607">Šī lapa izmanto pārāk daudz atmiņas, tādēļ pārlūks Chrome noņēma daļu satura.</translation>
 <translation id="8255190535488645436">Pārlūkā Google Chrome tiek izmantota kamera un mikrofons.</translation>
 <translation id="8286862437124483331">Google Chrome mēģina rādīt paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="8290100596633877290">Eh! Google Chrome ir avarējis. Vai restartēt to tūlīt?</translation>

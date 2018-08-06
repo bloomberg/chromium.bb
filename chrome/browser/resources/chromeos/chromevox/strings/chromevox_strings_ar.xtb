@@ -156,6 +156,7 @@
 <translation id="2462626033734746142">مجموعة أزرار الاختيار</translation>
 <translation id="2471138580042810658">العنوان السادس</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{علامة نجمة واحدة}zero{# asterisks}two{علامتا نجمة (#)}few{# علامات نجمة}many{# علامة نجمة}other{# من علامات النجمة}}</translation>
+<translation id="249330843868392562">فتح إعدادات تحويل النص إلى كلام</translation>
 <translation id="2523609930580546572">‏برنامج ChromeVox التعليمي</translation>
 <translation id="2525706221823668172">‏اختصارات لوحة المفاتيح لـ Chromebook</translation>
 <translation id="2549392850788122959">تمت إعادة تعيين <ph name="KEY" />.</translation>
@@ -753,6 +754,7 @@
 <translation id="7241683698754534149">فتح الوصف المطول في علامة تبويب جديدة</translation>
 <translation id="7248671827512403053">تطبيق</translation>
 <translation id="725969808843520477">زر الاختيار التالي</translation>
+<translation id="7261612856573623172">صوت تحويل النص إلى كلام في النظام</translation>
 <translation id="7269119382257320590">بدون علامات ترقيم</translation>
 <translation id="7273174640290488576">فارغ</translation>
 <translation id="7274770952766771364">ملاحظة مرجعية</translation>

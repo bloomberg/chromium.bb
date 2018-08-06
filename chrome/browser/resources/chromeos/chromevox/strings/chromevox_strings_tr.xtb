@@ -155,6 +155,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2462626033734746142">Radyo düğmesi grubu</translation>
 <translation id="2471138580042810658">Başlık 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{yıldız işareti}other{# yıldız işareti}}</translation>
+<translation id="249330843868392562">Metin okuma ayarlarını aç</translation>
 <translation id="2523609930580546572">ChromeVox Eğiticisi</translation>
 <translation id="2525706221823668172">Chromebook klavye kısayolları</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> sıfırlandı.</translation>
@@ -752,6 +753,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7241683698754534149">Uzun açıklamayı yeni sekmede aç</translation>
 <translation id="7248671827512403053">Uygulama</translation>
 <translation id="725969808843520477">Sonraki radyo düğmesi</translation>
+<translation id="7261612856573623172">Sistem Metin Okuma sesi</translation>
 <translation id="7269119382257320590">Noktalama işareti yok</translation>
 <translation id="7273174640290488576">Boş</translation>
 <translation id="7274770952766771364">Not referansı</translation>

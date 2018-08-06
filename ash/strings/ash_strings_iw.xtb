@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> נוסף</translation>
 <translation id="1056775291175587022">אין רשתות</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">צפייה בהגדרות הנגישות</translation>
 <translation id="1104621072296271835">ביחד, המכשירים שלך יוכלו לעבוד עוד יותר טוב</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
 <translation id="1153356358378277386">מכשירים מותאמים</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />‏ (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">אות חלש</translation>
 <translation id="1293264513303784526">‏מכשיר עם יציאת USB-C (יציאה שמאלית)</translation>
+<translation id="1302880136325416935">‏צפייה בהגדרות Bluetooth‏. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">ימינה</translation>
 <translation id="1351937230027495976">כיווץ התפריט</translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1467432559032391204">שמאלה</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">מפעיל</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{צפייה בהגדרות של הודעות. ההודעות מושבתות באפליקציה אחת}two{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}many{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}other{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}}</translation>
 <translation id="1525508553941733066">סגור</translation>
 <translation id="1537254971476575106">מגדיל למסך מלא</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
 <translation id="1567387640189251553">חוברה מקלדת אחרת מאז שהזנת את הסיסמה בפעם האחרונה. ייתכן שהיא מנסה לתעד את ההקשות שלך.</translation>
+<translation id="1570871743947603115">‏החלפת מצב Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">הסר את המשתמש הזה</translation>
 <translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">מצטערים, עדיין אי אפשר לאמת את הסיסמה שלך. חשוב לדעת: אם שינית לאחרונה את הסיסמה, הסיסמה החדשה תיכנס לתוקף רק אחרי יציאה מהחשבון. צריך להשתמש כאן בסיסמה הישנה.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">לא מזוהה</translation>
 <translation id="1746730358044914197">מנהל המערכת שלך מגדיר את שיטות הקלט.</translation>
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
+<translation id="1761222317188459878">החלפת מצב החיבור לרשת. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">אתרנט: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">‏Assistant (בטעינה...)</translation>
 <translation id="1841545962859478868">ייתכן שמנהל המכשיר עוקב אחרי:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">מכשיר זה מנוהל על ידי <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">לאורך</translation>
 <translation id="2067602449040652523">בהירות מקלדת</translation>
+<translation id="2075212959500165896">יותר מדי ניסיונות. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="2081529251031312395">ל-$1 עדיין תהיה אפשרות להיכנס מאוחר יותר.</translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
 <translation id="2135456203358955318">מגדיל במצב מעוגן</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">החלף סקירת חלון</translation>
 <translation id="2338501278241028356">‏יש להפעיל את Bluetooth כדי לאתר מכשירים קרובים</translation>
 <translation id="2339073806695260576">הקשה על לחצן הסטיילוס במדף מאפשרת לכתוב הערות, לצלם את המסך ולהשתמש בסמן הלייזר או בזכוכית המגדלת.</translation>
+<translation id="2341729377289034582">נעול במצב אנכי</translation>
 <translation id="2352467521400612932">הגדרות סטיילוס</translation>
 <translation id="2354174487190027830">מפעיל את <ph name="NAME" /></translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2365393535144473978">‏כשמפעילים את חבילת הגלישה, מופעלת גם תקשורת Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">החלפת המצב של 'נא לא להפריע'</translation>
 <translation id="2412593942846481727">יש עדכון זמין</translation>
+<translation id="2416346634399901812">יש חיבור אל <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. לפני שתאשר, ודא שמפתח הסיסמה הבא מוצג במכשיר הזה: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">התראות</translation>
 <translation id="2484513351006226581">צריך להקיש על <ph name="KEYBOARD_SHORTCUT" /> כדי להחליף פריסת מקלדת.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">הוסף חיבור</translation>
 <translation id="2961963223658824723">משהו השתבש. אפשר לנסות שוב בעוד כמה שניות.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">‏צפייה במכשירי CAST.</translation>
 <translation id="2996462380875591307">‏הזכוכית המגדלת במצב עגינה הופעלה. כדי לכבות אותה, יש להקיש שוב על Ctrl+Search+D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> היא הפעלה ציבורית המנוהלת על ידי <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">אודיו במונו</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">נתוני נייד</translation>
 <translation id="3151786313568798007">כיוון</translation>
 <translation id="3153444934357957346">אפשר לכלול עד <ph name="MULTI_PROFILE_USER_LIMIT" /> חשבונות בכניסה עם מספר חשבונות.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{מחובר למכשיר אחד}two{מחובר ל-# מכשירים}many{מחובר ל-# מכשירים}other{מחובר ל-# מכשירים}}</translation>
 <translation id="3236488194889173876">אין רשת סלולרית זמינה</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">אורח</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">נעילה</translation>
 <translation id="3798670284305777884">רמקול (פנימי)</translation>
 <translation id="380165613292957338">היי, איך אפשר לעזור?</translation>
+<translation id="383629559565718788">צפייה בהגדרות המקלדת</translation>
 <translation id="3846575436967432996">אין מידע רשת זמין</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3891340733213178823">‏הקש פעמיים על Ctrl+Shift+Q כדי לצאת.</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">אות בינוני</translation>
 <translation id="4200057768455216496">לחצת על מקש הקיצור של זכוכית מגדלת במצב עגינה. להפעיל אותה?</translation>
 <translation id="4217571870635786043">הכתבה</translation>
+<translation id="4261870227682513959">צפייה בהגדרות של הודעות. ההודעות מושבתות</translation>
 <translation id="4274921305979314545">‏חיבור ה-Chromebook אל הטלפון</translation>
 <translation id="4279490309300973883">שיקוף</translation>
+<translation id="4292681942966152062">המערכת מפעילה את <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">זכוכית מגדלת</translation>
@@ -239,6 +253,7 @@
 <translation id="5673434351075758678">מ"<ph name="FROM_LOCALE" />" ל"<ph name="TO_LOCALE" />" אחרי סנכרון ההגדרות.</translation>
 <translation id="574392208103952083">בינוני</translation>
 <translation id="5744083938413354016">הקשה וגרירה</translation>
+<translation id="5750765938512549687">‏Bluetooth כבוי</translation>
 <translation id="5777841717266010279">להפסיק את שיתוף המסך?</translation>
 <translation id="57838592816432529">השתק</translation>
 <translation id="5805697420284793859">מנהל החלונות</translation>
@@ -272,12 +287,14 @@
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6254629735336163724">נעול במצב אופקי</translation>
 <translation id="6259254695169772643">כדי לבחור יש להשתמש בסטיילוס</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: מפעיל...</translation>
 <translation id="6284232397434400372">הרזולוציה השתנתה</translation>
 <translation id="6297287540776456956">בחר אזור באמצעות הסטיילוס</translation>
 <translation id="6310121235600822547">בוצע סיבוב של <ph name="DISPLAY_NAME" /> אל <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">שכבת-על של מקלדת</translation>
+<translation id="6376931439017688372">‏Bluetooth פועל</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">הפעולה הושלמה</translation>
@@ -321,6 +338,7 @@
 <translation id="7066646422045619941">מנהל המערכת השבית את הרשת הזו.</translation>
 <translation id="7067196344162293536">סיבוב אוטומטי</translation>
 <translation id="7076293881109082629">כניסה</translation>
+<translation id="7092922358121866860">צפייה בהגדרות של תאורת לילה</translation>
 <translation id="7098389117866926363">‏מכשיר עם יציאת USB-C (יציאה שמאלית מאחור)</translation>
 <translation id="7131634465328662194">המערכת תוציא אותך מהחשבון באופן אוטומטי.</translation>
 <translation id="7143207342074048698">מתחבר</translation>
@@ -358,6 +376,7 @@
 <translation id="7798302898096527229">‏הקש על Search או על Shift כדי לבטל.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ו-<ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">אות חזק</translation>
+<translation id="7842211907556571265">המערכת מתחברת אל <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">אזהרה: תכונה ניסיונית</translation>
 <translation id="7846634333498149051">מקלדת</translation>
 <translation id="790040513076446191">לשנות הגדרות הקשורות לפרטיות</translation>
@@ -398,18 +417,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: מתחבר מחדש...</translation>
 <translation id="8513108775083588393">סיבוב אוטומטי</translation>
 <translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
+<translation id="8627191004499078455">יש חיבור אל <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">שיעור טעינה נותר - <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">הקראה</translation>
 <translation id="8652175077544655965">סגירת ההגדרות</translation>
+<translation id="8653151467777939995">צפייה בהגדרות של הודעות. ההודעות מופעלות</translation>
+<translation id="8664753092453405566">צפייה ברשימת הרשתות. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">חובר מטען בעל מתח נמוך</translation>
 <translation id="8683506306463609433">מעקב הביצועים פעיל</translation>
 <translation id="8734991477317290293">ייתכן שהיא מנסה לתעד את ההקשות שלך.</translation>
+<translation id="8735953464173050365">צפייה בהגדרות המקלדת. המקלדת שנבחרה היא <ph name="KEYBOARD_NAME" /></translation>
+<translation id="875593634123171288">‏צפייה בהגדרות VPN</translation>
 <translation id="8809737090443522491">יש להזין שם של אפליקציה או מסמך</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">אין תמיכה בשיקוף מסך עם יותר משני מסכים.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">לחצן 'הקודם'</translation>
+<translation id="8843682306134542540">החלפת המצב של נעילת הסיבוב. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">האפליקציה אינה תומכת במסך מפוצל.</translation>
 <translation id="8874184842967597500">לא מחובר</translation>
