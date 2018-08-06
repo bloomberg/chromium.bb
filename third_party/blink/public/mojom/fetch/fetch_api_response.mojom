@@ -12,9 +12,8 @@ import "url/mojom/url.mojom";
 
 // Describes a Response in terms of the concept from the Fetch spec.
 // https://fetch.spec.whatwg.org/#response-class
-// It is currently used by the Cache Storage API, and the plan is to use it also
-// in Service Worker and Background Fetch implementations to replace
-// content::ServiceWorkerResponse.
+// It is currently used by Cache Storage and Service Worker, and the plan is to
+// use it also in Background Fetch to replace content::ServiceWorkerResponse.
 // Note: Be sure to update CacheStorageCache::EstimatedResponseSizeWithoutBlob()
 // when adding or removing members.
 struct FetchAPIResponse {
@@ -25,14 +24,17 @@ struct FetchAPIResponse {
   array<url.mojom.Url> url_list;
 
   // Status code as number, e.g.: 200, 404.
-  int32 status_code;
+  // Zero status code indicates an error happened and the request was not
+  // handled.
+  int32 status_code = 0;
 
   // Status code as text. e.g.: "OK", "Not Found".
   string status_text;
 
   // Corresponds to response types from the Fetch spec:
   // https://fetch.spec.whatwg.org/#concept-response-type
-  network.mojom.FetchResponseType response_type;
+  network.mojom.FetchResponseType response_type =
+    network.mojom.FetchResponseType.kOpaque;
 
   // The response headers. It's case insensitive for header name as key.
   map<string, string> headers;
@@ -40,8 +42,9 @@ struct FetchAPIResponse {
   // Mojo interface to read the response payload.
   SerializedBlob? blob;
 
-  // Error codes for service worker APIs. This enum is used by
-  ServiceWorkerResponseError error;
+  // Error codes for service worker APIs.
+  ServiceWorkerResponseError error =
+    blink.mojom.ServiceWorkerResponseError.kUnknown;
 
   // The time at which the response headers were received.  For cached
   // responses, this time could be "far" in the past.

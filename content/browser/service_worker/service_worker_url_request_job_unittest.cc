@@ -150,12 +150,20 @@ std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
   return std::make_unique<storage::BlobProtocolHandler>(blob_storage_context);
 }
 
-std::unique_ptr<ServiceWorkerHeaderMap> MakeHeaders() {
-  auto headers = std::make_unique<ServiceWorkerHeaderMap>();
-  (*headers)["Pineapple"] = "Pen";
-  (*headers)["Foo"] = "Bar";
-  (*headers)["Set-Cookie"] = "CookieCookieCookie";
+base::flat_map<std::string, std::string> MakeHeaders() {
+  base::flat_map<std::string, std::string> headers;
+  headers["Pineapple"] = "Pen";
+  headers["Foo"] = "Bar";
+  headers["Set-Cookie"] = "CookieCookieCookie";
   return headers;
+}
+
+blink::mojom::FetchAPIResponsePtr MakeOkResponse() {
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->status_code = 200;
+  response->status_text = "OK";
+  response->response_type = network::mojom::FetchResponseType::kDefault;
+  return response;
 }
 
 void SaveStatusCallback(blink::ServiceWorkerStatusCode* out_status,
@@ -483,18 +491,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   }
 
   void Respond() {
-    response_callback_->OnResponse(
-        ServiceWorkerResponse(
-            std::make_unique<std::vector<GURL>>(), 200, "OK",
-            network::mojom::FetchResponseType::kDefault,
-            std::make_unique<ServiceWorkerHeaderMap>(), std::string(), 0,
-            nullptr /* blob */,
-            blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-            false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */,
-            std::make_unique<
-                ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-        base::Time::Now());
+    response_callback_->OnResponse(MakeOkResponse(), base::Time::Now());
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::Time::Now());
@@ -711,18 +708,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     context()->RemoveProviderHost(mock_render_process_id(), kProviderID);
-    response_callback->OnResponse(
-        ServiceWorkerResponse(
-            std::make_unique<std::vector<GURL>>(), 200, "OK",
-            network::mojom::FetchResponseType::kDefault,
-            std::make_unique<ServiceWorkerHeaderMap>(), std::string(), 0,
-            nullptr /* blob */,
-            blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-            false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */,
-            std::make_unique<
-                ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-        base::Time::Now());
+    response_callback->OnResponse(MakeOkResponse(), base::Time::Now());
     std::move(finish_callback)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::Time::Now());
@@ -800,17 +786,16 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
-    response_callback->OnResponse(
-        ServiceWorkerResponse(
-            std::make_unique<std::vector<GURL>>(), 200, "OK",
-            network::mojom::FetchResponseType::kDefault, MakeHeaders(),
-            blob_uuid_, blob_size_, nullptr /* blob */,
-            blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-            false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */,
-            std::make_unique<
-                ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-        base::Time::Now());
+    blink::mojom::FetchAPIResponsePtr response = MakeOkResponse();
+    response->headers = MakeHeaders();
+    response->blob = blink::mojom::SerializedBlob::New();
+    response->blob->uuid = blob_uuid_;
+    response->blob->size = blob_size_;
+    // As |response->blob->blob| must have a non-null value to be passed via
+    // Mojo, we give it a dummy value.
+    auto dummy_request = mojo::MakeRequest(&response->blob->blob);
+
+    response_callback->OnResponse(std::move(response), base::Time::Now());
     std::move(finish_callback)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::Time::Now());
@@ -902,17 +887,10 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     ASSERT_FALSE(stream_handle_.is_null());
+    blink::mojom::FetchAPIResponsePtr response = MakeOkResponse();
+    response->headers = MakeHeaders();
     response_callback->OnResponseStream(
-        ServiceWorkerResponse(
-            std::make_unique<std::vector<GURL>>(), 200, "OK",
-            network::mojom::FetchResponseType::kDefault, MakeHeaders(), "", 0,
-            nullptr /* blob */,
-            blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-            false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */,
-            std::make_unique<
-                ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-        std::move(stream_handle_), base::Time::Now());
+        std::move(response), std::move(stream_handle_), base::Time::Now());
     std::move(finish_callback)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
              base::Time::Now());
@@ -1385,18 +1363,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     finish_callback_ = std::move(finish_callback);
-    response_callback->OnResponse(
-        ServiceWorkerResponse(
-            std::make_unique<std::vector<GURL>>(), 200, "OK",
-            network::mojom::FetchResponseType::kDefault,
-            std::make_unique<ServiceWorkerHeaderMap>(), std::string(), 0,
-            nullptr /* blob */,
-            blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-            false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */,
-            std::make_unique<
-                ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-        base::Time::Now());
+    response_callback->OnResponse(MakeOkResponse(), base::Time::Now());
   }
 
  private:

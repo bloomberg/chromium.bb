@@ -35,6 +35,7 @@
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
 namespace content {
@@ -44,18 +45,11 @@ namespace {
 void OnFetchEventCommon(
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
-  response_callback->OnResponse(
-      ServiceWorkerResponse(
-          std::make_unique<std::vector<GURL>>(), 200, "OK",
-          network::mojom::FetchResponseType::kDefault,
-          std::make_unique<ServiceWorkerHeaderMap>(), std::string(), 0,
-          nullptr /* blob */,
-          blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-          false /* is_in_cache_storage */,
-          std::string() /* cache_storage_cache_name */,
-          std::make_unique<
-              ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-      base::Time::Now());
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->status_code = 200;
+  response->status_text = "OK";
+  response->response_type = network::mojom::FetchResponseType::kDefault;
+  response_callback->OnResponse(std::move(response), base::Time::Now());
   std::move(finish_callback)
       .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
            base::Time::Now());

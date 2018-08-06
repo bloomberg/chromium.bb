@@ -339,37 +339,37 @@ void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
 }
 
 void ServiceWorkerSubresourceLoader::OnResponse(
-    const ServiceWorkerResponse& response,
+    blink::mojom::FetchAPIResponsePtr response,
     base::Time dispatch_event_time) {
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnResponse", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
-  StartResponse(response, nullptr /* body_as_blob */,
+  StartResponse(std::move(response), nullptr /* body_as_blob */,
                 nullptr /* body_as_stream */);
 }
 
 void ServiceWorkerSubresourceLoader::OnResponseBlob(
-    const ServiceWorkerResponse& response,
+    blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::BlobPtr body_as_blob,
     base::Time dispatch_event_time) {
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnResponseBlob", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
-  StartResponse(response, std::move(body_as_blob),
+  StartResponse(std::move(response), std::move(body_as_blob),
                 nullptr /* body_as_stream */);
 }
 
 void ServiceWorkerSubresourceLoader::OnResponseStream(
-    const ServiceWorkerResponse& response,
+    blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     base::Time dispatch_event_time) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
-  StartResponse(response, nullptr /* body_as_blob */,
+  StartResponse(std::move(response), nullptr /* body_as_blob */,
                 std::move(body_as_stream));
 }
 
@@ -425,19 +425,19 @@ void ServiceWorkerSubresourceLoader::OnFallback(
 }
 
 void ServiceWorkerSubresourceLoader::StartResponse(
-    const ServiceWorkerResponse& response,
+    blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::BlobPtr body_as_blob,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
   // A response with status code 0 is Blink telling us to respond with network
   // error.
-  if (response.status_code == 0) {
+  if (response->status_code == 0) {
     CommitCompleted(net::ERR_FAILED);
     return;
   }
 
-  ServiceWorkerLoaderHelpers::SaveResponseInfo(response, &response_head_);
+  ServiceWorkerLoaderHelpers::SaveResponseInfo(*response, &response_head_);
   ServiceWorkerLoaderHelpers::SaveResponseHeaders(
-      response.status_code, response.status_text, response.headers,
+      response->status_code, response->status_text, response->headers,
       &response_head_);
   response_head_.response_start = base::TimeTicks::Now();
   response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();

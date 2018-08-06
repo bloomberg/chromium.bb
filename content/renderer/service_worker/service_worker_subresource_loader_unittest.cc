@@ -121,46 +121,31 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   FakeControllerServiceWorker() = default;
   ~FakeControllerServiceWorker() override = default;
 
-  static ServiceWorkerResponse OkResponse() {
-    return ServiceWorkerResponse(
-        std::make_unique<std::vector<GURL>>(), 200, "OK",
-        network::mojom::FetchResponseType::kDefault,
-        std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-        0 /* blob_size */, nullptr /* blob */,
-        blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-        false /* response_is_in_cache_storage */,
-        std::string() /* response_cache_storage_cache_name */,
-        std::make_unique<
-            ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
+  static blink::mojom::FetchAPIResponsePtr OkResponse() {
+    auto response = blink::mojom::FetchAPIResponse::New();
+    response->status_code = 200;
+    response->status_text = "OK";
+    response->response_type = network::mojom::FetchResponseType::kDefault;
+    return response;
   }
 
-  static ServiceWorkerResponse ErrorResponse() {
-    return ServiceWorkerResponse(
-        std::make_unique<std::vector<GURL>>(), 0 /* status_code */,
-        "" /* status_text */, network::mojom::FetchResponseType::kDefault,
-        std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-        0 /* blob_size */, nullptr /* blob */,
-        blink::mojom::ServiceWorkerResponseError::kPromiseRejected,
-        base::Time(), false /* response_is_in_cache_storage */,
-        std::string() /* response_cache_storage_cache_name */,
-        std::make_unique<
-            ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
+  static blink::mojom::FetchAPIResponsePtr ErrorResponse() {
+    auto response = blink::mojom::FetchAPIResponse::New();
+    response->status_code = 0;
+    response->response_type = network::mojom::FetchResponseType::kDefault;
+    response->error =
+        blink::mojom::ServiceWorkerResponseError::kPromiseRejected;
+    return response;
   }
 
-  static ServiceWorkerResponse RedirectResponse(
+  static blink::mojom::FetchAPIResponsePtr RedirectResponse(
       const std::string& redirect_location_header) {
-    auto headers = std::make_unique<ServiceWorkerHeaderMap>();
-    (*headers)["Location"] = redirect_location_header;
-
-    return ServiceWorkerResponse(
-        std::make_unique<std::vector<GURL>>(), 302, "Found",
-        network::mojom::FetchResponseType::kDefault, std::move(headers),
-        "" /* blob_uuid */, 0 /* blob_size */, nullptr /* blob */,
-        blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-        false /* response_is_in_cache_storage */,
-        std::string() /* response_cache_storage_cache_name */,
-        std::make_unique<
-            ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
+    auto response = blink::mojom::FetchAPIResponse::New();
+    response->status_code = 302;
+    response->status_text = "Found";
+    response->response_type = network::mojom::FetchResponseType::kDefault;
+    response->headers["Location"] = redirect_location_header;
+    return response;
   }
 
   void CloseAllBindings() { bindings_.CloseAllBindings(); }

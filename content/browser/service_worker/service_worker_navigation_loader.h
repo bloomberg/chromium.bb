@@ -17,17 +17,16 @@
 #include "content/browser/service_worker/service_worker_response_type.h"
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom.h"
 
 namespace content {
 
-struct ServiceWorkerResponse;
 class ServiceWorkerVersion;
 
 // S13nServiceWorker:
@@ -109,7 +108,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void DidDispatchFetchEvent(
       blink::ServiceWorkerStatusCode status,
       ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
-      const ServiceWorkerResponse& response,
+      blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       blink::mojom::BlobPtr body_as_blob,
       scoped_refptr<ServiceWorkerVersion> version);
@@ -118,7 +117,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   // worker chooses to handle a resource request. Returns the response to
   // |client|. |body_as_blob| is kept around until BlobDataHandle is created
   // from blob_uuid just to make sure the blob is kept alive.
-  void StartResponse(const ServiceWorkerResponse& response,
+  void StartResponse(blink::mojom::FetchAPIResponsePtr response,
                      scoped_refptr<ServiceWorkerVersion> version,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                      blink::mojom::BlobPtr body_as_blob,

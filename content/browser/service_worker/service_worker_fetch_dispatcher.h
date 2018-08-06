@@ -16,7 +16,6 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/log/net_log_with_source.h"
@@ -24,6 +23,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
 namespace net {
@@ -49,7 +49,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   using FetchCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode,
                               FetchEventResult,
-                              const ServiceWorkerResponse&,
+                              blink::mojom::FetchAPIResponsePtr,
                               blink::mojom::ServiceWorkerStreamHandlePtr,
                               blink::mojom::BlobPtr,
                               scoped_refptr<ServiceWorkerVersion>)>;
@@ -98,12 +98,12 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   void DidFail(blink::ServiceWorkerStatusCode status);
   void DidFinish(int request_id,
                  FetchEventResult fetch_result,
-                 const ServiceWorkerResponse& response,
+                 blink::mojom::FetchAPIResponsePtr response,
                  blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                  blink::mojom::BlobPtr body_as_blob);
   void Complete(blink::ServiceWorkerStatusCode status,
                 FetchEventResult fetch_result,
-                const ServiceWorkerResponse& response,
+                blink::mojom::FetchAPIResponsePtr response,
                 blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                 blink::mojom::BlobPtr body_as_blob);
 
