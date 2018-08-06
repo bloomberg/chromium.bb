@@ -261,16 +261,21 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 
 	aligned_width = width;
 	aligned_height = height;
-	if (format == DRM_FORMAT_YVU420_ANDROID) {
-		/*
-		 * Align width to 32 pixels, so chroma strides are 16 bytes as
-		 * Android requires.
-		 */
+	switch (format) {
+	case DRM_FORMAT_YVU420_ANDROID:
+		/* Align width to 32 pixels, so chroma strides are 16 bytes as
+		 * Android requires. */
 		aligned_width = ALIGN(width, 32);
-	}
-
-	if (format == DRM_FORMAT_YVU420_ANDROID || format == DRM_FORMAT_YVU420) {
+		/* Adjust the height to include room for chroma planes */
 		aligned_height = 3 * DIV_ROUND_UP(height, 2);
+		break;
+	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_NV12:
+		/* Adjust the height to include room for chroma planes */
+		aligned_height = 3 * DIV_ROUND_UP(height, 2);
+		break;
+	default:
+		break;
 	}
 
 	memset(&create_dumb, 0, sizeof(create_dumb));

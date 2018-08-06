@@ -39,10 +39,13 @@ static int msm_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	if (bo->format == DRM_FORMAT_YVU420_ANDROID)
 		height = bo->height;
 
-	/* Adjust the height of NV12 buffers to include room for the UV plane */
-	/* The extra 12KB at the end are a requirement of the Venus codec driver */
+	/*
+	 * The extra 12KB at the end are a requirement of the Venus codec driver.
+	 * Since |height| will be multiplied by 3/2 in drv_dumb_bo_create,
+	 * we multiply this padding by 2/3 here.
+	 */
 	if (bo->format == DRM_FORMAT_NV12)
-		height += DIV_ROUND_UP(height, 2) + DIV_ROUND_UP(0x3000, width);
+		height += 2 * DIV_ROUND_UP(0x3000, 3 * width);
 
 	return drv_dumb_bo_create(bo, width, height, format, flags);
 }
