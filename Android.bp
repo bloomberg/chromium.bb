@@ -1,7 +1,5 @@
-cc_library_static {
-    name: "libjsoncpp",
-    vendor_available: true,
-    host_supported: true,
+cc_defaults {
+    name: "libjsoncpp_defaults",
 
     srcs: [
         "src/lib_json/json_reader.cpp",
@@ -26,4 +24,18 @@ cc_library_static {
             enabled: true,
         },
     },
+}
+
+cc_library_static {
+    name: "libjsoncpp",
+    defaults: ["libjsoncpp_defaults"],
+    vendor_available: true,
+    host_supported: true,
+}
+
+cc_library_static {
+    name: "libjsoncpp_ndk",
+    defaults: ["libjsoncpp_defaults"],
+    sdk_version: "9",
+    stl: "libc++_static",
 }
