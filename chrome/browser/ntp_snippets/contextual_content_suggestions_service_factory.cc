@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 
 #include "base/files/file_path.h"
@@ -11,6 +13,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
@@ -79,6 +83,7 @@ ContextualContentSuggestionsServiceFactory::
     : BrowserContextKeyedServiceFactory(
           "ContextualContentSuggestionsService",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 ContextualContentSuggestionsServiceFactory::
@@ -96,10 +101,20 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   PrefService* pref_service = profile->GetPrefs();
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(context);
+  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
+      consent_helper;
+  if (IsUnifiedConsentEnabled(profile)) {
+    consent_helper = unified_consent::UrlKeyedDataCollectionConsentHelper::
+        NewPersonalizedDataCollectionConsentHelper(
+            true, /*is_unified_consent_enabled*/
+            ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+                profile));
+  }
+
   auto contextual_suggestions_fetcher =
       std::make_unique<ContextualSuggestionsFetcherImpl>(
           storage_partition->GetURLLoaderFactoryForBrowserProcess(),
-          g_browser_process->GetApplicationLocale());
+          std::move(consent_helper), g_browser_process->GetApplicationLocale());
   const base::FilePath::CharType kDatabaseFolder[] =
       FILE_PATH_LITERAL("contextualSuggestionsDatabase");
   base::FilePath database_dir(profile->GetPath().Append(kDatabaseFolder));

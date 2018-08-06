@@ -16,6 +16,7 @@ include_rules = [
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+components/sync/driver",
   "+components/ukm",
+  "+components/unified_consent",
   "+components/url_formatter",
   "+components/variations",
   "+components/version_info",

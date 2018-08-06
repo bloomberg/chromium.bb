@@ -168,6 +168,7 @@ static_library("ntp_snippets") {
     "//components/sessions",
     "//components/strings",
     "//components/sync_sessions",
+    "//components/unified_consent",
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/net",

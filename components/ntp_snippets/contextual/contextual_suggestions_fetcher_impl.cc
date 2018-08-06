@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher_impl.h"
 
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -10,8 +12,11 @@ namespace contextual_suggestions {
 
 ContextualSuggestionsFetcherImpl::ContextualSuggestionsFetcherImpl(
     const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory,
+    std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
+        consent_helper,
     const std::string& application_language_code)
     : loader_factory_(loader_factory),
+      consent_helper_(std::move(consent_helper)),
       bcp_language_code_(application_language_code) {}
 
 ContextualSuggestionsFetcherImpl::~ContextualSuggestionsFetcherImpl() = default;
@@ -20,8 +25,9 @@ void ContextualSuggestionsFetcherImpl::FetchContextualSuggestionsClusters(
     const GURL& url,
     FetchClustersCallback callback,
     ReportFetchMetricsCallback metrics_callback) {
-  auto fetch =
-      std::make_unique<ContextualSuggestionsFetch>(url, bcp_language_code_);
+  bool include_cookies = consent_helper_ && consent_helper_->IsEnabled();
+  auto fetch = std::make_unique<ContextualSuggestionsFetch>(
+      url, bcp_language_code_, include_cookies);
   ContextualSuggestionsFetch* fetch_unowned = fetch.get();
   pending_requests_.emplace(std::move(fetch));
 
