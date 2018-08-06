@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task_forward.h"
 #include "base/task/task_scheduler/task_scheduler_forward.h"
-#include "base/task_scheduler/task_scheduler_impl.h"
+#include "base/task/task_scheduler/task_scheduler_impl.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_restrictions.h"

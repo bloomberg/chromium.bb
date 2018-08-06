@@ -33,6 +33,6 @@
 // As such approach A was preferred : the landing process will wait for all 3
 // CLs to be LGTM'ed in approach A and then land them switfly back-to-back.
 
-#include "base/task_scheduler/task_scheduler.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 
 #endif  // BASE_TASK_TASK_SCHEDULER_TASK_SCHEDULER_FORWARD_H_

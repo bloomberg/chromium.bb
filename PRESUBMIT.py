@@ -451,7 +451,7 @@ _BANNED_CPP_FUNCTIONS = (
       (
         'Use the new API in base/threading/thread_restrictions.h.',
       ),
-      True,
+      False,
       (),
     ),
     (

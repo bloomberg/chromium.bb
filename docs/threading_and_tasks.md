@@ -88,7 +88,7 @@ The discussion below covers all of these ways to execute tasks in details.
 A task that can run on any thread and doesn’t have ordering or mutual exclusion
 requirements with other tasks should be posted using one of the
 `base::PostTask*()` functions defined in
-[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h).
+[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h).
 
 ```cpp
 base::PostTask(FROM_HERE, base::BindOnce(&Task));
@@ -359,12 +359,12 @@ com_sta_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskBUsingCOMSTA));
 
 ## Annotating Tasks with TaskTraits
 
-[`TaskTraits`](https://cs.chromium.org/chromium/src/base/task_scheduler/task_traits.h)
+[`TaskTraits`](https://cs.chromium.org/chromium/src/base/task/task_traits.h)
 encapsulate information about a task that helps the task scheduler make better
 scheduling decisions.
 
 All `PostTask*()` functions in
-[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h)
+[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
 have an overload that takes `TaskTraits` as argument and one that doesn’t. The
 overload that doesn’t take `TaskTraits` as argument is appropriate for tasks
 that:
@@ -373,7 +373,7 @@ that:
 - Can either block shutdown or be skipped on shutdown (task scheduler is free to choose a fitting default).
 Tasks that don’t match this description must be posted with explicit TaskTraits.
 
-[`base/task_scheduler/task_traits.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/task_traits.h)
+[`base/task/task_traits.h`](https://cs.chromium.org/chromium/src/base/task/task_traits.h)
 provides exhaustive documentation of available traits. Below are some examples
 of how to specify `TaskTraits`.
 
@@ -540,7 +540,7 @@ cancelable_task_tracker.TryCancelAll();
 
 To test code that uses `base::ThreadTaskRunnerHandle`,
 `base::SequencedTaskRunnerHandle` or a function in
-[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h), instantiate a
+[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h), instantiate a
 [`base::test::ScopedTaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/scoped_task_environment.h)
 for the scope of the test.
 
@@ -599,7 +599,7 @@ TEST(MyTest, MyTest) {
 ## Using TaskScheduler in a New Process
 
 TaskScheduler needs to be initialized in a process before the functions in
-[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h)
+[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
 can be used. Initialization of TaskScheduler in the Chrome browser process and
 child processes (renderer, GPU, utility) has already been taken care of. To use
 TaskScheduler in another process, initialize TaskScheduler early in the main
@@ -608,13 +608,13 @@ function:
 ```cpp
 // This initializes and starts TaskScheduler with default params.
 base::TaskScheduler::CreateAndStartWithDefaultParams(“process_name”);
-// The base/task_scheduler/post_task.h API can now be used. Tasks will be
-// scheduled as they are posted.
+// The base/task/post_task.h API can now be used. Tasks will be // scheduled as
+// they are posted.
 
 // This initializes TaskScheduler.
 base::TaskScheduler::Create(“process_name”);
-// The base/task_scheduler/post_task.h API can now be used. No threads
-// will be created and no tasks will be scheduled until after Start() is called.
+// The base/task/post_task.h API can now be used. No threads // will be created
+// and no tasks will be scheduled until after Start() is called.
 base::TaskScheduler::GetInstance()->Start(params);
 // TaskScheduler can now create threads and schedule tasks.
 ```
@@ -639,7 +639,7 @@ See [this example](https://codereview.chromium.org/2885173002/) of a
 refactoring where a TaskRunner was passed through a lot of components only to be
 used in an eventual leaf. The leaf can and should now obtain its TaskRunner
 directly from
-[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h).
+[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h).
 
 Dependency injection of TaskRunners can still seldomly be useful to unit test a
 component when triggering a specific race in a specific way is essential to the

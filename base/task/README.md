@@ -1,4 +1,4 @@
-This directory has the following layout (WIP):
+This directory has the following layout:
 - base/task/: public APIs for posting tasks and managing task queues.
 - base/task/task_scheduler/: implementation of the TaskScheduler.
 - base/task/sequence_manager/: implementation of the SequenceManager.

@@ -33,6 +33,6 @@
 // As such approach A was preferred : the landing process will wait for all 3
 // CLs to be LGTM'ed in approach A and then land them switfly back-to-back.
 
-#include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
+#include "base/task/single_thread_task_runner_thread_mode.h"
 
 #endif  // BASE_TASK_SINGLE_THREAD_TASK_RUNNER_THREAD_MODE_FORWARD_H_
