@@ -166,6 +166,10 @@ constexpr NSInteger kSectionOffset = 1000;
   return cell;
 }
 
+- (void)reloadSections:(NSIndexSet*)sections {
+  [self.collectionView reloadSections:sections];
+}
+
 #pragma mark - CollectionViewController
 
 - (void)loadModel {

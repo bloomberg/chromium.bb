@@ -29,7 +29,7 @@ class PrefService;
 
 // View controller.
 @property(nonatomic, weak) id<GoogleServicesSettingsConsumer> consumer;
-// Browser state.
+// Authentication service.
 @property(nonatomic, assign) AuthenticationService* authService;
 
 @end
