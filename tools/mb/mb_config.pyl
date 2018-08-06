@@ -104,10 +104,6 @@
       'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_x86_release',
       'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_x86_release',
 
-      'CrWinClangLLD': 'clang_tot_official_static_no_lld_x86',
-      'CrWinClangLLD64': 'clang_tot_shared_release_no_lld_dcheck',
-      'CrWinClngLLD64dbg': 'clang_tot_full_symbols_shared_debug_no_lld',
-      'CrWinClngLLDdbg': 'clang_tot_full_symbols_shared_debug_no_lld_x86',
       'linux-win_cross-rel': 'clang_tot_win_release_cross',
       'ToTAndroid': 'android_clang_tot_release_minimal_symbols',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
@@ -1078,24 +1074,8 @@
       'clang_tot', 'shared', 'debug',
     ],
 
-    'clang_tot_full_symbols_shared_debug_no_lld': [
-      'clang_tot', 'full_symbols', 'shared', 'debug', 'no_lld',
-    ],
-
-    'clang_tot_full_symbols_shared_debug_no_lld_x86': [
-      'clang_tot', 'full_symbols', 'shared', 'debug', 'no_lld', 'x86',
-    ],
-
     'clang_tot_shared_debug_x86': [
       'clang_tot', 'shared', 'debug', 'x86',
-    ],
-
-    'clang_tot_shared_release_no_lld_dcheck': [
-      'clang_tot', 'minimal_symbols', 'shared', 'release', 'no_lld', 'dcheck_always_on',
-    ],
-
-    'clang_tot_official_static_no_lld_x86': [
-      'clang_tot', 'minimal_symbols', 'official', 'static', 'release', 'no_lld', 'x86',
     ],
 
     'clang_tot_minimal_symbols_shared_release': [
@@ -2058,10 +2038,6 @@
 
     'ubsan_vptr': {
       'gn_args': 'is_ubsan_vptr=true',
-    },
-
-    'no_lld': {
-      'gn_args': 'use_lld=false',
     },
 
     # TODO(crbug.com/869348): Remove this if we set this by default or don't use
