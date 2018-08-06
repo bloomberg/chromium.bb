@@ -147,6 +147,15 @@ void SyncedBookmarkTracker::Update(
   // |ordered_local_tombstones_| as well if it has been locally deleted.
 }
 
+void SyncedBookmarkTracker::UpdateServerVersion(const std::string& sync_id,
+                                                int64_t server_version) {
+  auto it = sync_id_to_entities_map_.find(sync_id);
+  DCHECK(it != sync_id_to_entities_map_.end());
+  Entity* entity = it->second.get();
+  DCHECK(entity);
+  entity->metadata()->set_server_version(server_version);
+}
+
 void SyncedBookmarkTracker::MarkDeleted(const std::string& sync_id) {
   auto it = sync_id_to_entities_map_.find(sync_id);
   Entity* entity = it->second.get();
@@ -343,6 +352,15 @@ void SyncedBookmarkTracker::UpdateUponCommitResponse(
     sync_id_to_entities_map_[new_id] = std::move(it->second);
     sync_id_to_entities_map_.erase(old_id);
   }
+}
+
+void SyncedBookmarkTracker::AckSequenceNumber(const std::string& sync_id) {
+  auto it = sync_id_to_entities_map_.find(sync_id);
+  Entity* entity =
+      it != sync_id_to_entities_map_.end() ? it->second.get() : nullptr;
+  DCHECK(entity);
+  entity->metadata()->set_acked_sequence_number(
+      entity->metadata()->sequence_number());
 }
 
 bool SyncedBookmarkTracker::IsEmpty() const {
