@@ -90,6 +90,8 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   gfx::Size coded_size_;
   // The VA RT format associated with |va_surface_id_|.
   unsigned int va_rt_format_;
+  // The VA image format that will be requested from the VA API.
+  VAImageFormat va_image_format_;
 
   // WeakPtr factory for use in posting tasks from |decoder_task_runner_| back
   // to |task_runner_|.  Since |decoder_thread_| is a fully owned member of

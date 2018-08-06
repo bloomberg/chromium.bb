@@ -123,8 +123,11 @@ VaapiJpegDecodeAccelerator::VaapiJpegDecodeAccelerator(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(io_task_runner),
+      client_(nullptr),
       decoder_thread_("VaapiJpegDecoderThread"),
       va_surface_id_(VA_INVALID_SURFACE),
+      va_rt_format_(0),
+      va_image_format_{},
       weak_this_factory_(this) {}
 
 VaapiJpegDecodeAccelerator::~VaapiJpegDecodeAccelerator() {
@@ -140,6 +143,21 @@ bool VaapiJpegDecodeAccelerator::Initialize(Client* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   client_ = client;
+
+  // Set the image format that will be requested from the VA API. Currently we
+  // always use I420, as this is the expected output format.
+  // TODO(crbug.com/828119): Try a list of possible supported formats rather
+  // than hardcoding the format to I420 here.
+  VAImageFormat va_image_format = {};
+  va_image_format.fourcc = VA_FOURCC_I420;
+  va_image_format.byte_order = VA_LSB_FIRST;
+  va_image_format.bits_per_pixel = 12;
+
+  if (!VaapiWrapper::IsImageFormatSupported(va_image_format)) {
+    VLOGF(1) << "I420 image format not supported";
+    return false;
+  }
+  va_image_format_ = va_image_format;
 
   vaapi_wrapper_ =
       VaapiWrapper::Create(VaapiWrapper::kDecode, VAProfileJPEGBaseline,
@@ -173,15 +191,10 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
             << input_buffer_id;
 
   VAImage image = {};
-  VAImageFormat format = {};
-  format.fourcc = VA_FOURCC_I420;
-  format.byte_order = VA_LSB_FIRST;
-  format.bits_per_pixel = 12;  // 12 for I420
-
   uint8_t* mem = nullptr;
   gfx::Size coded_size = video_frame->coded_size();
-  if (!vaapi_wrapper_->GetVaImage(va_surface_id, &format, coded_size, &image,
-                                  reinterpret_cast<void**>(&mem))) {
+  if (!vaapi_wrapper_->GetVaImage(va_surface_id, &va_image_format_, coded_size,
+                                  &image, reinterpret_cast<void**>(&mem))) {
     VLOGF(1) << "Cannot get VAImage";
     return false;
   }

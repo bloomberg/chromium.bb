@@ -89,6 +89,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return true when JPEG encode is supported.
   static bool IsJpegEncodeSupported();
 
+  // Return true when the specified image format is supported.
+  static bool IsImageFormatSupported(const VAImageFormat& format);
+
   // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
   // |va_format|, each of size |size|. Returns true when successful, with the
   // created IDs in |va_surfaces| to be managed and later wrapped in

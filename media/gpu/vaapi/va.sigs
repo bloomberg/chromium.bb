@@ -24,10 +24,12 @@ VAStatus vaGetConfigAttributes(VADisplay dpy, VAProfile profile, VAEntrypoint en
 VAStatus vaGetImage(VADisplay dpy, VASurfaceID surface, int x, int y, unsigned int width, unsigned int height, VAImageID image);
 VAStatus vaInitialize(VADisplay dpy, int *major_version, int *minor_version);
 VAStatus vaMapBuffer(VADisplay dpy, VABufferID buf_id, void **pbuf);
-int vaMaxNumEntrypoints (VADisplay dpy);
+int vaMaxNumEntrypoints(VADisplay dpy);
+int vaMaxNumImageFormats(VADisplay dpy);
 int vaMaxNumProfiles(VADisplay dpy);
-VAStatus vaQueryConfigEntrypoints (VADisplay dpy, VAProfile profile, VAEntrypoint *entrypoint_list, int *num_entrypoints);
+VAStatus vaQueryConfigEntrypoints(VADisplay dpy, VAProfile profile, VAEntrypoint *entrypoint_list, int *num_entrypoints);
 VAStatus vaQueryConfigProfiles(VADisplay dpy, VAProfile *profile_list, int *num_profiles);
+VAStatus vaQueryImageFormats(VADisplay dpy, VAImageFormat *format_list, int *num_formats);
 VAStatus vaQuerySurfaceAttributes(VADisplay dpy, VAConfigID config, VASurfaceAttrib *attrib_list, unsigned int *num_attribs);
 const char* vaQueryVendorString(VADisplay dpy);
 VAStatus vaRenderPicture(VADisplay dpy, VAContextID context, VABufferID *buffers, int num_buffers);

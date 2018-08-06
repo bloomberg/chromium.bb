@@ -510,7 +510,7 @@ VASupportedProfiles::VASupportedProfiles()
     base::AutoLock auto_lock(*va_lock_);
     VAStatus va_res = VA_STATUS_SUCCESS;
     display_state->Deinitialize(&va_res);
-    VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
+    VA_LOG_ON_ERROR(va_res, "VADisplayState::Deinitialize failed");
     va_display_ = nullptr;
   }
 }
@@ -699,6 +699,95 @@ void DestroyVAImage(VADisplay va_display, VAImage image) {
     vaDestroyImage(va_display, image.image_id);
 }
 
+// This class encapsulates fetching the list of supported output image formats
+// from the VAAPI driver, in a singleton way.
+class VASupportedImageFormats {
+ public:
+  static const VASupportedImageFormats& Get();
+
+  bool IsImageFormatSupported(const VAImageFormat& va_format) const;
+
+ private:
+  friend class base::NoDestructor<VASupportedImageFormats>;
+
+  VASupportedImageFormats();
+  ~VASupportedImageFormats() = default;
+
+  // Initialize the list of supported image formats. The VA display should be
+  // locked upon calling this function.
+  bool InitSupportedImageFormats();
+
+  std::vector<VAImageFormat> supported_formats_;
+  const base::RepeatingClosure report_error_to_uma_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(VASupportedImageFormats);
+};
+
+// static
+const VASupportedImageFormats& VASupportedImageFormats::Get() {
+  static const base::NoDestructor<VASupportedImageFormats> image_formats;
+  return *image_formats;
+}
+
+bool VASupportedImageFormats::IsImageFormatSupported(
+    const VAImageFormat& va_image_format) const {
+  auto it = std::find_if(supported_formats_.begin(), supported_formats_.end(),
+                         [&va_image_format](const VAImageFormat& format) {
+                           return format.fourcc == va_image_format.fourcc;
+                         });
+  return it != supported_formats_.end();
+}
+
+VASupportedImageFormats::VASupportedImageFormats()
+    : report_error_to_uma_cb_(base::DoNothing()) {
+  VADisplayState* display_state = VADisplayState::Get();
+  base::Lock* va_lock = display_state->va_lock();
+  base::AutoLock auto_lock(*va_lock);
+
+  if (!display_state->Initialize())
+    return;
+
+  VADisplay va_display = display_state->va_display();
+  DCHECK(va_display) << "VADisplayState hasn't been properly initialized";
+
+  if (!InitSupportedImageFormats())
+    LOG(ERROR) << "Failed to get supported image formats";
+
+  VAStatus va_res = VA_STATUS_SUCCESS;
+  display_state->Deinitialize(&va_res);
+  VA_LOG_ON_ERROR(va_res, "VADisplayState::Deinitialize failed");
+}
+
+bool VASupportedImageFormats::InitSupportedImageFormats() {
+  VADisplayState* display_state = VADisplayState::Get();
+  display_state->va_lock()->AssertAcquired();
+  VADisplay va_display = display_state->va_display();
+  DCHECK(va_display) << "VADisplayState hasn't been properly initialized";
+
+  // Query the driver for the max number of image formats and allocate space.
+  const int max_image_formats = vaMaxNumImageFormats(va_display);
+  if (max_image_formats < 0) {
+    LOG(ERROR) << "vaMaxNumImageFormats returned: " << max_image_formats;
+    return false;
+  }
+  supported_formats_.resize(static_cast<size_t>(max_image_formats));
+
+  // Query the driver for the list of supported image formats.
+  int num_image_formats;
+  VAStatus va_res = vaQueryImageFormats(va_display, supported_formats_.data(),
+                                        &num_image_formats);
+  VA_SUCCESS_OR_RETURN(va_res, "vaQueryImageFormats failed", false);
+  if (num_image_formats < 0 || num_image_formats > max_image_formats) {
+    LOG(ERROR) << "vaQueryImageFormats returned: " << num_image_formats;
+    supported_formats_.clear();
+    return false;
+  }
+
+  // Resize the list to the actual number of formats returned by the driver.
+  supported_formats_.resize(static_cast<size_t>(num_image_formats));
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -790,6 +879,11 @@ bool VaapiWrapper::IsJpegDecodeSupported() {
 bool VaapiWrapper::IsJpegEncodeSupported() {
   return VASupportedProfiles::Get().IsProfileSupported(kEncode,
                                                        VAProfileJPEGBaseline);
+}
+
+// static
+bool VaapiWrapper::IsImageFormatSupported(const VAImageFormat& format) {
+  return VASupportedImageFormats::Get().IsImageFormatSupported(format);
 }
 
 bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
