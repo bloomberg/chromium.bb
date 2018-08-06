@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_CREDENTIAL_MANAGER_TYPE_CONVERTERS_H_
 
 #include "third_party/blink/public/platform/modules/credentialmanager/credential_manager.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/webauth/authenticator.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/webauthn/authenticator.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
