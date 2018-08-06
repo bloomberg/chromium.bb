@@ -1562,14 +1562,6 @@ const char kScrollPredictionDescription[] =
     "Predicts the finger's future position during scrolls allowing time to "
     "render the frame before the finger is there.";
 
-const char kSecondaryUiMd[] =
-    "Material Design in the rest of the browser's native UI";
-const char kSecondaryUiMdDescription[] =
-    "Extends the --top-chrome-md setting to secondary UI (bubbles, dialogs, "
-    "etc.). On Mac, this enables MacViews, which uses toolkit-views for native "
-    "browser dialogs. If --top-chrome-md is effectively Material Design "
-    "refresh, this option is enabled.";
-
 const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
 const char kServiceWorkerPaymentAppsDescription[] =
     "Enable Service Worker applications to integrate as payment apps";

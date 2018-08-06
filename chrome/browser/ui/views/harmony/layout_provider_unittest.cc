@@ -291,10 +291,6 @@ TEST_F(LayoutProviderTest, FontSizeRelativeToBase) {
 TEST_F(LayoutProviderTest, TypographyLineHeight) {
   constexpr int kStyle = views::style::STYLE_PRIMARY;
 
-  // Only MD overrides the default line spacing.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kSecondaryUiMd);
-
   std::unique_ptr<views::LayoutProvider> layout_provider =
       ChromeLayoutProvider::CreateLayoutProvider();
 
@@ -328,9 +324,6 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
 // Harmony spec. This test will only run if it detects that the current machine
 // has the default OS configuration.
 TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kSecondaryUiMd);
-
   std::unique_ptr<views::LayoutProvider> layout_provider =
       ChromeLayoutProvider::CreateLayoutProvider();
 

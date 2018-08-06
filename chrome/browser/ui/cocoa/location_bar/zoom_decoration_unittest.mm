@@ -13,23 +13,12 @@
 
 namespace {
 
+// TODO(crbug.com/630357): Remove parameterized testing for this class.
 class ZoomDecorationTest : public ChromeRenderViewHostTestHarness,
                            public ::testing::WithParamInterface<bool> {
  public:
   ZoomDecorationTest() {}
   ~ZoomDecorationTest() override {}
-
- protected:
-  // ChromeRenderViewHostTestHarness:
-  void SetUp() override {
-    // TODO(crbug.com/630357): Remove parameterized testing for this class when
-    // secondary-ui-md is enabled by default on all platforms.
-    if (GetParam())
-      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-    else
-      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
-    ChromeRenderViewHostTestHarness::SetUp();
-  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

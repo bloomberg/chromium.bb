@@ -1946,7 +1946,6 @@ test("browser_tests") {
         "../browser/ui/cocoa/dev_tools_controller_browsertest.mm",
         "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h",
         "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm",
-        "../browser/ui/cocoa/extensions/extension_message_bubble_browsertest_mac.mm",
         "../browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_browsertest.mm",
         "../browser/ui/cocoa/find_bar/find_bar_browsertest.mm",
         "../browser/ui/cocoa/location_bar/content_setting_decoration_browsertest.mm",

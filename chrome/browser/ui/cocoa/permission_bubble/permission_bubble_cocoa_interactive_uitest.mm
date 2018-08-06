@@ -30,11 +30,10 @@ namespace {
 
 enum class UiMode {
   VIEWS,
-  COCOA,
 };
 
 std::string UiModeToString(const ::testing::TestParamInfo<UiMode>& info) {
-  return info.param == UiMode::VIEWS ? "Views" : "Cocoa";
+  return "Views";
 }
 
 }  // namespace
@@ -58,6 +57,7 @@ class LocationBarDecorationTestApi {
 
 }  // namespace test
 
+// TODO(crbug.com/630357): Remove parameterized testing for this class.
 class PermissionBubbleInteractiveUITest
     : public InProcessBrowserTest,
       public ::testing::WithParamInterface<UiMode> {
@@ -92,15 +92,6 @@ class PermissionBubbleInteractiveUITest
     // NSEvent* which will be dispatched to NSApp (i.e. not NSWindow).
     ui_controls::SendKeyPress(
         [NSApp keyWindow], keycode, control, shift, alt, command);
-  }
-
-  // InProcessBrowserTest:
-  void SetUp() override {
-    if (GetParam() == UiMode::VIEWS)
-      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-    else
-      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
-    InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -225,5 +216,5 @@ IN_PROC_BROWSER_TEST_P(PermissionBubbleInteractiveUITest, DISABLED_SwitchTabs) {
 
 INSTANTIATE_TEST_CASE_P(,
                         PermissionBubbleInteractiveUITest,
-                        ::testing::Values(UiMode::VIEWS, UiMode::COCOA),
+                        ::testing::Values(UiMode::VIEWS),
                         &UiModeToString);

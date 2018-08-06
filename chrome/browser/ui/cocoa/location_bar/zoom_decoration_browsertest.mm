@@ -26,23 +26,13 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/ui_base_features.h"
 
+// TODO(crbug.com/630357): Remove parameterized testing for this class.
 class ZoomDecorationTest : public InProcessBrowserTest,
                            public ::testing::WithParamInterface<bool> {
  protected:
   ZoomDecorationTest()
       : InProcessBrowserTest(),
         should_quit_on_zoom_(false) {
-  }
-
-  // InProcessBrowserTest:
-  void SetUp() override {
-    // TODO(crbug.com/630357): Remove parameterized testing for this class when
-    // secondary-ui-md is enabled by default on all platforms.
-    if (GetParam())
-      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-    else
-      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
-    InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {

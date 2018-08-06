@@ -46,11 +46,6 @@ const base::Feature kEnableVirtualKeyboardUkm = {
 const base::Feature kExperimentalUi{"ExperimentalUi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Applies the material design mode to elements throughout Chrome (not just top
-// Chrome).
-const base::Feature kSecondaryUiMd = {"SecondaryUiMd",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Allows system keyboard event capture when |features::kKeyboardLockApi| is on.
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

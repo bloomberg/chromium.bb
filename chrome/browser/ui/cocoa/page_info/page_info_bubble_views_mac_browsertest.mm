@@ -83,12 +83,6 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest, NoCrashOnFullScreenToggle) {
 // switches via keyboard shortcuts.
 IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest,
                        BubbleClosesOnKeyboardTabSwitch) {
-  // Always use PageInfoBubbleView for this test rather than Cocoa UI.
-  base::test::ScopedFeatureList enable_md;
-  enable_md.InitWithFeatures(
-      {features::kSecondaryUiMd, features::kShowAllDialogsWithViewsToolkit},
-      {});
-
   ui_test_utils::NavigateToURL(browser(), GURL(GetParam().url));
   // Add a second tab, but make sure the first is selected.
   AddTabAtIndex(1, GURL("https://test_url.com"),
