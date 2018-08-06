@@ -28,6 +28,13 @@ void ChromeFeaturesServiceProvider::Start(
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsUsbguardEnabledMethod,
+      base::BindRepeating(&ChromeFeaturesServiceProvider::IsUsbguardEnabled,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeFeaturesServiceProvider::OnExported(
@@ -56,6 +63,16 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
   writer.AppendBool(delegate_->IsCrostiniEnabled(user_id_hash));
+  response_sender.Run(std::move(response));
+}
+
+void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(delegate_->IsUsbguardEnabled());
   response_sender.Run(std::move(response));
 }
 

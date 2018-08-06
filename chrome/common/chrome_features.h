@@ -351,6 +351,8 @@ extern const base::Feature kTPMFirmwareUpdate;
 extern const base::Feature kCrOSEnableUSMUserService;
 
 extern const base::Feature kMachineLearningService;
+
+extern const base::Feature kUsbguard;
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)

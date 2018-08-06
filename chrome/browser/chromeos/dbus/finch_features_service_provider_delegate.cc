@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/dbus/finch_features_service_provider_delegate.h"
 
+#include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 
 namespace chromeos {
 
@@ -26,6 +28,10 @@ bool FinchFeaturesServiceProviderDelegate::IsCrostiniEnabled(
   }
 
   return IsCrostiniAllowedForProfile(profile);
+}
+
+bool FinchFeaturesServiceProviderDelegate::IsUsbguardEnabled() {
+  return base::FeatureList::IsEnabled(features::kUsbguard);
 }
 
 }  // namespace chromeos

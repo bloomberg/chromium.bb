@@ -41,6 +41,7 @@ class CHROMEOS_EXPORT ChromeFeaturesServiceProvider
     virtual ~Delegate() {}
 
     virtual bool IsCrostiniEnabled(const std::string& user_id_hash) = 0;
+    virtual bool IsUsbguardEnabled() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -61,6 +62,8 @@ class CHROMEOS_EXPORT ChromeFeaturesServiceProvider
 
   // Called on UI thread in response to a D-Bus request.
   void IsCrostiniEnabled(dbus::MethodCall* method_call,
+                         dbus::ExportedObject::ResponseSender response_sender);
+  void IsUsbguardEnabled(dbus::MethodCall* method_call,
                          dbus::ExportedObject::ResponseSender response_sender);
 
   std::unique_ptr<Delegate> delegate_;
