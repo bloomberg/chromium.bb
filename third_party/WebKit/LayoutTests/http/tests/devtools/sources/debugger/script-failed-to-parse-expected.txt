@@ -1,4 +1,4 @@
-Tests that FailedToParseScriptSource event is raised after compile script with syntax error.
+Tests that ParsedScriptSource event is raised after compile script with syntax error.
 
 
 Running: testScriptParsedEvent
