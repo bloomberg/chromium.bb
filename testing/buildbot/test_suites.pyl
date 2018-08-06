@@ -333,10 +333,22 @@
   },
 
   'chromeos_gtests': {
+    'aura_unittests': {
+      'args': [
+        '--ozone-platform=headless',
+      ],
+    },
     'base_unittests': {},
     'cacheinvalidation_unittests': {},
     'capture_unittests': {},
     'cc_unittests': {},
+    'chromeos_unittests': {
+      'args': [
+        # TODO(crbug.com/865693): Don't stub out dbus clients.
+        '--dbus-stub',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.chromeos_unittests.filter',
+      ],
+    },
     'cros_vm_sanity_test': {},
     'crypto_unittests': {},
     'display_unittests': {},
@@ -351,6 +363,11 @@
     },
     'midi_unittests': {},
     'mojo_unittests': {},
+    'ozone_gl_unittests': {
+      'args': [
+        '--ozone-platform=headless',
+      ],
+    },
     'ozone_unittests': {},
     'pdf_unittests': {},
     'printing_unittests': {},
@@ -360,11 +377,6 @@
   },
 
   'chromeos_gtests_experimental': {
-    'aura_unittests': {
-      'args': [
-        '--ozone-platform=headless',
-      ],
-    },
     'base_unittests': {},
     'chromeos_unittests': {
       'args': [
@@ -391,11 +403,6 @@
         ],
         'shards': 3,
       },
-    },
-    'ozone_gl_unittests': {
-      'args': [
-        '--ozone-platform=headless',
-      ],
     },
     'services_unittests': {
       'args': [
