@@ -43,13 +43,8 @@
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
-
 using protocol::Maybe;
 using protocol::Response;
-
-namespace DOMSnapshotAgentState {
-static const char kDomSnapshotAgentEnabled[] = "DOMSnapshotAgentEnabled";
-};
 
 namespace {
 
@@ -148,14 +143,10 @@ InspectorDOMSnapshotAgent::InspectorDOMSnapshotAgent(
     InspectedFrames* inspected_frames,
     InspectorDOMDebuggerAgent* dom_debugger_agent)
     : inspected_frames_(inspected_frames),
-      dom_debugger_agent_(dom_debugger_agent) {}
+      dom_debugger_agent_(dom_debugger_agent),
+      enabled_(&agent_state_, /*default_value=*/false) {}
 
 InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() = default;
-
-bool InspectorDOMSnapshotAgent::Enabled() const {
-  return state_->booleanProperty(
-      DOMSnapshotAgentState::kDomSnapshotAgentEnabled, false);
-}
 
 void InspectorDOMSnapshotAgent::GetOriginUrl(String* origin_url_ptr,
                                              const Node* node) {
@@ -197,28 +188,27 @@ void InspectorDOMSnapshotAgent::DidInsertDOMNode(Node* node) {
     origin_url_map_->insert(DOMNodeIds::IdForNode(node), origin_url);
 }
 
-void InspectorDOMSnapshotAgent::InnerEnable() {
-  state_->setBoolean(DOMSnapshotAgentState::kDomSnapshotAgentEnabled, true);
+void InspectorDOMSnapshotAgent::EnableAndReset() {
+  enabled_.Set(true);
   origin_url_map_ = std::make_unique<OriginUrlMap>();
   instrumenting_agents_->addInspectorDOMSnapshotAgent(this);
 }
 
 void InspectorDOMSnapshotAgent::Restore() {
-  if (!Enabled())
-    return;
-  InnerEnable();
+  if (enabled_.Get())
+    EnableAndReset();
 }
 
 Response InspectorDOMSnapshotAgent::enable() {
-  if (!Enabled())
-    InnerEnable();
+  if (!enabled_.Get())
+    EnableAndReset();
   return Response::OK();
 }
 
 Response InspectorDOMSnapshotAgent::disable() {
-  if (!Enabled())
+  if (!enabled_.Get())
     return Response::Error("DOM snapshot agent hasn't been enabled.");
-  state_->setBoolean(DOMSnapshotAgentState::kDomSnapshotAgentEnabled, false);
+  enabled_.Clear();
   origin_url_map_.reset();
   instrumenting_agents_->removeInspectorDOMSnapshotAgent(this);
   return Response::OK();

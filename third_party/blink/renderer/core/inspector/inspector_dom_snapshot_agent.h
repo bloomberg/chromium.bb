@@ -55,15 +55,15 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
           documents,
       std::unique_ptr<protocol::Array<String>>* strings) override;
 
-  bool Enabled() const;
-
   // InspectorInstrumentation API.
   void CharacterDataModified(CharacterData*);
   void DidInsertDOMNode(Node*);
 
  private:
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
-  void InnerEnable();
+  // Unconditionally enables the agent, even if |enabled_.Get()==true|.
+  // For idempotence, call enable().
+  void EnableAndReset();
 
   int VisitNode(Node*,
                 bool include_event_listeners,
@@ -165,7 +165,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   DocumentOrderMap document_order_map_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
-
+  InspectorAgentState::Boolean enabled_;
   DISALLOW_COPY_AND_ASSIGN(InspectorDOMSnapshotAgent);
 };
 
