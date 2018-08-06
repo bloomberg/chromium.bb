@@ -190,9 +190,6 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   SnapPosition default_snap_position() const { return default_snap_position_; }
   SplitViewDivider* split_view_divider() { return split_view_divider_.get(); }
   bool is_resizing() const { return is_resizing_; }
-  bool has_animating_window() const {
-    return has_animating_window_;
-  }
 
  private:
   friend class SplitViewControllerTest;
@@ -403,9 +400,6 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // The map from a to-be-snapped window to its overview item's bounds if the
   // window comes from the overview.
   base::flat_map<aura::Window*, gfx::Rect> overview_window_item_bounds_map_;
-
-  // True if there is an animating window.
-  bool has_animating_window_ = false;
 
   base::ObserverList<Observer> observers_;
   mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;

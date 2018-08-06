@@ -49,6 +49,46 @@
 
 namespace ash {
 
+namespace {
+
+// The observer to observe the overview states in |root_window_|.
+class OverviewStatesObserver : public ShellObserver {
+ public:
+  OverviewStatesObserver(aura::Window* root_window)
+      : root_window_(root_window) {
+    Shell::Get()->AddShellObserver(this);
+  }
+  ~OverviewStatesObserver() override {
+    Shell::Get()->RemoveShellObserver(this);
+  }
+
+  // ShellObserver:
+  void OnOverviewModeStarting() override {
+    // Reset the value to true.
+    overview_animate_when_exiting_ = true;
+  }
+  void OnOverviewModeEnding() override {
+    WindowSelector* window_selector =
+        Shell::Get()->window_selector_controller()->window_selector();
+    WindowGrid* grid = window_selector->GetGridWithRootWindow(root_window_);
+    if (!grid)
+      return;
+    overview_animate_when_exiting_ = grid->should_animate_when_exiting();
+  }
+
+  bool overview_animate_when_exiting() const {
+    return overview_animate_when_exiting_;
+  }
+
+ private:
+  bool overview_animate_when_exiting_ = true;
+  aura::Window* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewStatesObserver);
+};
+
+}  // namespace
+
 class SplitViewControllerTest : public AshTestBase {
  public:
   SplitViewControllerTest() = default;
@@ -1477,6 +1517,57 @@ TEST_F(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
   EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window3.get()));
 }
 
+// Tests that if snapping a window causes overview to end (e.g., select two
+// windows in overview mode to snap to both side of the screen), or toggle
+// overview to end overview causes a window to snap, we should not have the
+// exiting animation.
+TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  // 1) For normal toggle overview case, we should have animation when
+  // exiting overview.
+  std::unique_ptr<OverviewStatesObserver> overview_observer =
+      std::make_unique<OverviewStatesObserver>(window1->GetRootWindow());
+  ToggleOverview();
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  ToggleOverview();
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
+
+  // 2) If overview is ended because of activating a window:
+  ToggleOverview();
+  // It will end overview.
+  wm::ActivateWindow(window1.get());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
+
+  // 3) If overview is ended because of snapping a window:
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  // Reset the observer as we'll need the OverviewStatesObserver to be added to
+  // to ShellObserver list after SplitViewController.
+  overview_observer.reset(new OverviewStatesObserver(window1->GetRootWindow()));
+  ToggleOverview();  // Start overview.
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  // Test |overview_animate_when_exiting_| has been properly reset.
+  EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
+
+  // 4) If ending overview causes a window to snap:
+  ToggleOverview();
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  // Test |overview_animate_when_exiting_| has been properly reset.
+  EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
+  ToggleOverview();
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
+}
+
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
 // dragged out of a window and then put in split view mode or merge into another
 // window.
@@ -2152,6 +2243,54 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   EXPECT_TRUE(window_selector->IsWindowInOverview(window3.get()));
   // Test that the new window item widget has been destroyed.
   EXPECT_FALSE(current_grid->new_selector_item_widget_for_testing());
+}
+
+// Tests that if overview is ended because of releasing the dragged window, we
+// should not do animation when exiting overview.
+TEST_F(SplitViewTabDraggingTest, OverviewExitAnimationTest) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<OverviewStatesObserver> overview_observer =
+      std::make_unique<OverviewStatesObserver>(window1->GetRootWindow());
+
+  // 1) If dragging a maximized window:
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window1.get(), window1.get());
+  ASSERT_TRUE(resizer.get());
+  // Overview should have been opened because the dragged window is the source
+  // window.
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  // The value should be properly initialized.
+  EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
+
+  // Now release the dragged window. There should be no animation when exiting
+  // overview.
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
+
+  // 2) If dragging a snapped window:
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  overview_observer.reset(new OverviewStatesObserver(window1->GetRootWindow()));
+  resizer = StartDrag(window1.get(), window1.get());
+  ASSERT_TRUE(resizer.get());
+  // Overview should have been opened behind the dragged window.
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  // Split view should still be active.
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+  // The value should be properly initialized.
+  EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
+
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
 }
 
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {

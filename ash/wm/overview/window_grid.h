@@ -153,11 +153,12 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   gfx::Rect GetNoItemsIndicatorLabelBoundsForTesting() const;
 
-  // Sets |should_animate_when_entering_| and |should_animate_when_exiting_| of
-  // the selector items of the windows based on where the first MRU window
-  // covering the available workspace is found. |selector_item| is not nullptr
-  // when |selector_item| is the selected item when exiting overview mode.
-  void SetWindowListAnimationStates(
+  // Calculates |should_animate_when_entering_| and
+  // |should_animate_when_exiting_| of the window selector items based on where
+  // the first MRU window covering the available workspace is found.
+  // |selector_item| is not nullptr if |selector_item| is the selected item when
+  // exiting overview mode.
+  void CalculateWindowListAnimationStates(
       WindowSelectorItem* selected_item,
       WindowSelector::OverviewTransition transition);
 
@@ -203,6 +204,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   views::Widget* new_selector_item_widget_for_testing() {
     return new_selector_item_widget_.get();
+  }
+
+  bool should_animate_when_exiting() const {
+    return should_animate_when_exiting_;
   }
 
  private:
@@ -261,11 +266,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
                               int* out_min_right,
                               int* out_max_right);
 
-  // Sets |selector_item|'s |should_animate_when_entering_|,
-  // |should_animate_when_exiting_|.
-  // |selector_item| is not nullptr when |selector_item| is the selected item
-  // when exiting overview mode.
-  void SetWindowSelectorItemAnimationState(
+  // Calculates |selector_item|'s |should_animate_when_entering_|,
+  // |should_animate_when_exiting_|. |selected| is true if if |selector_item| is
+  // the selected item when exiting overview mode.
+  void CalculateWindowSelectorItemAnimationState(
       WindowSelectorItem* selector_item,
       bool* has_fullscreen_coverred,
       bool selected,
@@ -314,6 +318,13 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // True only after all windows have been prepared for overview.
   bool prepared_for_overview_ = false;
+
+  // True if the window grid should animate when exiting overview mode. Note
+  // even if it's true, it doesn't mean all window items in the grid should
+  // animate when exiting overview, instead each window item's animation status
+  // is controlled by its own |should_animate_when_exiting_|. But if it's false,
+  // all window items in the grid don't have animation.
+  bool should_animate_when_exiting_ = true;
 
   // This WindowGrid's total bounds in screen coordinates.
   gfx::Rect bounds_;

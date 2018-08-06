@@ -718,13 +718,19 @@ void SplitViewController::OnOverviewModeStarting() {
 void SplitViewController::OnOverviewModeEnding() {
   DCHECK(IsSplitViewModeActive());
 
-  if (state_ == BOTH_SNAPPED)
-    return;
-
   WindowSelector* window_selector =
       Shell::Get()->window_selector_controller()->window_selector();
-  WindowGrid* current_grid = window_selector->GetGridWithRootWindow(
-      GetDefaultSnappedWindow()->GetRootWindow());
+  aura::Window* root_window = GetDefaultSnappedWindow()->GetRootWindow();
+
+  if (state_ == BOTH_SNAPPED) {
+    // If overview is ended because of the window gets snapped, do not do
+    // exiting overview animation.
+    window_selector->SetWindowListNotAnimatedWhenExiting(root_window);
+    return;
+  }
+
+  WindowGrid* current_grid =
+      window_selector->GetGridWithRootWindow(root_window);
   if (!current_grid)
     return;
 
@@ -737,6 +743,9 @@ void SplitViewController::OnOverviewModeEnding() {
       aura::Window* window = window_selector_item->GetWindow();
       if (CanSnap(window) && window != GetDefaultSnappedWindow()) {
         SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
+        // If ending overview causes a window to snap, also do not do exiting
+        // overview animation.
+        window_selector->SetWindowListNotAnimatedWhenExiting(root_window);
         return;
       }
     }
@@ -1268,9 +1277,7 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
   overview_window_item_bounds_map_.erase(iter);
 
   // Restore the window's transform first if it's not identity.
-  has_animating_window_ = !window->layer()->GetTargetTransform().IsIdentity();
-
-  if (has_animating_window_) {
+  if (!window->layer()->GetTargetTransform().IsIdentity()) {
     // Calculate the starting transform based on the window's expected snapped
     // bounds and its window item bounds in overview.
     const gfx::Rect snapped_bounds = GetSnappedWindowBoundsInScreen(
@@ -1461,9 +1468,13 @@ void SplitViewController::EndWindowDragImpl(
         InsertWindowToOverview(previous_snapped_window);
       }
     } else {
-      // End the overview mode if it's active at the moment. The dragged window
-      // will be restored back to its previous state before dragging.
-      EndOverview();
+      if (window_selector_controller->IsSelecting()) {
+        window_selector_controller->window_selector()
+            ->SetWindowListNotAnimatedWhenExiting(window->GetRootWindow());
+        // End the overview mode if it's active at the moment. The dragged
+        // window will be restored back to its previous state before dragging.
+        EndOverview();
+      }
     }
   } else {
     aura::Window* previous_snapped_window =

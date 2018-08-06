@@ -769,7 +769,7 @@ gfx::Rect WindowGrid::GetNoItemsIndicatorLabelBoundsForTesting() const {
   return shield_view_->GetLabelBounds();
 }
 
-void WindowGrid::SetWindowListAnimationStates(
+void WindowGrid::CalculateWindowListAnimationStates(
     WindowSelectorItem* selected_item,
     WindowSelector::OverviewTransition transition) {
   // |selected_item| is nullptr during entering animation.
@@ -802,16 +802,16 @@ void WindowGrid::SetWindowListAnimationStates(
       const bool is_selected_item = (selected_item == container_item);
       if (!has_checked_selected_item && is_selected_item)
         has_checked_selected_item = true;
-      SetWindowSelectorItemAnimationState(
+      CalculateWindowSelectorItemAnimationState(
           container_item, &has_covered_available_workspace,
           /*selected=*/is_selected_item, transition);
     }
   }
 
   if (!has_checked_selected_item) {
-    SetWindowSelectorItemAnimationState(selected_item,
-                                        &has_covered_available_workspace,
-                                        /*selected=*/true, transition);
+    CalculateWindowSelectorItemAnimationState(selected_item,
+                                              &has_covered_available_workspace,
+                                              /*selected=*/true, transition);
   }
   for (const auto& item : window_list_) {
     // Has checked the |selected_item|.
@@ -820,13 +820,14 @@ void WindowGrid::SetWindowListAnimationStates(
     // Has checked all always on top windows.
     if (item->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey))
       continue;
-    SetWindowSelectorItemAnimationState(item.get(),
-                                        &has_covered_available_workspace,
-                                        /*selected=*/false, transition);
+    CalculateWindowSelectorItemAnimationState(item.get(),
+                                              &has_covered_available_workspace,
+                                              /*selected=*/false, transition);
   }
 }
 
 void WindowGrid::SetWindowListNotAnimatedWhenExiting() {
+  should_animate_when_exiting_ = false;
   for (const auto& item : window_list_)
     item->set_should_animate_when_exiting(false);
 }
@@ -1348,7 +1349,7 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   return windows_fit;
 }
 
-void WindowGrid::SetWindowSelectorItemAnimationState(
+void WindowGrid::CalculateWindowSelectorItemAnimationState(
     WindowSelectorItem* selector_item,
     bool* has_covered_available_workspace,
     bool selected,
