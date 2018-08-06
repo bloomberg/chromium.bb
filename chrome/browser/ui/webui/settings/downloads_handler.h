@@ -51,6 +51,13 @@ class DownloadsHandler : public SettingsPageUIHandler,
                     int index,
                     void* params) override;
 
+#if defined(OS_CHROMEOS)
+  // Callback for the "getDownloadLocationText" message.  Converts actual
+  // paths in chromeos to values suitable to display to users.
+  // E.g. /home/chronos/u-<hash>/Downloads => "Downloads".
+  void HandleGetDownloadLocationText(const base::ListValue* args);
+#endif
+
   Profile* profile_;
 
   PrefChangeRegistrar pref_registrar_;

@@ -835,8 +835,6 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_UNSUPPORTED_DEVICE_MESSAGE},
     {"smbShareAddedMountExistsMessage",
      IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE},
-    {"downloadsAndroidFilesRootLabel",
-     IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL}
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

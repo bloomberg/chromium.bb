@@ -8,6 +8,13 @@ cr.define('settings', function() {
     initializeDownloads() {}
     selectDownloadLocation() {}
     resetAutoOpenFileTypes() {}
+    // <if expr="chromeos">
+    /**
+     * @param {string} path path to sanitze.
+     * @return {!Promise<string>} string to display in UI.
+     */
+    getDownloadLocationText(path) {}
+    // </if>
   }
 
   /**
@@ -28,6 +35,13 @@ cr.define('settings', function() {
     resetAutoOpenFileTypes() {
       chrome.send('resetAutoOpenFileTypes');
     }
+
+    // <if expr="chromeos">
+    /** @override */
+    getDownloadLocationText(path) {
+      return cr.sendWithPromise('getDownloadLocationText', path);
+    }
+    // </if>
   }
 
   cr.addSingletonGetter(DownloadsBrowserProxyImpl);

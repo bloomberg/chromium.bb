@@ -18,6 +18,10 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/file_manager/path_util.h"
+#endif
+
 using base::UserMetricsAction;
 
 namespace settings {
@@ -44,6 +48,12 @@ void DownloadsHandler::RegisterMessages() {
       "selectDownloadLocation",
       base::BindRepeating(&DownloadsHandler::HandleSelectDownloadLocation,
                           base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "getDownloadLocationText",
+      base::BindRepeating(&DownloadsHandler::HandleGetDownloadLocationText,
+                          base::Unretained(this)));
+#endif
 }
 
 void DownloadsHandler::OnJavascriptAllowed() {
@@ -104,5 +114,21 @@ void DownloadsHandler::FileSelected(const base::FilePath& path,
   pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
   pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }
+
+#if defined(OS_CHROMEOS)
+void DownloadsHandler::HandleGetDownloadLocationText(
+    const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(2U, args->GetSize());
+  std::string callback_id;
+  std::string path;
+  CHECK(args->GetString(0, &callback_id));
+  CHECK(args->GetString(1, &path));
+
+  ResolveJavascriptCallback(
+      base::Value(callback_id),
+      base::Value(file_manager::util::GetDownloadLocationText(profile_, path)));
+}
+#endif
 
 }  // namespace settings

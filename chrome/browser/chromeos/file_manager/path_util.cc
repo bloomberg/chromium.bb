@@ -6,21 +6,25 @@
 
 #include "base/barrier_closure.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace file_manager {
@@ -29,6 +33,8 @@ namespace util {
 namespace {
 
 const char kDownloadsFolderName[] = "Downloads";
+const char kGoogleDriveDisplayName[] = "Google Drive";
+const char kRootRelativeToDriveMount[] = "root";
 
 // Sync with the file provider in ARC++ side.
 constexpr char kArcFileProviderUrl[] =
@@ -249,6 +255,42 @@ void ConvertToContentUrls(
     documents_provider_root->ResolveToContentUrl(
         filepath, base::BindRepeating(single_content_url_callback, index));
   }
+}
+
+bool ReplacePrefix(std::string* s,
+                   const std::string& prefix,
+                   const std::string& replacement) {
+  if (base::StartsWith(*s, prefix, base::CompareCase::SENSITIVE)) {
+    base::ReplaceFirstSubstringAfterOffset(s, 0, prefix, replacement);
+    return true;
+  }
+  return false;
+}
+
+std::string GetDownloadLocationText(Profile* profile, const std::string& path) {
+  std::string result(path);
+  if (ReplacePrefix(&result, "/home/chronos/user/Downloads",
+                    kDownloadsFolderName)) {
+  } else if (ReplacePrefix(&result,
+                           "/home/chronos/" +
+                               profile->GetPath().BaseName().value() +
+                               "/Downloads",
+                           kDownloadsFolderName)) {
+  } else if (ReplacePrefix(&result,
+                           drive::util::GetDriveMountPointPath(profile)
+                               .Append(kRootRelativeToDriveMount)
+                               .value(),
+                           kGoogleDriveDisplayName)) {
+  } else if (ReplacePrefix(&result, kAndroidFilesPath,
+                           l10n_util::GetStringUTF8(
+                               IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL))) {
+  } else if (ReplacePrefix(&result, GetCrostiniMountDirectory(profile).value(),
+                           l10n_util::GetStringUTF8(
+                               IDS_FILE_BROWSER_LINUX_FILES_ROOT_LABEL))) {
+  }
+
+  base::ReplaceChars(result, "/", " \u203a ", &result);
+  return result;
 }
 
 }  // namespace util
