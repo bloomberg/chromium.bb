@@ -37,7 +37,7 @@ WebAppProviderFactory::~WebAppProviderFactory() = default;
 KeyedService* WebAppProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new WebAppProvider(profile->GetPrefs());
+  return new WebAppProvider(profile);
 }
 
 bool WebAppProviderFactory::ServiceIsCreatedWithBrowserContext() const {

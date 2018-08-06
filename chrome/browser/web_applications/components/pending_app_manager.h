@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "url/gurl.h"
 
@@ -20,6 +21,8 @@ namespace web_app {
 // should wait for the update request to finish before uninstalling the app.
 class PendingAppManager {
  public:
+  using InstallCallback = base::OnceCallback<void(bool)>;
+
   // How the app will be launched after installation.
   enum class LaunchContainer {
     kTab,
@@ -42,7 +45,16 @@ class PendingAppManager {
   PendingAppManager();
   virtual ~PendingAppManager();
 
-  // Starts the installation of |apps_to_install|.
+  // Queues an installation operation with the highest priority. Essentially
+  // installing the app immediately if there are no ongoing operations or
+  // installing the app right after the current operation finishes.
+  //
+  // Fails if the same operation has been queued before. Should only be used in
+  // response to a user action e.g. the user clicked an install button.
+  virtual void Install(AppInfo app_to_install,
+                       InstallCallback callback) = 0;
+
+  // Adds |apps_to_install| to the queue of operations.
   virtual void ProcessAppOperations(std::vector<AppInfo> apps_to_install) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PendingAppManager);

@@ -245,6 +245,11 @@ void TestWebContents::TestDidReceiveInputEvent(
   DidReceiveInputEvent(render_widget_host, type);
 }
 
+void TestWebContents::TestDidFinishLoad(const GURL& url) {
+  FrameHostMsg_DidFinishLoad msg(0, url);
+  frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
+}
+
 void TestWebContents::TestDidFailLoadWithError(
     const GURL& url,
     int error_code,
@@ -386,11 +391,6 @@ void TestWebContents::SetHistoryOffsetAndLength(int history_offset,
             history_offset);
   EXPECT_EQ(expect_set_history_offset_and_length_history_length_,
             history_length);
-}
-
-void TestWebContents::TestDidFinishLoad(const GURL& url) {
-  FrameHostMsg_DidFinishLoad msg(0, url);
-  frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 
 void TestWebContents::SetNavigationData(

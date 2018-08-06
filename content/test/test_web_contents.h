@@ -9,8 +9,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/web_contents_tester.h"
@@ -101,6 +103,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetMainFrameMimeType(const std::string& mime_type) override;
   void SetIsCurrentlyAudible(bool audible) override;
   void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) override;
+  void TestDidFinishLoad(const GURL& url) override;
   void TestDidFailLoadWithError(
       const GURL& url,
       int error_code,
@@ -149,8 +152,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   bool GetPauseSubresourceLoadingCalled() override;
 
   void ResetPauseSubresourceLoadingCalled() override;
-
-  void TestDidFinishLoad(const GURL& url);
 
   void SetPageImportanceSignals(PageImportanceSignals signals) override;
 
