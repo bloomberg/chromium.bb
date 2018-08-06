@@ -2050,6 +2050,7 @@
         "args": [
           "--jobs=1"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "swarming": {
