@@ -13,6 +13,16 @@
 namespace net {
 namespace test {
 
+namespace {
+
+base::TimeTicks NowInTicks(const quic::MockClock& clock) {
+  base::TimeTicks ticks;
+  return ticks + base::TimeDelta::FromMicroseconds(
+                     (clock.Now() - quic::QuicTime::Zero()).ToMicroseconds());
+}
+
+}  // namespace
+
 TestTaskRunner::TestTaskRunner(quic::MockClock* clock) : clock_(clock) {}
 
 TestTaskRunner::~TestTaskRunner() {}
@@ -21,7 +31,7 @@ bool TestTaskRunner::PostDelayedTask(const base::Location& from_here,
                                      base::OnceClosure task,
                                      base::TimeDelta delay) {
   EXPECT_GE(delay, base::TimeDelta());
-  tasks_.push_back(PostedTask(from_here, std::move(task), clock_->NowInTicks(),
+  tasks_.push_back(PostedTask(from_here, std::move(task), NowInTicks(*clock_),
                               delay, base::TestPendingTask::NESTABLE));
   return false;
 }
@@ -44,7 +54,7 @@ void TestTaskRunner::RunNextTask() {
   std::vector<PostedTask>::iterator next = FindNextTask();
   DCHECK(next != tasks_.end());
   clock_->AdvanceTime(quic::QuicTime::Delta::FromMicroseconds(
-      (next->GetTimeToRun() - clock_->NowInTicks()).InMicroseconds()));
+      (next->GetTimeToRun() - NowInTicks(*clock_)).InMicroseconds()));
   PostedTask task = std::move(*next);
   tasks_.erase(next);
   std::move(task.task).Run();
