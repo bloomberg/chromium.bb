@@ -11,12 +11,24 @@ namespace content {
 
 class ServiceWorkerContextObserver {
  public:
-  // Called when a service worker has been registered with scope |pattern|.
+  // Called when a service worker has been registered with scope |scope|.
   //
   // This is called when the ServiceWorkerContainer.register() promise is
   // resolved, which happens before the service worker registration is persisted
   // to disk.
-  virtual void OnRegistrationCompleted(const GURL& pattern) {}
+  virtual void OnRegistrationCompleted(const GURL& scope) {}
+
+  // Called when the service worker with id |version_id| changes status to
+  // activated.
+  virtual void OnVersionActivated(int64_t version_id, const GURL& scope) {}
+
+  // Called when the service worker with id |version_id| changes status to
+  // redundant.
+  virtual void OnVersionRedundant(int64_t version_id, const GURL& scope) {}
+
+  // Called when there are no more controllees for the service worker with id
+  // |version_id|.
+  virtual void OnNoControllees(int64_t version_id, const GURL& scope) {}
 
  protected:
   virtual ~ServiceWorkerContextObserver() {}

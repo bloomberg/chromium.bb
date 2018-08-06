@@ -262,6 +262,25 @@ void ServiceWorkerContextWrapper::OnRegistrationCompleted(
     observer.OnRegistrationCompleted(pattern);
 }
 
+void ServiceWorkerContextWrapper::OnNoControllees(int64_t version_id,
+                                                  const GURL& scope) {
+  for (auto& observer : observer_list_)
+    observer.OnNoControllees(version_id, scope);
+}
+
+void ServiceWorkerContextWrapper::OnVersionStateChanged(
+    int64_t version_id,
+    const GURL& scope,
+    ServiceWorkerVersion::Status status) {
+  if (status == ServiceWorkerVersion::Status::ACTIVATED) {
+    for (auto& observer : observer_list_)
+      observer.OnVersionActivated(version_id, scope);
+  } else if (status == ServiceWorkerVersion::Status::REDUNDANT) {
+    for (auto& observer : observer_list_)
+      observer.OnVersionRedundant(version_id, scope);
+  }
+}
+
 void ServiceWorkerContextWrapper::AddObserver(
     ServiceWorkerContextObserver* observer) {
   observer_list_.AddObserver(observer);

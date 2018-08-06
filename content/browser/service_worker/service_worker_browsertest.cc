@@ -200,6 +200,7 @@ class WorkerActivatedObserver
   }
   // ServiceWorkerContextCoreObserver overrides.
   void OnVersionStateChanged(int64_t version_id,
+                             const GURL& scope,
                              ServiceWorkerVersion::Status) override {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);

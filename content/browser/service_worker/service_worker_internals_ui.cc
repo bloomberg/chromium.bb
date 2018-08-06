@@ -261,6 +261,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
         Value(base::Int64ToString(version_id)));
   }
   void OnVersionStateChanged(int64_t version_id,
+                             const GURL& scope,
                              ServiceWorkerVersion::Status) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(

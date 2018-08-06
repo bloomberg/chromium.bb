@@ -21,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -169,6 +170,9 @@ class ServiceWorkerContextTest : public ServiceWorkerContextCoreObserver,
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
+  ServiceWorkerContextWrapper* context_wrapper() {
+    return helper_->context_wrapper();
+  }
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -204,6 +208,182 @@ class RecordableEmbeddedWorkerInstanceClient
  private:
   DISALLOW_COPY_AND_ASSIGN(RecordableEmbeddedWorkerInstanceClient);
 };
+
+class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
+ public:
+  enum class EventType {
+    RegistrationCompleted,
+    VersionActivated,
+    VersionRedundant,
+    NoControllees
+  };
+  struct EventLog {
+    EventType type;
+    base::Optional<GURL> url;
+    base::Optional<int64_t> version_id;
+  };
+
+  explicit TestServiceWorkerContextObserver(ServiceWorkerContext* context)
+      : context_(context) {
+    context_->AddObserver(this);
+  };
+
+  ~TestServiceWorkerContextObserver() override {
+    context_->RemoveObserver(this);
+  }
+
+  void OnRegistrationCompleted(const GURL& scope) override {
+    EventLog log;
+    log.type = EventType::RegistrationCompleted;
+    log.url = scope;
+    events_.push_back(log);
+  }
+
+  void OnVersionActivated(int64_t version_id, const GURL& scope) override {
+    EventLog log;
+    log.type = EventType::VersionActivated;
+    log.version_id = version_id;
+    log.url = scope;
+    events_.push_back(log);
+  }
+
+  void OnVersionRedundant(int64_t version_id, const GURL& scope) override {
+    EventLog log;
+    log.type = EventType::VersionRedundant;
+    log.version_id = version_id;
+    log.url = scope;
+    events_.push_back(log);
+  }
+
+  void OnNoControllees(int64_t version_id, const GURL& scope) override {
+    EventLog log;
+    log.type = EventType::NoControllees;
+    log.version_id = version_id;
+    log.url = scope;
+    events_.push_back(log);
+  }
+
+  const std::vector<EventLog>& events() { return events_; }
+
+ private:
+  ServiceWorkerContext* context_;
+  std::vector<EventLog> events_;
+  DISALLOW_COPY_AND_ASSIGN(TestServiceWorkerContextObserver);
+};
+
+// Make sure OnRegistrationCompleted is called on observer.
+TEST_F(ServiceWorkerContextTest, RegistrationCompletedObserver) {
+  GURL pattern("https://www.example.com/");
+  GURL script_url("https://www.example.com/service_worker.js");
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = pattern;
+
+  TestServiceWorkerContextObserver observer(context_wrapper());
+
+  int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
+  bool called = false;
+  context()->RegisterServiceWorker(
+      script_url, options, MakeRegisteredCallback(&called, &registration_id));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(called);
+  EXPECT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
+  ASSERT_EQ(2u, observer.events().size());
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::RegistrationCompleted,
+            observer.events()[0].type);
+  EXPECT_EQ(pattern, observer.events()[0].url);
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::VersionActivated,
+            observer.events()[1].type);
+  EXPECT_EQ(pattern, observer.events()[1].url);
+}
+
+// Make sure OnNoControllees is called on observer.
+TEST_F(ServiceWorkerContextTest, NoControlleesObserver) {
+  GURL pattern("https://www.example.com/");
+  GURL script_url("https://www.example.com/service_worker.js");
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = pattern;
+
+  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+      options, 1l /* dummy registration id */, context()->AsWeakPtr());
+
+  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration.get(), script_url, 2l /* dummy version id */,
+      context()->AsWeakPtr());
+
+  ServiceWorkerRemoteProviderEndpoint endpoint;
+  std::unique_ptr<ServiceWorkerProviderHost> host =
+      CreateProviderHostForWindow(helper_->mock_render_process_id(), 1, true,
+                                  context()->AsWeakPtr(), &endpoint);
+
+  version->AddControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+
+  TestServiceWorkerContextObserver observer(context_wrapper());
+
+  version->RemoveControllee(host->client_uuid());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, observer.events().size());
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::NoControllees,
+            observer.events()[0].type);
+  EXPECT_EQ(pattern, observer.events()[0].url);
+  EXPECT_EQ(2l, observer.events()[0].version_id);
+}
+
+// Make sure OnVersionActivated is called on observer.
+TEST_F(ServiceWorkerContextTest, VersionActivatedObserver) {
+  GURL pattern("https://www.example.com/");
+  GURL script_url("https://www.example.com/service_worker.js");
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = pattern;
+
+  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+      options, 1l /* dummy registration id */, context()->AsWeakPtr());
+
+  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration.get(), script_url, 2l /* dummy version id */,
+      context()->AsWeakPtr());
+
+  TestServiceWorkerContextObserver observer(context_wrapper());
+
+  version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
+  version->SetStatus(ServiceWorkerVersion::Status::ACTIVATED);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, observer.events().size());
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::VersionActivated,
+            observer.events()[0].type);
+  EXPECT_EQ(2l, observer.events()[0].version_id);
+}
+
+// Make sure OnVersionRedundant is called on observer.
+TEST_F(ServiceWorkerContextTest, VersionRedundantObserver) {
+  GURL pattern("https://www.example.com/");
+  GURL script_url("https://www.example.com/service_worker.js");
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = pattern;
+
+  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+      options, 1l /* dummy registration id */, context()->AsWeakPtr());
+
+  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration.get(), script_url, 2l /* dummy version id */,
+      context()->AsWeakPtr());
+
+  TestServiceWorkerContextObserver observer(context_wrapper());
+
+  version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
+  version->SetStatus(ServiceWorkerVersion::Status::REDUNDANT);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, observer.events().size());
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::VersionRedundant,
+            observer.events()[0].type);
+  EXPECT_EQ(2l, observer.events()[0].version_id);
+}
 
 // Make sure basic registration is working.
 TEST_F(ServiceWorkerContextTest, Register) {
