@@ -140,6 +140,65 @@ TEST_F(LockContentsViewUnitTest, SingleUserCenteredNoteActionEnabled) {
             widget_bounds.width() - (auth_bounds.x() + auth_bounds.width()));
 }
 
+// Verifies that any top-level spacing views go down to width zero in small
+// screen sizes.
+TEST_F(LockContentsViewUnitTest, LayoutInSmallScreenSize) {
+  // Build lock screen.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  LockContentsView::TestApi lock_contents(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  display::test::DisplayManagerTestApi display_manager_test_api(
+      display_manager());
+
+  auto get_left_view = [&]() -> views::View* {
+    return lock_contents.primary_big_view();
+  };
+  auto get_right_view = [&]() -> views::View* {
+    if (lock_contents.opt_secondary_big_view())
+      return lock_contents.opt_secondary_big_view();
+    return lock_contents.users_list();
+  };
+
+  for (int i = 2; i < 10; ++i) {
+    SetUserCount(i);
+    views::View* left_view = get_left_view();
+    views::View* right_view = get_right_view();
+
+    // Determine the full-sized widths when there is plenty of spacing available
+    display_manager_test_api.UpdateDisplay("2000x1000");
+    int left_width = left_view->width();
+    int right_width = right_view->width();
+
+    int left_x = left_view->x();
+    int right_x = right_view->x();
+
+    // Resize to the minimum width that will fit both the left and right views
+    int display_width = left_width + right_width;
+    display_manager_test_api.UpdateDisplay(std::to_string(display_width) +
+                                           "x400");
+
+    // Verify the views moved, ie, a layout was performed
+    EXPECT_NE(left_view->x(), left_x);
+    EXPECT_NE(right_view->x(), right_x);
+
+    // Left and right views still have their full widths
+    EXPECT_EQ(left_width, left_view->width());
+    EXPECT_EQ(right_width, right_view->width());
+
+    // Left edge of |left_view| should be at start of the screen.
+    EXPECT_EQ(left_view->GetBoundsInScreen().x(), 0);
+    // Left edge of |right_view| should immediately follow |left_view| with no
+    // gap.
+    EXPECT_EQ(left_view->GetBoundsInScreen().right(),
+              right_view->GetBoundsInScreen().x());
+    // Right edge of |right_view| should be at the end of the screen.
+    EXPECT_EQ(right_view->GetBoundsInScreen().right(), display_width);
+  }
+}
+
 // Verifies that layout dynamically updates after a rotation by checking the
 // distance between the auth user and the user list in landscape and portrait
 // mode.

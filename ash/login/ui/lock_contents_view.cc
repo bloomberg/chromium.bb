@@ -89,26 +89,10 @@ constexpr SkColor kLearnMoreButtonTextColor =
 constexpr char kLockContentsViewName[] = "LockContentsView";
 constexpr char kAuthErrorContainerName[] = "AuthErrorContainer";
 
-// A view which stores two preferred sizes. The embedder can control which one
-// is used.
-class MultiSizedView : public views::View {
- public:
-  MultiSizedView(const gfx::Size& a, const gfx::Size& b) : a_(a), b_(b) {}
-  ~MultiSizedView() override = default;
-
-  void SwapPreferredSizeTo(bool use_a) {
-    if (use_a)
-      SetPreferredSize(a_);
-    else
-      SetPreferredSize(b_);
-  }
-
- private:
-  gfx::Size a_;
-  gfx::Size b_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiSizedView);
-};
+// Sets the preferred width for |view| with an arbitrary height.
+void SetPreferredWidthForView(views::View* view, int width) {
+  view->SetPreferredSize(gfx::Size(width, kNonEmptyHeightDp));
+}
 
 class AuthErrorLearnMoreButton : public views::Button,
                                  public views::ButtonListener {
@@ -217,6 +201,69 @@ keyboard::KeyboardController* GetKeyboardControllerForWidget(
 bool IsPublicAccountUser(const mojom::LoginUserInfoPtr& user) {
   return user->basic_user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
+
+//
+// Computes a layout described as follows:
+//
+//    l L R r
+//
+// L R go from [0, L/R_max_fixed_width]
+// l and r go from [0, inf]
+//
+// First, width is distributed to L and R up to their maximum widths. If there
+// is not enough width for them, space will be distributed evenly in the same
+// ratio as their original sizes.
+//
+// If L and R are at max width, l and r will receive all remaining space in the
+// specified relative weighting.
+//
+// l -> left_flex_weight
+// L -> left_max_fixed_width
+// R -> right_max_fixed_width
+// r -> right_flex_weight
+//
+// Output data is in the member variables.
+//
+struct MediumViewLayout {
+  MediumViewLayout(int width,
+                   int left_flex_weight,
+                   int left_max_fixed_width,
+                   int right_max_fixed_width,
+                   int right_flex_weight) {
+    // No space to distribute.
+    if (width <= 0)
+      return;
+
+    auto set_values_from_weight = [](int width, float weight_a, float weight_b,
+                                     int* value_a, int* value_b) {
+      float total_weight = weight_a + weight_b;
+      *value_a = width * (weight_a / total_weight);
+      // Subtract to avoid floating point rounding errors, ie, guarantee that
+      // that |value_a + value_b = width|.
+      *value_b = width - *value_a;
+    };
+
+    int flex_width = width - (left_max_fixed_width + right_max_fixed_width);
+    if (flex_width < 0) {
+      // No flex available, distribute to fixed width only
+      set_values_from_weight(width, left_max_fixed_width, right_max_fixed_width,
+                             &left_fixed_width, &right_fixed_width);
+      DCHECK_EQ(width, left_fixed_width + right_fixed_width);
+    } else {
+      // Flex is available; fixed goes to maximum size, extra goes to flex.
+      left_fixed_width = left_max_fixed_width;
+      right_fixed_width = right_max_fixed_width;
+      set_values_from_weight(flex_width, left_flex_weight, right_flex_weight,
+                             &left_flex_width, &right_flex_width);
+      DCHECK_EQ(flex_width, left_flex_width + right_flex_width);
+    }
+  }
+
+  int left_fixed_width = 0;
+  int right_fixed_width = 0;
+  int left_flex_width = 0;
+  int right_flex_width = 0;
+};
 
 }  // namespace
 
@@ -498,7 +545,7 @@ void LockContentsView::OnUsersChanged(
   main_view_->RemoveAllChildViews(true /*delete_children*/);
   opt_secondary_big_view_ = nullptr;
   users_list_ = nullptr;
-  rotation_actions_.clear();
+  layout_actions_.clear();
 
   // Build user state list. Preserve previous state if the user already exists.
   std::vector<UserState> new_users;
@@ -509,7 +556,6 @@ void LockContentsView::OnUsersChanged(
     else
       new_users.push_back(UserState(user));
   }
-
   users_ = std::move(new_users);
 
   // If there are no users, show gaia signin if login, otherwise crash.
@@ -521,26 +567,22 @@ void LockContentsView::OnUsersChanged(
     return;
   }
 
-  auto box_layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
-  main_layout_ = box_layout.get();
-  main_layout_->set_main_axis_alignment(
+  // Allocate layout and big user, which are common between all densities.
+  auto* main_layout = main_view_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  main_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  main_layout_->set_cross_axis_alignment(
+  main_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  main_view_->SetLayoutManager(std::move(box_layout));
-
-  // Add big user.
   primary_big_view_ = AllocateLoginBigUserView(users[0], true /*is_primary*/);
-  main_view_->AddChildView(primary_big_view_);
 
   // Build layout for additional users.
-  if (users.size() == 2)
+  if (users.size() <= 2)
     CreateLowDensityLayout(users);
   else if (users.size() >= 3 && users.size() <= 6)
     CreateMediumDensityLayout(users);
   else if (users.size() >= 7)
-    CreateHighDensityLayout(users);
+    CreateHighDensityLayout(users, main_layout);
 
   LayoutAuth(primary_big_view_, opt_secondary_big_view_, false /*animate*/);
 
@@ -863,8 +905,11 @@ void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {
 
 void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,
                                                uint32_t changed_metrics) {
-  // Ignore all metric changes except rotation.
-  if ((changed_metrics & DISPLAY_METRIC_ROTATION) == 0)
+  // Ignore all metrics except for those listed in |filter|.
+  uint32_t filter = DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_WORK_AREA |
+                    DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+                    DISPLAY_METRIC_ROTATION;
+  if ((filter & changed_metrics) == 0)
     return;
 
   DoLayout();
@@ -929,81 +974,154 @@ void LockContentsView::FocusNextWidget(bool reverse) {
 
 void LockContentsView::CreateLowDensityLayout(
     const std::vector<mojom::LoginUserInfoPtr>& users) {
-  DCHECK_EQ(users.size(), 2u);
+  DCHECK_LE(users.size(), 2u);
 
-  // Space between auth user and alternative user.
-  main_view_->AddChildView(MakeOrientationViewWithWidths(
-      kLowDensityDistanceBetweenUsersInLandscapeDp,
-      kLowDensityDistanceBetweenUsersInPortraitDp));
+  main_view_->AddChildView(primary_big_view_);
 
-  // Build auth user.
-  opt_secondary_big_view_ =
-      AllocateLoginBigUserView(users[1], false /*is_primary*/);
-  main_view_->AddChildView(opt_secondary_big_view_);
+  if (users.size() > 1) {
+    // Space between primary user and secondary user.
+    auto* spacing_middle = new NonAccessibleView();
+    main_view_->AddChildView(spacing_middle);
+
+    // Build secondary auth user.
+    opt_secondary_big_view_ =
+        AllocateLoginBigUserView(users[1], false /*is_primary*/);
+    main_view_->AddChildView(opt_secondary_big_view_);
+
+    // Set |spacing_middle| to the correct size. If there is less spacing
+    // available than desired, use up to the available.
+    AddDisplayLayoutAction(base::BindRepeating(
+        [](views::View* host_view, views::View* big_user_view,
+           views::View* spacing_middle, views::View* secondary_big_view,
+           bool landscape) {
+          int total_width = host_view->GetPreferredSize().width();
+          int available_width =
+              total_width - (big_user_view->GetPreferredSize().width() +
+                             secondary_big_view->GetPreferredSize().width());
+          if (available_width <= 0) {
+            SetPreferredWidthForView(spacing_middle, 0);
+            return;
+          }
+
+          int desired_width = landscape
+                                  ? kLowDensityDistanceBetweenUsersInLandscapeDp
+                                  : kLowDensityDistanceBetweenUsersInPortraitDp;
+          SetPreferredWidthForView(spacing_middle,
+                                   std::min(available_width, desired_width));
+        },
+        this, primary_big_view_, spacing_middle, opt_secondary_big_view_));
+  }
 }
 
 void LockContentsView::CreateMediumDensityLayout(
     const std::vector<mojom::LoginUserInfoPtr>& users) {
-  // Insert spacing before (left of) auth.
-  main_view_->AddChildViewAt(MakeOrientationViewWithWidths(
-                                 kMediumDensityMarginLeftOfAuthUserLandscapeDp,
-                                 kMediumDensityMarginLeftOfAuthUserPortraitDp),
-                             0);
-  // Insert spacing between auth and user list.
-  main_view_->AddChildView(MakeOrientationViewWithWidths(
-      kMediumDensityDistanceBetweenAuthUserAndUsersLandscapeDp,
-      kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp));
+  // Here is a diagram of this layout:
+  //
+  //    a A x B y b
+  //
+  // a, A: spacing_left
+  // x: primary_big_view_
+  // B: spacing_middle
+  // y: users_list_
+  // b: spacing_right
+  //
+  // A and B are fixed-width spaces; a and b are flexible space that consume any
+  // additional width.
+  //
+  // A and B are the reason for custom layout; no layout manager currently
+  // supports a fixed-width view that can shrink, but not grow (ie, bounds from
+  // [0,x]). Custom layout logic is used instead, which is contained inside of
+  // the AddDisplayLayoutAction call below.
 
+  // Construct instances.
+  auto* spacing_left = new NonAccessibleView();
+  auto* spacing_middle = new NonAccessibleView();
+  auto* spacing_right = new NonAccessibleView();
   users_list_ = BuildScrollableUsersListView(users, LoginDisplayStyle::kSmall);
-  main_view_->AddChildView(users_list_);
 
-  // Insert dynamic spacing on left/right of the content which changes based on
-  // screen rotation and display size.
-  auto* left = new NonAccessibleView();
-  main_view_->AddChildViewAt(left, 0);
-  auto* right = new NonAccessibleView();
-  main_view_->AddChildView(right);
-  AddRotationAction(base::BindRepeating(
-      [](views::BoxLayout* layout, views::View* left, views::View* right,
+  // Add views as described above.
+  main_view_->AddChildView(spacing_left);
+  main_view_->AddChildView(primary_big_view_);
+  main_view_->AddChildView(spacing_middle);
+  main_view_->AddChildView(users_list_);
+  main_view_->AddChildView(spacing_right);
+
+  // Set width for the |spacing_*| views.
+  AddDisplayLayoutAction(base::BindRepeating(
+      [](views::View* host_view, views::View* big_user_view,
+         views::View* users_list, views::View* spacing_left,
+         views::View* spacing_middle, views::View* spacing_right,
          bool landscape) {
-        if (landscape) {
-          layout->SetFlexForView(left, 1);
-          layout->SetFlexForView(right, 1);
-        } else {
-          layout->SetFlexForView(left, 2);
-          layout->SetFlexForView(right, 1);
-        }
+        int total_width = host_view->GetPreferredSize().width();
+        int available_width =
+            total_width - (big_user_view->GetPreferredSize().width() +
+                           users_list->GetPreferredSize().width());
+
+        int left_max_fixed_width =
+            landscape ? kMediumDensityMarginLeftOfAuthUserLandscapeDp
+                      : kMediumDensityMarginLeftOfAuthUserPortraitDp;
+        int right_max_fixed_width =
+            landscape ? kMediumDensityDistanceBetweenAuthUserAndUsersLandscapeDp
+                      : kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp;
+
+        int left_flex_weight = landscape ? 1 : 2;
+        int right_flex_weight = 1;
+
+        MediumViewLayout medium_layout(
+            available_width, left_flex_weight, left_max_fixed_width,
+            right_max_fixed_width, right_flex_weight);
+
+        SetPreferredWidthForView(
+            spacing_left,
+            medium_layout.left_flex_width + medium_layout.left_fixed_width);
+        SetPreferredWidthForView(spacing_middle,
+                                 medium_layout.right_fixed_width);
+        SetPreferredWidthForView(spacing_right, medium_layout.right_flex_width);
       },
-      main_layout_, left, right));
+      this, primary_big_view_, users_list_, spacing_left, spacing_middle,
+      spacing_right));
 }
 
 void LockContentsView::CreateHighDensityLayout(
-    const std::vector<mojom::LoginUserInfoPtr>& users) {
-  // Insert spacing before and after the auth view.
+    const std::vector<mojom::LoginUserInfoPtr>& users,
+    views::BoxLayout* main_layout) {
+  // Insert spacing before the auth view.
   auto* fill = new NonAccessibleView();
-  main_view_->AddChildViewAt(fill, 0);
-  main_layout_->SetFlexForView(fill, 1);
+  main_view_->AddChildView(fill);
+  main_layout->SetFlexForView(fill, 1);
 
+  main_view_->AddChildView(primary_big_view_);
+
+  // Insert spacing after the auth view.
   fill = new NonAccessibleView();
   main_view_->AddChildView(fill);
-  main_layout_->SetFlexForView(fill, 1);
+  main_layout->SetFlexForView(fill, 1);
 
   users_list_ =
       BuildScrollableUsersListView(users, LoginDisplayStyle::kExtraSmall);
   main_view_->AddChildView(users_list_);
+
+  // User list size may change after a display metric change.
+  AddDisplayLayoutAction(base::BindRepeating(
+      [](views::View* view, bool landscape) { view->SizeToPreferredSize(); },
+      users_list_));
 }
 
 void LockContentsView::DoLayout() {
-  bool landscape = login_views_utils::ShouldShowLandscape(GetWidget());
-  for (auto& action : rotation_actions_)
-    action.Run(landscape);
-
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           GetWidget()->GetNativeWindow());
+
+  // Set preferred size before running layout actions, as layout actions may
+  // depend on the preferred size to determine layout.
   SetPreferredSize(display.size());
+
+  bool landscape = login_views_utils::ShouldShowLandscape(GetWidget());
+  for (auto& action : layout_actions_)
+    action.Run(landscape);
+
+  // SizeToPreferredSize will call Layout().
   SizeToPreferredSize();
-  Layout();
 }
 
 void LockContentsView::LayoutTopHeader() {
@@ -1027,18 +1145,10 @@ void LockContentsView::LayoutPublicSessionView() {
   expanded_view_->SetBoundsRect(bounds);
 }
 
-views::View* LockContentsView::MakeOrientationViewWithWidths(int landscape,
-                                                             int portrait) {
-  auto* view = new MultiSizedView(gfx::Size(landscape, kNonEmptyHeightDp),
-                                  gfx::Size(portrait, kNonEmptyHeightDp));
-  AddRotationAction(base::BindRepeating(&MultiSizedView::SwapPreferredSizeTo,
-                                        base::Unretained(view)));
-  return view;
-}
-
-void LockContentsView::AddRotationAction(const OnRotate& on_rotate) {
-  on_rotate.Run(login_views_utils::ShouldShowLandscape(GetWidget()));
-  rotation_actions_.push_back(on_rotate);
+void LockContentsView::AddDisplayLayoutAction(
+    const DisplayLayoutAction& layout_action) {
+  layout_action.Run(login_views_utils::ShouldShowLandscape(GetWidget()));
+  layout_actions_.push_back(layout_action);
 }
 
 void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
