@@ -60,7 +60,7 @@ vars = {
 
   # Check out and download nacl by default. This can be disabled e.g. with
   # custom_vars.
-  'checkout_nacl': True,
+  'checkout_nacl': False,
 
   # By default, do not check out src-internal. This can be overridden e.g. with
   # custom_vars.
@@ -78,7 +78,7 @@ vars = {
   'checkout_oculus_sdk' : 'checkout_src_internal and checkout_win',
 
   # TODO(dpranke): change to != "small" once != is supported.
-  'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
+  'checkout_traffic_annotation_tools': False,
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration == "default"',
 
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
@@ -99,6 +99,7 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   'skia_git': 'https://skia.googlesource.com',
   'webrtc_git': 'https://webrtc.googlesource.com',
+  'checkout_blpwtk2': True,
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling sfntly
   # and whatever else without interference from each other.
@@ -1940,6 +1941,7 @@ hooks = [
     'name': 'clang',
     'pattern': '.',
     'action': ['python', 'src/tools/clang/scripts/update.py'],
+    'condition': 'not checkout_blpwtk2'
   },
   {
     # Mac doesn't use lld so it's not included in the default clang bundle
@@ -1979,7 +1981,7 @@ hooks = [
   {
     'name': 'gn_win',
     'pattern': '.',
-    'condition': 'host_os == "win"',
+    'condition': 'host_os == "win" and not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2016,7 +2018,7 @@ hooks = [
   {
     'name': 'clang_format_win',
     'pattern': '.',
-    'condition': 'host_os == "win"',
+    'condition': 'host_os == "win" and not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2053,7 +2055,7 @@ hooks = [
   {
     'name': 'rc_win',
     'pattern': '.',
-    'condition': 'checkout_win and host_os == "win"',
+    'condition': '(checkout_win and host_os == "win") and not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2089,6 +2091,7 @@ hooks = [
  {
     'name': 'test_fonts',
     'pattern': '.',
+    'condition': 'not checkout_blpwtk2',
     'action': [ 'download_from_google_storage',
                 '--no_resume',
                 '--extract',
@@ -2101,7 +2104,7 @@ hooks = [
   {
     'name': 'orderfiles_win',
     'pattern': '.',
-    'condition': 'checkout_win',
+    'condition': 'checkout_win and not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2115,7 +2118,7 @@ hooks = [
   {
     'name': 'luci-go_win',
     'pattern': '.',
-    'condition': 'host_os == "win"',
+    'condition': 'host_os == "win" and not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2151,7 +2154,7 @@ hooks = [
   {
     'name': 'apache_win32',
     'pattern': '\\.sha1',
-    'condition': 'host_os == "win"',
+    'condition': 'host_os == "win" and not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2190,6 +2193,7 @@ hooks = [
   {
     "name": "wasm_fuzzer",
     "pattern": ".",
+    'condition': 'not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 "--no_resume",
@@ -2230,7 +2234,7 @@ hooks = [
   {
     'name': 'node_win',
     'pattern': '.',
-    'condition': 'host_os == "win"',
+    'condition': 'host_os == "win" and not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2244,6 +2248,7 @@ hooks = [
   {
     'name': 'webui_node_modules',
     'pattern': '.',
+    'condition': 'not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2311,6 +2316,7 @@ hooks = [
   {
     'name': 'zucchini_testdata',
     'pattern': '.',
+    'condition': 'not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -2536,6 +2542,7 @@ hooks = [
   {
     'name': 'vpython_common',
     'pattern': '.',
+    'condition': 'not checkout_blpwtk2',
     'action': [ 'vpython',
                 '-vpython-spec', 'src/.vpython',
                 '-vpython-tool', 'install',
