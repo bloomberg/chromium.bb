@@ -16,6 +16,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
@@ -383,9 +384,11 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
 
   // Callback for CrostiniManager::InstallCrostiniComponent. Must be called on
   // the UI thread.
-  void OnInstallTerminaComponent(BoolCallback callback,
-                                 bool is_update_checked,
-                                 bool is_successful);
+  void OnInstallTerminaComponent(
+      BoolCallback callback,
+      bool is_update_checked,
+      component_updater::CrOSComponentManager::Error error,
+      const base::FilePath& result);
 
   // Callback for CrostiniClient::StartConcierge. Called after the
   // DebugDaemon service method finishes.
