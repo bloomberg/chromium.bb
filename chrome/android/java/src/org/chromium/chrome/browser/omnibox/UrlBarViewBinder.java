@@ -32,8 +32,7 @@ class UrlBarViewBinder {
             view.setCustomSelectionActionModeCallback(
                     model.getValue(UrlBarProperties.ACTION_MODE_CALLBACK));
         } else if (UrlBarProperties.ALLOW_FOCUS.equals(propertyKey)) {
-            boolean allowFocus = model.getValue(UrlBarProperties.ALLOW_FOCUS);
-            view.setAllowFocus(allowFocus);
+            view.setAllowFocus(model.getValue(UrlBarProperties.ALLOW_FOCUS));
         } else if (UrlBarProperties.AUTOCOMPLETE_TEXT.equals(propertyKey)) {
             AutocompleteText autocomplete = model.getValue(UrlBarProperties.AUTOCOMPLETE_TEXT);
             if (view.shouldAutocomplete()) {

@@ -298,10 +298,8 @@ public class UrlBar extends AutocompleteEditText {
      */
     public void setAllowFocus(boolean allowFocus) {
         mAllowFocus = allowFocus;
-        if (mFirstDrawComplete) {
-            setFocusable(allowFocus);
-            setFocusableInTouchMode(allowFocus);
-        }
+        setFocusable(allowFocus);
+        setFocusableInTouchMode(allowFocus);
     }
 
     /**
