@@ -193,7 +193,8 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
                                 bool smart_replace,
                                 InputEvent::InputType);
 
-  // Implementation of WebLocalFrameImpl::replaceSelection.
+  // Implementation of WebLocalFrameImpl::ReplaceSelection. Does not use smart
+  // replacement.
   void ReplaceSelection(const String&);
 
   void ReplaceSelectionAfterDragging(DocumentFragment*,

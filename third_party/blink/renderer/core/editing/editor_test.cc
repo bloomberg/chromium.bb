@@ -91,4 +91,19 @@ TEST_F(EditorTest, DontCopyHiddenSelections) {
   EXPECT_TRUE(copied.IsEmpty()) << copied << " was copied.";
 }
 
+TEST_F(EditorTest, ReplaceSelection) {
+  const char* body_content = "<input id=text value='HELLO'>";
+  SetBodyContent(body_content);
+
+  HTMLInputElement& text_control =
+      ToHTMLInputElement(*GetDocument().getElementById("text"));
+  text_control.select();
+  text_control.SetSelectionRange(2, 2);
+
+  Editor& editor = GetDocument().GetFrame()->GetEditor();
+  editor.ReplaceSelection("NEW");
+
+  EXPECT_EQ("HENEWLLO", text_control.value());
+}
+
 }  // namespace blink
