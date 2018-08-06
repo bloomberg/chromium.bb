@@ -4,11 +4,8 @@
      found in the LICENSE file. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Buttons -->
-    <!-- TODO(https://crbug.com/856244): Remove fontFamily from button style and move
-         it to button textAppearance styles. -->
     <style name="ButtonCompat" parent="ButtonCompatBase">
         <item name="android:background">@drawable/button_compat</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
     <style name="ButtonCompatBorderless" parent="ButtonCompat">
         <item name="android:background">@drawable/button_borderless_compat</item>

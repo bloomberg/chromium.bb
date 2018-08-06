@@ -18,33 +18,27 @@
     <style name="ButtonCompatBorderlessOverlay">
         <item name="android:buttonStyle">@style/ButtonCompatBorderless</item>
     </style>
-    <!-- TODO(https://crbug.com/856244): Remove textAllCaps and textSize from button style and move
-         it to button textAppearance styles, and figure out why the feed library styles overrides
-         styles here. -->
     <style name="ButtonCompatBase">
         <item name="android:minWidth">88dp</item>
         <item name="android:minHeight">36dp</item>
-        <item name="android:textSize">14sp</item>
         <item name="android:paddingStart">20dp</item>
         <item name="android:paddingEnd">20dp</item>
         <item name="android:paddingTop">5dp</item>
         <item name="android:paddingBottom">5dp</item>
-        <item name="android:textAllCaps">true</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
         <item name="android:gravity">center_vertical|center_horizontal</item>
     </style>
-    <!-- TODO(https://crbug.com/856244): Remove textStyle from button style and move it to button
-         textAppearance styles. -->
     <style name="ButtonCompat" parent="ButtonCompatBase">
         <item name="android:background">@drawable/button_compat_shape</item>
-        <item name="android:textStyle">bold</item>
     </style>
     <style name="ButtonCompatBorderless" parent="ButtonCompat">
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
     <!-- Used by Chrome and Content -->
+    <!-- TODO(huayinz): Update prefixes for text appearance styles in ui/android. -->
+    <style name="TextAppearance" parent="android:TextAppearance" tools:ignore="UnusedResources" />
     <style name="RobotoMediumStyle">
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textStyle">bold</item>
@@ -107,6 +101,7 @@
     <style name="BlackButtonText" parent="RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/black_alpha_54</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
+        <item name="android:textAllCaps">true</item>
     </style>
     <style name="BlackLink" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/black_alpha_54</item>
@@ -156,10 +151,12 @@
     <style name="BlueButtonText1" parent="RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/modern_blue_300</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
+        <item name="android:textAllCaps">true</item>
     </style>
     <style name="BlueButtonText2" parent="RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/modern_blue_600</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
+        <item name="android:textAllCaps">true</item>
     </style>
     <style name="BlueLink1" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/modern_blue_600</item>

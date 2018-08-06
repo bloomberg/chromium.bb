@@ -627,9 +627,10 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 LineItem item = cart.getContents().get(i);
 
                 TextView description = new TextView(context);
-                ApiCompatibilityUtils.setTextAppearance(description, item.getIsPending()
-                                ? R.style.PaymentsUiSectionPendingTextEndAligned
-                                : R.style.PaymentsUiSectionDescriptiveTextEndAligned);
+                ApiCompatibilityUtils.setTextAppearance(description,
+                        item.getIsPending()
+                            ? R.style.TextAppearance_PaymentsUiSectionPendingTextEndAligned
+                            : R.style.TextAppearance_PaymentsUiSectionDescriptiveTextEndAligned);
                 description.setText(item.getLabel());
                 description.setEllipsize(TruncateAt.END);
                 description.setMaxLines(2);
@@ -638,9 +639,10 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 }
 
                 TextView amount = new TextView(context);
-                ApiCompatibilityUtils.setTextAppearance(amount, item.getIsPending()
-                                ? R.style.PaymentsUiSectionPendingTextEndAligned
-                                : R.style.PaymentsUiSectionDescriptiveTextEndAligned);
+                ApiCompatibilityUtils.setTextAppearance(amount,
+                        item.getIsPending()
+                            ? R.style.TextAppearance_PaymentsUiSectionPendingTextEndAligned
+                            : R.style.TextAppearance_PaymentsUiSectionDescriptiveTextEndAligned);
                 amount.setText(createValueString(item.getCurrency(), item.getPrice(), false));
 
                 // Each item is represented by a row in the GridLayout.
@@ -931,8 +933,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 if (mRowType == OPTION_ROW_TYPE_OPTION) {
                     // Show the string representing the EditableOption.
                     ApiCompatibilityUtils.setTextAppearance(labelView,
-                            isEnabled ? R.style.BlackTitle1
-                                      : R.style.PaymentsUiSectionDisabledText);
+                            isEnabled ? R.style.BlackTitle1 : R.style.BlackDisabledText1);
                     labelView.setText(convertOptionToString(mOption, false, /* excludeMainLabel */
                             mDelegate.isBoldLabelNeeded(OptionSection.this),
                             false /* singleLine */));
@@ -943,7 +944,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                             R.dimen.payments_section_add_button_height);
 
                     ApiCompatibilityUtils.setTextAppearance(
-                            labelView, R.style.EditorDialogSectionAddButtonLabel);
+                            labelView, R.style.TextAppearance_EditorDialogSectionAddButton);
                     labelView.setMinimumHeight(buttonHeight);
                     labelView.setGravity(Gravity.CENTER_VERTICAL);
                     labelView.setTypeface(UiUtils.createRobotoMediumTypeface());
@@ -952,13 +953,12 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     columnStart = 0;
                     columnSpan = 4;
 
-                    ApiCompatibilityUtils.setTextAppearance(
-                            labelView, R.style.PaymentsUiSectionDescriptiveText);
+                    ApiCompatibilityUtils.setTextAppearance(labelView, R.style.BlackBody);
                 } else if (mRowType == OPTION_ROW_TYPE_WARNING) {
                     // Warnings use three columns.
                     columnSpan = 3;
                     ApiCompatibilityUtils.setTextAppearance(
-                            labelView, R.style.PaymentsUiSectionWarningText);
+                            labelView, R.style.TextAppearance_PaymentsUiSectionWarningText);
                 }
 
                 // The label spans two columns if no option or edit icon, or spans three columns if
@@ -1064,7 +1064,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
          */
         private boolean mSplitSummaryInDisplayModeNormal;
 
-        /** Indicates whether the summary is set to R.style.PaymentsUiSectionDescriptiveText. */
+        /** Indicates whether the summary is set to descriptive or title text style. */
         private boolean mSummaryInDescriptiveText;
 
         private FocusChangedObserver mFocusChangedObserver;
@@ -1289,10 +1289,10 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
             if (selectedItem == null) {
                 setLogoDrawable(null);
-                // Section summary should be displayed as R.style.PaymentsUiSectionDescriptiveText.
+                // Section summary should be displayed as descriptive text style.
                 if (!mSummaryInDescriptiveText) {
                     ApiCompatibilityUtils.setTextAppearance(
-                            getSummaryLeftTextView(), R.style.PaymentsUiSectionDescriptiveText);
+                            getSummaryLeftTextView(), R.style.BlackBody);
                     mSummaryInDescriptiveText = true;
                 }
                 SectionUiUtils.showSectionSummaryInTextViewInSingeLine(

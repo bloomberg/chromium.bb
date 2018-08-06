@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.widget;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -65,8 +64,6 @@ public final class DualControlLayout extends ViewGroup {
      */
     public static Button createButtonForLayout(
             Context context, boolean isPrimary, String text, OnClickListener listener) {
-        int textColorLink = ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.default_text_color_link);
         int buttonColor =
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.light_active_color);
 
@@ -75,14 +72,14 @@ public final class DualControlLayout extends ViewGroup {
             primaryButton.setId(R.id.button_primary);
             primaryButton.setOnClickListener(listener);
             primaryButton.setText(text);
-            primaryButton.setTextColor(Color.WHITE);
+            ApiCompatibilityUtils.setTextAppearance(primaryButton, R.style.WhiteButtonText);
             return primaryButton;
         } else {
             Button secondaryButton = ButtonCompat.createBorderlessButton(context);
             secondaryButton.setId(R.id.button_secondary);
             secondaryButton.setOnClickListener(listener);
             secondaryButton.setText(text);
-            secondaryButton.setTextColor(textColorLink);
+            ApiCompatibilityUtils.setTextAppearance(secondaryButton, R.style.BlueButtonText2);
             return secondaryButton;
         }
     }

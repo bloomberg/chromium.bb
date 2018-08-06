@@ -18,7 +18,7 @@
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/PreferenceCategoryTextStyle" />
+        android:textAppearance="@style/TextAppearance.PreferenceCategoryText" />
 
     <!-- Users of this layout are responsible to set contentDescription. -->
     <ImageView
