@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"

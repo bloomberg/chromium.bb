@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"

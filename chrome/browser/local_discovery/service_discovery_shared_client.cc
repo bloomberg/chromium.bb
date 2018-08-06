@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/firewall_manager_win.h"

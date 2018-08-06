@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"

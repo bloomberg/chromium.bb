@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/sys_info.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/profiles/profile.h"

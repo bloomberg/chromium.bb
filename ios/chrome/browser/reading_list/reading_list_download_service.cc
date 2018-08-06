@@ -13,7 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "components/reading_list/core/reading_list_entry.h"

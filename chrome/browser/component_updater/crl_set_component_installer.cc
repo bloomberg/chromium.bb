@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"

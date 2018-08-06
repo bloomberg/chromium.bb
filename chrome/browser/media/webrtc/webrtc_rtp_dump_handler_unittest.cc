@@ -18,7 +18,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_writer.h"
 #include "content/public/test/test_browser_thread_bundle.h"

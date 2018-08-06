@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"

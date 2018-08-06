@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"

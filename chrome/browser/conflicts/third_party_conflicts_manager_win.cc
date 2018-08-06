@@ -16,7 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"

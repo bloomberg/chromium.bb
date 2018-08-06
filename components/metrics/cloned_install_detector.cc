@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_pref_names.h"

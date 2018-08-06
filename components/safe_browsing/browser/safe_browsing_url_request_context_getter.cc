@@ -5,7 +5,7 @@
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
 
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"

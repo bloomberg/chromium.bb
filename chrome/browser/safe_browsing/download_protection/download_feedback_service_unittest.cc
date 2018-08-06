@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/browser_thread.h"

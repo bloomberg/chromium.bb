@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/files/file_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"

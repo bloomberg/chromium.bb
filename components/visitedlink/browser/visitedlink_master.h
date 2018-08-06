@@ -22,7 +22,7 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/visitedlink/common/visitedlink_common.h"
 

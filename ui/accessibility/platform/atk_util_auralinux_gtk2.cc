@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 
 typedef void (*GnomeAccessibilityModuleInitFunc)();

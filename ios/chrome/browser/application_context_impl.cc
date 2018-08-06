@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/component_updater/component_updater_service.h"

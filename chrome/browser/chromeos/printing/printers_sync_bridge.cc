@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/model_type_change_processor.h"

@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/launch.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/public/cpp/standalone_service/switches.h"

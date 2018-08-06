@@ -7,7 +7,7 @@
 #include "base/base64url.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"

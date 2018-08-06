@@ -38,7 +38,7 @@
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system_monitor/system_monitor.h"
-#include "base/task/task_scheduler/initialization_util_forward.h"
+#include "base/task/task_scheduler/initialization_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"

@@ -4,7 +4,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"

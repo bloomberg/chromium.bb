@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 
 #include "base/bind.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "content/public/browser/web_ui.h"
 
 VersionHandlerChromeOS::VersionHandlerChromeOS() : weak_factory_(this) {}

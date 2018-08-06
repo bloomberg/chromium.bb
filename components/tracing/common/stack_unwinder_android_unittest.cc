@@ -5,7 +5,7 @@
 #include "components/tracing/common/stack_unwinder_android.h"
 
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/trace_event/cfi_backtrace_android.h"
 #include "testing/gtest/include/gtest/gtest.h"

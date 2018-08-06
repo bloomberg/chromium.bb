@@ -12,7 +12,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/task_traits.h"

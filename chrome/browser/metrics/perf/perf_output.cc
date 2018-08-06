@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/perf/perf_output.h"
 
 #include "base/bind.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 

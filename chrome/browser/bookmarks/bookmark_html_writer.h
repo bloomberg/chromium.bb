@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

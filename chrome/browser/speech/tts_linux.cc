@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"

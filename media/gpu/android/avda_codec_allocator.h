@@ -17,7 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"

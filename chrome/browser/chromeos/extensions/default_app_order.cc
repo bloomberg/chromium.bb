@@ -13,7 +13,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"

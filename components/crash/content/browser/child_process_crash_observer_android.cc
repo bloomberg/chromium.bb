@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 

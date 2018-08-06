@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "services/shape_detection/public/mojom/constants.mojom.h"

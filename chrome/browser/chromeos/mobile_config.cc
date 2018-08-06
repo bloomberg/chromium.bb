@@ -14,7 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"

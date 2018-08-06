@@ -14,7 +14,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 

@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"

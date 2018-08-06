@@ -15,7 +15,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome_elf/third_party_dlls/logging_api.h"

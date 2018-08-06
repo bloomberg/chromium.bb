@@ -13,7 +13,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/router/discovery/discovery_network_list.h"

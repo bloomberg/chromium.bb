@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"

@@ -6,7 +6,7 @@
 #define IOS_WEB_PUBLIC_GLOBAL_STATE_TASK_SCHEDULER_INIT_PARAMS_CALLBACK_H_
 
 #include "base/callback_forward.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 
 namespace web {
 

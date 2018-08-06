@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/task/post_task_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/values.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/external_data_fetcher.h"

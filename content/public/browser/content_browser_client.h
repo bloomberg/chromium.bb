@@ -16,7 +16,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/certificate_request_result_type.h"

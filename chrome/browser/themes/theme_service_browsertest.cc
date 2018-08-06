@@ -5,7 +5,7 @@
 #include "chrome/browser/themes/theme_service.h"
 
 #include "base/macros.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/component_loader.h"

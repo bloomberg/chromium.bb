@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/lazy_task_runner_forward.h"
+#include "base/task/lazy_task_runner.h"
 #include "build/build_config.h"
 
 namespace base {

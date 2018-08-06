@@ -14,7 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {

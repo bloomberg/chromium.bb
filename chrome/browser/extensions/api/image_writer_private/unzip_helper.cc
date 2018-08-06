@@ -8,7 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "third_party/zlib/google/zip_reader.h"
 

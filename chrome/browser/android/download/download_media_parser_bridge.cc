@@ -6,7 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/android/download/download_media_parser.h"
 #include "jni/DownloadMediaParserBridge_jni.h"
 

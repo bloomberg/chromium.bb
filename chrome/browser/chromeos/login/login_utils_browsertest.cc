@@ -32,7 +32,7 @@
 #include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/rlz/rlz_tracker.h"
 #endif
 

@@ -13,7 +13,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/patch/public/cpp/patch.h"
 #include "components/update_client/update_client.h"

@@ -14,7 +14,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"

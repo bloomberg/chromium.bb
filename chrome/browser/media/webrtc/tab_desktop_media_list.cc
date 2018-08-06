@@ -5,7 +5,7 @@
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
 
 #include "base/hash.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"

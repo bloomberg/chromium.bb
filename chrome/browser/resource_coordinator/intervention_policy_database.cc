@@ -5,7 +5,7 @@
 #include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 
 #include "base/files/file_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/resource_coordinator/utils.h"

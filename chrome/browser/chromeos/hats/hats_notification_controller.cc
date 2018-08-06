@@ -7,7 +7,7 @@
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/hats/hats_dialog.h"
 #include "chrome/browser/chromeos/hats/hats_finch_helper.h"

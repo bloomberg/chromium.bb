@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 
 #include "base/run_loop.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/test/base/testing_profile.h"

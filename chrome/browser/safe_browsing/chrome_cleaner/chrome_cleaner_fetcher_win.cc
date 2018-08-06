@@ -22,7 +22,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"

@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"

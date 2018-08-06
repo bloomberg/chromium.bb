@@ -14,7 +14,7 @@
 #include "base/md5.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_paths.h"

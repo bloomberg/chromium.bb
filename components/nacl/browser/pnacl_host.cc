@@ -13,7 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_translation_cache.h"
 #include "content/public/browser/browser_thread.h"

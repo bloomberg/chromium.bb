@@ -17,7 +17,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/installation_notifier.h"

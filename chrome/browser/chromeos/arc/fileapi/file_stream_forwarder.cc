@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/files/file_util.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 

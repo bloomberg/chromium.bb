@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/task_traits.h"
 #include "net/base/net_export.h"
 
 namespace net {

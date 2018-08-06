@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/gfx/geometry/size.h"

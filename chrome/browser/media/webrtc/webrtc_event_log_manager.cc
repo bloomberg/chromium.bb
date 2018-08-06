@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_features.h"

@@ -19,7 +19,7 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/browser/win/ui_automation_util.h"
 #include "ui/base/win/atl_module.h"

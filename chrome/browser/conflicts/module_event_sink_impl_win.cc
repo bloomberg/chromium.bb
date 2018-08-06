@@ -16,7 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/common/conflicts/module_watcher_win.h"
 #include "content/public/browser/browser_thread.h"

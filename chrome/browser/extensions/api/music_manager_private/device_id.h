@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/task_traits.h"
 
 namespace extensions {
 namespace api {

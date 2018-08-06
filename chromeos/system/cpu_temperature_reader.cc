@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 
 namespace chromeos {
 namespace system {

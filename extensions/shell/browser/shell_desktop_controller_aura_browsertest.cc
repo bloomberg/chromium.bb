@@ -5,7 +5,7 @@
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
 
 #include "base/macros.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"

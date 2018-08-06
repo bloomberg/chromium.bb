@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"

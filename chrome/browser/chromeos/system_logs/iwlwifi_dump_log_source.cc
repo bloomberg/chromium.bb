@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/system_logs/iwlwifi_dump_log_source.h"
 
 #include "base/files/file_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"

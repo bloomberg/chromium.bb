@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/assets_loader.h"

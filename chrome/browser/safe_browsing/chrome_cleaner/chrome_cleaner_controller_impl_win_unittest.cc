@@ -12,7 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"

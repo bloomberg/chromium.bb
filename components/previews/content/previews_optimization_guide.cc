@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/previews_hints.h"

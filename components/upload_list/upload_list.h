@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/task_traits.h"
 #include "base/time/time.h"
 
 // An UploadList is an abstraction over a list of client-side data files that

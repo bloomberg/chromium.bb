@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/printing/printer_info.h"
 
 #include "base/logging.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 
 namespace chromeos {
 

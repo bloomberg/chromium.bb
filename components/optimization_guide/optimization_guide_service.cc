@@ -10,7 +10,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 
 namespace optimization_guide {
 

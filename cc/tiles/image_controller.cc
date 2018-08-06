@@ -5,8 +5,8 @@
 #include "cc/tiles/image_controller.h"
 
 #include "base/bind.h"
-#include "base/task/post_task_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/completion_event.h"

@@ -20,7 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/prefs_export.h"

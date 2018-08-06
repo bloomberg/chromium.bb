@@ -19,8 +19,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/lazy_task_runner_forward.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/lazy_task_runner.h"
+#include "base/task/post_task.h"
 
 #include "content/public/browser/browser_thread.h"
 

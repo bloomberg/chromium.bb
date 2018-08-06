@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"

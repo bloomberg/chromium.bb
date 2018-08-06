@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "media/capabilities/video_decode_stats.pb.h"
 
