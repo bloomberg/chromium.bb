@@ -30,15 +30,15 @@ const CLASSES = {
   MD_FALLBACK_BACKGROUND: 'md-fallback-background',
   MD_FALLBACK_LETTER: 'md-fallback-letter',
   MD_FAVICON: 'md-favicon',
-  MD_LINK: 'md-link',
   MD_ICON: 'md-icon',
   MD_ICON_BACKGROUND: 'md-icon-background',
   MD_ADD_ICON: 'md-add-icon',
   MD_ADD_BACKGROUND: 'md-add-background',
   MD_MENU: 'md-menu',
   MD_EDIT_MENU: 'md-edit-menu',
-  MD_TILE: 'md-tile',
+  MD_TILE: 'md-tile-container',
   MD_TILE_INNER: 'md-tile-inner',
+  MD_TILE_LINK: 'md-tile',
   MD_TITLE: 'md-title',
   MD_TITLE_CONTAINER: 'md-title-container',
 };
@@ -454,6 +454,25 @@ var isSchemeAllowed = function(url) {
 
 
 /**
+ * Disables the focus outline for |element| on mousedown.
+ * @param {Element} element The element to remove the focus outline from.
+ */
+function disableOutlineOnMouseClick(element) {
+  element.addEventListener('mousedown', (event) => {
+    element.style.outline = 'none';
+    let resetOutline = (event) => {
+      // Clear current focus to prevent the outline from reappearing when the
+      // user switches windows.
+      document.activeElement.blur();
+      element.style.outline = '';
+      element.removeEventListener('blur', resetOutline);
+    };
+    element.addEventListener('blur', resetOutline);
+  });
+}
+
+
+/**
  * Renders a MostVisited tile to the DOM.
  * @param {object} data Object containing rid, url, title, favicon, thumbnail,
  *     and optionally isAddButton. isAddButton is true if you want to construct
@@ -628,12 +647,14 @@ var renderMostVisitedTile = function(data) {
  * @return {Element}
  */
 function renderMaterialDesignTile(data) {
-  let mdTile = document.createElement('a');
+  let mdTile = document.createElement('div');
+  mdTile.role = 'none';
 
   if (data == null) {
     mdTile.className = CLASSES.MD_EMPTY_TILE;
     return mdTile;
   }
+  mdTile.className = CLASSES.MD_TILE;
 
   if (data.isCustomLink)
     tilesAreCustomLinks = true;
@@ -643,16 +664,18 @@ function renderMaterialDesignTile(data) {
   // This is set in the load/error event for the favicon image.
   let tileType = TileVisualType.NONE;
 
-  mdTile.className = CLASSES.MD_TILE;
-  mdTile.setAttribute('data-tid', data.tid);
-  mdTile.setAttribute('data-pos', position);
+  let mdTileLink = document.createElement('a');
+  mdTileLink.className = CLASSES.MD_TILE_LINK;
+  mdTileLink.tabIndex = 0;
+  mdTileLink.setAttribute('data-tid', data.tid);
+  mdTileLink.setAttribute('data-pos', position);
   if (isSchemeAllowed(data.url)) {
-    mdTile.href = data.url;
+    mdTileLink.href = data.url;
   }
-  mdTile.setAttribute('aria-label', data.title);
-  mdTile.title = data.title;
+  mdTileLink.setAttribute('aria-label', data.title);
+  mdTileLink.title = data.title;
 
-  mdTile.addEventListener('click', function(ev) {
+  mdTileLink.addEventListener('click', function(ev) {
     if (data.isAddButton) {
       editCustomLink();
     } else {
@@ -661,7 +684,7 @@ function renderMaterialDesignTile(data) {
           data.dataGenerationTime);
     }
   });
-  mdTile.addEventListener('keydown', function(event) {
+  mdTileLink.addEventListener('keydown', function(event) {
     if ((event.keyCode == 46 /* DELETE */ ||
          event.keyCode == 8 /* BACKSPACE */) &&
         !data.isAddButton) {
@@ -673,14 +696,18 @@ function renderMaterialDesignTile(data) {
       event.preventDefault();
       this.click();
     } else if (event.keyCode == 37 /* LEFT */) {
-      const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
-      tiles[Math.max(this.getAttribute('data-pos') - 1, 0)].focus();
+      const tiles =
+          document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE_LINK);
+      tiles[Math.max(Number(this.getAttribute('data-pos')) - 1, 0)].focus();
     } else if (event.keyCode == 39 /* RIGHT */) {
-      const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
-      tiles[Math.min(this.getAttribute('data-pos') + 1, tiles.length - 1)]
+      const tiles =
+          document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE_LINK);
+      tiles[Math.min(
+                Number(this.getAttribute('data-pos')) + 1, tiles.length - 1)]
           .focus();
     }
   });
+  disableOutlineOnMouseClick(mdTileLink);
 
   let mdTileInner = document.createElement('div');
   mdTileInner.className = CLASSES.MD_TILE_INNER;
@@ -754,7 +781,8 @@ function renderMaterialDesignTile(data) {
   mdTitle.style.direction = data.direction || 'ltr';
   mdTitleContainer.appendChild(mdTitle);
   mdTileInner.appendChild(mdTitleContainer);
-  mdTile.appendChild(mdTileInner);
+  mdTileLink.appendChild(mdTileInner);
+  mdTile.appendChild(mdTileLink);
 
   if (!data.isAddButton) {
     let mdMenu = document.createElement('button');
@@ -762,6 +790,7 @@ function renderMaterialDesignTile(data) {
     if (isCustomLinksEnabled) {
       mdMenu.classList.add(CLASSES.MD_EDIT_MENU);
       mdMenu.title = queryArgs['editLinkTooltip'] || '';
+      mdMenu.name = (queryArgs['editLinkTooltip'] || '') + ' ' + data.title;
       mdMenu.addEventListener('click', function(ev) {
         editCustomLink(data.tid);
         ev.preventDefault();
@@ -769,18 +798,20 @@ function renderMaterialDesignTile(data) {
       });
     } else {
       mdMenu.title = queryArgs['removeTooltip'] || '';
+      mdMenu.name = (queryArgs['removeTooltip'] || '') + ' ' + data.title;
       mdMenu.addEventListener('click', function(ev) {
         removeAllOldTiles();
-        blacklistTile(mdTile);
+        blacklistTile(mdTileLink);
         ev.preventDefault();
         ev.stopPropagation();
       });
     }
     // Don't allow the event to bubble out to the containing tile, as that would
     // trigger navigation to the tile URL.
-    mdMenu.addEventListener('keydown', function(event) {
+    mdMenu.addEventListener('keydown', function(ev) {
       event.stopPropagation();
     });
+    disableOutlineOnMouseClick(mdMenu);
 
     mdTile.appendChild(mdMenu);
   }

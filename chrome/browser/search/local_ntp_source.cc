@@ -193,14 +193,14 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_BG_PHOTO_SELECTED);
 
     // Custom Links
-    AddString(translated_strings.get(), "addLink",
+    AddString(translated_strings.get(), "addLinkTitle",
               IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TITLE);
     AddString(translated_strings.get(), "addLinkTooltip",
               IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TOOLTIP);
-    AddString(translated_strings.get(), "editLinkTooltip",
-              IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT_TOOLTIP);
     AddString(translated_strings.get(), "editLinkTitle",
               IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT);
+    AddString(translated_strings.get(), "editLinkTooltip",
+              IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT_TOOLTIP);
     AddString(translated_strings.get(), "nameField", IDS_NTP_CUSTOM_LINKS_NAME);
     AddString(translated_strings.get(), "urlField", IDS_NTP_CUSTOM_LINKS_URL);
     AddString(translated_strings.get(), "linkRemove",

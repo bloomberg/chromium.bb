@@ -145,7 +145,7 @@ html[dir=rtl] .bg-option-img {
   width: 100%;
 }
 
-#custom-link-restore-default .bg-option-img {
+#custom-links-restore-default .bg-option-img {
   background: rgb(241, 243, 244) url(icons/link_gray.svg) no-repeat center;
   border-radius: 50%;
 }
