@@ -75,57 +75,26 @@ def diff_binary(first_filepath, second_filepath, file_len):
   diffs = 0
   streams = []
   offset = 0
-  with open(first_filepath, 'rb') as lhs:
-    with open(second_filepath, 'rb') as rhs:
-      # Skip part of Win32 COFF header if timestamps are different.
-      #
-      # COFF header:
-      #   0 -  1: magic.
-      #   2 -  3: # sections.
-      #   4 -  7: timestamp.
-      #   ....
-      #
-      # COFF BigObj header:
-      #   0 -  3: signature (0000 FFFF)
-      #   4 -  5: version
-      #   6 -  7: machine
-      #   8 - 11: timestamp.
-      COFF_HEADER_TO_COMPARE_SIZE = 12
-      if (sys.platform == 'win32'
-          and os.path.splitext(first_filepath)[1] in ('.o', '.obj')
-          and file_len > COFF_HEADER_TO_COMPARE_SIZE):
-        rhs_data = rhs.read(COFF_HEADER_TO_COMPARE_SIZE)
-        lhs_data = lhs.read(COFF_HEADER_TO_COMPARE_SIZE)
-        if (lhs_data[0:4] == rhs_data[0:4] and lhs_data[4:8] != rhs_data[4:8]
-            and lhs_data[8:12] == rhs_data[8:12]):
-          offset += COFF_HEADER_TO_COMPARE_SIZE
-        elif (lhs_data[0:4] == '\x00\x00\xff\xff' and
-              lhs_data[0:8] == rhs_data[0:8] and
-              lhs_data[8:12] != rhs_data[8:12]):
-          offset += COFF_HEADER_TO_COMPARE_SIZE
-        else:
-          lhs.seek(0)
-          rhs.seek(0)
-
-      while True:
-        lhs_data = lhs.read(BLOCK_SIZE)
-        rhs_data = rhs.read(BLOCK_SIZE)
-        if not lhs_data:
-          break
-        if lhs_data != rhs_data:
-          diffs += sum(l != r for l, r in zip(lhs_data, rhs_data))
-          for idx in xrange(NUM_CHUNKS_IN_BLOCK):
-            lhs_chunk = lhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
-            rhs_chunk = rhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
-            if streams is not None and lhs_chunk != rhs_chunk:
-              if len(streams) < MAX_STREAMS:
-                streams.append((offset + CHUNK_SIZE * idx,
-                                lhs_chunk, rhs_chunk))
-              else:
-                streams = None
-        offset += len(lhs_data)
-        del lhs_data
-        del rhs_data
+  with open(first_filepath, 'rb') as lhs, open(second_filepath, 'rb') as rhs:
+    while True:
+      lhs_data = lhs.read(BLOCK_SIZE)
+      rhs_data = rhs.read(BLOCK_SIZE)
+      if not lhs_data:
+        break
+      if lhs_data != rhs_data:
+        diffs += sum(l != r for l, r in zip(lhs_data, rhs_data))
+        for idx in xrange(NUM_CHUNKS_IN_BLOCK):
+          lhs_chunk = lhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
+          rhs_chunk = rhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
+          if streams is not None and lhs_chunk != rhs_chunk:
+            if len(streams) < MAX_STREAMS:
+              streams.append((offset + CHUNK_SIZE * idx,
+                              lhs_chunk, rhs_chunk))
+            else:
+              streams = None
+      offset += len(lhs_data)
+      del lhs_data
+      del rhs_data
   if not diffs:
     return None
   result = '%d out of %d bytes are different (%.2f%%)' % (
@@ -245,14 +214,12 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
   print('Epoch: %s' %
       ' '.join(epoch_hex[i:i+2] for i in xrange(0, len(epoch_hex), 2)))
 
-  with open(os.path.join(BASE_DIR, 'deterministic_build_blacklist.json')) as f:
-    blacklist = frozenset(json.load(f))
   with open(os.path.join(BASE_DIR, 'deterministic_build_whitelist.pyl')) as f:
     whitelist = frozenset(ast.literal_eval(f.read())[target_platform])
 
   # The two directories.
-  first_list = get_files_to_compare(first_dir, recursive) - blacklist
-  second_list = get_files_to_compare(second_dir, recursive) - blacklist
+  first_list = get_files_to_compare(first_dir, recursive)
+  second_list = get_files_to_compare(second_dir, recursive)
 
   equals = []
   expected_diffs = []
