@@ -57,7 +57,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -146,7 +146,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         profile, params.url, extensions::LAUNCH_CONTAINER_WINDOW);
     if (app) {
       std::string app_name =
-          web_app::GenerateApplicationNameFromExtensionId(app->id());
+          web_app::GenerateApplicationNameFromAppId(app->id());
       return {
           new Browser(Browser::CreateParams::CreateForApp(
               app_name,
@@ -201,15 +201,15 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       std::string app_name;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       if (!params.extension_app_id.empty()) {
-        app_name = web_app::GenerateApplicationNameFromExtensionId(
-            params.extension_app_id);
+        app_name =
+            web_app::GenerateApplicationNameFromAppId(params.extension_app_id);
       } else if (params.browser && !params.browser->app_name().empty()) {
         app_name = params.browser->app_name();
       } else if (params.source_contents) {
         extensions::TabHelper* extensions_tab_helper =
             extensions::TabHelper::FromWebContents(params.source_contents);
         if (extensions_tab_helper && extensions_tab_helper->is_app()) {
-          app_name = web_app::GenerateApplicationNameFromExtensionId(
+          app_name = web_app::GenerateApplicationNameFromAppId(
               extensions_tab_helper->extension_app()->id());
         }
       }

@@ -50,7 +50,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -109,7 +109,7 @@ class TestEvent : public ui::Event {
 Browser* FindBrowserForApp(const std::string& app_name) {
   for (auto* browser : *BrowserList::GetInstance()) {
     std::string browser_app_name =
-        web_app::GetExtensionIdFromApplicationName(browser->app_name());
+        web_app::GetAppIdFromApplicationName(browser->app_name());
     if (browser_app_name == app_name)
       return browser;
   }

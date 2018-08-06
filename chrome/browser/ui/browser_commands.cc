@@ -101,7 +101,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -492,7 +492,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
     const extensions::Extension* extension =
         extensions::ExtensionRegistry::Get(browser->profile())
             ->GetExtensionById(
-                web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+                web_app::GetAppIdFromApplicationName(browser->app_name()),
                 extensions::ExtensionRegistry::EVERYTHING);
     if (!extension)
       return;

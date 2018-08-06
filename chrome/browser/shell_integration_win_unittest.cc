@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/scoped_com_initializer.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/install_static/install_util.h"
@@ -68,8 +68,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 
     extension_id_ = L"chromiumexampleappidforunittests";
     base::string16 app_name =
-        base::UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
-        base::UTF16ToUTF8(extension_id_)));
+        base::UTF8ToUTF16(web_app::GenerateApplicationNameFromAppId(
+            base::UTF16ToUTF8(extension_id_)));
     extension_app_id_ = GetAppModelIdForProfile(app_name, default_profile_path);
     non_default_profile_extension_app_id_ = GetAppModelIdForProfile(
         app_name, default_user_data_dir.Append(non_default_profile_));

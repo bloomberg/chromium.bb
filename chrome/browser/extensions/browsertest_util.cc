@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -80,8 +80,8 @@ Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
 
   Browser* browser = chrome::FindLastActive();
   bool is_correct_app_browser =
-      browser && web_app::GetExtensionIdFromApplicationName(
-                     browser->app_name()) == extension_app->id();
+      browser && web_app::GetAppIdFromApplicationName(browser->app_name()) ==
+                     extension_app->id();
   EXPECT_TRUE(is_correct_app_browser);
 
   return is_correct_app_browser ? browser : nullptr;

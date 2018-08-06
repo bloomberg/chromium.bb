@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/apps/app_window_easy_resize_window_targeter.h"
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -57,8 +57,8 @@ void ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(
     views::Widget::InitParams* init_params,
     views::Widget* widget) {
 #if defined(USE_X11)
-  std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-      app_window()->extension_id());
+  std::string app_name =
+      web_app::GenerateApplicationNameFromAppId(app_window()->extension_id());
   // Set up a custom WM_CLASS for app windows. This allows task switchers in
   // X11 environments to distinguish them from main browser windows.
   init_params->wm_class_name =

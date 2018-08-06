@@ -37,7 +37,7 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
@@ -854,9 +854,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
     const extensions::Extension* app = InstallBookmarkApp(web_app_info);
     Browser* app_browser = LaunchAppBrowser(app);
 
-    EXPECT_EQ(
-        web_app::GetExtensionIdFromApplicationName(app_browser->app_name()),
-        app->id());
+    EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
+              app->id());
     EXPECT_EQ(web_app_info.theme_color,
               app_browser->hosted_app_controller()->GetThemeColor().value());
   }
@@ -868,9 +867,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
     const extensions::Extension* app = InstallBookmarkApp(web_app_info);
     Browser* app_browser = LaunchAppBrowser(app);
 
-    EXPECT_EQ(
-        web_app::GetExtensionIdFromApplicationName(app_browser->app_name()),
-        app->id());
+    EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
+              app->id());
     EXPECT_FALSE(
         app_browser->hosted_app_controller()->GetThemeColor().has_value());
   }
@@ -1277,7 +1275,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogram) {
   NavigateToURLAndWait(app_browser, GURL(kExampleURL));
 
   // Test shortcut launch.
-  EXPECT_EQ(web_app::GetExtensionIdFromApplicationName(app_browser->app_name()),
+  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
             app->id());
 
   histograms.ExpectUniqueSample(
@@ -1320,7 +1318,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
   Browser* app_browser = LaunchAppBrowser(app);
 
-  EXPECT_EQ(web_app::GetExtensionIdFromApplicationName(app_browser->app_name()),
+  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
             app->id());
 
   histograms.ExpectTotalCount(extensions::kPwaWindowEngagementTypeHistogram, 0);
@@ -1353,15 +1351,12 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogramTwoApps) {
   Browser* app_browser2 = LaunchAppBrowser(app1);
   Browser* app_browser3 = LaunchAppBrowser(app2);
 
-  EXPECT_EQ(
-      web_app::GetExtensionIdFromApplicationName(app_browser1->app_name()),
-      app1->id());
-  EXPECT_EQ(
-      web_app::GetExtensionIdFromApplicationName(app_browser2->app_name()),
-      app1->id());
-  EXPECT_EQ(
-      web_app::GetExtensionIdFromApplicationName(app_browser3->app_name()),
-      app2->id());
+  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser1->app_name()),
+            app1->id());
+  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser2->app_name()),
+            app1->id());
+  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser3->app_name()),
+            app2->id());
 
   histograms.ExpectUniqueSample(
       extensions::kPwaWindowEngagementTypeHistogram,

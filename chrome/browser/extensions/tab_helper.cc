@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -293,7 +293,7 @@ void TabHelper::DidFinishNavigation(
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     if (browser && browser->is_app()) {
       const Extension* extension = registry->GetExtensionById(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+          web_app::GetAppIdFromApplicationName(browser->app_name()),
           ExtensionRegistry::EVERYTHING);
       if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid())
         SetExtensionApp(extension);

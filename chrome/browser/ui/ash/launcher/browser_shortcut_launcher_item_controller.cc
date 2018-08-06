@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -361,8 +361,7 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
       return false;
 
     // V1 App popup windows may have their own item.
-    ash::ShelfID id(
-        web_app::GetExtensionIdFromApplicationName(browser->app_name()));
+    ash::ShelfID id(web_app::GetAppIdFromApplicationName(browser->app_name()));
     if (ChromeLauncherController::instance()->GetItem(id) != nullptr)
       return false;
   }

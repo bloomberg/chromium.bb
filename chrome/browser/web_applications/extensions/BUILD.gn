@@ -18,8 +18,6 @@ source_set("extensions") {
     "bookmark_app_shortcut_installation_task.h",
     "pending_bookmark_app_manager.cc",
     "pending_bookmark_app_manager.h",
-    "web_app_extension_helpers.cc",
-    "web_app_extension_helpers.h",
     "web_app_extension_shortcut.cc",
     "web_app_extension_shortcut.h",
     "web_app_extension_shortcut_mac.h",

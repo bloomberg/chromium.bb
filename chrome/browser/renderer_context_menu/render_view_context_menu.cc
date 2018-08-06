@@ -64,7 +64,7 @@
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -1196,9 +1196,8 @@ void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
 
   int open_in_app_string_id;
   const Browser* browser = GetBrowser();
-  if (browser &&
-      browser->app_name() ==
-          web_app::GenerateApplicationNameFromExtensionId(pwa->id())) {
+  if (browser && browser->app_name() ==
+                     web_app::GenerateApplicationNameFromAppId(pwa->id())) {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP_SAMEAPP;
   } else {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP;
