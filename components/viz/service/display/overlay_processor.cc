@@ -189,8 +189,7 @@ void OverlayProcessor::ProcessForOverlays(
 // Also subtract unoccluded underlays from the damage rect if we know that the
 // same underlay was scheduled on the previous frame. If the renderer decides
 // not to swap the framebuffer there will still be a transparent hole in the
-// previous frame. This only handles the common case of a single underlay quad
-// for fullscreen video.
+// previous frame.
 void OverlayProcessor::UpdateDamageRect(
     OverlayCandidateList* candidates,
     const gfx::Rect& previous_frame_underlay_rect,
@@ -209,13 +208,26 @@ void OverlayProcessor::UpdateDamageRect(
         if (overlay.is_opaque)
           damage_rect->Subtract(overlay_display_rect);
       }
-    } else if (overlay.is_unoccluded && this_frame_underlay_rect.IsEmpty()) {
+    } else if (this_frame_underlay_rect.IsEmpty()) {
+      // Process underlay candidates:
+      // Track the underlay_rect from frame to frame.  If it is the same
+      // and nothing is on top of it then that rect doesn't need to
+      // be damaged because the drawing is occurring on a different plane.
+      // If it is different then that indicates that a different underlay
+      // has been chosen and the previous underlay rect should be damaged
+      // because it has changed planes from the underlay plane to the
+      // main plane.
       this_frame_underlay_rect = ToEnclosedRect(overlay.display_rect);
+      if ((this_frame_underlay_rect == previous_frame_underlay_rect) &&
+          overlay.is_unoccluded) {
+        damage_rect->Subtract(this_frame_underlay_rect);
+      }
     }
   }
 
-  if (this_frame_underlay_rect == previous_frame_underlay_rect)
-    damage_rect->Subtract(this_frame_underlay_rect);
+  if (this_frame_underlay_rect != previous_frame_underlay_rect)
+    damage_rect->Union(previous_frame_underlay_rect);
+
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
 
   damage_rect->Union(output_surface_overlay_damage_rect);
