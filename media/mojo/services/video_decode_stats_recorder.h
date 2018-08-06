@@ -25,10 +25,10 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
   // |perf_history| required to save decode stats to local database and report
   // metrics. Callers must ensure that |perf_history| outlives this object; may
   // be nullptr if database recording is currently disabled.
-  VideoDecodeStatsRecorder(const url::Origin& untrusted_top_frame_origin,
+  VideoDecodeStatsRecorder(VideoDecodePerfHistory::SaveCallback save_cb,
+                           ukm::SourceId source_id,
                            bool is_top_frame,
-                           uint64_t player_id,
-                           VideoDecodePerfHistory::SaveCallback save_cb);
+                           uint64_t player_id);
   ~VideoDecodeStatsRecorder() override;
 
   // mojom::VideoDecodeStatsRecorder implementation:
@@ -40,9 +40,9 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
   // starting a new record.
   void FinalizeRecord();
 
-  const url::Origin untrusted_top_frame_origin_;
-  const bool is_top_frame_;
   const VideoDecodePerfHistory::SaveCallback save_cb_;
+  const ukm::SourceId source_id_;
+  const bool is_top_frame_;
   const uint64_t player_id_;
 
   mojom::PredictionFeatures features_;

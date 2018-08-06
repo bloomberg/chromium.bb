@@ -30,11 +30,18 @@ class MediaMetricsProviderTest : public testing::Test {
   ~MediaMetricsProviderTest() override { base::RunLoop().RunUntilIdle(); }
 
   void Initialize(bool is_mse, bool is_top_frame, const std::string& origin) {
-    MediaMetricsProvider::Create(VideoDecodePerfHistory::SaveCallback(),
-                                 mojo::MakeRequest(&provider_));
-    provider_->Initialize(is_mse, is_top_frame,
-                          url::Origin::Create(GURL(origin)));
+    source_id_ = test_recorder_->GetNewSourceID();
+    test_recorder_->UpdateSourceURL(source_id_, GURL(origin));
+
+    MediaMetricsProvider::Create(
+        is_top_frame,
+        base::BindRepeating(&MediaMetricsProviderTest::GetSourceId,
+                            base::Unretained(this)),
+        VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider_));
+    provider_->Initialize(is_mse);
   }
+
+  ukm::SourceId GetSourceId() { return source_id_; }
 
   void ResetMetricRecorders() {
     // Ensure cleared global before attempting to create a new TestUkmReporter.
@@ -45,6 +52,7 @@ class MediaMetricsProviderTest : public testing::Test {
  protected:
   base::TestMessageLoop message_loop_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
+  ukm::SourceId source_id_;
   mojom::MediaMetricsProviderPtr provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaMetricsProviderTest);

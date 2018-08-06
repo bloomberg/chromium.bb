@@ -12,7 +12,7 @@
 #include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "url/origin.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace media {
 class VideoDecodePerfHistory;
@@ -21,19 +21,24 @@ class VideoDecodePerfHistory;
 class MEDIA_MOJO_EXPORT MediaMetricsProvider
     : public mojom::MediaMetricsProvider {
  public:
-  explicit MediaMetricsProvider(VideoDecodePerfHistory::SaveCallback save_cb);
+  MediaMetricsProvider(bool is_top_frame,
+                       ukm::SourceId source_id,
+                       VideoDecodePerfHistory::SaveCallback save_cb);
   ~MediaMetricsProvider() override;
+
+  // Callback for retrieving a ukm::SourceId.
+  using GetSourceIdCallback = base::RepeatingCallback<ukm::SourceId(void)>;
 
   // Creates a MediaMetricsProvider, |perf_history| may be nullptr if perf
   // history database recording is disabled.
-  static void Create(VideoDecodePerfHistory::SaveCallback save_cb,
+  static void Create(bool is_top_frame,
+                     GetSourceIdCallback get_source_id_cb,
+                     VideoDecodePerfHistory::SaveCallback save_cb,
                      mojom::MediaMetricsProviderRequest request);
 
  private:
   // mojom::MediaMetricsProvider implementation:
-  void Initialize(bool is_mse,
-                  bool is_top_frame,
-                  const url::Origin& untrusted_top_origin) override;
+  void Initialize(bool is_mse) override;
   void OnError(PipelineStatus status) override;
   void SetIsEME() override;
   void SetTimeToMetadata(base::TimeDelta elapsed) override;
@@ -49,6 +54,13 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // to coordinate multiply logged events with a singly logged metric.
   const uint64_t player_id_;
 
+  // Are UKM reports for the main frame or for a subframe?
+  const bool is_top_frame_;
+
+  const ukm::SourceId source_id_;
+
+  const VideoDecodePerfHistory::SaveCallback save_cb_;
+
   // These values are not always sent but have known defaults.
   PipelineStatus pipeline_status_ = PIPELINE_OK;
   bool is_eme_ = false;
@@ -56,14 +68,10 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // The values below are only set if |initialized_| is true.
   bool initialized_ = false;
   bool is_mse_;
-  bool is_top_frame_;
-  url::Origin untrusted_top_origin_;
 
   base::TimeDelta time_to_metadata_ = kNoTimestamp;
   base::TimeDelta time_to_first_frame_ = kNoTimestamp;
   base::TimeDelta time_to_play_ready_ = kNoTimestamp;
-
-  const VideoDecodePerfHistory::SaveCallback save_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaMetricsProvider);
 };

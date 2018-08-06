@@ -56,12 +56,6 @@ namespace metrics {
 class UkmRecorderInterface;
 }  // namespace metrics
 
-namespace media {
-class MediaMetricsProvider;
-class VideoDecodePerfHistory;
-class WatchTimeRecorder;
-}  // namespace media
-
 namespace translate {
 class TranslateRankerImpl;
 }  // namespace translate
@@ -118,9 +112,6 @@ class METRICS_EXPORT UkmRecorder {
   friend download::DownloadUkmHelper;
   friend internal::SourceUrlRecorderWebContentsObserver;
   friend internal::SourceUrlRecorderWebStateObserver;
-  friend media::MediaMetricsProvider;
-  friend media::VideoDecodePerfHistory;
-  friend media::WatchTimeRecorder;
   friend metrics::UkmRecorderInterface;
   friend password_manager::PasswordManagerMetricsRecorder;
   friend payments::JourneyLogger;

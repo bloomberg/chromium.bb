@@ -12,21 +12,15 @@
 namespace media {
 
 VideoDecodeStatsRecorder::VideoDecodeStatsRecorder(
-    const url::Origin& untrusted_top_frame_origin,
+    VideoDecodePerfHistory::SaveCallback save_cb,
+    ukm::SourceId source_id,
     bool is_top_frame,
-    uint64_t player_id,
-    VideoDecodePerfHistory::SaveCallback save_cb)
-    : untrusted_top_frame_origin_(untrusted_top_frame_origin),
+    uint64_t player_id)
+    : save_cb_(std::move(save_cb)),
+      source_id_(source_id),
       is_top_frame_(is_top_frame),
-      save_cb_(std::move(save_cb)),
       player_id_(player_id) {
-  // Only bother to make the recorder when able to save stats. Checking here
-  // instead of silently failing below.
-  CHECK(!save_cb_.is_null());
-
-  DVLOG(2) << __func__
-           << " untrusted_top_frame_origin:" << untrusted_top_frame_origin
-           << " is_top_frame:" << is_top_frame;
+  DCHECK(save_cb_);
 }
 
 VideoDecodeStatsRecorder::~VideoDecodeStatsRecorder() {
@@ -85,8 +79,8 @@ void VideoDecodeStatsRecorder::FinalizeRecord() {
 
   // Final argument is an empty save-done-callback. No action to take if save
   // fails (DB already records UMAs on failure). Callback mainly used by tests.
-  save_cb_.Run(untrusted_top_frame_origin_, is_top_frame_, features_, targets_,
-               player_id_, base::OnceClosure());
+  save_cb_.Run(source_id_, is_top_frame_, features_, targets_, player_id_,
+               base::OnceClosure());
 }
 
 }  // namespace media

@@ -16,7 +16,7 @@
 #include "media/base/video_codecs.h"
 #include "media/mojo/interfaces/watch_time_recorder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "url/origin.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace media {
 
@@ -24,7 +24,7 @@ namespace media {
 class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
  public:
   WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
-                    const url::Origin& untrusted_top_origin,
+                    ukm::SourceId source_id,
                     bool is_top_frame,
                     uint64_t player_id);
   ~WatchTimeRecorder() override;
@@ -48,10 +48,9 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
 
   const mojom::PlaybackPropertiesPtr properties_;
 
-  // For privacy, only record the top origin. "Untrusted" signals that this
-  // value comes from the renderer and should not be used for security checks.
-  // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  const url::Origin untrusted_top_origin_;
+  const ukm::SourceId source_id_;
+
+  // Are UKM reports for the main frame or for a subframe?
   const bool is_top_frame_;
 
   // The provider ID which constructed this recorder. Used to record a UKM entry

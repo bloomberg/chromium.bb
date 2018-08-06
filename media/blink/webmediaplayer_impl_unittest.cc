@@ -369,13 +369,14 @@ class WebMediaPlayerImplTest : public testing::Test {
         RendererFactorySelector::FactoryType::DEFAULT);
 
     mojom::MediaMetricsProviderPtr provider;
-    MediaMetricsProvider::Create(VideoDecodePerfHistory::SaveCallback(),
-                                 mojo::MakeRequest(&provider));
+    MediaMetricsProvider::Create(
+        false, base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
+        VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider));
 
     // Initialize provider since none of the tests below actually go through the
     // full loading/pipeline initialize phase. If this ever changes the provider
     // will start DCHECK failing.
-    provider->Initialize(false, false, url::Origin());
+    provider->Initialize(false);
 
     audio_sink_ = base::WrapRefCounted(new NiceMock<MockAudioRendererSink>());
 
