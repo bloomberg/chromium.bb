@@ -18,7 +18,6 @@ namespace resource_coordinator {
 
 class LenientMockRenderProcessProbe : public RenderProcessProbe {
  public:
-  MOCK_METHOD0(StartGatherCycle, void());
   MOCK_METHOD0(StartSingleGather, void());
 };
 using MockRenderProcessProbe =

@@ -2084,8 +2084,6 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 
-  resource_coordinator::RenderProcessProbe::GetInstance()->StartGatherCycle();
-
   metrics::MetricsService::SetExecutionPhase(
       metrics::ExecutionPhase::MAIN_MESSAGE_LOOP_RUN,
       g_browser_process->local_state());

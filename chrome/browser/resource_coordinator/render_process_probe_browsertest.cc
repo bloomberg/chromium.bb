@@ -34,14 +34,10 @@ class TestingRenderProcessProbe : public RenderProcessProbeImpl {
   TestingRenderProcessProbe() = default;
   ~TestingRenderProcessProbe() override = default;
 
-  bool DispatchMetrics(
+  void DispatchMetricsOnUIThread(
       mojom::ProcessResourceMeasurementBatchPtr batch) override {
     last_measurement_batch_ = std::move(batch);
 
-    return false;
-  }
-
-  void AfterFinishCollectionOnUIThread() override {
     current_run_loop_->QuitWhenIdle();
   }
 
@@ -69,7 +65,6 @@ class TestingRenderProcessProbe : public RenderProcessProbeImpl {
   }
 
   size_t current_gather_cycle() const { return current_gather_cycle_; }
-  bool is_gather_cycle_started() const { return is_gather_cycle_started_; }
 
   void WaitForGather() {
     base::RunLoop run_loop;
@@ -80,8 +75,8 @@ class TestingRenderProcessProbe : public RenderProcessProbeImpl {
     current_run_loop_ = nullptr;
   }
 
-  void StartGatherCycleAndWait() {
-    StartGatherCycle();
+  void StartSingleGatherAndWait() {
+    StartSingleGather();
     WaitForGather();
   }
 
@@ -124,9 +119,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest,
 #endif
   // Ensure that the |resource_coordinator| service is enabled.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kGlobalResourceCoordinator,
-                                 features::kGRCRenderProcessCPUProfiling},
-                                {});
+  feature_list.InitWithFeatures({features::kGlobalResourceCoordinator}, {});
 
   TestingRenderProcessProbe probe;
 
@@ -134,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest,
   EXPECT_EQ(0u, probe.current_gather_cycle());
 
   // A tab is already open when the test begins.
-  probe.StartGatherCycleAndWait();
+  probe.StartSingleGatherAndWait();
   EXPECT_EQ(1u, probe.current_gather_cycle());
   size_t initial_size = probe.render_process_info_map().size();
   EXPECT_LE(1u, initial_size);
@@ -164,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest,
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  probe.StartGatherCycleAndWait();
+  probe.StartSingleGatherAndWait();
   EXPECT_EQ(2u, probe.current_gather_cycle());
   EXPECT_EQ(initial_size + 1u, probe.render_process_info_map().size());
   EXPECT_EQ(initial_size + 1u,
@@ -181,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest,
   }
 
   size_t info_map_size = info_map.size();
-  probe.StartGatherCycleAndWait();
+  probe.StartSingleGatherAndWait();
   // Verify that CPU usage is monotonically increasing, though the measurement
   // granulatity is such on some OSes that a zero difference is almost certain.
   for (const auto& measurement : probe.last_measurement_batch()->measurements) {
@@ -207,53 +200,11 @@ IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest,
                   ->GetMainFrame()
                   ->GetProcess()
                   ->FastShutdownIfPossible());
-  probe.StartGatherCycleAndWait();
+  probe.StartSingleGatherAndWait();
   EXPECT_EQ(4u, probe.current_gather_cycle());
   EXPECT_EQ(initial_size, probe.render_process_info_map().size());
   EXPECT_EQ(initial_size, probe.last_measurement_batch()->measurements.size());
   EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
-}
-
-IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest, StartSingleGather) {
-  // Ensure that the |resource_coordinator| service is enabled.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kGlobalResourceCoordinator,
-                                 features::kGRCRenderProcessCPUProfiling},
-                                {});
-
-  TestingRenderProcessProbe probe;
-
-  // Test the gather cycle state.
-  EXPECT_FALSE(probe.is_gather_cycle_started());
-  probe.StartGatherCycle();
-  EXPECT_TRUE(probe.is_gather_cycle_started());
-  probe.WaitForGather();
-  EXPECT_FALSE(probe.is_gather_cycle_started());
-  EXPECT_EQ(1u, probe.current_gather_cycle());
-
-  // Test a single gather while the gather cycle is disabled.
-  probe.StartSingleGather();
-  EXPECT_FALSE(probe.is_gather_cycle_started());
-  probe.WaitForGather();
-  EXPECT_FALSE(probe.is_gather_cycle_started());
-  EXPECT_EQ(2u, probe.current_gather_cycle());
-
-  // Test a single gather followed by starting the gather cycle.
-  probe.StartSingleGather();
-  EXPECT_FALSE(probe.is_gather_cycle_started());
-  probe.StartGatherCycle();
-  EXPECT_TRUE(probe.is_gather_cycle_started());
-  probe.WaitForGather();
-  EXPECT_FALSE(probe.is_gather_cycle_started());
-  EXPECT_EQ(3u, probe.current_gather_cycle());
-
-  // And now a single gather after the cycle is started.
-  probe.StartGatherCycle();
-  EXPECT_TRUE(probe.is_gather_cycle_started());
-  probe.StartSingleGather();
-  probe.WaitForGather();
-  EXPECT_FALSE(probe.is_gather_cycle_started());
-  EXPECT_EQ(4u, probe.current_gather_cycle());
 }
 
 }  // namespace resource_coordinator
