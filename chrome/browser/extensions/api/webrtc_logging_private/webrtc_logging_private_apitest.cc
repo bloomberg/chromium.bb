@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -23,6 +24,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/webrtc_event_logger.h"
@@ -76,7 +80,6 @@ void InitializeTestMetaData(base::ListValue* parameters) {
 class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
     extensions::ExtensionApiTest::SetUp();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }
@@ -361,30 +364,6 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   scoped_refptr<Extension> extension_;
 };
 
-class WebrtcLoggingPrivateApiTestDisabledRemoteLogging
-    : public WebrtcLoggingPrivateApiTest {
- protected:
-  void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(features::kWebRtcRemoteEventLog);
-    extensions::ExtensionApiTest::SetUp();
-    extension_ = extensions::ExtensionBuilder("Test").Build();
-  }
-};
-
-class WebrtcLoggingPrivateApiTestInIncognitoMode
-    : public WebrtcLoggingPrivateApiTest {
- protected:
-  Browser* GetBrowser() override {
-    if (!browser_) {
-      browser_ = CreateIncognitoBrowser();
-    }
-    return browser_;
-  }
-
- private:
-  Browser* browser_{nullptr};  // Does not own the object.
-};
-
 // Helper class to temporarily tell the uploader to save the multipart buffer to
 // a test string instead of uploading.
 class ScopedOverrideUploadBuffer {
@@ -644,8 +623,71 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   ASSERT_TRUE(StartAudioDebugRecordings(1));
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingForKnownPeerConnectionSucceeds) {
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+// Fixture for various tests over StartEventLogging. Intended to be sub-classed
+// to test different scenarios.
+class WebrtcLoggingPrivateApiStartEventLoggingTestBase
+    : public WebrtcLoggingPrivateApiTest {
+ public:
+  ~WebrtcLoggingPrivateApiStartEventLoggingTestBase() override = default;
+
+ protected:
+  void SetUp() override {
+    auto const webrtc_remote_event_logging = features::kWebRtcRemoteEventLog;
+    if (WebRtcEventLogCollectionFeature()) {
+      scoped_feature_list_.InitAndEnableFeature(webrtc_remote_event_logging);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(webrtc_remote_event_logging);
+    }
+    WebrtcLoggingPrivateApiTest::SetUp();
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+    policy::PolicyMap values;
+
+    values.Set(policy::key::kWebRtcEventLogCollectionAllowed,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+               std::make_unique<base::Value>(WebRtcEventLogCollectionPolicy()),
+               nullptr);
+
+    provider_.UpdateChromePolicy(values);
+  }
+
+  // Whether the test should have WebRTC remote-bound event logging generally
+  // enabled (default behavior), or disabled (Finch kill-switch engaged).
+  virtual bool WebRtcEventLogCollectionFeature() const = 0;
+
+  // Whether the test should simulate running on a user profile which
+  // has the kWebRtcEventLogCollectionAllowed policy configured or not.
+  virtual bool WebRtcEventLogCollectionPolicy() const = 0;
+
+ private:
+  policy::MockConfigurationPolicyProvider provider_;
+};
+
+// Test StartEventLogging's behavior when the feature is active (kill-switch
+// from Finch *not* engaged, working in a profile where the policy is
+// configured).
+class WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled
+    : public WebrtcLoggingPrivateApiStartEventLoggingTestBase {
+ public:
+  ~WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled()
+      override = default;
+
+  bool WebRtcEventLogCollectionFeature() const override { return true; }
+
+  bool WebRtcEventLogCollectionPolicy() const override { return true; }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingForKnownPeerConnectionSucceeds) {
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
@@ -653,8 +695,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   StartEventLogging(peer_connection_id, max_size_bytes, expect_success);
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingWithUnlimitedSizeFails) {
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingWithUnlimitedSizeFails) {
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kWebRtcEventLogManagerUnlimitedFileSize;
@@ -665,8 +708,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
                     error_message);
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingWithExcessiveMaxSizeFails) {
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingWithExcessiveMaxSizeFails) {
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes + 1;
@@ -676,8 +720,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
                     error_message);
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingForNeverAddedPeerConnectionFails) {
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingForNeverAddedPeerConnectionFails) {
   // Note that manager->PeerConnectionAdded() is not called.
   const std::string peer_connection_id = "id";
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
@@ -688,8 +733,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
                     error_message);
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingForWrongPeerConnectionIdFails) {
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingForWrongPeerConnectionIdFails) {
   const std::string peer_connection_id_1 = "id1";
   const std::string peer_connection_id_2 = "id2";
 
@@ -702,8 +748,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
                     error_message);
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingForAlreadyLoggedPeerConnectionFails) {
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingForAlreadyLoggedPeerConnectionFails) {
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
 
@@ -724,8 +771,34 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestDisabledRemoteLogging,
-                       StartEventLoggingFails) {
+// Testing with either the feature or the policy disabled (not both).
+class WebrtcLoggingPrivateApiStartEventLoggingTestFeatureOrPolicyDisabled
+    : public WebrtcLoggingPrivateApiStartEventLoggingTestBase,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  WebrtcLoggingPrivateApiStartEventLoggingTestFeatureOrPolicyDisabled()
+      : feature_enabled_(GetParam()), policy_enabled_(!feature_enabled_) {}
+
+  ~WebrtcLoggingPrivateApiStartEventLoggingTestFeatureOrPolicyDisabled()
+      override = default;
+
+ protected:
+  bool WebRtcEventLogCollectionFeature() const override {
+    return feature_enabled_;
+  }
+
+  bool WebRtcEventLogCollectionPolicy() const override {
+    return policy_enabled_;
+  }
+
+ private:
+  const bool feature_enabled_;
+  const bool policy_enabled_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureOrPolicyDisabled,
+    StartEventLoggingFails) {
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
@@ -735,8 +808,38 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestDisabledRemoteLogging,
                     error_message);
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestInIncognitoMode,
-                       StartEventLoggingFails) {
+INSTANTIATE_TEST_CASE_P(
+    FeatureEnabled,
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureOrPolicyDisabled,
+    ::testing::Bool());
+
+// Make sure that, even if both the feature and the policy enable remote-bound
+// event logging, it will be blocked for incognito sessions.
+class WebrtcLoggingPrivateApiStartEventLoggingTestInIncognitoMode
+    : public WebrtcLoggingPrivateApiStartEventLoggingTestBase {
+ public:
+  ~WebrtcLoggingPrivateApiStartEventLoggingTestInIncognitoMode() override =
+      default;
+
+ protected:
+  Browser* GetBrowser() override {
+    if (!browser_) {
+      browser_ = CreateIncognitoBrowser();
+    }
+    return browser_;
+  }
+
+  bool WebRtcEventLogCollectionFeature() const override { return true; }
+
+  bool WebRtcEventLogCollectionPolicy() const override { return true; }
+
+ private:
+  Browser* browser_{nullptr};  // Does not own the object.
+};
+
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestInIncognitoMode,
+    StartEventLoggingFails) {
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
@@ -745,3 +848,5 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestInIncognitoMode,
   StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
                     error_message);
 }
+
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

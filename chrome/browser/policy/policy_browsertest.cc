@@ -71,6 +71,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -6262,6 +6263,102 @@ INSTANTIATE_TEST_CASE_P(,
                                           BooleanPolicy::kFalse,
                                           BooleanPolicy::kTrue));
 
+class WebRtcEventLogCollectionAllowedPolicyTest
+    : public PolicyTest,
+      public testing::WithParamInterface<BooleanPolicy> {
+ public:
+  ~WebRtcEventLogCollectionAllowedPolicyTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+
+    const BooleanPolicy policy = GetParam();
+    if (policy == BooleanPolicy::kFalse || policy == BooleanPolicy::kTrue) {
+      const bool policy_bool = (policy == BooleanPolicy::kTrue);
+      policies.Set(policy::key::kWebRtcEventLogCollectionAllowed,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                   std::make_unique<base::Value>(policy_bool), nullptr);
+    }
+
+    provider_.UpdateChromePolicy(policies);
+  }
+
+  const PrefService::Preference* GetPreference() const {
+    auto* service = user_prefs::UserPrefs::Get(browser()->profile());
+    return service->FindPreference(prefs::kWebRtcEventLogCollectionAllowed);
+  }
+
+  base::OnceCallback<void(bool)> BlockingBoolExpectingReply(
+      base::RunLoop* run_loop,
+      bool expected_value) {
+    return base::BindOnce(
+        [](base::RunLoop* run_loop, bool expected_value, bool value) {
+          EXPECT_EQ(expected_value, value);
+          run_loop->Quit();
+        },
+        run_loop, expected_value);
+  }
+
+  // The "extras" in question are the ID and error (only one of which may
+  // be non-null), which this test ignores (tested elsewhere).
+  base::OnceCallback<void(bool, const std::string&, const std::string&)>
+  BlockingBoolExpectingReplyWithExtras(base::RunLoop* run_loop,
+                                       bool expected_value) {
+    return base::BindOnce(
+        [](base::RunLoop* run_loop, bool expected_value, bool value,
+           const std::string& ignored_log_id,
+           const std::string& ignored_error) {
+          EXPECT_EQ(expected_value, value);
+          run_loop->Quit();
+        },
+        run_loop, expected_value);
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
+  const PrefService::Preference* const pref = GetPreference();
+  const bool remote_logging_allowed = (GetParam() == BooleanPolicy::kTrue);
+  ASSERT_EQ(pref->GetValue()->GetBool(), remote_logging_allowed);
+
+  auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
+  ASSERT_TRUE(webrtc_event_log_manager);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int render_process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+
+  constexpr int kLid = 123;
+  const std::string kPeerConnectionId = "id";
+
+  {
+    base::RunLoop run_loop;
+    webrtc_event_log_manager->PeerConnectionAdded(
+        render_process_id, kLid, kPeerConnectionId,
+        BlockingBoolExpectingReply(&run_loop, true));
+    run_loop.Run();
+  }
+
+  {
+    constexpr size_t kMaxFileSizeBytes = 1000 * 1000;
+    base::RunLoop run_loop;
+
+    // Test focus - remote-bound logging allowed if and only if the policy
+    // is configured to allow it.
+    webrtc_event_log_manager->StartRemoteLogging(
+        render_process_id, kPeerConnectionId, kMaxFileSizeBytes,
+        BlockingBoolExpectingReplyWithExtras(&run_loop,
+                                             remote_logging_allowed));
+    run_loop.Run();
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        WebRtcEventLogCollectionAllowedPolicyTest,
+                        ::testing::Values(BooleanPolicy::kNotConfigured,
+                                          BooleanPolicy::kFalse,
+                                          BooleanPolicy::kTrue));
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 }  // namespace policy

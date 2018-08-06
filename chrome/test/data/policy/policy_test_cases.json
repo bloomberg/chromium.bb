@@ -3200,6 +3200,14 @@
     ]
   },
 
+  "WebRtcEventLogCollectionAllowed": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "WebRtcEventLogCollectionAllowed": false },
+    "pref_mappings": [
+      { "pref": "webrtc.event_logs_collection" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

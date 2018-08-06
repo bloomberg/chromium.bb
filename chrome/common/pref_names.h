@@ -425,6 +425,7 @@ extern const char kWebRTCMultipleRoutesEnabled[];
 extern const char kWebRTCNonProxiedUdpEnabled[];
 extern const char kWebRTCIPHandlingPolicy[];
 extern const char kWebRTCUDPPortRange[];
+extern const char kWebRtcEventLogCollectionAllowed[];
 
 #if !defined(OS_ANDROID)
 extern const char kHasSeenWelcomePage[];
