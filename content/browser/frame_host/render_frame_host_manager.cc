@@ -1971,7 +1971,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     // allowed to swap processes.
     no_renderer_swap_allowed |= !CanSubframeSwapProcess(
         request.common_params().url, request.source_site_instance(),
-        request.dest_site_instance(), was_server_redirect);
+        request.dest_site_instance());
   }
 
   if (no_renderer_swap_allowed)
@@ -2543,8 +2543,7 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,
 bool RenderFrameHostManager::CanSubframeSwapProcess(
     const GURL& dest_url,
     SiteInstance* source_instance,
-    SiteInstance* dest_instance,
-    bool was_server_redirect) {
+    SiteInstance* dest_instance) {
   // On renderer-initiated navigations, when the frame initiating the navigation
   // and the frame being navigated differ, |source_instance| is set to the
   // SiteInstance of the initiating frame. |dest_instance| is present on session
@@ -2561,22 +2560,25 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
       resolved_url = dest_instance->GetSiteURL();
     } else {
       // If there is no SiteInstance this unique origin can be associated with,
-      // there are two cases:
-      // (1) If there was a server redirect, allow a process swap.  Normally,
-      // redirects to data: or about: URLs are disallowed as
+      // then check whether it is safe to put into the parent frame's process.
+      // This is the case for about:blank URLs (with or without fragments),
+      // since they contain no active data.  This is also the case for
+      // about:srcdoc, since such URLs only get active content from their parent
+      // frame.  Using the parent frame's process avoids putting blank frames
+      // into OOPIFs and preserves scripting for about:srcdoc.
+      //
+      // Allow a process swap for other unique origin URLs, such as data: URLs.
+      // These have active content and may have come from an untrusted source,
+      // such as a restored frame from a different site or a redirect.
+      // (Normally, redirects to data: or about: URLs are disallowed as
       // net::ERR_UNSAFE_REDIRECT. However, extensions can still redirect
       // arbitary requests to those URLs using the chrome.webRequest or
       // chrome.declarativeWebRequest API, which will end up here (for an
-      // example, see ExtensionWebRequestApiTest.WebRequestDeclarative1).  It's
-      // safest to swap processes for those redirects if we are in an
-      // appropriate OOPIF-enabled mode.
-      //
-      // (2) Otherwise, avoid a process swap.  We can get here during session
-      // restore, and this avoids putting all data: and about:blank subframes
-      // in OOPIFs. We can also get here in tests with browser-initiated
-      // subframe navigations (NavigateFrameToURL).
-      if (!was_server_redirect)
+      // example, see ExtensionWebRequestApiTest.WebRequestDeclarative1).)
+      if (resolved_url.IsAboutBlank() ||
+          resolved_url == GURL(content::kAboutSrcDocURL)) {
         return false;
+      }
     }
   }
 
