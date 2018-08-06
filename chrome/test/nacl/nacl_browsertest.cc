@@ -376,9 +376,9 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugMasked,
       "pnacl_debug_url.html?nmf_file=pnacl_has_debug_flag_off.nmf"));
 }
 
-// NaClBrowserTestPnacl.PnaclErrorHandling is flaky on Win and Linux.
+// NaClBrowserTestPnacl.PnaclErrorHandling is flaky on Win, Mac, and Linux.
 // http://crbug.com/704980, http://crbug.com/870309
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_PnaclErrorHandling DISABLED_PnaclErrorHandling
 #else
 #define MAYBE_PnaclErrorHandling PnaclErrorHandling
