@@ -175,11 +175,18 @@ message WalletPostalAddress {
   optional string phone_number = 13;
 }
 
+// Contains information about a Payments Customer.
+message PaymentsCustomerData {
+  // The billable customer ID associated with the account.
+  optional string id = 1;
+}
+
 message AutofillWalletSpecifics {
   enum WalletInfoType {
     UNKNOWN = 0;
     MASKED_CREDIT_CARD = 1;
     POSTAL_ADDRESS = 2;
+    CUSTOMER_DATA = 3;
   }
 
   optional WalletInfoType type = 1;
@@ -190,6 +197,9 @@ message AutofillWalletSpecifics {
 
   // This field exists if and only if the "type" field equals to ADDRESS.
   optional WalletPostalAddress address = 3;
+
+  // This field exists if and only if the "type" field equals to CUSTOMER_DATA.
+  optional PaymentsCustomerData customer_data = 4;
 }
 
 // Wallet card and address usage information that can be synced.

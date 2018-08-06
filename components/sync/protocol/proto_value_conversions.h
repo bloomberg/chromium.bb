@@ -51,6 +51,7 @@ class NavigationRedirect;
 class NigoriSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;
+class PaymentsCustomerData;
 class PreferenceSpecifics;
 class PrinterPPDReference;
 class PrinterSpecifics;
@@ -199,6 +200,9 @@ std::unique_ptr<base::DictionaryValue> PasswordSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
+
+std::unique_ptr<base::DictionaryValue> PaymentsCustomerDataToValue(
+    const sync_pb::PaymentsCustomerData& payments_customer_data);
 
 std::unique_ptr<base::DictionaryValue> PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);

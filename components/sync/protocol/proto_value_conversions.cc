@@ -214,6 +214,9 @@ class ToValueVisitor {
     if (proto.type() != sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD) {
       value->Remove("masked_card", nullptr);
     }
+    if (proto.type() != sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA) {
+      value->Remove("customer_data", nullptr);
+    }
     return value;
   }
 
@@ -333,6 +336,7 @@ IMPLEMENT_PROTO_TO_VALUE(NavigationRedirect)
 IMPLEMENT_PROTO_TO_VALUE(NigoriSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PasswordSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PasswordSpecificsData)
+IMPLEMENT_PROTO_TO_VALUE(PaymentsCustomerData)
 IMPLEMENT_PROTO_TO_VALUE(PreferenceSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PrinterPPDReference)
 IMPLEMENT_PROTO_TO_VALUE(PrinterSpecifics)
