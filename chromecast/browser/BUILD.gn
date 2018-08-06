@@ -308,7 +308,6 @@ cast_source_set("browser") {
 
     deps += [
       "//chromecast/common/extensions_api:api",
-      "//chromecast/common/extensions_api:api_registration",
       "//components/guest_view/browser",
       "//components/keyed_service/content",
       "//components/pref_registry",

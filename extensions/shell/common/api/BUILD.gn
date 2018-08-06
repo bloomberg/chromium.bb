@@ -9,26 +9,36 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 assert(enable_extensions,
        "Cannot depend on extensions because enable_extensions=false.")
 
+# TODO(devlin): Enforce visibility restrictions on more of these targets?
+
 schema_sources = [ "identity.idl" ]
 root_namespace = "extensions::shell::api::%(namespace)s"
 
-json_schema_api("api") {
-  sources = schema_sources
-  schemas = true
-  bundle = true
-  bundle_name = "Shell"
-}
-
-json_schema_api("api_registration") {
+json_schema_api("generated_api_registration_bundle") {
   sources = schema_sources
   impl_dir = "//extensions/shell/browser/api"
   bundle_registration = true
   bundle_name = "Shell"
 
   deps = [
-    ":api",
     "//extensions/common",
   ]
+
+  visibility = [ ":api" ]
+}
+
+json_schema_api("generated_api_strings_bundle") {
+  sources = schema_sources
+  bundle = true
+  bundle_name = "Shell"
+
+  visibility = [ ":api" ]
+}
+
+generated_types("generated_api_types") {
+  sources = schema_sources
+
+  visibility = [ ":api" ]
 }
 
 json_features("shell_api_features") {
@@ -36,6 +46,16 @@ json_features("shell_api_features") {
   method_name = "AddShellAPIFeatures"
   sources = [
     "_api_features.json",
+  ]
+}
+
+# Public Targets
+
+group("api") {
+  public_deps = [
+    ":generated_api_registration_bundle",
+    ":generated_api_strings_bundle",
+    ":generated_api_types",
   ]
 }
 

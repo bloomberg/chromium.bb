@@ -65,7 +65,6 @@ source_set("app_shell_lib") {
     "//extensions/renderer",
     "//extensions/shell/browser/system_logs",
     "//extensions/shell/common/api",
-    "//extensions/shell/common/api:api_registration",
     "//extensions/shell/common/api:extensions_features",
     "//google_apis",
     "//third_party/blink/public:blink",

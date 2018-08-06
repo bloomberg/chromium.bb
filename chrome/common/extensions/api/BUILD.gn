@@ -12,9 +12,10 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 
 assert(enable_extensions)
 
-json_schema_api("api") {
+# TODO(devlin): Enforce visibility restrictions on more of these targets?
+
+json_schema_api("generated_api_bundles") {
   sources = chrome_extensions_api_schema_sources
-  schemas = true
   bundle = true
   configs = [ "//build/config:precompiled_headers" ]
   bundle_name = "Chrome"
@@ -48,6 +49,21 @@ json_schema_api("api") {
   deps = [
     "//extensions/common/api",
   ]
+
+  visibility = [ ":api" ]
+}
+
+generated_types("generated_api_types") {
+  sources = chrome_extensions_api_schema_sources
+  configs = [ "//build/config:precompiled_headers" ]
+  schema_include_rules = chrome_extensions_api_schema_include_rules
+
+  root_namespace = chrome_extensions_api_root_namespace
+  deps = [
+    "//extensions/common/api",
+  ]
+
+  visibility = [ ":api" ]
 }
 
 json_features("api_features") {
@@ -71,6 +87,15 @@ json_features("manifest_features") {
   method_name = "AddChromeManifestFeatures"
   sources = [
     "_manifest_features.json",
+  ]
+}
+
+# Public Targets
+
+group("api") {
+  public_deps = [
+    ":generated_api_bundles",
+    ":generated_api_types",
   ]
 }
 
