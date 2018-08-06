@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/fake_machine_learning_client.h"
@@ -28,10 +27,15 @@ class MachineLearningClientImpl : public MachineLearningClient {
   void BootstrapMojoConnection(
       base::ScopedFD fd,
       base::OnceCallback<void(bool success)> result_callback) override {
-    ml_service_proxy_->WaitForServiceToBeAvailable(
-        base::BindOnce(&MachineLearningClientImpl::OnServiceAvailable,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(fd),
-                       std::move(result_callback)));
+    dbus::MethodCall method_call(ml::kMachineLearningInterfaceName,
+                                 ml::kBootstrapMojoConnectionMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(fd.get());
+    ml_service_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(
+            &MachineLearningClientImpl::OnBootstrapMojoConnectionResponse,
+            weak_ptr_factory_.GetWeakPtr(), std::move(result_callback)));
   }
 
  protected:
@@ -44,31 +48,6 @@ class MachineLearningClientImpl : public MachineLearningClient {
 
  private:
   dbus::ObjectProxy* ml_service_proxy_ = nullptr;
-
-  // Actually sends the Mojo-bootstrap message to the ML service daemon, once
-  // the daemon's D-Bus interface is available.
-  void OnServiceAvailable(
-      base::ScopedFD fd,
-      base::OnceCallback<void(bool success)> result_callback,
-      const bool service_is_available) {
-    // Return failure immediately if D-Bus service is not available.
-    if (!service_is_available) {
-      const bool success = false;
-      std::move(result_callback).Run(success);
-      return;
-    }
-
-    // Call the bootstrap D-Bus method.
-    dbus::MethodCall method_call(ml::kMachineLearningInterfaceName,
-                                 ml::kBootstrapMojoConnectionMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendFileDescriptor(fd.get());
-    ml_service_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(
-            &MachineLearningClientImpl::OnBootstrapMojoConnectionResponse,
-            weak_ptr_factory_.GetWeakPtr(), std::move(result_callback)));
-  }
 
   // Passes the success/failure of |dbus_response| on to |result_callback|.
   void OnBootstrapMojoConnectionResponse(
