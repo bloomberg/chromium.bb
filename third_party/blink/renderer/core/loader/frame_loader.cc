@@ -1601,24 +1601,6 @@ SandboxFlags FrameLoader::EffectiveSandboxFlags() const {
   return flags;
 }
 
-WebInsecureRequestPolicy FrameLoader::GetInsecureRequestPolicy() const {
-  Frame* parent_frame = frame_->Tree().Parent();
-  if (!parent_frame)
-    return kLeaveInsecureRequestsAlone;
-
-  return parent_frame->GetSecurityContext()->GetInsecureRequestPolicy();
-}
-
-SecurityContext::InsecureNavigationsSet*
-FrameLoader::InsecureNavigationsToUpgrade() const {
-  DCHECK(frame_);
-  Frame* parent_frame = frame_->Tree().Parent();
-  if (!parent_frame)
-    return nullptr;
-
-  return parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
-}
-
 void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
                                       Document* origin_document) const {
   if (RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&

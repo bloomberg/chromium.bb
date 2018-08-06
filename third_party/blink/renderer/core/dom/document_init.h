@@ -41,6 +41,7 @@
 namespace blink {
 
 class Document;
+class DocumentLoader;
 class LocalFrame;
 class HTMLImportsController;
 class Settings;
@@ -56,7 +57,7 @@ class CORE_EXPORT DocumentInit final {
   // Example:
   //
   //   DocumentInit init = DocumentInit::Create()
-  //       .WithFrame(frame)
+  //       .WithDocumentLoader(loader)
   //       .WithContextDocument(context_document)
   //       .WithURL(url);
   //   Document* document = Document::Create(init);
@@ -70,21 +71,18 @@ class CORE_EXPORT DocumentInit final {
     return imports_controller_;
   }
 
-  bool HasSecurityContext() const { return FrameForSecurityContext(); }
+  bool HasSecurityContext() const { return MasterDocumentLoader(); }
   bool ShouldTreatURLAsSrcdocDocument() const;
   bool ShouldSetURL() const;
-  bool IsSeamlessAllowedFor(Document* child) const;
   SandboxFlags GetSandboxFlags() const;
   bool IsHostedInReservedIPRange() const;
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
   SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade() const;
 
-  KURL ParentBaseURL() const;
-  LocalFrame* OwnerFrame() const;
   Settings* GetSettings() const;
 
-  DocumentInit& WithFrame(LocalFrame*);
-  LocalFrame* GetFrame() const { return frame_; }
+  DocumentInit& WithDocumentLoader(DocumentLoader*);
+  LocalFrame* GetFrame() const;
 
   // Used by the DOMImplementation and DOMParser to pass their parent Document
   // so that the created Document will return the Document when the
@@ -106,9 +104,13 @@ class CORE_EXPORT DocumentInit final {
  private:
   DocumentInit(HTMLImportsController*);
 
-  LocalFrame* FrameForSecurityContext() const;
+  // For a Document associated directly with a frame, this will be the
+  // DocumentLoader driving the commit. For an import, XSLT-generated
+  // document, etc., it will be the DocumentLoader that drove the commit
+  // of its owning Document.
+  DocumentLoader* MasterDocumentLoader() const;
 
-  Member<LocalFrame> frame_;
+  Member<DocumentLoader> document_loader_;
   Member<Document> parent_document_;
 
   Member<HTMLImportsController> imports_controller_;

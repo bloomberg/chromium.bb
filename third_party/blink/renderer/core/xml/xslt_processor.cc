@@ -70,7 +70,11 @@ Document* XSLTProcessor::CreateDocumentFromSource(
   if (owner_document == source_node)
     url = owner_document->Url();
 
-  DocumentInit init = DocumentInit::Create().WithFrame(frame).WithURL(url);
+  DocumentInit init =
+      DocumentInit::Create()
+          .WithDocumentLoader(frame ? frame->Loader().GetDocumentLoader()
+                                    : nullptr)
+          .WithURL(url);
 
   String document_source = source_string;
   bool force_xhtml = source_mime_type == "text/plain";

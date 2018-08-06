@@ -165,8 +165,6 @@ class CORE_EXPORT FrameLoader final {
   void ForceSandboxFlags(SandboxFlags flags) { forced_sandbox_flags_ |= flags; }
   SandboxFlags EffectiveSandboxFlags() const;
 
-  WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
-  SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade() const;
   void ModifyRequestForCSP(ResourceRequest&, Document*) const;
 
   Frame* Opener();
