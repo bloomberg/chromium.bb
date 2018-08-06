@@ -96,6 +96,7 @@ Polymer({
             unavailableValue: [],
             valid: true,
             available: true,
+            setByPolicy: false,
             key: '',
           },
           copies: {
@@ -103,6 +104,7 @@ Polymer({
             unavailableValue: '1',
             valid: true,
             available: true,
+            setByPolicy: false,
             key: '',
           },
           collate: {
@@ -110,6 +112,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'isCollateEnabled',
           },
           layout: {
@@ -117,6 +120,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'isLandscapeEnabled',
           },
           color: {
@@ -124,6 +128,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'isColorEnabled',
           },
           mediaSize: {
@@ -134,6 +139,7 @@ Polymer({
             unavailableValue: {},
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'mediaSize',
           },
           margins: {
@@ -142,6 +148,7 @@ Polymer({
                 print_preview.ticket_items.MarginsTypeValue.DEFAULT,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'marginsType',
           },
           customMargins: {
@@ -154,6 +161,7 @@ Polymer({
             unavailableValue: {},
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'customMargins',
           },
           dpi: {
@@ -161,6 +169,7 @@ Polymer({
             unavailableValue: {},
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'dpi',
           },
           fitToPage: {
@@ -168,6 +177,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'isFitToPageEnabled',
           },
           scaling: {
@@ -175,6 +185,7 @@ Polymer({
             unavailableValue: '100',
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'scaling',
           },
           duplex: {
@@ -182,6 +193,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'isDuplexEnabled',
           },
           cssBackground: {
@@ -189,6 +201,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'isCssBackgroundEnabled',
           },
           selectionOnly: {
@@ -196,6 +209,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: '',
           },
           headerFooter: {
@@ -203,6 +217,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'isHeaderFooterEnabled',
           },
           rasterize: {
@@ -210,6 +225,7 @@ Polymer({
             unavailableValue: false,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: '',
           },
           vendorItems: {
@@ -217,6 +233,7 @@ Polymer({
             unavailableValue: {},
             valid: true,
             available: true,
+            setByPolicy: false,
             key: 'vendorOptions',
           },
           pagesPerSheet: {
@@ -224,6 +241,7 @@ Polymer({
             unavailableValue: 1,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: '',
           },
           // This does not represent a real setting value, and is used only to
@@ -233,6 +251,7 @@ Polymer({
             unavailableValue: null,
             valid: true,
             available: true,
+            setByPolicy: false,
             key: '',
           },
           // This does not represent a real settings value, but is used to
@@ -242,6 +261,7 @@ Polymer({
             unavailableValue: [],
             valid: true,
             available: true,
+            setByPolicy: false,
             key: '',
           },
         };
@@ -469,12 +489,12 @@ Polymer({
   updateSettingsValues_: function(caps) {
     if (this.settings.mediaSize.available) {
       const defaultOption = caps.media_size.option.find(o => !!o.is_default);
-      this.set('settings.mediaSize.value', defaultOption);
+      this.setSetting('mediaSize', defaultOption);
     }
 
     if (this.settings.dpi.available) {
       const defaultOption = caps.dpi.option.find(o => !!o.is_default);
-      this.set('settings.dpi.value', defaultOption);
+      this.setSetting('dpi', defaultOption);
     } else if (
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
       this.set('settings.dpi.unavailableValue', caps.dpi.option[0]);
@@ -483,8 +503,8 @@ Polymer({
     if (this.settings.color.available) {
       const defaultOption = this.destination.defaultColorOption;
       if (defaultOption) {
-        this.set(
-            'settings.color.value',
+        this.setSetting(
+            'color',
             !['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'].includes(
                 defaultOption.type));
       }
@@ -518,7 +538,7 @@ Polymer({
         if (defaultValue != null)
           vendorSettings[item.id] = defaultValue;
       }
-      this.set('settings.vendorItems.value', vendorSettings);
+      this.setSetting('vendorItems', vendorSettings);
     }
   },
 
@@ -561,6 +581,18 @@ Polymer({
   },
 
   /**
+   * @param {string} settingName
+   * @param {*} value
+   * @private
+   */
+  setPolicy_: function(settingName, value) {
+    if (value === undefined)
+      return;
+    this.setSetting(settingName, value);
+    this.set(`settings.${settingName}.setByPolicy`, true);
+  },
+
+  /**
    * Caches the sticky settings and sets up the recent destinations. Sticky
    * settings will be applied when destinaton capabilities have been retrieved.
    * @param {?string} savedSettingsStr The sticky settings from native layer
@@ -591,13 +623,23 @@ Polymer({
     this.stickySettings_ = savedSettings;
   },
 
+  /**
+   * Sets settings in accordance to policies from native code, and prevents
+   * those settings from being changed via other means.
+   * @param {?boolean} forceEnableHeaderFooter Whether to force the
+   *     header/footer to display, or undefined if there is no policy.
+   */
+  setPolicySettings: function(forceEnableHeaderFooter) {
+    this.setPolicy_('headerFooter', forceEnableHeaderFooter);
+  },
+
   applyStickySettings: function() {
     if (this.stickySettings_) {
       STICKY_SETTING_NAMES.forEach(settingName => {
         const setting = this.get(settingName, this.settings);
         const value = this.stickySettings_[setting.key];
         if (value != undefined)
-          this.set(`settings.${settingName}.value`, value);
+          this.setSetting(settingName, value);
       });
     }
     this.initialized_ = true;

@@ -12,6 +12,7 @@ cr.exportPath('print_preview_new');
  *   unavailableValue: *,
  *   valid: boolean,
  *   available: boolean,
+ *   setByPolicy: boolean,
  *   key: string,
  * }}
  */
@@ -74,11 +75,12 @@ const SettingsBehavior = {
 
   /**
    * @param {string} settingName Name of the setting to set
-   * @param {boolean | string | number | Array | Object} value The value to set
-   *     the setting to.
+   * @param {*} value The value to set the setting to.
    */
   setSetting: function(settingName, value) {
     const setting = this.getSetting(settingName);
+    if (setting.setByPolicy)
+      return;
     this.set(`settings.${settingName}.value`, value);
   },
 

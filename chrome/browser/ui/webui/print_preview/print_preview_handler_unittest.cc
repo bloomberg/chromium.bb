@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
@@ -18,10 +19,14 @@
 #include "base/values.h"
 #include "chrome/browser/printing/print_test_utils.h"
 #include "chrome/browser/printing/print_view_manager.h"
+#include "chrome/browser/ui/webui/print_preview/policy_settings.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "components/printing/common/print_messages.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -318,14 +323,16 @@ class PrintPreviewHandlerTest : public testing::Test {
 
   // Validates the initial settings structure in the response matches the
   // print_preview.NativeInitialSettings type in
-  // chrome/browser/resources/print_preview/native_layer.js. Checks that
-  // |default_printer_name| is the printer name returned and that
-  // |initiator_title| is the initiator title returned and validates that
-  // delimeters are correct for "en" locale (set in Initialize()). Assumes
-  // "test-callback-id-0" was used as the callback id.
+  // chrome/browser/resources/print_preview/native_layer.js. Checks that:
+  //   - |default_printer_name| is the printer name returned
+  //   - |initiator_title| is the initiator title returned
+  //   - |policy| is the header/footer policy returned
+  // Also validates that delimeters are correct for "en" locale (set in
+  // Initialize()).  Assumes "test-callback-id-0" was used as the callback id.
   void ValidateInitialSettings(const content::TestWebUI::CallData& data,
                                const std::string& default_printer_name,
-                               const std::string& initiator_title) {
+                               const std::string& initiator_title,
+                               printing::HeaderFooterEnforcement policy) {
     CheckWebUIResponse(data, "test-callback-id-0", true);
     const base::Value* settings = data.arg3();
     ASSERT_TRUE(settings->FindKeyOfType("isInKioskAutoPrintMode",
@@ -358,6 +365,22 @@ class PrintPreviewHandlerTest : public testing::Test {
         settings->FindKeyOfType("printerName", base::Value::Type::STRING);
     ASSERT_TRUE(printer);
     EXPECT_EQ(default_printer_name, printer->GetString());
+
+    const base::Value* force = settings->FindKeyOfType(
+        "forceEnableHeaderFooter", base::Value::Type::BOOLEAN);
+    switch (policy) {
+      case printing::HeaderFooterEnforcement::kNotEnforced:
+        EXPECT_FALSE(force);
+        break;
+      case printing::HeaderFooterEnforcement::kForceEnable:
+        ASSERT_TRUE(force);
+        EXPECT_TRUE(force->GetBool());
+        break;
+      case printing::HeaderFooterEnforcement::kForceDisable:
+        ASSERT_TRUE(force);
+        EXPECT_FALSE(force->GetBool());
+        break;
+    }
   }
 
   IPC::TestSink& initiator_sink() {
@@ -385,6 +408,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   }
 
   const Profile* profile() { return profile_.get(); }
+  PrefService* prefs() { return profile_->GetPrefs(); }
   content::TestWebUI* web_ui() { return web_ui_.get(); }
   printing::TestPrintPreviewHandler* handler() { return handler_; }
   printing::TestPrinterHandler* printer_handler() { return printer_handler_; }
@@ -404,16 +428,50 @@ class PrintPreviewHandlerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandlerTest);
 };
 
-TEST_F(PrintPreviewHandlerTest, InitialSettings) {
+TEST_F(PrintPreviewHandlerTest, InitialSettingsSimple) {
   Initialize();
 
   // Verify initial settings were sent.
   ValidateInitialSettings(*web_ui()->call_data().back(),
                           printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName);
+                          printing::kDummyInitiatorName,
+                          printing::HeaderFooterEnforcement::kNotEnforced);
 
   // Check that the use-cloud-print event got sent
   AssertWebUIEventFired(*web_ui()->call_data().front(), "use-cloud-print");
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsDontEnforceHeaderFooter) {
+  // Set a policy that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintHeaderFooter,
+                      printing::HeaderFooterEnforcement::kNotEnforced);
+  Initialize();
+  ValidateInitialSettings(*web_ui()->call_data().back(),
+                          printing::kDummyPrinterName,
+                          printing::kDummyInitiatorName,
+                          printing::HeaderFooterEnforcement::kNotEnforced);
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsForceHeaderFooter) {
+  // Set a policy that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintHeaderFooter,
+                      printing::HeaderFooterEnforcement::kForceEnable);
+  Initialize();
+  ValidateInitialSettings(*web_ui()->call_data().back(),
+                          printing::kDummyPrinterName,
+                          printing::kDummyInitiatorName,
+                          printing::HeaderFooterEnforcement::kForceEnable);
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsForceNoHeaderFooter) {
+  // Set a policy that should take priority over StickySettings.
+  prefs()->SetInteger(prefs::kPrintHeaderFooter,
+                      printing::HeaderFooterEnforcement::kForceDisable);
+  Initialize();
+  ValidateInitialSettings(*web_ui()->call_data().back(),
+                          printing::kDummyPrinterName,
+                          printing::kDummyInitiatorName,
+                          printing::HeaderFooterEnforcement::kForceDisable);
 }
 
 TEST_F(PrintPreviewHandlerTest, GetPrinters) {

@@ -144,7 +144,13 @@ class PrintPreviewHandler
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewPdfGeneratedBrowserTest,
                            MANUAL_DummyTest);
   friend class PrintPreviewHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, InitialSettings);
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, InitialSettingsSimple);
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
+                           InitialSettingsDontEnforceHeaderFooter);
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
+                           InitialSettingsForceHeaderFooter);
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
+                           InitialSettingsForceNoHeaderFooter);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPrinters);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPrinterCapabilities);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, Print);
@@ -155,6 +161,8 @@ class PrintPreviewHandler
   content::WebContents* preview_web_contents() const;
 
   PrintPreviewUI* print_preview_ui() const;
+
+  PrefService* GetPrefs() const;
 
   // Whether the the handler should be receiving messages from the renderer to
   // forward to the Print Preview JS in response to preview request with id
