@@ -3855,6 +3855,8 @@ crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe
 crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
 crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-sharedworker-failure.html [ Timeout ]
 
+crbug.com/798572 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-simple-success.html [ Timeout ]
+
 crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
@@ -4283,8 +4285,6 @@ crbug.com/794180 http/tests/devtools/layers/layer-compositing-reasons.js [ Failu
 crbug.com/779087 external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
 crbug.com/779087 external/wpt/feature-policy/autoplay-default-feature-policy.https.sub.html [ Skip ]
 crbug.com/779087 external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
-
-crbug.com/798572 virtual/enable_wasm/external/wpt/wasm/wasm_service_worker_test.https.html [ Failure ]
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]

@@ -250,6 +250,11 @@ class CORE_EXPORT SerializedScriptValue
   }
   void SetImageBitmapContentsArray(ImageBitmapContentsArray contents);
 
+  bool IsLockedToAgentCluster() const {
+    return !wasm_modules_.IsEmpty() ||
+           !shared_array_buffers_contents_.IsEmpty();
+  }
+
  private:
   friend class ScriptValueSerializer;
   friend class V8ScriptValueSerializer;

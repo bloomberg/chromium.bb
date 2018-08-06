@@ -92,6 +92,12 @@ void MessagePort::postMessage(ScriptState* script_state,
   if (debugger)
     msg.sender_stack_trace_id = debugger->StoreCurrentStackTrace("postMessage");
 
+  if (message->IsLockedToAgentCluster()) {
+    msg.locked_agent_cluster_id = GetExecutionContext()->GetAgentClusterID();
+  } else {
+    msg.locked_agent_cluster_id = base::nullopt;
+  }
+
   mojo::Message mojo_message =
       mojom::blink::TransferableMessage::WrapAsMessage(std::move(msg));
   connector_->Accept(&mojo_message);
@@ -261,9 +267,16 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
     return true;
   }
 
-  MessagePortArray* ports = MessagePort::EntanglePorts(
-      *GetExecutionContext(), std::move(message.ports));
-  Event* evt = MessageEvent::Create(ports, std::move(message.message));
+  Event* evt;
+  if (!message.locked_agent_cluster_id ||
+      GetExecutionContext()->IsSameAgentCluster(
+          *message.locked_agent_cluster_id)) {
+    MessagePortArray* ports = MessagePort::EntanglePorts(
+        *GetExecutionContext(), std::move(message.ports));
+    evt = MessageEvent::Create(ports, std::move(message.message));
+  } else {
+    evt = MessageEvent::CreateError();
+  }
 
   v8::Isolate* isolate = ToIsolate(GetExecutionContext());
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);

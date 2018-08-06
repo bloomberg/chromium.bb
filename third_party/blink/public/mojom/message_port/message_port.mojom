@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/big_buffer.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "third_party/blink/public/mojom/array_buffer/array_buffer_contents.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/message_port/user_activation_snapshot.mojom";
@@ -29,6 +30,9 @@ struct CloneableMessage {
   uint64 stack_trace_id;
   int64 stack_trace_debugger_id_first;
   int64 stack_trace_debugger_id_second;
+  // If not null, this message is locked to the given agent cluster ID.
+  // See https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
+  mojo_base.mojom.UnguessableToken? locked_agent_cluster_id;
 };
 
 // This struct combines the cloneable part of a message with the parts of the

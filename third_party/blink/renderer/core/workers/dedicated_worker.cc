@@ -313,7 +313,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
       ConnectToWorkerInterfaceProvider(GetExecutionContext(),
                                        SecurityOrigin::Create(script_url)),
       CreateBeginFrameProviderParams(),
-      GetExecutionContext()->GetSecurityContext().GetFeaturePolicy());
+      GetExecutionContext()->GetSecurityContext().GetFeaturePolicy(),
+      GetExecutionContext()->GetAgentClusterID());
 }
 
 const AtomicString& DedicatedWorker::InterfaceName() const {

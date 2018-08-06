@@ -131,6 +131,14 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
   DCHECK(IsValidSource(source_.Get()));
 }
 
+MessageEvent::MessageEvent(const String& origin, EventTarget* source)
+    : Event(EventTypeNames::messageerror, Bubbles::kNo, Cancelable::kNo),
+      data_type_(kDataTypeNull),
+      origin_(origin),
+      source_(source) {
+  DCHECK(IsValidSource(source_.Get()));
+}
+
 MessageEvent::MessageEvent(const String& data, const String& origin)
     : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeString),
@@ -269,6 +277,7 @@ v8::Local<v8::Object> MessageEvent::AssociateWithWrapper(
   // how much memory is used via the wrapper. To keep the wrapper alive, it's
   // set to the wrapper of the MessageEvent as a private value.
   switch (GetDataType()) {
+    case MessageEvent::kDataTypeNull:
     case MessageEvent::kDataTypeScriptValue:
     case MessageEvent::kDataTypeSerializedScriptValue:
       break;

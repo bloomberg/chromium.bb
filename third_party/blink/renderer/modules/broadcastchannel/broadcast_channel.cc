@@ -96,9 +96,17 @@ void BroadcastChannel::Trace(blink::Visitor* visitor) {
 
 void BroadcastChannel::OnMessage(BlinkCloneableMessage message) {
   // Queue a task to dispatch the event.
-  MessageEvent* event = MessageEvent::Create(
-      nullptr, std::move(message.message),
-      GetExecutionContext()->GetSecurityOrigin()->ToString());
+  MessageEvent* event;
+  if (!message.locked_agent_cluster_id ||
+      GetExecutionContext()->IsSameAgentCluster(
+          *message.locked_agent_cluster_id)) {
+    event = MessageEvent::Create(
+        nullptr, std::move(message.message),
+        GetExecutionContext()->GetSecurityOrigin()->ToString());
+  } else {
+    event = MessageEvent::CreateError(
+        GetExecutionContext()->GetSecurityOrigin()->ToString());
+  }
   EnqueueEvent(event, TaskType::kPostedMessage);
 }
 

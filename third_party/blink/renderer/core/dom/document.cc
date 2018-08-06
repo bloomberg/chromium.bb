@@ -696,7 +696,8 @@ Document::Document(const DocumentInit& initializer,
       slot_assignment_recalc_forbidden_recursion_depth_(0),
 #endif
       needs_to_record_ukm_outlive_time_(false),
-      viewport_data_(new ViewportData(*this)) {
+      viewport_data_(new ViewportData(*this)),
+      agent_cluster_id_(base::UnguessableToken::Create()) {
   if (frame_) {
     DCHECK(frame_->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *frame_->GetPage());

@@ -32,6 +32,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
@@ -152,6 +153,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual ResourceFetcher* Fetcher() const = 0;
 
   virtual SecurityContext& GetSecurityContext() = 0;
+
+  // https://tc39.github.io/ecma262/#sec-agent-clusters
+  virtual const base::UnguessableToken& GetAgentClusterID() const = 0;
+
+  bool IsSameAgentCluster(const base::UnguessableToken&) const;
 
   virtual bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) {
     return false;

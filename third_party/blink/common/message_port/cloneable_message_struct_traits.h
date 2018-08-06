@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_COMMON_MESSAGE_PORT_CLONEABLE_MESSAGE_STRUCT_TRAITS_H_
 
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "third_party/blink/public/common/message_port/cloneable_message.h"
 #include "third_party/blink/public/mojom/message_port/message_port.mojom.h"
 
@@ -23,17 +24,23 @@ struct BLINK_COMMON_EXPORT
     return input.blobs;
   }
 
-  static uint64_t stack_trace_id(blink::CloneableMessage& input) {
+  static uint64_t stack_trace_id(const blink::CloneableMessage& input) {
     return input.stack_trace_id;
   }
 
-  static int64_t stack_trace_debugger_id_first(blink::CloneableMessage& input) {
+  static int64_t stack_trace_debugger_id_first(
+      const blink::CloneableMessage& input) {
     return input.stack_trace_debugger_id_first;
   }
 
   static int64_t stack_trace_debugger_id_second(
-      blink::CloneableMessage& input) {
+      const blink::CloneableMessage& input) {
     return input.stack_trace_debugger_id_second;
+  }
+
+  static const base::Optional<base::UnguessableToken>& locked_agent_cluster_id(
+      const blink::CloneableMessage& input) {
+    return input.locked_agent_cluster_id;
   }
 
   static bool Read(blink::mojom::CloneableMessage::DataView data,

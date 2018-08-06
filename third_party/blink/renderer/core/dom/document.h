@@ -1445,6 +1445,18 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
 
+  // TODO(binji): See http://crbug.com/798572. This implementation shares the
+  // same agent cluster ID for any one document. The proper implementation of
+  // this function must follow the rules described here:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism.
+  //
+  // Even with this simple implementation, we can prevent sharing
+  // SharedArrayBuffers and WebAssembly modules with workers that happen to be
+  // in the same process.
+  const base::UnguessableToken& GetAgentClusterID() const final {
+    return agent_cluster_id_;
+  }
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1871,6 +1883,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // This is set through feature policy 'vertical-scroll'.
   bool is_vertical_scroll_enforced_ = false;
+
+  // https://tc39.github.io/ecma262/#sec-agent-clusters
+  const base::UnguessableToken agent_cluster_id_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
