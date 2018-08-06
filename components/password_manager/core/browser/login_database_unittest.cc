@@ -2070,11 +2070,11 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
   EXPECT_TRUE(result.empty());
 
   // Delete undecryptable logins and make sure we can get valid logins.
-  EXPECT_TRUE(db.DeleteUndecryptableLogins());
+  EXPECT_EQ(DatabaseCleanupResult::kSuccess, db.DeleteUndecryptableLogins());
   EXPECT_TRUE(db.GetAutofillableLogins(&result));
   EXPECT_THAT(result, UnorderedElementsAre(Pointee(form1), Pointee(form3)));
 #else
-  EXPECT_TRUE(db.DeleteUndecryptableLogins());
+  EXPECT_EQ(DatabaseCleanupResult::kSuccess, db.DeleteUndecryptableLogins());
 #endif
 }
 
@@ -2086,7 +2086,8 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
   OSCryptMocker::SetBackendLocked(true);
   LoginDatabase db(database_path());
   ASSERT_TRUE(db.Init());
-  EXPECT_FALSE(db.DeleteUndecryptableLogins());
+  EXPECT_EQ(DatabaseCleanupResult::kEncryptionUnavailable,
+            db.DeleteUndecryptableLogins());
 }
 #endif
 

@@ -18,6 +18,15 @@ struct PasswordForm;
 
 namespace password_manager {
 
+// This enum is used to determine result status when deleting undecryptable
+// logins from database.
+enum class DatabaseCleanupResult {
+  kSuccess,
+  kItemFailure,
+  kDatabaseUnavailable,
+  kEncryptionUnavailable,
+};
+
 // PasswordStore interface for PasswordSyncableService. It provides access to
 // synchronous methods of PasswordStore which shouldn't be accessible to other
 // classes. These methods are to be called on the PasswordStore background
@@ -37,6 +46,9 @@ class PasswordStoreSync {
   virtual bool FillBlacklistLogins(
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
       WARN_UNUSED_RESULT = 0;
+
+  // Deletes logins that cannot be decrypted.
+  virtual DatabaseCleanupResult DeleteUndecryptableLogins() = 0;
 
   // Synchronous implementation to add the given login.
   virtual PasswordStoreChangeList AddLoginSync(

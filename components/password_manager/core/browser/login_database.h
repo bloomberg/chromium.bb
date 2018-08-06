@@ -143,12 +143,12 @@ class LoginDatabase {
 
   // On MacOS, it deletes all logins from the database that cannot be decrypted
   // when encryption key from Keychain is available. If the Keychain is locked,
-  // it does nothing and returns false. If it's not running on MacOS, it does
-  // nothing and returns true. This can be used when syncing logins from the
-  // cloud to rewrite entries that can't be used anymore (due to modification of
-  // the encryption key). Returns true on success, if all the broken entries are
-  // successfully deleted.
-  bool DeleteUndecryptableLogins();
+  // it does nothing and returns ENCRYPTION_UNAVAILABLE. If it's not running on
+  // MacOS, it does nothing and returns SUCCESS. This can be used when syncing
+  // logins from the cloud to rewrite entries that can't be used anymore (due to
+  // modification of the encryption key). If one of the logins couldn't be
+  // removed from the database, returns ITEM_FAILURE.
+  DatabaseCleanupResult DeleteUndecryptableLogins();
 
   // Returns the encrypted password value for the specified |form|.  Returns an
   // empty string if the row for this |form| is not found.

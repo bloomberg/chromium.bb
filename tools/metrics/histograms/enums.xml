@@ -37509,6 +37509,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Read failed"/>
   <int value="2" label="Duplcate tags"/>
   <int value="3" label="Server failed"/>
+  <int value="4" label="Cleanup failed"/>
+  <int value="5" label="Decryption failed"/>
 </enum>
 
 <enum name="PaymentRequestAbortReason">
