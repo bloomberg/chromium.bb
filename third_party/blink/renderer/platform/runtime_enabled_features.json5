@@ -1318,10 +1318,6 @@
       status: "experimental",
     },
     {
-      name: "VisibilityCollapseRow",
-      status: "stable",
-    },
-    {
       name: "VisualViewportAPI",
       status: "stable",
     },
