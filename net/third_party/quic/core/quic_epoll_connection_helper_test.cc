@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
-#include "net/third_party/quic/test_tools/mock_epoll_server.h"
+#include "net/third_party/quic/test_tools/fake_epoll_server.h"
 
 namespace quic {
 namespace test {
@@ -17,7 +17,7 @@ class QuicEpollConnectionHelperTest : public QuicTest {
   QuicEpollConnectionHelperTest()
       : helper_(&epoll_server_, QuicAllocator::BUFFER_POOL) {}
 
-  MockEpollServer epoll_server_;
+  test::FakeEpollServer epoll_server_;
   QuicEpollConnectionHelper helper_;
 };
 

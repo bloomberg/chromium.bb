@@ -428,9 +428,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(kAKDU, perspective_)) {
     unlimited_ack_decimation_ = true;
   }
-  if (GetQuicReloadableFlag(quic_fast_ack_after_quiescence) &&
-      config.HasClientSentConnectionOption(kACKQ, perspective_)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_ack_after_quiescence);
+  if (config.HasClientSentConnectionOption(kACKQ, perspective_)) {
     fast_ack_after_quiescence_ = true;
   }
   if (config.HasClientSentConnectionOption(k5RTO, perspective_)) {
@@ -586,6 +584,8 @@ bool QuicConnection::OnProtocolVersionMismatch(
                   << ParsedQuicVersionToString(received_version);
 
   MaybeEnableSessionDecidesWhatToWrite();
+  no_stop_waiting_frames_ =
+      received_version.transport_version > QUIC_VERSION_43;
 
   // TODO(satyamshekhar): Store the packet number of this packet and close the
   // connection if we ever received a packet with incorrect version and whose
@@ -645,6 +645,7 @@ void QuicConnection::OnVersionNegotiationPacket(
 
   QUIC_DLOG(INFO) << ENDPOINT << "Negotiated version: "
                   << QuicVersionToString(transport_version());
+  no_stop_waiting_frames_ = transport_version() > QUIC_VERSION_43;
   version_negotiation_state_ = NEGOTIATION_IN_PROGRESS;
   RetransmitUnackedPackets(ALL_UNACKED_RETRANSMISSION);
 }
@@ -878,15 +879,10 @@ bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
     return true;
   }
 
-  QuicPacketNumber largest_sent_packet = packet_generator_.packet_number();
-  if (GetQuicReloadableFlag(quic_validate_ack_largest_observed)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_validate_ack_largest_observed);
-    largest_sent_packet = sent_packet_manager_.GetLargestSentPacket();
-  }
-  if (largest_acked > largest_sent_packet) {
+  if (largest_acked > sent_packet_manager_.GetLargestSentPacket()) {
     QUIC_DLOG(WARNING) << ENDPOINT
                        << "Peer's observed unsent packet:" << largest_acked
-                       << " vs " << largest_sent_packet;
+                       << " vs " << sent_packet_manager_.GetLargestSentPacket();
     // We got an error for data we have not sent.
     CloseConnection(QUIC_INVALID_ACK_DATA, "Largest observed too high.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);

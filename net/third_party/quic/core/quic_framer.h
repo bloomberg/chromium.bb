@@ -301,6 +301,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Size in bytes required for a serialized stop sending frame.
   static size_t GetStopSendingFrameSize(const QuicStopSendingFrame& frame);
 
+  // Size in bytes required for a serialized retransmittable control |frame|.
+  static size_t GetRetransmittableControlFrameSize(QuicTransportVersion version,
+                                                   const QuicFrame& frame);
+
   // Returns the number of bytes added to the packet for the specified frame,
   // and 0 if the frame doesn't fit.  Includes the header size for the first
   // frame.

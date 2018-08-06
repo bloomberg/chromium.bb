@@ -3146,6 +3146,9 @@ source_set("quic_test_tools") {
     "third_party/quic/test_tools/simulator/switch.h",
     "third_party/quic/test_tools/simulator/traffic_policer.cc",
     "third_party/quic/test_tools/simulator/traffic_policer.h",
+    "third_party/quic/tools/quic_tcp_like_trace_converter.cc",
+    "third_party/quic/tools/quic_tcp_like_trace_converter.h",
+    "third_party/quic/tools/quic_tcp_like_trace_converter_test.cc",
   ]
   deps = [
     ":net",
@@ -3164,10 +3167,10 @@ source_set("quic_test_tools") {
     sources += [
       "third_party/quic/test_tools/bad_packet_writer.cc",
       "third_party/quic/test_tools/bad_packet_writer.h",
+      "third_party/quic/test_tools/fake_epoll_server.cc",
+      "third_party/quic/test_tools/fake_epoll_server.h",
       "third_party/quic/test_tools/limited_mtu_test_writer.cc",
       "third_party/quic/test_tools/limited_mtu_test_writer.h",
-      "third_party/quic/test_tools/mock_epoll_server.cc",
-      "third_party/quic/test_tools/mock_epoll_server.h",
       "third_party/quic/test_tools/packet_dropping_test_writer.cc",
       "third_party/quic/test_tools/packet_dropping_test_writer.h",
       "third_party/quic/test_tools/packet_reordering_writer.cc",

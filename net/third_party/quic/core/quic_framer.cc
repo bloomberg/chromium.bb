@@ -423,6 +423,65 @@ size_t QuicFramer::GetPathResponseFrameSize(
 }
 
 // static
+size_t QuicFramer::GetRetransmittableControlFrameSize(
+    QuicTransportVersion version,
+    const QuicFrame& frame) {
+  switch (frame.type) {
+    case PING_FRAME:
+      // Ping has no payload.
+      return kQuicFrameTypeSize;
+    case RST_STREAM_FRAME:
+      return GetRstStreamFrameSize(version, *frame.rst_stream_frame);
+    case CONNECTION_CLOSE_FRAME:
+      return GetMinConnectionCloseFrameSize(version,
+                                            *frame.connection_close_frame) +
+             TruncatedErrorStringSize(
+                 frame.connection_close_frame->error_details);
+    case GOAWAY_FRAME:
+      return GetMinGoAwayFrameSize() +
+             TruncatedErrorStringSize(frame.goaway_frame->reason_phrase);
+    case WINDOW_UPDATE_FRAME:
+      // For version 99, this could be either a MAX DATA or MAX STREAM DATA.
+      // GetWindowUpdateFrameSize figures this out and returns the correct
+      // length.
+      return GetWindowUpdateFrameSize(version, *frame.window_update_frame);
+    case BLOCKED_FRAME:
+      return GetBlockedFrameSize(version, *frame.blocked_frame);
+    case APPLICATION_CLOSE_FRAME:
+      return GetMinApplicationCloseFrameSize(version,
+                                             *frame.application_close_frame) +
+             TruncatedErrorStringSize(
+                 frame.application_close_frame->error_details);
+    case NEW_CONNECTION_ID_FRAME:
+      return GetNewConnectionIdFrameSize(*frame.new_connection_id_frame);
+    case MAX_STREAM_ID_FRAME:
+      return GetMaxStreamIdFrameSize(version, frame.max_stream_id_frame);
+    case STREAM_ID_BLOCKED_FRAME:
+      return GetStreamIdBlockedFrameSize(version,
+                                         frame.stream_id_blocked_frame);
+    case PATH_RESPONSE_FRAME:
+      return GetPathResponseFrameSize(*frame.path_response_frame);
+    case PATH_CHALLENGE_FRAME:
+      return GetPathChallengeFrameSize(*frame.path_challenge_frame);
+    case STOP_SENDING_FRAME:
+      return GetStopSendingFrameSize(*frame.stop_sending_frame);
+
+    case STREAM_FRAME:
+    case ACK_FRAME:
+    case STOP_WAITING_FRAME:
+    case MTU_DISCOVERY_FRAME:
+    case PADDING_FRAME:
+    case NUM_FRAME_TYPES:
+      DCHECK(false);
+      return 0;
+  }
+
+  // Not reachable, but some Chrome compilers can't figure that out.  *sigh*
+  DCHECK(false);
+  return 0;
+}
+
+// static
 size_t QuicFramer::GetStreamIdSize(QuicStreamId stream_id) {
   // Sizes are 1 through 4 bytes.
   for (int i = 1; i <= 4; ++i) {
@@ -3145,60 +3204,14 @@ size_t QuicFramer::ComputeFrameLength(
                                      packet_number_length);
     case MTU_DISCOVERY_FRAME:
       // MTU discovery frames are serialized as ping frames.
-      QUIC_FALLTHROUGH_INTENDED;
-    case PING_FRAME:
-      // Ping has no payload.
       return kQuicFrameTypeSize;
-    case RST_STREAM_FRAME:
-      return GetRstStreamFrameSize(version_.transport_version,
-                                   *frame.rst_stream_frame);
-    case CONNECTION_CLOSE_FRAME:
-      return GetMinConnectionCloseFrameSize(version_.transport_version,
-                                            *frame.connection_close_frame) +
-             TruncatedErrorStringSize(
-                 frame.connection_close_frame->error_details);
-    case GOAWAY_FRAME:
-      return GetMinGoAwayFrameSize() +
-             TruncatedErrorStringSize(frame.goaway_frame->reason_phrase);
-    case WINDOW_UPDATE_FRAME:
-      // For version 99, this could be either a MAX DATA or MAX STREAM DATA.
-      // GetWindowUpdateFrameSize figures this out and returns the correct
-      // length.
-      return GetWindowUpdateFrameSize(version_.transport_version,
-                                      *frame.window_update_frame);
-    case BLOCKED_FRAME:
-      return GetBlockedFrameSize(version_.transport_version,
-                                 *frame.blocked_frame);
     case PADDING_FRAME:
       DCHECK(false);
       return 0;
-    case APPLICATION_CLOSE_FRAME:
-      return GetMinApplicationCloseFrameSize(version_.transport_version,
-                                             *frame.application_close_frame) +
-             TruncatedErrorStringSize(
-                 frame.application_close_frame->error_details);
-    case NEW_CONNECTION_ID_FRAME:
-      return GetNewConnectionIdFrameSize(*frame.new_connection_id_frame);
-    case MAX_STREAM_ID_FRAME:
-      return GetMaxStreamIdFrameSize(version_.transport_version,
-                                     frame.max_stream_id_frame);
-    case STREAM_ID_BLOCKED_FRAME:
-      return GetStreamIdBlockedFrameSize(version_.transport_version,
-                                         frame.stream_id_blocked_frame);
-    case PATH_RESPONSE_FRAME:
-      return GetPathResponseFrameSize(*frame.path_response_frame);
-    case PATH_CHALLENGE_FRAME:
-      return GetPathChallengeFrameSize(*frame.path_challenge_frame);
-    case STOP_SENDING_FRAME:
-      return GetStopSendingFrameSize(*frame.stop_sending_frame);
-    case NUM_FRAME_TYPES:
-      DCHECK(false);
-      return 0;
+    default:
+      return GetRetransmittableControlFrameSize(version_.transport_version,
+                                                frame);
   }
-
-  // Not reachable, but some Chrome compilers can't figure that out.  *sigh*
-  DCHECK(false);
-  return 0;
 }
 
 bool QuicFramer::AppendTypeByte(const QuicFrame& frame,

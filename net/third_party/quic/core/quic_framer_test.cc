@@ -10144,6 +10144,83 @@ TEST_P(QuicFramerTest, BuildIetfPathResponsePacket) {
                                       QUIC_ARRAYSIZE(packet99));
 }
 
+TEST_P(QuicFramerTest, GetRetransmittableControlFrameSize) {
+  QuicRstStreamFrame rst_stream(1, 3, QUIC_STREAM_CANCELLED, 1024);
+  EXPECT_EQ(QuicFramer::GetRstStreamFrameSize(framer_.transport_version(),
+                                              rst_stream),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&rst_stream)));
+
+  QuicString error_detail(2048, 'e');
+  QuicConnectionCloseFrame connection_close(QUIC_NETWORK_IDLE_TIMEOUT,
+                                            error_detail);
+  EXPECT_EQ(QuicFramer::GetMinConnectionCloseFrameSize(
+                framer_.transport_version(), connection_close) +
+                256,
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&connection_close)));
+
+  QuicGoAwayFrame goaway(2, QUIC_PEER_GOING_AWAY, 3, error_detail);
+  EXPECT_EQ(QuicFramer::GetMinGoAwayFrameSize() + 256,
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&goaway)));
+
+  QuicWindowUpdateFrame window_update(3, 3, 1024);
+  EXPECT_EQ(QuicFramer::GetWindowUpdateFrameSize(framer_.transport_version(),
+                                                 window_update),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&window_update)));
+
+  QuicBlockedFrame blocked(4, 3, 1024);
+  EXPECT_EQ(
+      QuicFramer::GetBlockedFrameSize(framer_.transport_version(), blocked),
+      QuicFramer::GetRetransmittableControlFrameSize(
+          framer_.transport_version(), QuicFrame(&blocked)));
+
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+  QuicApplicationCloseFrame application_close;
+  EXPECT_EQ(QuicFramer::GetMinApplicationCloseFrameSize(
+                framer_.transport_version(), application_close),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&application_close)));
+
+  QuicNewConnectionIdFrame new_connection_id(5, 42, 1, 101111);
+  EXPECT_EQ(QuicFramer::GetNewConnectionIdFrameSize(new_connection_id),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&new_connection_id)));
+
+  QuicMaxStreamIdFrame max_stream_id(6, 3);
+  EXPECT_EQ(QuicFramer::GetMaxStreamIdFrameSize(framer_.transport_version(),
+                                                max_stream_id),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(max_stream_id)));
+
+  QuicStreamIdBlockedFrame stream_id_blocked(7, 3);
+  EXPECT_EQ(QuicFramer::GetStreamIdBlockedFrameSize(framer_.transport_version(),
+                                                    stream_id_blocked),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(stream_id_blocked)));
+
+  QuicPathFrameBuffer buffer = {
+      {0x80, 0x91, 0xa2, 0xb3, 0xc4, 0xd5, 0xe5, 0xf7}};
+  QuicPathResponseFrame path_response_frame(8, buffer);
+  EXPECT_EQ(QuicFramer::GetPathResponseFrameSize(path_response_frame),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&path_response_frame)));
+
+  QuicPathChallengeFrame path_challenge_frame(9, buffer);
+  EXPECT_EQ(QuicFramer::GetPathChallengeFrameSize(path_challenge_frame),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&path_challenge_frame)));
+
+  QuicStopSendingFrame stop_sending_frame(10, 3, 20);
+  EXPECT_EQ(QuicFramer::GetStopSendingFrameSize(stop_sending_frame),
+            QuicFramer::GetRetransmittableControlFrameSize(
+                framer_.transport_version(), QuicFrame(&stop_sending_frame)));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

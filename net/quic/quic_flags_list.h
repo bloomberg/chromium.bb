@@ -110,18 +110,6 @@ QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 // it.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
 
-// Enables the 1RTO connection option which only sends one packet on QUIC
-// retransmission timeout, instead of 2.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_rto, true)
-
-// When true, the NRTT QUIC connection option causes receivers to ignore
-// incoming initial RTT values.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_irtt, true)
-
-// If it's been more than SRTT since receiving a packet, set the ack alarm for
-// 1ms instead of the standard delayed ack timer.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fast_ack_after_quiescence, true)
-
 // If true, QUIC offload pacing when using USPS as egress method.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_offload_pacing_to_usps2, false)
 
@@ -133,12 +121,6 @@ QUIC_FLAG(double, FLAGS_quic_pace_time_into_future_srtt_fraction, 0.125f)
 
 // If true, enable QUIC v44.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_44, true)
-
-// If true, close connection if largest observed in ack frame is greater than
-// largest sent packet.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_validate_ack_largest_observed,
-          true)
 
 // If true, QuicConnection::ProcessPacket will add the connection to write
 // blocked list if it is write blocked, and will not attempt to write before the
