@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/editing/rendered_position.h"
+#include "third_party/blink/renderer/core/editing/compute_layer_selection.h"
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class RenderedPositionTest : public EditingTestBase {
+class ComputeLayerSelectionTest : public EditingTestBase {
  public:
   void SetUp() override {
     EditingTestBase::SetUp();
@@ -45,7 +45,7 @@ class RenderedPositionTest : public EditingTestBase {
   UseMockScrollbarSettings mock_scrollbars_;
 };
 
-TEST_F(RenderedPositionTest, ComputeLayerSelection) {
+TEST_F(ComputeLayerSelectionTest, ComputeLayerSelection) {
   SetBodyContent(R"HTML(
       <!DOCTYPE html>
       input {
@@ -65,7 +65,7 @@ TEST_F(RenderedPositionTest, ComputeLayerSelection) {
   EXPECT_TRUE(composited_selection.end.hidden);
 }
 
-TEST_F(RenderedPositionTest, PositionInScrollableRoot) {
+TEST_F(ComputeLayerSelectionTest, PositionInScrollableRoot) {
   SetBodyContent(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -107,7 +107,7 @@ TEST_F(RenderedPositionTest, PositionInScrollableRoot) {
   EXPECT_EQ(gfx::Point(1369, 915), composited_selection.end.edge_bottom);
 }
 
-TEST_F(RenderedPositionTest, PositionInScroller) {
+TEST_F(ComputeLayerSelectionTest, PositionInScroller) {
   SetBodyContent(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -171,7 +171,7 @@ TEST_F(RenderedPositionTest, PositionInScroller) {
 }
 
 // crbug.com/807930
-TEST_F(RenderedPositionTest, ContentEditableLinebreak) {
+TEST_F(ComputeLayerSelectionTest, ContentEditableLinebreak) {
   SetBodyContent(
       "<div style='font: 10px/10px Ahem;' contenteditable>"
       "test<br><br></div>");
@@ -186,7 +186,7 @@ TEST_F(RenderedPositionTest, ContentEditableLinebreak) {
 }
 
 // crbug.com/807930
-TEST_F(RenderedPositionTest, TextAreaLinebreak) {
+TEST_F(ComputeLayerSelectionTest, TextAreaLinebreak) {
   SetBodyContent(
       "<textarea style='font: 10px/10px Ahem;'>"
       "test\n</textarea>");
@@ -200,7 +200,7 @@ TEST_F(RenderedPositionTest, TextAreaLinebreak) {
 }
 
 // crbug.com/815099
-TEST_F(RenderedPositionTest, CaretBeforeSoftWrap) {
+TEST_F(ComputeLayerSelectionTest, CaretBeforeSoftWrap) {
   SetBodyContent(
       "<div style='font: 10px/10px Ahem; width:20px;' "
       "contenteditable>foo</div>");
@@ -222,7 +222,7 @@ TEST_F(RenderedPositionTest, CaretBeforeSoftWrap) {
   EXPECT_EQ(composited_selection.end.edge_bottom, gfx::Point(27, 18));
 }
 
-TEST_F(RenderedPositionTest, CaretAfterSoftWrap) {
+TEST_F(ComputeLayerSelectionTest, CaretAfterSoftWrap) {
   SetBodyContent(
       "<div style='font: 10px/10px Ahem; width:20px;' "
       "contenteditable>foo</div>");
@@ -245,7 +245,7 @@ TEST_F(RenderedPositionTest, CaretAfterSoftWrap) {
 }
 
 // crbug.com/834686
-TEST_F(RenderedPositionTest, RangeBeginAtBlockEnd) {
+TEST_F(ComputeLayerSelectionTest, RangeBeginAtBlockEnd) {
   const SelectionInDOMTree& selection = SetSelectionTextToBody(
       "<div style='font: 10px/10px Ahem;'>"
       "<div>foo\n^</div><div>ba|r</div></div>");

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/editing/rendered_position.h"
+#include "third_party/blink/renderer/core/editing/compute_layer_selection.h"
 
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
