@@ -144,9 +144,9 @@
       }
 
       InitializeWritableStream(this);
-      const type = underlyingSink.type;
       const size = strategy.size;
       let highWaterMark = strategy.highWaterMark;
+      const type = underlyingSink.type;
       if (type !== undefined) {
         throw new RangeError(streamErrors.invalidType);
       }
@@ -822,7 +822,9 @@
   // or impossible, so use static dispatch for now. This will have to be fixed
   // when adding a byte controller.
   function WritableStreamDefaultControllerAbortSteps(controller, reason) {
-    return controller[_abortAlgorithm](reason);
+    const result = controller[_abortAlgorithm](reason);
+    WritableStreamDefaultControllerClearAlgorithms(controller);
+    return result;
   }
 
   function WritableStreamDefaultControllerErrorSteps(controller) {
@@ -895,6 +897,12 @@
     SetUpWritableStreamDefaultController(stream, controller, startAlgorithm,
         writeAlgorithm, closeAlgorithm, abortAlgorithm, highWaterMark,
         sizeAlgorithm);
+  }
+
+  function WritableStreamDefaultControllerClearAlgorithms(controller) {
+    controller[_writeAlgorithm] = undefined;
+    controller[_closeAlgorithm] = undefined;
+    controller[_abortAlgorithm] = undefined;
   }
 
   function WritableStreamDefaultControllerClose(controller) {
@@ -979,6 +987,7 @@
     // assert(controller[_queue].length === 0,
     //        'controller.[[queue]] is empty.');
     const sinkClosePromise = controller[_closeAlgorithm]();
+    WritableStreamDefaultControllerClearAlgorithms(controller);
     thenPromise(
         sinkClosePromise, () => WritableStreamFinishInFlightClose(stream),
         reason => WritableStreamFinishInFlightCloseWithError(stream, reason));
@@ -1005,6 +1014,10 @@
           WritableStreamDefaultControllerAdvanceQueueIfNeeded(controller);
         },
         reason => {
+          const state = stream[_stateAndFlags] & STATE_MASK;
+          if (state === WRITABLE) {
+            WritableStreamDefaultControllerClearAlgorithms(controller);
+          }
           WritableStreamFinishInFlightWriteWithError(stream, reason);
         });
   }
@@ -1019,6 +1032,7 @@
     const stream = controller[_controlledWritableStream];
     // assert((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
     //        '_stream_.[[state]] is `"writable"`.');
+    WritableStreamDefaultControllerClearAlgorithms(controller);
     WritableStreamStartErroring(stream, error);
   }
 
