@@ -53,6 +53,7 @@ EXTRA_DIST =					\
 	fr-bfu-g2_harness.yaml			\
 	ga-g1_harness.yaml			\
 	ga-g2_harness.yaml			\
+	hi_harness.yaml				\
 	hr-8dots_harness.yaml			\
 	hu-hu-comp8_backward.yaml		\
 	hu-hu-comp8_harness.yaml		\
