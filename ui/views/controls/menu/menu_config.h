@@ -38,7 +38,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Color for the arrow to scroll bookmarks.
   SkColor arrow_color;
 
-  // Menu border sizes.
+  // Menu border sizes. The vertical border size does not apply to menus with
+  // rounded corners - those menus always use the corner radius as the vertical
+  // border size.
   int menu_vertical_border_size;
   int menu_horizontal_border_size;
 

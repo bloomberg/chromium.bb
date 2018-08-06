@@ -2052,7 +2052,10 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     const int right_of_parent =
         item_loc.x() + item->width() - submenu_horizontal_inset;
 
-    menu_bounds.set_y(item_loc.y() - menu_config.menu_vertical_border_size);
+    int border_size = menu_config.CornerRadiusForMenu(this);
+    if (!border_size)
+      border_size = menu_config.menu_vertical_border_size;
+    menu_bounds.set_y(item_loc.y() - border_size);
 
     // Assume the menu can be placed in the preferred location.
     menu_bounds.set_x(create_on_right ? right_of_parent : left_of_parent);
