@@ -156,6 +156,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2462626033734746142">Gruppe med alternativknapper</translation>
 <translation id="2471138580042810658">Overskrift 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisk}other{# asterisker}}</translation>
+<translation id="249330843868392562">Åpne innstillinger for tekst til tale</translation>
 <translation id="2523609930580546572">ChromeVox-veiledning</translation>
 <translation id="2525706221823668172">Hurtigtaster på Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> er tilbakestilt.</translation>
@@ -753,6 +754,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7241683698754534149">Åpne lange beskrivelser i en ny fane</translation>
 <translation id="7248671827512403053">App</translation>
 <translation id="725969808843520477">Neste alternativknapp</translation>
+<translation id="7261612856573623172">System teskt til tale stemme</translation>
 <translation id="7269119382257320590">Ingen tegnsetting</translation>
 <translation id="7273174640290488576">Tom</translation>
 <translation id="7274770952766771364">Kommentarreferanse</translation>

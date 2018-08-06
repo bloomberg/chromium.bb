@@ -489,6 +489,7 @@
 <translation id="4277028893293644418">重設密碼</translation>
 <translation id="4280429058323657511">，到期日：<ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">切換</translation>
+<translation id="4308131620840579419">要集中儲存所有卡片嗎？</translation>
 <translation id="4312866146174492540">封鎖 (預設)</translation>
 <translation id="4325863107915753736">找不到文章</translation>
 <translation id="4326324639298822553">請檢查信用卡到期日，然後再試一次</translation>
@@ -599,6 +600,7 @@
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="5201306358585911203">這個網頁上的嵌入式網頁顯示</translation>
 <translation id="5205222826937269299">請輸入名稱</translation>
+<translation id="5215116848420601511">儲存在 Google Pay 的付款方式和地址資訊</translation>
 <translation id="5222812217790122047">請輸入電子郵件地址</translation>
 <translation id="5230733896359313003">運送地址</translation>
 <translation id="5250209940322997802">「連線至網路」</translation>
@@ -675,6 +677,7 @@
 <translation id="5689199277474810259">以 JSON 格式匯出</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="570530837424789914">管理...</translation>
+<translation id="5705882733397021510">返回</translation>
 <translation id="57094364128775171">建議高強度密碼…</translation>
 <translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
 <translation id="5719499550583120431">接受預付卡。</translation>
@@ -692,6 +695,7 @@
 <translation id="5810442152076338065">您的 <ph name="DOMAIN" /> 連線使用過舊的加密套件進行加密。</translation>
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
 <translation id="5838278095973806738">請勿在這個網站上輸入任何機密資訊 (例如密碼或信用卡號碼)，以免遭到攻擊者竊取。</translation>
+<translation id="5863847714970149516">進入接下來的頁面後，系統可能會向您收取費用</translation>
 <translation id="5866257070973731571">新增電話號碼</translation>
 <translation id="5869405914158311789">無法連上這個網站</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
@@ -822,6 +826,7 @@
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6989763994942163495">顯示進階設定...</translation>
 <translation id="7012363358306927923">中國銀聯</translation>
+<translation id="7016992613359344582">這些費用可能只收取一次，也可能週期性收取，而且您可能不會注意到這筆費用。</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7050187094878475250">您嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證有效期限太長，因此難以信任。</translation>
 <translation id="7053983685419859001">封鎖</translation>
@@ -1086,6 +1091,7 @@
 <translation id="8957210676456822347">監控式入口網站授權</translation>
 <translation id="8971063699422889582">伺服器憑證已過期。</translation>
 <translation id="8978053250194585037">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到網路詐騙行為<ph name="END_LINK" />。詐騙網站會偽裝成其他網站，藉此騙取你的資訊。</translation>
+<translation id="8983003182662520383">儲存在 Google Pay 的付款方式和地址資訊</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">你要瀏覽的網站含有有害程式</translation>

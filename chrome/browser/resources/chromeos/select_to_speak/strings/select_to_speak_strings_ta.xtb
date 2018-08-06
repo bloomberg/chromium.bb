@@ -1,7 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="111880247472081232">உங்கள் ‘பேசும் திரை' அம்சத்தின் ‘உரையிலிருந்து பேச்சு' அமைப்புகள், பொதுவான ‘உரையிலிருந்து பேச்சு' அமைப்புகளுக்கு மாற்றப்பட்டன.</translation>
 <translation id="1197088940767939838">ஆரஞ்சு</translation>
+<translation id="1273314450961659276">’உரையிலிருந்து பேச்சு' அமைப்புகள்</translation>
+<translation id="1498542103351704084">‘பேசும் திரை’ அம்சத்தின் பேச்சு அமைப்புகள் புதுப்பிக்கப்பட்டன</translation>
 <translation id="1555130319947370107">நீலம்</translation>
 <translation id="1666326070478924810">பேசும் திரை அமைப்புகள்</translation>
 <translation id="1966649499058910679">ஒவ்வொரு சொல்லையும் கூறும்போது தனிப்படுத்திக் காட்டு</translation>
@@ -9,11 +12,14 @@
 <translation id="2714180132046334502">அடர்த்தியான பின்புலம்</translation>
 <translation id="27349076983469322">வெளிர் பின்புலம்</translation>
 <translation id="335581015389089642">பேச்சு</translation>
+<translation id="3784184786832188702">‘பேசும் திரை' அம்சம் இப்போது பொதுவான ‘உரையிலிருந்து பேச்சு’ அமைப்புகளைப் பயன்படுத்துகிறது.</translation>
 <translation id="5901630391730855834">மஞ்சள்</translation>
 <translation id="6017514345406065928">பச்சை</translation>
 <translation id="6475604559827479857">சொல்லைத் தனிப்படுத்திக் காட்டுவதற்கான வண்ணம்:</translation>
 <translation id="6837853484260746864">குரலைத் தேர்ந்தெடுக்கவும்:</translation>
+<translation id="7261612856573623172">சாதனத்தின் இயல்பு ‘உரையிலிருந்து பேச்சுக்கான' குரல்</translation>
 <translation id="7768784765476638775">பேசும் திரை</translation>
 <translation id="7914870167134465181">தனிப்படுத்திக் காட்டுதல்</translation>
+<translation id="8324974933005349667">’உரையிலிருந்து பேச்சு’ அமைப்புகளைத் தனிப்பயனாக்கவும்</translation>
 <translation id="992256792861109788">பிங்க்</translation>
 </translationbundle>

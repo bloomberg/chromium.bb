@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> 추가됨</translation>
 <translation id="1056775291175587022">네트워크 없음</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">접근성 설정 표시</translation>
 <translation id="1104621072296271835">연결된 기기가 더욱 원활하게 작동합니다</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />(<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">신호 약함</translation>
 <translation id="1293264513303784526">USB-C 기기(왼쪽 포트)</translation>
+<translation id="1302880136325416935">블루투스 설정을 표시합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="1351937230027495976">메뉴 접기</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />(HDMI/DP)</translation>
 <translation id="1510238584712386396">런처</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{알림 설정을 표시합니다. 앱 1개의 알림이 사용 중지되어 있습니다.}other{알림 설정을 표시합니다. 앱 #개의 알림이 사용 중지되어 있습니다.}}</translation>
 <translation id="1525508553941733066">닫기</translation>
 <translation id="1537254971476575106">전체화면 돋보기</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
 <translation id="1567387640189251553">마지막으로 비밀번호를 입력한 후 다른 키보드가 연결되었습니다. 키 입력 내용을 도용하려는 시도일 수 있습니다.</translation>
+<translation id="1570871743947603115">블루투스를 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">이 사용자 삭제</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT" />입니다.</translation>
 <translation id="1658406695958299976">비밀번호를 여전히 확인할 수 없습니다. 참고: 최근에 비밀번호를 변경한 경우 로그아웃해야 새로운 비밀번호가 적용됩니다. 이전 비밀번호를 사용해 보세요.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">인식할 수 없음</translation>
 <translation id="1746730358044914197">입력 방법은 관리자가 설정합니다.</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
+<translation id="1761222317188459878">네트워크 연결을 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">이더넷: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">어시스턴트(로드 중...)</translation>
 <translation id="1841545962859478868">기기 관리자가 다음을 모니터링할 수 있습니다.</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">기기는 <ph name="DOMAIN" />에서 관리합니다.</translation>
 <translation id="2050339315714019657">세로 방향</translation>
 <translation id="2067602449040652523">키보드 밝기</translation>
+<translation id="2075212959500165896">시도 횟수가 너무 많습니다. 나중에 다시 시도하세요.</translation>
 <translation id="2081529251031312395">$1님이 나중에 로그인할 수 있습니다.</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
 <translation id="2135456203358955318">고정 돋보기</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">창 전환 개요</translation>
 <translation id="2338501278241028356">블루투스를 사용 설정하여 근처 기기 탐색</translation>
 <translation id="2339073806695260576">실행기에서 스타일러스 버튼을 탭하여 메모를 작성하거나, 스크린샷을 찍거나, 레이저 포인터 또는 돋보기를 활용할 수 있습니다.</translation>
+<translation id="2341729377289034582">세로로 잠김</translation>
 <translation id="2352467521400612932">스타일러스 설정</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> 활성화 중</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2365393535144473978">모바일 데이터를 사용 설정하면 블루투스가 사용 설정됩니다.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">알림 일시중지 전환</translation>
 <translation id="2412593942846481727">업데이트 가능</translation>
+<translation id="2416346634399901812"><ph name="NETWORK_NAME" />에 연결됨</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2484513351006226581">키보드 레이아웃을 전환하려면 <ph name="KEYBOARD_SHORTCUT" />을(를) 누르세요.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">연결 추가</translation>
 <translation id="2961963223658824723">문제가 발생했습니다. 잠시 후 다시 시도해 주세요.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">전송 기기를 표시합니다.</translation>
 <translation id="2996462380875591307">고정 돋보기가 사용 설정되었습니다. 사용 중지하려면 다시 Ctrl+Search+D를 누르세요.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" />은(는) <ph name="DOMAIN" />에서 관리하는 공개 세션입니다.</translation>
 <translation id="3000461861112256445">모노 오디오</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">모바일 데이터</translation>
 <translation id="3151786313568798007">방향</translation>
 <translation id="3153444934357957346">멀티 로그인에는 계정을 <ph name="MULTI_PROFILE_USER_LIMIT" />개까지만 사용할 수 있습니다.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{기기 1개에 연결됨}other{기기 #개에 연결됨}}</translation>
 <translation id="3236488194889173876">사용할 수 있는 모바일 네트워크 없음</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">손님</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">잠금</translation>
 <translation id="3798670284305777884">스피커(내부)</translation>
 <translation id="380165613292957338">안녕하세요, 무엇을 도와드릴까요?</translation>
+<translation id="383629559565718788">키보드 설정 표시</translation>
 <translation id="3846575436967432996">네트워크 정보 없음</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3891340733213178823">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">신호 보통</translation>
 <translation id="4200057768455216496">고정 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="4217571870635786043">음성기록</translation>
+<translation id="4261870227682513959">알림 설정을 표시합니다. 알림이 사용 중지되어 있습니다.</translation>
 <translation id="4274921305979314545">Chromebook을 휴대전화에 연결하세요.</translation>
 <translation id="4279490309300973883">미러링</translation>
+<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> 활성화 중</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">돋보기</translation>
@@ -239,6 +253,7 @@
 <translation id="5673434351075758678">설정 동기화 후 ‘<ph name="FROM_LOCALE" />’에서 ‘<ph name="TO_LOCALE" />’(으)로 변경합니다.</translation>
 <translation id="574392208103952083">보통</translation>
 <translation id="5744083938413354016">탭 드래그</translation>
+<translation id="5750765938512549687">블루투스가 사용 중지됨</translation>
 <translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
 <translation id="57838592816432529">음소거</translation>
 <translation id="5805697420284793859">창 관리자</translation>
@@ -272,12 +287,14 @@
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6164005077879661055">관리 대상 사용자를 제거하면 해당 관리 대상 사용자와 연결되어 있는 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다. 하지만 관리자는 관리 대상 사용자의 방문한 웹사이트 및 설정을 <ph name="MANAGEMENT_URL" /> 페이지에서 계속 볼 수 있습니다.</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
+<translation id="6254629735336163724">가로로 잠김</translation>
 <translation id="6259254695169772643">스타일러스로 선택하세요.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 활성화 중...</translation>
 <translation id="6284232397434400372">해상도가 변경됨</translation>
 <translation id="6297287540776456956">스타일러스를 사용하여 영역을 선택하세요.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />(이)가 <ph name="ROTATION" />(으)로 회전되었습니다.</translation>
 <translation id="632744581670418035">키보드 오버레이</translation>
+<translation id="6376931439017688372">블루투스 사용 중</translation>
 <translation id="639644700271529076">CAPS LOCK이 꺼져 있음</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">완료</translation>
@@ -321,6 +338,7 @@
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7076293881109082629">로그인</translation>
+<translation id="7092922358121866860">야간 조명 설정 표시</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="7131634465328662194">자동으로 로그아웃됩니다.</translation>
 <translation id="7143207342074048698">연결 중</translation>
@@ -356,6 +374,7 @@
 <translation id="7798302898096527229">취소하려면 검색 또는 Shift 키를 누르세요.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />시간 <ph name="MINUTE" />분</translation>
 <translation id="7829386189513694949">신호 강함</translation>
+<translation id="7842211907556571265"><ph name="NETWORK_NAME" />에 연결 중</translation>
 <translation id="7842569679327885685">경고: 실험 기능</translation>
 <translation id="7846634333498149051">키보드</translation>
 <translation id="790040513076446191">개인정보 보호 관련 설정 조정</translation>
@@ -396,18 +415,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
 <translation id="8513108775083588393">자동 회전</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
+<translation id="8627191004499078455"><ph name="DEVICE_NAME" />에 연결됨</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> 남음</translation>
 <translation id="8649101189709089199">텍스트 읽어주기</translation>
 <translation id="8652175077544655965">설정 닫기</translation>
+<translation id="8653151467777939995">알림 설정을 표시합니다. 알림이 사용 설정되어 있습니다.</translation>
+<translation id="8664753092453405566">네트워크 목록을 표시합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
 <translation id="8683506306463609433">성능 추적 활성화</translation>
 <translation id="8734991477317290293">키 입력 내용을 도용하려는 시도일 수 있습니다.</translation>
+<translation id="8735953464173050365">키보드 설정을 표시합니다. <ph name="KEYBOARD_NAME" />이(가) 선택되었습니다.</translation>
+<translation id="875593634123171288">VPN 설정 표시</translation>
 <translation id="8809737090443522491">앱 또는 문서 이름 입력</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">3개 이상의 디스플레이 미러링은 지원되지 않습니다.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">뒤로 버튼</translation>
+<translation id="8843682306134542540">회전 잠금을 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">앱이 화면 분할을 지원하지 않습니다.</translation>
 <translation id="8874184842967597500">연결되지 않음</translation>

@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> اضافه شد</translation>
 <translation id="1056775291175587022">شبکه‌ای وجود ندارد</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />:‏ <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">نشان دادن تنظیمات دسترس‌پذیری</translation>
 <translation id="1104621072296271835">دستگاه‌هایتان باهم به‌مراتب بهتر کار می‌کنند</translation>
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
 <translation id="1153356358378277386">دستگاه‌های مرتبط‌شده</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">سیگنال ضعیف</translation>
 <translation id="1293264513303784526">‏دستگاه USB-C (درگاه سمت چپ)</translation>
+<translation id="1302880136325416935">نشان دادن تنظیمات بلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">راست</translation>
 <translation id="1351937230027495976">کوچک کردن منو</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1467432559032391204">چپ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">راه‌انداز</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{نشان دادن تنظیمات اعلان. اعلان‌های یک برنامه خاموش است}one{نشان دادن تنظیمات اعلان. اعلان‌های # برنامه خاموش است}other{نشان دادن تنظیمات اعلان. اعلان‌های # برنامه خاموش است}}</translation>
 <translation id="1525508553941733066">رد کردن</translation>
 <translation id="1537254971476575106">ذره‌بین تمام‌صفحه</translation>
 <translation id="15373452373711364">نشانگر موشواره بزرگ</translation>
 <translation id="1550523713251050646">برای گزینه‌های بیشتر کلیک کنید</translation>
 <translation id="1567387640189251553">بعد از آخرین باری که گذرواژه‌تان را وارد کردید، صفحه‌کلید دیگری متصل شده است. ممکن است تلاش کند ضربه‌کلیدهای شما را به سرقت ببرد.</translation>
+<translation id="1570871743947603115">روشن/خاموش کردن بلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">حذف این کاربر</translation>
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">متأسفیم، گذرواژه‌تان هنوز تأیید نشده است. توجه: اگر به‌تازگی گذرواژه‌تان را تغییر داده‌اید، گذرواژه جدید شما هنگامی‌که از سیستم خارج شوید، اعمال می‌شود؛ لطفاً اینجا از گذرواژه قدیمی خود استفاده کنید.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">شناسایی نشد</translation>
 <translation id="1746730358044914197">روش‌های ورودی توسط سرپرستتان پیکربندی می‌شوند.</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
+<translation id="1761222317188459878">تغییر وضعیت اتصال شبکه. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">اترنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">دستیار (درحال بار کردن…)</translation>
 <translation id="1841545962859478868">سرپرست دستگاه ممکن است موارد زیر را پایش کند</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">این دستگاه توسط <ph name="DOMAIN" /> مدیریت می‌شود.</translation>
 <translation id="2050339315714019657">عمودی</translation>
 <translation id="2067602449040652523">روشنایی صفحه‌کلید</translation>
+<translation id="2075212959500165896">تلاش‌های ناموفق خیلی زیادی داشتید. بعداً دوباره امتحان کنید.</translation>
 <translation id="2081529251031312395">$1 همچنان می‌تواند بعداً به سیستم وارد شود.</translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
 <translation id="2135456203358955318">ذره‌بین متصل</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">مروری کلی بر پنجره تغییر حالت</translation>
 <translation id="2338501278241028356">برای کاوش دستگاه‌های همین اطراف، بلوتوث را روشن کنید</translation>
 <translation id="2339073806695260576">برای یادداشت‌برداری، گرفتن عکس صفحه‌نمایش، استفاده از اشاره‌گر لیزری یا ذره‌بین روی دکمه قلم در قفسه ضربه بزنید.</translation>
+<translation id="2341729377289034582">قفل درحالت عمودی</translation>
 <translation id="2352467521400612932">تنظیمات قلم</translation>
 <translation id="2354174487190027830">فعال‌سازی <ph name="NAME" /></translation>
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2365393535144473978">فعال کردن داده تلفن همراه، بلوتوث را فعال می‌کند.</translation>
 <translation id="2391579633712104609">۱۸۰°</translation>
+<translation id="239188844683466770">روشن/خاموش کردن «مزاحم نشوید»</translation>
 <translation id="2412593942846481727">به‌روزرسانی دردسترس است</translation>
+<translation id="2416346634399901812">متصل به <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. قبل از پذیرش، لطفاً تأیید کنید که این کلیدواژه در آن دستگاه نشان داده می‌شود: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
 <translation id="2484513351006226581">برای تغییر طرح‌بندی صفحه‌کلید، <ph name="KEYBOARD_SHORTCUT" /> را فشار دهید.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">افزودن اتصال</translation>
 <translation id="2961963223658824723">مشکلی پیش آمد. چند ثانیه دیگر دوباره امتحان کنید.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">نمایش دستگاه‌های ارسال محتوا.</translation>
 <translation id="2996462380875591307">‏«ذره‌بین متصل» فعال شد. برای خاموش کردن آن، Ctrl+Search+D را دوباره فشار دهید.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> یک جلسه عمومی مدیریت‌شده توسط <ph name="DOMAIN" /> است</translation>
 <translation id="3000461861112256445">صدای مونو</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">داده‌های تلفن همراه</translation>
 <translation id="3151786313568798007">جهت‌‌</translation>
 <translation id="3153444934357957346">در ورود چندگانه به سیستم، می‌توانید حداکثر از <ph name="MULTI_PROFILE_USER_LIMIT" /> حساب استفاده کنید.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{متصل به یک دستگاه.}one{متصل به # دستگاه}other{متصل به # دستگاه}}</translation>
 <translation id="3236488194889173876">هیچ شبکه تلفن همراهی دردسترس نیست</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">مهمان</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">قفل</translation>
 <translation id="3798670284305777884">بلندگو (داخلی)</translation>
 <translation id="380165613292957338">سلام، چه کمکی می‌توانم بکنم؟</translation>
+<translation id="383629559565718788">نمایش تنظیمات صفحه‌کلید</translation>
 <translation id="3846575436967432996">اطلاعات شبکه در دسترس نیست</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3891340733213178823">‏برای خروج از سیستم Ctrl+Shift+Q را دو بار فشار دهید.</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">سیگنال متوسط</translation>
 <translation id="4200057768455216496">میان‌بر مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
 <translation id="4217571870635786043">املا</translation>
+<translation id="4261870227682513959">نمایش تنظیمات اعلان. اعلان‌ها خاموش است</translation>
 <translation id="4274921305979314545">‏Chromebook را با تلفنتان مرتبط کنید</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
+<translation id="4292681942966152062">درحال فعال کردن <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">مهار</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
@@ -240,6 +254,7 @@
 <translation id="5673434351075758678">از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» بعد از همگام‌سازی تنظیمات.</translation>
 <translation id="574392208103952083">متوسط</translation>
 <translation id="5744083938413354016">کشیدن با ضربه زدن</translation>
+<translation id="5750765938512549687">بلوتوث خاموش است</translation>
 <translation id="5777841717266010279">اشتراک‌گذاری صفحه نمایش متوقف شود؟</translation>
 <translation id="57838592816432529">بی‌صدا کردن</translation>
 <translation id="5805697420284793859">مدیر پنجره</translation>
@@ -273,12 +288,14 @@
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6164005077879661055">با حذف این کاربر نظارت‌شده، کلیه فایل‌ها و داده‌های محلی مربوط به کاربر نظارت‌شده برای همیشه حذف خواهند شد. وب‌سایت‌های بازدید شده و تنظیمات این کاربر نظارت‌شده همچنان برای مدیر در <ph name="MANAGEMENT_URL" /> قابل مشاهده خواهد بود.</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6254629735336163724">قفل درحالت افقی</translation>
 <translation id="6259254695169772643">برای انتخاب از قلم استفاده کنید</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: در حال فعال‌سازی…</translation>
 <translation id="6284232397434400372">وضوح تغییر کرد</translation>
 <translation id="6297287540776456956">از قلم برای انتخاب منطقه استفاده کنید</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
 <translation id="632744581670418035">هم‌پوشانی صفحه‌کلید</translation>
+<translation id="6376931439017688372">بلوتوث روشن است</translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>
 <translation id="6406704438230478924">دگرساز راست</translation>
 <translation id="643147933154517414">کاملاً انجام شد</translation>
@@ -322,6 +339,7 @@
 <translation id="7066646422045619941">این شبکه توسط سرپرست شما غیرفعال شده است.</translation>
 <translation id="7067196344162293536">چرخش خودکار</translation>
 <translation id="7076293881109082629">در حال ورود به سیستم</translation>
+<translation id="7092922358121866860">نمایش تنظیمات «نور شب»</translation>
 <translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="7131634465328662194">به‌طور خودکار از سیستم خارج خواهید شد.</translation>
 <translation id="7143207342074048698">در حال اتصال</translation>
@@ -357,6 +375,7 @@
 <translation id="7798302898096527229">‏برای لغو کردن، Search یا Shift را فشار دهید.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">سیگنال قوی</translation>
+<translation id="7842211907556571265">درحال اتصال به <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">هشدار: ویژگی آزمایشی</translation>
 <translation id="7846634333498149051">صفحه‌کلید</translation>
 <translation id="790040513076446191">دستکاری تنظیمات مربوط به حریم خصوصی</translation>
@@ -397,18 +416,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: درحال اتصال مجدد...</translation>
 <translation id="8513108775083588393">چرخش خودکار</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
+<translation id="8627191004499078455">متصل به <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> باقی‌مانده</translation>
 <translation id="8649101189709089199">انتخاب کنید تا بتوانید صحبت کنید</translation>
 <translation id="8652175077544655965">بستن تنظیمات</translation>
+<translation id="8653151467777939995">نمایش تنظیمات اعلان. اعلان‌ها روشن است</translation>
+<translation id="8664753092453405566">نمایش فهرست شبکه. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">‎۲۷۰°‎</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>
 <translation id="8683506306463609433">ردیابی عملکرد فعال است</translation>
 <translation id="8734991477317290293">ممکن است تلاش کند ضربه‌کلیدهای شما را به سرقت ببرد</translation>
+<translation id="8735953464173050365">نمایش تنظیمات صفحه‌کلید. <ph name="KEYBOARD_NAME" /> انتخاب شده است</translation>
+<translation id="875593634123171288">‏نمایش تنظیمات VPN</translation>
 <translation id="8809737090443522491">نام برنامه یا سندی را وارد کنید</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">«نمایش صفحه‌نمایش روی دستگاه دیگر» با بیش از دو نمایشگر پشتیبانی نمی‌شود.</translation>
 <translation id="8828714802988429505">۹۰°</translation>
 <translation id="8841375032071747811">دکمه برگشت</translation>
+<translation id="8843682306134542540">تغییر وضعیت قفل چرخش. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">برنامه از تقسیم صفحه پشتیبانی نمی‌کند.</translation>
 <translation id="8874184842967597500">متصل نیست</translation>

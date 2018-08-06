@@ -156,6 +156,7 @@
 <translation id="2462626033734746142">Skupina izbirnih gumbov</translation>
 <translation id="2471138580042810658">Naslov 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{zvezdica}one{# zvezdica}two{# zvezdici}few{# zvezdice}other{# zvezdic}}</translation>
+<translation id="249330843868392562">Odpri nastavitve pretvorbe besedila v govor</translation>
 <translation id="2523609930580546572">Vadnica za ChromeVox</translation>
 <translation id="2525706221823668172">Bližnjične tipke za Chromebook</translation>
 <translation id="2549392850788122959">Tipka <ph name="KEY" /> je ponastavljena.</translation>
@@ -753,6 +754,7 @@
 <translation id="7241683698754534149">Odpiranje dolgega opisa na novem zavihku</translation>
 <translation id="7248671827512403053">Aplikacija</translation>
 <translation id="725969808843520477">Naslednji izbirni gumb</translation>
+<translation id="7261612856573623172">Sistemski glas pretvorbe besedila v govor</translation>
 <translation id="7269119382257320590">Ni ločil</translation>
 <translation id="7273174640290488576">Prazno</translation>
 <translation id="7274770952766771364">Sklicevanje na opombo</translation>

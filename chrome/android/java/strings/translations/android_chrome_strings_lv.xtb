@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">Tiek pievienots <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">No vietnēm</translation>
 <translation id="1049743911850919806">Inkognito</translation>
+<translation id="1054301162707478098">Jūs esat atvēris privāto režīmu.</translation>
 <translation id="10614374240317010">Netiek saglabātas</translation>
 <translation id="1068672505746868501">Nekad netulkot lapas šādā valodā: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> — <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">Citas valodas…</translation>
 <translation id="124678866338384709">Aizvērt pašreizējo cilni</translation>
 <translation id="1258753120186372309">Google svētku logotips: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">Lapas, ko skatāt privātajās cilnēs, nebūs redzamas pārlūka vēsturē, sīkfailu krātuvē vai meklēšanas vēsturē, kad aizvērsiet visas privātās cilnes. Tomēr visi lejupielādētie faili un izveidotās grāmatzīmes tiks saglabātas.
+
+Ņemiet vērā, ka privātajā režīmā jūs neesat neredzams. Jūsu pārlūkošanas darbības inkognito režīmā netiek slēptas no jūsu darba devēja, interneta pakalpojumu sniedzēja vai apmeklētajām vietnēm.</translation>
 <translation id="127138278192656016">Sinhronizēšanas un visu pakalpojumu izmantošana</translation>
 <translation id="1272079795634619415">Apturēt</translation>
 <translation id="1283039547216852943">Pieskarties, lai izvērstu</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">Pilnekrāna vietnes vadīklas</translation>
 <translation id="2038563949887743358">Ieslēgt iestatījumu “Pieprasīt datora vietni”</translation>
 <translation id="2045104531052923016">Citas lietotnes: <ph name="GIGABYTES" /> GB</translation>
+<translation id="2055670718290744343">Meklēšanas paātrinātājs</translation>
 <translation id="2063713494490388661">Pieskarties, lai meklētu</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultāts no <ph name="TOTAL_RESULTS" /></translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">Sinhronizēšana un Google pakalp.</translation>
 <translation id="2259659629660284697">Paroļu eksportēšana…</translation>
 <translation id="2268044343513325586">Uzlabot</translation>
+<translation id="2280910239864711607">Atvērt jaunu cilni privātajā režīmā</translation>
 <translation id="2286841657746966508">Norēķinu adrese</translation>
 <translation id="230115972905494466">Netika atrastas saderīgas ierīces.</translation>
 <translation id="2315043854645842844">Operētājsistēma neatbalsta klienta puses sertifikāta atlasi.</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">Atļaut JavaScript konkrētai vietnei</translation>
 <translation id="2625189173221582860">Parole ir nokopēta.</translation>
 <translation id="2631006050119455616">Saglabāts</translation>
+<translation id="2633278372998075009">Privātās cilnes</translation>
 <translation id="2647434099613338025">Pievienot valodu</translation>
 <translation id="2650751991977523696">Vai lejupielādēt failu vēlreiz?</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">Ja esat aizmirsis ieejas frāzi vai vēlaties mainīt šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
 <translation id="3232754137068452469">Tīmekļa lietotne</translation>
+<translation id="3234355010754616171">Jauna privātā cilne</translation>
 <translation id="3236059992281584593">Atlikusi 1 min</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Grāmatot šo lapu</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">Aizvērt visas inkognito režīma cilnes</translation>
 <translation id="3365671512111106261">Nav pieejams, kad ir ieslēgts datu lietojuma samazinātājs</translation>
 <translation id="3367813778245106622">Lai sāktu sinhronizēšanu, pierakstieties vēlreiz</translation>
+<translation id="3377025655491224618">Privātā cilne</translation>
 <translation id="3384347053049321195">Kopīgot attēlu</translation>
 <translation id="3386292677130313581">Jautāt, pirms atļaut vietnēm uzzināt jūsu atrašanās vietu (ieteicams)</translation>
 <translation id="3387650086002190359">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo radās failu sistēmas kļūdas.</translation>
@@ -385,6 +394,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4209895695669353772">Lai saņemtu Google ieteikto personalizēto saturu, ieslēdziet sinhronizāciju.</translation>
 <translation id="4226663524361240545">Saņemot paziņojumu, ierīce var vibrēt.</translation>
 <translation id="4242533952199664413">Atvērt iestatījumus</translation>
+<translation id="4243710787042215766">Atvērt privātajā cilnē</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
@@ -465,6 +475,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4878404682131129617">Neizdevās iestatīt porta pārsūtīšanu, izmantojot starpniekserveri.</translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="488187801263602086">Faila pārdēvēšana</translation>
+<translation id="4883379392681899581">Iziet no privātā režīma</translation>
 <translation id="4885273946141277891">Neatbalstīts Chrome instanču skaits</translation>
 <translation id="4910889077668685004">Maksājumu lietotnes</translation>
 <translation id="4913161338056004800">Atiestatīt statistikas datus</translation>
@@ -506,6 +517,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="5224771365102442243">Ar video</translation>
 <translation id="5233638681132016545">Jauna cilne</translation>
 <translation id="5240817131241497236">Ir mainīti sinhronizācijas, personalizācijas un citu Google pakalpojumu pārvaldības iestatījumi pārlūkā Chrome. Tas var ietekmēt jūsu pašreizējos iestatījumus.</translation>
+<translation id="5264003212305142034"><ph name="BEGIN_LINK1" /> Iestatījumus <ph name="END_LINK1" /> var pielāgot jebkurā laikā. Google var izmantot jūsu apmeklēto vietņu saturu, kā arī pārlūkā veiktās darbības un mijiedarbības, lai personalizētu pārlūku Chrome un citus Google pakalpojumus, piemēram, Tulkotājs, Meklēšana un reklāmas.</translation>
 <translation id="5271967389191913893">Ierīcē nevar atvērt lejupielādējamo saturu.</translation>
 <translation id="528192093759286357">Lai izietu no pilnekrāna režīma, velciet no augšas un pieskarieties pogai Atpakaļ.</translation>
 <translation id="5284584623296338184">Grāmatzīmju, vēstures, paroļu un citu iestatījumu izmaiņas vairs netiks sinhronizētas ar jūsu Google kontu. Tomēr esošie dati joprojām tiks glabāti jūsu Google kontā.</translation>
@@ -591,6 +603,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="583281660410589416">Nezināms</translation>
 <translation id="5833397272224757657">Personalizācijai izmanto jūsu apmeklēto vietņu saturu, kā arī darbības un mijiedarbības pārlūkā.</translation>
 <translation id="5833984609253377421">Kopīgot saiti</translation>
+<translation id="584427517463557805">Atlasītā privātā cilne</translation>
 <translation id="5854790677617711513">Vecāki par 30 dienām</translation>
 <translation id="5858741533101922242">Chrome nevar ieslēgt Bluetooth adapteri.</translation>
 <translation id="5860033963881614850">Izsl.</translation>
@@ -620,6 +633,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="6075798973483050474">Sākumlapas rediģēšana</translation>
 <translation id="60923314841986378">Atlikušas <ph name="HOURS" /> h</translation>
 <translation id="60924377787140961">Drīzumā būs pieejami citi raksti. Jauku pēcpusdienu!</translation>
+<translation id="6099151465289169210">Notika pārslēgšanās uz privātajām cilnēm</translation>
 <translation id="6108923351542677676">Notiek iestatīšana...</translation>
 <translation id="6111020039983847643">Izmantotie dati</translation>
 <translation id="6112702117600201073">Lapas atsvaidzināšana</translation>
@@ -649,6 +663,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6320088164292336938">Vibrācija</translation>
 <translation id="6324034347079777476">Android sistēmas sinhronizācija atspējota</translation>
 <translation id="6333140779060797560">Kopīgot, izmantojot <ph name="APPLICATION" /></translation>
+<translation id="6336451774241870485">Jauna privātā cilne</translation>
 <translation id="6337234675334993532">Šifrēšana</translation>
 <translation id="6341580099087024258">Vaicāt, kur saglabāt failus</translation>
 <translation id="6343192674172527289">Netika atrasta neviena lejupielāde</translation>
@@ -686,6 +701,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6593061639179217415">Vietne datoriem</translation>
 <translation id="6600954340915313787">Nokopēta pārlūkā Chrome.</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6610147964972079463">Aizvērt privātās cilnes</translation>
 <translation id="6612358246767739896">Aizsargāts saturs</translation>
 <translation id="6627583120233659107">Rediģēt mapi</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
@@ -789,6 +805,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7453467225369441013">Jūs tiksiet izrakstīts no lielākās daļas vietņu. Jūs netiksiet izrakstīts no Google konta.</translation>
 <translation id="7454641608352164238">Nepietiek vietas</translation>
 <translation id="7455923816558154057">Pieskarieties, lai skatītu</translation>
+<translation id="7465104139234185284">Aizvērt visas privātā režīma cilnes</translation>
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="7475192538862203634">Ja šis ziņojums tiek rādīts bieži, izmēģiniet šos <ph name="BEGIN_LINK" />ieteikumus<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD karte nav atrasta. Iespējams, trūkst kādi jūsu faili.</translation>
@@ -884,6 +901,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8220488350232498290">Lejupielādes: <ph name="GIGABYTES" /> GB</translation>
 <translation id="8249310407154411074">Pārvietot uz augšdaļu</translation>
 <translation id="8250920743982581267">Dokumenti</translation>
+<translation id="825412236959742607">Šī lapa izmanto pārāk daudz atmiņas, tādēļ pārlūks Chrome noņēma daļu satura.</translation>
 <translation id="8260126382462817229">Mēģiniet pierakstīties vēlreiz</translation>
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8266862848225348053">Lejupielādes atrašanās vieta</translation>
@@ -979,6 +997,7 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="9070377983101773829">Sākt meklēšanu ar balsi</translation>
 <translation id="9071742570345586758">Lai skatītu virtuālās realitātes saturu, instalējiet Google VR pakalpojumus.</translation>
 <translation id="9074336505530349563">Lai saņemtu Google ieteikto personalizēto saturu, pierakstieties un ieslēdziet sinhronizāciju.</translation>
+<translation id="9080642952018487277">Atvērt privāto režīmu</translation>
 <translation id="9086455579313502267">Nevar piekļūt tīklam</translation>
 <translation id="9099018167121903954">Lejupielādes: <ph name="KILOBYTES" /> KB.</translation>
 <translation id="9100505651305367705">Piedāvāt rādīt rakstus vienkāršotā skatā, ja tāds tiek atbalstīts</translation>

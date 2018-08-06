@@ -253,6 +253,7 @@
 <translation id="8179874765710681175">Инсталирайте Chrome на телефона си. Ще ви изпратим SMS на него.</translation>
 <translation id="8183957050892517584">Chrome ще съхранява надеждно личните ви данни, за да не се налага да ги въвеждате отново.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS ще се рестартира сега}=1{Chrome OS ще се рестартира след 1 секунда}other{Chrome OS ще се рестартира след # секунди}}</translation>
+<translation id="825412236959742607">Тази страница използва твърде много памет, така че Chrome премахна част от съдържанието.</translation>
 <translation id="8255190535488645436">Google Chrome използва камерата и микрофона ви.</translation>
 <translation id="8286862437124483331">Google Chrome опитва да покаже паролите. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="8290100596633877290">О, не! Google Chrome претърпя срив. Да се стартира ли отново сега?</translation>

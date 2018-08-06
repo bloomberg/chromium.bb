@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Показати опцію "Правопис і граматика"</translation>
 <translation id="1593594475886691512">Форматування…</translation>
 <translation id="159359590073980872">Кеш зображень</translation>
+<translation id="1593926297800505364">Зберегти спосіб оплати</translation>
 <translation id="1598233202702788831">Адміністратор вимкнув оновлення.</translation>
 <translation id="1600857548979126453">Отримувати доступ до серверної частини налагоджувача сторінки</translation>
 <translation id="1601560923496285236">Застосувати</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Не вдається приєднати пристрій до домену. Переконайтеся, що ви не перевищили допустиму кількість доданих пристроїв.</translation>
 <translation id="1744108098763830590">фонова сторінка</translation>
 <translation id="1745520510852184940">Завжди виконувати цю дію</translation>
+<translation id="1746417874336251387">Пропонує нові функції, які використовують з’єднання телефона на Chromebook</translation>
 <translation id="174937106936716857">Усього файлів</translation>
 <translation id="175196451752279553">В&amp;ідкрити закриту вкладку знову</translation>
 <translation id="1753905327828125965">Часто відвідувані</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Не раніше</translation>
 <translation id="1933809209549026293">Підключіть мишу чи клавіатуру. Якщо ви користуєтеся пристроєм Bluetooth, перевірте, чи він готовий до підключення.</translation>
 <translation id="1936157145127842922">Показати в папці</translation>
+<translation id="1938351510777341717">Зовнішня клавіша Command</translation>
 <translation id="1940546824932169984">Під’єднані пристрої</translation>
 <translation id="1942765061641586207">Роздільна здатність зображення</translation>
+<translation id="1943097386230153518">Установити новий сервіс</translation>
 <translation id="1944921356641260203">Знайдено оновлення</translation>
 <translation id="1951615167417147110">Прокрутити вгору на одну сторінку</translation>
 <translation id="1954813140452229842">Помилка підключення спільного доступу. Перевірте облікові дані та повторіть спробу.</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="265390580714150011">Значення поля</translation>
 <translation id="2654166010170466751">Дозволити сайтам встановлювати обробники платежів</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />На різних пристроях функції можуть бути іншими</translation>
 <translation id="2660779039299703961">Подія</translation>
 <translation id="266079277508604648">Не вдається під’єднатися до принтера. Перевірте, чи принтер увімкнено та під’єднано до Chromebook через Wi-Fi або USB.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">Введіть PIN-код</translation>
 <translation id="2805646850212350655">Система шифрування файлів Microsoft</translation>
 <translation id="2805756323405976993">Додатки</translation>
+<translation id="2806891468525657116">Ярлик уже є</translation>
 <translation id="2807517655263062534">Тут відображаються завантажені файли</translation>
 <translation id="2809586584051668049">і ще <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Відкрито нове вікно в поточному сеансі веб-переглядача.</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">Ви ввійшли.</translation>
 <translation id="3429275422858276529">Створіть закладку цієї сторінки, щоб легко знайти її пізніше</translation>
 <translation id="3429599832623003132">$1 елем.</translation>
+<translation id="3430342160185525240">Дозволяє Асистенту показувати вам сповіщення.</translation>
 <translation id="3432227430032737297">Вилучити всі показані</translation>
 <translation id="3432757130254800023">Надсилати аудіо та відео на дисплеї в локальній мережі</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1964,6 +1971,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> на панелі керування.
 
   Запустити міні-додаток <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Не вдається створити ярлик</translation>
 <translation id="3943582379552582368">&amp;Назад</translation>
 <translation id="3943857333388298514">Вставити</translation>
 <translation id="3948116654032448504">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
@@ -2271,6 +2279,7 @@
 <translation id="4481530544597605423">Відключені пристрої</translation>
 <translation id="4482194545587547824">Google може використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук та інші служби Google</translation>
 <translation id="4495419450179050807">Не показувати на цій сторінці</translation>
+<translation id="4499718683476608392">Вмикає "Автозаповнення" для кредитних карток, щоб вводити дані у форми одним кліком</translation>
 <translation id="4500114933761911433">Плагін <ph name="PLUGIN_NAME" /> аварійно завершив роботу</translation>
 <translation id="450099669180426158">Значок знака оклику</translation>
 <translation id="4501530680793980440">Підтвердити видалення</translation>
@@ -3114,6 +3123,7 @@
 <translation id="5752453871435543420">Резервне копіювання ОС Chrome в Інтернеті</translation>
 <translation id="5756163054456765343">Довідковий центр</translation>
 <translation id="5759728514498647443">Документи, які ви друкуєте через додаток <ph name="APP_NAME" />, може переглядати додаток <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Налаштування кредитних карток</translation>
 <translation id="5763751966069581670">Пристроїв USB не знайдено</translation>
 <translation id="5764483294734785780">Збере&amp;гти аудіо як...</translation>
 <translation id="57646104491463491">Дата змінення</translation>
@@ -3185,6 +3195,7 @@
 <translation id="5855773610748894548">Помилка модуля безпеки.</translation>
 <translation id="5856721540245522153">Увімкнути функції налагодження</translation>
 <translation id="5857090052475505287">Нова папка</translation>
+<translation id="585979798156957858">Зовнішня мета-клавіша</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="5860209693144823476">Вкладка 3</translation>
 <translation id="5860491529813859533">Увімкнути</translation>
@@ -3494,6 +3505,7 @@
 <translation id="6327785803543103246">Автоматичне виявлення веб-проксі</translation>
 <translation id="6333064448949140209">Файл буде надіслано в Google для налагодження</translation>
 <translation id="6333834492048057036">Вибрати адресний рядок для пошуку</translation>
+<translation id="6336451774241870485">Нова приватна вкладка</translation>
 <translation id="6339668969738228384">Створити новий профіль для облікового запису <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Не вдалося з’єднатись із сервером. Перевірте з’єднання з мережею та повторіть спробу. Якщо проблема не зникне, перезапустіть Chromebook.</translation>
 <translation id="6340071272923955280">Протокол друку через Інтернет (IPPS)</translation>
@@ -3675,6 +3687,7 @@
 <translation id="6606070663386660533">Вкладка 8</translation>
 <translation id="6607272825297743757">Інформація про файл</translation>
 <translation id="6607831829715835317">Інші інстру&amp;менти</translation>
+<translation id="6610147964972079463">Закрити приватні вкладки</translation>
 <translation id="6612358246767739896">Захищений вміст</translation>
 <translation id="6613452264606394692">Створіть закладку цієї сторінки, щоб швидко повернутися на неї</translation>
 <translation id="6614893213975402384">Встановлення оновлень і додатків. Продовжуючи, ви дозволяєте цьому пристрою автоматично завантажувати й встановлювати оновлення та додатки від Google, вашого оператора й виробника пристрою, зокрема через мобільний трафік. Деякі з цих додатків можуть пропонувати покупки в додатку. Ви можете будь-коли видалити ці додатки. <ph name="BEGIN_LINK1" />Докладніше<ph name="END_LINK1" /></translation>
@@ -3745,6 +3758,7 @@
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="6718273304615422081">Архівування…</translation>
 <translation id="671928215901716392">Блокування екрана</translation>
+<translation id="6720847671508630642">Автоматично діліться найкращими функціями Android із Chromebook. Підключіть телефон, щоб мати змогу надсилати SMS із комп’ютера, надавати доступ до Інтернету з телефона й розблоковувати екран Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Переглядати марку й модель ключа безпеки</translation>
 <translation id="6721972322305477112">&amp;Файл</translation>
 <translation id="672213144943476270">Перш ніж переглядати сторінки в гостьовому режимі, розблокуйте профіль.</translation>
@@ -3891,6 +3905,7 @@
 <translation id="6970856801391541997">Друкувати певні сторінки</translation>
 <translation id="6972180789171089114">Звук і відео</translation>
 <translation id="6973630695168034713">Папки</translation>
+<translation id="6974609594866392343">Демо-режим офлайн</translation>
 <translation id="6976108581241006975">Консоль JavaScript</translation>
 <translation id="6977381486153291903">Мікропрограма</translation>
 <translation id="6978121630131642226">Пошукові системи</translation>
@@ -4485,6 +4500,7 @@
 <translation id="7857949311770343000">Це сторінка нової вкладки, яку ви очікували?</translation>
 <translation id="786073089922909430">Сервіс: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Завантаження</translation>
+<translation id="7864662577698025113">Додати нові сервіси</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 файл cookie}one{# файл cookie}few{# файли cookie}many{# файлів cookie}other{# файлу cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" />: підключено</translation>
 <translation id="7870730066603611552">Після налаштування перевірте параметри синхронізації</translation>
@@ -4999,6 +5015,7 @@
 <translation id="8666584013686199826">Запитувати, коли сайт хоче отримати доступ до пристроїв USB</translation>
 <translation id="8667328578593601900">Сторінка <ph name="FULLSCREEN_ORIGIN" /> зараз відображається в повноекранному режимі та вимкнула курсор миші.</translation>
 <translation id="8669284339312441707">Тепло</translation>
+<translation id="8669919703154928649">Дозволити Асистенту показувати сповіщення</translation>
 <translation id="8669949407341943408">Переміщення…</translation>
 <translation id="8671210955687109937">Може коментувати</translation>
 <translation id="8673026256276578048">Пошук в Інтернеті...</translation>
@@ -5386,6 +5403,7 @@
 <translation id="964286338916298286">ІТ-адміністратор вимкнув додаткові можливості Chrome для вашого пристрою.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Додаток}one{Додатки}few{Додатки}many{Додатки}other{Додатки}}</translation>
 <translation id="967007123645306417">Ви вийдете з облікових записів Google. Зміни в закладках, історії, паролях та інших налаштуваннях більше не синхронізуватимуться з ним. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="BEGIN_LINK" />Інформаційній панелі Google<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Збережені дані</translation>
 <translation id="968000525894980488">Увімкніть сервіси Google Play.</translation>
 <translation id="968174221497644223">Кеш програми</translation>
 <translation id="969096075394517431">Змінити мови</translation>

@@ -152,7 +152,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="4891791193823137474">Laisser Google Chrome s'exécuter en arrière-plan</translation>
 <translation id="4895437082222824641">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="4921569541910214635">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chrome selon vos besoins.</translation>
-<translation id="4945319281866068441">{0,plural, =1{Redémarrer Chrome OS d'ici un jour}one{Redémarrer Chrome OS d'ici # jour}other{Rdémarrer Chrome OS d'ici # jours}}</translation>
+<translation id="4945319281866068441">{0,plural, =1{Redémarrer Chrome OS d'ici un jour}one{Redémarrer Chrome OS d'ici # jour}other{Redémarrer Chrome OS d'ici # jours}}</translation>
 <translation id="4953650215774548573">Définir Google Chrome en tant que navigateur par défaut</translation>
 <translation id="495931528404527476">Dans Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -259,6 +259,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8179874765710681175">Installez Chrome sur votre téléphone. Vous y recevrez un SMS.</translation>
 <translation id="8183957050892517584">Chrome va stocker les informations personnelles vous concernant de manière sécurisée. Ainsi, vous n'aurez pas besoin de les saisir à nouveau.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS va redémarrer maintenant}=1{Chrome OS va redémarrer dans 1 seconde}one{Chrome OS va redémarrer dans # seconde}other{Chrome OS va redémarrer dans # secondes}}</translation>
+<translation id="825412236959742607">Cette page utilise trop de mémoire, Chrome a donc supprimé du contenu.</translation>
 <translation id="8255190535488645436">Votre webcam et votre micro sont en cours d'utilisation dans Google Chrome.</translation>
 <translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="8290100596633877290">Google Chrome est bloqué. Voulez-vous le relancer maintenant ?</translation>

@@ -521,6 +521,11 @@
       Kung iniwang hindi nakatakda ang setting na ito, maaaring magpasya ang user kung gagamitin o hindi ang function na ito.
 
       Inalis ang setting na ito sa <ph name="PRODUCT_NAME" /> 29 at sa mga mas bagong bersyon.</translation>
+<translation id="2433412232489478893">Kinokontrol ng patakarang ito kung papayagan para sa user ang feature na Mga File Share sa Network para sa <ph name="PRODUCT_NAME" />.
+
+      Kapag hindi naka-configure o nakatakda sa True ang patakarang ito, magagamit ng mga user ang Mga File Share sa Network.
+
+      Kapag nakatakda sa False ang patakarang ito, hindi magagamit ng mga user ang Mga File Share sa Network.</translation>
 <translation id="2438609638493026652">Ine-enable ang pag-uulat ng mahahalagang event sa panahon ng pag-install ng Android app sa Google. Kina-capture lang ang mga event para sa mga app na kung saan na-trigger ng patakaran ang pag-install.
 
       Kung itatakda ang patakaran sa true, mala-log ang mga event.
@@ -602,6 +607,7 @@
 <translation id="2598508021807251719">Kino-configure ang mga lokal kung saan maaaring ipinapakita ang <ph name="PRODUCT_OS_NAME" />.
 
       Kung itatakda ang patakarang ito, mako-configure lang ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isa sa mga lokal na tinukoy sa patakarang ito. Kung hindi itatakda ang patakarang ito o itatakda ito sa isang blangkong listahan, maaaring ipakita ang <ph name="PRODUCT_OS_NAME" /> sa lahat ng sinusuportahang lokal ng UI. Kung itatakda ang patakarang ito sa isang listahang may mga invalid na value, babalewalain ang lahat ng invalid na value. Kung na-configure dati ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isang lokal na hindi pinapayagan ng patakarang ito, ililipat ang lokal ng display sa isang pinapayagang lokal ng UI sa susunod na mag-sign in ang user. Kung na-configure ng user ang mga piniling lokal at ang isa sa mga piniling lokal ay pinapayagan ng patakarang ito, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa lokal na ito. Kung hindi, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinukoy sa patakarang ito, o sa isang fallback na lokal (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
+<translation id="2604182581880595781">I-configure ang mga patakarang nauugnay sa File Share sa Network.</translation>
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Nagbibigay ng mga configuration para sa mga printer ng enterprise.
@@ -687,6 +693,7 @@
 <translation id="2823870601012066791">Lokasyon ng registry ng Windows para sa mga <ph name="PRODUCT_OS_NAME" /> client:</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2838830882081735096">Huwag payagan ang paglipat ng data at ARC</translation>
+<translation id="2839294585867804686">Mga setting ng Mga File Share sa Network</translation>
 <translation id="2840269525054388612">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
 
       Gagamitin lang ang patakarang ito kung napili ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1177,6 +1184,7 @@
       Kung hahayaang hindi nakatakda ang patakarang ito, ie-enable ang pangongolekta ng naka-anonymize na data na may key ng URL ngunit mababago ito ng user.</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4261820385751181068">Lokal ng screen sa pag-sign in ng device</translation>
+<translation id="4264607809747169568">Kumokontrol sa Mga File Share sa Network para sa availability ng ChromeOS</translation>
 <translation id="427220754384423013">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
 
       Gagamitin lang ang patakarang ito kung napili ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1607,6 +1615,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Dapat tukuyin sa milliseconds ang halaga ng patakaran.</translation>
 <translation id="5511702823008968136">Paganahin ang Bookmark Bar</translation>
 <translation id="5512418063782665071">URL ng home page</translation>
+<translation id="551639594034811656">Nakasaad sa patakarang ito ang listahan ng mga porsyentong maglalarawan sa bahagi ng mga <ph name="PRODUCT_OS_NAME" /> device sa OU para mag-update bawat araw simula sa araw na unang matuklasan ang update. Ang oras ng pagtuklas ay pagkatapos ng oras ng pag-publish ng update, dahil maaaring medyo matagalan ang palugit sa pagitan ng pag-publish ng update at pagtingin ng update ng device.
+
+      Makikita sa bawat (araw, porsyento) pares kung aling porsyento ng fleet ang ia-update ayon sa isinaad na bilang ng mga araw simula nang matuklasan ang update. Halimbawa, kung mayroon kami ng mga pares [(4, 40), (10, 70), (15, 100)], 40% ng fleet ang dapat ma-update 4 na araw pagkatapos makita ang update. 70% ang dapat ma-update pagkalipas ng 10 araw, at ganito rin sa susunod.
+
+      Kung may tinukoy na value para sa patakarang ito, babalewalain ng mga update ang patakarang <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> at susundin na lang ang patakarang ito.
+
+      Kung walang laman ang listahang ito, walang magiging staging at ilalapat ang mga update ayon sa iba pang patakaran ng device.
+
+      Hindi nalalapat ang patakarang ito para sa mga switch ng channel.</translation>
 <translation id="5523812257194833591">Awtomatikong mala-log in ang isang pampublikong session pagkatapos ng delay.
 
       Kung nakatakda ang patakarang ito, ang tinukoy na session ay awtomatikong mala-log in kapag lumipas na ang isang takdang panahon sa screen sa pag-log in nang walang pakikipag-ugnayan ng user. Dapat ay naka-configure na ang pampublikong session (tingnan ang |DeviceLocalAccounts|).
@@ -2540,6 +2557,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung idi-disable ang patakaran, walang magaganap na tahasang Pag-isolate ng Site at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Mae-enable pa rin ng mga user ang SitePerProcess sa manual na paraan.
       Kung hindi naka-configure ang patakaran, mababago ng user ang setting na ito.
       </translation>
+<translation id="7902255855035461275">Itutugma ang mga pattern sa listahang ito sa security
+      origin ng humihiling na URL.  Kung makakakita ng katugma, magbibigay ng access sa mga device na nagka-capture ng video
+      nang walang prompt.
+
+      TANDAAN: Hanggang sa bersyon 45, sinusuportahan lang ang patakarang ito sa Kiosk mode.</translation>
 <translation id="7912255076272890813">I-configure ang mga pinapayagang uri ng app/extension</translation>
 <translation id="7915236031252389808">Makakapagtakda ka rito ng URL sa isang proxy .pac file.
 

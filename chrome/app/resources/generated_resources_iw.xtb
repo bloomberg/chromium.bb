@@ -398,6 +398,7 @@
 <translation id="1589055389569595240">הצג איות ודקדוק</translation>
 <translation id="1593594475886691512">מפרמט...</translation>
 <translation id="159359590073980872">מטמון של תמונה</translation>
+<translation id="1593926297800505364">שמירת אמצעי התשלום</translation>
 <translation id="1598233202702788831">מנהל המערכת השבית את העדכונים.</translation>
 <translation id="1600857548979126453">להיכנס לניפוי הבאגים העורפי של הדף</translation>
 <translation id="1601560923496285236">החל</translation>
@@ -463,7 +464,7 @@
 <translation id="1673137583248014546">האתר <ph name="URL" /> מבקש לראות את היצרן והדגם של מפתח האבטחה שלך</translation>
 <translation id="167832068858235403">הפחתת עוצמת הקול</translation>
 <translation id="1679068421605151609">כלים עבור מפתחים</translation>
-<translation id="1680849702532889074">‏התרחשה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
+<translation id="1680849702532889074">‏קרתה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
 <translation id="16815041330799488">אין להתיר לאתרים לגשת לטקסט ותמונות שהועתקו ללוח</translation>
 <translation id="1682548588986054654">חלון נסתר חדש</translation>
 <translation id="168715261339224929">כדי שהסימניות שלך יופיעו בכל המכשירים, יש להפעיל סינכרון.</translation>
@@ -508,6 +509,7 @@
 <translation id="1744060673522309905">אי אפשר לצרף את המכשיר אל הדומיין. יש לוודא שלא חרגת ממספר המכשירים שניתן להוסיף.</translation>
 <translation id="1744108098763830590">דף רקע</translation>
 <translation id="1745520510852184940">עשה זאת תמיד</translation>
+<translation id="1746417874336251387">‏הצעה של תכונות חדשות שמשתמשות בחיבור הטלפון אל ה-Chromebook</translation>
 <translation id="174937106936716857">מספר הקבצים הכולל</translation>
 <translation id="175196451752279553">פ&amp;תח מחדש את הכרטיסייה הסגורה</translation>
 <translation id="1753905327828125965">עם המבקרים הרבים ביותר</translation>
@@ -638,8 +640,10 @@
 <translation id="1932098463447129402">לא לפני</translation>
 <translation id="1933809209549026293">‏חבר עכבר או מקלדת. אם ברצונך להשתמש במכשיר Bluetooth, ודא שהוא מוכן להתאמה.</translation>
 <translation id="1936157145127842922">הצג בתיקייה</translation>
+<translation id="1938351510777341717">‏מקש Command חיצוני</translation>
 <translation id="1940546824932169984">מכשירים מחוברים</translation>
 <translation id="1942765061641586207">רזולוציית תמונה</translation>
+<translation id="1943097386230153518">התקנת שירות חדש</translation>
 <translation id="1944921356641260203">נמצא עדכון</translation>
 <translation id="1951615167417147110">גלול מעלה דף אחד</translation>
 <translation id="1954813140452229842">קרתה שגיאה בטעינת התקן הרשת לשיתוף קבצים. יש לבדוק את פרטי הכניסה ולנסות שוב.</translation>
@@ -1105,6 +1109,7 @@
 <translation id="2653659639078652383">שלח</translation>
 <translation id="265390580714150011">ערך שדה </translation>
 <translation id="2654166010170466751">‏מתן הרשאה לאתרים להתקין מעבדי handler לתשלומים</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />במכשירים שונים יש תכונות שונות</translation>
 <translation id="2660779039299703961">אירוע</translation>
 <translation id="266079277508604648">‏לא ניתן להתחבר אל המדפסת. יש לוודא שהמדפסת פועלת ומחוברת אל ה-Chromebook דרך רשת ה-Wi-Fi או בחיבור USB.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1192,7 +1197,7 @@
 <translation id="2775104091073479743">עריכת טביעות האצבעות</translation>
 <translation id="2776441542064982094">נראה שאין מכשירים זמינים לרישום ברשת. אם המכשיר שלך מחובר לאינטרנט, נסה לרשום אותו מחדש באמצעות ההוראות המפורטות במדריך למשתמש שלו.</translation>
 <translation id="2781692009645368755">Google Pay</translation>
-<translation id="2782104745158847185">‏שגיאה במהלך ההתקנה של אפליקציית Linux</translation>
+<translation id="2782104745158847185">‏קרתה שגיאה במהלך ההתקנה של אפליקציית Linux</translation>
 <translation id="2783298271312924866">ההורדה בוצעה</translation>
 <translation id="2783321960289401138">צור קיצור דרך...</translation>
 <translation id="2783829359200813069">בחירת סוגי הצפנה</translation>
@@ -1211,6 +1216,7 @@
 <translation id="2803375539583399270">‏הזן PIN</translation>
 <translation id="2805646850212350655">‏מערכת קבצים מצפינה של Microsoft</translation>
 <translation id="2805756323405976993">אפליקציות</translation>
+<translation id="2806891468525657116">קיצור הדרך כבר קיים</translation>
 <translation id="2807517655263062534">קבצים שתוריד יופיעו כאן</translation>
 <translation id="2809586584051668049">ועוד <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">חלון חדש שנוצר בהפעלת דפדפן קיים.</translation>
@@ -1597,6 +1603,7 @@
 <translation id="3428419049384081277">התחברת!</translation>
 <translation id="3429275422858276529">כדאי לסמן את הדף עם סימניה כדי לגשת אליו בקלות בהמשך</translation>
 <translation id="3429599832623003132">$1 פריטים</translation>
+<translation id="3430342160185525240">‏Assistant יכול להציג הודעות.</translation>
 <translation id="3432227430032737297">הסר את כל התוכן המוצג</translation>
 <translation id="3432757130254800023">שליחה של קטעי אודיו וסרטונים למסכים ברשת המקומית</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1961,6 +1968,7 @@
 <ph name="CONTROL_PANEL_APPLET_NAME" /> בלוח הבקרה.
 
 האם תרצה להפעיל את <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">לא ניתן ליצור קיצור דרך</translation>
 <translation id="3943582379552582368">&amp;אחורה</translation>
 <translation id="3943857333388298514">הדבק</translation>
 <translation id="3948116654032448504">בצע &amp;חיפוש תמונה ב-<ph name="SEARCH_ENGINE" /></translation>
@@ -2268,6 +2276,7 @@
 <translation id="4481530544597605423">מכשירים לא מותאמים</translation>
 <translation id="4482194545587547824">‏Google עשויה להשתמש בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google</translation>
 <translation id="4495419450179050807">אל תציג בדף זה</translation>
+<translation id="4499718683476608392">התכונה 'מילוי אוטומטי' של כרטיסי אשראי יכולה למלא טפסים בקליק אחד</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> קרס</translation>
 <translation id="450099669180426158">סמל של סימן קריאה</translation>
 <translation id="4501530680793980440">אשר הסרה</translation>
@@ -2771,7 +2780,7 @@
 <translation id="5264148714798105376">הפעולה יכולה להימשך כדקה.</translation>
 <translation id="5264252276333215551">התחבר לאינטרנט כדי להפעיל את היישום במצב קיוסק.</translation>
 <translation id="5265562206369321422">לא מקוונת במשך יותר משבוע</translation>
-<translation id="5265797726250773323">שגיאה במהלך ההתקנה</translation>
+<translation id="5265797726250773323">קרתה שגיאה במהלך ההתקנה</translation>
 <translation id="5266113311903163739">שגיאת ייבוא של רשות אישורים</translation>
 <translation id="5269977353971873915">ההדפסה נכשלה</translation>
 <translation id="5271549068863921519">שמור סיסמה</translation>
@@ -3112,6 +3121,7 @@
 <translation id="5752453871435543420">‏גיבוי בענן של מערכת ההפעלה של Chrome</translation>
 <translation id="5756163054456765343">מרכז עזרה</translation>
 <translation id="5759728514498647443">תוכל להשתמש ב-<ph name="APP_NAME" /> כדי לקרוא מסמכים שתשלח להדפסה באמצעות <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">הגדרות של כרטיסי אשראי</translation>
 <translation id="5763751966069581670">‏לא נמצאו התקני USB</translation>
 <translation id="5764483294734785780">ש&amp;מור שמע כ...</translation>
 <translation id="57646104491463491">תארך השינוי</translation>
@@ -3183,6 +3193,7 @@
 <translation id="5855773610748894548">אופס, שגיאה במודול המאובטח.</translation>
 <translation id="5856721540245522153">הפעל תכונות לניפוי באגים</translation>
 <translation id="5857090052475505287">תיקייה חדשה</translation>
+<translation id="585979798156957858">‏מקש Meta חיצוני</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5860209693144823476">כרטיסייה 3</translation>
 <translation id="5860491529813859533">הפעל</translation>
@@ -3213,7 +3224,7 @@
 <translation id="5908769186679515905">‏חסום הפעלה של Flash על-ידי אתרים</translation>
 <translation id="5910363049092958439">שמ&amp;ור תמונה כ...</translation>
 <translation id="5911737117543891828">‏תתבצע מחיקה של קבצים זמניים לא מקוונים ב-Google Drive. הקבצים שהגדרת לגישה במצב לא מקוון לא יימחקו מהמכשיר הזה.</translation>
-<translation id="5911887972742538906">‏התרחשה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
+<translation id="5911887972742538906">‏קרתה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
 <translation id="5912378097832178659">&amp;ערוך מנועי חיפוש...</translation>
 <translation id="5914724413750400082">מודולוס (<ph name="MODULUS_NUM_BITS" /> ביטים):
   <ph name="MODULUS_HEX_DUMP" />
@@ -3492,6 +3503,7 @@
 <translation id="6327785803543103246">‏גילוי אוטומטי של שרת proxy באינטרנט</translation>
 <translation id="6333064448949140209">‏הקובץ יישלח אל Google לניפוי באגים</translation>
 <translation id="6333834492048057036">מיקוד בסרגל כתובות לחיפוש</translation>
+<translation id="6336451774241870485">כרטיסיית פרטיות חדשה</translation>
 <translation id="6339668969738228384">צור פרופיל חדש בשביל <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">‏לא ניתן היה להתחבר אל השרת. יש לבדוק את חיבור הרשת ולנסות שוב. אם הבעיה ממשיכה, יש להפעיל מחדש את ה-Chromebook.</translation>
 <translation id="6340071272923955280">‏פרוטוקול הדפסה באינטרנט (IPPS)</translation>
@@ -3673,6 +3685,7 @@
 <translation id="6606070663386660533">כרטיסייה 8</translation>
 <translation id="6607272825297743757">פרטי הקובץ</translation>
 <translation id="6607831829715835317">כלים &amp;נוספים</translation>
+<translation id="6610147964972079463">סגירת כרטיסיות הפרטיות</translation>
 <translation id="6612358246767739896">תוכן מוגן</translation>
 <translation id="6613452264606394692">הוספת הדף לסימניות תאפשר גישה מהירה אליו</translation>
 <translation id="6614893213975402384">‏התקנת עדכונים ואפליקציות. הבחירה להמשיך תבטא הסכמה מצידך לכך שהמכשיר גם יוריד ויתקין באופן אוטומטי עדכונים ואפליקציות מ-Google, מספק השירות ומיצרן המכשיר. ייתכן שההורדה תיעשה באמצעות חבילת הגלישה. חלק מהאפליקציות האלה עשויות לכלול אפשרות לרכישות מהאפליקציה. תמיד אפשר להסיר את האפליקציות האלה. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
@@ -3743,6 +3756,7 @@
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6718273304615422081">דוחס...</translation>
 <translation id="671928215901716392">מסך נעילה</translation>
+<translation id="6720847671508630642">‏אפשר לשתף באופן אוטומטי את מיטב היכולות של Android עם ה-Chromebook. חיבור הטלפון מאפשר לך לשלוח הודעות טקסט מהמחשב, לשתף את חיבור האינטרנט של הטלפון ולבטל את נעילת מסך ה-Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">לראות את היצרן והדגם של מפתח האבטחה</translation>
 <translation id="6721972322305477112">&amp;קובץ</translation>
 <translation id="672213144943476270">בטל את נעילת הפרופיל שלך לפני גלישה כאורח.</translation>
@@ -3889,6 +3903,7 @@
 <translation id="6970856801391541997">הדפסת דפים ספציפיים</translation>
 <translation id="6972180789171089114">אודיו/וידאו</translation>
 <translation id="6973630695168034713">תיקיות</translation>
+<translation id="6974609594866392343">מצב הדגמה לא מקוון</translation>
 <translation id="6976108581241006975">‏לוח JavaScript</translation>
 <translation id="6977381486153291903">שכתוב קושחה</translation>
 <translation id="6978121630131642226">מנועי חיפוש</translation>
@@ -4031,6 +4046,7 @@
 <translation id="7175353351958621980">נטען מתוך:</translation>
 <translation id="7180611975245234373">רענן</translation>
 <translation id="7180865173735832675">התאם אישית</translation>
+<translation id="7182359331070524176">‏בחירת אלבום בתמונות Google</translation>
 <translation id="7186088072322679094">השאר בסרגל הכלים</translation>
 <translation id="7187428571767585875">ערכים בקובץ הרישום שיש להסיר או לשנות:</translation>
 <translation id="7189234443051076392">צריך לוודא שיש מספיק מקום פנוי במכשיר</translation>
@@ -4479,6 +4495,7 @@
 <translation id="7857949311770343000">האם זהו דף הכרטיסייה החדשה שציפית לראות?</translation>
 <translation id="786073089922909430">שירות: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;הורדות</translation>
+<translation id="7864662577698025113">הוספת שירות חדש</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{‏קובץ Cookie אחד}two{‏# קובצי Cookie}many{‏# קובצי Cookie}other{‏# קובצי Cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - מותאם</translation>
 <translation id="7870730066603611552">בדיקת אפשרויות הסינכרון אחרי ההגדרה</translation>
@@ -4993,6 +5010,7 @@
 <translation id="8666584013686199826">‏צריך לבקש ממני אישור כשאתר רוצה לגשת למכשירי USB</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> הוא כעת במסך מלא והשבית את סמן העכבר שלך.</translation>
 <translation id="8669284339312441707">חמים יותר</translation>
+<translation id="8669919703154928649">‏Assistant יכול להציג הודעות</translation>
 <translation id="8669949407341943408">מעביר...</translation>
 <translation id="8671210955687109937">יכול להגיב</translation>
 <translation id="8673026256276578048">חפש באינטרנט...</translation>
@@ -5380,6 +5398,7 @@
 <translation id="964286338916298286">‏מנהל המערכת שלך השבית את ההטבות של Chrome בשביל המכשיר שלך.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{אפליקציה}two{אפליקציות}many{אפליקציות}other{אפליקציות}}</translation>
 <translation id="967007123645306417">‏פעולה זו תוציא אותך מחשבונות Google שלך. שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות נוספות לא יסונכרנו יותר עם חשבון Google שלך. עם זאת, הנתונים הקיימים עדיין יאוחסנו בחשבון Google שלך ואפשר לנהל אותם ב<ph name="BEGIN_LINK" />מרכז השליטה של Google<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">נפח הנתונים</translation>
 <translation id="968000525894980488">‏מפעילים את שירותי Google Play.</translation>
 <translation id="968174221497644223">מטמון של יישום</translation>
 <translation id="969096075394517431">החלף שפות</translation>

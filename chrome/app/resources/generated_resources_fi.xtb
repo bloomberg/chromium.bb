@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Näytä oikeinkirjoitus ja kielioppi</translation>
 <translation id="1593594475886691512">Alustetaan…</translation>
 <translation id="159359590073980872">Kuvavälimuisti</translation>
+<translation id="1593926297800505364">Tallenna maksutapa</translation>
 <translation id="1598233202702788831">Järjestelmänvalvoja on estänyt päivitykset.</translation>
 <translation id="1600857548979126453">Käyttää sivun viankorjausta</translation>
 <translation id="1601560923496285236">Käytä</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Laitetta ei voi liittää verkkotunnukseen. Varmista, ettei lisättävien laitteiden kiintiösi ole ylittynyt,</translation>
 <translation id="1744108098763830590">taustasivu:</translation>
 <translation id="1745520510852184940">Käännä aina</translation>
+<translation id="1746417874336251387">Tarjota uusia ominaisuuksia, jotka käyttävät puhelimen Chromebook-yhteyttä</translation>
 <translation id="174937106936716857">Tiedostoja yhteensä</translation>
 <translation id="175196451752279553">A&amp;vaa suljettu välilehti uudelleen</translation>
 <translation id="1753905327828125965">Käydyimmät</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Ei aiemmin kuin</translation>
 <translation id="1933809209549026293">Yhdistä hiiri tai näppäimistö. Jos käytät Bluetooth-laitetta, varmista että se on valmis laiteparin muodostamiseen.</translation>
 <translation id="1936157145127842922">Näytä kansiossa</translation>
+<translation id="1938351510777341717">Ulkoinen Komento-näppäin</translation>
 <translation id="1940546824932169984">Yhdistetyt laitteet</translation>
 <translation id="1942765061641586207">Kuvan resoluutio</translation>
+<translation id="1943097386230153518">Asenna uusi palvelu</translation>
 <translation id="1944921356641260203">Päivitys saatavilla</translation>
 <translation id="1951615167417147110">Vieritä ylöspäin yksi sivu</translation>
 <translation id="1954813140452229842">Virhe jaon käyttöönotossa. Tarkista kirjautumistietosi ja yritä uudelleen.</translation>
@@ -1109,6 +1113,7 @@
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="265390580714150011">Kentän arvo</translation>
 <translation id="2654166010170466751">Salli sivustojen asentaa maksujen käsittelijöitä</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" /> Ominaisuudet vaihtelevat laitteen mukaan</translation>
 <translation id="2660779039299703961">Tapahtuma</translation>
 <translation id="266079277508604648">Tulostimeen yhdistäminen epäonnistui. Tarkista, että tulostin on päällä ja yhteydessä Chromebookiin Wi-Fi-yhteydellä tai USB:llä.</translation>
 <translation id="2661146741306740526">16 x 9</translation>
@@ -1215,6 +1220,7 @@
 <translation id="2803375539583399270">Anna PIN-koodi.</translation>
 <translation id="2805646850212350655">Microsoftin tietojärjestelmän salaus</translation>
 <translation id="2805756323405976993">Sovellukset</translation>
+<translation id="2806891468525657116">Pikakuvake on jo olemassa</translation>
 <translation id="2807517655263062534">Lataamasi tiedostot näytetään tässä.</translation>
 <translation id="2809586584051668049">ja <ph name="NUMBER_ADDITIONAL_DISABLED" /> muuta</translation>
 <translation id="281133045296806353">Nykyisessä selainistunnossa avattiin uusi ikkuna.</translation>
@@ -1601,6 +1607,7 @@
 <translation id="3428419049384081277">Olet kirjautunut sisään!</translation>
 <translation id="3429275422858276529">Lisää tämä sivu kirjanmerkkeihin, niin löydät sen myöhemmin helposti.</translation>
 <translation id="3429599832623003132">$1 kohdetta</translation>
+<translation id="3430342160185525240">Tämä sallii Assistantin näyttää sinulle ilmoituksia.</translation>
 <translation id="3432227430032737297">Poista kaikki näytetyt</translation>
 <translation id="3432757130254800023">Lähetä ääntä ja videota näyttöihin lähiverkossa</translation>
 <translation id="3432762828853624962">SharedWorkerit</translation>
@@ -1962,6 +1969,7 @@
 <translation id="3940233957883229251">Ota automaattinen toisto käyttöön</translation>
 <translation id="3941357410013254652">Kanavatunnus</translation>
 <translation id="3941565636838060942">Jos haluat piilottaa tämän ohjelman käyttöoikeuden, sinun on poistettava sen asennus käyttämällä sovelmaa <ph name="CONTROL_PANEL_APPLET_NAME" /> ohjauspaneelissa. Haluatko käynnistää sovelman <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Pikakuvakkeen luominen epäonnistui</translation>
 <translation id="3943582379552582368">&amp;Edellinen</translation>
 <translation id="3943857333388298514">Liitä</translation>
 <translation id="3948116654032448504">&amp;Hae kuvaa (<ph name="SEARCH_ENGINE" />)</translation>
@@ -2269,6 +2277,7 @@
 <translation id="4481530544597605423">Laitteet ilman paria</translation>
 <translation id="4482194545587547824">Google voi muokata hakua ja muita Googlen palveluita selaushistoriasi perusteella.</translation>
 <translation id="4495419450179050807">Älä näytä tällä sivulla</translation>
+<translation id="4499718683476608392">Ota luottokorttien automaattinen täyttö käyttöön, niin voit täyttää lomakkeita yhdellä klikkauksella</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> on kaatunut.</translation>
 <translation id="450099669180426158">Huutomerkkikuvake</translation>
 <translation id="4501530680793980440">Vahvista poisto</translation>
@@ -3112,6 +3121,7 @@
 <translation id="5752453871435543420">Chrome-käyttöjärjestelmän pilvivarmuuskopiointi</translation>
 <translation id="5756163054456765343">Ohj&amp;ekeskus</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> voi lukea dokumentteja, jotka lähetät tulostettavaksi sovelluksen <ph name="APP_NAME" /> kautta.</translation>
+<translation id="5762172915276660232">Luottokorttiasetukset</translation>
 <translation id="5763751966069581670">USB-laitteita ei löytynyt.</translation>
 <translation id="5764483294734785780">T&amp;allenna audiotiedosto nimellä...</translation>
 <translation id="57646104491463491">Muokkauspäivämäärä</translation>
@@ -3183,6 +3193,7 @@
 <translation id="5855773610748894548">Hups, tapahtui suojausmoduulivirhe.</translation>
 <translation id="5856721540245522153">Ota käyttöön virheenkorjausominaisuudet</translation>
 <translation id="5857090052475505287">Uusi kansio</translation>
+<translation id="585979798156957858">Ulkoinen Meta-näppäin</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="5860209693144823476">Välilehti 3</translation>
 <translation id="5860491529813859533">Ota käyttöön</translation>
@@ -3494,6 +3505,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6327785803543103246">Verkkovälityspalvelimen automaattinen tunnistaminen</translation>
 <translation id="6333064448949140209">Tiedosto lähetetään Googlelle virheenkorjausta varten.</translation>
 <translation id="6333834492048057036">Tarkenna osoitepalkkiin hakua varten</translation>
+<translation id="6336451774241870485">Uusi yksityinen välilehti</translation>
 <translation id="6339668969738228384">Luo uusi profiili käyttäjälle <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Palvelimeen ei saatu yhteyttä. Tarkista verkkoyhteytesi ja yritä uudelleen. Jos ongelma jatkuu, käynnistä Chromebook uudelleen.</translation>
 <translation id="6340071272923955280">Internet-tulostusprotokolla (IPPS)</translation>
@@ -3675,6 +3687,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6606070663386660533">Välilehti 8</translation>
 <translation id="6607272825297743757">Tiedoston tiedot</translation>
 <translation id="6607831829715835317">&amp;Lisää työkaluja</translation>
+<translation id="6610147964972079463">Sulje yksityiset välilehdet</translation>
 <translation id="6612358246767739896">Suojattu sisältö</translation>
 <translation id="6613452264606394692">Lisää sivu kirjanmerkiksi, niin voit palata tähän nopeasti.</translation>
 <translation id="6614893213975402384">Asenna päivityksiä ja sovelluksia. Jatkamalla hyväksyt, että laite voi automaattisesti ladata ja asentaa Googlen, operaattorisi tai laitevalmistajan päivityksiä ja sovelluksia, mahdollisesti mobiilidatayhteyden välityksellä. Jotkin näistä sovelluksista tarjoavat sovelluksen sisäisiä ostoksia. Voit poistaa nämä sovellukset milloin tahansa. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
@@ -3745,6 +3758,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="6718273304615422081">Pakataan…</translation>
 <translation id="671928215901716392">Ruudunlukitus</translation>
+<translation id="6720847671508630642">Jaa Androidin parhaat ominaisuudet Chromebookillesi automaattisesti. Yhdistä puhelimesi, niin voit lähettää tekstiviestejä tietokoneelta, jakaa puhelimen internetyhteyden ja avata Chromebookin näytön lukituksen.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Lisätietoja<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">nähdä suojausavaimesi merkin ja mallin</translation>
 <translation id="6721972322305477112">&amp;Tiedosto</translation>
 <translation id="672213144943476270">Avaa profiilisi lukitus ennen vierailijakäytön aloittamista.</translation>
@@ -3891,6 +3905,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6970856801391541997">Tulosta tietyt sivut</translation>
 <translation id="6972180789171089114">Ääni- ja videotiedostot</translation>
 <translation id="6973630695168034713">Kansiot</translation>
+<translation id="6974609594866392343">Offline-esittelytila</translation>
 <translation id="6976108581241006975">JavaScript-konsoli</translation>
 <translation id="6977381486153291903">Laiteohjelmiston versio</translation>
 <translation id="6978121630131642226">Hakukoneet</translation>
@@ -4484,6 +4499,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7857949311770343000">Onko tämä haluamasi Uusi välilehti -sivu?</translation>
 <translation id="786073089922909430">Palvelu: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Lataukset</translation>
+<translation id="7864662577698025113">Lisää uusi palvelu</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 eväste}other{# evästettä}}</translation>
 <translation id="786957569166715433">Laitepari muodostettu laitteen <ph name="DEVICE_NAME" /> kanssa</translation>
 <translation id="7870730066603611552">Tarkista synkronointiasetukset määrityksen jälkeen</translation>
@@ -4998,6 +5014,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8666584013686199826">Kysy aina, kun sivusto pyytää USB-laitteen käyttölupaa</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> on nyt koko ruudun kokoinen ja on poistanut hiiren osoittimen käytöstä.</translation>
 <translation id="8669284339312441707">Lämmin</translation>
+<translation id="8669919703154928649">Anna Assistantin näyttää sinulle ilmoituksia</translation>
 <translation id="8669949407341943408">Siirretään…</translation>
 <translation id="8671210955687109937">Voi kommentoida</translation>
 <translation id="8673026256276578048">Haku verkosta...</translation>
@@ -5385,6 +5402,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="964286338916298286">IT-järjestelmänvalvojasi on poistanut Chrome Goodies ‑tarjoukset käytöstä laitteellasi.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Sovellus}other{Sovellukset}}</translation>
 <translation id="967007123645306417">Kirjanmerkkeihin, historiaan, salasanoihin ja muihin asetuksiin tehtyjä muutoksia ei enää synkronoida Google-tilillesi. Nykyiset tietosi pysyvät kuitenkin Google-tilillä ja niitä voidaan ylläpitää <ph name="BEGIN_LINK" />Google Hallintapaneelissa<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Tallennettu data</translation>
 <translation id="968000525894980488">Ota Google Play Palvelut käyttöön.</translation>
 <translation id="968174221497644223">Sovellusvälimuisti</translation>
 <translation id="969096075394517431">Vaihda kieltä</translation>

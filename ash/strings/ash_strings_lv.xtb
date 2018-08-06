@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Ierīce <ph name="DEVICE_NAME" /> ir pievienota</translation>
 <translation id="1056775291175587022">Nav tīklu</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">Rādīt pieejamības iestatījumus</translation>
 <translation id="1104621072296271835">Kopā jūsu ierīces darbojas vēl labāk</translation>
 <translation id="112308213915226829">Automātiski slēpt plauktu</translation>
 <translation id="1153356358378277386">Pārī savienotās ierīces</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Vājš signāls</translation>
 <translation id="1293264513303784526">USB-C ierīce (pieslēgvieta pa kreisi)</translation>
+<translation id="1302880136325416935">Rādīt Bluetooth iestatījumus. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Pa labi</translation>
 <translation id="1351937230027495976">Sakļaut izvēlni</translation>
 <translation id="1383876407941801731">Meklēt</translation>
 <translation id="1467432559032391204">Pa kreisi</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Lietojumprogrammu palaidējs</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{Rādīt paziņojumu iestatījumus. Paziņojumi lietotnei ir izslēgti}zero{Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti # lietotnēm}one{Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti # lietotnei}other{Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti # lietotnēm}}</translation>
 <translation id="1525508553941733066">NERĀDĪT</translation>
 <translation id="1537254971476575106">Pilnekrāna lupa</translation>
 <translation id="15373452373711364">Liels peles kursors</translation>
 <translation id="1550523713251050646">Noklikšķiniet, lai skatītu citas iespējas.</translation>
 <translation id="1567387640189251553">Kopš pēdējās reizes, kad ievadījāt paroli, ir pievienota cita tastatūra. Tā, iespējams, mēģina piesavināties jūsu taustiņsitienus.</translation>
+<translation id="1570871743947603115">Pārslēgt Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Noņemt šo lietotāju</translation>
 <translation id="1621499497873603021">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
 <translation id="1658406695958299976">Diemžēl jūsu paroli joprojām nevarēja verificēt. Ņemiet vērā: ja nesen mainījāt paroli, jaunā parole tiks lietota pēc izrakstīšanās. Lūdzu, šeit izmantojiet iepriekšējo paroli.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">Nav atpazīts</translation>
 <translation id="1746730358044914197">Administrators konfigurē ievades metodes.</translation>
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
+<translation id="1761222317188459878">Pārslēgt tīkla savienojumu. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">Ethernet adrese: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistents (notiek ielāde...)</translation>
 <translation id="1841545962859478868">Ierīces administrators var uzraudzīt šo:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">Šo ierīci pārvalda vietne <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrets</translation>
 <translation id="2067602449040652523">Tastatūras spilgtums</translation>
+<translation id="2075212959500165896">Pārāk daudz mēģinājumu. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="2081529251031312395">$1 joprojām varēs pierakstīties vēlāk.</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
 <translation id="2135456203358955318">Dokota lupa</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">Pārslēgt loga kopsavilkumu</translation>
 <translation id="2338501278241028356">Ieslēdziet Bluetooth, lai atklātu tuvumā esošas ierīces</translation>
 <translation id="2339073806695260576">Pieskarieties skārienekrāna pildspalvas pogai plauktā, lai veiktu piezīmes, uzņemtu ekrānuzņēmumus, izmantotu lāzera rādītāju vai lupu.</translation>
+<translation id="2341729377289034582">Bloķēts vertikāli</translation>
 <translation id="2352467521400612932">Skārienekrāna pildspalvas iestatījumi</translation>
 <translation id="2354174487190027830">Notiek <ph name="NAME" /> aktivizēšana.</translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2365393535144473978">Iespējojot mobilos datus, tiks iespējots Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">Pārslēgt režīmu “Netraucēt”</translation>
 <translation id="2412593942846481727">Ir pieejams atjauninājums</translation>
+<translation id="2416346634399901812">Izveidots savienojums ar tīklu <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Pirms piekrītat, lūdzu, pārliecinieties, vai ierīcē tiek parādīta šī ieejas atslēga: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2484513351006226581">Nospiediet īsinājumtaustiņu <ph name="KEYBOARD_SHORTCUT" />, lai pārslēgtu tastatūras izkārtojumu.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">Pievienot savienojumu</translation>
 <translation id="2961963223658824723">Radās problēma. Pēc dažām sekundēm mēģiniet vēlreiz.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">Rādīt apraides ierīces</translation>
 <translation id="2996462380875591307">Dokotās lupas režīms ir iespējots. Lai to izslēgtu, nospiediet taustiņu kombināciju Ctrl+Search+D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ir publiska sesija, kas tiek pārvaldīta domēnā <ph name="DOMAIN" />.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">Mobilie dati</translation>
 <translation id="3151786313568798007">Orientācija</translation>
 <translation id="3153444934357957346">Vairākkārtējas pierakstīšanās laikā var izmantot ne vairāk kā <ph name="MULTI_PROFILE_USER_LIMIT" /> kontus.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Savienots ar ierīci}zero{Savienots ar # ierīcēm}one{Savienots ar # ierīci}other{Savienots ar # ierīcēm}}</translation>
 <translation id="3236488194889173876">Mobilais tīkls nav pieejams</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="3294437725009624529">Viesis</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">Bloķēt</translation>
 <translation id="3798670284305777884">Skaļrunis (iebūvētais)</translation>
 <translation id="380165613292957338">Sveicināti! Kā varu palīdzēt?</translation>
+<translation id="383629559565718788">Rādīt tastatūras iestatījumus</translation>
 <translation id="3846575436967432996">Tīkla informācija nav pieejama.</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3891340733213178823">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">Vidēji spēcīgs signāls</translation>
 <translation id="4200057768455216496">Jūs nospiedāt dokotās lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="4217571870635786043">Diktēšana</translation>
+<translation id="4261870227682513959">Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti</translation>
 <translation id="4274921305979314545">Izveidojiet sava Chromebook datora un tālruņa savienojumu</translation>
 <translation id="4279490309300973883">Spoguļošana</translation>
+<translation id="4292681942966152062">Notiek tīkla <ph name="NETWORK_NAME" /> aktivizēšana</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
@@ -239,6 +253,7 @@
 <translation id="5673434351075758678">Pēc iestatījumu sinhronizēšanas valoda tika mainīta no “<ph name="FROM_LOCALE" />” uz “<ph name="TO_LOCALE" />”.</translation>
 <translation id="574392208103952083">Vidējs</translation>
 <translation id="5744083938413354016">Vilkšana pieskaroties</translation>
+<translation id="5750765938512549687">Bluetooth ir izslēgts</translation>
 <translation id="5777841717266010279">Vai apturēt ekrāna koplietošanu?</translation>
 <translation id="57838592816432529">Izslēgt skaņu</translation>
 <translation id="5805697420284793859">Logu pārvaldnieks</translation>
@@ -272,12 +287,14 @@
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
 <translation id="6164005077879661055">Visi faili un lokālie dati, kas ir saistīti ar uzraudzīto lietotāju, tiks neatgriezeniski dzēsti, tiklīdz uzraudzītais lietotājs tiks noņemts. Iespējams, pārzinis joprojām varēs skatīt šī uzraudzītā lietotāja apmeklētās vietnes un iestatījumus (vietnē <ph name="MANAGEMENT_URL" />).</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
+<translation id="6254629735336163724">Bloķēts horizontāli</translation>
 <translation id="6259254695169772643">Atlasīšanai izmantojiet skārienekrāna pildspalvu.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: notiek aktivizēšana...</translation>
 <translation id="6284232397434400372">Izšķirtspēja nomainīta</translation>
 <translation id="6297287540776456956">Izmantojiet skārienekrāna pildspalvu, lai atlasītu ekrāna daļu.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> tika pagriezts šādi: <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tastatūras pārklājums</translation>
+<translation id="6376931439017688372">Bluetooth ir ieslēgts</translation>
 <translation id="639644700271529076">Funkcija CAPS LOCK ir izslēgta.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Viss gatavs</translation>
@@ -321,6 +338,7 @@
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
 <translation id="7076293881109082629">Pierakstīšanās</translation>
+<translation id="7092922358121866860">Rādīt nakts režīma iestatījumus</translation>
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
 <translation id="7131634465328662194">Jūs tiksiet automātiski izrakstīts.</translation>
 <translation id="7143207342074048698">Notiek savienojuma izveide</translation>
@@ -356,6 +374,7 @@
 <translation id="7798302898096527229">Lai atceltu, nospiediet meklēšanas vai pārslēgšanas taustiņu.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> un <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Spēcīgs signāls</translation>
+<translation id="7842211907556571265">Notiek savienojuma izveide ar tīklu <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Brīdinājums: šī ir eksperimentāla funkcija!</translation>
 <translation id="7846634333498149051">Tastatūra</translation>
 <translation id="790040513076446191">Manipulēt ar konfidencialitāti saistītus iestatījumus</translation>
@@ -396,18 +415,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: notiek atkārtota savienojuma izveide…</translation>
 <translation id="8513108775083588393">Automātiska pagriešana</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā būs ieslēgta.</translation>
+<translation id="8627191004499078455">Izveidots savienojums ar ierīci (<ph name="DEVICE_NAME" />)</translation>
 <translation id="8639760480004882931">Atlicis: <ph name="PERCENTAGE" />%</translation>
 <translation id="8649101189709089199">Atlasīt, lai izrunātu</translation>
 <translation id="8652175077544655965">Aizvērt iestatījumus</translation>
+<translation id="8653151467777939995">Rādīt paziņojumu iestatījumus. Paziņojumi ir ieslēgti</translation>
+<translation id="8664753092453405566">Rādīt tīklu sarakstu. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pievienots lādētājs ar mazu strāvas padevi</translation>
 <translation id="8683506306463609433">Veiktspējas izsekošana ir aktīva</translation>
 <translation id="8734991477317290293">Tā, iespējams, mēģina piesavināties jūsu taustiņsitienus</translation>
+<translation id="8735953464173050365">Rādīt tastatūras iestatījumus. Ir atlasīta tastatūra <ph name="KEYBOARD_NAME" /></translation>
+<translation id="875593634123171288">Rādīt VPN iestatījumus</translation>
 <translation id="8809737090443522491">Ievadiet lietotnes vai dokumenta nosaukumu</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">Spoguļošana ar vairāk nekā diviem ekrāniem netiek atbalstīta.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Poga Atpakaļ</translation>
+<translation id="8843682306134542540">Pārslēgt pagriešanas bloķēšanu. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Lietotnē netiek atbalstīta ekrāna sadalīšana.</translation>
 <translation id="8874184842967597500">Savienojums nav izveidots</translation>

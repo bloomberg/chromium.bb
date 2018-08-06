@@ -22,6 +22,7 @@
 <translation id="3605252743693911722">Melden Sie sich in Chromium an, um Daten wie Lesezeichen und Passwörter auf allen Ihren Geräten zu nutzen.</translation>
 <translation id="3805899903892079518">Chromium hat keinen Zugriff auf Ihre Fotos und Videos. Aktivieren Sie den Zugriff unter "iOS-Einstellungen &gt; Datenschutz &gt; Fotos".</translation>
 <translation id="4024541897090868497">Melden Sie sich in Chromium an, um Ihre Tabs auf sämtlichen Geräten zu haben.</translation>
+<translation id="4157467675761413638">Chromium-Tipp: Wenn Sie weitere Tab-Optionen sehen möchten, halten Sie die Schaltfläche "Tabs anzeigen" in der Symbolleiste gedrückt. Sie finden die Leiste unten oder oben auf dem Bildschirm.</translation>
 <translation id="4241912885070669028">Sie melden sich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chromium-Daten von diesem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="4272892696084633551">Ich möchte dabei helfen, die Funktionen und die Leistung von Chromium zu verbessern</translation>
 <translation id="4555020257205549924">Wenn diese Funktion aktiviert ist, haben Sie in Chromium die Möglichkeit, Seiten in anderen Sprachen mithilfe von Google Übersetzer zu übersetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
@@ -44,6 +45,7 @@
 <translation id="7357211569052832586">Die ausgewählten Daten wurden aus Chromium und von allen synchronisierten Geräten entfernt. Eventuell finden Sie unter history.google.com weitere Arten von Browserverlaufsdaten wie Suchanfragen oder Aktivitäten anderer Google-Dienste für Ihr Google-Konto.</translation>
 <translation id="7400689562045506105">Chromium überall nutzen</translation>
 <translation id="7674213385180944843">Öffnen Sie "Einstellungen" &gt; "Datenschutz" &gt; "Kamera" &gt; "Chromium" und aktivieren Sie die Kamera.</translation>
+<translation id="7746854981345936341">Chromium-Tipp: Manche Schaltflächen wie "Zurück", "Weiter" und "Suche" befinden sich jetzt unten auf dem Bildschirm.</translation>
 <translation id="786327964234957808">Sie stellen die Kontosynchronisierung von <ph name="USER_EMAIL1" /> auf <ph name="USER_EMAIL2" /> um. Ihre bestehenden Chromium-Daten werden von <ph name="DOMAIN" /> verwaltet. Dadurch werden Ihre Daten von diesem Gerät gelöscht, bleiben jedoch in <ph name="USER_EMAIL1" /> erhalten.</translation>
 <translation id="8175055321229419309">Tipp: <ph name="BEGIN_LINK" />Ziehen Sie Chromium in Ihr Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Geben Sie Ihren Standort an, um Google über Chromium noch besser nutzen zu können.</translation>

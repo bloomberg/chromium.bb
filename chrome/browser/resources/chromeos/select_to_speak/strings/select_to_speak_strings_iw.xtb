@@ -1,7 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="111880247472081232">ההגדרות של המרת טקסט לדיבור הקשורות להקראה הועברו להגדרות הכלליות של המרת טקסט לדיבור.</translation>
 <translation id="1197088940767939838">כתום</translation>
+<translation id="1273314450961659276">ההגדרות של המרת טקסט לדיבור</translation>
+<translation id="1498542103351704084">המערכת עדכנה את הגדרות הדיבור של ההקראה</translation>
 <translation id="1555130319947370107">כחול</translation>
 <translation id="1666326070478924810">הגדרות הקראה</translation>
 <translation id="1966649499058910679">הדגשה של כל מילה בזמן שהן נאמרות</translation>
@@ -9,11 +12,14 @@
 <translation id="2714180132046334502">רקע כהה</translation>
 <translation id="27349076983469322">רקע בהיר</translation>
 <translation id="335581015389089642">דיבור</translation>
+<translation id="3784184786832188702">תכונת ההקראה משתמשת עכשיו בהגדרות הכלליות של המרת טקסט לדיבור.</translation>
 <translation id="5901630391730855834">צהוב</translation>
 <translation id="6017514345406065928">ירוק</translation>
 <translation id="6475604559827479857">הצבע של הדגשת המילים:</translation>
 <translation id="6837853484260746864">בחר קול:</translation>
+<translation id="7261612856573623172">קול ברירת המחדל של המרת טקסט לדיבור</translation>
 <translation id="7768784765476638775">הקראה</translation>
 <translation id="7914870167134465181">הדגשה</translation>
+<translation id="8324974933005349667">התאמת ההגדרות של המרת טקסט לדיבור</translation>
 <translation id="992256792861109788">ורוד</translation>
 </translationbundle>

@@ -24,6 +24,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="3605252743693911722">Prijavite se v Chromium, če želite dostopati do svojih zaznamkov, gesel in drugega v vseh napravah.</translation>
 <translation id="3805899903892079518">Chromium nima dostopa do fotografij ali videoposnetkov. Omogočite dostop v sistemu iOS: Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4024541897090868497">Če želite dostopati do zavihkov v vseh napravah, se prijavite v Chromium.</translation>
+<translation id="4157467675761413638">Nasvet za Chromium. Če želite več možnosti za zavihke, pridržite gumb za prikaz zavihkov v orodni vrstici na dnu ali vrhu zaslona.</translation>
 <translation id="4241912885070669028">Odjavili se boste iz računa, ki ga upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. S tem boste iz te naprave izbrisali podatke v Chromiumu, vendar bodo vaši podatki še vedno na voljo v Google Računu.</translation>
 <translation id="4272892696084633551">Pomagajte izboljšati funkcije in delovanje Chromiuma</translation>
 <translation id="4555020257205549924">Kadar je vklopljena ta funkcija, bo Chromium ponudil, da z uporabo Google Prevajalnika prevede strani v drugih jezikih. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
@@ -46,6 +47,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="7357211569052832586">Izbrani podatki so bili odstranjeni iz Chromiuma in sinhroniziranih naprav. V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in dejavnosti iz drugih Googlovih storitev, na history.google.com.</translation>
 <translation id="7400689562045506105">Uporaba Chromiuma povsod</translation>
 <translation id="7674213385180944843">Odprite Settings &gt; Privacy &gt; Camera &gt; Chromium in vklopite fotoaparat.</translation>
+<translation id="7746854981345936341">Nasvet za Chromium. Nekateri gumbi, na primer gumbi za nazaj, naprej in iskanje, so zdaj na dnu zaslona.</translation>
 <translation id="786327964234957808">Z računa za sinhronizacijo <ph name="USER_EMAIL1" /> boste preklopili na račun <ph name="USER_EMAIL2" />. Obstoječe podatke v Chromiumu upravlja <ph name="DOMAIN" />. S tem boste izbrisali podatke iz te naprave, vendar bodo vaši podatki še vedno na voljo v računu <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Nasvet: <ph name="BEGIN_LINK" />premaknite Chromium v vrstico z aplikacijami<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Izboljšajte izkušnjo z Googlom v Chromiumu na podlagi lokacije.</translation>

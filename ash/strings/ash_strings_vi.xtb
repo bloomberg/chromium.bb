@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Đã thêm <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Không có mạng</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">Hiển thị các tùy chọn cài đặt hỗ trợ tiếp cận</translation>
 <translation id="1104621072296271835">Các thiết bị của bạn hoạt động hiệu quả hơn khi kết nối với nhau</translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
 <translation id="1153356358378277386">Thiết bị được ghép nối</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Tín hiệu yếu</translation>
 <translation id="1293264513303784526">Thiết bị USB-C (cổng bên trái)</translation>
+<translation id="1302880136325416935">Hiển thị các tùy chọn cài đặt Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Phải</translation>
 <translation id="1351937230027495976">Thu gọn menu</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1467432559032391204">Trái</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Trình chạy</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{Hiển thị tùy chọn cài đặt thông báo. Các thông báo hiện đang tắt cho một ứng dụng}other{Hiển thị tùy chọn cài đặt thông báo. Các thông báo hiện đang tắt cho # ứng dụng}}</translation>
 <translation id="1525508553941733066">LOẠI BỎ</translation>
 <translation id="1537254971476575106">Phóng to toàn bộ màn hình</translation>
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
 <translation id="1567387640189251553">Một bàn phím khác đã được kết nối kể từ lần gần đây nhất bạn nhập mật khẩu của mình. Bàn phím này có thể đang cố gắng đánh cắp thao tác nhấn phím của bạn.</translation>
+<translation id="1570871743947603115">Bật/tắt Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Xóa người dùng này</translation>
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Rất tiếc, chúng tôi vẫn không thể xác minh được mật khẩu của bạn. Lưu ý: nếu gần đây bạn đã đổi mật khẩu thì mật khẩu mới của bạn sẽ được áp dụng sau khi bạn đăng xuất. Vui lòng sử dụng mật khẩu cũ của bạn tại đây.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">Không nhận dạng được</translation>
 <translation id="1746730358044914197">Các phương thức nhập do quản trị viên của bạn định cấu hình.</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
+<translation id="1761222317188459878">Bật/tắt kết nối mạng. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Trợ lý (đang tải...)</translation>
 <translation id="1841545962859478868">Quản trị viên thiết bị có thể theo dõi các vấn đề sau đây:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">Thiết bị này được <ph name="DOMAIN" /> quản lý.</translation>
 <translation id="2050339315714019657">Khổ dọc</translation>
 <translation id="2067602449040652523">Độ sáng bàn phím</translation>
+<translation id="2075212959500165896">Bạn đã thử quá nhiều lần. Hãy thử lại sau.</translation>
 <translation id="2081529251031312395">$1 vẫn có thể đăng nhập sau.</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="2135456203358955318">Phóng to ở vị trí cố định</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
 <translation id="2338501278241028356">Bật Bluetooth để khám phá các thiết bị lân cận</translation>
 <translation id="2339073806695260576">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng con trỏ laser hoặc kính lúp.</translation>
+<translation id="2341729377289034582">Đã khóa theo chiều dọc</translation>
 <translation id="2352467521400612932">Cài đặt bút cảm ứng</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2365393535144473978">Bật dữ liệu di động sẽ bật Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">Bật/tắt trạng thái Không làm phiền</translation>
 <translation id="2412593942846481727">Đã có bản cập nhật</translation>
+<translation id="2416346634399901812">Đã kết nối với <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Thông báo</translation>
 <translation id="2484513351006226581">Hãy nhấn <ph name="KEYBOARD_SHORTCUT" /> để chuyển bố cục bàn phím.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">Thêm kết nối</translation>
 <translation id="2961963223658824723">Đã xảy ra sự cố. Hãy thử lại sau vài giây.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">Hiển thị các thiết bị truyền.</translation>
 <translation id="2996462380875591307">Đã bật tính năng Phóng to ở vị trí cố định. Hãy nhấn lại tổ hợp phím Ctrl+Search+D để tắt tính năng này.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> là phiên công khai được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Đơn âm</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">Dữ liệu di động</translation>
 <translation id="3151786313568798007">Hướng</translation>
 <translation id="3153444934357957346">Bạn chỉ có thể có tối đa <ph name="MULTI_PROFILE_USER_LIMIT" /> tài khoản khi sử dụng tính năng đăng nhập nhiều tài khoản.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Đã kết nối với một thiết bị}other{Đã kết nối với # thiết bị}}</translation>
 <translation id="3236488194889173876">Không có mạng di động nào</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Khách</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">Khóa</translation>
 <translation id="3798670284305777884">Loa (bên trong)</translation>
 <translation id="380165613292957338">Xin chào, tôi có thể trợ giúp gì?</translation>
+<translation id="383629559565718788">Hiển thị các tùy chọn cài đặt bàn phím</translation>
 <translation id="3846575436967432996">Không có thông tin mạng</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3891340733213178823">Nhấn Ctrl+Shift+Q hai lần để đăng xuất.</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">Tín hiệu trung bình</translation>
 <translation id="4200057768455216496">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
+<translation id="4261870227682513959">Hiển thị các tùy chọn cài đặt thông báo. Thông báo hiện đang tắt</translation>
 <translation id="4274921305979314545">Kết nối Chromebook với điện thoại của bạn</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
+<translation id="4292681942966152062">Đang kích hoạt <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
@@ -240,6 +254,7 @@
 <translation id="5673434351075758678">Từ "<ph name="FROM_LOCALE" />" sang "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="574392208103952083">Trung bình</translation>
 <translation id="5744083938413354016">Kéo nhấn</translation>
+<translation id="5750765938512549687">Bluetooth đang tắt</translation>
 <translation id="5777841717266010279">Bạn muốn dừng chia sẻ màn hình?</translation>
 <translation id="57838592816432529">Tắt tiếng</translation>
 <translation id="5805697420284793859">Trình quản lý cửa sổ</translation>
@@ -273,12 +288,14 @@
 <translation id="615957422585914272">Hiển thị bàn phím ảo</translation>
 <translation id="6164005077879661055">Tất cả các tệp và dữ liệu trên máy được liên kết với người dùng được giám sát sẽ vĩnh viễn bị xóa khi người dùng được giám sát này bị xóa. Các trang web đã truy cập và các cài đặt của người dùng được giám sát này có thể vẫn hiển thị với người quản lý tại <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
+<translation id="6254629735336163724">Đã khóa theo chiều ngang</translation>
 <translation id="6259254695169772643">Sử dụng bút cảm ứng để chọn</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Đang kích hoạt...</translation>
 <translation id="6284232397434400372">Đã thay đổi độ phân giải</translation>
 <translation id="6297287540776456956">Sử dụng bút cảm ứng để chọn một vùng</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> đã được xoay vòng sang <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Lớp phủ bàn phím</translation>
+<translation id="6376931439017688372">Bluetooth đang bật</translation>
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">Đã xong</translation>
@@ -322,6 +339,7 @@
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
 <translation id="7076293881109082629">Đăng nhập</translation>
+<translation id="7092922358121866860">Hiển thị các tùy chọn cài đặt Chế độ ánh sáng ban đêm</translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
 <translation id="7131634465328662194">Bạn sẽ tự động bị đăng xuất.</translation>
 <translation id="7143207342074048698">Đang kết nối</translation>
@@ -357,6 +375,7 @@
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Tín hiệu mạnh</translation>
+<translation id="7842211907556571265">Đang kết nối với <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Cảnh báo: Tính năng thử nghiệm</translation>
 <translation id="7846634333498149051">Bàn phím</translation>
 <translation id="790040513076446191">Thực hiện cài đặt liên quan đến bảo mật</translation>
@@ -397,18 +416,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Đang kết nối lại...</translation>
 <translation id="8513108775083588393">Tự động xoay</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật.</translation>
+<translation id="8627191004499078455">Đã kết nối với <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">Còn <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Chọn để nói</translation>
 <translation id="8652175077544655965">Đóng cài đặt</translation>
+<translation id="8653151467777939995">Hiển thị các tùy chọn cài đặt thông báo. Thông báo đang tắt</translation>
+<translation id="8664753092453405566">Hiển thị danh sách mạng. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>
 <translation id="8683506306463609433">Tính năng theo dõi hiệu suất đang hoạt động</translation>
 <translation id="8734991477317290293">Bàn phím này có thể đang cố gắng đánh cắp thao tác nhấn phím của bạn</translation>
+<translation id="8735953464173050365">Hiển thị các tùy chọn cài đặt bàn phím. <ph name="KEYBOARD_NAME" /> được chọn</translation>
+<translation id="875593634123171288">Hiển thị các tùy chọn cài đặt VPN</translation>
 <translation id="8809737090443522491">Nhập tên của ứng dụng hoặc tài liệu</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825534185036233643">Không hỗ trợ tính năng phản chiếu với hai màn hình trở lên.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Nút quay lại</translation>
+<translation id="8843682306134542540">Bật/tắt khóa xoay. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Ứng dụng không hỗ trợ chế độ chia đôi màn hình.</translation>
 <translation id="8874184842967597500">Chưa kết nối</translation>

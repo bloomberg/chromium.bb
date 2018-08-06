@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">Se adaugă <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De la site-uri</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="1054301162707478098">Ai trecut în modul privat.</translation>
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="1068672505746868501">Nu traduce niciodată paginile în <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">Mai multe limbi</translation>
 <translation id="124678866338384709">Închide fila actuală</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">Paginile pe care le vezi în filele private nu vor fi înregistrate în istoricul browserului, nu vor stoca cookie-uri și nu vor rămâne în istoricul de căutare după ce închizi toate filele private. Fișierele descărcate și marcajele create vor fi păstrate.
+
+Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="127138278192656016">Folosește sincronizarea și toate serviciile</translation>
 <translation id="1272079795634619415">Oprește</translation>
 <translation id="1283039547216852943">Atinge pentru a extinde</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">Comenzi site în ecran complet</translation>
 <translation id="2038563949887743358">Activează opțiunea Versiune site pentru desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB pentru alte aplicații</translation>
+<translation id="2055670718290744343">Caută butonul Accelerator</translation>
 <translation id="2063713494490388661">Atinge pentru a căuta</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="2082238445998314030">Rezultatul <ph name="RESULT_NUMBER" /> din <ph name="TOTAL_RESULTS" /></translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">Sincronizarea și serviciile Google</translation>
 <translation id="2259659629660284697">Exportă parolele…</translation>
 <translation id="2268044343513325586">Rafinează</translation>
+<translation id="2280910239864711607">Deschide o filă nouă în modul privat</translation>
 <translation id="2286841657746966508">Adresa de facturare</translation>
 <translation id="230115972905494466">Nu s-au găsit dispozitive compatibile</translation>
 <translation id="2315043854645842844">Selectarea certificatelor pe partea de client nu este acceptată de sistemul de operare.</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">Permite JavaScript pentru un anumit site.</translation>
 <translation id="2625189173221582860">Parola a fost copiată</translation>
 <translation id="2631006050119455616">Economisite</translation>
+<translation id="2633278372998075009">File private</translation>
 <translation id="2647434099613338025">Adaugă o limbă</translation>
 <translation id="2650751991977523696">Descarci din nou fișierul?</translation>
 <translation id="2653659639078652383">Trimite</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">Dacă ai uitat expresia de acces sau dorești să modifici această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Microfon</translation>
 <translation id="3232754137068452469">Aplicație web</translation>
+<translation id="3234355010754616171">Filă privată nouă</translation>
 <translation id="3236059992281584593">1 min. rămas</translation>
 <translation id="3244271242291266297">LL</translation>
 <translation id="3254409185687681395">Marcați această pagină</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">Închide toate filele incognito</translation>
 <translation id="3365671512111106261">Nu este disponibilă când Economizorul de date este activat</translation>
 <translation id="3367813778245106622">Conectează-te din nou pentru a începe sincronizarea</translation>
+<translation id="3377025655491224618">Filă privată</translation>
 <translation id="3384347053049321195">Trimite imaginea</translation>
 <translation id="3386292677130313581">Întreabă înainte de a permite site-urilor să afle locația (recomandat)</translation>
 <translation id="3387650086002190359">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza unor erori privind sistemul de fișiere.</translation>
@@ -385,6 +394,7 @@ Pentru a ajusta termenul de căutare, apasă lung pentru a selecta. Pentru a raf
 <translation id="4209895695669353772">Pentru a obține sugestii de conținut personalizat de la Google, activează sincronizarea</translation>
 <translation id="4226663524361240545">Notificările pot face dispozitivul să vibreze</translation>
 <translation id="4242533952199664413">Deschide setările</translation>
+<translation id="4243710787042215766">Deschide într-o filă privată</translation>
 <translation id="424864128008805179">Te deconectezi de la Chrome?</translation>
 <translation id="4256782883801055595">Licențe open source</translation>
 <translation id="4259722352634471385">Navigarea este blocată: <ph name="URL" /></translation>
@@ -465,6 +475,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4878404682131129617">Nu s-a putut stabili un tunel prin serverul proxy</translation>
 <translation id="4881695831933465202">Deschide</translation>
 <translation id="488187801263602086">Redenumește fișierul</translation>
+<translation id="4883379392681899581">Ieși din modul privat</translation>
 <translation id="4885273946141277891">Număr de instanțe Chrome neacceptat.</translation>
 <translation id="4910889077668685004">Aplicații pentru plăți</translation>
 <translation id="4913161338056004800">Resetează statisticile</translation>
@@ -506,6 +517,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="5224771365102442243">Cu videoclip</translation>
 <translation id="5233638681132016545">Filă nouă</translation>
 <translation id="5240817131241497236">Setările care controlează sincronizarea, personalizarea și alte servicii Google din Chrome s-au modificat. Această acțiune poate afecta setările curente.</translation>
+<translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Setările<ph name="END_LINK1" /> pot fi personalizate oricând. Google poate folosi conținutul de pe site-urile pe care le accesezi, interacțiunile cu browserul și activitatea pentru a personaliza Chrome și alte servicii Google precum Traducere, Căutare și anunțuri.</translation>
 <translation id="5271967389191913893">Dispozitivul nu poate deschide conținutul de descărcat.</translation>
 <translation id="528192093759286357">Trage din partea de sus și atinge butonul Înapoi pentru a ieși din ecranul complet.</translation>
 <translation id="5284584623296338184">Modificările marcajelor, istoricului, parolelor sau ale altor setări nu vor mai fi sincronizate cu Contul Google. Totuși, datele existente vor rămâne stocate în Contul Google.</translation>
@@ -591,6 +603,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="5833397272224757657">Folosește conținutul de pe site-urile pe care le accesezi, activitatea browserului și interacțiunile pentru personalizare</translation>
 <translation id="5833984609253377421">Trimite linkul</translation>
+<translation id="584427517463557805">Fișă privată selectată</translation>
 <translation id="5854790677617711513">Mai vechi de 30 de zile</translation>
 <translation id="5858741533101922242">Chrome nu poate activa adaptorul Bluetooth</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
@@ -620,6 +633,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="6075798973483050474">Editează pagina de pornire</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ore rămase</translation>
 <translation id="60924377787140961">În curând vor apărea mai multe articole. O după-amiază plăcută!</translation>
+<translation id="6099151465289169210">Ai comutat la filele private</translation>
 <translation id="6108923351542677676">Configurare în curs...</translation>
 <translation id="6111020039983847643">date utilizate</translation>
 <translation id="6112702117600201073">Se actualizează pagina</translation>
@@ -649,6 +663,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6320088164292336938">Vibrații</translation>
 <translation id="6324034347079777476">Sincronizarea de sistem Android este dezactivată</translation>
 <translation id="6333140779060797560">Trimiteți prin <ph name="APPLICATION" /></translation>
+<translation id="6336451774241870485">Filă privată nouă</translation>
 <translation id="6337234675334993532">Criptare</translation>
 <translation id="6341580099087024258">Întreabă unde să fie salvate fișierele</translation>
 <translation id="6343192674172527289">Nu s-a găsit nicio descărcare</translation>
@@ -686,6 +701,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6593061639179217415">Versiune site desktop</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6610147964972079463">Închide filele private</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
 <translation id="6627583120233659107">Editați dosarul</translation>
 <translation id="6643016212128521049">Ștergeți</translation>
@@ -789,6 +805,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7453467225369441013">Te deconectează de pe majoritatea site-urilor. Nu te va deconecta de la Contul Google.</translation>
 <translation id="7454641608352164238">Spațiu insuficient</translation>
 <translation id="7455923816558154057">Atinge pentru a afișa</translation>
+<translation id="7465104139234185284">Închide toate filele private</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nu s-a găsit cardul SD. Este posibil ca unele fișiere să lipsească.</translation>
@@ -884,6 +901,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB pentru descărcări</translation>
 <translation id="8249310407154411074">Mută la început</translation>
 <translation id="8250920743982581267">Documente</translation>
+<translation id="825412236959742607">Această pagină folosește prea multă memorie, prin urmare Chrome a eliminat o parte din conținut.</translation>
 <translation id="8260126382462817229">Încearcă să te conectezi din nou</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8266862848225348053">Locația de descărcare</translation>
@@ -979,6 +997,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="9070377983101773829">Începe căutarea vocală</translation>
 <translation id="9071742570345586758">Pentru a vedea conținut de realitate virtuală, instalează serviciile Google VR</translation>
 <translation id="9074336505530349563">Pentru a obține sugestii de conținut personalizat de la Google, conectează-te și activează sincronizarea</translation>
+<translation id="9080642952018487277">Intră în modul privat</translation>
 <translation id="9086455579313502267">Nu se poate accesa rețeaua</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB pentru descărcări</translation>
 <translation id="9100505651305367705">Oferă afișarea simplificată a articolelor, dacă este acceptată</translation>

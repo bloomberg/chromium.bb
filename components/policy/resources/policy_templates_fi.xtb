@@ -510,6 +510,11 @@
       Jos tätä asetusta ei ole määritetty, käyttäjä voi päättää, käyttääkö tätä toimintoa vai ei.
 
       Tämä asetus on poistettu <ph name="PRODUCT_NAME" /> 29:stä ja uudemmista versioista.</translation>
+<translation id="2433412232489478893">Tämä käytäntö määrittää, antaako <ph name="PRODUCT_NAME" /> käyttäjälle oikeuden käyttää Verkkotiedostojen jakamista.
+
+      Jos tätä käytäntöä ei ole määritetty tai sen arvo on tosi, käyttäjät voivat käyttää Verkkotiedostojen jakamista.
+
+      Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi käyttää Verkkotiedostojen jakamista.</translation>
 <translation id="2438609638493026652">Sallii tärkeistä tapahtumista raportoimisen Googlelle Android-sovelluksen asennuksen aikana. Tapahtumia tallennetaan vain, jos sovelluksen asennus käynnistetään käytännön kautta.
 
       Jos käytännön arvoksi on asetettu tosi, tapahtumat kirjataan.
@@ -587,6 +592,7 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2598508021807251719">Määrittää kieli- ja maa-asetukset, joilla <ph name="PRODUCT_OS_NAME" /> voidaan näyttää.
 
       Jos tämä käytäntö on määritetty, <ph name="PRODUCT_OS_NAME" /> voidaan määrittää näkymään ainoastaan jollakin tässä käytännössä ilmoitetulla kielellä. Jos tätä käytäntöä ei ole määritetty tai sen arvoksi on määritetty tyhjä luettelo, <ph name="PRODUCT_OS_NAME" /> voidaan näyttää kaikilla tuetuilla UI-kielillä. Jos käytännön arvoksi on määritetty luettelo, jonka arvot ovat virheellisiä, kaikki virheelliset arvot ohitetaan. Jos <ph name="PRODUCT_OS_NAME" /> on aiemmin määritetty näkymään kielellä, jota käytäntö ei salli, näytettävä UI-kieli vaihdetaan sallittuun kieleen seuraavalla sisäänkirjautumiskerralla. Jos käyttäjä on määrittänyt haluamansa kielet ja jokin niistä sallitaan tässä käytännössä, <ph name="PRODUCT_OS_NAME" /> vaihtaa tähän kieleen. Muussa tapauksessa <ph name="PRODUCT_OS_NAME" /> vaihtaa ensimmäiseen kelvollisen arvoon tai varakieleen (tällä hetkellä Yhdysvaltain englantiin), jos käytännössä on virheellisiä merkintöjä.</translation>
+<translation id="2604182581880595781">Määritä Verkkotiedostojen jakamiseen liittyviä käytäntöjä.</translation>
 <translation id="2623014935069176671">Odota alkuperäisen käyttäjän toimintaa</translation>
 <translation id="262740370354162807">Salli asiakirjojen lähettäminen palveluun <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Määritä yritystulostimien asetuksia.
@@ -666,6 +672,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="2823870601012066791">Käyttöjärjestelmässä <ph name="PRODUCT_OS_NAME" /> toimivien asiakkaiden sijainti Windows-rekisterissä:</translation>
 <translation id="2824715612115726353">Ota incognito-tila käyttöön</translation>
 <translation id="2838830882081735096">Estä tietojen siirtäminen ja ARC</translation>
+<translation id="2839294585867804686">Verkkotiedostojen jakamisen asetukset</translation>
 <translation id="2840269525054388612">Määritä tulostimet, joita käyttäjä voi käyttää.
 
       Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_WHITELIST" /> on valittuna asetuksen <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> arvoksi.
@@ -1148,6 +1155,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos tätä käytäntöä ei ole määritetty, anonymisoidun datan kerääminen URL-avaimella on käytössä, mutta käyttäjä voi muuttaa asetusta.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4261820385751181068">Laitteen kirjautumisnäytön kieli- ja maa-asetus</translation>
+<translation id="4264607809747169568">Määrittää, onko Verkkotiedostojen jakaminen käytettävissä Chrome-käyttöjärjestelmässä</translation>
 <translation id="427220754384423013">Määritä tulostimet, joita käyttäjä voi käyttää.
 
       Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_WHITELIST" /> on valittuna asetuksen <ph name="BULK_PRINTERS_ACCESS_MODE" /> arvoksi.
@@ -1548,6 +1556,15 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Käytännön arvo tulee antaa millisekunteina.</translation>
 <translation id="5511702823008968136">Ota kirjanmerkkipalkki käyttöön</translation>
 <translation id="5512418063782665071">Etusivun URL-osoite</translation>
+<translation id="551639594034811656">Tämä käytäntö asettaa prosenttiosuudet, joiden mukaan määritellään, kuinka suuri osuus organisaatioyksikön <ph name="PRODUCT_OS_NAME" /> ‑laitteista päivitetään uuden päivityksen löytämisen jälkeen päivittäin. Löytämisen ajankohta on päivityksen julkaisuajankohdan jälkeen, sillä julkaisusta on saattanut kulua jonkin aikaa, ennen kuin laite tarkistaa päivitykset.
+
+      Kukin päivän ja prosenttiosuuden yhdistelmä määrittää, kuinka suuri osuus laitteistosta täytyy olla päivitettynä valittuun päivään mennessä. Päivät lasketaan päivityksen löytämisestä alkaen. Jos yhdistelmät ovat esimerkiksi [(4, 40), (10, 70), (15, 100)], 40 % laitteistosta tulee olla päivitettynä neljän päivän kuluttua päivityksen löytymisestä, 70 % laitteistosta 10 päivän kuluttua ja niin edelleen.
+
+      Jos tämän käytännön arvo on määritetty, tätä käytäntöä noudatetaan <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />-käytännön sijaan.
+
+      Jos tämä luettelo on tyhjä, päivityksiä ei jaeta päiväkohtaisten kiintiöiden mukaan, vaan ne asennetaan muiden laitekäytäntöjen mukaan.
+
+      Tämä käytäntö ei koske kanavan vaihtoja.</translation>
 <translation id="5523812257194833591">Automaattinen kirjautuminen julkiseen istuntoon viiveen jälkeen.
 
       Jos käytäntö asetetaan, määritettyyn istuntoon kirjaudutaan automaattisesti, kun kirjautumisruudulla ei ole havaittu käyttäjän toimia tietyn ajan kuluessa. Julkinen istunto täytyy määrittää ensin (katso |DeviceLocalAccounts|).
@@ -2439,6 +2456,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa SitePerProcess-asetuksen käyttöön manuaalisesti.
       Jos käytäntöä ei määritetä, käyttäjä voi muuttaa tätä asetusta.
       </translation>
+<translation id="7902255855035461275">Tähän luetteloon merkittyjä malleja verrataan pyynnön tehneen
+      URL-osoitteen suojaustiedon alkuperään. Jos vastaavuus löydetään,
+      videontallennuslaitteiden käyttöoikeus myönnetään ilman erillistä kehotetta.
+
+      HUOM. Versioon 45 asti tätä käytäntöä tuettiin vain kioskitilassa.</translation>
 <translation id="7912255076272890813">Määritä sallitut sovellus- ja laajennustyypit</translation>
 <translation id="7915236031252389808">Voit määrittää välityspalvelimen .pac-tiedoston URL-osoitteen tässä.
 

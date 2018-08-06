@@ -136,6 +136,7 @@
 <translation id="405887016757208221">የርቀት ኮምፒውተሩ ክፍለጊዜውን ለመጀመር ተስኖታል። ችግሩ ከቀጠለ እባክዎን አስተናጋጁን በድጋሚ ለማዋቀር ይሞክሩ።</translation>
 <translation id="4068946408131579958">ሁሉም ግንኙነቶች</translation>
 <translation id="409800995205263688">ማሳሰቢያ፦ የመምሪያ ቅንብሮች በአውታረ መረብዎ ውስጥ ባሉ ኮምፒውተሮች የሚኖሩ ግንኙነቶችን ብቻ ነው የሚፈቅዱት።</translation>
+<translation id="4126409073460786861">ማዋቀር ከተጠናቀቀ በኋላ ይህን ገጽ ያድሱት፣ ከዚያ መሣሪያዎን በመምረጥ እና ፒኑን በማስገባት ኮምፒውተሩን መድረስ ይችላሉ</translation>
 <translation id="4145029455188493639">እንደ <ph name="EMAIL_ADDRESS" /> ሆነው ገብተዋል።</translation>
 <translation id="4155497795971509630">አንዳንድ የሚያስፈልጉ ክፍሎች ይጎድላሉ። እባክዎ የሶፍትዌሩ የቅርብ ጊዜውን ስሪት መጫንዎን ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="4156740505453712750">ይህንን ኮምፒውተር በተጠበቀ መዳረሻ ለመድረስ እባክዎ <ph name="BOLD_START" />ቢያንስ ስድስት አኃዞች<ph name="BOLD_END" /> የሆነ ፒን ይምረጡ። ይሄ ፒን ከሌላ ቦታ ሆኖ ሲገናኙ ያስፈልጋል።</translation>
@@ -270,6 +271,7 @@
 <translation id="6998989275928107238">ለ</translation>
 <translation id="7019153418965365059">ያልታወቀ የአስተናጋጅ ስህተት፦ <ph name="HOST_OFFLINE_REASON" />።</translation>
 <translation id="701976023053394610">የርቀት እርዳታ</translation>
+<translation id="7026930240735156896">ኮምፒውተርዎን ለርቀት መዳረሻ ለማዋቀር መመሪያዎቹን ይከተሉ</translation>
 <translation id="7038683108611689168">የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን እንድንሰበስብ በመፍቀድ Chromoting እንድናሻሽል ያግዙን።</translation>
 <translation id="7067321367069083429">ማያ ገጽ እንደ ማያንካ ይሆናል</translation>
 <translation id="7116737094673640201">እንኳን ወደ Chrome የርቀት ዴስክቶፕ በደህና መጡ</translation>

@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> hinzugefügt</translation>
 <translation id="1056775291175587022">Keine Netzwerke</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">Einstellungen für Bedienungshilfen anzeigen</translation>
 <translation id="1104621072296271835">Vorteile durch das Verbinden Ihrer Geräte</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Schwaches Signal</translation>
 <translation id="1293264513303784526">USB-C-Gerät (Port links)</translation>
+<translation id="1302880136325416935">Einstellungen für Bedienungshilfen anzeigen. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1351937230027495976">Menü minimieren</translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Übersicht</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind für eine App deaktiviert.}other{Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind für # Apps deaktiviert.}}</translation>
 <translation id="1525508553941733066">SCHLIESSEN</translation>
 <translation id="1537254971476575106">Vollbildlupe</translation>
 <translation id="15373452373711364">Großer Cursor</translation>
 <translation id="1550523713251050646">Für weitere Optionen klicken</translation>
 <translation id="1567387640189251553">Seit der letzten Eingabe Ihres Passwortes wurde eine andere Tastatur angeschlossen. Möglicherweise versucht jemand, darüber Ihre Tastatureingaben zu erfassen.</translation>
+<translation id="1570871743947603115">Bluetooth aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Diesen Nutzer entfernen</translation>
 <translation id="1621499497873603021">Verbleibende Akku-Laufzeit: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Ihr Passwort konnte immer noch nicht bestätigt werden. Hinweis: Falls Sie Ihr Passwort kürzlich geändert haben, wird Ihr neues Passwort übernommen, sobald Sie sich abmelden. Bitte verwenden Sie hier das alte Passwort.</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">Nicht erkannt</translation>
 <translation id="1746730358044914197">Die Eingabemethoden werden von Ihrem Administrator konfiguriert.</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
+<translation id="1761222317188459878">Netzwerkverbindung aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (wird geladen…)</translation>
 <translation id="1841545962859478868">Der Geräteadministrator überwacht eventuell Folgendes:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">Dieses Gerät wird durch <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="2050339315714019657">Hochformat</translation>
 <translation id="2067602449040652523">Tastaturhelligkeit</translation>
+<translation id="2075212959500165896">Zu viele Versuche. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="2081529251031312395">$1 kann sich später weiterhin anmelden.</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
 <translation id="2135456203358955318">Angedockte Lupe</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
 <translation id="2338501278241028356">Aktivieren Sie Bluetooth, damit Geräte in der Nähe gefunden werden</translation>
 <translation id="2339073806695260576">Tippen Sie auf die Eingabestift-Schaltfläche in der Ablage, um Notizen oder Screenshots zu erstellen, den Laserpointer oder die Vergrößerungsfunktion zu verwenden.</translation>
+<translation id="2341729377289034582">Vertikale Ausrichtung fixiert</translation>
 <translation id="2352467521400612932">Eingabestift-Einstellungen</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> wird aktiviert</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2365393535144473978">Bei Aktivierung der mobilen Daten wird auch Bluetooth aktiviert.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="239188844683466770">"Bitte nicht stören" aktivieren/deaktivieren</translation>
 <translation id="2412593942846481727">Update verfügbar</translation>
+<translation id="2416346634399901812">Verbunden mit <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2484513351006226581">Drücken Sie <ph name="KEYBOARD_SHORTCUT" />, um das Tastaturlayout zu ändern.</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">Verbindung hinzufügen</translation>
 <translation id="2961963223658824723">Ein Fehler ist aufgetreten. Bitte versuchen Sie es in ein paar Sekunden noch einmal.</translation>
 <translation id="2963773877003373896">Mod3</translation>
+<translation id="2995447421581609334">Übertragungsgeräte anzeigen.</translation>
 <translation id="2996462380875591307">Angedockte Lupe aktiviert. Drücken Sie Strg + Suchtaste + D, um sie zu deaktivieren.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ist eine öffentliche Sitzung, die von <ph name="DOMAIN" /> verwaltet wird.</translation>
 <translation id="3000461861112256445">Mono-Audio</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">Mobilfunk</translation>
 <translation id="3151786313568798007">Ausrichtung</translation>
 <translation id="3153444934357957346">Bei der Mehrfachanmeldung sind maximal <ph name="MULTI_PROFILE_USER_LIMIT" /> Konten zulässig.</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Mit einem Gerät verbunden}other{Mit # Geräten verbunden}}</translation>
 <translation id="3236488194889173876">Kein Mobilfunknetz verfügbar</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" />, <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Gast</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">Sperren</translation>
 <translation id="3798670284305777884">Lautsprecher (intern)</translation>
 <translation id="380165613292957338">Hallo, wie kann ich dir helfen?</translation>
+<translation id="383629559565718788">Tastatureinstellungen anzeigen</translation>
 <translation id="3846575436967432996">Keine Netzwerkinformationen verfügbar</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3891340733213178823">Drücken Sie zum Abmelden zweimal Strg + Umschalttaste + Q.</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">Durchschnittliches Signal</translation>
 <translation id="4200057768455216496">Sie haben die Tastenkombination für die angedockte Lupe gedrückt. Möchten Sie sie aktivieren?</translation>
 <translation id="4217571870635786043">Spracheingabe</translation>
+<translation id="4261870227682513959">Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind deaktiviert.</translation>
 <translation id="4274921305979314545">Sie können Ihr Chromebook mit Ihrem Smartphone verbinden</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
+<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> wird aktiviert</translation>
 <translation id="4321179778687042513">Strg</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupe</translation>
@@ -239,6 +253,7 @@
 <translation id="5673434351075758678">Nach der Synchronisierung der Einstellungen von "<ph name="FROM_LOCALE" />" zu "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="574392208103952083">Mittel</translation>
 <translation id="5744083938413354016">Antippen und Ziehen</translation>
+<translation id="5750765938512549687">Bluetooth ist deaktiviert</translation>
 <translation id="5777841717266010279">Bildschirmfreigabe beenden?</translation>
 <translation id="57838592816432529">Stummschalten</translation>
 <translation id="5805697420284793859">Fenstermanager</translation>
@@ -272,12 +287,14 @@
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6164005077879661055">Durch das Entfernen des betreuten Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht. Besuchte Websites und Einstellungen des betreuten Nutzers kann der Manager möglicherweise weiterhin unter <ph name="MANAGEMENT_URL" /> einsehen.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6254629735336163724">Horizontale Ausrichtung fixiert</translation>
 <translation id="6259254695169772643">Verwenden Sie den Eingabestift, um Ihre Auswahl zu treffen</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Wird aktiviert...</translation>
 <translation id="6284232397434400372">Auflösung geändert</translation>
 <translation id="6297287540776456956">Diesen Eingabestift verwenden, um einen Bereich auszuwählen</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
 <translation id="632744581670418035">Tastatur-Overlay</translation>
+<translation id="6376931439017688372">Bluetooth ist aktiviert</translation>
 <translation id="639644700271529076">Feststelltaste Aus</translation>
 <translation id="6406704438230478924">AltGr</translation>
 <translation id="643147933154517414">Fertig</translation>
@@ -321,6 +338,7 @@
 <translation id="7066646422045619941">Dieses Netzwerk wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="7067196344162293536">Automatisch drehen</translation>
 <translation id="7076293881109082629">Anmeldung</translation>
+<translation id="7092922358121866860">Nachtlichteinstellungen anzeigen</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
 <translation id="7131634465328662194">Sie werden automatisch abgemeldet.</translation>
 <translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
@@ -356,6 +374,7 @@
 <translation id="7798302898096527229">Drücken Sie die Such-Taste oder Umschalttaste, um die Aktivierung aufzuheben.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Starkes Signal</translation>
+<translation id="7842211907556571265">Verbindung zu <ph name="NETWORK_NAME" /> wird hergestellt</translation>
 <translation id="7842569679327885685">Achtung: Experimentelle Funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="790040513076446191">Datenschutzeinstellungen bearbeiten</translation>
@@ -396,18 +415,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Verbindung wird wiederhergestellt...</translation>
 <translation id="8513108775083588393">Automatisch drehen</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
+<translation id="8627191004499078455">Verbunden mit <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> verbleibend</translation>
 <translation id="8649101189709089199">Vorlesen</translation>
 <translation id="8652175077544655965">Einstellungen schließen</translation>
+<translation id="8653151467777939995">Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind aktiviert.</translation>
+<translation id="8664753092453405566">Netzwerkliste anzeigen. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Schwachstrom-Ladegerät angeschlossen</translation>
 <translation id="8683506306463609433">Leistungsverfolgung ist aktiv</translation>
 <translation id="8734991477317290293">Möglicherweise versucht jemand, darüber Ihre Tastatureingaben zu erfassen</translation>
+<translation id="8735953464173050365">Tastatureinstellungen anzeigen. <ph name="KEYBOARD_NAME" /> ist ausgewählt.</translation>
+<translation id="875593634123171288">VPN-Einstellungen anzeigen</translation>
 <translation id="8809737090443522491">Name einer App oder eines Dokuments eingeben</translation>
 <translation id="8814190375133053267">WLAN</translation>
 <translation id="8825534185036233643">Das Spiegeln mit mehr als zwei Displays wird nicht unterstützt.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Schaltfläche "Zurück"</translation>
+<translation id="8843682306134542540">Rotationssperre aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Suche + Esc</translation>
 <translation id="8870509716567206129">Das Teilen des Bildschirms wird in dieser App nicht unterstützt.</translation>
 <translation id="8874184842967597500">Nicht verbunden</translation>

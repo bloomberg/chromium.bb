@@ -505,6 +505,11 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wird diese Einstellung nicht konfiguriert, können die Nutzer entscheiden, ob sie die Funktion verwenden möchten.
 
       Diese Einstellung ist ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr vorhanden.</translation>
+<translation id="2433412232489478893">Mit dieser Richtlinie wird gesteuert, ob die Netzwerkfreigabe-Funktion für <ph name="PRODUCT_NAME" /> für einen Nutzer zulässig ist.
+
+      Wenn diese Richtlinie nicht konfiguriert oder auf "true" gesetzt ist, können Nutzer Netzwerkfreigaben verwenden.
+
+      Ist diese Richtlinie auf "false" eingestellt, so stehen Nutzern keine Netzwerkfreigaben zur Verfügung.</translation>
 <translation id="2438609638493026652">Aktiviert die Meldung von wichtigen Ereignissen an Google während der Installation von Android-Apps. Ereignisse werden nur für Apps erfasst, deren Installation über die Richtlinie ausgelöst wurde.
 
       Wenn die Richtlinie auf "true" festgelegt ist, werden Ereignisse protokolliert.
@@ -582,6 +587,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2598508021807251719">Mit dieser Richtlinie werden die Sprachen konfiguriert, in denen <ph name="PRODUCT_OS_NAME" /> angezeigt werden kann.
 
       Wenn diese Richtlinie festgelegt ist, kann der Nutzer <ph name="PRODUCT_OS_NAME" /> nur in einer der durch diese Richtlinie angegebenen Sprachen anzeigen lassen. Falls diese Richtlinie nicht festgelegt ist oder auf eine leere Liste verweist, kann <ph name="PRODUCT_OS_NAME" /> in allen unterstützten UI-Sprachen angezeigt werden. Sollte diese Richtlinie auf eine Liste mit ungültigen Werten verweisen, werden alle ungültigen Werte ignoriert. Wenn ein Nutzer <ph name="PRODUCT_OS_NAME" /> zuvor so konfiguriert hat, dass das Betriebssystem in einer Sprache angezeigt wird, die nicht durch diese Richtlinie zugelassen ist, wird die UI-Sprache in eine zulässige Sprache geändert, wenn sich der Nutzer das nächste Mal anmeldet. Falls der Nutzer bevorzugte Sprachen konfiguriert hatte und eine der bevorzugten Sprachen durch diese Richtlinie zugelassen ist, wechselt <ph name="PRODUCT_OS_NAME" /> zu dieser Sprache. Andernfalls wechselt <ph name="PRODUCT_OS_NAME" /> zum ersten gültigen Wert, der durch diese Richtlinie angegeben ist, oder – falls diese Richtlinie nur ungültige Einträge enthält – zu einer Ersatzsprache (derzeit en-US).</translation>
+<translation id="2604182581880595781">Richtlinien für Netzwerkfreigaben konfigurieren.</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
 <translation id="2627554163382448569">Stellt Konfigurationen für Unternehmensdrucker bereit.
@@ -661,6 +667,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2823870601012066791">Windows-Registrierungspfad für <ph name="PRODUCT_OS_NAME" />-Clients:</translation>
 <translation id="2824715612115726353">Inkognitomodus aktivieren</translation>
 <translation id="2838830882081735096">Datenmigration und ARC nicht zulassen</translation>
+<translation id="2839294585867804686">Einstellungen für Netzwerkfreigaben</translation>
 <translation id="2840269525054388612">Gibt die Drucker an, die ein Nutzer verwenden kann.
 
       Diese Richtlinie wird nur verwendet, wenn <ph name="PRINTERS_WHITELIST" /> für <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ausgewählt wurde.
@@ -1126,17 +1133,18 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird für alle Websites entweder der globale Standardwert der Richtlinie "DefaultKeygenSetting", sofern festgelegt, oder die persönliche Konfiguration des Nutzers verwendet.</translation>
 <translation id="4239720644496144453">Der Cache wird nicht für Android-Apps verwendet. Wenn mehrere Nutzer die gleiche Android-App installieren, wird sie für jeden Nutzer neu heruntergeladen.</translation>
-<translation id="4243336580717651045">Unter <ph name="PRODUCT_NAME" /> können Sie die anonymisierte URL-Erfassung von Daten aktivieren und Nutzer daran hindern, diese Einstellung zu ändern.
+<translation id="4243336580717651045">Unter <ph name="PRODUCT_NAME" /> können Sie die anonymisierte URL-Datenerfassung aktivieren und Nutzer daran hindern, diese Einstellung zu ändern.
 
-      Bei der anonymisierten URL-Erfassung von Daten werden die URLs der vom Nutzer besuchten Seiten an Google gesendet, um die Suche und das Surfen zu verbessern.
+      Bei der anonymisierten URL-Datenerfassung werden die URLs der vom Nutzer besuchten Seiten an Google gesendet, um die Suche und das Surfen zu verbessern.
 
-      Wenn Sie diese Richtlinie aktivieren, ist die anonymisierte URL-Erfassung von Daten immer aktiviert.
+      Wenn Sie diese Richtlinie aktivieren, ist die anonymisierte URL-Datenerfassung immer aktiviert.
 
-      Wenn Sie diese Richtlinie deaktivieren, ist die anonymisierte URL-Erfassung von Daten immer deaktiviert.
+      Wenn Sie diese Richtlinie deaktivieren, ist die anonymisierte URL-Datenerfassung immer deaktiviert.
 
-      Wenn diese Richtlinie nicht festgelegt wird, ist die anonymisierte URL-Erfassung von Daten aktiviert, aber der Nutzer kann diese Einstellung ändern.</translation>
+      Wenn diese Richtlinie nicht festgelegt wird, ist die anonymisierte URL-Datenerfassung aktiviert, aber der Nutzer kann diese Einstellung ändern.</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4261820385751181068">Sprache der Anmeldeseite</translation>
+<translation id="4264607809747169568">Steuert Netzwerkfreigaben für Chrome OS-Verfügbarkeit</translation>
 <translation id="427220754384423013">Gibt die Drucker an, die ein Nutzer verwenden kann.
 
       Diese Richtlinie wird nur verwendet, wenn <ph name="PRINTERS_WHITELIST" /> für <ph name="BULK_PRINTERS_ACCESS_MODE" /> ausgewählt wurde.
@@ -1539,6 +1547,15 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Der Wert sollte in Millisekunden angegeben werden.</translation>
 <translation id="5511702823008968136">Lesezeichenleiste aktivieren</translation>
 <translation id="5512418063782665071">Startseiten-URL</translation>
+<translation id="551639594034811656">Durch diese Richtlinie wird eine Liste mit Prozentwerten festgelegt, die angeben, welcher Anteil der <ph name="PRODUCT_OS_NAME" />-Geräte in der OE pro Tag aktualisiert werden, nachdem das Update entdeckt wurde. Der Abstand zwischen Entdeckungszeitpunkt und Veröffentlichungszeitpunkt hängt davon ab, wann das Gerät nach Updates sucht.
+
+      Jedes Paar der Form (Tag, Prozentwert) gibt an, welcher Anteil der Geräte nach dieser Anzahl von Tagen, seit das Update entdeckt wurde, aktualisiert worden sein muss. Wenn zum Beispiel die Paare [(4, 40), (10, 70), (15, 100)] festgelegt wurden, sollten vier Tage, nachdem das Updates entdeckt wurde, 40 % der Geräte aktualisiert worden sein. Nach zehn Tagen sollte das Update für 70 % erfolgt sein und so weiter.
+
+      Wenn für diese Richtlinie ein Wert festgelegt ist, folgen Updates dieser Richtlinie und ignorieren die Richtlinie "<ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" />".
+
+      Falls diese Liste leer ist, erfolgt kein Staging und Updates werden gemäß anderen Geräterichtlinien angewendet.
+
+      Diese Richtlinie gilt nicht für Kanalwechsel.</translation>
 <translation id="5523812257194833591">Hiermit geben Sie die öffentliche Sitzung an, in der ein Nutzer nach einer bestimmten Zeitspanne automatisch angemeldet wird.
 
       Ist diese Richtlinie festgelegt, wird der Nutzer nach Ablauf einer bestimmten Zeitspanne der Inaktivität beim Anmeldebildschirm automatisch in der angegebenen Sitzung angemeldet. Die öffentliche Sitzung muss vorher konfiguriert werden, siehe |DeviceLocalAccounts|.
@@ -1760,7 +1777,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
           Wenn der Bildschirm bei Inaktivität gesperrt werden soll, empfehlen wir, die Bildschirmsperre für den Wechsel in den Suspend-Modus zu aktivieren und <ph name="PRODUCT_OS_NAME" /> anzuweisen, nach der Inaktivitätsverzögerung in den Suspend-Modus zu wechseln. Diese Richtlinie sollte nur verwendet werden, wenn die Bildschirmsperre deutlich früher aktiviert werden soll als der Suspend-Modus oder wenn der Suspend-Modus bei Inaktivität nicht erwünscht ist.
 
           Der Richtlinienwert muss in Millisekunden angegeben werden und wird automatisch auf einen Wert unter der Inaktivitätsverzögerung reduziert.</translation>
-<translation id="6097601282776163274">Anonymisierte URL-Erfassung von Daten aktivieren</translation>
+<translation id="6097601282776163274">Anonymisierte URL-Datenerfassung aktivieren</translation>
 <translation id="6111936128861357925">Easter Egg-Dinosaurierspiel zulassen</translation>
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6133088669883929098">Schlüsselgenerierung für alle Websites zulassen</translation>
@@ -2435,6 +2452,11 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
       </translation>
+<translation id="7902255855035461275">Muster in dieser Liste werden mit der Sicherheitsherkunft
+      der anfragenden URL abgeglichen. Bei einer Übereinstimmung wird der
+      Zugriff auf Videoaufnahmegeräte ohne Nachfrage gestattet.
+
+      HINWEIS: Bis Version 45 wurde diese Richtlinie nur im Kioskmodus unterstützt.</translation>
 <translation id="7912255076272890813">Zulässige App- bzw. Erweiterungstypen konfigurieren</translation>
 <translation id="7915236031252389808">Hier können Sie eine URL zu einer Proxy-PAC-Datei angeben.
 

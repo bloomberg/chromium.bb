@@ -489,6 +489,7 @@
 <translation id="4277028893293644418">Resetează parola</translation>
 <translation id="4280429058323657511">data expirării: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Comută</translation>
+<translation id="4308131620840579419">Salvezi toate cardurile într-un singur loc?</translation>
 <translation id="4312866146174492540">Blochează (în mod prestabilit)</translation>
 <translation id="4325863107915753736">Articolul nu a fost găsit</translation>
 <translation id="4326324639298822553">Verifică data de expirare și încearcă din nou</translation>
@@ -599,6 +600,7 @@
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="5201306358585911203">O pagină încorporată de pe această pagină afișează mesajul</translation>
 <translation id="5205222826937269299">Numele este obligatoriu</translation>
+<translation id="5215116848420601511">Metodele de plată și adresele care folosesc Google Pay</translation>
 <translation id="5222812217790122047">Adresa de e-mail este obligatorie</translation>
 <translation id="5230733896359313003">Adresă de expediere</translation>
 <translation id="5250209940322997802">„Conectează-te la rețea”</translation>
@@ -675,6 +677,7 @@
 <translation id="5689199277474810259">Exportă în format JSON</translation>
 <translation id="5689516760719285838">Locație</translation>
 <translation id="570530837424789914">Gestionează...</translation>
+<translation id="5705882733397021510">Înapoi</translation>
 <translation id="57094364128775171">Sugerează o parolă puternică…</translation>
 <translation id="5710435578057952990">Identitatea acestui site nu a fost confirmată.</translation>
 <translation id="5719499550583120431">Se acceptă carduri preplătite.</translation>
@@ -692,6 +695,7 @@
 <translation id="5810442152076338065">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare învechită.</translation>
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
 <translation id="5838278095973806738">Nu ar trebui să introduci informații sensibile pe acest site (de exemplu, parole sau carduri de credit), deoarece ar putea fi furate de atacatori.</translation>
+<translation id="5863847714970149516">Următoarea pagină poate să genereze costuri</translation>
 <translation id="5866257070973731571">Adaugă un număr de telefon</translation>
 <translation id="5869405914158311789">Acest site nu poate fi accesat</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
@@ -822,6 +826,7 @@
 <translation id="6973656660372572881">Sunt specificate atât servere proxy fixe, cât și o adresă URL pentru scripturi .pac.</translation>
 <translation id="6989763994942163495">Afișează setările avansate...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7016992613359344582">Aceste costuri pot fi unice sau recurente și ascunse.</translation>
 <translation id="7029809446516969842">Parole</translation>
 <translation id="7050187094878475250">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat a cărui perioadă de validitate este prea lungă pentru a fi de încredere.</translation>
 <translation id="7053983685419859001">Blochează</translation>
@@ -1087,6 +1092,7 @@
 <translation id="8957210676456822347">Autorizarea prin portalul captiv</translation>
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
 <translation id="8978053250194585037">Recent, Navigarea sigură Google <ph name="BEGIN_LINK" />a detectat phishing<ph name="END_LINK" /> pe <ph name="SITE" />. Site-urile de phishing falsifică alte site-uri, pentru a te înșela.</translation>
+<translation id="8983003182662520383">Metodele de plată și adresele care folosesc Google Pay</translation>
 <translation id="8987927404178983737">Lună</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Site-ul pe care urmează să îl accesezi conține programe dăunătoare</translation>

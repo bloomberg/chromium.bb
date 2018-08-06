@@ -5,6 +5,7 @@
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" />ን በማከል ላይ...</translation>
 <translation id="1041308826830691739">ከድር ጣቢያዎች</translation>
 <translation id="1049743911850919806">ማንነት የማያሳውቅ</translation>
+<translation id="1054301162707478098">እርስዎ የግል ሆነዋል።</translation>
 <translation id="10614374240317010">በጭራሽ አልተቀመጠም</translation>
 <translation id="1068672505746868501">በ<ph name="SOURCE_LANGUAGE" /> ውስጥ ገጾችን በጭራሽ አትተርጉም</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">ተጨማሪ ቋንቋዎች</translation>
 <translation id="124678866338384709">የአሁኑን ትር ዝጋ</translation>
 <translation id="1258753120186372309">Google doodle፦ <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">በግል ትሮች ላይ የሚያዩዋቸው ገጾች ሁሉንም የግል ትሮችዎን ከዘጉ በኋላ በእርስዎ የአሳሽ ታሪክ፣ የኩኪ ማከማቻ ወይም የፍለጋ ታሪክ ውስጥ አይቆዩም። የሚያወርዷቸው ማንኛቸውም ፋይሎች ወይም ዕልባቶች ይቀመጣሉ።
+
+ይሁንና እርስዎ ስውር አይደሉም። የግል መሆን የእርስዎን አሰሳ ከአሰሪዎ፣ ከበይነመረብ አገልጋይዎ ወይም ከሚጎበኟቸው ድር ጣቢያዎች አይደብቁዎውም።</translation>
 <translation id="127138278192656016">ማመሳሰልን እና ሁሉንም አገልግሎቶች ይጠቀሙ</translation>
 <translation id="1272079795634619415">አቁም</translation>
 <translation id="1283039547216852943">ለመዘርጋት መታ ያድርጉ</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">የሙሉ ማያ ገጽ ጣቢያ መቆጣጠሪያዎች</translation>
 <translation id="2038563949887743358">የዴስክቶፕ ጣቢያን ጠይቅን አብራ</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> ጊባ ሌሎች መተግበሪያዎች</translation>
+<translation id="2055670718290744343">የፍለጋ ማፍጠኛ</translation>
 <translation id="2063713494490388661">ለመፈለግ መታ ያድርጉ</translation>
 <translation id="2079545284768500474">ቀልብስ</translation>
 <translation id="2082238445998314030">ውጤት <ph name="RESULT_NUMBER" /> ከ<ph name="TOTAL_RESULTS" /></translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">ማመሳሰል እና የGoogle አገልግሎቶች</translation>
 <translation id="2259659629660284697">የይለፍ ቃላትን ወደ ውጭ ላክ...</translation>
 <translation id="2268044343513325586">አጽዳ</translation>
+<translation id="2280910239864711607">አዲስ ትር በግል ሁነታ ውስጥ ክፈት</translation>
 <translation id="2286841657746966508">የመላኪያ አድራሻ</translation>
 <translation id="230115972905494466">ምንም ተኳሃኝ መሣሪያዎች አልተገኙም</translation>
 <translation id="2315043854645842844">የደንበኛ ወገን ዕውቅና ማረጋገጫ ምርጫ በስርዓተ-ክወናው አይደገፍም።</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">ጃቫስክሪፕትን ለአንድ የተወሰነ ጣቢያ ፍቀድ።</translation>
 <translation id="2625189173221582860">የይለፍ ቃል ተቀድቷል።</translation>
 <translation id="2631006050119455616">ተቀምጧል</translation>
+<translation id="2633278372998075009">የግል ትሮችq</translation>
 <translation id="2647434099613338025">ቋንቋ አክል</translation>
 <translation id="2650751991977523696">ፋይሉ እንደገና ይውረድ?</translation>
 <translation id="2653659639078652383">አስገባ</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">የእርስዎን የይለፍሐረግ ከረሱት ወይም ይህን ቅንብር መለወጥ ከፈለጉ <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">ማይክሮፎን</translation>
 <translation id="3232754137068452469">የድር መተግበሪያ</translation>
+<translation id="3234355010754616171">አዲስ የግል ትር</translation>
 <translation id="3236059992281584593">1 ደቂቃ ይቀራል</translation>
 <translation id="3244271242291266297">ወወ</translation>
 <translation id="3254409185687681395">ለእዚህ ገጽ ዕልባት አብጅ</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">ሁሉንም ማንነት የማያሳውቅ ትሮችን ይዝጉ</translation>
 <translation id="3365671512111106261">ውሂብ ቆጣቢ በሚበራበት ጊዜ አይገኝም</translation>
 <translation id="3367813778245106622">ስምረትን ለመጀመር እንደገና ይግቡ</translation>
+<translation id="3377025655491224618">የግል ትር</translation>
 <translation id="3384347053049321195">ምስል አጋራ</translation>
 <translation id="3386292677130313581">ጣቢያዎች አካባቢዎን እንዲያውቁ ከመፍቀድዎ በፊት ይጠይቅ (የሚመከር)</translation>
 <translation id="3387650086002190359">በስርዓተ-ፋይል ስህተቶች ምክንያት <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
@@ -385,6 +394,7 @@
 <translation id="4209895695669353772">በGoogle የተጠቆመ ግላዊነት የተላበሰ ይዘትን ስምረትን ማብራት ለማግኘት</translation>
 <translation id="4226663524361240545">ማሳወቂያዎች መሣሪያውን እንዲነዝር ሊያደርጉት ይችላሉ</translation>
 <translation id="4242533952199664413">ቅንብሮችን ክፈት</translation>
+<translation id="4243710787042215766">በግል ትር ውስጥ ክፈት</translation>
 <translation id="424864128008805179">ከChrome ተዘግቶ ይወጣ?</translation>
 <translation id="4256782883801055595">የክፍት ምንጭ ፍቃዶች</translation>
 <translation id="4259722352634471385">ዳሰሳ ታግዷል፦ <ph name="URL" /></translation>
@@ -465,6 +475,7 @@
 <translation id="4878404682131129617">በተኪ አገልጋይ በኩል ዋሻን መመስረት አልተሳካም</translation>
 <translation id="4881695831933465202">ክፈት</translation>
 <translation id="488187801263602086">ፋይልን ዳግም ይሰይሙ</translation>
+<translation id="4883379392681899581">ከግል ሁነታ ውጣ</translation>
 <translation id="4885273946141277891">የማይደገፍ የChrome አብነቶች ብዛት።</translation>
 <translation id="4910889077668685004">የክፍያ መተግበሪያዎች</translation>
 <translation id="4913161338056004800">ስታትስቲክስ ዳግም አስጀምር</translation>
@@ -506,6 +517,7 @@
 <translation id="5224771365102442243">ከቪዲዮ ጋር</translation>
 <translation id="5233638681132016545">አዲስ ትር</translation>
 <translation id="5240817131241497236">በChrome ውስጥ ስምረትን፣ ግላዊነት ማላበስን እና ሌሎች የGoogle አገልግሎቶችን የሚቆጣጠሩ ቅንብሮች ተቀይረዋል። ይህ በአሁኑ ቅንብሮችዎ ላይ ተጽዕኖ ሊኖረው ይችላል።</translation>
+<translation id="5264003212305142034"><ph name="BEGIN_LINK1" />ቅንብሮች<ph name="END_LINK1" />ን በማንኛውም ጊዜ ማበጀት ይቻላል። Chromeን እና እንደ ትርጉም፣ ፍለጋ እና ማስታወቂያዎች ያሉ ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ Google እርስዎ በሚጎበኟቸው ጣቢያዎች ላይ ያለ ይዘትን እና የአሰሳ እንቅስቃሴ ሊጠቀም ይችላል።</translation>
 <translation id="5271967389191913893">መሣሪያ የሚወርደውን ይዘት መክፈት አይችልም።</translation>
 <translation id="528192093759286357">ከሙሉ ማያ ገጽ ለመውጣት ከላይ ይጎትቱ እና የተመለስ አዝራሩን ይንኩ።</translation>
 <translation id="5284584623296338184">በእርስዎ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ላይ የተደረጉ ለውጦች ከአሁን በኋላ ከእርስዎ የGoogle መለያ ጋር አይሠምሩም። ሆኖም ግን ነባር ውሂብዎ በእርስዎ የGoogle መለያ ላይ እንደተከማቸ ይቆያል።</translation>
@@ -591,6 +603,7 @@
 <translation id="583281660410589416">ያልታወቀ </translation>
 <translation id="5833397272224757657">እርስዎ የሚጎበኙዋቸውን ጣቢያዎች ላይ ይዘትን እንዲሁም የአሰሳ እንቅስቃሴ እና መስተጋብሮች ለግላዊነት ለማላበስ ይጠቀማል</translation>
 <translation id="5833984609253377421">አገናኝ አጋራ</translation>
+<translation id="584427517463557805">የተመረጠ የግል ትር</translation>
 <translation id="5854790677617711513">ከ30 ቀናት በላይ የቆየ</translation>
 <translation id="5858741533101922242">Chrome የብሉቱዝ አስማሚውን ማብራት አልቻለም</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
@@ -620,6 +633,7 @@
 <translation id="6075798973483050474">መነሻ ገጽን ያርትዑ</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ሰዓቶች ይቀራሉ</translation>
 <translation id="60924377787140961">ተጨማሪ ጽሑፎች በቅርቡ ይታያሉ። የእርስዎን ከሰዓት ይዝናኑበት!</translation>
+<translation id="6099151465289169210">ወደ የግል ትሮች ተቀይሯል</translation>
 <translation id="6108923351542677676">ማዋቀር በሂደት ላይ…</translation>
 <translation id="6111020039983847643">ጥቅም ላይ የዋለው ውሂብ</translation>
 <translation id="6112702117600201073">ገጽ በማደስ ላይ</translation>
@@ -649,6 +663,7 @@
 <translation id="6320088164292336938">ንዘር</translation>
 <translation id="6324034347079777476">የAndroid ሥርዓት ስምረት ተሰናክሏል</translation>
 <translation id="6333140779060797560">በ<ph name="APPLICATION" /> በኩል ያጋሩ</translation>
+<translation id="6336451774241870485">አዲስ የግል ትር</translation>
 <translation id="6337234675334993532">ምስጠራ</translation>
 <translation id="6341580099087024258">ፋይሎች የት እንደሚቀመጡ ይጠይቁ</translation>
 <translation id="6343192674172527289">ምንም ውርዶች አልተገኙም</translation>
@@ -686,6 +701,7 @@
 <translation id="6593061639179217415">የዴስክቶፕ ጣቢያ</translation>
 <translation id="6600954340915313787">ወደ Chrome ተቀድቷል</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ጊባ</translation>
+<translation id="6610147964972079463">የግል ትሮችን ዝጋ</translation>
 <translation id="6612358246767739896">ጥበቃ የሚደረግለት ይዘት</translation>
 <translation id="6627583120233659107">አቃፊ አርትዕ</translation>
 <translation id="6643016212128521049">አጽዳ</translation>
@@ -789,6 +805,7 @@
 <translation id="7453467225369441013">ከአብዛኛዎቹ ጣቢያዎች ዘግተው ያስወጣዎታል። ከእርስዎ የGoogle መለያ ዘግተው እንዲወጡ አይደረጉም።</translation>
 <translation id="7454641608352164238">በቂ ቦታ የለም</translation>
 <translation id="7455923816558154057">ለመመልከት መታ ያድርጉ</translation>
+<translation id="7465104139234185284">ሁሉንም የግል ትሮች ዝጋ</translation>
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="7475192538862203634">ይህን በተደጋጋሚነት እያዩት ከሆኑ እነዚህን <ph name="BEGIN_LINK" />የአስተያየት ጥቆማዎች<ph name="END_LINK" /> ይሞክሩ።</translation>
 <translation id="7475688122056506577">ኤስዲ ካርድ አልተገኘም። አንዳንዶቹ ፋይሎችዎ ሊጎድሉ ይችላሉ።</translation>
@@ -884,6 +901,7 @@
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> ጊባ ወርዷል</translation>
 <translation id="8249310407154411074">ወደ ላይ ውሰድ</translation>
 <translation id="8250920743982581267">ሰነዶች</translation>
+<translation id="825412236959742607">ይህ ገጽ በጣም ብዙ ማህደረ ትውስታን ይጠቀማል፣ ስለዚህ Chrome አንዳንድ ይዘትን አስወግዷል።</translation>
 <translation id="8260126382462817229">እንደገና ለመግባት ይሞክሩ</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8266862848225348053">የሚወርድበት ቦታ</translation>
@@ -979,6 +997,7 @@
 <translation id="9070377983101773829">የድምጽ ፍለጋን ጀምር</translation>
 <translation id="9071742570345586758">የምናባዊ እውነታ ይዘትን ለመመልከት የGoogle ቪአር አገልግሎቶችን ይጫኑ</translation>
 <translation id="9074336505530349563">በGoogle የተጠቆመ ግላዊነት የተላበሰ ይዘትን በመለያ መግባት እና ስምረትን ማብራት ለማግኘት</translation>
+<translation id="9080642952018487277">ወደ የግል ሁነታ ግባ</translation>
 <translation id="9086455579313502267">አውታረ መረቡን መድረስ አልተቻለም።</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> ኪባ ወርዷል</translation>
 <translation id="9100505651305367705">የሚደገፍ ሲሆን ጽሑፎችን በተቃለለ እይታ ለማሳየት ጠይቅ</translation>

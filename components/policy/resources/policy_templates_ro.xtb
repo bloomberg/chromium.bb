@@ -514,6 +514,11 @@
       Dacă această setare nu este configurată, utilizatorul poate alege să folosească sau nu această funcție.
 
       Această setare a fost eliminată din <ph name="PRODUCT_NAME" /> versiunea 29 și din versiunile ulterioare.</translation>
+<translation id="2433412232489478893">Această politică stabilește dacă funcția Dispozitive de stocare în rețea pentru <ph name="PRODUCT_NAME" /> este permisă unui utilizator.
+
+      Dacă politica nu este configurată sau dacă este activată, utilizatorii vor putea folosi Dispozitive de stocare în rețea.
+
+      Dacă politica este dezactivată, utilizatorii nu vor putea folosi Dispozitive de stocare în rețea.</translation>
 <translation id="2438609638493026652">Activează raportarea evenimentelor cheie la Google în timpul instalării aplicației pentru Android. Evenimentele sunt înregistrate numai pentru aplicațiile a căror instalare a fost declanșată în baza politicii.
 
       Dacă politica este activată, vor fi înregistrate evenimente.
@@ -591,6 +596,7 @@
 <translation id="2598508021807251719">Configurează codurile locale în care poate fi afișat <ph name="PRODUCT_OS_NAME" />.
 
       Dacă această politică este configurată, utilizatorul poate să configureze afișarea <ph name="PRODUCT_OS_NAME" /> numai într-unul dintre codurile locale specificate de această politică. Dacă această politică nu este configurată sau dacă este configurată la o listă necompletată, <ph name="PRODUCT_OS_NAME" /> poate fi afișat în toate codurile locale IU acceptate. Dacă această politică este configurată la o listă cu valori nevalide, toate valorile nevalide vor fi ignorate. Dacă un utilizator a configurat anterior afișarea <ph name="PRODUCT_OS_NAME" /> într-un cod local care nu este permis de această politică, codul local de afișare va fi înlocuit cu un cod local IU permis la următoarea conectare a utilizatorului. Dacă utilizatorul a configurat codurile locale preferate și unul dintre ele este permis de această politică, <ph name="PRODUCT_OS_NAME" /> va comuta la codul local respectiv. În caz contrar, <ph name="PRODUCT_OS_NAME" /> va comuta la prima valoare validă specificată de această politică sau la un cod local alternativ (în prezent, en-US), în cazul în care politica nu conține decât intrări nevalide.</translation>
+<translation id="2604182581880595781">Configurează politicile pentru Dispozitive de stocare în rețea.</translation>
 <translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Specifică configurațiile pentru imprimantele companiei.
@@ -670,6 +676,7 @@
 <translation id="2823870601012066791">Locația din registry-ul Windows pentru clienții <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activează modul incognito</translation>
 <translation id="2838830882081735096">Nu permite migrarea datelor și ARC</translation>
+<translation id="2839294585867804686">Setări pentru Dispozitive de stocare în rețea</translation>
 <translation id="2840269525054388612">Specifică imprimantele pe care le poate folosi un utilizator.
 
       Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_WHITELIST" /> este aleasă pentru <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1157,6 +1164,7 @@
       Dacă politica nu este configurată, colectarea datelor anonimizate cu cheie URL va fi activă, dar utilizatorul o va putea modifica.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4261820385751181068">Limba de pe ecranul de conectare al dispozitivului</translation>
+<translation id="4264607809747169568">Controlează funcția Dispozitive de stocare în rețea pentru disponibilitatea sistemului de operare Chrome</translation>
 <translation id="427220754384423013">Specifică imprimantele pe care le poate folosi un utilizator.
 
       Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_WHITELIST" /> este aleasă pentru <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1562,6 +1570,15 @@
       Valoarea pentru politică trebuie specificată în milisecunde.</translation>
 <translation id="5511702823008968136">Activează bara de marcaje</translation>
 <translation id="5512418063782665071">Adresa URL a paginii de pornire</translation>
+<translation id="551639594034811656">Această politică definește o listă de procente care vor defini proporția de dispozitive <ph name="PRODUCT_OS_NAME" /> din UO de actualizat pe zi, începând din ziua în care se descoperă actualizarea. Momentul descoperirii apare după momentul publicării actualizării, deoarece este posibil să treacă un timp după publicare până când dispozitivul va căuta actualizări.
+
+      Fiecare pereche (ziua, procentul) conține procentul din flotă care trebuie actualizat în funcție de numărul de zile de când a fost descoperită actualizarea. De exemplu, dacă avem perechile [(4, 40), (10, 70), (15, 100)], 40% din flotă trebuie actualizată la 4 zile după descoperirea actualizării, 70% trebuie actualizată după 10 zile și așa mai departe.
+
+      Dacă există o valoare definită pentru această politică, actualizările vor ignora politica <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> și o vor urma pe aceasta.
+
+      Dacă lista este goală, nu va exista nicio simulare și actualizările vor fi aplicate conform altor politici privind dispozitivele.
+
+      Această politică nu se aplică pentru comutările de canal.</translation>
 <translation id="5523812257194833591">O sesiune publică pentru conectare automată după un interval de inactivitate.
 
       Dacă această politică este setată, sesiunea specificată va fi conectată în mod automat după o perioadă de timp care s-a scurs după afișarea ecranului de conectare fără ca utilizatorul să interacționeze cu acesta. Sesiunea publică trebuie să fie deja configurată (vedeți |DeviceLocalAccounts|).
@@ -2453,6 +2470,11 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările pentru IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual SitePerProcess.
       Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
       </translation>
+<translation id="7902255855035461275">Șabloanele din această listă vor fi comparate cu originea
+      de securitate a adresei URL solicitante. Dacă este identificată o potrivire,
+      accesul la dispozitivele de capturare a conținutului video va fi acordat automat.
+
+      NOTĂ: până la versiunea 45, această politică era acceptată doar în modul Chioșc.</translation>
 <translation id="7912255076272890813">Configurați tipurile de aplicații/extensii permise</translation>
 <translation id="7915236031252389808">Poți specifica adresa URL a unui fișier .pac pentru proxy aici.
 

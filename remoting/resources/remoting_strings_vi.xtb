@@ -136,6 +136,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="405887016757208221">Máy tính từ xa đã không khởi tạo được phiên. Nếu sự cố vẫn tiếp diễn, vui lòng thử định cấu hình lại máy chủ.</translation>
 <translation id="4068946408131579958">Tất cả kết nối</translation>
 <translation id="409800995205263688">LƯU Ý: Cài đặt chính sách chỉ cho phép kết nối giữa các máy tính trong mạng của bạn.</translation>
+<translation id="4126409073460786861">Sau khi thiết lập xong máy tính, bạn phải làm mới trang này thì mới có thể truy cập vào máy tính bằng cách chọn thiết bị của bạn và nhập mã PIN</translation>
 <translation id="4145029455188493639">Đã đăng nhập bằng địa chỉ <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Thiếu một số thành phần bắt buộc. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất của phần mềm và thử lại.</translation>
 <translation id="4156740505453712750">Để bảo vệ quyền truy cập vào máy tính này, vui lòng chọn một mã PIN <ph name="BOLD_START" />ít nhất sáu chữ số<ph name="BOLD_END" />. Mã PIN này sẽ được yêu cầu khi kết nối từ một vị trí khác.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Đến</translation>
 <translation id="7019153418965365059">Lỗi máy chủ không xác định: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Hỗ trợ từ xa</translation>
+<translation id="7026930240735156896">Hãy làm theo hướng dẫn thiết lập máy tính của bạn để truy cập từ xa</translation>
 <translation id="7038683108611689168">Giúp chúng tôi cải thiện Kết nối từ xa trên Chrome bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="7067321367069083429">Màn hình đóng vai trò như màn hình cảm ứng</translation>
 <translation id="7116737094673640201">Chào mừng bạn đến với Chrome Remote Desktop</translation>

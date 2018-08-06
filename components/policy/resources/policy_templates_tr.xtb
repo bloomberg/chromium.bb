@@ -520,6 +520,11 @@
       Bu ayar belirlenmemiş olarak bırakılırsa kullanıcı bu işlevi kullanıp kullanmayacağına karar verebilir.
 
       Bu ayar, <ph name="PRODUCT_NAME" /> 29 ve sonraki sürümlerinde kaldırılmıştır.</translation>
+<translation id="2433412232489478893">Bu politika, <ph name="PRODUCT_NAME" /> için Ağ Üzerinde Dosya Paylaşımı özelliğine belirli bir kullanıcı için izin verilip verilmediğini kontrol eder.
+
+      Bu politika True (Doğru) değerine yapılandırılmaz veya ayarlanmazsa, kullanıcılar Ağ Üzerinde Dosya Paylaşımı özelliğini kullanabilirler.
+
+      Bu politika False (Yanlış) değerine ayarlanırsa, kullanıcılar Ağ Üzerinde Dosya Paylaşımı özelliğini kullanamazlar</translation>
 <translation id="2438609638493026652">Android uygulaması yüklemesi sırasında önemli etkinliklerin Google'a bildirilmesini sağlar. Etkinlikler yalnızca yüklemesini politikanın tetiklediği uygulamalar için yakalanır.
 
       Politika true (doğru) değerine ayarlanırsa etkinlikler günlüğe kaydedilir.
@@ -601,6 +606,7 @@
 <translation id="2598508021807251719"><ph name="PRODUCT_OS_NAME" /> ürününün görüntülenebileceği yerel ayarları yapılandırır.
 
       Bu politika ayarlanırsa kullanıcı, <ph name="PRODUCT_OS_NAME" /> ürününü yalnızca bu politikada belirtilen yerel ayarların birinde görüntülenecek şekilde yapılandırabilir. Bu politika ayarlanmazsa veya boş bir listeye ayarlanırsa <ph name="PRODUCT_OS_NAME" />, desteklenen tüm kullanıcı arayüzü yerel ayarlarında görüntülenebilir. Bu politika geçersiz değerler içeren bir listeye ayarlanırsa tüm geçersiz değerler yoksayılır. Bir kullanıcı daha önce <ph name="PRODUCT_OS_NAME" /> ürününü bu politika tarafından izin verilmeyen bir yerel ayarda görüntülenecek şekilde yapılandırmışsa, kullanıcı tekrar oturum açtığında görüntüleme yerel ayarı izin verilen bir kullanıcı arayüzü yerel ayarıyla değiştirilir. Kullanıcı tercih edilen yerel ayarları yapılandırdıysa ve bu politika, tercih edilen yerel ayarlardan birine izin veriyorsa <ph name="PRODUCT_OS_NAME" />, bu yerel ayara geçiş yapar. Aksi halde, <ph name="PRODUCT_OS_NAME" /> bu politika tarafından belirtilen geçerli değere veya bu politika yalnızca geçersiz girişler içerirse bir yedek yerel ayara (şu anda en-US) geçiş yapar.</translation>
+<translation id="2604182581880595781">Ağ Üzerinde Dosya Paylaşımı ile ilgili politikaları yapılandırın.</translation>
 <translation id="2623014935069176671">İlk kullanıcı etkinliğini bekle</translation>
 <translation id="262740370354162807">Dokümanların <ph name="CLOUD_PRINT_NAME" /> için gönderilmesini etkinleştir</translation>
 <translation id="2627554163382448569">Kurumsal yazıcılar için yapılandırmalar sağlar.
@@ -686,6 +692,7 @@
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> istemcileri için Windows kayıt defteri konumu:</translation>
 <translation id="2824715612115726353">Gizli modu etkinleştir</translation>
 <translation id="2838830882081735096">Veri taşıma ve ARC'ye izin verme</translation>
+<translation id="2839294585867804686">Ağ Üzerinde Dosya Paylaşımı ayarları</translation>
 <translation id="2840269525054388612">Bir kullanıcının kullanabileceği yazıcıları belirtir.
 
       Bu politika yalnızca <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> için <ph name="PRINTERS_WHITELIST" /> değeri seçilirse kullanılır.
@@ -1172,6 +1179,7 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmadan bırakılırsa URL içeren veya URL'lerle ilişkili anonim veri toplama özelliği etkinleştirilir ancak kullanıcı tarafından kapatılabilir.</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="4261820385751181068">Cihaz oturum açma ekranı yerel ayarı</translation>
+<translation id="4264607809747169568">ChromeOS için Ağ Üzerinde Dosya Paylaşımı'nın kullanılabilirliğini kontrol eder</translation>
 <translation id="427220754384423013">Kullanıcının kullanabileceği yazıcıları belirtir.
 
       Bu politika yalnızca <ph name="BULK_PRINTERS_ACCESS_MODE" /> için <ph name="PRINTERS_WHITELIST" /> değeri seçilirse kullanılır.
@@ -1601,6 +1609,15 @@ politikayı geçersiz kılamaz.
       Politika değeri milisaniye cinsinden belirtilmelidir.</translation>
 <translation id="5511702823008968136">Yer İşareti Çubuğunu etkinleştir</translation>
 <translation id="5512418063782665071">Ana sayfa URL'si</translation>
+<translation id="551639594034811656">Bu politika, güncellemenin ilk keşfedildiği günden başlamak üzere kuruluş biriminde günlük olarak güncellenecek <ph name="PRODUCT_OS_NAME" /> cihazlarının oranını gösteren yüzde değerlerin listesini tanımlar. Güncelleme yayınlandıktan sonra cihazın güncellemeleri kontrol etmesi biraz zaman aldığından, keşif zamanı güncelleme zamanından sonradır.
+
+      Gün ve yüzde değerinden oluşan her çift, güncelleme yayınlandıktan sonra hangi günde cihaz grubunun yüzde kaçının güncelleneceğini gösterir. Örneğin, politikada [(4, 40), (10, 70), (15, 100)] çiftleri ayarlandıysa, grubun %40'ı güncelleme görüldükten 4 gün sonra, %70'i 10 gün sonra vb. güncellenmelidir.
+
+      Bu politika için tanımlanmış bir değer varsa güncellemeler <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> politikasını yoksayıp bu politikayı uygular.
+
+      Bu liste boşsa aşama olmaz ve güncellemeler diğer cihaz politikalarına göre uygulanır.
+
+      Bu politika kanal geçişlerine uygulanmaz.</translation>
 <translation id="5523812257194833591">Gecikme sonrasında otomatik olarak giriş yapılacak herkese açık oturum.
 
       Bu politika ayarlanırsa, giriş ekranında kullanıcı etkileşimi olmadan bir süre geçtikten sonra, belirlenen oturuma otomatik olarak giriş yapılır. Herkese açık oturumun önceden yapılandırılmış olması gerekir (Bkz. |DeviceLocalAccounts|).
@@ -2531,6 +2548,11 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika devre dışı bırakılırsa herhangi bir Site İzolasyonu yapılmaz ve IsolateOrigins ile SitePerProcess'in saha denemeleri devre dışı kalır. Ancak kullanıcılar yine de SitePerProcess'i manuel olarak etkinleştirebilirler.
       Bu politika yapılandırılmazsa kullanıcı bu ayarı değiştirebilir.
       </translation>
+<translation id="7902255855035461275">Bu listedeki kalıplar, istek yapan URL'nin güvenlik
+      kaynağı ile karşılaştırılır. Bir eşleşme bulunursa, herhangi bir istemde
+      bulunulmadan görüntü yakalama cihazlarına erişim izni verilir.
+
+      NOT: Sürüm 45'e kadar bu politika sadece Kiosk modunda destekleniyordu.</translation>
 <translation id="7912255076272890813">İzin verilen uygulama/uzantı türlerini yapılandır</translation>
 <translation id="7915236031252389808">Bir proxy .pac dosyasının URL'sini burada belirtebilirsiniz.
 

@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">جارٍ إضافة <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">من المواقع الإلكترونية</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
+<translation id="1054301162707478098">لقد انتقلت إلى الوضع الخاص.</translation>
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
 <translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">مزيد من اللغات</translation>
 <translation id="124678866338384709">إغلاق علامة التبويب الحالية</translation>
 <translation id="1258753120186372309">‏رسم الشعار المبتكر من Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">لن تظهر الصفحات التي تشاهدها في علامات التبويب الخاصة في سِجل متصفّحك أو في وحدة تخزين ملفات تعريف الارتباط أو في سِجل البحث بعد إغلاق جميع علامات التبويب الخاصة. وسيتم حفظ أي ملفات تنزّلها أو إشارات مرجعية تنشئها.
+
+لكنك لن تكون غير مرئي. فاستخدام الوضع الخاص لا يخفي تصفُّحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
 <translation id="127138278192656016">استخدام المزامنة وجميع الخدمات</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1283039547216852943">النقر للتوسيع</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">عناصر التحكم لموقع في وضع ملء الشاشة</translation>
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
 <translation id="2045104531052923016">تطبيقات أخرى بحجم <ph name="GIGABYTES" /> غيغابايت</translation>
+<translation id="2055670718290744343">مسرَّع البحث</translation>
 <translation id="2063713494490388661">انقر للبحث</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">‏خدمات Google والمزامنة</translation>
 <translation id="2259659629660284697">تصدير كلمات المرور...</translation>
 <translation id="2268044343513325586">تحسين</translation>
+<translation id="2280910239864711607">فتح علامة تبويب جديدة في الوضع الخاص</translation>
 <translation id="2286841657746966508">عنوان الفاتورة</translation>
 <translation id="230115972905494466">لم يتم العثور على أي أجهزة متوافقة</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">السماح بجافا سكريبت لموقع ويب معين.</translation>
 <translation id="2625189173221582860">تم نسخ كلمة المرور</translation>
 <translation id="2631006050119455616">تم الحفظ</translation>
+<translation id="2633278372998075009">علامات التبويب الخاصة</translation>
 <translation id="2647434099613338025">إضافة لغة</translation>
 <translation id="2650751991977523696">هل تريد تنزيل الملف مرة أخرى؟</translation>
 <translation id="2653659639078652383">إرسال</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">إذا نسيت عبارة المرور أو رغبت في تغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">الميكروفون</translation>
 <translation id="3232754137068452469">تطبيق الويب</translation>
+<translation id="3234355010754616171">علامة تبويب خاصة جديدة</translation>
 <translation id="3236059992281584593">يتبقى دقيقة واحدة</translation>
 <translation id="3244271242291266297">الشهر</translation>
 <translation id="3254409185687681395">وضع إشارة على هذه الصفحة</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">إغلاق كافة علامات تبويب التصفح المتخفي</translation>
 <translation id="3365671512111106261">غير متاح عند تشغيل توفير البيانات</translation>
 <translation id="3367813778245106622">تسجيل الدخول مرة أخرى لبدء المزامنة</translation>
+<translation id="3377025655491224618">علامة تبويب خاصة</translation>
 <translation id="3384347053049321195">مشاركة صورة</translation>
 <translation id="3386292677130313581">السؤال قبل السماح للمواقع بمعرفة الموقع (موصى به)</translation>
 <translation id="3387650086002190359">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب أخطاء في نظام الملف.</translation>
@@ -385,6 +394,7 @@
 <translation id="4209895695669353772">‏للحصول على محتوى مُخصَّص اقترحته Google، يُرجى تفعيل المزامنة.</translation>
 <translation id="4226663524361240545">يمكن أن تؤدي الإشعارات إلى اهتزاز الجهاز</translation>
 <translation id="4242533952199664413">فتح الإعدادات</translation>
+<translation id="4243710787042215766">فتح في علامة تبويب خاصة</translation>
 <translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
 <translation id="4256782883801055595">تراخيص البرامج مفتوحة المصدر</translation>
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
@@ -466,6 +476,7 @@
 <translation id="4878404682131129617">أخفق إنشاء نفق عبر الخادم الوكيل.</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="488187801263602086">إعادة تسمية الملف</translation>
+<translation id="4883379392681899581">مغادرة الوضع الخاص</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
 <translation id="4910889077668685004">تطبيقات الدفع</translation>
 <translation id="4913161338056004800">إعادة تعيين الإحصائيات</translation>
@@ -507,6 +518,7 @@
 <translation id="5224771365102442243">يتضمن فيديو</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="5240817131241497236">‏تم تغيير الإعدادات التي تتحكَّم في المزامنة والتخصيص وخدمات Google الأخرى في Chrome. قد يؤثر هذا في إعداداتك الحالية.</translation>
+<translation id="5264003212305142034">‏يمكن تخصيص <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" /> في أي وقت. قد تستخدم Google محتوى المواقع الإلكترونية التي تزورها ونشاط المتصفّح والتفاعلات لتخصيص Chrome وخدمات Google، مثل "ترجمة Google" و"بحث Google" والإعلانات.</translation>
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="5284584623296338184">‏لن تتم مزامنة التغييرات الطارئة على الإشارات المرجعية والسجل وكلمات المرور وغيرها من الإعدادات بحسابك في Google. ومع ذلك، ستظل بياناتك الحالية مخزنة في حسابك في Google.</translation>
@@ -592,6 +604,7 @@
 <translation id="583281660410589416">غير معروف</translation>
 <translation id="5833397272224757657">يتم استخدام المحتوى على المواقع الإلكترونية التي تزورها، بالإضافة إلى نشاط المتصفِّح وتفاعلاته للتخصيص.</translation>
 <translation id="5833984609253377421">مشاركة الرابط</translation>
+<translation id="584427517463557805">علامة تبويب خاصة مُحدّدة</translation>
 <translation id="5854790677617711513">مرّ عليها أكثر من 30 يومًا</translation>
 <translation id="5858741533101922242">‏يتعذر على Chrome تشغيل محوّل البلوتوث</translation>
 <translation id="5860033963881614850">إيقاف</translation>
@@ -621,6 +634,7 @@
 <translation id="6075798973483050474">تعديل الصفحة الرئيسية</translation>
 <translation id="60923314841986378">عدد الساعات المتبقية: <ph name="HOURS" /></translation>
 <translation id="60924377787140961">ستظهر المزيد من المقالات قريبًا. استمتع بقضاء وقت الظهيرة!</translation>
+<translation id="6099151465289169210">تم التبديل إلى علامات التبويب الخاصة</translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6111020039983847643">البيانات المُستخدَمة</translation>
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
@@ -650,6 +664,7 @@
 <translation id="6320088164292336938">اهتزاز</translation>
 <translation id="6324034347079777476">‏تمّ إيقاف مزامنة نظام Android</translation>
 <translation id="6333140779060797560">مشاركة عن طريق <ph name="APPLICATION" /></translation>
+<translation id="6336451774241870485">علامة تبويب خاصة جديدة</translation>
 <translation id="6337234675334993532">تشفير</translation>
 <translation id="6341580099087024258">السؤال عن مكان حفظ الملفات</translation>
 <translation id="6343192674172527289">لم يتم العثور على أي تنزيلات</translation>
@@ -687,6 +702,7 @@
 <translation id="6593061639179217415">العرض بإصدار سطح المكتب</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> غيغابايت</translation>
+<translation id="6610147964972079463">إغلاق علامات التبويب الخاصة</translation>
 <translation id="6612358246767739896">محتوى محمي</translation>
 <translation id="6627583120233659107">تعديل مجلد</translation>
 <translation id="6643016212128521049">محو</translation>
@@ -790,6 +806,7 @@
 <translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب لكن لن يتم تسجيل الخروج من حسابك في Google.</translation>
 <translation id="7454641608352164238">سعة التخزين غير كافية</translation>
 <translation id="7455923816558154057">يُرجى النقر للعرض</translation>
+<translation id="7465104139234185284">إغلاق جميع علامات التبويب الخاصة</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7475192538862203634">إذا تكرر ظهور هذا، فحاول الاستفادة من <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">‏لم يتم العثور على بطاقة SD. قد يكون بعض الملفات مفقودًا.</translation>
@@ -885,6 +902,7 @@
 <translation id="8220488350232498290">تم تنزيل <ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="8249310407154411074">نقل إلى الأعلى</translation>
 <translation id="8250920743982581267">المستندات</translation>
+<translation id="825412236959742607">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أزال Chrome بعض محتواها.</translation>
 <translation id="8260126382462817229">محاولة تسجيل الدخول مرة أخرى</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8266862848225348053">موقع التنزيل</translation>
@@ -980,6 +998,7 @@
 <translation id="9070377983101773829">بدء البحث الصوتي</translation>
 <translation id="9071742570345586758">‏لعرض محتوى الواقع الافتراضي، يلزمك تثبيت خدمات Google VR</translation>
 <translation id="9074336505530349563">‏للحصول على محتوى مُخصَّص اقترحته Google، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
+<translation id="9080642952018487277">الدخول إلى الوضع الخاص</translation>
 <translation id="9086455579313502267">تعذر الدخول إلى الشبكة</translation>
 <translation id="9099018167121903954">تم تنزيل <ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="9100505651305367705">اقتراح مشاهدة المقالات في العرض المبسَّط إذا كان ذلك متاحًا</translation>

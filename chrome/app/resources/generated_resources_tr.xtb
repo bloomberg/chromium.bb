@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Yazım ve Dilbilgisi'ni Göster</translation>
 <translation id="1593594475886691512">Biçimlendiriliyor...</translation>
 <translation id="159359590073980872">Resim Önbelleği</translation>
+<translation id="1593926297800505364">Ödeme yöntemini kaydet</translation>
 <translation id="1598233202702788831">Güncellemeler yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="1600857548979126453">Sayfa hata ayıklayıcı arka ucuna erişme</translation>
 <translation id="1601560923496285236">Uygula</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">Cihaz alan adına eklenemiyor. Ekleyebileceğiniz cihaz sayısını aşmadığınızdan emin olun.</translation>
 <translation id="1744108098763830590">arka plan sayfası</translation>
 <translation id="1745520510852184940">Bunu Her Zaman Yap</translation>
+<translation id="1746417874336251387">Telefonunuzun Chromebook'unuz ile bağlantısını kullanan yeni özellikler sunar</translation>
 <translation id="174937106936716857">Toplam dosya sayısı</translation>
 <translation id="175196451752279553">&amp;Kapatılan sekmeyi yeniden aç</translation>
 <translation id="1753905327828125965">En Çok Ziyaret Edilenler</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">Şundan Önce Değil:</translation>
 <translation id="1933809209549026293">Bir fare veya klavye bağlayın. Bluetooth cihaz kullanıyorsanız cihazın eşleştirmeye hazır olduğundan emin olun.</translation>
 <translation id="1936157145127842922">Klasörde Göster</translation>
+<translation id="1938351510777341717">Harici Komut</translation>
 <translation id="1940546824932169984">Bağlı cihazlar</translation>
 <translation id="1942765061641586207">Resim çözünürlüğü</translation>
+<translation id="1943097386230153518">Yeni hizmet ekle</translation>
 <translation id="1944921356641260203">Güncelleme bulundu</translation>
 <translation id="1951615167417147110">Bir sayfa yukarı kaydır</translation>
 <translation id="1954813140452229842">Paylaşım eklenirken hata oluştu. Lütfen kimlik bilgilerinizi kontrol edin ve tekrar deneyin.</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="265390580714150011">Alan Değeri</translation>
 <translation id="2654166010170466751">Sitelerin ödeme işleyici yüklemesine izin ver</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Özellikler cihaza göre değişiklik gösterir</translation>
 <translation id="2660779039299703961">Etkinlik</translation>
 <translation id="266079277508604648">Yazıcıya bağlanılamıyor. Yazıcının açık olduğundan ve kablosuz ağ üzerinden veya USB kablosuyla Chromebook'unuza bağlı olduğundan emin olun.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">PIN girin</translation>
 <translation id="2805646850212350655">Microsoft Şifreleme Dosya Sistemi</translation>
 <translation id="2805756323405976993">Uygulamalar</translation>
+<translation id="2806891468525657116">Kısayol zaten mevcut</translation>
 <translation id="2807517655263062534">İndirdiğiniz dosyalar burada görünür</translation>
 <translation id="2809586584051668049">ve diğer <ph name="NUMBER_ADDITIONAL_DISABLED" /> öğe</translation>
 <translation id="281133045296806353">Mevcut tarayıcı oturumunda yeni pencere oluşturuldu.</translation>
@@ -1600,6 +1606,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3428419049384081277">Oturum açtınız!</translation>
 <translation id="3429275422858276529">Bu sayfayı daha sonra kolayca bulmak için sayfaya yer işareti koyun</translation>
 <translation id="3429599832623003132">$1 öğe</translation>
+<translation id="3430342160185525240">Asistan'ın bildirimleri göstermesini sağlar.</translation>
 <translation id="3432227430032737297">Tüm Gösterilenleri Kaldır</translation>
 <translation id="3432757130254800023">Yerel ağdaki ekranlara ses ve video gönderme</translation>
 <translation id="3432762828853624962">Ortak Çalışanlar</translation>
@@ -1964,6 +1971,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
   <ph name="CONTROL_PANEL_APPLET_NAME" /> aracını kullanarak programın yüklemesini kaldırmanız gerekir.
 
 <ph name="CONTROL_PANEL_APPLET_NAME" /> aracını başlatmak ister misiniz?</translation>
+<translation id="394183848452296464">Kısayol oluşturulamıyor</translation>
 <translation id="3943582379552582368">&amp;Geri</translation>
 <translation id="3943857333388298514">Yapıştır</translation>
 <translation id="3948116654032448504"><ph name="SEARCH_ENGINE" /> içinde Resim &amp;ara</translation>
@@ -2271,6 +2279,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4481530544597605423">Eşlemesi kaldırılmış cihazlar</translation>
 <translation id="4482194545587547824">Google, Arama ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi kullanabilir</translation>
 <translation id="4495419450179050807">Bu sayfada gösterme</translation>
+<translation id="4499718683476608392">Formları tek bir tıklamayla doldurmak için kredi kartı bilgilerini Otomatik Doldurma özelliğini etkinleştirir</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> eklentisi kilitlendi</translation>
 <translation id="450099669180426158">Ünlem işareti simgesi</translation>
 <translation id="4501530680793980440">Kaldırmayı Onaylayın</translation>
@@ -3115,6 +3124,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5752453871435543420">Chrome OS Bulut yedekleme</translation>
 <translation id="5756163054456765343">Y&amp;ardım merkezi</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> aracılığıyla yazdırılmaları için gönderdiğiniz dokümanlar <ph name="APP_NAME" /> tarafından okunabilir.</translation>
+<translation id="5762172915276660232">Kredi kartı ayarları</translation>
 <translation id="5763751966069581670">USB cihazı bulunamadı</translation>
 <translation id="5764483294734785780">Sesi farklı kay&amp;det...</translation>
 <translation id="57646104491463491">Değiştirilme Tarihi</translation>
@@ -3186,6 +3196,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5855773610748894548">Tüh, güvenli modül hatası.</translation>
 <translation id="5856721540245522153">Hata ayıklama özelliklerini etkinleştirin</translation>
 <translation id="5857090052475505287">Yeni Klasör</translation>
+<translation id="585979798156957858">Harici Meta</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5860209693144823476">Sekme 3</translation>
 <translation id="5860491529813859533">Etkinleştir</translation>
@@ -3495,6 +3506,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6327785803543103246">Web proxy otomatik keşfi</translation>
 <translation id="6333064448949140209">Dosya, hata ayıklama amacıyla Google'a gönderilecektir</translation>
 <translation id="6333834492048057036">Aramak için adres çubuğuna odaklan</translation>
+<translation id="6336451774241870485">Yeni gizli sekme</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> için yeni profil oluştur</translation>
 <translation id="6340017061976355871">Sunucuya bağlanamadı. Lütfen ağ bağlantınızı kontrol edip tekrar deneyin. Sorun devam ederse Chromebook'unuzu yeniden başlatın.</translation>
 <translation id="6340071272923955280">İnternet Yazdırma Protokolü (IPPS)</translation>
@@ -3676,6 +3688,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6606070663386660533">Sekme 8</translation>
 <translation id="6607272825297743757">Dosya bilgileri</translation>
 <translation id="6607831829715835317">Diğer araç&amp;lar</translation>
+<translation id="6610147964972079463">Gizli sekmeleri kapat</translation>
 <translation id="6612358246767739896">Korunan içerik</translation>
 <translation id="6613452264606394692">Bu sayfaya yer işareti koyarak buraya hızlıca geri dönün</translation>
 <translation id="6614893213975402384">Güncellemeleri ve uygulamaları yükleyin. Devam ederek bu cihazın Google'dan, operatörünüzden ve cihazınızın üreticisinden güncellemeleri ve uygulamaları, muhtemelen hücresel veri üzerinden otomatik olarak indirip yükleyebileceğini kabul etmiş olursunuz. Bu uygulamalardan bazıları uygulama içi satın alma seçenekleri sunabilir. Bu uygulamaları istediğiniz zaman kaldırabilirsiniz. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
@@ -3746,6 +3759,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="6718273304615422081">Sıkıştırılıyor...</translation>
 <translation id="671928215901716392">Kilit ekranı</translation>
+<translation id="6720847671508630642">Android'in en iyi işlevlerini Chrombook'unuzla otomatik olarak paylaşın. Bilgisayarınızdan kısa mesaj gönderebilmek, telefonunuzun internet bağlantısını paylaşabilmek ve Chromebook ekranınızın kilidini açabilmek için telefonunuzu bağlayın. <ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Daha fazla bilgi<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Güvenlik Anahtarınızın markasını ve modelini görme</translation>
 <translation id="6721972322305477112">&amp;Dosya</translation>
 <translation id="672213144943476270">Lütfen misafir olarak göz atmadan önce profilinizin kilidini açın.</translation>
@@ -3892,6 +3906,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6970856801391541997">Belirli Sayfaları Yazdır</translation>
 <translation id="6972180789171089114">Ses/Video</translation>
 <translation id="6973630695168034713">Klasörler</translation>
+<translation id="6974609594866392343">Çevrimdışı demo modu</translation>
 <translation id="6976108581241006975">JavaScript konsolu</translation>
 <translation id="6977381486153291903">Donanım yazılımı düzeltmesi</translation>
 <translation id="6978121630131642226">Arama Motorları</translation>
@@ -4485,6 +4500,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7857949311770343000">Bu, beklediğiniz yeni sekme sayfası mı?</translation>
 <translation id="786073089922909430">Hizmet: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;İndirilenler</translation>
+<translation id="7864662577698025113">Yeni hizmet ekle</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 çerez}other{# çerez}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Eşlendi</translation>
 <translation id="7870730066603611552">Kurulumdan sonra senkronizasyon seçeneklerini inceleyin</translation>
@@ -4999,6 +5015,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8666584013686199826">Bir site USB cihazlarına erişmek istediğinde sor</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> artık tam ekran görüntüleniyor ve fare imlecinizi devre dışı bıraktı.</translation>
 <translation id="8669284339312441707">Daha Sıcak</translation>
+<translation id="8669919703154928649">Asistan'ın size bildirimleri göstermesine izin verin</translation>
 <translation id="8669949407341943408">Taşınıyor...</translation>
 <translation id="8671210955687109937">Yorum yapabilir</translation>
 <translation id="8673026256276578048">Web’de ara...</translation>
@@ -5386,6 +5403,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="964286338916298286">BT yöneticiniz cihazınızda Chrome Ekstraları'nı devre dışı bırakmış.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Uygulama}other{Uygulamalar}}</translation>
 <translation id="967007123645306417">Bu işlem Google hesaplarınızın oturumunu kapatacaktır. Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızla ilgili değişiklikler artık Google Hesabınızla senkronize edilmeyecek. Ancak mevcut verileriniz Google Hesabınızda kalmaya devam edecek ve <ph name="BEGIN_LINK" />Google Hesap Özeti<ph name="END_LINK" />'nde yönetilebilecektir.</translation>
+<translation id="967624055006145463">Depolanan veriler</translation>
 <translation id="968000525894980488">Google Play hizmetlerini açın.</translation>
 <translation id="968174221497644223">Uygulama önbelleği</translation>
 <translation id="969096075394517431">Dilleri değiştir</translation>

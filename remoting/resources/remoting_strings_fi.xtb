@@ -136,6 +136,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="405887016757208221">Etätietokone ei alustanut istuntoa oikein. Jos ongelma ei ratkea, yritä määrittää isäntäkoneen asetukset uudelleen.</translation>
 <translation id="4068946408131579958">Kaikki yhteydet</translation>
 <translation id="409800995205263688">HUOMAA: käytäntöasetusten vuoksi vain verkossasi olevien tietokoneiden väliset yhteydet sallitaan.</translation>
+<translation id="4126409073460786861">Päivitä tämä sivu määrityksen jälkeen, niin voit käyttää tietokonetta valitsemalla laitteesi ja syöttämällä PIN-koodin</translation>
 <translation id="4145029455188493639">Kirjautunut osoitteella <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4155497795971509630">Joitakin vaadittavia komponentteja puuttuu. Varmista, että olet asentanut ohjelmiston uusimman version, ja yritä uudelleen.</translation>
 <translation id="4156740505453712750">Suojaa tämän tietokoneen käyttöä valitsemalla <ph name="BOLD_START" />vähintään kuusinumeroinen<ph name="BOLD_END" /> PIN-koodi. Tarvitset PIN-koodin muodostaessasi yhteyden toiselta koneelta.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Vastaanottaja</translation>
 <translation id="7019153418965365059">Tuntematon isäntävirhe: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Etätuki</translation>
+<translation id="7026930240735156896">Määritä tietokone etäyhteyttä varten seuraamalla ohjeita</translation>
 <translation id="7038683108611689168">Auta meitä parantamaan Chromotingia antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
 <translation id="7067321367069083429">Näyttö toimii kosketusnäyttönä</translation>
 <translation id="7116737094673640201">Tervetuloa Chrome-etäkäyttöön</translation>

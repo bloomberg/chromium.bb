@@ -8,7 +8,7 @@
 <translation id="1170115874949214249">‏התקן את Chromium בטלפון שלך, ונשלח הודעת SMS למספר שמוגדר לשחזור החשבון.</translation>
 <translation id="1174473354587728743">‏משתף את המחשב? עכשיו תוכל להגדיר את Chromium בדיוק כמו שאתה אוהב.</translation>
 <translation id="1185134272377778587">‏על Chromium</translation>
-<translation id="1209657686917656928">{0,plural, =0{‏Chromium יופעל מחדש עכשיו}=1{‏Chromium יופעל מחדש בעוד שנייה אחת}two{‏Chromium יופעל מחדש בעוד 2 שניות}many{‏Chromium יופעל מחדש בעוד # שניות}other{‏Chromium יופעל מחדש בעוד # שניות}}</translation>
+<translation id="1209657686917656928">{0,plural, =0{‏Chromium יופעל מחדש עכשיו}=1{‏Chromium יופעל מחדש בעוד שנייה אחת}two{‏Chromium יופעל מחדש בעוד שתי שניות}many{‏Chromium יופעל מחדש בעוד # שניות}other{‏Chromium יופעל מחדש בעוד # שניות}}</translation>
 <translation id="1267419686153937460">{0,plural, =1{‏צריך להפעיל מחדש את Chromium תוך יום אחד}two{‏צריך להפעיל מחדש את Chromium תוך יומיים}many{‏צריך להפעיל מחדש את Chromium תוך # ימים}other{‏צריך להפעיל מחדש את Chromium תוך # ימים}}</translation>
 <translation id="1298199220304005244">‏עזרה באמצעות מערכת ההפעלה של Chromium</translation>
 <translation id="1396446129537741364">‏Chromium מנסה להציג סיסמאות.</translation>
@@ -25,7 +25,7 @@
 <translation id="1808667845054772817">‏התקן מחדש את Chromium</translation>
 <translation id="1869480248812203386">‏אתה יכול לעזור לשפר את הבטיחות של Chromium ולהקל את השימוש בו על ידי דיווח ל-Google על פרטים של בעיות אבטחה אפשריות.</translation>
 <translation id="1881322772814446296">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. לחלופין, תוכל ליצור פרופיל חדש כדי לשמור את הנתונים הקיימים שלך ב-Chromium בנפרד.<ph name="LEARN_MORE" /></translation>
-<translation id="1895626441344023878">{0,plural, =0{‏יש עדכון זמין של Chromium}=1{‏יש עדכון זמין של Chromium}two{‏עדכון של Chromium זמין כבר יומיים}many{‏עדכון של Chromium זמין כבר # ימים}other{‏עדכון של Chromium זמין כבר # ימים}}</translation>
+<translation id="1895626441344023878">{0,plural, =0{‏יש עדכון ל-Chromium}=1{‏יש עדכון ל-Chromium}two{‏עדכון של Chromium זמין כבר יומיים}many{‏עדכון של Chromium זמין כבר # ימים}other{‏עדכון של Chromium זמין כבר # ימים}}</translation>
 <translation id="1929939181775079593">‏Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="1966382378801805537">‏ב-Chromium לא ניתן לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="2008474315282236005">‏הפעולה הזו תמחק פריט אחד מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
@@ -55,7 +55,7 @@
 <translation id="2977470724722393594">‏Chromium‏ מעודכן</translation>
 <translation id="3032787606318309379">‏הוספה ל-Chromium</translation>
 <translation id="3046695367536568084">‏עליך להיות מחובר ל-Chromium כדי להשתמש ביישומים. כך Chromium יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בין מכשירים שונים.</translation>
-<translation id="3052899382720782935">{0,plural, =1{‏Chromium יופעל מחדש בעוד דקה}two{‏Chromium יופעל מחדש בעוד 2 דקות}many{‏Chromium יופעל מחדש בעוד # דקות}other{‏Chromium יופעל מחדש בעוד # דקות}}</translation>
+<translation id="3052899382720782935">{0,plural, =1{‏Chromium יופעל מחדש בעוד דקה}two{‏Chromium יופעל מחדש בעוד שתי דקות}many{‏Chromium יופעל מחדש בעוד # דקות}other{‏Chromium יופעל מחדש בעוד # דקות}}</translation>
 <translation id="3068515742935458733">‏עזור לשפר את Chromium על ידי שליחת דוחות קריסה ו-<ph name="UMA_LINK" /> אל Google</translation>
 <translation id="3103660991484857065">‏המתקין לא הצליח לבטל את דחיסת הארכיון. הורד שוב את Chromium.</translation>
 <translation id="3130323860337406239">‏Chromium משתמש במיקרופון שלך.</translation>
@@ -109,7 +109,7 @@
 <translation id="4943838377383847465">‏Chromium נמצא במצב רקע.</translation>
 <translation id="4987820182225656817">‏אורחים יכולים להשתמש ב-Chromium בלי להשאיר דבר מאחור.</translation>
 <translation id="4994636714258228724">‏הוסף את עצמך ל-Chromium</translation>
-<translation id="5021854341188256296">{0,plural, =0{‏יש עדכון זמין של Chromium OS}=1{‏יש עדכון זמין של Chromium OS}two{‏עדכון של Chromium OS זמין כבר יומיים}many{‏עדכון של Chromium OS זמין כבר # ימים}other{‏עדכון של Chromium OS זמין כבר # ימים}}</translation>
+<translation id="5021854341188256296">{0,plural, =0{‏יש עדכון ל-Chromium OS}=1{‏יש עדכון ל-Chromium OS}two{‏עדכון של Chromium OS זמין כבר יומיים}many{‏עדכון של Chromium OS זמין כבר # ימים}other{‏עדכון של Chromium OS זמין כבר # ימים}}</translation>
 <translation id="5032989939245619637">‏שמור פרטים ב-Chromium</translation>
 <translation id="5045248521775609809">‏לוקחים את Chromium לכל מקום</translation>
 <translation id="5116586539350239523">‏Chromium יאחסן את הפרטים האישיים שלך באופן מאובטח כדי שלא תידרש להקליד אותם שוב.</translation>
@@ -123,7 +123,7 @@
 <translation id="5480860683791598150">‏Chromium זקוק לגישה למיקום שלך כדי לשתף אותו עם האתר הזה</translation>
 <translation id="549669000822060376">‏המתן בזמן ש-Chromium מתקין את עדכוני המערכת האחרונים.</translation>
 <translation id="5514308096618405748">‏הפיתוח של Chrome OS אפשרי בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות, כמו Linux (בטא).</translation>
-<translation id="5529843986978123325">{0,plural, =1{‏Chromium OS תופעל מחדש בעוד דקה אחת}two{‏Chromium OS תופעל מחדש בעוד 2 דקות}many{‏Chromium OS תופעל מחדש בעוד # דקות}other{‏Chromium OS תופעל מחדש בעוד # דקות}}</translation>
+<translation id="5529843986978123325">{0,plural, =1{‏Chromium OS תופעל מחדש בעוד דקה אחת}two{‏Chromium OS תופעל מחדש בעוד שתי דקות}many{‏Chromium OS תופעל מחדש בעוד # דקות}other{‏Chromium OS תופעל מחדש בעוד # דקות}}</translation>
 <translation id="5631814766731275228">‏שם ותמונה ב-Chromium</translation>
 <translation id="5634636535844844681">‏כדי להשתמש ב-Chromium יש צורך ב-Windows מגירסה 7 ואילך.</translation>
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
@@ -230,6 +230,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8157153840442649507">‏Chromium מוצג בשפה זו</translation>
 <translation id="81770708095080097">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן.</translation>
 <translation id="8222496066431494154">‏התקן את Chromium בטלפון שלך, ונשלח הודעת SMS למספר שמוגדר לשחזור החשבון: <ph name="PHONE_NUMBER" /></translation>
+<translation id="825412236959742607">‏הדף הזה משתמש בנפח זיכרון גדול מידי, לכן מערכת Chrome הסירה חלק מהתוכן.</translation>
 <translation id="8269379391216269538">‏עזור לנו לשפר את Chromium</translation>
 <translation id="8290862415967981663">‏Chromium‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
 <translation id="8330519371938183845">‏כניסה לחשבון תסנכרן ותתאים אישית את Chromium בכל המכשירים שברשותך</translation>
@@ -240,7 +241,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8493179195440786826">‏Chromium אינו מעודכן</translation>
 <translation id="85843667276690461">‏עזרה באמצעות Chromium</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
-<translation id="8599548569518771270">{0,plural, =0{‏Chromium OS תופעל מחדש עכשיו}=1{‏Chromium OS תופעל מחדש בעוד שנייה אחת}two{‏Chromium OS תופעל מחדש בעוד 2 שניות}many{‏Chromium OS תופעל מחדש בעוד # שניות}other{‏Chromium OS תופעל מחדש בעוד # שניות}}</translation>
+<translation id="8599548569518771270">{0,plural, =0{‏Chromium OS תופעל מחדש עכשיו}=1{‏Chromium OS תופעל מחדש בעוד שנייה אחת}two{‏Chromium OS תופעל מחדש בעוד שתי שניות}many{‏Chromium OS תופעל מחדש בעוד # שניות}other{‏Chromium OS תופעל מחדש בעוד # שניות}}</translation>
 <translation id="8619360774459241877">‏הפעלת Chromium מתבצעת...</translation>
 <translation id="8621669128220841554">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Chromium.</translation>
 <translation id="8628626585870903697">‏Chromium אינו כולל מציג PDF, הנדרש להפעלת תצוגה מקדימה של הדפסה.</translation>

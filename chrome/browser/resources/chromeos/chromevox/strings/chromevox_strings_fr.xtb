@@ -156,6 +156,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2462626033734746142">Groupe de cases d'option</translation>
 <translation id="2471138580042810658">Titre 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{astérisque}one{# astérisque}other{# astérisques}}</translation>
+<translation id="249330843868392562">Ouvrir les paramètres de synthèse vocale</translation>
 <translation id="2523609930580546572">Didacticiel ChromeVox</translation>
 <translation id="2525706221823668172">Raccourcis clavier dans Chromebook</translation>
 <translation id="2549392850788122959">Le mappage du clavier <ph name="KEY" /> a été réinitialisé.</translation>
@@ -753,6 +754,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="7241683698754534149">Ouvrir les descriptions longues dans un nouvel onglet</translation>
 <translation id="7248671827512403053">Application</translation>
 <translation id="725969808843520477">Case d'option suivante</translation>
+<translation id="7261612856573623172">Voix de la synthèse vocale du système</translation>
 <translation id="7269119382257320590">Aucun signe de ponctuation</translation>
 <translation id="7273174640290488576">Vide</translation>
 <translation id="7274770952766771364">Référence de note</translation>

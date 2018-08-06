@@ -23,6 +23,7 @@
 <translation id="3605252743693911722">‏היכנס אל Chromium כדי לקבל גישה אל הסימניות, הסיסמאות ונתונים נוספים בכל המכשירים שלך.</translation>
 <translation id="3805899903892079518">‏ל-Chromium אין גישה לתמונות או לסרטונים שלך. אפשר גישה ב'הגדרות iOS' &gt; 'פרטיות' &gt; 'תמונות'.</translation>
 <translation id="4024541897090868497">‏כדי לקבל גישה לכרטיסיות שלך בכל המכשירים, היכנס ל-Chromium.</translation>
+<translation id="4157467675761413638">‏טיפ למשתמשי Chromium. כדי לקבל יותר אפשרויות של כרטיסיות, יש ללחוץ לחיצה ארוכה על הלחצן 'הצגת כרטיסיות' בסרגל הכלים, שנמצא בחלק התחתון או העליון של המסך.</translation>
 <translation id="4241912885070669028">‏אתה יוצא מחשבון המנוהל על-ידי <ph name="SIGNOUT_MANAGED_DOMAIN" />. פעולה זו תמחק את הנתונים שלך ב-Chromium מהמכשיר הזה, אבל הם יישארו בחשבון Google שלך.</translation>
 <translation id="4272892696084633551">‏עזרה בשיפור התכונות והביצועים של Chromium</translation>
 <translation id="4555020257205549924">‏כשהתכונה הזו פועלת, Chromium יציע לתרגם באמצעות Google Translate דפים שנכתבו בשפות אחרות‏. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
@@ -45,6 +46,7 @@
 <translation id="7357211569052832586">‏הנתונים שבחרת הוסרו מ-Chromium ומהמכשירים המסונכרנים. ייתכן שבכתובת history.google.com תוכל לגשת לסוגים אחרים של היסטוריית גלישה בחשבון Google, כמו חיפושים ופעילות משירותי Google אחרים.</translation>
 <translation id="7400689562045506105">‏אפשר להשתמש ב-Chromium בכל מקום</translation>
 <translation id="7674213385180944843">‏עבור אל 'הגדרות' &gt; 'פרטיות' &gt; 'מצלמה' &gt; Chromium והפעל את המצלמה.</translation>
+<translation id="7746854981345936341">‏טיפ למשתמשי Chromium. חלק מהלחצנים נמצאים עכשיו בחלק התחתון של המסך, כמו 'הקודם', 'קדימה' ו'חיפוש'.</translation>
 <translation id="786327964234957808">‏אתה עובר מחשבון סינכרון <ph name="USER_EMAIL1" /> אל <ph name="USER_EMAIL2" />. נתוני Chromium הקיימים שלך מנוהלים על-ידי <ph name="DOMAIN" />. פעולה זו תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו ב-<ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">‏טיפ: <ph name="BEGIN_LINK" />העבר את Chromium לשורת המשימות<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">‏לחוויית Google משופרת ב-Chromium בהתבסס על המיקום שלך.</translation>

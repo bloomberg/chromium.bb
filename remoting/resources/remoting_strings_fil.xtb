@@ -136,6 +136,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="405887016757208221">Hindi nasimulan ng remote na computer ang session. Kung ayaw mawala ng problema, pakisubukang i-configure muli ang host.</translation>
 <translation id="4068946408131579958">Lahat ng koneksyon</translation>
 <translation id="409800995205263688">TANDAAN: Ang pinapayagan ng mga setting ng patakaran ay mga koneksyon lang sa pagitan ng mga computer sa loob ng iyong network.</translation>
+<translation id="4126409073460786861">Pagkatapos ng pag-set up, i-refresh ang page na ito, pagkatapos ay maa-access mo ang computer sa pamamagitan ng pagpili sa iyong device at paglagay ng PIN</translation>
 <translation id="4145029455188493639">Naka-sign in bilang <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Nawawala ang ilang bahagi na kinakailangan. Pakitiyak na na-install mo ang pinakabagong bersyon ng software at subukang muli.</translation>
 <translation id="4156740505453712750">Upang protektahan ang access sa computer na ito, mangyaring pumili ng PIN na may <ph name="BOLD_START" />hindi bababa sa anim na digit<ph name="BOLD_END" />. Kakailanganin ang PIN na ito kapag kumokonekta mula sa isa pang lokasyon.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">Para sa</translation>
 <translation id="7019153418965365059">Hindi alam na error sa host: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Malayuang Tulong</translation>
+<translation id="7026930240735156896">Sundin ang mga tagubilin para i-set up ang iyong computer para sa malayuang pag-access</translation>
 <translation id="7038683108611689168">Tumulong sa amin na pahusayin ang Chromoting sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
 <translation id="7067321367069083429">Gumagana ang screen tulad ng touch screen</translation>
 <translation id="7116737094673640201">Welcome sa Remote na Desktop ng Chrome</translation>

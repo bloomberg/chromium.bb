@@ -13,7 +13,7 @@
 <translation id="123620459398936149">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה שלך לסנכרון.</translation>
 <translation id="127345590676626841">‏Chrome מתעדכן באופן אוטומטי, כך שתמיד ברשותך הגרסה העדכנית ביותר. כשההורדה תסתיים, Chrome יופעל מחדש ותוכל להמשיך.</translation>
 <translation id="1302523850133262269">‏המתן בזמן ש-Chrome מתקין את עדכוני המערכת האחרונים.</translation>
-<translation id="1312676208694947750">{0,plural, =0{‏יש עדכון זמין של Chrome OS}=1{‏יש עדכון זמין של Chrome OS}two{‏עדכון של Chrome OS זמין כבר יומיים}many{‏עדכון של Chrome OS זמין כבר # ימים}other{‏עדכון של Chrome OS זמין כבר # ימים}}</translation>
+<translation id="1312676208694947750">{0,plural, =0{‏יש עדכון ל-Chrome OS}=1{‏יש עדכון ל-Chrome OS}two{‏עדכון של Chrome OS זמין כבר יומיים}many{‏עדכון של Chrome OS זמין כבר # ימים}other{‏עדכון של Chrome OS זמין כבר # ימים}}</translation>
 <translation id="137466361146087520">‏גרסת הביטא של Google Chrome</translation>
 <translation id="1393853151966637042">‏קבלת עזרה לשימוש ב-Chrome</translation>
 <translation id="1399397803214730675">‏במחשב זה מותקנת כבר גירסה עדכנית יותר של Google Chrome. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ונסה שוב.</translation>
@@ -164,7 +164,7 @@
 <translation id="532046782124376502">‏אזהרה: Google Chrome לא יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית את התוסף הזה במצב גלישה בסתר, יש לבטל את האפשרות הזו.</translation>
 <translation id="5386244825306882791">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome או מבצע חיפוש  מסרגל הכתובות.</translation>
 <translation id="5430073640787465221">‏קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
-<translation id="5483595757826856374">{0,plural, =0{‏Chrome יופעל מחדש עכשיו}=1{‏Chrome יופעל מחדש בעוד שנייה}two{‏Chrome יופעל מחדש בעוד 2 שניות}many{‏Chrome יופעל מחדש בעוד # שניות}other{‏Chrome יופעל מחדש בעוד # שניות}}</translation>
+<translation id="5483595757826856374">{0,plural, =0{‏Chrome יופעל מחדש עכשיו}=1{‏Chrome יופעל מחדש בעוד שנייה}two{‏Chrome יופעל מחדש בעוד שתי שניות}many{‏Chrome יופעל מחדש בעוד # שניות}other{‏Chrome יופעל מחדש בעוד # שניות}}</translation>
 <translation id="5514308096618405748">‏הפיתוח של Chrome OS אפשרי בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות, כמו Linux (בטא).</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
@@ -203,7 +203,7 @@
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="686561893457936865">‏לוקחים את Chrome לכל מקום</translation>
 <translation id="6885412569789873916">‏אפליקציות לגרסת הביטא של Chrome</translation>
-<translation id="6964107240822114422">{0,plural, =0{‏יש עדכון זמין של Chrome}=1{‏יש עדכון זמין של Chrome}two{‏עדכון של Chrome זמין כבר יומיים}many{‏עדכון של Chrome זמין כבר # ימים}other{‏עדכון של Chrome זמין כבר # ימים}}</translation>
+<translation id="6964107240822114422">{0,plural, =0{‏יש עדכון ל-Chrome}=1{‏יש עדכון ל-Chrome}two{‏עדכון של Chrome זמין כבר יומיים}many{‏עדכון של Chrome זמין כבר # ימים}other{‏עדכון של Chrome זמין כבר # ימים}}</translation>
 <translation id="6967962315388095737">‏כלל נכנס לגרסת הביטא של Google Chrome כדי לאפשר תנועת mDNS.</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="6982337800632491844">‏<ph name="DOMAIN" /> דורש שתקרא ותקבל את התנאים וההגבלות הבאים לפני שתשתמש במכשיר הזה. תנאים אלה אינם מרחיבים, משנים או מגבילים את התנאים לשימוש במערכת ההפעלה של Google Chrome.</translation>
@@ -224,7 +224,7 @@
 <translation id="7486227612705979895">‏Chrome ייגש ל-Drive שלך כדי להציג הצעות בסרגל הכתובות</translation>
 <translation id="7535429826459677826">‏גרסת הפיתוח של Google Chrome</translation>
 <translation id="7552219221109926349">‏הצג את מערכת ההפעלה של Chrome בשפה זו</translation>
-<translation id="7561940363513215021">{0,plural, =1{‏Chrome יופעל מחדש בעוד דקה}two{‏Chrome יופעל מחדש בעוד 2 דקות}many{‏Chrome יופעל מחדש בעוד # דקות}other{‏Chrome יופעל מחדש בעוד # דקות}}</translation>
+<translation id="7561940363513215021">{0,plural, =1{‏Chrome יופעל מחדש בעוד דקה}two{‏Chrome יופעל מחדש בעוד שתי דקות}many{‏Chrome יופעל מחדש בעוד # דקות}other{‏Chrome יופעל מחדש בעוד # דקות}}</translation>
 <translation id="7589360514048265910">‏המחשב הזה יפסיק לקבל עדכונים של Google Chrome כי כבר אין תמיכה בגירסה 10.9 של Mac OS X.</translation>
 <translation id="7592736734348559088">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="7626032353295482388">‏ברוכים הבאים ל-Chrome</translation>
@@ -250,7 +250,8 @@
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>
 <translation id="8179874765710681175">‏התקן את Chrome בטלפון שלך, ונשלח אליו הודעת SMS.</translation>
 <translation id="8183957050892517584">‏Chrome יאחסן את הפרטים האישיים שלך באופן מאובטח כדי שלא תידרש להקליד אותם שוב.</translation>
-<translation id="8226081633851087288">{0,plural, =0{‏Chrome OS תופעל מחדש עכשיו}=1{‏Chrome OS תופעל מחדש בעוד שנייה אחת}two{‏Chrome OS תופעל מחדש בעוד 2 שניות}many{‏Chrome OS תופעל מחדש בעוד # שניות}other{‏Chrome OS תופעל מחדש בעוד # שניות}}</translation>
+<translation id="8226081633851087288">{0,plural, =0{‏Chrome OS תופעל מחדש עכשיו}=1{‏Chrome OS תופעל מחדש בעוד שנייה אחת}two{‏Chrome OS תופעל מחדש בעוד שתי שניות}many{‏Chrome OS תופעל מחדש בעוד # שניות}other{‏Chrome OS תופעל מחדש בעוד # שניות}}</translation>
+<translation id="825412236959742607">‏הדף הזה משתמש בנפח זיכרון גדול מידי, לכן מערכת Chrome הסירה חלק מהתוכן.</translation>
 <translation id="8255190535488645436">‏Google Chrome משתמש במצלמה ובמיקרופון שלך.</translation>
 <translation id="8286862437124483331">‏Google Chrome מנסה להציג סיסמאות. הקלד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="8290100596633877290">‏אופס! Google Chrome קרס. להפעיל מחדש עכשיו?</translation>
@@ -273,7 +274,7 @@
 <translation id="870251953148363156">‏עדכן את Google Chrome&amp;</translation>
 <translation id="873133009373065397">‏Google Chrome אינו יכול לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="8736674169840206667">‏לפי דרישת מנהל המערכת, יש להפעיל מחדש את Chrome כדי להחיל עדכון</translation>
-<translation id="8791470158600044404">{0,plural, =1{‏Chrome OS תופעל מחדש בעוד דקה אחת}two{‏Chrome OS תופעל מחדש בעוד 2 דקות}many{‏Chrome OS תופעל מחדש בעוד # דקות}other{‏Chrome OS תופעל מחדש בעוד # דקות}}</translation>
+<translation id="8791470158600044404">{0,plural, =1{‏Chrome OS תופעל מחדש בעוד דקה אחת}two{‏Chrome OS תופעל מחדש בעוד שתי דקות}many{‏Chrome OS תופעל מחדש בעוד # דקות}other{‏Chrome OS תופעל מחדש בעוד # דקות}}</translation>
 <translation id="8796108026289707191">‏עליך לאתחל את Google Chrome עכשיו.</translation>
 <translation id="8823341990149967727">‏Chrome אינו מעודכן</translation>
 <translation id="884296878221830158">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome או לוחץ על הלחצן 'דף הבית'.</translation>

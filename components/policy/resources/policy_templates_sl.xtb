@@ -525,6 +525,11 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če te nastavitve ne nastavite, se lahko uporabnik odloči, ali želi uporabljati to funkcijo.
 
       Ta nastavitev je bila odstranjena iz programa <ph name="PRODUCT_NAME" /> 29 in novejših različic.</translation>
+<translation id="2433412232489478893">Ta pravilnik nadzira, ali je funkcija omrežnih naprav za skupno rabo datotek za izdelek <ph name="PRODUCT_NAME" /> dovoljena za uporabnika.
+
+      Če ta pravilnik ni konfiguriran ali je omogočen, bodo uporabniki lahko uporabljali omrežne naprave za skupno rabo datotek.
+
+      Če je ta pravilnik onemogočen, uporabniki ne bodo mogli uporabljati omrežnih naprav za skupno rabo datotek.</translation>
 <translation id="2438609638493026652">Omogoča poročanje Googlu o ključnih dogodkih pri namestitvi aplikacije za Android. Dogodki so zajeti samo za aplikacije, katerih namestitev je bila sprožena s pravilnikom.
 
       Če je pravilnik omogočen, bodo dogodki zabeleženi.
@@ -606,6 +611,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2598508021807251719">Konfigurira jezike, v katerih je lahko prikazan <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik nastavljen, lahko uporabnik konfigurira <ph name="PRODUCT_OS_NAME" /> za prikaz samo v enem od jezikov, ki jih določa ta pravilnik. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je <ph name="PRODUCT_OS_NAME" /> lahko prikazan v vseh podprtih jezikih uporabniškega vmesnika. Če je ta pravilnik nastavljen na seznam z neveljavnimi vrednostmi, bodo vse neveljavne vrednosti prezrte. Če je uporabnik <ph name="PRODUCT_OS_NAME" /> v preteklosti konfiguriral za prikaz v jeziku, ki ga ta pravilnik ne dovoljuje, bo jezik prikaza preklopljen v dovoljen jezik uporabniškega vmesnika, ko se uporabnik naslednjič prijavi. Če je uporabnik konfiguriral prednostne jezike in enega izmed njih dovoljuje ta pravilnik, bo <ph name="PRODUCT_OS_NAME" /> preklopil v ta jezik. V nasprotnem primeru bo <ph name="PRODUCT_OS_NAME" /> preklopil na prvo veljavno vrednost, ki jo določa ta pravilnik, ali rezervni jezik (trenutno je to ameriška angleščina, en-US), če ta pravilnik vsebuje samo neveljavne vnose.</translation>
+<translation id="2604182581880595781">Konfiguriranje pravilnikov, povezanih z omrežnimi napravami za skupno rabo datotek.</translation>
 <translation id="2623014935069176671">Čakanje na začetno dejavnost uporabnika</translation>
 <translation id="262740370354162807">Omogoča pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Posreduje konfiguracije za tiskalnike v podjetjih.
@@ -691,6 +697,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2823870601012066791">Lokacija registra sistema Windows za odjemalce s sistemom <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Omogoči način brez beleženja zgodovine</translation>
 <translation id="2838830882081735096">Prepoved selitve podatkov in ARC-ja</translation>
+<translation id="2839294585867804686">Nastavitve omrežnih naprav za skupno rabo datotek</translation>
 <translation id="2840269525054388612">Določa tiskalnike, ki jih uporabnik lahko uporablja.
 
       Ta pravilnik se uporablja samo, če je za pravilnik <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_WHITELIST" />.
@@ -1192,6 +1199,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če ta pravilnik ni nastavljen, bo zbiranje anonimiziranih podatkov, ki vključujejo URL-je, omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jezik na zaslonu za prijavo v napravi</translation>
+<translation id="4264607809747169568">Nadzira razpoložljivost omrežnih naprav za skupno rabo datotek v okolju OS Chrome</translation>
 <translation id="427220754384423013">Določa tiskalnike, ki jih uporabnik lahko uporablja.
 
       Ta pravilnik se uporablja samo, če je za pravilnik <ph name="BULK_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_WHITELIST" />.
@@ -1624,6 +1632,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Vrednost pravilnika mora biti v milisekundah.</translation>
 <translation id="5511702823008968136">Omogoči vrstico z zaznamki</translation>
 <translation id="5512418063782665071">URL domače strani</translation>
+<translation id="551639594034811656">Ta pravilnik opredeljuje seznam odstotkov, ki določajo delež naprav s sistemom <ph name="PRODUCT_OS_NAME" /> v organizacijski enoti, ki prejmejo posodobitev dnevno od dneva, ko je posodobitev prvič odkrita. Čas odkrivanja je poznejši od časa objave posodobitve, saj lahko po objavi posodobitve preteče nekaj časa, preden naprava preveri, ali je na voljo posodobitev.
+
+      Vsak par (dan, odstotek) vsebuje odstotek opreme, ki mora biti posodobljena v danem številu dni po odkritju posodobitve. Če so na primer na voljo pari [(4, 40), (10, 70), (15, 100)], mora biti 40 % naprav posodobljenih v 4 dneh po odkritju posodobitve, 70 % naprav v 10 dneh po odkritju in tako naprej.
+
+      Če je za ta pravilnik določena vrednost, posodobitve prezrejo pravilnik <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> in upoštevajo ta pravilnik.
+
+      Če je seznam prazen, ni priprav in posodobitve bodo uveljavljene glede na druge pravilnike naprave.
+
+      Ta pravilnik se ne uporablja pri preklapljanju med kanali.</translation>
 <translation id="5523812257194833591">Samodejna prijava javne seje po časovnem zamiku.
 
       Če je ta pravilnik nastavljen, bo po preteku določenega časa nedejavnosti uporabnika na zaslonu za prijavo določena seja prijavljena samodejno. Javna seja mora biti pred tem konfigurirana (glejte |DeviceLocalAccounts|).
@@ -2555,6 +2572,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik SitePerProcess.
       Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
       </translation>
+<translation id="7902255855035461275">Vzorci na tem seznamu se bodo primerjali z varnostnim
+      izvorom zahtevajočega URL-ja. Če je najdeno ujemanje, bo dostop do naprav
+      za zajem videa dovoljen brez poziva.
+
+      OPOMBA: ta pravilnik je bil do različice 45 podprt samo v načinu kioska.</translation>
 <translation id="7912255076272890813">Konfiguracija dovoljenih vrst aplikacij/razširitev</translation>
 <translation id="7915236031252389808">Tu lahko določite URL za datoteko .pac strežnika proxy.
 

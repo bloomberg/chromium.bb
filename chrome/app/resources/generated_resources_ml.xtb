@@ -398,6 +398,7 @@
 <translation id="1589055389569595240">സ്‌പെല്ലിംഗും വ്യാകരണവും കാണിക്കുക</translation>
 <translation id="1593594475886691512">ഫോർമാറ്റുചെയ്യുന്നു...</translation>
 <translation id="159359590073980872">ഇമേജ് കാഷെ</translation>
+<translation id="1593926297800505364">പേയ്മെന്റ് രീതികൾ സംരക്ഷിക്കുക</translation>
 <translation id="1598233202702788831">അപ്‌ഡേറ്റുകളെ നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റര്‍ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="1600857548979126453">പേജ് ഡീബഗ്ഗർ ബാക്ക്എൻഡ് ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="1601560923496285236">പ്രയോഗിക്കുക</translation>
@@ -508,6 +509,7 @@
 <translation id="1744060673522309905">ഉപകരണത്തെ ഡൊമെയ്‌നുമായി ബന്ധിപ്പിക്കാൻ കഴിയുന്നില്ല. നിങ്ങൾക്ക് ചേർക്കാനാവുന്ന ഉപകരണങ്ങളുടെ എണ്ണം കവിഞ്ഞിട്ടില്ലെന്ന് ഉറപ്പാക്കുക.</translation>
 <translation id="1744108098763830590">പശ്ചാത്തല പേജ്</translation>
 <translation id="1745520510852184940">എല്ലായ്‌പ്പോഴും ഇങ്ങനെ ചെയ്യുക</translation>
+<translation id="1746417874336251387">നിങ്ങളുടെ Chromebook-ലേക്ക് ഫോണിന്റെ കണക്ഷൻ ഉപയോഗിക്കുന്ന പുതിയ ഫീച്ചറുകൾ നൽകുന്നു</translation>
 <translation id="174937106936716857">മൊത്തം ഫയലുകളുടെ എണ്ണം</translation>
 <translation id="175196451752279553">അടച്ച ടാബ് വീണ്ടും&amp;തുറക്കുക</translation>
 <translation id="1753905327828125965">കൂടുതൽ‍ സന്ദര്‍ശിച്ചത്</translation>
@@ -638,8 +640,10 @@
 <translation id="1932098463447129402">മുമ്പല്ല</translation>
 <translation id="1933809209549026293">ഒരു മൗസോ കീബോർഡോ കണക്റ്റുചെയ്യുക. നിങ്ങൾ ഒരു Bluetooth ഉപകരണം ഉപയോഗിക്കുന്നുവെങ്കിൽ, അത് ജോടിയാക്കാൻ തയ്യാറാണെന്ന് ഉറപ്പുവരുത്തുക.</translation>
 <translation id="1936157145127842922">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
+<translation id="1938351510777341717">എക്‌സ്‌റ്റേണൽ കമാൻഡ്</translation>
 <translation id="1940546824932169984">കണക്‌റ്റുചെയ്ത ഉപകരണം</translation>
 <translation id="1942765061641586207">ചിത്രത്തിന്റെ റെസല്യൂഷൻ</translation>
+<translation id="1943097386230153518">പുതിയ സേവനം ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
 <translation id="1944921356641260203">അപ്‌ഡേറ്റ് കണ്ടെത്തി</translation>
 <translation id="1951615167417147110">ഒരു പേജ് മുകളിലേക്ക് സ്ക്രോള്‍ ചെയ്യുക</translation>
 <translation id="1954813140452229842">പങ്കിടൽ മൗണ്ട് ചെയ്യുന്നതിൽ പിശക്. ക്രെഡൻഷ്യലുകൾ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
@@ -1105,6 +1109,7 @@
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
 <translation id="265390580714150011">ഫീല്‍‌ഡ് മൂല്യം</translation>
 <translation id="2654166010170466751">പേയ്‌മെന്റ് ഹാൻഡ്‌ലറുകളെ ഇൻസ്റ്റാൾ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുന്നു</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />ഉപകരണത്തിന് അനുസരിച്ച് ഫീച്ചറുകൾ വ്യത്യാസപ്പെടും</translation>
 <translation id="2660779039299703961">ഇവന്റ്</translation>
 <translation id="266079277508604648">പ്രിന്‍റർ കണക്റ്റ് ചെയ്യാനാവുന്നില്ല. പ്രിന്‍റർ ഓണാണോ എന്നും വൈഫൈയോ USB-യോ ഉപയോഗിച്ച് Chromebook-ലേക്ക് കണക്റ്റ് ചെയ്‌‌തിട്ടുണ്ടോ എന്നും പരിശോധിക്കുക.</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1211,6 +1216,7 @@
 <translation id="2803375539583399270">പിൻ നൽകുക</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">ആപ്സ്</translation>
+<translation id="2806891468525657116">കുറുക്കുവഴി മുമ്പേ നിലവിലുണ്ട്</translation>
 <translation id="2807517655263062534">നിങ്ങൾ ഡൗൺലോഡ് ചെയ്യുന്ന ഫയലുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="2809586584051668049">ഒപ്പം <ph name="NUMBER_ADDITIONAL_DISABLED" /> എണ്ണം കൂടി</translation>
 <translation id="281133045296806353">നിലവിലുള്ള ബ്രൌസിംഗ് സെഷനില്‍ പുതിയ വിന്‍ഡോ സൃഷ്‌ടിച്ചു.</translation>
@@ -1597,6 +1603,7 @@
 <translation id="3428419049384081277">നിങ്ങൾ സൈൻ ഇൻ ചെയ്‌തു!</translation>
 <translation id="3429275422858276529">പിന്നീട് ഈ പേജ് എളുപ്പത്തിൽ കണ്ടെത്താൻ ബുക്ക്‌മാർക്ക് ചെയ്യുക</translation>
 <translation id="3429599832623003132">$1 ഇനങ്ങൾ</translation>
+<translation id="3430342160185525240">നിങ്ങൾക്ക് അറിയിപ്പുകൾ കാണിക്കാൻ അസിസ്‌റ്റന്റിനെ പ്രവർത്തനക്ഷമമാക്കുക.</translation>
 <translation id="3432227430032737297">ദൃശ്യമാക്കിയിരിക്കുന്നതെല്ലാം നീക്കംചെയ്യുക</translation>
 <translation id="3432757130254800023">പ്രാദേശിക നെറ്റ്‌വർക്കിലെ ഡിസ്‌പ്ലേകളിലേക്ക് ഓഡിയോയും വീഡിയോയും അയയ്‌ക്കുക</translation>
 <translation id="3432762828853624962">പങ്കിട്ട വർക്കർമാർ</translation>
@@ -1960,6 +1967,7 @@
 <translation id="3941565636838060942">ഈ പ്രോഗ്രാമിലേക്കുള്ള ആക്‌സസ്സ് മറയ്‌ക്കാൻ, നിയന്ത്രണ പാനലിൽ <ph name="CONTROL_PANEL_APPLET_NAME" />   ഉപയോഗിച്ച് നിങ്ങളിത് അൺഇൻസ്‌റ്റാൾ ചെയ്യേണ്ടതാണ്.
 
   <ph name="CONTROL_PANEL_APPLET_NAME" />, ആരംഭിക്കാൻ താൽപ്പര്യമുണ്ടോ?</translation>
+<translation id="394183848452296464">കുറുക്കുവഴി സൃഷ്‌ടിക്കാനാവില്ല</translation>
 <translation id="3943582379552582368">&amp;പിന്നോട്ട്</translation>
 <translation id="3943857333388298514">ഒട്ടിക്കുക</translation>
 <translation id="3948116654032448504">&amp;ചിത്രത്തിനായി തിരയുക <ph name="SEARCH_ENGINE" /></translation>
@@ -2267,6 +2275,7 @@
 <translation id="4481530544597605423">ജോടി മാറ്റിയ ഉപകരണങ്ങൾ</translation>
 <translation id="4482194545587547824">തിരയലും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ Google നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിച്ചേക്കാം</translation>
 <translation id="4495419450179050807">ഈ പേജില്‍ കാണിക്കരുത്</translation>
+<translation id="4499718683476608392">ഒറ്റ ക്ലിക്കിൽ ഫോമുകൾ പൂരിപ്പിക്കാൻ ക്രെഡിറ്റ് കാർഡിന്റെ സ്വമേധയാ പൂരിപ്പിക്കൽ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ക്രാഷ് ചെയ്തിരിക്കുന്നു</translation>
 <translation id="450099669180426158">ആശ്ചര്യചിഹ്നത്തിന്റെ ഐക്കൺ</translation>
 <translation id="4501530680793980440">നീക്കംചെയ്യൽ സ്ഥിരീകരിക്കുക</translation>
@@ -3110,6 +3119,7 @@
 <translation id="5752453871435543420">Chrome OS ക്ലൗഡ് ബാക്കപ്പ്</translation>
 <translation id="5756163054456765343">സഹാ&amp;യ കേന്ദ്രം</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> വഴി പ്രിന്റുചെയ്യാൻ നിങ്ങൾ അയയ്‌ക്കുന്ന പ്രമാണങ്ങളെ <ph name="APP_NAME" /> എന്നതിന് വായിക്കാനാകുന്നു.</translation>
+<translation id="5762172915276660232">ക്രെഡിറ്റ് കാർഡ് ക്രമീകരണം</translation>
 <translation id="5763751966069581670">USB ഉപകരണങ്ങളൊന്നും കണ്ടില്ല</translation>
 <translation id="5764483294734785780">ഓഡിയോ ഇതുപോലെ സം&amp;രക്ഷിക്കുക...</translation>
 <translation id="57646104491463491">തീയതി പരിഷ്കരിച്ചു</translation>
@@ -3181,6 +3191,7 @@
 <translation id="5855773610748894548">ക്ഷമിക്കണം, സുരക്ഷിത മൊഡ്യൂൾ പിശക്.</translation>
 <translation id="5856721540245522153">ഡീബഗ്ഗുചെയ്യൽ ഫീച്ചറുകൾ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5857090052475505287">പുതിയ ഫോള്‍ഡര്‍</translation>
+<translation id="585979798156957858">എക്‌സ്‌റ്റേണൽ മെറ്റ</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="5860209693144823476">ടാബ് 3</translation>
 <translation id="5860491529813859533">ഓൺ ചെയ്യുക</translation>
@@ -3491,6 +3502,7 @@
 <translation id="6327785803543103246">വെബ് പ്രോക്‌സി സ്വയമേവ കണ്ടെത്തൽ</translation>
 <translation id="6333064448949140209">ഡീബഗ്ഗുചെയ്യലിനായി ഫയൽ Google-ന് അയയ്‌ക്കും</translation>
 <translation id="6333834492048057036">തിരയലിനുള്ള വിലാസ ബാർ ഫോക്കസുചെയ്യുക</translation>
+<translation id="6336451774241870485">പുതിയ സ്വകാര്യ ടാബ്</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> എന്നയാൾക്ക് വേണ്ടി പുതിയ പ്രൊഫൈൽ സൃഷ്‌ടിക്കുക</translation>
 <translation id="6340017061976355871">സെര്‍വറുമായി കണക്റ്റ് ചെയ്യാനായില്ല. നിങ്ങളുടെ നെറ്റ്‌വർക്ക് കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക. തുടർന്നും പ്രശ്‌നം നിലനിൽക്കുകയാണെങ്കിൽ, Chromebook റീസ്‌റ്റാർട്ടുചെയ്യുക.</translation>
 <translation id="6340071272923955280">ഇന്റർനെറ്റ് പ്രിന്റിംഗ് പ്രോട്ടോക്കോൾ (IPPS)</translation>
@@ -3673,6 +3685,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="6606070663386660533">ടാബ് 8</translation>
 <translation id="6607272825297743757">ഫയൽ വിവരം</translation>
 <translation id="6607831829715835317">കൂടുതൽ ഉപക&amp;രണങ്ങൾ</translation>
+<translation id="6610147964972079463">സ്വകാര്യ ടാബുകൾ അടയ്ക്കുക</translation>
 <translation id="6612358246767739896">പരിരക്ഷിത ഉള്ളടക്കം</translation>
 <translation id="6613452264606394692">ഈ പേജ് ബുക്ക്‌മാർക്ക് ചെയ്താൽ വേഗത്തിൽ ഇവിടെ മടങ്ങിയെത്താൻ കഴിയും</translation>
 <translation id="6614893213975402384">അപ്‌ഡേറ്റുകളും ആപ്പുകളും ഇൻസ്റ്റാൾ ചെയ്യുക. തുടരുന്നതിലൂടെ, ഈ ഉപകരണം Google-ൽ നിന്നും നിങ്ങളുടെ കാരിയറിൽ നിന്നും ഉപകരണ നിർമ്മാതാവിൽ നിന്നും, ഒരുപക്ഷേ സെല്ലുലാർ ഡാറ്റ ഉപയോഗിച്ച്, അപ്‌ഡേറ്റുകളും ആപ്പുകളും സ്വമേധയാ ഡൗൺലോഡ് ചെയ്‌ത് ഇൻസ്‌റ്റാൾ ചെയ്യുന്നത് നിങ്ങൾ അംഗീകരിക്കുന്നു. ഈ ആപ്പുകളിൽ ചിലത് 'ആപ്പ് വഴി വാങ്ങൽ' സൗകര്യം നൽകിയേക്കാം. ഏതുസമയത്തും ഈ ആപ്പുകൾ നിങ്ങൾക്ക് നീക്കം ചെയ്യാവുന്നതാണ്. <ph name="BEGIN_LINK1" />കൂടുതലറിയുക<ph name="END_LINK1" /></translation>
@@ -3743,6 +3756,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="6710213216561001401">കഴിഞ്ഞ</translation>
 <translation id="6718273304615422081">Zip ചെയ്യുന്നു...</translation>
 <translation id="671928215901716392">സ്‌ക്രീൻ ലോക്കുചെയ്യുക</translation>
+<translation id="6720847671508630642">Android-ന്റെ മികച്ച ഫീച്ചറുകൾ, നിങ്ങളുടെ Chromebook-മായി സ്വമേധയാ പങ്കിടുക. കമ്പ്യൂട്ടറിൽ നിന്ന് ടെക്‌സ്‌റ്റ് ചെയ്യുക, ഫോണിലെ ഇന്റ്ർനെറ്റ് കണക്ഷൻ പങ്കിടുക, Chromebook സ്‌ക്രീൻ അൺലോക്ക് ചെയ്യുക എന്നിങ്ങനെയുള്ള കാര്യങ്ങൾ നിങ്ങളുടെ ഫോൺ കണക്‌റ്റ് ചെയ്യുമ്പോൾ ചെയ്യാനാവും.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">നിങ്ങളുടെ സുരക്ഷാ കീയുടെ മെയ്‌ക്കും മോഡലും കാണുക</translation>
 <translation id="6721972322305477112">&amp;ഫയല്‍</translation>
 <translation id="672213144943476270">ഒരു അതിഥിയായി ബ്രൗസിംഗ് ആരംഭിക്കുന്നതിന് മുമ്പ് നിങ്ങളുടെ പ്രൊഫൈൽ അൺലോക്കുചെയ്യുക.</translation>
@@ -3889,6 +3903,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="6970856801391541997">പ്രിന്റ് പ്രത്യേക പേജുകൾ</translation>
 <translation id="6972180789171089114">ഓഡിയോ/വീഡിയോ</translation>
 <translation id="6973630695168034713">ഫോൾഡറുകൾ</translation>
+<translation id="6974609594866392343">ഓഫ്‌ലൈൻ ഡെമോ മോഡ്</translation>
 <translation id="6976108581241006975">JavaScript കണ്‍സോള്‍</translation>
 <translation id="6977381486153291903">ഫേംവെയർ പുനരവലോകനം</translation>
 <translation id="6978121630131642226">സെര്‍ച്ച് എഞ്ചിനുകള്‍</translation>
@@ -4483,6 +4498,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7857949311770343000">നിങ്ങൾ ഉദ്ദേശിച്ച പുതിയ ടാബ് പേജ് ഇതാണോ?</translation>
 <translation id="786073089922909430">സേവനം: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;ഡൌണ്‍ലോഡുകള്‍</translation>
+<translation id="7864662577698025113">പുതിയ സേവനം ചേർക്കുക</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{ഒരു കുക്കി}other{# കുക്കികൾ}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - ജോടിയാക്കി</translation>
 <translation id="7870730066603611552">സജ്ജീകരണത്തിന് ശേഷം സമന്വയ ഓപ്‌ഷനുകൾ അവലോകനം ചെയ്യുക</translation>
@@ -4997,6 +5013,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8666584013686199826">USB ഉപകരണങ്ങൾ ആക്‌സസ് ചെയ്യാൻ ഒരു സൈറ്റ് താൽപ്പര്യപ്പെടുമ്പോൾ ചോദിക്കുക</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> ഇപ്പോൾ പൂർണ‌സ്‌ക്രീനിലാണ് കൂടാതെ നിങ്ങളുടെ മൗസ് കഴ്‌സർ അപ്രാപ്തമാക്കി.</translation>
 <translation id="8669284339312441707">തീക്ഷ്‌ണമായ</translation>
+<translation id="8669919703154928649">നിങ്ങൾക്ക് അറിയിപ്പുകൾ കാണിക്കാൻ അസിസ്‌റ്റന്റിനെ അനുവദിക്കുക</translation>
 <translation id="8669949407341943408">നീക്കുന്നു...</translation>
 <translation id="8671210955687109937">അഭിപ്രായമിടാനാകുന്നത്</translation>
 <translation id="8673026256276578048">വെബില്‍‌ തിരയുക...</translation>
@@ -5384,6 +5401,7 @@ Linux ഫയലുകൾ ഫോൾഡറിലേക്ക് പകർത്ത
 <translation id="964286338916298286">നിങ്ങളുടെ ഐടി അഡ്‌മിനിസ്‌ട്രേറ്റർ നിങ്ങളുടെ ഉപകരണത്തിനായുള്ള Chrome Goodies പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{അപ്ലിക്കേഷൻ}other{അപ്ലിക്കേഷനുകൾ}}</translation>
 <translation id="967007123645306417">ഇത് നിങ്ങളുടെ Google അക്കൗണ്ടുകളിൽ നിന്ന് നിങ്ങളെ സൈൻ ഔട്ട് ചെയ്യിക്കും. ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ, മറ്റ് ക്രമീകരണം എന്നിവയിലുള്ള മാറ്റങ്ങളെ ഇനി നിങ്ങളുടെ Google അക്കൗണ്ടിലേക്ക് സമന്വയിപ്പിക്കില്ല. എന്നിരുന്നാലും, നിലവിലുള്ള വിവരങ്ങളെ Google അക്കൗണ്ടിൽ തുടർന്നും നിലനിർത്തും, അവ <ph name="BEGIN_LINK" />Google ഡാഷ്‌ബോർഡിൽ<ph name="END_LINK" /> മാനേജ് ചെയ്യാം.</translation>
+<translation id="967624055006145463">ഡാറ്റ സംഭരിച്ചു</translation>
 <translation id="968000525894980488">Google Play സേവനങ്ങൾ ഓണാക്കുക</translation>
 <translation id="968174221497644223">അപ്ലിക്കേഷന്‍ കാഷെ</translation>
 <translation id="969096075394517431">ഭാഷകൾ മാറ്റുക</translation>

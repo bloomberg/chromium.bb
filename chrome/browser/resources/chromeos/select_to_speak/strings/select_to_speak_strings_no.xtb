@@ -1,7 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="111880247472081232">Innstillingene for tekstopplesning og tekst til tale ble migrert til de globale test til tale innstillingene.</translation>
 <translation id="1197088940767939838">Oransje</translation>
+<translation id="1273314450961659276">Innstillinger for tekst til tale</translation>
+<translation id="1498542103351704084">Innstillinger for tekstopplesing oppdatert</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1666326070478924810">Innstillinger for Tekstopplesing</translation>
 <translation id="1966649499058910679">Fremhev enkeltord når de uttales</translation>
@@ -9,11 +12,14 @@
 <translation id="2714180132046334502">Mørk bakgrunn</translation>
 <translation id="27349076983469322">Lys bakgrunn</translation>
 <translation id="335581015389089642">Tale</translation>
+<translation id="3784184786832188702">Tekstopplesning bruker nå globale tekst til tale innstillinger.</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="6017514345406065928">Grønn</translation>
 <translation id="6475604559827479857">Farge for fremheving av ord:</translation>
 <translation id="6837853484260746864">Velg en stemme:</translation>
+<translation id="7261612856573623172">System teskt til tale stemme</translation>
 <translation id="7768784765476638775">Tekstopplesing</translation>
 <translation id="7914870167134465181">Fremheving</translation>
+<translation id="8324974933005349667">Gi innstillingen for tekst til tale et personlig preg</translation>
 <translation id="992256792861109788">Rosa</translation>
 </translationbundle>

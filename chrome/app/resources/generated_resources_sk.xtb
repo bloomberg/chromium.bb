@@ -2456,7 +2456,7 @@ dotyku</translation>
 <translation id="4776917500594043016">Heslo pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Obchod Play</translation>
 <translation id="4779083564647765204">Lupa</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Kontextové okno bolo zablokované}few{Boli zablokované # kontextové okná}many{Bolo zablokovaného # kontextového okna}other{Bolo zablokovaných # kontextových okien}}</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Zablokované vyskakovacie okno}few{Zablokované # vyskakovacie okná}many{# pop-ups blocked}other{Zablokovaných # vyskakovacích okien}}</translation>
 <translation id="4780321648949301421">Uložiť stránku ako...</translation>
 <translation id="4781787911582943401">Priblížiť obrazovku</translation>
 <translation id="4784330909746505604">Prezentácia aplikácie PowerPoint</translation>
@@ -4189,7 +4189,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7400418766976504921">Webová adresa</translation>
 <translation id="740083207982962331">Počkajte, kým sa zariadenie Chromebox reštartuje...</translation>
 <translation id="7400839060291901923">Nastavenie pripojenia v telefóne <ph name="PHONE_NAME" /></translation>
-<translation id="740624631517654988">Kontextové okno bolo zablokované</translation>
+<translation id="740624631517654988">Zablokované vyskakovacie okno</translation>
 <translation id="7407430846095439694">Importovať a spojiť</translation>
 <translation id="7409836189476010449">spustiť obsah vo formáte Flash</translation>
 <translation id="7410344089573941623">Opýtať sa, ak stránky <ph name="HOST" /> chcú pristupovať ku kamere a mikrofónu</translation>
@@ -4564,7 +4564,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7953739707111622108">Toto zariadenie nie je možné otvoriť, pretože jeho systém súborov nebol rozpoznaný.</translation>
 <translation id="7953955868932471628">Spravovať skratky</translation>
 <translation id="7955383984025963790">Karta 5</translation>
-<translation id="7957054228628133943">Spravovať blokovanie kontextových okien...</translation>
+<translation id="7957054228628133943">Spravovať blokovanie vyskakovacích okien…</translation>
 <translation id="7957615753207896812">Otvoriť nastavenia klávesnice</translation>
 <translation id="7959074893852789871">Súbor obsahoval viacero certifikátov a niektoré z nich neboli importované:</translation>
 <translation id="7961015016161918242">Nikdy</translation>

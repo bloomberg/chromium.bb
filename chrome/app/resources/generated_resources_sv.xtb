@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">Visa stavning och grammatik</translation>
 <translation id="1593594475886691512">Formaterar ...</translation>
 <translation id="159359590073980872">Cacheminne för bilder</translation>
+<translation id="1593926297800505364">Spara betalningsmetod</translation>
 <translation id="1598233202702788831">Uppdateringar har inaktiverats av administratören.</translation>
 <translation id="1600857548979126453">Få åtkomst till serverdelen för felsökning av sida</translation>
 <translation id="1601560923496285236">Verkställ</translation>
@@ -510,6 +511,7 @@
 <translation id="1744060673522309905">Det gick inte att ansluta enheten till domänen. Kontrollera att du inte redan har lagt till det högsta tillåtna antalet enheter.</translation>
 <translation id="1744108098763830590">bakgrundssida</translation>
 <translation id="1745520510852184940">Gör alltid detta</translation>
+<translation id="1746417874336251387">Erbjud nya funktioner som använder mobilens anslutning till Chromebook</translation>
 <translation id="174937106936716857">Totalt antal filer</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
@@ -640,8 +642,10 @@
 <translation id="1932098463447129402">Inte före</translation>
 <translation id="1933809209549026293">Anslut en mus eller ett tangentbord. Om du använder en Bluetooth-enhet kontrollerar du att den är klar att kopplas.</translation>
 <translation id="1936157145127842922">Visa i mapp</translation>
+<translation id="1938351510777341717">Extern kommandotangent</translation>
 <translation id="1940546824932169984">Anslutna enheter</translation>
 <translation id="1942765061641586207">Bildupplösning</translation>
+<translation id="1943097386230153518">Installera ny tjänst</translation>
 <translation id="1944921356641260203">En uppdatering hittades</translation>
 <translation id="1951615167417147110">Bläddra uppåt en sida</translation>
 <translation id="1954813140452229842">Det gick inte att montera den delade resursen. Kontrollera användaruppgifterna och försök igen.</translation>
@@ -1107,6 +1111,7 @@
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="265390580714150011">Fältvärde</translation>
 <translation id="2654166010170466751">Tillåt att nya betalningshanterare installeras av webbplatser</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Funktionerna varierar beroende på enhet</translation>
 <translation id="2660779039299703961">Event</translation>
 <translation id="266079277508604648">Det gick inte att ansluta till skrivaren. Kontrollera att skrivaren är påslagen och ansluten till Chromebook via Wi-Fi eller USB.</translation>
 <translation id="2661146741306740526">16:9</translation>
@@ -1213,6 +1218,7 @@
 <translation id="2803375539583399270">Ange pinkod</translation>
 <translation id="2805646850212350655">Microsofts krypterande filsystem</translation>
 <translation id="2805756323405976993">Appar</translation>
+<translation id="2806891468525657116">Genvägen finns redan</translation>
 <translation id="2807517655263062534">Filer som du laddar ned visas här</translation>
 <translation id="2809586584051668049">och ytterligare <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Ett nytt fönster skapades under den aktuella webbläsarsessionen.</translation>
@@ -1599,6 +1605,7 @@
 <translation id="3428419049384081277">Du är inloggad!</translation>
 <translation id="3429275422858276529">Lägg till ett bokmärke för den här sidan så att du enkelt kan hitta tillbaka till den</translation>
 <translation id="3429599832623003132">$1 objekt</translation>
+<translation id="3430342160185525240">Tillåter att assistenten visar aviseringar.</translation>
 <translation id="3432227430032737297">Ta bort alla som visas</translation>
 <translation id="3432757130254800023">Skicka ljud och bild till skärmar i det lokala nätverket</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1963,6 +1970,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> i kontrollpanelen.
 
   Vill du starta <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Det gick inte att skapa genvägen</translation>
 <translation id="3943582379552582368">&amp;Bakåt</translation>
 <translation id="3943857333388298514">Klistra in</translation>
 <translation id="3948116654032448504">&amp;Sök på <ph name="SEARCH_ENGINE" /> efter bild</translation>
@@ -2270,6 +2278,7 @@
 <translation id="4481530544597605423">Frånkopplade enheter</translation>
 <translation id="4482194545587547824">Google kan använda webbhistoriken för att anpassa Sök och andra tjänster från Google.</translation>
 <translation id="4495419450179050807">Visa inte den här sidan</translation>
+<translation id="4499718683476608392">Aktivera Autofyll för kreditkort och fyll i formulär med ett enda klick</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> har kraschat</translation>
 <translation id="450099669180426158">Ikon med utropstecken</translation>
 <translation id="4501530680793980440">Bekräfta borttagning</translation>
@@ -3113,6 +3122,7 @@
 <translation id="5752453871435543420">Säkerhetskopiering i molnet för Chrome OS</translation>
 <translation id="5756163054456765343">Hjälpc&amp;enter</translation>
 <translation id="5759728514498647443">Dokument som du skickar till utskrift via <ph name="APP_NAME" /> kan läsas av <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Inställningar för kreditkort</translation>
 <translation id="5763751966069581670">Inga USB-enheter hittades</translation>
 <translation id="5764483294734785780">S&amp;para ljud som...</translation>
 <translation id="57646104491463491">Datum ändrad</translation>
@@ -3184,6 +3194,7 @@
 <translation id="5855773610748894548">Ett fel uppstod i den säkra modulen</translation>
 <translation id="5856721540245522153">Aktivera felsökningsfunktioner</translation>
 <translation id="5857090052475505287">Ny mapp</translation>
+<translation id="585979798156957858">Extern metatangent</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5860209693144823476">Flik 3</translation>
 <translation id="5860491529813859533">Aktivera</translation>
@@ -3493,6 +3504,7 @@
 <translation id="6327785803543103246">Automatisk identifiering av webbproxy</translation>
 <translation id="6333064448949140209">Filen skickas till Google för felsökning</translation>
 <translation id="6333834492048057036">Fokusera på adressfältet för sökning</translation>
+<translation id="6336451774241870485">Ny privat flik</translation>
 <translation id="6339668969738228384">Skapa en ny profil för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Det gick inte att ansluta till servern. Kontrollera nätverksanslutningen och försök igen. Starta om Chromebook om problemet kvarstår.</translation>
 <translation id="6340071272923955280">Protokoll för internetutskrift (IPPS)</translation>
@@ -3674,6 +3686,7 @@
 <translation id="6606070663386660533">Flik 8</translation>
 <translation id="6607272825297743757">Filinformation</translation>
 <translation id="6607831829715835317">Fler verkt&amp;yg</translation>
+<translation id="6610147964972079463">Stäng privata flikar</translation>
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="6613452264606394692">Hitta snabbt tillbaka hit med ett bokmärke</translation>
 <translation id="6614893213975402384">Installera uppdateringar och appar. Genom att fortsätta godkänner du att enheten kan ladda ned och installera uppdateringar och appar automatiskt från Google, operatören och enhetstillverkaren, eventuellt genom att använda mobildata. Det kan hända att några av apparna erbjuder köp i appen. Du kan när som helst ta bort dessa appar. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
@@ -3744,6 +3757,7 @@
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6718273304615422081">Komprimerar ...</translation>
 <translation id="671928215901716392">Lås skärmen</translation>
+<translation id="6720847671508630642">Dela det bästa på Android med din Chromebook automatiskt. Anslut mobilen så att du kan skicka sms från datorn, dela mobilens internetanslutning och låsa upp skärmen på Chromebook.<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Visa säkerhetsnyckelns märke och modell</translation>
 <translation id="6721972322305477112">&amp;Arkiv</translation>
 <translation id="672213144943476270">Du måste låsa upp din profil innan du kan surfa som gäst.</translation>
@@ -3890,6 +3904,7 @@
 <translation id="6970856801391541997">Skriv ut vissa sidor</translation>
 <translation id="6972180789171089114">Ljud/video</translation>
 <translation id="6973630695168034713">Mappar</translation>
+<translation id="6974609594866392343">Demoläge offline</translation>
 <translation id="6976108581241006975">JavaScript-konsol</translation>
 <translation id="6977381486153291903">Revision av firmware</translation>
 <translation id="6978121630131642226">Sökmotorer</translation>
@@ -4484,6 +4499,7 @@
 <translation id="7857949311770343000">Var det den här nya fliksidan du väntade dig?</translation>
 <translation id="786073089922909430">Tjänst: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Nedladdade filer</translation>
+<translation id="7864662577698025113">Lägg till ny tjänst</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookies}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – kopplad</translation>
 <translation id="7870730066603611552">Granska synkroniseringsalternativen efter konfigureringen</translation>
@@ -4998,6 +5014,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8666584013686199826">Fråga om en webbplats försöker få åtkomst till USB-enheter</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> visas nu i helskärm och har inaktiverat din muspekare.</translation>
 <translation id="8669284339312441707">Varmare</translation>
+<translation id="8669919703154928649">Tillåt assistenten att visa aviseringar</translation>
 <translation id="8669949407341943408">Flyttar …</translation>
 <translation id="8671210955687109937">Kan kommentera</translation>
 <translation id="8673026256276578048">Sök på webben ...</translation>
@@ -5385,6 +5402,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="964286338916298286">IT-administratören har inaktiverat Godbitar från Chrome för din enhet.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{App}other{Appar}}</translation>
 <translation id="967007123645306417">Du loggas ut från dina Google-konton. När bokmärken, historik, lösenord och andra inställningar ändras kommer dessa ändringar inte längre att synkroniseras med Google-kontot. Uppgifter som redan har sparats i Google-kontot finns däremot kvar och kan hanteras via <ph name="BEGIN_LINK" />Google Översikt<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Sparad data</translation>
 <translation id="968000525894980488">Aktivera Google Play-tjänster.</translation>
 <translation id="968174221497644223">Programmets cacheminne</translation>
 <translation id="969096075394517431">Ändra språk</translation>

@@ -401,6 +401,7 @@
 <translation id="1589055389569595240">顯示拼字與文法</translation>
 <translation id="1593594475886691512">正在格式化...</translation>
 <translation id="159359590073980872">圖片快取</translation>
+<translation id="1593926297800505364">儲存付款方式</translation>
 <translation id="1598233202702788831">您的管理員停用了更新功能。</translation>
 <translation id="1600857548979126453">存取網頁偵錯工具後端</translation>
 <translation id="1601560923496285236">套用</translation>
@@ -511,6 +512,7 @@
 <translation id="1744060673522309905">無法將這個裝置加入網域。請確認裝置數量沒有超過添加上限。</translation>
 <translation id="1744108098763830590">背景頁面</translation>
 <translation id="1745520510852184940">一律採取這種處理方式</translation>
+<translation id="1746417874336251387">提供將手機和 Chromebook 連結便能使用的新功能</translation>
 <translation id="174937106936716857">檔案總數</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
 <translation id="1753905327828125965">最常造訪</translation>
@@ -641,8 +643,10 @@
 <translation id="1932098463447129402">此日期之後：</translation>
 <translation id="1933809209549026293">請連接滑鼠或鍵盤。如果你使用的是藍牙裝置，請確認該裝置處於可進行配對的狀態。</translation>
 <translation id="1936157145127842922">在資料夾中顯示</translation>
+<translation id="1938351510777341717">外部 Command 鍵</translation>
 <translation id="1940546824932169984">已連結的裝置</translation>
 <translation id="1942765061641586207">影像解析度</translation>
+<translation id="1943097386230153518">安裝新服務</translation>
 <translation id="1944921356641260203">找到更新</translation>
 <translation id="1951615167417147110">向上捲動一頁</translation>
 <translation id="1954813140452229842">掛接共用裝置時發生錯誤。請檢查你的憑證，然後再試一次。</translation>
@@ -1108,6 +1112,7 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="265390580714150011">欄位值</translation>
 <translation id="2654166010170466751">允許網站安裝付款處理常式</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />功能會因裝置而異</translation>
 <translation id="2660779039299703961">活動</translation>
 <translation id="266079277508604648">無法連上印表機。請確認印表機已開啟，且已透過 Wi-Fi 或 USB 連上 Chromebook。</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1214,6 +1219,7 @@
 <translation id="2803375539583399270">輸入 PIN</translation>
 <translation id="2805646850212350655">Microsoft 加密檔案系統</translation>
 <translation id="2805756323405976993">應用程式</translation>
+<translation id="2806891468525657116">捷徑已經存在</translation>
 <translation id="2807517655263062534">你下載的檔案會顯示在這裡</translation>
 <translation id="2809586584051668049">和另外 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 個</translation>
 <translation id="281133045296806353">已在目前的瀏覽器工作階段開啟新視窗。</translation>
@@ -1600,6 +1606,7 @@
 <translation id="3428419049384081277">你已登入帳戶！</translation>
 <translation id="3429275422858276529">將這個網頁加入書籤，方便日後查看</translation>
 <translation id="3429599832623003132">$1 個項目</translation>
+<translation id="3430342160185525240">允許 Google 助理向你顯示通知。</translation>
 <translation id="3432227430032737297">將顯示的項目全部移除</translation>
 <translation id="3432757130254800023">傳送要在區域網路顯示的影音內容</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1963,6 +1970,7 @@
 <translation id="3941565636838060942">如要隱藏這個程式的存取權，你必須使用控制台中的「<ph name="CONTROL_PANEL_APPLET_NAME" />」解除安裝此程式。
 
   是否要開啟「<ph name="CONTROL_PANEL_APPLET_NAME" />」？</translation>
+<translation id="394183848452296464">無法建立捷徑</translation>
 <translation id="3943582379552582368">上一頁(&amp;B)</translation>
 <translation id="3943857333388298514">貼上</translation>
 <translation id="3948116654032448504">透過 <ph name="SEARCH_ENGINE" /> 搜尋圖片(&amp;S)</translation>
@@ -2270,6 +2278,7 @@
 <translation id="4481530544597605423">解除配對的裝置</translation>
 <translation id="4482194545587547824">Google 可能會使用您的瀏覽記錄，為您提供個人化的搜尋服務和其他各項 Google 服務。</translation>
 <translation id="4495419450179050807">不要顯示這個網頁</translation>
+<translation id="4499718683476608392">啟用信用卡自動填入功能，輕鬆一按即可填妥表單</translation>
 <translation id="4500114933761911433">「<ph name="PLUGIN_NAME" />」當機了</translation>
 <translation id="450099669180426158">驚嘆號圖示</translation>
 <translation id="4501530680793980440">確認移除</translation>
@@ -3112,6 +3121,7 @@
 <translation id="5752453871435543420">Chrome 作業系統雲端備份</translation>
 <translation id="5756163054456765343">說明中心(&amp;E)</translation>
 <translation id="5759728514498647443">「<ph name="APP_NAME" />」可以讀取您透過「<ph name="APP_NAME" />」傳送的待列印文件。</translation>
+<translation id="5762172915276660232">信用卡設定</translation>
 <translation id="5763751966069581670">找不到 USB 裝置</translation>
 <translation id="5764483294734785780">將音訊另存為(&amp;V)...</translation>
 <translation id="57646104491463491">已修改日期</translation>
@@ -3183,6 +3193,7 @@
 <translation id="5855773610748894548">糟糕，發生安全模組錯誤。</translation>
 <translation id="5856721540245522153">啟用偵錯功能</translation>
 <translation id="5857090052475505287">新資料夾</translation>
+<translation id="585979798156957858">外部 Meta 鍵</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5860209693144823476">分頁 3</translation>
 <translation id="5860491529813859533">啟用</translation>
@@ -3492,6 +3503,7 @@
 <translation id="6327785803543103246">網路 Proxy 自動探索</translation>
 <translation id="6333064448949140209">檔案會傳送給 Google 進行偵錯</translation>
 <translation id="6333834492048057036">將焦點移至網址列以便進行搜尋</translation>
+<translation id="6336451774241870485">新私密分頁</translation>
 <translation id="6339668969738228384">為 <ph name="USER_EMAIL_ADDRESS" /> 建立新的個人資料</translation>
 <translation id="6340017061976355871">無法連上伺服器。請檢查網路連線狀態，然後再試一次。如果問題持續發生，請重新啟動 Chromebook。</translation>
 <translation id="6340071272923955280">網際網路列印通訊協定 (IPPS)</translation>
@@ -3672,6 +3684,7 @@
 <translation id="6606070663386660533">分頁 8</translation>
 <translation id="6607272825297743757">檔案資訊</translation>
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
+<translation id="6610147964972079463">關閉私密分頁</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6613452264606394692">將此頁加入書籤，方便你快速返回</translation>
 <translation id="6614893213975402384">安裝更新和應用程式。如果您選擇繼續，即表示您允許這部裝置自動下載及安裝來自 Google、您的電信業者和裝置製造商的更新內容和應用程式，上述程序可能會使用行動數據。這類應用程式中，有些可能會提供應用程式內購功能。您隨時可以移除這類應用程式。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
@@ -3742,6 +3755,7 @@
 <translation id="6710213216561001401">返回</translation>
 <translation id="6718273304615422081">壓縮中...</translation>
 <translation id="671928215901716392">鎖定螢幕</translation>
+<translation id="6720847671508630642">自動將最佳 Android 功能分享給你的 Chromebook。與手機連結後，即可透過電腦收發簡訊、讓電腦使用手機的網際網路連線，並使用手機解鎖 Chromebook 螢幕。<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">查看安全金鑰的製造商和型號</translation>
 <translation id="6721972322305477112">檔案(&amp;F)</translation>
 <translation id="672213144943476270">以訪客身分瀏覽之前，請先取消鎖定您的個人資料。</translation>
@@ -3888,6 +3902,7 @@
 <translation id="6970856801391541997">列印特定網頁</translation>
 <translation id="6972180789171089114">音效/影片</translation>
 <translation id="6973630695168034713">資料夾</translation>
+<translation id="6974609594866392343">離線示範模式</translation>
 <translation id="6976108581241006975">JavaScript 控制台</translation>
 <translation id="6977381486153291903">韌體版本</translation>
 <translation id="6978121630131642226">搜尋引擎</translation>
@@ -4481,6 +4496,7 @@
 <translation id="7857949311770343000">這是你想要的新分頁嗎？</translation>
 <translation id="786073089922909430">服務：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">下載(&amp;D)</translation>
+<translation id="7864662577698025113">新增服務</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 個 Cookie}other{# 個 Cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - 已配對</translation>
 <translation id="7870730066603611552">設定後查看同步處理選項</translation>
@@ -4995,6 +5011,7 @@
 <translation id="8666584013686199826">網站要求存取 USB 裝置時詢問我</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> 已顯示為全螢幕，並且停用了滑鼠游標。</translation>
 <translation id="8669284339312441707">暖色調</translation>
+<translation id="8669919703154928649">允許 Google 助理顯示你的通知</translation>
 <translation id="8669949407341943408">移動中...</translation>
 <translation id="8671210955687109937">可以註解</translation>
 <translation id="8673026256276578048">搜尋網頁...</translation>
@@ -5382,6 +5399,7 @@
 <translation id="964286338916298286">你的 IT 管理員已為你的裝置停用 Chrome 好康優惠。</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{應用程式}other{應用程式}}</translation>
 <translation id="967007123645306417">你將登出自己的 Google 帳戶。你的書籤、歷史記錄、密碼和其他設定的變更將不會再同步到你的 Google 帳戶。不過，你的現有資料仍會儲存在你的 Google 帳戶中，並可透過 <ph name="BEGIN_LINK" />Google 資訊主頁<ph name="END_LINK" />管理。</translation>
+<translation id="967624055006145463">已儲存的資料</translation>
 <translation id="968000525894980488">開啟 Google Play 服務。</translation>
 <translation id="968174221497644223">應用程式快取</translation>
 <translation id="969096075394517431">變更語言</translation>

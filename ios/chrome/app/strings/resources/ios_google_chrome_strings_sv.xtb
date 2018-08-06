@@ -39,6 +39,7 @@
 <translation id="5639704535586432836">Öppna Inställningar &gt; Sekretess &gt; Kamera &gt; Google Chrome och aktivera kameran.</translation>
 <translation id="5642200033778930880">Google Chrome kan inte använda kameran i delad vy</translation>
 <translation id="5703130498371792817">Gillar du Chrome? <ph name="BEGIN_LINK" />Sätt betyg på appen<ph name="END_LINK" /></translation>
+<translation id="5854621639439811139">Tips för Chrome. Vissa knappar finns nu längst ned på skärmen, till exempel bakåtknappen, framåtknappen och Sök.</translation>
 <translation id="6036420186814142909">I Google Chrome finns det funktioner som du kan använda för att hantera dina internetuppgifter och inläsningshastigheten för webbsidor.
 <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Här visas flikar som du har öppnat i Chrome på andra enheter.</translation>
@@ -57,4 +58,5 @@
 <translation id="8459495907675268833">Den data som markerades har tagits bort från Chrome och från synkroniserade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på history.google.com, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chrome kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
+<translation id="96145293669295453">Tips för Chrome. Tryck länge på Visa flikar i verktygsfältet så visas fler flikalternativ. Du hittar verktygsfältet längst ned eller högst upp på skärmen.</translation>
 </translationbundle>

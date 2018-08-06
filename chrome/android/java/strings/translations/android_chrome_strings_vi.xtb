@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">Đang thêm <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Từ trang web</translation>
 <translation id="1049743911850919806">Ẩn danh</translation>
+<translation id="1054301162707478098">Bạn đã chuyển sang chế độ riêng tư.</translation>
 <translation id="10614374240317010">Không bao giờ lưu</translation>
 <translation id="1068672505746868501">Không bao giờ dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">Ngôn ngữ khác</translation>
 <translation id="124678866338384709">Đóng tab hiện tại</translation>
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">Trang mà bạn xem ở tab ẩn danh sẽ không lưu vào lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả tab riêng tư. Mọi tệp bạn tải xuống hoặc dấu trang bạn tạo sẽ được lưu lại.
+
+Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang chế độ riêng tư sẽ không ẩn hoạt động duyệt web của bạn với chủ lao động, nhà cung cấp dịch vụ Internet hoặc các trang web bạn truy cập.</translation>
 <translation id="127138278192656016">Sử dụng tùy chọn đồng bộ hóa và tất cả dịch vụ</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1283039547216852943">Nhấn để mở rộng</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
 <translation id="2045104531052923016">Các ứng dụng khác chiếm <ph name="GIGABYTES" /> GB</translation>
+<translation id="2055670718290744343">Trình tăng tốc tìm kiếm</translation>
 <translation id="2063713494490388661">Nhấn để tìm kiếm</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">Đồng bộ hóa và các dịch vụ của Google</translation>
 <translation id="2259659629660284697">Xuất mật khẩu...</translation>
 <translation id="2268044343513325586">Tinh chỉnh</translation>
+<translation id="2280910239864711607">Mở tab mới trong chế độ Riêng tư</translation>
 <translation id="2286841657746966508">Địa chỉ thanh toán</translation>
 <translation id="230115972905494466">Không tìm thấy thiết bị tương thích</translation>
 <translation id="2315043854645842844">Lựa chọn chứng chỉ phía ứng dụng khách không được hệ điều hành hỗ trợ.</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">Cho phép JavaScript cho trang web cụ thể.</translation>
 <translation id="2625189173221582860">Đã sao chép mật khẩu</translation>
 <translation id="2631006050119455616">Đã tiết kiệm</translation>
+<translation id="2633278372998075009">Các tab riêng tư</translation>
 <translation id="2647434099613338025">Thêm ngôn ngữ</translation>
 <translation id="2650751991977523696">Tải tệp xuống lần nữa?</translation>
 <translation id="2653659639078652383">Gửi</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Micrô</translation>
 <translation id="3232754137068452469">Ứng dụng web</translation>
+<translation id="3234355010754616171">Tab riêng tư mới</translation>
 <translation id="3236059992281584593">Còn 1 phút</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Đánh dấu trang này</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">Đóng tất cả các tab ẩn danh</translation>
 <translation id="3365671512111106261">Không khả dụng khi Trình tiết kiệm dữ liệu được bật</translation>
 <translation id="3367813778245106622">Đăng nhập lại để bắt đầu đồng bộ hóa</translation>
+<translation id="3377025655491224618">Tab riêng tư</translation>
 <translation id="3384347053049321195">Chia sẻ hình ảnh</translation>
 <translation id="3386292677130313581">Hỏi trước khi cho phép các trang web biết vị trí của bạn (được đề xuất)</translation>
 <translation id="3387650086002190359">Tải xuống <ph name="FILE_NAME" /> không thành công do lỗi hệ thống tệp.</translation>
@@ -385,6 +394,7 @@
 <translation id="4209895695669353772">Để nhận nội dung do Google đề xuất riêng cho bạn, hãy bật tính năng đồng bộ hóa</translation>
 <translation id="4226663524361240545">Thông báo có thể làm rung thiết bị</translation>
 <translation id="4242533952199664413">Mở cài đặt</translation>
+<translation id="4243710787042215766">Mở trong tab riêng tư</translation>
 <translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
 <translation id="4259722352634471385">Điều hướng bị chặn: <ph name="URL" /></translation>
@@ -465,6 +475,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4878404682131129617">Thiết lập đường hầm qua máy chủ proxy không thành công</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="488187801263602086">Đổi tên tệp</translation>
+<translation id="4883379392681899581">Thoát chế độ riêng tư</translation>
 <translation id="4885273946141277891">Số phiên bản Chrome không được hỗ trợ.</translation>
 <translation id="4910889077668685004">Ứng dụng thanh toán</translation>
 <translation id="4913161338056004800">Đặt lại thống kê</translation>
@@ -506,6 +517,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5224771365102442243">Có video</translation>
 <translation id="5233638681132016545">Tab mới</translation>
 <translation id="5240817131241497236">Các tùy chọn cài đặt kiểm soát tính năng đồng bộ hóa, cá nhân hóa và các dịch vụ khác của Google trong Chrome đã thay đổi. Điều này có thể ảnh hưởng đến các tùy chọn cài đặt hiện tại của bạn.</translation>
+<translation id="5264003212305142034">Bạn có thể tùy chỉnh mục <ph name="BEGIN_LINK1" />Cài đặt<ph name="END_LINK1" /> bất cứ lúc nào. Google có thể sử dụng nội dung trên các trang web bạn truy cập, cùng với hoạt động và thông tin tương tác trên trình duyệt để tùy chỉnh Chrome và các dịch vụ khác của Google như Dịch, Tìm kiếm và quảng cáo.</translation>
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
 <translation id="528192093759286357">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="5284584623296338184">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và cài đặt khác sẽ không còn được đồng bộ hóa với Tài khoản Google của bạn. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong tài khoản Google của bạn.</translation>
@@ -591,6 +603,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5833397272224757657">Dùng nội dung trên trang web bạn truy cập cũng như các tương tác và hoạt động trên trình duyệt để cá nhân hóa</translation>
 <translation id="5833984609253377421">Chia sẻ liên kết</translation>
+<translation id="584427517463557805">Tab đã chọn ở chế độ riêng tư</translation>
 <translation id="5854790677617711513">Đã tồn tại hơn 30 ngày</translation>
 <translation id="5858741533101922242">Chrome không thể bật bộ điều hợp Bluetooth</translation>
 <translation id="5860033963881614850">Tắt</translation>
@@ -620,6 +633,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6075798973483050474">Chỉnh sửa trang chủ</translation>
 <translation id="60923314841986378">Còn <ph name="HOURS" /> giờ</translation>
 <translation id="60924377787140961">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi chiều vui vẻ!</translation>
+<translation id="6099151465289169210">Đã chuyển sang tab riêng tư</translation>
 <translation id="6108923351542677676">Đang thiết lập…</translation>
 <translation id="6111020039983847643">dữ liệu đã dùng</translation>
 <translation id="6112702117600201073">Làm mới trang</translation>
@@ -649,6 +663,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6320088164292336938">Rung</translation>
 <translation id="6324034347079777476">Đồng bộ hóa hệ thống Android đã bị tắt</translation>
 <translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION" /></translation>
+<translation id="6336451774241870485">Tab riêng tư mới</translation>
 <translation id="6337234675334993532">Mã hóa</translation>
 <translation id="6341580099087024258">Hỏi vị trí lưu tệp</translation>
 <translation id="6343192674172527289">Không tìm thấy tài nguyên đã tải xuống nào</translation>
@@ -686,6 +701,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6593061639179217415">Trang web cho máy tính</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6610147964972079463">Đóng tab riêng tư</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6627583120233659107">Chỉnh sửa thư mục</translation>
 <translation id="6643016212128521049">Xóa</translation>
@@ -789,6 +805,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7453467225369441013">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="7454641608352164238">Không đủ dung lượng</translation>
 <translation id="7455923816558154057">Nhấn để xem</translation>
+<translation id="7465104139234185284">Đóng tất cả tab riêng tư</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7475192538862203634">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>
 <translation id="7475688122056506577">Không tìm thấy thẻ SD. Một số tệp của bạn có thể bị thiếu.</translation>
@@ -884,6 +901,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8220488350232498290">Đã tải xuống <ph name="GIGABYTES" /> GB</translation>
 <translation id="8249310407154411074">Chuyển lên trên cùng</translation>
 <translation id="8250920743982581267">Tài liệu</translation>
+<translation id="825412236959742607">Trang này sử dụng quá nhiều bộ nhớ, nên Chrome đã xóa bớt nội dung.</translation>
 <translation id="8260126382462817229">Thử đăng nhập lại</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8266862848225348053">Vị trí tải xuống</translation>
@@ -979,6 +997,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9070377983101773829">Bắt đầu tìm kiếm bằng giọng nói</translation>
 <translation id="9071742570345586758">Để xem nội dung thực tế ảo, hãy cài đặt Dịch vụ VR của Google</translation>
 <translation id="9074336505530349563">Để nhận nội dung do Google đề xuất riêng cho bạn, hãy đăng nhập và bật tính năng đồng bộ hóa</translation>
+<translation id="9080642952018487277">Vào chế độ riêng tư</translation>
 <translation id="9086455579313502267">Không thể truy cập mạng</translation>
 <translation id="9099018167121903954">Đã tải xuống <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">Đề xuất hiển thị các bài viết ở chế độ xem đơn giản khi được hỗ trợ</translation>

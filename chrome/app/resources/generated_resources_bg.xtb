@@ -398,6 +398,7 @@
 <translation id="1589055389569595240">Показване на проверката на правописа и граматиката</translation>
 <translation id="1593594475886691512">Форматира се...</translation>
 <translation id="159359590073980872">Кеш за изображения</translation>
+<translation id="1593926297800505364">Запазване на начина на плащане</translation>
 <translation id="1598233202702788831">Актуализациите са деактивирани от администратора ви.</translation>
 <translation id="1600857548979126453">Достъп до задния слой на инструмента за откриване и отстраняване на грешки в страниците</translation>
 <translation id="1601560923496285236">Прилагане</translation>
@@ -508,6 +509,7 @@
 <translation id="1744060673522309905">Устройството не може да се присъедини към домейна. Проверете дали не сте надхвърлили броя устройства, които можете да добавите.</translation>
 <translation id="1744108098763830590">фонова страница</translation>
 <translation id="1745520510852184940">Превеждане винаги</translation>
+<translation id="1746417874336251387">Извеждане на предложения за нови функции, които използват връзката на телефона ви с вашия Chromebook</translation>
 <translation id="174937106936716857">Общ брой файлове</translation>
 <translation id="175196451752279553">По&amp;вторно отваряне на затворения раздел</translation>
 <translation id="1753905327828125965">Ползвани</translation>
@@ -638,8 +640,10 @@
 <translation id="1932098463447129402">Не преди</translation>
 <translation id="1933809209549026293">Моля, свържете мишка или клавиатура. Ако използвате устройство с Bluetooth, уверете се, че е готово за сдвояване.</translation>
 <translation id="1936157145127842922">Показване в папката</translation>
+<translation id="1938351510777341717">Външен клавиш Command</translation>
 <translation id="1940546824932169984">Свързани устройства</translation>
 <translation id="1942765061641586207">Разделителна способност на изображението</translation>
+<translation id="1943097386230153518">Инсталиране на нова услуга</translation>
 <translation id="1944921356641260203">Намерена е актуализация</translation>
 <translation id="1951615167417147110">Превъртане една страница нагоре</translation>
 <translation id="1954813140452229842">Възникна грешка при свързването на дяла. Моля, проверете идентификационните си данни и опитайте отново.</translation>
@@ -1105,6 +1109,7 @@
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="265390580714150011">Стойност на полето</translation>
 <translation id="2654166010170466751">Разрешаване на сайтовете да инсталират приложения за обработване на плащания</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" /> Функциите варират според устройството</translation>
 <translation id="2660779039299703961">Събитие</translation>
 <translation id="266079277508604648">Не може да се установи връзка с принтера. Уверете се, че е включен и е свързан с вашия Chromebook чрез Wi-Fi или USB.</translation>
 <translation id="2661146741306740526">16 x 9</translation>
@@ -1211,6 +1216,7 @@
 <translation id="2803375539583399270">Въведете ПИН кодa</translation>
 <translation id="2805646850212350655">Шифроване на файлова система от Microsoft</translation>
 <translation id="2805756323405976993">Приложения</translation>
+<translation id="2806891468525657116">Прекият път вече съществува</translation>
 <translation id="2807517655263062534">Тук се показват изтеглените от вас файлове</translation>
 <translation id="2809586584051668049">и още <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Създаден е нов прозорец в съществуващата сесия на браузъра.</translation>
@@ -1597,6 +1603,7 @@
 <translation id="3428419049384081277">Влязохте в профила си!</translation>
 <translation id="3429275422858276529">Запазете отметка към тази страница, за да я намирате лесно по-късно</translation>
 <translation id="3429599832623003132">$1 елемента</translation>
+<translation id="3430342160185525240">Дава възможност на Асистент да ви показва известия.</translation>
 <translation id="3432227430032737297">Премахване на всички показани</translation>
 <translation id="3432757130254800023">Изпращане на аудио и видео до дисплеи в локалната мрежа</translation>
 <translation id="3432762828853624962">Споделени изпълнители</translation>
@@ -1963,6 +1970,7 @@
 <ph name="CONTROL_PANEL_APPLET_NAME" /> в контролния панел.
 
 Искате ли да стартирате <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">Прекият път не може да бъде създаден</translation>
 <translation id="3943582379552582368">&amp;Назад</translation>
 <translation id="3943857333388298514">Поставяне</translation>
 <translation id="3948116654032448504">&amp;Търсене на изображението чрез <ph name="SEARCH_ENGINE" /></translation>
@@ -2270,6 +2278,7 @@
 <translation id="4481530544597605423">Несдвоени устройства</translation>
 <translation id="4482194545587547824">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето и други услуги на Google</translation>
 <translation id="4495419450179050807">Да не се показва на тази страница</translation>
+<translation id="4499718683476608392">Активирайте автоматичното попълване на кредитни карти, за да ги въвеждате във формуляри само с едно кликване</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> претърпя срив</translation>
 <translation id="450099669180426158">Икона на удивителен знак</translation>
 <translation id="4501530680793980440">Потвърждаване на премахването</translation>
@@ -3114,6 +3123,7 @@
 <translation id="5752453871435543420">Резервни копия в облака на Chrome OS</translation>
 <translation id="5756163054456765343">П&amp;омощен център</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> може да чете документите, които изпращате за отпечатване чрез <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Настройки за кредитни карти</translation>
 <translation id="5763751966069581670">Няма намерени USB устройства</translation>
 <translation id="5764483294734785780">&amp;Запазване на аудиоклипа като...</translation>
 <translation id="57646104491463491">Дата на промяна</translation>
@@ -3185,6 +3195,7 @@
 <translation id="5855773610748894548">Ами сега! Възникна грешка в модула за сигурност.</translation>
 <translation id="5856721540245522153">Активиране на функциите за отстраняване на грешки</translation>
 <translation id="5857090052475505287">Нова папка</translation>
+<translation id="585979798156957858">Външен клавиш Meta</translation>
 <translation id="5860033963881614850">Изключено</translation>
 <translation id="5860209693144823476">Раздел 3</translation>
 <translation id="5860491529813859533">Включване</translation>
@@ -3494,6 +3505,7 @@
 <translation id="6327785803543103246">Автоматично откриване на уеб прокси сървъра</translation>
 <translation id="6333064448949140209">Файлът ще бъде изпратен до Google за отстраняване на грешки</translation>
 <translation id="6333834492048057036">Преместване на фокуса върху адресната лента за търсене</translation>
+<translation id="6336451774241870485">Нов раздел в режим на частно сърфиране</translation>
 <translation id="6339668969738228384">Създаване на нов потребителски профил за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Не можа да се установи връзка със сървъра. Моля, проверете мрежовата си връзка и опитайте отново. Ако проблемът продължи, рестартирайте своя Chromebook.</translation>
 <translation id="6340071272923955280">Internet Printing Protocol (IPPS)</translation>
@@ -3675,6 +3687,7 @@
 <translation id="6606070663386660533">Раздел 8</translation>
 <translation id="6607272825297743757">Информация за файла</translation>
 <translation id="6607831829715835317">Още инструме&amp;нти</translation>
+<translation id="6610147964972079463">Частни раздели: Затваряне</translation>
 <translation id="6612358246767739896">Защитено съдържание</translation>
 <translation id="6613452264606394692">Връщайте се тук бързо, като запазите отметка към тази страница</translation>
 <translation id="6614893213975402384">Инсталиране на актуализации и приложения. С продължаването си приемате, че това устройство може също автоматично да изтегля и инсталира актуализации и приложения от Google, оператора ви и производителя си, при което е възможно да използва мобилни данни. В някои от тези приложения може да се предлагат покупки. В състояние сте да премахнете приложенията по всяко време. <ph name="BEGIN_LINK1" />Научете повече<ph name="END_LINK1" /></translation>
@@ -3745,6 +3758,7 @@
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6718273304615422081">Компресира се...</translation>
 <translation id="671928215901716392">Заключване на екрана</translation>
+<translation id="6720847671508630642">Автоматично споделяйте най-доброто от Android със своя Chromebook. Свържете телефона си, за да можете да изпращате SMS съобщения от компютъра си, да споделяте връзката на телефона с интернет и да отключвате екрана на своя Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Преглед на марката и модела на ключа ви за сигурност</translation>
 <translation id="6721972322305477112">&amp;Файл</translation>
 <translation id="672213144943476270">Моля, отключете потребителския си профил, преди да сърфирате като гост.</translation>
@@ -3891,6 +3905,7 @@
 <translation id="6970856801391541997">Отпечатване на конкретни страници</translation>
 <translation id="6972180789171089114">Аудио/видео</translation>
 <translation id="6973630695168034713">Папки</translation>
+<translation id="6974609594866392343">Офлайн демонстрационен режим</translation>
 <translation id="6976108581241006975">Конзола на JavaScript</translation>
 <translation id="6977381486153291903">Версия на фърмуера</translation>
 <translation id="6978121630131642226">Търсещи машини</translation>
@@ -4485,6 +4500,7 @@
 <translation id="7857949311770343000">Това очакваният от вас нов раздел ли е?</translation>
 <translation id="786073089922909430">Услуга: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;За изтегляне</translation>
+<translation id="7864662577698025113">Добавяне на нова услуга</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 „бисквитка“}other{# „бисквитки“}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – сдвоено</translation>
 <translation id="7870730066603611552">Преглед на опциите за синхронизиране след настройването</translation>
@@ -4999,6 +5015,7 @@
 <translation id="8666584013686199826">Извеждане на запитване, когато сайт иска достъп до USB устройства</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> сега е на цял екран и курсорът на мишката ви е деактивиран.</translation>
 <translation id="8669284339312441707">По-топли цветове</translation>
+<translation id="8669919703154928649">Позволяване на Асистент да ви показва известия</translation>
 <translation id="8669949407341943408">Извършва се преместване...</translation>
 <translation id="8671210955687109937">Може да коментира</translation>
 <translation id="8673026256276578048">Търсене в мрежата...</translation>
@@ -5386,6 +5403,7 @@
 <translation id="964286338916298286">Системният ви администратор е деактивирал екстрите за Chrome за устройството ви.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Приложение}other{Приложения}}</translation>
 <translation id="967007123645306417">Така ще излезете от профилите си в Google. Промените във вашите отметки, история, пароли и други настройки повече няма да се синхронизират с профила ви в Google. Съществуващите ви данни обаче ще продължат да се съхраняват в него. Можете да ги управлявате от <ph name="BEGIN_LINK" />Google Табло за управление<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Съхранени данни</translation>
 <translation id="968000525894980488">Включете услугите за Google Play.</translation>
 <translation id="968174221497644223">Кеш на приложение</translation>
 <translation id="969096075394517431">Промяна на езиците</translation>
