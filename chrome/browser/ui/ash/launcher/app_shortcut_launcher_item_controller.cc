@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -284,7 +284,7 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
     const extensions::Extension* browser_extension =
         ExtensionRegistry::Get(browser->profile())
             ->GetExtensionById(
-                web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+                web_app::GetAppIdFromApplicationName(browser->app_name()),
                 ExtensionRegistry::EVERYTHING);
     return browser_extension == extension;
   }

@@ -81,8 +81,8 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -1185,7 +1185,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
         extensions::ExtensionRegistry* registry =
             extensions::ExtensionRegistry::Get(browser->profile());
         const extensions::Extension* extension = registry->GetExtensionById(
-            web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+            web_app::GetAppIdFromApplicationName(browser->app_name()),
             extensions::ExtensionRegistry::ENABLED);
         if (extension && extension->is_hosted_app())
           continue;

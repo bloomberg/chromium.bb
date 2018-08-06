@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -51,7 +51,7 @@ scoped_refptr<const Extension> GetAppForWindow(content::WebContents* source) {
     return nullptr;
 
   const Extension* app = ExtensionRegistry::Get(context)->GetExtensionById(
-      web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+      web_app::GetAppIdFromApplicationName(browser->app_name()),
       extensions::ExtensionRegistry::ENABLED);
 
   if (!IsWindowedBookmarkApp(app, context))

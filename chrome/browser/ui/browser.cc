@@ -150,7 +150,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -296,7 +296,7 @@ std::unique_ptr<extensions::HostedAppBrowserController>
 MaybeCreateHostedAppController(Browser* browser) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const std::string extension_id =
-      web_app::GetExtensionIdFromApplicationName(browser->app_name());
+      web_app::GetAppIdFromApplicationName(browser->app_name());
   const Extension* extension =
       extensions::ExtensionRegistry::Get(browser->profile())
           ->GetExtensionById(extension_id,

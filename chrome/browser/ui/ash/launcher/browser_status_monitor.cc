@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -191,7 +191,7 @@ void BrowserStatusMonitor::AddV1AppToShelf(Browser* browser) {
   DCHECK(initialized_);
 
   std::string app_id =
-      web_app::GetExtensionIdFromApplicationName(browser->app_name());
+      web_app::GetAppIdFromApplicationName(browser->app_name());
   if (!app_id.empty()) {
     if (!IsV1AppInShelfWithAppId(app_id))
       launcher_controller_->SetV1AppStatus(app_id, ash::STATUS_RUNNING);

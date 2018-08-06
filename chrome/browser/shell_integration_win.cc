@@ -41,7 +41,6 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
 #include "chrome/browser/win/settings_app_monitor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -133,9 +132,8 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
     app_name = base::UTF8ToUTF16(web_app::GenerateApplicationNameFromURL(
         GURL(command_line.GetSwitchValueASCII(switches::kApp))));
   } else if (command_line.HasSwitch(switches::kAppId)) {
-    app_name = base::UTF8ToUTF16(
-        web_app::GenerateApplicationNameFromExtensionId(
-            command_line.GetSwitchValueASCII(switches::kAppId)));
+    app_name = base::UTF8ToUTF16(web_app::GenerateApplicationNameFromAppId(
+        command_line.GetSwitchValueASCII(switches::kAppId)));
   } else if (command_line.HasSwitch(switches::kShowAppList)) {
     app_name = GetAppListAppName();
   } else {

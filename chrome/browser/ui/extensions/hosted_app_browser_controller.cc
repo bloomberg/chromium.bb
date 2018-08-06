@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -143,8 +143,7 @@ base::string16 HostedAppBrowserController::FormatUrlOrigin(const GURL& url) {
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : SiteEngagementObserver(SiteEngagementService::Get(browser->profile())),
       browser_(browser),
-      extension_id_(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name())),
+      extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
       // If a bookmark app has a URL handler, then it is a PWA.
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
       // indicator of a Bookmark App for an installable website.

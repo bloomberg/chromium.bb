@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -345,7 +344,7 @@ Browser* CreateApplicationWindow(const AppLaunchParams& params,
   if (!params.override_app_name.empty())
     app_name = params.override_app_name;
   else if (extension)
-    app_name = web_app::GenerateApplicationNameFromExtensionId(extension->id());
+    app_name = web_app::GenerateApplicationNameFromAppId(extension->id());
   else
     app_name = web_app::GenerateApplicationNameFromURL(url);
 
@@ -457,7 +456,7 @@ Browser* ReparentWebContentsIntoAppBrowser(
   DCHECK(!profile->IsOffTheRecord());
 
   Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      web_app::GenerateApplicationNameFromExtensionId(extension->id()),
+      web_app::GenerateApplicationNameFromAppId(extension->id()),
       true /* trusted_source */, gfx::Rect(), profile,
       true /* user_gesture */));
   Browser* target_browser = new Browser(browser_params);
