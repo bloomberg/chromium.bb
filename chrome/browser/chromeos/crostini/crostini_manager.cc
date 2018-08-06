@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -448,28 +447,6 @@ void CrostiniManager::MaybeUpgradeCrostiniAfterTerminaCheck(
   InstallTerminaComponent(base::DoNothing());
 }
 
-namespace {
-void InstallTerminaComponentLoaderCallback(
-    CrostiniManager::BoolCallback callback,
-    component_updater::CrOSComponentManager::Error error,
-    const base::FilePath& result) {
-  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  bool is_successful =
-      error == component_updater::CrOSComponentManager::Error::NONE;
-
-  if (!is_successful) {
-    LOG(ERROR)
-        << "Failed to install the cros-termina component with error code: "
-        << static_cast<int>(error);
-  }
-  // Hop to the UI thread to update state and run |callback|.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback), is_successful));
-}
-}  // namespace
-
 void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
   if (chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
     // Running in test. We still PostTask to prevent races.
@@ -477,7 +454,9 @@ void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       true, true));
+                       true,
+                       component_updater::CrOSComponentManager::Error::NONE,
+                       base::FilePath()));
     return;
   }
   auto* cros_component_manager =
@@ -517,20 +496,30 @@ void CrostiniManager::InstallTerminaComponent(BoolCallback callback) {
       imageloader::kTerminaComponentName,
       component_updater::CrOSComponentManager::MountPolicy::kMount,
       update_policy,
-      base::BindOnce(
-          InstallTerminaComponentLoaderCallback,
-          base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         update_policy == UpdatePolicy::kForce)));
+      base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     update_policy == UpdatePolicy::kForce));
 }
 
-void CrostiniManager::OnInstallTerminaComponent(BoolCallback callback,
-                                                bool is_update_checked,
-                                                bool is_successful) {
+void CrostiniManager::OnInstallTerminaComponent(
+    CrostiniManager::BoolCallback callback,
+    bool is_update_checked,
+    component_updater::CrOSComponentManager::Error error,
+    const base::FilePath& result) {
+  bool is_successful =
+      error == component_updater::CrOSComponentManager::Error::NONE;
+
+  if (!is_successful) {
+    LOG(ERROR)
+        << "Failed to install the cros-termina component with error code: "
+        << static_cast<int>(error);
+  }
+
   if (is_successful && is_update_checked) {
     VLOG(1) << "cros-termina update check successful.";
     termina_update_check_needed_ = false;
   }
+
   std::move(callback).Run(is_successful);
 }
 

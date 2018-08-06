@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
@@ -230,8 +231,8 @@ void CrOSComponentManager::Load(const std::string& name,
     LoadInternal(name, std::move(load_callback));
   } else {
     // A compatible component is installed, do not load it.
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback),
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(load_callback),
                                   ReportError(Error::NONE), base::FilePath()));
   }
 }
@@ -298,8 +299,8 @@ void CrOSComponentManager::Install(ComponentUpdateService* cus,
                                    LoadCallback load_callback) {
   const ComponentConfig* config = FindConfig(name);
   if (!config) {
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback),
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(load_callback),
                                   ReportError(Error::UNKNOWN_COMPONENT),
                                   base::FilePath()));
     return;
@@ -327,15 +328,15 @@ void CrOSComponentManager::FinishInstall(const std::string& name,
                                          LoadCallback load_callback,
                                          update_client::Error error) {
   if (error != update_client::Error::NONE) {
-    base::PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(load_callback),
                        ReportError(Error::INSTALL_FAILURE), base::FilePath()));
   } else if (mount_policy == MountPolicy::kMount) {
     LoadInternal(name, std::move(load_callback));
   } else {
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback),
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(load_callback),
                                   ReportError(Error::NONE), base::FilePath()));
   }
 }
@@ -354,7 +355,7 @@ void CrOSComponentManager::LoadInternal(const std::string& name,
                            base::Unretained(this), std::move(load_callback),
                            base::TimeTicks::Now(), name));
   } else {
-    base::PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(load_callback),
                        ReportError(Error::COMPATIBILITY_CHECK_FAILED),
@@ -370,13 +371,14 @@ void CrOSComponentManager::FinishLoad(LoadCallback load_callback,
   UMA_HISTOGRAM_LONG_TIMES("ComponentUpdater.ChromeOS.MountTime",
                            base::TimeTicks::Now() - start_time);
   if (!result.has_value()) {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
-                                             ReportError(Error::MOUNT_FAILURE),
-                                             base::FilePath()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(load_callback),
+                       ReportError(Error::MOUNT_FAILURE), base::FilePath()));
   } else {
     metadata_table_->AddComponentForCurrentUser(name);
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback),
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(load_callback),
                                   ReportError(Error::NONE), result.value()));
   }
 }

@@ -113,6 +113,7 @@ class CrOSComponentManager {
   void SetDelegate(Delegate* delegate);
 
   // Installs a component and keeps it up-to-date.
+  // The |load_callback| is run on the calling thread.
   void Load(const std::string& name,
             MountPolicy mount_policy,
             UpdatePolicy update_policy,
