@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
 
+#include "base/logging.h"
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_mediator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_personalization_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_view_controller.h"
@@ -36,6 +38,7 @@
 
 @implementation ConsentBumpCoordinator
 
+@synthesize delegate = _delegate;
 @synthesize presentedCoordinatorType = _presentedCoordinatorType;
 @synthesize consentBumpViewController = _consentBumpViewController;
 @synthesize unifiedConsentCoordinator = _unifiedConsentCoordinator;
@@ -82,15 +85,31 @@
 
 - (void)consentBumpViewControllerDidTapPrimaryButton:
     (ConsentBumpViewController*)consentBumpViewController {
+  ConsentBumpOptionType type = ConsentBumpOptionTypeNotSet;
   switch (self.presentedCoordinatorType) {
     case ConsentBumpScreenUnifiedConsent:
-      // TODO(crbug.com/866506): Consent bump accepted.
+      type = ConsentBumpOptionTypeTurnOn;
       break;
     case ConsentBumpScreenPersonalization:
-      // TODO(crbug.com/866506): Clarify what should be the behavior at this
-      // point.
+      type = self.personalizationCoordinator.selectedOption;
       break;
   }
+  switch (type) {
+    case ConsentBumpOptionTypeNoChange:
+      // TODO(crbug.com/866506): Implement metrics.
+      break;
+    case ConsentBumpOptionTypeReview:
+      // TODO(crbug.com/866506): Implement metrics.
+      break;
+    case ConsentBumpOptionTypeTurnOn:
+      // TODO(crbug.com/866506): Implement metrics + sync updates.
+      break;
+    case ConsentBumpOptionTypeNotSet:
+      NOTREACHED();
+      break;
+  }
+  [self.delegate consentBumpCoordinator:self
+         didFinishNeedingToShowSettings:(type == ConsentBumpOptionTypeReview)];
 }
 
 - (void)consentBumpViewControllerDidTapSecondaryButton:

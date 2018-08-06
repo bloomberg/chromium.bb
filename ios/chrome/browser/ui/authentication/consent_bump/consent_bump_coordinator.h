@@ -7,11 +7,16 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@protocol ConsentBumpCoordinatorDelegate;
+
 // Coordinator handling the consent bump.
 @interface ConsentBumpCoordinator : ChromeCoordinator
 
 // ViewController associated with this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
+
+// Delegate for this coordinator.
+@property(nonatomic, weak) id<ConsentBumpCoordinatorDelegate> delegate;
 
 @end
 

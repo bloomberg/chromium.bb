@@ -9,6 +9,7 @@ source_set("consent_bump") {
   sources = [
     "consent_bump_coordinator.h",
     "consent_bump_coordinator.mm",
+    "consent_bump_coordinator_delegate.h",
     "consent_bump_mediator.h",
     "consent_bump_mediator.mm",
     "consent_bump_personalization_coordinator.h",
@@ -31,6 +32,7 @@ source_set("consent_bump_ui") {
     "consent_bump_consumer.h",
     "consent_bump_option_button.h",
     "consent_bump_option_button.mm",
+    "consent_bump_option_type.h",
     "consent_bump_personalization_view_controller.h",
     "consent_bump_personalization_view_controller.mm",
     "consent_bump_view_controller.h",

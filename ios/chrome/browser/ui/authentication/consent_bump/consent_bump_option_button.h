@@ -7,13 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-// Different option types.
-typedef NS_ENUM(NSInteger, ConsentBumpOptionType) {
-  ConsentBumpOptionTypeDefault = 0,
-  ConsentBumpOptionTypeNoChange,
-  ConsentBumpOptionTypeReview,
-  ConsentBumpOptionTypeTurnOn
-};
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_option_type.h"
 
 // Button defining a consent bump option.
 @interface ConsentBumpOptionButton : UIButton
