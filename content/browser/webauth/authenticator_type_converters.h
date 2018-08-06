@@ -15,7 +15,7 @@
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "third_party/blink/public/platform/modules/webauth/authenticator.mojom.h"
+#include "third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h"
 
 // TODO(hongjunchoi): Remove type converters and instead expose mojo interface
 // directly from device/fido service.

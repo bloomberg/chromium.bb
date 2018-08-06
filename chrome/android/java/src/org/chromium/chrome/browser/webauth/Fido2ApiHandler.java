@@ -15,7 +15,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 
 /**
  * Android implementation of the Authenticator service defined in
- * components/webauth/authenticator.mojom.
+ * //third_party/blink/public/platform/modules/webauth/authenticator.mojom.
  */
 public class Fido2ApiHandler {
     private static Fido2ApiHandler sInstance;

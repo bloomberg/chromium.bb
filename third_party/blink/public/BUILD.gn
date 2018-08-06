@@ -715,7 +715,7 @@ mojom("mojo_bindings") {
     "platform/modules/payments/payment_app.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
-    "platform/modules/webauth/virtual_authenticator.mojom",
+    "platform/modules/webauthn/virtual_authenticator.mojom",
     "platform/modules/webdatabase/web_database.mojom",
     "platform/oom_intervention.mojom",
     "platform/referrer.mojom",
@@ -779,7 +779,7 @@ mojom("android_mojo_bindings") {
     "platform/modules/installedapp/related_application.mojom",
     "platform/modules/mediasession/media_session.mojom",
     "platform/modules/payments/payment_request.mojom",
-    "platform/modules/webauth/authenticator.mojom",
+    "platform/modules/webauthn/authenticator.mojom",
     "platform/modules/webshare/webshare.mojom",
     "web/remote_objects.mojom",
   ]
