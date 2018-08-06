@@ -5,7 +5,6 @@
 // https://w3c.github.io/server-timing/#dom-performanceservertiming
 
 [
-    RuntimeEnabled=ServerTiming,
     Exposed=(Window,Worker)
 ] interface PerformanceServerTiming {
     readonly attribute DOMString name;

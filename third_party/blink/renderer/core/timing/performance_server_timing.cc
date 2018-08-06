@@ -29,15 +29,13 @@ ScriptValue PerformanceServerTiming::toJSONForBinding(
 WebVector<WebServerTimingInfo> PerformanceServerTiming::ParseServerTiming(
     const ResourceTimingInfo& info) {
   WebVector<WebServerTimingInfo> result;
-  if (RuntimeEnabledFeatures::ServerTimingEnabled()) {
-    const ResourceResponse& response = info.FinalResponse();
-    std::unique_ptr<ServerTimingHeaderVector> headers = ParseServerTimingHeader(
-        response.HttpHeaderField(HTTPNames::Server_Timing));
-    result.reserve(headers->size());
-    for (const auto& header : *headers) {
-      result.emplace_back(header->Name(), header->Duration(),
-                          header->Description());
-    }
+  const ResourceResponse& response = info.FinalResponse();
+  std::unique_ptr<ServerTimingHeaderVector> headers = ParseServerTimingHeader(
+      response.HttpHeaderField(HTTPNames::Server_Timing));
+  result.reserve(headers->size());
+  for (const auto& header : *headers) {
+    result.emplace_back(header->Name(), header->Duration(),
+                        header->Description());
   }
   return result;
 }
