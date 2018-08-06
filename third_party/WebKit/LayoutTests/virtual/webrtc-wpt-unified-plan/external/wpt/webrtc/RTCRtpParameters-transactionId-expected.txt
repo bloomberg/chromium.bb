@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS sender.getParameters() should return different transaction IDs for each call
 PASS sender.setParameters() with transaction ID different from last getParameters() should reject with InvalidModificationError
-FAIL sender.setParameters() with transaction ID unset should reject with InvalidModificationError assert_throws: function "function() { throw e }" threw object "TypeError: Failed to execute 'setParameters' on 'RTCRtpSender': required member transactionId is undefined." that is not a DOMException InvalidModificationError: property "code" is equal to undefined, expected 13
+PASS sender.setParameters() with transaction ID unset should reject with TypeError
 PASS setParameters() twice with the same parameters should reject with InvalidStateError
 PASS setParameters() with parameters older than last getParameters() should reject with InvalidModificationError
 Harness: the test ran to completion.
