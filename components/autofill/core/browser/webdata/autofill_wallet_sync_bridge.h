@@ -7,10 +7,11 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
-#include "base/threading/thread_checker.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -58,14 +59,15 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
  private:
+  // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable();
-
-  // The bridge should be used on the same sequence where it is constructed.
-  THREAD_CHECKER(thread_checker_);
 
   // AutofillProfileSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.
   AutofillWebDataBackend* const web_data_backend_;
+
+  // The bridge should be used on the same sequence where it is constructed.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletSyncBridge);
 };

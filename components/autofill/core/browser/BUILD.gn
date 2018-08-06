@@ -176,6 +176,8 @@ static_library("browser") {
     "webdata/autofill_profile_sync_difference_tracker.h",
     "webdata/autofill_profile_syncable_service.cc",
     "webdata/autofill_profile_syncable_service.h",
+    "webdata/autofill_sync_bridge_util.cc",
+    "webdata/autofill_sync_bridge_util.h",
     "webdata/autofill_table.cc",
     "webdata/autofill_table.h",
     "webdata/autofill_table_encryptor.h",
@@ -333,6 +335,8 @@ static_library("test_support") {
     "test_region_data_loader.h",
     "test_sync_service.cc",
     "test_sync_service.h",
+    "webdata/autofill_sync_bridge_test_util.cc",
+    "webdata/autofill_sync_bridge_test_util.h",
   ]
 
   public_deps = [

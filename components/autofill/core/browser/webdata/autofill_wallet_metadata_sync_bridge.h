@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"

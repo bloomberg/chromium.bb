@@ -4,17 +4,26 @@
 
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 
-#include <memory>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_profile_sync_util.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/sync/model/entity_data.h"
+#include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/sync_metadata_store_change_list.h"
 
 using sync_pb::AutofillWalletSpecifics;
+using syncer::EntityData;
 
 namespace autofill {
 namespace {
@@ -69,12 +78,12 @@ AutofillWalletSyncBridge::AutofillWalletSyncBridge(
       web_data_backend_(web_data_backend) {}
 
 AutofillWalletSyncBridge::~AutofillWalletSyncBridge() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 std::unique_ptr<syncer::MetadataChangeList>
 AutofillWalletSyncBridge::CreateMetadataChangeList() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<syncer::SyncMetadataStoreChangeList>(
       GetAutofillTable(), syncer::AUTOFILL_WALLET_DATA);
 }
@@ -95,29 +104,42 @@ base::Optional<syncer::ModelError> AutofillWalletSyncBridge::ApplySyncChanges(
 
 void AutofillWalletSyncBridge::GetData(StorageKeyList storage_keys,
                                        DataCallback callback) {
+  // This data type is never synced "up" so we don't need to implement this.
   NOTIMPLEMENTED();
 }
 
 void AutofillWalletSyncBridge::GetAllDataForDebugging(DataCallback callback) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  std::vector<std::unique_ptr<CreditCard>> cards;
+  if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
+      !GetAutofillTable()->GetServerCreditCards(&cards)) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load entries from table."});
+    return;
+  }
+
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
+  for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
+    batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
+               CreateEntityDataFromAutofillServerProfile(*entry));
+  }
+  for (const std::unique_ptr<CreditCard>& entry : cards) {
+    batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
+               CreateEntityDataFromCard(*entry));
+  }
+
+  std::move(callback).Run(std::move(batch));
 }
 
 std::string AutofillWalletSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill_wallet());
 
-  switch (entity_data.specifics.autofill_wallet().type()) {
-    case sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS:
-      return "address-" + GetStorageKey(entity_data);
-    case sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD:
-      return "card-" + GetStorageKey(entity_data);
-    case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
-      return "customer-" + GetStorageKey(entity_data);
-    case sync_pb::AutofillWalletSpecifics::UNKNOWN:
-      NOTREACHED();
-      return std::string();
-  }
-  return std::string();
+  return GetClientTagForSpecificsId(
+      entity_data.specifics.autofill_wallet().type(),
+      GetStorageKey(entity_data));
 }
 
 std::string AutofillWalletSyncBridge::GetStorageKey(
