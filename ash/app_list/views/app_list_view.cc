@@ -1385,7 +1385,8 @@ float AppListView::GetAppListTransitionProgress() const {
   if (current_height <= peeking_height) {
     // Currently transition progress is between closed and peeking state.
     // Calculate the progress of this transition.
-    const float shelf_height = GetCurrentAppListHeight();
+    const float shelf_height =
+        GetScreenBottom() - GetDisplayNearestView().work_area().bottom();
 
     // When screen is rotated, the current height might be smaller than shelf
     // height for just one moment, which results in negative progress. So force
