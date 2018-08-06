@@ -146,7 +146,8 @@ void SearchResultView::CreateTitleRenderText() {
   render_text->SetText(result_->title());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(
-      rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(2));
+      rb.GetFontList(kSearchResultTitleFontStyle)
+          .DeriveWithSizeDelta(kSearchResultTitleTextSizeDelta));
   // When result is an omnibox non-url search, the matched tag indicates
   // proposed query. For all other cases, the matched tag indicates typed search
   // query.
