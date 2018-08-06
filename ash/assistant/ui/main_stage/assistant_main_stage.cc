@@ -8,9 +8,9 @@
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
-#include "ash/assistant/ui/main_stage/suggestion_container_view.h"
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -54,6 +54,19 @@ constexpr base::TimeDelta kAnimationTranslateUpDelay =
 constexpr base::TimeDelta kAnimationTranslateUpDuration =
     base::TimeDelta::FromMilliseconds(333);
 
+// Footer animation.
+constexpr int kFooterAnimationTranslationDip = 22;
+constexpr base::TimeDelta kFooterAnimationTranslationDelay =
+    base::TimeDelta::FromMilliseconds(66);
+constexpr base::TimeDelta kFooterAnimationTranslationDuration =
+    base::TimeDelta::FromMilliseconds(416);
+constexpr base::TimeDelta kFooterAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(149);
+constexpr base::TimeDelta kFooterAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kFooterAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(100);
+
 // Greeting animation.
 constexpr base::TimeDelta kGreetingAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(83);
@@ -69,19 +82,6 @@ constexpr base::TimeDelta kProgressAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(167);
 constexpr base::TimeDelta kProgressAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(83);
-
-// Suggestion container animation.
-constexpr int kSuggestionContainerAnimationTranslationDip = 22;
-constexpr base::TimeDelta kSuggestionContainerAnimationTranslationDelay =
-    base::TimeDelta::FromMilliseconds(66);
-constexpr base::TimeDelta kSuggestionContainerAnimationTranslationDuration =
-    base::TimeDelta::FromMilliseconds(416);
-constexpr base::TimeDelta kSuggestionContainerAnimationFadeInDelay =
-    base::TimeDelta::FromMilliseconds(149);
-constexpr base::TimeDelta kSuggestionContainerAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kSuggestionContainerAnimationFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(100);
 
 // StackLayout -----------------------------------------------------------------
 
@@ -145,13 +145,13 @@ AssistantMainStage::AssistantMainStage(
               /*animation_ended_callback=*/base::BindRepeating(
                   &AssistantMainStage::OnActiveQueryExitAnimationEnded,
                   base::Unretained(this)))),
-      suggestion_container_animation_observer_(
+      footer_animation_observer_(
           std::make_unique<ui::CallbackLayerAnimationObserver>(
               /*animation_started_callback=*/base::BindRepeating(
-                  &AssistantMainStage::OnSuggestionContainerAnimationStarted,
+                  &AssistantMainStage::OnFooterAnimationStarted,
                   base::Unretained(this)),
               /*animation_ended_callback=*/base::BindRepeating(
-                  &AssistantMainStage::OnSuggestionContainerAnimationEnded,
+                  &AssistantMainStage::OnFooterAnimationEnded,
                   base::Unretained(this)))) {
   InitLayout(assistant_controller);
 
@@ -232,15 +232,15 @@ void AssistantMainStage::InitContentLayoutContainer(
 
   layout_manager->SetFlexForView(ui_element_container_, 1);
 
-  // Suggestion container.
-  suggestion_container_ = new SuggestionContainerView(assistant_controller);
-  suggestion_container_->AddObserver(this);
+  // Footer.
+  footer_ = new AssistantFooterView(assistant_controller);
+  footer_->AddObserver(this);
 
-  // The suggestion container will be animated on its own layer.
-  suggestion_container_->SetPaintToLayer();
-  suggestion_container_->layer()->SetFillsBoundsOpaquely(false);
+  // The footer will be animated on its own layer.
+  footer_->SetPaintToLayer();
+  footer_->layer()->SetFillsBoundsOpaquely(false);
 
-  content_layout_container_->AddChildView(suggestion_container_);
+  content_layout_container_->AddChildView(footer_);
 
   AddChildView(content_layout_container_);
 }
@@ -410,7 +410,7 @@ void AssistantMainStage::OnActivateQuery() {
   }
 
   UpdateTopPadding();
-  UpdateSuggestionContainer();
+  UpdateFooter();
 }
 
 void AssistantMainStage::OnActiveQueryCleared() {
@@ -492,7 +492,7 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
               CreateOpacityElement(1.f, kPendingQueryAnimationFadeInDuration)));
     }
 
-    UpdateSuggestionContainer();
+    UpdateFooter();
   }
 
   pending_query_view_->SetQuery(query);
@@ -505,10 +505,10 @@ void AssistantMainStage::OnPendingQueryCleared() {
   }
 
   // If the pending query is cleared but a committed query exists, we don't
-  // need to update the suggestions container because the suggestion container
-  // visibility state should not have changed.
+  // need to update the footer because the footer visibility state should not
+  // have changed.
   if (!committed_query_view_)
-    UpdateSuggestionContainer();
+    UpdateFooter();
 }
 
 void AssistantMainStage::OnResponseChanged(const AssistantResponse& response) {
@@ -552,7 +552,7 @@ void AssistantMainStage::OnUiVisibilityChanged(bool visible,
   progress_indicator_->layer()->SetTransform(gfx::Transform());
 
   UpdateTopPadding();
-  UpdateSuggestionContainer();
+  UpdateFooter();
 }
 
 void AssistantMainStage::UpdateTopPadding() {
@@ -596,75 +596,72 @@ void AssistantMainStage::UpdateQueryViewTransform(views::View* query_view) {
   query_view->layer()->SetTransform(transform);
 }
 
-void AssistantMainStage::UpdateSuggestionContainer() {
-  // The suggestion container is only visible when the committed/pending query
-  // views are not. When it is not visible, it should not process events.
+void AssistantMainStage::UpdateFooter() {
+  // The footer is only visible when the committed/pending query views are not.
+  // When it is not visible, it should not process events.
   bool visible = !committed_query_view_ && !pending_query_view_;
 
   if (!assistant::ui::kIsMotionSpecEnabled) {
-    suggestion_container_->layer()->SetOpacity(visible ? 1.f : 0.f);
-    suggestion_container_->set_can_process_events_within_subtree(
-        visible ? true : false);
+    footer_->layer()->SetOpacity(visible ? 1.f : 0.f);
+    footer_->set_can_process_events_within_subtree(visible ? true : false);
     return;
   }
 
   using namespace assistant::util;
 
   if (visible) {
-    // The suggestion container will animate up into position so we need to set
-    // an initial offset transformation from which to animate.
+    // The footer will animate up into position so we need to set an initial
+    // offset transformation from which to animate.
     gfx::Transform transform;
-    transform.Translate(0, kSuggestionContainerAnimationTranslationDip);
-    suggestion_container_->layer()->SetTransform(transform);
+    transform.Translate(0, kFooterAnimationTranslationDip);
+    footer_->layer()->SetTransform(transform);
 
-    // Animate the entry of the suggestion container.
+    // Animate the entry of the footer.
     StartLayerAnimationSequencesTogether(
-        suggestion_container_->layer()->GetAnimator(),
+        footer_->layer()->GetAnimator(),
         {// Animate the translation with delay.
          CreateLayerAnimationSequence(
              ui::LayerAnimationElement::CreatePauseElement(
                  ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
-                 kSuggestionContainerAnimationTranslationDelay),
-             CreateTransformElement(
-                 gfx::Transform(),
-                 kSuggestionContainerAnimationTranslationDuration,
-                 gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+                 kFooterAnimationTranslationDelay),
+             CreateTransformElement(gfx::Transform(),
+                                    kFooterAnimationTranslationDuration,
+                                    gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
          // Animate the fade in with delay.
          CreateLayerAnimationSequence(
              ui::LayerAnimationElement::CreatePauseElement(
                  ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                 kSuggestionContainerAnimationFadeInDelay),
-             CreateOpacityElement(
-                 1.f, kSuggestionContainerAnimationFadeInDuration))},
+                 kFooterAnimationFadeInDelay),
+             CreateOpacityElement(1.f, kFooterAnimationFadeInDuration))},
         // Observer animation start/end events.
-        suggestion_container_animation_observer_.get());
+        footer_animation_observer_.get());
   } else {
-    // Animate the exit of the suggestion container.
+    // Animate the exit of the footer.
     StartLayerAnimationSequence(
-        suggestion_container_->layer()->GetAnimator(),
+        footer_->layer()->GetAnimator(),
         // Animate fade out.
-        CreateLayerAnimationSequence(CreateOpacityElement(
-            0.f, kSuggestionContainerAnimationFadeOutDuration)),
+        CreateLayerAnimationSequence(
+            CreateOpacityElement(0.f, kFooterAnimationFadeOutDuration)),
         // Observe animation start/end events.
-        suggestion_container_animation_observer_.get());
+        footer_animation_observer_.get());
   }
 
   // Set the observer to active so that we'll receive start/end events.
-  suggestion_container_animation_observer_->SetActive();
+  footer_animation_observer_->SetActive();
 }
 
-void AssistantMainStage::OnSuggestionContainerAnimationStarted(
+void AssistantMainStage::OnFooterAnimationStarted(
     const ui::CallbackLayerAnimationObserver& observer) {
-  // The suggestion container should not process events while animating.
-  suggestion_container_->set_can_process_events_within_subtree(false);
+  // The footer should not process events while animating.
+  footer_->set_can_process_events_within_subtree(false);
 }
 
-bool AssistantMainStage::OnSuggestionContainerAnimationEnded(
+bool AssistantMainStage::OnFooterAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
-  // The suggestion container should only process events when visible. It is
-  // only visible when there is no committed or pending query view.
-  suggestion_container_->set_can_process_events_within_subtree(
-      !committed_query_view_ && !pending_query_view_);
+  // The footer should only process events when visible. It is only visible when
+  // there is no committed or pending query view.
+  footer_->set_can_process_events_within_subtree(!committed_query_view_ &&
+                                                 !pending_query_view_);
 
   // Return false so that the observer does not destroy itself.
   return false;

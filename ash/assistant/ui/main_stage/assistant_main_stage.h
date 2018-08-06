@@ -24,9 +24,9 @@ class Label;
 namespace ash {
 
 class AssistantController;
+class AssistantFooterView;
 class AssistantProgressIndicator;
 class AssistantQueryView;
-class SuggestionContainerView;
 class UiElementContainerView;
 
 // AssistantMainStage is the child of AssistantMainView responsible for
@@ -66,16 +66,16 @@ class AssistantMainStage : public views::View,
 
   void UpdateTopPadding();
   void UpdateQueryViewTransform(views::View* query_view);
-  void UpdateSuggestionContainer();
+  void UpdateFooter();
 
   void OnActivateQuery();
   void OnActiveQueryCleared();
   bool OnActiveQueryExitAnimationEnded(
       const ui::CallbackLayerAnimationObserver& observer);
 
-  void OnSuggestionContainerAnimationStarted(
+  void OnFooterAnimationStarted(
       const ui::CallbackLayerAnimationObserver& observer);
-  bool OnSuggestionContainerAnimationEnded(
+  bool OnFooterAnimationEnded(
       const ui::CallbackLayerAnimationObserver& observer);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
@@ -83,7 +83,7 @@ class AssistantMainStage : public views::View,
   // Content layout container and children. Owned by view hierarchy.
   views::View* content_layout_container_;
   UiElementContainerView* ui_element_container_;
-  SuggestionContainerView* suggestion_container_;
+  AssistantFooterView* footer_;
 
   // Query layout container and children. Owned by view hierarchy.
   views::View* query_layout_container_;
@@ -100,7 +100,7 @@ class AssistantMainStage : public views::View,
       active_query_exit_animation_observer_;
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver>
-      suggestion_container_animation_observer_;
+      footer_animation_observer_;
 
   // True if this is the first query received for the current Assistant UI
   // session, false otherwise.
