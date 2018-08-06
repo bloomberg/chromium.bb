@@ -16,6 +16,9 @@
 @property(nonatomic, strong, readonly)
     CollectionViewModel<CollectionViewItem*>* collectionViewModel;
 
+// Reloads |sections|.
+- (void)reloadSections:(NSIndexSet*)sections;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_CONSUMER_H_

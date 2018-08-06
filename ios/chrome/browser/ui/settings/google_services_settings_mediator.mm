@@ -4,10 +4,15 @@
 
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 
+#include "base/auto_reset.h"
+#include "base/mac/foundation_util.h"
+#import "components/prefs/ios/pref_observer_bridge.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_collapsible_item.h"
@@ -23,6 +28,8 @@
 
 using l10n_util::GetNSString;
 using unified_consent::prefs::kUnifiedConsentGiven;
+
+typedef NSArray<CollectionViewItem*>* ItemArray;
 
 namespace {
 
@@ -66,12 +73,35 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface GoogleServicesSettingsMediator ()
+@interface GoogleServicesSettingsMediator ()<PrefObserverDelegate> {
+  // Bridge to listen to pref changes.
+  std::unique_ptr<PrefObserverBridge> prefObserverBridge_;
+  // Registrar for pref changes notifications.
+  PrefChangeRegistrar prefChangeRegistrar_;
+}
 
 // Returns YES if the user is authenticated.
-@property(nonatomic, readonly) BOOL isAuthenticated;
+@property(nonatomic, assign, readonly) BOOL isAuthenticated;
+// Returns YES if the user has given his consent to use Google services.
+@property(nonatomic, assign, readonly) BOOL isConsentGiven;
 // Preference service.
-@property(nonatomic, readonly) PrefService* prefService;
+@property(nonatomic, assign, readonly) PrefService* prefService;
+
+// YES if the switch for |syncEverythingItem| is currently animating from one
+// state to another.
+@property(nonatomic, assign, readwrite) BOOL syncEverythingSwitchBeingAnimated;
+// Item for "Sync Everything" section.
+@property(nonatomic, strong, readonly) SyncSwitchItem* syncEverythingItem;
+// Collapsible item for the personalized section.
+@property(nonatomic, strong, readonly)
+    SettingsCollapsibleItem* syncPersonalizationItem;
+// All the items for the personalized section.
+@property(nonatomic, strong, readonly) ItemArray personalizedItems;
+// Collapsible item for the non-personalized section.
+@property(nonatomic, strong, readonly)
+    SettingsCollapsibleItem* nonPersonalizedServicesItem;
+// All the items for the non-personalized section.
+@property(nonatomic, strong, readonly) ItemArray nonPersonalizedItems;
 
 @end
 
@@ -80,6 +110,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize consumer = _consumer;
 @synthesize authService = _authService;
 @synthesize prefService = _prefService;
+@synthesize syncEverythingSwitchBeingAnimated =
+    _syncEverythingSwitchBeingAnimated;
+@synthesize syncEverythingItem = _syncEverythingItem;
+@synthesize syncPersonalizationItem = _syncPersonalizationItem;
+@synthesize personalizedItems = _personalizedItems;
+@synthesize nonPersonalizedServicesItem = _nonPersonalizedServicesItem;
+@synthesize nonPersonalizedItems = _nonPersonalizedItems;
 
 #pragma mark - Load model
 
@@ -88,6 +125,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     DCHECK(prefService);
     _prefService = prefService;
+    prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
+    prefChangeRegistrar_.Init(prefService);
+    prefObserverBridge_->ObserveChangesForPreference(kUnifiedConsentGiven,
+                                                     &prefChangeRegistrar_);
   }
   return self;
 }
@@ -96,19 +137,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)loadSyncEverythingSection {
   CollectionViewModel* model = self.consumer.collectionViewModel;
   [model addSectionWithIdentifier:SyncEverythingSectionIdentifier];
-  [model addItem:[self syncEverythingItem]
+  [model addItem:self.syncEverythingItem
       toSectionWithIdentifier:SyncEverythingSectionIdentifier];
-}
-
-// Creates SyncEverythingItemType item.
-- (CollectionViewItem*)syncEverythingItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:SyncEverythingItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_EVERYTHING);
-  item.enabled = YES;
-  item.on = [self isConsentGiven];
-  item.commandID = GoogleServicesSettingsCommandIDToggleSyncEverything;
-  return item;
+  self.syncEverythingItem.on = self.isConsentGiven;
 }
 
 // Loads PersonalizedSectionIdentifier section.
@@ -118,165 +149,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model setSectionIdentifier:PersonalizedSectionIdentifier
                  collapsedKey:kGoogleServicesSettingsPersonalizedSectionKey];
   SettingsCollapsibleItem* syncPersonalizationItem =
-      [self syncPersonalizationItem];
+      self.syncPersonalizationItem;
   [model addItem:syncPersonalizationItem
       toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  BOOL collapsed = self.isAuthenticated ? [self isConsentGiven] : YES;
+  BOOL collapsed = self.isAuthenticated ? self.isConsentGiven : YES;
   syncPersonalizationItem.collapsed = collapsed;
   [model setSection:PersonalizedSectionIdentifier collapsed:collapsed];
-  [model addItem:[self syncBookmarksItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self syncHistoryItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self syncPasswordsItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self syncOpenTabsItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self syncAutofillItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self syncReadingListItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self syncActivityAndInteractionsItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self syncGoogleActivityControlsItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self encryptionItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model addItem:[self manageSyncedDataItem]
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-}
-
-// Creates SyncPersonalizationItemType item.
-- (SettingsCollapsibleItem*)syncPersonalizationItem {
-  SettingsCollapsibleItem* item = [[SettingsCollapsibleItem alloc]
-      initWithType:SyncPersonalizationItemType];
-  item.text =
-      GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_TEXT);
-  item.numberOfTextLines = 0;
-  if (!self.isAuthenticated)
-    item.textColor = [[MDCPalette greyPalette] tint500];
-  item.detailText =
-      GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_DETAIL);
-  item.numberOfDetailTextLines = 0;
-  return item;
-}
-
-// Creates SyncBookmarksItemType item.
-- (CollectionViewItem*)syncBookmarksItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:SyncBookmarksItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_BOOKMARKS_TEXT);
-  item.enabled = self.isAuthenticated;
-  item.commandID = GoogleServicesSettingsCommandIDToggleBookmarkSync;
-  return item;
-}
-
-// Creates SyncHistoryItemType item.
-- (CollectionViewItem*)syncHistoryItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:SyncHistoryItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_HISTORY_TEXT);
-  item.enabled = self.isAuthenticated;
-  item.commandID = GoogleServicesSettingsCommandIDToggleHistorySync;
-  return item;
-}
-
-// Creates SyncPasswordsItemType item.
-- (CollectionViewItem*)syncPasswordsItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:SyncPasswordsItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_PASSWORD_TEXT);
-  item.enabled = self.isAuthenticated;
-  item.commandID = GoogleServicesSettingsCommandIDTogglePasswordsSync;
-  return item;
-}
-
-// Creates SyncOpenTabsItemType item.
-- (CollectionViewItem*)syncOpenTabsItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:SyncOpenTabsItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_OPENTABS_TEXT);
-  item.enabled = self.isAuthenticated;
-  item.commandID = GoogleServicesSettingsCommandIDToggleOpenTabsSync;
-  return item;
-}
-
-// Creates SyncAutofillItemType item.
-- (CollectionViewItem*)syncAutofillItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:SyncAutofillItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOFILL_TEXT);
-  item.enabled = self.isAuthenticated;
-  item.commandID = GoogleServicesSettingsCommandIDToggleAutofillSync;
-  return item;
-}
-
-// Creates SyncReadingListItemType item.
-- (CollectionViewItem*)syncReadingListItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:SyncReadingListItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT);
-  item.enabled = self.isAuthenticated;
-  item.commandID = GoogleServicesSettingsCommandIDToggleReadingListSync;
-  return item;
-}
-
-// Creates SyncActivityAndInteractionsItemType item.
-- (CollectionViewItem*)syncActivityAndInteractionsItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:SyncActivityAndInteractionsItemType];
-  item.text = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT);
-  item.detailText = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL);
-  item.enabled = self.isAuthenticated;
-  item.commandID =
-      GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService;
-  return item;
-}
-
-// Creates SyncGoogleActivityControlsItemType item.
-- (CollectionViewItem*)syncGoogleActivityControlsItem {
-  CollectionViewTextItem* item = [[CollectionViewTextItem alloc]
-      initWithType:SyncGoogleActivityControlsItemType];
-  item.text = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_TEXT);
-  item.numberOfTextLines = 0;
-  if (!self.isAuthenticated)
-    item.textColor = [[MDCPalette greyPalette] tint500];
-  item.detailText = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_DETAIL);
-  item.numberOfDetailTextLines = 0;
-  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
-  item.commandID = GoogleServicesSettingsCommandIDOpenGoogleActivityPage;
-  return item;
-}
-
-// Creates EncryptionItemType item.
-- (CollectionViewItem*)encryptionItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:EncryptionItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENCRYPTION_TEXT);
-  item.numberOfTextLines = 0;
-  if (!self.isAuthenticated)
-    item.textColor = [[MDCPalette greyPalette] tint500];
-  item.numberOfDetailTextLines = 0;
-  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
-  item.commandID = GoogleServicesSettingsCommandIDOpenEncryptionDialog;
-  return item;
-}
-
-// Creates ManageSyncedDataItemType item.
-- (CollectionViewItem*)manageSyncedDataItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:ManageSyncedDataItemType];
-  item.text =
-      GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_MANAGED_SYNC_DATA_TEXT);
-  item.numberOfTextLines = 0;
-  if (!self.isAuthenticated)
-    item.textColor = [[MDCPalette greyPalette] tint500];
-  item.commandID = GoogleServicesSettingsCommandIDOpenManageSyncedDataPage;
-  return item;
+  for (CollectionViewItem* item in self.personalizedItems) {
+    [model addItem:item toSectionWithIdentifier:PersonalizedSectionIdentifier];
+  }
+  [self updatePersonalizedSection];
 }
 
 // Loads NonPersonalizedSectionIdentifier section.
@@ -286,88 +168,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model setSectionIdentifier:NonPersonalizedSectionIdentifier
                  collapsedKey:kGoogleServicesSettingsNonPersonalizedSectionKey];
   SettingsCollapsibleItem* nonPersonalizedServicesItem =
-      [self nonPersonalizedServicesItem];
+      self.nonPersonalizedServicesItem;
   [model addItem:nonPersonalizedServicesItem
       toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
-  BOOL collapsed = self.isAuthenticated ? [self isConsentGiven] : NO;
+  BOOL collapsed = self.isAuthenticated ? self.isConsentGiven : NO;
   nonPersonalizedServicesItem.collapsed = collapsed;
   [model setSection:NonPersonalizedSectionIdentifier collapsed:collapsed];
-  [model addItem:[self autocompleteSearchesAndURLsItem]
-      toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
-  [model addItem:[self preloadPagesItem]
-      toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
-  [model addItem:[self improveChromeItem]
-      toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
-  [model addItem:[self betterSearchAndBrowsingItemType]
-      toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
+  for (CollectionViewItem* item in self.nonPersonalizedItems) {
+    [model addItem:item
+        toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
+  }
+  [self updateNonPersonalizedSection];
 }
 
-// Creates NonPersonalizedServicesItemType item.
-- (SettingsCollapsibleItem*)nonPersonalizedServicesItem {
-  SettingsCollapsibleItem* item = [[SettingsCollapsibleItem alloc]
-      initWithType:NonPersonalizedServicesItemType];
-  item.text = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_NON_PERSONALIZED_SERVICES_TEXT);
-  item.numberOfTextLines = 0;
-  item.detailText = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_NON_PERSONALIZED_SERVICES_DETAIL);
-  item.numberOfDetailTextLines = 0;
-  return item;
-}
-
-// Creates AutocompleteSearchesAndURLsItemType item.
-- (CollectionViewItem*)autocompleteSearchesAndURLsItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:AutocompleteSearchesAndURLsItemType];
-  item.text = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT);
-  item.detailText = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL);
-  item.commandID =
-      GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService;
-  item.enabled = YES;
-  return item;
-}
-
-// Creates PreloadPagesItemType item.
-- (CollectionViewItem*)preloadPagesItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:PreloadPagesItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_TEXT);
-  item.detailText =
-      GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_DETAIL);
-  item.enabled = YES;
-  item.commandID = GoogleServicesSettingsCommandIDTogglePreloadPagesService;
-  return item;
-}
-
-// Creates ImproveChromeItemType item.
-- (CollectionViewItem*)improveChromeItem {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:ImproveChromeItemType];
-  item.text = GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT);
-  item.detailText =
-      GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL);
-  item.enabled = YES;
-  item.commandID = GoogleServicesSettingsCommandIDToggleImproveChromeService;
-  return item;
-}
-
-// Creates BetterSearchAndBrowsingItemType item.
-- (CollectionViewItem*)betterSearchAndBrowsingItemType {
-  SyncSwitchItem* item =
-      [[SyncSwitchItem alloc] initWithType:BetterSearchAndBrowsingItemType];
-  item.text = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT);
-  item.detailText = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL);
-  item.enabled = YES;
-  item.commandID =
-      GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService;
-  return item;
-}
-
-#pragma mark - Private
+#pragma mark - Properties
 
 - (BOOL)isAuthenticated {
   return self.authService->IsAuthenticated();
@@ -375,6 +189,247 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)isConsentGiven {
   return self.prefService->GetBoolean(kUnifiedConsentGiven);
+}
+
+- (CollectionViewItem*)syncEverythingItem {
+  if (!_syncEverythingItem) {
+    _syncEverythingItem = [self
+        switchItemWithItemType:SyncEverythingItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_EVERYTHING
+                detailStringID:0
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleSyncEverything];
+  }
+  return _syncEverythingItem;
+}
+
+- (SettingsCollapsibleItem*)syncPersonalizationItem {
+  if (!_syncPersonalizationItem) {
+    _syncPersonalizationItem = [self
+        collapsibleItemWithItemType:SyncPersonalizationItemType
+                       textStringID:
+                           IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_TEXT
+                     detailStringID:
+                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_DETAIL];
+  }
+  return _syncPersonalizationItem;
+}
+
+- (ItemArray)personalizedItems {
+  if (!_personalizedItems) {
+    SyncSwitchItem* syncBookmarksItem = [self
+        switchItemWithItemType:SyncBookmarksItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_BOOKMARKS_TEXT
+                detailStringID:0
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleBookmarkSync];
+    SyncSwitchItem* syncHistoryItem = [self
+        switchItemWithItemType:SyncHistoryItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_HISTORY_TEXT
+                detailStringID:0
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleHistorySync];
+    SyncSwitchItem* syncPasswordsItem = [self
+        switchItemWithItemType:SyncPasswordsItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_PASSWORD_TEXT
+                detailStringID:0
+                     commandID:
+                         GoogleServicesSettingsCommandIDTogglePasswordsSync];
+    SyncSwitchItem* syncOpenTabsItem = [self
+        switchItemWithItemType:SyncOpenTabsItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_OPENTABS_TEXT
+                detailStringID:0
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleOpenTabsSync];
+    SyncSwitchItem* syncAutofillItem = [self
+        switchItemWithItemType:SyncAutofillItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOFILL_TEXT
+                detailStringID:0
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleAutofillSync];
+    SyncSwitchItem* syncReadingListItem = [self
+        switchItemWithItemType:SyncReadingListItemType
+                  textStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT
+                detailStringID:0
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleReadingListSync];
+    SyncSwitchItem* syncActivityAndInteractionsItem = [self
+        switchItemWithItemType:SyncActivityAndInteractionsItemType
+                  textStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT
+                detailStringID:
+                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService];
+    CollectionViewTextItem* syncGoogleActivityControlsItem = [self
+        textItemWithItemType:SyncGoogleActivityControlsItemType
+                textStringID:
+                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_TEXT
+              detailStringID:
+                  IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_DETAIL
+               accessoryType:MDCCollectionViewCellAccessoryDisclosureIndicator
+                   commandID:
+                       GoogleServicesSettingsCommandIDOpenGoogleActivityPage];
+    CollectionViewTextItem* encryptionItem = [self
+        textItemWithItemType:EncryptionItemType
+                textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENCRYPTION_TEXT
+              detailStringID:0
+               accessoryType:MDCCollectionViewCellAccessoryDisclosureIndicator
+                   commandID:
+                       GoogleServicesSettingsCommandIDOpenEncryptionDialog];
+    CollectionViewTextItem* manageSyncedDataItem = [self
+        textItemWithItemType:ManageSyncedDataItemType
+                textStringID:
+                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_MANAGED_SYNC_DATA_TEXT
+              detailStringID:0
+               accessoryType:MDCCollectionViewCellAccessoryNone
+                   commandID:
+                       GoogleServicesSettingsCommandIDOpenManageSyncedDataPage];
+    _personalizedItems = @[
+      syncBookmarksItem, syncHistoryItem, syncPasswordsItem, syncOpenTabsItem,
+      syncAutofillItem, syncReadingListItem, syncActivityAndInteractionsItem,
+      syncGoogleActivityControlsItem, encryptionItem, manageSyncedDataItem
+    ];
+  }
+  return _personalizedItems;
+}
+
+- (SettingsCollapsibleItem*)nonPersonalizedServicesItem {
+  if (!_nonPersonalizedServicesItem) {
+    _nonPersonalizedServicesItem = [self
+        collapsibleItemWithItemType:NonPersonalizedServicesItemType
+                       textStringID:
+                           IDS_IOS_GOOGLE_SERVICES_SETTINGS_NON_PERSONALIZED_SERVICES_TEXT
+                     detailStringID:
+                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_NON_PERSONALIZED_SERVICES_DETAIL];
+  }
+  return _nonPersonalizedServicesItem;
+}
+
+- (ItemArray)nonPersonalizedItems {
+  if (!_nonPersonalizedItems) {
+    SyncSwitchItem* autocompleteSearchesAndURLsItem = [self
+        switchItemWithItemType:AutocompleteSearchesAndURLsItemType
+                  textStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
+                detailStringID:
+                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService];
+    SyncSwitchItem* preloadPagesItem = [self
+        switchItemWithItemType:PreloadPagesItemType
+                  textStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_TEXT
+                detailStringID:
+                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_DETAIL
+                     commandID:
+                         GoogleServicesSettingsCommandIDTogglePreloadPagesService];
+    SyncSwitchItem* improveChromeItem = [self
+        switchItemWithItemType:ImproveChromeItemType
+                  textStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT
+                detailStringID:
+                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleImproveChromeService];
+    SyncSwitchItem* betterSearchAndBrowsingItemType = [self
+        switchItemWithItemType:BetterSearchAndBrowsingItemType
+                  textStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
+                detailStringID:
+                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
+                     commandID:
+                         GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService];
+    _nonPersonalizedItems = @[
+      autocompleteSearchesAndURLsItem, preloadPagesItem, improveChromeItem,
+      betterSearchAndBrowsingItemType
+    ];
+  }
+  return _nonPersonalizedItems;
+}
+
+#pragma mark - Private
+
+// Creates a SettingsCollapsibleItem instance.
+- (SettingsCollapsibleItem*)collapsibleItemWithItemType:(NSInteger)itemType
+                                           textStringID:(int)textStringID
+                                         detailStringID:(int)detailStringID {
+  SettingsCollapsibleItem* collapsibleItem =
+      [[SettingsCollapsibleItem alloc] initWithType:itemType];
+  collapsibleItem.text = GetNSString(textStringID);
+  collapsibleItem.numberOfTextLines = 0;
+  collapsibleItem.detailText = GetNSString(detailStringID);
+  collapsibleItem.numberOfDetailTextLines = 0;
+  return collapsibleItem;
+}
+
+// Creates a SyncSwitchItem instance.
+- (SyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
+                             textStringID:(int)textStringID
+                           detailStringID:(int)detailStringID
+                                commandID:(NSInteger)commandID {
+  SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:itemType];
+  switchItem.text = GetNSString(textStringID);
+  if (detailStringID)
+    switchItem.detailText = GetNSString(detailStringID);
+  switchItem.commandID = commandID;
+  return switchItem;
+}
+
+// Creates a CollectionViewTextItem instance.
+- (CollectionViewTextItem*)
+textItemWithItemType:(NSInteger)itemType
+        textStringID:(int)textStringID
+      detailStringID:(int)detailStringID
+       accessoryType:(MDCCollectionViewCellAccessoryType)accessoryType
+           commandID:(NSInteger)commandID {
+  CollectionViewTextItem* textItem =
+      [[CollectionViewTextItem alloc] initWithType:itemType];
+  textItem.text = GetNSString(textStringID);
+  textItem.accessoryType = accessoryType;
+  if (detailStringID)
+    textItem.detailText = GetNSString(detailStringID);
+  textItem.commandID = commandID;
+  return textItem;
+}
+
+// Updates the personalized section according to the user consent.
+- (void)updatePersonalizedSection {
+  BOOL enabled = self.isAuthenticated && !self.isConsentGiven;
+  [self updateSectionWithCollapsibleItem:self.syncPersonalizationItem
+                                   items:self.personalizedItems
+                                 enabled:enabled];
+}
+
+// Updates the non-personalized section according to the user consent.
+- (void)updateNonPersonalizedSection {
+  BOOL enabled = !self.isAuthenticated || !self.isConsentGiven;
+  [self updateSectionWithCollapsibleItem:self.nonPersonalizedServicesItem
+                                   items:self.nonPersonalizedItems
+                                 enabled:enabled];
+}
+
+// Set a section (collapsible item, with all the items inside) to be enabled
+// or disabled.
+- (void)updateSectionWithCollapsibleItem:
+            (SettingsCollapsibleItem*)collapsibleItem
+                                   items:(ItemArray)items
+                                 enabled:(BOOL)enabled {
+  UIColor* textColor = enabled ? nil : [[MDCPalette greyPalette] tint500];
+  collapsibleItem.textColor = textColor;
+  for (CollectionViewItem* item in items) {
+    if ([item isKindOfClass:[SyncSwitchItem class]]) {
+      SyncSwitchItem* switchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+      switchItem.enabled = enabled;
+    } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
+      CollectionViewTextItem* textItem =
+          base::mac::ObjCCast<CollectionViewTextItem>(item);
+      textItem.textColor = textColor;
+    } else {
+      NOTREACHED();
+    }
+  }
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerModelDelegate
@@ -392,8 +447,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - GoogleServicesSettingsCommandHandler
 
-- (void)toggleSyncEverythingWithValue:(BOOL)on {
-  // Needs to be implemented.
+- (void)toggleSyncEverythingWithValue:(BOOL)value {
+  if (value == self.isConsentGiven)
+    return;
+  // Mark the switch has being animated to avoid being reloaded.
+  base::AutoReset<BOOL> autoReset(&_syncEverythingSwitchBeingAnimated, YES);
+  self.prefService->SetBoolean(kUnifiedConsentGiven, value);
 }
 
 - (void)toggleBookmarksSyncWithValue:(BOOL)on {
@@ -454,6 +513,38 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)openManageSyncedDataPage {
   // Needs to be implemented.
+}
+
+#pragma mark - PrefObserverDelegate
+
+- (void)onPreferenceChanged:(const std::string&)preferenceName {
+  DCHECK_EQ(kUnifiedConsentGiven, preferenceName);
+  self.syncEverythingItem.on = self.isConsentGiven;
+  [self updatePersonalizedSection];
+  [self updateNonPersonalizedSection];
+  CollectionViewModel* model = self.consumer.collectionViewModel;
+  if (!self.isConsentGiven) {
+    // If the consent is removed, both collapsible sections should be expanded.
+    [model setSection:PersonalizedSectionIdentifier collapsed:NO];
+    [self syncPersonalizationItem].collapsed = NO;
+    [model setSection:NonPersonalizedSectionIdentifier collapsed:NO];
+    [self nonPersonalizedServicesItem].collapsed = NO;
+  }
+  // Reload sections.
+  NSMutableIndexSet* sectionIndexToReload = [NSMutableIndexSet indexSet];
+  if (!self.syncEverythingSwitchBeingAnimated) {
+    // The sync everything section can be reloaded only if the switch for
+    // syncEverythingItem is not currently animated. Otherwise the animation
+    // would be stopped before the end.
+    [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
+                                              SyncEverythingSectionIdentifier]];
+  }
+  [sectionIndexToReload
+      addIndex:[model
+                   sectionForSectionIdentifier:PersonalizedSectionIdentifier]];
+  [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
+                                            NonPersonalizedSectionIdentifier]];
+  [self.consumer reloadSections:sectionIndexToReload];
 }
 
 @end
