@@ -110,29 +110,9 @@ constexpr NSInteger kSectionOffset = 1000;
     case GoogleServicesSettingsCommandIDToggleSyncEverything:
       [self.commandHandler toggleSyncEverythingWithValue:isOn];
       break;
-    case GoogleServicesSettingsCommandIDToggleBookmarkSync:
-      [self.commandHandler toggleBookmarksSyncWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleHistorySync:
-      [self.commandHandler toggleHistorySyncWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDTogglePasswordsSync:
-      [self.commandHandler togglePasswordsSyncWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleOpenTabsSync:
-      [self.commandHandler toggleOpenTabSyncWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleAutofillSync:
-      [self.commandHandler toggleAutofillWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleSettingsSync:
-      [self.commandHandler toggleSettingsWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleReadingListSync:
-      [self.commandHandler toggleReadingListWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService:
-      [self.commandHandler toggleActivityAndInteractionsServiceWithValue:isOn];
+    case GoogleServicesSettingsCommandIDToggleDataTypeSync:
+      [self.commandHandler toggleSyncDataSync:syncSwitchItem.dataType
+                                    WithValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
       [self.commandHandler toggleAutocompleteSearchesServiceWithValue:isOn];
@@ -252,14 +232,7 @@ constexpr NSInteger kSectionOffset = 1000;
       break;
     case GoogleServicesSettingsCommandIDNoOp:
     case GoogleServicesSettingsCommandIDToggleSyncEverything:
-    case GoogleServicesSettingsCommandIDToggleBookmarkSync:
-    case GoogleServicesSettingsCommandIDToggleHistorySync:
-    case GoogleServicesSettingsCommandIDTogglePasswordsSync:
-    case GoogleServicesSettingsCommandIDToggleOpenTabsSync:
-    case GoogleServicesSettingsCommandIDToggleAutofillSync:
-    case GoogleServicesSettingsCommandIDToggleSettingsSync:
-    case GoogleServicesSettingsCommandIDToggleReadingListSync:
-    case GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService:
+    case GoogleServicesSettingsCommandIDToggleDataTypeSync:
     case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
     case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
     case GoogleServicesSettingsCommandIDToggleImproveChromeService:

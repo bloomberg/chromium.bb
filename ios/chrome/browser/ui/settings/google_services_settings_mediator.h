@@ -15,14 +15,23 @@
 class AuthenticationService;
 @class GoogleServicesSettingsViewController;
 class PrefService;
+class SyncSetupService;
+
+namespace browser_sync {
+class ProfileSyncService;
+};
 
 // Mediator for the Google services settings.
 @interface GoogleServicesSettingsMediator
     : NSObject<GoogleServicesSettingsCommandHandler,
                GoogleServicesSettingsViewControllerModelDelegate>
 
-// Designated initializer. |prefService| should not be null.
+// Designated initializer. |prefService|, |syncService| and |syncSetupService|
+// should not be null.
 - (instancetype)initWithPrefService:(PrefService*)prefService
+                        syncService:
+                            (browser_sync::ProfileSyncService*)syncService
+                   syncSetupService:(SyncSetupService*)syncSetupService
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
