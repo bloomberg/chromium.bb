@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -293,7 +294,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the scheme of request initiator that should be ignored by
   // cross-origin read blocking.  nullptr can be returned to indicate that no
   // exceptions should be granted based on initiator's scheme.
-  virtual const char* GetInitatorSchemeBypassingDocumentBlocking();
+  virtual const char* GetInitiatorSchemeBypassingDocumentBlocking();
 
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may

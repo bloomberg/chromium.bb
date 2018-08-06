@@ -1418,7 +1418,7 @@ bool ChromeContentBrowserClient::ShouldLockToOrigin(
 }
 
 const char*
-ChromeContentBrowserClient::GetInitatorSchemeBypassingDocumentBlocking() {
+ChromeContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Don't block responses for extension processes or for content scripts.
   // TODO(creis): When every extension fetch (including content scripts) has

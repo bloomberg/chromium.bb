@@ -1294,6 +1294,7 @@ test("browser_tests") {
         "../browser/extensions/content_verifier_hash_fetch_behavior_browsertest.cc",
         "../browser/extensions/content_verifier_test_utils.cc",
         "../browser/extensions/content_verifier_test_utils.h",
+        "../browser/extensions/cross_origin_read_blocking_browsertest.cc",
         "../browser/extensions/cross_origin_xhr_apitest.cc",
         "../browser/extensions/crx_installer_browsertest.cc",
         "../browser/extensions/docs/examples/apps/calculator_browsertest.cc",

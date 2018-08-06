@@ -547,7 +547,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   const char* initiator_scheme_exception =
       GetContentClient()
           ->browser()
-          ->GetInitatorSchemeBypassingDocumentBlocking();
+          ->GetInitiatorSchemeBypassingDocumentBlocking();
 
   // Delegate most decisions to CrossOriginReadBlocking::ResponseAnalyzer.
   analyzer_ =
