@@ -24,6 +24,8 @@ enum class ErrorType {
   AUTH_ERROR
 };
 
+std::string GetThumbnailImageOptionsForTesting();
+
 // Background images are organized into collections, according to a theme. This
 // struct contains the data required to display information about a collection,
 // including a representative image. The complete set of CollectionImages must

@@ -4,6 +4,17 @@
 
 #include "chrome/browser/search/background/ntp_background_data.h"
 
+namespace {
+// The options to be added to a thumbnail image URL, specifying resolution,
+// cropping, etc. Options appear on an image URL after the '=' character. This
+// resolution matches the height an width of bg-sel-tile.
+constexpr char kThumbnailImageOptions[] = "=w156-h117-p-k-no-nd-mv";
+}  // namespace
+
+std::string GetThumbnailImageOptionsForTesting() {
+  return kThumbnailImageOptions;
+}
+
 CollectionInfo::CollectionInfo() = default;
 CollectionInfo::CollectionInfo(const CollectionInfo&) = default;
 CollectionInfo::CollectionInfo(CollectionInfo&&) = default;
@@ -29,7 +40,11 @@ CollectionInfo CollectionInfo::CreateFromProto(
   collection_info.collection_name = collection.collection_name();
   // Use the first preview image as the representative one for the collection.
   if (collection.preview_size() > 0 && collection.preview(0).has_image_url()) {
-    collection_info.preview_image_url = GURL(collection.preview(0).image_url());
+    collection_info.preview_image_url =
+        GURL(collection.preview(0).image_url() +
+             ((collection.preview(0).image_url().find('=') == std::string::npos)
+                  ? kThumbnailImageOptions
+                  : std::string("")));
   }
 
   return collection_info;
@@ -63,7 +78,10 @@ CollectionImage CollectionImage::CreateFromProto(
   collection_image.collection_id = collection_id;
   collection_image.asset_id = image.asset_id();
   // Without options added to the image, it is 512x512.
-  collection_image.thumbnail_image_url = GURL(image.image_url());
+  collection_image.thumbnail_image_url = GURL(
+      image.image_url() + ((image.image_url().find('=') == std::string::npos)
+                               ? kThumbnailImageOptions
+                               : std::string("")));
   // TODO(ramyan): Request resolution from service, instead of setting it here.
   collection_image.image_url = GURL(
       image.image_url() + ((image.image_url().find('=') == std::string::npos)
