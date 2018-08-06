@@ -400,7 +400,7 @@ class MyActivity(object):
     ret['review_url'] = '%s://%s/%s' % (protocol, url, issue['_number'])
 
     ret['header'] = issue['subject']
-    ret['owner'] = issue['owner']['email']
+    ret['owner'] = issue['owner'].get('email', '')
     ret['author'] = ret['owner']
     ret['created'] = datetime_from_gerrit(issue['created'])
     ret['modified'] = datetime_from_gerrit(issue['updated'])
