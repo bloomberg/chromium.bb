@@ -38,6 +38,7 @@ EXTRA_DIST =					\
 	en-ueb-g2_backward_no_dis.yaml		\
 	en-ueb-math.yaml			\
 	en-ueb-symbols_harness.yaml		\
+	en-ueb-michael-robin.yaml		\
 	en-us-comp8-ext-back_harness.yaml	\
 	en-us-comp8-ext-for_harness.yaml	\
 	en-us-g2-dictionary_harness.yaml	\
