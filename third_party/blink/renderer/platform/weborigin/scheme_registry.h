@@ -87,12 +87,6 @@ class PLATFORM_EXPORT SchemeRegistry {
   static bool ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
       const String& scheme);
 
-  // Allow non-HTTP schemes to be registered to allow CORS requests.
-  // This is not used in Chromium anymore but left here intentionally
-  // to allow other embedders of Blink to add more schemes
-  // to the CORS-enabled schemes list.
-  // As for now (Nov 2017) it is used by Electron.
-  static void RegisterURLSchemeAsCORSEnabled(const String& scheme);
   static bool ShouldTreatURLSchemeAsCORSEnabled(const String& scheme);
 
   // Serialize the registered schemes in a comma-separated list.
