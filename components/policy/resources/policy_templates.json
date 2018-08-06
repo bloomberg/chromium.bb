@@ -12619,6 +12619,33 @@
 
       When this policy is set to False, users will be unable to use Network File Shares.''',
     },
+    {
+      'name': 'WebRtcEventLogCollectionAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:70-'],
+      'features': {
+        # TODO(crbug.com/775415): Support dynamic refresh, then add support
+        # for ChromeOS as well.
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 464,
+      'caption': '''Allow collection of WebRTC event logs from Google services''',
+      'tags': ['google-sharing'],
+      'desc': '''
+      If the policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed to collect WebRTC event logs from Google services (e.g. Google Meet), and upload those logs to Google.
+
+      If the policy is set to false, or is unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not collect nor upload such logs.
+
+      These logs contain information such as the time and size of sent and received RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. This information is helpful when debugging issues with audio or video calls in Chrome, such as bandwidth estimation issues, etc. The logs do not contain audio or video contents from the call.
+
+      This data collection can only be triggered by Google's web services, such as Google Hangouts or Google Meet.
+
+      These logs may be associated, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
+      ''',
+    },
   ],
 
   'messages': {
@@ -12760,5 +12787,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 463
+  'highest_id_currently_used': 464
 }

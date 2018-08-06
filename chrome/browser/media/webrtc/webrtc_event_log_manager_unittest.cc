@@ -37,11 +37,16 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_unittest_helpers.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/testing_pref_store.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/mock_network_connection_tracker.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -49,10 +54,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
-
-// TODO(crbug.com/775415): Add unit tests for incognito mode.
-// TODO(crbug.com/775415): Migrate to being based on Profiles rather than on
-// BrowserContexts.
 
 #if defined(OS_WIN)
 #define IntToStringType base::IntToString16
@@ -197,8 +198,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
         run_loop_(std::make_unique<base::RunLoop>()),
         uploader_run_loop_(std::make_unique<base::RunLoop>()),
         browser_context_(nullptr),
-        browser_context_id_(GetBrowserContextId(browser_context_)),
-        upload_suppressing_browser_context_(nullptr) {
+        browser_context_id_(GetBrowserContextId(browser_context_.get())) {
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         url_request_context_getter_.get());
 
@@ -239,7 +239,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
         std::move(tracker));
     SetLocalLogsObserver(&local_observer_);
     SetRemoteLogsObserver(&remote_observer_);
-    LoadProfiles();
+    LoadMainTestProfile();
   }
 
   void CreateWebRtcEventLogManager(
@@ -261,21 +261,17 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     }
   }
 
-  void LoadProfiles() {
-    testing_profile_manager_ = std::make_unique<TestingProfileManager>(
-        TestingBrowserProcess::GetGlobal());
-    EXPECT_TRUE(testing_profile_manager_->SetUp(profiles_dir_.GetPath()));
+  void LoadMainTestProfile() {
     browser_context_ = CreateBrowserContext("browser_context_");
-    browser_context_id_ = GetBrowserContextId(browser_context_);
-    rph_ = std::make_unique<MockRenderProcessHost>(browser_context_);
+    browser_context_id_ = GetBrowserContextId(browser_context_.get());
+    rph_ = std::make_unique<MockRenderProcessHost>(browser_context_.get());
   }
 
-  void UnloadProfiles() {
-    browser_context_ = nullptr;
-    browser_context_id_ = GetBrowserContextId(browser_context_);
+  void UnloadMainTestProfile() {
     rph_.reset();
+    browser_context_.reset();
+    browser_context_id_ = GetBrowserContextId(browser_context_.get());
     EXPECT_FALSE(upload_suppressing_rph_);
-    testing_profile_manager_.reset();  // Make sure we only have one at a time.
   }
 
   void WaitForReply() {
@@ -495,19 +491,54 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     WaitForReply();
   }
 
-  // |testing_profile_manager_| maintains ownership of the created objects.
-  // This allows either creating a TestingProfile with a predetermined name
+  // Allows either creating a TestingProfile with a predetermined name
   // (useful when trying to "reload" a profile), or one with an arbitrary name.
-  TestingProfile* CreateBrowserContext(const std::string& profile_name = "") {
-    static size_t index = 0;
-    TestingProfile* browser_context;
+  virtual std::unique_ptr<TestingProfile> CreateBrowserContext() {
+    return CreateBrowserContext("");
+  }
+  virtual std::unique_ptr<TestingProfile> CreateBrowserContext(
+      std::string profile_name) {
+    return CreateBrowserContext(profile_name, true);
+  }
+  virtual std::unique_ptr<TestingProfile> CreateBrowserContext(
+      std::string profile_name,
+      bool policy_allows_remote_logging) {
+    // If profile name not specified, select a unique name.
     if (profile_name.empty()) {
-      browser_context = testing_profile_manager_->CreateTestingProfile(
-          std::to_string(++index));
-    } else {
-      browser_context =
-          testing_profile_manager_->CreateTestingProfile(profile_name);
+      static size_t index = 0;
+      profile_name = std::to_string(++index);
     }
+
+    // Set a directory for the profile, derived from its name, so that
+    // recreating the profile will get the same directory.
+    const base::FilePath profile_path =
+        profiles_dir_.GetPath().AppendASCII(profile_name);
+    if (base::PathExists(profile_path)) {
+      EXPECT_TRUE(base::DirectoryExists(profile_path));
+    } else {
+      EXPECT_TRUE(base::CreateDirectory(profile_path));
+    }
+
+    // Prepare to specify preferences for the profile.
+    sync_preferences::PrefServiceMockFactory factory;
+    factory.set_user_prefs(base::WrapRefCounted(new TestingPrefStore()));
+    scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
+        new user_prefs::PrefRegistrySyncable);
+    sync_preferences::PrefServiceSyncable* regular_prefs =
+        factory.CreateSyncable(registry.get()).release();
+
+    // Set the preference associated with the policy for WebRTC remote-bound
+    // event logging.
+    RegisterUserProfilePrefs(registry.get());
+    regular_prefs->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                              policy_allows_remote_logging);
+
+    // Build the profile.
+    TestingProfile::Builder profile_builder;
+    profile_builder.SetProfileName(profile_name);
+    profile_builder.SetPath(profile_path);
+    profile_builder.SetPrefService(base::WrapUnique(regular_prefs));
+    std::unique_ptr<TestingProfile> browser_context = profile_builder.Build();
 
     // Blocks on the unit under test's task runner, so that we won't proceed
     // with the test (e.g. check that files were created) before finished
@@ -551,7 +582,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     }
     DCHECK(!upload_suppressing_rph_) << "Uploading already suppressed.";
     upload_suppressing_rph_ = std::make_unique<MockRenderProcessHost>(
-        upload_suppressing_browser_context_);
+        upload_suppressing_browser_context_.get());
     const auto key = GetPeerConnectionKey(upload_suppressing_rph_.get(), 0);
     ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
   }
@@ -639,23 +670,19 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   // The directory which will contain all profiles.
   base::ScopedTempDir profiles_dir_;
 
-  // Constructs (and owns) profiles.
-  std::unique_ptr<TestingProfileManager> testing_profile_manager_;
-
   // Default BrowserContext and RenderProcessHost, to be used by tests which
   // do not require anything fancy (such as seeding the BrowserContext with
   // pre-existing logs files from a previous session, or working with multiple
   // BrowserContext objects).
 
-  TestingProfile* browser_context_;  // Owned by testing_profile_manager_.
+  std::unique_ptr<TestingProfile> browser_context_;
   BrowserContextId browser_context_id_;
   std::unique_ptr<MockRenderProcessHost> rph_;
 
   // Used for suppressing the upload of finished files, by creating an active
   // remote-bound log associated with an independent BrowserContext which
   // does not otherwise interfere with the test.
-  // upload_suppressing_browser_context_ is owned by testing_profile_manager_.
-  TestingProfile* upload_suppressing_browser_context_;
+  std::unique_ptr<TestingProfile> upload_suppressing_browser_context_;
   std::unique_ptr<MockRenderProcessHost> upload_suppressing_rph_;
 
   // The directory where we'll save local log files.
@@ -743,6 +770,8 @@ class WebRtcEventLogManagerTestCacheClearing
     }
   }
 
+  void ClearPendingLogFiles() { pending_logs_.clear(); }
+
   base::Optional<base::FilePath> CreateRemoteLogFile(
       const PeerConnectionKey& key,
       bool pending) {
@@ -793,22 +822,43 @@ class WebRtcEventLogManagerTestCacheClearing
 const base::TimeDelta WebRtcEventLogManagerTestCacheClearing::kEpsion =
     base::TimeDelta::FromHours(1);
 
-class WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled
+class WebRtcEventLogManagerTestWithRemoteLoggingDisabled
     : public WebRtcEventLogManagerTestBase,
       public ::testing::WithParamInterface<bool> {
  public:
-  WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled() {
-    // Show that the feature is not active if not explicitly ENABLED.
-    const bool disable = GetParam();
-    if (disable) {  // Otherwise, left to default value.
+  WebRtcEventLogManagerTestWithRemoteLoggingDisabled()
+      : feature_enabled_(GetParam()), policy_enabled_(!feature_enabled_) {
+    if (feature_enabled_) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kWebRtcRemoteEventLog);
+    } else {
       scoped_feature_list_.InitAndDisableFeature(
           features::kWebRtcRemoteEventLog);
     }
     CreateWebRtcEventLogManager();
   }
 
-  ~WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled() override =
-      default;
+  ~WebRtcEventLogManagerTestWithRemoteLoggingDisabled() override = default;
+
+  // Override CreateBrowserContext() to use policy_enabled_.
+  std::unique_ptr<TestingProfile> CreateBrowserContext() override {
+    return CreateBrowserContext("");
+  }
+  std::unique_ptr<TestingProfile> CreateBrowserContext(
+      std::string profile_name) override {
+    return CreateBrowserContext(profile_name, policy_enabled_);
+  }
+  std::unique_ptr<TestingProfile> CreateBrowserContext(
+      std::string profile_name,
+      bool policy_allows_remote_logging) override {
+    DCHECK_EQ(policy_enabled_, policy_allows_remote_logging);
+    return WebRtcEventLogManagerTestBase::CreateBrowserContext(
+        profile_name, policy_allows_remote_logging);
+  }
+
+ private:
+  const bool feature_enabled_;  // Whether the Finch kill-switch is engaged.
+  const bool policy_enabled_;  // Whether the policy is enabled for the profile.
 };
 
 class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
@@ -862,8 +912,9 @@ class WebRtcEventLogManagerTestForNetworkConnectivity
 
     // Unload the profile, but remember where it stores its files (for sanity).
     browser_context_path_ = browser_context_->GetPath();
-    const base::FilePath remote_logs_dir = RemoteBoundLogsDir(browser_context_);
-    UnloadProfiles();
+    const base::FilePath remote_logs_dir =
+        RemoteBoundLogsDir(browser_context_.get());
+    UnloadMainTestProfile();
 
     // Seed the remote logs' directory with one log file, simulating the
     // creation of logs in a previous session.
@@ -894,7 +945,7 @@ class WebRtcEventLogManagerTestForNetworkConnectivity
 class WebRtcEventLogManagerTestUploadDelay
     : public WebRtcEventLogManagerTestBase {
  public:
-  WebRtcEventLogManagerTestUploadDelay() {}
+  ~WebRtcEventLogManagerTestUploadDelay() override = default;
 
   void SetUp() override {
     // Intercept and block the call to SetUp(). The test body will call
@@ -912,8 +963,6 @@ class WebRtcEventLogManagerTestUploadDelay
 
     WebRtcEventLogManagerTestBase::SetUp();
   }
-
-  ~WebRtcEventLogManagerTestUploadDelay() override = default;
 
   // There's a trade-off between the test runtime and the likelihood of a
   // false-positive (lowered when the time is increased).
@@ -951,6 +1000,34 @@ class WebRtcEventLogManagerTestCompression
         true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
     WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
   }
+};
+
+class WebRtcEventLogManagerTestIncognito
+    : public WebRtcEventLogManagerTestBase {
+ public:
+  WebRtcEventLogManagerTestIncognito() : incognito_profile_(nullptr) {
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+    CreateWebRtcEventLogManager();
+  }
+
+  ~WebRtcEventLogManagerTestIncognito() override {
+    incognito_rph_.reset();
+    if (incognito_profile_) {
+      DCHECK(browser_context_);
+      browser_context_->DestroyOffTheRecordProfile();
+    }
+  }
+
+  void SetUp() override {
+    WebRtcEventLogManagerTestBase::SetUp();
+
+    incognito_profile_ = browser_context_->GetOffTheRecordProfile();
+    incognito_rph_ =
+        std::make_unique<MockRenderProcessHost>(incognito_profile_);
+  }
+
+  Profile* incognito_profile_;
+  std::unique_ptr<MockRenderProcessHost> incognito_rph_;
 };
 
 namespace {
@@ -1001,7 +1078,7 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
         EXPECT_FALSE(true);  // More files uploaded than expected.
       } else {
         EXPECT_EQ(log_file.path, expected_files_.front().path);
-        // Because LoadProfiles() and UnloadProfiles() mess up the
+        // Because LoadMainTestProfile() and UnloadMainTestProfile() mess up the
         // BrowserContextId in ways that would not happen in production,
         // we cannot verify |log_file.browser_context_id| is correct.
         // This is unimportant to the test.
@@ -1411,7 +1488,7 @@ TEST_F(WebRtcEventLogManagerTest, LocalLogMultipleActiveFiles) {
 
   std::list<MockRenderProcessHost> rphs;
   for (size_t i = 0; i < 3; ++i) {
-    rphs.emplace_back(browser_context_);
+    rphs.emplace_back(browser_context_.get());  // (MockRenderProcessHost ctor)
   }
 
   std::vector<PeerConnectionKey> keys;
@@ -1717,8 +1794,9 @@ TEST_F(WebRtcEventLogManagerTest,
 
 TEST_F(WebRtcEventLogManagerTest,
        BrowserContextInitializationCreatesDirectoryForRemoteLogs) {
-  auto* browser_context = CreateBrowserContext();
-  const base::FilePath remote_logs_path = RemoteBoundLogsDir(browser_context);
+  auto browser_context = CreateBrowserContext();
+  const base::FilePath remote_logs_path =
+      RemoteBoundLogsDir(browser_context.get());
   EXPECT_TRUE(base::DirectoryExists(remote_logs_path));
   EXPECT_TRUE(base::IsDirectoryEmpty(remote_logs_path));
 }
@@ -1891,12 +1969,12 @@ TEST_F(WebRtcEventLogManagerTest, StartRemoteLoggingCreatesEmptyFile) {
 TEST_F(WebRtcEventLogManagerTest, RemoteLogFileCreatedInCorrectDirectory) {
   // Set up separate browser contexts; each one will get one log.
   constexpr size_t kLogsNum = 3;
-  TestingProfile* browser_contexts[kLogsNum];
+  std::unique_ptr<TestingProfile> browser_contexts[kLogsNum];
   std::vector<std::unique_ptr<MockRenderProcessHost>> rphs;
   for (size_t i = 0; i < kLogsNum; ++i) {
-    auto* const browser_context = CreateBrowserContext();
-    browser_contexts[i] = browser_context;
-    rphs.emplace_back(std::make_unique<MockRenderProcessHost>(browser_context));
+    browser_contexts[i] = CreateBrowserContext();
+    rphs.emplace_back(
+        std::make_unique<MockRenderProcessHost>(browser_contexts[i].get()));
   }
 
   // Prepare to store the logs' paths in distinct memory locations.
@@ -1925,8 +2003,8 @@ TEST_F(WebRtcEventLogManagerTest, RemoteLogFileCreatedInCorrectDirectory) {
 TEST_F(WebRtcEventLogManagerTest,
        StartRemoteLoggingSanityIfDuplicateIdsInDifferentRendererProcesses) {
   std::unique_ptr<MockRenderProcessHost> rphs[2] = {
-      std::make_unique<MockRenderProcessHost>(browser_context_),
-      std::make_unique<MockRenderProcessHost>(browser_context_),
+      std::make_unique<MockRenderProcessHost>(browser_context_.get()),
+      std::make_unique<MockRenderProcessHost>(browser_context_.get()),
   };
 
   PeerConnectionKey keys[2] = {GetPeerConnectionKey(rphs[0].get(), 0),
@@ -2125,12 +2203,12 @@ TEST_F(WebRtcEventLogManagerTest,
 TEST_F(WebRtcEventLogManagerTest,
        LogMultipleActiveRemoteLogsDifferentBrowserContexts) {
   constexpr size_t kLogsNum = 3;
-  TestingProfile* browser_contexts[kLogsNum];
+  std::unique_ptr<TestingProfile> browser_contexts[kLogsNum];
   std::vector<std::unique_ptr<MockRenderProcessHost>> rphs;
   for (size_t i = 0; i < kLogsNum; ++i) {
-    TestingProfile* const browser_context = CreateBrowserContext();
-    browser_contexts[i] = browser_context;
-    rphs.emplace_back(std::make_unique<MockRenderProcessHost>(browser_context));
+    browser_contexts[i] = CreateBrowserContext();
+    rphs.emplace_back(
+        std::make_unique<MockRenderProcessHost>(browser_contexts[i].get()));
   }
 
   std::vector<PeerConnectionKey> keys;
@@ -2219,17 +2297,18 @@ TEST_F(WebRtcEventLogManagerTest, RemoteLogFileClosedWhenCapacityReached) {
 TEST_F(WebRtcEventLogManagerTest,
        FailureToCreateRemoteLogsDirHandledGracefully) {
   const base::FilePath browser_context_dir = browser_context_->GetPath();
-  const base::FilePath remote_logs_path = RemoteBoundLogsDir(browser_context_);
+  const base::FilePath remote_logs_path =
+      RemoteBoundLogsDir(browser_context_.get());
 
   // Unload the profile, delete its remove logs directory, and remove write
   // permissions from it, thereby preventing it from being created again.
-  UnloadProfiles();
+  UnloadMainTestProfile();
   ASSERT_TRUE(base::DeleteFile(remote_logs_path, /*recursive=*/true));
   RemoveWritePermissions(browser_context_dir);
 
   // Graceful handling by BrowserContext::EnableForBrowserContext, despite
   // failing to create the remote logs' directory..
-  LoadProfiles();
+  LoadMainTestProfile();
   EXPECT_FALSE(base::DirectoryExists(remote_logs_path));
 
   // Graceful handling of PeerConnectionAdded: True returned because the
@@ -2263,7 +2342,8 @@ TEST_F(WebRtcEventLogManagerTest, GracefullyHandleFailureToStartRemoteLogFile) {
   EXPECT_CALL(remote_observer_, OnRemoteLogStopped(_)).Times(0);
 
   // Remove write permissions from the directory.
-  const base::FilePath remote_logs_path = RemoteBoundLogsDir(browser_context_);
+  const base::FilePath remote_logs_path =
+      RemoteBoundLogsDir(browser_context_.get());
   ASSERT_TRUE(base::DirectoryExists(remote_logs_path));
   RemoveWritePermissions(remote_logs_path);
 
@@ -2376,11 +2456,11 @@ TEST_F(WebRtcEventLogManagerTest,
   SuppressUploading();
 
   // Create additional BrowserContexts for the test.
-  TestingProfile* browser_contexts[2] = {CreateBrowserContext(),
-                                         CreateBrowserContext()};
+  std::unique_ptr<TestingProfile> browser_contexts[2] = {
+      CreateBrowserContext(), CreateBrowserContext()};
   std::unique_ptr<MockRenderProcessHost> rphs[2] = {
-      std::make_unique<MockRenderProcessHost>(browser_contexts[0]),
-      std::make_unique<MockRenderProcessHost>(browser_contexts[1])};
+      std::make_unique<MockRenderProcessHost>(browser_contexts[0].get()),
+      std::make_unique<MockRenderProcessHost>(browser_contexts[1].get())};
 
   // Allowed to start kMaxPendingRemoteLogFiles for each BrowserContext.
   // Specifically, we can do it for the first BrowserContext.
@@ -2413,8 +2493,9 @@ TEST_F(WebRtcEventLogManagerTest,
        LogsFromPreviousSessionBecomePendingLogsWhenBrowserContextInitialized) {
   // Unload the profile, but remember where it stores its files.
   const base::FilePath browser_context_path = browser_context_->GetPath();
-  const base::FilePath remote_logs_dir = RemoteBoundLogsDir(browser_context_);
-  UnloadProfiles();
+  const base::FilePath remote_logs_dir =
+      RemoteBoundLogsDir(browser_context_.get());
+  UnloadMainTestProfile();
 
   // Seed the remote logs' directory with log files, simulating the
   // creation of logs in a previous session.
@@ -2440,7 +2521,7 @@ TEST_F(WebRtcEventLogManagerTest,
       std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
           &expected_files, true, &run_loop));
 
-  LoadProfiles();
+  LoadMainTestProfile();
   ASSERT_EQ(browser_context_->GetPath(), browser_context_path);
 
   WaitForPendingTasks(&run_loop);
@@ -2453,8 +2534,9 @@ TEST_F(WebRtcEventLogManagerTest,
        LogsCapturedPreviouslyMadePendingEvenIfDifferentExtensionUsed) {
   // Unload the profile, but remember where it stores its files.
   const base::FilePath browser_context_path = browser_context_->GetPath();
-  const base::FilePath remote_logs_dir = RemoteBoundLogsDir(browser_context_);
-  UnloadProfiles();
+  const base::FilePath remote_logs_dir =
+      RemoteBoundLogsDir(browser_context_.get());
+  UnloadMainTestProfile();
 
   // Seed the remote logs' directory with log files, simulating the
   // creation of logs in a previous session.
@@ -2487,7 +2569,7 @@ TEST_F(WebRtcEventLogManagerTest,
       std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
           &expected_files, true, &run_loop));
 
-  LoadProfiles();
+  LoadMainTestProfile();
   ASSERT_EQ(browser_context_->GetPath(), browser_context_path);
 
   WaitForPendingTasks(&run_loop);
@@ -2519,7 +2601,8 @@ TEST_P(WebRtcEventLogManagerTest,
 
   WaitForPendingTasks(&run_loop);
 
-  EXPECT_TRUE(base::IsDirectoryEmpty(RemoteBoundLogsDir(browser_context_)));
+  EXPECT_TRUE(
+      base::IsDirectoryEmpty(RemoteBoundLogsDir(browser_context_.get())));
 }
 
 TEST_P(WebRtcEventLogManagerTest, DestroyedRphTriggersLogUpload) {
@@ -2547,7 +2630,8 @@ TEST_P(WebRtcEventLogManagerTest, DestroyedRphTriggersLogUpload) {
 
   WaitForPendingTasks(&run_loop);
 
-  EXPECT_TRUE(base::IsDirectoryEmpty(RemoteBoundLogsDir(browser_context_)));
+  EXPECT_TRUE(
+      base::IsDirectoryEmpty(RemoteBoundLogsDir(browser_context_.get())));
 }
 
 // Note that SuppressUploading() and UnSuppressUploading() use the behavior
@@ -2595,15 +2679,17 @@ TEST_F(WebRtcEventLogManagerTest, UploadOrderDependsOnLastModificationTime) {
 
   // Create profiles. This creates their directories.
   base::FilePath remote_logs_dirs[kProfilesNum];
-  BrowserContext* browser_contexts[kProfilesNum];
+  std::unique_ptr<BrowserContext> browser_contexts[kProfilesNum];
   for (size_t i = 0; i < kProfilesNum; ++i) {
     browser_contexts[i] = CreateBrowserContext(profile_names[i]);
-    remote_logs_dirs[i] = RemoteBoundLogsDir(browser_contexts[i]);
+    remote_logs_dirs[i] = RemoteBoundLogsDir(browser_contexts[i].get());
   }
 
   // Unload the profiles, so that whatever files we add into their directory
   // could be discovered by EnableForBrowserContext when we reload them.
-  UnloadProfiles();
+  for (size_t i = 0; i < kProfilesNum; ++i) {
+    browser_contexts[i].reset();
+  }
 
   // Seed the directories with log files.
   base::FilePath file_paths[kProfilesNum];
@@ -2635,17 +2721,16 @@ TEST_F(WebRtcEventLogManagerTest, UploadOrderDependsOnLastModificationTime) {
     mod_time += base::TimeDelta::FromSeconds(1);  // Back to the future.
     const base::FilePath& path = file_paths[permutation[i]];
     ASSERT_TRUE(base::TouchFile(path, shared_last_accessed, mod_time));
-    expected_files.emplace_back(GetBrowserContextId(browser_contexts[i]), path,
-                                GetLastModificationTime(path));
+    expected_files.emplace_back(GetBrowserContextId(browser_contexts[i].get()),
+                                path, GetLastModificationTime(path));
   }
 
   // Recognize the files as pending files by initializing their BrowserContexts.
   // We keep uploading suppressed so as to avoid them being uploaded in order of
   // loading, rather than in order of date.
-  LoadProfiles();
   SuppressUploading();
   for (size_t i = 0; i < kProfilesNum; ++i) {
-    CreateBrowserContext(profile_names[i]);  // Owned by the profile manager.
+    browser_contexts[i] = CreateBrowserContext(profile_names[i]);
   }
 
   // Show that the files are uploaded by order of modification.
@@ -2665,9 +2750,10 @@ TEST_F(WebRtcEventLogManagerTest, ExpiredFilesArePrunedRatherThanUploaded) {
   DCHECK_GE(kMaxPendingRemoteBoundWebRtcEventLogs, 2u)
       << "Please restructure the test to use separate browser contexts.";
 
-  const base::FilePath remote_logs_dir = RemoteBoundLogsDir(browser_context_);
+  const base::FilePath remote_logs_dir =
+      RemoteBoundLogsDir(browser_context_.get());
 
-  UnloadProfiles();
+  UnloadMainTestProfile();
 
   base::FilePath file_paths[2];
   for (size_t i = 0; i < 2; ++i) {
@@ -2702,13 +2788,14 @@ TEST_F(WebRtcEventLogManagerTest, ExpiredFilesArePrunedRatherThanUploaded) {
           &expected_files, true, &run_loop));
 
   // Recognize the files as pending by initializing their BrowserContext.
-  LoadProfiles();
+  LoadMainTestProfile();
 
   WaitForPendingTasks(&run_loop);
 
   // Both the uploaded file as well as the expired file have no been removed
   // from local disk.
-  EXPECT_TRUE(base::IsDirectoryEmpty(RemoteBoundLogsDir(browser_context_)));
+  EXPECT_TRUE(
+      base::IsDirectoryEmpty(RemoteBoundLogsDir(browser_context_.get())));
 }
 
 // TODO(crbug.com/775415): Add a test showing that a file expiring while another
@@ -2745,11 +2832,12 @@ TEST_F(WebRtcEventLogManagerTest, RemoteLogEmptyStringHandledGracefully) {
 #if defined(OS_POSIX)
 TEST_F(WebRtcEventLogManagerTest,
        UnopenedRemoteLogFilesNotCountedTowardsActiveLogsLimit) {
-  TestingProfile* browser_contexts[2];
+  std::unique_ptr<TestingProfile> browser_contexts[2];
   std::unique_ptr<MockRenderProcessHost> rphs[2];
   for (size_t i = 0; i < 2; ++i) {
     browser_contexts[i] = CreateBrowserContext();
-    rphs[i] = std::make_unique<MockRenderProcessHost>(browser_contexts[i]);
+    rphs[i] =
+        std::make_unique<MockRenderProcessHost>(browser_contexts[i].get());
   }
 
   constexpr size_t without_permissions = 0;
@@ -2757,7 +2845,7 @@ TEST_F(WebRtcEventLogManagerTest,
 
   // Remove write permissions from one directory.
   const base::FilePath permissions_lacking_remote_logs_path =
-      RemoteBoundLogsDir(browser_contexts[without_permissions]);
+      RemoteBoundLogsDir(browser_contexts[without_permissions].get());
   ASSERT_TRUE(base::DirectoryExists(permissions_lacking_remote_logs_path));
   RemoveWritePermissions(permissions_lacking_remote_logs_path);
 
@@ -3122,6 +3210,29 @@ TEST_F(WebRtcEventLogManagerTest,
             std::make_pair(false, false));
 }
 
+TEST_F(WebRtcEventLogManagerTest, DifferentProfilesCanHaveDifferentPolicies) {
+  auto policy_disabled_profile = CreateBrowserContext("disabled", false);
+  auto policy_disabled_rph =
+      std::make_unique<MockRenderProcessHost>(policy_disabled_profile.get());
+  const auto disabled_key =
+      GetPeerConnectionKey(policy_disabled_rph.get(), kLid);
+
+  auto policy_enabled_profile = CreateBrowserContext("enabled", true);
+  auto policy_enabled_rph =
+      std::make_unique<MockRenderProcessHost>(policy_enabled_profile.get());
+  const auto enabled_key = GetPeerConnectionKey(policy_enabled_rph.get(), kLid);
+
+  ASSERT_TRUE(
+      PeerConnectionAdded(disabled_key.render_process_id, disabled_key.lid));
+  ASSERT_TRUE(
+      PeerConnectionAdded(enabled_key.render_process_id, enabled_key.lid));
+
+  EXPECT_FALSE(StartRemoteLogging(disabled_key.render_process_id,
+                                  GetUniqueId(disabled_key)));
+  EXPECT_TRUE(StartRemoteLogging(enabled_key.render_process_id,
+                                 GetUniqueId(enabled_key)));
+}
+
 INSTANTIATE_TEST_CASE_P(UploadCompleteResult,
                         WebRtcEventLogManagerTest,
                         ::testing::Bool());
@@ -3130,18 +3241,20 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
        ClearCacheForBrowserContextRemovesPendingFilesInRange) {
   SuppressUploading();
 
-  auto* const browser_context = CreateBrowserContext("name");
-  CreatePendingLogFiles(browser_context);
-  auto& elements = *(pending_logs_[browser_context]);
+  auto browser_context = CreateBrowserContext("name");
+  CreatePendingLogFiles(browser_context.get());
+  auto& elements = *(pending_logs_[browser_context.get()]);
 
   const base::Time earliest_mod = pending_earliest_mod_ - kEpsion;
   const base::Time latest_mod = pending_latest_mod_ + kEpsion;
 
   // Test - ClearCacheForBrowserContext() removed all of the files in the range.
-  ClearCacheForBrowserContext(browser_context, earliest_mod, latest_mod);
+  ClearCacheForBrowserContext(browser_context.get(), earliest_mod, latest_mod);
   for (size_t i = 0; i < elements.file_paths.size(); ++i) {
     EXPECT_FALSE(base::PathExists(*elements.file_paths[i]));
   }
+
+  ClearPendingLogFiles();
 }
 
 TEST_F(WebRtcEventLogManagerTestCacheClearing,
@@ -3162,7 +3275,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   // Test
   EXPECT_CALL(remote_observer_, OnRemoteLogStopped(key)).Times(1);
   ClearCacheForBrowserContext(
-      browser_context_, base::Time::Now() - base::TimeDelta::FromHours(1),
+      browser_context_.get(), base::Time::Now() - base::TimeDelta::FromHours(1),
       base::Time::Now() + base::TimeDelta::FromHours(1));
   EXPECT_FALSE(base::PathExists(*file_path));
 }
@@ -3186,7 +3299,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Main part of test - the expectation set up in the the uploader factory
   // should now be satisfied.
-  ClearCacheForBrowserContext(browser_context_, mod_time - kEpsion,
+  ClearCacheForBrowserContext(browser_context_.get(), mod_time - kEpsion,
                               mod_time + kEpsion);
 }
 
@@ -3194,9 +3307,9 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
        ClearCacheForBrowserContextDoesNotRemovePendingFilesOutOfRange) {
   SuppressUploading();
 
-  auto* const browser_context = CreateBrowserContext("name");
-  CreatePendingLogFiles(browser_context);
-  auto& elements = *(pending_logs_[browser_context]);
+  auto browser_context = CreateBrowserContext("name");
+  CreatePendingLogFiles(browser_context.get());
+  auto& elements = *(pending_logs_[browser_context.get()]);
 
   // Get a range whose intersection with the files' range is empty.
   const base::Time earliest_mod =
@@ -3207,10 +3320,12 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Test - ClearCacheForBrowserContext() does not remove files not in range.
   // (Range chosen to be earlier than the oldest file
-  ClearCacheForBrowserContext(browser_context, earliest_mod, latest_mod);
+  ClearCacheForBrowserContext(browser_context.get(), earliest_mod, latest_mod);
   for (size_t i = 0; i < elements.file_paths.size(); ++i) {
     EXPECT_TRUE(base::PathExists(*elements.file_paths[i]));
   }
+
+  ClearPendingLogFiles();
 }
 
 TEST_F(WebRtcEventLogManagerTestCacheClearing,
@@ -3231,7 +3346,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   // Test
   EXPECT_CALL(remote_observer_, OnRemoteLogStopped(_)).Times(0);
   ClearCacheForBrowserContext(
-      browser_context_, base::Time::Now() - base::TimeDelta::FromHours(2),
+      browser_context_.get(), base::Time::Now() - base::TimeDelta::FromHours(2),
       base::Time::Now() - base::TimeDelta::FromHours(1));
   EXPECT_TRUE(base::PathExists(*file_path));
 }
@@ -3253,7 +3368,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   // Main part of test - the expectation set up in the the uploader factory,
   // that the upload will not be cancelled, should be shown to hold true.
   // should now be satisfied.
-  ClearCacheForBrowserContext(browser_context_, mod_time + kEpsion,
+  ClearCacheForBrowserContext(browser_context_.get(), mod_time + kEpsion,
                               mod_time + 2 * kEpsion);
 }
 
@@ -3261,13 +3376,13 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
        ClearCacheForBrowserContextDoesNotRemovePendingFilesFromOtherProfiles) {
   SuppressUploading();
 
-  auto* const cleared_browser_context = CreateBrowserContext("cleared");
-  CreatePendingLogFiles(cleared_browser_context);
-  auto& cleared_elements = *(pending_logs_[cleared_browser_context]);
+  auto cleared_browser_context = CreateBrowserContext("cleared");
+  CreatePendingLogFiles(cleared_browser_context.get());
+  auto& cleared_elements = *(pending_logs_[cleared_browser_context.get()]);
 
-  auto* const uncleared_browser_context = CreateBrowserContext("pristine");
-  CreatePendingLogFiles(uncleared_browser_context);
-  auto& uncleared_elements = *(pending_logs_[uncleared_browser_context]);
+  auto const uncleared_browser_context = CreateBrowserContext("pristine");
+  CreatePendingLogFiles(uncleared_browser_context.get());
+  auto& uncleared_elements = *(pending_logs_[uncleared_browser_context.get()]);
 
   ASSERT_EQ(cleared_elements.file_paths.size(),
             uncleared_elements.file_paths.size());
@@ -3278,12 +3393,14 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Test - ClearCacheForBrowserContext() only removes the files which belong
   // to the cleared context.
-  ClearCacheForBrowserContext(cleared_browser_context, earliest_mod,
+  ClearCacheForBrowserContext(cleared_browser_context.get(), earliest_mod,
                               latest_mod);
   for (size_t i = 0; i < kFileCount; ++i) {
     EXPECT_FALSE(base::PathExists(*cleared_elements.file_paths[i]));
     EXPECT_TRUE(base::PathExists(*uncleared_elements.file_paths[i]));
   }
+
+  ClearPendingLogFiles();
 }
 
 TEST_F(WebRtcEventLogManagerTestCacheClearing,
@@ -3291,17 +3408,17 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   SuppressUploading();
 
   // Remote-bound active log file that *will* be cleared.
-  auto* const cleared_browser_context = CreateBrowserContext("cleared");
+  auto cleared_browser_context = CreateBrowserContext("cleared");
   auto cleared_rph =
-      std::make_unique<MockRenderProcessHost>(cleared_browser_context);
+      std::make_unique<MockRenderProcessHost>(cleared_browser_context.get());
   const auto cleared_key = GetPeerConnectionKey(cleared_rph.get(), kLid);
   base::Optional<base::FilePath> cleared_file_path =
       CreateActiveRemoteLogFile(cleared_key);
 
   // Remote-bound active log file that will *not* be cleared.
-  auto* const uncleared_browser_context = CreateBrowserContext("pristine");
+  auto uncleared_browser_context = CreateBrowserContext("pristine");
   auto uncleared_rph =
-      std::make_unique<MockRenderProcessHost>(uncleared_browser_context);
+      std::make_unique<MockRenderProcessHost>(uncleared_browser_context.get());
   const auto uncleared_key = GetPeerConnectionKey(uncleared_rph.get(), kLid);
   base::Optional<base::FilePath> uncleared_file_path =
       CreateActiveRemoteLogFile(uncleared_key);
@@ -3310,7 +3427,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   // to the cleared context.
   EXPECT_CALL(remote_observer_, OnRemoteLogStopped(cleared_key)).Times(1);
   EXPECT_CALL(remote_observer_, OnRemoteLogStopped(uncleared_key)).Times(0);
-  ClearCacheForBrowserContext(cleared_browser_context, base::Time::Min(),
+  ClearCacheForBrowserContext(cleared_browser_context.get(), base::Time::Min(),
                               base::Time::Max());
   EXPECT_FALSE(base::PathExists(*cleared_file_path));
   EXPECT_TRUE(base::PathExists(*uncleared_file_path));
@@ -3337,9 +3454,9 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   // Main part of test - the expectation set up in the the uploader factory,
   // that the upload will not be cancelled, should be shown to hold true.
   // should now be satisfied.
-  const auto* const different_browser_context = CreateBrowserContext();
-  ClearCacheForBrowserContext(different_browser_context, mod_time - kEpsion,
-                              mod_time + kEpsion);
+  auto const different_browser_context = CreateBrowserContext();
+  ClearCacheForBrowserContext(different_browser_context.get(),
+                              mod_time - kEpsion, mod_time + kEpsion);
 }
 
 // Show that clearing browser cache, while it removes remote-bound logs, does
@@ -3361,7 +3478,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Test focus - local logging is uninterrupted.
   EXPECT_CALL(local_observer_, OnLocalLogStopped(_)).Times(0);
-  ClearCacheForBrowserContext(browser_context_, base::Time::Min(),
+  ClearCacheForBrowserContext(browser_context_.get(), base::Time::Min(),
                               base::Time::Max());
   EXPECT_TRUE(base::PathExists(*local_log));
 
@@ -3385,9 +3502,9 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   // Create the not-deleted file under a different profile, to easily make sure
   // it does not fit in the ClearCacheForBrowserContext range (less fiddly than
   // a time range).
-  auto* other_browser_context = CreateBrowserContext();
+  auto other_browser_context = CreateBrowserContext();
   auto other_rph =
-      std::make_unique<MockRenderProcessHost>(other_browser_context);
+      std::make_unique<MockRenderProcessHost>(other_browser_context.get());
   const auto key = GetPeerConnectionKey(other_rph.get(), kLid);
   base::Optional<base::FilePath> other_file = CreatePendingRemoteLogFile(key);
   ASSERT_TRUE(other_file);
@@ -3396,49 +3513,49 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   // new file, which is not deleted, is uploaded.
   base::RunLoop run_loop;
   std::list<WebRtcLogFileInfo> expected_files = {
-      WebRtcLogFileInfo(GetBrowserContextId(other_browser_context), *other_file,
-                        GetLastModificationTime(*other_file))};
+      WebRtcLogFileInfo(GetBrowserContextId(other_browser_context.get()),
+                        *other_file, GetLastModificationTime(*other_file))};
   SetWebRtcEventLogUploaderFactoryForTesting(
       std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
           &expected_files, true, &run_loop));
 
   // Clearing the cache for the first profile, should now trigger the upload
   // of the last remaining unclear pending log file - |other_file|.
-  ClearCacheForBrowserContext(browser_context_, base::Time::Min(),
+  ClearCacheForBrowserContext(browser_context_.get(), base::Time::Min(),
                               base::Time::Max());
   WaitForPendingTasks(&run_loop);
 }
 
-TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
        SanityPeerConnectionAdded) {
   EXPECT_TRUE(PeerConnectionAdded(rph_->GetID(), kLid));
 }
 
-TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
        SanityPeerConnectionRemoved) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
   EXPECT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
 }
 
-TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
        SanityPeerConnectionStopped) {
   PeerConnectionStopped(rph_->GetID(), kLid);  // No crash.
 }
 
-TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
        SanityEnableLocalLogging) {
   ASSERT_TRUE(PeerConnectionAdded(rph_->GetID(), kLid));
   ASSERT_TRUE(EnableLocalLogging());
 }
 
-TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
        SanityDisableLocalLogging) {
   ASSERT_TRUE(EnableLocalLogging());
   EXPECT_TRUE(DisableLocalLogging());
 }
 
-TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
        SanityStartRemoteLogging) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
@@ -3448,7 +3565,7 @@ TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
   EXPECT_EQ(error_message, kStartRemoteLoggingFailureFeatureDisabled);
 }
 
-TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
        SanityOnWebRtcEventLogWrite) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
@@ -3457,10 +3574,9 @@ TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
             std::make_pair(false, false));
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ExplicitlyDisable,
-    WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
-    ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(,
+                        WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+                        ::testing::Bool());
 
 TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
        UploadingNotSuppressedByActivePeerConnections) {
@@ -3587,7 +3703,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
       std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
           &empty_expected_files_list, true, &run_loop));
 
-  LoadProfiles();
+  LoadMainTestProfile();
   ASSERT_EQ(browser_context_->GetPath(), browser_context_path_);
 
   WaitForPendingTasks(&run_loop);
@@ -3608,7 +3724,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
       std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
           &expected_files_, true, &run_loop));
 
-  LoadProfiles();
+  LoadMainTestProfile();
   ASSERT_EQ(browser_context_->GetPath(), browser_context_path_);
 
   WaitForPendingTasks(&run_loop);
@@ -3731,7 +3847,7 @@ TEST_F(WebRtcEventLogManagerTestUploadDelay,
   // was deleted.
   // (Test implemented with a glimpse into the black box due to technical
   // limitations and the desire to avoid flakiness.)
-  ClearCacheForBrowserContext(browser_context_, base::Time::Min(),
+  ClearCacheForBrowserContext(browser_context_.get(), base::Time::Min(),
                               base::Time::Max());
   EXPECT_FALSE(UploadConditionsHold());
 
@@ -3772,6 +3888,39 @@ TEST_F(WebRtcEventLogManagerTestCompression,
   ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
 
   WaitForPendingTasks(&run_loop);
+}
+
+TEST_F(WebRtcEventLogManagerTestIncognito,
+       NoRemoteBoundLogsDirectoryCreatedWhenProfileLoaded) {
+  const base::FilePath remote_logs_path =
+      RemoteBoundLogsDir(incognito_profile_);
+  EXPECT_FALSE(base::DirectoryExists(remote_logs_path));
+}
+
+TEST_F(WebRtcEventLogManagerTestIncognito, StartRemoteLoggingFails) {
+  const auto key = GetPeerConnectionKey(incognito_rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  EXPECT_FALSE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+}
+
+TEST_F(WebRtcEventLogManagerTestIncognito,
+       StartRemoteLoggingDoesNotCreateDirectoryOrFiles) {
+  const auto key = GetPeerConnectionKey(incognito_rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  ASSERT_FALSE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+
+  const base::FilePath remote_logs_path =
+      RemoteBoundLogsDir(incognito_profile_);
+  EXPECT_FALSE(base::DirectoryExists(remote_logs_path));
+}
+
+TEST_F(WebRtcEventLogManagerTestIncognito,
+       OnWebRtcEventLogWriteReturnsFalseForRemotePart) {
+  const auto key = GetPeerConnectionKey(incognito_rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  ASSERT_FALSE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+  EXPECT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, "log"),
+            std::make_pair(false, false));
 }
 
 #else  // defined(OS_ANDROID)

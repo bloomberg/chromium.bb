@@ -45,7 +45,7 @@ class CONTENT_EXPORT WebRtcEventLogger {
   // This function must not be called for an off-the-records BrowserContext.
   // Local-logging is not associated with BrowserContexts, and is allowed even
   // if EnableForBrowserContext is not called. That is, even for incognito mode.
-  virtual void EnableForBrowserContext(const BrowserContext* browser_context,
+  virtual void EnableForBrowserContext(BrowserContext* browser_context,
                                        base::OnceClosure reply) = 0;
 
   // Disables WebRTC event logging for a given BrowserContext. New remote-bound

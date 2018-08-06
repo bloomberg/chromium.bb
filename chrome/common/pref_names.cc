@@ -1252,6 +1252,8 @@ const char kWebRTCNonProxiedUdpEnabled[] =
 const char kWebRTCIPHandlingPolicy[] = "webrtc.ip_handling_policy";
 // Define range of UDP ports allowed to be used by WebRTC PeerConnections.
 const char kWebRTCUDPPortRange[] = "webrtc.udp_port_range";
+// Whether WebRTC event log collection by Google domains is allowed.
+const char kWebRtcEventLogCollectionAllowed[] = "webrtc.event_logs_collection";
 
 #if !defined(OS_ANDROID)
 // Whether or not this profile has been shown the Welcome page.

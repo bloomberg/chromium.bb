@@ -70,7 +70,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   ~WebRtcEventLogManager() override;
 
-  void EnableForBrowserContext(const content::BrowserContext* browser_context,
+  void EnableForBrowserContext(content::BrowserContext* browser_context,
                                base::OnceClosure reply) override;
 
   void DisableForBrowserContext(const content::BrowserContext* browser_context,
@@ -168,8 +168,8 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   WebRtcEventLogManager();
 
-  // Checks whether remote-bound logging is enabled.
-  bool IsRemoteLoggingEnabled() const;
+  bool IsRemoteLoggingAllowedForBrowserContext(
+      content::BrowserContext* browser_context) const;
 
   // Determines the exact subclass of LogFileWriter::Factory to be used for
   // producing remote-bound logs.
@@ -211,10 +211,15 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       net::URLRequestContextGetter* url_request_context_getter,
       std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory);
 
+  // The BrowserContext is always enabled for local-bound logs.
+  // |enable_for_remote_logging| indicates whether it should also be enabled
+  // for remote-bound logs. This depends on a Chrome policy.
   void EnableForBrowserContextInternal(
       BrowserContextId browser_context_id,
       const base::FilePath& browser_context_dir,
+      bool enable_for_remote_logging,
       base::OnceClosure reply);
+
   void DisableForBrowserContextInternal(BrowserContextId browser_context_id,
                                         base::OnceClosure reply);
 
@@ -231,7 +236,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   void OnWebRtcEventLogWriteInternal(
       PeerConnectionKey key,
-      bool remote_logging_allowed,
       const std::string& message,
       base::OnceCallback<void(std::pair<bool, bool>)> reply);
 
@@ -296,6 +300,16 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   static WebRtcEventLogManager* g_webrtc_event_log_manager;
 
+  // The main logic will run sequentially on this runner, on which blocking
+  // tasks are allowed.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Indicates whether remote-bound logging is generally allowed, although
+  // possibly not for all profiles. This makes it possible for remote-bound to
+  // be disabled through Finch.
+  // TODO(crbug.com/775415): Remove this kill-switch.
+  const bool remote_logging_feature_enabled_;
+
   // Observer which will be informed whenever a local log file is started or
   // stopped. Its callbacks are called synchronously from |task_runner_|,
   // so the observer needs to be able to either run from any (sequenced) runner.
@@ -311,13 +325,8 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   WebRtcLocalEventLogManager local_logs_manager_;
 
   // Manages remote-bound logs - logs which will be sent to a remote server.
-  // This is only possible when a command line flag is present.
-  // Creation and destruction (or reset) only on the UI thread, and therefore
-  // checking for emptiness allowed on the UI thread.
-  // Everything else (dereferencing and calling methods) only on |task_runner_|.
-  // TODO(eladalon): Remove the command-line flag and the unique_ptr.
-  // https://crbug.com/775415
-  std::unique_ptr<WebRtcRemoteEventLogManager> remote_logs_manager_;
+  // This is only possible when the appropriate Chrome policy is configured.
+  WebRtcRemoteEventLogManager remote_logs_manager_;
 
   // This keeps track of which peer connections have event logging turned on
   // in WebRTC, and for which client(s).
@@ -344,10 +353,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // |remote_logs_manager_| when (and if) produced.
   std::unique_ptr<LogFileWriter::Factory>
       remote_log_file_writer_factory_for_testing_;
-
-  // The main logic will run sequentially on this runner, on which blocking
-  // tasks are allowed.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcEventLogManager);
 };

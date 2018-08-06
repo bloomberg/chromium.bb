@@ -491,6 +491,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWebRtcUdpPortRange,
     prefs::kWebRTCUDPPortRange,
     base::Value::Type::STRING },
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  { key::kWebRtcEventLogCollectionAllowed,
+    prefs::kWebRtcEventLogCollectionAllowed,
+    base::Value::Type::BOOLEAN },
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kSecurityKeyPermitAttestation,
     prefs::kSecurityKeyPermitAttestation,

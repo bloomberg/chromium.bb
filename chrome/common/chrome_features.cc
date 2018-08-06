@@ -654,8 +654,10 @@ const base::Feature kMachineLearningService{"MachineLearningService",
 #if !defined(OS_ANDROID)
 // Allow capturing of WebRTC event logs, and uploading of those logs to Crash.
 // Please note that a Chrome policy must also be set, for this to have effect.
+// Effectively, this is a kill-switch for the feature.
+// TODO(crbug.com/775415): Remove this kill-switch.
 extern const base::Feature kWebRtcRemoteEventLog{
-    "WebRtcRemoteEventLog", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebRtcRemoteEventLog", base::FEATURE_ENABLED_BY_DEFAULT};
 // Compress remote-bound WebRTC event logs (if used; see kWebRtcRemoteEventLog).
 extern const base::Feature kWebRtcRemoteEventLogGzipped{
     "WebRtcRemoteEventLogGzipped", base::FEATURE_ENABLED_BY_DEFAULT};
