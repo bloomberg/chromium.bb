@@ -108,7 +108,7 @@ class HostListService {
   std::unique_ptr<HostListFetcher> host_list_fetcher_;
 
   std::vector<remoting::HostInfo> hosts_;
-  State state_;
+  State state_ = State::NOT_FETCHED;
   std::unique_ptr<FetchFailureInfo> last_fetch_failure_;
 
   base::WeakPtrFactory<HostListService> weak_factory_;
