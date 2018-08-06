@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
 #define CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -148,6 +149,9 @@ class WebContentsTester {
 
   // Simulates an input event from the user.
   virtual void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) = 0;
+
+  // Simulates successfully finishing a load.
+  virtual void TestDidFinishLoad(const GURL& url) = 0;
 
   // Simulates terminating an load with a network error.
   virtual void TestDidFailLoadWithError(

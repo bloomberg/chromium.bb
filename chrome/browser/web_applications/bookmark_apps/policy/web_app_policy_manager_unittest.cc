@@ -39,6 +39,10 @@ class WebAppPolicyManagerTest::TestPendingAppManager
   TestPendingAppManager() = default;
   ~TestPendingAppManager() override = default;
 
+  void Install(
+      AppInfo app_to_install,
+      PendingAppManager::InstallCallback callback) override {}
+
   void ProcessAppOperations(std::vector<AppInfo> apps_to_install) override {
     last_apps_to_install_ = std::move(apps_to_install);
   }

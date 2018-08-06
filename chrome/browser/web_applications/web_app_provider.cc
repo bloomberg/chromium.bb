@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/task/post_task_forward.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/external_web_apps.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
@@ -24,11 +25,11 @@ WebAppProvider* WebAppProvider::Get(Profile* profile) {
   return WebAppProviderFactory::GetForProfile(profile);
 }
 
-WebAppProvider::WebAppProvider(PrefService* pref_service)
+WebAppProvider::WebAppProvider(Profile* profile)
     : pending_app_manager_(
-          std::make_unique<extensions::PendingBookmarkAppManager>()),
+          std::make_unique<extensions::PendingBookmarkAppManager>(profile)),
       web_app_policy_manager_(
-          std::make_unique<WebAppPolicyManager>(pref_service,
+          std::make_unique<WebAppPolicyManager>(profile->GetPrefs(),
                                                 pending_app_manager_.get())) {
 #if defined(OS_CHROMEOS)
   // As of mid 2018, only Chrome OS has default web apps or external web apps.

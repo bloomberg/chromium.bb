@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_service.h"
 
 class Profile;
 
@@ -32,7 +31,7 @@ class WebAppProvider : public KeyedService {
  public:
   static WebAppProvider* Get(Profile* profile);
 
-  explicit WebAppProvider(PrefService* pref_service);
+  explicit WebAppProvider(Profile* profile);
 
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.

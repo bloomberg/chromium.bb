@@ -30,8 +30,8 @@ class BookmarkAppShortcutInstallationTask : public BookmarkAppInstallationTask {
   explicit BookmarkAppShortcutInstallationTask(Profile* profile);
   ~BookmarkAppShortcutInstallationTask() override;
 
-  void InstallFromWebContents(content::WebContents* web_contents,
-                              ResultCallback callback);
+  virtual void InstallFromWebContents(content::WebContents* web_contents,
+                                      ResultCallback callback);
 
  private:
   void OnGetWebApplicationInfo(
