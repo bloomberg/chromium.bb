@@ -12,21 +12,7 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
   // Enabble/disable all the Google services.
   GoogleServicesSettingsCommandIDToggleSyncEverything,
   // Enable/disabble bookmark sync.
-  GoogleServicesSettingsCommandIDToggleBookmarkSync,
-  // Enable/disabble history sync.
-  GoogleServicesSettingsCommandIDToggleHistorySync,
-  // Enable/disabble passwords sync.
-  GoogleServicesSettingsCommandIDTogglePasswordsSync,
-  // Enable/disabble open tabs sync.
-  GoogleServicesSettingsCommandIDToggleOpenTabsSync,
-  // Enable/disabble autofill sync.
-  GoogleServicesSettingsCommandIDToggleAutofillSync,
-  // Enable/disabble settings sync.
-  GoogleServicesSettingsCommandIDToggleSettingsSync,
-  // Enable/disabble reading list sync.
-  GoogleServicesSettingsCommandIDToggleReadingListSync,
-  // Enable/disable activity and interactions service.
-  GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService,
+  GoogleServicesSettingsCommandIDToggleDataTypeSync,
   // Enable/disabble autocomplete searches service.
   GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService,
   // Enable/disabble preload pages service.
@@ -48,27 +34,8 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
 
 // Called when GoogleServicesSettingsCommandIDToggleSyncEverything is triggered.
 - (void)toggleSyncEverythingWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDToggleBookmarkSync is triggered.
-- (void)toggleBookmarksSyncWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDToggleHistorySync is triggered.
-- (void)toggleHistorySyncWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDTogglePasswordsSync is triggered.
-- (void)togglePasswordsSyncWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDToggleOpenTabsSync is triggered.
-- (void)toggleOpenTabSyncWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDToggleAutofillSync is triggered.
-- (void)toggleAutofillWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDToggleSettingsSync is triggered.
-- (void)toggleSettingsWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDToggleReadingListSync is
-// triggered.
-- (void)toggleReadingListWithValue:(BOOL)on;
-// Called when
-// GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService is
-// triggered.
-- (void)toggleActivityAndInteractionsServiceWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService
-// is triggered.
+// Called when GoogleServicesSettingsCommandIDToggleDataTypeSync is triggered.
+- (void)toggleSyncDataSync:(NSInteger)dataType WithValue:(BOOL)on;
 - (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)on;
 // Called when GoogleServicesSettingsCommandIDTogglePreloadPagesService is
 // triggered.

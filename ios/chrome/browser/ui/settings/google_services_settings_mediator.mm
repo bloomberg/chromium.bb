@@ -6,12 +6,14 @@
 
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
+#include "components/browser_sync/profile_sync_service.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
@@ -73,11 +75,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface GoogleServicesSettingsMediator ()<PrefObserverDelegate> {
+@interface GoogleServicesSettingsMediator ()<PrefObserverDelegate,
+                                             SyncObserverModelBridge> {
   // Bridge to listen to pref changes.
   std::unique_ptr<PrefObserverBridge> prefObserverBridge_;
   // Registrar for pref changes notifications.
   PrefChangeRegistrar prefChangeRegistrar_;
+  std::unique_ptr<SyncObserverBridge> _syncObserver;
 }
 
 // Returns YES if the user is authenticated.
@@ -86,10 +90,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign, readonly) BOOL isConsentGiven;
 // Preference service.
 @property(nonatomic, assign, readonly) PrefService* prefService;
+// Sync setup service.
+@property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
 
 // YES if the switch for |syncEverythingItem| is currently animating from one
 // state to another.
 @property(nonatomic, assign, readwrite) BOOL syncEverythingSwitchBeingAnimated;
+// YES if at least one switch in the personalized section is currently animating
+// from one state to another.
+@property(nonatomic, assign, readwrite) BOOL personalizedSectionBeingAnimated;
 // Item for "Sync Everything" section.
 @property(nonatomic, strong, readonly) SyncSwitchItem* syncEverythingItem;
 // Collapsible item for the personalized section.
@@ -110,8 +119,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize consumer = _consumer;
 @synthesize authService = _authService;
 @synthesize prefService = _prefService;
+@synthesize syncSetupService = _syncSetupService;
 @synthesize syncEverythingSwitchBeingAnimated =
     _syncEverythingSwitchBeingAnimated;
+@synthesize personalizedSectionBeingAnimated =
+    _personalizedSectionBeingAnimated;
 @synthesize syncEverythingItem = _syncEverythingItem;
 @synthesize syncPersonalizationItem = _syncPersonalizationItem;
 @synthesize personalizedItems = _personalizedItems;
@@ -120,11 +132,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Load model
 
-- (instancetype)initWithPrefService:(PrefService*)prefService {
+- (instancetype)initWithPrefService:(PrefService*)prefService
+                        syncService:
+                            (browser_sync::ProfileSyncService*)syncService
+                   syncSetupService:(SyncSetupService*)syncSetupService {
   self = [super init];
   if (self) {
     DCHECK(prefService);
+    DCHECK(syncService);
+    DCHECK(syncSetupService);
     _prefService = prefService;
+    _syncSetupService = syncSetupService;
+    _syncObserver.reset(new SyncObserverBridge(self, syncService));
     prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
     prefChangeRegistrar_.Init(prefService);
     prefObserverBridge_->ObserveChangesForPreference(kUnifiedConsentGiven,
@@ -198,7 +217,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_EVERYTHING
                 detailStringID:0
                      commandID:
-                         GoogleServicesSettingsCommandIDToggleSyncEverything];
+                         GoogleServicesSettingsCommandIDToggleSyncEverything
+                      dataType:0];
   }
   return _syncEverythingItem;
 }
@@ -221,47 +241,47 @@ typedef NS_ENUM(NSInteger, ItemType) {
         switchItemWithItemType:SyncBookmarksItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_BOOKMARKS_TEXT
                 detailStringID:0
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleBookmarkSync];
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncBookmarks];
     SyncSwitchItem* syncHistoryItem = [self
         switchItemWithItemType:SyncHistoryItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_HISTORY_TEXT
                 detailStringID:0
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleHistorySync];
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncOmniboxHistory];
     SyncSwitchItem* syncPasswordsItem = [self
         switchItemWithItemType:SyncPasswordsItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_PASSWORD_TEXT
                 detailStringID:0
-                     commandID:
-                         GoogleServicesSettingsCommandIDTogglePasswordsSync];
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncPasswords];
     SyncSwitchItem* syncOpenTabsItem = [self
         switchItemWithItemType:SyncOpenTabsItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_OPENTABS_TEXT
                 detailStringID:0
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleOpenTabsSync];
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncOpenTabs];
     SyncSwitchItem* syncAutofillItem = [self
         switchItemWithItemType:SyncAutofillItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOFILL_TEXT
                 detailStringID:0
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleAutofillSync];
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncAutofill];
     SyncSwitchItem* syncReadingListItem = [self
         switchItemWithItemType:SyncReadingListItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT
                 detailStringID:0
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleReadingListSync];
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncReadingList];
     SyncSwitchItem* syncActivityAndInteractionsItem = [self
         switchItemWithItemType:SyncActivityAndInteractionsItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleActivityAndInteractionsService];
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncUserEvent];
     CollectionViewTextItem* syncGoogleActivityControlsItem = [self
         textItemWithItemType:SyncGoogleActivityControlsItemType
                 textStringID:
@@ -316,7 +336,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
                      commandID:
-                         GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService];
+                         GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService
+                      dataType:0];
     SyncSwitchItem* preloadPagesItem = [self
         switchItemWithItemType:PreloadPagesItemType
                   textStringID:
@@ -324,7 +345,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_DETAIL
                      commandID:
-                         GoogleServicesSettingsCommandIDTogglePreloadPagesService];
+                         GoogleServicesSettingsCommandIDTogglePreloadPagesService
+                      dataType:0];
     SyncSwitchItem* improveChromeItem = [self
         switchItemWithItemType:ImproveChromeItemType
                   textStringID:
@@ -332,7 +354,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
                      commandID:
-                         GoogleServicesSettingsCommandIDToggleImproveChromeService];
+                         GoogleServicesSettingsCommandIDToggleImproveChromeService
+                      dataType:0];
     SyncSwitchItem* betterSearchAndBrowsingItemType = [self
         switchItemWithItemType:BetterSearchAndBrowsingItemType
                   textStringID:
@@ -340,7 +363,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
                      commandID:
-                         GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService];
+                         GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService
+                      dataType:0];
     _nonPersonalizedItems = @[
       autocompleteSearchesAndURLsItem, preloadPagesItem, improveChromeItem,
       betterSearchAndBrowsingItemType
@@ -368,12 +392,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (SyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
                              textStringID:(int)textStringID
                            detailStringID:(int)detailStringID
-                                commandID:(NSInteger)commandID {
+                                commandID:(NSInteger)commandID
+                                 dataType:(NSInteger)dataType {
   SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:itemType];
   switchItem.text = GetNSString(textStringID);
   if (detailStringID)
     switchItem.detailText = GetNSString(detailStringID);
   switchItem.commandID = commandID;
+  switchItem.dataType = dataType;
   return switchItem;
 }
 
@@ -402,6 +428,15 @@ textItemWithItemType:(NSInteger)itemType
                                  enabled:enabled];
 }
 
+// Updates |item.on| and |item.enabled| according to its data type.
+- (void)updateSwitchValueWithItem:(SyncSwitchItem*)item enabled:(BOOL)enabled {
+  SyncSetupService::SyncableDatatype dataType =
+      static_cast<SyncSetupService::SyncableDatatype>(item.dataType);
+  syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
+  item.on = self.syncSetupService->IsDataTypePreferred(modelType);
+  item.enabled = enabled;
+}
+
 // Updates the non-personalized section according to the user consent.
 - (void)updateNonPersonalizedSection {
   BOOL enabled = !self.isAuthenticated || !self.isConsentGiven;
@@ -421,6 +456,15 @@ textItemWithItemType:(NSInteger)itemType
   for (CollectionViewItem* item in items) {
     if ([item isKindOfClass:[SyncSwitchItem class]]) {
       SyncSwitchItem* switchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+      if (switchItem.commandID ==
+          GoogleServicesSettingsCommandIDToggleDataTypeSync) {
+        SyncSetupService::SyncableDatatype dataType =
+            static_cast<SyncSetupService::SyncableDatatype>(
+                switchItem.dataType);
+        syncer::ModelType modelType =
+            self.syncSetupService->GetModelType(dataType);
+        switchItem.on = self.syncSetupService->IsDataTypePreferred(modelType);
+      }
       switchItem.enabled = enabled;
     } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
       CollectionViewTextItem* textItem =
@@ -455,36 +499,12 @@ textItemWithItemType:(NSInteger)itemType
   self.prefService->SetBoolean(kUnifiedConsentGiven, value);
 }
 
-- (void)toggleBookmarksSyncWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)toggleHistorySyncWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)togglePasswordsSyncWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)toggleOpenTabSyncWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)toggleAutofillWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)toggleSettingsWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)toggleReadingListWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)toggleActivityAndInteractionsServiceWithValue:(BOOL)on {
-  // Needs to be implemented.
+- (void)toggleSyncDataSync:(NSInteger)dataTypeInt WithValue:(BOOL)on {
+  base::AutoReset<BOOL> autoReset(&_personalizedSectionBeingAnimated, YES);
+  SyncSetupService::SyncableDatatype dataType =
+      static_cast<SyncSetupService::SyncableDatatype>(dataTypeInt);
+  syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
+  self.syncSetupService->SetDataTypeEnabled(modelType, on);
 }
 
 - (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)on {
@@ -539,12 +559,28 @@ textItemWithItemType:(NSInteger)itemType
     [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
                                               SyncEverythingSectionIdentifier]];
   }
-  [sectionIndexToReload
-      addIndex:[model
-                   sectionForSectionIdentifier:PersonalizedSectionIdentifier]];
+  if (!self.personalizedSectionBeingAnimated) {
+    // The sync everything section can be reloaded only if none of the switches
+    // in the personalized section are not currently animated. Otherwise the
+    // animation would be stopped before the end.
+    [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
+                                              PersonalizedSectionIdentifier]];
+  }
   [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
                                             NonPersonalizedSectionIdentifier]];
   [self.consumer reloadSections:sectionIndexToReload];
+}
+
+#pragma mark - SyncObserverModelBridge
+
+- (void)onSyncStateChanged {
+  [self updatePersonalizedSection];
+  if (!self.personalizedSectionBeingAnimated) {
+    NSMutableIndexSet* sectionIndexToReload = [NSMutableIndexSet indexSet];
+    [sectionIndexToReload
+        addIndex:PersonalizedSectionIdentifier - kSectionIdentifierEnumZero];
+    [self.consumer reloadSections:sectionIndexToReload];
+  }
 }
 
 @end
