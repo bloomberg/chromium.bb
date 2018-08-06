@@ -262,7 +262,13 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
   // Hence we need to repeat computeUsedBreadthOfGridTracks for both, columns
   // and rows, to determine the final values.
   ComputeTrackSizesForDefiniteSize(kForColumns, available_space_for_columns);
+  ComputeContentPositionAndDistributionOffset(
+      kForColumns, track_sizing_algorithm_.FreeSpace(kForColumns).value(),
+      NonCollapsedTracks(kForColumns));
   ComputeTrackSizesForDefiniteSize(kForRows, available_space_for_rows);
+  ComputeContentPositionAndDistributionOffset(
+      kForRows, track_sizing_algorithm_.FreeSpace(kForRows).value(),
+      NonCollapsedTracks(kForRows));
 }
 
 void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
