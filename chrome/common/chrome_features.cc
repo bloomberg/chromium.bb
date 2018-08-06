@@ -40,10 +40,6 @@ const base::Feature kFullscreenToolbarReveal{"FullscreenToolbarReveal",
 // Use the Toolkit-Views Task Manager window.
 const base::Feature kViewsTaskManager{"ViewsTaskManager",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the suggested text touch bar for autocomplete in textfields.
-const base::Feature kSuggestedTextTouchBar{"SuggestedTextTouchBar",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID)
@@ -145,6 +141,12 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
 const base::Feature kTabMetricsLogging{"TabMetricsLogging",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
+#if defined(OS_MACOSX)
+// Enables the suggested text touch bar for autocomplete in textfields.
+const base::Feature kTextSuggestionsTouchBar{"TextSuggestionsTouchBar",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)

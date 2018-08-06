@@ -28161,7 +28161,6 @@ from previous Chrome versions.
   <int value="-1039555838" label="GamepadExtensions:enabled"/>
   <int value="-1034344165" label="V8NoTurbo:disabled"/>
   <int value="-1033738911" label="enable-mac-views-dialogs"/>
-  <int value="-1032031735" label="SuggestedTextTouchBar:enabled"/>
   <int value="-1031350684" label="PdfIsolation:disabled"/>
   <int value="-1029920490" label="IdleTimeSpellChecking:enabled"/>
   <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
@@ -28510,6 +28509,7 @@ from previous Chrome versions.
   <int value="-314605926" label="protect-sync-credential-on-reauth:enabled"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-310908854" label="new-wallpaper-picker"/>
+  <int value="-304951461" label="TextSuggestionsTouchBar:enabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
   <int value="-297716805"
@@ -29017,7 +29017,6 @@ from previous Chrome versions.
       label="enable-fullscreen-handwriting-virtual-keyboard:enabled"/>
   <int value="773743944" label="show-android-files-in-files-app"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
-  <int value="774079453" label="SuggestedTextTouchBar:disabled"/>
   <int value="777667507" label="DesktopPWAsLinkCapturing:enabled"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="779849093" label="OfflinePagesCTSuppressNotifications:disabled"/>
@@ -29201,6 +29200,7 @@ from previous Chrome versions.
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
+  <int value="1166897718" label="TextSuggestionsTouchBar:disabled"/>
   <int value="1167613030" label="enable-permission-action-reporting"/>
   <int value="1169418814" label="ManualFallbacksFilling:enabled"/>
   <int value="1174088940" label="enable-wasm"/>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller.h"
+#import "chrome/browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller.h"
 
 #include "base/i18n/break_iterator.h"
 #include "base/strings/sys_string_conversions.h"
@@ -14,17 +14,17 @@
 
 namespace {
 // Touch bar identifier.
-NSString* const kSuggestedTextTouchBarId = @"suggested-text";
+NSString* const kTextSuggestionsTouchBarId = @"text-suggestions";
 
 // Touch bar item identifiers.
-NSString* const kSuggestedTextItemsTouchId = @"SUGGESTED-TEXT-ITEMS";
+NSString* const kTextSuggestionsItemsTouchId = @"TEXT-SUGGESTIONS-ITEMS";
 }  // namespace
 
 namespace text_observer {
 class WebContentsTextObserver : public content::WebContentsObserver {
  public:
   WebContentsTextObserver(content::WebContents* web_contents,
-                          SuggestedTextTouchBarController* owner)
+                          TextSuggestionsTouchBarController* owner)
       : WebContentsObserver(web_contents), owner_(owner) {}
 
   void UpdateWebContents(content::WebContents* web_contents) {
@@ -42,11 +42,11 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   }
 
  private:
-  SuggestedTextTouchBarController* owner_;  // weak
+  TextSuggestionsTouchBarController* owner_;  // weak
 };
 }  // namespace text_observer
 
-@interface SuggestedTextTouchBarController () {
+@interface TextSuggestionsTouchBarController () {
   // An observer for text selection changes.
   std::unique_ptr<text_observer::WebContentsTextObserver> observer_;
 
@@ -75,7 +75,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 }
 @end
 
-@implementation SuggestedTextTouchBarController
+@implementation TextSuggestionsTouchBarController
 
 - (BOOL)isTextfieldFocused {
   return webContents_ && webContents_->IsFocusedElementEditable();
@@ -100,16 +100,16 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
   [touchBar
-      setCustomizationIdentifier:ui::GetTouchBarId(kSuggestedTextTouchBarId)];
+      setCustomizationIdentifier:ui::GetTouchBarId(kTextSuggestionsTouchBarId)];
   [touchBar setDelegate:self];
 
-  [touchBar setDefaultItemIdentifiers:@[ kSuggestedTextItemsTouchId ]];
+  [touchBar setDefaultItemIdentifiers:@[ kTextSuggestionsItemsTouchId ]];
   return touchBar.autorelease();
 }
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
       makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
-  if (![identifier hasSuffix:kSuggestedTextItemsTouchId])
+  if (![identifier hasSuffix:kTextSuggestionsItemsTouchId])
     return nil;
 
   return [self createCandidateListItem];
@@ -118,7 +118,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 - (NSCandidateListTouchBarItem*)createCandidateListItem {
   NSCandidateListTouchBarItem* candidateListItem =
       [[NSCandidateListTouchBarItem alloc]
-          initWithIdentifier:kSuggestedTextItemsTouchId];
+          initWithIdentifier:kTextSuggestionsItemsTouchId];
 
   [candidateListItem setCandidates:suggestions_
                   forSelectedRange:selectionRange_

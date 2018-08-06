@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller.h"
+#import "chrome/browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/gfx/range/range.h"
@@ -19,11 +19,11 @@ const base::string16 kWordWithLeadingWhitespace(base::ASCIIToUTF16(" hello"));
 const base::string16 kMultipleWords(base::ASCIIToUTF16("hello world"));
 const base::string16 kWhitespace(base::ASCIIToUTF16("     "));
 
-class SuggestedTextTouchBarControllerUnitTest : public CocoaTest {
+class TextSuggestionsTouchBarControllerTest : public CocoaTest {
  public:
   void SetUp() override {
     CocoaTest::SetUp();
-    controller_.reset([[SuggestedTextTouchBarController alloc] init]);
+    controller_.reset([[TextSuggestionsTouchBarController alloc] init]);
   }
 
   gfx::Range GetEditingWordRange(const base::string16& text, size_t cursor) {
@@ -32,10 +32,10 @@ class SuggestedTextTouchBarControllerUnitTest : public CocoaTest {
     return gfx::Range(range);
   }
 
-  base::scoped_nsobject<SuggestedTextTouchBarController> controller_;
+  base::scoped_nsobject<TextSuggestionsTouchBarController> controller_;
 };
 
-TEST_F(SuggestedTextTouchBarControllerUnitTest, CollapsedCandidateListTest) {
+TEST_F(TextSuggestionsTouchBarControllerTest, CollapsedCandidateList) {
   if (@available(macOS 10.12.2, *)) {
     base::scoped_nsobject<NSCandidateListTouchBarItem> item;
 
@@ -51,25 +51,23 @@ TEST_F(SuggestedTextTouchBarControllerUnitTest, CollapsedCandidateListTest) {
 
 // Tests that the editing word range is simply the cursor position if there
 // is no text.
-TEST_F(SuggestedTextTouchBarControllerUnitTest, EmptyTextEditingWordRangeTest) {
+TEST_F(TextSuggestionsTouchBarControllerTest, EmptyTextEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 0), GetEditingWordRange(kEmptyText, 0));
 }
 
 // Tests that the editing word range contains the full word as the cursor
 // moves through a word without breaks.
-TEST_F(SuggestedTextTouchBarControllerUnitTest, WordEditingWordRangeTest) {
+TEST_F(TextSuggestionsTouchBarControllerTest, WordEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 0), GetEditingWordRange(kWord, 0));
   EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 1));
   EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 2));
   EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 3));
   EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 4));
-  EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 5));
 }
 
 // Tests that the editing word range is properly calculated as the cursor moves
 // through non-word characters.
-TEST_F(SuggestedTextTouchBarControllerUnitTest,
-       WhitespaceEditingWordRangeTest) {
+TEST_F(TextSuggestionsTouchBarControllerTest, WhitespaceEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWhitespace, 0));
   EXPECT_EQ(gfx::Range(1, 5), GetEditingWordRange(kWhitespace, 1));
   EXPECT_EQ(gfx::Range(2, 5), GetEditingWordRange(kWhitespace, 2));
@@ -80,8 +78,8 @@ TEST_F(SuggestedTextTouchBarControllerUnitTest,
 
 // Tests that the editing word range changes properly as the cursor moves
 // from word to non-word characters.
-TEST_F(SuggestedTextTouchBarControllerUnitTest,
-       TrailingWhitespaceEditingWordRangeTest) {
+TEST_F(TextSuggestionsTouchBarControllerTest,
+       TrailingWhitespaceEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 0),
             GetEditingWordRange(kWordWithTrailingWhitespace, 0));
   EXPECT_EQ(gfx::Range(0, 6),
@@ -100,8 +98,8 @@ TEST_F(SuggestedTextTouchBarControllerUnitTest,
 
 // Tests that the editing word range changes properly as the cursor moves
 // from non-word to word characters.
-TEST_F(SuggestedTextTouchBarControllerUnitTest,
-       LeadingWhitespaceEditingWordRangeTest) {
+TEST_F(TextSuggestionsTouchBarControllerTest,
+       LeadingWhitespaceEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 1),
             GetEditingWordRange(kWordWithLeadingWhitespace, 0));
   EXPECT_EQ(gfx::Range(1, 1),
@@ -120,8 +118,7 @@ TEST_F(SuggestedTextTouchBarControllerUnitTest,
 
 // Tests that the editing word range is properly calculated as the cursor moves
 // from word to non-word and back to word characters.
-TEST_F(SuggestedTextTouchBarControllerUnitTest,
-       MultipleWordsEditingWordRangeTest) {
+TEST_F(TextSuggestionsTouchBarControllerTest, MultipleWordsEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 0), GetEditingWordRange(kMultipleWords, 0));
   EXPECT_EQ(gfx::Range(0, 6), GetEditingWordRange(kMultipleWords, 1));
   EXPECT_EQ(gfx::Range(0, 6), GetEditingWordRange(kMultipleWords, 2));
@@ -136,7 +133,7 @@ TEST_F(SuggestedTextTouchBarControllerUnitTest,
   EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 11));
 }
 
-TEST_F(SuggestedTextTouchBarControllerUnitTest, TouchBarMetricTest) {
+TEST_F(TextSuggestionsTouchBarControllerTest, TouchBarMetrics) {
   if (@available(macOS 10.12.2, *)) {
     base::HistogramTester histogram_tester;
     [controller_ candidateListTouchBarItem:nil endSelectingCandidateAtIndex:1];

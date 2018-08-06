@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #import "chrome/browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller.h"
-#import "chrome/browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller.h"
+#import "chrome/browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller.h"
 #include "chrome/browser/ui/views/frame/browser_frame_mac.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_features.h"
@@ -44,9 +44,9 @@
   if ((self = [super init])) {
     controller_ = controller;
 
-    if (base::FeatureList::IsEnabled(features::kSuggestedTextTouchBar)) {
-      suggestedTextTouchBarController_.reset(
-          [[SuggestedTextTouchBarController alloc]
+    if (base::FeatureList::IsEnabled(features::kTextSuggestionsTouchBar)) {
+      textSuggestionsTouchBarController_.reset(
+          [[TextSuggestionsTouchBarController alloc]
               initWithWebContents:[controller_ webContents]
                        controller:self]);
     }
@@ -74,7 +74,7 @@
 }
 
 - (void)updateWebContents:(content::WebContents*)contents {
-  [suggestedTextTouchBarController_ setWebContents:contents];
+  [textSuggestionsTouchBarController_ setWebContents:contents];
 }
 
 - (void)invalidateTouchBar {
@@ -85,8 +85,8 @@
   if (autofillTouchBarController_)
     return [autofillTouchBarController_ makeTouchBar];
 
-  if (suggestedTextTouchBarController_)
-    return [suggestedTextTouchBarController_ makeTouchBar];
+  if (textSuggestionsTouchBarController_)
+    return [textSuggestionsTouchBarController_ makeTouchBar];
 
   return nil;
 }
