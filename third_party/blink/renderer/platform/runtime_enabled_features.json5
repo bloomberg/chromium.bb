@@ -1159,10 +1159,6 @@
       status: "experimental",
     },
     {
-      name: "ServerTiming",
-      status: "stable",
-    },
-    {
       name: "ServiceWorkerScriptFullCodeCache",
     },
     {
