@@ -27,7 +27,7 @@ namespace {
 
 using RequestResult = APIBindingHooks::RequestResult;
 
-constexpr char kSendRequest[] = "extension.sendRequest";
+constexpr char kSendExtensionRequest[] = "extension.sendRequest";
 constexpr char kGetURL[] = "extension.getURL";
 constexpr char kGetBackgroundPage[] = "extension.getBackgroundPage";
 constexpr char kGetViews[] = "extension.getViews";
@@ -116,7 +116,7 @@ RequestResult ExtensionHooksDelegate::HandleRequest(
     Handler handler;
     base::StringPiece method;
   } kHandlers[] = {
-      {&ExtensionHooksDelegate::HandleSendRequest, kSendRequest},
+      {&ExtensionHooksDelegate::HandleSendRequest, kSendExtensionRequest},
       {&ExtensionHooksDelegate::HandleGetURL, kGetURL},
       {&ExtensionHooksDelegate::HandleGetBackgroundPage, kGetBackgroundPage},
       {&ExtensionHooksDelegate::HandleGetExtensionTabs, kGetExtensionTabs},
@@ -136,7 +136,7 @@ RequestResult ExtensionHooksDelegate::HandleRequest(
   if (!handler)
     return RequestResult(RequestResult::NOT_HANDLED);
 
-  if (method_name == kSendRequest) {
+  if (method_name == kSendExtensionRequest) {
     messaging_util::MassageSendMessageArguments(context->GetIsolate(), false,
                                                 arguments);
   }

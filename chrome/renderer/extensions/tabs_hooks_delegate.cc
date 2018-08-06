@@ -25,7 +25,7 @@ using RequestResult = APIBindingHooks::RequestResult;
 
 constexpr char kConnect[] = "tabs.connect";
 constexpr char kSendMessage[] = "tabs.sendMessage";
-constexpr char kSendRequest[] = "tabs.sendRequest";
+constexpr char kSendTabsRequest[] = "tabs.sendRequest";
 
 }  // namespace
 
@@ -49,7 +49,7 @@ RequestResult TabsHooksDelegate::HandleRequest(
     base::StringPiece method;
   } kHandlers[] = {
       {&TabsHooksDelegate::HandleSendMessage, kSendMessage},
-      {&TabsHooksDelegate::HandleSendRequest, kSendRequest},
+      {&TabsHooksDelegate::HandleSendRequest, kSendTabsRequest},
       {&TabsHooksDelegate::HandleConnect, kConnect},
   };
 
