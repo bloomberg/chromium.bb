@@ -1,4 +1,4 @@
-description("This tests checks that all of the input values for background-repeat parse correctly.");
+description("This tests checks that all of the input values for text-rendering parse correctly.");
 
 function test(value)
 {
@@ -12,10 +12,10 @@ function test(value)
 }
 
 shouldBe('test("text-rendering: auto;")', '"auto"');
-shouldBe('test("text-rendering: optimizeSpeed;")', '"optimizeSpeed"');
-shouldBe('test("text-rendering: optimizeLegibility;")', '"optimizeLegibility"');
-shouldBe('test("text-rendering: geometricPrecision;")', '"geometricPrecision"');
-shouldBe('test("text-rendering: OptIMizESpEEd;")', '"optimizeSpeed"');
+shouldBe('test("text-rendering: optimizespeed;")', '"optimizespeed"');
+shouldBe('test("text-rendering: optimizelegibility;")', '"optimizelegibility"');
+shouldBe('test("text-rendering: geometricprecision;")', '"geometricprecision"');
+shouldBe('test("text-rendering: OptIMizESpEEd;")', '"optimizespeed"');
 
 shouldBeEqualToString('test("text-rendering: auto auto;")', '');
 shouldBeEqualToString('test("text-rendering: optimizeCoconuts;")', '');

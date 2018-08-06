@@ -193,8 +193,8 @@
 
     // CSS_PROP_COLOR_RENDERING
     //auto
-    //optimizeSpeed
-    //optimizeQuality
+    //optimizespeed
+    //optimizequality
 
     //// CSS_PROP_FILL
     //currentColor
@@ -206,8 +206,8 @@
 
     // CSS_PROP_IMAGE_RENDERING
     //auto
-    //optimizeSpeed
-    //optimizeQuality
+    //optimizespeed
+    //optimizequality
 
     // CSS_PROP_MARKER
     // CSS_PROP_MARKER_END
@@ -215,9 +215,9 @@
     // CSS_PROP_MARKER_START
     // CSS_PROP_SHAPE_RENDERING
     //auto
-    //optimizeSpeed
-    "crispEdges",
-    //geometricPrecision
+    //optimizespeed
+    //crispedges
+    //geometricprecision
 
     // CSS_PROP_STROKE
     // CSS_PROP_STROKE_DASHARRAY

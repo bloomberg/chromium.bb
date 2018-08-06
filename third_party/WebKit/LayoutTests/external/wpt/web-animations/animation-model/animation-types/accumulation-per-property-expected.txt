@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 566 tests; 389 PASS, 177 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 566 tests; 393 PASS, 173 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -436,8 +436,8 @@ PASS shape-outside (type: discrete) has testAccumulation function
 PASS shape-outside: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")"
 PASS shape-outside: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")"
 PASS shape-rendering (type: discrete) has testAccumulation function
-FAIL shape-rendering: "crispEdges" onto "optimizeSpeed" assert_equals: The value should be crispedges at 0ms expected "crispedges" but got "crispEdges"
-FAIL shape-rendering: "optimizeSpeed" onto "crispEdges" assert_equals: The value should be optimizespeed at 0ms expected "optimizespeed" but got "optimizeSpeed"
+PASS shape-rendering: "crispEdges" onto "optimizeSpeed"
+PASS shape-rendering: "optimizeSpeed" onto "crispEdges"
 PASS stop-color (type: color) has testAccumulation function
 FAIL stop-color supports animating as color of rgb() with overflowed  from and to values assert_equals: The value should be rgb(255, 128, 128) at 0ms expected "rgb(255, 128, 128)" but got "rgb(255, 0, 0)"
 FAIL stop-color supports animating as color of #RGB assert_equals: The value should be rgb(255, 128, 128) at 0ms expected "rgb(255, 128, 128)" but got "rgb(255, 0, 0)"
@@ -496,8 +496,8 @@ PASS text-overflow (type: discrete) has testAccumulation function
 PASS text-overflow: "ellipsis" onto "clip"
 PASS text-overflow: "clip" onto "ellipsis"
 PASS text-rendering (type: discrete) has testAccumulation function
-FAIL text-rendering: "optimizeLegibility" onto "optimizeSpeed" assert_equals: The value should be optimizelegibility at 0ms expected "optimizelegibility" but got "optimizeLegibility"
-FAIL text-rendering: "optimizeSpeed" onto "optimizeLegibility" assert_equals: The value should be optimizespeed at 0ms expected "optimizespeed" but got "optimizeSpeed"
+PASS text-rendering: "optimizeLegibility" onto "optimizeSpeed"
+PASS text-rendering: "optimizeSpeed" onto "optimizeLegibility"
 PASS text-shadow (type: textShadowList) has testAccumulation function
 FAIL text-shadow: shadow assert_equals: The value should be rgb(240, 240, 240) 20px 20px 20px at 0ms expected "rgb(240, 240, 240) 20px 20px 20px" but got "rgb(120, 120, 120) 10px 10px 10px"
 PASS text-transform (type: discrete) has testAccumulation function

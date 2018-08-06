@@ -592,8 +592,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueAuto || value_id == CSSValueSRGB ||
              value_id == CSSValueLinearRGB;
     case CSSPropertyColorRendering:
-      return value_id == CSSValueAuto || value_id == CSSValueOptimizeSpeed ||
-             value_id == CSSValueOptimizeQuality;
+      return value_id == CSSValueAuto || value_id == CSSValueOptimizespeed ||
+             value_id == CSSValueOptimizequality;
     case CSSPropertyDirection:
       return value_id == CSSValueLtr || value_id == CSSValueRtl;
     case CSSPropertyDisplay:
@@ -673,9 +673,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       DCHECK(RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled());
       return value_id == CSSValueAuto || value_id == CSSValueSmooth;
     case CSSPropertyShapeRendering:
-      return value_id == CSSValueAuto || value_id == CSSValueOptimizeSpeed ||
-             value_id == CSSValueCrispEdges ||
-             value_id == CSSValueGeometricPrecision;
+      return value_id == CSSValueAuto || value_id == CSSValueOptimizespeed ||
+             value_id == CSSValueCrispedges ||
+             value_id == CSSValueGeometricprecision;
     case CSSPropertySpeak:
       return value_id == CSSValueNone || value_id == CSSValueNormal ||
              value_id == CSSValueSpellOut || value_id == CSSValueDigits ||
@@ -722,9 +722,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyTextOverflow:
       return value_id == CSSValueClip || value_id == CSSValueEllipsis;
     case CSSPropertyTextRendering:
-      return value_id == CSSValueAuto || value_id == CSSValueOptimizeSpeed ||
-             value_id == CSSValueOptimizeLegibility ||
-             value_id == CSSValueGeometricPrecision;
+      return value_id == CSSValueAuto || value_id == CSSValueOptimizespeed ||
+             value_id == CSSValueOptimizelegibility ||
+             value_id == CSSValueGeometricprecision;
     case CSSPropertyTextTransform:  // capitalize | uppercase | lowercase | none
       return (value_id >= CSSValueCapitalize &&
               value_id <= CSSValueLowercase) ||
