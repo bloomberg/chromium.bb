@@ -17,6 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/http_server/error_page_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -85,8 +86,9 @@ id<GREYMatcher> ShareMenuCollectionView() {
   EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
 #endif
 
-  // TODO(crbug.com/864597): Reenable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled due to changes in error pages.");
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    EARL_GREY_TEST_SKIPPED(@"Web-based error pages are printable");
+  }
 
   // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
   // interact with the share menu.
@@ -131,7 +133,7 @@ id<GREYMatcher> ShareMenuCollectionView() {
   }
 
   // TODO(crbug.com/864597): Reenable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled due to changes in error pages.");
+  EARL_GREY_TEST_DISABLED(@"Test should be rewritten to use Offline Version.");
 
   std::unique_ptr<web::DataResponseProvider> provider(
       new ErrorPageResponseProvider());
