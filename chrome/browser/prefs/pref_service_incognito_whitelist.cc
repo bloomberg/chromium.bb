@@ -49,7 +49,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chromeos/chromeos_pref_names.h"
-#include "components/arc/arc_prefs.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/drive/drive_pref_names.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -518,14 +517,12 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kServerBackedDeviceState, prefs::kCustomizationDefaultWallpaperURL,
     prefs::kLogoutStartedLast,
     // prefs::kConsumerManagementStage,
-    prefs::kIsBootstrappingSlave, prefs::kReportArcStatusEnabled,
-    prefs::kNetworkThrottlingEnabled, prefs::kPowerMetricsDailySample,
-    prefs::kPowerMetricsIdleScreenDimCount,
+    prefs::kIsBootstrappingSlave, prefs::kNetworkThrottlingEnabled,
+    prefs::kPowerMetricsDailySample, prefs::kPowerMetricsIdleScreenDimCount,
     prefs::kPowerMetricsIdleScreenOffCount,
     prefs::kPowerMetricsIdleSuspendCount,
     prefs::kPowerMetricsLidClosedSuspendCount, prefs::kReportingUsers,
-    prefs::kArcAppInstallEventLoggingEnabled, prefs::kRemoveUsersRemoteCommand,
-    prefs::kCameraMediaConsolidated,
+    prefs::kRemoveUsersRemoteCommand, prefs::kCameraMediaConsolidated,
 #endif  // defined(OS_CHROMEOS)
 
     prefs::kClearPluginLSODataEnabled, prefs::kPepperFlashSettingsEnabled,
@@ -746,29 +743,6 @@ const char* temporary_incognito_whitelist[] = {
     chromeos::prefs::kAudioOutputAllowed, chromeos::prefs::kAudioVolumePercent,
     chromeos::prefs::kAudioDevicesState,
     chromeos::prefs::kQuirksClientLastServerCheck,
-#endif  // defined(OS_CHROMEOS)
-
-// components/arc/arc_prefs.h
-#if defined(OS_CHROMEOS)
-    arc::prefs::kArcActiveDirectoryPlayUserId, arc::prefs::kArcApps,
-    arc::prefs::kArcBackupRestoreEnabled, arc::prefs::kArcDataRemoveRequested,
-    arc::prefs::kArcEnabled, arc::prefs::kArcFastAppReinstallPackages,
-    arc::prefs::kArcFastAppReinstallStarted,
-    arc::prefs::kArcInitialSettingsPending,
-    arc::prefs::kArcPolicyComplianceReported, arc::prefs::kArcTermsAccepted,
-    arc::prefs::kArcTermsShownInOobe, arc::prefs::kArcLocationServiceEnabled,
-    arc::prefs::kArcPackages, arc::prefs::kArcPaiStarted,
-    arc::prefs::kArcPushInstallAppsRequested,
-    arc::prefs::kArcPushInstallAppsPending,
-    arc::prefs::kArcSetNotificationsEnabledDeferred, arc::prefs::kArcSignedIn,
-    arc::prefs::kArcSkippedReportingNotice,
-    arc::prefs::kArcSupervisionTransition,
-    arc::prefs::kArcCompatibleFilesystemChosen,
-    arc::prefs::kArcVoiceInteractionValuePropAccepted,
-    arc::prefs::kEcryptfsMigrationStrategy,
-    arc::prefs::kVoiceInteractionEnabled,
-    arc::prefs::kVoiceInteractionContextEnabled,
-    arc::prefs::kVoiceInteractionHotwordEnabled,
 #endif  // defined(OS_CHROMEOS)
 
     // components/bookmarks/common/bookmark_pref_names.h
