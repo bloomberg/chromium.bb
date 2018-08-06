@@ -16,6 +16,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
@@ -47,7 +48,27 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWinrt
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) override;
 
+  ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattDescriptor*
+  GetDescriptorForTesting();
+
  private:
+  struct PendingReadCallbacks {
+    PendingReadCallbacks(ValueCallback callback, ErrorCallback error_callback);
+    ~PendingReadCallbacks();
+
+    ValueCallback callback;
+    ErrorCallback error_callback;
+  };
+
+  struct PendingWriteCallbacks {
+    PendingWriteCallbacks(base::OnceClosure callback,
+                          ErrorCallback error_callback);
+    ~PendingWriteCallbacks();
+
+    base::OnceClosure callback;
+    ErrorCallback error_callback;
+  };
+
   BluetoothRemoteGattDescriptorWinrt(
       BluetoothRemoteGattCharacteristic* characteristic,
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
@@ -55,6 +76,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWinrt
           descriptor,
       BluetoothUUID uuid,
       uint16_t attribute_handle);
+
+  void OnReadValue(Microsoft::WRL::ComPtr<
+                   ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+                       IGattReadResult> read_result);
+
+  void OnWriteValueWithResult(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattWriteResult>
+          write_result);
 
   // Weak. This object is owned by |characteristic_|.
   BluetoothRemoteGattCharacteristic* characteristic_;
@@ -64,6 +94,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWinrt
   BluetoothUUID uuid_;
   std::string identifier_;
   std::vector<uint8_t> value_;
+  std::unique_ptr<PendingReadCallbacks> pending_read_callbacks_;
+  std::unique_ptr<PendingWriteCallbacks> pending_write_callbacks_;
+
+  base::WeakPtrFactory<BluetoothRemoteGattDescriptorWinrt> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorWinrt);
 };

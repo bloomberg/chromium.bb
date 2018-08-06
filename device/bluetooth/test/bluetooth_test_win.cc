@@ -33,6 +33,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_winrt.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_winrt.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
@@ -40,6 +41,7 @@
 #include "device/bluetooth/test/fake_bluetooth_le_device_winrt.h"
 #include "device/bluetooth/test/fake_device_information_winrt.h"
 #include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
+#include "device/bluetooth/test/fake_gatt_descriptor_winrt.h"
 
 // Note: As UWP does not provide int specializations for IObservableVector and
 // VectorChangedEventHandler we need to supply our own. UUIDs were generated
@@ -813,6 +815,41 @@ void BluetoothTestWinrt::SimulateGattCharacteristicWriteError(
       ->SimulateGattCharacteristicWriteError(error_code);
 }
 
+void BluetoothTestWinrt::SimulateGattDescriptorRead(
+    BluetoothRemoteGattDescriptor* descriptor,
+    const std::vector<uint8_t>& value) {
+  static_cast<FakeGattDescriptorWinrt*>(
+      static_cast<BluetoothRemoteGattDescriptorWinrt*>(descriptor)
+          ->GetDescriptorForTesting())
+      ->SimulateGattDescriptorRead(value);
+}
+
+void BluetoothTestWinrt::SimulateGattDescriptorReadError(
+    BluetoothRemoteGattDescriptor* descriptor,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
+  static_cast<FakeGattDescriptorWinrt*>(
+      static_cast<BluetoothRemoteGattDescriptorWinrt*>(descriptor)
+          ->GetDescriptorForTesting())
+      ->SimulateGattDescriptorReadError(error_code);
+}
+
+void BluetoothTestWinrt::SimulateGattDescriptorWrite(
+    BluetoothRemoteGattDescriptor* descriptor) {
+  static_cast<FakeGattDescriptorWinrt*>(
+      static_cast<BluetoothRemoteGattDescriptorWinrt*>(descriptor)
+          ->GetDescriptorForTesting())
+      ->SimulateGattDescriptorWrite();
+}
+
+void BluetoothTestWinrt::SimulateGattDescriptorWriteError(
+    BluetoothRemoteGattDescriptor* descriptor,
+    BluetoothRemoteGattService::GattErrorCode error_code) {
+  static_cast<FakeGattDescriptorWinrt*>(
+      static_cast<BluetoothRemoteGattDescriptorWinrt*>(descriptor)
+          ->GetDescriptorForTesting())
+      ->SimulateGattDescriptorWriteError(error_code);
+}
+
 void BluetoothTestWinrt::SimulateGattDescriptor(
     BluetoothRemoteGattCharacteristic* characteristic,
     const std::string& uuid) {
@@ -849,6 +886,16 @@ void BluetoothTestWinrt::OnFakeBluetoothCharacteristicWriteValue(
     std::vector<uint8_t> value) {
   last_write_value_ = std::move(value);
   ++gatt_write_characteristic_attempts_;
+}
+
+void BluetoothTestWinrt::OnFakeBluetoothDescriptorReadValue() {
+  ++gatt_read_descriptor_attempts_;
+}
+
+void BluetoothTestWinrt::OnFakeBluetoothDescriptorWriteValue(
+    std::vector<uint8_t> value) {
+  last_write_value_ = std::move(value);
+  ++gatt_write_descriptor_attempts_;
 }
 
 }  // namespace device
