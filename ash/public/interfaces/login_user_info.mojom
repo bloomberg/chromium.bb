@@ -46,8 +46,14 @@ enum FingerprintUnlockState {
   AVAILABLE,
   // The unlock attempt is successful, the fingerprint is matched.
   AUTH_SUCCESS,
-  // The unlock attempt is unsuccessful, the fingerprint is not recognized.
+  // The unlock attempt is unsuccessful; the fingerprint is not
+  // recognized; however, the user can make another fingerprint auth
+  // attempt.
   AUTH_FAILED,
+  // The unlock attempt is unsuccessful; the fingerprint is not
+  // recognized.  There have been too many unlock attempts and fingerprint
+  // is now disabled.
+  AUTH_DISABLED,
 };
 
 // Information about the custom icon in the user pod.

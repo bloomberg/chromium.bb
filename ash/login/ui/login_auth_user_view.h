@@ -165,6 +165,11 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   views::LabelButton* online_sign_in_message_ = nullptr;
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
+  // Displays padding between:
+  // 1. Password field and pin keyboard
+  // 2. Password field and fingerprint view, when pin is not available.
+  // Preferred size will change base on current auth method.
+  NonAccessibleView* padding_below_password_view_ = nullptr;
   const OnAuthCallback on_auth_;
   const LoginUserView::OnTap on_tap_;
 

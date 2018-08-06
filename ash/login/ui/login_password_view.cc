@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/login_password_view.h"
 
+#include "ash/login/ui/horizontal_image_sequence_animation_decoder.h"
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_button.h"
@@ -159,62 +160,6 @@ IconBundle GetEasyUnlockResources(mojom::EasyUnlockIconId id) {
                     IDR_EASY_UNLOCK_LOCKED_PRESSED);
 }
 
-// Decodes an animation strip that is laid out 1xN (ie, the image grows in
-// width, not height). There is no padding between frames in the animation
-// strip.
-//
-// As an example, if the following ASCII art is 100 pixels wide, it has 4 frames
-// each 25 pixels wide. The frames go from [0, 25), [25, 50), [50, 75), [75,
-// 100). All frames have the same height of 25 pixels.
-//
-//    [1][2][3][4]
-//
-class EasyUnlockAnimationDecoder
-    : public AnimatedRoundedImageView::AnimationDecoder {
- public:
-  EasyUnlockAnimationDecoder(const gfx::ImageSkia& image,
-                             base::TimeDelta duration,
-                             int num_frames)
-      : image_(image), duration_(duration), num_frames_(num_frames) {}
-  ~EasyUnlockAnimationDecoder() override = default;
-
-  // AnimatedRoundedImageView::AnimationDecoder:
-  AnimationFrames Decode(float image_scale) override {
-    SkBitmap bitmap = image_.GetRepresentation(image_scale).sk_bitmap();
-
-    int frame_width = bitmap.width() / num_frames_;
-    base::TimeDelta frame_duration = duration_ / num_frames_;
-
-    AnimationFrames animation;
-    animation.reserve(num_frames_);
-    for (int i = 0; i < num_frames_; ++i) {
-      // Get the subsection of the animation strip.
-      SkBitmap frame_bitmap;
-      bitmap.extractSubset(
-          &frame_bitmap,
-          SkIRect::MakeXYWH(i * frame_width, 0, frame_width, bitmap.height()));
-
-      // Add an animation frame.
-      AnimationFrame frame;
-      frame.duration = frame_duration;
-      frame.image = gfx::ImageSkia::CreateFrom1xBitmap(frame_bitmap);
-      animation.push_back(frame);
-    }
-
-    return animation;
-  }
-
- private:
-  // The animation image source.
-  gfx::ImageSkia image_;
-  // The total duration of the animation.
-  base::TimeDelta duration_;
-  // The total number of frames in the animation.
-  int num_frames_;
-
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockAnimationDecoder);
-};
-
 }  // namespace
 
 class LoginPasswordView::EasyUnlockIcon : public views::Button,
@@ -225,7 +170,6 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
     SetPreferredSize(size);
     SetLayoutManager(std::make_unique<views::FillLayout>());
     icon_ = new AnimatedRoundedImageView(size, corner_radius);
-    icon_->SetAnimationEnabled(true);
     AddChildView(icon_);
   }
   ~EasyUnlockIcon() override = default;
@@ -328,8 +272,10 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
       DCHECK_EQ(resources.normal, resources.hover);
       DCHECK_EQ(resources.normal, resources.pressed);
       if (changed_states) {
-        icon_->SetAnimationDecoder(std::make_unique<EasyUnlockAnimationDecoder>(
-            *image, resources.duration, resources.num_frames));
+        icon_->SetAnimationDecoder(
+            std::make_unique<HorizontalImageSequenceAnimationDecoder>(
+                *image, resources.duration, resources.num_frames),
+            AnimatedRoundedImageView::Playback::kRepeat);
       }
     } else {
       icon_->SetImage(*image);

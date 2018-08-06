@@ -42,14 +42,16 @@ constexpr char kLockDisplay[] = "lock";
 ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
     ScreenLocker::FingerprintState state) {
   switch (state) {
-    case ScreenLocker::FingerprintState::kRemoved:
     case ScreenLocker::FingerprintState::kHidden:
-    case ScreenLocker::FingerprintState::kDefault:
       return ash::mojom::FingerprintUnlockState::UNAVAILABLE;
+    case ScreenLocker::FingerprintState::kDefault:
+      return ash::mojom::FingerprintUnlockState::AVAILABLE;
     case ScreenLocker::FingerprintState::kSignin:
       return ash::mojom::FingerprintUnlockState::AUTH_SUCCESS;
     case ScreenLocker::FingerprintState::kFailed:
       return ash::mojom::FingerprintUnlockState::AUTH_FAILED;
+    case ScreenLocker::FingerprintState::kRemoved:
+      return ash::mojom::FingerprintUnlockState::AUTH_DISABLED;
   }
 }
 
