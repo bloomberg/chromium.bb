@@ -264,10 +264,6 @@ LoginUserView* ScrollableUsersListView::GetUserView(
 void ScrollableUsersListView::Layout() {
   DCHECK(contents_layout_);
 
-  // Make sure to resize width, which may be invalid. For example, this happens
-  // after a rotation.
-  SizeToPreferredSize();
-
   // Update clipping height.
   if (parent()) {
     int parent_height = parent()->size().height();

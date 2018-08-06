@@ -213,7 +213,7 @@ class ASH_EXPORT LockContentsView
     DISALLOW_COPY_AND_ASSIGN(UserState);
   };
 
-  using OnRotate = base::RepeatingCallback<void(bool landscape)>;
+  using DisplayLayoutAction = base::RepeatingCallback<void(bool landscape)>;
 
   // Focus the next/previous widget.
   void FocusNextWidget(bool reverse);
@@ -226,7 +226,8 @@ class ASH_EXPORT LockContentsView
       const std::vector<mojom::LoginUserInfoPtr>& users);
   // 7+ users.
   void CreateHighDensityLayout(
-      const std::vector<mojom::LoginUserInfoPtr>& users);
+      const std::vector<mojom::LoginUserInfoPtr>& users,
+      views::BoxLayout* main_layout);
 
   // Lay out the entire view. This is called when the view is attached to a
   // widget and when the screen is rotated.
@@ -239,16 +240,9 @@ class ASH_EXPORT LockContentsView
   // Lay out the expanded public session view.
   void LayoutPublicSessionView();
 
-  // Creates a new view with |landscape| and |portrait| preferred sizes.
-  // |landscape| and |portrait| specify the width of the preferred size; the
-  // height is an arbitrary non-zero value. The correct size is chosen
-  // dynamically based on screen orientation. The view will respond to
-  // orientation changes.
-  views::View* MakeOrientationViewWithWidths(int landscape, int portrait);
-
-  // Adds |on_rotate| to |rotation_actions_| and immediately executes it with
+  // Adds |layout_action| to |layout_actions_| and immediately executes it with
   // the current rotation.
-  void AddRotationAction(const OnRotate& on_rotate);
+  void AddDisplayLayoutAction(const DisplayLayoutAction& layout_action);
 
   // Change the active |auth_user_|. If |is_primary| is true, the active auth
   // switches to |opt_secondary_big_view_|. If |is_primary| is false, the active
@@ -376,12 +370,11 @@ class ASH_EXPORT LockContentsView
 
   // Contains authentication user and the additional user views.
   NonAccessibleView* main_view_ = nullptr;
-  // Layout used for |main_view_|. Pointer owned by the View base class.
-  views::BoxLayout* main_layout_ = nullptr;
 
-  // Actions that should be executed when rotation changes. A full layout pass
-  // is performed after all actions are executed.
-  std::vector<OnRotate> rotation_actions_;
+  // Actions that should be executed before a new layout happens caused by a
+  // display change (eg. screen rotation). A full layout pass is performed after
+  // all actions are executed.
+  std::vector<DisplayLayoutAction> layout_actions_;
 
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
   ScopedSessionObserver session_observer_;
