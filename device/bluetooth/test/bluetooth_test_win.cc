@@ -813,6 +813,19 @@ void BluetoothTestWinrt::SimulateGattCharacteristicWriteError(
       ->SimulateGattCharacteristicWriteError(error_code);
 }
 
+void BluetoothTestWinrt::SimulateGattDescriptor(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    const std::string& uuid) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattDescriptor(characteristic, uuid);
+
+  auto* const ble_device = static_cast<TestBluetoothDeviceWinrt*>(
+                               characteristic->GetService()->GetDevice())
+                               ->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattDescriptor(characteristic, uuid);
+}
+
 void BluetoothTestWinrt::DeleteDevice(BluetoothDevice* device) {
   (!GetParam() || !PlatformSupportsLowEnergy())
       ? BluetoothTestWin::DeleteDevice(device)

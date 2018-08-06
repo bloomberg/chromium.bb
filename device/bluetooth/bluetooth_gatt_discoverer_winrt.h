@@ -38,16 +38,24 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDiscovererWinrt {
   using GattCharacteristicList = std::vector<
       Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
                                  GenericAttributeProfile::IGattCharacteristic>>;
+  using GattDescriptorList = std::vector<
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattDescriptor>>;
 
   BluetoothGattDiscovererWinrt(
       Microsoft::WRL::ComPtr<
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice> ble_device);
   ~BluetoothGattDiscovererWinrt();
 
+  // Note: In order to avoid running |callback| multiple times on errors,
+  // clients are expected to synchronously destroy the GattDiscoverer after
+  // |callback| has been invoked for the first time.
   void StartGattDiscovery(GattDiscoveryCallback callback);
   const GattServiceList& GetGattServices() const;
   const GattCharacteristicList* GetCharacteristics(
       uint16_t service_attribute_handle) const;
+  const GattDescriptorList* GetDescriptors(
+      uint16_t characteristic_attribute_handle) const;
 
  private:
   void OnGetGattServices(
@@ -61,6 +69,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDiscovererWinrt {
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattCharacteristicsResult> characteristics_result);
 
+  void OnGetDescriptors(
+      uint16_t characteristic_attribute_handle,
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              IGattDescriptorsResult> descriptors_result);
+
   void RunCallbackIfDone();
 
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice>
@@ -70,6 +84,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDiscovererWinrt {
   GattServiceList gatt_services_;
   base::flat_map<uint16_t, GattCharacteristicList>
       service_to_characteristics_map_;
+  base::flat_map<uint16_t, GattDescriptorList>
+      characteristic_to_descriptors_map_;
+  size_t num_services_ = 0;
+  size_t num_characteristics_ = 0;
 
   THREAD_CHECKER(thread_checker_);
 

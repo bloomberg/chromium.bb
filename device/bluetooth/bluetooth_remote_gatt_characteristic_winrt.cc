@@ -12,6 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/winrt_storage_util.h"
+#include "device/bluetooth/bluetooth_gatt_discoverer_winrt.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_winrt.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/event_utils_winrt.h"
@@ -256,6 +258,33 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
       std::make_unique<PendingWriteCallbacks>(callback, error_callback);
 }
 
+void BluetoothRemoteGattCharacteristicWinrt::UpdateDescriptors(
+    BluetoothGattDiscovererWinrt* gatt_discoverer) {
+  const auto* gatt_descriptors =
+      gatt_discoverer->GetDescriptors(attribute_handle_);
+  DCHECK(gatt_descriptors);
+
+  // Instead of clearing out |descriptors_| and creating each descriptor
+  // from scratch, we create a new map and move already existing descriptors
+  // into it in order to preserve pointer stability.
+  DescriptorMap descriptors;
+  for (const auto& gatt_descriptor : *gatt_descriptors) {
+    auto descriptor =
+        BluetoothRemoteGattDescriptorWinrt::Create(this, gatt_descriptor.Get());
+    if (!descriptor)
+      continue;
+
+    std::string identifier = descriptor->GetIdentifier();
+    auto iter = descriptors_.find(identifier);
+    if (iter != descriptors_.end())
+      descriptors.emplace(std::move(*iter));
+    else
+      descriptors.emplace(std::move(identifier), std::move(descriptor));
+  }
+
+  std::swap(descriptors, descriptors_);
+}
+
 bool BluetoothRemoteGattCharacteristicWinrt::WriteWithoutResponse(
     base::span<const uint8_t> value) {
   if (!(GetProperties() & PROPERTY_WRITE_WITHOUT_RESPONSE))
@@ -345,10 +374,11 @@ BluetoothRemoteGattCharacteristicWinrt::BluetoothRemoteGattCharacteristicWinrt(
       characteristic_(std::move(characteristic)),
       uuid_(std::move(uuid)),
       properties_(properties),
+      attribute_handle_(attribute_handle),
       identifier_(base::StringPrintf("%s/%s_%04x",
                                      service_->GetIdentifier().c_str(),
                                      uuid_.value().c_str(),
-                                     attribute_handle)),
+                                     attribute_handle_)),
       weak_ptr_factory_(this) {}
 
 void BluetoothRemoteGattCharacteristicWinrt::OnReadValue(

@@ -13,6 +13,8 @@
 #include "base/win/winrt_storage_util.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/bluetooth_test_win.h"
+#include "device/bluetooth/test/fake_gatt_descriptor_winrt.h"
+#include "device/bluetooth/test/fake_gatt_descriptors_result_winrt.h"
 #include "device/bluetooth/test/fake_gatt_read_result_winrt.h"
 #include "device/bluetooth/test/fake_gatt_write_result_winrt.h"
 
@@ -69,7 +71,8 @@ FakeGattCharacteristicWinrt::FakeGattCharacteristicWinrt(
     : bluetooth_test_winrt_(bluetooth_test_winrt),
       properties_(static_cast<GattCharacteristicProperties>(properties)),
       uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
-      attribute_handle_(attribute_handle) {}
+      attribute_handle_(attribute_handle),
+      last_descriptor_attribute_handle_(attribute_handle) {}
 
 FakeGattCharacteristicWinrt::~FakeGattCharacteristicWinrt() = default;
 
@@ -173,7 +176,13 @@ HRESULT FakeGattCharacteristicWinrt::remove_ValueChanged(
 
 HRESULT FakeGattCharacteristicWinrt::GetDescriptorsAsync(
     IAsyncOperation<GattDescriptorsResult*>** operation) {
-  return E_NOTIMPL;
+  auto async_op = Make<base::win::AsyncOperation<GattDescriptorsResult*>>();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(async_op->callback(),
+                     Make<FakeGattDescriptorsResultWinrt>(fake_descriptors_)));
+  *operation = async_op.Detach();
+  return S_OK;
 }
 
 HRESULT FakeGattCharacteristicWinrt::GetDescriptorsWithCacheModeAsync(
@@ -256,6 +265,12 @@ void FakeGattCharacteristicWinrt::SimulateGattCharacteristicWriteError(
     std::move(write_value_callback_)
         .Run(Make<FakeGattWriteResultWinrt>(error_code));
   }
+}
+
+void FakeGattCharacteristicWinrt::SimulateGattDescriptor(
+    base::StringPiece uuid) {
+  fake_descriptors_.push_back(
+      Make<FakeGattDescriptorWinrt>(uuid, ++last_descriptor_attribute_handle_));
 }
 
 }  // namespace device

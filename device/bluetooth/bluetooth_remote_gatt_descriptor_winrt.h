@@ -5,8 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_WINRT_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_WINRT_H_
 
+#include <windows.devices.bluetooth.genericattributeprofile.h>
+#include <wrl/client.h>
+
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,15 +19,18 @@
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
-
-class BluetoothUUID;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWinrt
     : public BluetoothRemoteGattDescriptor {
  public:
-  BluetoothRemoteGattDescriptorWinrt();
+  static std::unique_ptr<BluetoothRemoteGattDescriptorWinrt> Create(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattDescriptor>
+          descriptor);
   ~BluetoothRemoteGattDescriptorWinrt() override;
 
   // BluetoothGattDescriptor:
@@ -41,6 +48,21 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWinrt
                              const ErrorCallback& error_callback) override;
 
  private:
+  BluetoothRemoteGattDescriptorWinrt(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattDescriptor>
+          descriptor,
+      BluetoothUUID uuid,
+      uint16_t attribute_handle);
+
+  // Weak. This object is owned by |characteristic_|.
+  BluetoothRemoteGattCharacteristic* characteristic_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                             GenericAttributeProfile::IGattDescriptor>
+      descriptor_;
+  BluetoothUUID uuid_;
+  std::string identifier_;
   std::vector<uint8_t> value_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorWinrt);
