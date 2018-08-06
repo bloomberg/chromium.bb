@@ -142,21 +142,31 @@ TEST(ProtoValueConversionsTest, AutofillWalletSpecificsToValue) {
   sync_pb::AutofillWalletSpecifics specifics;
   specifics.mutable_masked_card()->set_name_on_card("Igloo");
   specifics.mutable_address()->set_recipient_name("John");
+  specifics.mutable_customer_data()->set_id("123456");
 
   specifics.set_type(sync_pb::AutofillWalletSpecifics::UNKNOWN);
   auto value = AutofillWalletSpecificsToValue(specifics);
   EXPECT_FALSE(value->Get("masked_card", nullptr));
   EXPECT_FALSE(value->Get("address", nullptr));
+  EXPECT_FALSE(value->Get("customer_data", nullptr));
 
   specifics.set_type(sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD);
   value = AutofillWalletSpecificsToValue(specifics);
   EXPECT_TRUE(value->Get("masked_card", nullptr));
   EXPECT_FALSE(value->Get("address", nullptr));
+  EXPECT_FALSE(value->Get("customer_data", nullptr));
 
   specifics.set_type(sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS);
   value = AutofillWalletSpecificsToValue(specifics);
   EXPECT_FALSE(value->Get("masked_card", nullptr));
   EXPECT_TRUE(value->Get("address", nullptr));
+  EXPECT_FALSE(value->Get("customer_data", nullptr));
+
+  specifics.set_type(sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA);
+  value = AutofillWalletSpecificsToValue(specifics);
+  EXPECT_FALSE(value->Get("masked_card", nullptr));
+  EXPECT_FALSE(value->Get("address", nullptr));
+  EXPECT_TRUE(value->Get("customer_data", nullptr));
 }
 
 TEST(ProtoValueConversionsTest, BookmarkSpecificsData) {

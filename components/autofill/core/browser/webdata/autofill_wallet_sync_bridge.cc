@@ -29,6 +29,8 @@ std::string GetStorageKeyFromAutofillWalletSpecifics(
       return specifics.masked_card().id();
     case AutofillWalletSpecifics::POSTAL_ADDRESS:
       return specifics.address().id();
+    case AutofillWalletSpecifics::CUSTOMER_DATA:
+      return specifics.customer_data().id();
     case AutofillWalletSpecifics::UNKNOWN:
       NOTREACHED();
       return std::string();
@@ -109,6 +111,8 @@ std::string AutofillWalletSyncBridge::GetClientTag(
       return "address-" + GetStorageKey(entity_data);
     case sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD:
       return "card-" + GetStorageKey(entity_data);
+    case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
+      return "customer-" + GetStorageKey(entity_data);
     case sync_pb::AutofillWalletSpecifics::UNKNOWN:
       NOTREACHED();
       return std::string();

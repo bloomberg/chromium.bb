@@ -188,6 +188,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillWalletSpecifics& proto) {
   VISIT_ENUM(type);
   VISIT(masked_card);
   VISIT(address);
+  VISIT(customer_data);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::BookmarkSpecifics& proto) {
@@ -1023,6 +1024,10 @@ VISIT_PROTO_FIELDS(const sync_pb::WalletPostalAddress& proto) {
   VISIT(country_code);
   VISIT(phone_number);
   VISIT(language_code);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::PaymentsCustomerData& proto) {
+  VISIT(id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WalletSyncFlags& proto) {

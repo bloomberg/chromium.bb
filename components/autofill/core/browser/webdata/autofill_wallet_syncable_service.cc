@@ -285,6 +285,7 @@ void AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
         ids[autofill_specifics.address().id()] =
             wallet_addresses->back().server_id();
         break;
+      case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
       case sync_pb::AutofillWalletSpecifics::UNKNOWN:
         // Just ignore new entry types that the client doesn't know about.
         break;
