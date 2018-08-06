@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -1175,6 +1176,9 @@ class DnsTransactionImpl : public DnsTransaction,
       net_log_.AddEvent(NetLogEventType::DNS_TRANSACTION_RESPONSE,
                         base::Bind(&DnsAttempt::NetLogResponseCallback,
                                    base::Unretained(attempt)));
+
+      base::UmaHistogramSparse("AsyncDNS.Rcode",
+                               attempt->GetResponse()->rcode());
     }
   }
 

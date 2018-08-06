@@ -1876,6 +1876,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="UNKNOWN_PREF"/>
 </enum>
 
+<enum name="AsyncDNSRcode">
+  <summary>
+    https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-6
+  </summary>
+  <int value="0" label="NoError">No Error</int>
+  <int value="1" label="FormErr">Format Error</int>
+  <int value="2" label="ServFail">Server Failure</int>
+  <int value="3" label="NXDomain">Non-Existent Domain</int>
+  <int value="4" label="NotImp">Not Implemented</int>
+  <int value="5" label="Refused">Query Refused</int>
+</enum>
+
 <enum name="AsyncDNSResolveStatus">
   <int value="0" label="DNS_SUCCESS">Succeeded with async DNS.</int>
   <int value="1" label="PROC_SUCCESS">
