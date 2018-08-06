@@ -194,6 +194,9 @@ public class SearchActivity extends AsyncInitializationActivity
         if (mQueuedUrl != null) loadUrl(mQueuedUrl);
 
         AutocompleteController.nativePrefetchZeroSuggestResults();
+        // TODO(tedchoc): Warmup triggers the CustomTab layout to be inflated, but this widget
+        //                will navigate to Tabbed mode.  Investigate whether this can inflate
+        //                the tabbed mode layout in the background instead of CCTs.
         CustomTabsConnection.getInstance().warmup(0);
         mSearchBox.onDeferredStartup(isVoiceSearchIntent());
         RecordUserAction.record("SearchWidget.WidgetSelected");
