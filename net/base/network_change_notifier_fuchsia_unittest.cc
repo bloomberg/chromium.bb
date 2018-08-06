@@ -96,7 +96,11 @@ fuchsia::netstack::NetInterface CreateNetInterface(
 // which aren't handled well by GMock.
 class FakeNetstack : public fuchsia::netstack::Netstack {
  public:
-  FakeNetstack() = default;
+  explicit FakeNetstack(
+      fidl::InterfaceRequest<fuchsia::netstack::Netstack> netstack_request)
+      : binding_(this) {
+    CHECK_EQ(ZX_OK, binding_.Bind(std::move(netstack_request)));
+  }
   ~FakeNetstack() override = default;
 
   // Adds |interface| to the interface query response list.
@@ -108,20 +112,20 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
     route_table_->push_back(std::move(interface));
   }
 
-  // Sends the accumulated list of |interfaces_| to |listener_|.
+  // Sends the accumulated |interfaces_| to the OnInterfacesChanged event.
   void NotifyInterfaces() {
-    if (listener_) {
-      listener_->OnInterfacesChanged(std::move(interfaces_));
-      interfaces_ = fidl::VectorPtr<fuchsia::netstack::NetInterface>::New(0);
-    }
+    binding_.events().OnInterfacesChanged(std::move(interfaces_));
+    interfaces_ = fidl::VectorPtr<fuchsia::netstack::NetInterface>::New(0);
   }
+
+  fidl::Binding<fuchsia::netstack::Netstack>& binding() { return binding_; }
 
  private:
   // fuchsia::netstack::Netstack implementation.
   void RegisterListener(
       ::fidl::InterfaceHandle<fuchsia::netstack::NotificationListener> listener)
       override {
-    listener_ = listener.BindSync();
+    NOTREACHED();
   }
 
   void GetInterfaces(GetInterfacesCallback callback) override {
@@ -164,11 +168,12 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
                        SetFilterStatusCallback callback) override {}
   void GetFilterStatus(GetFilterStatusCallback callback) override {}
 
-  fuchsia::netstack::NotificationListenerSyncPtr listener_;
   ::fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces_ =
       fidl::VectorPtr<fuchsia::netstack::NetInterface>::New(0);
   ::fidl::VectorPtr<fuchsia::netstack::RouteTableEntry> route_table_ =
       fidl::VectorPtr<fuchsia::netstack::RouteTableEntry>::New(0);
+
+  fidl::Binding<fuchsia::netstack::Netstack> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNetstack);
 };
@@ -183,9 +188,7 @@ class MockNetworkChangeObserver
 
 class NetworkChangeNotifierFuchsiaTest : public testing::Test {
  public:
-  NetworkChangeNotifierFuchsiaTest() : netstack_binding_(&netstack_) {
-    CHECK_EQ(ZX_OK, netstack_binding_.Bind(netstack_ptr_.NewRequest()));
-  }
+  NetworkChangeNotifierFuchsiaTest() : netstack_(netstack_ptr_.NewRequest()) {}
 
   ~NetworkChangeNotifierFuchsiaTest() override {}
 
@@ -205,9 +208,8 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
  protected:
   base::MessageLoopForIO message_loop_;
   testing::StrictMock<MockNetworkChangeObserver> observer_;
-  FakeNetstack netstack_;
   fuchsia::netstack::NetstackPtr netstack_ptr_;
-  fidl::Binding<fuchsia::netstack::Netstack> netstack_binding_;
+  FakeNetstack netstack_;
 
   // Allows us to allocate our own NetworkChangeNotifier for unit testing.
   NetworkChangeNotifier::DisableForTest disable_for_test_;
