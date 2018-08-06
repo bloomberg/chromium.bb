@@ -85,7 +85,9 @@ public class MultiWindowUtils implements ActivityStateListener {
         DisplayManager displayManager =
                 (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
         Display[] displays = displayManager.getDisplays();
-        return displays != null && displays.length == 2;
+        if (displays == null || displays.length != 2) return false;
+        return displays[0].getState() == Display.STATE_ON
+                && displays[1].getState() == Display.STATE_ON;
     }
 
     @VisibleForTesting

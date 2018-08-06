@@ -672,7 +672,8 @@ public class ChromeTabbedActivity
         }
 
         if (FeatureUtilities.isTabModelMergingEnabled()) {
-            boolean inMultiWindowMode = MultiWindowUtils.getInstance().isInMultiWindowMode(this);
+            boolean inMultiWindowMode = MultiWindowUtils.getInstance().isInMultiWindowMode(this)
+                    || MultiWindowUtils.getInstance().isInMultiDisplayMode(this);
             // Don't need to merge tabs when mMergeTabsOnResume is null (cold start) since they get
             // merged when TabPersistentStore.loadState(boolean) is called from initializeState().
             if (!inMultiWindowMode && (mMergeTabsOnResume != null && mMergeTabsOnResume)) {
