@@ -856,7 +856,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
 
     EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
               app->id());
-    EXPECT_EQ(web_app_info.theme_color,
+    EXPECT_EQ(SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE),
               app_browser->hosted_app_controller()->GetThemeColor().value());
   }
   {

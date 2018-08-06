@@ -232,8 +232,14 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_->profile());
   const Extension* extension =
       registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  if (extension)
-    return AppThemeColorInfo::GetThemeColor(extension);
+  if (extension) {
+    const base::Optional<SkColor> color =
+        AppThemeColorInfo::GetThemeColor(extension);
+    if (color) {
+      // The frame/tabstrip code expects an opaque color.
+      return SkColorSetA(*color, SK_AlphaOPAQUE);
+    }
+  }
   return base::nullopt;
 }
 
