@@ -435,7 +435,7 @@
       ],
       'swarming': {
         'hard_timeout': 1200,
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 6,
       },
     },
@@ -454,7 +454,7 @@
       ],
       'swarming': {
         'hard_timeout': 1200,
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 12,
       },
     },
@@ -469,7 +469,7 @@
       ],
       'swarming': {
         'hard_timeout': 960,
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 12,
       },
     },
@@ -480,7 +480,7 @@
         '--jobs=1',
       ],
       'swarming': {
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 4,
       },
     },
@@ -853,7 +853,7 @@
     'devtools_eslint': {},
     'telemetry_gpu_unittests': {
       'swarming': {
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
       },
     },
     'telemetry_perf_unittests': {
@@ -862,7 +862,7 @@
       ],
       'swarming': {
         'hard_timeout': 960,
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 12,
       },
     },
@@ -871,7 +871,7 @@
         '--jobs=1',
       ],
       'swarming': {
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 4,
       },
     },
@@ -901,7 +901,7 @@
     'metrics_python_tests': {},
     'telemetry_gpu_unittests': {
       'swarming': {
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
       },
     },
     'telemetry_unittests': {
@@ -909,7 +909,7 @@
         '--jobs=1',
       ],
       'swarming': {
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 4,
       },
     },
@@ -1644,7 +1644,7 @@
       ],
       'swarming': {
         'hard_timeout': 960,
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 12,
       },
     },
@@ -1656,7 +1656,7 @@
       ],
       'swarming': {
         'hard_timeout': 960,
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 12,
       },
     },
@@ -1666,13 +1666,13 @@
         '--extra-browser-args=--enable-features=VizDisplayCompositor',
       ],
       'swarming': {
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 4,
       },
      },
      'telemetry_unittests': {
        'swarming': {
-         'idempotent': False,
+         'idempotent': False,  # https://crbug.com/549140
          'shards': 4,
        },
      },
@@ -2066,7 +2066,7 @@
     'telemetry_perf_unittests': {
       'swarming': {
         'hard_timeout': 960,
-        'idempotent': False,
+        'idempotent': False,  # https://crbug.com/549140
         'shards': 12,
       },
     },
