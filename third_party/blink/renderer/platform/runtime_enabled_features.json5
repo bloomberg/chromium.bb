@@ -743,6 +743,11 @@
       status: "test",
     },
     {
+      name: "MediaSourceChangeType",
+      origin_trial_feature_name: "MediaSourceChangeType",
+      status: "experimental",
+    },
+    {
       name: "MediaSourceExperimental",
       status: "experimental",
     },

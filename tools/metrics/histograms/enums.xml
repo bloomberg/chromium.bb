@@ -19544,6 +19544,7 @@ Called by update_net_error_codes.py.-->
   <int value="2521"
       label="DocumentLevelPassiveDefaultEventListenerPreventedWheel"/>
   <int value="2522" label="ShapeDetectionAPI"/>
+  <int value="2523" label="V8SourceBuffer_ChangeType_Method"/>
 </enum>
 
 <enum name="FeedbackSource">
