@@ -92,17 +92,21 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   blink::WebRemoteFrame* web_frame =
       blink::WebRemoteFrame::Create(scope, proxy.get());
 
+  bool parent_is_local =
+      !frame_to_replace->GetWebFrame()->Parent() ||
+      frame_to_replace->GetWebFrame()->Parent()->IsWebLocalFrame();
+
   // If frame_to_replace has a RenderFrameProxy parent, then its
   // RenderWidget will be destroyed along with it, so the new
   // RenderFrameProxy uses its parent's RenderWidget.
   RenderWidget* widget =
-      (!frame_to_replace->GetWebFrame()->Parent() ||
-       frame_to_replace->GetWebFrame()->Parent()->IsWebLocalFrame())
+      parent_is_local
           ? frame_to_replace->GetRenderWidget()
           : RenderFrameProxy::FromWebFrame(
                 frame_to_replace->GetWebFrame()->Parent()->ToWebRemoteFrame())
                 ->render_widget();
-  proxy->Init(web_frame, frame_to_replace->render_view(), widget);
+  proxy->Init(web_frame, frame_to_replace->render_view(), widget,
+              parent_is_local);
   return proxy.release();
 }
 
@@ -158,7 +162,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     render_widget = parent->render_widget();
   }
 
-  proxy->Init(web_frame, render_view, render_widget);
+  proxy->Init(web_frame, render_view, render_widget, false);
 
   // Initialize proxy's WebRemoteFrame with the security origin and other
   // replicated information.
@@ -220,7 +224,8 @@ RenderFrameProxy::~RenderFrameProxy() {
 
 void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
                             RenderViewImpl* render_view,
-                            RenderWidget* render_widget) {
+                            RenderWidget* render_widget,
+                            bool parent_is_local) {
   CHECK(web_frame);
   CHECK(render_view);
   CHECK(render_widget);
@@ -237,7 +242,8 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 
   enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
 
-  compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
+  if (parent_is_local)
+    compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
 
   pending_visual_properties_.screen_info =
       render_widget_->GetOriginalScreenInfo();
@@ -264,7 +270,8 @@ void RenderFrameProxy::ResendVisualProperties() {
 }
 
 void RenderFrameProxy::WillBeginCompositorFrame() {
-  if (compositing_helper_->primary_surface_id().is_valid()) {
+  if (compositing_helper_ &&
+      compositing_helper_->primary_surface_id().is_valid()) {
     FrameHostMsg_HittestData_Params params;
     params.surface_id = compositing_helper_->primary_surface_id();
     params.ignored_for_hittest = web_frame_->IsIgnoredForHitTest();

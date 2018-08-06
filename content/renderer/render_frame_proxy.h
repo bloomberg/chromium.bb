@@ -217,7 +217,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   void Init(blink::WebRemoteFrame* frame,
             RenderViewImpl* render_view,
-            RenderWidget* render_widget);
+            RenderWidget* render_widget,
+            bool parent_is_local);
 
   void ResendVisualProperties();
 
@@ -287,6 +288,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // Stores the WebRemoteFrame we are associated with.
   blink::WebRemoteFrame* web_frame_;
   std::string unique_name_;
+
+  // Can be nullptr when this RenderFrameProxy's parent is not a RenderFrame.
   std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;
 
   RenderViewImpl* render_view_;
