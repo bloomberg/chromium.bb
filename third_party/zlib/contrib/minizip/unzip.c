@@ -68,10 +68,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef NOUNCRYPT
-        #define NOUNCRYPT
-#endif
-
 #include "third_party/zlib/zlib.h"
 #include "unzip.h"
 
@@ -1630,6 +1626,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
             zdecode(s->keys,s->pcrc_32_tab,source[i]);
 
         s->pfile_in_zip_read->pos_in_zipfile+=12;
+        s->pfile_in_zip_read->rest_read_compressed-=12;
         s->encrypted=1;
     }
 #    endif
