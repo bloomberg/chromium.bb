@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- Generate token with the command:
+tools/origin_trials/generate_token.py http://127.0.0.1:8000 MediaSourceChangeType --expire-timestamp=2000000000
+
+To test whether the token is working, run the suite virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials.
+-->
+<title>MediaSourceChangeType - interfaces exposed by origin trial</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/origin-trials-helper.js"></script>
+<script>
+
+let token = "AtRt0SH3CPMu71uc+KvPkp74coHka5l2c5KbiC1pzdUW0g7Fbkjfd/pjQIJtOrHnbRJz9331CP1xHwneskoHnw4AAABdeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiTWVkaWFTb3VyY2VDaGFuZ2VUeXBlIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9";
+
+let properties_to_check = {'SourceBuffer': ['changeType']};
+
+// Skip this test if flags are not set properly.
+if(!self.internals.runtimeFlags.mediaSourceChangeTypeEnabled) {
+  test(t => {
+    OriginTrialsHelper.check_properties_missing(this, properties_to_check);
+  }, "MSE changeType method is not available without a token.");
+}
+
+OriginTrialsHelper.add_token(token);
+
+test(t => {
+  OriginTrialsHelper.check_properties(this, properties_to_check);
+}, "MSE changeType method is available.");
+</script>
