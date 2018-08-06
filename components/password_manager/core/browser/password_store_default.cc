@@ -196,6 +196,13 @@ bool PasswordStoreDefault::FillBlacklistLogins(
   return login_db_ && login_db_->GetBlacklistLogins(forms);
 }
 
+DatabaseCleanupResult PasswordStoreDefault::DeleteUndecryptableLogins() {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  if (!login_db_)
+    return DatabaseCleanupResult::kDatabaseUnavailable;
+  return login_db_->DeleteUndecryptableLogins();
+}
+
 void PasswordStoreDefault::AddSiteStatsImpl(const InteractionsStats& stats) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   if (login_db_)

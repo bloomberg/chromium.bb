@@ -16,6 +16,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "net/base/escape.h"
 
@@ -138,6 +139,31 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   DCHECK_EQ(syncer::PASSWORDS, type);
   base::AutoReset<bool> processing_changes(&is_processing_sync_changes_, true);
   syncer::SyncMergeResult merge_result(type);
+
+  // On MacOS it may happen that some passwords cannot be decrypted due to
+  // modification of encryption key in Keychain (https://crbug.com/730625).
+  // Delete those logins from the store, they should be automatically updated
+  // with Sync data.
+  if (base::FeatureList::IsEnabled(features::kDeleteUndecryptableLogins)) {
+    DatabaseCleanupResult cleanup_result =
+        password_store_->DeleteUndecryptableLogins();
+
+    if (cleanup_result == DatabaseCleanupResult::kEncryptionUnavailable) {
+      merge_result.set_error(sync_error_factory->CreateAndUploadError(
+          FROM_HERE, "Failed to get encryption key during database cleanup."));
+      metrics_util::LogPasswordSyncState(
+          metrics_util::NOT_SYNCING_FAILED_DECRYPTION);
+      return merge_result;
+    }
+
+    if (cleanup_result != DatabaseCleanupResult::kSuccess) {
+      merge_result.set_error(sync_error_factory->CreateAndUploadError(
+          FROM_HERE, "Failed to cleanup database."));
+      metrics_util::LogPasswordSyncState(
+          metrics_util::NOT_SYNCING_FAILED_CLEANUP);
+      return merge_result;
+    }
+  }
 
   // We add all the db entries as |new_local_entries| initially. During model
   // association entries that match a sync entry will be removed and this list

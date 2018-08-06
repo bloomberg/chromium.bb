@@ -1263,11 +1263,11 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   return Init();
 }
 
-bool LoginDatabase::DeleteUndecryptableLogins() {
+DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // If the Keychain is unavailable, don't delete any logins.
   if (!OSCrypt::IsEncryptionAvailable())
-    return false;
+    return DatabaseCleanupResult::kEncryptionUnavailable;
 
   DCHECK(db_.is_open());
 
@@ -1300,11 +1300,11 @@ bool LoginDatabase::DeleteUndecryptableLogins() {
 
   for (const auto& form : forms_to_be_deleted) {
     if (!RemoveLogin(form))
-      return false;
+      return DatabaseCleanupResult::kItemFailure;
   }
 #endif
 
-  return true;
+  return DatabaseCleanupResult::kSuccess;
 }
 
 std::string LoginDatabase::GetEncryptedPassword(
