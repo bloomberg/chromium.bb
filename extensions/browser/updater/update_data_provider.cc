@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"

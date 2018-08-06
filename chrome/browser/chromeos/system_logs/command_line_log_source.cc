@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/sys_info.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

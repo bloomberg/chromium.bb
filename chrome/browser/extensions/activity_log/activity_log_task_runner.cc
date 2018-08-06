@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 
 #include "base/single_thread_task_runner.h"
-#include "base/task/lazy_task_runner_forward.h"
-#include "base/task/single_thread_task_runner_thread_mode_forward.h"
+#include "base/task/lazy_task_runner.h"
+#include "base/task/single_thread_task_runner_thread_mode.h"
 
 namespace extensions {
 

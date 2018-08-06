@@ -5,7 +5,7 @@
 #include "services/device/serial/serial_io_handler_impl.h"
 
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "device/serial/buffer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

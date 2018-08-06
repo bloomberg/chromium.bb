@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/task/task_scheduler/scheduler_worker_params_forward.h"
-#include "base/task/task_scheduler/scheduler_worker_pool_params_forward.h"
+#include "base/task/task_scheduler/scheduler_worker_params.h"
+#include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "components/variations/variations_params_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

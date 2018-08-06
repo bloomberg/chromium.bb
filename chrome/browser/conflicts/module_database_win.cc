@@ -14,7 +14,7 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/feature_list.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"

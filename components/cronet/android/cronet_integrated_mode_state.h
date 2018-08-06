@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_CRONET_ANDROID_CRONET_INTEGRATED_MODE_STATE_H_
 #define COMPONENTS_CRONET_ANDROID_CRONET_INTEGRATED_MODE_STATE_H_
 
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 
 namespace cronet {
 

@@ -9,7 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"

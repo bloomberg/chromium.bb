@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"

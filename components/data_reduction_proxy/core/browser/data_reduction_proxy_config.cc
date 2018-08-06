@@ -23,7 +23,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/lazy_task_runner_forward.h"
+#include "base/task/lazy_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"

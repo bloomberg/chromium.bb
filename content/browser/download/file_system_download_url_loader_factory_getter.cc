@@ -4,8 +4,8 @@
 
 #include "content/browser/download/file_system_download_url_loader_factory_getter.h"
 
-#include "base/task/post_task_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"

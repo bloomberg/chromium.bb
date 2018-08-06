@@ -12,8 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/task/post_task_forward.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 

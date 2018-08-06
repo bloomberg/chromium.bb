@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 

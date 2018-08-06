@@ -5,7 +5,7 @@
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
 
 #include "base/files/file_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"

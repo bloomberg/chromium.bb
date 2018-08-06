@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/strings/grit/components_strings.h"

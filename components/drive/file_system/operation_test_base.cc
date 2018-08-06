@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/about_resource_root_folder_id_loader.h"
 #include "components/drive/chromeos/change_list_loader.h"

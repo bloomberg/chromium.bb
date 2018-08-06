@@ -13,7 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/task_scheduler/initialization_util_forward.h"
+#include "base/task/task_scheduler/initialization_util.h"
 #include "base/time/time.h"
 
 namespace task_scheduler_util {

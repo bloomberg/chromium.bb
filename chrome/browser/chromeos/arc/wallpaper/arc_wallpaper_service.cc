@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_bridge_service.h"

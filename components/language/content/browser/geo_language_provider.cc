@@ -5,7 +5,7 @@
 #include "components/language/content/browser/geo_language_provider.h"
 
 #include "base/memory/singleton.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"

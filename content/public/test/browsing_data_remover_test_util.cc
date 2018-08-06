@@ -5,7 +5,7 @@
 #include "content/public/test/browsing_data_remover_test_util.h"
 
 #include "base/bind.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 
 namespace content {
 

@@ -19,7 +19,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/task_traits.h"
 
 namespace device {
 

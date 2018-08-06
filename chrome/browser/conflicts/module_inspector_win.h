@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 

@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"

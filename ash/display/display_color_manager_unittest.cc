@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/chromeos_paths.h"

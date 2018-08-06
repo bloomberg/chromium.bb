@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"

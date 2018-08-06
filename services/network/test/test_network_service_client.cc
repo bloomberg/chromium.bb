@@ -4,7 +4,7 @@
 
 #include "services/network/test/test_network_service_client.h"
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 
 namespace network {
 

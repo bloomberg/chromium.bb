@@ -12,7 +12,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/synchronization/cancellation_flag.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {

@@ -8,8 +8,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/values.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"

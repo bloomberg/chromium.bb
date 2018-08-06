@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/services/file_util/public/mojom/zip_file_creator.mojom.h"
 
 namespace service_manager {

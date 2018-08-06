@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/no_destructor.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"

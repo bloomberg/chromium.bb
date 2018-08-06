@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/files/file_util.h"
-#include "base/task/post_task_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "components/prefs/pref_service.h"

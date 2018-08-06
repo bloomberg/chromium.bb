@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"

@@ -4,7 +4,7 @@
 
 #import "image_copier.h"
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #include "ios/chrome/grit/ios_strings.h"

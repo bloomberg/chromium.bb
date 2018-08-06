@@ -15,7 +15,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/offline_pages/android/background_scheduler_bridge.h"

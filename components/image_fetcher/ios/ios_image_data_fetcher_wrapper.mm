@@ -5,7 +5,7 @@
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 
 #include "base/bind.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"

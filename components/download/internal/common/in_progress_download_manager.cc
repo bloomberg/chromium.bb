@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/optional.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/database/download_db_entry.h"
 #include "components/download/database/download_db_impl.h"

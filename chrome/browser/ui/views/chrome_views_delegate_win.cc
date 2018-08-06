@@ -7,7 +7,7 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/browser/win/app_icon.h"

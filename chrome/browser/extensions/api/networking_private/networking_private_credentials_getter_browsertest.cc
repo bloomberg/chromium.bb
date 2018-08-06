@@ -6,7 +6,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/services/wifi_util_win/public/mojom/wifi_credentials_getter.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"

@@ -6,8 +6,8 @@
 
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "components/feedback/feedback_uploader.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"

@@ -5,8 +5,8 @@
 #import "components/storage_monitor/image_capture_device.h"
 
 #include "base/files/file_util.h"
-#include "base/task/post_task_forward.h"
-#include "base/task/task_traits_forward.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 

@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

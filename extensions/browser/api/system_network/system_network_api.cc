@@ -4,7 +4,7 @@
 
 #include "extensions/browser/api/system_network/system_network_api.h"
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {

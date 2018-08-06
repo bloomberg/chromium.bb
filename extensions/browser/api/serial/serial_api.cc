@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"

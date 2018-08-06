@@ -4,7 +4,7 @@
 
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
 
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_ui_util.h"

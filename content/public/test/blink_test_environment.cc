@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/task/task_scheduler/task_scheduler_forward.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "build/build_config.h"

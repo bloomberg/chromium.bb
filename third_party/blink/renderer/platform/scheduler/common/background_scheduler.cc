@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 
 #include "base/location.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 
 namespace blink {
 

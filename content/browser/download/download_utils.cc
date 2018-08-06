@@ -8,7 +8,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task_forward.h"
+#include "base/task/post_task.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/database/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_create_info.h"

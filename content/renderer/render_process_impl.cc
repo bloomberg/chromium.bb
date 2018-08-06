@@ -26,7 +26,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
-#include "base/task/task_scheduler/initialization_util_forward.h"
+#include "base/task/task_scheduler/initialization_util.h"
 #include "base/time/time.h"
 #include "content/common/task_scheduler.h"
 #include "content/public/common/bindings_policy.h"
