@@ -20,9 +20,6 @@ class KeyEvent;
 
 namespace ash_util {
 
-// Returns true if Ash should be run at startup.
-bool ShouldOpenAshOnStartup();
-
 // Returns true if the given |accelerator| has been deprecated and hence can
 // be consumed by web contents if needed.
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator);

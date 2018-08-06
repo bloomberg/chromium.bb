@@ -21,10 +21,6 @@
 
 namespace ash_util {
 
-bool ShouldOpenAshOnStartup() {
-  return features::IsAshInBrowserProcess();
-}
-
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {
   // When running in mash the browser doesn't handle ash accelerators.
   if (!features::IsAshInBrowserProcess())
