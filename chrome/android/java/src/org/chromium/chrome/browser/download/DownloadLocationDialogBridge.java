@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
@@ -101,7 +102,10 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         if (mNativeDownloadLocationDialogBridge != 0) {
             PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
                     directoryOption.location);
-            directoryOption.recordDirectoryOptionType();
+
+            RecordHistogram.recordEnumeratedHistogram(
+                    "MobileDownload.Location.Dialog.DirectoryType", directoryOption.type,
+                    DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
 
             File file = new File(directoryOption.location, fileName);
             nativeOnComplete(mNativeDownloadLocationDialogBridge, file.getAbsolutePath());

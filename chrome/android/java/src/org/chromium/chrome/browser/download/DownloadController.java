@@ -79,6 +79,8 @@ public class DownloadController {
     private static void onDownloadCompleted(DownloadInfo downloadInfo) {
         if (sDownloadNotificationService == null) return;
         sDownloadNotificationService.onDownloadCompleted(downloadInfo);
+
+        DownloadMetrics.recordDownloadDirectoryType(downloadInfo.getFilePath());
     }
 
     /**
