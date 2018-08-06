@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.download;
 
 import android.support.annotation.IntDef;
 
-import org.chromium.base.metrics.RecordHistogram;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -72,13 +70,5 @@ public class DirectoryOption {
         DirectoryOption directoryOption = new DirectoryOption(
                 this.name, this.location, this.availableSpace, this.totalSpace, this.type);
         return directoryOption;
-    }
-
-    /**
-     * Records a histogram for this directory option when the user selects this directory option.
-     */
-    public void recordDirectoryOptionType() {
-        RecordHistogram.recordEnumeratedHistogram("MobileDownload.Location.Setting.DirectoryType",
-                type, DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
     }
 }
