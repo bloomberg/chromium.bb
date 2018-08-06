@@ -22,7 +22,7 @@ class ConsentSyncBridge {
 
   // Returns the delegate for the controller, i.e. sync integration point.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetControllerDelegateOnUIThread() = 0;
+  GetControllerDelegate() = 0;
 };
 
 }  // namespace syncer

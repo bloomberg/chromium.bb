@@ -224,8 +224,8 @@ void ConsentSyncBridgeImpl::RecordConsentImpl(
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
-ConsentSyncBridgeImpl::GetControllerDelegateOnUIThread() {
-  return change_processor()->GetControllerDelegateOnUIThread();
+ConsentSyncBridgeImpl::GetControllerDelegate() {
+  return change_processor()->GetControllerDelegate();
 }
 
 void ConsentSyncBridgeImpl::ProcessQueuedEvents() {

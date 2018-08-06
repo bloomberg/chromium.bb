@@ -311,9 +311,9 @@ void ConsentAuditorImpl::RecordLocalConsent(
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
-ConsentAuditorImpl::GetControllerDelegateOnUIThread() {
+ConsentAuditorImpl::GetControllerDelegate() {
   if (consent_sync_bridge_) {
-    return consent_sync_bridge_->GetControllerDelegateOnUIThread();
+    return consent_sync_bridge_->GetControllerDelegate();
   }
   return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 }

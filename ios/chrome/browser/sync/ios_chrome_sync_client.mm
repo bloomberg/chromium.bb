@@ -334,35 +334,35 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
       return ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
-          ->GetDeviceInfoSyncControllerDelegateOnUIThread();
+          ->GetDeviceInfoSyncControllerDelegate();
     case syncer::READING_LIST: {
       ReadingListModel* reading_list_model =
           ReadingListModelFactory::GetForBrowserState(browser_state_);
       return reading_list_model->GetModelTypeSyncBridge()
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     }
     case syncer::AUTOFILL:
       return autofill::AutocompleteSyncBridge::FromWebDataService(
                  web_data_service_.get())
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     case syncer::AUTOFILL_PROFILE:
       return autofill::AutofillProfileSyncBridge::FromWebDataService(
                  web_data_service_.get())
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     case syncer::AUTOFILL_WALLET_DATA: {
       return autofill::AutofillWalletSyncBridge::FromWebDataService(
                  web_data_service_.get())
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     }
     case syncer::AUTOFILL_WALLET_METADATA: {
       return autofill::AutofillWalletMetadataSyncBridge::FromWebDataService(
                  web_data_service_.get())
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     }
     case syncer::TYPED_URLS:
       // TypedURLModelTypeController doesn't exercise this function.
@@ -370,15 +370,15 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForBrowserState(browser_state_)
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     case syncer::USER_EVENTS:
       return IOSUserEventServiceFactory::GetForBrowserState(browser_state_)
           ->GetSyncBridge()
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     case syncer::SESSIONS:
       return ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
-          ->GetSessionSyncControllerDelegateOnUIThread();
+          ->GetSessionSyncControllerDelegate();
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();

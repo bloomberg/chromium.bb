@@ -41,8 +41,7 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
   void ReportError(const ModelError& error) override;
-  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateOnUIThread()
-      override;
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
 
   // Indicates that ReportError should be called in the future.
   void ExpectError();

@@ -44,7 +44,7 @@ void BookmarkSyncService::DecodeBookmarkSyncMetadata(
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
-BookmarkSyncService::GetBookmarkSyncControllerDelegateOnUIThread() {
+BookmarkSyncService::GetBookmarkSyncControllerDelegate() {
   if (!bookmark_model_type_processor_) {
     return nullptr;
   }

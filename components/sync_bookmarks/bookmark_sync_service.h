@@ -44,7 +44,7 @@ class BookmarkSyncService : public KeyedService {
 
   // Returns the ModelTypeControllerDelegate for syncer::BOOKMARKS.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetBookmarkSyncControllerDelegateOnUIThread();
+  GetBookmarkSyncControllerDelegate();
 
  private:
   // BookmarkModelTypeProcessor handles communications between sync engine and

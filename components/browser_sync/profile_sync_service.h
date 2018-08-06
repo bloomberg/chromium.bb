@@ -304,11 +304,11 @@ class ProfileSyncService : public syncer::SyncService,
   // Returns the SyncableService or USS bridge for syncer::SESSIONS.
   syncer::SyncableService* GetSessionsSyncableService();
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetSessionSyncControllerDelegateOnUIThread();
+  GetSessionSyncControllerDelegate();
 
   // Returns the ModelTypeControllerDelegate for syncer::DEVICE_INFO.
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetDeviceInfoSyncControllerDelegateOnUIThread();
+  GetDeviceInfoSyncControllerDelegate();
 
   // Returns synced devices tracker.
   // Virtual for testing.

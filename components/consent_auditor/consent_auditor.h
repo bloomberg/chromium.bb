@@ -90,7 +90,7 @@ class ConsentAuditor : public KeyedService {
 
   // Returns the underlying Sync integration point.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetControllerDelegateOnUIThread() = 0;
+  GetControllerDelegate() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConsentAuditor);
