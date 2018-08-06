@@ -120,6 +120,8 @@ crbug.com/680917 http/tests/devtools/audits2/ [ Slow ]
 # These tests are intentionally SLOW because of throttled loading.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
 crbug.com/73609 http/tests/media/video-preload-metadata.html [ Slow ]
+crbug.com/869829 http/tests/media/video-cancel-load.html [ Slow ]
+crbug.com/870259 http/tests/media/video-throttled-load-metadata.html [ Slow ]
 
 # Many of the virtual animations tests are slow.
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]

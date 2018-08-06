@@ -4840,11 +4840,7 @@ crbug.com/869364 virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Pass Time
 
 # Sheriff 2018-08-01
 crbug.com/869773 [ Mac Linux ] http/tests/misc/window-dot-stop.html [ Pass Failure ]
-crbug.com/869829 [ Mac Release ] http/tests/media/video-cancel-load.html [ Pass Failure ]
 crbug.com/862806 [ Linux ] css3/filters/effect-drop-shadow-hw.html [ Pass Timeout ]
-
-# Sheriff 2018-08-02
-crbug.com/870259 [ Mac ] http/tests/media/video-throttled-load-metadata.html [ Pass Timeout ]
 
 # Sheriff 2018-08-06
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure ]
