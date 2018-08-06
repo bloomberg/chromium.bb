@@ -253,6 +253,9 @@ void CrashMetricsReporter::CrashDumpProcessed(
     }
     UMA_HISTOGRAM_ENUMERATION(
         "Stability.Android.StrongBindingOomRemainingBindingState", combo);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "Stability.Android.StrongBindingOomRemainingStrongBindingCount",
+        info.remaining_process_with_strong_binding, 20);
   }
 
   ReportLegacyCrashUma(info, has_valid_dump);
