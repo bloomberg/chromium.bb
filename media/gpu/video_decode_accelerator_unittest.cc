@@ -506,35 +506,16 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
 
   texture_target_ = texture_target;
   for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
-    uint32_t texture_id;
-    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-    rendering_helper_->CreateTexture(texture_target_, &texture_id, dimensions,
-                                     &done);
-    done.Wait();
-
-    scoped_refptr<media::test::TextureRef> texture_ref;
-    base::Closure delete_texture_cb =
-        base::Bind(&RenderingHelper::DeleteTexture,
-                   base::Unretained(rendering_helper_), texture_id);
-
-    if (g_test_import) {
-      texture_ref = media::test::TextureRef::CreatePreallocated(
-          texture_id, delete_texture_cb, pixel_format, dimensions);
-    } else {
-      texture_ref =
-          media::test::TextureRef::Create(texture_id, delete_texture_cb);
-    }
-
+    auto texture_ref = rendering_helper_->CreateTexture(
+        texture_target_, g_test_import, pixel_format, dimensions);
     LOG_ASSERT(texture_ref);
-
     int32_t picture_buffer_id = next_picture_buffer_id_++;
     int irrelevant_id = picture_buffer_id;
     LOG_ASSERT(
         active_textures_.insert(std::make_pair(picture_buffer_id, texture_ref))
             .second);
 
-    PictureBuffer::TextureIds texture_ids(1, texture_id);
+    PictureBuffer::TextureIds texture_ids(1, texture_ref->texture_id());
     buffers.push_back(PictureBuffer(picture_buffer_id, dimensions,
                                     PictureBuffer::TextureIds{irrelevant_id++},
                                     texture_ids, texture_target, pixel_format));

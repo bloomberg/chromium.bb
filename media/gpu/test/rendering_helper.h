@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/base/video_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -30,6 +31,9 @@ class WaitableEvent;
 }
 
 namespace media {
+namespace test {
+class TextureRef;
+}  // namespace test
 
 class VideoFrameTexture : public base::RefCounted<VideoFrameTexture> {
  public:
@@ -95,12 +99,14 @@ class RenderingHelper {
   // must be called on the rendering thread.
   void UnInitialize(base::WaitableEvent* done);
 
-  // Return a newly-created GLES2 texture id of the specified size, and
-  // signal |*done|.
-  void CreateTexture(uint32_t texture_target,
-                     uint32_t* texture_id,
-                     const gfx::Size& size,
-                     base::WaitableEvent* done);
+  // Return a newly-created media::test::TextureRef of the specified size and
+  // pixel format. If pre_allocate is true, NativePixmap is allocated in this
+  // function.
+  scoped_refptr<media::test::TextureRef> CreateTexture(
+      uint32_t texture_target,
+      bool pre_allocate,
+      VideoPixelFormat pixel_format,
+      const gfx::Size& size);
 
   // If |render_as_thumbnails_| is true, renders |video_frame| as thumbnail.
   // Otherwise, queues |video_frame| to |pending_frames|.
@@ -110,9 +116,6 @@ class RenderingHelper {
   // Flushes the pending frames. Notify the rendering_helper there won't be
   // more video frames.
   void Flush(size_t window_id);
-
-  // Delete |texture_id|.
-  void DeleteTexture(uint32_t texture_id);
 
   // Get the platform specific handle to the OpenGL display.
   void* GetGLDisplay();
@@ -152,6 +155,9 @@ class RenderingHelper {
   // Queues the |video_frame| for rendering.
   void QueueVideoFrame(size_t window_id,
                        scoped_refptr<VideoFrameTexture> video_frame);
+
+  // Return a newly-created GLES2 texture id of the specified size.
+  uint32_t CreateTextureId(uint32_t texture_target, const gfx::Size& size);
 
   void Clear();
   void RenderContent();
