@@ -2356,8 +2356,6 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Notification">
-  <owner>yangsharon@google.com</owner>
-  <owner>awdf@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
     A notification event corresponds with the entire lifespan of a single
