@@ -6,9 +6,6 @@
 
 #include "base/bind.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    content::protocol::DevToolsDownloadManagerHelper);
-
 namespace content {
 namespace protocol {
 

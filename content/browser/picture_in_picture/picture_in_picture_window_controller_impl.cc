@@ -16,8 +16,6 @@
 
 namespace content {
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PictureInPictureWindowControllerImpl);
-
 // static
 PictureInPictureWindowController*
 PictureInPictureWindowController::GetOrCreateForWebContents(
