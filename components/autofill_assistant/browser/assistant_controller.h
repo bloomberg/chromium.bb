@@ -45,6 +45,7 @@ class AssistantController : public AssistantScriptExecutorDelegate,
 
   // Overrides content::AssistantUiDelegate:
   void OnClickOverlay() override;
+  void OnDestroy() override;
 
   // Overrides content::WebContentsObserver:
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,

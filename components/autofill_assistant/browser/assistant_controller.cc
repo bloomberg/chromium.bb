@@ -72,6 +72,10 @@ void AssistantController::OnClickOverlay() {
   // TODO(crbug.com/806868): Stop executing scripts.
 }
 
+void AssistantController::OnDestroy() {
+  delete this;
+}
+
 void AssistantController::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
@@ -81,7 +85,7 @@ void AssistantController::DidFinishLoad(
 }
 
 void AssistantController::WebContentsDestroyed() {
-  delete this;
+  OnDestroy();
 }
 
 }  // namespace autofill_assistant

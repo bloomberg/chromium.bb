@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.autofill_assistant.AssistantUiController;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -170,6 +171,8 @@ public class CustomTabActivity extends ChromeActivity {
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
     private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
+
+    private AssistantUiController mAutofillAssistantUiController;
 
     @Nullable
     private ModuleEntryPoint mModuleEntryPoint;
@@ -597,6 +600,14 @@ public class CustomTabActivity extends ChromeActivity {
                     getIntent().getIntExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, 0),
                     getActivityTab().getWebContents());
         }
+
+        // TODO(crbug.com/806868): Only enable Autofill Assistant when the flag is enabled in the
+        // intent.
+        if (mAutofillAssistantUiController == null
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)) {
+            mAutofillAssistantUiController = new AssistantUiController(this);
+        }
+
         super.finishNativeInitialization();
     }
 
