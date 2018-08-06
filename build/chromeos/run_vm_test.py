@@ -322,13 +322,14 @@ def vm_test(args, unknown_args):
 
 def host_cmd(args, unknown_args):
   if not args.cmd:
-    logging.error('Must specify command to run on the host.')
-    return 1
+    raise TestFormatError('Must specify command to run on the host.')
   elif unknown_args:
-    logging.error(
-        'Args "%s" unsupported. Is your host command correctly formatted?',
-        ' '.join(unknown_args))
-    return 1
+    raise TestFormatError(
+        'Args "%s" unsupported. Is your host command correctly formatted?' % (
+            ' '.join(unknown_args)))
+  elif args.deploy_chrome and not args.path_to_outdir:
+    raise TestFormatError(
+        '--path-to-outdir must be specified if --deploy-chrome is passed.')
 
   cros_run_vm_test_cmd = [
       CROS_RUN_VM_TEST_PATH,
@@ -339,6 +340,24 @@ def host_cmd(args, unknown_args):
   if args.verbose:
     cros_run_vm_test_cmd.append('--debug')
 
+  test_env = os.environ.copy()
+  if args.deploy_chrome:
+    cros_run_vm_test_cmd += [
+        '--deploy',
+        '--build-dir', os.path.abspath(args.path_to_outdir),
+    ]
+    # If we're deploying, push chromite/bin's deploy_chrome onto PATH.
+    test_env['PATH'] = (
+        test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
+    # deploy_chrome needs a set of GN args used to build chrome to determine if
+    # certain libraries need to be pushed to the VM. It looks for the args via
+    # an env var. To trigger the default deploying behavior, give it a dummy set
+    # of args.
+    # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd
+    # line args.
+    if not test_env.get('GN_ARGS'):
+      test_env['GN_ARGS'] = 'is_chromeos = true'
+
   cros_run_vm_test_cmd += [
       '--host-cmd',
       '--',
@@ -348,7 +367,7 @@ def host_cmd(args, unknown_args):
   logging.info(' '.join(cros_run_vm_test_cmd))
 
   return subprocess42.call(
-      cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr)
+      cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=test_env)
 
 
 def main():
@@ -366,6 +385,14 @@ def main():
   host_cmd_parser.set_defaults(func=host_cmd)
   host_cmd_parser.add_argument(
       '--cros-cache', type=str, required=True, help='Path to cros cache.')
+  host_cmd_parser.add_argument(
+      '--path-to-outdir', type=os.path.realpath,
+      help='Path to output directory, all of whose contents will be deployed '
+           'to the device.')
+  host_cmd_parser.add_argument(
+      '--deploy-chrome', action='store_true',
+      help='Will deploy a locally built Chrome binary to the VM before running '
+           'the host-cmd.')
   host_cmd_parser.add_argument('cmd', nargs=argparse.REMAINDER)
   # VM-side test args.
   vm_test_parser = subparsers.add_parser(

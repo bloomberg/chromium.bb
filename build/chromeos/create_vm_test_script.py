@@ -41,6 +41,7 @@ if __name__ == '__main__':
   sys.exit(main())
 """
 
+
 def main(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--script-output-path')
@@ -49,8 +50,8 @@ def main(args):
   parser.add_argument('--runtime-deps-path')
   parser.add_argument('--cros-cache')
   parser.add_argument('--board')
+  parser.add_argument('--deploy-chrome', action='store_true')
   args = parser.parse_args(args)
-
 
   def RelativizePathToScript(path):
     return os.path.relpath(path, os.path.dirname(args.script_output_path))
@@ -62,6 +63,7 @@ def main(args):
       '--board', args.board,
       '-v',
   ]
+
   if args.test_exe:
     vm_test_args.extend([
         'vm-test',
@@ -70,6 +72,8 @@ def main(args):
     ])
   else:
     vm_test_args.append('host-cmd')
+    if args.deploy_chrome:
+      vm_test_args.append('--deploy-chrome')
 
   vm_test_path_args = [
       ('--cros-cache', RelativizePathToScript(args.cros_cache)),

@@ -822,6 +822,10 @@ test("chromeos_unittests") {
 if (cros_board != "") {
   generate_vm_runner_script("cros_vm_launcher") {
     generated_script = "$root_build_dir/bin/launch_cros_vm"
+
+    # Assume every time we build cros_vm_launcher, we also build chrome and
+    # want to deploy it to the VM.
+    deploy_chrome = true
   }
 
   # The sanity test's actual binary is baked into the vm image. All we need to

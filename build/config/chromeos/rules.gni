@@ -9,6 +9,12 @@ declare_args() {
   cros_sdk_version = ""
 }
 
+# Creates a script at $generated_script that can be used to launch a cros VM
+# and optionally run a test within it.
+# Args:
+#   generated_script: Path to place the generated script.
+#   deploy_chrome: If true, deploys a locally built chrome located in the root
+#                  build dir to the VM after launching it.
 template("generate_vm_runner_script") {
   _cache_path_prefix =
       "//build/cros_cache/chrome-sdk/tarballs/${cros_board}+${cros_sdk_version}"
@@ -64,7 +70,13 @@ template("generate_vm_runner_script") {
       rebase_path("//build/cros_cache/", root_build_dir),
       "--board",
       cros_board,
+      "--output-directory",
+      rebase_path(root_out_dir, root_build_dir),
     ]
+
+    if (defined(invoker.deploy_chrome) && invoker.deploy_chrome) {
+      args += [ "--deploy-chrome" ]
+    }
 
     # When --test-exe is specified, run_vm_test will push the exe to the VM and
     # execute it. Otherwise it wraps a host-side command and just takes care
@@ -73,8 +85,6 @@ template("generate_vm_runner_script") {
       args += [
         "--test-exe",
         rebase_path(invoker.test_exe, root_build_dir),
-        "--output-directory",
-        rebase_path(root_out_dir, root_build_dir),
       ]
       if (defined(invoker.runtime_deps_file)) {
         args += [
