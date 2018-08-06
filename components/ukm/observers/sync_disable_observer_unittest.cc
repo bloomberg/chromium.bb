@@ -57,8 +57,8 @@ class MockSyncService : public syncer::FakeSyncService {
   void RemoveObserver(syncer::SyncServiceObserver* observer) override {
     observers_.RemoveObserver(observer);
   }
-  State GetState() const override {
-    return initialized_ ? State::ACTIVE : State::INITIALIZING;
+  TransportState GetTransportState() const override {
+    return initialized_ ? TransportState::ACTIVE : TransportState::INITIALIZING;
   }
   bool IsUsingSecondaryPassphrase() const override { return has_passphrase_; }
   syncer::ModelTypeSet GetPreferredDataTypes() const override {

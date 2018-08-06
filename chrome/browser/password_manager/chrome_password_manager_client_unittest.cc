@@ -194,8 +194,8 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 
     EXPECT_CALL(*mock_sync_service, IsFirstSetupComplete())
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_sync_service, GetState())
-        .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+    EXPECT_CALL(*mock_sync_service, GetTransportState())
+        .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
     return mock_sync_service;
   }
 

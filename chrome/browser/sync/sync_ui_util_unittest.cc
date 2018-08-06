@@ -132,8 +132,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
     case STATUS_CASE_AUTHENTICATING: {
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
-      EXPECT_CALL(*service, GetState())
-          .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+      EXPECT_CALL(*service, GetTransportState())
+          .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(false));
       syncer::SyncEngine::Status status;
@@ -147,8 +147,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
     case STATUS_CASE_AUTH_ERROR: {
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
-      EXPECT_CALL(*service, GetState())
-          .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+      EXPECT_CALL(*service, GetTransportState())
+          .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(false));
       syncer::SyncEngine::Status status;
@@ -168,8 +168,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
     case STATUS_CASE_PROTOCOL_ERROR: {
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
-      EXPECT_CALL(*service, GetState())
-          .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+      EXPECT_CALL(*service, GetTransportState())
+          .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(false));
       syncer::SyncProtocolError protocolError;
@@ -195,8 +195,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
     case STATUS_CASE_PASSPHRASE_ERROR: {
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
-      EXPECT_CALL(*service, GetState())
-          .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+      EXPECT_CALL(*service, GetTransportState())
+          .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
       syncer::SyncEngine::Status status;
       EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
@@ -211,8 +211,8 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
     case STATUS_CASE_SYNCED: {
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
-      EXPECT_CALL(*service, GetState())
-          .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+      EXPECT_CALL(*service, GetTransportState())
+          .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(false));
       syncer::SyncEngine::Status status;
@@ -230,8 +230,9 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
               Return(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY));
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(false));
-      EXPECT_CALL(*service, GetState())
-          .WillRepeatedly(Return(syncer::SyncService::State::DISABLED));
+      EXPECT_CALL(*service, GetTransportState())
+          .WillRepeatedly(
+              Return(syncer::SyncService::TransportState::DISABLED));
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(false));
       syncer::SyncEngine::Status status;

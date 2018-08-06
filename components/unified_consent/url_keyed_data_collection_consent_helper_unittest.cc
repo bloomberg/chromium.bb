@@ -32,7 +32,9 @@ class TestSyncService : public syncer::FakeSyncService {
 
   // syncer::FakeSyncService:
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
-  State GetState() const override { return State::ACTIVE; }
+  TransportState GetTransportState() const override {
+    return TransportState::ACTIVE;
+  }
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
     return syncer::ModelTypeSet(syncer::ModelType::HISTORY_DELETE_DIRECTIVES,
                                 syncer::ModelType::USER_EVENTS,

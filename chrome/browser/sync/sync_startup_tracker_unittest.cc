@@ -50,8 +50,9 @@ class SyncStartupTrackerTest : public testing::Test {
     ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(no_error_));
     ON_CALL(*mock_pss_, GetDisableReasons())
         .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
-    ON_CALL(*mock_pss_, GetState())
-        .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
+    ON_CALL(*mock_pss_, GetTransportState())
+        .WillByDefault(
+            Return(syncer::SyncService::TransportState::INITIALIZING));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -64,8 +65,8 @@ class SyncStartupTrackerTest : public testing::Test {
 TEST_F(SyncStartupTrackerTest, SyncAlreadyInitialized) {
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
-  ON_CALL(*mock_pss_, GetState())
-      .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
+  ON_CALL(*mock_pss_, GetTransportState())
+      .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
   EXPECT_CALL(observer_, SyncStartupCompleted());
   SyncStartupTracker tracker(profile_.get(), &observer_);
 }
@@ -75,8 +76,8 @@ TEST_F(SyncStartupTrackerTest, SyncNotSignedIn) {
   // in.
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
-  ON_CALL(*mock_pss_, GetState())
-      .WillByDefault(Return(syncer::SyncService::State::DISABLED));
+  ON_CALL(*mock_pss_, GetTransportState())
+      .WillByDefault(Return(syncer::SyncService::TransportState::DISABLED));
   EXPECT_CALL(observer_, SyncStartupFailed());
   SyncStartupTracker tracker(profile_.get(), &observer_);
 }
@@ -86,8 +87,8 @@ TEST_F(SyncStartupTrackerTest, SyncAuthError) {
   // error.
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
-  ON_CALL(*mock_pss_, GetState())
-      .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
+  ON_CALL(*mock_pss_, GetTransportState())
+      .WillByDefault(Return(syncer::SyncService::TransportState::INITIALIZING));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error));
@@ -103,8 +104,8 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedInitialization) {
   SyncStartupTracker tracker(profile_.get(), &observer_);
   Mock::VerifyAndClearExpectations(&observer_);
   // Now, mark the PSS as initialized.
-  ON_CALL(*mock_pss_, GetState())
-      .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
+  ON_CALL(*mock_pss_, GetTransportState())
+      .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
   EXPECT_CALL(observer_, SyncStartupCompleted());
   tracker.OnStateChanged(mock_pss_);
 }
@@ -121,8 +122,8 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedAuthError) {
   // Now, mark the PSS as having an auth error.
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
-  ON_CALL(*mock_pss_, GetState())
-      .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
+  ON_CALL(*mock_pss_, GetTransportState())
+      .WillByDefault(Return(syncer::SyncService::TransportState::INITIALIZING));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error));
@@ -143,8 +144,8 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedUnrecoverableError) {
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(
           Return(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR));
-  ON_CALL(*mock_pss_, GetState())
-      .WillByDefault(Return(syncer::SyncService::State::DISABLED));
+  ON_CALL(*mock_pss_, GetTransportState())
+      .WillByDefault(Return(syncer::SyncService::TransportState::DISABLED));
   EXPECT_CALL(observer_, SyncStartupFailed());
   tracker.OnStateChanged(mock_pss_);
 }

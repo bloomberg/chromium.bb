@@ -22,15 +22,15 @@ bool SyncService::CanSyncStart() const {
 }
 
 bool SyncService::IsEngineInitialized() const {
-  switch (GetState()) {
-    case State::DISABLED:
-    case State::WAITING_FOR_START_REQUEST:
-    case State::START_DEFERRED:
-    case State::INITIALIZING:
+  switch (GetTransportState()) {
+    case TransportState::DISABLED:
+    case TransportState::WAITING_FOR_START_REQUEST:
+    case TransportState::START_DEFERRED:
+    case TransportState::INITIALIZING:
       return false;
-    case State::PENDING_DESIRED_CONFIGURATION:
-    case State::CONFIGURING:
-    case State::ACTIVE:
+    case TransportState::PENDING_DESIRED_CONFIGURATION:
+    case TransportState::CONFIGURING:
+    case TransportState::ACTIVE:
       return true;
   }
   NOTREACHED();
@@ -41,15 +41,15 @@ bool SyncService::IsSyncActive() const {
   if (!IsSyncFeatureEnabled()) {
     return false;
   }
-  switch (GetState()) {
-    case State::DISABLED:
-    case State::WAITING_FOR_START_REQUEST:
-    case State::START_DEFERRED:
-    case State::INITIALIZING:
-    case State::PENDING_DESIRED_CONFIGURATION:
+  switch (GetTransportState()) {
+    case TransportState::DISABLED:
+    case TransportState::WAITING_FOR_START_REQUEST:
+    case TransportState::START_DEFERRED:
+    case TransportState::INITIALIZING:
+    case TransportState::PENDING_DESIRED_CONFIGURATION:
       return false;
-    case State::CONFIGURING:
-    case State::ACTIVE:
+    case TransportState::CONFIGURING:
+    case TransportState::ACTIVE:
       return true;
   }
   NOTREACHED();

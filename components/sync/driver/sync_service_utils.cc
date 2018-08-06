@@ -38,18 +38,18 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
     return UploadState::NOT_ACTIVE;
   }
 
-  switch (sync_service->GetState()) {
-    case SyncService::State::DISABLED:
+  switch (sync_service->GetTransportState()) {
+    case SyncService::TransportState::DISABLED:
       return UploadState::NOT_ACTIVE;
 
-    case SyncService::State::WAITING_FOR_START_REQUEST:
-    case SyncService::State::START_DEFERRED:
-    case SyncService::State::INITIALIZING:
-    case SyncService::State::PENDING_DESIRED_CONFIGURATION:
-    case SyncService::State::CONFIGURING:
+    case SyncService::TransportState::WAITING_FOR_START_REQUEST:
+    case SyncService::TransportState::START_DEFERRED:
+    case SyncService::TransportState::INITIALIZING:
+    case SyncService::TransportState::PENDING_DESIRED_CONFIGURATION:
+    case SyncService::TransportState::CONFIGURING:
       return UploadState::INITIALIZING;
 
-    case SyncService::State::ACTIVE:
+    case SyncService::TransportState::ACTIVE:
       // If sync is active, but the data type in question still isn't, then
       // something must have gone wrong with that data type.
       if (!sync_service->GetActiveDataTypes().Has(type)) {

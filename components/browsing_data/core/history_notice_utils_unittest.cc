@@ -27,9 +27,10 @@ class TestSyncService : public syncer::FakeSyncService {
   // Getters (FakeSyncService implementation). ---------------------------------
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
 
-  State GetState() const override {
-    return IsFirstSetupComplete() ? State::ACTIVE
-                                  : State::PENDING_DESIRED_CONFIGURATION;
+  TransportState GetTransportState() const override {
+    return IsFirstSetupComplete()
+               ? TransportState::ACTIVE
+               : TransportState::PENDING_DESIRED_CONFIGURATION;
   }
 
   bool IsFirstSetupComplete() const override {

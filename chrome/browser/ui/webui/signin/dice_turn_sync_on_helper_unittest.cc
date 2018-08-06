@@ -259,8 +259,8 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
     ON_CALL(*sync_service_mock, GetDisableReasons())
         .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
-    ON_CALL(*sync_service_mock, GetState())
-        .WillByDefault(Return(syncer::SyncService::State::ACTIVE));
+    ON_CALL(*sync_service_mock, GetTransportState())
+        .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
   }
 
   void SetExpectationsForSyncStartupPending() {
@@ -269,8 +269,9 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
     ON_CALL(*sync_service_mock, GetDisableReasons())
         .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
-    ON_CALL(*sync_service_mock, GetState())
-        .WillByDefault(Return(syncer::SyncService::State::INITIALIZING));
+    ON_CALL(*sync_service_mock, GetTransportState())
+        .WillByDefault(
+            Return(syncer::SyncService::TransportState::INITIALIZING));
     ON_CALL(*sync_service_mock, GetAuthError())
         .WillByDefault(ReturnRef(kNoAuthError));
   }

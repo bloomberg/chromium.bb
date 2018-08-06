@@ -117,8 +117,8 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     ON_CALL(*sync_service, GetRegisteredDataTypes())
         .WillByDefault(Return(syncer::ModelTypeSet()));
     sync_service->Initialize();
-    EXPECT_CALL(*sync_service, GetState())
-        .WillRepeatedly(Return(syncer::SyncService::State::ACTIVE));
+    EXPECT_CALL(*sync_service, GetTransportState())
+        .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
     EXPECT_CALL(*sync_service, GetOpenTabsUIDelegate())
         .WillRepeatedly(Return(nullptr));
 
