@@ -410,7 +410,6 @@
         {
             "platforms": [
                 "linux",
-                "mac",
                 "windows"
             ],
             "experiments": [
@@ -430,7 +429,8 @@
         {
             "platforms": [
                 "android",
-                "chromeos"
+                "chromeos",
+                "mac"
             ],
             "experiments": [
                 {
