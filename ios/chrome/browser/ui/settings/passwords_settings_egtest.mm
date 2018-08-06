@@ -789,7 +789,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 // Checks that deleting a duplicated blacklisted form from password details view
 // goes back to the list-of-passwords view which doesn't display that form
 // anymore.
-- (void)testDuplicatedBlacklistedFormDeletionInDetailView {
+// TODO(crbug.com/871223): Disabled because the PasswordStore no longer allows
+// adding duplicate blacklisted forms.
+- (void)DISABLED_testDuplicatedBlacklistedFormDeletionInDetailView {
   // Save blacklisted form to be deleted later.
   PasswordForm blacklisted;
   blacklisted.origin = GURL("https://blacklisted.com");
