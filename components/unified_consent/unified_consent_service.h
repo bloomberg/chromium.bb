@@ -37,6 +37,17 @@ enum class MigrationState : int {
   COMPLETED = 10,
 };
 
+enum class ConsentBumpSuppressReason {
+  kNone,
+  kNotSignedIn,
+  kSyncEverythingOff,
+  kPrivacySettingOff,
+  kSettingsOptIn,
+  kUserSignedOut,
+  kSyncPaused,
+  kMaxValue = kSyncPaused
+};
+
 // A browser-context keyed service that is used to manage the user consent
 // when UnifiedConsent feature is enabled.
 class UnifiedConsentService : public KeyedService,
@@ -67,7 +78,13 @@ class UnifiedConsentService : public KeyedService,
   bool ShouldShowConsentBump();
   // Finishes the migration to unified consent. All future calls to
   // |GetMigrationState| are guranteed to return |MIGRATION_COMPLETED|.
-  void MarkMigrationComplete();
+  // Takes as argument the suppress reason for not showing the consent
+  // bump if it wasn't shown.
+  void MarkMigrationComplete(ConsentBumpSuppressReason suppress_reason);
+  // Records the suppress reason for the consent bump without changing the
+  // migration state.
+  void RecordConsentBumpSuppressReason(
+      ConsentBumpSuppressReason suppress_reason);
 
   // KeyedService:
   void Shutdown() override;
@@ -99,6 +116,9 @@ class UnifiedConsentService : public KeyedService,
 
   // Returns true if all non-personalized services are enabled.
   bool AreAllNonPersonalizedServicesEnabled();
+
+  // Checks if all on-by-default non-personalized services are on.
+  bool AreAllOnByDefaultPrivacySettingsOn();
 
   std::unique_ptr<UnifiedConsentServiceClient> service_client_;
   PrefService* pref_service_;
