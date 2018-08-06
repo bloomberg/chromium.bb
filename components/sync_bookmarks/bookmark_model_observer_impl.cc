@@ -141,7 +141,21 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
 
   const SyncedBookmarkTracker::Entity* entity =
       bookmark_tracker_->GetEntityForBookmarkNode(node);
-  DCHECK(entity);
+  if (!entity) {
+    // If the node hasn't been added to the tracker yet, we do nothing. It will
+    // be added later. It's how BookmarkModel currently notifies observers, if
+    // further changes are triggered *during* observer notification. Consider
+    // the following scenario:
+    // 1. New bookmark added.
+    // 2. BookmarkModel notifies all the observers about the new node.
+    // 3. One observer A get's notified before us.
+    // 4. Observer A decided to update the bookmark node.
+    // 5. BookmarkModel notifies all observers about the update.
+    // 6. We received the notification about the update before the creation.
+    // 7. We will get the notification about the addition later and then we can
+    //    start tracking the node.
+    return;
+  }
   const std::string& sync_id = entity->metadata()->server_id();
   const base::Time modification_time = base::Time::Now();
   sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(node);
