@@ -35,11 +35,12 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif  // defined(USE_OZONE)
 
+namespace media {
+
+namespace {
+
 // Helper for Shader creation.
-static void CreateShader(GLuint program,
-                         GLenum type,
-                         const char* source,
-                         int size) {
+void CreateShader(GLuint program, GLenum type, const char* source, int size) {
   GLuint shader = glCreateShader(type);
   glShaderSource(shader, 1, &source, &size);
   glCompileShader(shader);
@@ -60,17 +61,15 @@ void DeleteTexture(uint32_t texture_id) {
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-namespace media {
+// Helper function to set GL viewport.
+void GLSetViewPort(const gfx::Rect& area) {
+  glViewport(area.x(), area.y(), area.width(), area.height());
+  glScissor(area.x(), area.y(), area.width(), area.height());
+}
+
+}  // namespace
 
 bool RenderingHelper::use_gl_ = false;
-
-RenderingHelperParams::RenderingHelperParams()
-    : rendering_fps(0), render_as_thumbnails(false) {}
-
-RenderingHelperParams::RenderingHelperParams(
-    const RenderingHelperParams& other) = default;
-
-RenderingHelperParams::~RenderingHelperParams() {}
 
 VideoFrameTexture::VideoFrameTexture(uint32_t texture_target,
                                      uint32_t texture_id,
@@ -85,11 +84,9 @@ VideoFrameTexture::~VideoFrameTexture() {
   base::ResetAndReturn(&no_longer_needed_cb_).Run();
 }
 
-RenderingHelper::RenderedVideo::RenderedVideo()
-    : is_flushing(false), frames_to_drop(0) {}
+RenderingHelper::RenderedVideo::RenderedVideo() {}
 
-RenderingHelper::RenderedVideo::RenderedVideo(const RenderedVideo& other) =
-    default;
+RenderingHelper::RenderedVideo::RenderedVideo(const RenderedVideo&) = default;
 
 RenderingHelper::RenderedVideo::~RenderedVideo() {}
 
@@ -373,12 +370,6 @@ uint32_t RenderingHelper::CreateTextureId(uint32_t texture_target,
   return texture_id;
 }
 
-// Helper function to set GL viewport.
-static inline void GLSetViewPort(const gfx::Rect& area) {
-  glViewport(area.x(), area.y(), area.width(), area.height());
-  glScissor(area.x(), area.y(), area.width(), area.height());
-}
-
 void RenderingHelper::ConsumeVideoFrame(
     size_t window_id,
     scoped_refptr<VideoFrameTexture> video_frame) {
@@ -460,10 +451,6 @@ void RenderingHelper::RenderTexture(uint32_t texture_target,
 
 gl::GLContext* RenderingHelper::GetGLContext() {
   return gl_context_.get();
-}
-
-void* RenderingHelper::GetGLDisplay() {
-  return gl_surface_->GetDisplay();
 }
 
 void RenderingHelper::Clear() {
