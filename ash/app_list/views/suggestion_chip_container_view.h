@@ -28,6 +28,11 @@ class SuggestionChipContainerView : public SearchResultContainerView {
 
   // views::View:
   void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+
+  // Suggestion chips become unfocusable if |disabled| is true. This is used to
+  // trap focus within the folder when it is opened.
+  void DisableFocusForShowingActiveFolder(bool disabled);
 
  private:
   // Returns true if update and layout should be ignored.
@@ -36,7 +41,7 @@ class SuggestionChipContainerView : public SearchResultContainerView {
   ContentsView* contents_view_ = nullptr;  // Not owned
   AppListViewDelegate* view_delegate_ = nullptr;
 
-  std::vector<SearchResultSuggestionChipView*> suggestion_chip_views;  // Owned
+  std::vector<SearchResultSuggestionChipView*> suggestion_chip_views_;  // Owned
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionChipContainerView);
 };

@@ -70,10 +70,6 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   views::ImageButton* close_button();
   views::Textfield* search_box() { return search_box_; }
 
-  void set_contents_view(views::View* contents_view) {
-    contents_view_ = contents_view;
-  }
-
   // Swaps the google icon with the back button.
   void ShowBackOrGoogleIcon(bool show_back_button);
 
@@ -88,7 +84,6 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
-  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void OnEnabledChanged() override;
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -152,8 +147,6 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
 
   views::BoxLayout* box_layout() { return box_layout_; }
 
-  views::View* contents_view() { return contents_view_; }
-
   void set_is_tablet_mode(bool is_tablet_mode) {
     is_tablet_mode_ = is_tablet_mode;
   }
@@ -205,7 +198,6 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   SearchBoxImageButton* close_button_ = nullptr;
   views::Textfield* search_box_;
   views::View* search_box_right_space_ = nullptr;
-  views::View* contents_view_ = nullptr;
 
   // Owned by |content_container_|. It is deleted when the view is deleted.
   views::BoxLayout* box_layout_ = nullptr;

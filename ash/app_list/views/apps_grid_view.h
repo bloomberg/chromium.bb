@@ -532,6 +532,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // state.
   bool HandleFocusMovementInFullscreenAllAppsState(bool arrow_up);
 
+  // Handle vertical focus movement triggered by arrow up and down.
+  bool HandleVerticalFocusMovement(bool arrow_up);
+
   // Update number of columns and rows for apps within a folder.
   void UpdateColsAndRowsForFolder();
 
@@ -600,6 +603,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Update the padding of tile view based on the contents bounds.
   void UpdateTilePadding();
+
+  // Returns the number of existing items in specified page. Returns 0 if |page|
+  // is out of range.
+  int GetItemsNumOfPage(int page) const;
 
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.

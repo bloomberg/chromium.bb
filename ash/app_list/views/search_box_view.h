@@ -22,6 +22,7 @@ namespace app_list {
 
 class AppListView;
 class AppListViewDelegate;
+class ContentsView;
 class SearchModel;
 
 // Subclass of search_box::SearchBoxViewBase. SearchBoxModel is its data model
@@ -51,6 +52,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Overridden from views::View:
   void OnKeyEvent(ui::KeyEvent* event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -83,6 +85,11 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Sets the autocomplete text if autocomplete conditions are met.
   void ProcessAutocomplete();
+
+  void set_contents_view(ContentsView* contents_view) {
+    contents_view_ = contents_view;
+  }
+  ContentsView* contents_view() { return contents_view_; }
 
  private:
   // Gets the wallpaper prominent colors.
@@ -132,6 +139,10 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Owned by views hierarchy.
   app_list::AppListView* app_list_view_;
+  ContentsView* contents_view_ = nullptr;
+
+  // True if new style launcher feature is enabled.
+  const bool is_new_style_launcher_enabled_;
 
   base::WeakPtrFactory<SearchBoxView> weak_ptr_factory_;
 
