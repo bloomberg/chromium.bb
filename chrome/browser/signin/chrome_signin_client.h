@@ -19,7 +19,7 @@
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
 #if !defined(OS_CHROMEOS)
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -30,7 +30,7 @@ class Profile;
 class ChromeSigninClient
     : public SigninClient,
 #if !defined(OS_CHROMEOS)
-      public content::NetworkConnectionTracker::NetworkConnectionObserver,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
 #endif
       public SigninErrorController::Observer,
       public gaia::GaiaOAuthClient::Delegate,
@@ -99,7 +99,7 @@ class ChromeSigninClient
                          const GoogleServiceAuthError& error) override;
 
 #if !defined(OS_CHROMEOS)
-  // content::NetworkConnectionTracker::NetworkConnectionObserver
+  // network::NetworkConnectionTracker::NetworkConnectionObserver
   // implementation.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 #endif

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 #include <utility>
 
@@ -11,7 +11,7 @@
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -188,4 +188,4 @@ void NetworkConnectionTracker::HandleNetworkServicePipeBroken() {
   Initialize();
 }
 
-}  // namespace content
+}  // namespace network

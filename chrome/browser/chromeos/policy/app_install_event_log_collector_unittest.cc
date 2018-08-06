@@ -145,7 +145,7 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   }
 
   void SetNetworkState(
-      content::NetworkConnectionTracker::NetworkConnectionObserver* observer,
+      network::NetworkConnectionTracker::NetworkConnectionObserver* observer,
       const std::string& service_path,
       const std::string& state) {
     service_test_->SetServiceProperty(service_path, shill::kStateProperty,

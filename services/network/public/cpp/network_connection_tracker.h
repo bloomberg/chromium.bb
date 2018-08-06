@@ -2,38 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_NETWORK_CONNECTION_TRACKER_H_
-#define CONTENT_PUBLIC_BROWSER_NETWORK_CONNECTION_TRACKER_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_NETWORK_CONNECTION_TRACKER_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_NETWORK_CONNECTION_TRACKER_H_
 
 #include <list>
 #include <memory>
 
 #include "base/atomicops.h"
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
-namespace content {
+namespace network {
 
 // This class subscribes to network change events from
 // network::mojom::NetworkChangeManager and propogates these notifications to
 // its NetworkConnectionObservers registered through
 // AddNetworkConnectionObserver()/RemoveNetworkConnectionObserver().
-class CONTENT_EXPORT NetworkConnectionTracker
+class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
     : public network::mojom::NetworkChangeManagerClient {
  public:
   using ConnectionTypeCallback =
       base::OnceCallback<void(network::mojom::ConnectionType)>;
 
-  class CONTENT_EXPORT NetworkConnectionObserver {
+  class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionObserver {
    public:
     // Please refer to NetworkChangeManagerClient::OnNetworkChanged for when
     // this method is invoked.
@@ -145,6 +145,6 @@ class CONTENT_EXPORT NetworkConnectionTracker
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionTracker);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_PUBLIC_BROWSER_NETWORK_CONNECTION_TRACKER_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_NETWORK_CONNECTION_TRACKER_H_

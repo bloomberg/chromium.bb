@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_MOCK_NETWORK_CONNECTION_TRACKER_H_
-#define CONTENT_PUBLIC_TEST_MOCK_NETWORK_CONNECTION_TRACKER_H_
+#ifndef SERVICES_NETWORK_TEST_TEST_NETWORK_CONNECTION_TRACKER_H_
+#define SERVICES_NETWORK_TEST_TEST_NETWORK_CONNECTION_TRACKER_H_
 
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
-namespace content {
+namespace network {
 
 // Allows unit tests to set the network connection type.
 // GetConnectionType() can be set to respond synchronously or asynchronously,
 // so that it may be tested that tested units are able to correctly handle
 // either.
-class MockNetworkConnectionTracker : public content::NetworkConnectionTracker {
+class TestNetworkConnectionTracker : public NetworkConnectionTracker {
  public:
-  MockNetworkConnectionTracker(bool respond_synchronously,
+  TestNetworkConnectionTracker(bool respond_synchronously,
                                network::mojom::ConnectionType initial_type);
-  ~MockNetworkConnectionTracker() override = default;
+  ~TestNetworkConnectionTracker() override = default;
 
   bool GetConnectionType(network::mojom::ConnectionType* type,
                          ConnectionTypeCallback callback) override;
@@ -32,6 +32,6 @@ class MockNetworkConnectionTracker : public content::NetworkConnectionTracker {
   network::mojom::ConnectionType type_;
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_PUBLIC_TEST_MOCK_NETWORK_CONNECTION_TRACKER_H_
+#endif  // SERVICES_NETWORK_TEST_TEST_NETWORK_CONNECTION_TRACKER_H_

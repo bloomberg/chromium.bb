@@ -526,7 +526,7 @@ void WebRtcEventLogManager::OnLoggingTargetStopped(LoggingTarget target,
 void WebRtcEventLogManager::OnFirstBrowserContextLoaded() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  content::NetworkConnectionTracker* network_connection_tracker =
+  network::NetworkConnectionTracker* network_connection_tracker =
       g_browser_process->network_connection_tracker();
   DCHECK(network_connection_tracker);
 
@@ -554,7 +554,7 @@ void WebRtcEventLogManager::OnFirstBrowserContextLoaded() {
 }
 
 void WebRtcEventLogManager::OnFirstBrowserContextLoadedInternal(
-    content::NetworkConnectionTracker* network_connection_tracker,
+    network::NetworkConnectionTracker* network_connection_tracker,
     net::URLRequestContextGetter* url_request_context_getter,
     std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());

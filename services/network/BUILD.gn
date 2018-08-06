@@ -308,6 +308,8 @@ source_set("test_support") {
     "mojo_socket_test_util.h",
     "test/test_data_pipe_getter.cc",
     "test/test_data_pipe_getter.h",
+    "test/test_network_connection_tracker.cc",
+    "test/test_network_connection_tracker.h",
     "test/test_network_context.h",
     "test/test_network_service_client.cc",
     "test/test_network_service_client.h",

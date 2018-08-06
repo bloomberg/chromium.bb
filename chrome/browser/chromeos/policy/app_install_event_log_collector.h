@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/arc/common/policy.mojom.h"
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 class Profile;
 
@@ -31,7 +31,7 @@ namespace policy {
 class AppInstallEventLogCollector
     : public chromeos::PowerManagerClient::Observer,
       public arc::ArcPolicyBridge::Observer,
-      public content::NetworkConnectionTracker::NetworkConnectionObserver,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public ArcAppListPrefs::Observer {
  public:
   // The delegate that events are forwarded to for inclusion in the log.
@@ -76,7 +76,7 @@ class AppInstallEventLogCollector
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // content::NetworkConnectionTracker::NetworkConnectionObserver:
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // arc::ArcPolicyBridge::Observer:

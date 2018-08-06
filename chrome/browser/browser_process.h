@@ -39,11 +39,8 @@ class SystemNetworkContextManager;
 class WatchDogThread;
 class WebRtcLogUploader;
 
-namespace content {
-class NetworkConnectionTracker;
-}
-
 namespace network {
+class NetworkConnectionTracker;
 class NetworkQualityTracker;
 class SharedURLLoaderFactory;
 }
@@ -188,7 +185,7 @@ class BrowserProcess {
 
   // Returns a NetworkConnectionTracker that can be used to subscribe for
   // network change events.
-  virtual content::NetworkConnectionTracker* network_connection_tracker() = 0;
+  virtual network::NetworkConnectionTracker* network_connection_tracker() = 0;
 
   // Returns a NetworkQualityTracker that can be used to subscribe for
   // network quality change events.

@@ -19,7 +19,4 @@ specific_include_rules = {
   "simple_url_loader_unittest\.cc": [
     "+content/public/network",
   ],
-  "network_connection_tracker_unittest\.cc": [
-    "+content/public/network",
-  ],
 }

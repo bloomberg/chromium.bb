@@ -12,7 +12,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace {
 
@@ -30,7 +30,7 @@ static const int kFirstTabLoadTimeoutMS = 60000;
 
 class TabLoaderDelegateImpl
     : public TabLoaderDelegate,
-      public content::NetworkConnectionTracker::NetworkConnectionObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   explicit TabLoaderDelegateImpl(TabLoaderCallback* callback);
   ~TabLoaderDelegateImpl() override;
@@ -58,7 +58,7 @@ class TabLoaderDelegateImpl
   // TabLoaderDelegate:
   void NotifyTabLoadStarted() override { policy_.NotifyTabLoadStarted(); }
 
-  // content::NetworkConnectionTracker::NetworkConnectionObserver:
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
  private:

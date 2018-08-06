@@ -19,7 +19,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/media/router/discovery/dial/dial_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace base {
 class Clock;
@@ -37,7 +37,7 @@ namespace media_router {
 // DialRegistry lives on the IO thread.
 class DialRegistry
     : public DialService::Observer,
-      public content::NetworkConnectionTracker::NetworkConnectionObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   using DeviceList = std::vector<DialDeviceData>;
 
@@ -120,7 +120,7 @@ class DialRegistry
   ~DialRegistry() override;
 
   // Called when we've gotten the NetworkConnectionTracker from the UI thread.
-  void SetNetworkConnectionTracker(content::NetworkConnectionTracker* tracker);
+  void SetNetworkConnectionTracker(network::NetworkConnectionTracker* tracker);
 
   // DialService::Observer:
   void OnDiscoveryRequest(DialService* service) override;
@@ -130,7 +130,7 @@ class DialRegistry
   void OnError(DialService* service,
                const DialService::DialServiceErrorCode& code) override;
 
-  // content::NetworkConnectionTracker::NetworkConnectionObserver:
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // Notify all observers about DialDeviceEvent or DialError.
@@ -206,7 +206,7 @@ class DialRegistry
   // Set just after construction, only used on the IO thread.
   net::NetLog* net_log_ = nullptr;
 
-  content::NetworkConnectionTracker* network_connection_tracker_ = nullptr;
+  network::NetworkConnectionTracker* network_connection_tracker_ = nullptr;
 
   base::Clock* clock_;
 

@@ -74,7 +74,7 @@ class TestingBrowserProcess : public BrowserProcess {
   SystemNetworkContextManager* system_network_context_manager() override;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
-  content::NetworkConnectionTracker* network_connection_tracker() override;
+  network::NetworkConnectionTracker* network_connection_tracker() override;
   network::NetworkQualityTracker* network_quality_tracker() override;
   WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
@@ -150,7 +150,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
   void SetNetworkConnectionTracker(
-      std::unique_ptr<content::NetworkConnectionTracker> tracker);
+      std::unique_ptr<network::NetworkConnectionTracker> tracker);
   void SetNotificationUIManager(
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
   void SetNotificationPlatformBridge(
@@ -171,7 +171,7 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
       browser_policy_connector_;
   bool created_browser_policy_connector_ = false;
-  std::unique_ptr<content::NetworkConnectionTracker>
+  std::unique_ptr<network::NetworkConnectionTracker>
       network_connection_tracker_;
   std::unique_ptr<ProfileManager> profile_manager_;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;

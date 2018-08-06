@@ -47,10 +47,10 @@
 #include "components/prefs/testing_pref_store.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "content/public/test/mock_network_connection_tracker.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -230,11 +230,11 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   }
 
   void SetUp() override {
-    SetUp(std::make_unique<content::MockNetworkConnectionTracker>(
+    SetUp(std::make_unique<network::TestNetworkConnectionTracker>(
         true, network::mojom::ConnectionType::CONNECTION_ETHERNET));
   }
 
-  void SetUp(std::unique_ptr<content::NetworkConnectionTracker> tracker) {
+  void SetUp(std::unique_ptr<network::NetworkConnectionTracker> tracker) {
     TestingBrowserProcess::GetGlobal()->SetNetworkConnectionTracker(
         std::move(tracker));
     SetLocalLogsObserver(&local_observer_);
@@ -748,7 +748,7 @@ class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase,
   void SetUp() override {
     CreateWebRtcEventLogManager(Compression::GZIP_PERFECT_ESTIMATION);
 
-    auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+    auto tracker = std::make_unique<network::TestNetworkConnectionTracker>(
         true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
     WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
 
@@ -1008,7 +1008,7 @@ class WebRtcEventLogManagerTestCompression
                 base::Optional<WebRtcEventLogCompression>()) {
     CreateWebRtcEventLogManager(remote_compression);
 
-    auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+    auto tracker = std::make_unique<network::TestNetworkConnectionTracker>(
         true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
     WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
   }
@@ -3568,7 +3568,7 @@ TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        DoNotUploadPendingLogsIfConnectedToUnsupportedNetworkType) {
   WebRtcEventLogManagerTestBase::SetUp(
-      std::make_unique<content::MockNetworkConnectionTracker>(
+      std::make_unique<network::TestNetworkConnectionTracker>(
           get_conn_type_is_sync_, unsupported_type_));
 
   const auto key = GetPeerConnectionKey(rph_.get(), 1);
@@ -3594,7 +3594,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        UploadPendingLogsIfConnectedToSupportedNetworkType) {
   WebRtcEventLogManagerTestBase::SetUp(
-      std::make_unique<content::MockNetworkConnectionTracker>(
+      std::make_unique<network::TestNetworkConnectionTracker>(
           get_conn_type_is_sync_, supported_type_));
 
   const auto key = GetPeerConnectionKey(rph_.get(), 1);
@@ -3620,9 +3620,9 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
 
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        UploadPendingLogsIfConnectionTypeChangesFromUnsupportedToSupported) {
-  auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+  auto tracker = std::make_unique<network::TestNetworkConnectionTracker>(
       get_conn_type_is_sync_, unsupported_type_);
-  content::MockNetworkConnectionTracker* mock = tracker.get();
+  network::TestNetworkConnectionTracker* mock = tracker.get();
   WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
 
   const auto key = GetPeerConnectionKey(rph_.get(), 1);
@@ -3653,7 +3653,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        DoNotUploadPendingLogsAtStartupIfConnectedToUnsupportedNetworkType) {
   WebRtcEventLogManagerTestBase::SetUp(
-      std::make_unique<content::MockNetworkConnectionTracker>(
+      std::make_unique<network::TestNetworkConnectionTracker>(
           get_conn_type_is_sync_, unsupported_type_));
 
   UnloadProfileAndSeedPendingLog();
@@ -3675,7 +3675,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        UploadPendingLogsAtStartupIfConnectedToSupportedNetworkType) {
   WebRtcEventLogManagerTestBase::SetUp(
-      std::make_unique<content::MockNetworkConnectionTracker>(
+      std::make_unique<network::TestNetworkConnectionTracker>(
           get_conn_type_is_sync_, supported_type_));
 
   UnloadProfileAndSeedPendingLog();
