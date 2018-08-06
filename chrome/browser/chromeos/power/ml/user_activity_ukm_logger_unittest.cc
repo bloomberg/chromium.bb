@@ -149,30 +149,6 @@ class UserActivityUkmLoggerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(UserActivityUkmLoggerTest);
 };
 
-TEST_F(UserActivityUkmLoggerTest, BucketEveryFivePercents) {
-  const std::vector<int> original_values = {0, 14, 15, 100};
-  const std::vector<int> results = {0, 10, 15, 100};
-  constexpr UserActivityUkmLoggerImpl::Bucket buckets[] = {{100, 5}};
-
-  for (size_t i = 0; i < original_values.size(); ++i) {
-    EXPECT_EQ(results[i], UserActivityUkmLoggerImpl::Bucketize(
-                              original_values[i], buckets, arraysize(buckets)));
-  }
-}
-
-TEST_F(UserActivityUkmLoggerTest, Bucketize) {
-  const std::vector<int> original_values = {0,   18,  59,  60,  62,  69,  72,
-                                            299, 300, 306, 316, 599, 600, 602};
-  constexpr UserActivityUkmLoggerImpl::Bucket buckets[] = {
-      {60, 1}, {300, 10}, {600, 20}};
-  const std::vector<int> results = {0,   18,  59,  60,  60,  60,  70,
-                                    290, 300, 300, 300, 580, 600, 600};
-  for (size_t i = 0; i < original_values.size(); ++i) {
-    EXPECT_EQ(results[i], UserActivityUkmLoggerImpl::Bucketize(
-                              original_values[i], buckets, arraysize(buckets)));
-  }
-}
-
 TEST_F(UserActivityUkmLoggerTest, BasicLogging) {
   auto user_activity_event = user_activity_event_;
   UserActivityEvent::Features* features =
