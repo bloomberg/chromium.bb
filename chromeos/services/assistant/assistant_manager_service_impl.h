@@ -190,10 +190,6 @@ class AssistantManagerServiceImpl
   void OnAssistantScreenshotReceived(base::OnceClosure on_done,
                                      const std::vector<uint8_t>& jpg_image);
 
-  // Writes a file to assistant's path to force assistant volume to 100%.
-  // TODO(muyuanli): Remove once AudioOutputImpl is checked in.
-  void SetVolumeHack();
-
   State state_ = State::STOPPED;
   PlatformApiImpl platform_api_;
   bool enable_hotword_;
