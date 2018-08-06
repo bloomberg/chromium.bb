@@ -7289,8 +7289,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Ensures that navigating to data: URLs present in session history will
-// correctly commit the navigation in the same process as the parent frame.
-// See https://crbug.com/606996.
+// correctly commit the navigation in the same process as the one used for the
+// original navigation. See https://crbug.com/606996.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        NavigateSubframeToDataUrlInSessionHistory) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -7316,7 +7316,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(data_url, observer.last_navigation_url());
   scoped_refptr<SiteInstanceImpl> orig_site_instance =
-    child->current_frame_host()->GetSiteInstance();
+      child->current_frame_host()->GetSiteInstance();
   EXPECT_NE(root->current_frame_host()->GetSiteInstance(), orig_site_instance);
 
   // Navigate it to another cross-site url.
@@ -7334,6 +7334,286 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   web_contents()->GetController().GoBack();
   frame_observer.WaitForCommit();
   EXPECT_EQ(orig_site_instance, child->current_frame_host()->GetSiteInstance());
+}
+
+// Ensures that subframes navigated to data: URLs start in a process based on
+// their creator, but end up in unique processes after a restore (since
+// SiteInstance relationships are not preserved on restore, until
+// https://crbug.com/14987 is fixed).  This is better than restoring into the
+// parent process, per https://crbug.com/863069.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeDataUrlsAfterRestore) {
+  // We must use a page that has iframes in the HTML here, unlike
+  // cross_site_iframe_factory.html which loads them dynamically.  In the latter
+  // case, Chrome will not restore subframe URLs from history, which is needed
+  // for this test.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_two_iframes.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ(2U, root->child_count());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   +--Site C ------- proxies for A B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://bar.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child_0 = root->child_at(0);
+  FrameTreeNode* child_1 = root->child_at(1);
+  scoped_refptr<SiteInstanceImpl> child_site_instance_0 =
+      child_0->current_frame_host()->GetSiteInstance();
+  scoped_refptr<SiteInstanceImpl> child_site_instance_1 =
+      child_1->current_frame_host()->GetSiteInstance();
+
+  // Navigate the iframes to data URLs via renderer initiated navigations, which
+  // will commit in the existing SiteInstances.
+  TestNavigationObserver observer(shell()->web_contents());
+  GURL data_url_0("data:text/html,dataurl_0");
+  {
+    TestFrameNavigationObserver commit_observer(child_0);
+    EXPECT_TRUE(
+        ExecuteScript(child_0, "location.href = '" + data_url_0.spec() + "';"));
+    commit_observer.WaitForCommit();
+  }
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(data_url_0, observer.last_navigation_url());
+  EXPECT_EQ(child_site_instance_0,
+            child_0->current_frame_host()->GetSiteInstance());
+
+  GURL data_url_1("data:text/html,dataurl_1");
+  {
+    TestFrameNavigationObserver commit_observer(child_1);
+    EXPECT_TRUE(
+        ExecuteScript(child_1, "location.href = '" + data_url_1.spec() + "';"));
+    commit_observer.WaitForCommit();
+  }
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(data_url_1, observer.last_navigation_url());
+  EXPECT_EQ(child_site_instance_1,
+            child_1->current_frame_host()->GetSiteInstance());
+
+  // Grab the NavigationEntry and clone its PageState into a new entry for
+  // restoring into a new tab.
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
+              std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+  restored_entry->SetPageState(entry->GetPageState());
+  ASSERT_EQ(2U, restored_entry->root_node()->children.size());
+
+  // Restore the NavigationEntry into a new tab and check that the data URLs are
+  // not loaded into the parent's SiteInstance.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  new_controller.Restore(entries.size() - 1,
+                         RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
+  ASSERT_EQ(0u, entries.size());
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  ASSERT_EQ(2U, new_root->child_count());
+  EXPECT_EQ(main_url, new_root->current_url());
+  EXPECT_EQ("data", new_root->child_at(0)->current_url().scheme());
+  EXPECT_EQ("data", new_root->child_at(1)->current_url().scheme());
+
+  EXPECT_NE(new_root->current_frame_host()->GetSiteInstance(),
+            new_root->child_at(0)->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(new_root->current_frame_host()->GetSiteInstance(),
+            new_root->child_at(1)->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(new_root->child_at(0)->current_frame_host()->GetSiteInstance(),
+            new_root->child_at(1)->current_frame_host()->GetSiteInstance());
+}
+
+// Similar to SubframeDataUrlsAfterRestore, but ensures that about:blank frames
+// do get put into their parent process after restore, even if they weren't
+// originally.  This is safe because they do not contain active content (even
+// when there's a fragment in the URL), and it avoids unnecessary OOPIFs.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeBlankUrlsAfterRestore) {
+  // We must use a page that has iframes in the HTML here, unlike
+  // cross_site_iframe_factory.html which loads them dynamically.  In the latter
+  // case, Chrome will not restore subframe URLs from history, which is needed
+  // for this test.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_two_iframes.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ(2U, root->child_count());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   +--Site C ------- proxies for A B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://bar.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child_0 = root->child_at(0);
+  FrameTreeNode* child_1 = root->child_at(1);
+  scoped_refptr<SiteInstanceImpl> child_site_instance_0 =
+      child_0->current_frame_host()->GetSiteInstance();
+  scoped_refptr<SiteInstanceImpl> child_site_instance_1 =
+      child_1->current_frame_host()->GetSiteInstance();
+
+  // Navigate the iframes to about:blank URLs via renderer initiated
+  // navigations, which will commit in the existing SiteInstances.
+  TestNavigationObserver observer(shell()->web_contents());
+  GURL blank_url("about:blank");
+  {
+    TestFrameNavigationObserver commit_observer(child_0);
+    EXPECT_TRUE(
+        ExecuteScript(child_0, "location.href = '" + blank_url.spec() + "';"));
+    commit_observer.WaitForCommit();
+  }
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(blank_url, observer.last_navigation_url());
+  EXPECT_EQ(child_site_instance_0,
+            child_0->current_frame_host()->GetSiteInstance());
+
+  GURL blank_url_ref("about:blank#1");
+  {
+    TestFrameNavigationObserver commit_observer(child_1);
+    EXPECT_TRUE(ExecuteScript(
+        child_1, "location.href = '" + blank_url_ref.spec() + "';"));
+    commit_observer.WaitForCommit();
+  }
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(blank_url_ref, observer.last_navigation_url());
+  EXPECT_EQ(child_site_instance_1,
+            child_1->current_frame_host()->GetSiteInstance());
+
+  // Grab the NavigationEntry and clone its PageState into a new entry for
+  // restoring into a new tab.
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
+              std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+  restored_entry->SetPageState(entry->GetPageState());
+  ASSERT_EQ(2U, restored_entry->root_node()->children.size());
+
+  // Restore the NavigationEntry into a new tab and check that the data URLs are
+  // not loaded into the parent's SiteInstance.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  new_controller.Restore(entries.size() - 1,
+                         RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
+  ASSERT_EQ(0u, entries.size());
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  ASSERT_EQ(2U, new_root->child_count());
+  EXPECT_EQ(main_url, new_root->current_url());
+  EXPECT_TRUE(new_root->child_at(0)->current_url().IsAboutBlank());
+  EXPECT_TRUE(new_root->child_at(1)->current_url().IsAboutBlank());
+
+  EXPECT_EQ(new_root->current_frame_host()->GetSiteInstance(),
+            new_root->child_at(0)->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(new_root->current_frame_host()->GetSiteInstance(),
+            new_root->child_at(1)->current_frame_host()->GetSiteInstance());
+}
+
+// Similar to SubframeBlankUrlsAfterRestore, but ensures that about:srcdoc ends
+// up in its parent's process after restore, since that's where its content
+// comes from.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeSrcdocUrlAfterRestore) {
+  // Load a page that uses iframe srcdoc.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_srcdoc_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  scoped_refptr<SiteInstanceImpl> child_site_instance =
+      child->current_frame_host()->GetSiteInstance();
+  EXPECT_EQ(child_site_instance, root->current_frame_host()->GetSiteInstance());
+
+  // Grab the NavigationEntry and clone its PageState into a new entry for
+  // restoring into a new tab.
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
+              std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+  restored_entry->SetPageState(entry->GetPageState());
+  ASSERT_EQ(1U, restored_entry->root_node()->children.size());
+
+  // Restore the NavigationEntry into a new tab and check that the srcdoc URLs
+  // are still loaded into the parent's SiteInstance.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  new_controller.Restore(entries.size() - 1,
+                         RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
+  ASSERT_EQ(0u, entries.size());
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  ASSERT_EQ(1U, new_root->child_count());
+  EXPECT_EQ(main_url, new_root->current_url());
+  EXPECT_EQ(GURL(content::kAboutSrcDocURL),
+            new_root->child_at(0)->current_url());
+
+  EXPECT_EQ(new_root->current_frame_host()->GetSiteInstance(),
+            new_root->child_at(0)->current_frame_host()->GetSiteInstance());
 }
 
 // Ensures that navigating to about:blank URLs present in session history will

@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -155,7 +156,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     const extensions::Extension* extension =
         LoadExtension(test_data_dir_.AppendASCII("options_page"));
 
-    // Change the first tab to be the omnibox page (TYPE_WEBUI).
+    // Change the first tab to be the omnibox page (WebUI).
     GURL omnibox(chrome::kChromeUIOmniboxURL);
     ui_test_utils::NavigateToURL(browser(), omnibox);
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -164,7 +165,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     EXPECT_EQ(omnibox, tab1->GetURL());
     EXPECT_EQ(host_count, RenderProcessHostCount());
 
-    // Create a new TYPE_TABBED tab.  It should be in its own process.
+    // Create a new normal tab with a data URL. It should be in its own process.
     GURL page1("data:text/html,hello world1");
 
     ui_test_utils::WindowedTabAddedNotificationObserver observer1(
@@ -181,23 +182,30 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     EXPECT_EQ(host_count, RenderProcessHostCount());
     EXPECT_NE(rph1, rph2);
 
-    // Create another TYPE_TABBED tab.  It should share the previous process.
+    // Create another data URL tab.  With Site Isolation, this will require its
+    // own process, but without Site Isolation, it can share the previous
+    // process.
     GURL page2("data:text/html,hello world2");
     ui_test_utils::WindowedTabAddedNotificationObserver observer2(
         content::NotificationService::AllSources());
     ::ShowSingletonTab(browser(), page2);
     observer2.Wait();
     tab_count++;
+    if (content::AreAllSitesIsolatedForTesting())
+      host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab2 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
     EXPECT_EQ(tab2->GetURL(), page2);
     EXPECT_EQ(host_count, RenderProcessHostCount());
-    EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph2);
+    if (content::AreAllSitesIsolatedForTesting())
+      EXPECT_NE(tab2->GetMainFrame()->GetProcess(), rph2);
+    else
+      EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph2);
 
-    // Create another TYPE_WEBUI tab.  It should share the process with omnibox.
-    // Note: intentionally create this tab after the TYPE_TABBED tabs to
-    // exercise bug 43448 where extension and WebUI tabs could get combined into
-    // normal renderers.
+    // Create another WebUI tab.  It should share the process with omnibox.
+    // Note: intentionally create this tab after the normal tabs to exercise bug
+    // 43448 where extension and WebUI tabs could get combined into normal
+    // renderers.
     GURL history(chrome::kChromeUIHistoryURL);
     ui_test_utils::WindowedTabAddedNotificationObserver observer3(
         content::NotificationService::AllSources());
@@ -210,7 +218,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     EXPECT_EQ(host_count, RenderProcessHostCount());
     EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph1);
 
-    // Create a TYPE_EXTENSION tab.  It should be in its own process.
+    // Create an extension tab.  It should be in its own process.
     GURL extension_url("chrome-extension://" + extension->id());
     ui_test_utils::WindowedTabAddedNotificationObserver observer4(
         content::NotificationService::AllSources());
@@ -256,13 +264,13 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   int tab_count = 1;
   int host_count = 1;
 
-  // Change the first tab to be the new tab page (TYPE_WEBUI).
+  // Change the first tab to be a WebUI page.
   GURL omnibox(chrome::kChromeUIOmniboxURL);
   ui_test_utils::NavigateToURL(browser(), omnibox);
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  // Create a new TYPE_TABBED tab.  It should be in its own process.
+  // Create a new normal tab with a data URL.  It should be in its own process.
   GURL page1("data:text/html,hello world1");
   ui_test_utils::WindowedTabAddedNotificationObserver observer1(
       content::NotificationService::AllSources());
@@ -273,13 +281,16 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  // Create another TYPE_TABBED tab.  It should share the previous process.
+  // Create another data URL tab.  With Site Isolation, this will require its
+  // own process, but without Site Isolation, it can share the previous process.
   GURL page2("data:text/html,hello world2");
   ui_test_utils::WindowedTabAddedNotificationObserver observer2(
       content::NotificationService::AllSources());
   ::ShowSingletonTab(browser(), page2);
   observer2.Wait();
   tab_count++;
+  if (content::AreAllSitesIsolatedForTesting())
+    host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
