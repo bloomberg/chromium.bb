@@ -595,8 +595,8 @@ void aom_highbd_upsampled_pred_sse2(MACROBLOCKD *xd,
                                     int mi_row, int mi_col, const MV *const mv,
                                     uint16_t *comp_pred, int width, int height,
                                     int subpel_x_q3, int subpel_y_q3,
-                                    const uint8_t *ref8, int ref_stride,
-                                    int bd) {
+                                    const uint8_t *ref8, int ref_stride, int bd,
+                                    int subpel_search) {
   // expect xd == NULL only in tests
   if (xd != NULL) {
     const MB_MODE_INFO *mi = xd->mi[0];
@@ -680,7 +680,9 @@ void aom_highbd_upsampled_pred_sse2(MACROBLOCKD *xd,
   }
 
   const InterpFilterParams *filter =
-      av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
+      (subpel_search == 1)
+          ? av1_get_4tap_interp_filter_params(EIGHTTAP_REGULAR)
+          : av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
 
   if (!subpel_x_q3 && !subpel_y_q3) {
     uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
@@ -746,13 +748,13 @@ void aom_highbd_comp_avg_upsampled_pred_sse2(
     MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
     const MV *const mv, uint16_t *comp_pred, const uint8_t *pred8, int width,
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
-    int ref_stride, int bd) {
+    int ref_stride, int bd, int subpel_search) {
   uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
   int n;
   int i;
   aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width,
                             height, subpel_x_q3, subpel_y_q3, ref8, ref_stride,
-                            bd);
+                            bd, subpel_search);
   /*The total number of pixels must be a multiple of 8 (e.g., 4x4).*/
   assert(!(width * height & 7));
   n = width * height >> 3;
@@ -835,13 +837,14 @@ void aom_highbd_jnt_comp_avg_upsampled_pred_sse2(
     MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
     const MV *const mv, uint16_t *comp_pred, const uint8_t *pred8, int width,
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
-    int ref_stride, int bd, const JNT_COMP_PARAMS *jcp_param) {
+    int ref_stride, int bd, const JNT_COMP_PARAMS *jcp_param,
+    int subpel_search) {
   uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
   int n;
   int i;
   aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width,
                             height, subpel_x_q3, subpel_y_q3, ref8, ref_stride,
-                            bd);
+                            bd, subpel_search);
   assert(!(width * height & 7));
   n = width * height >> 3;
 

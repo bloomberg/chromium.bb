@@ -486,7 +486,8 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
                              int mi_row, int mi_col, const MV *const mv,
                              uint8_t *comp_pred, int width, int height,
                              int subpel_x_q3, int subpel_y_q3,
-                             const uint8_t *ref, int ref_stride) {
+                             const uint8_t *ref, int ref_stride,
+                             int subpel_search) {
   // expect xd == NULL only in tests
   if (xd != NULL) {
     const MB_MODE_INFO *mi = xd->mi[0];
@@ -571,7 +572,9 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
   }
 
   const InterpFilterParams *filter =
-      av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
+      (subpel_search == 1)
+          ? av1_get_4tap_interp_filter_params(EIGHTTAP_REGULAR)
+          : av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
 
   if (!subpel_x_q3 && !subpel_y_q3) {
     if (width >= 16) {
@@ -649,11 +652,11 @@ void aom_comp_avg_upsampled_pred_sse2(
     MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
     const MV *const mv, uint8_t *comp_pred, const uint8_t *pred, int width,
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
-    int ref_stride) {
+    int ref_stride, int subpel_search) {
   int n;
   int i;
   aom_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred, width, height,
-                     subpel_x_q3, subpel_y_q3, ref, ref_stride);
+                     subpel_x_q3, subpel_y_q3, ref, ref_stride, subpel_search);
   /*The total number of pixels must be a multiple of 16 (e.g., 4x4).*/
   assert(!(width * height & 15));
   n = width * height >> 4;
