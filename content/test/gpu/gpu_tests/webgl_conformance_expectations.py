@@ -441,6 +441,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=635081)
     self.Fail('conformance/glsl/bugs/init-array-with-loop.html',
         ['mac', ('nvidia', 0xfe9)], bug=784817)
+    self.Fail('conformance/uniforms/uniform-samplers-test.html',
+        ['mac', 'debug', ('nvidia', 0xfe9)], bug=871352)
 
     # Linux failures
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
