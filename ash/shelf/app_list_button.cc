@@ -329,7 +329,9 @@ void AppListButton::OnVoiceInteractionStatusChanged(
     case mojom::VoiceInteractionState::NOT_READY:
       // If we are showing the bursting or waiting animation, no need to do
       // anything. Otherwise show the waiting animation now.
-      if (!assistant_overlay_->IsBursting() &&
+      // NOTE: No waiting animation for native assistant.
+      if (!chromeos::switches::IsAssistantEnabled() &&
+          !assistant_overlay_->IsBursting() &&
           !assistant_overlay_->IsWaiting()) {
         assistant_overlay_->WaitingAnimation();
       }
