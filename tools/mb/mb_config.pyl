@@ -90,7 +90,7 @@
     'chromium.chromiumos': {
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
 
-      'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-daisy-rel': 'cros_chrome_sdk',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
@@ -552,7 +552,7 @@
     },
 
     'tryserver.chromium.chromiumos': {
-      'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-daisy-rel': 'cros_chrome_sdk',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
@@ -1148,6 +1148,10 @@
     # wrapper and need to be looked at specially.
     'cros_chrome_sdk': [
       'cros_chrome_sdk',
+    ],
+
+    'cros_chrome_sdk_headless_ozone': [
+      'cros_chrome_sdk', 'ozone_platform_headless',
     ],
 
     'cros_chrome_sdk_headless_ozone_dcheck_always_on': [

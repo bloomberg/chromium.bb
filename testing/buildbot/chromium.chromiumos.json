@@ -7,6 +7,22 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--ozone-platform=headless"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ]
+        },
+        "test": "aura_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -57,6 +73,23 @@
           ]
         },
         "test": "cc_unittests"
+      },
+      {
+        "args": [
+          "--dbus-stub",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.chromeos_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ]
+        },
+        "test": "chromeos_unittests"
       },
       {
         "swarming": {
@@ -190,6 +223,22 @@
           ]
         },
         "test": "mojo_unittests"
+      },
+      {
+        "args": [
+          "--ozone-platform=headless"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ]
+        },
+        "test": "ozone_gl_unittests"
       },
       {
         "swarming": {
