@@ -77,6 +77,10 @@ class ConsentBumpActivator : public BrowserListObserver,
     // signed out of Gmail).
     if (token_service->RefreshTokenHasError(
             signin_manager->GetAuthenticatedAccountId())) {
+      unified_consent::UnifiedConsentService* consent_service =
+          UnifiedConsentServiceFactory::GetForProfile(profile_);
+      consent_service->RecordConsentBumpSuppressReason(
+          unified_consent::ConsentBumpSuppressReason::kSyncPaused);
       return;
     }
 
@@ -112,7 +116,8 @@ class ConsentBumpActivator : public BrowserListObserver,
     unified_consent::UnifiedConsentService* consent_service =
         UnifiedConsentServiceFactory::GetForProfile(profile_);
 
-    consent_service->MarkMigrationComplete();
+    consent_service->MarkMigrationComplete(
+        unified_consent::ConsentBumpSuppressReason::kNone);
 
     switch (result) {
       case LoginUIService::CONFIGURE_SYNC_FIRST:

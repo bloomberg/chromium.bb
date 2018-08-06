@@ -91,9 +91,20 @@ bool UnifiedConsentService::ShouldShowConsentBump() {
          MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP;
 }
 
-void UnifiedConsentService::MarkMigrationComplete() {
+void UnifiedConsentService::MarkMigrationComplete(
+    ConsentBumpSuppressReason suppress_reason) {
   pref_service_->SetInteger(prefs::kUnifiedConsentMigrationState,
                             static_cast<int>(MigrationState::COMPLETED));
+  // Record the suppress reason for the consent bump. After the migration is
+  // marked complete, the consent bump should not be shown anymore. Note:
+  // |suppress_reason| can be kNone in case the consent bump was actually shown.
+  RecordConsentBumpSuppressReason(suppress_reason);
+}
+
+void UnifiedConsentService::RecordConsentBumpSuppressReason(
+    ConsentBumpSuppressReason suppress_reason) {
+  UMA_HISTOGRAM_ENUMERATION("UnifiedConsent.ConsentBump.SuppressReason",
+                            suppress_reason);
 }
 
 void UnifiedConsentService::Shutdown() {
@@ -130,7 +141,7 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
       // Only users that were signed in and have opted into sync before unified
       // consent are eligible to see the unified consent bump. Since the user
       // signs out of Chrome, mark the migration to unified consent as complete.
-      MarkMigrationComplete();
+      MarkMigrationComplete(ConsentBumpSuppressReason::kUserSignedOut);
       break;
     case MigrationState::COMPLETED:
       break;
@@ -167,7 +178,7 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   // If the user opts into unified consent throught settings, the consent bump
   // doesn't need to be shown. Therefore mark the migration as complete.
   if (GetMigrationState() != MigrationState::COMPLETED)
-    MarkMigrationComplete();
+    MarkMigrationComplete(ConsentBumpSuppressReason::kSettingsOptIn);
 
   // Enable all sync data types if possible, otherwise they will be enabled with
   // |OnStateChanged| once sync is active;
@@ -210,31 +221,34 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
   DCHECK(!IsUnifiedConsentGiven());
 
   if (!identity_manager_->HasPrimaryAccount()) {
-    MarkMigrationComplete();
+    MarkMigrationComplete(ConsentBumpSuppressReason::kNotSignedIn);
     return;
   }
 
   bool is_syncing_everything =
       syncer::SyncPrefs(pref_service_).HasKeepEverythingSynced();
-  // Record whether the user was syncing everything during Migration.
-  UMA_HISTOGRAM_BOOLEAN("UnifiedConsent.Migration.SyncEverythingWasOn",
-                        is_syncing_everything);
   if (!is_syncing_everything) {
-    MarkMigrationComplete();
+    MarkMigrationComplete(ConsentBumpSuppressReason::kSyncEverythingOff);
     return;
   }
 
-  // When the user was syncing everything, the consent bump should be shown
-  // when this is possible.
-  pref_service_->SetInteger(
-      prefs::kUnifiedConsentMigrationState,
-      static_cast<int>(MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP));
   // Set sync-everything to false to match the |kUnifiedConsentGiven| pref.
   // Note: If the sync engine isn't initialized at this point,
   // sync-everything is set to false once the sync engine state changes.
   // Sync-everything can then be set to true again after going through the
   // consent bump and opting into unified consent.
   SetSyncEverythingIfPossible(false);
+
+  if (!AreAllOnByDefaultPrivacySettingsOn()) {
+    MarkMigrationComplete(ConsentBumpSuppressReason::kPrivacySettingOff);
+    return;
+  }
+
+  // When the user was syncing everything, and all on-by-default privacy
+  // settings were on, the consent bump should be shown when this is possible.
+  pref_service_->SetInteger(
+      prefs::kUnifiedConsentMigrationState,
+      static_cast<int>(MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP));
 }
 
 bool UnifiedConsentService::AreAllNonPersonalizedServicesEnabled() {
@@ -247,6 +261,16 @@ bool UnifiedConsentService::AreAllNonPersonalizedServicesEnabled() {
           prefs::kUrlKeyedAnonymizedDataCollectionEnabled))
     return false;
 
+  return true;
+}
+
+bool UnifiedConsentService::AreAllOnByDefaultPrivacySettingsOn() {
+  for (auto service : {Service::kAlternateErrorPages,
+                       Service::kMetricsReporting, Service::kNetworkPrediction,
+                       Service::kSafeBrowsing, Service::kSearchSuggest}) {
+    if (service_client_->GetServiceState(service) == ServiceState::kDisabled)
+      return false;
+  }
   return true;
 }
 

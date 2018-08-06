@@ -47578,6 +47578,16 @@ Full version information for the fingerprint enum values:
   <int value="3" label="More options: Make no changes was selected"/>
 </enum>
 
+<enum name="UnifiedConsentBumpSuppressReason">
+  <int value="0" label="None (consent bump was shown)"/>
+  <int value="1" label="User wasn't signed in"/>
+  <int value="2" label="User wasn't syncing everything"/>
+  <int value="3" label="On-by-default privacy setting was off"/>
+  <int value="4" label="User opted into Unity in settings"/>
+  <int value="5" label="User signed out"/>
+  <int value="6" label="Sync was paused"/>
+</enum>
+
 <enum name="UniformityTrialGroupNotActive">
   <int value="0" label="Invalid"/>
   <int value="1" label="Group not reported"/>
