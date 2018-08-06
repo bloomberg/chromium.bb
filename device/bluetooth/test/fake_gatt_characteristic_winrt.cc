@@ -269,8 +269,8 @@ void FakeGattCharacteristicWinrt::SimulateGattCharacteristicWriteError(
 
 void FakeGattCharacteristicWinrt::SimulateGattDescriptor(
     base::StringPiece uuid) {
-  fake_descriptors_.push_back(
-      Make<FakeGattDescriptorWinrt>(uuid, ++last_descriptor_attribute_handle_));
+  fake_descriptors_.push_back(Make<FakeGattDescriptorWinrt>(
+      bluetooth_test_winrt_, uuid, ++last_descriptor_attribute_handle_));
 }
 
 }  // namespace device
