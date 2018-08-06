@@ -9,8 +9,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification_test_util.h"
+#include "chrome/browser/notifications/notification_ui_manager_impl.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -25,9 +25,9 @@
 
 namespace message_center {
 
-class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
+class NotificationUIManagerTest : public BrowserWithTestWindowTest {
  public:
-  MessageCenterNotificationManagerTest() {}
+  NotificationUIManagerTest() {}
 
  protected:
   void SetUp() override {
@@ -43,8 +43,8 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
     MessageCenter::Shutdown();
   }
 
-  MessageCenterNotificationManager* notification_manager() {
-    return (MessageCenterNotificationManager*)
+  NotificationUIManagerImpl* notification_manager() {
+    return (NotificationUIManagerImpl*)
         g_browser_process->notification_ui_manager();
   }
 
@@ -64,12 +64,12 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
   MessageCenter* message_center_;
 };
 
-TEST_F(MessageCenterNotificationManagerTest, SetupNotificationManager) {
+TEST_F(NotificationUIManagerTest, SetupNotificationManager) {
   TestingProfile profile;
   notification_manager()->Add(GetANotification("test"), &profile);
 }
 
-TEST_F(MessageCenterNotificationManagerTest, AddNotificationOnShutdown) {
+TEST_F(NotificationUIManagerTest, AddNotificationOnShutdown) {
   TestingProfile profile;
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
   notification_manager()->Add(GetANotification("test"), &profile);
@@ -83,7 +83,7 @@ TEST_F(MessageCenterNotificationManagerTest, AddNotificationOnShutdown) {
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
 }
 
-TEST_F(MessageCenterNotificationManagerTest, UpdateNotification) {
+TEST_F(NotificationUIManagerTest, UpdateNotification) {
   TestingProfile profile;
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
   notification_manager()->Add(GetANotification("test"), &profile);
@@ -94,7 +94,7 @@ TEST_F(MessageCenterNotificationManagerTest, UpdateNotification) {
 }
 
 // Regression test for crbug.com/767868
-TEST_F(MessageCenterNotificationManagerTest, GetAllIdsReturnsOriginalId) {
+TEST_F(NotificationUIManagerTest, GetAllIdsReturnsOriginalId) {
   TestingProfile profile;
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
   notification_manager()->Add(GetANotification("test"), &profile);

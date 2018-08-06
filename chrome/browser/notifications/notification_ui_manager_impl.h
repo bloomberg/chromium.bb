@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_NOTIFICATION_MANAGER_H_
-#define CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_NOTIFICATION_MANAGER_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_IMPL_H_
+#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -29,17 +29,16 @@ namespace message_center {
 class Notification;
 class NotificationBlocker;
 FORWARD_DECLARE_TEST(NotificationTrayTest, ManuallyCloseMessageCenter);
-}
+}  // namespace message_center
 
-// This class extends NotificationUIManagerImpl and delegates actual display
+// This class extends NotificationUIManager and delegates actual display
 // of notifications to MessageCenter, doing necessary conversions. This is only
 // used on platforms that support non-native notifications.
-class MessageCenterNotificationManager
-    : public NotificationUIManager,
-      public message_center::MessageCenterObserver {
+class NotificationUIManagerImpl : public NotificationUIManager,
+                                  public message_center::MessageCenterObserver {
  public:
-  MessageCenterNotificationManager();
-  ~MessageCenterNotificationManager() override;
+  NotificationUIManagerImpl();
+  ~NotificationUIManagerImpl() override;
 
   // NotificationUIManager
   void Add(const message_center::Notification& notification,
@@ -67,7 +66,8 @@ class MessageCenterNotificationManager
   // Returns the notification id which this manager will use to add to message
   // center, for this combination of delegate id and profile.
   std::string GetMessageCenterNotificationIdForTest(
-      const std::string& delegate_id, Profile* profile);
+      const std::string& delegate_id,
+      Profile* profile);
 
   // Returns true if the popup bubbles are currently visible.
   bool popups_visible() const { return popups_visible_; }
@@ -104,7 +104,7 @@ class MessageCenterNotificationManager
   // Tracks the current visibility status of the popup bubbles.
   bool popups_visible_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
+  DISALLOW_COPY_AND_ASSIGN(NotificationUIManagerImpl);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_NOTIFICATION_MANAGER_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_IMPL_H_
