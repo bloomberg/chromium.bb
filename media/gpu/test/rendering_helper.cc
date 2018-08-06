@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -23,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -50,6 +52,11 @@ static void CreateShader(GLuint program,
   }
   glAttachShader(program, shader);
   glDeleteShader(shader);
+  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+}
+
+void DeleteTexture(uint32_t texture_id) {
+  glDeleteTextures(1, &texture_id);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
@@ -320,26 +327,33 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   done->Signal();
 }
 
-void RenderingHelper::CreateTexture(uint32_t texture_target,
-                                    uint32_t* texture_id,
-                                    const gfx::Size& size,
-                                    base::WaitableEvent* done) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&RenderingHelper::CreateTexture, base::Unretained(this),
-                   texture_target, texture_id, size, done));
-    return;
+scoped_refptr<media::test::TextureRef> RenderingHelper::CreateTexture(
+    uint32_t texture_target,
+    bool pre_allocate,
+    VideoPixelFormat pixel_format,
+    const gfx::Size& size) {
+  CHECK(task_runner_->BelongsToCurrentThread());
+  uint32_t texture_id = CreateTextureId(texture_target, size);
+  base::OnceClosure delete_texture_cb =
+      use_gl_ ? base::BindOnce(DeleteTexture, texture_id) : base::DoNothing();
+  if (pre_allocate) {
+    return media::test::TextureRef::CreatePreallocated(
+        texture_id, std::move(delete_texture_cb), pixel_format, size);
   }
+  return media::test::TextureRef::Create(texture_id,
+                                         std::move(delete_texture_cb));
+}
 
+uint32_t RenderingHelper::CreateTextureId(uint32_t texture_target,
+                                          const gfx::Size& size) {
+  CHECK(task_runner_->BelongsToCurrentThread());
   if (!use_gl_) {
-    *texture_id = 0;
-    done->Signal();
-    return;
+    return 0;
   }
 
-  glGenTextures(1, texture_id);
-  glBindTexture(texture_target, *texture_id);
+  uint32_t texture_id;
+  glGenTextures(1, &texture_id);
+  glBindTexture(texture_target, texture_id);
   if (texture_target == GL_TEXTURE_2D) {
     glTexImage2D(GL_TEXTURE_2D,
                  0,
@@ -356,7 +370,7 @@ void RenderingHelper::CreateTexture(uint32_t texture_target,
   glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-  done->Signal();
+  return texture_id;
 }
 
 // Helper function to set GL viewport.
@@ -441,16 +455,6 @@ void RenderingHelper::RenderTexture(uint32_t texture_target,
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindTexture(texture_target, 0);
 
-  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-}
-
-void RenderingHelper::DeleteTexture(uint32_t texture_id) {
-  CHECK(task_runner_->BelongsToCurrentThread());
-
-  if (!use_gl_)
-    return;
-
-  glDeleteTextures(1, &texture_id);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 

@@ -74,29 +74,32 @@ VideoDecodeAcceleratorTestEnvironment::GetRenderingTaskRunner() const {
 }
 
 TextureRef::TextureRef(uint32_t texture_id,
-                       const base::Closure& no_longer_needed_cb)
-    : texture_id_(texture_id), no_longer_needed_cb_(no_longer_needed_cb) {}
+                       base::OnceClosure no_longer_needed_cb)
+    : texture_id_(texture_id),
+      no_longer_needed_cb_(std::move(no_longer_needed_cb)) {}
 
 TextureRef::~TextureRef() {
-  base::ResetAndReturn(&no_longer_needed_cb_).Run();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  std::move(no_longer_needed_cb_).Run();
 }
 
 // static
 scoped_refptr<TextureRef> TextureRef::Create(
     uint32_t texture_id,
-    const base::Closure& no_longer_needed_cb) {
-  return base::WrapRefCounted(new TextureRef(texture_id, no_longer_needed_cb));
+    base::OnceClosure no_longer_needed_cb) {
+  return base::WrapRefCounted(
+      new TextureRef(texture_id, std::move(no_longer_needed_cb)));
 }
 
 // static
 scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
     uint32_t texture_id,
-    const base::Closure& no_longer_needed_cb,
+    base::OnceClosure no_longer_needed_cb,
     VideoPixelFormat pixel_format,
     const gfx::Size& size) {
   scoped_refptr<TextureRef> texture_ref;
 #if defined(OS_CHROMEOS)
-  texture_ref = TextureRef::Create(texture_id, no_longer_needed_cb);
+  texture_ref = TextureRef::Create(texture_id, std::move(no_longer_needed_cb));
   LOG_ASSERT(texture_ref);
 
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();

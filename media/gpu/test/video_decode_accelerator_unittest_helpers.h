@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,11 +60,11 @@ class TextureRef : public base::RefCounted<TextureRef> {
  public:
   static scoped_refptr<TextureRef> Create(
       uint32_t texture_id,
-      const base::Closure& no_longer_needed_cb);
+      base::OnceClosure no_longer_needed_cb);
 
   static scoped_refptr<TextureRef> CreatePreallocated(
       uint32_t texture_id,
-      const base::Closure& no_longer_needed_cb,
+      base::OnceClosure no_longer_needed_cb,
       VideoPixelFormat pixel_format,
       const gfx::Size& size);
 
@@ -74,14 +75,15 @@ class TextureRef : public base::RefCounted<TextureRef> {
  private:
   friend class base::RefCounted<TextureRef>;
 
-  TextureRef(uint32_t texture_id, const base::Closure& no_longer_needed_cb);
+  TextureRef(uint32_t texture_id, base::OnceClosure no_longer_needed_cb);
   ~TextureRef();
 
   uint32_t texture_id_;
-  base::Closure no_longer_needed_cb_;
+  base::OnceClosure no_longer_needed_cb_;
 #if defined(OS_CHROMEOS)
   scoped_refptr<gfx::NativePixmap> pixmap_;
 #endif
+  THREAD_CHECKER(thread_checker_);
 };
 
 class EncodedDataHelper {
