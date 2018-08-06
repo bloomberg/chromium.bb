@@ -1,8 +1,7 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "chrome/browser/notifications/message_center_notification_manager.h"
+#include "chrome/browser/notifications/notification_ui_manager_impl.h"
 
 #include <memory>
 #include <utility>
@@ -30,7 +29,17 @@
 using message_center::MessageCenter;
 using message_center::NotifierId;
 
-MessageCenterNotificationManager::MessageCenterNotificationManager()
+// static
+NotificationUIManager* NotificationUIManager::Create() {
+  // If there's no MessageCenter, there should be no NotificationUIManager to
+  // manage it.
+  if (!message_center::MessageCenter::Get())
+    return nullptr;
+
+  return new NotificationUIManagerImpl();
+}
+
+NotificationUIManagerImpl::NotificationUIManagerImpl()
     : system_observer_(this),
       popups_only_ui_controller_(std::make_unique<PopupsOnlyUiController>(
           PopupsOnlyUiController::CreateDelegate())) {
@@ -43,7 +52,7 @@ MessageCenterNotificationManager::MessageCenterNotificationManager()
       std::make_unique<FullscreenNotificationBlocker>(message_center));
 }
 
-MessageCenterNotificationManager::~MessageCenterNotificationManager() {
+NotificationUIManagerImpl::~NotificationUIManagerImpl() {
   // The message center may have already been shut down (on Chrome OS).
   if (MessageCenter::Get())
     MessageCenter::Get()->RemoveObserver(this);
@@ -54,7 +63,7 @@ MessageCenterNotificationManager::~MessageCenterNotificationManager() {
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationUIManager
 
-void MessageCenterNotificationManager::Add(
+void NotificationUIManagerImpl::Add(
     const message_center::Notification& notification,
     Profile* profile) {
   // We won't have time to process and act on this notification.
@@ -79,7 +88,7 @@ void MessageCenterNotificationManager::Add(
           profile_notification->notification()));
 }
 
-bool MessageCenterNotificationManager::Update(
+bool NotificationUIManagerImpl::Update(
     const message_center::Notification& notification,
     Profile* profile) {
   const std::string profile_id = ProfileNotification::GetProfileNotificationId(
@@ -126,7 +135,7 @@ bool MessageCenterNotificationManager::Update(
   return false;
 }
 
-const message_center::Notification* MessageCenterNotificationManager::FindById(
+const message_center::Notification* NotificationUIManagerImpl::FindById(
     const std::string& id,
     ProfileID profile_id) const {
   std::string profile_notification_id =
@@ -137,8 +146,8 @@ const message_center::Notification* MessageCenterNotificationManager::FindById(
   return &(iter->second->notification());
 }
 
-bool MessageCenterNotificationManager::CancelById(const std::string& id,
-                                                  ProfileID profile_id) {
+bool NotificationUIManagerImpl::CancelById(const std::string& id,
+                                           ProfileID profile_id) {
   std::string profile_notification_id =
       ProfileNotification::GetProfileNotificationId(id, profile_id);
   // See if this ID hasn't been shown yet.
@@ -153,7 +162,7 @@ bool MessageCenterNotificationManager::CancelById(const std::string& id,
   return true;
 }
 
-std::set<std::string> MessageCenterNotificationManager::GetAllIdsByProfile(
+std::set<std::string> NotificationUIManagerImpl::GetAllIdsByProfile(
     ProfileID profile_id) {
   std::set<std::string> original_ids;
   for (const auto& pair : profile_notifications_) {
@@ -164,8 +173,7 @@ std::set<std::string> MessageCenterNotificationManager::GetAllIdsByProfile(
   return original_ids;
 }
 
-bool MessageCenterNotificationManager::CancelAllBySourceOrigin(
-    const GURL& source) {
+bool NotificationUIManagerImpl::CancelAllBySourceOrigin(const GURL& source) {
   // Same pattern as CancelById, but more complicated than the above
   // because there may be multiple notifications from the same source.
   bool removed = false;
@@ -183,8 +191,7 @@ bool MessageCenterNotificationManager::CancelAllBySourceOrigin(
   return removed;
 }
 
-bool MessageCenterNotificationManager::CancelAllByProfile(
-    ProfileID profile_id) {
+bool NotificationUIManagerImpl::CancelAllByProfile(ProfileID profile_id) {
   // Same pattern as CancelAllBySourceOrigin.
   bool removed = false;
 
@@ -201,12 +208,12 @@ bool MessageCenterNotificationManager::CancelAllByProfile(
   return removed;
 }
 
-void MessageCenterNotificationManager::CancelAll() {
+void NotificationUIManagerImpl::CancelAll() {
   MessageCenter::Get()->RemoveAllNotifications(
       false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
 }
 
-void MessageCenterNotificationManager::StartShutdown() {
+void NotificationUIManagerImpl::StartShutdown() {
   is_shutdown_started_ = true;
   CancelAll();
   popups_only_ui_controller_.reset();
@@ -215,18 +222,16 @@ void MessageCenterNotificationManager::StartShutdown() {
 ////////////////////////////////////////////////////////////////////////////////
 // MessageCenter::Observer
 
-void MessageCenterNotificationManager::OnNotificationRemoved(
-    const std::string& id,
-    bool by_user) {
+void NotificationUIManagerImpl::OnNotificationRemoved(const std::string& id,
+                                                      bool by_user) {
   RemoveProfileNotification(id);
 }
 
-void MessageCenterNotificationManager::ResetUiControllerForTest() {
+void NotificationUIManagerImpl::ResetUiControllerForTest() {
   popups_only_ui_controller_.reset();
 }
 
-std::string
-MessageCenterNotificationManager::GetMessageCenterNotificationIdForTest(
+std::string NotificationUIManagerImpl::GetMessageCenterNotificationIdForTest(
     const std::string& id,
     Profile* profile) {
   return ProfileNotification::GetProfileNotificationId(id,
@@ -236,7 +241,7 @@ MessageCenterNotificationManager::GetMessageCenterNotificationIdForTest(
 ////////////////////////////////////////////////////////////////////////////////
 // private
 
-void MessageCenterNotificationManager::AddProfileNotification(
+void NotificationUIManagerImpl::AddProfileNotification(
     std::unique_ptr<ProfileNotification> profile_notification) {
   const message_center::Notification& notification =
       profile_notification->notification();
@@ -246,7 +251,7 @@ void MessageCenterNotificationManager::AddProfileNotification(
   profile_notifications_[id] = std::move(profile_notification);
 }
 
-void MessageCenterNotificationManager::RemoveProfileNotification(
+void NotificationUIManagerImpl::RemoveProfileNotification(
     const std::string& notification_id) {
   auto it = profile_notifications_.find(notification_id);
   if (it == profile_notifications_.end())
@@ -267,7 +272,7 @@ void MessageCenterNotificationManager::RemoveProfileNotification(
   profile_notifications_.erase(it);
 }
 
-ProfileNotification* MessageCenterNotificationManager::FindProfileNotification(
+ProfileNotification* NotificationUIManagerImpl::FindProfileNotification(
     const std::string& id) const {
   auto iter = profile_notifications_.find(id);
   if (iter == profile_notifications_.end())

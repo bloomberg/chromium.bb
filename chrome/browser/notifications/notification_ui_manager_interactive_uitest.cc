@@ -28,11 +28,10 @@ const char kTestFileName[] = "notifications/platform_notification_service.html";
 
 }  // namespace
 
-class MessageCenterNotificationManagerBrowserTest
-    : public InProcessBrowserTest {
+class NotificationUIManagerInteractiveUITest : public InProcessBrowserTest {
  public:
-  MessageCenterNotificationManagerBrowserTest() = default;
-  ~MessageCenterNotificationManagerBrowserTest() override = default;
+  NotificationUIManagerInteractiveUITest() = default;
+  ~NotificationUIManagerInteractiveUITest() override = default;
 
   // InProcessBrowserTest overrides.
   void SetUp() override {
@@ -82,12 +81,12 @@ class MessageCenterNotificationManagerBrowserTest
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManagerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(NotificationUIManagerInteractiveUITest);
 };
 
 // Make sure that clicks go through on web notifications. Regression test for
 // crbug.com/767868
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NotificationUIManagerInteractiveUITest,
                        CloseDisplayedPersistentNotification) {
   GrantNotificationPermissionForTest();
 

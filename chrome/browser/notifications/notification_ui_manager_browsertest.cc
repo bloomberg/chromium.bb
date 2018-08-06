@@ -15,8 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/message_center_notification_manager.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_ui_manager_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
@@ -31,14 +30,14 @@
 
 using message_center::Notification;
 
-class MessageCenterNotificationsTest : public InProcessBrowserTest {
+class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
  public:
-  MessageCenterNotificationsTest() {
+  NotificationUIManagerBrowserTest() {
     feature_list_.InitAndDisableFeature(features::kNativeNotifications);
   }
 
-  MessageCenterNotificationManager* manager() {
-    return static_cast<MessageCenterNotificationManager*>(
+  NotificationUIManagerImpl* manager() {
+    return static_cast<NotificationUIManagerImpl*>(
         g_browser_process->notification_ui_manager());
   }
 
@@ -117,12 +116,12 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {
+IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest, RetrieveBaseParts) {
   EXPECT_TRUE(manager());
   EXPECT_TRUE(message_center());
 }
 
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicAddCancel) {
+IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest, BasicAddCancel) {
   // Someone may create system notifications like "you're in multi-profile
   // mode..." or something which may change the expectation.
   // TODO(mukai): move this to SetUpOnMainThread() after fixing the side-effect
@@ -134,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicAddCancel) {
   EXPECT_EQ(0u, message_center()->NotificationCount());
 }
 
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicDelegate) {
+IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest, BasicDelegate) {
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("hey", &delegate), profile());
   manager()->CancelById("hey", NotificationUIManager::GetProfileID(profile()));
@@ -143,7 +142,8 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicDelegate) {
   delegate->Release();
 }
 
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
+IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest,
+                       ButtonClickedDelegate) {
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
   const std::string notification_id =
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
   delegate->Release();
 }
 
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
+IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest,
                        UpdateExistingNotification) {
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate2->Release();
 }
 
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, VerifyKeepAlives) {
+IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest, VerifyKeepAlives) {
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NOTIFICATION));
 
