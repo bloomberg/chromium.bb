@@ -153,19 +153,17 @@ SniffingResult MaybeSkipHtmlComment(StringPiece* data) {
   return CrossOriginReadBlocking::kYes;
 }
 
-// Headers from
-// https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+// Removes headers that should be blocked in cross-origin case.
 //
-// Note that XSDB doesn't block responses allowed through CORS - this means
+// Note that corbSanitizedResponse in https://fetch.spec.whatwg.org/#main-fetch
+// has an empty list of headers, but the code below doesn't remove all the
+// headers for improved user experience - for better error messages for CORS.
+// See also https://github.com/whatwg/fetch/pull/686#issuecomment-383711732 and
+// the http/tests/xmlhttprequest/origin-exact-matching/07.html layout test.
+//
+// Note that CORB doesn't block responses allowed through CORS - this means
 // that the list of allowed headers below doesn't have to consider header
 // names listed in the Access-Control-Expose-Headers header.
-const char* const kCorsSafelistedHeaders[] = {
-    "cache-control", "content-language", "content-type",
-    "expires",       "last-modified",    "pragma",
-};
-
-// Removes headers that should be blocked in cross-origin case.
-// See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
 void BlockResponseHeaders(
     const scoped_refptr<net::HttpResponseHeaders>& headers) {
   DCHECK(headers);
@@ -186,14 +184,9 @@ void BlockResponseHeaders(
       continue;
     }
 
-    // Remove all other headers (but note the final exclusion below).
+    // Remove all other headers.
     names_of_headers_to_remove.insert(base::ToLowerASCII(name));
   }
-
-  // Exclude from removals headers from
-  // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
-  for (const char* header : kCorsSafelistedHeaders)
-    names_of_headers_to_remove.erase(header);
 
   headers->RemoveHeaders(names_of_headers_to_remove);
 }
@@ -442,14 +435,6 @@ void CrossOriginReadBlocking::SanitizeBlockedResponse(
   response->head.content_length = 0;
   if (response->head.headers)
     BlockResponseHeaders(response->head.headers);
-}
-
-// static
-std::vector<std::string>
-CrossOriginReadBlocking::GetCorsSafelistedHeadersForTesting() {
-  return std::vector<std::string>(
-      kCorsSafelistedHeaders,
-      kCorsSafelistedHeaders + arraysize(kCorsSafelistedHeaders));
 }
 
 // static

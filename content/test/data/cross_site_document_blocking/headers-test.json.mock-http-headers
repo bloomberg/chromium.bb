@@ -1,4 +1,5 @@
 HTTP/1.1 200 OK
+Access-Control-Allow-Origin: https://other.unrelated.origin.com
 Cache-Control: no-cache, no-store, must-revalidate
 Content-Length: 19
 Content-Language: TestLanguage

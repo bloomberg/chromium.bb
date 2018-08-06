@@ -89,7 +89,7 @@ void InspectHistograms(const base::HistogramTester& histograms,
                        const std::string& resource_name,
                        ResourceType resource_type) {
   // //services/network doesn't have access to content::ResourceType and
-  // therefore cannot log some XSDB UMAs.
+  // therefore cannot log some CORB UMAs.
   bool is_restricted_uma_expected = false;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     is_restricted_uma_expected = true;
@@ -613,38 +613,21 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockHeaders) {
   ASSERT_EQ(net::OK, interceptor.completion_status().error_code);
   ASSERT_TRUE(interceptor.completion_status().should_report_corb_blocking);
 
-  // Verify that safelisted headers have not been removed by XSDB.
-  // See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+  // Verify that most response headers have been removed by CORB.
   const std::string& headers =
       interceptor.response_head().headers->raw_headers();
-  EXPECT_THAT(headers,
-              HasSubstr("Cache-Control: no-cache, no-store, must-revalidate"));
-  EXPECT_THAT(headers, HasSubstr("Content-Language: TestLanguage"));
-  EXPECT_THAT(headers,
-              HasSubstr("Content-Type: application/json; charset=utf-8"));
-  EXPECT_THAT(headers, HasSubstr("Expires: Wed, 21 Oct 2199 07:28:00 GMT"));
-  EXPECT_THAT(headers,
-              HasSubstr("Last-Modified: Wed, 07 Feb 2018 13:55:00 PST"));
-  EXPECT_THAT(headers, HasSubstr("Pragma: TestPragma"));
-
-  // Make sure the test covers all the safelisted headers known to the product
-  // code.
-  for (const std::string& safelisted_header :
-       network::CrossOriginReadBlocking::GetCorsSafelistedHeadersForTesting()) {
-    EXPECT_TRUE(
-        interceptor.response_head().headers->HasHeader(safelisted_header));
-
-    std::string value;
-    interceptor.response_head().headers->EnumerateHeader(
-        nullptr, safelisted_header, &value);
-    EXPECT_FALSE(value.empty());
-  }
-
-  // Verify that other response headers have been removed by XSDB.
+  EXPECT_THAT(headers, HasSubstr("Access-Control-Allow-Origin: https://other"));
+  EXPECT_THAT(headers, Not(HasSubstr("Cache-Control")));
+  EXPECT_THAT(headers, Not(HasSubstr("Content-Language")));
   EXPECT_THAT(headers, Not(HasSubstr("Content-Length")));
-  EXPECT_THAT(headers, Not(HasSubstr("X-My-Secret-Header")));
+  EXPECT_THAT(headers, Not(HasSubstr("Content-Type")));
+  EXPECT_THAT(headers, Not(HasSubstr("Expires")));
+  EXPECT_THAT(headers, Not(HasSubstr("Last-Modified")));
   EXPECT_THAT(headers, Not(HasSubstr("MySecretCookieKey")));
   EXPECT_THAT(headers, Not(HasSubstr("MySecretCookieValue")));
+  EXPECT_THAT(headers, Not(HasSubstr("Pragma")));
+  EXPECT_THAT(headers, Not(HasSubstr("X-Content-Type-Options")));
+  EXPECT_THAT(headers, Not(HasSubstr("X-My-Secret-Header")));
 
   // Verify that the body is empty.
   EXPECT_EQ("", interceptor.response_body());
@@ -899,7 +882,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest, NoNetwork) {
           }); )";
   EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &response));
 
-  // Verify that XSDB didn't block the response (since it was "faked" within the
+  // Verify that CORB didn't block the response (since it was "faked" within the
   // service worker and didn't cross any security boundaries).
   EXPECT_EQ("Response created by service worker", response);
   InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, "blah.html",
@@ -938,13 +921,13 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
   std::string response;
   EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &response));
 
-  // Verify that XSDB blocked the response from the network (from
+  // Verify that CORB blocked the response from the network (from
   // |cross_origin_https_server_|) to the service worker.
   InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing, "network.txt",
                     RESOURCE_TYPE_XHR);
 
   // Verify that the service worker replied with an expected error.
-  // Replying with an error means that XSDB is only active once (for the
+  // Replying with an error means that CORB is only active once (for the
   // initial, real network request) and therefore the test doesn't get
   // confused (second successful response would have added noise to the
   // histograms captured by the test).

@@ -77,10 +77,10 @@ CORB mitigates the following attack vectors:
 When CORB decides that a response needs to be CORB-protected, the response is
 modified as follows:
 * The response body is replaced with an empty body.
-* The response headers are filtered down to the following ones
-  (i.e. all other response headers are removed from the response):
-  - [CORS safelisted response headers](https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name)
-  - [CORS response headers](https://fetch.spec.whatwg.org/#http-responses)
+* The response headers are removed.
+
+> [lukasza@chromium.org] Chromium currently retains Access-Control-\* headers
+> (this helps generate better error messages for CORS).
 
 To be effective against speculative side-channel attacks, CORB blocking must
 take place before the response reaches the process hosting the cross-origin

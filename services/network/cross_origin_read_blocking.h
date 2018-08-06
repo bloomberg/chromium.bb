@@ -161,14 +161,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   static void SanitizeBlockedResponse(
       const scoped_refptr<network::ResourceResponse>& response);
 
-  // Returns explicitly named headers from
-  // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
-  //
-  // Note that CORB doesn't block responses allowed through CORS - this means
-  // that the list of allowed headers below doesn't have to consider header
-  // names listed in the Access-Control-Expose-Headers header.
-  static std::vector<std::string> GetCorsSafelistedHeadersForTesting();
-
   // This enum backs a histogram, so do not change the order of entries or
   // remove entries. When adding new entries update |kMaxValue| and enums.xml
   // (see the SiteIsolationResponseAction enum).

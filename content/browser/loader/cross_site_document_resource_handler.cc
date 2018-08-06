@@ -532,7 +532,7 @@ void CrossSiteDocumentResourceHandler::OnResponseCompleted(
     next_handler_->OnResponseCompleted(net::URLRequestStatus(),
                                        std::move(controller));
   } else {
-    // Only report XSDB status for successful (i.e. non-aborted,
+    // Only report CORB status for successful (i.e. non-aborted,
     // non-errored-out) requests.
     if (status.is_success())
       analyzer_->LogAllowedResponse();
