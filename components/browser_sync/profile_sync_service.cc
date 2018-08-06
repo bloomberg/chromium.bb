@@ -303,13 +303,11 @@ void ProfileSyncService::Initialize() {
   int disable_reasons = GetDisableReasons();
   RecordSyncInitialState(disable_reasons, IsFirstSetupComplete());
 
-  // If sync isn't allowed, the only thing to do is to turn it off.
-  if ((disable_reasons & DISABLE_REASON_PLATFORM_OVERRIDE) ||
-      (disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY)) {
-    // Only clear data if disallowed by policy.
-    StopImpl((disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY) ? CLEAR_DATA
-                                                                  : KEEP_DATA);
-    return;
+  // If sync is disallowed by policy, clean up.
+  if (disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY) {
+    // Note that this won't actually clear data, since neither |engine_| nor
+    // |sync_thread_| exist at this point. Bug or feature?
+    StopImpl(CLEAR_DATA);
   }
 
   if (!IsLocalSyncEnabled()) {
