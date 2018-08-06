@@ -15,6 +15,10 @@ namespace {
 // The name of the service flag that defines the account is Unicorn.
 const char kChildAccountServiceFlag[] = "uca";
 
+// The name of the service flag that defines the account is in advanced
+// protection program.
+const char kAdvancedProtectionAccountServiceFlag[] = "tia";
+
 // The key indexing service flags in the ID token JSON.
 const char kServicesKey[] = "services";
 
@@ -79,15 +83,24 @@ bool GetServiceFlags(const std::string id_token,
 
 namespace gaia {
 
-bool IsChildAccountFromIdToken(const std::string& id_token) {
+TokenServiceFlags ParseServiceFlags(const std::string& id_token) {
+  TokenServiceFlags token_service_flags;
   std::vector<std::string> service_flags;
   if (!GetServiceFlags(id_token, &service_flags)) {
-    // If service flags can’t be obtained, then assume it’s not a child account.
-    VLOG(1) << "Assuming non-child account due to decoding failure";
-    return false;
+    // If service flags can’t be obtained, then assume these service flags
+    // are not set.
+    VLOG(1) << "Assuming the account doesn't have any service flag set "
+            << "due to decoding failure";
+    return token_service_flags;
   }
-  return std::find(service_flags.begin(), service_flags.end(),
-                   kChildAccountServiceFlag) != service_flags.end();
+
+  token_service_flags.is_child_account =
+      std::find(service_flags.begin(), service_flags.end(),
+                kChildAccountServiceFlag) != service_flags.end();
+  token_service_flags.is_under_advanced_protection =
+      std::find(service_flags.begin(), service_flags.end(),
+                kAdvancedProtectionAccountServiceFlag) != service_flags.end();
+  return token_service_flags;
 }
 
 }  // namespace gaia
