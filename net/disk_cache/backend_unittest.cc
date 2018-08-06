@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -741,6 +742,39 @@ TEST_F(DiskCacheBackendTest, BlockFileCacheMemoryDump) {
 
   ASSERT_EQ(0u, cache_->DumpMemoryStats(&pmd, parent->absolute_name()));
   EXPECT_EQ(1u, pmd.allocator_dumps().size());
+}
+
+TEST_F(DiskCacheBackendTest, MemoryListensToMemoryPressure) {
+  const int kLimit = 16 * 1024;
+  const int kEntrySize = 256;
+  SetMaxSize(kLimit);
+  SetMemoryOnlyMode();
+  InitCache();
+
+  // Fill in to about 80-90% full.
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kEntrySize));
+  CacheTestFillBuffer(buffer->data(), kEntrySize, false);
+
+  for (int i = 0; i < 0.9 * (kLimit / kEntrySize); ++i) {
+    disk_cache::Entry* entry = nullptr;
+    ASSERT_EQ(net::OK, CreateEntry(base::IntToString(i), &entry));
+    EXPECT_EQ(kEntrySize,
+              WriteData(entry, 0, 0, buffer.get(), kEntrySize, true));
+    entry->Close();
+  }
+
+  EXPECT_GT(CalculateSizeOfAllEntries(), 0.8 * kLimit);
+
+  // Signal low-memory of various sorts, and see how small it gets.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_LT(CalculateSizeOfAllEntries(), 0.5 * kLimit);
+
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_LT(CalculateSizeOfAllEntries(), 0.1 * kLimit);
 }
 
 TEST_F(DiskCacheBackendTest, ExternalFiles) {

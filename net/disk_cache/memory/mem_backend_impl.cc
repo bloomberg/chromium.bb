@@ -56,8 +56,13 @@ base::LinkNode<MemEntryImpl>* NextSkippingChildren(
 }  // namespace
 
 MemBackendImpl::MemBackendImpl(net::NetLog* net_log)
-    : max_size_(0), current_size_(0), net_log_(net_log), weak_factory_(this) {
-}
+    : max_size_(0),
+      current_size_(0),
+      net_log_(net_log),
+      memory_pressure_listener_(
+          base::BindRepeating(&MemBackendImpl::OnMemoryPressure,
+                              base::Unretained(this))),
+      weak_factory_(this) {}
 
 MemBackendImpl::~MemBackendImpl() {
   DCHECK(CheckLRUListOrder(lru_list_));
@@ -341,9 +346,11 @@ size_t MemBackendImpl::DumpMemoryStats(
 void MemBackendImpl::EvictIfNeeded() {
   if (current_size_ <= max_size_)
     return;
-
   int target_size = std::max(0, max_size_ - kDefaultEvictionSize);
+  EvictTill(target_size);
+}
 
+void MemBackendImpl::EvictTill(int target_size) {
   base::LinkNode<MemEntryImpl>* entry = lru_list_.head();
   while (current_size_ > target_size && entry != lru_list_.end()) {
     MemEntryImpl* to_doom = entry->value();
@@ -351,6 +358,22 @@ void MemBackendImpl::EvictIfNeeded() {
 
     if (!to_doom->InUse())
       to_doom->Doom();
+  }
+}
+
+void MemBackendImpl::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      // Not supposed to get this here, but if there is no problem, there is
+      // no problem...
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      EvictTill(max_size_ / 2);
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      EvictTill(max_size_ / 10);
+      break;
   }
 }
 
