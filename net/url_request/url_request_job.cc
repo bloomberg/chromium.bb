@@ -474,10 +474,15 @@ void URLRequestJob::NotifyHeadersComplete() {
       return;
     }
     if (source_stream_->type() == SourceStream::TYPE_NONE) {
-      std::string content_length;
-      request_->GetResponseHeaderByName("content-length", &content_length);
-      if (!content_length.empty())
-        base::StringToInt64(content_length, &expected_content_size_);
+      // If the subclass didn't set |expected_content_size|, and there are
+      // headers, and the response body is not compressed, try to get the
+      // expected content size from the headers.
+      if (expected_content_size_ == -1 && request_->response_headers()) {
+        // This sets |expected_content_size_| to its previous value of -1 if
+        // there's no Content-Length header.
+        expected_content_size_ =
+            request_->response_headers()->GetContentLength();
+      }
     } else {
       request_->net_log().AddEvent(
           NetLogEventType::URL_REQUEST_FILTERS_SET,
