@@ -112,6 +112,9 @@ class CORE_EXPORT WorkerGlobalScope
   bool IsContextThread() const final;
   const KURL& BaseURL() const final { return url_; }
   String UserAgent() const final { return user_agent_; }
+  const base::UnguessableToken& GetAgentClusterID() const final {
+    return agent_cluster_id_;
+  }
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }
@@ -226,6 +229,8 @@ class CORE_EXPORT WorkerGlobalScope
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
 
   service_manager::InterfaceProvider interface_provider_;
+
+  const base::UnguessableToken agent_cluster_id_;
 };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope,

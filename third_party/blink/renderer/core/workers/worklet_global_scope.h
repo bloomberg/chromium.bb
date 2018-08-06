@@ -51,6 +51,12 @@ class CORE_EXPORT WorkletGlobalScope
   SecurityContext& GetSecurityContext() final { return *this; }
   bool IsSecureContext(String& error_message) const final;
 
+  // Currently, worklet agents have no clearly defined owner. See
+  // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
+  const base::UnguessableToken& GetAgentClusterID() const final {
+    return base::UnguessableToken::Null();
+  }
+
   DOMTimerCoordinator* Timers() final {
     // WorkletGlobalScopes don't have timers.
     NOTREACHED();

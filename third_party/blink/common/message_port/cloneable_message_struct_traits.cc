@@ -20,7 +20,9 @@ bool StructTraits<blink::mojom::CloneableMessage::DataView,
     Read(blink::mojom::CloneableMessage::DataView data,
          blink::CloneableMessage* out) {
   mojo_base::BigBufferView message_view;
-  if (!data.ReadEncodedMessage(&message_view) || !data.ReadBlobs(&out->blobs)) {
+  base::Optional<base::UnguessableToken> locked_agent_cluster_id;
+  if (!data.ReadEncodedMessage(&message_view) || !data.ReadBlobs(&out->blobs) ||
+      !data.ReadLockedAgentClusterId(&locked_agent_cluster_id)) {
     return false;
   }
 
@@ -30,6 +32,7 @@ bool StructTraits<blink::mojom::CloneableMessage::DataView,
   out->stack_trace_id = data.stack_trace_id();
   out->stack_trace_debugger_id_first = data.stack_trace_debugger_id_first();
   out->stack_trace_debugger_id_second = data.stack_trace_debugger_id_second();
+  out->locked_agent_cluster_id = locked_agent_cluster_id;
   return true;
 }
 

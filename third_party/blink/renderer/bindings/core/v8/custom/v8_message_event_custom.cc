@@ -59,6 +59,10 @@ void V8MessageEvent::dataAttributeGetterCustom(
 
   v8::Local<v8::Value> result;
   switch (event->GetDataType()) {
+    case MessageEvent::kDataTypeNull:
+      result = v8::Null(isolate);
+      break;
+
     case MessageEvent::kDataTypeScriptValue:
       result =
           event->DataAsScriptValue().V8ValueFor(ScriptState::Current(isolate));

@@ -42,6 +42,9 @@ class NullExecutionContext
   void DidUpdateSecurityOrigin() override {}
   SecurityContext& GetSecurityContext() override { return *this; }
   DOMTimerCoordinator* Timers() override { return nullptr; }
+  const base::UnguessableToken& GetAgentClusterID() const final {
+    return base::UnguessableToken::Null();
+  }
 
   void AddConsoleMessage(ConsoleMessage*) override {}
   void ExceptionThrown(ErrorEvent*) override {}

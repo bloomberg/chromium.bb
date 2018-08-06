@@ -435,10 +435,18 @@ void ServiceWorkerContainer::DispatchMessageEvent(
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(msg.ports));
   ServiceWorker* source =
       ServiceWorker::From(GetExecutionContext(), std::move(handle));
-  DispatchEvent(MessageEvent::Create(
-      ports, std::move(msg.message),
-      GetExecutionContext()->GetSecurityOrigin()->ToString(),
-      String() /* lastEventId */, source));
+  MessageEvent* event;
+  if (!msg.locked_agent_cluster_id ||
+      GetExecutionContext()->IsSameAgentCluster(*msg.locked_agent_cluster_id)) {
+    event = MessageEvent::Create(
+        ports, std::move(msg.message),
+        GetExecutionContext()->GetSecurityOrigin()->ToString(),
+        String() /* lastEventId */, source);
+  } else {
+    event = MessageEvent::CreateError(
+        GetExecutionContext()->GetSecurityOrigin()->ToString(), source);
+  }
+  DispatchEvent(event);
 }
 
 void ServiceWorkerContainer::CountFeature(mojom::WebFeature feature) {

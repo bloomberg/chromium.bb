@@ -9,6 +9,8 @@
 
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "third_party/blink/common/common_export.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
@@ -46,6 +48,11 @@ struct BLINK_COMMON_EXPORT CloneableMessage {
   uint64_t stack_trace_id = 0;
   int64_t stack_trace_debugger_id_first = 0;
   int64_t stack_trace_debugger_id_second = 0;
+
+  // If not null, this message is locked to the given agent cluster ID.
+  // See
+  // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
+  base::Optional<base::UnguessableToken> locked_agent_cluster_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CloneableMessage);

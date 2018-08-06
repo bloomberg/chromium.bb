@@ -53,7 +53,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       WorkletModuleResponsesMap*,
       service_manager::mojom::blink::InterfaceProviderPtrInfo = {},
       BeginFrameProviderParams begin_frame_provider_params = {},
-      const FeaturePolicy* parent_feature_policy = nullptr);
+      const FeaturePolicy* parent_feature_policy = nullptr,
+      base::UnguessableToken agent_cluster_id = {});
 
   ~GlobalScopeCreationParams() = default;
 
@@ -134,6 +135,11 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   BeginFrameProviderParams begin_frame_provider_params;
 
   std::unique_ptr<FeaturePolicy> worker_feature_policy;
+
+  // Set when the worker/worklet has the same AgentClusterID as the execution
+  // context that created it (e.g. for a dedicated worker).
+  // See https://tc39.github.io/ecma262/#sec-agent-clusters
+  base::UnguessableToken agent_cluster_id;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };

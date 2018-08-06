@@ -73,6 +73,10 @@ class CORE_EXPORT MessageEvent final : public Event {
     return new MessageEvent(std::move(data), origin, last_event_id, source,
                             std::move(channels), user_activation);
   }
+  static MessageEvent* CreateError(const String& origin = String(),
+                                   EventTarget* source = nullptr) {
+    return new MessageEvent(origin, source);
+  }
   static MessageEvent* Create(const String& data,
                               const String& origin = String()) {
     return new MessageEvent(data, origin);
@@ -127,6 +131,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   const AtomicString& InterfaceName() const override;
 
   enum DataType {
+    kDataTypeNull,  // For "messageerror" events.
     kDataTypeScriptValue,
     kDataTypeSerializedScriptValue,
     kDataTypeString,
@@ -203,6 +208,9 @@ class CORE_EXPORT MessageEvent final : public Event {
                EventTarget* source,
                Vector<MessagePortChannel>,
                UserActivation* user_activation);
+
+  // Creates a "messageerror" event.
+  MessageEvent(const String& origin, EventTarget* source);
 
   MessageEvent(const String& data, const String& origin);
   MessageEvent(Blob* data, const String& origin);

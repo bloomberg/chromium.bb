@@ -259,4 +259,14 @@ void ExecutionContext::Trace(blink::Visitor* visitor) {
   Supplementable<ExecutionContext>::Trace(visitor);
 }
 
+bool ExecutionContext::IsSameAgentCluster(
+    const base::UnguessableToken& other_id) const {
+  base::UnguessableToken this_id = GetAgentClusterID();
+  // If the AgentClusterID is empty then it should never be the same (e.g.
+  // currently for worklets).
+  if (this_id.is_empty() || other_id.is_empty())
+    return false;
+  return this_id == other_id;
+}
+
 }  // namespace blink

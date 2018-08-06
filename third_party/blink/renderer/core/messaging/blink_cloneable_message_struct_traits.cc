@@ -41,6 +41,10 @@ bool StructTraits<blink::mojom::blink::CloneableMessage::DataView,
       std::make_pair(data.stack_trace_debugger_id_first(),
                      data.stack_trace_debugger_id_second()));
 
+  base::Optional<base::UnguessableToken> locked_agent_cluster_id;
+  if (!data.ReadLockedAgentClusterId(&locked_agent_cluster_id))
+    return false;
+  out->locked_agent_cluster_id = locked_agent_cluster_id;
   return true;
 }
 

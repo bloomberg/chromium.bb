@@ -344,7 +344,10 @@ WorkerGlobalScope::WorkerGlobalScope(
       font_selector_(OffscreenFontSelector::Create(this)),
       animation_frame_provider_(WorkerAnimationFrameProvider::Create(
           this,
-          creation_params->begin_frame_provider_params)) {
+          creation_params->begin_frame_provider_params)),
+      agent_cluster_id_(creation_params->agent_cluster_id.is_empty()
+                            ? base::UnguessableToken::Create()
+                            : creation_params->agent_cluster_id) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
   scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url_);

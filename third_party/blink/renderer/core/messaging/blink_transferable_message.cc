@@ -36,6 +36,7 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
       message.stack_trace_id,
       std::make_pair(message.stack_trace_debugger_id_first,
                      message.stack_trace_debugger_id_second));
+  result.locked_agent_cluster_id = message.locked_agent_cluster_id;
   result.ports.AppendRange(message.ports.begin(), message.ports.end());
   result.has_user_gesture = message.has_user_gesture;
   if (message.user_activation) {
@@ -63,6 +64,7 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
       message.sender_stack_trace_id.debugger_id.first;
   result.stack_trace_debugger_id_second =
       message.sender_stack_trace_id.debugger_id.second;
+  result.locked_agent_cluster_id = message.locked_agent_cluster_id;
   result.ports.assign(message.ports.begin(), message.ports.end());
   result.has_user_gesture = message.has_user_gesture;
   if (message.user_activation) {
