@@ -19,7 +19,8 @@ class Profile;
 class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static identity::IdentityManager* GetForProfile(Profile* profile);
-  static identity::IdentityManager* GetForProfileIfExists(Profile* profile);
+  static identity::IdentityManager* GetForProfileIfExists(
+      const Profile* profile);
 
   // Returns an instance of the IdentityManagerFactory singleton.
   static IdentityManagerFactory* GetInstance();

@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
@@ -31,6 +32,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "google_apis/drive/test_util.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
 using ::testing::_;
@@ -510,8 +512,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
 
   // Profile must be signed in with email for crostini.
-  SigninManagerFactory::GetForProfileIfExists(browser()->profile())
-      ->SetAuthenticatedAccountInfo("12345", "testuser@gmail.com");
+  identity::SetPrimaryAccount(
+      SigninManagerFactory::GetForProfileIfExists(browser()->profile()),
+      IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
+      "testuser@gmail.com");
 
   // DiskMountManager mock.
   std::string known_hosts;

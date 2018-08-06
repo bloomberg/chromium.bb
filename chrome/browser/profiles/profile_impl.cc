@@ -133,6 +133,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/identity/identity_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
@@ -782,10 +783,10 @@ ProfileImpl::~ProfileImpl() {
 }
 
 std::string ProfileImpl::GetProfileUserName() const {
-  const SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(this);
-  if (signin_manager)
-    return signin_manager->GetAuthenticatedAccountInfo().email;
+  const identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfileIfExists(this);
+  if (identity_manager)
+    return identity_manager->GetPrimaryAccountInfo().email;
 
   return std::string();
 }
