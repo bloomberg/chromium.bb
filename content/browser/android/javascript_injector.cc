@@ -15,8 +15,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavascriptInjector);
-
 JavascriptInjector::JavascriptInjector(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

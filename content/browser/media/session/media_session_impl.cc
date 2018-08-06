@@ -77,8 +77,6 @@ MediaSessionUserAction MediaSessionActionToUserAction(
 using MediaSessionSuspendedSource =
     MediaSessionUmaHelper::MediaSessionSuspendedSource;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(MediaSessionImpl);
-
 MediaSessionImpl::PlayerIdentifier::PlayerIdentifier(
     MediaSessionPlayerObserver* observer,
     int player_id)
