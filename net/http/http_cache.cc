@@ -31,7 +31,6 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "net/base/cache_type.h"
-#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -122,7 +121,7 @@ bool HttpCache::ActiveEntry::TransactionInReaders(
 // This structure keeps track of work items that are attempting to create or
 // open cache entries or the backend itself.
 struct HttpCache::PendingOp {
-  PendingOp() : disk_entry(NULL) {}
+  PendingOp() : disk_entry(NULL), callback_will_delete(false) {}
   ~PendingOp() = default;
 
   // Returns the estimate of dynamically allocated memory in bytes.
@@ -136,7 +135,11 @@ struct HttpCache::PendingOp {
   disk_cache::Entry* disk_entry;
   std::unique_ptr<disk_cache::Backend> backend;
   std::unique_ptr<WorkItem> writer;
-  CompletionCallback callback;  // BackendCallback.
+  // True if there is a posted OnPendingOpComplete() task that might delete
+  // |this| without removing it from |pending_ops_|.  Note that since
+  // OnPendingOpComplete() is static, it will not get cancelled when HttpCache
+  // is destroyed.
+  bool callback_will_delete;
   WorkItemList pending_queue;
 };
 
@@ -368,15 +371,10 @@ HttpCache::~HttpCache() {
     PendingOp* pending_op = pending_it->second;
     pending_op->writer.reset();
     bool delete_pending_op = true;
-    if (building_backend_) {
+    if (building_backend_ && pending_op->callback_will_delete) {
       // If we don't have a backend, when its construction finishes it will
       // deliver the callbacks.
-      if (!pending_op->callback.is_null()) {
-        // If not null, the callback will delete the pending operation later.
-        delete_pending_op = false;
-      }
-    } else {
-      pending_op->callback.Reset();
+      delete_pending_op = false;
     }
 
     pending_op->pending_queue.clear();
@@ -463,14 +461,14 @@ int HttpCache::CreateTransaction(RequestPriority priority,
     CreateBackend(NULL, CompletionOnceCallback());
   }
 
-   HttpCache::Transaction* transaction =
+  HttpCache::Transaction* transaction =
       new HttpCache::Transaction(priority, this);
-   if (bypass_lock_for_test_)
+  if (bypass_lock_for_test_)
     transaction->BypassLockForTest();
-   if (bypass_lock_after_headers_for_test_)
-     transaction->BypassLockAfterHeadersForTest();
-   if (fail_conditionalization_for_test_)
-     transaction->FailConditionalizationForTest();
+  if (bypass_lock_after_headers_for_test_)
+    transaction->BypassLockAfterHeadersForTest();
+  if (fail_conditionalization_for_test_)
+    transaction->FailConditionalizationForTest();
 
   trans->reset(transaction);
   return OK;
@@ -535,16 +533,18 @@ int HttpCache::CreateBackend(disk_cache::Backend** backend,
   DCHECK(pending_op->pending_queue.empty());
 
   pending_op->writer = std::move(item);
-  pending_op->callback = base::Bind(&HttpCache::OnPendingOpComplete,
-                                    GetWeakPtr(), pending_op);
 
-  int rv = backend_factory_->CreateBackend(net_log_, &pending_op->backend,
-                                           pending_op->callback);
-  if (rv != ERR_IO_PENDING) {
-    pending_op->writer->ClearCallback();
-    pending_op->callback.Run(rv);
+  int rv = backend_factory_->CreateBackend(
+      net_log_, &pending_op->backend,
+      base::BindOnce(&HttpCache::OnPendingOpComplete, GetWeakPtr(),
+                     pending_op));
+  if (rv == ERR_IO_PENDING) {
+    pending_op->callback_will_delete = true;
+    return rv;
   }
 
+  pending_op->writer->ClearCallback();
+  OnPendingOpComplete(GetWeakPtr(), pending_op, rv);
   return rv;
 }
 
@@ -630,16 +630,19 @@ int HttpCache::AsyncDoomEntry(const std::string& key, Transaction* trans) {
   DCHECK(pending_op->pending_queue.empty());
 
   pending_op->writer = std::move(item);
-  pending_op->callback = base::Bind(&HttpCache::OnPendingOpComplete,
-                                    GetWeakPtr(), pending_op);
 
   net::RequestPriority priority = trans ? trans->priority() : net::LOWEST;
-  int rv = disk_cache_->DoomEntry(key, priority, pending_op->callback);
-  if (rv != ERR_IO_PENDING) {
-    pending_op->writer->ClearTransaction();
-    pending_op->callback.Run(rv);
+  int rv =
+      disk_cache_->DoomEntry(key, priority,
+                             base::BindOnce(&HttpCache::OnPendingOpComplete,
+                                            GetWeakPtr(), pending_op));
+  if (rv == ERR_IO_PENDING) {
+    pending_op->callback_will_delete = true;
+    return rv;
   }
 
+  pending_op->writer->ClearTransaction();
+  OnPendingOpComplete(GetWeakPtr(), pending_op, rv);
   return rv;
 }
 
@@ -757,16 +760,18 @@ int HttpCache::OpenEntry(const std::string& key, ActiveEntry** entry,
   DCHECK(pending_op->pending_queue.empty());
 
   pending_op->writer = std::move(item);
-  pending_op->callback = base::Bind(&HttpCache::OnPendingOpComplete,
-                                    GetWeakPtr(), pending_op);
 
-  int rv = disk_cache_->OpenEntry(
-      key, trans->priority(), &(pending_op->disk_entry), pending_op->callback);
-  if (rv != ERR_IO_PENDING) {
-    pending_op->writer->ClearTransaction();
-    pending_op->callback.Run(rv);
+  int rv =
+      disk_cache_->OpenEntry(key, trans->priority(), &(pending_op->disk_entry),
+                             base::BindOnce(&HttpCache::OnPendingOpComplete,
+                                            GetWeakPtr(), pending_op));
+  if (rv == ERR_IO_PENDING) {
+    pending_op->callback_will_delete = true;
+    return rv;
   }
 
+  pending_op->writer->ClearTransaction();
+  OnPendingOpComplete(GetWeakPtr(), pending_op, rv);
   return rv;
 }
 
@@ -787,16 +792,18 @@ int HttpCache::CreateEntry(const std::string& key, ActiveEntry** entry,
   DCHECK(pending_op->pending_queue.empty());
 
   pending_op->writer = std::move(item);
-  pending_op->callback = base::Bind(&HttpCache::OnPendingOpComplete,
-                                    GetWeakPtr(), pending_op);
 
   int rv = disk_cache_->CreateEntry(
-      key, trans->priority(), &(pending_op->disk_entry), pending_op->callback);
-  if (rv != ERR_IO_PENDING) {
-    pending_op->writer->ClearTransaction();
-    pending_op->callback.Run(rv);
+      key, trans->priority(), &(pending_op->disk_entry),
+      base::BindOnce(&HttpCache::OnPendingOpComplete, GetWeakPtr(),
+                     pending_op));
+  if (rv == ERR_IO_PENDING) {
+    pending_op->callback_will_delete = true;
+    return rv;
   }
 
+  pending_op->writer->ClearTransaction();
+  OnPendingOpComplete(GetWeakPtr(), pending_op, rv);
   return rv;
 }
 
@@ -1391,6 +1398,7 @@ void HttpCache::OnPendingOpComplete(const base::WeakPtr<HttpCache>& cache,
                                     PendingOp* pending_op,
                                     int rv) {
   if (cache.get()) {
+    pending_op->callback_will_delete = false;
     cache->OnIOComplete(rv, pending_op);
   } else {
     // The callback was cancelled so we should delete the pending_op that
@@ -1403,9 +1411,6 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
   std::unique_ptr<WorkItem> item = std::move(pending_op->writer);
   WorkItemOperation op = item->operation();
   DCHECK_EQ(WI_CREATE_BACKEND, op);
-
-  // We don't need the callback anymore.
-  pending_op->callback.Reset();
 
   if (backend_factory_.get()) {
     // We may end up calling OnBackendCreated multiple times if we have pending
