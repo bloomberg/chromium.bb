@@ -282,7 +282,8 @@ void SaveCardBubbleViews::Init() {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       controller_->GetExplanatoryMessage().empty() ? views::CONTROL
                                                    : views::TEXT,
-      views::CONTROL));
+      GetDialogButtons() == ui::DIALOG_BUTTON_NONE ? views::TEXT
+                                                   : views::CONTROL));
   AddChildView(CreateMainContentView().release());
 }
 
