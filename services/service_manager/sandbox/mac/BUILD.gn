@@ -5,7 +5,6 @@
 action_foreach("package_sb_files") {
   script = "package_sb_file.py"
   sources = [
-    "audio.sb",
     "cdm.sb",
     "common.sb",
     "common_v2.sb",

@@ -85,9 +85,8 @@
 (allow file-read* (subpath (param bundle-path)))
 
 ; Allow reads of system libraries and frameworks.
-(allow file-read*
+(allow file-read-data
   (subpath "/System/Library/Frameworks")
-  (subpath "/System/Library/Preferences/Logging")
   (subpath "/System/Library/PrivateFrameworks")
   (subpath "/usr/lib"))
 

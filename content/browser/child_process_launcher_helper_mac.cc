@@ -22,7 +22,6 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/embedder/result_codes.h"
-#include "services/service_manager/sandbox/mac/audio.sb.h"
 #include "services/service_manager/sandbox/mac/cdm.sb.h"
 #include "services/service_manager/sandbox/mac/common_v2.sb.h"
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
@@ -74,8 +73,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       service_manager::IsUnsandboxedSandboxType(sandbox_type);
 
   // TODO(kerrnel): Delete this switch once the V2 sandbox is always enabled.
-  bool use_v2 = base::FeatureList::IsEnabled(features::kMacV2Sandbox);
-
+  bool v2_process = false;
   switch (sandbox_type) {
     case service_manager::SANDBOX_TYPE_NO_SANDBOX:
       break;
@@ -86,13 +84,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     case service_manager::SANDBOX_TYPE_NACL_LOADER:
     case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
     case service_manager::SANDBOX_TYPE_PROFILING:
-      // If the feature experiment is enabled and this process type supports
-      // the v2 sandbox, use it.
-      use_v2 &= true;
-      break;
-    case service_manager::SANDBOX_TYPE_AUDIO:
-      // The audio service only exists with the v2 sandbox.
-      use_v2 |= true;
+      v2_process = true;
       break;
     default:
       // This is a 'break' because the V2 sandbox is not enabled for all
@@ -100,6 +92,9 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       // should not be run under the V2 sandbox.
       break;
   }
+
+  bool use_v2 =
+      v2_process && base::FeatureList::IsEnabled(features::kMacV2Sandbox);
 
   if (use_v2 && !no_sandbox) {
     // Generate the profile string.
@@ -125,9 +120,6 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
         profile += service_manager::kSeatbeltPolicyString_pdf_compositor;
         break;
-      case service_manager::SANDBOX_TYPE_AUDIO:
-        profile += service_manager::kSeatbeltPolicyString_audio;
-        break;
       case service_manager::SANDBOX_TYPE_UTILITY:
       case service_manager::SANDBOX_TYPE_PROFILING:
         profile += service_manager::kSeatbeltPolicyString_utility;
@@ -151,7 +143,6 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_NACL_LOADER:
       case service_manager::SANDBOX_TYPE_RENDERER:
       case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
-      case service_manager::SANDBOX_TYPE_AUDIO:
         SetupCommonSandboxParameters(seatbelt_exec_client_.get());
         break;
       case service_manager::SANDBOX_TYPE_PPAPI:

@@ -8,8 +8,6 @@ import("//build/config/sanitizers/sanitizers.gni")
 component("sandbox") {
   sources = [
     "export.h",
-    "features.cc",
-    "features.h",
     "sandbox.cc",
     "sandbox.h",
     "sandbox_delegate.h",
@@ -85,6 +83,8 @@ component("sandbox") {
   }
   if (is_win) {
     sources += [
+      "features.cc",
+      "features.h",
       "win/sandbox_win.cc",
       "win/sandbox_win.h",
     ]

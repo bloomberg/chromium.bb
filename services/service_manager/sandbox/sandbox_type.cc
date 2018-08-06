@@ -7,8 +7,11 @@
 #include <string>
 
 #include "base/feature_list.h"
-#include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/switches.h"
+
+#if defined(OS_WIN)
+#include "services/service_manager/sandbox/features.h"
+#endif
 
 namespace service_manager {
 
@@ -21,7 +24,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return true;
 #endif
     case SANDBOX_TYPE_AUDIO:
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
       return !base::FeatureList::IsEnabled(
           service_manager::features::kAudioServiceSandbox);
 #else
