@@ -81,14 +81,11 @@ class MachineLevelUserCloudPolicyControllerObserver
     }
     EXPECT_EQ(should_succeed_, succeeded);
     is_finished_ = true;
-    if (run_loop_)
-      run_loop_->Quit();
     g_browser_process->browser_policy_connector()
         ->machine_level_user_cloud_policy_controller()
         ->RemoveObserver(this);
   }
 
-  void SetRunLoop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
   void SetShouldSucceed(bool should_succeed) {
     should_succeed_ = should_succeed;
   }
@@ -96,7 +93,6 @@ class MachineLevelUserCloudPolicyControllerObserver
   bool IsFinished() { return is_finished_; }
 
  private:
-  base::RunLoop* run_loop_ = nullptr;
   bool is_finished_ = false;
   bool should_succeed_ = false;
 };
@@ -400,17 +396,40 @@ class MachineLevelUserCloudPolicyEnrollmentTest
     histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 0);
   }
 
+  void TearDownInProcessBrowserTestFixture() override {
+    // Test body is skipped if enrollment failed as Chrome quit early.
+    // Verify the enrollment result in the tear down instead.
+    if (!is_enrollment_token_valid()) {
+      VerifyEnrollmentResult();
+    }
+  }
+
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
         new ChromeBrowserExtraSetUp(&observer_));
   }
 
-  void WaitForPolicyRegisterFinished() {
-    if (!observer_.IsFinished()) {
-      base::RunLoop run_loop;
-      observer_.SetRunLoop(&run_loop);
-      run_loop.Run();
+  void VerifyEnrollmentResult() {
+    EXPECT_EQ(is_enrollment_token_valid() ? "fake_device_management_token"
+                                          : std::string(),
+              BrowserDMTokenStorage::Get()->RetrieveDMToken());
+
+    // Verify the enrollment result.
+    MachineLevelUserCloudPolicyEnrollmentResult expected_result;
+    if (is_enrollment_token_valid() && storage_enabled()) {
+      expected_result = MachineLevelUserCloudPolicyEnrollmentResult::kSuccess;
+    } else if (is_enrollment_token_valid() && !storage_enabled()) {
+      expected_result =
+          MachineLevelUserCloudPolicyEnrollmentResult::kFailedToStore;
+    } else {
+      expected_result =
+          MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch;
     }
+
+    // Verify the metrics.
+    histogram_tester_.ExpectBucketCount(kEnrollmentResultMetrics,
+                                        expected_result, 1);
+    histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 1);
   }
 
  protected:
@@ -428,37 +447,18 @@ class MachineLevelUserCloudPolicyEnrollmentTest
 };
 
 IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
-  WaitForPolicyRegisterFinished();
+  // Test body is ran only if enrollment is succeeded.
+  EXPECT_TRUE(is_enrollment_token_valid());
 
-  EXPECT_EQ(is_enrollment_token_valid() ? "fake_device_management_token"
-                                        : std::string(),
-            BrowserDMTokenStorage::Get()->RetrieveDMToken());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
-  // Verify the enrollment result.
-  MachineLevelUserCloudPolicyEnrollmentResult expected_result;
-  if (is_enrollment_token_valid() && storage_enabled()) {
-    expected_result = MachineLevelUserCloudPolicyEnrollmentResult::kSuccess;
-  } else if (is_enrollment_token_valid() && !storage_enabled()) {
-    expected_result =
-        MachineLevelUserCloudPolicyEnrollmentResult::kFailedToStore;
-  } else {
-    expected_result =
-        MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch;
-  }
-
-  // Verify the metrics.
-  histogram_tester_.ExpectBucketCount(kEnrollmentResultMetrics, expected_result,
-                                      1);
-  histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 1);
-
+  VerifyEnrollmentResult();
 #if defined(OS_MACOSX)
   // Verify the last mericis of launch is recorded in
   // applicationDidFinishNotification.
-  if (is_enrollment_token_valid()) {
-    EXPECT_EQ(1u, histogram_tester_
-                      .GetAllSamples("Startup.OSX.DockIconWillFinishBouncing")
-                      .size());
-  }
+  EXPECT_EQ(1u, histogram_tester_
+                    .GetAllSamples("Startup.OSX.DockIconWillFinishBouncing")
+                    .size());
 #endif
 }
 
