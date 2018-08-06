@@ -9,6 +9,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
@@ -36,11 +37,14 @@ const int kMaxVisibleNotifications = 100;
 
 UnifiedMessageCenterView::UnifiedMessageCenterView(
     UnifiedSystemTrayController* tray_controller,
+    UnifiedSystemTrayView* parent,
     MessageCenter* message_center)
     : tray_controller_(tray_controller),
+      parent_(parent),
       message_center_(message_center),
       scroller_(new views::ScrollView()),
       message_list_view_(new MessageListView()) {
+  DCHECK(message_center_);
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -51,7 +55,7 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller_->SetVerticalScrollBar(new MessageCenterScrollBar());
+  scroller_->SetVerticalScrollBar(new MessageCenterScrollBar(this));
   scroller_->set_draw_overflow_indicator(false);
   AddChildView(scroller_);
 
@@ -129,6 +133,7 @@ void UnifiedMessageCenterView::SetNotifications(
 void UnifiedMessageCenterView::Layout() {
   scroller_->SetBounds(0, 0, width(), height());
   ScrollToBottom();
+  OnMessageCenterScrolled();
 }
 
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
@@ -211,6 +216,11 @@ void UnifiedMessageCenterView::OnAllNotificationsCleared() {
   tray_controller_->OnClearAllAnimationEnded();
 }
 
+void UnifiedMessageCenterView::OnMessageCenterScrolled() {
+  parent_->SetNotificationHeightBelowScroll(
+      message_list_view_->GetHeightBelowVisibleRect());
+}
+
 void UnifiedMessageCenterView::Update() {
   SetVisible(message_list_view_->GetNotificationCount() > 0);
 
@@ -230,6 +240,7 @@ void UnifiedMessageCenterView::Update() {
 
   scroller_->Layout();
   PreferredSizeChanged();
+  OnMessageCenterScrolled();
 }
 
 void UnifiedMessageCenterView::AddNotificationAt(

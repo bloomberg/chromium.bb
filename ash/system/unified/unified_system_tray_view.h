@@ -95,6 +95,10 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
 
   void ShowClearAllAnimation();
 
+  // Update the top of the SystemTray part to imitate notification list
+  // scrolling under SystemTray. |height_below_scroll| should not be negative.
+  void SetNotificationHeightBelowScroll(int height_below_scroll);
+
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -114,7 +118,6 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   UnifiedSystemTrayController* const controller_;
 
   // Owned by views hierarchy.
-  UnifiedMessageCenterView* const message_center_view_;
   views::View* const notification_hidden_view_;
   TopShortcutsView* const top_shortcuts_view_;
   FeaturePodsContainerView* const feature_pods_container_;
@@ -122,6 +125,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   UnifiedSystemInfoView* const system_info_view_;
   views::View* const system_tray_container_;
   views::View* const detailed_view_container_;
+  UnifiedMessageCenterView* const message_center_view_;
 
   const std::unique_ptr<FocusSearch> focus_search_;
   const std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;

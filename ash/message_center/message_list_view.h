@@ -70,6 +70,10 @@ class ASH_EXPORT MessageListView : public views::View,
 
   void SetBorderPadding();
 
+  // Get the distance from the bottom of ScrollView's visible rect to the bottom
+  // of the notification list.
+  int GetHeightBelowVisibleRect() const;
+
   void set_use_fixed_height(bool use_fixed_height) {
     use_fixed_height_ = use_fixed_height;
   }

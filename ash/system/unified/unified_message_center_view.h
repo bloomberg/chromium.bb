@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "ash/ash_export.h"
+#include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/message_center/message_list_view.h"
 #include "base/macros.h"
 #include "ui/message_center/message_center_observer.h"
@@ -31,6 +32,7 @@ class FocusManager;
 namespace ash {
 
 class UnifiedSystemTrayController;
+class UnifiedSystemTrayView;
 
 // Container for message list view. Acts as a controller/delegate of message
 // list view, passing data back and forth to message center.
@@ -40,9 +42,11 @@ class ASH_EXPORT UnifiedMessageCenterView
       public views::ViewObserver,
       public views::ButtonListener,
       public views::FocusChangeListener,
-      public MessageListView::Observer {
+      public MessageListView::Observer,
+      public MessageCenterScrollBar::Observer {
  public:
   UnifiedMessageCenterView(UnifiedSystemTrayController* tray_controller,
+                           UnifiedSystemTrayView* parent,
                            message_center::MessageCenter* message_center);
   ~UnifiedMessageCenterView() override;
 
@@ -83,6 +87,9 @@ class ASH_EXPORT UnifiedMessageCenterView
   // MessageListView::Observer:
   void OnAllNotificationsCleared() override;
 
+  // MessageCenterScrollBar::Observer:
+  void OnMessageCenterScrolled() override;
+
  private:
   void Update();
   void AddNotificationAt(const message_center::Notification& notification,
@@ -93,6 +100,7 @@ class ASH_EXPORT UnifiedMessageCenterView
   void ScrollToBottom();
 
   UnifiedSystemTrayController* const tray_controller_;
+  UnifiedSystemTrayView* const parent_;
   message_center::MessageCenter* const message_center_;
 
   views::ScrollView* const scroller_;
