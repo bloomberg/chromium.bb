@@ -145,13 +145,6 @@ jumbo_component("services") {
       deps += [ "//sandbox" ]
     }
   }
-
-  if (enable_assistant_audio_decoder) {
-    sources += [
-      "assistant_mojo_media_client.cc",
-      "assistant_mojo_media_client.h",
-    ]
-  }
 }
 
 service_manifest("cdm_manifest") {

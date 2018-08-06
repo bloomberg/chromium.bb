@@ -34,10 +34,6 @@
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "services/viz/service.h"
 
-#if BUILDFLAG(ENABLE_ASSISTANT_AUDIO_DECODER)
-#include "media/mojo/services/media_service_factory.h"  // nogncheck
-#endif
-
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
 #include "media/mojo/interfaces/constants.mojom.h"   // nogncheck
@@ -100,12 +96,6 @@ std::unique_ptr<service_manager::Service> CreateCdmService() {
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-#if BUILDFLAG(ENABLE_ASSISTANT_AUDIO_DECODER)
-std::unique_ptr<service_manager::Service> CreateMediaService() {
-  return ::media::CreateMediaService();
-}
-#endif  // BUILDFLAG(ENABLE_ASSISTANT_AUDIO_DECODER)
-
 std::unique_ptr<service_manager::Service> CreateDataDecoderService() {
   content::UtilityThread::Get()->EnsureBlinkInitialized();
   return data_decoder::DataDecoderService::Create();
@@ -153,14 +143,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   service_manager::EmbeddedServiceInfo info;
   info.factory = base::Bind(&CreateCdmService);
   services->emplace(media::mojom::kCdmServiceName, info);
-#endif
-
-#if BUILDFLAG(ENABLE_ASSISTANT_AUDIO_DECODER)
-  service_manager::EmbeddedServiceInfo assistant_media_service_info;
-  assistant_media_service_info.factory =
-      base::BindRepeating(&CreateMediaService);
-  services->emplace(media::mojom::kMediaServiceName,
-                    assistant_media_service_info);
 #endif
 
   service_manager::EmbeddedServiceInfo shape_detection_info;

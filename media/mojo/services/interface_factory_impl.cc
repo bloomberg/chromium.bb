@@ -16,11 +16,9 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
-#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || \
-    BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 #include "media/mojo/services/mojo_audio_decoder_service.h"
-#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) ||
-        // BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 #include "media/mojo/services/mojo_video_decoder_service.h"
@@ -49,8 +47,7 @@ InterfaceFactoryImpl::InterfaceFactoryImpl(
     std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
     MojoMediaClient* mojo_media_client)
     :
-#if BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || \
-    BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#if BUILDFLAG(ENABLE_MOJO_RENDERER)
       media_log_(media_log),
 #endif
 #if BUILDFLAG(ENABLE_MOJO_CDM)
@@ -73,13 +70,12 @@ InterfaceFactoryImpl::~InterfaceFactoryImpl() {
 void InterfaceFactoryImpl::CreateAudioDecoder(
     mojo::InterfaceRequest<mojom::AudioDecoder> request) {
   DVLOG(2) << __func__;
-#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || \
-    BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
 
   std::unique_ptr<AudioDecoder> audio_decoder =
-      mojo_media_client_->CreateAudioDecoder(task_runner, media_log_);
+      mojo_media_client_->CreateAudioDecoder(task_runner);
   if (!audio_decoder) {
     DLOG(ERROR) << "AudioDecoder creation failed.";
     return;
@@ -89,8 +85,7 @@ void InterfaceFactoryImpl::CreateAudioDecoder(
       std::make_unique<MojoAudioDecoderService>(&cdm_service_context_,
                                                 std::move(audio_decoder)),
       std::move(request));
-#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) ||
-        // BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 }
 
 void InterfaceFactoryImpl::CreateVideoDecoder(
@@ -207,12 +202,10 @@ void InterfaceFactoryImpl::OnDestroyPending(base::OnceClosure destroy_cb) {
 }
 
 bool InterfaceFactoryImpl::IsEmpty() {
-#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || \
-    BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
   if (!audio_decoder_bindings_.empty())
     return false;
-#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) ||
-        // BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   if (!video_decoder_bindings_.empty())
@@ -247,11 +240,9 @@ void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
   auto connection_error_cb = base::BindRepeating(
       &InterfaceFactoryImpl::OnBindingConnectionError, base::Unretained(this));
 
-#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || \
-    BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
   audio_decoder_bindings_.set_connection_error_handler(connection_error_cb);
-#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) ||
-        // BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   video_decoder_bindings_.set_connection_error_handler(connection_error_cb);

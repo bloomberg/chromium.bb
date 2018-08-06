@@ -12,7 +12,6 @@ buildflag_header("buildflags") {
   enable_mojo_renderer = false
   enable_mojo_cdm = false
   enable_mojo_audio_decoder = false
-  enable_assistant_mojo_audio_decoder = false
   enable_mojo_video_decoder = false
   enable_mojo_media_in_browser_process = false
   enable_mojo_media_in_gpu_process = false
@@ -31,8 +30,6 @@ buildflag_header("buildflags") {
         enable_mojo_cdm = true
       } else if (service == "audio_decoder") {
         enable_mojo_audio_decoder = true
-      } else if (service == "assistant_audio_decoder") {
-        enable_assistant_mojo_audio_decoder = true
       } else if (service == "video_decoder") {
         enable_mojo_video_decoder = true
       } else {
@@ -52,10 +49,6 @@ buildflag_header("buildflags") {
     } else {
       assert(false, "Invalid mojo media host: $mojo_media_host")
     }
-
-    if (assistant_mojo_media_host == "utility") {
-      enable_mojo_media_in_utility_process = true
-    }
   }
 
   flags = [
@@ -64,7 +57,6 @@ buildflag_header("buildflags") {
     "ENABLE_MOJO_RENDERER=$enable_mojo_renderer",
     "ENABLE_MOJO_CDM=$enable_mojo_cdm",
     "ENABLE_MOJO_AUDIO_DECODER=$enable_mojo_audio_decoder",
-    "ENABLE_ASSISTANT_MOJO_AUDIO_DECODER=$enable_assistant_mojo_audio_decoder",
     "ENABLE_MOJO_VIDEO_DECODER=$enable_mojo_video_decoder",
     "ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS=$enable_mojo_media_in_browser_process",
     "ENABLE_MOJO_MEDIA_IN_GPU_PROCESS=$enable_mojo_media_in_gpu_process",

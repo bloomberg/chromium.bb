@@ -7,14 +7,9 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "media/mojo/buildflags.h"
 #include "media/mojo/services/gpu_mojo_media_client.h"
 #include "media/mojo/services/media_service.h"
 #include "media/mojo/services/test_mojo_media_client.h"
-
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-#include "media/mojo/services/assistant_mojo_media_client.h"  // nogncheck
-#endif
 
 #if defined(OS_ANDROID)
 #include "media/mojo/services/android_mojo_media_client.h"  // nogncheck
@@ -28,9 +23,6 @@ std::unique_ptr<service_manager::Service> CreateMediaService() {
 #elif defined(OS_ANDROID)
   return std::unique_ptr<service_manager::Service>(
       new MediaService(std::make_unique<AndroidMojoMediaClient>()));
-#elif BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
-  return std::make_unique<MediaService>(
-      std::make_unique<AssistantMojoMediaClient>());
 #else
   NOTREACHED() << "No MediaService implementation available.";
   return nullptr;

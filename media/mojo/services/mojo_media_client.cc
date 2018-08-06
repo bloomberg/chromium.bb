@@ -24,8 +24,7 @@ MojoMediaClient::~MojoMediaClient() = default;
 void MojoMediaClient::Initialize(service_manager::Connector* connector) {}
 
 std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    MediaLog* media_log) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return nullptr;
 }
 

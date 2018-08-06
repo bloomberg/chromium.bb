@@ -5,7 +5,6 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
-import("//chromeos/assistant/assistant.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 # Do not expand this list without double-checking with OWNERS, this is a list of
@@ -174,13 +173,6 @@ assert(!enable_cdm_host_verification || is_mac || is_win,
 _default_mojo_media_services = []
 _default_mojo_media_host = "none"
 
-# Mojo media host for Chrome OS Assistant.
-_default_assistant_mojo_media_host = "none"
-
-# Enables the use of Assistant Audio Decoder Service. If true, it will be hosted
-# in the mojo MediaService running in the utility process.
-enable_assistant_audio_decoder = is_chromeos && enable_cros_libassistant
-
 # Default mojo_media_services and mojo_media_host on various platforms.
 # Can be overridden by gn build arguments from the --args command line flag
 # for local testing.
@@ -202,12 +194,6 @@ if (enable_mojo_media) {
   } else if (is_mac || is_win) {
     _default_mojo_media_services = [ "video_decoder" ]
     _default_mojo_media_host = "gpu"
-  }
-
-  if (enable_assistant_audio_decoder) {
-    # Chrome OS Assistant uses audio decoder running in utility process.
-    _default_mojo_media_services += [ "assistant_audio_decoder" ]
-    _default_assistant_mojo_media_host = "utility"
   }
 
   if (enable_library_cdms) {
@@ -249,7 +235,6 @@ declare_args() {
   # - "gpu": Use mojo media service hosted in the gpu process.
   # - "utility": Use mojo media service hosted in the utility process.
   mojo_media_host = _default_mojo_media_host
-  assistant_mojo_media_host = _default_assistant_mojo_media_host
 }
 
 declare_args() {

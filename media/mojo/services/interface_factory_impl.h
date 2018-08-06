@@ -63,24 +63,16 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   // available.
   MojoCdmServiceContext cdm_service_context_;
 
-#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || \
-    BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
   mojo::StrongBindingSet<mojom::AudioDecoder> audio_decoder_bindings_;
-#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) ||
-        // BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   mojo::StrongBindingSet<mojom::VideoDecoder> video_decoder_bindings_;
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
-#if BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || \
-    BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
-  MediaLog* media_log_;
-#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER) ||
-        // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) ||
-        // BUILDFLAG(ENABLE_ASSISTANT_MOJO_AUDIO_DECODER)
-
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
+  MediaLog* media_log_;
   mojo::StrongBindingSet<mojom::Renderer> renderer_bindings_;
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
