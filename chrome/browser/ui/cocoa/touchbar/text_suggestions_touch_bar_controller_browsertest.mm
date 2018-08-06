@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller.h"
+#import "chrome/browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller.h"
 #include "chrome/browser/ui/cocoa/touchbar/web_textfield_touch_bar_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -46,11 +46,12 @@
 
 @end
 
-@interface MockSuggestedTextTouchBarController : SuggestedTextTouchBarController
+@interface MockTextSuggestionsTouchBarController
+    : TextSuggestionsTouchBarController
 - (NSString*)firstSuggestion;
 @end
 
-@implementation MockSuggestedTextTouchBarController
+@implementation MockTextSuggestionsTouchBarController
 
 - (void)requestSuggestions {
   [self setSuggestions:@[ [self text] ]];
@@ -65,18 +66,18 @@
 
 namespace {
 
-class SuggestedTextTouchBarControllerBrowserTest : public InProcessBrowserTest {
+class TextSuggestionsTouchBarControllerTest : public InProcessBrowserTest {
  public:
   void SetUp() override {
     InProcessBrowserTest::SetUp();
-    feature_list_.InitAndEnableFeature(features::kSuggestedTextTouchBar);
+    feature_list_.InitAndEnableFeature(features::kTextSuggestionsTouchBar);
   }
 
   void SetUpOnMainThread() override {
     web_textfield_controller_.reset(
         [[MockWebTextfieldTouchBarController alloc] init]);
     [web_textfield_controller_ resetNumInvalidations];
-    touch_bar_controller_.reset([[MockSuggestedTextTouchBarController alloc]
+    touch_bar_controller_.reset([[MockTextSuggestionsTouchBarController alloc]
         initWithWebContents:GetActiveWebContents()
                  controller:web_textfield_controller_]);
   }
@@ -98,16 +99,15 @@ class SuggestedTextTouchBarControllerBrowserTest : public InProcessBrowserTest {
 
   base::scoped_nsobject<MockWebTextfieldTouchBarController>
       web_textfield_controller_;
-  base::scoped_nsobject<MockSuggestedTextTouchBarController>
+  base::scoped_nsobject<MockTextSuggestionsTouchBarController>
       touch_bar_controller_;
   base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests to check if the touch bar shows up properly.
-IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
-                       TouchBarTest) {
+IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, MakeTouchBar) {
   if (@available(macOS 10.12.2, *)) {
-    NSString* const kSuggestedTextTouchBarId = @"suggested-text";
+    NSString* const kTextSuggestionsTouchBarId = @"text-suggestions";
 
     // Touch bar shouldn't appear if the focused element is not a textfield.
     UnfocusTextfield();
@@ -118,13 +118,13 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
     NSTouchBar* touch_bar = [touch_bar_controller_ makeTouchBar];
     EXPECT_TRUE(touch_bar);
     EXPECT_TRUE([[touch_bar customizationIdentifier]
-        isEqual:ui::GetTouchBarId(kSuggestedTextTouchBarId)]);
+        isEqual:ui::GetTouchBarId(kTextSuggestionsTouchBarId)]);
   }
 }
 
 // Tests that a change in text selection is handled properly.
-IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
-                       UpdateTextSelectionTest) {
+IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
+                       UpdateTextSelection) {
   NSString* const kText = @"text";
   NSString* const kEmptyText = @"";
   const gfx::Range kRange = gfx::Range(0, 4);
@@ -175,8 +175,7 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
 }
 
 // Tests that a change in WebContents is handled properly.
-IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
-                       SetWebContentsTest) {
+IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, SetWebContents) {
   NSString* const kText = @"text";
   const gfx::Range kRange = gfx::Range(1, 1);
 

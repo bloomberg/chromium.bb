@@ -14,7 +14,7 @@
 
 @class BrowserWindowTouchBarController;
 @class CreditCardAutofillTouchBarController;
-@class SuggestedTextTouchBarController;
+@class TextSuggestionsTouchBarController;
 @class TabContentsController;
 
 namespace autofill {
@@ -31,8 +31,8 @@ class WebContents;
   BrowserWindowTouchBarController* controller_;  // weak.
   base::scoped_nsobject<CreditCardAutofillTouchBarController>
       autofillTouchBarController_;
-  base::scoped_nsobject<SuggestedTextTouchBarController>
-      suggestedTextTouchBarController_;
+  base::scoped_nsobject<TextSuggestionsTouchBarController>
+      textSuggestionsTouchBarController_;
 }
 
 + (WebTextfieldTouchBarController*)controllerForWindow:(NSWindow*)window;

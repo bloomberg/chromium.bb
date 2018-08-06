@@ -4121,10 +4121,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_MACOSX)
-    {"enable-suggested-text-touch-bar",
-     flag_descriptions::kSuggestedTextTouchBarName,
-     flag_descriptions::kSuggestedTextTouchBarDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kSuggestedTextTouchBar)},
+    {"enable-text-suggestions-touch-bar",
+     flag_descriptions::kTextSuggestionsTouchBarName,
+     flag_descriptions::kTextSuggestionsTouchBarDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kTextSuggestionsTouchBar)},
 #endif
 
 #if defined(OS_CHROMEOS)

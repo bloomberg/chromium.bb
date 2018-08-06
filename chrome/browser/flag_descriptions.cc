@@ -2935,10 +2935,6 @@ const char kMacViewsTaskManagerName[] = "Toolkit-Views Task Manager.";
 const char kMacViewsTaskManagerDescription[] =
     "Controls whether to use the Toolkit-Views based Task Manager.";
 
-const char kSuggestedTextTouchBarName[] = "Suggested Text Touch Bar";
-const char kSuggestedTextTouchBarDescription[] =
-    "Enable suggested text touch bar for textfields.";
-
 const char kTabDetachingInFullscreenName[] =
     "Allow tab detaching in fullscreen";
 const char kTabDetachingInFullscreenDescription[] =
@@ -2947,6 +2943,10 @@ const char kTabDetachingInFullscreenDescription[] =
 const char kTabStripKeyboardFocusName[] = "Tab Strip Keyboard Focus";
 const char kTabStripKeyboardFocusDescription[] =
     "Enable keyboard focus for the tabs in the tab strip.";
+
+const char kTextSuggestionsTouchBarName[] = "Text Suggestions Touch Bar";
+const char kTextSuggestionsTouchBarDescription[] =
+    "Enable text suggestions touch bar for textfields.";
 
 #endif
 

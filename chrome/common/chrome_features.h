@@ -291,10 +291,6 @@ extern const base::Feature kSingleTabMode;
 
 extern const base::Feature kSoundContentSetting;
 
-#if defined(OS_MACOSX)
-extern const base::Feature kSuggestedTextTouchBar;
-#endif
-
 extern const base::Feature kSupervisedUserCommittedInterstitials;
 
 #if defined(OS_CHROMEOS)
@@ -303,6 +299,10 @@ extern const base::Feature kSysInternals;
 
 #if !defined(OS_ANDROID)
 extern const base::Feature kTabMetricsLogging;
+#endif
+
+#if defined(OS_MACOSX)
+extern const base::Feature kTextSuggestionsTouchBar;
 #endif
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
