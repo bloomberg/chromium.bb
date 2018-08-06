@@ -155,7 +155,7 @@ WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
 }
 
 void WebRtcRemoteEventLogManager::SetNetworkConnectionTracker(
-    content::NetworkConnectionTracker* network_connection_tracker) {
+    network::NetworkConnectionTracker* network_connection_tracker) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(network_connection_tracker);
   DCHECK(!network_connection_tracker_);

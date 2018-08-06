@@ -207,7 +207,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // OnFirstBrowserContextLoadedInternal() is the task sent to |task_runner_|.
   void OnFirstBrowserContextLoaded();
   void OnFirstBrowserContextLoadedInternal(
-      content::NetworkConnectionTracker* network_connection_tracker,
+      network::NetworkConnectionTracker* network_connection_tracker,
       net::URLRequestContextGetter* url_request_context_getter,
       std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory);
 

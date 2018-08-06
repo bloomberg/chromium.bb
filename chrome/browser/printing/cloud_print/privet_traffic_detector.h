@@ -11,10 +11,10 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/network_connection_tracker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_endpoint.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace content {
@@ -31,7 +31,7 @@ class PrivetTrafficDetector
     : public base::RefCountedThreadSafe<
           PrivetTrafficDetector,
           content::BrowserThread::DeleteOnIOThread>,
-      private content::NetworkConnectionTracker::NetworkConnectionObserver,
+      private network::NetworkConnectionTracker::NetworkConnectionObserver,
       public network::mojom::UDPSocketReceiver {
  public:
   PrivetTrafficDetector(net::AddressFamily address_family,
@@ -64,7 +64,7 @@ class PrivetTrafficDetector
   void OnJoinGroupComplete(int rv);
   void ResetConnection();
 
-  // content::NetworkConnectionTracker::NetworkConnectionObserver:
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // network::mojom::UDPSocketReceiver implementation

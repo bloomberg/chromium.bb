@@ -20,9 +20,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_management_switches.h"
-#include "content/public/browser/network_connection_tracker.h"
-#include "content/public/test/mock_network_connection_tracker.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,7 +62,7 @@ class ChromeSigninClientTest : public testing::Test {
  public:
   ChromeSigninClientTest() {}
 
-  void Initialize(std::unique_ptr<content::NetworkConnectionTracker> tracker) {
+  void Initialize(std::unique_ptr<network::NetworkConnectionTracker> tracker) {
     TestingBrowserProcess::GetGlobal()->SetNetworkConnectionTracker(
         std::move(tracker));
     // Create a signed-in profile.
@@ -82,7 +82,7 @@ class ChromeSigninClientTest : public testing::Test {
 };
 
 TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsImmediatelyWithNetwork) {
-  Initialize(std::make_unique<content::MockNetworkConnectionTracker>(
+  Initialize(std::make_unique<network::TestNetworkConnectionTracker>(
       true, network::mojom::ConnectionType::CONNECTION_3G));
   CallbackTester tester;
   signin_client()->DelayNetworkCall(
@@ -91,7 +91,7 @@ TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsImmediatelyWithNetwork) {
 }
 
 TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterGetConnectionType) {
-  auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+  auto tracker = std::make_unique<network::TestNetworkConnectionTracker>(
       false, network::mojom::ConnectionType::CONNECTION_3G);
   Initialize(std::move(tracker));
 
@@ -106,9 +106,9 @@ TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterGetConnectionType) {
 }
 
 TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterNetworkChange) {
-  auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+  auto tracker = std::make_unique<network::TestNetworkConnectionTracker>(
       true, network::mojom::ConnectionType::CONNECTION_NONE);
-  content::MockNetworkConnectionTracker* mock = tracker.get();
+  network::TestNetworkConnectionTracker* mock = tracker.get();
   Initialize(std::move(tracker));
 
   base::RunLoop run_loop;

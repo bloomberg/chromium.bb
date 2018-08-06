@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/mock_network_connection_tracker.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace content {
+namespace network {
 
-MockNetworkConnectionTracker::MockNetworkConnectionTracker(
+TestNetworkConnectionTracker::TestNetworkConnectionTracker(
     bool respond_synchronously,
     network::mojom::ConnectionType initial_type)
     : respond_synchronously_(respond_synchronously), type_(initial_type) {}
 
-bool MockNetworkConnectionTracker::GetConnectionType(
+bool TestNetworkConnectionTracker::GetConnectionType(
     network::mojom::ConnectionType* type,
     ConnectionTypeCallback callback) {
   if (respond_synchronously_) {
@@ -27,10 +27,10 @@ bool MockNetworkConnectionTracker::GetConnectionType(
   return false;
 }
 
-void MockNetworkConnectionTracker::SetConnectionType(
+void TestNetworkConnectionTracker::SetConnectionType(
     network::mojom::ConnectionType type) {
   type_ = type;
   OnNetworkChanged(type_);
 }
 
-}  // namespace content
+}  // namespace network

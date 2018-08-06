@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "content/public/browser/network_connection_tracker.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 class Profile;
 class SigninManager;
@@ -27,7 +27,7 @@ extern const char kForceSigninVerificationFailureTimeMetricsName[];
 // error.
 class ForceSigninVerifier
     : public OAuth2TokenService::Consumer,
-      public content::NetworkConnectionTracker::NetworkConnectionObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   explicit ForceSigninVerifier(Profile* profile);
   ~ForceSigninVerifier() override;
@@ -39,7 +39,7 @@ class ForceSigninVerifier
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
-  // override content::NetworkConnectionTracker::NetworkConnectionObserver
+  // override network::NetworkConnectionTracker::NetworkConnectionObserver
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // Cancel any pending or ongoing verification.

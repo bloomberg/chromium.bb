@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_uploader.h"
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 // TODO(crbug.com/775415): Avoid uploading logs when Chrome shutdown imminent.
 
@@ -22,7 +22,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 class WebRtcRemoteEventLogManager final
-    : public content::NetworkConnectionTracker::NetworkConnectionObserver {
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
   using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
   using LogFilesMap =
       std::map<WebRtcEventLogPeerConnectionKey, std::unique_ptr<LogFileWriter>>;
@@ -34,12 +34,12 @@ class WebRtcRemoteEventLogManager final
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~WebRtcRemoteEventLogManager() override;
 
-  // Sets a content::NetworkConnectionTracker which will be used to track
+  // Sets a network::NetworkConnectionTracker which will be used to track
   // network connectivity.
   // Must not be called more than once.
   // Must be called before any call to EnableForBrowserContext().
   void SetNetworkConnectionTracker(
-      content::NetworkConnectionTracker* network_connection_tracker);
+      network::NetworkConnectionTracker* network_connection_tracker);
 
   // Sets a net::URLRequestContextGetter which will be used for uploads.
   // Must not be called more than once.
@@ -136,7 +136,7 @@ class WebRtcRemoteEventLogManager final
   // were associated with the renderer process.
   void RenderProcessHostExitedDestroyed(int render_process_id);
 
-  // content::NetworkConnectionTracker::NetworkConnectionObserver implementation
+  // network::NetworkConnectionTracker::NetworkConnectionObserver implementation
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // Unit tests may use this to inject null uploaders, or ones which are
@@ -355,7 +355,7 @@ class WebRtcRemoteEventLogManager final
   std::unique_ptr<WebRtcEventLogUploader> uploader_;
 
   // Provides notifications of network changes.
-  content::NetworkConnectionTracker* network_connection_tracker_;
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   // Whether the network we are currently connected to, if any, is one over
   // which we may upload.

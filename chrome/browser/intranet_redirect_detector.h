@@ -12,9 +12,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/network_connection_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -40,7 +40,7 @@ class PrefRegistrySimple;
 // return a value at all times (even during startup or in unittest mode).  If no
 // redirection is in place, the returned GURL will be empty.
 class IntranetRedirectDetector
-    : public content::NetworkConnectionTracker::NetworkConnectionObserver {
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->intranet_redirect_detector_.  No code other than the

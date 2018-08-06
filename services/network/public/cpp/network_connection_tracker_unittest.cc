@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -14,7 +14,7 @@
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -179,8 +179,8 @@ class NetworkConnectionTrackerTest : public testing::Test {
     network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
     network_service_ =
-        network::NetworkService::Create(std::move(network_service_request),
-                                        /*netlog=*/nullptr);
+        NetworkService::Create(std::move(network_service_request),
+                               /*netlog=*/nullptr);
     tracker_ = std::make_unique<NetworkConnectionTracker>(
         base::BindRepeating(&NetworkConnectionTrackerTest::network_service,
                             base::Unretained(this)));
@@ -213,7 +213,7 @@ class NetworkConnectionTrackerTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::test::MockNetworkChangeNotifier mock_network_change_notifier_;
-  std::unique_ptr<network::NetworkService> network_service_;
+  std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkConnectionTracker> tracker_;
   std::unique_ptr<TestNetworkConnectionObserver> observer_;
 
@@ -404,4 +404,4 @@ TEST_F(NetworkGetConnectionTest, GetConnectionTypeOnDifferentThread) {
   }
 }
 
-}  // namespace content
+}  // namespace network

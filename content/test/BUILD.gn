@@ -95,8 +95,6 @@ jumbo_static_library("test_support") {
     "../public/test/mock_browsing_data_remover_delegate.h",
     "../public/test/mock_download_manager.cc",
     "../public/test/mock_download_manager.h",
-    "../public/test/mock_network_connection_tracker.cc",
-    "../public/test/mock_network_connection_tracker.h",
     "../public/test/mock_notification_observer.cc",
     "../public/test/mock_notification_observer.h",
     "../public/test/mock_permission_manager.cc",
@@ -1619,7 +1617,6 @@ test("content_unittests") {
     "../common/throttling_url_loader_unittest.cc",
     "../common/unique_name_helper_unittest.cc",
     "../common/webplugininfo_unittest.cc",
-    "../public/browser/network_connection_tracker_unittest.cc",
     "../public/browser/site_isolation_policy_unittest.cc",
 
     # TODO(jam): move these network/ tests to services/network.

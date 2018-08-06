@@ -21,7 +21,7 @@
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class OAuth2TokenService;
@@ -69,7 +69,7 @@ class SyncEngine
       public LocalChangeProcessor,
       public drive::DriveNotificationObserver,
       public drive::DriveServiceObserver,
-      public content::NetworkConnectionTracker::NetworkConnectionObserver,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public SigninManagerBase::Observer {
  public:
   typedef RemoteFileSyncService::Observer SyncServiceObserver;
@@ -146,7 +146,7 @@ class SyncEngine
   void OnReadyToSendRequests() override;
   void OnRefreshTokenInvalid() override;
 
-  // content::NetworkConnectionTracker::NetworkConnectionObserver overrides.
+  // network::NetworkConnectionTracker::NetworkConnectionObserver overrides.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // SigninManagerBase::Observer overrides.

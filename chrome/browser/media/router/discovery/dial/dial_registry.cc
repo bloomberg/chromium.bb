@@ -66,7 +66,7 @@ DialRegistry* DialRegistry::GetInstance() {
 }
 
 void DialRegistry::SetNetworkConnectionTracker(
-    content::NetworkConnectionTracker* tracker) {
+    network::NetworkConnectionTracker* tracker) {
   network_connection_tracker_ = tracker;
   network_connection_tracker_->AddLeakyNetworkConnectionObserver(this);
   // If there are no observers yet, it won't actually start.
@@ -158,7 +158,7 @@ bool DialRegistry::ReadyToDiscover() {
     OnDialError(DIAL_NETWORK_DISCONNECTED);
     return false;
   }
-  if (content::NetworkConnectionTracker::IsConnectionCellular(type)) {
+  if (network::NetworkConnectionTracker::IsConnectionCellular(type)) {
     OnDialError(DIAL_CELLULAR_NETWORK);
     return false;
   }

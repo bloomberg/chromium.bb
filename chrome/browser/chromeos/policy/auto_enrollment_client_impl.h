@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 class PrefRegistrySimple;
@@ -35,7 +35,7 @@ class DeviceManagementRequestJob;
 // OOBE.
 class AutoEnrollmentClientImpl
     : public AutoEnrollmentClient,
-      public content::NetworkConnectionTracker::NetworkConnectionObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // Subclasses of this class provide an identifier and specify the identifier
   // set for the DeviceAutoEnrollmentRequest,
@@ -86,7 +86,7 @@ class AutoEnrollmentClientImpl
   std::string device_id() const override;
   AutoEnrollmentState state() const override;
 
-  // content::NetworkConnectionTracker::NetworkConnectionObserver:
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
  private:

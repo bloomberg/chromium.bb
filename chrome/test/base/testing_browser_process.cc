@@ -26,12 +26,12 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
-#include "content/public/browser/network_connection_tracker.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -59,9 +59,9 @@
 
 namespace {
 
-class MockNetworkConnectionTracker : public content::NetworkConnectionTracker {
+class MockNetworkConnectionTracker : public network::NetworkConnectionTracker {
  public:
-  MockNetworkConnectionTracker() : content::NetworkConnectionTracker() {}
+  MockNetworkConnectionTracker() : network::NetworkConnectionTracker() {}
   ~MockNetworkConnectionTracker() override {}
 
   bool GetConnectionType(network::mojom::ConnectionType* type,
@@ -176,7 +176,7 @@ TestingBrowserProcess::shared_url_loader_factory() {
   return shared_url_loader_factory_;
 }
 
-content::NetworkConnectionTracker*
+network::NetworkConnectionTracker*
 TestingBrowserProcess::network_connection_tracker() {
   if (!network_connection_tracker_) {
     network_connection_tracker_ =
@@ -471,7 +471,7 @@ void TestingBrowserProcess::SetSharedURLLoaderFactory(
 }
 
 void TestingBrowserProcess::SetNetworkConnectionTracker(
-    std::unique_ptr<content::NetworkConnectionTracker> tracker) {
+    std::unique_ptr<network::NetworkConnectionTracker> tracker) {
   network_connection_tracker_ = std::move(tracker);
 }
 
