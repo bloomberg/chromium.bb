@@ -1327,6 +1327,21 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       }
       break;
 
+    case ui::VKEY_SPACE:
+      {
+        size_t start, end;
+        GetSelectionBounds(&start, &end);
+        end = std::max(start, end);
+        if (end == text().size() &&
+            model()->popup_model()->SelectedLineHasTabMatch() &&
+            model()->popup_model()->selected_line_state() ==
+                OmniboxPopupModel::TAB_SWITCH) {
+          popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
+          return true;
+        }
+      }
+      break;
+
     default:
       break;
   }
