@@ -553,26 +553,6 @@
           ],
         },
       },
-      'CrWinClangLLD': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-        },
-      },
-      'CrWinClangLLD64': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-        },
-      },
-      'CrWinClngLLD64dbg': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-        },
-      },
-      'CrWinClngLLDdbg': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-        },
-      },
       'ToTAndroid': {
         'additional_compile_targets': [
           'all',
