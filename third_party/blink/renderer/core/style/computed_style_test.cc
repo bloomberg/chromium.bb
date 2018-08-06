@@ -286,4 +286,69 @@ TEST(ComputedStyleTest, CursorList) {
   EXPECT_EQ(*style, *other);
 }
 
+TEST(ComputedStyleTest, BorderStyle) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Create();
+  style->SetBorderLeftStyle(EBorderStyle::kSolid);
+  style->SetBorderTopStyle(EBorderStyle::kSolid);
+  style->SetBorderRightStyle(EBorderStyle::kSolid);
+  style->SetBorderBottomStyle(EBorderStyle::kSolid);
+  other->SetBorderLeftStyle(EBorderStyle::kSolid);
+  other->SetBorderTopStyle(EBorderStyle::kSolid);
+  other->SetBorderRightStyle(EBorderStyle::kSolid);
+  other->SetBorderBottomStyle(EBorderStyle::kSolid);
+
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+  style->SetBorderLeftWidth(1.0);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  other->SetBorderLeftWidth(1.0);
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+  style->SetBorderTopWidth(1.0);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  other->SetBorderTopWidth(1.0);
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+  style->SetBorderRightWidth(1.0);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  other->SetBorderRightWidth(1.0);
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+  style->SetBorderBottomWidth(1.0);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  other->SetBorderBottomWidth(1.0);
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+
+  style->SetBorderLeftStyle(EBorderStyle::kHidden);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  style->SetBorderLeftStyle(EBorderStyle::kNone);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  style->SetBorderLeftStyle(EBorderStyle::kSolid);
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+
+  style->SetBorderTopStyle(EBorderStyle::kHidden);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  style->SetBorderTopStyle(EBorderStyle::kNone);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  style->SetBorderTopStyle(EBorderStyle::kSolid);
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+
+  style->SetBorderRightStyle(EBorderStyle::kHidden);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  style->SetBorderRightStyle(EBorderStyle::kNone);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  style->SetBorderRightStyle(EBorderStyle::kSolid);
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+
+  style->SetBorderBottomStyle(EBorderStyle::kHidden);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  style->SetBorderBottomStyle(EBorderStyle::kNone);
+  EXPECT_FALSE(style->BorderSizeEquals(*other));
+  style->SetBorderBottomStyle(EBorderStyle::kSolid);
+  EXPECT_TRUE(style->BorderSizeEquals(*other));
+}
+
 }  // namespace blink

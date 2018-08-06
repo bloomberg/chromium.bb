@@ -1479,10 +1479,10 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   bool BorderSizeEquals(const ComputedStyle& o) const {
-    return BorderLeftWidthInternal() == o.BorderLeftWidthInternal() &&
-           BorderTopWidthInternal() == o.BorderTopWidthInternal() &&
-           BorderRightWidthInternal() == o.BorderRightWidthInternal() &&
-           BorderBottomWidthInternal() == o.BorderBottomWidthInternal();
+    return BorderLeftWidth() == o.BorderLeftWidth() &&
+           BorderTopWidth() == o.BorderTopWidth() &&
+           BorderRightWidth() == o.BorderRightWidth() &&
+           BorderBottomWidth() == o.BorderBottomWidth();
   }
 
   BorderValue BorderBeforeUsing(const ComputedStyle& other) const {
