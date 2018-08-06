@@ -1712,20 +1712,9 @@ void BrowserMainLoop::InitializeAudio() {
   }
 
   if (base::FeatureList::IsEnabled(features::kAudioServiceLaunchOnStartup)) {
-    // Schedule the audio service startup on the main thread.
-    BrowserThread::PostAfterStartupTask(
-        FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-        base::BindOnce([]() {
-          TRACE_EVENT0("audio", "Starting audio service");
-          ServiceManagerConnection* connection =
-              content::ServiceManagerConnection::GetForProcess();
-          if (connection) {
-            // The browser is not shutting down: |connection| would be null
-            // otherwise.
-            connection->GetConnector()->StartService(
-                audio::mojom::kServiceName);
-          }
-        }));
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->StartService(audio::mojom::kServiceName);
   }
 
   audio_system_ = audio::CreateAudioSystem(
