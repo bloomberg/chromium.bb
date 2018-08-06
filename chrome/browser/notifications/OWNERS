@@ -5,9 +5,6 @@ peter@chromium.org
 stevenjb@chromium.org
 yoshiki@chromium.org
 
-# Android files
-per-file *_android*=awdf@chromium.org
-
 # Mac files
 per-file *_mac*=rsesek@chromium.org
 
