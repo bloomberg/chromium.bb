@@ -26,8 +26,10 @@ bool ProgressMarkersMatch(const browser_sync::ProfileSyncService* service1,
                           const browser_sync::ProfileSyncService* service2) {
   // GetActiveDataTypes() is always empty during configuration, so progress
   // markers cannot be compared.
-  if (service1->GetState() != syncer::SyncService::State::ACTIVE ||
-      service2->GetState() != syncer::SyncService::State::ACTIVE) {
+  if (service1->GetTransportState() !=
+          syncer::SyncService::TransportState::ACTIVE ||
+      service2->GetTransportState() !=
+          syncer::SyncService::TransportState::ACTIVE) {
     return false;
   }
 

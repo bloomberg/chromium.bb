@@ -69,7 +69,7 @@ class OneClickTestProfileSyncService
 
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
 
-  State GetState() const override { return state_; }
+  TransportState GetTransportState() const override { return state_; }
 
   void set_first_setup_complete(bool complete) {
     first_setup_complete_ = complete;
@@ -79,18 +79,18 @@ class OneClickTestProfileSyncService
     setup_in_progress_ = in_progress;
   }
 
-  void set_state(State state) { state_ = state; }
+  void set_state(TransportState state) { state_ = state; }
 
  private:
   explicit OneClickTestProfileSyncService(InitParams init_params)
       : browser_sync::TestProfileSyncService(std::move(init_params)),
         first_setup_complete_(false),
         setup_in_progress_(false),
-        state_(State::INITIALIZING) {}
+        state_(TransportState::INITIALIZING) {}
 
   bool first_setup_complete_;
   bool setup_in_progress_;
-  State state_;
+  TransportState state_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickTestProfileSyncService);
 };
@@ -208,7 +208,7 @@ TEST_F(OneClickSigninSyncObserverTest,
   CreateSyncObserver(kContinueUrl);
   sync_service_->set_first_setup_complete(true);
   sync_service_->set_setup_in_progress(false);
-  sync_service_->set_state(syncer::SyncService::State::ACTIVE);
+  sync_service_->set_state(syncer::SyncService::TransportState::ACTIVE);
 
   EXPECT_CALL(*web_contents_observer_, DidStartNavigation(_));
   sync_service_->NotifyObservers();
@@ -222,7 +222,7 @@ TEST_F(OneClickSigninSyncObserverTest,
   CreateSyncObserver(kContinueUrl);
   sync_service_->set_first_setup_complete(true);
   sync_service_->set_setup_in_progress(false);
-  sync_service_->set_state(syncer::SyncService::State::INITIALIZING);
+  sync_service_->set_state(syncer::SyncService::TransportState::INITIALIZING);
 
   EXPECT_CALL(*web_contents_observer_, DidStartNavigation(_)).Times(0);
   sync_service_->NotifyObservers();
@@ -236,7 +236,7 @@ TEST_F(OneClickSigninSyncObserverTest,
   CreateSyncObserver(kContinueUrl);
   sync_service_->set_first_setup_complete(false);
   sync_service_->set_setup_in_progress(true);
-  sync_service_->set_state(syncer::SyncService::State::INITIALIZING);
+  sync_service_->set_state(syncer::SyncService::TransportState::INITIALIZING);
 
   EXPECT_CALL(*web_contents_observer_, DidStartNavigation(_)).Times(0);
   sync_service_->NotifyObservers();
@@ -256,7 +256,7 @@ TEST_F(OneClickSigninSyncObserverTest,
   CreateSyncObserver(continue_url.spec());
   sync_service_->set_first_setup_complete(true);
   sync_service_->set_setup_in_progress(false);
-  sync_service_->set_state(syncer::SyncService::State::ACTIVE);
+  sync_service_->set_state(syncer::SyncService::TransportState::ACTIVE);
 
   EXPECT_CALL(*web_contents_observer_, DidStartNavigation(_)).Times(0);
   sync_service_->NotifyObservers();

@@ -190,22 +190,22 @@ std::string GetDisableReasonsString(int disable_reasons) {
   return base::JoinString(reason_strings, ", ");
 }
 
-std::string GetSummaryString(syncer::SyncService::State state,
+std::string GetSummaryString(syncer::SyncService::TransportState state,
                              int disable_reasons) {
   switch (state) {
-    case syncer::SyncService::State::DISABLED:
+    case syncer::SyncService::TransportState::DISABLED:
       return "Disabled (" + GetDisableReasonsString(disable_reasons) + ")";
-    case syncer::SyncService::State::WAITING_FOR_START_REQUEST:
+    case syncer::SyncService::TransportState::WAITING_FOR_START_REQUEST:
       return "Waiting for start request";
-    case syncer::SyncService::State::START_DEFERRED:
+    case syncer::SyncService::TransportState::START_DEFERRED:
       return "Start deferred";
-    case syncer::SyncService::State::INITIALIZING:
+    case syncer::SyncService::TransportState::INITIALIZING:
       return "Initializing";
-    case syncer::SyncService::State::PENDING_DESIRED_CONFIGURATION:
+    case syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION:
       return "Pending desired configuration";
-    case syncer::SyncService::State::CONFIGURING:
+    case syncer::SyncService::TransportState::CONFIGURING:
       return "Configuring data types";
-    case syncer::SyncService::State::ACTIVE:
+    case syncer::SyncService::TransportState::ACTIVE:
       return "Active";
   }
   NOTREACHED();
@@ -428,8 +428,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   }
 
   // Summary.
-  summary_string->Set(
-      GetSummaryString(service->GetState(), service->GetDisableReasons()));
+  summary_string->Set(GetSummaryString(service->GetTransportState(),
+                                       service->GetDisableReasons()));
 
   SyncStatus full_status;
   bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);

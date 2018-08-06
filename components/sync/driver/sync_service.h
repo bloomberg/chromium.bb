@@ -84,7 +84,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   };
 
   // The overall state of the SyncService, in ascending order of "activeness".
-  enum class State {
+  enum class TransportState {
     // Sync is inactive, e.g. due to enterprise policy, or simply because there
     // is no authenticated user.
     DISABLED,
@@ -152,14 +152,14 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     return GetDisableReasons() & reason;
   }
 
-  // Returns the overall state of the SyncService. See the enum definition for
-  // what the individual states mean.
+  // Returns the overall state of the SyncService transport layer. See the enum
+  // definition for what the individual states mean.
   // Note: This refers to Sync-the-transport, which may be active even if
   // Sync-the-feature is disabled by the user, by enterprise policy, etc.
   // Note: If your question is "Are we actually sending this data to Google?" or
   // "Am I allowed to send this type of data to Google?", you probably want
   // syncer::GetUploadToGoogleState instead of this.
-  virtual State GetState() const = 0;
+  virtual TransportState GetTransportState() const = 0;
 
   // Returns true if the local sync backend server has been enabled through a
   // command line flag or policy. In this case sync is considered active but any

@@ -40,7 +40,7 @@ class FakeSyncService : public SyncService {
   // Dummy methods.
   // SyncService implementation.
   int GetDisableReasons() const override;
-  State GetState() const override;
+  TransportState GetTransportState() const override;
   bool IsFirstSetupComplete() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;

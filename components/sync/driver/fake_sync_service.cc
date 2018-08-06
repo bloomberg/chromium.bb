@@ -39,23 +39,23 @@ int FakeSyncService::GetDisableReasons() const {
   return DISABLE_REASON_PLATFORM_OVERRIDE;
 }
 
-syncer::SyncService::State FakeSyncService::GetState() const {
+syncer::SyncService::TransportState FakeSyncService::GetTransportState() const {
   // This is a temporary partial copy of the real implementation in
   // ProfileSyncService, containing only the things that exist in the
   // FakeSyncService. If subclasses override some of the individual getters,
   // this should still return a reasonable result.
   if (GetDisableReasons() != DISABLE_REASON_NONE) {
-    return State::DISABLED;
+    return TransportState::DISABLED;
   }
   // From this point on, Sync can start in principle.
   DCHECK(CanSyncStart());
   if (!IsFirstSetupComplete()) {
-    return State::PENDING_DESIRED_CONFIGURATION;
+    return TransportState::PENDING_DESIRED_CONFIGURATION;
   }
   if (!configuration_done_) {
-    return State::CONFIGURING;
+    return TransportState::CONFIGURING;
   }
-  return State::ACTIVE;
+  return TransportState::ACTIVE;
 }
 
 bool FakeSyncService::IsFirstSetupComplete() const {

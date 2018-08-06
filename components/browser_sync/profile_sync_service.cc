@@ -786,7 +786,8 @@ int ProfileSyncService::GetDisableReasons() const {
   return result;
 }
 
-syncer::SyncService::State ProfileSyncService::GetState() const {
+syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
+    const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsEngineAllowedToStart()) {
@@ -798,7 +799,7 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
     // immediately (not posting a task), or setting the unrecoverable error as
     // part of the posted task.
     DCHECK(HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR) || !engine_);
-    return State::DISABLED;
+    return TransportState::DISABLED;
   }
 
   // Typically, Sync won't start until the initial setup is at least in
@@ -808,13 +809,13 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
     switch (startup_controller_->GetState()) {
       case syncer::StartupController::State::NOT_STARTED:
         DCHECK(!engine_);
-        return State::WAITING_FOR_START_REQUEST;
+        return TransportState::WAITING_FOR_START_REQUEST;
       case syncer::StartupController::State::STARTING_DEFERRED:
         DCHECK(!engine_);
-        return State::START_DEFERRED;
+        return TransportState::START_DEFERRED;
       case syncer::StartupController::State::STARTED:
         DCHECK(engine_);
-        return State::INITIALIZING;
+        return TransportState::INITIALIZING;
     }
     NOTREACHED();
   }
@@ -829,7 +830,7 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   // in progress, we won't configure them right now.
   if (data_type_manager_->state() == DataTypeManager::STOPPED) {
     DCHECK(!CanConfigureDataTypes());
-    return State::PENDING_DESIRED_CONFIGURATION;
+    return TransportState::PENDING_DESIRED_CONFIGURATION;
   }
 
   // Unless standalone transport is enabled, the DataTypeManager shouldn't get
@@ -843,10 +844,10 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   DCHECK(CanConfigureDataTypes() || IsSetupInProgress());
 
   if (data_type_manager_->state() != DataTypeManager::CONFIGURED) {
-    return State::CONFIGURING;
+    return TransportState::CONFIGURING;
   }
 
-  return State::ACTIVE;
+  return TransportState::ACTIVE;
 }
 
 bool ProfileSyncService::IsFirstSetupComplete() const {

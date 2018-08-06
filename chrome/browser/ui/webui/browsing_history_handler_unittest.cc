@@ -61,9 +61,9 @@ class TestSyncService : public browser_sync::TestProfileSyncService {
   explicit TestSyncService(Profile* profile)
       : browser_sync::TestProfileSyncService(
             CreateProfileSyncServiceParamsForTest(profile)),
-        state_(State::ACTIVE) {}
+        state_(TransportState::ACTIVE) {}
 
-  State GetState() const override { return state_; }
+  TransportState GetTransportState() const override { return state_; }
 
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
 
@@ -73,13 +73,13 @@ class TestSyncService : public browser_sync::TestProfileSyncService {
     return syncer::ModelTypeSet::All();
   }
 
-  void SetState(State state) {
+  void SetTransportState(TransportState state) {
     state_ = state;
     NotifyObservers();
   }
 
  private:
-  State state_;
+  TransportState state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };
@@ -173,7 +173,8 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
   // BrowsingHistoryHandler is informed about WebHistoryService history
   // deletions.
   {
-    sync_service()->SetState(syncer::SyncService::State::ACTIVE);
+    sync_service()->SetTransportState(
+        syncer::SyncService::TransportState::ACTIVE);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
 
@@ -188,10 +189,12 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
   // BrowsingHistoryHandler will be informed about WebHistoryService deletions
   // even if history sync is activated later.
   {
-    sync_service()->SetState(syncer::SyncService::State::INITIALIZING);
+    sync_service()->SetTransportState(
+        syncer::SyncService::TransportState::INITIALIZING);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
-    sync_service()->SetState(syncer::SyncService::State::ACTIVE);
+    sync_service()->SetTransportState(
+        syncer::SyncService::TransportState::ACTIVE);
 
     web_history_service()->ExpireHistoryBetween(
         std::set<GURL>(), base::Time(), base::Time::Max(), callback,
@@ -204,7 +207,8 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
   // BrowsingHistoryHandler does not fire historyDeleted while a web history
   // delete request is happening.
   {
-    sync_service()->SetState(syncer::SyncService::State::ACTIVE);
+    sync_service()->SetTransportState(
+        syncer::SyncService::TransportState::ACTIVE);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
 
@@ -226,7 +230,8 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
   // deletions. The WebHistoryService object still exists (because it's a
   // BrowserContextKeyedService), but is not visible to BrowsingHistoryHandler.
   {
-    sync_service()->SetState(syncer::SyncService::State::INITIALIZING);
+    sync_service()->SetTransportState(
+        syncer::SyncService::TransportState::INITIALIZING);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
 
