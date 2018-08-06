@@ -835,22 +835,6 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
   PasswordStoreChangeList list;
-  if (form.blacklisted_by_user) {
-    sql::Statement blacklist_statement(db_.GetUniqueStatement(
-        "SELECT EXISTS(SELECT 1 FROM logins WHERE signon_realm == ? AND "
-        "blacklisted_by_user == 1)"));
-    blacklist_statement.BindString(0, form.signon_realm);
-    const bool is_already_blacklisted =
-        blacklist_statement.Step() && blacklist_statement.ColumnBool(0);
-    UMA_HISTOGRAM_BOOLEAN(
-        "PasswordManager.BlacklistedSites.PreventedAddingDuplicates",
-        is_already_blacklisted);
-    if (is_already_blacklisted) {
-      // The site is already blacklisted, so we need to ignore the request to
-      // avoid duplicates.
-      return list;
-    }
-  }
   if (!DoesMatchConstraints(form))
     return list;
   std::string encrypted_password;
@@ -878,25 +862,6 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
     list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
   }
-  return list;
-}
-
-PasswordStoreChangeList LoginDatabase::AddBlacklistedLoginForTesting(
-    const PasswordForm& form) {
-  DCHECK(form.blacklisted_by_user);
-  PasswordStoreChangeList list;
-
-  std::string encrypted_password;
-  if (EncryptedString(form.password_value, &encrypted_password) !=
-      ENCRYPTION_RESULT_SUCCESS)
-    return list;
-
-  DCHECK(!add_statement_.empty());
-  sql::Statement s(
-      db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
-  BindAddStatement(form, encrypted_password, &s);
-  if (s.Run())
-    list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
   return list;
 }
 

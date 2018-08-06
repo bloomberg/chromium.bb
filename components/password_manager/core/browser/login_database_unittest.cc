@@ -1497,14 +1497,12 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   password_form.origin = GURL("http://rsolomakhin.github.io/autofill/123");
   password_form.signon_realm = "http://rsolomakhin.github.io/";
   password_form.blacklisted_by_user = true;
-  EXPECT_EQ(AddChangeForForm(password_form),
-            db().AddBlacklistedLoginForTesting(password_form));
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   password_form.origin = GURL("https://rsolomakhin.github.io/autofill/1234");
   password_form.signon_realm = "https://rsolomakhin.github.io/";
   password_form.blacklisted_by_user = true;
-  EXPECT_EQ(AddChangeForForm(password_form),
-            db().AddBlacklistedLoginForTesting(password_form));
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   base::HistogramTester histogram_tester;
   db().ReportMetrics("", false);
@@ -1568,58 +1566,6 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
                                       0, 1);
   histogram_tester.ExpectUniqueSample("PasswordManager.BlacklistedDuplicates",
                                       2, 1);
-}
-
-// This test will check that adding a blacklist entry is prevented due to an
-// already existing entry.
-TEST_F(LoginDatabaseTest, AddBlacklistedDuplicates) {
-  PasswordForm password_form;
-  password_form.origin = GURL("http://rsolomakhin.github.io/autofill/");
-  password_form.signon_realm = "http://rsolomakhin.github.io/";
-  password_form.blacklisted_by_user = true;
-  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
-
-  PasswordForm password_form_duplicated;
-  password_form_duplicated.origin =
-      GURL("http://rsolomakhin.github.io/autofill/123");
-  password_form_duplicated.signon_realm = "http://rsolomakhin.github.io/";
-  password_form_duplicated.blacklisted_by_user = true;
-  EXPECT_EQ(PasswordStoreChangeList(), db().AddLogin(password_form_duplicated));
-
-  PasswordForm password_form_example;
-  password_form_example.origin = GURL("http://example.com/");
-  password_form_example.signon_realm = "http://example.com/";
-  password_form_example.blacklisted_by_user = false;
-  EXPECT_EQ(AddChangeForForm(password_form_example),
-            db().AddLogin(password_form_example));
-
-  PasswordForm password_form_example_blacklisted;
-  password_form_example_blacklisted.origin = GURL("http://example.com/1");
-  password_form_example_blacklisted.signon_realm = "http://example.com/";
-  password_form_example_blacklisted.blacklisted_by_user = true;
-  EXPECT_EQ(AddChangeForForm(password_form_example_blacklisted),
-            db().AddLogin(password_form_example_blacklisted));
-
-  PasswordForm password_form_example_blacklisted_duplicated;
-  password_form_example_blacklisted_duplicated.origin =
-      GURL("http://example.com/123");
-  password_form_example_blacklisted_duplicated.signon_realm =
-      "http://example.com/";
-  password_form_example_blacklisted_duplicated.blacklisted_by_user = true;
-  EXPECT_EQ(PasswordStoreChangeList(),
-            db().AddLogin(password_form_example_blacklisted_duplicated));
-
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  ASSERT_TRUE(db().GetAutofillableLogins(&forms));
-  EXPECT_THAT(forms,
-              UnorderedElementsAre(::testing::Pointee(password_form_example)));
-
-  std::vector<std::unique_ptr<PasswordForm>> blacklisted_forms;
-  ASSERT_TRUE(db().GetBlacklistLogins(&blacklisted_forms));
-  EXPECT_THAT(blacklisted_forms,
-              UnorderedElementsAre(
-                  ::testing::Pointee(password_form),
-                  ::testing::Pointee(password_form_example_blacklisted)));
 }
 
 TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {

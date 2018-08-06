@@ -3830,11 +3830,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Active"/>
 </enum>
 
-<enum name="BooleanAddingBlacklistedDuplicatesPrevented">
-  <int value="0" label="Not prevented"/>
-  <int value="1" label="Prevented"/>
-</enum>
-
 <enum name="BooleanAllowed">
   <int value="0" label="Not Allowed"/>
   <int value="1" label="Allowed"/>
@@ -4413,11 +4408,6 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="BooleanNeedsClearing">
   <int value="0" label="Doesn't need clearing"/>
   <int value="1" label="Needs to be clearred"/>
-</enum>
-
-<enum name="BooleanNeedsDeDuplication">
-  <int value="0" label="Doesn't need duplications clearing"/>
-  <int value="1" label="Needs to be duplications cleared"/>
 </enum>
 
 <enum name="BooleanNetworkQuietBeforeSwap">
