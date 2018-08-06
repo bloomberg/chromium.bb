@@ -987,11 +987,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 // http://www.google.com/chrome/intl/en/webmasters-faq.html#newtab will not
 // fork a new renderer process.
 IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
-  // TODO(lukasza): https://crbug.com/824962: Investigate why this test fails
-  // with --site-per-process.
-  if (content::AreAllSitesIsolatedForTesting())
-    return;
-
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
@@ -1009,8 +1004,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   WebContents* oldtab = browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderProcessHost* process = oldtab->GetMainFrame()->GetProcess();
 
-  // Now open a tab to a blank page, set its opener to null, and redirect it
-  // cross-site.
+  // Now open a tab to a blank page and redirect it cross-site.
   std::string dont_fork_popup = "w=window.open();";
   dont_fork_popup += "w.document.location=\"";
   dont_fork_popup += https_url.spec();
@@ -1036,10 +1030,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   EXPECT_EQ(https_url.spec(),
             newtab->GetController().GetLastCommittedEntry()->GetURL().spec());
 
-  // Popup window should still be in the opener's process.
+  // Process of the (cross-site) popup window depends on whether
+  // site-per-process mode is enabled or not.
   content::RenderProcessHost* popup_process =
       newtab->GetMainFrame()->GetProcess();
-  EXPECT_EQ(process, popup_process);
+  if (content::AreAllSitesIsolatedForTesting())
+    EXPECT_NE(process, popup_process);
+  else
+    EXPECT_EQ(process, popup_process);
 
   // Same thing if the current tab tries to navigate itself.
   std::string navigate_str = "document.location=\"";
@@ -1056,10 +1054,18 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   EXPECT_EQ(https_url.spec(),
             oldtab->GetController().GetLastCommittedEntry()->GetURL().spec());
 
-  // Original window should still be in the original process.
+  // Whether original stays in the original process (when navigating to a
+  // cross-site url) depends on whether site-per-process mode is enabled or not.
   content::RenderProcessHost* new_process =
       newtab->GetMainFrame()->GetProcess();
-  EXPECT_EQ(process, new_process);
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(process, new_process);
+
+    // site-per-process should reuse the process for the https site.
+    EXPECT_EQ(popup_process, new_process);
+  } else {
+    EXPECT_EQ(process, new_process);
+  }
 }
 
 // Test that get_process_idle_time() returns reasonable values when compared
