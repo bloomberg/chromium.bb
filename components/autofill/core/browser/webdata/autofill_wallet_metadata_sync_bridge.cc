@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -40,22 +41,6 @@ std::string GetClientTagForSpecificsId(WalletMetadataSpecifics::Type type,
       NOTREACHED();
       return "";
   }
-}
-
-std::string GetSpecificsIdForEntryServerId(const std::string& server_id) {
-  std::string specifics_id;
-  base::Base64Encode(server_id, &specifics_id);
-  return specifics_id;
-}
-
-std::string GetStorageKeyForSpecificsId(const std::string& specifics_id) {
-  // We use the base64 encoded |specifics_id| directly as the storage key, this
-  // function only hides this definition from all its call sites.
-  return specifics_id;
-}
-
-std::string GetStorageKeyForEntryServerId(const std::string& server_id) {
-  return GetStorageKeyForSpecificsId(GetSpecificsIdForEntryServerId(server_id));
 }
 
 // Returns EntityData with common fields set based on |local_data_model|.

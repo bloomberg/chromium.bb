@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/browser/webdata/autofill_sync_bridge_test_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -113,14 +114,6 @@ WalletMetadataSpecifics CreateWalletMetadataSpecificsForCard(
   specifics.set_use_date(kJune2017.ToDeltaSinceWindowsEpoch().InMicroseconds());
   specifics.set_card_billing_address_id("");
   return specifics;
-}
-
-AutofillProfile CreateServerProfile(const std::string& server_id) {
-  return AutofillProfile(AutofillProfile::SERVER_PROFILE, server_id);
-}
-
-CreditCard CreateCreditCard(const std::string& server_id) {
-  return CreditCard(CreditCard::MASKED_SERVER_CARD, server_id);
 }
 
 void ExtractWalletMetadataSpecificsFromDataBatch(
@@ -290,8 +283,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
        GetAllDataForDebugging_ShouldReturnAllData) {
   table()->SetServerProfiles({CreateServerProfile(kAddr1ServerId),
                               CreateServerProfile(kAddr2ServerId)});
-  table()->SetServerCreditCards(
-      {CreateCreditCard(kCard1ServerId), CreateCreditCard(kCard2ServerId)});
+  table()->SetServerCreditCards({CreateServerCreditCard(kCard1ServerId),
+                                 CreateServerCreditCard(kCard2ServerId)});
 
   EXPECT_THAT(
       GetAllLocalData(),
@@ -314,8 +307,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnSelectedData) {
   table()->SetServerProfiles({CreateServerProfile(kAddr1ServerId),
                               CreateServerProfile(kAddr2ServerId)});
-  table()->SetServerCreditCards(
-      {CreateCreditCard(kCard1ServerId), CreateCreditCard(kCard2ServerId)});
+  table()->SetServerCreditCards({CreateServerCreditCard(kCard1ServerId),
+                                 CreateServerCreditCard(kCard2ServerId)});
 
   EXPECT_THAT(GetLocalData({kAddr1SpecificsId, kCard1SpecificsId}),
               UnorderedElementsAre(
@@ -333,7 +326,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnCompleteData) {
   profile.set_has_converted(true);
   table()->SetServerProfiles({profile});
 
-  CreditCard card = CreateCreditCard(kCard1ServerId);
+  CreditCard card = CreateServerCreditCard(kCard1ServerId);
   card.set_use_count(6);
   card.set_use_date(base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(3)));
