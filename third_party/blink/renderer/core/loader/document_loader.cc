@@ -1091,7 +1091,7 @@ void DocumentLoader::InstallNewDocument(
   Document* document = frame_->DomWindow()->InstallNewDocument(
       mime_type,
       DocumentInit::Create()
-          .WithFrame(frame_)
+          .WithDocumentLoader(this)
           .WithURL(url)
           .WithOwnerDocument(owner_document)
           .WithNewRegistrationContext(),

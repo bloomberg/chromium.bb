@@ -144,7 +144,8 @@ TEST_F(WindowPerformanceTest, NavigateAway) {
   EXPECT_TRUE(ObservingLongTasks());
 
   // Simulate navigation commit.
-  DocumentInit init = DocumentInit::Create().WithFrame(GetFrame());
+  DocumentInit init = DocumentInit::Create().WithDocumentLoader(
+      GetFrame()->Loader().GetDocumentLoader());
   GetDocument()->Shutdown();
   GetFrame()->SetDOMWindow(LocalDOMWindow::Create(*GetFrame()));
   GetFrame()->DomWindow()->InstallNewDocument(AtomicString(), init, false);
@@ -178,7 +179,7 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   page_holder->GetDocument().Shutdown();
   page_holder->GetFrame().DomWindow()->InstallNewDocument(
       AtomicString(),
-      DocumentInit::Create().WithFrame(&page_holder->GetFrame()), false);
+      DocumentInit::Create().WithDocumentLoader(document_loader), false);
 
   EXPECT_EQ(perf, DOMWindowPerformance::performance(
                       *page_holder->GetFrame().DomWindow()));

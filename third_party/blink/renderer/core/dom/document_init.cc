@@ -40,10 +40,11 @@
 namespace blink {
 
 // FIXME: Broken with OOPI.
-static Document* ParentDocument(LocalFrame* frame) {
-  DCHECK(frame);
+static Document* ParentDocument(DocumentLoader* loader) {
+  DCHECK(loader);
+  DCHECK(loader->GetFrame());
 
-  Element* owner_element = frame->DeprecatedLocalOwner();
+  Element* owner_element = loader->GetFrame()->DeprecatedLocalOwner();
   if (!owner_element)
     return nullptr;
   return &owner_element->GetDocument();
@@ -71,33 +72,37 @@ DocumentInit::DocumentInit(const DocumentInit&) = default;
 DocumentInit::~DocumentInit() = default;
 
 bool DocumentInit::ShouldSetURL() const {
-  LocalFrame* frame = FrameForSecurityContext();
-  return (frame && frame->Tree().Parent()) || !url_.IsEmpty();
+  DocumentLoader* loader = MasterDocumentLoader();
+  return (loader && loader->GetFrame()->Tree().Parent()) || !url_.IsEmpty();
 }
 
 bool DocumentInit::ShouldTreatURLAsSrcdocDocument() const {
   return parent_document_ &&
-         frame_->Loader().ShouldTreatURLAsSrcdocDocument(url_);
+         document_loader_->GetFrame()->Loader().ShouldTreatURLAsSrcdocDocument(
+             url_);
 }
 
-LocalFrame* DocumentInit::FrameForSecurityContext() const {
-  if (frame_)
-    return frame_;
-  if (imports_controller_)
-    return imports_controller_->Master()->GetFrame();
+DocumentLoader* DocumentInit::MasterDocumentLoader() const {
+  if (document_loader_)
+    return document_loader_;
+  if (imports_controller_) {
+    return imports_controller_->Master()
+        ->GetFrame()
+        ->Loader()
+        .GetDocumentLoader();
+  }
   return nullptr;
 }
 
 SandboxFlags DocumentInit::GetSandboxFlags() const {
-  DCHECK(FrameForSecurityContext());
-  FrameLoader* loader = &FrameForSecurityContext()->Loader();
-  SandboxFlags flags = loader->EffectiveSandboxFlags();
+  DCHECK(MasterDocumentLoader());
+  DocumentLoader* loader = MasterDocumentLoader();
+  SandboxFlags flags = loader->GetFrame()->Loader().EffectiveSandboxFlags();
 
   // If the load was blocked by CSP, force the Document's origin to be unique,
   // so that the blocked document appears to be a normal cross-origin document's
   // load per CSP spec: https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
-  if (loader->GetDocumentLoader() &&
-      loader->GetDocumentLoader()->WasBlockedAfterCSP()) {
+  if (loader->WasBlockedAfterCSP()) {
     flags |= kSandboxOrigin;
   }
 
@@ -105,46 +110,48 @@ SandboxFlags DocumentInit::GetSandboxFlags() const {
 }
 
 WebInsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy() const {
-  DCHECK(FrameForSecurityContext());
-  return FrameForSecurityContext()->Loader().GetInsecureRequestPolicy();
+  DCHECK(MasterDocumentLoader());
+  Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
+  if (!parent_frame)
+    return kLeaveInsecureRequestsAlone;
+  return parent_frame->GetSecurityContext()->GetInsecureRequestPolicy();
 }
 
 SecurityContext::InsecureNavigationsSet*
 DocumentInit::InsecureNavigationsToUpgrade() const {
-  DCHECK(FrameForSecurityContext());
-  return FrameForSecurityContext()->Loader().InsecureNavigationsToUpgrade();
+  DCHECK(MasterDocumentLoader());
+  Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
+  if (!parent_frame)
+    return nullptr;
+  return parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
 }
 
 bool DocumentInit::IsHostedInReservedIPRange() const {
-  if (LocalFrame* frame = FrameForSecurityContext()) {
-    if (DocumentLoader* loader =
-            frame->Loader().GetProvisionalDocumentLoader()
-                ? frame->Loader().GetProvisionalDocumentLoader()
-                : frame->Loader().GetDocumentLoader()) {
-      if (!loader->GetResponse().RemoteIPAddress().IsEmpty())
-        return NetworkUtils::IsReservedIPAddress(
-            loader->GetResponse().RemoteIPAddress());
+  if (DocumentLoader* loader = MasterDocumentLoader()) {
+    if (!loader->GetResponse().RemoteIPAddress().IsEmpty()) {
+      return NetworkUtils::IsReservedIPAddress(
+          loader->GetResponse().RemoteIPAddress());
     }
   }
   return false;
 }
 
 Settings* DocumentInit::GetSettings() const {
-  DCHECK(FrameForSecurityContext());
-  return FrameForSecurityContext()->GetSettings();
+  DCHECK(MasterDocumentLoader());
+  return MasterDocumentLoader()->GetFrame()->GetSettings();
 }
 
-KURL DocumentInit::ParentBaseURL() const {
-  return parent_document_->BaseURL();
-}
-
-DocumentInit& DocumentInit::WithFrame(LocalFrame* frame) {
-  DCHECK(!frame_);
+DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader) {
+  DCHECK(!document_loader_);
   DCHECK(!imports_controller_);
-  frame_ = frame;
-  if (frame_)
-    parent_document_ = ParentDocument(frame_);
+  document_loader_ = loader;
+  if (document_loader_)
+    parent_document_ = ParentDocument(document_loader_);
   return *this;
+}
+
+LocalFrame* DocumentInit::GetFrame() const {
+  return document_loader_ ? document_loader_->GetFrame() : nullptr;
 }
 
 DocumentInit& DocumentInit::WithContextDocument(Document* context_document) {
