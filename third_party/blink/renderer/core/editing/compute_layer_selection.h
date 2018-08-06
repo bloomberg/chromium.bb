@@ -28,10 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
-
-// TODO(editing-dev): Consider rename/move this file.
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMPUTE_LAYER_SELECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMPUTE_LAYER_SELECTION_H_
 
 #include "cc/input/layer_selection_bound.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -40,9 +38,10 @@ namespace blink {
 
 class FrameSelection;
 
+// Compute coodinates to paint selection handles on touch devices.
 CORE_EXPORT cc::LayerSelection ComputeLayerSelection(
     const FrameSelection& frame_selection);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMPUTE_LAYER_SELECTION_H_
