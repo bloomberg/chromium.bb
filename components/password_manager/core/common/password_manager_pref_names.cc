@@ -43,9 +43,6 @@ const char kSyncPasswordLengthAndHashSalt[] =
 const char kBlacklistedCredentialsStripped[] =
     "profile.blacklisted_credentials_stripped";
 
-const char kDuplicatedBlacklistedCredentialsRemoved[] =
-    "profile.duplicated_blacklisted_credentials_removed";
-
 const char kPasswordHashDataList[] = "profile.password_hash_data_list";
 
 }  // namespace prefs

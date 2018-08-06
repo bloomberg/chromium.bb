@@ -98,9 +98,6 @@ TEST(PasswordManagerUtil, CleanBlacklistedUsernamePassword) {
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterBooleanPref(
       password_manager::prefs::kBlacklistedCredentialsStripped, false);
-  // Prevent cleaning of duplicated blacklist entries.
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved, true);
   auto password_store = base::MakeRefCounted<
       testing::StrictMock<password_manager::MockPasswordStore>>();
   ASSERT_TRUE(
@@ -114,6 +111,10 @@ TEST(PasswordManagerUtil, CleanBlacklistedUsernamePassword) {
   EXPECT_CALL(*password_store, RemoveLogin(blacklisted_with_username));
   EXPECT_CALL(*password_store, RemoveLogin(blacklisted_with_password));
   EXPECT_CALL(*password_store, AddLogin(blacklisted)).Times(2);
+
+  // These deletions are not related to clean-up user credentials.
+  // They are performed by RemoveDuplicated().
+  EXPECT_CALL(*password_store, RemoveLogin(blacklisted)).Times(2);
 
   CleanBlacklistedCredentials(password_store.get(), &prefs, 0);
   scoped_task_environment.RunUntilIdle();
@@ -148,14 +149,10 @@ TEST(PasswordManagerUtil, RemoveBlacklistedDuplicates) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   TestingPrefServiceSimple prefs;
 
-  // In this test we are explicitly only testing the clean up of duplicated
-  // credentials and setting this true will prevent making other unrelated
-  // clean-up.
+  // The following preference is used inside the blacklist cleaning utility
+  // for an unrelated clean-up
   prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kBlacklistedCredentialsStripped, true);
-
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved, false);
+      password_manager::prefs::kBlacklistedCredentialsStripped, false);
 
   auto password_store = base::MakeRefCounted<
       testing::StrictMock<password_manager::MockPasswordStore>>();
@@ -192,14 +189,10 @@ TEST(PasswordManagerUtil, RemoveBlacklistedDuplicatesWithCredentials) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   TestingPrefServiceSimple prefs;
 
-  // Here we test the behavior when the Password Store contains blacklisted
-  // entries with password or username values that have to be cleared and
-  // blacklisted duplicates, too.
+  // The following preference is used inside the blacklist cleaning utility
+  // for an unrelated clean-up
   prefs.registry()->RegisterBooleanPref(
       password_manager::prefs::kBlacklistedCredentialsStripped, false);
-
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved, false);
 
   auto password_store =
       base::MakeRefCounted<password_manager::TestPasswordStore>();

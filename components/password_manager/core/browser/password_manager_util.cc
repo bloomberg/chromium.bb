@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -40,14 +40,14 @@ class BlacklistedCredentialsCleaner
   ~BlacklistedCredentialsCleaner() override = default;
 
   void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
-    if (!prefs_->GetBoolean(
-            password_manager::prefs::kBlacklistedCredentialsStripped))
+      std::vector<std::unique_ptr<PasswordForm>> results) override {
+    bool need_to_clean = !prefs_->GetBoolean(
+        password_manager::prefs::kBlacklistedCredentialsStripped);
+    UMA_HISTOGRAM_BOOLEAN("PasswordManager.BlacklistedSites.NeedToBeCleaned",
+                          need_to_clean);
+    if (need_to_clean)
       RemoveUsernameAndPassword(results);
-
-    if (!prefs_->GetBoolean(
-            password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved))
-      RemoveDuplicates(results);
+    RemoveDuplicates(results);
     delete this;
   }
 
@@ -85,12 +85,6 @@ class BlacklistedCredentialsCleaner
         // |results| already contain a form with the same signon_realm.
         store_->RemoveLogin(*form);
       }
-    }
-    const size_t duplicates = results.size() - signon_realms.size();
-    if (duplicates == 0) {
-      prefs_->SetBoolean(
-          password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved,
-          true);
     }
   }
 
@@ -248,21 +242,11 @@ void UserTriggeredManualGenerationFromContextMenu(
 void CleanBlacklistedCredentials(password_manager::PasswordStore* store,
                                  PrefService* prefs,
                                  int delay_in_seconds) {
-  const bool need_to_stripe_username = !prefs->GetBoolean(
-      password_manager::prefs::kBlacklistedCredentialsStripped);
-  base::UmaHistogramBoolean("PasswordManager.BlacklistedSites.NeedToBeCleaned",
-                            need_to_stripe_username);
-  const bool need_to_remove_blacklisted_duplicates = !prefs->GetBoolean(
-      password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved);
-  base::UmaHistogramBoolean(
-      "PasswordManager.BlacklistedSites.NeedRemoveBlacklistDuplicates",
-      need_to_remove_blacklisted_duplicates);
-  if (need_to_stripe_username || need_to_remove_blacklisted_duplicates)
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&StartCleaningBlacklisted, base::WrapRefCounted(store),
-                       prefs),
-        base::TimeDelta::FromSeconds(delay_in_seconds));
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&StartCleaningBlacklisted, base::WrapRefCounted(store),
+                     prefs),
+      base::TimeDelta::FromSeconds(delay_in_seconds));
 }
 
 void FindBestMatches(
