@@ -1134,8 +1134,7 @@ void HistoryBackend::QueryURL(const GURL& url,
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 HistoryBackend::GetTypedURLSyncControllerDelegate() {
   DCHECK(typed_url_sync_bridge_);
-  return typed_url_sync_bridge_->change_processor()
-      ->GetControllerDelegateOnUIThread();
+  return typed_url_sync_bridge_->change_processor()->GetControllerDelegate();
 }
 
 // Statistics ------------------------------------------------------------------

@@ -584,7 +584,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
       return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetDeviceInfoSyncControllerDelegateOnUIThread();
+          ->GetDeviceInfoSyncControllerDelegate();
     case syncer::READING_LIST:
       // Reading List is only supported on iOS at the moment.
       NOTREACHED();
@@ -593,12 +593,12 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return autofill::AutocompleteSyncBridge::FromWebDataService(
                  profile_web_data_service_.get())
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     case syncer::AUTOFILL_PROFILE:
       return autofill::AutofillProfileSyncBridge::FromWebDataService(
                  profile_web_data_service_.get())
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     case syncer::AUTOFILL_WALLET_DATA: {
       // TODO(feuunk): This doesn't allow switching which database to use at
       // runtime. This should be fixed as part of the USS migration for
@@ -608,7 +608,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return autofill::AutofillWalletSyncBridge::FromWebDataService(
                  service.get())
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     }
     case syncer::AUTOFILL_WALLET_METADATA: {
       // TODO(feuunk): This doesn't allow switching which database to use at
@@ -619,7 +619,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return autofill::AutofillWalletMetadataSyncBridge::FromWebDataService(
                  service.get())
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     }
 #if defined(OS_CHROMEOS)
     case syncer::PRINTERS:
@@ -627,7 +627,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
                  profile_)
           ->GetSyncBridge()
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
 #endif  // defined(OS_CHROMEOS)
     case syncer::TYPED_URLS:
       // TypedURLModelTypeController doesn't exercise this function.
@@ -635,19 +635,19 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForProfile(profile_)
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     case syncer::USER_EVENTS:
       return browser_sync::UserEventServiceFactory::GetForProfile(profile_)
           ->GetSyncBridge()
           ->change_processor()
-          ->GetControllerDelegateOnUIThread();
+          ->GetControllerDelegate();
     case syncer::SESSIONS: {
       return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetSessionSyncControllerDelegateOnUIThread();
+          ->GetSessionSyncControllerDelegate();
     }
     case syncer::BOOKMARKS: {
       return BookmarkSyncServiceFactory::GetForProfile(profile_)
-          ->GetBookmarkSyncControllerDelegateOnUIThread();
+          ->GetBookmarkSyncControllerDelegate();
     }
     default:
       NOTREACHED();

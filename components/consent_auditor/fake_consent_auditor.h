@@ -44,8 +44,8 @@ class FakeConsentAuditor : public ConsentAuditor {
   void RecordLocalConsent(const std::string& feature,
                           const std::string& description_text,
                           const std::string& confirmation_text) override;
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetControllerDelegateOnUIThread() override;
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
+      override;
 
   // Methods for fake.
   // TODO(markusheintz): Replace the usage of this methods in all tests.

@@ -282,7 +282,7 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
 }
 
 base::WeakPtr<ModelTypeControllerDelegate>
-ClientTagBasedModelTypeProcessor::GetControllerDelegateOnUIThread() {
+ClientTagBasedModelTypeProcessor::GetControllerDelegate() {
   return weak_ptr_factory_for_controller_.GetWeakPtr();
 }
 

@@ -71,8 +71,8 @@ class ConsentAuditorImpl : public ConsentAuditor {
   void RecordLocalConsent(const std::string& feature,
                           const std::string& description_text,
                           const std::string& confirmation_text) override;
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetControllerDelegateOnUIThread() override;
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
+      override;
 
  private:
   // Records a consent for |feature| for the signed-in GAIA account with

@@ -268,7 +268,7 @@ void ExtensionSessionsTest::CreateSessionModels() {
   std::unique_ptr<syncer::DataTypeActivationResponse> activation_response;
   base::RunLoop loop;
   ProfileSyncServiceFactory::GetForProfile(browser_->profile())
-      ->GetSessionSyncControllerDelegateOnUIThread()
+      ->GetSessionSyncControllerDelegate()
       ->OnSyncStarting(
           request, base::BindLambdaForTesting(
                        [&](std::unique_ptr<syncer::DataTypeActivationResponse>

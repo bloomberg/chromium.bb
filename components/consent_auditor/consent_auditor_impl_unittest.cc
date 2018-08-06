@@ -89,13 +89,13 @@ class FakeConsentSyncBridge : public syncer::ConsentSyncBridge {
     recorded_user_consents_.push_back(*specifics);
   }
 
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetControllerDelegateOnUIThread() override {
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
+      override {
     return delegate_;
   }
 
   // Fake methods.
-  void SetControllerDelegateOnUIThread(
+  void SetControllerDelegate(
       base::WeakPtr<syncer::ModelTypeControllerDelegate> delegate) {
     delegate_ = delegate;
   }
@@ -476,7 +476,7 @@ TEST_F(ConsentAuditorImplTest, ShouldReturnNoSyncDelegateWhenNoBridge) {
 
   // There is no bridge (i.e. separate sync type for consents is disabled),
   // thus, there should be no delegate as well.
-  EXPECT_EQ(nullptr, consent_auditor()->GetControllerDelegateOnUIThread());
+  EXPECT_EQ(nullptr, consent_auditor()->GetControllerDelegate());
 }
 
 TEST_F(ConsentAuditorImplTest, ShouldReturnSyncDelegateWhenBridgePresent) {
@@ -487,7 +487,7 @@ TEST_F(ConsentAuditorImplTest, ShouldReturnSyncDelegateWhenBridgePresent) {
       syncer::ModelType::USER_CONSENTS);
   auto expected_delegate_ptr = fake_delegate.GetWeakPtr();
   DCHECK(expected_delegate_ptr);
-  fake_bridge->SetControllerDelegateOnUIThread(expected_delegate_ptr);
+  fake_bridge->SetControllerDelegate(expected_delegate_ptr);
 
   SetConsentSyncBridge(std::move(fake_bridge));
   SetUserEventService(nullptr);
@@ -496,7 +496,7 @@ TEST_F(ConsentAuditorImplTest, ShouldReturnSyncDelegateWhenBridgePresent) {
   // There is a bridge (i.e. separate sync type for consents is enabled), thus,
   // there should be a delegate as well.
   EXPECT_EQ(expected_delegate_ptr.get(),
-            consent_auditor()->GetControllerDelegateOnUIThread().get());
+            consent_auditor()->GetControllerDelegate().get());
 }
 
 }  // namespace consent_auditor

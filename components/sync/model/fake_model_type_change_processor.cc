@@ -62,7 +62,7 @@ void FakeModelTypeChangeProcessor::ReportError(const ModelError& error) {
 }
 
 base::WeakPtr<ModelTypeControllerDelegate>
-FakeModelTypeChangeProcessor::GetControllerDelegateOnUIThread() {
+FakeModelTypeChangeProcessor::GetControllerDelegate() {
   return delegate_;
 }
 

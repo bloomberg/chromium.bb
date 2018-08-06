@@ -62,9 +62,8 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->ReportError(error);
   }
 
-  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateOnUIThread()
-      override {
-    return other_->GetControllerDelegateOnUIThread();
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override {
+    return other_->GetControllerDelegate();
   }
 
  private:
@@ -117,10 +116,9 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
           Invoke(delegate, &ModelTypeChangeProcessor::IsTrackingMetadata));
   ON_CALL(*this, ReportError(_))
       .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::ReportError));
-  ON_CALL(*this, GetControllerDelegateOnUIThread())
+  ON_CALL(*this, GetControllerDelegate())
       .WillByDefault(
-          Invoke(delegate,
-                 &ModelTypeChangeProcessor::GetControllerDelegateOnUIThread));
+          Invoke(delegate, &ModelTypeChangeProcessor::GetControllerDelegate));
 }
 
 }  //  namespace syncer

@@ -48,8 +48,8 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
   // ConsentSyncBridge implementation.
   void RecordConsent(
       std::unique_ptr<sync_pb::UserConsentSpecifics> specifics) override;
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetControllerDelegateOnUIThread() override;
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
+      override;
 
   static std::string GetStorageKeyFromSpecificsForTest(
       const sync_pb::UserConsentSpecifics& specifics);

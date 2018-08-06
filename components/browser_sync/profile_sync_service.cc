@@ -2104,20 +2104,19 @@ syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
-ProfileSyncService::GetSessionSyncControllerDelegateOnUIThread() {
+ProfileSyncService::GetSessionSyncControllerDelegate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!sessions_sync_manager_)
     return nullptr;
   return sessions_sync_manager_->GetModelTypeSyncBridge()
       ->change_processor()
-      ->GetControllerDelegateOnUIThread();
+      ->GetControllerDelegate();
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
-ProfileSyncService::GetDeviceInfoSyncControllerDelegateOnUIThread() {
+ProfileSyncService::GetDeviceInfoSyncControllerDelegate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return device_info_sync_bridge_->change_processor()
-      ->GetControllerDelegateOnUIThread();
+  return device_info_sync_bridge_->change_processor()->GetControllerDelegate();
 }
 
 syncer::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus() const {

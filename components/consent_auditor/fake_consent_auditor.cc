@@ -70,7 +70,7 @@ void FakeConsentAuditor::RecordLocalConsent(
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
-FakeConsentAuditor::GetControllerDelegateOnUIThread() {
+FakeConsentAuditor::GetControllerDelegate() {
   NOTIMPLEMENTED();
   return nullptr;
 }

@@ -67,14 +67,9 @@ namespace {
 // "WeakPtr<ModelTypeControllerDelegate> (AutofillWebDataService*)".
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 AutocompleteDelegateFromDataService(autofill::AutofillWebDataService* service) {
-  // TODO(jkrcal): Deal with the (probably rare) race condition when we call
-  // bridges' FromWebDataService() before calling
-  // CreateForWebDataServiceAndBackend() in WebDataServiceWrapper. This TODO
-  // also applies to all analogous functions below and to analogous code in
-  // SyncClient::GetControllerDelegateForModelType().
   return autofill::AutocompleteSyncBridge::FromWebDataService(service)
       ->change_processor()
-      ->GetControllerDelegateOnUIThread();
+      ->GetControllerDelegate();
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -82,7 +77,7 @@ AutofillProfileDelegateFromDataService(
     autofill::AutofillWebDataService* service) {
   return autofill::AutofillProfileSyncBridge::FromWebDataService(service)
       ->change_processor()
-      ->GetControllerDelegateOnUIThread();
+      ->GetControllerDelegate();
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -90,7 +85,7 @@ AutofillWalletDelegateFromDataService(
     autofill::AutofillWebDataService* service) {
   return autofill::AutofillWalletSyncBridge::FromWebDataService(service)
       ->change_processor()
-      ->GetControllerDelegateOnUIThread();
+      ->GetControllerDelegate();
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -98,7 +93,7 @@ AutofillWalletMetadataDelegateFromDataService(
     autofill::AutofillWebDataService* service) {
   return autofill::AutofillWalletMetadataSyncBridge::FromWebDataService(service)
       ->change_processor()
-      ->GetControllerDelegateOnUIThread();
+      ->GetControllerDelegate();
 }
 
 }  // namespace

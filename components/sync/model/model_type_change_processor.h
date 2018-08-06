@@ -90,12 +90,9 @@ class ModelTypeChangeProcessor {
   // disabled for the model type (generally until the next restart).
   virtual void ReportError(const ModelError& error) = 0;
 
-  // Returns the delegate for the controller. This function must be thread-safe!
-  // It is run on the UI thread by the ModelTypeController.
-  // TODO(mastiz): Remove the inaccurate suffix OnUIThread and the thread-safety
-  // requirement documented above, since it actually runs on the model thread.
+  // Returns the delegate for the controller.
   virtual base::WeakPtr<ModelTypeControllerDelegate>
-  GetControllerDelegateOnUIThread() = 0;
+  GetControllerDelegate() = 0;
 };
 
 }  // namespace syncer

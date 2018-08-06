@@ -37,7 +37,7 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   MOCK_METHOD1(ModelReadyToSync, void(std::unique_ptr<MetadataBatch> batch));
   MOCK_METHOD0(IsTrackingMetadata, bool());
   MOCK_METHOD1(ReportError, void(const ModelError& error));
-  MOCK_METHOD0(GetControllerDelegateOnUIThread,
+  MOCK_METHOD0(GetControllerDelegate,
                base::WeakPtr<ModelTypeControllerDelegate>());
 
   // Returns a processor that forwards all calls to
