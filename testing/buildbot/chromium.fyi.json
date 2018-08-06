@@ -2962,6 +2962,7 @@
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
           "--xvfb",
+          "--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgs",
           "--skip=measurements.clock_domain_test.ClockDomainTest.testTelemetryUsesChromeClockDomain"
         ],
         "isolate_name": "telemetry_perf_unittests",
@@ -2978,7 +2979,7 @@
           "hard_timeout": 3600,
           "idempotent": false,
           "io_timeout": 3600,
-          "shards": 12
+          "shards": 6
         }
       },
       {
@@ -2988,7 +2989,8 @@
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
           "--skip=telemetry.core.tracing_controller_unittest.TracingControllerTest.testBattOrTracing",
-          "--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView"
+          "--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView",
+          "--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
@@ -3004,7 +3006,7 @@
           "hard_timeout": 3600,
           "idempotent": false,
           "io_timeout": 3600,
-          "shards": 6
+          "shards": 12
         }
       }
     ]

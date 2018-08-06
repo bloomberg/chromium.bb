@@ -423,12 +423,13 @@
         '--remote=127.0.0.1',
         '--remote-ssh-port=9222',
         '--xvfb',
+        '--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgs',
         '--skip=measurements.clock_domain_test.ClockDomainTest.testTelemetryUsesChromeClockDomain',
       ],
       'swarming': {
         'hard_timeout': 1200,
         'idempotent': False,
-        'shards': 12,
+        'shards': 6,
       },
     },
     'telemetry_unittests': {
@@ -442,11 +443,12 @@
         '--skip=telemetry.core.tracing_controller_unittest.TracingControllerTest.testBattOrTracing',
         # Always fails.
         '--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView',
+        '--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse',
       ],
       'swarming': {
         'hard_timeout': 1200,
         'idempotent': False,
-        'shards': 6,
+        'shards': 12,
       },
     },
   },
