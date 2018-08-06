@@ -272,7 +272,7 @@ void AppendParams(
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-bool IsStandaloneExtensionProcess() {
+bool IsStandaloneContentExtensionProcess() {
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
   return false;
 #else
@@ -376,7 +376,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
   thread->SetRendererProcessType(
-      IsStandaloneExtensionProcess()
+      IsStandaloneContentExtensionProcess()
           ? blink::scheduler::RendererProcessType::kExtensionRenderer
           : blink::scheduler::RendererProcessType::kRenderer);
 
@@ -1217,7 +1217,7 @@ void ChromeContentRendererClient::PostCompositorThreadCreated(
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
-  return !IsStandaloneExtensionProcess();
+  return !IsStandaloneContentExtensionProcess();
 }
 
 bool ChromeContentRendererClient::AllowPopup() {
@@ -1603,7 +1603,7 @@ void ChromeContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread(
 // information. Also, the enforcement of sending and binding UDP is already done
 // by chrome extension permission model.
 bool ChromeContentRendererClient::ShouldEnforceWebRTCRoutingPreferences() {
-  return !IsStandaloneExtensionProcess();
+  return !IsStandaloneContentExtensionProcess();
 }
 
 GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
