@@ -3,14 +3,9 @@
 # found in the LICENSE file.
 
 mojom = "//content/common/service_worker/service_worker.mojom"
-public_headers = [
-  "//content/common/background_fetch/background_fetch_types.h",
-  "//third_party/blink/public/common/service_worker/service_worker_status_code.h",
-  "//content/common/service_worker/service_worker_types.h",
-]
+public_headers = [ "//content/common/service_worker/service_worker_types.h" ]
 traits_headers = [ "//content/common/service_worker/service_worker_messages.h" ]
 type_mappings = [
-  "content.mojom.ExtendableMessageEventSource=::content::ExtendableMessageEventSource",
   "content.mojom.ServiceWorkerFetchRequest=::content::ServiceWorkerFetchRequest",
   "content.mojom.ServiceWorkerResponse=::content::ServiceWorkerResponse",
 ]
