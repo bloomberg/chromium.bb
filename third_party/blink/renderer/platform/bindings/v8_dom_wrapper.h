@@ -114,13 +114,12 @@ inline void V8DOMWrapper::SetNativeInfoInternal(
   wrapper->SetAlignedPointerInInternalFields(base::size(indices), indices,
                                              values);
   auto* per_isolate_data = V8PerIsolateData::From(isolate);
-  // We notify ScriptWrappableVisitor about the new wrapper association,
-  // so the visitor can make sure to trace the association (in case it is
+  // We notify V8HeapController about the new wrapper association,
+  // so the controller can make sure to trace the association (in case it is
   // currently tracing).  Because of some optimizations, V8 will not
   // necessarily detect wrappers created during its incremental marking.
-  per_isolate_data->GetScriptWrappableMarkingVisitor()->RegisterV8Reference(
-      std::make_pair(const_cast<WrapperTypeInfo*>(wrapper_type_info),
-                     wrappable));
+  per_isolate_data->GetV8HeapController()->RegisterV8References({std::make_pair(
+      const_cast<WrapperTypeInfo*>(wrapper_type_info), wrappable)});
 }
 
 inline void V8DOMWrapper::ClearNativeInfo(v8::Isolate* isolate,
