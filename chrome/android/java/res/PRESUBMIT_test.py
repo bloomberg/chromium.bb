@@ -147,5 +147,148 @@ class XmlNamespacePrefixesTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
+class TextAppearanceTest(unittest.TestCase):
+
+  def testFailure_Style(self):
+    lines = [
+        '<resource>',
+        '<style name="TestTextAppearance">',
+        '<item name="android:textColor">@color/default_text_color_link</item>',
+        '<item name="android:textSize">14sp</item>',
+        '<item name="android:textStyle">bold</item>',
+        '<item name="android:fontFamily">some-font</item>',
+        '<item name="android:textAllCaps">true</item>',
+        '</style>',
+        '</resource>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
+    errors = PRESUBMIT._CheckTextAppearance(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertEqual(5, len(errors[0].items))
+    self.assertEqual(
+        '  chrome/path/test.xml:2 contains attribute android:textColor',
+        errors[0].items[0].splitlines()[0])
+    self.assertEqual(
+        '  chrome/path/test.xml:2 contains attribute android:textSize',
+        errors[0].items[1].splitlines()[0])
+    self.assertEqual(
+        '  chrome/path/test.xml:2 contains attribute android:textStyle',
+        errors[0].items[2].splitlines()[0])
+    self.assertEqual(
+        '  chrome/path/test.xml:2 contains attribute android:fontFamily',
+        errors[0].items[3].splitlines()[0])
+    self.assertEqual(
+        '  chrome/path/test.xml:2 contains attribute android:textAllCaps',
+        errors[0].items[4].splitlines()[0])
+
+  def testSuccess_Style(self):
+    lines = [
+        '<resource>',
+        '<style name="TextAppearance.Test">',
+        '<item name="android:textColor">@color/default_text_color_link</item>',
+        '<item name="android:textSize">14sp</item>',
+        '<item name="android:textStyle">bold</item>',
+        '<item name="android:fontFamily">some-font</item>',
+        '<item name="android:textAllCaps">true</item>',
+        '</style>',
+        '<style name="TestStyle">',
+        '<item name="android:background">some_background</item>',
+        '</style>',
+        '</resource>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
+    errors = PRESUBMIT._CheckTextAppearance(mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(errors))
+
+  def testFailure_Widget(self):
+    lines_top_level = [
+        '<TextView',
+        'xmlns:android="http://schemas.android.com/apk/res/android"',
+        'android:layout_width="match_parent"',
+        'android:layout_height="@dimen/snippets_article_header_height"',
+        'android:textColor="@color/snippets_list_header_text_color"',
+        'android:textSize="14sp" />']
+    lines_subcomponent_widget = [
+        '<RelativeLayout',
+        'xmlns:android="http://schemas.android.com/apk/res/android"',
+        'android:layout_width="match_parent"',
+        'android:layout_height="wrap_content">',
+        '<View',
+        'android:textColor="@color/error_text_color"',
+        'android:textSize="@dimen/text_size_medium"',
+        'android:textAllCaps="true"',
+        'android:background="@drawable/infobar_shadow_top"',
+        'android:visibility="gone" />',
+        '</RelativeLayout>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('chrome/path/test1.xml', lines_top_level),
+        MockFile('chrome/path/test2.xml', lines_subcomponent_widget)]
+    errors = PRESUBMIT._CheckTextAppearance(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertEqual(5, len(errors[0].items))
+    self.assertEqual(
+        '  chrome/path/test1.xml:5 contains attribute android:textColor',
+        errors[0].items[0].splitlines()[0])
+    self.assertEqual(
+        '  chrome/path/test1.xml:6 contains attribute android:textSize',
+        errors[0].items[1].splitlines()[0])
+    self.assertEqual(
+        '  chrome/path/test2.xml:6 contains attribute android:textColor',
+        errors[0].items[2].splitlines()[0])
+    self.assertEqual(
+        '  chrome/path/test2.xml:7 contains attribute android:textSize',
+        errors[0].items[3].splitlines()[0])
+    self.assertEqual(
+        '  chrome/path/test2.xml:8 contains attribute android:textAllCaps',
+        errors[0].items[4].splitlines()[0])
+
+  def testSuccess_Widget(self):
+    lines = [
+        '<RelativeLayout',
+        'xmlns:android="http://schemas.android.com/apk/res/android"',
+        'android:layout_width="match_parent"',
+        'android:layout_height="wrap_content">',
+        '<View',
+        'android:background="@drawable/infobar_shadow_top"',
+        'android:visibility="gone" />',
+        '</RelativeLayout>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
+    errors = PRESUBMIT._CheckTextAppearance(mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(errors))
+
+class NewTextAppearanceTest(unittest.TestCase):
+
+  def testFailure(self):
+    lines = [
+        '<resource>',
+        '<style name="TextAppearance.Test">',
+        '<item name="android:textColor">@color/default_text_color_link</item>',
+        '<item name="android:textSize">14sp</item>',
+        '</style>',
+        '</resource>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
+    errors = PRESUBMIT._CheckNewTextAppearance(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertEqual(1, len(errors[0].items))
+    self.assertEqual(
+        '  chrome/path/test.xml:2',
+        errors[0].items[0].splitlines()[0])
+
+  def testSuccess(self):
+    lines = [
+        '<resource>',
+        '<style name="TextAppearanceTest">',
+        '<item name="android:textColor">@color/default_text_color_link</item>',
+        '<item name="android:textSize">14sp</item>',
+        '</style>',
+        '</resource>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
+    errors = PRESUBMIT._CheckNewTextAppearance(mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(errors))
+
 if __name__ == '__main__':
   unittest.main()

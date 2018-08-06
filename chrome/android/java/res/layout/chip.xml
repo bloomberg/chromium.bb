@@ -30,5 +30,5 @@
         android:paddingStart="@dimen/chip_icon_padding"
         android:paddingEnd="@dimen/chip_no_icon_padding"
         android:textAlignment="center"
-        android:textAppearance="@style/DownloadHomeChipText" />
+        android:textAppearance="@style/TextAppearance.DownloadHomeChip" />
 </LinearLayout>

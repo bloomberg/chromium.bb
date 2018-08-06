@@ -4,7 +4,6 @@
      found in the LICENSE file. -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/data_reduction_stats_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -31,8 +30,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:singleLine="true"
-                    android:textColor="@color/default_text_color_link"
-                    android:textSize="23sp" />
+                    android:textAppearance="@style/TextAppearance.DataReductionHeadline" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -77,15 +75,13 @@
             android:id="@+id/data_reduction_start_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/PreferenceSummary"
-            android:textSize="14sp" />
+            android:textAppearance="@style/BlackBody" />
 
         <TextView
             android:id="@+id/data_reduction_end_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/PreferenceSummary"
-            android:textSize="14sp" />
+            android:textAppearance="@style/BlackBody" />
 
     </FrameLayout>
 

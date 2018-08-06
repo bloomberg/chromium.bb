@@ -95,13 +95,15 @@
         <item name="android:windowBackground">@null</item>
         <item name="android:windowDisablePreview">true</item>
     </style>
-    <style name="WebappSplashScreenTextTheme">
+    <style name="TextAppearance.WebappSplashScreenText" parent="BlackHeadline1">
         <item name="android:textSize">24sp</item>
-        <item name="android:ellipsize">end</item>
-        <item name="android:textColor">@color/default_text_color</item>
-        <item name="android:gravity">center</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
+    </style>
+    <style name="WebappSplashScreenTextTheme">
+        <item name="android:ellipsize">end</item>
+        <item name="android:gravity">center</item>
         <item name="android:maxLines">2</item>
+        <item name="android:textAppearance">@style/TextAppearance.WebappSplashScreenText</item>
     </style>
 
     <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
@@ -136,8 +138,13 @@
         <item name="android:paddingBottom">@dimen/modal_dialog_control_padding_vertical</item>
     </style>
 
-    <style name="ModalDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+    <!-- TODO(huayinz): Move this to pre-defined style once we have the disabled state defined  -->
+    <style name="TextAppearance.ModalDialogButton" parent="BlueButtonText2">
         <item name="android:textColor">@color/blue_when_enabled</item>
+    </style>
+
+    <style name="ModalDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textAppearance">@style/TextAppearance.ModalDialogButton</item>
     </style>
 
     <style name="SimpleDialog" parent="AlertDialogTheme">
@@ -148,10 +155,11 @@
     <!-- Preferences -->
     <style name="PreferencesTheme" parent="ThemeWithActionBar">
         <item name="android:textColorLink">@color/pref_accent_color</item>
-        <item name="android:textAppearanceMedium">@style/PreferenceTextAppearanceMedium</item>
+        <item name="android:textAppearanceMedium">@style/TextAppearance.PreferenceMediumText</item>
+        <item name="android:textAppearanceSmall">@style/BlackBody</item>
         <item name="android:preferenceCategoryStyle">@style/PreferenceCategory</item>
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
-        <item name="floatLabelTextAppearance">@style/PreferenceFloatLabelTextAppearance</item>
+        <item name="floatLabelTextAppearance">@style/BlackCaption</item>
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_margin</item>
@@ -161,7 +169,7 @@
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
       <item name="titleTextStyle">@style/BlackHeadline1</item>
     </style>
-    <style name="PreferenceTextAppearanceMedium">
+    <style name="TextAppearance.PreferenceMediumText">
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
@@ -176,7 +184,7 @@
         <item name="android:paddingTop">16dp</item>
         <item name="android:layout_marginBottom">16dp</item>
     </style>
-    <style name="PreferenceCategoryTextStyle" parent="RobotoMediumStyle">
+    <style name="TextAppearance.PreferenceCategoryText" parent="RobotoMediumStyle">
         <item name="android:textColor">@color/pref_accent_color</item>
         <item name="android:textSize">12sp</item>
     </style>
@@ -186,8 +194,7 @@
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
     </style>
     <style name="PreferenceSummary">
-        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
-        <item name="android:textColor">?android:attr/textColorSecondary</item>
+        <item name="android:textAppearance">@style/BlackBody</item>
     </style>
     <style name="PreferenceScreenLayout">
         <item name="android:paddingTop">16dp</item>
@@ -207,14 +214,10 @@
     </style>
     <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
     <style name="DeprecationWarningPreferenceTheme" parent="PreferencesTheme">
-        <item name="android:textSize">14sp</item>
-    </style>
-    <style name="PreferenceFloatLabelTextAppearance">
-        <item name="android:textColor">@color/descriptive_text_color</item>
-        <item name="android:textSize">12sp</item>
+        <item name="android:textAppearance">@style/BlackBodyDefault</item>
     </style>
     <style name="PreferenceSpinnerItem">
-        <item name="android:textAppearance">@style/PreferenceTextAppearanceMedium</item>
+        <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
     </style>
     <style name="PreferenceSpinnerUnderlineView">
         <item name="android:layout_width">match_parent</item>
@@ -243,8 +246,12 @@
     <style name="ThemeWithActionBar" parent="ThemeWithActionBarBase" />
 
     <style name="FlushFooterButton">
-      <item name="android:textColor">@color/light_normal_color</item>
-      <item name="android:background">@drawable/flush_footer_button</item>
+        <item name="android:background">@drawable/flush_footer_button</item>
+        <item name="android:textAppearance">@style/TextAppearance.FlushFooterButton</item>
+    </style>
+    <style name="TextAppearance.FlushFooterButton"
+        parent="android:TextAppearance.DeviceDefault.Widget.Button">
+        <item name="android:textColor">@color/light_normal_color</item>
     </style>
 
     <!-- Manage Space Activity -->
@@ -290,7 +297,7 @@
         <item name="android:popupBackground">@null</item>
         <item name="android:listDivider">@null</item>
         <item name="android:listPreferredItemHeightSmall">48dp</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textAppearance">@style/BlackTitle1</item>
     </style>
     <style name="OverflowMenuButton">
         <item name="android:layout_width">0dp</item>
@@ -399,7 +406,7 @@
     </style>
 
     <!-- Web Notifications -->
-    <style name="TextAppearance_StatusBar_EventContent_LineTwo"
+    <style name="TextAppearance.Notification"
         parent="@android:style/TextAppearance.StatusBar.EventContent">
         <!-- This style is defined as a workaround for TextAppearance.StatusBar.EventContent.Line2
              not being exposed by the framework and removed from the Support Library. It copies
@@ -412,17 +419,17 @@
         parent="@android:style/TextAppearance.StatusBar.EventContent.Title">
         <item name="android:layout_marginStart">8dp</item>
     </style>
-    <style name="WebNotificationBody" parent="TextAppearance_StatusBar_EventContent_LineTwo">
+    <style name="WebNotificationBody" parent="TextAppearance.Notification">
         <item name="android:layout_marginStart">8dp</item>
     </style>
     <style name="WebNotificationBodyBig"
         parent="@android:style/TextAppearance.StatusBar.EventContent">
         <item name="android:layout_marginStart">8dp</item>
     </style>
-    <style name="WebNotificationOrigin" parent="TextAppearance_StatusBar_EventContent_LineTwo">
+    <style name="WebNotificationOrigin" parent="TextAppearance.Notification">
         <item name="android:layout_marginStart">8dp</item>
     </style>
-    <style name="WebNotificationTime" parent="TextAppearance_StatusBar_EventContent_LineTwo"/>
+    <style name="WebNotificationTime" parent="TextAppearance.Notification"/>
     <style name="WebNotificationDivider">
         <item name="android:background">?android:dividerHorizontal</item>
     </style>
@@ -434,12 +441,16 @@
     </style>
     <style name="WebNotificationButton"
         parent="@android:style/Widget.DeviceDefault.Button.Borderless.Small">
+        <item name="android:textAppearance">@style/TextAppearance.WebNotificationButton</item>
+    </style>
+    <style name="TextAppearance.WebNotificationButton"
+        parent="android:TextAppearance.DeviceDefault.Widget.Button">
         <!-- textColor from the 4.4.4 notification_action.xml - no public aliases. -->
         <item name="android:textColor">#ccc</item>
     </style>
     <style name="WebNotificationSettingsButton"
         parent="@style/WebNotificationButton">
-        <item name="android:textAppearance">@style/TextAppearance_StatusBar_EventContent_LineTwo</item>
+        <item name="android:textAppearance">@style/TextAppearance.Notification</item>
         <item name="android:paddingStart">40dp</item>
         <!-- Margin at the end to avoid overlap with the small icon. -->
         <item name="android:layout_marginEnd">24dp</item>
@@ -477,7 +488,7 @@
     </style>
 
     <style name="SigninDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
-        <item name="android:textColor">@color/default_text_color_link</item>
+        <item name="android:textAppearance">@style/BlueButtonText2</item>
     </style>
 
     <!-- Contextual Search styles -->
@@ -507,6 +518,10 @@
         <item name="android:includeFontPadding">false</item>
         <item name="android:requiresFadingEdge">horizontal</item>
         <item name="android:singleLine">true</item>
+        <item name="android:textAppearance">
+            @style/TextAppearance.ContextualSearchContextTextView</item>
+    </style>
+    <style name="TextAppearance.ContextualSearchContextTextView">
         <item name="android:textColor">#CCC</item>
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
@@ -524,27 +539,18 @@
     </style>
 
     <!-- Payments UI -->
-    <style name="PaymentsUiSectionDisabledText">
-        <item name="android:textColor">@color/explanation_text_color</item>
-        <item name="android:textSize">16sp</item>
-    </style>
-    <style name="PaymentsUiSectionDescriptiveText">
-        <item name="android:textColor">@color/descriptive_text_color</item>
-        <item name="android:textSize">14sp</item>
-    </style>
-    <style name="PaymentsUiSectionWarningText">
+    <style name="TextAppearance.PaymentsUiSectionWarningText">
         <item name="android:textColor">@color/error_text_color</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="PaymentsUiSectionDescriptiveTextEndAligned" parent="PaymentsUiSectionDescriptiveText">
+    <style name="TextAppearance.PaymentsUiSectionDescriptiveTextEndAligned" parent="BlackBody">
         <item name="android:textAlignment">viewEnd</item>
     </style>
-    <style name="PaymentsUiSectionPendingTextEndAligned" parent="PaymentsUiSectionDescriptiveTextEndAligned">
+    <style name="TextAppearance.PaymentsUiSectionPendingTextEndAligned"
+        parent="TextAppearance.PaymentsUiSectionDescriptiveTextEndAligned">
         <item name="android:textColor">@color/explanation_text_color</item>
     </style>
-    <style name="EditorDialogSectionAddButtonLabel">
-        <item name="android:textColor">@color/default_text_color_link</item>
-        <item name="android:textSize">14sp</item>
+    <style name="TextAppearance.EditorDialogSectionAddButton" parent="BlueLink2">
         <item name="android:textAllCaps">true</item>
     </style>
 
@@ -585,27 +591,19 @@
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
     </style>
     <style name="SadTabBodyText">
-        <item name="android:textColor">@color/sad_tab_body_text_color</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textAppearance">@style/BlackBody</item>
         <item name="android:layout_gravity">start</item>
     </style>
     <style name="SigninButtonCompat">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textAppearance">@style/WhiteButtonText</item>
         <item name="buttonColor">@color/light_active_color</item>
         <item name="buttonRaised">false</item>
     </style>
-    <!-- TODO(https://crbug.com/856244): Remove text attributes here and use textAppearance once
-         they are removed from @style/ButtonCompatBase. -->
     <style name="SigninButtonBorderlessRegular">
         <item name="android:background">?android:attr/selectableItemBackground</item>
         <item name="android:paddingStart">0dp</item>
         <item name="android:paddingEnd">0dp</item>
-        <item name="android:fontFamily">sans-serif</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="android:textStyle">normal</item>
-        <item name="android:textColor">@color/default_text_color_link</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textAppearance">@style/BlueLink2</item>
     </style>
 
     <!-- New tab page RecyclerView overscroll color -->
@@ -644,7 +642,7 @@
     </style>
 
     <!-- Download Home -->
-    <style name="DownloadHomeChipText">
+    <style name="TextAppearance.DownloadHomeChip">
         <item name="android:textColor">@color/chip_text_color</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
@@ -653,8 +651,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">0dp</item>
         <item name="android:minHeight">18dp</item>
-        <item name="android:textColor">@color/google_grey_600</item>
-        <item name="android:textSize">12sp</item>
+        <item name="android:textAppearance">@style/BlackBody</item>
         <item name="android:ellipsize">start</item>
         <item name="android:singleLine">true</item>
     </style>
@@ -700,11 +697,14 @@
         <item name="android:paddingStart">6dp</item>
         <item name="android:paddingEnd">6dp</item>
         <item name="android:singleLine">true</item>
+        <item name="android:text">@string/prefetch_badge_new</item>
+        <item name="android:textAppearance">@style/TextAppearance.DownloadNewBadge</item>
+    </style>
+    <style name="TextAppearance.DownloadNewBadge">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_small</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:text">@string/prefetch_badge_new</item>
     </style>
 
     <!-- Download Home V2 -->
@@ -717,15 +717,23 @@
     </style>
 
     <!-- Data Reduction -->
+    <style name="TextAppearance.DataUsageBreakdownColumnLabel" parent="@style/BlackButtonText">
+        <item name="android:textAllCaps">false</item>
+    </style>
     <style name="DataUsageBreakdownColumnLabel">
         <item name="android:layout_height">wrap_content</item>
         <item name="android:paddingBottom">10dp</item>
         <item name="android:paddingTop">10dp</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">@style/BlackButtonText</item>
+        <item name="android:textAppearance">
+            @style/TextAppearance.DataUsageBreakdownColumnLabel</item>
+    </style>
+    <style name="TextAppearance.DataUsageBreakdownSavedColumnLabel" parent="@style/BlueButtonText2">
+        <item name="android:textAllCaps">false</item>
     </style>
     <style name="DataUsageBreakdownSavedColumnLabel" parent="DataUsageBreakdownColumnLabel">
-        <item name="android:textAppearance">@style/BlueButtonText2</item>
+        <item name="android:textAppearance">
+            @style/TextAppearance.DataUsageBreakdownSavedColumnLabel</item>
     </style>
     <style name="DataUsageBreakdownColumnItem">
         <item name="android:layout_height">wrap_content</item>
@@ -736,6 +744,9 @@
     </style>
     <style name="DataUsageBreakdownSavedColumnItem" parent="DataUsageBreakdownColumnItem">
         <item name="android:textAppearance">@style/BlueLink3</item>
+    </style>
+    <style name="TextAppearance.DataReductionHeadline" parent="BlackHeadline1">
+        <item name="android:textColor">@color/default_text_color_link</item>
     </style>
 
     <!-- Incognito New Tab Page -->
@@ -749,8 +760,13 @@
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
         <item name="android:textAppearance">@style/BlueButtonText1</item>
-        <item name="android:textAllCaps">true</item>
         <item name="android:padding">16dp</item>
+    </style>
+    <!-- TODO(https://crbug.com/850138): Confirm with UX whether this should be a one-off text
+         appearance or a pre-defined text appearance. -->
+    <style name="TextAppearance.IncognitoNewTabLearnMoreLinkModern">
+        <item name="android:textColor">@color/modern_blue_300</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
 
     <!-- Picker Dialog animations -->
@@ -775,18 +791,18 @@
         <item name="android:ellipsize">end</item>
         <item name="leading">16sp</item>
     </style>
-    <!-- TODO(https://crbug.com/856244): Figure out why the styles in the feed library overrides
-         chrome's style and try to use BlueButtonText2 instead of text attributes here. -->
-    <style name="SuggestionCardAction" parent="ButtonCompatBorderless">
-        <item name="android:textSize">@dimen/text_size_medium</item>
-        <item name="android:textColor">@color/default_text_color_link</item>
+    <style name="SuggestionCardAction">
         <item name="android:minHeight">48dp</item>
     </style>
 
     <!-- Password manager settings page -->
-    <style name="PasswordEntryName" parent="BlueButtonText2">
+    <style name="PasswordEntryName">
+        <item name="android:textAppearance">@style/TextAppearance.PasswordEntryName</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="TextAppearance.PasswordEntryName" parent="BlueButtonText2">
+        <item name="android:textAllCaps">false</item>
     </style>
 
     <!-- ListMenuButton -->

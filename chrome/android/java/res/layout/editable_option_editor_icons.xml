@@ -17,7 +17,7 @@
             android:id="@+id/label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/PreferenceFloatLabelTextAppearance" />
+            android:textAppearance="@style/BlackCaption" />
 
     <org.chromium.chrome.browser.widget.prefeditor.ExpandableGridView
             android:id="@+id/icons_container"

@@ -1055,7 +1055,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         TextView view = new TextViewWithClickableSpans(mContext);
         view.setText(spannableMessage);
         view.setMovementMethod(LinkMovementMethod.getInstance());
-        ApiCompatibilityUtils.setTextAppearance(view, R.style.PaymentsUiSectionDescriptiveText);
+        ApiCompatibilityUtils.setTextAppearance(view, R.style.BlackBody);
 
         // Add paddings instead of margin to let getMeasuredHeight return correct value for section
         // resize animation.

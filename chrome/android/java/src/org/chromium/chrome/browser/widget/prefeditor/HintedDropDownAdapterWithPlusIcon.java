@@ -76,7 +76,7 @@ public class HintedDropDownAdapterWithPlusIcon<T> extends HintedDropDownAdapter<
 
             // Set the correct appearance, face and style for the text.
             ApiCompatibilityUtils.setTextAppearance(
-                    mTextView, R.style.EditorDialogSectionAddButtonLabel);
+                    mTextView, R.style.TextAppearance_EditorDialogSectionAddButton);
             mTextView.setTypeface(UiUtils.createRobotoMediumTypeface());
 
             // Padding at the bottom of the dropdown.
