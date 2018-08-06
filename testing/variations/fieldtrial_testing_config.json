@@ -1281,7 +1281,7 @@
             ],
             "experiments": [
                 {
-                    "name": "DefaultPassthroughCommandDecoder",
+                    "name": "Enabled",
                     "enable_features": [
                         "DefaultPassthroughCommandDecoder"
                     ]
