@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 #
 # Additional dependencies not in the rpm find-requires output.
-#
-# TODO(thestig,bugzilla.redhat.com/show_bug.cgi?id=1482760): Use the
-# liberation-fonts package once it's available on all distros.
 
 # For lsb_release.
 /usr/bin/lsb_release
@@ -15,6 +12,9 @@ ca-certificates
 
 # Temporary entry for tray icons
 libappindicator3.so.1()(64bit)
+
+# Make sure users have compatible fonts for viewing PDFs.
+liberation-fonts
 
 # Specify a more recent version for security and stability updates. While we
 # depend on libnss3.so and not libssl3.so, force the dependency on libssl3 to
