@@ -34,7 +34,7 @@ def EnsureEmptyDir(path):
 def BuildForArch(arch):
   build_dir = 'out/release-' + arch
   Run('scripts/fx', 'set', arch,
-      '--packages=garnet/packages/sdk/base',
+      '--packages=topaz/packages/sdk/topaz',
       '--args=is_debug=false', build_dir)
   Run('scripts/fx', 'full-build')
 
