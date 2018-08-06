@@ -476,10 +476,14 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
 // S13nServiceWorker: Test that SetController correctly sets (or resets)
 // the controller service worker for clients.
 TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
+  // This test has temporary LOG(ERROR) logging to debug
+  // https://crbug.com/862294.
+
   EnableS13nServiceWorker();
   const int kProviderId = 10;
 
   // (1) Test if setting the controller via the CTOR works.
+  LOG(ERROR) << "1 test ctor";
   auto object_host1 =
       std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
   ASSERT_EQ(0, object_host1->GetBindingCount());
@@ -506,7 +510,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), host_ptr.PassInterface(),
       std::move(controller_info1), loader_factory_);
+  LOG(ERROR) << "1 RunUntilIdle after ctor";
   base::RunLoop().RunUntilIdle();
+  LOG(ERROR) << "1 RunUntilIdle after ctor finished";
 
   // Subresource loader factory must be available.
   auto* subresource_loader_factory1 =
@@ -518,12 +524,15 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   base::RunLoop loop1;
   fake_controller1.set_fetch_callback(loop1.QuitClosure());
   StartRequest(subresource_loader_factory1, kURL1);
+  LOG(ERROR) << "1 loop1.Run()";
   loop1.Run();
+  LOG(ERROR) << "1 loop1.Run() finished";
   EXPECT_EQ(kURL1, fake_controller1.fetch_event_request().url);
   EXPECT_EQ(1, fake_controller1.fetch_event_count());
 
   // (2) Test if resetting the controller to a new one via SetController
   // works.
+  LOG(ERROR) << "2 reset controller to new one";
   auto object_host2 =
       std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
   ASSERT_EQ(0, object_host2->GetBindingCount());
@@ -543,7 +552,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // The controller is reset. References to the old controller must be
   // released.
+  LOG(ERROR) << "2 RunUntilIdle after SetController";
   base::RunLoop().RunUntilIdle();
+  LOG(ERROR) << "2 RunUntilIdle after SetController finished";
   EXPECT_EQ(0, object_host1->GetBindingCount());
 
   // Subresource loader factory must be available, and should be the same
@@ -558,19 +569,24 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   base::RunLoop loop2;
   fake_controller2.set_fetch_callback(loop2.QuitClosure());
   StartRequest(subresource_loader_factory2, kURL2);
+  LOG(ERROR) << "2 loop2.Run()";
   loop2.Run();
+  LOG(ERROR) << "2 loop2.Run() finished";
   EXPECT_EQ(kURL2, fake_controller2.fetch_event_request().url);
   EXPECT_EQ(1, fake_controller2.fetch_event_count());
   // The request should not go to the previous controller.
   EXPECT_EQ(1, fake_controller1.fetch_event_count());
 
   // (3) Test if resetting the controller to nullptr works.
+  LOG(ERROR) << "3 reset controller to null";
   container_ptr->SetController(mojom::ControllerServiceWorkerInfo::New(),
                                std::vector<blink::mojom::WebFeature>(), true);
 
   // The controller is reset. References to the old controller must be
   // released.
+  LOG(ERROR) << "3 RunUntilIdle()";
   base::RunLoop().RunUntilIdle();
+  LOG(ERROR) << "3 RunUntilIdle() finished";
   EXPECT_EQ(0, object_host2->GetBindingCount());
 
   // Subresource loader factory must not be available.
@@ -583,7 +599,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   fake_loader_factory_.set_start_loader_callback(loop3.QuitClosure());
   EXPECT_EQ(0UL, fake_loader_factory_.clients_count());
   StartRequest(subresource_loader_factory2, kURL3);
+  LOG(ERROR) << "3 loop3.Run()";
   loop3.Run();
+  LOG(ERROR) << "3 loop3.Run() finished";
   EXPECT_EQ(kURL3, fake_loader_factory_.last_request_url());
   EXPECT_EQ(1UL, fake_loader_factory_.clients_count());
 
@@ -593,6 +611,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // (4) Test if resetting the controller to yet another one via SetController
   // works.
+  LOG(ERROR) << "4 reset controller yet another one";
   auto object_host4 =
       std::make_unique<MockServiceWorkerObjectHost>(202 /* version_id */);
   ASSERT_EQ(0, object_host4->GetBindingCount());
@@ -609,7 +628,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   controller_info4->endpoint = controller_ptr4.PassInterface();
   container_ptr->SetController(std::move(controller_info4),
                                std::vector<blink::mojom::WebFeature>(), true);
+  LOG(ERROR) << "4 RunUntilIdle()";
   base::RunLoop().RunUntilIdle();
+  LOG(ERROR) << "4 RunUntilIdle() finished";
 
   // Subresource loader factory must be available.
   auto* subresource_loader_factory4 =
@@ -621,7 +642,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   base::RunLoop loop4;
   fake_controller4.set_fetch_callback(loop4.QuitClosure());
   StartRequest(subresource_loader_factory4, kURL4);
+  LOG(ERROR) << "4 loop4.Run()";
   loop4.Run();
+  LOG(ERROR) << "4 loop4.Run() finished";
   EXPECT_EQ(kURL4, fake_controller4.fetch_event_request().url);
   EXPECT_EQ(1, fake_controller4.fetch_event_count());
 
@@ -635,7 +658,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // The outcome is not deterministic but should not crash.
   StartRequest(subresource_loader_factory4, kURL4);
   fake_controller4.Disconnect();
+  LOG(ERROR) << "4 RunUntilIdle() again";
   base::RunLoop().RunUntilIdle();
+  LOG(ERROR) << "4 RunUntilIdle() finished";
 }
 
 TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
