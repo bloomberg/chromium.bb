@@ -55,7 +55,7 @@
 
 // LazyInstance uses its own struct initializer-list style static
 // initialization, which does not require a constructor.
-#define LAZY_INSTANCE_INITIALIZER {0}
+#define LAZY_INSTANCE_INITIALIZER {}
 
 namespace base {
 
