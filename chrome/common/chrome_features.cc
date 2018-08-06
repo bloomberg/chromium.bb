@@ -649,6 +649,9 @@ const base::Feature kCrOSEnableUSMUserService{"CrOSEnableUSMUserService",
 // Enables or disables initialization & use of the Chrome OS ML Service.
 const base::Feature kMachineLearningService{"MachineLearningService",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable USBGuard at the lockscreen on Chrome OS.
+const base::Feature kUsbguard{"USBGuard", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)

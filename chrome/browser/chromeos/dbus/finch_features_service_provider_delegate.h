@@ -19,6 +19,7 @@ class FinchFeaturesServiceProviderDelegate
 
   // ChromeServiceProvider::Delegate:
   bool IsCrostiniEnabled(const std::string& user_id_hash) override;
+  bool IsUsbguardEnabled() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FinchFeaturesServiceProviderDelegate);
