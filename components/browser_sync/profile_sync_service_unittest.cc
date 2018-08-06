@@ -479,6 +479,33 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
   EXPECT_EQ(syncer::SyncService::State::DISABLED, service()->GetState());
 }
 
+// This test exercises sign-in after startup, which isn't supported on ChromeOS.
+#if !defined(OS_CHROMEOS)
+TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInitThenPolicyRemoved) {
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          std::make_unique<base::Value>(true));
+  CreateService(ProfileSyncService::AUTO_START);
+  InitializeForNthSync();
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY |
+                syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+            service()->GetDisableReasons());
+  EXPECT_EQ(syncer::SyncService::State::DISABLED, service()->GetState());
+
+  // Remove the policy. Now only missing sign-in is preventing startup.
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          std::make_unique<base::Value>(false));
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+            service()->GetDisableReasons());
+  EXPECT_EQ(syncer::SyncService::State::DISABLED, service()->GetState());
+
+  // Once we mark first setup complete again (it was cleared by the policy) and
+  // sign in, sync starts up.
+  service()->SetFirstSetupComplete();
+  SignIn();
+  EXPECT_EQ(syncer::SyncService::State::ACTIVE, service()->GetState());
+}
+#endif  // !defined(OS_CHROMEOS)
+
 // Verify that disable by enterprise policy works even after the backend has
 // been initialized.
 TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
