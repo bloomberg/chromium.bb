@@ -3179,10 +3179,23 @@ be describing additional metrics about the same event.
       blink::TaskType for the current task.
     </summary>
   </metric>
+  <metric name="ThreadType">
+    <summary>
+      blink::WebThreadType for the thread the current task was executed on.
+    </summary>
+  </metric>
   <metric name="UseCase">
     <summary>
       MainThreadSchedulerImpl's UseCase when this task was completed. See
       blink::scheduler::UseCase for the values of this enum.
+    </summary>
+  </metric>
+  <metric name="Version">
+    <summary>
+      The version of this metric, which is used to track the actual set of
+      values present across different builds and channels. Hardcoded into the
+      binary and incremented each time a new field is added or existing is
+      changed. Integer.
     </summary>
   </metric>
 </event>

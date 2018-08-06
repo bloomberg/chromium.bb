@@ -33,7 +33,7 @@ class FrameScheduler : public FrameOrWorkerScheduler {
     virtual ~Delegate() = default;
 
     virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
-    virtual int64_t GetUkmSourceId() = 0;
+    virtual ukm::SourceId GetUkmSourceId() = 0;
   };
 
   ~FrameScheduler() override = default;
@@ -147,6 +147,9 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // use GetPageScheduler()->IsExemptFromBudgetBasedThrottling for the status
   // of the page.
   virtual bool IsExemptFromBudgetBasedThrottling() const = 0;
+
+  // Returns UKM source id for recording metrics associated with this frame.
+  virtual ukm::SourceId GetUkmSourceId() = 0;
 
   FrameScheduler* ToFrameScheduler() override { return this; }
 

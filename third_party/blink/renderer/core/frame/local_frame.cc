@@ -191,6 +191,7 @@ class EmptyFrameScheduler final : public FrameScheduler {
   GetPauseSubresourceLoadingHandle() override {
     return nullptr;
   }
+  ukm::SourceId GetUkmSourceId() override { return ukm::kInvalidSourceId; }
 };
 
 }  // namespace

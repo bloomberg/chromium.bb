@@ -63,7 +63,6 @@ const double kShortIdlePeriodDurationPercentile = 50;
 const double kFastCompositingIdleTimeThreshold = .2;
 constexpr base::TimeDelta kQueueingTimeWindowDuration =
     base::TimeDelta::FromSeconds(1);
-const double kSamplingRateForTaskUkm = 0.0001;
 const int64_t kSecondsPerMinute = 60;
 
 // Wake-up throttling trial.
@@ -503,7 +502,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       max_virtual_time_task_starvation_count(0),
       virtual_time_stopped(false),
       nested_runloop(false),
-      uniform_distribution(0.0f, 1.0f),
       compositing_experiment(main_thread_scheduler_impl),
       should_prioritize_compositing(false) {}
 
@@ -1745,6 +1743,10 @@ base::TimeDelta MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration()
   }
 }
 
+SchedulerHelper* MainThreadSchedulerImpl::GetHelper() {
+  return &helper_;
+}
+
 bool MainThreadSchedulerImpl::CanEnterLongIdlePeriod(
     base::TimeTicks now,
     base::TimeDelta* next_long_idle_period_delay_out) {
@@ -2552,6 +2554,7 @@ UkmRecordingStatus MainThreadSchedulerImpl::RecordTaskUkmImpl(
   ukm::builders::RendererSchedulerTask builder(
       frame_scheduler->GetUkmSourceId());
 
+  builder.SetVersion(kUkmMetricVersion);
   builder.SetPageSchedulers(main_thread_only().page_schedulers.size());
 
   builder.SetRendererBackgrounded(main_thread_only().renderer_backgrounded);
@@ -2761,31 +2764,6 @@ base::WeakPtr<MainThreadSchedulerImpl> MainThreadSchedulerImpl::GetWeakPtr() {
 
 bool MainThreadSchedulerImpl::IsAudioPlaying() const {
   return main_thread_only().is_audio_playing;
-}
-
-bool MainThreadSchedulerImpl::ShouldIgnoreTaskForUkm(bool has_thread_time,
-                                                     double* sampling_rate) {
-  const double thread_time_sampling_rate =
-      helper_.GetSamplingRateForRecordingCPUTime();
-  if (thread_time_sampling_rate && *sampling_rate < thread_time_sampling_rate) {
-    if (!has_thread_time)
-      return true;
-    *sampling_rate /= thread_time_sampling_rate;
-  }
-  return false;
-}
-
-bool MainThreadSchedulerImpl::ShouldRecordTaskUkm(bool has_thread_time) {
-  double sampling_rate = kSamplingRateForTaskUkm;
-
-  // If thread_time is sampled as well, try to align UKM sampling with it so
-  // that we only record UKMs for tasks that also record thread_time.
-  if (ShouldIgnoreTaskForUkm(has_thread_time, &sampling_rate)) {
-    return false;
-  }
-
-  return main_thread_only().uniform_distribution(
-             main_thread_only().random_generator) < sampling_rate;
 }
 
 bool MainThreadSchedulerImpl::ShouldUpdateTaskQueuePriorities(

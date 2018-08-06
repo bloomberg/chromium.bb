@@ -100,6 +100,8 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
   NonMainThreadSchedulerHelper* helper() { return &helper_; }
 
  private:
+  SchedulerHelper* GetHelper() override;
+
   NonMainThreadSchedulerHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NonMainThreadSchedulerImpl);

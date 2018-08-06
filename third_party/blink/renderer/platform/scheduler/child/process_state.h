@@ -7,14 +7,16 @@
 
 #include <atomic>
 
+#include "third_party/blink/renderer/platform/platform_export.h"
+
 namespace blink {
 namespace scheduler {
 namespace internal {
 
 // Helper lock-free struct to share main state of the process between threads
-// for recording methods.
+// for recording metrics.
 // This class should not be used for synchronization between threads.
-struct ProcessState {
+struct PLATFORM_EXPORT ProcessState {
   static ProcessState* Get();
 
   std::atomic_bool is_process_backgrounded;

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/idle_canceled_delayed_task_sweeper.h"
 #include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/frame_status.h"
 #include "third_party/blink/renderer/platform/scheduler/util/thread_load_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_metrics_helper.h"
@@ -23,6 +24,10 @@ namespace sequence_manager {
 class SequenceManager;
 }
 }  // namespace base
+
+namespace ukm {
+class UkmRecorder;
+}
 
 namespace blink {
 namespace scheduler {
@@ -116,9 +121,17 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   std::unordered_set<WorkerScheduler*>& GetWorkerSchedulersForTesting();
 
+  void SetUkmRecorderForTest(std::unique_ptr<ukm::UkmRecorder> ukm_recorder);
+
  private:
   void MaybeStartLongIdlePeriod();
 
+  void RecordTaskUkm(
+      NonMainThreadTaskQueue* worker_task_queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
+
+  const WebThreadType thread_type_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
   ThreadLoadTracker load_tracker_;
@@ -142,6 +155,12 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   // Owned by |task_queue_throttler_|.
   WakeUpBudgetPool* wake_up_budget_pool_ = nullptr;
   CPUTimeBudgetPool* cpu_time_budget_pool_ = nullptr;
+
+  // The status of the parent frame when the worker was created.
+  const FrameStatus initial_frame_status_;
+
+  const ukm::SourceId ukm_source_id_;
+  std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadScheduler);
 };

@@ -590,6 +590,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     MainThreadSchedulerImpl* scheduler_;  // NOT OWNED
   };
 
+  // ThreadSchedulerImpl implementation:
+  SchedulerHelper* GetHelper() override;
+
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,
@@ -597,8 +600,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void IsNotQuiescent() override {}
   void OnIdlePeriodStarted() override;
   void OnIdlePeriodEnded() override;
-
   void OnPendingTasksChanged(bool has_tasks) override;
+
   void DispatchRequestBeginMainFrameNotExpected(bool has_tasks);
 
   void EndIdlePeriod();
@@ -651,7 +654,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     kForceUpdate,
   };
 
-  // The implelemtation of UpdatePolicy & ForceUpdatePolicy.  It is allowed to
+  // The implementation of UpdatePolicy & ForceUpdatePolicy.  It is allowed to
   // early out if |update_type| is kMayEarlyOutIfPolicyUnchanged.
   virtual void UpdatePolicyLocked(UpdateType update_type);
 
@@ -709,15 +712,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // normally. Care must be taken when using this API to avoid fighting with the
   // TaskQueueThrottler.
   void VirtualTimeResumed();
-
-  // Returns true if the current task should not be reported in UKM because no
-  // thread time was recorded for it. Also updates |sampling_rate| to account
-  // for the ignored tasks by sampling the remaining tasks with higher
-  // probability.
-  bool ShouldIgnoreTaskForUkm(bool has_thread_time, double* sampling_rate);
-
-  // Returns true with probability of kSamplingRateForTaskUkm.
-  bool ShouldRecordTaskUkm(bool has_thread_time);
 
   // Returns true if there is a change in the main thread's policy that should
   // trigger a priority update.
@@ -903,9 +897,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     // True if a nested RunLoop is running.
     bool nested_runloop;
-
-    std::mt19937_64 random_generator;
-    std::uniform_real_distribution<double> uniform_distribution;
 
     // High-priority for compositing events after input experiment.
     PrioritizeCompositingAfterInputExperiment compositing_experiment;
