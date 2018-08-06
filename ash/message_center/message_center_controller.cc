@@ -110,7 +110,8 @@ MessageCenterController::MessageCenterController() {
         std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
   }
 
-  message_center::RegisterVectorIcons({&kNotificationCaptivePortalIcon,
+  message_center::RegisterVectorIcons({&kNotificationAssistantIcon,
+                                       &kNotificationCaptivePortalIcon,
                                        &kNotificationCellularAlertIcon,
                                        &kNotificationDownloadIcon,
                                        &kNotificationEndOfSupportIcon,

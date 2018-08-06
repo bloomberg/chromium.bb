@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/metrics/histogram_macros.h"
@@ -18,14 +19,17 @@
 #include "components/prefs/pref_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 namespace {
 
+constexpr char kAssistantDisplaySource[] = "Assistant";
 constexpr char kAssistantSubPage[] = "googleAssistant";
 constexpr char kHotwordNotificationId[] = "assistant/hotword";
 constexpr char kNotifierAssistant[] = "assistant";
+constexpr int kAssistantIconSize = 24;
 
 // Delegate for assistant hotword notification.
 class AssistantHotwordNotificationDelegate
@@ -111,7 +115,8 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
 
   const base::string16 title =
       l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_NOTIFICATION_TITLE);
-  const base::string16 display_source = base::UTF8ToUTF16(kNotifierAssistant);
+  const base::string16 display_source =
+      base::UTF8ToUTF16(kAssistantDisplaySource);
 
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kHotwordNotificationId, title,
@@ -119,6 +124,10 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierAssistant),
       {}, base::MakeRefCounted<AssistantHotwordNotificationDelegate>(profile));
+
+  gfx::Image image(CreateVectorIcon(ash::kNotificationAssistantIcon,
+                                    kAssistantIconSize, gfx::kGoogleBlue700));
+  notification.set_small_image(image);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, notification);

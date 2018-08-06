@@ -6,8 +6,8 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
@@ -152,7 +152,7 @@ void AssistantNotificationController::OnShowNotification(
           new AssistantNotificationDelegate(weak_factory_.GetWeakPtr(),
                                             assistant_controller_->GetWeakPtr(),
                                             notification.Clone()),
-          kAssistantIcon,
+          kNotificationAssistantIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   system_notification->set_priority(message_center::DEFAULT_PRIORITY);
   message_center->AddNotification(std::move(system_notification));
