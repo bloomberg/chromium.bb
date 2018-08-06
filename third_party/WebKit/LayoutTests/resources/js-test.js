@@ -67,7 +67,7 @@ var unexpectedErrorMessage; // set by onerror when expectingError is not true
         if (self._lazyTestResults) {
             self._lazyTestResults.push(msg);
         } else {
-            var span = document.createElement("span");
+            var span = document.createElement("div");
             // insert it first so XHTML knows the namespace;
             getOrCreateTestElement("console", "div").appendChild(span);
             span.innerHTML = msg + '<br />';
