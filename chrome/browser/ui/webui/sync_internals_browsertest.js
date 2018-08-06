@@ -261,20 +261,23 @@ TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
 GEN('#if defined(OS_CHROMEOS)');
 TEST_F('SyncInternalsWebUITestWithStandaloneTransport', 'SignedIn', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
-  expectTrue(this.hasInDetails(true, 'Summary', 'Initializing'));
+  expectTrue(this.hasInDetails(true, 'Transport State', 'Initializing'));
+  expectTrue(this.hasInDetails(true, 'Disable Reasons', 'None'));
   expectTrue(this.hasInDetails(true, 'Username', 'stub-user@example.com'));
 });
 TEST_F(
     'SyncInternalsWebUITestWithoutStandaloneTransport', 'SignedIn', function() {
       assertNotEquals(null, chrome.sync.aboutInfo);
-      expectTrue(
-          this.hasInDetails(true, 'Summary', 'Waiting for start request'));
+      expectTrue(this.hasInDetails(
+          true, 'Transport State', 'Waiting for start request'));
+      expectTrue(this.hasInDetails(true, 'Disable Reasons', 'None'));
       expectTrue(this.hasInDetails(true, 'Username', 'stub-user@example.com'));
     });
 GEN('#else');
 TEST_F('SyncInternalsWebUITest', 'SignedOut', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
-  expectTrue(this.hasInDetails(true, 'Summary', 'Disabled (Not signed in)'));
+  expectTrue(this.hasInDetails(true, 'Transport State', 'Disabled'));
+  expectTrue(this.hasInDetails(true, 'Disable Reasons', 'Not signed in'));
   expectTrue(this.hasInDetails(true, 'Username', ''));
 });
 GEN('#endif  // defined(OS_CHROMEOS)');
