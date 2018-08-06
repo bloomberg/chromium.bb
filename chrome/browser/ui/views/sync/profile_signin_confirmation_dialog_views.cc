@@ -21,13 +21,16 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -158,6 +161,13 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       ui::GetSigninConfirmationPromptBarColor(
           GetNativeTheme(), ui::kSigninConfirmationPromptBarBackgroundAlpha);
 
+  // Create business icon.
+  int business_icon_size = 20;
+  views::ImageView* business_icon = new views::ImageView();
+  business_icon->SetImage(gfx::CreateVectorIcon(gfx::IconDescription(
+      vector_icons::kBusinessIcon, business_icon_size, gfx::kChromeIconGrey,
+      base::TimeDelta(), gfx::kNoneIcon)));
+
   // Create the prompt label.
   size_t offset;
   const base::string16 domain =
@@ -217,11 +227,22 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));
   constexpr int kPromptBarColumnSetId = 0;
-  prompt_layout->AddColumnSet(kPromptBarColumnSetId)
-      ->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                  views::GridLayout::USE_PREF, 0, 0);
+  auto* prompt_columnset = prompt_layout->AddColumnSet(kPromptBarColumnSetId);
+  prompt_columnset->AddColumn(
+      views::GridLayout::FILL, views::GridLayout::CENTER,
+      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+  prompt_columnset->AddPaddingColumn(
+      views::GridLayout::kFixedSize,
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
+  prompt_columnset->AddColumn(views::GridLayout::FILL,
+                              views::GridLayout::CENTER, 1.0,
+                              views::GridLayout::USE_PREF, 0, 0);
+
   prompt_layout->StartRow(views::GridLayout::kFixedSize, kPromptBarColumnSetId);
+  prompt_layout->AddView(business_icon);
   prompt_layout->AddView(prompt_label);
+
   // Use a column set with no padding.
   dialog_layout->AddColumnSet(0)->AddColumn(views::GridLayout::FILL,
                                             views::GridLayout::FILL, 1.0,
