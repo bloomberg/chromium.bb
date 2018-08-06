@@ -161,7 +161,17 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // the entire workspace, true otherwise.
   bool ShouldAnimateWallpaper(aura::Window* root_window);
 
+  // Returns true if |window| is currently showing in overview.
   bool IsWindowInOverview(const aura::Window* window);
+
+  // Set the window grid that's displaying in |root_window| not animate when
+  // exiting overview mode, i.e., all window items in the grid will not animate
+  // when exiting overview mode. It may be called in two cases: 1) When a window
+  // gets snapped (either from overview or not) and thus cause the end of the
+  // overview mode, we should not do the exiting animation; 2) When a window
+  // is dragged around and when released, it causes the end of the overview
+  // mode, we also should not do the exiting animation.
+  void SetWindowListNotAnimatedWhenExiting(aura::Window* root_window);
 
   WindowSelectorDelegate* delegate() { return delegate_; }
 

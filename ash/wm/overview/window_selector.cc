@@ -307,8 +307,8 @@ void WindowSelector::Init(const WindowList& windows,
       if (dragged_window) {
         window_grid->PositionWindows(/*animate=*/false);
       } else {
-        window_grid->SetWindowListAnimationStates(/*selected_item=*/nullptr,
-                                                  OverviewTransition::kEnter);
+        window_grid->CalculateWindowListAnimationStates(
+            /*selected_item=*/nullptr, OverviewTransition::kEnter);
         window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
                                      OverviewTransition::kEnter);
       }
@@ -357,13 +357,8 @@ void WindowSelector::Shutdown() {
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
     // During shutdown, do not animate all windows in overview if we need to
     // animate the snapped window.
-    if (split_view_controller->IsSplitViewModeActive() &&
-        split_view_controller->GetDefaultSnappedWindow()->GetRootWindow() ==
-            window_grid->root_window() &&
-        split_view_controller->has_animating_window()) {
-      window_grid->SetWindowListNotAnimatedWhenExiting();
-    } else {
-      window_grid->SetWindowListAnimationStates(
+    if (window_grid->should_animate_when_exiting()) {
+      window_grid->CalculateWindowListAnimationStates(
           selected_item_ && selected_item_->window_grid() == window_grid.get()
               ? selected_item_
               : nullptr,
@@ -638,14 +633,7 @@ bool WindowSelector::IsShuttingDown() const {
 
 bool WindowSelector::ShouldAnimateWallpaper(aura::Window* root_window) {
   // Find the grid associated with |root_window|.
-  WindowGrid* grid = nullptr;
-  for (const auto& window_grid : grid_list_) {
-    if (window_grid->root_window() == root_window) {
-      grid = window_grid.get();
-      break;
-    }
-  }
-
+  WindowGrid* grid = GetGridWithRootWindow(root_window);
   if (!grid)
     return false;
 
@@ -664,6 +652,14 @@ bool WindowSelector::IsWindowInOverview(const aura::Window* window) {
       return true;
   }
   return false;
+}
+
+void WindowSelector::SetWindowListNotAnimatedWhenExiting(
+    aura::Window* root_window) {
+  // Find the grid accociated with |root_window|.
+  WindowGrid* grid = GetGridWithRootWindow(root_window);
+  if (grid)
+    grid->SetWindowListNotAnimatedWhenExiting();
 }
 
 void WindowSelector::OnDisplayRemoved(const display::Display& display) {
@@ -728,15 +724,10 @@ void WindowSelector::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  aura::Window* root_window = gained_active->GetRootWindow();
-  auto grid =
-      std::find_if(grid_list_.begin(), grid_list_.end(),
-                   [root_window](const std::unique_ptr<WindowGrid>& grid) {
-                     return grid->root_window() == root_window;
-                   });
-  if (grid == grid_list_.end())
+  auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
+  if (!grid)
     return;
-  const auto& windows = (*grid)->window_list();
+  const auto& windows = grid->window_list();
 
   auto iter = std::find_if(
       windows.begin(), windows.end(),
