@@ -274,6 +274,7 @@ const char kHandlerSettingsSubPage[] = "handlers";
 const char kImportDataSubPage[] = "importData";
 const char kLanguageOptionsSubPage[] = "languages";
 const char kPasswordManagerSubPage[] = "passwords";
+const char kPaymentsSubPage[] = "payments";
 const char kPrintingSettingsSubPage[] = "printing";
 const char kResetProfileSettingsSubPage[] = "resetProfileSettings";
 const char kSearchEnginesSubPage[] = "searchEngines";

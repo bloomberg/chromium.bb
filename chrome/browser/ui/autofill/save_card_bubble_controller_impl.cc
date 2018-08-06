@@ -364,7 +364,7 @@ void SaveCardBubbleControllerImpl::OnManageCardsClicked() {
   // TODO(crbug/855186): Implement metrics for sign-in promo.
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(web_contents()),
-      chrome::kAutofillSubPage);
+      chrome::kPaymentsSubPage);
 }
 
 void SaveCardBubbleControllerImpl::OnBubbleClosed() {

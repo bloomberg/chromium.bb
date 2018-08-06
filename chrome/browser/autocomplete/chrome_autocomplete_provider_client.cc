@@ -57,18 +57,28 @@ namespace {
 // This list should be kept in sync with chrome/common/webui_url_constants.h.
 // Only include useful sub-pages, confirmation alerts are not useful.
 const char* const kChromeSettingsSubPages[] = {
-    chrome::kAutofillSubPage,        chrome::kClearBrowserDataSubPage,
-    chrome::kContentSettingsSubPage, chrome::kLanguageOptionsSubPage,
-    chrome::kPasswordManagerSubPage, chrome::kResetProfileSettingsSubPage,
-    chrome::kSearchEnginesSubPage,   chrome::kSyncSetupSubPage,
+    chrome::kAutofillSubPage,
+    chrome::kClearBrowserDataSubPage,
+    chrome::kContentSettingsSubPage,
+    chrome::kLanguageOptionsSubPage,
+    chrome::kPasswordManagerSubPage,
+    chrome::kPaymentsSubPage,
+    chrome::kResetProfileSettingsSubPage,
+    chrome::kSearchEnginesSubPage,
+    chrome::kSyncSetupSubPage,
 #if defined(OS_CHROMEOS)
-    chrome::kAccessibilitySubPage,   chrome::kBluetoothSubPage,
-    chrome::kDateTimeSubPage,        chrome::kDisplaySubPage,
-    chrome::kInternetSubPage,        chrome::kPowerSubPage,
+    chrome::kAccessibilitySubPage,
+    chrome::kBluetoothSubPage,
+    chrome::kDateTimeSubPage,
+    chrome::kDisplaySubPage,
+    chrome::kInternetSubPage,
+    chrome::kPowerSubPage,
     chrome::kStylusSubPage,
 #else
-    chrome::kCreateProfileSubPage,   chrome::kImportDataSubPage,
-    chrome::kManageProfileSubPage,   chrome::kPeopleSubPage,
+    chrome::kCreateProfileSubPage,
+    chrome::kImportDataSubPage,
+    chrome::kManageProfileSubPage,
+    chrome::kPeopleSubPage,
 #endif
 };
 #endif  // !defined(OS_ANDROID)
