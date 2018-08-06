@@ -176,13 +176,11 @@
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/mus/user_activity_forwarder.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_features.h"
@@ -702,9 +700,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
       weak_factory_(this) {
-  // TODO(sky): better refactor cash/mash dependencies. Perhaps put all cash
-  // state on ShellPortClassic. http://crbug.com/671246.
-
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
@@ -1010,9 +1005,7 @@ void Shell::Init(
 
   wallpaper_controller_ = std::make_unique<WallpaperController>();
 
-  // TODO(sky): move creation to ShellPort.
-  if (config != Config::MASH_DEPRECATED)
-    immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryAsh>();
+  immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryAsh>();
 
   window_positioner_ = std::make_unique<WindowPositioner>();
 
@@ -1133,16 +1126,6 @@ void Shell::Init(
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
-
-  // Forward user activity from the window server to |user_activity_detector_|.
-  // The connector is unavailable in some tests.
-  // TODO(sky): this is dead code, clean up.
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS && connector_) {
-    ui::mojom::UserActivityMonitorPtr user_activity_monitor;
-    connector_->BindInterface(ui::mojom::kServiceName, &user_activity_monitor);
-    user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
-        std::move(user_activity_monitor), user_activity_detector_.get());
-  }
 
   if (!::features::IsAshInBrowserProcess())
     client_image_registry_ = std::make_unique<ClientImageRegistry>();
@@ -1298,14 +1281,8 @@ void Shell::Init(
 }
 
 void Shell::InitializeDisplayManager() {
-  const Config config = shell_port_->GetAshConfig();
   bool display_initialized = display_manager_->InitFromCommandLine();
 
-  if (!display_initialized && config != Config::CLASSIC) {
-    // Run display configuration off device in mus mode.
-    display_manager_->set_configure_displays(true);
-    display_configurator_->set_configure_display(true);
-  }
   display_configuration_controller_ =
       std::make_unique<DisplayConfigurationController>(
           display_manager_.get(), window_tree_host_manager_.get());
@@ -1323,14 +1300,7 @@ void Shell::InitializeDisplayManager() {
       std::make_unique<ProjectingObserver>(display_configurator_.get());
 
   if (!display_initialized) {
-    // TODO(sky): this is dead code, cleanup.
-    if (config != Config::CLASSIC && !chromeos::IsRunningAsSystemCompositor()) {
-      display::mojom::DevDisplayControllerPtr controller;
-      connector_->BindInterface(ui::mojom::kServiceName, &controller);
-      display_manager_->SetDevDisplayController(std::move(controller));
-    }
-
-    if (config != Config::CLASSIC || chromeos::IsRunningAsSystemCompositor()) {
+    if (chromeos::IsRunningAsSystemCompositor()) {
       display_change_observer_ =
           std::make_unique<display::DisplayChangeObserver>(
               display_configurator_.get(), display_manager_.get());
@@ -1357,8 +1327,7 @@ void Shell::InitializeDisplayManager() {
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
 
-  if (config == Config::CLASSIC)
-    display_manager_->RefreshFontParams();
+  display_manager_->RefreshFontParams();
 }
 
 void Shell::InitRootWindow(aura::Window* root_window) {
