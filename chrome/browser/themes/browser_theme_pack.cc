@@ -11,9 +11,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -51,7 +53,7 @@ constexpr int kTallestTabHeight = 41;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 55;
+const int kThemePackVersion = 56;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -785,13 +787,30 @@ bool BrowserThemePack::GetTint(int id, color_utils::HSL* hsl) const {
 }
 
 bool BrowserThemePack::GetColor(int id, SkColor* color) const {
+  static const base::NoDestructor<
+      base::flat_set<ThemeProperties::OverwritableByUserThemeProperty>>
+      kOpaqueColors({
+          // Background tabs must be opaque since the tabstrip expects to be
+          // able to render text opaquely atop them.
+          ThemeProperties::COLOR_BACKGROUND_TAB,
+          ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE,
+          ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO,
+          ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
+          // The frame colors will be used for background tabs when not
+          // otherwise overridden and thus must be opaque as well.
+          ThemeProperties::COLOR_FRAME, ThemeProperties::COLOR_FRAME_INACTIVE,
+          ThemeProperties::COLOR_FRAME_INCOGNITO,
+          ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
+          // The toolbar is used as the foreground tab color, so it must be
+          // opaque just like background tabs.
+          ThemeProperties::COLOR_TOOLBAR,
+      });
+
   if (colors_) {
     for (size_t i = 0; i < kColorTableLength; ++i) {
       if (colors_[i].id == id) {
         *color = colors_[i].color;
-        // The theme provider is intentionally made to ignore alpha for toolbar
-        // color, as we don't want to allow transparent toolbars.
-        if (id == ThemeProperties::COLOR_TOOLBAR)
+        if (base::ContainsKey(*kOpaqueColors, id))
           *color = SkColorSetA(*color, SK_AlphaOPAQUE);
         return true;
       }
