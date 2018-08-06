@@ -400,6 +400,34 @@ typedef struct FRAME_COUNTS {
                                 [SWITCHABLE_FILTERS];
 } FRAME_COUNTS;
 
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+#define INTER_MODE_RD_DATA_OVERALL_SIZE 6400
+
+typedef struct {
+  int ready;
+  double a;
+  double b;
+  double dist_mean;
+  int bracket_idx;
+} InterModeRdModel;
+
+typedef struct {
+  int idx;
+  int64_t rd;
+} RdIdxPair;
+// TODO(angiebird): This is an estimated size. We still need to figure what is
+// the maximum number of modes.
+#define MAX_INTER_MODES 1024
+typedef struct inter_modes_info {
+  int num;
+  MB_MODE_INFO mbmi_arr[MAX_INTER_MODES];
+  int mode_rate_arr[MAX_INTER_MODES];
+  int64_t sse_arr[MAX_INTER_MODES];
+  int64_t est_rd_arr[MAX_INTER_MODES];
+  RdIdxPair rd_idx_pair_arr[MAX_INTER_MODES];
+} InterModesInfo;
+#endif
+
 // TODO(jingning) All spatially adaptive variables should go to TileDataEnc.
 typedef struct TileDataEnc {
   TileInfo tile_info;
@@ -410,6 +438,15 @@ typedef struct TileDataEnc {
   CFL_CTX cfl;
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
   uint8_t allow_update_cdf;
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+  InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
+  int inter_mode_data_idx[4];
+  int64_t inter_mode_data_sse[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
+  int64_t inter_mode_data_dist[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
+  int inter_mode_data_residue_cost[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
+  int inter_mode_data_all_cost[4][INTER_MODE_RD_DATA_OVERALL_SIZE];
+  InterModesInfo inter_modes_info;
+#endif
 } TileDataEnc;
 
 typedef struct RD_COUNTS {

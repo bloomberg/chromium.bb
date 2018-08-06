@@ -4311,7 +4311,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
     if (cpi->sf.inter_mode_rd_model_estimation && cm->tile_cols == 1 &&
         cm->tile_rows == 1) {
-      av1_inter_mode_data_fit(x->rdmult);
+      av1_inter_mode_data_fit(tile_data, x->rdmult);
     }
 #endif
   }
@@ -4412,6 +4412,10 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   const TileInfo *const tile_info = &this_tile->tile_info;
   TOKENEXTRA *tok = cpi->tile_tok[tile_row][tile_col];
   int mi_row;
+
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+  av1_inter_mode_data_init(this_tile);
+#endif
 
   av1_zero_above_context(cm, &td->mb.e_mbd, tile_info->mi_col_start,
                          tile_info->mi_col_end, tile_row);
@@ -5067,10 +5071,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       input_fpmb_stats(&cpi->twopass.firstpass_mb_stats, cm,
                        &cpi->twopass.this_frame_mb_stats);
     }
-#endif
-
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
-    av1_inter_mode_data_init();
 #endif
 
     if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols * cm->tile_rows) > 1)
