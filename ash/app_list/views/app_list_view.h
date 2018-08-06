@@ -35,6 +35,7 @@ class AnimationMetricsReporter;
 namespace app_list {
 class AppsContainerView;
 class ApplicationDragAndDropHost;
+class AppListBackgroundShieldView;
 class AppListMainView;
 class AppListModel;
 class AppsGridView;
@@ -241,9 +242,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if the home_launcher feature is enabled.
   bool is_home_launcher_enabled() const { return is_home_launcher_enabled_; }
 
-  views::View* app_list_background_shield_for_test() {
-    return app_list_background_shield_;
-  }
+  views::View* GetAppListBackgroundShieldForTest();
 
  private:
   // A widget observer that is responsible for keeping the AppListView state up
@@ -348,10 +347,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   SearchBoxView* search_box_view_ = nullptr;  // Owned by |search_box_widget_|.
   // Owned by the app list's widget. Null if the fullscreen app list is not
   // enabled.
-  views::View* app_list_background_shield_ = nullptr;
-
-  // The mask layer to create rounded corner of the app list background.
-  std::unique_ptr<ui::LayerOwner> app_list_background_mask_ = nullptr;
+  AppListBackgroundShieldView* app_list_background_shield_ = nullptr;
 
   // Whether tablet mode is active.
   bool is_tablet_mode_ = false;
