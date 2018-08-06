@@ -5,10 +5,12 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/mock_network_state_helper.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_exit_code.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -27,6 +30,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -35,6 +39,7 @@
 using chromeos::test::DemoModeSetupResult;
 using chromeos::test::MockDemoModeOfflineEnrollmentHelperCreator;
 using chromeos::test::MockDemoModeOnlineEnrollmentHelperCreator;
+using chromeos::test::SetupDummyOfflinePolicyDir;
 
 namespace chromeos {
 
@@ -48,7 +53,7 @@ constexpr char kDefaultNetworkServicePath[] = "/service/eth1";
 constexpr char kDefaultNetworkName[] = "eth1";
 
 constexpr base::TimeDelta kJsConditionCheckFrequency =
-    base::TimeDelta::FromMilliseconds(200);
+    base::TimeDelta::FromMilliseconds(10);
 
 // How js query is executed.
 enum class JSExecution { kSync, kAsync };
@@ -57,7 +62,7 @@ enum class JSExecution { kSync, kAsync };
 enum class OobeButton { kBack, kNext, kText };
 
 // Dialogs that are a part of Demo Mode setup screens.
-enum class DemoSetupDialog { kNetwork, kEula, kSettings, kProgress, kError };
+enum class DemoSetupDialog { kNetwork, kEula, kProgress, kError };
 
 // Returns js id of the given |button| type.
 std::string ButtonToStringId(OobeButton button) {
@@ -80,8 +85,6 @@ std::string DialogToStringId(DemoSetupDialog dialog) {
       return "networkDialog";
     case DemoSetupDialog::kEula:
       return "eulaDialog";
-    case DemoSetupDialog::kSettings:
-      return "demoSetupSettingsDialog";
     case DemoSetupDialog::kProgress:
       return "demoSetupProgressDialog";
     case DemoSetupDialog::kError:
@@ -316,21 +319,31 @@ class DemoSetupTest : public LoginManagerTest {
     JSExecuteAsync(query);
   }
 
-  void SkipToDialog(DemoSetupDialog dialog) {
-    InvokeDemoMode();
-    ClickOkOnConfirmationDialog();
+  void SkipToErrorDialog() {
+    // Simulate online setup error.
+    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+        &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+
     auto* const wizard_controller = WizardController::default_controller();
     wizard_controller->SimulateDemoModeSetupForTesting();
+    // Enrollment type is set in the part of the flow that is skipped, That is
+    // why we need to set it here.
+    wizard_controller->demo_setup_controller()->set_enrollment_type(
+        DemoSetupController::EnrollmentType::kOnline);
     wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
 
     OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-    EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
+    // TODO(agawronska): Progress dialog transition is async - extra work is
+    // needed to be able to check it reliably.
+    WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                        DemoSetupDialog::kError);
+  }
 
-    const std::string query = base::StrCat(
-        {ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_SETUP),
-         ".showScreenForTesting('", DialogToStringId(dialog), "')"});
-    EXPECT_TRUE(JSExecute(query));
-    EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP, dialog));
+  void WaitForScreenDialog(OobeScreen screen, DemoSetupDialog dialog) {
+    const std::string query =
+        base::StrCat({"!", ScreenToContentQuery(screen), ".$.",
+                      DialogToStringId(dialog), ".hidden"});
+    JsConditionWaiter(js_checker(), query).Wait();
   }
 
   void SkipToScreen(OobeScreen screen) {
@@ -346,6 +359,22 @@ class DemoSetupTest : public LoginManagerTest {
     return static_cast<DemoSetupScreen*>(
         WizardController::default_controller()->screen_manager()->GetScreen(
             OobeScreen::SCREEN_OOBE_DEMO_SETUP));
+  }
+
+  void SimulateOfflineEnvironment() {
+    DemoSetupController* controller =
+        WizardController::default_controller()->demo_setup_controller();
+
+    // Simulate offline data directory.
+    ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &fake_policy_dir_));
+    controller->SetOfflineDataDirForTest(fake_policy_dir_.GetPath());
+
+    // Simulate policy store.
+    EXPECT_CALL(mock_policy_store_, Store(testing::_))
+        .WillRepeatedly(testing::InvokeWithoutArgs(
+            &mock_policy_store_,
+            &policy::MockCloudPolicyStore::NotifyStoreLoaded));
+    controller->SetDeviceLocalAccountPolicyStoreForTest(&mock_policy_store_);
   }
 
   // Simulates device being connected to the network.
@@ -399,6 +428,10 @@ class DemoSetupTest : public LoginManagerTest {
   void JSExecuteAsync(const std::string& script) {
     content::ExecuteScriptAsync(web_contents(), script);
   }
+
+  // TODO(agawronska): Maybe create a separate test fixture for offline setup.
+  base::ScopedTempDir fake_policy_dir_;
+  policy::MockCloudPolicyStore mock_policy_store_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
 };
@@ -469,16 +502,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kSettings));
-
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                          DemoSetupDialog::kSettings, OobeButton::kNext,
-                          JSExecution::kAsync);
-
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kProgress));
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
 
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
 }
@@ -525,38 +550,25 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowError) {
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kSettings));
-
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                          DemoSetupDialog::kSettings, OobeButton::kNext,
-                          JSExecution::kAsync);
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kProgress));
-
-  // Wait for progress dialog to be hidden.
-  const std::string progress_dialog_hidden_query = base::StrCat(
-      {"!!", ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_SETUP), ".$.",
-       DialogToStringId(DemoSetupDialog::kProgress), ".hidden"});
-  JsConditionWaiter(js_checker(), progress_dialog_hidden_query).Wait();
-
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kError));
-
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                          DemoSetupDialog::kError, OobeButton::kBack,
-                          JSExecution::kAsync);
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
+  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                      DemoSetupDialog::kError);
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
+  // Simulate offline setup success.
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+      &MockDemoModeOfflineEnrollmentHelperCreator<
+          DemoModeSetupResult::SUCCESS>);
   SimulateNetworkDisconnected();
 
   InvokeDemoMode();
   ClickOkOnConfirmationDialog();
+
+  // It needs to be done after demo setup controller was created (demo setup
+  // flow was started).
+  SimulateOfflineEnvironment();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
@@ -578,31 +590,55 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
 
   ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
-                          OobeButton::kText, JSExecution::kAsync);
+                          OobeButton::kText, JSExecution::kSync);
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kSettings));
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
 
-  ClickScreenDialogButtonWithId(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                DemoSetupDialog::kSettings,
-                                "[name=offlineSetup]", JSExecution::kSync);
-  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                          DemoSetupDialog::kSettings, OobeButton::kNext,
-                          JSExecution::kAsync);
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+}
 
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kProgress));
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
+  // Simulate offline setup failure.
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+  SimulateNetworkDisconnected();
 
-  // Wait for progress dialog to be hidden.
-  const std::string progress_dialog_hidden_query = base::StrCat(
-      {"!!", ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_SETUP), ".$.",
-       DialogToStringId(DemoSetupDialog::kProgress), ".hidden"});
-  JsConditionWaiter(js_checker(), progress_dialog_hidden_query).Wait();
+  InvokeDemoMode();
+  ClickOkOnConfirmationDialog();
 
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kError));
+  // It needs to be done after demo setup controller was created (demo setup
+  // flow was started).
+  SimulateOfflineEnvironment();
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+
+  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+                  JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
+  EXPECT_FALSE(IsScreenDialogElementEnabled(
+      OobeScreen::SCREEN_OOBE_NETWORK, DemoSetupDialog::kNetwork,
+      ButtonToStringId(OobeButton::kNext)));
+
+  const std::string offline_setup_item_name =
+      l10n_util::GetStringUTF8(IDS_NETWORK_OFFLINE_DEMO_SETUP_LIST_ITEM_NAME);
+  ClickNetworkListElement(offline_setup_item_name);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+
+  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+                          OobeButton::kText, JSExecution::kSync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
+  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                      DemoSetupDialog::kError);
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, NextDisabledOnNetworkScreen) {
@@ -657,42 +693,42 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnNetworkScreen) {
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnSettingsScreen) {
-  SkipToDialog(DemoSetupDialog::kSettings);
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnArcTermsScreen) {
+  // User cannot go to ARC ToS screen without accepting eula - simulate that.
+  StartupUtils::MarkEulaAccepted();
+
+  SkipToScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+
+  ClickOobeButton(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, OobeButton::kBack,
+                  JSExecution::kSync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnErrorScreen) {
+  SkipToErrorDialog();
 
   ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                          DemoSetupDialog::kSettings, OobeButton::kBack,
+                          DemoSetupDialog::kError, OobeButton::kBack,
                           JSExecution::kAsync);
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, RetryOnErrorScreen) {
-  // Simulate successful online setup after retry.
+  SkipToErrorDialog();
+
+  // Simulate successful online setup on retry.
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
-
-  SkipToDialog(DemoSetupDialog::kError);
 
   ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
                           DemoSetupDialog::kError, OobeButton::kText,
                           JSExecution::kAsync);
-  EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                            DemoSetupDialog::kProgress));
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
 
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOnlineAndOfflineButton) {
-  SkipToDialog(DemoSetupDialog::kSettings);
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-
-  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                         DemoSetupDialog::kSettings,
-                                         "[name=onlineSetup]"));
-  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                         DemoSetupDialog::kSettings,
-                                         "[name=offlineSetup]"));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOfflineSetupOptionOnNetworkList) {
@@ -715,18 +751,6 @@ class DemoSetupOfflineDisabledTest : public DemoSetupTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(DemoSetupOfflineDisabledTest);
 };
-
-IN_PROC_BROWSER_TEST_F(DemoSetupOfflineDisabledTest, DoNotShowOfflineButton) {
-  SkipToDialog(DemoSetupDialog::kSettings);
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-
-  EXPECT_TRUE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                         DemoSetupDialog::kSettings,
-                                         "[name=onlineSetup]"));
-  EXPECT_FALSE(IsScreenDialogElementShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
-                                          DemoSetupDialog::kSettings,
-                                          "[name=offlineSetup]"));
-}
 
 IN_PROC_BROWSER_TEST_F(DemoSetupOfflineDisabledTest,
                        NoOfflineSetupOptionOnNetworkList) {

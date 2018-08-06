@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEMO_SETUP_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEMO_SETUP_SCREEN_H_
 
-#include <memory>
+#include <string>
 
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
@@ -17,8 +19,7 @@ class DemoSetupScreenView;
 
 // Controlls demo mode setup. The screen can be shown during OOBE. It allows
 // user to setup retail demo mode on the device.
-class DemoSetupScreen : public BaseScreen,
-                        public DemoSetupController::Delegate {
+class DemoSetupScreen : public BaseScreen {
  public:
   DemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
                   DemoSetupScreenView* view);
@@ -29,17 +30,22 @@ class DemoSetupScreen : public BaseScreen,
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
 
-  // DemoSetupManager::Delegate:
-  void OnSetupError(bool fatal) override;
-  void OnSetupSuccess() override;
-
   // Called when view is being destroyed. If Screen is destroyed earlier
   // then it has to call Bind(nullptr).
   void OnViewDestroyed(DemoSetupScreenView* view);
 
  private:
+  void StartEnrollment();
+
+  // Called when the setup flow finished with error.
+  void OnSetupError(DemoSetupController::DemoSetupError error);
+
+  // Called when the setup flow finished successfully.
+  void OnSetupSuccess();
+
   DemoSetupScreenView* view_;
-  std::unique_ptr<DemoSetupController> demo_controller_;
+
+  base::WeakPtrFactory<DemoSetupScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupScreen);
 };

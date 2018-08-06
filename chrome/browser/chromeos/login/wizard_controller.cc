@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -816,7 +817,7 @@ void WizardController::OnWelcomeContinued() {
 }
 
 void WizardController::OnNetworkBack() {
-  if (is_in_demo_setup_flow_) {
+  if (demo_setup_controller_) {
     ShowDemoModePreferencesScreen();
   } else {
     ShowWelcomeScreen();
@@ -824,6 +825,11 @@ void WizardController::OnNetworkBack() {
 }
 
 void WizardController::OnNetworkConnected() {
+  if (demo_setup_controller_) {
+    demo_setup_controller_->set_enrollment_type(
+        DemoSetupController::EnrollmentType::kOnline);
+  }
+
   if (is_official_build_) {
     if (!StartupUtils::IsEulaAccepted()) {
       ShowEulaScreen();
@@ -842,8 +848,10 @@ void WizardController::OnNetworkConnected() {
 }
 
 void WizardController::OnOfflineDemoModeSetup() {
-  DCHECK(is_in_demo_setup_flow_);
-  is_offline_demo_setup_ = true;
+  DCHECK(demo_setup_controller_);
+  demo_setup_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kOffline);
+
   if (is_official_build_) {
     if (!StartupUtils::IsEulaAccepted()) {
       ShowEulaScreen();
@@ -865,7 +873,7 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  if (is_in_demo_setup_flow_) {
+  if (demo_setup_controller_) {
     ShowDemoModeSetupScreen();
     return;
   }
@@ -889,8 +897,7 @@ void WizardController::OnEulaAccepted() {
   PerformPostEulaActions();
 
   // TODO(crbug.com/857275): Show Play Store ToS when available offline.
-  if (is_offline_demo_setup_) {
-    DCHECK(is_in_demo_setup_flow_);
+  if (demo_setup_controller_ && demo_setup_controller_->IsOfflineEnrollment()) {
     ShowDemoModeSetupScreen();
     return;
   }
@@ -1031,7 +1038,7 @@ void WizardController::OnArcTermsOfServiceSkipped() {
 }
 
 void WizardController::OnArcTermsOfServiceAccepted() {
-  if (is_in_demo_setup_flow_) {
+  if (demo_setup_controller_) {
     InitiateOOBEUpdate();
     return;
   }
@@ -1052,7 +1059,7 @@ void WizardController::OnArcTermsOfServiceAccepted() {
 }
 
 void WizardController::OnArcTermsOfServiceBack() {
-  DCHECK(is_in_demo_setup_flow_);
+  DCHECK(demo_setup_controller_);
   DCHECK(StartupUtils::IsEulaAccepted());
   ShowNetworkScreen();
 }
@@ -1102,29 +1109,26 @@ void WizardController::OnAutoEnrollmentCheckCompleted() {
 }
 
 void WizardController::OnDemoSetupFinished() {
-  DCHECK(is_in_demo_setup_flow_);
-  is_in_demo_setup_flow_ = false;
-  is_offline_demo_setup_ = false;
+  DCHECK(demo_setup_controller_);
+  demo_setup_controller_.reset();
   PerformOOBECompletedActions();
   ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnDemoSetupCanceled() {
-  DCHECK(is_in_demo_setup_flow_);
-  is_in_demo_setup_flow_ = false;
-  is_offline_demo_setup_ = false;
+  DCHECK(demo_setup_controller_);
+  demo_setup_controller_.reset();
   ShowWelcomeScreen();
 }
 
 void WizardController::OnDemoPreferencesContinued() {
-  DCHECK(is_in_demo_setup_flow_);
+  DCHECK(demo_setup_controller_);
   ShowNetworkScreen();
 }
 
 void WizardController::OnDemoPreferencesCanceled() {
-  DCHECK(is_in_demo_setup_flow_);
-  is_in_demo_setup_flow_ = false;
-  is_offline_demo_setup_ = false;
+  DCHECK(demo_setup_controller_);
+  demo_setup_controller_.reset();
   ShowWelcomeScreen();
 }
 
@@ -1427,12 +1431,12 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
 }
 
 void WizardController::StartDemoModeSetup() {
-  is_in_demo_setup_flow_ = true;
+  demo_setup_controller_ = std::make_unique<DemoSetupController>();
   ShowDemoModePreferencesScreen();
 }
 
 void WizardController::SimulateDemoModeSetupForTesting() {
-  is_in_demo_setup_flow_ = true;
+  demo_setup_controller_ = std::make_unique<DemoSetupController>();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

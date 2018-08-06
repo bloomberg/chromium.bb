@@ -4,23 +4,15 @@
 
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 
-#include "base/files/file_path.h"
-#include "base/logging.h"
-#include "chrome/browser/chromeos/login/screen_manager.h"
+#include "base/bind.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
-#include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace {
 
-constexpr char kUserActionOnlineSetup[] = "online-setup";
-constexpr char kUserActionOfflineSetup[] = "offline-setup";
+constexpr char kUserActionStartSetup[] = "start-setup";
 constexpr char kUserActionClose[] = "close-setup";
-
-// The policy blob data for offline demo-mode is embedded into the filesystem.
-// TODO(mukai, agawronska): fix this when switching to dm-verity image.
-constexpr const base::FilePath::CharType kOfflineDemoModeDir[] =
-    FILE_PATH_LITERAL("/usr/share/chromeos-assets/demo_mode_resources/policy");
 
 }  // namespace
 
@@ -29,10 +21,10 @@ namespace chromeos {
 DemoSetupScreen::DemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
                                  DemoSetupScreenView* view)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_DEMO_SETUP),
-      view_(view) {
+      view_(view),
+      weak_ptr_factory_(this) {
   DCHECK(view_);
   view_->Bind(this);
-  demo_controller_.reset(new DemoSetupController(this));
 }
 
 DemoSetupScreen::~DemoSetupScreen() {
@@ -51,10 +43,8 @@ void DemoSetupScreen::Hide() {
 }
 
 void DemoSetupScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kUserActionOnlineSetup) {
-    demo_controller_->EnrollOnline();
-  } else if (action_id == kUserActionOfflineSetup) {
-    demo_controller_->EnrollOffline(base::FilePath(kOfflineDemoModeDir));
+  if (action_id == kUserActionStartSetup) {
+    StartEnrollment();
   } else if (action_id == kUserActionClose) {
     Finish(ScreenExitCode::DEMO_MODE_SETUP_CANCELED);
   } else {
@@ -62,9 +52,20 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-void DemoSetupScreen::OnSetupError(bool fatal) {
-  // TODO(mukai): propagate |fatal| information and change the error message.
+void DemoSetupScreen::OnSetupError(DemoSetupController::DemoSetupError error) {
+  // TODO(mukai): propagate |error| information and change the error message.
   view_->OnSetupFinished(false, std::string());
+}
+
+void DemoSetupScreen::StartEnrollment() {
+  // Demo setup screen is only shown in OOBE.
+  DCHECK(DemoSetupController::IsOobeDemoSetupFlowInProgress());
+  DemoSetupController* demo_controller =
+      WizardController::default_controller()->demo_setup_controller();
+  demo_controller->Enroll(base::BindOnce(&DemoSetupScreen::OnSetupSuccess,
+                                         weak_ptr_factory_.GetWeakPtr()),
+                          base::BindOnce(&DemoSetupScreen::OnSetupError,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DemoSetupScreen::OnSetupSuccess() {
@@ -74,7 +75,6 @@ void DemoSetupScreen::OnSetupSuccess() {
 void DemoSetupScreen::OnViewDestroyed(DemoSetupScreenView* view) {
   if (view_ == view)
     view_ = nullptr;
-  demo_controller_.reset();
 }
 
 }  // namespace chromeos
