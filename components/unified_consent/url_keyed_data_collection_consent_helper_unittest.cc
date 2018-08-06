@@ -21,9 +21,10 @@ class TestSyncService : public syncer::FakeSyncService {
   void set_sync_initialized(bool sync_initialized) {
     sync_initialized_ = sync_initialized;
   }
-  void set_sync_active_data_type(syncer::ModelType type) {
-    sync_active_data_type_ = type;
+  void AddActiveDataType(syncer::ModelType type) {
+    sync_active_data_types_.Put(type);
   }
+  void ClearActiveDataTypes() { sync_active_data_types_.Clear(); }
   void FireOnStateChangeOnAllObservers() {
     for (auto& observer : observers_)
       observer.OnStateChanged(this);
@@ -34,7 +35,8 @@ class TestSyncService : public syncer::FakeSyncService {
   State GetState() const override { return State::ACTIVE; }
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
     return syncer::ModelTypeSet(syncer::ModelType::HISTORY_DELETE_DIRECTIVES,
-                                syncer::ModelType::USER_EVENTS);
+                                syncer::ModelType::USER_EVENTS,
+                                syncer::ModelType::EXTENSIONS);
   }
   bool IsFirstSetupComplete() const override { return true; }
 
@@ -53,10 +55,7 @@ class TestSyncService : public syncer::FakeSyncService {
   }
 
   syncer::ModelTypeSet GetActiveDataTypes() const override {
-    if (sync_active_data_type_ != syncer::ModelType::UNSPECIFIED) {
-      return syncer::ModelTypeSet(sync_active_data_type_);
-    }
-    return syncer::ModelTypeSet();
+    return sync_active_data_types_;
   }
 
   void AddObserver(syncer::SyncServiceObserver* observer) override {
@@ -68,7 +67,7 @@ class TestSyncService : public syncer::FakeSyncService {
 
  private:
   bool sync_initialized_ = false;
-  syncer::ModelType sync_active_data_type_ = syncer::ModelType::UNSPECIFIED;
+  syncer::ModelTypeSet sync_active_data_types_;
   base::ObserverList<syncer::SyncServiceObserver> observers_;
 };
 
@@ -128,11 +127,10 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
   EXPECT_TRUE(state_changed_notifications.empty());
 
   sync_service_.set_sync_initialized(true);
-  sync_service_.set_sync_active_data_type(
-      syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
+  sync_service_.AddActiveDataType(syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_TRUE(helper->IsEnabled());
-  ASSERT_EQ(1U, state_changed_notifications.size());
+  EXPECT_EQ(1U, state_changed_notifications.size());
   helper->RemoveObserver(this);
 }
 
@@ -154,12 +152,30 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
   EXPECT_TRUE(state_changed_notifications.empty());
-
   sync_service_.set_sync_initialized(true);
-  sync_service_.set_sync_active_data_type(syncer::ModelType::USER_EVENTS);
+
+  // Peronalized data collection is disabled when only USER_EVENTS are enabled.
+  sync_service_.AddActiveDataType(syncer::ModelType::USER_EVENTS);
+  sync_service_.FireOnStateChangeOnAllObservers();
+  EXPECT_FALSE(helper->IsEnabled());
+  EXPECT_TRUE(state_changed_notifications.empty());
+
+  // Peronalized data collection is disabled when only HISTORY_DELETE_DIRECTIVES
+  // are enabled.
+  sync_service_.ClearActiveDataTypes();
+  sync_service_.AddActiveDataType(syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
+  sync_service_.FireOnStateChangeOnAllObservers();
+  EXPECT_FALSE(helper->IsEnabled());
+  EXPECT_TRUE(state_changed_notifications.empty());
+
+  // Personalized data collection is enabled iff USER_EVENTS and
+  // HISTORY_DELETE_DIRECTIVES are enabled.
+  sync_service_.ClearActiveDataTypes();
+  sync_service_.AddActiveDataType(syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
+  sync_service_.AddActiveDataType(syncer::ModelType::USER_EVENTS);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_TRUE(helper->IsEnabled());
-  ASSERT_EQ(1U, state_changed_notifications.size());
+  EXPECT_EQ(1U, state_changed_notifications.size());
   helper->RemoveObserver(this);
 }
 
@@ -173,11 +189,10 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
   EXPECT_TRUE(state_changed_notifications.empty());
 
   sync_service_.set_sync_initialized(true);
-  sync_service_.set_sync_active_data_type(
-      syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
+  sync_service_.AddActiveDataType(syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_TRUE(helper->IsEnabled());
-  ASSERT_EQ(1U, state_changed_notifications.size());
+  EXPECT_EQ(1U, state_changed_notifications.size());
   helper->RemoveObserver(this);
 }
 
