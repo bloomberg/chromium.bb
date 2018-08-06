@@ -286,7 +286,9 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
                     ? kBorderPaddingDueToRoundedCorners
                     : 0;
 
-  const int vertical_inset = menu_config.menu_vertical_border_size + padding;
+  const int vertical_inset =
+      (corner_radius ? corner_radius : menu_config.menu_vertical_border_size) +
+      padding;
   const int horizontal_inset =
       menu_config.menu_horizontal_border_size + padding;
 
