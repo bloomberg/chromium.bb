@@ -590,6 +590,24 @@ INSTANTIATE_TEST_CASE_P(,
                         AppListViewFocusTest,
                         testing::ValuesIn(kAppListViewFocusTestParams));
 
+// Test behaviors in tablet mode when homcher launcher feature is not enabled.
+class AppListViewNonHomeLauncherTest : public AppListViewTest {
+ public:
+  AppListViewNonHomeLauncherTest() = default;
+  ~AppListViewNonHomeLauncherTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {}, {app_list::features::kEnableHomeLauncher});
+    AppListViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListViewNonHomeLauncherTest);
+};
+
 }  // namespace
 
 // Tests that the initial focus is on search box.
@@ -1476,14 +1494,14 @@ TEST_F(AppListViewTest, EscapeKeySideShelfFullscreenToClosed) {
 }
 
 // Tests that pressing escape when in tablet mode closes the app list.
-TEST_F(AppListViewTest, EscapeKeyTabletModeFullscreenToClosed) {
+TEST_F(AppListViewTest, EscapeKeyTabletModeStayFullscreen) {
   // Put into fullscreen by using tablet mode.
   Initialize(0, true, false);
 
   Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
-  ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
+  ASSERT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 
 // Tests that pressing escape when in fullscreen search changes to fullscreen.
@@ -1561,8 +1579,8 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeSearchToFullscreen) {
   ASSERT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 
-// Tests that leaving tablet mode when in tablet search causes no change.
-TEST_F(AppListViewTest, LeaveTabletModeNoChange) {
+// Tests that leaving tablet mode when in tablet search closes launcher.
+TEST_F(AppListViewTest, LeaveTabletModeClosed) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
   views::Textfield* search_box =
@@ -1573,11 +1591,11 @@ TEST_F(AppListViewTest, LeaveTabletModeNoChange) {
   search_box->InsertText(base::UTF8ToUTF16("something"));
   view_->OnTabletModeChanged(false);
 
-  ASSERT_EQ(AppListViewState::FULLSCREEN_SEARCH, view_->app_list_state());
+  ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
 }
 
 // Tests that escape works after leaving tablet mode from search.
-TEST_F(AppListViewTest, LeaveTabletModeEscapeKeyToFullscreen) {
+TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeEscapeKeyToFullscreen) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
   views::Textfield* search_box =
@@ -1593,7 +1611,7 @@ TEST_F(AppListViewTest, LeaveTabletModeEscapeKeyToFullscreen) {
 }
 
 // Tests that escape twice closes after leaving tablet mode from search.
-TEST_F(AppListViewTest, LeaveTabletModeEscapeKeyTwiceToClosed) {
+TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeEscapeKeyTwiceToClosed) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
   views::Textfield* search_box =
@@ -1983,6 +2001,32 @@ TEST_F(AppListViewTest, DISABLED_MultiplePagesReinitializeOnInputPage) {
   Show();
 
   ASSERT_EQ(1, view_->GetAppsPaginationModel()->selected_page());
+}
+
+// Tests that pressing escape when in tablet mode closes the app list.
+TEST_F(AppListViewNonHomeLauncherTest, EscapeKeyTabletModeFullscreenToClosed) {
+  // Put into fullscreen by using tablet mode.
+  Initialize(0, true, false);
+
+  Show();
+  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+
+  ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
+}
+
+// Tests that leaving tablet mode when in tablet search causes no change.
+TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeNoChange) {
+  // Put into fullscreen using tablet mode.
+  Initialize(0, true, false);
+  views::Textfield* search_box =
+      view_->app_list_main_view()->search_box_view()->search_box();
+
+  Show();
+  search_box->SetText(base::string16());
+  search_box->InsertText(base::UTF8ToUTF16("something"));
+  view_->OnTabletModeChanged(false);
+
+  ASSERT_EQ(AppListViewState::FULLSCREEN_SEARCH, view_->app_list_state());
 }
 
 }  // namespace test

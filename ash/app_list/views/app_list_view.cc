@@ -1082,7 +1082,7 @@ void AppListView::OnTabletModeChanged(bool started) {
     aura::Window* root_window = window->GetRootWindow();
     aura::Window* parent_window = root_window->GetChildById(
         ash::kShellWindowId_AppListTabletModeContainer);
-    if (!parent_window->Contains(window))
+    if (parent_window && !parent_window->Contains(window))
       parent_window->AddChild(window);
 
     // Update background opacity.
@@ -1163,11 +1163,13 @@ void AppListView::SetState(AppListViewState new_state) {
     return;
   }
 
-  // Reset the focus to initially focused view. This should be done before
-  // updating visibility of views, because setting focused view invisible
-  // automatically moves focus to next focusable view, which potentially
-  // causes bugs.
-  GetInitiallyFocusedView()->RequestFocus();
+  if (fullscreen_widget_->IsActive()) {
+    // Reset the focus to initially focused view. This should be
+    // done before updating visibility of views, because setting
+    // focused view invisible automatically moves focus to next
+    // focusable view, which potentially causes bugs.
+    GetInitiallyFocusedView()->RequestFocus();
+  }
 
   // Updates the visibility of app list items according to the change of
   // |app_list_state_|.
@@ -1383,10 +1385,13 @@ float AppListView::GetAppListTransitionProgress() const {
   if (current_height <= peeking_height) {
     // Currently transition progress is between closed and peeking state.
     // Calculate the progress of this transition.
-    const float shelf_height =
-        GetScreenBottom() - GetDisplayNearestView().work_area().bottom();
-    DCHECK_LE(shelf_height, current_height);
-    return (current_height - shelf_height) / (peeking_height - shelf_height);
+    const float shelf_height = GetCurrentAppListHeight();
+
+    // When screen is rotated, the current height might be smaller than shelf
+    // height for just one moment, which results in negative progress. So force
+    // the progress to be non-negative.
+    return std::max(0.0f, (current_height - shelf_height) /
+                              (peeking_height - shelf_height));
   }
 
   // Currently transition progress is between peeking and fullscreen state.

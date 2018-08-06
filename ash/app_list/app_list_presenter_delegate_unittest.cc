@@ -135,6 +135,26 @@ class AppListPresenterDelegateTest : public AshTestBase,
 // the parameterized tests.
 INSTANTIATE_TEST_CASE_P(, AppListPresenterDelegateTest, testing::Bool());
 
+// Test a variety of behaviors in tablet mode when home launcher is not enabled.
+class AppListPresenterDelegateNonHomeLauncherTest
+    : public AppListPresenterDelegateTest {
+ public:
+  AppListPresenterDelegateNonHomeLauncherTest() = default;
+  ~AppListPresenterDelegateNonHomeLauncherTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {}, {app_list::features::kEnableHomeLauncher});
+    AppListPresenterDelegateTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateNonHomeLauncherTest);
+};
+
 // Tests that app list hides when focus moves to a normal window.
 TEST_F(AppListPresenterDelegateTest, HideOnFocusOut) {
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -288,7 +308,7 @@ TEST_F(AppListPresenterDelegateTest, TabletModeTextStateTransitions) {
 
 // Tests that the app list state responds correctly to tablet mode being
 // enabled while the app list is being shown.
-TEST_F(AppListPresenterDelegateTest,
+TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
        PeekingToFullscreenWhenTabletModeIsActive) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -411,7 +431,7 @@ TEST_F(AppListPresenterDelegateTest, AppListViewDragHandler) {
 }
 
 // Tests that the app list view handles drag properly in tablet mode.
-TEST_F(AppListPresenterDelegateTest,
+TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
        AppListViewDragHandlerTabletModeFromAllApps) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
   EnableTabletMode(true);
@@ -430,7 +450,7 @@ TEST_F(AppListPresenterDelegateTest,
 
 // Tests that the state of the app list changes properly with drag input from
 // fullscreen search.
-TEST_F(AppListPresenterDelegateTest,
+TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
        AppListViewDragHandlerTabletModeFromSearch) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
   EnableTabletMode(true);

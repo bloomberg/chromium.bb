@@ -35,7 +35,7 @@ namespace ash {
 class DefaultFrameHeader;
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
-}
+}  // namespace ash
 
 // Provides the BrowserNonClientFrameView for Chrome OS.
 class BrowserNonClientFrameViewAsh
@@ -146,7 +146,7 @@ class BrowserNonClientFrameViewAsh
                            AvatarDisplayOnTeleportedWindow);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            HeaderVisibilityInOverviewAndSplitview);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+  FRIEND_TEST_ALL_PREFIXES(NonHomeLauncherBrowserNonClientFrameViewAshTest,
                            HeaderHeightForSnappedBrowserInSplitView);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshBackButtonTest,
                            V1BackButton);
