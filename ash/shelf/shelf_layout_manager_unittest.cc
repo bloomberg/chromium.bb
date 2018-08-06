@@ -41,6 +41,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -669,6 +670,23 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(shelf_shown.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 }
+
+class ShelfLayoutManagerNonHomeLauncherTest : public ShelfLayoutManagerTest {
+ public:
+  ShelfLayoutManagerNonHomeLauncherTest() = default;
+  ~ShelfLayoutManagerNonHomeLauncherTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {}, {app_list::features::kEnableHomeLauncher});
+    ShelfLayoutManagerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerNonHomeLauncherTest);
+};
 
 // Makes sure SetVisible updates work area and widget appropriately.
 TEST_F(ShelfLayoutManagerTest, SetVisible) {
@@ -1485,7 +1503,7 @@ TEST_F(ShelfLayoutManagerTest, ChangeShelfAlignmentDuringAppListDragging) {
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
-TEST_F(ShelfLayoutManagerTest,
+TEST_F(ShelfLayoutManagerNonHomeLauncherTest,
        SwipingUpOnShelfInTabletModeForFullscreenAppList) {
   // Animations triggered by immersive mode cause this test to fail.
   ImmersiveFullscreenControllerTestApi::GlobalAnimationDisabler

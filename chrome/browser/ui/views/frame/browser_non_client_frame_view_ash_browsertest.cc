@@ -400,17 +400,17 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       ash::Shell::Get()->tablet_mode_controller();
   tablet_mode_controller->EnableTabletModeWindowManager(true);
   tablet_mode_controller->FlushForTesting();
-  ash::FrameCaptionButtonContainerView::TestApi test(frame_view->
-                                                     caption_button_container_);
+  ash::FrameCaptionButtonContainerView::TestApi test(
+      frame_view->caption_button_container_);
   test.EndAnimations();
-  const gfx::Rect during_maximize = frame_view->caption_button_container_->
-      bounds();
+  const gfx::Rect during_maximize =
+      frame_view->caption_button_container_->bounds();
   EXPECT_GT(initial.width(), during_maximize.width());
   tablet_mode_controller->EnableTabletModeWindowManager(false);
   tablet_mode_controller->FlushForTesting();
   test.EndAnimations();
-  const gfx::Rect after_restore = frame_view->caption_button_container_->
-      bounds();
+  const gfx::Rect after_restore =
+      frame_view->caption_button_container_->bounds();
   EXPECT_EQ(initial, after_restore);
 }
 
@@ -866,7 +866,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
 // Tests that a web app's theme color is set.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
   aura::Window* window = browser_view_->GetWidget()->GetNativeWindow();
-  EXPECT_EQ(GetThemeColor(),window->GetProperty(ash::kFrameActiveColorKey));
+  EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameActiveColorKey));
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameInactiveColorKey));
   EXPECT_EQ(SK_ColorWHITE, GetActiveColor());
 }
@@ -1201,42 +1201,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(frame_view2->caption_button_container_->visible());
 }
 
-// Tests that the header of a snapped browser window in splitview mode uses
-// the same header height of a maximized window.
-IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       HeaderHeightForSnappedBrowserInSplitView) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  Widget* widget = browser_view->GetWidget();
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  widget->GetNativeWindow()->SetProperty(
-      aura::client::kResizeBehaviorKey,
-      ui::mojom::kResizeBehaviorCanMaximize |
-          ui::mojom::kResizeBehaviorCanResize);
-
-  // Maximize the widget and store its frame header height.
-  widget->Maximize();
-  const int expected_height = frame_view->frame_header_->GetHeaderHeight();
-  widget->Restore();
-
-  ash::Shell* shell = ash::Shell::Get();
-  ash::SplitViewController* split_view_controller =
-      shell->split_view_controller();
-  split_view_controller->BindRequest(
-      mojo::MakeRequest(&frame_view->split_view_controller_));
-  split_view_controller->AddObserver(
-      frame_view->CreateInterfacePtrForTesting());
-  frame_view->split_view_controller_.FlushForTesting();
-
-  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  shell->window_selector_controller()->ToggleOverview();
-  split_view_controller->SnapWindow(widget->GetNativeWindow(),
-                                    ash::SplitViewController::LEFT);
-  frame_view->split_view_controller_.FlushForTesting();
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
-}
-
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        ImmersiveModeTopViewInset) {
   browser()->window()->Close();
@@ -1311,6 +1275,31 @@ class HomeLauncherBrowserNonClientFrameViewAshTest
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherBrowserNonClientFrameViewAshTest);
 };
 
+class NonHomeLauncherBrowserNonClientFrameViewAshTest
+    : public TopChromeMdParamTest<InProcessBrowserTest> {
+ public:
+  NonHomeLauncherBrowserNonClientFrameViewAshTest() = default;
+  ~NonHomeLauncherBrowserNonClientFrameViewAshTest() override = default;
+
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    TopChromeMdParamTest<InProcessBrowserTest>::SetUpDefaultCommandLine(
+        command_line);
+
+    command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
+  }
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        app_list::features::kEnableHomeLauncher);
+    TopChromeMdParamTest<InProcessBrowserTest>::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(NonHomeLauncherBrowserNonClientFrameViewAshTest);
+};
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
@@ -1371,6 +1360,44 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
+// Tests that the header of a snapped browser window in splitview mode uses
+// the same header height of a maximized window. The test will fail when home
+// launcher is enabled, because caption button container is made invisible
+// intentionally.
+IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
+                       HeaderHeightForSnappedBrowserInSplitView) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  Widget* widget = browser_view->GetWidget();
+  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
+
+  widget->GetNativeWindow()->SetProperty(
+      aura::client::kResizeBehaviorKey,
+      ui::mojom::kResizeBehaviorCanMaximize |
+          ui::mojom::kResizeBehaviorCanResize);
+
+  // Maximize the widget and store its frame header height.
+  widget->Maximize();
+  const int expected_height = frame_view->frame_header_->GetHeaderHeight();
+  widget->Restore();
+
+  ash::Shell* shell = ash::Shell::Get();
+  ash::SplitViewController* split_view_controller =
+      shell->split_view_controller();
+  split_view_controller->BindRequest(
+      mojo::MakeRequest(&frame_view->split_view_controller_));
+  split_view_controller->AddObserver(
+      frame_view->CreateInterfacePtrForTesting());
+  frame_view->split_view_controller_.FlushForTesting();
+
+  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  shell->window_selector_controller()->ToggleOverview();
+  split_view_controller->SnapWindow(widget->GetNativeWindow(),
+                                    ash::SplitViewController::LEFT);
+  frame_view->split_view_controller_.FlushForTesting();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
+}
+
 #define INSTANTIATE_TEST_CASE(name)                                   \
   INSTANTIATE_TEST_CASE_P(                                            \
       , name,                                                         \
@@ -1384,3 +1411,4 @@ INSTANTIATE_TEST_CASE(ImmersiveModeBrowserViewTest);
 INSTANTIATE_TEST_CASE(HostedAppNonClientFrameViewAshTest);
 INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshBackButtonTest);
 INSTANTIATE_TEST_CASE(HomeLauncherBrowserNonClientFrameViewAshTest);
+INSTANTIATE_TEST_CASE(NonHomeLauncherBrowserNonClientFrameViewAshTest);

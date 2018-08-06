@@ -47,6 +47,7 @@
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -HomeLauncherBrowserNonClientFrameViewAshTest.*
 -HostedAppNonClientFrameViewAshTest.*
+-NonHomeLauncherBrowserNonClientFrameViewAshTest.*
 
 # Fix immersive fullscreen mode in mash. https://crbug.com/844748.
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode*
