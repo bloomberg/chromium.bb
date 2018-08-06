@@ -34,12 +34,11 @@ SSLConfigServiceMojo::SSLConfigServiceMojo(
     mojom::SSLConfigPtr initial_config,
     mojom::SSLConfigClientRequest ssl_config_client_request)
     : binding_(this),
-      ssl_config_(initial_config ? mojo::ConvertTo<net::SSLConfig>(
-                                       std::move(initial_config))
-                                 : net::SSLConfig()),
       client_cert_pooling_policy_(
           initial_config ? initial_config->client_cert_pooling_policy
                          : std::vector<std::string>()) {
+  if (initial_config)
+    ssl_config_ = mojo::ConvertTo<net::SSLConfig>(std::move(initial_config));
   if (ssl_config_client_request)
     binding_.Bind(std::move(ssl_config_client_request));
 }
@@ -47,11 +46,12 @@ SSLConfigServiceMojo::SSLConfigServiceMojo(
 SSLConfigServiceMojo::~SSLConfigServiceMojo() = default;
 
 void SSLConfigServiceMojo::OnSSLConfigUpdated(mojom::SSLConfigPtr ssl_config) {
-  net::SSLConfig old_config = ssl_config_;
-  ssl_config_ = mojo::ConvertTo<net::SSLConfig>(std::move(ssl_config));
   bool force_notification =
       client_cert_pooling_policy_ != ssl_config->client_cert_pooling_policy;
   client_cert_pooling_policy_ = ssl_config->client_cert_pooling_policy;
+
+  net::SSLConfig old_config = ssl_config_;
+  ssl_config_ = mojo::ConvertTo<net::SSLConfig>(std::move(ssl_config));
   ProcessConfigUpdate(old_config, ssl_config_, force_notification);
 }
 
