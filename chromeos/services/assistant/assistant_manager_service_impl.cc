@@ -99,6 +99,7 @@ AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
 
 void AssistantManagerServiceImpl::SetAccessToken(
     const std::string& access_token) {
+  VLOG(1) << "Set access token.";
   // Push the |access_token| we got as an argument into AssistantManager before
   // starting to ensure that all server requests will be authenticated once
   // it is started. |user_id| is used to pair a user to their |access_token|,

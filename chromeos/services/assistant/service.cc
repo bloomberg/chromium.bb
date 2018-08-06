@@ -179,6 +179,7 @@ void Service::BindAssistantSettingsManager(
 }
 
 void Service::RequestAccessToken() {
+  VLOG(1) << "Start requesting access token.";
   GetIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
       &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
 }
