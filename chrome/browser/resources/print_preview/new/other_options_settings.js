@@ -9,6 +9,13 @@ Polymer({
 
   properties: {
     disabled: Boolean,
+
+    /** @private */
+    headerFooterCheckboxDisabled_: {
+      type: Boolean,
+      computed: 'computeHeaderFooterCheckboxDisabled_(disabled, ' +
+          'settings.headerFooter.setByPolicy)'
+    },
   },
 
   observers: [
@@ -44,6 +51,16 @@ Polymer({
                          // For tests only
                          this.fire('update-checkbox-setting', settingName);
                        }, 100));
+  },
+
+  /**
+   * @param {boolean} globallyDisabled Value of the |disabled| property.
+   * @param {boolean} setByPolicy Value of |settings.headerFooter.setByPolicy|.
+   * @return {boolean} New value for |headerFooterCheckboxDisabled_|.
+   * @private
+   */
+  computeHeaderFooterCheckboxDisabled_(globallyDisabled, setByPolicy) {
+    return globallyDisabled || setByPolicy;
   },
 
   /**

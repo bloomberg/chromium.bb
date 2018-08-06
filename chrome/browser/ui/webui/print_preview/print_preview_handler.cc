@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
+#include "chrome/browser/ui/webui/print_preview/policy_settings.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
@@ -262,6 +263,9 @@ const char kAppState[] = "serializedAppStateStr";
 // Name of a dictionary field holding the default destination selection rules.
 const char kDefaultDestinationSelectionRules[] =
     "serializedDefaultDestinationSelectionRulesStr";
+// Name of a dictionary field holding the header/footer enterprise policy, if
+// any.
+const char kForceEnableHeaderFooter[] = "forceEnableHeaderFooter";
 
 // Get the print job settings dictionary from |json_str|. Returns NULL on
 // failure.
@@ -409,6 +413,18 @@ base::LazyInstance<printing::StickySettings>::DestructorAtExit
 
 printing::StickySettings* GetStickySettings() {
   return g_sticky_settings.Pointer();
+}
+
+base::Optional<bool> GetHeaderFooterPolicy(const PrefService* prefs) {
+  const int enforcement = prefs->GetInteger(prefs::kPrintHeaderFooter);
+  switch (enforcement) {
+    case printing::HeaderFooterEnforcement::kForceEnable:
+      return true;
+    case printing::HeaderFooterEnforcement::kForceDisable:
+      return false;
+    default:
+      return base::nullopt;
+  }
 }
 
 }  // namespace
@@ -597,6 +613,12 @@ void PrintPreviewHandler::OnJavascriptDisallowed() {
 
 WebContents* PrintPreviewHandler::preview_web_contents() const {
   return web_ui()->GetWebContents();
+}
+
+PrefService* PrintPreviewHandler::GetPrefs() const {
+  return Profile::FromBrowserContext(
+             preview_web_contents()->GetBrowserContext())
+      ->GetPrefs();
 }
 
 PrintPreviewUI* PrintPreviewHandler::print_preview_ui() const {
@@ -869,8 +891,7 @@ void PrintPreviewHandler::HandleSaveAppState(const base::ListValue* args) {
   printing::StickySettings* sticky_settings = GetStickySettings();
   if (args->GetString(0, &data_to_save) && !data_to_save.empty())
     sticky_settings->StoreAppState(data_to_save);
-  sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
-      preview_web_contents()->GetBrowserContext())->GetPrefs());
+  sticky_settings->SaveInPrefs(GetPrefs());
 }
 
 // |args| is expected to contain a string with representing the callback id
@@ -1025,8 +1046,7 @@ void PrintPreviewHandler::SendInitialSettings(
                               print_preview_ui()->source_has_selection());
   initial_settings.SetBoolean(printing::kSettingShouldPrintSelectionOnly,
                               print_preview_ui()->print_selection_only());
-  PrefService* prefs = Profile::FromBrowserContext(
-      preview_web_contents()->GetBrowserContext())->GetPrefs();
+  PrefService* prefs = GetPrefs();
   printing::StickySettings* sticky_settings = GetStickySettings();
   sticky_settings->RestoreFromPrefs(prefs);
   if (sticky_settings->printer_app_state()) {
@@ -1034,6 +1054,11 @@ void PrintPreviewHandler::SendInitialSettings(
                                *sticky_settings->printer_app_state());
   } else {
     initial_settings.SetKey(kAppState, base::Value());
+  }
+
+  base::Optional<bool> policy = GetHeaderFooterPolicy(prefs);
+  if (policy) {
+    initial_settings.SetBoolean(kForceEnableHeaderFooter, policy.value());
   }
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
@@ -1110,9 +1135,7 @@ void PrintPreviewHandler::SendPrinterSetup(
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
-  Profile* profile = Profile::FromBrowserContext(
-      preview_web_contents()->GetBrowserContext());
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = GetPrefs();
   if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled) &&
       !base::FeatureList::IsEnabled(features::kCloudPrinterHandler)) {
     FireWebUIListener(

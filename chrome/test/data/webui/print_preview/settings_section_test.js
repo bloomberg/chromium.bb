@@ -27,6 +27,8 @@ cr.define('settings_sections_tests', function() {
     SetOther: 'set other',
     PresetCopies: 'preset copies',
     PresetDuplex: 'preset duplex',
+    EnableHeaderFooterByPolicy: 'enable header and footer by policy',
+    DisableHeaderFooterByPolicy: 'disable header and footer by policy',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -936,6 +938,46 @@ cr.define('settings_sections_tests', function() {
       cr.webUIListenerCallback('print-preset-options', false, 1, duplex);
       assertEquals(duplex, page.settings.duplex.value);
       assertTrue(checkbox.checked);
+    });
+
+    /**
+     * Tests that 'force enable header/footer' policy disables the header/footer
+     * checkbox and checks it.
+     */
+    // TODO(rbpotter): Don't call setPolicySettings() manually in this test.
+    test(assert(TestNames.EnableHeaderFooterByPolicy), function() {
+      toggleMoreSettings();
+      const optionsElement = page.$$('print-preview-other-options-settings');
+      const checkbox = optionsElement.$.headerFooter;
+      const model = page.$.model;
+
+      assertFalse(checkbox.disabled);
+      model.setPolicySettings(undefined);
+      assertFalse(checkbox.disabled);
+
+      model.setPolicySettings(true);
+      assertTrue(checkbox.disabled);
+      assertTrue(checkbox.checked);
+    });
+
+    /**
+     * Tests that 'force enable header/footer' policy enables the header/footer
+     * checkbox and doesn't check it.
+     */
+    // TODO(rbpotter): Don't call setPolicySettings() manually in this test.
+    test(assert(TestNames.DisableHeaderFooterByPolicy), function() {
+      toggleMoreSettings();
+      const optionsElement = page.$$('print-preview-other-options-settings');
+      const checkbox = optionsElement.$.headerFooter;
+      const model = page.$.model;
+
+      assertFalse(checkbox.disabled);
+      model.setPolicySettings(undefined);
+      assertFalse(checkbox.disabled);
+
+      model.setPolicySettings(false);
+      assertTrue(checkbox.disabled);
+      assertFalse(checkbox.checked);
     });
   });
 

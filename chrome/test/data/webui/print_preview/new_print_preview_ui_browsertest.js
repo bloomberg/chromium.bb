@@ -154,6 +154,20 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'PresetDuplex', function() {
   this.runMochaTest(settings_sections_tests.TestNames.PresetDuplex);
 });
 
+TEST_F(
+    'PrintPreviewSettingsSectionsTest', 'EnableHeaderFooterByPolicy',
+    function() {
+      this.runMochaTest(
+          settings_sections_tests.TestNames.EnableHeaderFooterByPolicy);
+    });
+
+TEST_F(
+    'PrintPreviewSettingsSectionsTest', 'DisableHeaderFooterByPolicy',
+    function() {
+      this.runMochaTest(
+          settings_sections_tests.TestNames.DisableHeaderFooterByPolicy);
+    });
+
 PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -290,6 +304,10 @@ PrintPreviewModelTest = class extends NewPrintPreviewTest {
 
 TEST_F('PrintPreviewModelTest', 'SetStickySettings', function() {
   this.runMochaTest(model_test.TestNames.SetStickySettings);
+});
+
+TEST_F('PrintPreviewModelTest', 'SetPolicySettings', function() {
+  this.runMochaTest(model_test.TestNames.SetPolicySettings);
 });
 
 TEST_F('PrintPreviewModelTest', 'GetPrintTicket', function() {
