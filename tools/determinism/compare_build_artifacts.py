@@ -191,7 +191,7 @@ def compare_deps(first_dir, second_dir, ninja_path, targets):
       print 'deps on %s are different: %s' % (
           target, set(first_deps).symmetric_difference(set(second_deps)))
       continue
-    max_filepath_len = max(len(n) for n in first_deps)
+    max_filepath_len = max([0] + [len(n) for n in first_deps])
     for d in first_deps:
       first_file = os.path.join(first_dir, d)
       second_file = os.path.join(second_dir, d)
