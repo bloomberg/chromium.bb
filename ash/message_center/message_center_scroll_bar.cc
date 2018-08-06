@@ -26,8 +26,9 @@ void CollectScrollActionReason(ScrollActionReason reason) {
 
 namespace ash {
 
-MessageCenterScrollBar::MessageCenterScrollBar()
-    : views::OverlayScrollBar(false) {
+MessageCenterScrollBar::MessageCenterScrollBar(
+    MessageCenterScrollBar::Observer* observer)
+    : views::OverlayScrollBar(false), observer_(observer) {
   GetThumb()->layer()->SetVisible(!features::IsSystemTrayUnifiedEnabled() ||
                                   features::IsNotificationScrollBarEnabled());
 }
@@ -46,7 +47,13 @@ bool MessageCenterScrollBar::OnMouseWheel(const ui::MouseWheelEvent& event) {
     CollectScrollActionReason(ScrollActionReason::kByMouseWheel);
     stats_recorded_ = true;
   }
-  return views::OverlayScrollBar::OnMouseWheel(event);
+
+  bool result = views::OverlayScrollBar::OnMouseWheel(event);
+
+  if (observer_)
+    observer_->OnMessageCenterScrolled();
+
+  return result;
 }
 
 void MessageCenterScrollBar::OnGestureEvent(ui::GestureEvent* event) {
@@ -54,7 +61,11 @@ void MessageCenterScrollBar::OnGestureEvent(ui::GestureEvent* event) {
     CollectScrollActionReason(ScrollActionReason::kByTouch);
     stats_recorded_ = true;
   }
-  return views::OverlayScrollBar::OnGestureEvent(event);
+
+  views::OverlayScrollBar::OnGestureEvent(event);
+
+  if (observer_)
+    observer_->OnMessageCenterScrolled();
 }
 
 }  // namespace ash

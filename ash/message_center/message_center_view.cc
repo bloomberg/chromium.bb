@@ -213,7 +213,7 @@ MessageCenterView::MessageCenterView(
   // set the default opaque background color.
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller_->ClipHeightTo(kMinScrollViewHeight, max_scroll_view_height);
-  scroller_->SetVerticalScrollBar(new MessageCenterScrollBar());
+  scroller_->SetVerticalScrollBar(new MessageCenterScrollBar(nullptr));
 
   message_list_view_.reset(new MessageListView());
   message_list_view_->SetBorderPadding();

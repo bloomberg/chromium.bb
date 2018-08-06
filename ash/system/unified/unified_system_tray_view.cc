@@ -19,8 +19,12 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
@@ -64,12 +68,59 @@ std::unique_ptr<views::Background> CreateUnifiedBackground() {
           kUnifiedTrayCornerRadius));
 }
 
+// Border applied to SystemTrayContainer and DetailedViewContainer to iminate
+// notification list scrolling under SystemTray part of UnifiedSystemTray.
+// The border paints mock notification frame behind the top corners based on
+// |height_below_scroll|.
+class TopCornerBorder : public views::Border {
+ public:
+  TopCornerBorder() = default;
+
+  // views::Border:
+  void Paint(const views::View& view, gfx::Canvas* canvas) override {
+    gfx::ScopedCanvas scoped(canvas);
+
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(view.GetLocalBounds()),
+                      SkIntToScalar(kUnifiedTrayCornerRadius),
+                      SkIntToScalar(kUnifiedTrayCornerRadius));
+    canvas->sk_canvas()->clipPath(path, SkClipOp::kDifference, true);
+
+    cc::PaintFlags flags;
+    flags.setColor(message_center::kNotificationBackgroundColor);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+
+    const int height = kUnifiedTrayCornerRadius * 4;
+    canvas->DrawRoundRect(
+        gfx::RectF(0,
+                   -height + std::min(height_below_scroll_,
+                                      kUnifiedTrayCornerRadius * 2),
+                   view.width(), height),
+        kUnifiedTrayCornerRadius, flags);
+  }
+
+  gfx::Insets GetInsets() const override { return gfx::Insets(); }
+
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+
+  void set_height_below_scroll(int height_below_scroll) {
+    height_below_scroll_ = height_below_scroll;
+  }
+
+ private:
+  int height_below_scroll_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TopCornerBorder);
+};
+
 class SystemTrayContainer : public views::View {
  public:
   SystemTrayContainer() {
     SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     SetBackground(CreateUnifiedBackground());
+    SetBorder(std::make_unique<TopCornerBorder>());
   }
 
   ~SystemTrayContainer() override = default;
@@ -85,7 +136,10 @@ class SystemTrayContainer : public views::View {
 
 class DetailedViewContainer : public views::View {
  public:
-  DetailedViewContainer() { SetBackground(CreateUnifiedBackground()); }
+  DetailedViewContainer() {
+    SetBackground(CreateUnifiedBackground());
+    SetBorder(std::make_unique<TopCornerBorder>());
+  }
 
   ~DetailedViewContainer() override = default;
 
@@ -193,9 +247,6 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
     bool initially_expanded)
     : expanded_amount_(initially_expanded ? 1.0 : 0.0),
       controller_(controller),
-      message_center_view_(
-          new UnifiedMessageCenterView(controller,
-                                       message_center::MessageCenter::Get())),
       notification_hidden_view_(CreateNotificationHiddenView()),
       top_shortcuts_view_(new TopShortcutsView(controller_)),
       feature_pods_container_(new FeaturePodsContainerView(initially_expanded)),
@@ -203,6 +254,10 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       system_info_view_(new UnifiedSystemInfoView(controller_)),
       system_tray_container_(new SystemTrayContainer()),
       detailed_view_container_(new DetailedViewContainer()),
+      message_center_view_(
+          new UnifiedMessageCenterView(controller,
+                                       this,
+                                       message_center::MessageCenter::Get())),
       focus_search_(std::make_unique<FocusSearch>(this)),
       interacted_by_tap_recorder_(
           std::make_unique<InteractedByTapRecorder>(this)) {
@@ -340,6 +395,15 @@ bool UnifiedSystemTrayView::IsTransformEnabled() const {
 
 void UnifiedSystemTrayView::ShowClearAllAnimation() {
   message_center_view_->ShowClearAllAnimation();
+}
+
+void UnifiedSystemTrayView::SetNotificationHeightBelowScroll(
+    int height_below_scroll) {
+  static_cast<TopCornerBorder*>(system_tray_container_->border())
+      ->set_height_below_scroll(height_below_scroll);
+  static_cast<TopCornerBorder*>(detailed_view_container_->border())
+      ->set_height_below_scroll(height_below_scroll);
+  SchedulePaint();
 }
 
 void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
