@@ -36,6 +36,28 @@ const IDS = {
 
 
 /**
+ * Enum for classes.
+ * @enum {string}
+ * @const
+ */
+const CLASSES = {
+  // Applied if the input field has been modified.
+  TEXT_MODIFIED: 'text-modified',
+};
+
+
+/**
+ * Enum for key codes.
+ * @enum {int}
+ * @const
+ */
+const KEYCODES = {
+  ENTER: 13,
+  ESC: 27,
+};
+
+
+/**
  * The origin of this request, i.e. 'https://www.google.TLD' for the remote NTP,
  * or 'chrome-search://local-ntp' for the local NTP.
  * @const {string}
@@ -59,6 +81,27 @@ let prepopulatedLink = {
   title: '',
   url: '',
 };
+
+
+/**
+ * The title of the dialog when adding a link.
+ * @type {string}
+ */
+let addLinkTitle = '';
+
+
+/**
+ * The title of the dialog when editing a link.
+ * @type {string}
+ */
+let editLinkTitle = '';
+
+
+/**
+ * The accessibility title of remove link button.
+ * @type {string}
+ */
+let deleteLinkTitle = '';
 
 
 /**
@@ -91,6 +134,12 @@ function prepopulateFields(rid) {
   prepopulatedLink.rid = rid;
   $(IDS.TITLE_FIELD).value = prepopulatedLink.title = data.title;
   $(IDS.URL_FIELD).value = prepopulatedLink.url = data.url;
+  $(IDS.URL_FIELD).classList.add(CLASSES.TEXT_MODIFIED);
+
+  // Set accessibility names.
+  $(IDS.DELETE).name = deleteLinkTitle + ' ' + data.title;
+  $(IDS.DONE).name = editLinkTitle + ' ' + data.title;
+  $(IDS.DONE).title = editLinkTitle;
 }
 
 
@@ -123,9 +172,8 @@ function showInvalidUrlUntilTextInput() {
 /**
  * Send a message to close the edit dialog. Called when the edit flow has been
  * completed. If the fields were unchanged, does not update the link data.
- * @param {!Event} event The click event.
  */
-function finishEditLink(event) {
+function finishEditLink() {
   // Show error message for invalid urls.
   if (!isValidURL($(IDS.URL_FIELD).value)) {
     showInvalidUrlUntilTextInput();
@@ -135,17 +183,17 @@ function finishEditLink(event) {
 
   let newUrl = '';
   let newTitle = '';
-  if ($(IDS.URL_FIELD).value != prepopulatedLink.url)
+  if ($(IDS.URL_FIELD).value != prepopulatedLink.url &&
+      $(IDS.URL_FIELD).value != 'https://')
     newUrl = $(IDS.URL_FIELD).value;
   if ($(IDS.TITLE_FIELD).value != prepopulatedLink.title)
     newTitle = $(IDS.TITLE_FIELD).value;
 
-  // Do not update link if fields were unchanged.
-  if (!newUrl && !newTitle)
-    return;
-
-  chrome.embeddedSearch.newTabPage.updateCustomLink(
-      prepopulatedLink.rid, newUrl, newTitle);
+  // Update the link only if a field was changed.
+  if (!!newUrl || !!newTitle) {
+    chrome.embeddedSearch.newTabPage.updateCustomLink(
+        prepopulatedLink.rid, newUrl, newTitle);
+  }
   closeDialog();
 }
 
@@ -166,13 +214,17 @@ function deleteLink(event) {
  */
 function closeDialog() {
   window.parent.postMessage({cmd: 'closeDialog'}, DOMAIN_ORIGIN);
-  $(IDS.FORM).reset();
-  $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
-  $(IDS.DELETE).disabled = false;
-  $(IDS.DONE).disabled = false;
-  prepopulatedLink.rid = -1;
-  prepopulatedLink.title = '';
-  prepopulatedLink.url = '';
+  // Small delay to allow the dialog close before cleaning up.
+  window.setTimeout(function() {
+    $(IDS.FORM).reset();
+    $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
+    $(IDS.URL_FIELD).classList.remove(CLASSES.TEXT_MODIFIED);
+    $(IDS.DELETE).disabled = false;
+    $(IDS.DONE).disabled = false;
+    prepopulatedLink.rid = -1;
+    prepopulatedLink.title = '';
+    prepopulatedLink.url = '';
+  }, 10);
 }
 
 
@@ -185,12 +237,35 @@ function handlePostMessage(event) {
   let args = event.data;
   if (cmd === 'linkData') {
     if (args.tid) {  // We are editing a link, prepopulate the link data.
+      $(IDS.DIALOG_TITLE).textContent = editLinkTitle;
       prepopulateFields(args.tid);
     } else {  // We are adding a link, disable the delete button.
+      $(IDS.DIALOG_TITLE).textContent = addLinkTitle;
       $(IDS.DELETE).disabled = true;
       disableSubmitUntilTextInput();
+      // Set accessibility names.
+      $(IDS.DONE).name = $(IDS.DONE).title = addLinkTitle;
     }
   }
+}
+
+
+/**
+ * Disables the focus outline for |element| on mousedown.
+ * @param {Element} element The element to remove the focus outline from.
+ */
+function disableOutlineOnMouseClick(element) {
+  element.addEventListener('mousedown', (event) => {
+    element.style.outline = 'none';
+    let resetOutline = (event) => {
+      // Clear current focus to prevent the outline from reappearing when the
+      // user switches windows.
+      document.activeElement.blur();
+      element.style.outline = '';
+      element.removeEventListener('blur', resetOutline);
+    };
+    element.addEventListener('blur', resetOutline);
+  });
 }
 
 
@@ -216,24 +291,46 @@ function init() {
   }
 
   // Populate text content.
-  $(IDS.DIALOG_TITLE).textContent = queryArgs['title'];
+  addLinkTitle = queryArgs['addTitle'];
+  editLinkTitle = queryArgs['editTitle'];
+  deleteLinkTitle = queryArgs['linkRemove'];
+  $(IDS.DIALOG_TITLE).textContent = addLinkTitle;
   $(IDS.TITLE_FIELD_NAME).textContent = queryArgs['nameField'];
   $(IDS.TITLE_FIELD_NAME).name = queryArgs['nameField'];
   $(IDS.URL_FIELD_NAME).textContent = queryArgs['urlField'];
   $(IDS.URL_FIELD_NAME).name = queryArgs['urlField'];
-  $(IDS.DELETE).textContent = queryArgs['linkRemove'];
-  $(IDS.CANCEL).textContent = queryArgs['linkCancel'];
-  $(IDS.DONE).textContent = queryArgs['linkDone'];
+  $(IDS.DELETE).textContent = $(IDS.DELETE).title = queryArgs['linkRemove'];
+  $(IDS.CANCEL).textContent = $(IDS.CANCEL).title = $(IDS.CANCEL).name =
+      queryArgs['linkCancel'];
+  $(IDS.DONE).textContent = $(IDS.DONE).title = queryArgs['linkDone'];
   $(IDS.INVALID_URL).textContent = queryArgs['invalidUrl'];
 
   // Set up event listeners.
+  $(IDS.URL_FIELD).addEventListener('input', (event) => {
+    if (!$(IDS.URL_FIELD).classList.contains(CLASSES.TEXT_MODIFIED))
+      $(IDS.URL_FIELD).classList.add(CLASSES.TEXT_MODIFIED);
+  });
   $(IDS.DELETE).addEventListener('click', deleteLink);
   $(IDS.CANCEL).addEventListener('click', closeDialog);
   $(IDS.FORM).addEventListener('submit', (event) => {
     // Prevent the form from submitting and modifying the URL.
     event.preventDefault();
-    finishEditLink(event);
+    finishEditLink();
   });
+  $(IDS.FORM).onkeyup = (event) => {
+    if (event.keyCode === KEYCODES.ENTER) {
+      event.preventDefault();
+      if ($(IDS.DONE).disabled)
+        closeDialog();
+      else
+        finishEditLink();
+    } else if (event.keyCode === KEYCODES.ESC) {
+      closeDialog();
+    }
+  };
+  disableOutlineOnMouseClick($(IDS.DELETE));
+  disableOutlineOnMouseClick($(IDS.CANCEL));
+  disableOutlineOnMouseClick($(IDS.DONE));
 
   // Change input field name to blue on input field focus.
   let changeColor = (fieldTitle) => {

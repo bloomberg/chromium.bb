@@ -375,14 +375,12 @@ html[dir=rtl] .mv-favicon {
   display: none;
 }
 
-.md-tile {
+.md-tile-container {
   border-radius: 4px;
   box-sizing: border-box;
-  cursor: pointer;
   height: var(--md-tile-height);
   margin-bottom: var(--md-tile-margin);
   opacity: 1;
-  padding: var(--md-tile-padding-vertical) var(--md-tile-padding-horizontal);
   position: relative;
   transition-property:
       background, background-color, border-color, box-shadow, opacity,
@@ -390,29 +388,34 @@ html[dir=rtl] .mv-favicon {
   width: var(--md-tile-width);
 }
 
+.md-tile {
+  cursor: pointer;
+  padding: var(--md-tile-padding-vertical) var(--md-tile-padding-horizontal);
+}
+
 .md-empty-tile {
   display: none;
 }
 
-.md-tile:hover {
+.md-tile-container:hover {
   background-color: rgba(33, 32, 36, 0.06);
 }
 
-body.dark-theme .md-tile:hover {
+body.dark-theme .md-tile-container:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.md-tile:hover > .md-menu {
+.md-tile-container:hover .md-menu {
   opacity: 1;
   transition-delay: 500ms;
 }
 
-body.dark-theme .md-tile:active .md-menu::after {
-  background-color: rgba(33, 32, 36, 0.71);
-  transition-delay: 500ms;
+body.dark-theme .md-tile-container:active + .md-menu::after {
+  background-color: rgb(189, 193, 198);
+  transition-delay: 0ms;
 }
 
-.md-tile.blacklisted {
+.md-tile-container.blacklisted {
   margin: 0;
   padding: 0;
   transform: scale(0, 0);
@@ -426,18 +429,8 @@ body.dark-theme .md-tile:active .md-menu::after {
   display: flex;
   flex-flow: column nowrap;
   height: 100%;
-  position: relative;
   width: 100%;
   z-index: -1;
-}
-
-.md-link {
-  height: 100%;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
 }
 
 .md-icon {
@@ -508,7 +501,6 @@ body.dark-theme .md-title {
 body.using-theme .md-title-container {
   background-color: white;
   border-radius: 12px;
-  height: 24px;
   padding: 4px;
 }
 

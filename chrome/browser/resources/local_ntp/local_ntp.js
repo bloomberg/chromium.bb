@@ -110,6 +110,7 @@ var IDS = {
   ATTRIBUTION: 'attribution',
   ATTRIBUTION_TEXT: 'attribution-text',
   CUSTOM_LINKS_EDIT_IFRAME: 'custom-links-edit',
+  CUSTOM_LINKS_EDIT_IFRAME_DIALOG: 'custom-links-edit-dialog',
   FAKEBOX: 'fakebox',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
@@ -353,6 +354,8 @@ function renderTheme() {
       .classList.toggle(
           customBackgrounds.CLASSES.OPTION_DISABLED,
           !info.customBackgroundConfigured);
+  $(customBackgrounds.IDS.RESTORE_DEFAULT).tabIndex =
+      (info.customBackgroundConfigured ? 0 : -1);
 
   if (configData.isGooglePage) {
     // Hide the settings menu or individual options if the related features are
@@ -715,17 +718,6 @@ function setFakeboxVisibility(show) {
 
 
 /**
- * @param {boolean} show True if do show the edit custom link dialog and disable
- *  scrolling.
- */
-function setEditCustomLinkDialogVisibility(show) {
-  $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
-      .classList.toggle(CLASSES.SHOW_EDIT_DIALOG, show);
-  document.body.classList.toggle(CLASSES.HIDE_BODY_OVERFLOW, show);
-}
-
-
-/**
  * @param {!Element} element The element to register the handler for.
  * @param {number} keycode The keycode of the key to register.
  * @param {!Function} handler The key handler to register.
@@ -765,6 +757,8 @@ function handlePostMessage(event) {
           .classList.toggle(
               customBackgrounds.CLASSES.OPTION_DISABLED,
               !args.showRestoreDefault);
+      $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).tabIndex =
+          (args.showRestoreDefault ? 0 : -1);
     }
   } else if (cmd === 'tileBlacklisted') {
     if (configData.isCustomLinksEnabled) {
@@ -787,9 +781,12 @@ function handlePostMessage(event) {
   } else if (cmd === 'startEditLink') {
     $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
         .contentWindow.postMessage({cmd: 'linkData', tid: args.tid}, '*');
-    setEditCustomLinkDialogVisibility(true);
+    // Small delay to allow the dialog to finish setting up before displaying.
+    window.setTimeout(function() {
+      $(IDS.CUSTOM_LINKS_EDIT_IFRAME_DIALOG).showModal();
+    }, 10);
   } else if (cmd === 'closeDialog') {
-    setEditCustomLinkDialogVisibility(false);
+    $(IDS.CUSTOM_LINKS_EDIT_IFRAME_DIALOG).close();
   }
 }
 
@@ -879,6 +876,26 @@ function addRippleAnimations() {
     rippleElements[i].addEventListener('mousedown', ripple);
   }
 }
+
+
+/**
+ * Disables the focus outline for |element| on mousedown.
+ * @param {Element} element The element to remove the focus outline from.
+ */
+function disableOutlineOnMouseClick(element) {
+  element.addEventListener('mousedown', (event) => {
+    element.style.outline = 'none';
+    let resetOutline = (event) => {
+      // Clear current focus to prevent the outline from reappearing when the
+      // user switches windows.
+      document.activeElement.blur();
+      element.style.outline = '';
+      element.removeEventListener('blur', resetOutline);
+    };
+    element.addEventListener('blur', resetOutline);
+  });
+}
+
 
 /**
  * Prepares the New Tab Page by adding listeners, the most visited pages
@@ -997,6 +1014,7 @@ function init() {
     inputbox.ondragleave = function() {
       setFakeboxDragFocus(false);
     };
+    disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
 
     // Update the fakebox style to match the current key capturing state.
     setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
@@ -1109,7 +1127,10 @@ function init() {
       clArgs.push('rtl=1');
 
     clArgs.push(
-        'title=' +
+        'addTitle=' +
+        encodeURIComponent(configData.translatedStrings.addLinkTitle));
+    clArgs.push(
+        'editTitle=' +
         encodeURIComponent(configData.translatedStrings.editLinkTitle));
     clArgs.push(
         'nameField=' +
@@ -1136,7 +1157,10 @@ function init() {
     clIframe.name = IDS.CUSTOM_LINKS_EDIT_IFRAME;
     clIframe.title = configData.translatedStrings.editLinkTitle;
     clIframe.src = 'chrome-search://most-visited/edit.html?' + clArgs.join('&');
-    document.body.appendChild(clIframe);
+    let clIframeDialog = document.createElement('dialog');
+    clIframeDialog.id = IDS.CUSTOM_LINKS_EDIT_IFRAME_DIALOG;
+    clIframeDialog.appendChild(clIframe);
+    document.body.appendChild(clIframeDialog);
   }
 
   window.addEventListener('message', handlePostMessage);

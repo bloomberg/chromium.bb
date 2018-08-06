@@ -2,8 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#edit-link-dialog::backdrop {
-  background-color: rgba(255, 255, 255, .75);
+body {
+  overflow: hidden;
 }
 
 #edit-link-dialog {
@@ -19,6 +19,10 @@
   top: 0;
   width: 320px;
   z-index: 10000;
+}
+
+#edit-link-dialog::backdrop {
+  background: transparent;
 }
 
 #edit-link-dialog > div {
@@ -62,6 +66,10 @@ input {
   padding-inline-end: 8px;
   padding-inline-start: 8px;
   width: calc(100% - 16px);
+}
+
+#url-field:not(.text-modified) {
+  color: rgba(32, 33, 36, 0.38);
 }
 
 .underline {
@@ -132,13 +140,13 @@ button {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+button:disabled {
+  transition: none;
+}
+
 button.primary {
   background-color: rgb(26, 115, 232);
   color: white;
-}
-
-button:focus:not(:active) {
-  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.4);
 }
 
 button.primary:disabled {
