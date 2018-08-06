@@ -480,7 +480,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_test_suite',
           'num_shards': 26,
           'extra_args': [
-              '--run-ref-build',
+              # '--run-ref-build', crbug.com/868675
               '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
               '--assert-gpu-compositing',
           ],
@@ -548,7 +548,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         {
           'isolate': 'performance_test_suite',
           'extra_args': [
-            '--run-ref-build',
+            # '--run-ref-build', crbug.com/868675
             '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
               '--assert-gpu-compositing',
           ],
