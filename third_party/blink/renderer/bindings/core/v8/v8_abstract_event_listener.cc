@@ -114,6 +114,9 @@ void V8AbstractEventListener::handleEvent(ExecutionContext* execution_context,
 
 void V8AbstractEventListener::HandleEvent(ScriptState* script_state,
                                           Event* event) {
+  if (!script_state->ContextIsValid())
+    return;
+
   ScriptState::Scope scope(script_state);
 
   // Get the V8 wrapper for the event object.

@@ -52,8 +52,6 @@ class V8WorkerOrWorkletEventListener final : public V8EventListener {
     return event_listener;
   }
 
-  void HandleEvent(ScriptState*, Event*) override;
-
  protected:
   V8WorkerOrWorkletEventListener(bool is_inline, ScriptState*);
 

@@ -49,26 +49,6 @@ V8WorkerOrWorkletEventListener::V8WorkerOrWorkletEventListener(
     ScriptState* script_state)
     : V8EventListener(is_inline, script_state) {}
 
-void V8WorkerOrWorkletEventListener::HandleEvent(ScriptState* script_state,
-                                                 Event* event) {
-  v8::Local<v8::Context> context = script_state->GetContext();
-  WorkerOrWorkletScriptController* script_controller =
-      ToWorkerOrWorkletGlobalScope(ToExecutionContext(context))
-          ->ScriptController();
-  if (!script_controller)
-    return;
-
-  ScriptState::Scope scope(script_state);
-
-  // Get the V8 wrapper for the event object.
-  v8::Local<v8::Value> js_event = ToV8(event, context->Global(), GetIsolate());
-  if (js_event.IsEmpty())
-    return;
-
-  InvokeEventHandler(script_state, event,
-                     v8::Local<v8::Value>::New(GetIsolate(), js_event));
-}
-
 v8::Local<v8::Value> V8WorkerOrWorkletEventListener::CallListenerFunction(
     ScriptState* script_state,
     v8::Local<v8::Value> js_event,
