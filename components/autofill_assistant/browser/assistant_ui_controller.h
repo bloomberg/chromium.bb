@@ -7,6 +7,8 @@
 
 #include "components/autofill_assistant/browser/assistant_ui_delegate.h"
 
+#include <string>
+
 namespace autofill_assistant {
 // Controller to control autofill assistant UI.
 class AssistantUiController {

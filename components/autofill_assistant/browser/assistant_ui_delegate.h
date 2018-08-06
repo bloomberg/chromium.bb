@@ -14,6 +14,10 @@ class AssistantUiDelegate {
   // Called when the overlay has been clicked by user.
   virtual void OnClickOverlay() = 0;
 
+  // Called when the Autofill Assistant should be destroyed, e.g. the tab
+  // detached from the associated activity.
+  virtual void OnDestroy() = 0;
+
  protected:
   AssistantUiDelegate() = default;
 };
