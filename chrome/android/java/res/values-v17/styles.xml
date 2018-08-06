@@ -255,6 +255,16 @@
     </style>
 
     <!-- Manage Space Activity -->
+    <style name="ManageSpaceTheme" parent="PreferencesTheme">
+        <!-- Action bar color. This is intentionally a dark color. See crbug.com/871193. -->
+        <item name="colorPrimary">@color/dark_action_bar_color</item>
+        <!-- Status bar color -->
+        <item name="colorPrimaryDark">@color/dark_status_bar_color</item>
+        <item name="actionBarStyle">@style/ManageSpaceActionBarModern</item>
+    </style>
+    <style name="ManageSpaceActionBarModern" parent="PreferenceActionBarModern">
+        <item name="titleTextStyle">@style/WhiteHeadline1</item>
+    </style>
     <style name="ManageSpaceActivityButton">
       <item name="android:layout_width">wrap_content</item>
       <item name="android:layout_height">wrap_content</item>
