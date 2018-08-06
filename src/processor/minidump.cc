@@ -753,18 +753,10 @@ bool MinidumpContext::Read(uint32_t expected_size) {
         Swap(&context_arm64->float_save.regs[fpr_index]);
       }
     }
-    SetContextFlags(static_cast<uint32_t>(context_arm64->context_flags));
-
-    // Check for data loss when converting context flags from uint64_t into
-    // uint32_t
-    if (static_cast<uint64_t>(GetContextFlags()) !=
-        context_arm64->context_flags) {
-      BPLOG(ERROR) << "Data loss detected when converting ARM64 context_flags";
-      return false;
-    }
 
     scoped_ptr<MDRawContextARM64> new_context(new MDRawContextARM64());
     ConvertOldARM64Context(*context_arm64.get(), new_context.get());
+    SetContextFlags(new_context->context_flags);
     SetContextARM64(new_context.release());
   } else {
     uint32_t context_flags;
