@@ -46,6 +46,7 @@ html[dir=rtl] #edit-bg {
 #edit-bg-gear {
   background: url(../../../../ui/webui/resources/images/icon_settings.svg) no-repeat center;
   background-size: 16px 16px;
+  cursor: pointer;
   height: 100%;
   width: 100%;
 }
@@ -189,7 +190,9 @@ html[dir=rtl] .bg-option-text {
   position: absolute;
   right: 0;
   top: 0;
-  width: 516px;
+  /* Suitable for 3 columns of tiles on all platforms, accounting for larger
+   * scrollbar width on Windows.*/
+  width: 517px;
   z-index: 10000;
 }
 
