@@ -125,9 +125,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                net::RequestPrioritySize::NUM_PRIORITIES>
         net_to_blink_priority;
 
-    // Turn on relevant experiments during the loading phase.
-    bool experiment_only_when_loading;
-
     using FrameTaskTypeToQueueTraitsArray =
         std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
                    static_cast<size_t>(TaskType::kCount)>;
@@ -855,9 +852,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
     base::TimeDelta max_queueing_time;
     base::TimeTicks background_status_changed_at;
-    std::set<PageSchedulerImpl*> page_schedulers;  // Not owned.
+    std::set<PageSchedulerImpl*> page_schedulers;                 // Not owned.
     base::ObserverList<WebRAILModeObserver> rail_mode_observers;  // Not owned.
-    WakeUpBudgetPool* wake_up_budget_pool;         // Not owned.
+    WakeUpBudgetPool* wake_up_budget_pool;                        // Not owned.
     MainThreadMetricsHelper metrics_helper;
     TraceableState<RendererProcessType, kTracingCategoryNameTopLevel>
         process_type;
