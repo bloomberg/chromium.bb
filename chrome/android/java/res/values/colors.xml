@@ -27,6 +27,7 @@
 
     <!-- Other common colors -->
     <color name="dark_action_bar_color">#263238</color>
+    <color name="dark_status_bar_color">#161E21</color>
     <color name="modal_dialog_scrim_color">#7F000000</color>
 
     <!-- Modern color palette -->

@@ -548,7 +548,7 @@ by a child template that "extends" this file.
             android:exported="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.preferences.website.ManageSpaceActivity"
-            android:theme="@style/PreferencesTheme"
+            android:theme="@style/ManageSpaceTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:label="@string/storage_management_activity_label"
             android:exported="false">
