@@ -14,7 +14,8 @@ class PrefService;
 class UnifiedConsentServiceClientImpl
     : public unified_consent::UnifiedConsentServiceClient {
  public:
-  explicit UnifiedConsentServiceClientImpl(PrefService* pref_service);
+  explicit UnifiedConsentServiceClientImpl(PrefService* user_pref_service,
+                                           PrefService* local_pref_service);
   ~UnifiedConsentServiceClientImpl() override = default;
 
   // unified_consent::UnifiedConsentServiceClient overrides:
@@ -22,7 +23,8 @@ class UnifiedConsentServiceClientImpl
   void SetServiceEnabled(Service service, bool enabled) override;
 
  private:
-  PrefService* pref_service_;
+  PrefService* user_pref_service_;
+  PrefService* local_pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentServiceClientImpl);
 };
