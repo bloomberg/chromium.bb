@@ -121,18 +121,23 @@ void MaterialDesignController::Initialize() {
       base::FeatureList::IsEnabled(features::kExperimentalUi);
 #endif
 
-  if (force_material_refresh ||
-      switch_value == switches::kTopChromeMDMaterialRefresh) {
+  if (switch_value == switches::kTopChromeMDMaterialRefresh) {
     SetMode(MATERIAL_REFRESH);
+  } else if (switch_value ==
+             switches::kTopChromeMDMaterialRefreshTouchOptimized) {
+    SetMode(MATERIAL_TOUCH_REFRESH);
+  } else if (force_material_refresh) {
+    bool has_touchscreen = false;
+#if defined(OS_CHROMEOS)
+    has_touchscreen = HasTouchscreen();
+#endif
+    SetMode(has_touchscreen ? MATERIAL_TOUCH_REFRESH : MATERIAL_REFRESH);
   } else if (switch_value == switches::kTopChromeMDMaterial) {
     SetMode(MATERIAL_NORMAL);
   } else if (switch_value == switches::kTopChromeMDMaterialHybrid) {
     SetMode(MATERIAL_HYBRID);
   } else if (switch_value == switches::kTopChromeMDMaterialTouchOptimized) {
     SetMode(MATERIAL_TOUCH_OPTIMIZED);
-  } else if (switch_value ==
-             switches::kTopChromeMDMaterialRefreshTouchOptimized) {
-    SetMode(MATERIAL_TOUCH_REFRESH);
   } else if (switch_value == switches::kTopChromeMDMaterialAuto) {
 #if defined(OS_WIN)
     // TODO(girard): add support for switching between modes when
