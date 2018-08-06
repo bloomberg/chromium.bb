@@ -712,5 +712,10 @@
     "prefix": "mojo-blob-urls",
     "base": "external/wpt/FileAPI/url",
     "args": ["--enable-features=MojoBlobURLs"]
+  },
+  {
+    "prefix": "origin-policy",
+    "base": "external/wpt/origin-policy",
+    "args": ["--enable-features=OriginPolicy"]
   }
 ]

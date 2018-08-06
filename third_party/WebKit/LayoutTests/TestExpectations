@@ -4623,6 +4623,10 @@ crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance.h
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/month-picker-appearance.html [ Failure ]
 crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failure ]
 
+# Origin Policy: Skip tests that rely on --feature-enabled=OriginPolicy, so
+#   they can be run via virtual/origin-policy instead.
+crbug.com/751996 external/wpt/origin-policy [ Skip ]
+
 # Sheriff 2018-06-18
 crbug.com/853852 [ Win7 Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Pass Timeout ]
 crbug.com/853852 [ Linux ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
