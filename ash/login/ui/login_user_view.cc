@@ -139,7 +139,11 @@ class LoginUserView::UserImage : public NonAccessibleView {
     }
   }
 
-  void SetAnimationEnabled(bool enable) { image_->SetAnimationEnabled(enable); }
+  void SetAnimationEnabled(bool enable) {
+    image_->SetAnimationPlayback(
+        enable ? AnimatedRoundedImageView::Playback::kRepeat
+               : AnimatedRoundedImageView::Playback::kFirstFrameOnly);
+  }
 
  private:
   void OnImageDecoded(AnimationFrames animation) {
@@ -150,7 +154,8 @@ class LoginUserView::UserImage : public NonAccessibleView {
     }
 
     image_->SetAnimationDecoder(
-        std::make_unique<PassthroughAnimationDecoder>(animation));
+        std::make_unique<PassthroughAnimationDecoder>(animation),
+        AnimatedRoundedImageView::Playback::kRepeat);
   }
 
   AnimatedRoundedImageView* image_ = nullptr;

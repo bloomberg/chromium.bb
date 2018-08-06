@@ -21,6 +21,12 @@ namespace ash {
 // A custom image view with rounded edges.
 class AnimatedRoundedImageView : public views::View {
  public:
+  enum class Playback {
+    kFirstFrameOnly,  // Only the first frame in the animation will be shown.
+    kSingle,          // Play the animation only once.
+    kRepeat,          // Play the animation repeatly.
+  };
+
   // Provides animation frames.
   class AnimationDecoder {
    public:
@@ -33,14 +39,15 @@ class AnimatedRoundedImageView : public views::View {
   AnimatedRoundedImageView(const gfx::Size& size, int corner_radius);
   ~AnimatedRoundedImageView() override;
 
-  // Show an animation.
-  void SetAnimationDecoder(std::unique_ptr<AnimationDecoder> decoder);
+  // Show an animation with specified playback mode.
+  void SetAnimationDecoder(std::unique_ptr<AnimationDecoder> decoder,
+                           Playback playback);
 
   // Show a static image.
   void SetImage(const gfx::ImageSkia& image);
 
-  // Start or stop animation.
-  void SetAnimationEnabled(bool enabled);
+  // Set playback type of the animation.
+  void SetAnimationPlayback(Playback playback);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -51,10 +58,6 @@ class AnimatedRoundedImageView : public views::View {
   void UpdateAnimationFrame();
   void BuildAnimationFrames(float image_scale);
 
-  // If true and there are multiple frames, the animation will play. If false,
-  // only the first frame in the animation will be shown.
-  bool should_animate_ = false;
-
   // Currently displayed animation frame.
   int active_frame_ = 0;
 
@@ -64,6 +67,8 @@ class AnimatedRoundedImageView : public views::View {
   float frames_scale_ = NAN;
   // The raw decoded animation frames.
   AnimationFrames frames_;
+  // Animation playback type.
+  Playback playback_ = Playback::kFirstFrameOnly;
 
   const gfx::Size image_size_;
   const int corner_radius_;
