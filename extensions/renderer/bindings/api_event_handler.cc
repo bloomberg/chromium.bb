@@ -88,7 +88,12 @@ void DispatchEvent(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Converter<EventEmitter*>::FromV8(isolate, v8_emitter.Get(isolate),
                                         &emitter);
   CHECK(emitter);
-  emitter->Fire(context, &args, nullptr, JSRunner::ResultCallback());
+  // Note: It's safe to use EventEmitter::FireSync() here because this should
+  // only be triggered from a JS call, so we know JS is running.
+  // TODO(devlin): It looks like the return result that requires this to be sync
+  // is only used by the InputIME custom bindings; it would be kind of nice to
+  // remove the dependency.
+  info.GetReturnValue().Set(emitter->FireSync(context, &args, nullptr));
 }
 
 }  // namespace
