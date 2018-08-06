@@ -107,7 +107,8 @@ bool ContentBrowserClient::ShouldLockToOrigin(BrowserContext* browser_context,
   return true;
 }
 
-const char* ContentBrowserClient::GetInitatorSchemeBypassingDocumentBlocking() {
+const char*
+ContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
   return nullptr;
 }
 

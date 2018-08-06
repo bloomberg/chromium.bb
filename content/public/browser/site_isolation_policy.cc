@@ -94,7 +94,7 @@ void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
   const char* initiator_scheme_exception =
       GetContentClient()
           ->browser()
-          ->GetInitatorSchemeBypassingDocumentBlocking();
+          ->GetInitiatorSchemeBypassingDocumentBlocking();
   if (initiator_scheme_exception)
     params->corb_excluded_initiator_scheme = initiator_scheme_exception;
 }
