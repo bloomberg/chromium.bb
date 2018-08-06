@@ -16,6 +16,7 @@
 
 namespace media {
 
+// Client side for a MediaLog via mojo.
 class MojoMediaLog final : public MediaLog {
  public:
   // TODO(sandersd): Template on Ptr type to support non-associated.
@@ -23,9 +24,10 @@ class MojoMediaLog final : public MediaLog {
                         scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~MojoMediaLog() final;
 
+ protected:
   // MediaLog implementation.  May be called from any thread, but will only
   // use |remote_media_log_| on |task_runner_|.
-  void AddEvent(std::unique_ptr<MediaLogEvent> event) override;
+  void AddEventLocked(std::unique_ptr<MediaLogEvent> event) override;
 
  private:
   mojom::MediaLogAssociatedPtr remote_media_log_;
