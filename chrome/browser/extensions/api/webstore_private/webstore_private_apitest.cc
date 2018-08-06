@@ -28,6 +28,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -187,34 +188,39 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
 };
 
 // Test cases for webstore origin frame blocking.
-// TODO(mkwst): Disabled until new X-Frame-Options behavior rolls into
-// Chromium, see crbug.com/226018.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_FrameWebstorePageBlocked) {
-  base::string16 expected_title = base::UTF8ToUTF16("PASS: about:blank");
-  base::string16 failure_title = base::UTF8ToUTF16("FAIL");
-  content::TitleWatcher watcher(GetWebContents(), expected_title);
-  watcher.AlsoWaitForTitle(failure_title);
+                       FrameWebstorePageBlocked) {
   GURL url = embedded_test_server()->GetURL(
       "/extensions/api_test/webstore_private/noframe.html");
+  content::WebContents* web_contents = GetWebContents();
   ui_test_utils::NavigateToURL(browser(), url);
-  base::string16 final_title = watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, final_title);
+  ASSERT_TRUE(content::ExecuteScript(web_contents, "dropFrame()"));
+  WaitForLoadStop(web_contents);
+  content::RenderFrameHost* subframe =
+      content::ChildFrameAt(web_contents->GetMainFrame(), 0);
+  ASSERT_TRUE(subframe);
+  // The subframe load should fail due to XFO. Currently that results in
+  // loading a blank page with the URL "data:,", but this check will need to
+  // change when XFO failures result in an error page - see
+  // https://crbug.com/870815.
+  EXPECT_EQ(GURL("data:,"), subframe->GetLastCommittedURL());
 }
 
-// TODO(mkwst): Disabled until new X-Frame-Options behavior rolls into
-// Chromium, see crbug.com/226018.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_FrameErrorPageBlocked) {
-  base::string16 expected_title = base::UTF8ToUTF16("PASS: about:blank");
-  base::string16 failure_title = base::UTF8ToUTF16("FAIL");
-  content::TitleWatcher watcher(GetWebContents(), expected_title);
-  watcher.AlsoWaitForTitle(failure_title);
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FrameErrorPageBlocked) {
   GURL url = embedded_test_server()->GetURL(
       "/extensions/api_test/webstore_private/noframe2.html");
+  content::WebContents* web_contents = GetWebContents();
   ui_test_utils::NavigateToURL(browser(), url);
-  base::string16 final_title = watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, final_title);
+  ASSERT_TRUE(content::ExecuteScript(web_contents, "dropFrame()"));
+  WaitForLoadStop(web_contents);
+  content::RenderFrameHost* subframe =
+      content::ChildFrameAt(web_contents->GetMainFrame(), 0);
+  ASSERT_TRUE(subframe);
+  // The subframe load should fail due to XFO. Currently that results in
+  // loading a blank page with the URL "data:,", but this check will need to
+  // change when XFO failures result in an error page - see
+  // https://crbug.com/870815.
+  EXPECT_EQ(GURL("data:,"), subframe->GetLastCommittedURL());
 }
 
 // Test cases where the user accepts the install confirmation dialog.
