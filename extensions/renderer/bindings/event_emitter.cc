@@ -60,6 +60,14 @@ void EventEmitter::Fire(v8::Local<v8::Context> context,
   DispatchAsync(context, args, filter, std::move(callback));
 }
 
+v8::Local<v8::Value> EventEmitter::FireSync(
+    v8::Local<v8::Context> context,
+    std::vector<v8::Local<v8::Value>>* args,
+    const EventFilteringInfo* filter) {
+  DCHECK(context == context->GetIsolate()->GetCurrentContext());
+  return DispatchSync(context, args, filter);
+}
+
 void EventEmitter::Invalidate(v8::Local<v8::Context> context) {
   valid_ = false;
   listeners_->Invalidate(context);
