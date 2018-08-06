@@ -308,9 +308,6 @@ class ProxyResolverFactoryMojo::Job
     factory_->mojo_proxy_factory_->CreateResolver(
         base::UTF16ToUTF8(pac_script->utf16()),
         mojo::MakeRequest(&resolver_ptr_), std::move(client));
-    resolver_ptr_.set_connection_error_handler(
-        base::Bind(&ProxyResolverFactoryMojo::Job::OnConnectionError,
-                   base::Unretained(this)));
     binding_.set_connection_error_handler(
         base::Bind(&ProxyResolverFactoryMojo::Job::OnConnectionError,
                    base::Unretained(this)));
@@ -320,12 +317,14 @@ class ProxyResolverFactoryMojo::Job
 
  private:
   void ReportResult(int32_t error) override {
-    resolver_ptr_.set_connection_error_handler(base::Closure());
-    binding_.set_connection_error_handler(base::Closure());
+    // Prevent any other messages arriving unexpectedly, in the case |this|
+    // isn't destroyed immediately.
+    binding_.Close();
+
     if (error == net::OK) {
-      resolver_->reset(new ProxyResolverMojo(
+      *resolver_ = std::make_unique<ProxyResolverMojo>(
           std::move(resolver_ptr_), factory_->host_resolver_,
-          std::move(error_observer_), factory_->net_log_));
+          std::move(error_observer_), factory_->net_log_);
     }
     std::move(callback_).Run(error);
   }
@@ -365,10 +364,10 @@ int ProxyResolverFactoryMojo::CreateProxyResolver(
       pac_script->utf16().empty()) {
     return net::ERR_PAC_SCRIPT_FAILED;
   }
-  request->reset(new Job(this, pac_script, resolver, std::move(callback),
-                         error_observer_factory_.is_null()
-                             ? nullptr
-                             : error_observer_factory_.Run()));
+  *request = std::make_unique<Job>(
+      this, pac_script, resolver, std::move(callback),
+      error_observer_factory_.is_null() ? nullptr
+                                        : error_observer_factory_.Run());
   return net::ERR_IO_PENDING;
 }
 
