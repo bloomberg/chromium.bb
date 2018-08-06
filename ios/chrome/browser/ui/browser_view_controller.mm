@@ -4771,10 +4771,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)printTab {
   Tab* currentTab = [_model currentTab];
-  // The UI should prevent users from printing non-printable pages. However, a
-  // redirection to an un-printable page can happen before it is reflected in
-  // the UI.
+  // The UI should prevent users from printing non-printable pages. However,
+  // a page load error can happen after share dialog is invoked.
   if (![currentTab viewForPrinting]) {
+    // Web-based error pages are printable.
+    DCHECK(!base::FeatureList::IsEnabled(web::features::kWebErrorPages));
     TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeError);
     [self showSnackbar:l10n_util::GetNSString(IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
     return;
