@@ -96,6 +96,12 @@ bool isAllowedStateTransition(keyboard::KeyboardControllerState from,
           // HideKeyboard can be called at anytime for example on shutdown.
           {keyboard::KeyboardControllerState::SHOWN,
            keyboard::KeyboardControllerState::HIDDEN},
+
+          // Return to INITIAL when keyboard is disabled.
+          {keyboard::KeyboardControllerState::LOADING_EXTENSION,
+           keyboard::KeyboardControllerState::INITIAL},
+          {keyboard::KeyboardControllerState::HIDDEN,
+           keyboard::KeyboardControllerState::INITIAL},
       };
   return kAllowedStateTransition.count(std::make_pair(from, to)) == 1;
 };
@@ -203,6 +209,11 @@ void KeyboardController::DisableKeyboard() {
 
   if (parent_container_)
     DeactivateKeyboard();
+
+  // Return to the INITIAL state to ensure that transitions entering a state
+  // is equal to transitions leaving the state.
+  if (state_ != KeyboardControllerState::INITIAL)
+    ChangeState(KeyboardControllerState::INITIAL);
 
   // TODO(https://crbug.com/731537): Move KeyboardController members into a
   // subobject so we can just put this code into the subobject destructor.

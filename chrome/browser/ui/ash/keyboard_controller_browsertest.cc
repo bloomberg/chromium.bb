@@ -305,3 +305,17 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, OpenAndCloseAndOpen) {
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::SHOWN);
 }
+
+// See crbug.com/755354.
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest,
+                       DisablingKeyboardGoesToInitialState) {
+  auto* controller = keyboard::KeyboardController::Get();
+
+  controller->LoadKeyboardWindowInBackground();
+  EXPECT_EQ(controller->GetStateForTest(),
+            keyboard::KeyboardControllerState::LOADING_EXTENSION);
+
+  controller->DisableKeyboard();
+  EXPECT_EQ(controller->GetStateForTest(),
+            keyboard::KeyboardControllerState::INITIAL);
+}
