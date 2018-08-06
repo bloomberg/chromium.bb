@@ -131,7 +131,8 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionsResponse) {
   CollectionInfo collection_info;
   collection_info.collection_id = collection.collection_id();
   collection_info.collection_name = collection.collection_name();
-  collection_info.preview_image_url = GURL(collection.preview(0).image_url());
+  collection_info.preview_image_url = GURL(
+      collection.preview(0).image_url() + GetThumbnailImageOptionsForTesting());
 
   EXPECT_FALSE(service()->collection_info().empty());
   EXPECT_THAT(service()->collection_info().at(0), Eq(collection_info));
@@ -186,7 +187,8 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionImagesResponse) {
   CollectionImage collection_image;
   collection_image.collection_id = "shapes";
   collection_image.asset_id = image.asset_id();
-  collection_image.thumbnail_image_url = GURL(image.image_url());
+  collection_image.thumbnail_image_url =
+      GURL(image.image_url() + GetThumbnailImageOptionsForTesting());
   collection_image.image_url = GURL(image.image_url() + kImageOptions);
   collection_image.attribution.push_back(image.attribution(0).text());
   collection_image.attribution_action_url = GURL(image.action_url());
@@ -233,12 +235,14 @@ TEST_F(NtpBackgroundServiceTest, MultipleRequests) {
   CollectionInfo collection_info;
   collection_info.collection_id = collection.collection_id();
   collection_info.collection_name = collection.collection_name();
-  collection_info.preview_image_url = GURL(collection.preview(0).image_url());
+  collection_info.preview_image_url = GURL(
+      collection.preview(0).image_url() + GetThumbnailImageOptionsForTesting());
 
   CollectionImage collection_image;
   collection_image.collection_id = "shapes";
   collection_image.asset_id = image.asset_id();
-  collection_image.thumbnail_image_url = GURL(image.image_url());
+  collection_image.thumbnail_image_url =
+      GURL(image.image_url() + GetThumbnailImageOptionsForTesting());
   collection_image.image_url = GURL(image.image_url() + kImageOptions);
   collection_image.attribution.push_back(image.attribution(0).text());
 
