@@ -150,20 +150,33 @@ class NullWebRtcEventLogUploader : public WebRtcEventLogUploader {
 
   class Factory : public WebRtcEventLogUploader::Factory {
    public:
-    explicit Factory(bool cancellation_expected)
-        : cancellation_expected_(cancellation_expected) {}
+    Factory(bool cancellation_expected,
+            base::Optional<size_t> expected_instance_count =
+                base::Optional<size_t>())
+        : cancellation_expected_(cancellation_expected),
+          expected_instance_count_(expected_instance_count),
+          instance_count_(0) {}
 
-    ~Factory() override = default;
+    ~Factory() override {
+      if (expected_instance_count_.has_value()) {
+        EXPECT_EQ(instance_count_, expected_instance_count_.value());
+      }
+    }
 
     std::unique_ptr<WebRtcEventLogUploader> Create(
         const WebRtcLogFileInfo& log_file,
         UploadResultCallback callback) override {
+      if (expected_instance_count_.has_value()) {
+        EXPECT_LE(++instance_count_, expected_instance_count_.value());
+      }
       return std::make_unique<NullWebRtcEventLogUploader>(
           log_file, cancellation_expected_);
     }
 
    private:
     const bool cancellation_expected_;
+    const base::Optional<size_t> expected_instance_count_;
+    size_t instance_count_;
   };
 
  private:
@@ -873,6 +886,23 @@ class WebRtcEventLogManagerTestWithRemoteLoggingDisabled
   const bool policy_enabled_;  // Whether the policy is enabled for the profile.
 };
 
+class WebRtcEventLogManagerTestPolicy : public WebRtcEventLogManagerTestBase {
+ public:
+  WebRtcEventLogManagerTestPolicy() {
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+
+    // Avoid proactive pruning; it has the potential to mess up tests, as well
+    // as keep pendings tasks around with a dangling reference to the unit
+    // under test. (Zero is a sentinel value for disabling proactive pruning.)
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
+        ::switches::kWebRtcRemoteEventLogUploadDelayMs, "0");
+
+    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+  }
+
+  ~WebRtcEventLogManagerTestPolicy() override = default;
+};
+
 class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
     : public WebRtcEventLogManagerTestBase {
  public:
@@ -994,6 +1024,9 @@ class WebRtcEventLogManagerTestCompression
   WebRtcEventLogManagerTestCompression() {
     scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
 
+    // Avoid proactive pruning; it has the potential to mess up tests, as well
+    // as keep pendings tasks around with a dangling reference to the unit
+    // under test. (Zero is a sentinel value for disabling proactive pruning.)
     scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
         ::switches::kWebRtcRemoteEventLogUploadDelayMs, "0");
   }
@@ -3540,6 +3573,253 @@ TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
 INSTANTIATE_TEST_CASE_P(,
                         WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
                         ::testing::Bool());
+
+// This test is redundant; it is provided for completeness; see following tests.
+TEST_F(WebRtcEventLogManagerTestPolicy, StartsEnabledAllowsRemoteLogging) {
+  const bool allow_remote_logging = true;
+  auto browser_context = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(browser_context.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
+}
+
+// This test is redundant; it is provided for completeness; see following tests.
+TEST_F(WebRtcEventLogManagerTestPolicy, StartsDisabledRejectsRemoteLogging) {
+  const bool allow_remote_logging = false;
+  auto browser_context = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(browser_context.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
+}
+
+// #1 and #2 differ in the order of AddPeerConnection and the changing of
+// the pref value.
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       StartsEnabledThenDisabledRejectsRemoteLogging1) {
+  bool allow_remote_logging = true;
+  auto profile = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+
+  allow_remote_logging = !allow_remote_logging;
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  allow_remote_logging);
+
+  EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
+}
+
+// #1 and #2 differ in the order of AddPeerConnection and the changing of
+// the pref value.
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       StartsEnabledThenDisabledRejectsRemoteLogging2) {
+  bool allow_remote_logging = true;
+  auto profile = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  allow_remote_logging = !allow_remote_logging;
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  allow_remote_logging);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+
+  EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
+}
+
+// #1 and #2 differ in the order of AddPeerConnection and the changing of
+// the pref value.
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       StartsDisabledThenEnabledAllowsRemoteLogging1) {
+  bool allow_remote_logging = false;
+  auto profile = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+
+  allow_remote_logging = !allow_remote_logging;
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  allow_remote_logging);
+
+  EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
+}
+
+// #1 and #2 differ in the order of AddPeerConnection and the changing of
+// the pref value.
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       StartsDisabledThenEnabledAllowsRemoteLogging2) {
+  bool allow_remote_logging = false;
+  auto profile = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  allow_remote_logging = !allow_remote_logging;
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  allow_remote_logging);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+
+  EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
+}
+
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       StartsDisabledThenEnabledUploadsPendingLogFiles) {
+  bool allow_remote_logging = false;
+  auto profile = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  allow_remote_logging = !allow_remote_logging;
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  allow_remote_logging);
+
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  ASSERT_TRUE(allow_remote_logging)
+      << "Must turn on before StartRemoteLogging, to test the right thing.";
+  ASSERT_EQ(StartRemoteLogging(key), allow_remote_logging);
+  ASSERT_TRUE(log_file);
+
+  base::RunLoop run_loop;
+  std::list<WebRtcLogFileInfo> expected_files = {WebRtcLogFileInfo(
+      browser_context_id_, *log_file, GetLastModificationTime(*log_file))};
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &expected_files, true, &run_loop));
+
+  ASSERT_TRUE(PeerConnectionRemoved(key));
+
+  WaitForPendingTasks(&run_loop);
+}
+
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       StartsEnabledThenDisabledDoesNotUploadPendingLogFiles) {
+  SuppressUploading();
+
+  std::list<WebRtcLogFileInfo> empty_list;
+  base::RunLoop run_loop;
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &empty_list, true, &run_loop));
+
+  bool allow_remote_logging = true;
+  auto profile = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  ASSERT_TRUE(allow_remote_logging)
+      << "Must turn off after StartRemoteLogging, to test the right thing.";
+  ASSERT_EQ(StartRemoteLogging(key), allow_remote_logging);
+  ASSERT_TRUE(PeerConnectionRemoved(key));
+
+  allow_remote_logging = !allow_remote_logging;
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  allow_remote_logging);
+
+  UnsuppressUploading();
+
+  WaitForPendingTasks(&run_loop);
+}
+
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       StartsEnabledThenDisabledDeletesPendingLogFiles) {
+  SuppressUploading();
+
+  std::list<WebRtcLogFileInfo> empty_list;
+  base::RunLoop run_loop;
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &empty_list, true, &run_loop));
+
+  bool allow_remote_logging = true;
+  auto profile = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  ASSERT_TRUE(allow_remote_logging)
+      << "Must turn off after StartRemoteLogging, to test the right thing.";
+  ASSERT_EQ(StartRemoteLogging(key), allow_remote_logging);
+  ASSERT_TRUE(log_file);
+
+  // Make the file PENDING.
+  ASSERT_TRUE(PeerConnectionRemoved(key));
+  ASSERT_TRUE(base::PathExists(*log_file));  // Test sanity; exists before.
+
+  allow_remote_logging = !allow_remote_logging;
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  allow_remote_logging);
+
+  WaitForPendingTasks(&run_loop);
+
+  // Test focus - file deleted without being uploaded.
+  EXPECT_FALSE(base::PathExists(*log_file));
+
+  // Still not uploaded.
+  UnsuppressUploading();
+  WaitForPendingTasks();
+}
+
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       StartsEnabledThenDisabledCancelsAndDeletesCurrentlyUploadedLogFile) {
+  // This factory expects exactly one log to be created, then cancelled.
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<NullWebRtcEventLogUploader::Factory>(true, 1));
+
+  bool allow_remote_logging = true;
+  auto profile = CreateBrowserContext("name", allow_remote_logging);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  ASSERT_TRUE(allow_remote_logging)
+      << "Must turn off after StartRemoteLogging, to test the right thing.";
+  ASSERT_EQ(StartRemoteLogging(key), allow_remote_logging);
+  ASSERT_TRUE(log_file);
+
+  // Log file's upload commences.
+  ASSERT_TRUE(PeerConnectionRemoved(key));
+
+  ASSERT_TRUE(base::PathExists(*log_file));  // Test sanity; exists before.
+
+  allow_remote_logging = !allow_remote_logging;
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  allow_remote_logging);
+
+  WaitForPendingTasks();
+
+  // Test focus - file deleted without being uploaded.
+  // When the test terminates, the NullWebRtcEventLogUploader::Factory's
+  // expectation that one log file was uploaded, and that the upload was
+  // cancelled, is enforced.
+  // Deletion of the file not performed by NullWebRtcEventLogUploader; instead,
+  // WebRtcEventLogUploaderImplTest.CancelOnOngoingUploadDeletesFile tests that.
+}
 
 TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
        UploadingNotSuppressedByActivePeerConnections) {

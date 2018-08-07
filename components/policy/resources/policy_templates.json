@@ -12623,11 +12623,10 @@
       'name': 'WebRtcEventLogCollectionAllowed',
       'type': 'main',
       'schema': { 'type': 'boolean' },
+      # TODO(crbug.com/775415): Support for ChromeOS as well.
       'supported_on': ['chrome.*:70-'],
       'features': {
-        # TODO(crbug.com/775415): Support dynamic refresh, then add support
-        # for ChromeOS as well.
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': True,
       },
       'example_value': True,
