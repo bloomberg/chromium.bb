@@ -98,6 +98,10 @@ interface VoiceInteractionController {
   // Return the voice interaction setup complete status.
   IsSetupCompleted() => (bool completed);
 
+  // Return if the user has granted permission to access screen "context", the
+  // text and graphics content that is currently on screen.
+  IsContextEnabled() => (bool enabled);
+
   // Return the voice interaction hotword listening status.
   IsHotwordEnabled() => (bool enabled);
 

@@ -60,9 +60,20 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   connector->BindInterface(ash::mojom::kServiceName,
                            &voice_interaction_controller_);
 
+  // TODO(b/112281490): Combine this observer with the one in service.cc.
   ash::mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_observer_binding_.Bind(mojo::MakeRequest(&ptr));
   voice_interaction_controller_->AddObserver(std::move(ptr));
+
+  // Initialize |assistant_enabled_| to the value in settings.
+  voice_interaction_controller_->IsSettingEnabled(base::BindOnce(
+      &AssistantManagerServiceImpl::OnVoiceInteractionSettingsEnabled,
+      weak_factory_.GetWeakPtr()));
+
+  // Initialize |context_enabled_| to the value in settings.
+  voice_interaction_controller_->IsContextEnabled(base::BindOnce(
+      &AssistantManagerServiceImpl::OnVoiceInteractionContextEnabled,
+      weak_factory_.GetWeakPtr()));
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}

@@ -28,6 +28,7 @@ class FakeVoiceInteractionController
   void NotifyNotificationEnabled(bool enabled) override;
   void IsSettingEnabled(IsSettingEnabledCallback callback) override;
   void IsSetupCompleted(IsSetupCompletedCallback callback) override;
+  void IsContextEnabled(IsContextEnabledCallback callback) override;
   void IsHotwordEnabled(IsHotwordEnabledCallback callback) override;
   void AddObserver(ash::mojom::VoiceInteractionObserverPtr observer) override {}
 
