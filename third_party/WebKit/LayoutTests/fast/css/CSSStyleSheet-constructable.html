@@ -28,6 +28,56 @@ test(() => {
   assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
 }, 'Empty CSSStyleSheet can be constructed using script');
 
+test(() => {
+  const sheet = document.createEmptyCSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
+  assert_equals(sheet.title, "Red");
+  assert_equals(sheet.ownerNode, null);
+  assert_equals(sheet.ownerRule, null);
+  assert_equals(sheet.media.length, 2);
+  assert_equals(sheet.media.item(0), "screen");
+  assert_equals(sheet.media.item(1), "print");
+  assert_true(sheet.disabled);
+  assert_equals(sheet.cssRules.length, 0);
+
+  sheet.insertRule(redStyleTexts[0]);
+  assert_equals(sheet.cssRules.length, 1);
+  assert_equals(sheet.cssRules[0].cssText, redStyleTexts[0]);
+
+  sheet.insertRule(redStyleTexts[1]);
+  assert_equals(sheet.cssRules.length, 2);
+  assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
+
+  const sheet2 = document.createEmptyCSSStyleSheet({});
+  assert_equals(sheet2.title, "")
+  assert_equals(sheet2.ownerNode, null);
+  assert_equals(sheet2.ownerRule, null);
+  assert_equals(sheet2.media.length, 0);
+  assert_false(sheet2.disabled);
+  assert_equals(sheet2.cssRules.length, 0);
+
+  sheet2.insertRule(redStyleTexts[1]);
+  assert_equals(sheet2.cssRules.length, 1);
+  assert_equals(sheet2.cssRules[0].cssText, redStyleTexts[1]);
+
+  sheet2.deleteRule(0);
+  assert_equals(sheet2.cssRules.length, 0);
+
+const sheet3 = document.createEmptyCSSStyleSheet();
+  assert_equals(sheet3.title, "")
+  assert_equals(sheet3.ownerNode, null);
+  assert_equals(sheet3.ownerRule, null);
+  assert_equals(sheet3.media.length, 0);
+  assert_false(sheet3.disabled);
+  assert_equals(sheet3.cssRules.length, 0);
+
+  sheet3.insertRule(redStyleTexts[1]);
+  assert_equals(sheet3.cssRules.length, 1);
+  assert_equals(sheet3.cssRules[0].cssText, redStyleTexts[1]);
+
+  sheet3.deleteRule(0);
+  assert_equals(sheet3.cssRules.length, 0);
+}, 'Document.createEmptyCSSStyleSheet produces empty CSSStyleSheet');
+
 promise_test(() => {
   const promise_sheet = document.createCSSStyleSheet(redStyleTexts[0], {title: "Red", disabled: true, media: "screen, print"});
   return promise_sheet.then(function(sheet) {

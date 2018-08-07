@@ -1144,6 +1144,20 @@ ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
                              ScriptValue::From(script_state, sheet));
 }
 
+CSSStyleSheet* Document::createEmptyCSSStyleSheet(
+    ScriptState* script_state,
+    const CSSStyleSheetInit& options,
+    ExceptionState& exception_state) {
+  return CSSStyleSheet::Create(*this, options, exception_state);
+}
+
+CSSStyleSheet* Document::createEmptyCSSStyleSheet(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  return Document::createEmptyCSSStyleSheet(script_state, CSSStyleSheetInit(),
+                                            exception_state);
+}
+
 ScriptValue Document::registerElement(ScriptState* script_state,
                                       const AtomicString& name,
                                       const ElementRegistrationOptions& options,

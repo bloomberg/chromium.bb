@@ -362,6 +362,12 @@ class CORE_EXPORT Document : public ContainerNode,
   Element* CreateRawElement(const QualifiedName&,
                             const CreateElementFlags = CreateElementFlags());
 
+  CSSStyleSheet* createEmptyCSSStyleSheet(ScriptState*,
+                                          const CSSStyleSheetInit&,
+                                          ExceptionState&);
+
+  CSSStyleSheet* createEmptyCSSStyleSheet(ScriptState*, ExceptionState&);
+
   ScriptPromise createCSSStyleSheet(ScriptState*,
                                     const String&,
                                     ExceptionState&);
