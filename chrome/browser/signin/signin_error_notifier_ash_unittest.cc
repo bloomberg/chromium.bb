@@ -14,16 +14,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,10 +49,6 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
     SigninErrorNotifierFactory::GetForProfile(GetProfile());
     display_service_ =
         std::make_unique<NotificationDisplayServiceTester>(profile());
-  }
-
-  TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase}};
   }
 
  protected:
