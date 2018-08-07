@@ -145,55 +145,6 @@ bool ShouldUseClientLoFiForRequest(
   return true;
 }
 
-class EmptyFrameScheduler final : public FrameScheduler {
- public:
-  EmptyFrameScheduler() { DCHECK(IsMainThread()); }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      TaskType type) override {
-    return Platform::Current()->MainThread()->GetTaskRunner();
-  }
-
-  std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingTaskRunnerHandle() override {
-    return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
-        GetTaskRunner(TaskType::kNetworkingWithURLLoaderAnnotation));
-  }
-
-  void SetFrameVisible(bool) override {}
-  bool IsFrameVisible() const override { return false; }
-  bool IsPageVisible() const override { return false; }
-  void SetPaused(bool) override {}
-  void SetCrossOrigin(bool) override {}
-  bool IsCrossOrigin() const override { return false; }
-  void SetIsAdFrame() override {}
-  bool IsAdFrame() const override { return false; }
-  void TraceUrlChange(const String& override) override {}
-  FrameScheduler::FrameType GetFrameType() const override {
-    return FrameScheduler::FrameType::kSubframe;
-  }
-  PageScheduler* GetPageScheduler() const override { return nullptr; }
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const String&,
-      WebScopedVirtualTimePauser::VirtualTaskDuration) override {
-    return WebScopedVirtualTimePauser();
-  }
-  void DidStartProvisionalLoad(bool is_main_frame) override {}
-  void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
-                                bool is_reload,
-                                bool is_main_frame) override {}
-  void OnFirstMeaningfulPaint() override {}
-  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
-    return nullptr;
-  }
-  bool IsExemptFromBudgetBasedThrottling() const override { return false; }
-  std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
-  GetPauseSubresourceLoadingHandle() override {
-    return nullptr;
-  }
-  ukm::SourceId GetUkmSourceId() override { return ukm::kInvalidSourceId; }
-};
-
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -917,14 +868,11 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
                               FrameOwner* owner,
                               InterfaceRegistry* interface_registry)
     : Frame(client, page, owner, LocalWindowProxyManager::Create(*this)),
-      frame_scheduler_(page.GetPageScheduler()
-                           ? page.GetPageScheduler()->CreateFrameScheduler(
-                                 this,
-                                 client->GetFrameBlameContext(),
-                                 IsMainFrame()
-                                     ? FrameScheduler::FrameType::kMainFrame
-                                     : FrameScheduler::FrameType::kSubframe)
-                           : std::make_unique<EmptyFrameScheduler>()),
+      frame_scheduler_(page.GetPageScheduler()->CreateFrameScheduler(
+          this,
+          client->GetFrameBlameContext(),
+          IsMainFrame() ? FrameScheduler::FrameType::kMainFrame
+                        : FrameScheduler::FrameType::kSubframe)),
       loader_(this),
       navigation_scheduler_(NavigationScheduler::Create(this)),
       script_controller_(ScriptController::Create(

@@ -9,33 +9,27 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
 
-namespace {
-
-class TestingPlatformSupportWithMockSchedulerAndThreadedAnimations
-    : public TestingPlatformSupportWithMockScheduler {
- public:
-  bool IsThreadedAnimationEnabled() override { return true; }
-};
-
-}  // namespace
-
 class CSSAnimationsTest : public RenderingTest {
  public:
+  CSSAnimationsTest() {
+    EnablePlatform();
+    platform()->SetThreadedAnimationEnabled(true);
+  }
+
   void SetUp() override {
-    platform_->SetAutoAdvanceNowToPendingTasks(false);
+    platform()->SetAutoAdvanceNowToPendingTasks(false);
     // Advance timer manually as RenderingTest expects the time to be non-zero.
-    platform_->AdvanceClockSeconds(1.);
+    platform()->AdvanceClockSeconds(1.);
     RenderingTest::SetUp();
     EnableCompositing();
   }
 
   void TearDown() override {
-    platform_->SetAutoAdvanceNowToPendingTasks(true);
-    platform_->RunUntilIdle();
+    platform()->SetAutoAdvanceNowToPendingTasks(true);
+    platform()->RunUntilIdle();
   }
 
   void StartAnimationOnCompositor(Animation* animation) {
@@ -46,8 +40,8 @@ class CSSAnimationsTest : public RenderingTest {
   }
 
   void AdvanceClockSeconds(double seconds) {
-    platform_->AdvanceClockSeconds(seconds);
-    platform_->RunUntilIdle();
+    platform()->AdvanceClockSeconds(seconds);
+    platform()->RunUntilIdle();
   }
 
   double GetContrastFilterAmount(Element* element) {
@@ -58,11 +52,6 @@ class CSSAnimationsTest : public RenderingTest {
     return static_cast<const BasicComponentTransferFilterOperation*>(filter)
         ->Amount();
   }
-
- private:
-  ScopedTestingPlatformSupport<
-      TestingPlatformSupportWithMockSchedulerAndThreadedAnimations>
-      platform_;
 };
 
 // Verify that a composited animation is retargeted according to its composited

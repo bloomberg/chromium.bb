@@ -68,8 +68,10 @@ class TestingPlatformSupport : public Platform {
       override;
   WebData GetDataResource(const char* name) override;
   InterfaceProvider* GetInterfaceProvider() override;
+  bool IsThreadedAnimationEnabled() override;
 
   virtual void RunUntilIdle();
+  void SetThreadedAnimationEnabled(bool enabled);
 
   // Overrides the handling of GetInterface on the platform's associated
   // interface provider.
@@ -90,6 +92,9 @@ class TestingPlatformSupport : public Platform {
 
   Platform* const old_platform_;
   std::unique_ptr<TestingInterfaceProvider> interface_provider_;
+
+ private:
+  bool is_threaded_animation_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestingPlatformSupport);
 };

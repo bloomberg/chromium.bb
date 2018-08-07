@@ -150,6 +150,14 @@ void TestingPlatformSupport::RunUntilIdle() {
   base::RunLoop().RunUntilIdle();
 }
 
+bool TestingPlatformSupport::IsThreadedAnimationEnabled() {
+  return is_threaded_animation_enabled_;
+}
+
+void TestingPlatformSupport::SetThreadedAnimationEnabled(bool enabled) {
+  is_threaded_animation_enabled_ = enabled;
+}
+
 class ScopedUnittestsEnvironmentSetup::DummyPlatform final
     : public blink::Platform {
  public:

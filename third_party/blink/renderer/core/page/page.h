@@ -102,9 +102,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     DISALLOW_COPY_AND_ASSIGN(PageClients);
   };
 
-  static Page* Create(PageClients& page_clients) {
-    return new Page(page_clients);
-  }
+  static Page* Create(PageClients& page_clients);
 
   // An "ordinary" page is a fully-featured page owned by a web view.
   static Page* CreateOrdinary(PageClients&, Page* opener);

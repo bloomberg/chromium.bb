@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -1108,25 +1107,17 @@ TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnP3Canvas) {
 class CanvasRenderingContext2DTestWithTestingPlatform
     : public CanvasRenderingContext2DTest {
  protected:
+  CanvasRenderingContext2DTestWithTestingPlatform() {
+    EnablePlatform();
+    platform()->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings.
+  }
+
   void SetUp() override {
-    platform_ = std::make_unique<ScopedTestingPlatformSupport<
-        TestingPlatformSupportWithMockScheduler>>();
-    (*platform_)
-        ->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings.
     CanvasRenderingContext2DTest::SetUp();
     GetDocument().View()->UpdateLayout();
   }
 
-  void TearDown() override {
-    platform_.reset();
-    CanvasRenderingContext2DTest::TearDown();
-  }
-
-  void RunUntilIdle() { (*platform_)->RunUntilIdle(); }
-
-  std::unique_ptr<
-      ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>>
-      platform_;
+  void RunUntilIdle() { platform()->RunUntilIdle(); }
 };
 
 // https://crbug.com/708445: When the Canvas2DLayerBridge hibernates or wakes up

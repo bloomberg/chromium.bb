@@ -1805,6 +1805,9 @@ TEST(ImageResourceTest,
 }
 
 TEST(ImageResourceTest, PeriodicFlushTest) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+
   EmptyChromeClient* chrome_client = new EmptyChromeClient();
   Page::PageClients clients;
   FillWithEmptyClients(clients);
@@ -1812,8 +1815,6 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create(
       IntSize(800, 600), &clients, EmptyLocalFrameClient::Create(), nullptr);
 
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
