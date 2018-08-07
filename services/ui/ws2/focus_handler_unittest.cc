@@ -40,6 +40,32 @@ TEST(FocusHandlerTest, FocusTopLevel) {
   EXPECT_TRUE(top_level->HasFocus());
 }
 
+// This test simulates the typical sequence of a client closing a window:
+// SetFocus(nullptr) and then Hide().
+TEST(FocusHandlerTest, ActiveWindowChangesAfterSetFocusToNullAndHide) {
+  // Create two top-levels and focus the second.
+  WindowServiceTestSetup setup;
+  aura::Window* top_level1 =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level1);
+  top_level1->Show();
+  aura::Window* top_level2 =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level2);
+  top_level2->Show();
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(top_level2));
+  EXPECT_TRUE(top_level2->HasFocus());
+
+  // SetFocus(nullptr) should fail (focus should not change).
+  EXPECT_FALSE(setup.window_tree_test_helper()->SetFocus(nullptr));
+  EXPECT_TRUE(top_level2->HasFocus());
+
+  // Hiding |top_level2| should focus |top_level1|.
+  top_level2->Hide();
+  EXPECT_FALSE(top_level2->HasFocus());
+  EXPECT_TRUE(top_level1->HasFocus());
+}
+
 TEST(FocusHandlerTest, FocusNull) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
@@ -48,8 +74,8 @@ TEST(FocusHandlerTest, FocusNull) {
   top_level->Show();
   EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(top_level));
   EXPECT_TRUE(top_level->HasFocus());
-  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(nullptr));
-  EXPECT_FALSE(top_level->HasFocus());
+  EXPECT_FALSE(setup.window_tree_test_helper()->SetFocus(nullptr));
+  EXPECT_TRUE(top_level->HasFocus());
 }
 
 TEST(FocusHandlerTest, FocusChild) {
