@@ -18,6 +18,7 @@
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace tracing {
@@ -45,7 +46,7 @@ void BackgroundTracingUploadCallback(
     std::unique_ptr<const base::DictionaryValue> metadata,
     content::BackgroundTracingManager::FinishedProcessingCallback callback) {
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
-      g_browser_process->system_request_context());
+      g_browser_process->shared_url_loader_factory());
 
   if (GURL(upload_url).is_valid())
     uploader->SetUploadURL(upload_url);

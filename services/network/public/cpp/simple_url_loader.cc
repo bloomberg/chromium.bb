@@ -206,6 +206,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       const OnRedirectCallback& on_redirect_callback) override;
   void SetOnResponseStartedCallback(
       OnResponseStartedCallback on_response_started_callback) override;
+  void SetOnUploadProgressCallback(
+      UploadProgressCallback on_upload_progress_callback) override;
   void SetAllowPartialResults(bool allow_partial_results) override;
   void SetAllowHttpErrorResults(bool allow_http_error_results) override;
   void AttachStringForUpload(const std::string& upload_data,
@@ -310,6 +312,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
 
   std::vector<OnRedirectCallback> on_redirect_callback_;
   OnResponseStartedCallback on_response_started_callback_;
+  UploadProgressCallback on_upload_progress_callback_;
   bool allow_partial_results_ = false;
   bool allow_http_error_results_ = false;
 
@@ -1161,6 +1164,12 @@ void SimpleURLLoaderImpl::SetOnResponseStartedCallback(
   DCHECK(on_response_started_callback_);
 }
 
+void SimpleURLLoaderImpl::SetOnUploadProgressCallback(
+    UploadProgressCallback on_upload_progress_callback) {
+  on_upload_progress_callback_ = std::move(on_upload_progress_callback);
+  DCHECK(on_upload_progress_callback_);
+}
+
 void SimpleURLLoaderImpl::SetAllowPartialResults(bool allow_partial_results) {
   // Check if a request has not yet been started.
   DCHECK(!body_handler_);
@@ -1453,7 +1462,11 @@ void SimpleURLLoaderImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {}
 void SimpleURLLoaderImpl::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
-    OnUploadProgressCallback ack_callback) {}
+    OnUploadProgressCallback ack_callback) {
+  if (on_upload_progress_callback_)
+    on_upload_progress_callback_.Run(current_position, total_size);
+  std::move(ack_callback).Run();
+}
 
 void SimpleURLLoaderImpl::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {

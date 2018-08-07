@@ -242,8 +242,8 @@ void TracingUI::DoUploadInternal(const std::string& file_contents,
 
   trace_uploader_ = delegate_->GetTraceUploader(
       BrowserContext::GetDefaultStoragePartition(
-          web_ui()->GetWebContents()->GetBrowserContext())->
-              GetURLRequestContext());
+          web_ui()->GetWebContents()->GetBrowserContext())
+          ->GetURLLoaderFactoryForBrowserProcess());
   DCHECK(trace_uploader_);
   trace_uploader_->DoUpload(file_contents, upload_mode, nullptr,
                             std::move(progress_callback),

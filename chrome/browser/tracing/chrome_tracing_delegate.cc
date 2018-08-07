@@ -82,9 +82,9 @@ void ChromeTracingDelegate::OnBrowserAdded(Browser* browser) {
 #endif  // defined(OS_ANDROID)
 
 std::unique_ptr<content::TraceUploader> ChromeTracingDelegate::GetTraceUploader(
-    net::URLRequestContextGetter* request_context) {
+    scoped_refptr<network::SharedURLLoaderFactory> factory) {
   return std::unique_ptr<content::TraceUploader>(
-      new TraceCrashServiceUploader(request_context));
+      new TraceCrashServiceUploader(std::move(factory)));
 }
 
 namespace {
