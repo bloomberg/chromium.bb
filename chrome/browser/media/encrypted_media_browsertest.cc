@@ -451,15 +451,6 @@ class EncryptedMediaTest
   }
 
   void TestPolicyCheck() {
-// TODO(crbug.com/847591): ChromeOS Widevine CDM does not support policy check
-// API yet. Remove this condition when the CDM is updated.
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_CHROMEOS)
-    if (IsWidevine(CurrentKeySystem())) {
-      DVLOG(0) << "Skipping test due to HDCP policy check related bugs.";
-      return;
-    }
-#endif
-
     base::StringPairs query_params;
     // We do not care about playback so choose an arbitrary media file.
     query_params.emplace_back("mediaFile", "bear-a_enc-a.webm");
