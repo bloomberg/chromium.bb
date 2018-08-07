@@ -26,6 +26,11 @@ class ProfileSyncService;
     : NSObject<GoogleServicesSettingsCommandHandler,
                GoogleServicesSettingsViewControllerModelDelegate>
 
+// View controller.
+@property(nonatomic, weak) id<GoogleServicesSettingsConsumer> consumer;
+// Authentication service.
+@property(nonatomic, assign) AuthenticationService* authService;
+
 // Designated initializer. |prefService|, |syncService| and |syncSetupService|
 // should not be null.
 - (instancetype)initWithPrefService:(PrefService*)prefService
@@ -35,11 +40,6 @@ class ProfileSyncService;
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-// View controller.
-@property(nonatomic, weak) id<GoogleServicesSettingsConsumer> consumer;
-// Authentication service.
-@property(nonatomic, assign) AuthenticationService* authService;
 
 @end
 

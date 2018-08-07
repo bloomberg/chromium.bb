@@ -101,18 +101,12 @@ constexpr NSInteger kSectionOffset = 1000;
   GoogleServicesSettingsCommandID commandID =
       static_cast<GoogleServicesSettingsCommandID>(syncSwitchItem.commandID);
   switch (commandID) {
-    case GoogleServicesSettingsCommandIDNoOp:
-    case GoogleServicesSettingsCommandIDOpenGoogleActivityPage:
-    case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
-    case GoogleServicesSettingsCommandIDOpenManageSyncedDataPage:
-      NOTREACHED();
-      break;
     case GoogleServicesSettingsCommandIDToggleSyncEverything:
       [self.commandHandler toggleSyncEverythingWithValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDToggleDataTypeSync:
       [self.commandHandler toggleSyncDataSync:syncSwitchItem.dataType
-                                    WithValue:isOn];
+                                    withValue:isOn];
       break;
     case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
       [self.commandHandler toggleAutocompleteSearchesServiceWithValue:isOn];
@@ -125,6 +119,12 @@ constexpr NSInteger kSectionOffset = 1000;
       break;
     case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
       [self.commandHandler toggleBetterSearchAndBrowsingServiceWithValue:isOn];
+      break;
+    case GoogleServicesSettingsCommandIDNoOp:
+    case GoogleServicesSettingsCommandIDOpenGoogleActivityPage:
+    case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
+    case GoogleServicesSettingsCommandIDOpenManageSyncedDataPage:
+      NOTREACHED();
       break;
   }
 }

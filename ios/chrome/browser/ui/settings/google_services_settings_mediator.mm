@@ -499,28 +499,12 @@ textItemWithItemType:(NSInteger)itemType
   self.prefService->SetBoolean(kUnifiedConsentGiven, value);
 }
 
-- (void)toggleSyncDataSync:(NSInteger)dataTypeInt WithValue:(BOOL)on {
+- (void)toggleSyncDataSync:(NSInteger)dataTypeInt withValue:(BOOL)value {
   base::AutoReset<BOOL> autoReset(&_personalizedSectionBeingAnimated, YES);
   SyncSetupService::SyncableDatatype dataType =
       static_cast<SyncSetupService::SyncableDatatype>(dataTypeInt);
   syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
-  self.syncSetupService->SetDataTypeEnabled(modelType, on);
-}
-
-- (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)togglePreloadPagesServiceWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)toggleImproveChromeServiceWithValue:(BOOL)on {
-  // Needs to be implemented.
-}
-
-- (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)on {
-  // Needs to be implemented.
+  self.syncSetupService->SetDataTypeEnabled(modelType, value);
 }
 
 - (void)openGoogleActivityPage {
@@ -532,6 +516,22 @@ textItemWithItemType:(NSInteger)itemType
 }
 
 - (void)openManageSyncedDataPage {
+  // Needs to be implemented.
+}
+
+- (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)value {
+  // Needs to be implemented.
+}
+
+- (void)togglePreloadPagesServiceWithValue:(BOOL)value {
+  // Needs to be implemented.
+}
+
+- (void)toggleImproveChromeServiceWithValue:(BOOL)value {
+  // Needs to be implemented.
+}
+
+- (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)value {
   // Needs to be implemented.
 }
 
