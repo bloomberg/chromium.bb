@@ -43,6 +43,7 @@ OfflineItem::OfflineItem()
       is_transient(false),
       is_suggested(false),
       is_accelerated(false),
+      refresh_visuals(false),
       total_size_bytes(0),
       externally_removed(false),
       is_openable(false),
@@ -71,6 +72,7 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
          is_transient == offline_item.is_transient &&
          is_suggested == offline_item.is_suggested &&
          is_accelerated == offline_item.is_accelerated &&
+         refresh_visuals == offline_item.refresh_visuals &&
          total_size_bytes == offline_item.total_size_bytes &&
          externally_removed == offline_item.externally_removed &&
          creation_time == offline_item.creation_time &&

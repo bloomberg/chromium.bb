@@ -124,6 +124,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
     public void destroyServiceDelegate() {}
 
     private void getVisualsAndUpdateItem(OfflineItem item) {
+        if (item.refreshVisuals) mVisualsCache.remove(item.id);
         if (needsVisualsForUi(item)) {
             if (!mVisualsCache.containsKey(item.id)) {
                 // We don't have any visuals for this item yet.  Stash the current OfflineItem and,
@@ -214,8 +215,9 @@ public class OfflineContentAggregatorNotificationBridgeUi
             case OfflineItemState.PENDING:
             case OfflineItemState.INTERRUPTED:
             case OfflineItemState.PAUSED:
+            case OfflineItemState.COMPLETE:
                 return true;
-            // OfflineItemState.FAILED, OfflineItemState.COMPLETE,
+            // OfflineItemState.FAILED,
             // OfflineItemState.CANCELLED
             default:
                 return false;

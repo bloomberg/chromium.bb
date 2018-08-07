@@ -103,8 +103,6 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   } else {
     offline_item.state = OfflineItemState::IN_PROGRESS;
   }
-
-  // TODO(crbug.com/865063): Update the icon.
 }
 
 bool BackgroundFetchDelegateImpl::JobDetails::ShouldReportProgressBySize() {
@@ -229,8 +227,10 @@ void BackgroundFetchDelegateImpl::UpdateUI(
   if (title && job_details.fetch_description->title != *title)
     job_details.fetch_description->title = *title;
 
-  if (icon)
+  if (icon) {
     job_details.fetch_description->icon = *icon;
+    job_details.offline_item.refresh_visuals = true;
+  }
 
   UpdateOfflineItemAndUpdateObservers(&job_details);
 }
@@ -525,6 +525,7 @@ void BackgroundFetchDelegateImpl::GetVisualsForItem(
   if (it != job_details_map_.end()) {
     visuals->icon =
         gfx::Image::CreateFrom1xBitmap(it->second.fetch_description->icon);
+    it->second.offline_item.refresh_visuals = false;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
