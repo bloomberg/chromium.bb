@@ -594,12 +594,12 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 
   switch (out_params->key_exchange) {
     case kC255:
-      out_params->client_key_exchange.reset(Curve25519KeyExchange::New(
-          Curve25519KeyExchange::NewPrivateKey(rand)));
+      out_params->client_key_exchange = Curve25519KeyExchange::New(
+          Curve25519KeyExchange::NewPrivateKey(rand));
       break;
     case kP256:
-      out_params->client_key_exchange.reset(
-          P256KeyExchange::New(P256KeyExchange::NewPrivateKey()));
+      out_params->client_key_exchange =
+          P256KeyExchange::New(P256KeyExchange::NewPrivateKey());
       break;
     default:
       DCHECK(false);

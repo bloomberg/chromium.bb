@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "net/third_party/quic/platform/api/quic_logging.h"
+#include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ecdh.h"
@@ -16,6 +17,23 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace quic {
+namespace {
+
+class P256KeyExchangeFactory : public KeyExchange::Factory {
+ public:
+  P256KeyExchangeFactory() = default;
+  ~P256KeyExchangeFactory() override = default;
+
+  std::unique_ptr<KeyExchange> Create(QuicRandom* /* rand */) const override {
+    // TODO(agl): avoid the serialisation/deserialisation in this function.
+    const QuicString private_value = P256KeyExchange::NewPrivateKey();
+    return P256KeyExchange::New(private_value);
+  }
+
+  QuicTag tag() const override { return kP256; }
+};
+
+}  // namespace
 
 P256KeyExchange::P256KeyExchange(bssl::UniquePtr<EC_KEY> private_key,
                                  const uint8_t* public_key)
@@ -26,7 +44,7 @@ P256KeyExchange::P256KeyExchange(bssl::UniquePtr<EC_KEY> private_key,
 P256KeyExchange::~P256KeyExchange() {}
 
 // static
-P256KeyExchange* P256KeyExchange::New(QuicStringPiece key) {
+std::unique_ptr<P256KeyExchange> P256KeyExchange::New(QuicStringPiece key) {
   if (key.empty()) {
     QUIC_DLOG(INFO) << "Private key is empty";
     return nullptr;
@@ -49,7 +67,8 @@ P256KeyExchange* P256KeyExchange::New(QuicStringPiece key) {
     return nullptr;
   }
 
-  return new P256KeyExchange(std::move(private_key), public_key);
+  return QuicWrapUnique(
+      new P256KeyExchange(std::move(private_key), public_key));
 }
 
 // static
@@ -74,10 +93,9 @@ QuicString P256KeyExchange::NewPrivateKey() {
   return QuicString(reinterpret_cast<char*>(private_key.get()), key_len);
 }
 
-KeyExchange* P256KeyExchange::NewKeyPair(QuicRandom* /*rand*/) const {
-  // TODO(agl): avoid the serialisation/deserialisation in this function.
-  const QuicString private_value = NewPrivateKey();
-  return P256KeyExchange::New(private_value);
+const KeyExchange::Factory& P256KeyExchange::GetFactory() const {
+  static const Factory* factory = new P256KeyExchangeFactory;
+  return *factory;
 }
 
 bool P256KeyExchange::CalculateSharedKey(QuicStringPiece peer_public_value,
@@ -113,10 +131,6 @@ bool P256KeyExchange::CalculateSharedKey(QuicStringPiece peer_public_value,
 QuicStringPiece P256KeyExchange::public_value() const {
   return QuicStringPiece(reinterpret_cast<const char*>(public_key_),
                          sizeof(public_key_));
-}
-
-QuicTag P256KeyExchange::tag() const {
-  return kP256;
 }
 
 }  // namespace quic

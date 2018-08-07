@@ -3061,7 +3061,7 @@ void QuicConnection::MaybeSendProbingRetransmissions() {
     return;
   }
 
-  if (!sent_packet_manager_.GetSendAlgorithm()->IsProbingForMoreBandwidth()) {
+  if (!sent_packet_manager_.GetSendAlgorithm()->ShouldSendProbingPacket()) {
     return;
   }
 

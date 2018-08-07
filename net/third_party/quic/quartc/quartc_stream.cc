@@ -50,6 +50,22 @@ void QuartcStream::OnDataBuffered(
   delegate_->OnBufferChanged(this);
 }
 
+void QuartcStream::OnCanWrite() {
+  if (cancel_on_loss_ && HasPendingRetransmission()) {
+    Reset(QUIC_STREAM_CANCELLED);
+    return;
+  }
+  QuicStream::OnCanWrite();
+}
+
+bool QuartcStream::cancel_on_loss() {
+  return cancel_on_loss_;
+}
+
+void QuartcStream::set_cancel_on_loss(bool cancel_on_loss) {
+  cancel_on_loss_ = cancel_on_loss;
+}
+
 void QuartcStream::FinishWriting() {
   WriteOrBufferData(QuicStringPiece(nullptr, 0), true, nullptr);
 }

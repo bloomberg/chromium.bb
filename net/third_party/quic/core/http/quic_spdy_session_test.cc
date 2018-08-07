@@ -1019,7 +1019,7 @@ TEST_P(QuicSpdySessionTestServer,
   while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2000) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-    headers["header"] = QuicStrCat("", random.RandUint64(), random.RandUint64(),
+    headers["header"] = QuicStrCat(random.RandUint64(), random.RandUint64(),
                                    random.RandUint64());
     session_.WriteHeaders(stream_id, headers.Clone(), true, 0, nullptr);
     stream_id += 2;

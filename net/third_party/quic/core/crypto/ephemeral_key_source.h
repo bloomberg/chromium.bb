@@ -5,6 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_CRYPTO_EPHEMERAL_KEY_SOURCE_H_
 #define NET_THIRD_PARTY_QUIC_CORE_CRYPTO_EPHEMERAL_KEY_SOURCE_H_
 
+#include "net/third_party/quic/core/crypto/key_exchange.h"
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -12,7 +13,6 @@
 
 namespace quic {
 
-class KeyExchange;
 class QuicRandom;
 
 // EphemeralKeySource manages and rotates ephemeral keys as they can be reused
@@ -24,12 +24,12 @@ class QUIC_EXPORT_PRIVATE EphemeralKeySource {
   virtual ~EphemeralKeySource() {}
 
   // CalculateForwardSecureKey generates an ephemeral public/private key pair
-  // using the algorithm |key_exchange|, sets |*public_value| to the public key
-  // and returns the shared key between |peer_public_value| and the private
-  // key. |*public_value| will be sent to the peer to be used with the peer's
-  // private key.
+  // using the algorithm represented by |key_exchange_factory|, sets
+  // |*public_value| to the public key and returns the shared key between
+  // |peer_public_value| and the private key. |*public_value| will be sent to
+  // the peer to be used with the peer's private key.
   virtual QuicString CalculateForwardSecureKey(
-      const KeyExchange* key_exchange,
+      const KeyExchange::Factory& key_exchange_factory,
       QuicRandom* rand,
       QuicTime now,
       QuicStringPiece peer_public_value,

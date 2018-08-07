@@ -7,32 +7,51 @@
 #include <cstdint>
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 
 namespace quic {
+namespace {
+
+class Curve25519KeyExchangeFactory : public KeyExchange::Factory {
+ public:
+  Curve25519KeyExchangeFactory() = default;
+  ~Curve25519KeyExchangeFactory() override = default;
+
+  std::unique_ptr<KeyExchange> Create(QuicRandom* rand) const override {
+    const QuicString private_value = Curve25519KeyExchange::NewPrivateKey(rand);
+    return Curve25519KeyExchange::New(private_value);
+  }
+
+  QuicTag tag() const override { return kC255; }
+};
+
+}  // namespace
 
 Curve25519KeyExchange::Curve25519KeyExchange() {}
 
 Curve25519KeyExchange::~Curve25519KeyExchange() {}
 
 // static
-Curve25519KeyExchange* Curve25519KeyExchange::New(QuicStringPiece private_key) {
-  Curve25519KeyExchange* ka;
+std::unique_ptr<Curve25519KeyExchange> Curve25519KeyExchange::New(
+    QuicStringPiece private_key) {
   // We don't want to #include the BoringSSL headers in the public header file,
   // so we use literals for the sizes of private_key_ and public_key_. Here we
   // assert that those values are equal to the values from the BoringSSL
   // header.
-  static_assert(sizeof(ka->private_key_) == X25519_PRIVATE_KEY_LEN,
-                "header out of sync");
-  static_assert(sizeof(ka->public_key_) == X25519_PUBLIC_VALUE_LEN,
-                "header out of sync");
+  static_assert(
+      sizeof(Curve25519KeyExchange::private_key_) == X25519_PRIVATE_KEY_LEN,
+      "header out of sync");
+  static_assert(
+      sizeof(Curve25519KeyExchange::public_key_) == X25519_PUBLIC_VALUE_LEN,
+      "header out of sync");
 
   if (private_key.size() != X25519_PRIVATE_KEY_LEN) {
     return nullptr;
   }
 
-  ka = new Curve25519KeyExchange();
+  auto ka = QuicWrapUnique(new Curve25519KeyExchange);
   memcpy(ka->private_key_, private_key.data(), X25519_PRIVATE_KEY_LEN);
   X25519_public_from_private(ka->public_key_, ka->private_key_);
   return ka;
@@ -45,9 +64,10 @@ QuicString Curve25519KeyExchange::NewPrivateKey(QuicRandom* rand) {
   return QuicString(reinterpret_cast<char*>(private_key), sizeof(private_key));
 }
 
-KeyExchange* Curve25519KeyExchange::NewKeyPair(QuicRandom* rand) const {
-  const QuicString private_value = NewPrivateKey(rand);
-  return Curve25519KeyExchange::New(private_value);
+const Curve25519KeyExchange::Factory& Curve25519KeyExchange::GetFactory()
+    const {
+  static const Factory* factory = new Curve25519KeyExchangeFactory;
+  return *factory;
 }
 
 bool Curve25519KeyExchange::CalculateSharedKey(
@@ -70,10 +90,6 @@ bool Curve25519KeyExchange::CalculateSharedKey(
 QuicStringPiece Curve25519KeyExchange::public_value() const {
   return QuicStringPiece(reinterpret_cast<const char*>(public_key_),
                          sizeof(public_key_));
-}
-
-QuicTag Curve25519KeyExchange::tag() const {
-  return kC255;
 }
 
 }  // namespace quic

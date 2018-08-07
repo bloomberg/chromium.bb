@@ -51,8 +51,7 @@ class MockQuicSession : public QuicSession {
     char* buf = new char[write_length];
     QuicDataWriter writer(write_length, buf, NETWORK_BYTE_ORDER);
     if (write_length > 0) {
-      stream->WriteStreamData(stream->stream_bytes_written(), write_length,
-                              &writer);
+      stream->WriteStreamData(offset, write_length, &writer);
     }
     write_buffer_->append(buf, write_length);
     delete[] buf;
@@ -351,6 +350,42 @@ TEST_F(QuartcStreamTest, CloseOnFins) {
 
   // Check that the OnClose() callback occurred.
   EXPECT_TRUE(mock_stream_delegate_->closed());
+}
+
+TEST_F(QuartcStreamTest, TestCancelOnLossDisabled) {
+  CreateReliableQuicStream();
+
+  // This should be the default state.
+  EXPECT_FALSE(stream_->cancel_on_loss());
+
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 7)});
+  stream_->WriteMemSlices(data.span(), /*fin=*/false);
+
+  EXPECT_EQ("Foo bar", write_buffer_);
+
+  stream_->OnStreamFrameLost(0, 7, false);
+  stream_->OnCanWrite();
+
+  EXPECT_EQ("Foo barFoo bar", write_buffer_);
+  EXPECT_EQ(stream_->stream_error(), QUIC_STREAM_NO_ERROR);
+}
+
+TEST_F(QuartcStreamTest, TestCancelOnLossEnabled) {
+  CreateReliableQuicStream();
+  stream_->set_cancel_on_loss(true);
+
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 7)});
+  stream_->WriteMemSlices(data.span(), /*fin=*/false);
+
+  EXPECT_EQ("Foo bar", write_buffer_);
+
+  stream_->OnStreamFrameLost(0, 7, false);
+  stream_->OnCanWrite();
+
+  EXPECT_EQ("Foo bar", write_buffer_);
+  EXPECT_EQ(stream_->stream_error(), QUIC_STREAM_CANCELLED);
 }
 
 }  // namespace
