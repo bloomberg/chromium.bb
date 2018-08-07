@@ -16,6 +16,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/gfx_paths.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace ash {
@@ -26,6 +27,12 @@ AshTestSuite::~AshTestSuite() = default;
 
 void AshTestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+  // Force software-gl. This is necessary for tests that trigger launching ash
+  // in its own process
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  cmd_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
+
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
   gfx::RegisterPathProvider();
