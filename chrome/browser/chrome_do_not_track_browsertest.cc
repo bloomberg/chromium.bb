@@ -18,30 +18,47 @@ namespace {
 
 class ChromeDoNotTrackTest : public InProcessBrowserTest {
  protected:
-  void TestDoNoTrack(bool enabled) {
-    ASSERT_TRUE(embedded_test_server()->Start());
-
+  void SetEnableDoNotTrack(bool enabled) {
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kEnableDoNotTrack, enabled);
+  }
 
-    GURL url = embedded_test_server()->GetURL("/echo");
-    ui_test_utils::NavigateToURL(browser(), url);
-    EXPECT_EQ(enabled, browser()
-                           ->tab_strip_model()
-                           ->GetActiveWebContents()
-                           ->GetMutableRendererPrefs()
-                           ->enable_do_not_track);
+  void ExpectPageTextEq(const std::string& expected_content) {
+    std::string text;
+    ASSERT_TRUE(ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "window.domAutomationController.send(document.body.innerText);",
+        &text));
+    EXPECT_EQ(expected_content, text);
   }
 };
 
-// Checks that the DNT preference is set on the WebContents when navigating.
-
 IN_PROC_BROWSER_TEST_F(ChromeDoNotTrackTest, NotEnabled) {
-  TestDoNoTrack(/*enabled=*/false);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetEnableDoNotTrack(false /* enabled */);
+
+  GURL url = embedded_test_server()->GetURL("/echoheader?DNT");
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(false, browser()
+                       ->tab_strip_model()
+                       ->GetActiveWebContents()
+                       ->GetMutableRendererPrefs()
+                       ->enable_do_not_track);
+  ExpectPageTextEq("None");
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeDoNotTrackTest, Enabled) {
-  TestDoNoTrack(/*enabled=*/true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetEnableDoNotTrack(true /* enabled */);
+
+  GURL url = embedded_test_server()->GetURL("/echoheader?DNT");
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(true, browser()
+                      ->tab_strip_model()
+                      ->GetActiveWebContents()
+                      ->GetMutableRendererPrefs()
+                      ->enable_do_not_track);
+  ExpectPageTextEq("1");
 }
 
 }  // namespace
