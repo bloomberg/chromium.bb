@@ -60,9 +60,10 @@ permissions into "API permissions".
 
 ## Storing Permissions
 Permissions are stored in the Preferences file, under the extension’s entry.  We
-store two different sets of permissions: granted permissions and active
-permissions.  Note that neither of these include any
-[non-persistent permissions](#non_persistent-permissions).
+always store two different sets of permissions: granted permissions and active
+permissions (with the runtime host permissions feature, we will store a third,
+runtime granted permissions - this is described below).  Note that neither of
+these include any [non-persistent permissions](#non_persistent-permissions).
 
 ### Granted Permissions
 Granted permissions are the permissions that the extension has ever been granted
@@ -207,3 +208,96 @@ There are two known issues related to syncing extensions:
   if no new permissions are added*. This is because Chrome cannot know whether
   version 2 added new permissions or not, and behaves conservatively. Syncing
   granted permissions would solve this issue. See https://crbug.com/809797.
+
+## Runtime Host Permissions
+Runtime host permissions is a new feature that allows users to have more control
+over when and where their extensions run. This allows the user to install an
+extension that requests permission to multiple hosts, but have a choice over if
+it runs.
+
+The runtime host permissions feature introduces a number of permissions-related
+concepts.
+
+### Withheld Permissions
+Withheld permissions are stored on the Extension object (as part of the
+PermissionsData class). Withheld permissions are the set of permissions that
+were listed as required permissions by the extension, but were withheld as part
+of the runtime host permissions feature. The extension does not have acccess
+to these permissions.
+
+### Runtime-Granted Permissions
+Runtime-granted permissions are stored within extension preferences, and
+represent the permissions that the user has granted the extension at runtime.
+This is deliberately kept as a separate set from granted permissions in order
+to ensure that experimentation with the feature is independent, and will not
+affect extensions when the feature is disabled.
+
+Runtime-granted permissions include permissions granted through dedicated UI
+for the runtime host permissions feature (such as context menu controls and
+controls in the chrome://extensions page) as well as optional permissions
+granted through the `permissions` API.
+
+The controls for granting runtime permissions allow granting permissions beyond
+what the extension specifically requests. This is so that the user can grant
+`https://google.com/*`, even if the extension only requested
+`https://google.com/maps`. This is useful for two reasons. First, it presents
+a simpler UI to the user (who doesn't need to worry about granting exactly the
+correct URL pattern); secondly, it means if the extension later requests
+an additional pattern within the same host, it will be automatically granted.
+
+However, though the runtime-granted permissions may extend beyond what is
+explicitly requested, the current permissions on the extension object itself
+(or granted to the extension process) should not. This provides us increased
+security, since we don't want to have extensions privileged beyond what they
+should need.
+
+### Calculating Current Permissions
+With the runtime host permissions feature, calculating current permissions is
+a little more complex. Typically, an extension's current permissions are
+calculated as
+
+```
+current_permissions =
+    intersection(active_permissions,
+                 union(required_permissions, optional_permissions))
+```
+
+Said differently, an extension's permissions are equal to any permissions in
+the active permission set that also appear in either the required or optional
+sets. This ensures that the extension never has access to permissions that it
+didn't request, which is important for security reasons (we don't want an
+over-privileged process if we can avoid it).
+
+With runtime host permissions, this calculation is a little more difficult:
+
+```
+current_permissions_without_feature =
+    intersection(active_permissions,
+                 union(required_permissions, optional_permissions))
+current_permissions =
+    intersection(current_permissions_without_feature,
+                 runtime_granted_permissions)
+```
+
+The system will withhold permissions that were not within the set of
+runtime-granted permissions. As noted above, the runtime-granted permissions
+may include more than what was explicitly requested by the extension; however,
+we will not extend these permissions to the extension object because these
+additional permissions will not be present on in the required or optional
+permissions.
+
+### Permissions Intersections
+With runtime host permissions, it's possible that the user will grant a host
+permission that overlaps with a requested host, but is neither a direct match
+nor a strict subset. For instance, an extension may request the pattern
+`*://google.com/maps`, and a user may grant `https://*.google.com/*`. In this
+case, we should neither grant `*://google.com/maps` (which includes origins the
+user did not approve, nor grant `https://*.google.com/*` (which includes more
+than the extension requires). Instead, we should grant the extension
+`https://google.com/maps` - the intersection of the granted permission and the
+requested permission.
+
+We perform this calculation with runtime host permissions. This has the
+implication that permissions granted to the extension object may not be
+explicitly present within the extension's required or optional permissions, but
+rather contained by one of those sets.
