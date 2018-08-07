@@ -66,9 +66,9 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
   // unicode code points. It needs this information frequently so we cache it
   // here.
   std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
-  // For debugging crbug.com/312965
-  base::PlatformThreadId creation_thread_;
   sk_sp<font_service::FontLoader> font_loader_;
+  // For debugging https://crbug.com/312965
+  base::SequenceCheckerImpl creation_thread_sequence_checker_;
 #endif
 };
 
@@ -86,9 +86,7 @@ bool PpapiBlinkPlatformImpl::SandboxSupport::LoadFont(CTFontRef src_font,
 
 #elif defined(OS_POSIX)
 
-PpapiBlinkPlatformImpl::SandboxSupport::SandboxSupport()
-    : creation_thread_(base::PlatformThread::CurrentId()) {
-}
+PpapiBlinkPlatformImpl::SandboxSupport::SandboxSupport() {}
 
 void PpapiBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
     WebUChar32 character,
@@ -96,7 +94,7 @@ void PpapiBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
     blink::WebFallbackFont* fallbackFont) {
   ppapi::ProxyLock::AssertAcquired();
   // For debugging crbug.com/312965
-  CHECK_EQ(creation_thread_, base::PlatformThread::CurrentId());
+  CHECK(creation_thread_sequence_checker_.CalledOnValidSequence());
   const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
       unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {

@@ -54,8 +54,12 @@ std::string TestBrowserFont::TestMeasure() {
   int32_t length1 = font.MeasureText(pp::BrowserFontTextRun("WWW"));
   ASSERT_TRUE(length1 > 0);
   int32_t length2 = font.MeasureText(pp::BrowserFontTextRun("WWWWWWWW"));
-
   ASSERT_TRUE(length2 >= length1 * 2);
+
+  // Fallback font test.
+  int32_t length3 = font.MeasureText(pp::BrowserFontTextRun("こんにちは"));
+  ASSERT_TRUE(length3 > 0);
+
   PASS();
 }
 
