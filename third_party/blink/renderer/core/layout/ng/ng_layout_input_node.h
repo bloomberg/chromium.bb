@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
@@ -25,10 +26,14 @@ struct NGPhysicalSize;
 
 // Input to the min/max inline size calculation algorithm for child nodes. Child
 // nodes within the same formatting context need to know which floats are beside
-// them.
+// them. Additionally, orthogonal writing mode roots will need the extrinsic
+// block-size of the container.
 struct MinMaxSizeInput {
   LayoutUnit float_left_inline_size;
   LayoutUnit float_right_inline_size;
+
+  // Extrinsic block-size of the containing block.
+  LayoutUnit extrinsic_block_size = NGSizeIndefinite;
 };
 
 // Represents the input to a layout algorithm for a given node. The layout
