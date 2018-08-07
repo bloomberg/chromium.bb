@@ -5,6 +5,7 @@
 #include "ash/message_center/message_center_controller.h"
 
 #include "ash/message_center/arc_notification_manager_delegate_impl.h"
+#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
@@ -95,7 +96,8 @@ class AshClientNotificationDelegate
 }  // namespace
 
 MessageCenterController::MessageCenterController() {
-  message_center::MessageCenter::Initialize();
+  message_center::MessageCenter::Initialize(
+      std::make_unique<AshMessageCenterLockScreenController>());
 
   fullscreen_notification_blocker_ =
       std::make_unique<FullscreenNotificationBlocker>(MessageCenter::Get());

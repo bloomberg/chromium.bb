@@ -22,6 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/message_center/lock_screen/fake_lock_screen_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
@@ -114,8 +115,14 @@ class TestDelegate : public NotificationDelegate {
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
     if (button_index) {
-      log_ += "ButtonClick_";
-      log_ += base::IntToString(*button_index) + "_";
+      if (!reply) {
+        log_ += "ButtonClick_";
+        log_ += base::IntToString(*button_index) + "_";
+      } else {
+        log_ += "ReplyButtonClick_";
+        log_ += base::IntToString(*button_index) + "_";
+        log_ += base::UTF16ToUTF8(*reply) + "_";
+      }
     } else {
       log_ += "Click_";
     }
@@ -139,7 +146,7 @@ class MessageCenterImplTest : public testing::Test {
   MessageCenterImplTest() {}
 
   void SetUp() override {
-    MessageCenter::Initialize();
+    MessageCenter::Initialize(std::make_unique<FakeLockScreenController>());
     message_center_ = MessageCenter::Get();
     loop_.reset(new base::MessageLoop);
     run_loop_.reset(new base::RunLoop());
@@ -194,6 +201,16 @@ class MessageCenterImplTest : public testing::Test {
         gfx::Image() /* icon */, base::string16() /* display_source */, GURL(),
         NotifierId(NotifierId::APPLICATION, notifier_id), optional_fields,
         base::MakeRefCounted<TestDelegate>());
+  }
+
+  TestDelegate* GetDelegate(const std::string& id) const {
+    Notification* n = message_center()->FindVisibleNotificationById(id);
+    return n ? static_cast<TestDelegate*>(n->delegate()) : nullptr;
+  }
+
+  FakeLockScreenController* lock_screen_controller() const {
+    return static_cast<FakeLockScreenController*>(
+        message_center_impl()->lock_screen_controller());
   }
 
  private:
@@ -986,6 +1003,153 @@ TEST_F(MessageCenterImplTest,
 
   message_center()->SetVisibility(VISIBILITY_TRANSIENT);
   EXPECT_EQ("update-n", observer.log("n"));
+}
+
+TEST_F(MessageCenterImplTest, Click) {
+  TestAddObserver observer(message_center());
+  std::string id("n");
+
+  std::unique_ptr<Notification> notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  message_center()->ClickOnNotification(id);
+
+  EXPECT_EQ("Click_", GetDelegate(id)->log());
+}
+
+TEST_F(MessageCenterImplTest, ButtonClick) {
+  TestAddObserver observer(message_center());
+  std::string id("n");
+
+  std::unique_ptr<Notification> notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  message_center()->ClickOnNotificationButton(id, 1);
+
+  EXPECT_EQ("ButtonClick_1_", GetDelegate(id)->log());
+}
+
+TEST_F(MessageCenterImplTest, ButtonClickWithReply) {
+  TestAddObserver observer(message_center());
+  std::string id("n");
+
+  std::unique_ptr<Notification> notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  message_center()->ClickOnNotificationButtonWithReply(
+      id, 1, base::UTF8ToUTF16("REPLYTEXT"));
+
+  EXPECT_EQ("ReplyButtonClick_1_REPLYTEXT_", GetDelegate(id)->log());
+}
+
+TEST_F(MessageCenterImplTest, Unlock) {
+  lock_screen_controller()->set_is_screen_locked(true);
+
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_TRUE(lock_screen_controller()->IsScreenLocked());
+
+  lock_screen_controller()->SimulateUnlock();
+
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_FALSE(lock_screen_controller()->IsScreenLocked());
+
+  lock_screen_controller()->set_is_screen_locked(true);
+
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_TRUE(lock_screen_controller()->IsScreenLocked());
+
+  lock_screen_controller()->SimulateUnlock();
+
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_FALSE(lock_screen_controller()->IsScreenLocked());
+}
+
+TEST_F(MessageCenterImplTest, ClickOnLockScreen) {
+  lock_screen_controller()->set_is_screen_locked(true);
+
+  TestAddObserver observer(message_center());
+  std::string id("n");
+
+  std::unique_ptr<Notification> notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  message_center()->ClickOnNotification(id);
+
+  EXPECT_EQ("", GetDelegate(id)->log());
+  EXPECT_TRUE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_TRUE(lock_screen_controller()->IsScreenLocked());
+
+  lock_screen_controller()->SimulateUnlock();
+
+  EXPECT_EQ("Click_", GetDelegate(id)->log());
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_FALSE(lock_screen_controller()->IsScreenLocked());
+}
+
+TEST_F(MessageCenterImplTest, ClickAndCancelOnLockScreen) {
+  lock_screen_controller()->set_is_screen_locked(true);
+
+  TestAddObserver observer(message_center());
+  std::string id("n");
+
+  std::unique_ptr<Notification> notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  message_center()->ClickOnNotification(id);
+
+  EXPECT_EQ("", GetDelegate(id)->log());
+  EXPECT_TRUE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_TRUE(lock_screen_controller()->IsScreenLocked());
+
+  lock_screen_controller()->CancelClick();
+
+  EXPECT_EQ("", GetDelegate(id)->log());
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_TRUE(lock_screen_controller()->IsScreenLocked());
+
+  lock_screen_controller()->SimulateUnlock();
+
+  EXPECT_EQ("", GetDelegate(id)->log());
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_FALSE(lock_screen_controller()->IsScreenLocked());
+}
+
+TEST_F(MessageCenterImplTest, ButtonClickOnLockScreen) {
+  lock_screen_controller()->set_is_screen_locked(true);
+
+  TestAddObserver observer(message_center());
+  std::string id("n");
+
+  std::unique_ptr<Notification> notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  message_center()->ClickOnNotificationButton(id, 1);
+
+  EXPECT_EQ("", GetDelegate(id)->log());
+  EXPECT_TRUE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_TRUE(lock_screen_controller()->IsScreenLocked());
+
+  lock_screen_controller()->SimulateUnlock();
+
+  EXPECT_EQ("ButtonClick_1_", GetDelegate(id)->log());
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_FALSE(lock_screen_controller()->IsScreenLocked());
+}
+
+TEST_F(MessageCenterImplTest, ButtonClickWithReplyOnLockScreen) {
+  lock_screen_controller()->set_is_screen_locked(true);
+
+  TestAddObserver observer(message_center());
+  std::string id("n");
+
+  std::unique_ptr<Notification> notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  message_center()->ClickOnNotificationButtonWithReply(
+      id, 1, base::UTF8ToUTF16("REPLYTEXT"));
+
+  EXPECT_EQ("", GetDelegate(id)->log());
+  EXPECT_TRUE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_TRUE(lock_screen_controller()->IsScreenLocked());
+
+  lock_screen_controller()->SimulateUnlock();
+
+  EXPECT_EQ("ReplyButtonClick_1_REPLYTEXT_", GetDelegate(id)->log());
+  EXPECT_FALSE(lock_screen_controller()->HasPendingCallback());
+  EXPECT_FALSE(lock_screen_controller()->IsScreenLocked());
 }
 
 }  // namespace internal

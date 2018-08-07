@@ -4,6 +4,7 @@
 
 #include "ui/message_center/message_center.h"
 
+#include "ui/message_center/lock_screen/empty_lock_screen_controller.h"
 #include "ui/message_center/message_center_impl.h"
 
 namespace message_center {
@@ -16,8 +17,15 @@ static MessageCenter* g_message_center = nullptr;
 
 // static
 void MessageCenter::Initialize() {
+  Initialize(std::make_unique<EmptyLockScreenController>());
+}
+
+// static
+void MessageCenter::Initialize(
+    std::unique_ptr<LockScreenController> lock_screen_controller) {
   DCHECK(!g_message_center);
-  g_message_center = new MessageCenterImpl();
+  DCHECK(lock_screen_controller);
+  g_message_center = new MessageCenterImpl(std::move(lock_screen_controller));
 }
 
 // static
