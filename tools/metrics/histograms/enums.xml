@@ -14910,6 +14910,7 @@ Called by update_net_error_codes.py.-->
   <int value="422" label="INPUT_METHOD_PRIVATE_ON_FOCUS"/>
   <int value="423" label="SYSTEM_POWER_SOURCE_ONPOWERCHANGED"/>
   <int value="424" label="WEB_REQUEST_ON_ACTION_IGNORED"/>
+  <int value="425" label="ARC_APPS_PRIVATE_ON_INSTALLED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
