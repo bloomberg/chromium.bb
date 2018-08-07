@@ -58,9 +58,6 @@ extern const char kAndroidMessagesIntegrationDescription[];
 extern const char kAppBannersName[];
 extern const char kAppBannersDescription[];
 
-extern const char kAshSidebarName[];
-extern const char kAshSidebarDescription[];
-
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 

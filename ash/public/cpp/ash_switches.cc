@@ -49,10 +49,6 @@ const char kAshEnableMagnifierKeyScroller[] =
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
 
-// Enables the sidebar.
-const char kAshSidebarEnabled[] = "enable-ash-sidebar";
-const char kAshSidebarDisabled[] = "disable-ash-sidebar";
-
 // Enables the observation of accelerometer events to enter tablet
 // mode.  The flag is "enable-touchview" not "enable-tabletmode" as this
 // is used to enable tablet mode on convertible devices.
@@ -143,11 +139,6 @@ const char kTouchscreenUsableWhileScreenOff[] =
 
 // Hides all Message Center notification popups (toasts). Used for testing.
 const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
-
-bool IsSidebarEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshSidebarEnabled);
-}
 
 bool IsUsingViewsLock() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);

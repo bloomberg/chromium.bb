@@ -2046,10 +2046,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // ENABLE_EXTENSIONS
 #if !defined(OS_ANDROID)
 #if defined(OS_CHROMEOS)
-    {"enable-ash-sidebar", flag_descriptions::kAshSidebarName,
-     flag_descriptions::kAshSidebarDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshSidebarEnabled,
-                               ash::switches::kAshSidebarDisabled)},
     {"enable-system-tray-unified", flag_descriptions::kSystemTrayUnifiedName,
      flag_descriptions::kSystemTrayUnifiedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemTrayUnified)},
