@@ -51,9 +51,6 @@ class AutomationWebContentsObserver;
 }  // namespace cast
 }  // namespace extensions
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    extensions::cast::AutomationWebContentsObserver);
-
 namespace extensions {
 namespace cast {
 
