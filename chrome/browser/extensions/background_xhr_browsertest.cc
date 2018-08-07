@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/network_service_instance.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
@@ -60,8 +60,7 @@ class BackgroundXhrTest : public ExtensionBrowserTest {
     GURL test_url = net::AppendQueryParameter(extension->GetResourceURL(path),
                                               "url", url.spec());
     ui_test_utils::NavigateToURL(browser(), test_url);
-    content::BrowserContext::GetDefaultStoragePartition(profile())
-        ->FlushNetworkInterfaceForTesting();
+    content::FlushNetworkServiceInstanceForTesting();
     constexpr char kSendXHRScript[] = R"(
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '%s');
