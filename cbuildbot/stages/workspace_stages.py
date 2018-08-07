@@ -96,6 +96,7 @@ class WorkspaceCleanStage(WorkspaceStageBase):
       # If there is any failure doing the cleanup, wipe everything.
       # The previous run might have been killed in the middle leaving stale git
       # locks. Clean those up, first.
+      repo.PreLoad()
       repo.CleanStaleLocks()
       repo.BuildRootGitCleanup(prune_all=True)
     except Exception:

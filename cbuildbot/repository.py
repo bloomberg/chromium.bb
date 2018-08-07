@@ -392,6 +392,35 @@ class RepoRepository(object):
         raise ValueError('%s is nested inside a repo at %s.' %
                          (self.directory, repo_root))
 
+  def PreLoad(self, source_repo=None):
+    """Preinitialize new .repo directory for faster initial sync.
+
+    This is a hint that the new .repo directory can be copied from
+    source_repo/.repo to avoid network sync operations. It does nothing if the
+    .repo already exists, or source is invalid. source_repo defaults to the repo
+    of the current checkout for the script.
+
+    This should be done before the target is cleaned, to avoid corruption, since
+    the source is in an unknown state.
+
+    Args:
+      source_repo: Directory path to use as a template for new repo checkout.
+    """
+    if not source_repo:
+      source_repo = constants.SOURCE_ROOT
+
+    target_repo = os.path.join(self.directory, '.repo')
+
+    # If target already exist, or source is invalid, don't copy.
+    if os.path.exists(target_repo) or not IsARepoRoot(source_repo):
+      return
+
+    source_repo = os.path.join(source_repo, '.repo')
+
+    logging.info("Preloading '%s' from '%s'.", target_repo, source_repo)
+    shutil.copytree(source_repo, target_repo, symlinks=True)
+
+
   def Initialize(self, local_manifest=None, manifest_repo_url=None,
                  extra_args=()):
     """Initializes a repository.  Optionally forces a local manifest.

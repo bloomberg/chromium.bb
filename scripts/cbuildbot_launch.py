@@ -275,17 +275,18 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
       osutils.RmDir(os.path.join(repo.directory, '.cache', 'distfiles'),
                     ignore_missing=True, sudo=True)
 
-    try:
-      # If there is any failure doing the cleanup, wipe everything.
-      # The previous run might have been killed in the middle leaving stale git
-      # locks. Clean those up, first.
-      repo.CleanStaleLocks()
-      repo.BuildRootGitCleanup(prune_all=True)
-    except Exception:
-      logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
-      metrics.Counter(METRIC_CLOBBER).increment(
-          field(metrics_fields, reason='repo_cleanup_failure'))
-      repository.ClearBuildRoot(repo.directory)
+  try:
+    # If there is any failure doing the cleanup, wipe everything.
+    # The previous run might have been killed in the middle leaving stale git
+    # locks. Clean those up, first.
+    repo.PreLoad()
+    repo.CleanStaleLocks()
+    repo.BuildRootGitCleanup(prune_all=True)
+  except Exception:
+    logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
+    metrics.Counter(METRIC_CLOBBER).increment(
+        field(metrics_fields, reason='repo_cleanup_failure'))
+    repository.ClearBuildRoot(repo.directory)
 
   # Ensure buildroot exists. Save the state we are prepped for.
   osutils.SafeMakedirs(repo.directory)
