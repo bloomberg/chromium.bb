@@ -2589,12 +2589,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestBadHTTPSDownload) {
     observer.Wait();
   }
 
-  // To exit the browser cleanly (and this test) we need to complete the
-  // download after completing this test.
-  content::DownloadTestObserverTerminal dangerous_download_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
-
   // Proceed through the SSL interstitial. This doesn't use
   // ProceedThroughInterstitial() since no page load will commit.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -2602,14 +2596,15 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestBadHTTPSDownload) {
   WaitForInterstitial(tab);
   ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(tab));
   {
-    content::TestNavigationObserver nav_observer(tab);
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_DOWNLOAD_INITIATED,
-        content::NotificationService::AllSources());
+    // Wait for the download to complete after proceeding with the download.
+    // This serves to verify the download was initiated, and to let the
+    // test successfully shut down and cleanup. Exiting the browser with a
+    // download still in-progress can lead to test failues.
+    content::DownloadTestObserverTerminal dangerous_download_observer(
+        content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+        content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
     SendInterstitialCommand(tab, security_interstitials::CMD_PROCEED);
-    observer.Wait();
-    if (IsCommittedInterstitialTest())
-      nav_observer.Wait();
+    dangerous_download_observer.WaitForFinished();
   }
 
   // There should still be an interstitial at this point. Press the
@@ -2620,8 +2615,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestBadHTTPSDownload) {
   ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(tab));
   EXPECT_TRUE(chrome::CanGoBack(browser()));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-
-  dangerous_download_observer.WaitForFinished();
 }
 
 //

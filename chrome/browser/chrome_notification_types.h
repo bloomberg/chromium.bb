@@ -258,14 +258,6 @@ enum NotificationType {
   NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS,
 #endif
 
-  // Download Notifications --------------------------------------------------
-
-  // Sent when a download is initiated. It is possible that the download will
-  // not actually begin due to the DownloadRequestLimiter cancelling it
-  // prematurely.
-  // The source is the corresponding WebContents. There are no details.
-  NOTIFICATION_DOWNLOAD_INITIATED,
-
   // Misc --------------------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
