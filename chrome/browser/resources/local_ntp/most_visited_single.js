@@ -36,9 +36,9 @@ const CLASSES = {
   MD_ADD_BACKGROUND: 'md-add-background',
   MD_MENU: 'md-menu',
   MD_EDIT_MENU: 'md-edit-menu',
-  MD_TILE: 'md-tile-container',
+  MD_TILE: 'md-tile',
+  MD_TILE_CONTAINER: 'md-tile-container',
   MD_TILE_INNER: 'md-tile-inner',
-  MD_TILE_LINK: 'md-tile',
   MD_TITLE: 'md-title',
   MD_TITLE_CONTAINER: 'md-title-container',
 };
@@ -426,15 +426,20 @@ var addTile = function(args) {
  * @param {Element} tile DOM node of the tile we want to remove.
  */
 var blacklistTile = function(tile) {
-  tile.classList.add('blacklisted');
-  tile.addEventListener('transitionend', function(ev) {
-    if (ev.propertyName != 'width')
-      return;
+  let tid = isMDEnabled ? Number(tile.firstChild.getAttribute('data-tid')) :
+                          Number(tile.getAttribute('data-tid'));
 
-    window.parent.postMessage(
-        {cmd: 'tileBlacklisted', tid: Number(tile.getAttribute('data-tid'))},
-        DOMAIN_ORIGIN);
-  });
+  if (isCustomLinksEnabled) {
+    chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(tid);
+  } else {
+    tile.classList.add('blacklisted');
+    tile.addEventListener('transitionend', function(ev) {
+      if (ev.propertyName != 'width')
+        return;
+      window.parent.postMessage(
+          {cmd: 'tileBlacklisted', tid: Number(tid)}, DOMAIN_ORIGIN);
+    });
+  }
 };
 
 
@@ -464,12 +469,9 @@ var isSchemeAllowed = function(url) {
  */
 function disableOutlineOnMouseClick(element) {
   element.addEventListener('mousedown', (event) => {
-    element.style.outline = 'none';
+    element.classList.add('mouse-navigation');
     let resetOutline = (event) => {
-      // Clear current focus to prevent the outline from reappearing when the
-      // user switches windows.
-      document.activeElement.blur();
-      element.style.outline = '';
+      element.classList.remove('mouse-navigation');
       element.removeEventListener('blur', resetOutline);
     };
     element.addEventListener('blur', resetOutline);
@@ -652,14 +654,14 @@ var renderMostVisitedTile = function(data) {
  * @return {Element}
  */
 function renderMaterialDesignTile(data) {
-  let mdTile = document.createElement('div');
-  mdTile.role = 'none';
+  let mdTileContainer = document.createElement('div');
+  mdTileContainer.role = 'none';
 
   if (data == null) {
-    mdTile.className = CLASSES.MD_EMPTY_TILE;
-    return mdTile;
+    mdTileContainer.className = CLASSES.MD_EMPTY_TILE;
+    return mdTileContainer;
   }
-  mdTile.className = CLASSES.MD_TILE;
+  mdTileContainer.className = CLASSES.MD_TILE_CONTAINER;
 
   if (data.isCustomLink)
     tilesAreCustomLinks = true;
@@ -669,18 +671,18 @@ function renderMaterialDesignTile(data) {
   // This is set in the load/error event for the favicon image.
   let tileType = TileVisualType.NONE;
 
-  let mdTileLink = document.createElement('a');
-  mdTileLink.className = CLASSES.MD_TILE_LINK;
-  mdTileLink.tabIndex = 0;
-  mdTileLink.setAttribute('data-tid', data.tid);
-  mdTileLink.setAttribute('data-pos', position);
+  let mdTile = document.createElement('a');
+  mdTile.className = CLASSES.MD_TILE;
+  mdTile.tabIndex = 0;
+  mdTile.setAttribute('data-tid', data.tid);
+  mdTile.setAttribute('data-pos', position);
   if (isSchemeAllowed(data.url)) {
-    mdTileLink.href = data.url;
+    mdTile.href = data.url;
   }
-  mdTileLink.setAttribute('aria-label', data.title);
-  mdTileLink.title = data.title;
+  mdTile.setAttribute('aria-label', data.title);
+  mdTile.title = data.title;
 
-  mdTileLink.addEventListener('click', function(ev) {
+  mdTile.addEventListener('click', function(ev) {
     if (data.isAddButton) {
       editCustomLink();
       logEvent(LOG_TYPE.NTP_CUSTOMIZE_ADD_SHORTCUT_CLICKED);
@@ -690,30 +692,28 @@ function renderMaterialDesignTile(data) {
           data.dataGenerationTime);
     }
   });
-  mdTileLink.addEventListener('keydown', function(event) {
+  mdTile.addEventListener('keydown', function(event) {
     if ((event.keyCode == 46 /* DELETE */ ||
          event.keyCode == 8 /* BACKSPACE */) &&
         !data.isAddButton) {
       event.preventDefault();
       event.stopPropagation();
-      blacklistTile(this);
+      blacklistTile(mdTileContainer);
     } else if (
         event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
       event.preventDefault();
       this.click();
     } else if (event.keyCode == 37 /* LEFT */) {
-      const tiles =
-          document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE_LINK);
+      const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
       tiles[Math.max(Number(this.getAttribute('data-pos')) - 1, 0)].focus();
     } else if (event.keyCode == 39 /* RIGHT */) {
-      const tiles =
-          document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE_LINK);
+      const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
       tiles[Math.min(
                 Number(this.getAttribute('data-pos')) + 1, tiles.length - 1)]
           .focus();
     }
   });
-  disableOutlineOnMouseClick(mdTileLink);
+  disableOutlineOnMouseClick(mdTile);
 
   let mdTileInner = document.createElement('div');
   mdTileInner.className = CLASSES.MD_TILE_INNER;
@@ -787,8 +787,8 @@ function renderMaterialDesignTile(data) {
   mdTitle.style.direction = data.direction || 'ltr';
   mdTitleContainer.appendChild(mdTitle);
   mdTileInner.appendChild(mdTitleContainer);
-  mdTileLink.appendChild(mdTileInner);
-  mdTile.appendChild(mdTileLink);
+  mdTile.appendChild(mdTileInner);
+  mdTileContainer.appendChild(mdTile);
 
   if (!data.isAddButton) {
     let mdMenu = document.createElement('button');
@@ -796,7 +796,9 @@ function renderMaterialDesignTile(data) {
     if (isCustomLinksEnabled) {
       mdMenu.classList.add(CLASSES.MD_EDIT_MENU);
       mdMenu.title = queryArgs['editLinkTooltip'] || '';
-      mdMenu.name = (queryArgs['editLinkTooltip'] || '') + ' ' + data.title;
+      mdMenu.setAttribute(
+          'aria-label',
+          (queryArgs['editLinkTooltip'] || '') + ' ' + data.title);
       mdMenu.addEventListener('click', function(ev) {
         editCustomLink(data.tid);
         ev.preventDefault();
@@ -805,10 +807,11 @@ function renderMaterialDesignTile(data) {
       });
     } else {
       mdMenu.title = queryArgs['removeTooltip'] || '';
-      mdMenu.name = (queryArgs['removeTooltip'] || '') + ' ' + data.title;
+      mdMenu.setAttribute(
+          'aria-label', (queryArgs['removeTooltip'] || '') + ' ' + data.title);
       mdMenu.addEventListener('click', function(ev) {
         removeAllOldTiles();
-        blacklistTile(mdTileLink);
+        blacklistTile(mdTileContainer);
         ev.preventDefault();
         ev.stopPropagation();
       });
@@ -820,10 +823,10 @@ function renderMaterialDesignTile(data) {
     });
     disableOutlineOnMouseClick(mdMenu);
 
-    mdTile.appendChild(mdMenu);
+    mdTileContainer.appendChild(mdMenu);
   }
 
-  return mdTile;
+  return mdTileContainer;
 }
 
 
@@ -846,6 +849,8 @@ var init = function() {
       continue;
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
+
+  document.title = queryArgs['title'];
 
   if ('ntl' in queryArgs) {
     var ntl = parseInt(queryArgs['ntl'], 10);

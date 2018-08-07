@@ -6,6 +6,10 @@ body {
   overflow: hidden;
 }
 
+.mouse-navigation {
+  outline: none;
+}
+
 #edit-link-dialog {
   background-color: #fff;
   border: none;

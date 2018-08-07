@@ -54,6 +54,7 @@ const CLASSES = {
 const KEYCODES = {
   ENTER: 13,
   ESC: 27,
+  TAB: 9,
 };
 
 
@@ -105,6 +106,13 @@ let deleteLinkTitle = '';
 
 
 /**
+ * True if keyboard navigation should start at the first input field.
+ * @type {boolean}
+ */
+let startKeyboardAtFirstField = false;
+
+
+/**
  * True if the provided url is valid.
  * @type {string}
  */
@@ -137,8 +145,8 @@ function prepopulateFields(rid) {
   $(IDS.URL_FIELD).classList.add(CLASSES.TEXT_MODIFIED);
 
   // Set accessibility names.
-  $(IDS.DELETE).name = deleteLinkTitle + ' ' + data.title;
-  $(IDS.DONE).name = editLinkTitle + ' ' + data.title;
+  $(IDS.DELETE).setAttribute('aria-label', deleteLinkTitle + ' ' + data.title);
+  $(IDS.DONE).setAttribute('aria-label', editLinkTitle + ' ' + data.title);
   $(IDS.DONE).title = editLinkTitle;
 }
 
@@ -224,6 +232,7 @@ function closeDialog() {
     prepopulatedLink.rid = -1;
     prepopulatedLink.title = '';
     prepopulatedLink.url = '';
+    startKeyboardAtFirstField = false;
   }, 10);
 }
 
@@ -236,15 +245,19 @@ function handlePostMessage(event) {
   let cmd = event.data.cmd;
   let args = event.data;
   if (cmd === 'linkData') {
+    startKeyboardAtFirstField = true;
     if (args.tid) {  // We are editing a link, prepopulate the link data.
+      document.title = editLinkTitle;
       $(IDS.DIALOG_TITLE).textContent = editLinkTitle;
       prepopulateFields(args.tid);
     } else {  // We are adding a link, disable the delete button.
+      document.title = addLinkTitle;
       $(IDS.DIALOG_TITLE).textContent = addLinkTitle;
       $(IDS.DELETE).disabled = true;
       disableSubmitUntilTextInput();
       // Set accessibility names.
-      $(IDS.DONE).name = $(IDS.DONE).title = addLinkTitle;
+      $(IDS.DONE).setAttribute('aria-label', addLinkTitle);
+      $(IDS.DONE).title = addLinkTitle;
     }
   }
 }
@@ -256,12 +269,9 @@ function handlePostMessage(event) {
  */
 function disableOutlineOnMouseClick(element) {
   element.addEventListener('mousedown', (event) => {
-    element.style.outline = 'none';
+    element.classList.add('mouse-navigation');
     let resetOutline = (event) => {
-      // Clear current focus to prevent the outline from reappearing when the
-      // user switches windows.
-      document.activeElement.blur();
-      element.style.outline = '';
+      element.classList.remove('mouse-navigation');
       element.removeEventListener('blur', resetOutline);
     };
     element.addEventListener('blur', resetOutline);
@@ -283,6 +293,8 @@ function init() {
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
 
+  document.title = queryArgs['editTitle'];
+
   // Enable RTL.
   // TODO(851293): Add RTL formatting.
   if (queryArgs['rtl'] == '1') {
@@ -296,16 +308,29 @@ function init() {
   deleteLinkTitle = queryArgs['linkRemove'];
   $(IDS.DIALOG_TITLE).textContent = addLinkTitle;
   $(IDS.TITLE_FIELD_NAME).textContent = queryArgs['nameField'];
-  $(IDS.TITLE_FIELD_NAME).name = queryArgs['nameField'];
+  $(IDS.TITLE_FIELD_NAME).setAttribute('aria-label', queryArgs['nameField']);
   $(IDS.URL_FIELD_NAME).textContent = queryArgs['urlField'];
-  $(IDS.URL_FIELD_NAME).name = queryArgs['urlField'];
+  $(IDS.URL_FIELD_NAME).setAttribute('aria-label', queryArgs['urlField']);
   $(IDS.DELETE).textContent = $(IDS.DELETE).title = queryArgs['linkRemove'];
-  $(IDS.CANCEL).textContent = $(IDS.CANCEL).title = $(IDS.CANCEL).name =
-      queryArgs['linkCancel'];
+  $(IDS.CANCEL).textContent = $(IDS.CANCEL).title = queryArgs['linkCancel'];
+  $(IDS.CANCEL).setAttribute('aria-label', queryArgs['linkCancel']);
   $(IDS.DONE).textContent = $(IDS.DONE).title = queryArgs['linkDone'];
   $(IDS.INVALID_URL).textContent = queryArgs['invalidUrl'];
 
   // Set up event listeners.
+  document.body.onkeydown = (event) => {
+    if (event.keyCode === KEYCODES.ESC) {
+      // Close the iframe instead of just this dialog.
+      event.preventDefault();
+      closeDialog();
+    } else if (event.keyCode === KEYCODES.TAB && startKeyboardAtFirstField) {
+      // Start keyboard navigation at the first input field when the dialog
+      // opens.
+      event.preventDefault();
+      $(IDS.TITLE_FIELD).focus();
+      startKeyboardAtFirstField = false;
+    }
+  };
   $(IDS.URL_FIELD).addEventListener('input', (event) => {
     if (!$(IDS.URL_FIELD).classList.contains(CLASSES.TEXT_MODIFIED))
       $(IDS.URL_FIELD).classList.add(CLASSES.TEXT_MODIFIED);
