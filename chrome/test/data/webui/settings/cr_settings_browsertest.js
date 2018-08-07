@@ -499,7 +499,8 @@ CrSettingsPeoplePageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageTest', 'All', function() {
+// Flaky, see crbug.com/871545.
+TEST_F('CrSettingsPeoplePageTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -582,7 +583,8 @@ CrSettingsResetPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsResetPageTest', 'All', function() {
+// Flaky, see crbug.com/871620.
+TEST_F('CrSettingsResetPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -1097,7 +1099,8 @@ GEN('#else');
 GEN('#define MAYBE_All All');
 GEN('#endif');
 
-TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_All', function() {
+// Flaky, see crbug.com/871548.
+TEST_F('CrSettingsSiteDetailsTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -1510,7 +1513,8 @@ CrSettingsEditDictionaryPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsEditDictionaryPageTest', 'All', function() {
+// Flaky, see crbug.com/871543.
+TEST_F('CrSettingsEditDictionaryPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -1542,8 +1546,8 @@ CrSettingsLanguagesTest.prototype = {
   ]),
 };
 
-// Flaky on Win and Linux, see http://crbug/692356.
-TEST_F('CrSettingsLanguagesTest', 'All', function() {
+// Flaky, see http://crbug/871666.
+TEST_F('CrSettingsLanguagesTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -1584,7 +1588,8 @@ TEST_F('CrSettingsLanguagesPageTest', 'InputMethods', function() {
   mocha.grep(assert(languages_page_tests.TestNames.InputMethods)).run();
 });
 
-TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
+// Flaky, see crbug.com/871544.
+TEST_F('CrSettingsLanguagesPageTest', 'DISABLED_Spellcheck', function() {
   mocha.grep(assert(languages_page_tests.TestNames.Spellcheck)).run();
 });
 
@@ -1605,7 +1610,8 @@ CrSettingsRouteTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsRouteTest', 'All', function() {
+// Flaky, see crbug.com/871547.
+TEST_F('CrSettingsRouteTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
