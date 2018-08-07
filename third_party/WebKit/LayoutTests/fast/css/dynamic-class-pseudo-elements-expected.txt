@@ -13,7 +13,7 @@ PASS getComputedStyle(r3, '::first-line').backgroundColor is transparent
 PASS internals.updateStyleAndReturnAffectedElementCount() is 9
 PASS getComputedStyle(r3, '::first-line').backgroundColor is green
 PASS getComputedStyle(r4, '::first-letter').backgroundColor is transparent
-PASS internals.updateStyleAndReturnAffectedElementCount() is 10
+PASS internals.updateStyleAndReturnAffectedElementCount() is 9
 PASS getComputedStyle(r4, '::first-letter').backgroundColor is green
 PASS successfullyParsed is true
 

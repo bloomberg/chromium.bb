@@ -2220,9 +2220,7 @@ class ComputedStyle : public ComputedStyleBase,
   InterpolationQuality GetInterpolationQuality() const;
 
   bool CanGeneratePseudoElement(PseudoId pseudo) const {
-    // The first letter pseudo element has to look up the tree and see if any
-    // of the ancestors are first letter.
-    if (pseudo != kPseudoIdFirstLetter && !HasPseudoStyle(pseudo))
+    if (!HasPseudoStyle(pseudo))
       return false;
     if (Display() == EDisplay::kNone)
       return false;

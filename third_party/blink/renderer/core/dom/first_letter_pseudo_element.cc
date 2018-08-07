@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
@@ -271,27 +272,16 @@ void FirstLetterPseudoElement::DetachLayoutTree(const AttachContext& context) {
   PseudoElement::DetachLayoutTree(context);
 }
 
-ComputedStyle* FirstLetterPseudoElement::StyleForFirstLetter(
-    LayoutObject* layout_object_container) {
-  DCHECK(layout_object_container);
-
-  LayoutObject* style_container =
-      ParentOrShadowHostElement()->GetLayoutObject();
-  DCHECK(style_container);
-
-  // We always force the pseudo style to recompute as the first-letter style
-  // computed by the style container may not have taken the layoutObjects styles
-  // into account.
-  style_container->MutableStyle()->RemoveCachedPseudoStyle(
-      kPseudoIdFirstLetter);
-
-  ComputedStyle* pseudo_style = style_container->GetCachedPseudoStyle(
-      kPseudoIdFirstLetter, layout_object_container->FirstLineStyle());
-  DCHECK(pseudo_style);
-  pseudo_style->UpdateIsStackingContext(false /* is_document_element */,
-                                        false /* is_in_top_layer */,
-                                        false /* is_svg_stacking */);
-  return pseudo_style;
+scoped_refptr<ComputedStyle>
+FirstLetterPseudoElement::CustomStyleForLayoutObject() {
+  LayoutObject* first_letter_text =
+      FirstLetterPseudoElement::FirstLetterTextLayoutObject(*this);
+  if (!first_letter_text)
+    return nullptr;
+  DCHECK(first_letter_text->Parent());
+  return ParentOrShadowHostElement()->StyleForPseudoElement(
+      PseudoStyleRequest(GetPseudoId()),
+      first_letter_text->Parent()->FirstLineStyle());
 }
 
 void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* first_letter_text) {
@@ -303,12 +293,6 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   // applied to it.
   String old_text = first_letter_text->IsTextFragment() ? ToLayoutTextFragment(first_letter_text)->CompleteText() : first_letter_text->OriginalText();
   DCHECK(old_text.Impl());
-
-  // :first-letter inherits from the parent of the text. It may not be
-  // this->Parent() when e.g., <div><span>text</span></div>.
-  ComputedStyle* pseudo_style =
-      StyleForFirstLetter(first_letter_text->Parent());
-  GetLayoutObject()->SetStyle(pseudo_style);
 
   // FIXME: This would already have been calculated in firstLetterLayoutObject.
   // Can we pass the length through?
@@ -344,7 +328,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   LayoutTextFragment* letter =
       LayoutTextFragment::CreateAnonymous(*this, old_text.Impl(), 0, length);
   letter->SetFirstLetterPseudoElement(this);
-  letter->SetStyle(pseudo_style);
+  letter->SetStyle(MutableComputedStyle());
   GetLayoutObject()->AddChild(letter);
 
   first_letter_text->Destroy();
@@ -355,30 +339,15 @@ void FirstLetterPseudoElement::DidRecalcStyle(StyleRecalcChange) {
   if (!layout_object)
     return;
 
-  // :first-letter inherits from the parent of the text. It may not be
-  // this->Parent() when e.g., <div><span>text</span></div>.
-  DCHECK(remaining_text_layout_object_);
-  ComputedStyle* pseudo_style =
-      StyleForFirstLetter(remaining_text_layout_object_->Parent());
-  DCHECK(pseudo_style);
-  // TODO(kojii): While setting to GetLayoutObject() looks correct all the time,
-  // as we do so in AttachFirstLetterTextLayoutObjects(), it is required only
-  // when inline box has text children, and can break layout tree when changing
-  // :first-letter to floats. The check in Element::UpdatePseudoElement() does
-  // not catch all such cases.
-  if (!pseudo_style->IsDisplayBlockContainer())
-    layout_object->SetStyle(pseudo_style);
-
-  // The layoutObjects inside pseudo elements are anonymous so they don't get
-  // notified of recalcStyle and must have
-  // the style propagated downward manually similar to
-  // LayoutObject::propagateStyleToAnonymousChildren.
+  // The layout objects inside pseudo elements are anonymous so they don't get
+  // notified of RecalcStyle and must have the style propagated downward
+  // manually similar to LayoutObject::PropagateStyleToAnonymousChildren.
   for (LayoutObject* child = layout_object->NextInPreOrder(layout_object);
        child; child = child->NextInPreOrder(layout_object)) {
     // We need to re-calculate the correct style for the first letter element
     // and then apply that to the container and the text fragment inside.
     if (child->Style()->StyleType() == kPseudoIdFirstLetter) {
-      child->SetPseudoStyle(pseudo_style);
+      child->SetPseudoStyle(layout_object->MutableStyle());
       continue;
     }
 

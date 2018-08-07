@@ -81,8 +81,7 @@ forceLayout();
 t4.className = "a4";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "10");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "9");
 
-document.body.offsetLeft; // workaround for issue 351308
 shouldBe("getComputedStyle(r4, '::first-letter').backgroundColor", "green");
 </script>

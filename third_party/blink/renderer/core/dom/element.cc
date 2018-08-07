@@ -2137,16 +2137,8 @@ void Element::AttachLayoutTree(AttachContext& context) {
   AttachPseudoElement(kPseudoIdAfter, children_context);
   AttachPseudoElement(kPseudoIdBackdrop, children_context);
 
-  // We create the first-letter element after the :before, :after and
-  // children are attached because the first letter text could come
-  // from any of them.
-  //
-  // TODO(futhark@chromium.org: Replace with AttachPseudoElement when we create
-  // ::first-letter elements during style recalc.
-  if (PseudoElement* first_letter =
-          CreatePseudoElementIfNeeded(kPseudoIdFirstLetter)) {
-    first_letter->AttachLayoutTree(children_context);
-  }
+  UpdateFirstLetterPseudoElement(StyleUpdatePhase::kAttachLayoutTree);
+  AttachPseudoElement(kPseudoIdFirstLetter, children_context);
 
   if (layout_object) {
     if (!layout_object->IsFloatingOrOutOfFlowPositioned())
@@ -2162,9 +2154,7 @@ void Element::DetachLayoutTree(const AttachContext& context) {
   RemoveCallbackSelectors();
   if (HasRareData()) {
     ElementRareData* data = GetElementRareData();
-    if (context.performing_reattach)
-      data->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
-    else
+    if (!context.performing_reattach)
       data->ClearPseudoElements();
 
     // attachLayoutTree() will clear the computed style for us when inside
@@ -2233,8 +2223,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
                                            ? CustomStyleForLayoutObject()
                                            : OriginalStyleForLayoutObject();
   if (!style) {
-    DCHECK(IsBeforePseudoElement() || IsAfterPseudoElement() ||
-           GetPseudoId() == kPseudoIdBackdrop);
+    DCHECK(IsPseudoElement());
     return nullptr;
   }
 
@@ -2361,13 +2350,11 @@ void Element::RecalcStyle(StyleRecalcChange change) {
 
     UpdatePseudoElement(kPseudoIdAfter, change);
 
-    // If our children have changed then we need to force the first-letter
-    // checks as we don't know if they effected the first letter or not.
-    // This can be seen when a child transitions from floating to
-    // non-floating we have to take it into account for the first letter.
-    UpdatePseudoElement(
-        kPseudoIdFirstLetter,
-        change < kForce && ChildNeedsStyleRecalc() ? kForce : change);
+    // If we are re-attaching us or any of our descendants, we need to attach
+    // the descendants before we know if this element generates a ::first-letter
+    // and which element the ::first-letter inherits style from.
+    if (change < kReattach && !ChildNeedsReattachLayoutTree())
+      UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc);
 
     ClearChildNeedsStyleRecalc();
   }
@@ -2544,7 +2531,6 @@ void Element::RebuildShadowRootLayoutTree(
 void Element::RebuildPseudoElementLayoutTree(
     PseudoId pseudo_id,
     WhitespaceAttacher& whitespace_attacher) {
-  PseudoElement* element = GetPseudoElement(pseudo_id);
   if (pseudo_id == kPseudoIdFirstLetter) {
     // Need to create a ::first-letter element here for the following case:
     //
@@ -2560,14 +2546,12 @@ void Element::RebuildPseudoElementLayoutTree(
     // up here for #outer after AttachLayoutTree is called on #inner at which
     // point the layout sub-tree is available for deciding on creating the
     // ::first-letter.
-    if (!element)
-      element = CreatePseudoElementIfNeeded(pseudo_id);
-    else if (UpdateFirstLetter(element))
-      return;
+    UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRebuildLayoutTree);
   }
-
-  if (element && element->NeedsRebuildLayoutTree(whitespace_attacher))
-    element->RebuildLayoutTree(whitespace_attacher);
+  if (PseudoElement* element = GetPseudoElement(pseudo_id)) {
+    if (element->NeedsRebuildLayoutTree(whitespace_attacher))
+      element->RebuildLayoutTree(whitespace_attacher);
+  }
 }
 
 void Element::UpdateCallbackSelectors(const ComputedStyle* old_style,
@@ -3930,35 +3914,99 @@ void Element::CancelFocusAppearanceUpdate() {
     GetDocument().CancelFocusAppearanceUpdate();
 }
 
+void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
+  // Update the ::first-letter pseudo elements presence and its style. This
+  // method may be called from style recalc or layout tree rebuilding/
+  // reattachment. In order to know if an element generates a ::first-letter
+  // element, we need to know if:
+  //
+  // * The element generates a block level box to which ::first-letter applies.
+  // * The element's layout subtree generates any first letter text.
+  // * None of the descendant blocks generate a ::first-letter element.
+  //   (This is not correct according to spec as all block containers should be
+  //   able to generate ::first-letter elements around the first letter of the
+  //   first formatted text, but Blink is only supporting a single
+  //   ::first-letter element which is the innermost block generating a
+  //   ::first-letter).
+  //
+  // We do not always do this at style recalc time as that would have required
+  // us to collect the information about how the layout tree will look like
+  // after the layout tree is attached. So, instead we will wait until we have
+  // an up-to-date layout sub-tree for the element we are considering for
+  // ::first-letter.
+  //
+  // The StyleUpdatePhase tells where we are in the process of updating style
+  // and layout tree.
+
+  PseudoElement* element = GetPseudoElement(kPseudoIdFirstLetter);
+  if (!element) {
+    element = CreatePseudoElementIfNeeded(kPseudoIdFirstLetter);
+    // If we are in Element::AttachLayoutTree, don't mess up the ancestor flags
+    // for layout tree attachment/rebuilding. We will unconditionally call
+    // AttachLayoutTree for the created pseudo element immediately after this
+    // call.
+    if (element && phase != StyleUpdatePhase::kAttachLayoutTree)
+      element->SetNeedsReattachLayoutTree();
+    return;
+  }
+
+  if (phase == StyleUpdatePhase::kRebuildLayoutTree &&
+      element->NeedsReattachLayoutTree()) {
+    // We were already updated in RecalcStyle and ready for reattach.
+    DCHECK(element->GetNonAttachedStyle());
+    return;
+  }
+
+  if (!CanGeneratePseudoElement(kPseudoIdFirstLetter)) {
+    GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
+    return;
+  }
+
+  LayoutObject* remaining_text_layout_object =
+      FirstLetterPseudoElement::FirstLetterTextLayoutObject(*element);
+
+  if (!remaining_text_layout_object) {
+    GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
+    return;
+  }
+
+  bool text_node_changed =
+      remaining_text_layout_object !=
+      ToFirstLetterPseudoElement(element)->RemainingTextLayoutObject();
+
+  if (phase == StyleUpdatePhase::kAttachLayoutTree) {
+    // RemainingTextLayoutObject should have been cleared from DetachLayoutTree.
+    DCHECK(!ToFirstLetterPseudoElement(element)->RemainingTextLayoutObject());
+    DCHECK(text_node_changed);
+    scoped_refptr<ComputedStyle> pseudo_style = element->StyleForLayoutObject();
+    if (PseudoElementLayoutObjectIsNeeded(pseudo_style.get()))
+      element->SetNonAttachedStyle(std::move(pseudo_style));
+    else
+      GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
+    return;
+  }
+
+  element->RecalcStyle(text_node_changed ? kReattach : kForce);
+
+  if (element->NeedsReattachLayoutTree() &&
+      !PseudoElementLayoutObjectIsNeeded(element->GetNonAttachedStyle())) {
+    GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
+  }
+}
+
 void Element::UpdatePseudoElement(PseudoId pseudo_id,
                                   StyleRecalcChange change) {
-  // TODO(futhark@chromium.org): Update ::first-letter pseudo elements and style
-  // as part of style recalc also when re-attaching.
-  if (change == kReattach && pseudo_id == kPseudoIdFirstLetter)
-    return;
-
   PseudoElement* element = GetPseudoElement(pseudo_id);
   if (!element) {
-    if (change >= kUpdatePseudoElements)
-      element = CreatePseudoElementIfNeeded(pseudo_id);
-    // TODO(futhark@chromium.org): We cannot SetNeedsReattachLayoutTree() for
-    // ::first-letter inside CreatePseudoElementIfNeeded() because it may be
-    // called from layout tree attachment.
-    if (element && pseudo_id == kPseudoIdFirstLetter)
+    if (change < kUpdatePseudoElements)
+      return;
+    if ((element = CreatePseudoElementIfNeeded(pseudo_id)))
       element->SetNeedsReattachLayoutTree();
     return;
   }
 
   if (change == kUpdatePseudoElements ||
       element->ShouldCallRecalcStyle(change)) {
-    if (pseudo_id == kPseudoIdFirstLetter) {
-      if (UpdateFirstLetter(element))
-        return;
-      // Need to clear the cached style if the PseudoElement wants a recalc so
-      // it computes a new style.
-      if (element->NeedsStyleRecalc())
-        MutableComputedStyle()->RemoveCachedPseudoStyle(kPseudoIdFirstLetter);
-    }
     if (CanGeneratePseudoElement(pseudo_id)) {
       element->RecalcStyle(change == kUpdatePseudoElements ? kForce : change);
       if (!element->NeedsReattachLayoutTree())
@@ -3967,37 +4015,7 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
         return;
     }
     GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
-  } else if (pseudo_id == kPseudoIdFirstLetter &&
-             change >= kUpdatePseudoElements &&
-             !FirstLetterPseudoElement::FirstLetterTextLayoutObject(*element)) {
-    // We can end up here if we change to a float, for example. We need to
-    // cleanup the first-letter PseudoElement and then fix the text of the
-    // original remaining text LayoutObject. This can be seen in Test 7 of
-    // fast/css/first-letter-removed-added.html
-    GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
   }
-}
-
-// If we're updating first letter, and the current first letter layoutObject
-// is not the same as the one we're currently using we need to re-create
-// the first letter layoutObject.
-bool Element::UpdateFirstLetter(Element* element) {
-  LayoutObject* remaining_text_layout_object =
-      FirstLetterPseudoElement::FirstLetterTextLayoutObject(*element);
-  if (!remaining_text_layout_object ||
-      remaining_text_layout_object !=
-          ToFirstLetterPseudoElement(element)->RemainingTextLayoutObject()) {
-    // We have to clear out the old first letter here because when it is
-    // disposed it will set the original text back on the remaining text
-    // layoutObject. If we dispose after creating the new one we will get
-    // incorrect results due to setting the first letter back.
-    if (remaining_text_layout_object)
-      element->ReattachLayoutTree();
-    else
-      GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
-    return true;
-  }
-  return false;
 }
 
 PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
@@ -4025,12 +4043,6 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
     GetDocument().AddToTopLayer(pseudo_element, this);
 
   pseudo_element->SetNonAttachedStyle(std::move(pseudo_style));
-
-  // TODO(futhark@chromium.org): We cannot SetNeedsReattachLayoutTree() for
-  // ::first-letter inside CreatePseudoElementIfNeeded() because it may be
-  // called from layout tree attachment.
-  if (pseudo_id != kPseudoIdFirstLetter)
-    pseudo_element->SetNeedsReattachLayoutTree();
 
   probe::pseudoElementCreated(pseudo_element);
 
