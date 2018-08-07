@@ -45,8 +45,6 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
       command_id_(command_id),
       active_(false),
       suppress_mouse_released_action_(false) {
-  if (views::PlatformStyle::kPreferFocusRings)
-    focus_ring_ = views::FocusRing::Install(this);
   SetBorder(views::CreateEmptyBorder(
       GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
   if (ui::MaterialDesignController::IsNewerMaterialUi()) {
@@ -187,7 +185,7 @@ void PageActionIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDrop> PageActionIconView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
+  ink_drop->SetShowHighlightOnFocus(!focus_ring());
   return std::move(ink_drop);
 }
 

@@ -111,6 +111,10 @@ TEST_F(ViewAXPlatformNodeDelegateTest, BoundsShouldMatch) {
 }
 
 TEST_F(ViewAXPlatformNodeDelegateTest, LabelIsChildOfButton) {
+  // Disable focus rings for this test: they introduce extra children that can
+  // be either before or after the label, which complicates correctness testing.
+  button_->SetInstallFocusRingOnFocus(false);
+
   // |button_| is focusable, so |label_| (as its child) should be ignored.
   EXPECT_EQ(View::FocusBehavior::ACCESSIBLE_ONLY, button_->focus_behavior());
   EXPECT_EQ(1, button_accessibility()->GetChildCount());

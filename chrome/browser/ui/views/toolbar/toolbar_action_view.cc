@@ -34,7 +34,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/mouse_constants.h"
-#include "ui/views/style/platform_style.h"
 
 using views::LabelButtonBorder;
 
@@ -67,7 +66,6 @@ ToolbarActionView::ToolbarActionView(
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_drag_controller(delegate_);
-  SetInstallFocusRingOnFocus(views::PlatformStyle::kPreferFocusRings);
 
   set_context_menu_controller(this);
 
@@ -141,7 +139,7 @@ std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
   auto ink_drop = CreateToolbarInkDrop<MenuButton>(this);
 
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
-  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
+  ink_drop->SetShowHighlightOnFocus(!focus_ring());
   return ink_drop;
 }
 

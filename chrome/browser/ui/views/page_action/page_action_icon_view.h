@@ -15,7 +15,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/ink_drop_host_view.h"
-#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -190,9 +189,6 @@ class PageActionIconView : public IconLabelBubbleView {
   // pressed event. If this is true then the mouse released event is ignored to
   // prevent the bubble from reshowing.
   bool suppress_mouse_released_action_;
-
-  // The focus ring used for this view.
-  std::unique_ptr<views::FocusRing> focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionIconView);
 };

@@ -109,7 +109,7 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     set_ink_drop_visible_opacity(0.08f);
 
     SetFocusPainter(nullptr);
-    focus_ring_ = views::FocusRing::Install(this);
+    SetInstallFocusRingOnFocus(true);
   }
 
   // In newer material UI, the button is placed vertically exactly in the
@@ -346,7 +346,7 @@ void NewTabButton::Layout() {
 
     SkPath path;
     path.addOval(gfx::RectToSkRect(contents_bounds));
-    focus_ring_->SetPath(path);
+    focus_ring()->SetPath(path);
   }
 }
 
