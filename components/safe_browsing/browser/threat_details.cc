@@ -580,7 +580,7 @@ void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
   frame->GetRemoteInterfaces()->GetInterface(&threat_reporter);
   safe_browsing::mojom::ThreatReporter* raw_threat_report =
       threat_reporter.get();
-  pending_render_frame_hosts_.insert(frame);
+  pending_render_frame_hosts_.push_back(frame);
   raw_threat_report->GetThreatDOMDetails(
       base::BindOnce(&ThreatDetails::OnReceivedThreatDOMDetails, this,
                      std::move(threat_reporter), frame));
@@ -593,8 +593,13 @@ void ThreatDetails::OnReceivedThreatDOMDetails(
     std::vector<mojom::ThreatDOMDetailsNodePtr> params) {
   // If the RenderFrameHost was closed between sending the IPC and this callback
   // running, |sender| will be invalid.
-  if (pending_render_frame_hosts_.erase(sender) == 0)
+  const auto sender_it = std::find(pending_render_frame_hosts_.begin(),
+                                   pending_render_frame_hosts_.end(), sender);
+  if (sender_it == pending_render_frame_hosts_.end()) {
     return;
+  }
+
+  pending_render_frame_hosts_.erase(sender_it);
 
   // Lookup the FrameTreeNode ID of any child frames in the list of DOM nodes.
   const int sender_process_id = sender->GetProcess()->GetID();
@@ -815,7 +820,17 @@ void ThreatDetails::AllDone() {
 }
 
 void ThreatDetails::FrameDeleted(RenderFrameHost* render_frame_host) {
-  pending_render_frame_hosts_.erase(render_frame_host);
+  auto render_frame_host_it =
+      std::find(pending_render_frame_hosts_.begin(),
+                pending_render_frame_hosts_.end(), render_frame_host);
+  if (render_frame_host_it != pending_render_frame_hosts_.end()) {
+    pending_render_frame_hosts_.erase(render_frame_host_it);
+  }
+}
+
+void ThreatDetails::RenderFrameHostChanged(RenderFrameHost* old_host,
+                                           RenderFrameHost* new_host) {
+  FrameDeleted(old_host);
 }
 
 }  // namespace safe_browsing
