@@ -79,6 +79,7 @@ import org.chromium.content.browser.test.util.TestWebContentsObserver;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -629,6 +630,8 @@ public class ContextualSuggestionsTest {
         WebContents webContents = mActivityTestRule.getWebContents();
         GestureListenerManager.fromWebContents(webContents).addListener(gestureStateListener);
         View view = webContents.getViewAndroidDelegate().getContainerView();
+        int maxScrollOffset =
+                RenderCoordinates.fromWebContents(webContents).getMaxVerticalScrollPixInt();
 
         // Verify that suggestions are not shown before scroll.
         ThreadUtils.runOnUiThreadBlocking(
@@ -636,10 +639,10 @@ public class ContextualSuggestionsTest {
         assertEquals("Bottom sheet should be hidden before scroll.", BottomSheet.SheetState.HIDDEN,
                 mBottomSheet.getSheetState());
 
-        // Scroll the page to 30% and verify that the suggestions are not shown. The pixel to scroll
-        // is hard coded (approximately) based on the html height of the TEST_PAGE.
+        // Scroll the page to 30% and verify that the suggestions are not shown.
         int callCount = scrollChangedCallback.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(() -> view.scrollBy(0, 3000));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> view.scrollBy(0, Math.round(maxScrollOffset * 0.3f)));
         scrollChangedCallback.waitForCallback(callCount);
 
         // Simulate call to show content without browser controls being hidden.
@@ -648,9 +651,10 @@ public class ContextualSuggestionsTest {
         assertEquals("Bottom sheet should be hidden on 30% scroll percentage.",
                 BottomSheet.SheetState.HIDDEN, mBottomSheet.getSheetState());
 
-        // Scroll the page to approximately 60% and verify that the suggestions are shown.
+        // Scroll the page 20% more for a total of 50% and verify that the suggestions are shown.
         callCount = scrollChangedCallback.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(() -> view.scrollBy(0, 3000));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> view.scrollBy(0, Math.round(maxScrollOffset * 0.2f)));
         scrollChangedCallback.waitForCallback(callCount);
 
         // Simulate call to show content without browser controls being hidden.
