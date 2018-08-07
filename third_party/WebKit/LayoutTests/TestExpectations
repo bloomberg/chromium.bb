@@ -4837,7 +4837,6 @@ crbug.com/866166 virtual/gpu-rasterization/images/color-profile-image-filter-all
 crbug.com/868706 external/wpt/css/css-layout-api/auto-block-size-inflow.https.html [ Pass Failure ]
 
 # Sheriff 2018-07-31
-crbug.com/869470 external/wpt/background-fetch/get.https.window.html [ Pass Failure ]
 crbug.com/869364 css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
 crbug.com/869364 external/wpt/IndexedDB/parallel-cursors-upgrade.html [ Pass Timeout ]
 crbug.com/869364 http/tests/devtools/console/console-correct-suggestions.js [ Pass Timeout ]
@@ -4859,3 +4858,8 @@ crbug.com/871578 [ Mac ] virtual/outofblink-cors-ns/external/wpt/xhr/timeout-mul
 
 # Only passes on bots with GPUs.
 crbug.com/871445 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Timeout ]
+
+# Flaky on various bots
+crbug.com/869470 external/wpt/background-fetch/fetch.https.window.html [ Pass Failure ]
+crbug.com/869470 external/wpt/background-fetch/get.https.window.html [ Pass Failure ]
+crbug.com/869470 external/wpt/background-fetch/get-ids.https.window.html [ Pass Failure ]
