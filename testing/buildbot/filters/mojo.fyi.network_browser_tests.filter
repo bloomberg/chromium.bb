@@ -17,8 +17,9 @@
 -WebViewTest.WebViewInBackgroundPage
 
 # These tests uses net::URLRequestFilter (through TestRequestInterceptor) to
-# mock out network responses. Unclear if the code being tested uses
-# SimpleURLLoader or URLFetcher.
+# mock out network responses, and use ExtensionDownloader to issue requests,
+# which has yet to be switched from URLFetcher.
+# https://crbug.com/844928
 -PolicyTest.ExtensionInstallBlacklistSharedModules
 -PolicyTest.ExtensionInstallForcelist
 -PolicyTest.ExtensionInstallForcelist_DefaultedUpdateUrl
@@ -26,6 +27,11 @@
 -PolicyTest.ExtensionMinimumVersionRequired
 -PolicyTest.ExtensionMinimumVersionRequiredAlt
 -PolicyTest.ExtensionRecommendedInstallationMode
+
+# These tests uses net::URLRequestFilter (through TestRequestInterceptor) to
+# mock out network responses, and use URLFetcherDownloader to issue requests,
+# which has yet to be switched from URLFetcher.
+# https://crbug.com/871542
 -PolicyUpdateServiceTest.Backoff
 -PolicyUpdateServiceTest.FailedUpdateRetries
 -PolicyUpdateServiceTest.PolicyCorruptedOnStartup
@@ -140,8 +146,6 @@
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
--PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/0
--PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/1
 -PolicyTest.ExtensionInstallSources
 
 # crbug.com/859594 Migrate storage::FileWriterDelegate to use SimpleURLLoader
