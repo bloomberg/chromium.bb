@@ -2579,6 +2579,12 @@ const char kOfflinePagesSharingName[] = "Enables offline pages to be shared.";
 const char kOfflinePagesSharingDescription[] =
     "Enables the saved offline pages to be shared via other applications.";
 
+const char kOfflinePagesLivePageSharingName[] =
+    "Enables live page sharing of offline pages";
+const char kOfflinePagesLivePageSharingDescription[] =
+    "Enables to share current loaded page as offline page by saving as MHTML "
+    "first.";
+
 const char kOfflinePagesShowAlternateDinoPageName[] =
     "Enable alternate dino page with more user capabilities.";
 const char kOfflinePagesShowAlternateDinoPageDescription[] =
