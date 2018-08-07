@@ -391,7 +391,6 @@ const TestResultInformation = {
   "SKIP":       { index: 9, text: "Skip", isFailure: false, isSuccess: false },
   "MISSING":    { index: 10, text: "Missing", isFailure: false, isSuccess: false },
   "WONTFIX":    { index: 11, text: "WontFix", isFailure: false, isSuccess: false },
-  "NEEDSMANUALREBASELINE": { index: 12, text: "NeedsManualRebaseline", isFailure: false, isSuccess: false },
   "PASS":       { index: 13, text: "Pass", isFailure: false, isSuccess: true },
   "NOTRUN":     { index: 14, text: "NOTRUN", isFailure: false, isSuccess: true }
 };
@@ -962,7 +961,6 @@ const Filters = {
   },
   containsNoPass: function(map) {
     return map.has("FAIL")
-        || map.has("NEEDSMANUALREBASELINE")
         || map.has("WONTFIX")
         || map.has("SKIP")
         || map.has("CRASH");
@@ -971,8 +969,7 @@ const Filters = {
     return !Filters.containsPass(test.expectedMap) && Filters.containsPass(test.actualMap);
   },
   regressionFromExpectedMap: (finalResult, expectedMap) => {
-    if (expectedMap.has("NEEDSMANUALREBASELINE")
-        || expectedMap.has("NEEDSREBASELINE")
+    if (expectedMap.has("NEEDSREBASELINE")
         || expectedMap.has("WONTFIX"))
       return false;
     switch (finalResult) {
@@ -1016,8 +1013,7 @@ const Filters = {
   flagFailure: test => { // Tests that are failing, but expected to pass in base.
     if (Filters.containsPass(test.actualMap))
       return false;
-    if (test.expectedMap.has("NEEDSMANUALREBASELINE")
-        || test.expectedMap.has("NEEDSREBASELINE")
+    if (test.expectedMap.has("NEEDSREBASELINE")
         || test.expectedMap.has("WONTFIX"))
       return false;
     let baseMap = test.flagMap ? test.baseMap : test.expectedMap;

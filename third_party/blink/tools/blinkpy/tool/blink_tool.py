@@ -49,7 +49,6 @@ from blinkpy.tool.commands.queries import CrashLog
 from blinkpy.tool.commands.queries import PrintBaselines
 from blinkpy.tool.commands.queries import PrintExpectations
 from blinkpy.tool.commands.rebaseline import Rebaseline
-from blinkpy.tool.commands.rebaseline import RebaselineExpectations
 from blinkpy.tool.commands.rebaseline_cl import RebaselineCL
 from blinkpy.tool.commands.rebaseline_test import RebaselineTest
 
@@ -84,7 +83,6 @@ class BlinkTool(Host):
             PrintExpectations(),
             Rebaseline(),
             RebaselineCL(),
-            RebaselineExpectations(),
             RebaselineTest(),
         ]
         self.help_command = HelpCommand(tool=self)

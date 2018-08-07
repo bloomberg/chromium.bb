@@ -230,8 +230,6 @@ class ExpectationsRemover(object):
             otherwise.
         """
         unstrippable_expectations = (
-            'NEEDSMANUALREBASELINE',
-            'REBASELINE',
             'SKIP',
             'SLOW',
         )

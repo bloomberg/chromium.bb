@@ -44,7 +44,7 @@ _log = logging.getLogger(__name__)
 # FIXME: range() starts with 0 which makes if expectation checks harder
 # as PASS is 0.
 (PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, TIMEOUT, CRASH, LEAK, SKIP, WONTFIX,
- SLOW, REBASELINE, NEEDS_REBASELINE_UNUSED, NEEDS_MANUAL_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(19)
+ SLOW, MISSING, FLAKY, NOW, NONE) = range(16)
 
 WEBKIT_BUG_PREFIX = 'webkit.org/b/'
 CHROMIUM_BUG_PREFIX = 'crbug.com/'
@@ -73,7 +73,6 @@ class TestExpectationParser(object):
 
     # FIXME: Rename these to *_KEYWORD as in MISSING_KEYWORD above, but make
     # the case studdly-caps to match the actual file contents.
-    REBASELINE_MODIFIER = 'rebaseline'
     PASS_EXPECTATION = 'pass'
     SKIP_MODIFIER = 'skip'
     SLOW_MODIFIER = 'slow'
@@ -160,12 +159,7 @@ class TestExpectationParser(object):
         expectations = [expectation.lower() for expectation in expectation_line.expectations]
         if not expectation_line.bugs and self.WONTFIX_MODIFIER not in expectations:
             expectation_line.warnings.append(self.MISSING_BUG_WARNING)
-        if self.REBASELINE_MODIFIER in expectations:
-            expectation_line.warnings.append('REBASELINE should only be used for running rebaseline.py. Cannot be checked in.')
-
         specifiers = [specifier.lower() for specifier in expectation_line.specifiers]
-        if self.REBASELINE_MODIFIER in expectations and ('debug' in specifiers or 'release' in specifiers):
-            expectation_line.warnings.append('A test cannot be rebaselined for Debug/Release.')
 
     def _parse_expectations(self, expectation_line):
         result = set()
@@ -296,7 +290,6 @@ class TestExpectationLine(object):
         'Failure': 'FAIL',
         MISSING_KEYWORD: 'MISSING',
         'Pass': 'PASS',
-        'Rebaseline': 'REBASELINE',
         'Skip': 'SKIP',
         'Slow': 'SLOW',
         'Timeout': 'TIMEOUT',
@@ -904,7 +897,6 @@ class TestExpectations(object):
         TestExpectationParser.SKIP_MODIFIER: SKIP,
         TestExpectationParser.WONTFIX_MODIFIER: WONTFIX,
         TestExpectationParser.SLOW_MODIFIER: SLOW,
-        TestExpectationParser.REBASELINE_MODIFIER: REBASELINE,
     }
 
     EXPECTATIONS_TO_STRING = {k: v.upper() for (v, k) in EXPECTATIONS.iteritems()}
@@ -953,12 +945,11 @@ class TestExpectations(object):
             raise ValueError(expectation)
 
     @staticmethod
-    def result_was_expected(result, expected_results, test_needs_rebaselining):
+    def result_was_expected(result, expected_results):
         """Returns whether we got a result we were expecting.
         Args:
             result: actual result of a test execution
             expected_results: set of results listed in test_expectations
-            test_needs_rebaselining: whether test was marked as REBASELINE
         """
         local_expected = set(expected_results)
         if WONTFIX in local_expected:
@@ -967,18 +958,13 @@ class TestExpectations(object):
 
         # Make sure we have at least one result type that may actually happen.
         local_expected.discard(WONTFIX)
-        local_expected.discard(REBASELINE)
         local_expected.discard(SLOW)
         if not local_expected:
             local_expected = {PASS}
 
         if result in local_expected:
             return True
-        if result in (PASS, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, MISSING) and NEEDS_MANUAL_REBASELINE in local_expected:
-            return True
         if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO) and FAIL in local_expected:
-            return True
-        if result == MISSING and test_needs_rebaselining:
             return True
         return False
 
@@ -1090,9 +1076,6 @@ class TestExpectations(object):
     def expectations(self):
         return self._expectations
 
-    def get_rebaselining_failures(self):
-        return self._model.get_test_set(REBASELINE)
-
     # FIXME: Change the callsites to use TestExpectationsModel and remove.
     def get_expectations(self, test):
         return self._model.get_expectations(test)
@@ -1118,10 +1101,7 @@ class TestExpectations(object):
             expected_results = self.remove_non_sanitizer_failures(expected_results)
         elif not pixel_tests_are_enabled:
             expected_results = self.remove_pixel_failures(expected_results)
-        return self.result_was_expected(result, expected_results, self.is_rebaselining(test))
-
-    def is_rebaselining(self, test):
-        return REBASELINE in self._model.get_expectations(test)
+        return self.result_was_expected(result, expected_results)
 
     def _shorten_filename(self, filename):
         finder = PathFinder(self._port.host.filesystem)

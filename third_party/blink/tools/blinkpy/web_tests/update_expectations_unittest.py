@@ -172,8 +172,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # expectations are flaky so we shouldn't remove any.
             Bug(test) test/a.html [ Pass ]
             Bug(test) test/b.html [ Timeout ]
-            Bug(test) test/c.html [ Failure Timeout ]
-            Bug(test) test/d.html [ Rebaseline ]"""
+            Bug(test) test/c.html [ Failure Timeout ]"""
 
         self._expectations_remover = (
             self._create_expectations_remover(self.FLAKE_TYPE))
@@ -213,8 +212,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # expectations are failing so we shouldn't remove any.
             Bug(test) test/a.html [ Pass ]
             Bug(test) test/b.html [ Failure Pass ]
-            Bug(test) test/c.html [ Failure Pass Timeout ]
-            Bug(test) test/d.html [ Rebaseline ]"""
+            Bug(test) test/c.html [ Failure Pass Timeout ]"""
 
         self._expectations_remover = (
             self._create_expectations_remover(self.FAIL_TYPE))
@@ -337,36 +335,6 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'WebKit Linux Trusty': {
                 'test/a.html': ['PASS', 'PASS'],
                 'test/b.html': ['PASS', 'IMAGE'],
-            }
-        }
-        updated_expectations = (
-            self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(
-            updated_expectations, test_expectations_before)
-
-    def test_dont_remove_rebaselines(self):
-        """Tests that lines with rebaseline expectations are untouched."""
-        test_expectations_before = """
-            # Even though the results show all passing, none of the
-            # expectations are flaky or failing so we shouldn't remove any.
-            Bug(test) test/a.html [ Failure Pass Rebaseline ]
-            Bug(test) test/b.html [ Failure Rebaseline ]"""
-
-        self._expectations_remover = self._create_expectations_remover()
-        self._define_builders({
-            'WebKit Linux Trusty': {
-                'port_name': 'linux-trusty',
-                'specifiers': ['Trusty', 'Release']
-            },
-        })
-        self._port.all_build_types = ('release',)
-        self._port.all_systems = (('trusty', 'x86_64'),)
-
-        self._parse_expectations(test_expectations_before)
-        self._expectation_factory.all_results_by_builder = {
-            'WebKit Linux Trusty': {
-                'test/a.html': ['PASS', 'PASS'],
-                'test/b.html': ['PASS', 'PASS'],
             }
         }
         updated_expectations = (

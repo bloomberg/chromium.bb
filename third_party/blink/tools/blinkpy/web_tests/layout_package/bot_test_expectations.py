@@ -218,7 +218,7 @@ class BotTestExpectations(object):
             # Distinct resulting expectations.
             result_exp = map(string_to_exp, result_strings)
 
-            expected = lambda e: TestExpectations.result_was_expected(e, expectations, False)
+            expected = lambda e: TestExpectations.result_was_expected(e, expectations)
 
             additional_expectations = set(e for e in result_exp if not expected(e))
 
@@ -328,7 +328,7 @@ class BotTestExpectations(object):
                 # individual runs' full_results.json, which would be slow and more complicated.
                 # The only thing we lose by not fixing this is that a test that was flaky
                 # and got fixed will still get printed out until 100 runs have passed.
-                if not TestExpectations.result_was_expected(result_enum, latest_expectations, test_needs_rebaselining=False):
+                if not TestExpectations.result_was_expected(result_enum, latest_expectations):
                     has_unexpected_results = True
                     break
 
