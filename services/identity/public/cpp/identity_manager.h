@@ -37,7 +37,6 @@ class MultiProfileFilesAppBrowserTest;
 // Necessary to declare these classes as friends.
 class ArcSupportHostTest;
 class MultiProfileDownloadNotificationTest;
-class ProfileSyncServiceHarness;
 
 namespace identity {
 
@@ -214,7 +213,6 @@ class IdentityManager : public SigninManagerBase::Observer,
                                        IdentityManager* identity_manager,
                                        const std::string& email);
   friend MultiProfileDownloadNotificationTest;
-  friend ProfileSyncServiceHarness;
   friend file_manager::MultiProfileFilesAppBrowserTest;
 
   // These clients needs to call SetPrimaryAccountSynchronously().

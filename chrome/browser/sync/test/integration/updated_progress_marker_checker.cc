@@ -32,12 +32,11 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
   //    GetLastCycleSnapshot() prior to the first sync cycle).
   // 2. Our last sync cycle committed no changes (because commits are followed
   //    by the test-only 'self-notify' cycle).
-  // 3. Sync is still active (e.g. no failures).
-  // 4. No pending local changes (which will ultimately generate new progress
+  // 3. No pending local changes (which will ultimately generate new progress
   //    markers once submitted to the server).
   return !snap.download_progress_markers().empty() &&
          snap.model_neutral_state().num_successful_commits == 0 &&
-         service()->IsSyncActive() && !has_unsynced_items_.value();
+         !has_unsynced_items_.value();
 }
 
 void UpdatedProgressMarkerChecker::GotHasUnsyncedItems(

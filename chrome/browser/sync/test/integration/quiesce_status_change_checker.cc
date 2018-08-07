@@ -16,11 +16,6 @@
 
 namespace {
 
-// Returns true if this service is disabled.
-bool IsSyncDisabled(browser_sync::ProfileSyncService* service) {
-  return !service->IsSetupInProgress() && !service->IsFirstSetupComplete();
-}
-
 // Returns true if these services have matching progress markers.
 bool ProgressMarkersMatch(const browser_sync::ProfileSyncService* service1,
                           const browser_sync::ProfileSyncService* service2) {
@@ -103,10 +98,6 @@ bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
   // Check that all progress markers are up to date.
   std::vector<browser_sync::ProfileSyncService*> enabled_services;
   for (const auto& checker : checkers_) {
-    if (IsSyncDisabled(checker->service())) {
-      continue;  // Skip disabled services.
-    }
-
     enabled_services.push_back(checker->service());
 
     if (!checker->IsExitConditionSatisfied()) {

@@ -204,23 +204,20 @@ class UkmBrowserTestBase : public SyncTest {
             GetFakeServer()->AsWeakPtr()));
 
     std::string username;
-    std::string gaia_id;
 #if defined(OS_CHROMEOS)
     // In browser tests, the profile may already by authenticated with stub
     // account |user_manager::kStubUserEmail|.
     AccountInfo info = SigninManagerFactory::GetForProfile(profile)
                            ->GetAuthenticatedAccountInfo();
     username = info.email;
-    gaia_id = info.gaia;
 #endif
     if (username.empty()) {
       username = "user@gmail.com";
-      gaia_id = "123456789";
     }
 
     std::unique_ptr<ProfileSyncServiceHarness> harness =
         ProfileSyncServiceHarness::Create(
-            profile, username, gaia_id, "unused" /* password */,
+            profile, username, "unused" /* password */,
             ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
     EXPECT_TRUE(harness->SetupSync());
     return harness;

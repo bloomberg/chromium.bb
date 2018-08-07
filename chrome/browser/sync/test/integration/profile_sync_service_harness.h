@@ -39,10 +39,13 @@ class ProfileSyncServiceHarness {
   static std::unique_ptr<ProfileSyncServiceHarness> Create(
       Profile* profile,
       const std::string& username,
-      const std::string& gaia_id,
       const std::string& password,
       SigninType signin_type);
   virtual ~ProfileSyncServiceHarness();
+
+  // Creates a ProfileSyncService for the profile passed at construction and
+  // signs in without actually enabling sync the feature.
+  bool SignIn();
 
   // Creates a ProfileSyncService for the profile passed at construction and
   // enables sync for all available datatypes. Returns true only after sync has
@@ -114,7 +117,7 @@ class ProfileSyncServiceHarness {
   // (e.g., auth error) is reached. Returns true if and only if the engine
   // initialized successfully. See ProfileSyncService's IsEngineInitialized()
   // method for the definition of engine initialization.
-  bool AwaitEngineInitialization(bool skip_passphrase_verification);
+  bool AwaitEngineInitialization(bool skip_passphrase_verification = false);
 
   // Blocks the caller until sync setup is complete. Returns true if and only
   // if sync setup completed successfully. See syncer::SyncService's
@@ -160,7 +163,6 @@ class ProfileSyncServiceHarness {
  private:
   ProfileSyncServiceHarness(Profile* profile,
                             const std::string& username,
-                            const std::string& gaia_id,
                             const std::string& password,
                             SigninType signin_type);
 
@@ -182,7 +184,6 @@ class ProfileSyncServiceHarness {
 
   // Credentials used for GAIA authentication.
   std::string username_;
-  std::string gaia_id_;
   std::string password_;
 
   // Used to decide what method of profile signin to use.
