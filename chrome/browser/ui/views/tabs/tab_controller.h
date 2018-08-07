@@ -132,6 +132,10 @@ class TabController {
           border_callback,
       gfx::Path* clip) = 0;
 
+  // Returns the thickness of the stroke around all tabs (for pre-refresh) or
+  // the active tab (for refresh) in DIP.  Returns 0 if there is no stroke.
+  virtual int GetStrokeThickness() const = 0;
+
   // Returns true if tab loading throbbers can be painted to a composited layer.
   // This can only be done when the TabController can guarantee that nothing
   // in the same window will redraw on top of the the favicon area of any tab.

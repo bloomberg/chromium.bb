@@ -67,9 +67,6 @@ class TabStrip : public views::View,
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
 
-  // Returns whether or not strokes should be drawn around and under the tabs.
-  static bool ShouldDrawStrokes();
-
   // Returns the gap size between the pinned tabs and the non-pinned tabs.
   static int GetPinnedToNonPinnedOffset();
 
@@ -218,6 +215,9 @@ class TabStrip : public views::View,
   // ongoing this does a layout.
   void StopAnimating(bool layout);
 
+  // Returns whether or not strokes should be drawn around and under the tabs.
+  bool ShouldDrawStrokes() const;
+
   // TabController:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
@@ -256,6 +256,7 @@ class TabStrip : public views::View,
       const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>&
           border_callback,
       gfx::Path* clip) override;
+  int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
   SkColor GetTabSeparatorColor() const override;

@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
@@ -618,7 +619,7 @@ void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
         GetMirroredX() + browser_view_->GetMirroredX() +
         browser_view_->frame()->GetFrameView()->GetThemeBackgroundXInset();
     const int y_offset = GetLayoutConstant(TAB_HEIGHT) -
-                         Tab::GetStrokeHeight() -
+                         browser_view_->tabstrip()->GetStrokeThickness() -
                          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
     canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR), x_offset,
                          y_offset, 0, 0, width(), height());

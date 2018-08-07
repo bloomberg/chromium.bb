@@ -81,6 +81,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Retrieves the icon to use in the frame to indicate an incognito window.
   gfx::ImageSkia GetIncognitoAvatarIcon() const;
 
+  // Returns the color of the browser frame, which is also the color of the
+  // tabstrip background.
+  SkColor GetFrameColor() const;
+
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
   SkColor GetToolbarTopSeparatorColor() const;
@@ -150,7 +154,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Convenience versions of the above which use ShouldPaintAsActive() for
   // |active|.
-  SkColor GetFrameColor() const;
   gfx::ImageSkia GetFrameImage() const;
   gfx::ImageSkia GetFrameOverlayImage() const;
 
