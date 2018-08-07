@@ -288,9 +288,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
  public:
   explicit MockNativeWidgetMac(internal::NativeWidgetDelegate* delegate)
       : NativeWidgetMac(delegate) {}
-
-  // Expose a reference, so that it can be reset() independently.
-  std::unique_ptr<BridgedNativeWidget>& bridge() { return bridge_; }
+  using NativeWidgetMac::bridge;
 
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override {
@@ -301,7 +299,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
     delegate()->OnNativeWidgetCreated(true);
 
     // To allow events to dispatch to a view, it needs a way to get focus.
-    bridge_->SetFocusManager(GetWidget()->GetFocusManager());
+    bridge()->SetFocusManager(GetWidget()->GetFocusManager());
   }
 
   void ReorderNativeViews() override {
@@ -324,9 +322,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   explicit BridgedNativeWidgetTestBase(SkipInitialization tag)
       : native_widget_mac_(nullptr) {}
 
-  std::unique_ptr<BridgedNativeWidget>& bridge() {
-    return native_widget_mac_->bridge();
-  }
+  BridgedNativeWidget* bridge() { return native_widget_mac_->bridge(); }
 
   // Overridden from testing::Test:
   void SetUp() override {

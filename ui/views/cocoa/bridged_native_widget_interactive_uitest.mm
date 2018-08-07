@@ -15,6 +15,7 @@
 #include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
+#include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -256,7 +257,7 @@ class HitTestNativeWidgetMac : public NativeWidgetMac {
   HitTestNativeWidgetMac(internal::NativeWidgetDelegate* delegate,
                          NativeFrameView* native_frame_view)
       : NativeWidgetMac(delegate), native_frame_view_(native_frame_view) {
-    NativeWidgetMac::bridge_.reset(new BridgedNativeWidget(this));
+    bridge_host_ = std::make_unique<BridgedNativeWidgetHostImpl>(this);
   }
 
   // internal::NativeWidgetPrivate:
