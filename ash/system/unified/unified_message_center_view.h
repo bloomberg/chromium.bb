@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/message_center/message_list_view.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/macros.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_list.h"
@@ -90,14 +91,18 @@ class ASH_EXPORT UnifiedMessageCenterView
   // MessageCenterScrollBar::Observer:
   void OnMessageCenterScrolled() override;
 
+  // Notify the height below scroll to UnifiedSystemTrayView in order to imitate
+  // notification list scrolling under SystemTray.
+  void NotifyHeightBelowScroll();
+
  private:
   void Update();
   void AddNotificationAt(const message_center::Notification& notification,
                          int index);
   void UpdateNotification(const std::string& notification_id);
 
-  // Scroll the notification list to the bottom.
-  void ScrollToBottom();
+  // Scroll the notification list to |position_from_bottom_|.
+  void ScrollToPositionFromBottom();
 
   UnifiedSystemTrayController* const tray_controller_;
   UnifiedSystemTrayView* const parent_;
@@ -105,6 +110,10 @@ class ASH_EXPORT UnifiedMessageCenterView
 
   views::ScrollView* const scroller_;
   MessageListView* const message_list_view_;
+
+  // Position from the bottom of scroll contents in dip. Hide Clear All button
+  // at the buttom from initial viewport.
+  int position_from_bottom_ = 3 * kUnifiedNotificationCenterSpacing;
 
   views::FocusManager* focus_manager_ = nullptr;
 

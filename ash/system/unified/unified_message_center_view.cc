@@ -6,7 +6,6 @@
 
 #include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -101,6 +100,8 @@ void UnifiedMessageCenterView::Init() {
   focus_manager_ = GetFocusManager();
   if (focus_manager_)
     focus_manager_->AddFocusChangeListener(this);
+  ScrollToPositionFromBottom();
+  NotifyHeightBelowScroll();
 }
 
 void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
@@ -132,8 +133,8 @@ void UnifiedMessageCenterView::SetNotifications(
 
 void UnifiedMessageCenterView::Layout() {
   scroller_->SetBounds(0, 0, width(), height());
-  ScrollToBottom();
-  OnMessageCenterScrolled();
+  ScrollToPositionFromBottom();
+  NotifyHeightBelowScroll();
 }
 
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
@@ -158,7 +159,6 @@ void UnifiedMessageCenterView::OnNotificationAdded(const std::string& id) {
     }
   }
   Update();
-  ScrollToBottom();
 }
 
 void UnifiedMessageCenterView::OnNotificationRemoved(const std::string& id,
@@ -217,6 +217,15 @@ void UnifiedMessageCenterView::OnAllNotificationsCleared() {
 }
 
 void UnifiedMessageCenterView::OnMessageCenterScrolled() {
+  // Notification list is scrolled manually e.g. by mouse or gesture.
+  auto* scroll_bar = scroller_->vertical_scroll_bar();
+  // Save the distance from the bottom when manually scrolled.
+  position_from_bottom_ =
+      scroll_bar->GetMaxPosition() - scroller_->GetVisibleRect().y();
+  NotifyHeightBelowScroll();
+}
+
+void UnifiedMessageCenterView::NotifyHeightBelowScroll() {
   parent_->SetNotificationHeightBelowScroll(
       message_list_view_->GetHeightBelowVisibleRect());
 }
@@ -239,8 +248,9 @@ void UnifiedMessageCenterView::Update() {
   }
 
   scroller_->Layout();
+
   PreferredSizeChanged();
-  OnMessageCenterScrolled();
+  NotifyHeightBelowScroll();
 }
 
 void UnifiedMessageCenterView::AddNotificationAt(
@@ -272,14 +282,11 @@ void UnifiedMessageCenterView::UpdateNotification(const std::string& id) {
   }
 }
 
-void UnifiedMessageCenterView::ScrollToBottom() {
-  // Hide Clear All button at the buttom from initial viewport.
-  int max_position_without_button =
-      scroller_->vertical_scroll_bar()->GetMaxPosition() -
-      3 * kUnifiedNotificationCenterSpacing;
+void UnifiedMessageCenterView::ScrollToPositionFromBottom() {
   scroller_->ScrollToPosition(
       const_cast<views::ScrollBar*>(scroller_->vertical_scroll_bar()),
-      max_position_without_button);
+      std::max(0, scroller_->vertical_scroll_bar()->GetMaxPosition() -
+                      position_from_bottom_));
 }
 
 }  // namespace ash
