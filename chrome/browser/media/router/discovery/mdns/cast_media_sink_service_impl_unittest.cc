@@ -98,6 +98,10 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
     media_sink_service_impl_.OpenChannels(cast_sinks, sink_source);
   }
 
+  void ChangeConnectionType(network::mojom::ConnectionType connection_type) {
+    discovery_network_monitor_->OnConnectionChanged(connection_type);
+  }
+
  protected:
   void ExpectOpenSocketInternal(cast_channel::CastSocket* socket) {
     EXPECT_CALL(*mock_cast_socket_service_,
@@ -120,8 +124,6 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
 
   const content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_ =
-      base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
   std::unique_ptr<DiscoveryNetworkMonitor> discovery_network_monitor_ =
       DiscoveryNetworkMonitor::CreateInstanceForTest(&FakeGetNetworkInfo);
 
@@ -762,14 +764,12 @@ TEST_F(CastMediaSinkServiceImplTest, CacheSinksForKnownNetwork) {
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   fake_network_info_ = fake_wifi_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1, sink1);
@@ -789,8 +789,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheSinksForKnownNetwork) {
   // Reconnecting to the previous ethernet network should restore the same sinks
   // from the cache and attempt to resolve them.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
@@ -799,8 +798,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheSinksForKnownNetwork) {
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint2, _, _));
   fake_network_info_ = fake_ethernet_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
@@ -834,14 +832,12 @@ TEST_F(CastMediaSinkServiceImplTest, CacheContainsOnlyResolvedSinks) {
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   fake_network_info_ = fake_wifi_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1, sink1);
@@ -860,8 +856,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheContainsOnlyResolvedSinks) {
   // Reconnecting to the previous ethernet network should restore only |sink1|,
   // since |sink2| failed to resolve.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
@@ -871,8 +866,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheContainsOnlyResolvedSinks) {
               OpenSocketInternal(ip_endpoint2, _, _))
       .Times(0);
   fake_network_info_ = fake_ethernet_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
@@ -901,14 +895,12 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedOnChannelOpenFailed) {
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   fake_network_info_ = fake_wifi_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
@@ -927,15 +919,13 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedOnChannelOpenFailed) {
   // since the only sink to resolve successfully, |sink1|, later had a channel
   // error.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(_, _, _)).Times(0);
   fake_network_info_ = fake_ethernet_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
@@ -949,8 +939,7 @@ TEST_F(CastMediaSinkServiceImplTest, UnknownNetworkNoCache) {
   media_sink_service_impl_.retry_params_.max_retry_attempts = 0;
 
   fake_network_info_ = fake_unknown_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_UNKNOWN);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
@@ -974,8 +963,7 @@ TEST_F(CastMediaSinkServiceImplTest, UnknownNetworkNoCache) {
 
   // Network is reported as disconnected but discover a new device.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1, sink1);
@@ -996,15 +984,13 @@ TEST_F(CastMediaSinkServiceImplTest, UnknownNetworkNoCache) {
   // cache items from another unknown network.
   EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(_, _, _)).Times(0);
   fake_network_info_ = fake_unknown_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Similarly, disconnecting from the network shouldn't pull any cache items.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
@@ -1037,14 +1023,12 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   fake_network_info_ = fake_wifi_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1, sink1);
@@ -1064,8 +1048,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
   // Reconnecting to the previous ethernet network should restore the same sinks
   // from the cache and attempt to resolve them.  |sink3| is also lost.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
@@ -1077,8 +1060,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
   ExpectOpenSocketInternal(&socket1);
   ExpectOpenSocketInternal(&socket2);
   fake_network_info_ = fake_ethernet_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
@@ -1096,8 +1078,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
 
   // Disconnect from the network and lose sinks.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint4, sink4);
@@ -1106,8 +1087,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint4, _, _));
   fake_network_info_ = fake_ethernet_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
@@ -1151,14 +1131,12 @@ TEST_F(CastMediaSinkServiceImplTest, CacheDialDiscoveredSinks) {
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   fake_network_info_ = fake_wifi_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1, sink1_cast);
@@ -1187,8 +1165,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheDialDiscoveredSinks) {
   // Reconnecting to the previous ethernet network should restore the same sinks
   // from the cache and attempt to resolve them.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
@@ -1197,8 +1174,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheDialDiscoveredSinks) {
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint2, _, _));
   fake_network_info_ = fake_ethernet_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
@@ -1240,14 +1216,12 @@ TEST_F(CastMediaSinkServiceImplTest, DualDiscoveryDoesntDuplicateCacheItems) {
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   fake_network_info_ = fake_wifi_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1_cast, sink1_cast);
@@ -1267,16 +1241,14 @@ TEST_F(CastMediaSinkServiceImplTest, DualDiscoveryDoesntDuplicateCacheItems) {
   // Reconnecting to the previous ethernet network should restore the same sinks
   // from the cache and attempt to resolve them.
   fake_network_info_.clear();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint1_cast, _, _));
   fake_network_info_ = fake_ethernet_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
@@ -1309,8 +1281,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheSinksForDirectNetworkChange) {
 
   // Connect to a new network with different sinks.
   fake_network_info_ = fake_wifi_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1, sink1);
@@ -1334,8 +1305,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheSinksForDirectNetworkChange) {
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint2, _, _));
   fake_network_info_ = fake_ethernet_info_;
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   content::RunAllTasksUntilIdle();
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
