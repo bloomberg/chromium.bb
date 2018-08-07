@@ -1882,12 +1882,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
 }
 
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, RootWindowTransform) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       DISABLED_RootWindowTransform) {
   HitTestRootWindowTransform(shell(), embedded_test_server());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       RootWindowTransform) {
+                       DISABLED_RootWindowTransform) {
   HitTestRootWindowTransform(shell(), embedded_test_server());
 }
 #endif  // defined(USE_AURA)
