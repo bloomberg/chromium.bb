@@ -78,13 +78,13 @@ namespace {
 //    progress, it exits the run loop.
 // 7. At this point, all parsing, resource loads, and layout should be finished.
 
-void RunServeAsyncRequestsTask() {
+void RunServeAsyncRequestsTask(scoped_refptr<base::TaskRunner> task_runner) {
   // TODO(kinuko,toyoshim): Create a mock factory and use it instead of
   // getting the platform's one. (crbug.com/751425)
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   if (TestWebFrameClient::IsLoading()) {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&RunServeAsyncRequestsTask));
+    task_runner->PostTask(FROM_HERE,
+                          WTF::Bind(&RunServeAsyncRequestsTask, task_runner));
   } else {
     test::ExitRunLoop();
   }
@@ -153,8 +153,10 @@ void ReloadFrameBypassingCache(WebLocalFrame* frame) {
 }
 
 void PumpPendingRequestsForFrameToLoad(WebLocalFrame* frame) {
-  frame->GetTaskRunner(blink::TaskType::kInternalTest)
-      ->PostTask(FROM_HERE, WTF::Bind(&RunServeAsyncRequestsTask));
+  scoped_refptr<base::TaskRunner> task_runner =
+      frame->GetTaskRunner(blink::TaskType::kInternalTest);
+  task_runner->PostTask(FROM_HERE,
+                        WTF::Bind(&RunServeAsyncRequestsTask, task_runner));
   test::EnterRunLoop();
 }
 
