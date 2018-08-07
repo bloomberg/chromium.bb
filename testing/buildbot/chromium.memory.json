@@ -3647,17 +3647,6 @@
       },
       {
         "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_browser_tests",
@@ -5576,17 +5565,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 15
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-site-isolation-trials"
-        ],
-        "name": "not_site_per_process_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
         },
         "test": "browser_tests"
       },
