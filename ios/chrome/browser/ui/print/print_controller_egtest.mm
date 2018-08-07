@@ -77,6 +77,15 @@ id<GREYMatcher> ShareMenuCollectionView() {
   }
 #endif
 
+#if TARGET_IPHONE_SIMULATOR
+  if (IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
+    // TODO(crbug.com/871685): Re-enable this test.
+    EARL_GREY_TEST_DISABLED(
+        @"Failing on iOS 10 iPad simulator, for "
+        @"ios_chrome_multitasking_egtests");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
+
   GURL url = web::test::HttpServer::MakeUrl(kHTMLURL);
   std::map<GURL, std::string> responses;
   std::string response = "Test";
