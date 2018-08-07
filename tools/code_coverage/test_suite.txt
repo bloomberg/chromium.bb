@@ -4,7 +4,6 @@ app_shell_unittests
 audio_unittests
 aura_unittests
 base_unittests
-battor_agent_unittests
 blink_common_unittests
 blink_heap_unittests
 blink_platform_unittests

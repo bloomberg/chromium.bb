@@ -353,12 +353,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "battor_agent_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "blink_common_unittests"
       },
       {
@@ -1942,12 +1936,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "battor_agent_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "blink_common_unittests"
       },
       {
@@ -2952,7 +2940,6 @@
           "--browser=cros-chrome",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
-          "--skip=telemetry.core.tracing_controller_unittest.TracingControllerTest.testBattOrTracing",
           "--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView",
           "--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse"
         ],
@@ -4010,12 +3997,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "battor_agent_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "blink_common_unittests"
       },
       {
@@ -4783,12 +4764,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "battor_agent_unittests"
       },
       {
         "swarming": {
@@ -5581,15 +5556,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=ViewsBrowserWindows"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "battor_agent_unittests"
       },
       {
         "args": [
