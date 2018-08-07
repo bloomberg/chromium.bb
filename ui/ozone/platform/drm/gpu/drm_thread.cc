@@ -318,6 +318,13 @@ void DrmThread::GetVSyncParameters(
     window->GetVSyncParameters(callback);
 }
 
+void DrmThread::IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic) {
+  scoped_refptr<ui::DrmDevice> drm_device =
+      device_manager_->GetDrmDevice(widget);
+
+  *is_atomic = drm_device->is_atomic();
+}
+
 void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
   std::unique_ptr<DrmWindow> window(
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));

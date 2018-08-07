@@ -95,6 +95,8 @@ class DrmThread : public base::Thread,
       gfx::AcceleratedWidget widget,
       const gfx::VSyncProvider::UpdateVSyncCallback& callback);
 
+  void IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic);
+
   // ozone::mojom::DrmDevice
   void StartDrmDevice(StartDrmDeviceCallback callback) override;
   void CreateWindow(gfx::AcceleratedWidget widget) override;

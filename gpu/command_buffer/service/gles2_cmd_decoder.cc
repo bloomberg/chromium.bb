@@ -3390,11 +3390,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   }
   CHECK_GL_ERROR();
 
-  if (features().chromium_gpu_fence &&
-      group_->gpu_preferences().use_gpu_fences_for_overlay_planes) {
-    surface_->SetUsePlaneGpuFences();
-  }
-
   should_use_native_gmb_for_backbuffer_ =
       attrib_helper.should_use_native_gmb_for_backbuffer;
   if (should_use_native_gmb_for_backbuffer_) {
@@ -4039,6 +4034,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   // This is unconditionally true on mac, no need to test for it at runtime.
   caps.iosurface = true;
 #endif
+  caps.use_gpu_fences_for_overlay_planes = surface_->SupportsPlaneGpuFences();
 
   caps.post_sub_buffer = supports_post_sub_buffer_;
   caps.swap_buffers_with_bounds = supports_swap_buffers_with_bounds_;
@@ -4099,8 +4095,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().chromium_texture_storage_image;
   caps.supports_oop_raster = false;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
-  caps.use_gpu_fences_for_overlay_planes =
-      group_->gpu_preferences().use_gpu_fences_for_overlay_planes;
   caps.unpremultiply_and_dither_copy =
       feature_info_->feature_flags().unpremultiply_and_dither_copy;
   caps.texture_target_exception_list =

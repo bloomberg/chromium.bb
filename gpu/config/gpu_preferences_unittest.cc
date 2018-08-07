@@ -71,8 +71,6 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.ignore_gpu_blacklist, right.ignore_gpu_blacklist);
   EXPECT_EQ(left.enable_oop_rasterization, right.enable_oop_rasterization);
   EXPECT_EQ(left.disable_oop_rasterization, right.disable_oop_rasterization);
-  EXPECT_EQ(left.use_gpu_fences_for_overlay_planes,
-            right.use_gpu_fences_for_overlay_planes);
   EXPECT_EQ(left.watchdog_starts_backgrounded,
             right.watchdog_starts_backgrounded);
   EXPECT_EQ(left.enable_vulkan, right.enable_vulkan);
@@ -153,7 +151,6 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(ignore_gpu_blacklist, true)
     GPU_PREFERENCES_FIELD(enable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(disable_oop_rasterization, true)
-    GPU_PREFERENCES_FIELD(use_gpu_fences_for_overlay_planes, true)
     GPU_PREFERENCES_FIELD(watchdog_starts_backgrounded, true)
     GPU_PREFERENCES_FIELD(enable_vulkan, true)
     GPU_PREFERENCES_FIELD(enable_gpu_benchmarking_extension, true)
