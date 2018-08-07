@@ -26,7 +26,7 @@ void ControllerServiceWorkerImpl::Clone(
 
 void ControllerServiceWorkerImpl::DispatchFetchEvent(
     blink::mojom::DispatchFetchEventParamsPtr params,
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   DCHECK(context_client_);
   context_client_->DispatchOrQueueFetchEvent(

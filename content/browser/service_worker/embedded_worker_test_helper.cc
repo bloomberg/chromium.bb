@@ -43,7 +43,7 @@ namespace content {
 namespace {
 
 void OnFetchEventCommon(
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
   auto response = blink::mojom::FetchAPIResponse::New();
   response->status_code = 200;
@@ -266,7 +266,7 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
 
   void DispatchFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
     if (!helper_)
       return;
@@ -645,7 +645,7 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
     int /* embedded_worker_id */,
     const network::ResourceRequest& /* request */,
     blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
   // TODO(falken): In-line common into here.
   OnFetchEventCommon(std::move(response_callback), std::move(finish_callback));
@@ -937,7 +937,7 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int embedded_worker_id,
     const network::ResourceRequest& request,
     blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

@@ -198,7 +198,7 @@ class EmbeddedWorkerTestHelper {
       int embedded_worker_id,
       const network::ResourceRequest& request,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
   virtual void OnNotificationClickEvent(
       const std::string& notification_id,
@@ -298,7 +298,7 @@ class EmbeddedWorkerTestHelper {
       int embedded_worker_id,
       const network::ResourceRequest& request,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
   void OnNotificationClickEventStub(
       const std::string& notification_id,

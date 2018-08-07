@@ -521,7 +521,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
       can_make_payment_result_callbacks;
   std::map<int, payments::mojom::PaymentHandlerResponseCallbackPtr>
       payment_response_callbacks;
-  std::map<int, mojom::ServiceWorkerFetchResponseCallbackPtr>
+  std::map<int, blink::mojom::ServiceWorkerFetchResponseCallbackPtr>
       fetch_response_callbacks;
 
   // Inflight navigation preload requests.
@@ -1105,7 +1105,7 @@ void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
-  const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
+  const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
   DCHECK(response_callback.is_bound());
   response_callback->OnFallback(base::Time::FromDoubleT(event_dispatch_time));
@@ -1124,7 +1124,7 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
   DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   blink::mojom::FetchAPIResponsePtr response(
       GetFetchAPIResponseFromWebResponse(web_response));
-  const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
+  const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
 
   // TODO(leonhsl): Do not need to pass the additional |blob_ptr| via
@@ -1165,7 +1165,7 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
   DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   blink::mojom::FetchAPIResponsePtr response(
       GetFetchAPIResponseFromWebResponse(web_response));
-  const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
+  const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
   blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream =
       blink::mojom::ServiceWorkerStreamHandle::New();
@@ -1466,7 +1466,7 @@ void ServiceWorkerContextClient::Claim(
 
 void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
     blink::mojom::DispatchFetchEventParamsPtr params,
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   TRACE_EVENT2("ServiceWorker",
                "ServiceWorkerContextClient::DispatchOrQueueFetchEvent", "url",
@@ -1766,7 +1766,7 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
 // S13nServiceWorker
 void ServiceWorkerContextClient::DispatchFetchEvent(
     blink::mojom::DispatchFetchEventParamsPtr params,
-    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   int event_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->fetch_event_callbacks));

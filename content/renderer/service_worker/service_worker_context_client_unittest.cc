@@ -340,11 +340,11 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
   const GURL expected_url("https://example.com/expected");
-  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request;
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = expected_url;
-  mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
-  fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
+  blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+  blink::mojom::ServiceWorkerFetchResponseCallbackRequest
+      fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
   auto params = blink::mojom::DispatchFetchEventParams::New();
   params->request = *request;
   pipes.service_worker->DispatchFetchEvent(
@@ -377,9 +377,9 @@ TEST_F(ServiceWorkerContextClientTest,
 
   // The dispatched fetch event should be recorded by |mock_proxy|.
   const GURL expected_url("https://example.com/expected");
-  mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
-  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request =
-      mojo::MakeRequest(&fetch_callback_ptr);
+  blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+  blink::mojom::ServiceWorkerFetchResponseCallbackRequest
+      fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = expected_url;
   auto params = blink::mojom::DispatchFetchEventParams::New();
@@ -421,13 +421,13 @@ TEST_F(ServiceWorkerContextClientTest,
   EXPECT_TRUE(context_client->RequestedTermination());
 
   const GURL expected_url("https://example.com/expected");
-  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request;
 
   // FetchEvent dispatched directly from the controlled clients through
   // mojom::ControllerServiceWorker should be queued in the idle state.
   {
-    mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
-    fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+    blink::mojom::ServiceWorkerFetchResponseCallbackRequest
+        fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = expected_url;
     auto params = blink::mojom::DispatchFetchEventParams::New();
@@ -469,13 +469,15 @@ TEST_F(ServiceWorkerContextClientTest,
 
   const GURL expected_url_1("https://example.com/expected_1");
   const GURL expected_url_2("https://example.com/expected_2");
-  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request_1;
-  mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request_2;
+  blink::mojom::ServiceWorkerFetchResponseCallbackRequest
+      fetch_callback_request_1;
+  blink::mojom::ServiceWorkerFetchResponseCallbackRequest
+      fetch_callback_request_2;
 
   // FetchEvent dispatched directly from the controlled clients through
   // mojom::ControllerServiceWorker should be queued in the idle state.
   {
-    mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     fetch_callback_request_1 = mojo::MakeRequest(&fetch_callback_ptr);
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = expected_url_1;
@@ -492,7 +494,7 @@ TEST_F(ServiceWorkerContextClientTest,
   // Another event dispatched to mojom::ServiceWorker wakes up
   // the context client.
   {
-    mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+    blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     fetch_callback_request_2 = mojo::MakeRequest(&fetch_callback_ptr);
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = expected_url_2;

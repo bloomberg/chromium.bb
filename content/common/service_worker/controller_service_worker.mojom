@@ -5,11 +5,11 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker.mojom";
-import "content/common/service_worker/service_worker_fetch_response_callback.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_fetch_response_callback.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_object.mojom";
 import "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom";
 
@@ -37,8 +37,9 @@ interface ControllerServiceWorker {
   // handler ran and all outstanding respondWith() and waitUntil() promises have
   // settled. |response_callback| is called once the promise to respondWith()
   // settles, or when the event handler ran without calling respondWith().
-  DispatchFetchEvent(blink.mojom.DispatchFetchEventParams params,
-                     ServiceWorkerFetchResponseCallback response_callback)
+  DispatchFetchEvent(
+      blink.mojom.DispatchFetchEventParams params,
+      blink.mojom.ServiceWorkerFetchResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
 

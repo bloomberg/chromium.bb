@@ -361,11 +361,12 @@ const net::NetworkTrafficAnnotationTag kNavigationPreloadTrafficAnnotation =
 // ServiceWorkerVersion::StartRequest*(), and held in pending_requests_
 // until FinishRequest() is called.
 class ServiceWorkerFetchDispatcher::ResponseCallback
-    : public mojom::ServiceWorkerFetchResponseCallback {
+    : public blink::mojom::ServiceWorkerFetchResponseCallback {
  public:
-  ResponseCallback(mojom::ServiceWorkerFetchResponseCallbackRequest request,
-                   base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
-                   ServiceWorkerVersion* version)
+  ResponseCallback(
+      blink::mojom::ServiceWorkerFetchResponseCallbackRequest request,
+      base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
+      ServiceWorkerVersion* version)
       : binding_(this, std::move(request)),
         fetch_dispatcher_(fetch_dispatcher),
         version_(version) {}
@@ -377,7 +378,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
     fetch_event_id_ = id;
   }
 
-  // Implements mojom::ServiceWorkerFetchResponseCallback.
+  // Implements blink::mojom::ServiceWorkerFetchResponseCallback.
   void OnResponse(blink::mojom::FetchAPIResponsePtr response,
                   base::Time dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
@@ -433,7 +434,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
                                 std::move(body_as_blob));
   }
 
-  mojo::Binding<mojom::ServiceWorkerFetchResponseCallback> binding_;
+  mojo::Binding<blink::mojom::ServiceWorkerFetchResponseCallback> binding_;
   base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   // Owns |this| via pending_requests_.
   ServiceWorkerVersion* version_;
@@ -578,7 +579,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
 
   // Set up for receiving the response.
-  mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
+  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   auto response_callback = std::make_unique<ResponseCallback>(
       mojo::MakeRequest(&response_callback_ptr), weak_factory_.GetWeakPtr(),
       version_.get());

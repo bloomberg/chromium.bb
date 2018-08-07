@@ -526,7 +526,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
       int embedded_worker_id,
       const network::ResourceRequest& /* request */,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     embedded_worker_id_ = embedded_worker_id;
@@ -547,7 +547,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;
   blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info_;
   int embedded_worker_id_ = 0;
-  mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
+  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
   blink::mojom::FetchEventPreloadHandlePtr preload_handle_;
   mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
   ServiceWorkerURLRequestJobTest* test_;
@@ -704,7 +704,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
       int /* embedded_worker_id */,
       const network::ResourceRequest& /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     context()->RemoveProviderHost(mock_render_process_id(), kProviderID);
@@ -783,7 +783,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
       int /* embedded_worker_id */,
       const network::ResourceRequest& /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     blink::mojom::FetchAPIResponsePtr response = MakeOkResponse();
@@ -883,7 +883,7 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
       int /* embedded_worker_id */,
       const network::ResourceRequest& /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     ASSERT_FALSE(stream_handle_.is_null());
@@ -1266,7 +1266,8 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
       int embedded_worker_id,
       const network::ResourceRequest& /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-      mojom::ServiceWorkerFetchResponseCallbackPtr /* response_callback */,
+      blink::mojom::
+          ServiceWorkerFetchResponseCallbackPtr /* response_callback */,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     SimulateWorkerStopped(embedded_worker_id);
@@ -1359,7 +1360,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
       int /* embedded_worker_id */,
       const network::ResourceRequest& /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     finish_callback_ = std::move(finish_callback);
