@@ -6,7 +6,9 @@
 
 #include "ui/views/view.h"
 
-// Amount to scale the opacity.
+// Amount to scale the opacity. The spec is in terms of a Sketch radial gradient
+// from color A (#FFF, 0.9) at center to color B (#FFF, 0.0) at edge, with a
+// gradient opacity of 0.5. So this premultiplies for a center opacity of 0.45.
 static const double kSubtleOpacityScale = 0.45;
 static const double kPronouncedOpacityScale = 1.0;
 
@@ -14,7 +16,10 @@ static const double kPronouncedOpacityScale = 1.0;
 static const int kTrackHoverDurationMs = 200;
 
 GlowHoverController::GlowHoverController(views::View* view)
-    : view_(view), animation_(this), opacity_scale_(kSubtleOpacityScale) {
+    : view_(view),
+      animation_(this),
+      opacity_scale_(kSubtleOpacityScale),
+      subtle_opacity_scale_(kSubtleOpacityScale) {
   animation_.set_delegate(this);
 }
 
@@ -31,10 +36,14 @@ void GlowHoverController::SetLocation(const gfx::Point& location) {
     view_->SchedulePaint();
 }
 
+void GlowHoverController::SetSubtleOpacityScale(double opacity_scale) {
+  subtle_opacity_scale_ = opacity_scale;
+}
+
 void GlowHoverController::Show(Style style) {
   switch (style) {
     case SUBTLE:
-      opacity_scale_ = kSubtleOpacityScale;
+      opacity_scale_ = subtle_opacity_scale_;
       animation_.SetSlideDuration(kTrackHoverDurationMs);
       animation_.SetTweenType(gfx::Tween::EASE_OUT);
       animation_.Show();

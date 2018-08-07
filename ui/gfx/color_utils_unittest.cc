@@ -221,4 +221,37 @@ TEST(ColorUtils, GetColorWithMinimumContrast_StopsAtDarkestColor) {
   SetDarkestColor(old_black_color);
 }
 
+TEST(ColorUtils, GetBlendValueWithMinimumContrast_ComputesExpectedOpacities) {
+  const SkColor source = SkColorSetRGB(0xDE, 0xE1, 0xE6);
+  const SkColor target = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+  const SkColor base = source;
+  SkAlpha alpha = GetBlendValueWithMinimumContrast(source, target, base, 1.11f);
+  EXPECT_NEAR(alpha / 255.0f, 0.4f, 0.03f);
+  alpha = GetBlendValueWithMinimumContrast(source, target, base, 1.19f);
+  EXPECT_NEAR(alpha / 255.0f, 0.65f, 0.03f);
+  alpha = GetBlendValueWithMinimumContrast(source, target, base, 1.13728f);
+  EXPECT_NEAR(alpha / 255.0f, 0.45f, 0.03f);
+}
+
+TEST(ColorUtils, FindBlendValueForContrastRatio_MatchesNaiveImplementation) {
+  const SkColor source = SkColorSetRGB(0xDE, 0xE1, 0xE6);
+  const SkColor target = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+  const SkColor base = source;
+  const float contrast_ratio = 1.11f;
+  const SkAlpha alpha =
+      FindBlendValueForContrastRatio(source, target, base, contrast_ratio, 0);
+
+  // Naive implementation is direct translation of function description.
+  SkAlpha check = SK_AlphaTRANSPARENT;
+  for (SkAlpha alpha = SK_AlphaTRANSPARENT; alpha <= SK_AlphaOPAQUE; ++alpha) {
+    const SkColor blended = AlphaBlend(target, source, alpha);
+    const float contrast = GetContrastRatio(blended, base);
+    check = alpha;
+    if (contrast >= contrast_ratio)
+      break;
+  }
+
+  EXPECT_EQ(check, alpha);
+}
+
 }  // namespace color_utils
