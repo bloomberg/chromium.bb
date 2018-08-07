@@ -52,6 +52,7 @@
 #include "components/omnibox/browser/search_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/navigation_controller.h"
@@ -189,6 +190,15 @@ bool ChromeOmniboxClient::IsNewTabPage(const GURL& url) const {
 
 bool ChromeOmniboxClient::IsHomePage(const GURL& url) const {
   return url.spec() == profile_->GetPrefs()->GetString(prefs::kHomePage);
+}
+
+bool ChromeOmniboxClient::IsDefaultSearchProviderEnabled() const {
+  const base::DictionaryValue* url_dict = profile_->GetPrefs()->GetDictionary(
+      DefaultSearchManager::kDefaultSearchProviderDataPrefName);
+  bool disabled_by_policy = false;
+  url_dict->GetBoolean(DefaultSearchManager::kDisabledByPolicy,
+                       &disabled_by_policy);
+  return !disabled_by_policy;
 }
 
 const SessionID& ChromeOmniboxClient::GetSessionID() const {

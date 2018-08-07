@@ -57,6 +57,10 @@ bool OmniboxClient::IsHomePage(const GURL& url) const {
   return false;
 }
 
+bool OmniboxClient::IsDefaultSearchProviderEnabled() const {
+  return true;
+}
+
 bookmarks::BookmarkModel* OmniboxClient::GetBookmarkModel() {
   return nullptr;
 }

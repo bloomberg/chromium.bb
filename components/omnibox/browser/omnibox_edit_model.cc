@@ -556,6 +556,9 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
 
 void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
     KeywordModeEntryMethod entry_method) {
+  if (!client_->IsDefaultSearchProviderEnabled())
+    return;
+
   autocomplete_controller()->Stop(false);
 
   keyword_ =
