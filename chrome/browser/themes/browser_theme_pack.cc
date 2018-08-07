@@ -49,11 +49,14 @@ namespace {
 // The tallest tab height in any mode.
 constexpr int kTallestTabHeight = 41;
 
+// The tallest height above the tabs in any mode is 19 DIP.
+constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
+
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 56;
+const int kThemePackVersion = 57;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -282,12 +285,6 @@ struct CropEntry {
 
   // The maximum useful height of the image at |prs_id|.
   int max_height;
-
-  // Whether cropping the image at |prs_id| should be skipped on OSes which
-  // have a frame border to the left and right of the web contents.
-  // This should be true for images which can be used to decorate the border to
-  // the left and the right of the web contents.
-  bool skip_if_frame_border;
 };
 
 // The images which should be cropped before being saved to the data pack. The
@@ -296,15 +293,15 @@ struct CropEntry {
 // |kThemePackVersion| must be incremented if any of the maximum heights below
 // are modified.
 const struct CropEntry kImagesToCrop[] = {
-  { PRS_THEME_FRAME, 120, true },
-  { PRS_THEME_FRAME_INACTIVE, 120, true },
-  { PRS_THEME_FRAME_INCOGNITO, 120, true },
-  { PRS_THEME_FRAME_INCOGNITO_INACTIVE, 120, true },
-  { PRS_THEME_FRAME_OVERLAY, 120, true },
-  { PRS_THEME_FRAME_OVERLAY_INACTIVE, 120, true },
-  { PRS_THEME_TOOLBAR, 200, false },
-  { PRS_THEME_BUTTON_BACKGROUND, 60, false },
-  { PRS_THEME_WINDOW_CONTROL_BACKGROUND, 50, false },
+    {PRS_THEME_FRAME, kTallestFrameHeight},
+    {PRS_THEME_FRAME_INACTIVE, kTallestFrameHeight},
+    {PRS_THEME_FRAME_INCOGNITO, kTallestFrameHeight},
+    {PRS_THEME_FRAME_INCOGNITO_INACTIVE, kTallestFrameHeight},
+    {PRS_THEME_FRAME_OVERLAY, kTallestFrameHeight},
+    {PRS_THEME_FRAME_OVERLAY_INACTIVE, kTallestFrameHeight},
+    {PRS_THEME_TOOLBAR, 200},
+    {PRS_THEME_BUTTON_BACKGROUND, 60},
+    {PRS_THEME_WINDOW_CONTROL_BACKGROUND, 50},
 };
 
 // A list of images that don't need tinting or any other modification and can
@@ -315,16 +312,6 @@ const int kPreloadIDs[] = {
   PRS_THEME_NTP_BACKGROUND,
   PRS_THEME_NTP_ATTRIBUTION,
 };
-
-// Returns true if this OS uses a browser frame which has a non zero width to
-// the left and the right of the web contents.
-bool HasFrameBorder() {
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-  return false;
-#else
-  return true;
-#endif
-}
 
 // Returns a piece of memory with the contents of the file |path|.
 scoped_refptr<base::RefCountedMemory> ReadFileData(const base::FilePath& path) {
@@ -1229,11 +1216,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
 }
 
 void BrowserThemePack::CropImages(ImageCache* images) const {
-  bool has_frame_border = HasFrameBorder();
   for (size_t i = 0; i < arraysize(kImagesToCrop); ++i) {
-    if (has_frame_border && kImagesToCrop[i].skip_if_frame_border)
-      continue;
-
     int prs_id = kImagesToCrop[i].prs_id;
     ImageCache::iterator it = images->find(prs_id);
     if (it == images->end())
@@ -1301,11 +1284,8 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
       temp_output[frame_values.prs_id] = dest_image;
 
       if (frame_values.color_id) {
-        // The tallest frame height above the top of tabs in any mode.
-        constexpr int kTallestFrameHeight = 19;
         ComputeColorFromImage(frame_values.color_id.value(),
-                              kTallestTabHeight + kTallestFrameHeight,
-                              dest_image);
+                              kTallestFrameHeight, dest_image);
       }
     }
   }
