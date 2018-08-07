@@ -161,12 +161,27 @@ void SegregatedPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
   selected_pref_store_->ReadPrefsAsync(NULL);
 }
 
-void SegregatedPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
-  base::RepeatingClosure done_callback_wrapper =
-      done_callback ? base::BarrierClosure(2, std::move(done_callback))
-                    : base::RepeatingClosure();
-  default_pref_store_->CommitPendingWrite(done_callback_wrapper);
-  selected_pref_store_->CommitPendingWrite(done_callback_wrapper);
+void SegregatedPrefStore::CommitPendingWrite(
+    base::OnceClosure reply_callback,
+    base::OnceClosure synchronous_done_callback) {
+  // A BarrierClosure will run its callback wherever the last instance of the
+  // returned wrapper is invoked. As such it is guaranteed to respect the reply
+  // vs synchronous semantics assuming |default_pref_store_| and
+  // |selected_pref_store_| honor it.
+
+  base::RepeatingClosure reply_callback_wrapper =
+      reply_callback ? base::BarrierClosure(2, std::move(reply_callback))
+                     : base::RepeatingClosure();
+
+  base::RepeatingClosure synchronous_callback_wrapper =
+      synchronous_done_callback
+          ? base::BarrierClosure(2, std::move(synchronous_done_callback))
+          : base::RepeatingClosure();
+
+  default_pref_store_->CommitPendingWrite(reply_callback_wrapper,
+                                          synchronous_callback_wrapper);
+  selected_pref_store_->CommitPendingWrite(reply_callback_wrapper,
+                                           synchronous_callback_wrapper);
 }
 
 void SegregatedPrefStore::SchedulePendingLossyWrites() {

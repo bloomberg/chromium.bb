@@ -225,11 +225,17 @@ void PersistentPrefStoreClient::ReadPrefsAsync(
     ReadErrorDelegate* error_delegate) {}
 
 void PersistentPrefStoreClient::CommitPendingWrite(
-    base::OnceClosure done_callback) {
+    base::OnceClosure reply_callback,
+    base::OnceClosure synchronous_done_callback) {
+  // Supporting |synchronous_done_callback| semantics would require a sync IPC.
+  // This isn't implemented as such at the moment as this functionality isn't
+  // used in practice (if it ever becomes necessary, this check will fire).
+  DCHECK(!synchronous_done_callback);
+
   DCHECK(pref_store_);
   if (!pending_writes_.empty())
     FlushPendingWrites();
-  pref_store_->CommitPendingWrite(std::move(done_callback));
+  pref_store_->CommitPendingWrite(std::move(reply_callback));
 }
 
 void PersistentPrefStoreClient::SchedulePendingLossyWrites() {
@@ -251,7 +257,7 @@ PersistentPrefStoreClient::~PersistentPrefStoreClient() {
   if (!pref_store_)
     return;
 
-  CommitPendingWrite(base::OnceClosure());
+  CommitPendingWrite();
 }
 
 void PersistentPrefStoreClient::QueueWrite(

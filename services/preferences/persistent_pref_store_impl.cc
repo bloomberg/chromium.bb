@@ -129,6 +129,10 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
   }
 
   void CommitPendingWrite(CommitPendingWriteCallback done_callback) override {
+    // Note: PersistentPrefStore's synchronous callback part of the
+    // CommitPendingWrite() API isn't supported on mojom::PersistentPrefStore at
+    // the moment (see PersistentPrefStoreClient::CommitPendingWrite() for
+    // details).
     pref_store_->CommitPendingWrite(std::move(done_callback));
   }
   void SchedulePendingLossyWrites() override {
