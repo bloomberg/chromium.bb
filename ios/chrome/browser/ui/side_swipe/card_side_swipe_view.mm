@@ -54,8 +54,9 @@ const CGFloat kResizeFactor = 4;
 @property(nonatomic, strong) UIImageView* topToolbarSnapshot;
 @property(nonatomic, strong) UIImageView* bottomToolbarSnapshot;
 
-@property CGFloat topMargin;
-@property NSLayoutConstraint* toolbarTopConstraint;
+@property(nonatomic, assign) CGFloat topMargin;
+@property(nonatomic, strong) NSLayoutConstraint* toolbarTopConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* imageTopConstraint;
 
 @end
 
@@ -69,6 +70,7 @@ const CGFloat kResizeFactor = 4;
 @synthesize bottomToolbarSnapshot = _bottomToolbarSnapshot;
 @synthesize topMargin = _topMargin;
 @synthesize toolbarTopConstraint = _toolbarTopConstraint;
+@synthesize imageTopConstraint = _imageTopConstraint;
 
 - (instancetype)initWithFrame:(CGRect)frame topMargin:(CGFloat)topMargin {
   self = [super initWithFrame:frame];
@@ -110,9 +112,11 @@ const CGFloat kResizeFactor = 4;
       _toolbarTopConstraint.constant = -StatusBarHeight();
     }
 
+    _imageTopConstraint =
+        [_image.topAnchor constraintEqualToAnchor:self.topAnchor
+                                         constant:topMargin];
     [constraints addObjectsFromArray:@[
-      [[_image topAnchor] constraintEqualToAnchor:self.topAnchor
-                                         constant:topMargin],
+      _imageTopConstraint,
       [[_image bottomAnchor] constraintEqualToAnchor:self.bottomAnchor],
       _toolbarTopConstraint,
       [_bottomToolbarSnapshot.bottomAnchor
@@ -149,6 +153,11 @@ const CGFloat kResizeFactor = 4;
         CGRectMake(0.0, 0.0, viewSize.width / (zoomRatio * imageSize.width),
                    viewSize.height / (zoomRatio * imageSize.height));
   }
+}
+
+- (void)setTopMargin:(CGFloat)topMargin {
+  _topMargin = topMargin;
+  self.imageTopConstraint.constant = topMargin;
 }
 
 - (void)setImage:(UIImage*)image {
@@ -250,6 +259,12 @@ const CGFloat kResizeFactor = 4;
     AddSameConstraints(_leftCard, self);
   }
   return self;
+}
+
+- (void)setTopMargin:(CGFloat)topMargin {
+  _topMargin = topMargin;
+  _leftCard.topMargin = topMargin;
+  _rightCard.topMargin = topMargin;
 }
 
 - (void)updateConstraints {
