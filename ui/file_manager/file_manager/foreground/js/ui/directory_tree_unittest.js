@@ -124,7 +124,7 @@ function testCreateDirectoryTree(callback) {
  *
  * Google Drive
  * - My Drive
- * - Team Drives
+ * - Team Drives (only if there is a child team drive).
  * - Shared with me
  * - Offline
  * Downloads
@@ -194,8 +194,7 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
 
 /**
  * Test case for creating tree with empty Team Drives.
- * Team Drives subtree should be hidden when the user don't have access to any
- * Team Drive.
+ * The Team Drives subtree should be removed if the user has no team drives.
  *
  * @param {!function(boolean)} callback A callback function which is called with
  *     test result.
@@ -238,21 +237,19 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
 
   reportPromise(
       waitUntil(function() {
-        // Root entries under Drive volume is generated, plus Team Drives.
+        // Root entries under Drive volume is generated, Team Drives isn't
+        // included because it has no child.
         // See testCreateDirectoryTreeWithTeamDrive for detail.
-        return driveItem.items.length == 4;
+        return driveItem.items.length == 3;
       }).then(function() {
         var teamDrivesItemFound = false;
         for (var i = 0; i < driveItem.items.length; i++) {
           if (driveItem.items[i].label == str('DRIVE_TEAM_DRIVES_LABEL')) {
-            assertEquals(
-                true, driveItem.items[i].hidden,
-                'Team Drives node should not be shown');
             teamDrivesItemFound = true;
             break;
           }
         }
-        assertTrue(teamDrivesItemFound, 'Team Drives node should be generated');
+        assertFalse(teamDrivesItemFound, 'Team Drives should NOT be generated');
       }),
       callback);
 }
@@ -403,7 +400,7 @@ function testAddFirstTeamDrive(callback) {
 
   reportPromise(
       waitUntil(() => {
-        return driveItem.items.length == 4;
+        return driveItem.items.length == 3;
       })
           .then(() => {
             window.webkitResolveLocalFileSystemURLEntries
@@ -434,7 +431,7 @@ function testAddFirstTeamDrive(callback) {
 
 /**
  * Test removing the last team drive for a user.
- * Team Drives subtree should be hidden after the change notification is
+ * Team Drives subtree should be removed after the change notification is
  * delivered.
  *
  * @param {!function(boolean)} callback A callback function which is called with
@@ -501,14 +498,15 @@ function testRemoveLastTeamDrive(callback) {
             }
           })
           .then(() => {
+            // Wait team drive grand root to appear.
             return waitUntil(() => {
               for (var i = 0; i < driveItem.items.length; i++) {
                 if (driveItem.items[i].label ==
                     str('DRIVE_TEAM_DRIVES_LABEL')) {
-                  return driveItem.items[i].hidden;
+                  return false;
                 }
               }
-              return false;
+              return true;
             });
           }),
       callback);

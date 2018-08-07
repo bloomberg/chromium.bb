@@ -977,27 +977,68 @@ DriveVolumeItem.prototype.handleClick = function(e) {
 };
 
 /**
- * Sets the hidden state of the given item depending on whether the user has any
- * Team Drives.
+ * Creates Team Drives root if there is any team drive, if there is no team
+ * drive, then it removes the root.
  *
  * Since we don't currently support any functionality with just the grand root
- * (e.g. you can't create a new team drive from the root yet), hide the grand
- * root unless the user has at least one Team Drive. If there is at least one
- * Team Drive, show it.
+ * (e.g. you can't create a new team drive from the root yet), remove/don't
+ * create the grand root so it can't be reached via keyboard.
+ * If there is at least one Team Drive, add/show the Team Drives trand root.
  *
- * @param {!DirectoryItem} teamDrivesGrandRootItem The item to show if there is
- *     at least one Team Drive, or hide if not.
+ * @return {!Promise<SubDirectoryItem>} Resolved with Team Drive Grand Root
+ * SubDirectoryItem instance, or undefined when it shouldn't exist.
  * @private
  */
-DriveVolumeItem.prototype.setHiddenForTeamDrivesGrandRoot_ = function(
-    teamDrivesGrandRootItem) {
-  var teamDriveEntry = this.volumeInfo_.teamDriveDisplayRoot;
-  if (!teamDriveEntry)
-    return;
-  var reader = teamDriveEntry.createReader();
-  reader.readEntries(function(results) {
-    metrics.recordSmallCount('TeamDrivesCount', results.length);
-    teamDrivesGrandRootItem.hidden = results.length == 0;
+DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
+  return new Promise(resolve => {
+    const teamDriveGrandRoot = this.volumeInfo_.teamDriveDisplayRoot;
+    if (!teamDriveGrandRoot) {
+      // Team Drive is disabled.
+      resolve();
+      return;
+    }
+
+    let index;
+    for (var i = 0; i < this.items.length; i++) {
+      const entry = this.items[i] && this.items[i].entry;
+      if (entry && util.isSameEntry(entry, teamDriveGrandRoot)) {
+        index = i;
+        break;
+      }
+    }
+
+    const reader = teamDriveGrandRoot.createReader();
+    reader.readEntries(results => {
+      metrics.recordSmallCount('TeamDrivesCount', results.length);
+      // Only create grand root if there is at least 1 child/result.
+      if (results.length) {
+        if (index) {
+          this.items[index].hidden = false;
+          resolve(this.items[index]);
+          return;
+        }
+
+        // Create if it doesn't exist yet.
+        const label = util.getEntryLabel(
+                          this.parentTree_.volumeManager_.getLocationInfo(
+                              teamDriveGrandRoot),
+                          teamDriveGrandRoot) ||
+            '';
+        const item = new SubDirectoryItem(
+            label, teamDriveGrandRoot, this, this.parentTree_);
+        this.addAt(item, 1);
+        item.updateSubDirectories(false);
+        resolve(item);
+        return;
+      } else {
+        // When there is no team drive, the grand root should be removed.
+        if (index && this.items[index].parentItem) {
+          this.items[index].parentItem.remove(this.items[index]);
+        }
+        resolve();
+        return;
+      }
+    });
   });
 };
 
@@ -1032,21 +1073,19 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
   }
 
   for (var i = 0; i < entries.length; i++) {
-    var item = new SubDirectoryItem(
-        util.getEntryLabel(
-            this.parentTree_.volumeManager_.getLocationInfo(entries[i]),
-            entries[i]) ||
-            '',
-        entries[i], this, this.parentTree_);
-
-    // Hide the team drives root in case we have no team drives.
-    if (entries[i] === teamDrivesDisplayRoot) {
-      item.hidden = true;
-      this.setHiddenForTeamDrivesGrandRoot_(item);
+    // Only create the team drives root if there is at least 1 team drive.
+    const entry = entries[i];
+    if (entry === teamDrivesDisplayRoot) {
+      this.createTeamDrivesGrandRoot_();
+    } else {
+      const label =
+          util.getEntryLabel(
+              this.parentTree_.volumeManager_.getLocationInfo(entry), entry) ||
+          '';
+      const item = new SubDirectoryItem(label, entry, this, this.parentTree_);
+      this.add(item);
+      item.updateSubDirectories(false);
     }
-
-    this.add(item);
-    item.updateSubDirectories(false);
   }
   // When My files is disabled Drive should be expanded by default.
   // TODO(crbug.com/850348): Remove this once flag is removed.
@@ -1065,11 +1104,18 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
 DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
   // The first item is My Drive, and the second item is Team Drives.
   // Keep in sync with |fixedEntries| in |updateSubDirectories|.
-  var index = util.isTeamDriveEntry(changedDirectoryEntry) ? 1 : 0;
-  this.items[index].updateItemByEntry(changedDirectoryEntry);
-  if (util.isTeamDrivesGrandRoot(changedDirectoryEntry) &&
-      this.volumeInfo_.teamDriveDisplayRoot) {
-    this.setHiddenForTeamDrivesGrandRoot_(this.items[index]);
+  const isTeamDriveChild = util.isTeamDriveEntry(changedDirectoryEntry);
+  const index = isTeamDriveChild ? 1 : 0;
+
+  // If Team Drive grand root has been removed and we receive an update for an
+  // team drive, we need to create the Team Drive grand root.
+  if (isTeamDriveChild) {
+    this.createTeamDrivesGrandRoot_().then(teamDriveGranRootItem => {
+      if (teamDriveGranRootItem)
+        this.items[index].updateItemByEntry(changedDirectoryEntry);
+    });
+  } else {
+    this.items[index].updateItemByEntry(changedDirectoryEntry);
   }
 };
 
