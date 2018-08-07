@@ -27,6 +27,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/user_manager/user_manager.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
 
@@ -144,8 +145,6 @@ std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
   chromeos::DeviceOAuth2TokenService* device_oauth2_token_service =
       chromeos::DeviceOAuth2TokenServiceFactory::Get();
 
-  scoped_refptr<net::URLRequestContextGetter> system_request_context =
-      g_browser_process->system_request_context();
   std::string robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();
 
@@ -173,7 +172,7 @@ std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
       )");
   return std::make_unique<UploadJobImpl>(
       upload_url, robot_account_id, device_oauth2_token_service,
-      system_request_context, delegate,
+      g_browser_process->shared_url_loader_factory(), delegate,
       std::make_unique<UploadJobImpl::RandomMimeBoundaryGenerator>(),
       traffic_annotation, task_runner_);
 }
