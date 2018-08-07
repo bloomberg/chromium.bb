@@ -495,6 +495,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/list/holder/ListItemViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/MoreButtonViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/PrefetchViewHolder.java",
+  "java/src/org/chromium/chrome/browser/download/home/list/holder/SectionTitleViewHolder.java",
+  "java/src/org/chromium/chrome/browser/download/home/list/holder/SeparatorViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/ThumbnailAwareViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/VideoViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/ListProperties.java",

@@ -584,6 +584,10 @@
     <dimen name="download_manager_prefetch_thumbnail_size">114dp</dimen>
     <dimen name="download_manager_prefetch_horizontal_margin">16dp</dimen>
     <dimen name="download_manager_prefetch_vertical_margin">12dp</dimen>
+    <dimen name="download_manager_section_title_padding_top">16dp</dimen>
+    <dimen name="download_manager_section_title_padding_top_condensed">0dp</dimen>
+    <dimen name="download_manager_section_title_padding_bottom">0dp</dimen>
+    <dimen name="download_manager_section_title_padding_image">8dp</dimen>
 
     <!-- Navigation history popup dimensions -->
     <dimen name="navigation_popup_width">312dp</dimen>

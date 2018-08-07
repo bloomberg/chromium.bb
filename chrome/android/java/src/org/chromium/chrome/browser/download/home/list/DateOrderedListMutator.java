@@ -5,16 +5,21 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
-import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.SeparatorViewListItem;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A class responsible for turning a {@link Collection} of {@link OfflineItem}s into a list meant
@@ -30,9 +35,10 @@ import java.util.List;
  *   for an example since that is close to doing what we want - minus the contains() call).
  */
 class DateOrderedListMutator implements OfflineItemFilterObserver {
-    private static final int INVALID_INDEX = -1;
-
     private final ListItemModel mModel;
+
+    private Map<Date, DateGroup> mDateGroups =
+            new TreeMap<>((lhs, rhs) -> { return rhs.compareTo(lhs); });
 
     /**
      * Creates an DateOrderedList instance that will reflect {@code source}.
@@ -48,103 +54,153 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
     // OfflineItemFilterObserver implementation.
     @Override
     public void onItemsAdded(Collection<OfflineItem> items) {
-        List<OfflineItem> sorted = new ArrayList<>(items);
-        Collections.sort(sorted, (lhs, rhs) -> {
-            long delta = rhs.creationTimeMs - lhs.creationTimeMs;
-            if (delta > 0) return 1;
-            if (delta < 0) return -1;
-            return 0;
-        });
-
-        for (OfflineItem item : sorted) {
-            int index = getBestIndexFor(item);
-            mModel.addItem(index, new ListItem.OfflineItemListItem(item));
-
-            boolean isFirst = index == 0;
-            boolean isPrevSameDay = !isFirst
-                    && CalendarUtils.isSameDay(
-                               getItemAt(index - 1).date.getTime(), item.creationTimeMs);
-
-            if (isFirst || !isPrevSameDay) {
-                Calendar startOfDay = CalendarUtils.getStartOfDay(item.creationTimeMs);
-                mModel.addItem(index, new ListItem.DateListItem(startOfDay));
+        for (OfflineItem item : items) {
+            Date date = getDateFromOfflineItem(item);
+            DateGroup dateGroup = mDateGroups.get(date);
+            if (dateGroup == null) {
+                dateGroup = new DateGroup();
+                mDateGroups.put(date, dateGroup);
             }
+            dateGroup.addItem(item);
         }
 
-        mModel.dispatchLastEvent();
+        pushItemsToModel();
     }
 
     @Override
     public void onItemsRemoved(Collection<OfflineItem> items) {
-        for (int i = mModel.size() - 1; i >= 0; i--) {
-            ListItem.DateListItem item = getItemAt(i);
-            boolean isHeader = isHeader(item);
-            boolean isLast = i == mModel.size() - 1;
-            boolean isNextHeader = isLast ? false : isHeader(getItemAt(i + 1));
-            boolean removeHeader = isHeader && (isLast || isNextHeader);
-            boolean removeItem = !isHeader && items.contains(getOfflineItemFrom(item));
+        for (OfflineItem item : items) {
+            Date date = getDateFromOfflineItem(item);
+            DateGroup dateGroup = mDateGroups.get(date);
+            if (dateGroup == null) continue;
 
-            if (removeHeader || removeItem) mModel.removeItem(i);
+            dateGroup.removeItem(item);
+            if (dateGroup.sections.isEmpty()) {
+                mDateGroups.remove(date);
+            }
         }
 
-        mModel.dispatchLastEvent();
+        pushItemsToModel();
     }
 
     @Override
     public void onItemUpdated(OfflineItem oldItem, OfflineItem item) {
         assert oldItem.id.equals(item.id);
 
-        int i = indexOfItem(oldItem.id);
-        if (i == INVALID_INDEX) return;
-
-        // If the update changed the creation time, remove and add the element to get it positioned.
-        if (oldItem.creationTimeMs != item.creationTimeMs) {
+        // If the update changed the creation time or filter type, remove and add the element to get
+        // it positioned.
+        if (oldItem.creationTimeMs != item.creationTimeMs || oldItem.filter != item.filter) {
+            // TODO(shaktisahu): Collect UMA when this happens.
             onItemsRemoved(CollectionUtil.newArrayList(oldItem));
             onItemsAdded(CollectionUtil.newArrayList(item));
         } else {
-            mModel.setItem(i, new ListItem.OfflineItemListItem(item));
+            for (int i = 0; i < mModel.size(); i++) {
+                ListItem listItem = mModel.get(i);
+                if (!(listItem instanceof OfflineItemListItem)) continue;
+
+                OfflineItem offlineListItem = ((OfflineItemListItem) listItem).item;
+                if (item.id.equals(offlineListItem.id)) {
+                    mModel.update(i, new OfflineItemListItem(item));
+                }
+            }
         }
 
         mModel.dispatchLastEvent();
     }
 
-    private int indexOfItem(ContentId id) {
-        for (int i = 0; i < mModel.size(); i++) {
-            ListItem.DateListItem listItem = getItemAt(i);
-            if (isHeader(listItem)) continue;
-            if (getOfflineItemFrom(listItem).id.equals(id)) return i;
+    // Flattens out the hierarchical data and adds items to the model in the order they should be
+    // displayed. Date header, section header, date separator and section separators are added
+    // wherever necessary. The existing items in the model are replaced by the new set of items
+    // computed.
+    // TODO(shaktisahu): Write a version having no headers for the prefetch tab.
+    private void pushItemsToModel() {
+        List<ListItem> listItems = new ArrayList<>();
+        int dateIndex = 0;
+        for (Date date : mDateGroups.keySet()) {
+            DateGroup dateGroup = mDateGroups.get(date);
+            int sectionIndex = 0;
+
+            // Add an item for the date header.
+            listItems.add(new DateListItem(CalendarUtils.getStartOfDay(date.getTime())));
+
+            // For each section.
+            for (Integer filter : dateGroup.sections.keySet()) {
+                Section section = dateGroup.sections.get(filter);
+
+                // Add a section header.
+                SectionHeaderListItem sectionHeaderItem =
+                        new SectionHeaderListItem(filter, date.getTime());
+                sectionHeaderItem.isFirstSectionOfDay = sectionIndex == 0;
+                listItems.add(sectionHeaderItem);
+
+                // Add the items in the section.
+                for (OfflineItem item : section.items.values()) {
+                    listItems.add(new OfflineItemListItem(item));
+                }
+
+                // Add a section separator if needed.
+                if (sectionIndex < dateGroup.sections.size() - 1) {
+                    listItems.add(new SeparatorViewListItem(date.getTime(), filter));
+                }
+                sectionIndex++;
+            }
+
+            // Add a date separator if needed.
+            if (dateIndex < mDateGroups.size() - 1) {
+                listItems.add(new SeparatorViewListItem(date.getTime()));
+            }
+            dateIndex++;
         }
 
-        return INVALID_INDEX;
+        mModel.set(listItems);
+        mModel.dispatchLastEvent();
     }
 
-    private int getBestIndexFor(OfflineItem item) {
-        for (int i = 0; i < mModel.size(); i++) {
-            ListItem.DateListItem listItem = getItemAt(i);
+    private Date getDateFromOfflineItem(OfflineItem offlineItem) {
+        return CalendarUtils.getStartOfDay(offlineItem.creationTimeMs).getTime();
+    }
 
-            // We need to compare different things depending on whether or not the ListItem is a
-            // header.  If it is a header we want to compare the day, otherwise we want to compare
-            // the exact time.
-            long itemTimestamp = isHeader(listItem)
-                    ? CalendarUtils.getStartOfDay(item.creationTimeMs).getTimeInMillis()
-                    : item.creationTimeMs;
+    /** Represents a group of items which were downloaded on the same day. */
+    private static class DateGroup {
+        /**
+         * The list of sections for the day. The ordering is done in the same order as {@code
+         * Filters.FilterType}.
+         */
+        public Map<Integer, Section> sections = new TreeMap<>((lhs, rhs) -> {
+            return Filters.fromOfflineItem(lhs).compareTo(Filters.fromOfflineItem(rhs));
+        });
 
-            if (itemTimestamp > listItem.date.getTime()) return i;
+        public void addItem(OfflineItem item) {
+            Section section = sections.get(item.filter);
+            if (section == null) {
+                section = new Section();
+                sections.put(item.filter, section);
+            }
+            section.addItem(item);
         }
 
-        return mModel.size();
+        public void removeItem(OfflineItem item) {
+            Section section = sections.get(item.filter);
+            if (section == null) return;
+
+            section.removeItem(item);
+            if (section.items.isEmpty()) {
+                sections.remove(item.filter);
+            }
+        }
     }
 
-    private ListItem.DateListItem getItemAt(int index) {
-        return (ListItem.DateListItem) mModel.get(index);
-    }
+    /** Represents a group of items having the same filter type. */
+    private static class Section {
+        public Map<Date, OfflineItem> items =
+                new TreeMap<>((lhs, rhs) -> { return rhs.compareTo(lhs); });
 
-    private boolean isHeader(ListItem.DateListItem item) {
-        return !(item instanceof ListItem.OfflineItemListItem);
-    }
+        public void addItem(OfflineItem item) {
+            items.put(new Date(item.creationTimeMs), item);
+        }
 
-    private OfflineItem getOfflineItemFrom(ListItem.DateListItem item) {
-        if (isHeader(item)) return null;
-        return ((ListItem.OfflineItemListItem) item).item;
+        public void removeItem(OfflineItem item) {
+            items.remove(new Date(item.creationTimeMs));
+        }
     }
 }
