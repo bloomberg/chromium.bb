@@ -1395,9 +1395,10 @@ Polymer({
    * @private
    */
   maybeUpdateFocusOnFilterViewExit_: function() {
-    var searchSinks = this.$$('#search-results').querySelectorAll('paper-item');
+    var searchSinks =
+        this.$$('#search-results').querySelectorAll('.selectable-item');
     var focusedElem = Array.prototype.find.call(searchSinks, function(sink) {
-      return sink.focused;
+      return sink.matches(':focus');
     });
     if (!focusedElem) {
       return;

@@ -3,8 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../media_router_header/media_router_header.html">
 <link rel="import" href="../route_details/route_details.html">
@@ -52,16 +51,17 @@
     </media-router-header>
     <div id="content">
       <template is="dom-if" if="[[!computeCastModeListHidden_(currentView_)]]">
-        <paper-listbox id="cast-mode-list" role="presentation"
-            selectable="paper-item" selected="{{selectedCastModeMenuItem_}}">
+        <iron-selector id="cast-mode-list" role="presentation"
+            selectable=".selectable-item"
+            selected="{{selectedCastModeMenuItem_}}">
           <template is="dom-repeat" id="presentationCastModeList"
               items="[[computePresentationCastModeList_(castModeList)]]">
-            <paper-item on-tap="onCastModeClick_">
+            <button class="selectable-item" on-click="onCastModeClick_">
               <iron-icon class="cast-mode-icon"
                   icon="[[computeCastModeIcon_(item)]]">
               </iron-icon>
               <div><span>[[item.host]]</span></div>
-            </paper-item>
+            </button>
           </template>
           <div id="share-screen-text" class="subheading-text"
               hidden$="[[computeShareScreenSubheadingHidden_(castModeList)]]">
@@ -69,12 +69,12 @@
           </div>
           <template is="dom-repeat" id="shareScreenCastModeList"
               items="[[computeShareScreenCastModeList_(castModeList)]]">
-            <paper-item on-tap="onCastModeClick_">
+            <button class="selectable-item" on-click="onCastModeClick_">
               <iron-icon class="cast-mode-icon"
                   icon="[[computeCastModeIcon_(item)]]">
               </iron-icon>
               <div><span>[[item.description]]</span></div>
-            </paper-item>
+            </button>
           </template>
           <div id="cast-local-media-text" class="subheading-text"
               hidden$="[[computeLocalMediaSubheadingHidden_(castModeList)]]">
@@ -82,14 +82,14 @@
           </div>
           <template is="dom-repeat" id="localMediaCastModeList"
               items="[[computeLocalMediaCastModeList_(castModeList)]]">
-            <paper-item on-tap="onCastModeClick_">
+            <button class="selectable-item" on-click="onCastModeClick_">
               <iron-icon class="cast-mode-icon"
                   icon="[[computeCastModeIcon_(item)]]">
               </iron-icon>
               <div><span>[[item.description]]</span></div>
-            </paper-item>
+            </button>
           </template>
-        </paper-listbox>
+        </iron-selector>
       </template>
       <template is="dom-if"
           if="[[!computeRouteDetailsHidden_(currentView_, issue)]]">
@@ -116,9 +116,10 @@
         </div>
         <template is="dom-if" if="[[!computeSinkListHidden_(sinksToShow_)]]">
           <div id="sink-list" hidden$="[[hideSinkListForAnimation_]]">
-            <paper-listbox id="sink-list-paper-menu" role="presentation">
+            <iron-selector id="sink-list-paper-menu" role="presentation"
+                selectable=".selectable-item">
               <template is="dom-repeat" id="sinkList" items="[[sinksToShow_]]">
-                <paper-item on-tap="onSinkClick_">
+                <button class="selectable-item" on-click="onSinkClick_">
                   <div class="sink-content">
                     <div>
                       <iron-icon icon="[[computeSinkIcon_(item)]]"
@@ -151,9 +152,9 @@
                       </template>
                     </div>
                   </div>
-                </paper-item>
+                </button>
               </template>
-            </paper-listbox>
+            </iron-selector>
           </div>
         </template>
         <template is="dom-if" if="[[searchEnabled_]]">
@@ -177,11 +178,12 @@
             </div>
             <div id="search-results"
                 hidden$="[[computeSearchResultsHidden_(searchResultsToShow_, isSearchListHidden_)]]">
-              <paper-listbox id="search-results-paper-menu" selected="0"
-                  role="presentation">
+              <iron-selector id="search-results-paper-menu" selected="0"
+                  role="presentation" selectable=".selectable-item">
                 <template is="dom-repeat" id="searchResults"
                     items="[[searchResultsToShow_]]">
-                  <paper-item class="search-item" on-tap="onSinkClick_">
+                  <button class="search-item selectable-item"
+                      on-click="onSinkClick_">
                     <div class="sink-content">
                       <div>
                         <iron-icon icon="[[computeSinkIcon_(item.sinkItem)]]"
@@ -217,9 +219,9 @@
                         </template>
                       </div>
                     </div>
-                  </paper-item>
+                  </button>
                 </template>
-              </paper-listbox>
+              </iron-selector>
             </div>
           </div>
         </template>

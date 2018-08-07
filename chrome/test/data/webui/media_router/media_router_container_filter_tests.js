@@ -218,8 +218,8 @@ cr.define('media_router_container_filter', function() {
               container.$$('#search-results-paper-menu');
           // Use the Polymer method for selecting (and focusing on) a sink
           searchResultsPaperMenu.selectIndex(focusIndex);
-          var itemInSearch =
-              searchResultsPaperMenu.querySelectorAll('paper-item')[focusIndex];
+          var itemInSearch = searchResultsPaperMenu.querySelectorAll(
+              'button.selectable-item')[focusIndex];
           // TODO(crbug.com/608551): This condition handles flakiness around
           // the search item getting focus earlier. If it doesn't get focus,
           // the logic that changes focus from a search item to a sink list
@@ -230,8 +230,8 @@ cr.define('media_router_container_filter', function() {
             checkCurrentView(media_router.MediaRouterView.SINK_LIST);
             chainOnAnimationPromise(function() {
               var sinkListPaperMenu = container.$$('#sink-list-paper-menu');
-              var item =
-                  sinkListPaperMenu.querySelectorAll('paper-item')[focusIndex];
+              var item = sinkListPaperMenu.querySelectorAll(
+                  'button.selectable-item')[focusIndex];
 
               // Check that the "focused" HTML attribute persists.
               assertTrue(item.focused);
@@ -252,8 +252,8 @@ cr.define('media_router_container_filter', function() {
         container.allSinks = fakeSinkList;
         MockInteractions.tap(container.$$('#sink-search-icon'));
         setTimeout(function() {
-          var item =
-              container.$$('#search-results').querySelectorAll('paper-item')[1];
+          var item = container.$$('#search-results')
+                         .querySelectorAll('button.selectable-item')[1];
           var closeButton = container.$['container-header'].$['close-button'];
           closeButton.focus();
           var focusedSuccess = closeButton.focused;
@@ -391,8 +391,8 @@ cr.define('media_router_container_filter', function() {
         container.$$('#sink-search-input').value = searchTextOne;
         MockInteractions.tap(container.$$('#sink-search-icon'));
         setTimeout(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           assertEquals(1, searchResults.length);
           done();
         });
@@ -406,8 +406,8 @@ cr.define('media_router_container_filter', function() {
         container.$$('#sink-search-input').value = searchTextNone;
         MockInteractions.tap(container.$$('#sink-search-icon'));
         setTimeout(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           assertEquals(0, searchResults.length);
           done();
         });
@@ -456,20 +456,21 @@ cr.define('media_router_container_filter', function() {
         var searchInput = container.$$('#sink-search-input');
         setTimeout(function() {
           searchInput.value = searchTextAll;
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           assertEquals(fakeSinkList.length, searchResults.length);
 
           searchInput.value = searchTextOne;
           setTimeout(function() {
-            var searchResults =
-                container.$$('#search-results').querySelectorAll('paper-item');
+            var searchResults = container.$$('#search-results')
+                                    .querySelectorAll('button.selectable-item');
             assertEquals(1, searchResults.length);
 
             searchInput.value = searchTextNone;
             setTimeout(function() {
-              var searchResults = container.$$('#search-results')
-                                      .querySelectorAll('paper-item');
+              var searchResults =
+                  container.$$('#search-results')
+                      .querySelectorAll('button.selectable-item');
               assertEquals(0, searchResults.length);
               done();
             });
@@ -485,8 +486,8 @@ cr.define('media_router_container_filter', function() {
         var testSinkName = fakeSinkList[0].name;
         container.$$('#sink-search-input').value = testSinkName;
         setTimeout(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           assertEquals(1, searchResults.length);
           // This selector works only because there's only one result in the
           // list.
@@ -503,8 +504,8 @@ cr.define('media_router_container_filter', function() {
         container.allSinks = fakeSinkList;
         MockInteractions.tap(container.$$('#sink-search-icon'));
         setTimeout(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           container.addEventListener('create-route', function(data) {
             assertEquals(fakeSinkList[1].id, data.detail.sinkId);
             done();
@@ -520,8 +521,8 @@ cr.define('media_router_container_filter', function() {
         container.routeList = fakeRouteList;
         MockInteractions.tap(container.$$('#sink-search-icon'));
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[1]);
           checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
           done();
