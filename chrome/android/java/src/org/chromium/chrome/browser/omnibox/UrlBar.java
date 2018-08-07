@@ -36,6 +36,7 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.UiUtils;
 
@@ -87,10 +88,13 @@ public class UrlBar extends AutocompleteEditText {
 
     private boolean mPendingScroll;
     private int mPreviousWidth;
-    private String mPreviousTldScrollText;
-    private int mPreviousTldScrollViewWidth;
-    private int mPreviousTldScrollResultXPosition;
-    private float mPreviousFontSize;
+
+    @ScrollType
+    private int mPreviousScrollType;
+    private String mPreviousScrollText;
+    private int mPreviousScrollViewWidth;
+    private int mPreviousScrollResultXPosition;
+    private float mPreviousScrollFontSize;
 
     // Used as a hint to indicate the text may contain an ellipsize span.  This will be true if an
     // ellispize span was applied the last time the text changed.  A true value here does not
@@ -616,6 +620,25 @@ public class UrlBar extends AutocompleteEditText {
      */
     private void scrollDisplayTextInternal(@ScrollType int scrollType) {
         mPendingScroll = false;
+
+        if (mFocused) return;
+
+        Editable text = getText();
+        if (TextUtils.isEmpty(text)) scrollType = ScrollType.SCROLL_TO_BEGINNING;
+
+        // Ensure any selection from the focus state is cleared.
+        setSelection(0);
+
+        int measuredWidth = getMeasuredWidth() - (getPaddingLeft() + getPaddingRight());
+        if (scrollType == mPreviousScrollType && TextUtils.equals(text, mPreviousScrollText)
+                && measuredWidth == mPreviousScrollViewWidth
+                // Font size is float but it changes in discrete range (eg small font, big font),
+                // therefore false negative using regular equality is unlikely.
+                && getTextSize() == mPreviousScrollFontSize) {
+            scrollTo(mPreviousScrollResultXPosition, getScrollY());
+            return;
+        }
+
         switch (scrollType) {
             case ScrollType.SCROLL_TO_TLD:
                 scrollToTLD();
@@ -624,21 +647,32 @@ public class UrlBar extends AutocompleteEditText {
                 scrollToBeginning();
                 break;
             default:
-                break;
+                // Intentional return to avoid clearing scroll state when no scroll was applied.
+                return;
         }
+
+        mPreviousScrollType = scrollType;
+        mPreviousScrollText = text.toString();
+        mPreviousScrollViewWidth = measuredWidth;
+        mPreviousScrollFontSize = getTextSize();
+        mPreviousScrollResultXPosition = getScrollX();
     }
 
     /**
      * Scrolls the omnibox text to show the very beginning of the text entered.
      */
     private void scrollToBeginning() {
-        if (mFocused) return;
-
-        setSelection(0);
-
         Editable text = getText();
         float scrollPos = 0f;
-        if (BidiFormatter.getInstance().isRtl(text)) {
+        if (TextUtils.isEmpty(text)) {
+            if (ApiCompatibilityUtils.isLayoutRtl(this)
+                    && BidiFormatter.getInstance().isRtl(getHint())) {
+                // Compared to below that uses getPrimaryHorizontal(1) due to 0 returning an
+                // invalid value, if the text is empty, getPrimaryHorizontal(0) returns the actual
+                // max scroll amount.
+                scrollPos = (int) getLayout().getPrimaryHorizontal(0) - getMeasuredWidth();
+            }
+        } else if (BidiFormatter.getInstance().isRtl(text)) {
             // RTL.
             float endPointX = getLayout().getPrimaryHorizontal(text.length());
             int measuredWidth = getMeasuredWidth();
@@ -652,42 +686,8 @@ public class UrlBar extends AutocompleteEditText {
      * Scrolls the omnibox text to bring the TLD into view.
      */
     private void scrollToTLD() {
-        if (mFocused) return;
-
-        // Ensure any selection from the focus state is cleared.
-        setSelection(0);
-
-        String previousTldScrollText = mPreviousTldScrollText;
-        int previousTldScrollViewWidth = mPreviousTldScrollViewWidth;
-        int previousTldScrollResultXPosition = mPreviousTldScrollResultXPosition;
-
-        mPreviousTldScrollText = null;
-        mPreviousTldScrollViewWidth = 0;
-        mPreviousTldScrollResultXPosition = 0;
-
         Editable url = getText();
-        if (url == null || url.length() < 1) {
-            int scrollX = 0;
-            if (ApiCompatibilityUtils.isLayoutRtl(this)
-                    && BidiFormatter.getInstance().isRtl(getHint())) {
-                // Compared to below that uses getPrimaryHorizontal(1) due to 0 returning an
-                // invalid value, if the text is empty, getPrimaryHorizontal(0) returns the actual
-                // max scroll amount.
-                scrollX = (int) getLayout().getPrimaryHorizontal(0) - getMeasuredWidth();
-            }
-            scrollTo(scrollX, getScrollY());
-            return;
-        }
-
         int measuredWidth = getMeasuredWidth() - (getPaddingLeft() + getPaddingRight());
-        if (TextUtils.equals(url, previousTldScrollText)
-                && measuredWidth == previousTldScrollViewWidth
-                // Font size is float but it changes in discrete range (eg small font, big font),
-                // therefore false negative using regular equality is unlikely.
-                && getTextSize() == mPreviousFontSize) {
-            scrollTo(previousTldScrollResultXPosition, getScrollY());
-            return;
-        }
 
         assert getLayout().getLineCount() == 1;
         float endPointX = getLayout().getPrimaryHorizontal(mOriginEndIndex);
@@ -710,11 +710,6 @@ public class UrlBar extends AutocompleteEditText {
             }
         }
         scrollTo((int) scrollPos, getScrollY());
-
-        mPreviousTldScrollText = url.toString();
-        mPreviousTldScrollViewWidth = measuredWidth;
-        mPreviousFontSize = getTextSize();
-        mPreviousTldScrollResultXPosition = (int) scrollPos;
     }
 
     @Override
