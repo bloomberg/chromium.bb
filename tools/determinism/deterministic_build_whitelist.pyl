@@ -27,6 +27,9 @@
     'remoting-webapp.v2.zip',
 
     'zucchini_apply_fuzzer_seed_corpus.zip',
+
+    # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
+    'v8_context_snapshot.bin',
   ],
 
   # https://crbug.com/330262
@@ -165,7 +168,5 @@
   'win': [
     'crashpad_snapshot_test_image_reader.exe',
     'crashpad_snapshot_test_image_reader_module.dll',
-    'mini_installer.exe',
-    'previous_version_mini_installer.exe',
   ],
 }
