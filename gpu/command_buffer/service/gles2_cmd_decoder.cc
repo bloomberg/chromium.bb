@@ -13225,32 +13225,30 @@ bool GLES2DecoderImpl::ClearLevelUsingGL(Texture* texture,
                                          int width,
                                          int height) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::ClearLevelUsingGL");
+  GLenum fb_target = GetDrawFramebufferTarget();
   GLuint fb = 0;
   api()->glGenFramebuffersEXTFn(1, &fb);
-  api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER_EXT, fb);
+  api()->glBindFramebufferEXTFn(fb_target, fb);
 
   bool have_color = (channels & GLES2Util::kRGBA) != 0;
   if (have_color) {
-    api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
-                                       GL_COLOR_ATTACHMENT0, target,
+    api()->glFramebufferTexture2DEXTFn(fb_target, GL_COLOR_ATTACHMENT0, target,
                                        texture->service_id(), level);
   }
   bool have_depth = (channels & GLES2Util::kDepth) != 0;
   if (have_depth) {
-    api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
-                                       GL_DEPTH_ATTACHMENT, target,
+    api()->glFramebufferTexture2DEXTFn(fb_target, GL_DEPTH_ATTACHMENT, target,
                                        texture->service_id(), level);
   }
   bool have_stencil = (channels & GLES2Util::kStencil) != 0;
   if (have_stencil) {
-    api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
-                                       GL_STENCIL_ATTACHMENT, target,
+    api()->glFramebufferTexture2DEXTFn(fb_target, GL_STENCIL_ATTACHMENT, target,
                                        texture->service_id(), level);
   }
   // Attempt to do the clear only if the framebuffer is complete. ANGLE
   // promises a depth only attachment ok.
   bool result = false;
-  if (api()->glCheckFramebufferStatusEXTFn(GL_DRAW_FRAMEBUFFER_EXT) ==
+  if (api()->glCheckFramebufferStatusEXTFn(fb_target) ==
       GL_FRAMEBUFFER_COMPLETE) {
     api()->glColorMaskFn(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     api()->glClearColorFn(0.0, 0.0, 0.0, 0.0);
@@ -13272,11 +13270,10 @@ bool GLES2DecoderImpl::ClearLevelUsingGL(Texture* texture,
   }
   RestoreClearState();
   api()->glDeleteFramebuffersEXTFn(1, &fb);
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(fb_target);
   GLuint fb_service_id =
       framebuffer ? framebuffer->service_id() : GetBackbufferServiceId();
-  api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER_EXT, fb_service_id);
+  api()->glBindFramebufferEXTFn(fb_target, fb_service_id);
   return result;
 }
 
