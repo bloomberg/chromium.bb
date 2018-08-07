@@ -329,6 +329,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   void OnInstallLinuxPackageProgress(
       const vm_tools::cicerone::InstallLinuxPackageProgressSignal& signal)
       override;
+  void OnLxdContainerCreated(
+      const vm_tools::cicerone::LxdContainerCreatedSignal& signal) override;
+  void OnLxdContainerDownloading(
+      const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) override;
+  void OnTremplinStarted(
+      const vm_tools::cicerone::TremplinStartedSignal& signal) override;
 
   void RemoveCrostini(Profile* profile,
                       std::string vm_name,

@@ -36,8 +36,20 @@ bool FakeCiceroneClient::IsContainerShutdownSignalConnected() {
   return is_container_shutdown_signal_connected_;
 }
 
+bool FakeCiceroneClient::IsLxdContainerCreatedSignalConnected() {
+  return is_lxd_container_created_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsLxdContainerDownloadingSignalConnected() {
+  return is_lxd_container_downloading_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsTremplinStartedSignalConnected() {
+  return is_tremplin_started_signal_connected_;
+}
+
 bool FakeCiceroneClient::IsInstallLinuxPackageProgressSignalConnected() {
-  return is_install_linux_package_progress_signal_connected;
+  return is_install_linux_package_progress_signal_connected_;
 }
 
 void FakeCiceroneClient::LaunchContainerApplication(
@@ -70,6 +82,42 @@ void FakeCiceroneClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeCiceroneClient::CreateLxdContainer(
+    const vm_tools::cicerone::CreateLxdContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::CreateLxdContainerResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), create_lxd_container_response_));
+}
+
+void FakeCiceroneClient::StartLxdContainer(
+    const vm_tools::cicerone::StartLxdContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::StartLxdContainerResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), start_lxd_container_response_));
+}
+
+void FakeCiceroneClient::GetLxdContainerUsername(
+    const vm_tools::cicerone::GetLxdContainerUsernameRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::GetLxdContainerUsernameResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                get_lxd_container_username_response_));
+}
+
+void FakeCiceroneClient::SetUpLxdContainerUser(
+    const vm_tools::cicerone::SetUpLxdContainerUserRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::SetUpLxdContainerUserResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), setup_lxd_container_user_response_));
 }
 
 }  // namespace chromeos

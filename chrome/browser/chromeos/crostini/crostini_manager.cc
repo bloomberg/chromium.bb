@@ -1227,6 +1227,13 @@ void CrostiniManager::OnInstallLinuxPackageProgress(
   }
 }
 
+void CrostiniManager::OnLxdContainerCreated(
+    const vm_tools::cicerone::LxdContainerCreatedSignal& signal) {}
+void CrostiniManager::OnLxdContainerDownloading(
+    const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) {}
+void CrostiniManager::OnTremplinStarted(
+    const vm_tools::cicerone::TremplinStartedSignal& signal) {}
+
 void CrostiniManager::OnLaunchContainerApplication(
     LaunchContainerApplicationCallback callback,
     base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>

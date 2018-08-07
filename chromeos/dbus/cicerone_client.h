@@ -21,7 +21,7 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
  public:
   class Observer {
    public:
-    // OnContainerStarted is signaled by Cicerone after the long-running
+    // OnContainerStarted is signaled by Cicerone after the long-running Lxd
     // container startup process has been completed and the container is ready.
     virtual void OnContainerStarted(
         const vm_tools::cicerone::ContainerStartedSignal& signal) = 0;
@@ -35,6 +35,22 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
     virtual void OnInstallLinuxPackageProgress(
         const vm_tools::cicerone::InstallLinuxPackageProgressSignal&
             signal) = 0;
+
+    // OnLxdContainerCreated is signaled from Cicerone when the long running
+    // creation of an Lxd container is complete.
+    virtual void OnLxdContainerCreated(
+        const vm_tools::cicerone::LxdContainerCreatedSignal& signal) = 0;
+
+    // OnLxdContainerDownloading is signaled from Cicerone giving download
+    // progress on the container.
+    virtual void OnLxdContainerDownloading(
+        const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) = 0;
+
+    // OnTremplinStarted is signaled from Cicerone when Tremplin gRPC service is
+    // first connected in a VM. This service is required for CreateLxdContainer
+    // and StartLxdContainer.
+    virtual void OnTremplinStarted(
+        const vm_tools::cicerone::TremplinStartedSignal& signal) = 0;
 
    protected:
     virtual ~Observer() = default;
@@ -59,6 +75,18 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   // This should be true prior to calling InstallLinuxPackage.
   virtual bool IsInstallLinuxPackageProgressSignalConnected() = 0;
 
+  // This should be true prior to calling CreateLxdContainer or
+  // StartLxdContainer.
+  virtual bool IsLxdContainerCreatedSignalConnected() = 0;
+
+  // This should be true prior to calling CreateLxdContainer or
+  // StartLxdContainer.
+  virtual bool IsLxdContainerDownloadingSignalConnected() = 0;
+
+  // This should be true prior to calling CreateLxdContainer or
+  // StartLxdContainer.
+  virtual bool IsTremplinStartedSignalConnected() = 0;
+
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
   virtual void LaunchContainerApplication(
@@ -78,6 +106,36 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   virtual void InstallLinuxPackage(
       const vm_tools::cicerone::InstallLinuxPackageRequest& request,
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+          callback) = 0;
+
+  // Creates a new Lxd Container.
+  // |callback| is called to indicate creation status.
+  // |Observer::OnLxdContainerCreated| will be called on completion.
+  // |Observer::OnLxdContainerDownloading| is called to indicate progress.
+  virtual void CreateLxdContainer(
+      const vm_tools::cicerone::CreateLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::CreateLxdContainerResponse>
+          callback) = 0;
+
+  // Starts a new Lxd Container.
+  // |callback| is called when the method completes.
+  virtual void StartLxdContainer(
+      const vm_tools::cicerone::StartLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::StartLxdContainerResponse>
+          callback) = 0;
+
+  // Gets the Lxd container username.
+  // |callback| is called when the method completes.
+  virtual void GetLxdContainerUsername(
+      const vm_tools::cicerone::GetLxdContainerUsernameRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::GetLxdContainerUsernameResponse>
+          callback) = 0;
+
+  // Sets the Lxd container user, creating it if needed.
+  // |callback| is called when the method completes.
+  virtual void SetUpLxdContainerUser(
+      const vm_tools::cicerone::SetUpLxdContainerUserRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::SetUpLxdContainerUserResponse>
           callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.
