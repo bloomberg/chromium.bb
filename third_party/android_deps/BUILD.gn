@@ -444,6 +444,12 @@ android_aar_prebuilt(
   ]
 }
 
+android_aar_prebuilt("com_google_android_play_core_java") {
+  aar_path = "libs/com_google_android_play_core/core-1.3.0.aar"
+  info_path =
+      "libs/com_google_android_play_core/com_google_android_play_core.info"
+}
+
 java_prebuilt("android_arch_core_common_java") {
   jar_path = "libs/android_arch_core_common/common-1.0.0.jar"
   output_name = "android_arch_core_common"
