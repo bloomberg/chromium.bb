@@ -5,7 +5,6 @@
 """Implements commands for running and interacting with Fuchsia on QEMU."""
 
 import boot_data
-import log_reader
 import logging
 import target
 import os
@@ -34,7 +33,7 @@ def _GetAvailableTcpPort():
 
 
 class QemuTarget(target.Target):
-  def __init__(self, output_dir, target_cpu,
+  def __init__(self, output_dir, target_cpu, system_log_file,
                ram_size_mb=2048):
     """output_dir: The directory which will contain the files that are
                    generated to support the QEMU deployment.
@@ -43,6 +42,7 @@ class QemuTarget(target.Target):
     super(QemuTarget, self).__init__(output_dir, target_cpu)
     self._qemu_process = None
     self._ram_size_mb = ram_size_mb
+    self._system_log_file = system_log_file
 
   def __enter__(self):
     return self
@@ -138,13 +138,19 @@ class QemuTarget(target.Target):
     logging.debug('Launching QEMU.')
     logging.debug(' '.join(qemu_command))
 
-    # QEMU stderr/stdout are redirected to LogReader to debug
+    # Zircon sends debug logs to serial port (see kernel.serial=legacy flag
+    # above). Serial port is redirected to a file through QEMU stdout.
+    # This approach is used instead of loglistener to debug
     # https://crbug.com/86975 .
+    if self._system_log_file:
+      stdout = open(self._system_log_file, 'w')
+      stderr = subprocess.STDOUT
+    else:
+      stdout = open(os.devnull)
+      stderr = open(os.devnull)
+
     self._qemu_process = subprocess.Popen(qemu_command, stdin=open(os.devnull),
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT)
-    self._SetSystemLogsReader(
-        log_reader.LogReader(None, self._qemu_process.stdout))
+                                          stdout=stdout, stderr=stderr)
     self._WaitUntilReady();
 
   def Shutdown(self):
