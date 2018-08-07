@@ -12,6 +12,7 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ui {
 namespace ws2 {
@@ -50,6 +51,7 @@ WindowServiceTestSetup::WindowServiceTestSetup()
   service_ =
       std::make_unique<WindowService>(&delegate_, nullptr, focus_controller());
   aura::client::SetFocusClient(root(), focus_controller());
+  wm::SetActivationClient(root(), focus_controller());
   delegate_.set_top_level_parent(aura_test_helper_.root_window());
 
   window_tree_ = service_->CreateWindowTree(&window_tree_client_);

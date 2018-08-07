@@ -78,6 +78,7 @@ component("lib") {
     "//ui/aura",
     "//ui/base/mojo:lib",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   defines = [ "IS_WINDOW_SERVICE_IMPL" ]
