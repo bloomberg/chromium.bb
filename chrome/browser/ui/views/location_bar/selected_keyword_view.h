@@ -33,7 +33,6 @@ class SelectedKeywordView : public IconLabelBubbleView {
 
   // IconLabelBubbleView:
   SkColor GetTextColor() const override;
-  bool ShouldShowExtraInternalSpace() const override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -48,6 +47,7 @@ class SelectedKeywordView : public IconLabelBubbleView {
 
  private:
   // IconLabelBubbleView:
+  int GetExtraInternalSpacing() const override;
   const char* GetClassName() const override;
 
   LocationBarView* location_bar_;
