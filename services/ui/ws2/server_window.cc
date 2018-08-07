@@ -457,9 +457,6 @@ void ServerWindow::SetClientArea(
 
   additional_client_areas_ = additional_client_areas;
   client_area_ = insets;
-
-  // TODO(sky): update cursor if over this window.
-  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ServerWindow::SetCaptureOwner(WindowTree* owner) {
