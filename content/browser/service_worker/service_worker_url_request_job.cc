@@ -660,7 +660,6 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-    blink::mojom::BlobPtr body_as_blob,
     scoped_refptr<ServiceWorkerVersion> version) {
   // Do not clear |fetch_dispatcher_| if it has dispatched a navigation preload
   // request to keep the network::mojom::URLLoader related objects in it,
@@ -738,12 +737,11 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   }
 
   // Set up a request for reading the blob.
-  // |body_as_blob| must be kept around until we call this to ensure that
-  // it's alive.
-  // TODO(falken): Can we just read |body_as_blob| directly like in
+  // TODO(falken): Can we just read |response->blob->blob| directly like in
   // ServiceWorkerNavigationLoader?
   if (response->blob && blob_storage_context_) {
     DCHECK(!response->blob->uuid.empty());
+    DCHECK(response->blob->blob.is_valid());
     SetResponseBodyType(BLOB);
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
         blob_storage_context_->GetBlobDataFromUUID(response->blob->uuid);

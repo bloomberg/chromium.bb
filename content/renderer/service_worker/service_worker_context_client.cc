@@ -1127,27 +1127,8 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
 
-  // TODO(leonhsl): Do not need to pass the additional |blob_ptr| via
-  // OnResponseBlob, just calling OnResponse is fine because the receiver can
-  // use |response->blob->blob| directly.
-  if (response->blob) {
-    DCHECK(!response->blob->uuid.empty());
-    DCHECK(response->blob->blob.is_valid());
-    blink::mojom::BlobPtr blob_ptr(std::move(response->blob->blob));
-    // Make a clone of the blob ptr to ensure |response->blob->blob| has a valid
-    // value, otherwise Mojo will complain, because by definition of the mojom
-    // struct SerializedBlob it must always have a valid member blob ptr when we
-    // pass the struct via Mojo calls.
-    blink::mojom::BlobPtrInfo blob_clone;
-    blob_ptr->Clone(mojo::MakeRequest(&blob_clone));
-    response->blob->blob = std::move(blob_clone);
-    response_callback->OnResponseBlob(
-        std::move(response), std::move(blob_ptr),
-        base::Time::FromDoubleT(event_dispatch_time));
-  } else {
-    response_callback->OnResponse(std::move(response),
-                                  base::Time::FromDoubleT(event_dispatch_time));
-  }
+  response_callback->OnResponse(std::move(response),
+                                base::Time::FromDoubleT(event_dispatch_time));
   context_->fetch_response_callbacks.erase(fetch_event_id);
 }
 

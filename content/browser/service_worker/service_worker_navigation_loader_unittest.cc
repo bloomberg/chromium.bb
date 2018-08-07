@@ -44,11 +44,13 @@ void ReceiveRequestHandler(
   *out_handler = std::move(handler);
 }
 
-blink::mojom::FetchAPIResponsePtr OkResponse() {
+blink::mojom::FetchAPIResponsePtr OkResponse(
+    blink::mojom::SerializedBlobPtr blob_body) {
   auto response = blink::mojom::FetchAPIResponse::New();
   response->status_code = 200;
   response->status_text = "OK";
   response->response_type = network::mojom::FetchResponseType::kDefault;
+  response->blob = std::move(blob_body);
   return response;
 }
 
@@ -175,7 +177,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   ~Helper() override = default;
 
   // Tells this helper to respond to fetch events with the specified blob.
-  void RespondWithBlob(blink::mojom::BlobPtr blob) {
+  void RespondWithBlob(blink::mojom::SerializedBlobPtr blob) {
     response_mode_ = ResponseMode::kBlob;
     blob_body_ = std::move(blob);
   }
@@ -265,15 +267,16 @@ class Helper : public EmbeddedWorkerTestHelper {
             std::move(response_callback), std::move(finish_callback));
         return;
       case ResponseMode::kBlob:
-        response_callback->OnResponseBlob(OkResponse(), std::move(blob_body_),
-                                          base::Time::Now());
+        response_callback->OnResponse(OkResponse(std::move(blob_body_)),
+                                      base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
         return;
       case ResponseMode::kStream:
-        response_callback->OnResponseStream(
-            OkResponse(), std::move(stream_handle_), base::Time::Now());
+        response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
+                                            std::move(stream_handle_),
+                                            base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
@@ -314,7 +317,8 @@ class Helper : public EmbeddedWorkerTestHelper {
         return;
       case ResponseMode::kEarlyResponse:
         finish_callback_ = std::move(finish_callback);
-        response_callback->OnResponse(OkResponse(), base::Time::Now());
+        response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
+                                      base::Time::Now());
         // Now the caller must call FinishWaitUntil() to finish the event.
         return;
       case ResponseMode::kRedirect:
@@ -345,7 +349,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   scoped_refptr<network::ResourceRequestBody> request_body_;
 
   // For ResponseMode::kBlob.
-  blink::mojom::BlobPtr blob_body_;
+  blink::mojom::SerializedBlobPtr blob_body_;
 
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
@@ -591,10 +595,13 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   blob_data->AppendData(kResponseBody);
   std::unique_ptr<storage::BlobDataHandle> blob_handle =
       blob_context_.AddFinishedBlob(std::move(blob_data));
-  blink::mojom::BlobPtr blob_ptr;
-  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob_ptr);
+
+  auto blob = blink::mojom::SerializedBlob::New();
+  blob->uuid = blob_handle->uuid();
+  blob->size = blob_handle->size();
+  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob->blob);
   storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
-  helper_->RespondWithBlob(std::move(blob_ptr));
+  helper_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
   LoaderResult result = StartRequest(CreateRequest());
@@ -622,10 +629,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
   std::unique_ptr<storage::BlobDataHandle> blob_handle =
       blob_context_.AddBrokenBlob(kBrokenUUID, "", "",
                                   storage::BlobStatus::ERR_OUT_OF_MEMORY);
-  blink::mojom::BlobPtr blob_ptr;
-  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob_ptr);
+  auto blob = blink::mojom::SerializedBlob::New();
+  blob->uuid = kBrokenUUID;
+  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob->blob);
   storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
-  helper_->RespondWithBlob(std::move(blob_ptr));
+  helper_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
   LoaderResult result = StartRequest(CreateRequest());
