@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
   // Default apps: chrome + web store + internal apps.
   const size_t kNumDefaultApps =
       2u + app_list::GetNumberOfInternalAppsShowInLauncherForTest(
-               /*apps_name=*/nullptr, GetProfile(0)->IsGuestSession());
+               /*apps_name=*/nullptr);
   ASSERT_EQ(kNumApps + kNumDefaultApps, service->GetNumSyncItemsForTest());
 
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());

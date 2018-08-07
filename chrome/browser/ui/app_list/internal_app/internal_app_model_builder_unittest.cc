@@ -6,13 +6,11 @@
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
-#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -35,6 +33,7 @@ class InternalAppModelBuilderTest : public AppListTestBase {
   // AppListTestBase:
   void SetUp() override {
     AppListTestBase::SetUp();
+    CreateBuilder();
   }
 
   void TearDown() override {
@@ -43,20 +42,19 @@ class InternalAppModelBuilderTest : public AppListTestBase {
   }
 
  protected:
+  std::unique_ptr<FakeAppListModelUpdater> model_updater_;
+
+ private:
   // Creates a new builder, destroying any existing one.
-  void CreateBuilder(bool guest_mode) {
+  void CreateBuilder() {
     ResetBuilder();  // Destroy any existing builder in the correct order.
 
-    testing_profile()->SetGuestSession(guest_mode);
     model_updater_ = std::make_unique<FakeAppListModelUpdater>();
     controller_ = std::make_unique<test::TestAppListControllerDelegate>();
     builder_ = std::make_unique<InternalAppModelBuilder>(controller_.get());
     builder_->Initialize(nullptr, profile(), model_updater_.get());
   }
 
-  std::unique_ptr<FakeAppListModelUpdater> model_updater_;
-
- private:
   void ResetBuilder() {
     builder_.reset();
     controller_.reset();
@@ -73,20 +71,8 @@ TEST_F(InternalAppModelBuilderTest, Build) {
   // The internal apps list is provided by GetInternalAppList() in
   // internal_app_metadata.cc. Only count the apps can display in launcher.
   std::string internal_apps_name;
-  CreateBuilder(false);
   EXPECT_EQ(app_list::GetNumberOfInternalAppsShowInLauncherForTest(
-                &internal_apps_name, profile()->IsGuestSession()),
-            model_updater_->ItemCount());
-  EXPECT_EQ(internal_apps_name, GetModelContent(model_updater_.get()));
-}
-
-TEST_F(InternalAppModelBuilderTest, BuildGuestMode) {
-  // The internal apps list is provided by GetInternalAppList() in
-  // internal_app_metadata.cc. Only count the apps can display in launcher.
-  std::string internal_apps_name;
-  CreateBuilder(true);
-  EXPECT_EQ(app_list::GetNumberOfInternalAppsShowInLauncherForTest(
-                &internal_apps_name, profile()->IsGuestSession()),
+                &internal_apps_name),
             model_updater_->ItemCount());
   EXPECT_EQ(internal_apps_name, GetModelContent(model_updater_.get()));
 }

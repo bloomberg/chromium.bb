@@ -708,8 +708,7 @@ TEST_F(AppContextMenuTest, CommandIdsMatchEnumsForHistograms) {
 
 // Tests that internal app's context menu is correct.
 TEST_P(AppContextMenuTest, InternalAppMenu) {
-  for (const auto& internal_app :
-       app_list::GetInternalAppList(profile()->IsGuestSession())) {
+  for (const auto& internal_app : app_list::GetInternalAppList()) {
     if (!internal_app.show_in_launcher)
       continue;
 
