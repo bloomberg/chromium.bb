@@ -108,7 +108,8 @@ class InfoBarsTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
+// Flakes with a crash on Win10. https://crbug.com/871910
+IN_PROC_BROWSER_TEST_F(InfoBarsTest, FLAKY_TestInfoBarsCloseOnNewTheme) {
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   ASSERT_TRUE(embedded_test_server()->Start());
