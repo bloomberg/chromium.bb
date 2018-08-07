@@ -21,6 +21,7 @@ const int kButtonBackgroundColor = 0x1A73E8;
 const CGFloat kButtonTitleGreyShade = 0.98;
 const CGFloat kButtonCornerRadius = 8;
 const CGFloat kButtonPadding = 16;
+const CGFloat kButtonVerticalPadding = 8;
 const CGFloat kButtonMinimalWidth = 80;
 const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
 }  // namespace
@@ -28,8 +29,17 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
 @interface ConsentBumpViewController ()
 
 @property(nonatomic, strong) UIView* buttonContainer;
+// Primary button. Hidden by default.
 @property(nonatomic, strong) UIButton* primaryButton;
+// Secondary button.
 @property(nonatomic, strong) UIButton* secondaryButton;
+// More button. Used to scroll the content to the bottom. Only displayed while
+// the primary button is hidden.
+@property(nonatomic, strong) UIButton* moreButton;
+// Constraint between the more button and the secondary button.
+@property(nonatomic, strong)
+    NSLayoutConstraint* secondaryMoreButtonMarginConstraint;
+// Gradient used to show that there is content that can be scrolled.
 @property(nonatomic, strong) UIView* gradientView;
 @property(nonatomic, strong) CAGradientLayer* gradientLayer;
 
@@ -42,6 +52,9 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
 @synthesize buttonContainer = _buttonContainer;
 @synthesize primaryButton = _primaryButton;
 @synthesize secondaryButton = _secondaryButton;
+@synthesize moreButton = _moreButton;
+@synthesize secondaryMoreButtonMarginConstraint =
+    _secondaryMoreButtonMarginConstraint;
 @synthesize gradientView = _gradientView;
 @synthesize gradientLayer = _gradientLayer;
 
@@ -88,12 +101,14 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
              forState:UIControlStateNormal];
     _primaryButton.layer.cornerRadius = kButtonCornerRadius;
     _primaryButton.contentEdgeInsets =
-        UIEdgeInsetsMake(0, kButtonPadding, 0, kButtonPadding);
+        UIEdgeInsetsMake(kButtonVerticalPadding, kButtonPadding,
+                         kButtonVerticalPadding, kButtonPadding);
     [_primaryButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                       forAxis:UILayoutConstraintAxisVertical];
     [_primaryButton addTarget:self
                        action:@selector(primaryButtonCallback)
              forControlEvents:UIControlEventTouchUpInside];
+    _primaryButton.hidden = YES;
   }
   return _primaryButton;
 }
@@ -102,6 +117,9 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
   if (!_secondaryButton) {
     _secondaryButton = [UIButton buttonWithType:UIButtonTypeSystem];
     _secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _secondaryButton.contentEdgeInsets =
+        UIEdgeInsetsMake(kButtonVerticalPadding, kButtonPadding,
+                         kButtonVerticalPadding, kButtonPadding);
     [_secondaryButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                         forAxis:UILayoutConstraintAxisVertical];
     [_secondaryButton addTarget:self
@@ -109,6 +127,28 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
                forControlEvents:UIControlEventTouchUpInside];
   }
   return _secondaryButton;
+}
+
+- (UIButton*)moreButton {
+  if (!_moreButton) {
+    _moreButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    _moreButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _moreButton.contentEdgeInsets =
+        UIEdgeInsetsMake(kButtonVerticalPadding, kButtonPadding,
+                         kButtonVerticalPadding, kButtonPadding);
+    [_moreButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                   forAxis:UILayoutConstraintAxisVertical];
+    [_moreButton addTarget:self
+                    action:@selector(moreButtonCallback)
+          forControlEvents:UIControlEventTouchUpInside];
+    [_moreButton
+        setTitle:l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON)
+        forState:UIControlStateNormal];
+    [_moreButton setImage:[UIImage imageNamed:@"signin_confirmation_more"]
+                 forState:UIControlStateNormal];
+  }
+  return _moreButton;
 }
 
 - (UIView*)buttonContainer {
@@ -152,11 +192,15 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
 
   // Add subviews.
   [self.buttonContainer addSubview:self.primaryButton];
+  [self.buttonContainer addSubview:self.moreButton];
   [self.buttonContainer addSubview:self.secondaryButton];
   [self.view addSubview:self.buttonContainer];
   [self.view addSubview:self.gradientView];
 
   // Constraints.
+  self.secondaryMoreButtonMarginConstraint = [self.moreButton.leadingAnchor
+      constraintGreaterThanOrEqualToAnchor:self.secondaryButton.trailingAnchor
+                                  constant:kMargin];
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self.view);
   AddSameConstraintsToSides(self.view, self.gradientView,
                             LayoutSides::kLeading | LayoutSides::kTrailing);
@@ -171,13 +215,18 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
       self.primaryButton, self.buttonContainer,
       LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kBottom,
       ChromeDirectionalEdgeInsetsMake(kMargin, 0, kMargin, kMargin));
+  AddSameConstraintsToSidesWithInsets(
+      self.moreButton, self.buttonContainer,
+      LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kBottom,
+      ChromeDirectionalEdgeInsetsMake(kMargin, 0, kMargin, kMargin));
   [NSLayoutConstraint activateConstraints:@[
+    self.secondaryMoreButtonMarginConstraint,
     [self.gradientView.heightAnchor constraintEqualToConstant:kGradientHeight],
     [self.gradientView.bottomAnchor
         constraintEqualToAnchor:self.buttonContainer.topAnchor],
     [self.primaryButton.leadingAnchor
-        constraintGreaterThanOrEqualToAnchor:self.secondaryButton
-                                                 .trailingAnchor],
+        constraintGreaterThanOrEqualToAnchor:self.secondaryButton.trailingAnchor
+                                    constant:kMargin],
 
     // Add minimum width to the buttons to have a better looking animation when
     // changing the label.
@@ -216,6 +265,12 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
                   completion:nil];
 }
 
+- (void)showPrimaryButton {
+  self.moreButton.hidden = YES;
+  self.primaryButton.hidden = NO;
+  self.secondaryMoreButtonMarginConstraint.active = NO;
+}
+
 #pragma mark - Private
 
 - (void)primaryButtonCallback {
@@ -224,6 +279,10 @@ const CGFloat kButtonTitleChangeAnimationDuration = 0.15;
 
 - (void)secondaryButtonCallback {
   [self.delegate consentBumpViewControllerDidTapSecondaryButton:self];
+}
+
+- (void)moreButtonCallback {
+  [self.delegate consentBumpViewControllerDidTapMoreButton:self];
 }
 
 @end

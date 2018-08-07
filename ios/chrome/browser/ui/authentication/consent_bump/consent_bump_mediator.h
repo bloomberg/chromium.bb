@@ -24,6 +24,9 @@ typedef NS_ENUM(NSInteger, ConsentBumpScreen) {
 // Updates the consumer such as it is displaying information relative to the
 // |consentBumpScreen|.
 - (void)updateConsumerForConsentBumpScreen:(ConsentBumpScreen)consentBumpScreen;
+// Updates the consumer shuch as it is possible to continue on the next screen
+// by showing the primary button.
+- (void)consumerCanProceed;
 
 @end
 

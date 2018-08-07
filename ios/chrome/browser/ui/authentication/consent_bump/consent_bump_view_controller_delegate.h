@@ -20,6 +20,10 @@
 // been pressed.
 - (void)consentBumpViewControllerDidTapSecondaryButton:
     (ConsentBumpViewController*)consentBumpViewController;
+// Notifies the delegate that the more button of the view controller has been
+// pressed.
+- (void)consentBumpViewControllerDidTapMoreButton:
+    (ConsentBumpViewController*)consentBumpViewController;
 
 @end
 
