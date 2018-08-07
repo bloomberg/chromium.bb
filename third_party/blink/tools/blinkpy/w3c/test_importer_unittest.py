@@ -308,6 +308,7 @@ class TestImporterTest(LoggingTestCase):
             'lines to TestExpectations rather than reverting. See:\n'
             'https://chromium.googlesource.com'
             '/chromium/src/+/master/docs/testing/web_platform_tests.md\n\n'
+            'NOAUTOREVERT=true\n'
             'No-Export: true')
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
