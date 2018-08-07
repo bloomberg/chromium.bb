@@ -40,8 +40,8 @@ constexpr char kAssistantExploreWebUrl[] =
 constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
   <html>
     <body style="font-family:Google Sans,sans-serif;padding:0 32px;">
-      <h3>Assistant Reminders</h3>
-      <p>Coming soon. Meanwhile, please use your Android/iOS phone to access reminders.</p>
+      <h3>Google Assistant Reminders</h3>
+      <p>Please use your phone to access Reminders.</p>
     </body>
   </html>
 )";
@@ -50,8 +50,8 @@ constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
 constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
   <html>
     <body style="font-family:Google Sans,sans-serif;padding:0 32px;">
-      <h3>Assistant Settings</h3>
-      <p>Coming soon. Meanwhile, please use your Android/iOS phone to access settings.</p>
+      <h3>Google Assistant Settings</h3>
+      <p>Please use your phone to access Settings.</p>
     </body>
   </html>
 )";

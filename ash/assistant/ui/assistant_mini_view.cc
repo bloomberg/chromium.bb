@@ -24,7 +24,10 @@ namespace {
 
 // Appearance.
 constexpr int kIconSizeDip = 20;
+constexpr int kLineHeightDip = 20;
 constexpr int kMaxWidthDip = 512;
+constexpr int kPaddingLeftDip = 14;
+constexpr int kPaddingRightDip = 24;
 constexpr int kPreferredHeightDip = 48;
 
 }  // namespace
@@ -62,7 +65,8 @@ void AssistantMiniView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, kPaddingDip), 2 * kSpacingDip));
+          gfx::Insets(0, kPaddingLeftDip, 0, kPaddingRightDip),
+          2 * kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -76,9 +80,11 @@ void AssistantMiniView::InitLayout() {
 
   // Label.
   label_->SetAutoColorReadabilityEnabled(false);
+  label_->SetEnabledColor(kTextColorPrimary);
   label_->SetFontList(
-      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(4));
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  label_->SetLineHeight(kLineHeightDip);
   AddChildView(label_);
 
   // Trigger input modality changed event to initialize view state.
