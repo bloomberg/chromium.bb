@@ -1143,19 +1143,6 @@ void WindowSelectorItem::StartDrag() {
     widget_window->parent()->StackChildAtTop(widget_window);
     widget_window->parent()->StackChildBelow(window, widget_window);
   }
-
-  // If split view mode is actvie and there is already a snapped window, stack
-  // this item's window below the snapped window. Note: this should be temporary
-  // for M66, see https://crbug.com/809298 for details.
-  if (Shell::Get()->IsSplitViewModeActive()) {
-    aura::Window* snapped_window =
-        Shell::Get()->split_view_controller()->GetDefaultSnappedWindow();
-    if (widget_window && widget_window->parent() == window->parent() &&
-        widget_window->parent() == snapped_window->parent()) {
-      widget_window->parent()->StackChildBelow(widget_window, snapped_window);
-      widget_window->parent()->StackChildBelow(window, widget_window);
-    }
-  }
 }
 
 }  // namespace ash
