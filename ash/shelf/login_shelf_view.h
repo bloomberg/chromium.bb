@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
+#include "ash/login/login_screen_controller_observer.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/shutdown_controller.h"
 #include "ash/tray_action/tray_action_observer.h"
@@ -29,6 +30,7 @@ namespace ash {
 class LockScreenActionBackgroundController;
 enum class LockScreenActionBackgroundState;
 class TrayAction;
+class LoginScreenController;
 
 class KioskAppsButton;
 
@@ -38,7 +40,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
                                   public views::ButtonListener,
                                   public TrayActionObserver,
                                   public LockScreenActionBackgroundObserver,
-                                  public ShutdownController::Observer {
+                                  public ShutdownController::Observer,
+                                  public LoginScreenControllerObserver {
  public:
   enum ButtonId {
     kShutdown = 1,    // Shut down the device.
@@ -93,6 +96,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // ShutdownController::Observer:
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
+  // LoginScreenControllerObserver:
+  void OnOobeDialogVisibilityChanged(bool visible) override;
+
  private:
   bool LockScreenActionBackgroundAnimating() const;
 
@@ -113,6 +119,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   ScopedObserver<ShutdownController, ShutdownController::Observer>
       shutdown_controller_observer_;
+
+  ScopedObserver<LoginScreenController, LoginScreenControllerObserver>
+      login_screen_controller_observer_;
 
   KioskAppsButton* kiosk_apps_button_ = nullptr;  // Owned by view hierarchy
 
