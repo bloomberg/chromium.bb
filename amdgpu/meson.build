@@ -26,8 +26,7 @@ libdrm_amdgpu = shared_library(
   [
     files(
       'amdgpu_asic_id.c', 'amdgpu_bo.c', 'amdgpu_cs.c', 'amdgpu_device.c',
-      'amdgpu_gpu_info.c', 'amdgpu_vamgr.c', 'amdgpu_vm.c', 'util_hash.c',
-      'util_hash_table.c',
+      'amdgpu_gpu_info.c', 'amdgpu_vamgr.c', 'amdgpu_vm.c', 'handle_table.c',
     ),
     config_file,
   ],
