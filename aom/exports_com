@@ -22,3 +22,4 @@ text aom_uleb_decode
 text aom_uleb_encode
 text aom_uleb_encode_fixed_size
 text aom_uleb_size_in_bytes
+text av1_resize_frame420
