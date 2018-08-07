@@ -1087,10 +1087,6 @@
       status: "stable",
     },
     {
-      name: "ResizeObserver",
-      status: "stable",
-    },
-    {
       name: "ResourceLoadScheduler",
       status: "experimental",
     },
