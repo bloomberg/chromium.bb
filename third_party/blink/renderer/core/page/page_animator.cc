@@ -114,4 +114,11 @@ void PageAnimator::UpdateAllLifecyclePhasesExceptPaint(LocalFrame& root_frame) {
   view->UpdateAllLifecyclePhasesExceptPaint();
 }
 
+void PageAnimator::UpdateLifecycleToLayoutClean(LocalFrame& root_frame) {
+  LocalFrameView* view = root_frame.View();
+  base::AutoReset<bool> servicing(&updating_layout_and_style_for_painting_,
+                                  true);
+  view->UpdateLifecycleToLayoutClean();
+}
+
 }  // namespace blink

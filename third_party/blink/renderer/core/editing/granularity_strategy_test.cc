@@ -42,9 +42,6 @@ class GranularityStrategyTest : public PageTestBase {
   void SetUp() override;
 
   Text* AppendTextNode(const String& data);
-  int LayoutCount() const {
-    return GetDummyPageHolder().GetFrameView().LayoutCount();
-  }
   void SetInnerHTML(const char*);
   // Parses the text node, appending the info to m_letterPos and m_wordMiddles.
   void ParseText(Text*);

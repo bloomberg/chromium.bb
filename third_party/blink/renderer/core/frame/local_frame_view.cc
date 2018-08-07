@@ -292,7 +292,8 @@ void LocalFrameView::Reset() {
   has_pending_layout_ = false;
   layout_scheduling_enabled_ = true;
   in_synchronous_post_layout_ = false;
-  layout_count_ = 0;
+  layout_count_for_testing_ = 0;
+  lifecycle_update_count_for_testing_ = 0;
   nested_layout_count_ = 0;
   post_layout_tasks_timer_.Stop();
   update_plugins_timer_.Stop();
@@ -961,8 +962,7 @@ void LocalFrameView::UpdateLayout() {
         this, TracedLayoutObject::Create(*GetLayoutView(), true));
 
     GetLayoutView()->Compositor()->DidLayout();
-
-    layout_count_++;
+    layout_count_for_testing_++;
 
     if (AXObjectCache* cache = document->GetOrCreateAXObjectCache()) {
       const KURL& url = document->Url();
@@ -2370,6 +2370,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
          target_state == DocumentLifecycle::kCompositingClean ||
          target_state == DocumentLifecycle::kPrePaintClean ||
          target_state == DocumentLifecycle::kPaintClean);
+  lifecycle_update_count_for_testing_++;
 
   // If the document is not active then it is either not yet initialized, or it
   // is stopping. In either case, we can't reach one of the supported target

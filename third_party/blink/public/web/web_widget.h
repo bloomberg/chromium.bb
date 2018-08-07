@@ -92,10 +92,10 @@ class WebWidget {
   // and it may result in calls to WebWidgetClient::didInvalidateRect.
   virtual void UpdateAllLifecyclePhases() { UpdateLifecycle(); }
 
-  // Selectively runs all lifecycle phases or all phases excluding paint. The
-  // latter can be used to trigger side effects of updating layout and
-  // animations if painting is not required.
-  enum class LifecycleUpdate { kPrePaint, kAll };
+  // By default, all phases are updated by |UpdateLifecycle| (e.g., style,
+  // layout, prepaint, paint, etc. See: document_lifecycle.h). |LifecycleUpdate|
+  // can be used to only update to a specific lifecycle phase.
+  enum class LifecycleUpdate { kLayout, kPrePaint, kAll };
   virtual void UpdateLifecycle(
       LifecycleUpdate requested_update = LifecycleUpdate::kAll) {}
 

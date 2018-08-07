@@ -22,27 +22,18 @@ void AwRenderViewExt::RenderViewCreated(content::RenderView* render_view) {
 }
 
 void AwRenderViewExt::DidCommitCompositorFrame() {
-  PostCheckContentsSize();
+  UpdateContentsSize();
 }
 
 void AwRenderViewExt::DidUpdateMainFrameLayout() {
-  PostCheckContentsSize();
+  UpdateContentsSize();
 }
 
 void AwRenderViewExt::OnDestruct() {
   delete this;
 }
 
-void AwRenderViewExt::PostCheckContentsSize() {
-  if (check_contents_size_timer_.IsRunning())
-    return;
-
-  check_contents_size_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(0), this,
-      &AwRenderViewExt::CheckContentsSize);
-}
-
-void AwRenderViewExt::CheckContentsSize() {
+void AwRenderViewExt::UpdateContentsSize() {
   blink::WebView* webview = render_view()->GetWebView();
   content::RenderFrame* main_render_frame = render_view()->GetMainRenderFrame();
 

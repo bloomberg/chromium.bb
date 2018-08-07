@@ -19,7 +19,7 @@ layer at (57,85) size 240x156 clip at (59,87) size 237x153
   LayoutButton (relative positioned) {INPUT} at (0,0) size 240x156 [border: (1.50px solid #D8D8D8) (1.50px solid #D1D1D1) (1.50px solid #BABABA) (1.50px solid #D1D1D1)]
     LayoutFlexibleBox (anonymous) at (12,41.25) size 216x72
       LayoutBlockFlow {DIV} at (72,0) size 72x72 [bgcolor=#FFFFFFE6]
-layer at (57,169) size 240x72 scrollWidth 267
+layer at (57,169) size 240x72 scrollWidth 339
   LayoutFlexibleBox (relative positioned) {DIV} at (0,84) size 240x72
     LayoutBlockFlow {DIV} at (24,0) size 46.72x72 [color=#FFFFFF]
       LayoutText {#text} at (0,22) size 47x28
@@ -31,6 +31,7 @@ layer at (57,169) size 240x72 scrollWidth 267
     LayoutBlockFlow {DIV} at (123.44,72) size 0x0
     LayoutButton {INPUT} at (123.44,0) size 72x72
     LayoutButton {INPUT} at (195.44,0) size 72x72
+    LayoutButton {INPUT} at (267.44,0) size 72x72
 layer at (57,241) size 240x24
   LayoutSlider {INPUT} at (0,156) size 240x24 [color=#909090]
     LayoutFlexibleBox {DIV} at (24,0) size 192x6
@@ -57,7 +58,7 @@ layer at (57,310) size 240x156 clip at (59,312) size 237x153
   LayoutButton (relative positioned) {INPUT} at (0,0) size 240x156 [border: (1.50px solid #D8D8D8) (1.50px solid #D1D1D1) (1.50px solid #BABABA) (1.50px solid #D1D1D1)]
     LayoutFlexibleBox (anonymous) at (12,41.25) size 216x72
       LayoutBlockFlow {DIV} at (72,0) size 72x72 [bgcolor=#FFFFFFE6]
-layer at (57,394) size 240x72 backgroundClip at (47,373) size 249x113 clip at (57,394) size 239x72 scrollWidth 267
+layer at (57,394) size 240x72 backgroundClip at (47,373) size 249x113 clip at (57,394) size 239x72 scrollWidth 339
   LayoutFlexibleBox (relative positioned) {DIV} at (0,84) size 240x72
     LayoutBlockFlow {DIV} at (24,0) size 46.72x72 [color=#FFFFFF]
       LayoutText {#text} at (0,22) size 47x28
@@ -69,6 +70,7 @@ layer at (57,394) size 240x72 backgroundClip at (47,373) size 249x113 clip at (5
     LayoutBlockFlow {DIV} at (123.44,72) size 0x0
     LayoutButton {INPUT} at (123.44,0) size 72x72
     LayoutButton {INPUT} at (195.44,0) size 72x72
+    LayoutButton {INPUT} at (267.44,0) size 72x72
 layer at (57,466) size 240x24
   LayoutSlider {INPUT} at (0,156) size 240x24 [color=#909090]
     LayoutFlexibleBox {DIV} at (24,0) size 192x6

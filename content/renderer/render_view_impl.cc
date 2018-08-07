@@ -569,7 +569,6 @@ void RenderViewImpl::Initialize(
   page_zoom_level_ = 0;
 
   nav_state_sync_timer_.SetTaskRunner(task_runner);
-  check_preferred_size_timer_.SetTaskRunner(std::move(task_runner));
 }
 
 RenderViewImpl::~RenderViewImpl() {
@@ -1667,17 +1666,7 @@ void RenderViewImpl::DidUpdateMainFrameLayout() {
   for (auto& observer : observers_)
     observer.DidUpdateMainFrameLayout();
 
-  // We don't always want to set up a timer, only if we've been put in that
-  // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
-  // message.
-  if (!send_preferred_size_changes_ || !webview())
-    return;
-
-  if (check_preferred_size_timer_.IsRunning())
-    return;
-  check_preferred_size_timer_.Start(FROM_HERE,
-                                    TimeDelta::FromMilliseconds(0), this,
-                                    &RenderViewImpl::CheckPreferredSize);
+  UpdatePreferredSize();
 }
 
 void RenderViewImpl::NavigateBackForwardSoon(int offset) {
@@ -1744,7 +1733,7 @@ gfx::RectF RenderViewImpl::ElementBoundsInWindow(
   return gfx::RectF(bounding_box_in_window);
 }
 
-void RenderViewImpl::CheckPreferredSize() {
+void RenderViewImpl::UpdatePreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
   // been put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.
@@ -1861,12 +1850,17 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
     return;
   send_preferred_size_changes_ = true;
 
-  // Start off with an initial preferred size notification (in case
-  // |DidUpdateMainFrameLayout| was already called).
-  // TODO(pdr): |DidUpdateMainFrameLayout| should only be called with up-to-date
-  // layout but that may not be the case (see: NetworkServiceRestartBrowserTest.
-  // WindowOpenXHR). A lifecycle update should be done before this call.
-  DidUpdateMainFrameLayout();
+  if (!webview())
+    return;
+
+  // We need to ensure |UpdatePreferredSize| gets called. If a layout is needed,
+  // force an update here which will call |DidUpdateMainFrameLayout|.
+  webview()->UpdateLifecycle(WebWidget::LifecycleUpdate::kLayout);
+
+  // If a layout was not needed, |DidUpdateMainFrameLayout| will not be called.
+  // We explicitly update the preferred size here to ensure the preferred size
+  // notification is sent.
+  UpdatePreferredSize();
 }
 
 void RenderViewImpl::OnDisableScrollbarsForSmallWindows(

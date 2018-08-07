@@ -21,7 +21,9 @@ namespace blink {
 
 class SpellCheckerTest : public SpellCheckTestBase {
  protected:
-  int LayoutCount() const { return Page().GetFrameView().LayoutCount(); }
+  unsigned LayoutCount() const {
+    return Page().GetFrameView().LayoutCountForTesting();
+  }
   DummyPageHolder& Page() const { return GetDummyPageHolder(); }
 
   void ForceLayout();
@@ -91,7 +93,7 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
 
   EXPECT_TRUE(GetSpellChecker().IsSpellCheckingEnabled());
   ForceLayout();
-  int start_count = LayoutCount();
+  unsigned start_count = LayoutCount();
   GetSpellChecker().RespondToChangedSelection();
   EXPECT_EQ(start_count, LayoutCount());
 }

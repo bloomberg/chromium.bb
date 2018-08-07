@@ -414,7 +414,7 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
   const gfx::Size& GetPreferredSize() {
-    view()->CheckPreferredSize();
+    view()->UpdatePreferredSize();
     return view()->preferred_size_;
   }
 

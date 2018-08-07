@@ -152,7 +152,11 @@ class CORE_EXPORT LocalFrameView final
   bool HasOrthogonalWritingModeRoots() const;
   void LayoutOrthogonalWritingModeRoots();
   void ScheduleOrthogonalWritingModeRootsForLayout();
-  int LayoutCount() const { return layout_count_; }
+
+  unsigned LayoutCountForTesting() const { return layout_count_for_testing_; }
+  unsigned LifecycleUpdateCountForTesting() const {
+    return lifecycle_update_count_for_testing_;
+  }
 
   void CountObjectsNeedingLayout(unsigned& needs_layout_objects,
                                  unsigned& total_objects,
@@ -829,7 +833,8 @@ class CORE_EXPORT LocalFrameView final
 
   bool layout_scheduling_enabled_;
   bool in_synchronous_post_layout_;
-  int layout_count_;
+  unsigned layout_count_for_testing_;
+  unsigned lifecycle_update_count_for_testing_;
   unsigned nested_layout_count_;
   TaskRunnerTimer<LocalFrameView> post_layout_tasks_timer_;
   TaskRunnerTimer<LocalFrameView> update_plugins_timer_;

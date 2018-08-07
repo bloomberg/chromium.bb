@@ -3446,4 +3446,9 @@ void Internals::BypassLongCompileThresholdOnce(
   }
   return performance_monitor->BypassLongCompileThresholdOnceForTesting();
 }
+
+unsigned Internals::LifecycleUpdateCount() const {
+  return document_->View()->LifecycleUpdateCountForTesting();
+}
+
 }  // namespace blink

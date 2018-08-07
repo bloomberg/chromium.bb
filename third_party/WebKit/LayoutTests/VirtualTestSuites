@@ -31,6 +31,11 @@
   },
   {
     "prefix": "threaded",
+    "base": "lifecycle",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
     "base": "http/tests/worklet",
     "args": ["--enable-threaded-compositing"]
   },
