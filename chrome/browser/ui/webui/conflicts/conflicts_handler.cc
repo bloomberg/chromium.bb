@@ -75,6 +75,8 @@ std::string GetModuleStatusString(
         return "Disallowed - Added to the blacklist";
       case BlockingDecision::kBlocked:
         return "Disallowed - Blocked";
+      case BlockingDecision::kBypassedBlocking:
+        return "Disallowed - Bypassed blocking";
       case BlockingDecision::kUnknown:
         NOTREACHED();
         break;
