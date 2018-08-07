@@ -249,8 +249,12 @@ SkColor GetOmniboxColor(OmniboxPart part,
       // The spec calls for transparent black (or white) overlays for hover (8%)
       // and select (6%), which can overlap (for 14%). Pre-blend these with the
       // background for the best text AA result.
+      // High contrast mode needs a darker base - Grey 800 with 14% white
+      // overlaid on it (see below) is hard to produce good contrast ratios
+      // against with colors other than white.
       return color_utils::BlendTowardOppositeLuma(
-          dark ? gfx::kGoogleGrey800 : SK_ColorWHITE,
+          dark ? (high_contrast ? gfx::kGoogleGrey900 : gfx::kGoogleGrey800)
+               : SK_ColorWHITE,
           gfx::ToRoundedInt(GetOmniboxStateAlpha(state) * 0xff));
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
     case OmniboxPart::RESULTS_TEXT_DEFAULT:
@@ -270,6 +274,8 @@ SkColor GetOmniboxColor(OmniboxPart part,
     case OmniboxPart::RESULTS_TEXT_POSITIVE:
       return dark ? gfx::kGoogleGreenDark600 : gfx::kGoogleGreen600;
     case OmniboxPart::RESULTS_TEXT_URL:
+      if (high_contrast)
+        return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue700;
       return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
 
     case OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE:
