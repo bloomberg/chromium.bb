@@ -509,53 +509,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return test_result
 
 
-class RebaselineExpectations(AbstractParallelRebaselineCommand):
-    name = 'rebaseline-expectations'
-    help_text = 'Rebaselines the tests indicated in TestExpectations.'
-    show_in_main_help = True
-
-    def __init__(self):
-        super(RebaselineExpectations, self).__init__(options=[
-            self.no_optimize_option,
-        ] + self.platform_options)
-        self._test_baseline_set = None
-
-    @staticmethod
-    def _tests_to_rebaseline(port):
-        tests_to_rebaseline = []
-        for path, value in port.expectations_dict().items():
-            expectations = TestExpectations(port, include_overrides=False, expectations_dict={path: value})
-            for test in expectations.get_rebaselining_failures():
-                tests_to_rebaseline.append(test)
-        return tests_to_rebaseline
-
-    def _add_tests_to_rebaseline(self, port_name):
-        builder_name = self._tool.builders.builder_name_for_port_name(port_name)
-        if not builder_name:
-            return
-        tests = self._tests_to_rebaseline(self._tool.port_factory.get(port_name))
-
-        if tests:
-            _log.info('Retrieving results for %s from %s.', port_name, builder_name)
-
-        for test_name in tests:
-            _log.info('    %s', test_name)
-            self._test_baseline_set.add(test_name, Build(builder_name))
-
-    def execute(self, options, args, tool):
-        self._tool = tool
-        self._test_baseline_set = TestBaselineSet(tool)
-        options.results_directory = None
-        port_names = tool.port_factory.all_port_names(options.platform)
-        for port_name in port_names:
-            self._add_tests_to_rebaseline(port_name)
-        if not self._test_baseline_set:
-            _log.warning('Did not find any tests marked Rebaseline.')
-            return
-
-        self.rebaseline(options, self._test_baseline_set)
-
-
 class Rebaseline(AbstractParallelRebaselineCommand):
     name = 'rebaseline'
     help_text = 'Rebaseline tests with results from the continuous builders.'

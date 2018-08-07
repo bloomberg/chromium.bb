@@ -36,7 +36,7 @@ from blinkpy.web_tests.models.test_configuration import TestConfiguration, TestC
 from blinkpy.web_tests.models.test_expectations import (
     TestExpectationLine, TestExpectations, ParseError, TestExpectationParser,
     PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO,
-    TIMEOUT, CRASH, LEAK, SKIP, WONTFIX, NEEDS_MANUAL_REBASELINE, MISSING
+    TIMEOUT, CRASH, LEAK, SKIP, WONTFIX, MISSING
 )
 
 
@@ -121,35 +121,15 @@ class MiscTests(Base):
 
     def test_result_was_expected(self):
         # test basics
-        self.assertEqual(TestExpectations.result_was_expected(PASS, set([PASS]), test_needs_rebaselining=False), True)
-        self.assertEqual(TestExpectations.result_was_expected(FAIL, set([PASS]), test_needs_rebaselining=False), False)
+        self.assertEqual(TestExpectations.result_was_expected(PASS, set([PASS])), True)
+        self.assertEqual(TestExpectations.result_was_expected(FAIL, set([PASS])), False)
 
         # test handling of SKIPped tests and results
-        self.assertEqual(TestExpectations.result_was_expected(SKIP, set([CRASH]), test_needs_rebaselining=False), False)
-        self.assertEqual(TestExpectations.result_was_expected(SKIP, set([LEAK]), test_needs_rebaselining=False), False)
+        self.assertEqual(TestExpectations.result_was_expected(SKIP, set([CRASH])), False)
+        self.assertEqual(TestExpectations.result_was_expected(SKIP, set([LEAK])), False)
 
-        # test handling of MISSING results and the REBASELINE specifier
-        self.assertEqual(TestExpectations.result_was_expected(MISSING, set([PASS]), test_needs_rebaselining=True), True)
-        self.assertEqual(TestExpectations.result_was_expected(MISSING, set([PASS]), test_needs_rebaselining=False), False)
-
-        self.assertTrue(TestExpectations.result_was_expected(
-            PASS, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(
-            MISSING, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(
-            TEXT, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(
-            IMAGE, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(
-            IMAGE_PLUS_TEXT, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(
-            AUDIO, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
-        self.assertFalse(TestExpectations.result_was_expected(
-            TIMEOUT, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
-        self.assertFalse(TestExpectations.result_was_expected(
-            CRASH, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
-        self.assertFalse(TestExpectations.result_was_expected(
-            LEAK, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        # test handling of MISSING results
+        self.assertEqual(TestExpectations.result_was_expected(MISSING, set([PASS])), False)
 
     def test_remove_pixel_failures(self):
         self.assertEqual(TestExpectations.remove_pixel_failures(set([FAIL])), set([FAIL]))
@@ -774,17 +754,6 @@ Bug(y) [ Mac ] failures/expected/foo.html [ Crash ]
         self.assertEqual("""Bug(x) [ Win Debug ] failures/expected/foo.html [ Failure Timeout ]
 Bug(y) [ Mac ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
-
-
-class RebaseliningTest(Base):
-
-    def test_get_rebaselining_failures(self):
-        # Make sure we find a test as needing a rebaseline even if it is not marked as a failure.
-        self.parse_exp('Bug(x) failures/expected/text.html [ Rebaseline ]\n')
-        self.assertEqual(len(self._exp.get_rebaselining_failures()), 1)
-
-        self.parse_exp(self.get_basic_expectations())
-        self.assertEqual(len(self._exp.get_rebaselining_failures()), 0)
 
 
 class TestExpectationsParserTests(unittest.TestCase):
