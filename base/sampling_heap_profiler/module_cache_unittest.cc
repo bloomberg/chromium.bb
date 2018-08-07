@@ -19,8 +19,10 @@ int AFunctionForTest() {
 // addresses within the module.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #define MAYBE_ModuleCache ModuleCache
+#define MAYBE_ModulesList ModulesList
 #else
 #define MAYBE_ModuleCache DISABLED_ModuleCache
+#define MAYBE_ModulesList DISABLED_ModulesList
 #endif
 TEST_F(ModuleCacheTest, MAYBE_ModuleCache) {
   uintptr_t ptr1 = reinterpret_cast<uintptr_t>(&AFunctionForTest);
@@ -32,6 +34,15 @@ TEST_F(ModuleCacheTest, MAYBE_ModuleCache) {
   EXPECT_TRUE(module1.is_valid);
   EXPECT_LT(module1.base_address, ptr1);
   EXPECT_GT(module1.base_address + module1.size, ptr2);
+}
+
+TEST_F(ModuleCacheTest, MAYBE_ModulesList) {
+  ModuleCache cache;
+  uintptr_t ptr = reinterpret_cast<uintptr_t>(&AFunctionForTest);
+  const ModuleCache::Module& module = cache.GetModuleForAddress(ptr);
+  EXPECT_TRUE(module.is_valid);
+  EXPECT_EQ(1u, cache.GetModules().size());
+  EXPECT_EQ(&module, cache.GetModules().front());
 }
 
 TEST_F(ModuleCacheTest, InvalidModule) {

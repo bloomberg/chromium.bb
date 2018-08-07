@@ -4,7 +4,10 @@
 
 #include "content/browser/devtools/protocol/memory_handler.h"
 
+#include <cinttypes>
+
 #include "base/memory/memory_pressure_listener.h"
+#include "base/sampling_heap_profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/render_process_host.h"
@@ -33,6 +36,7 @@ void MemoryHandler::SetRenderer(int process_host_id,
 
 Response MemoryHandler::GetBrowserSamplingProfile(
     std::unique_ptr<Memory::SamplingProfile>* out_profile) {
+  base::ModuleCache module_cache;
   std::unique_ptr<Array<Memory::SamplingProfileNode>> samples =
       Array<Memory::SamplingProfileNode>::create();
   std::vector<base::SamplingHeapProfiler::Sample> raw_samples =
@@ -40,8 +44,11 @@ Response MemoryHandler::GetBrowserSamplingProfile(
 
   for (auto& sample : raw_samples) {
     std::unique_ptr<Array<String>> stack = Array<String>::create();
-    for (auto* frame : sample.stack)
-      stack->addItem(base::StringPrintf("%p", frame));
+    for (const void* frame : sample.stack) {
+      uintptr_t address = reinterpret_cast<uintptr_t>(frame);
+      module_cache.GetModuleForAddress(address);  // Populates module_cache.
+      stack->addItem(base::StringPrintf("0x%" PRIxPTR, address));
+    }
     samples->addItem(Memory::SamplingProfileNode::Create()
                          .SetSize(sample.size)
                          .SetTotal(sample.total)
@@ -49,8 +56,23 @@ Response MemoryHandler::GetBrowserSamplingProfile(
                          .Build());
   }
 
-  *out_profile =
-      Memory::SamplingProfile::Create().SetSamples(std::move(samples)).Build();
+  std::unique_ptr<Array<Memory::Module>> modules =
+      Array<Memory::Module>::create();
+  for (const auto* module : module_cache.GetModules()) {
+    modules->addItem(Memory::Module::Create()
+                         .SetName(base::StringPrintf(
+                             "%" PRIsFP, module->filename.value().c_str()))
+                         .SetUuid(module->id)
+                         .SetBaseAddress(base::StringPrintf(
+                             "0x%" PRIxPTR, module->base_address))
+                         .SetSize(static_cast<double>(module->size))
+                         .Build());
+  }
+
+  *out_profile = Memory::SamplingProfile::Create()
+                     .SetSamples(std::move(samples))
+                     .SetModules(std::move(modules))
+                     .Build();
   return Response::OK();
 }
 
