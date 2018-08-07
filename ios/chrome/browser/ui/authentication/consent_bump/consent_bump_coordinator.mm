@@ -69,6 +69,7 @@
 
   self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
   self.unifiedConsentCoordinator.delegate = self;
+  self.unifiedConsentCoordinator.interactable = NO;
   [self.unifiedConsentCoordinator start];
   self.presentedCoordinatorType = ConsentBumpScreenUnifiedConsent;
 

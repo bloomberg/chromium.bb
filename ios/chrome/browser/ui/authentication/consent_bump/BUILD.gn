@@ -40,11 +40,11 @@ source_set("consent_bump_ui") {
     "consent_bump_view_controller_delegate.h",
   ]
   deps = [
-    "resources:consent_bump_checkmark",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/authentication:authentication_constants",
+    "//ios/chrome/browser/ui/authentication/resources:authentication_checkmark",
     "//ios/chrome/common/ui_util",
     "//ui/base",
   ]

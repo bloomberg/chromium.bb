@@ -4,6 +4,15 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
+imageset("authentication_checkmark") {
+  sources = [
+    "authentication_checkmark.imageset/Contents.json",
+    "authentication_checkmark.imageset/authentication_checkmark.png",
+    "authentication_checkmark.imageset/authentication_checkmark@2x.png",
+    "authentication_checkmark.imageset/authentication_checkmark@3x.png",
+  ]
+}
+
 imageset("signin_confirmation_more") {
   sources = [
     "signin_confirmation_more.imageset/Contents.json",
