@@ -56,22 +56,26 @@ void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
   t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
   t->EnterSessionWithUserGestureOrFail();
 
-  // Wait for javascript to submit at least one frame.
+  // Wait for JavaScript to submit at least one frame.
   EXPECT_TRUE(
       t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutShort))
       << "No frame submitted";
 
-  // Tell javascript that it is done with the test.
+  // Tell JavaScript that it is done with the test.
   t->ExecuteStepAndWait("finishTest()");
   t->EndTest();
 
   my_mock.WaitForFrame();
 
   device::Color expected = {0, 0, 255, 255};
-  EXPECT_EQ(expected.r, my_mock.last_submitted_color_.r);
-  EXPECT_EQ(expected.g, my_mock.last_submitted_color_.g);
-  EXPECT_EQ(expected.b, my_mock.last_submitted_color_.b);
-  EXPECT_EQ(expected.a, my_mock.last_submitted_color_.a);
+  EXPECT_EQ(expected.r, my_mock.last_submitted_color_.r)
+      << "Red channel of submitted color does not match expectation";
+  EXPECT_EQ(expected.g, my_mock.last_submitted_color_.g)
+      << "Green channel of submitted color does not match expectation";
+  EXPECT_EQ(expected.b, my_mock.last_submitted_color_.b)
+      << "Blue channel of submitted color does not match expectation";
+  EXPECT_EQ(expected.a, my_mock.last_submitted_color_.a)
+      << "Alpha channel of submitted color does not match expectation";
 }
 
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,

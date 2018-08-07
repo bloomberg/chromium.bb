@@ -11,18 +11,18 @@ bool WebXrBrowserTestBase::XrDeviceFound(content::WebContents* web_contents) {
   return RunJavaScriptAndExtractBoolOrFail("xrDevice != null", web_contents);
 }
 
+void WebXrBrowserTestBase::EnterSessionWithUserGestureAndWait(
+    content::WebContents* web_contents) {
+  EnterSessionWithUserGesture(web_contents);
+  WaitOnJavaScriptStep(web_contents);
+}
+
 bool WebXrBrowserTestBase::XrDeviceFound() {
   return XrDeviceFound(GetFirstTabWebContents());
 }
 
 void WebXrBrowserTestBase::EnterSessionWithUserGesture() {
   EnterSessionWithUserGesture(GetFirstTabWebContents());
-}
-
-void WebXrBrowserTestBase::EnterSessionWithUserGestureAndWait(
-    content::WebContents* web_contents) {
-  EnterSessionWithUserGesture(web_contents);
-  WaitOnJavaScriptStep(web_contents);
 }
 
 void WebXrBrowserTestBase::EnterSessionWithUserGestureAndWait() {

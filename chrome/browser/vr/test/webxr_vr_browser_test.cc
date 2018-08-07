@@ -15,29 +15,29 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
   // ExecuteScript runs with a user gesture, so we can just directly call
   // requestSession instead of having to do the hacky workaround the
   // instrumentation tests use of actually sending a click event to the canvas.
-  EXPECT_TRUE(content::ExecuteScript(web_contents, "onRequestSession()"));
+  RunJavaScriptOrFail("onRequestSession()", web_contents);
 }
 
 void WebXrVrBrowserTestBase::EnterSessionWithUserGestureOrFail(
     content::WebContents* web_contents) {
   EnterSessionWithUserGesture(web_contents);
-  EXPECT_TRUE(PollJavaScriptBoolean(
+  PollJavaScriptBooleanOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
-      kPollTimeoutLong, web_contents));
+      kPollTimeoutLong, web_contents);
 }
 
 void WebXrVrBrowserTestBase::EndSession(content::WebContents* web_contents) {
-  EXPECT_TRUE(content::ExecuteScript(
-      web_contents,
-      "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()"));
+  RunJavaScriptOrFail(
+      "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
+      web_contents);
 }
 
 void WebXrVrBrowserTestBase::EndSessionOrFail(
     content::WebContents* web_contents) {
   EndSession(web_contents);
-  EXPECT_TRUE(PollJavaScriptBoolean(
+  PollJavaScriptBooleanOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].currentSession == null",
-      kPollTimeoutLong, web_contents));
+      kPollTimeoutLong, web_contents);
 }
 
 }  // namespace vr

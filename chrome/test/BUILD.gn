@@ -1994,11 +1994,11 @@ test("browser_tests") {
         "../browser/vr/test/webxr_vr_browser_test.h",
         "../browser/vr/test/xr_browser_test.cc",
         "../browser/vr/test/xr_browser_test.h",
-        "../browser/vr/webvr_frame_pose_browser_test.cc",
-        "../browser/vr/webvr_input_browser_test.cc",
-        "../browser/vr/webvr_pixel_browser_test.cc",
-        "../browser/vr/webvr_tab_browser_test.cc",
-        "../browser/vr/webvr_transition_browser_test.cc",
+        "../browser/vr/webxr_vr_frame_pose_browser_test.cc",
+        "../browser/vr/webxr_vr_input_browser_test.cc",
+        "../browser/vr/webxr_vr_pixel_browser_test.cc",
+        "../browser/vr/webxr_vr_tab_browser_test.cc",
+        "../browser/vr/webxr_vr_transition_browser_test.cc",
       ]
       deps += [
         "//chrome:other_version",

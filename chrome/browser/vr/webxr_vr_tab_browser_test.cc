@@ -10,11 +10,11 @@
 
 // Browser test equivalent of
 // chrome/android/javatests/src/.../browser/vr/WebXrVrTabTest.java.
-// End-to-end tests for testing WebVR's interaction with multiple tabss.
+// End-to-end tests for testing WebXR/WebVR's interaction with multiple tabs.
 
 namespace vr {
 
-// Tests that non-focused tabs cannot get pose information from WebVR/WebXR
+// Tests that non-focused tabs cannot get pose information from WebVR/WebXR.
 void TestPoseDataUnfocusedTabImpl(WebXrVrBrowserTestBase* t,
                                   std::string filename) {
   t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
