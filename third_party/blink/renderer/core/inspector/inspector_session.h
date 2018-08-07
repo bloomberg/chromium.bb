@@ -33,12 +33,10 @@ class CORE_EXPORT InspectorSession
         int session_id,
         int call_id,
         const String& response,
-        const String& state,
         mojom::blink::DevToolsSessionStatePtr updates) = 0;
     virtual void SendProtocolNotification(
         int session_id,
         const String& message,
-        const String& state,
         mojom::blink::DevToolsSessionStatePtr updates) = 0;
     virtual ~Client() = default;
   };
@@ -49,7 +47,6 @@ class CORE_EXPORT InspectorSession
       int session_id,
       v8_inspector::V8Inspector*,
       int context_group_id,
-      const String& reattach_state,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state);
   ~InspectorSession() override;
   // TODO(dgozman): remove session id once WokrerInspectorController
@@ -89,20 +86,18 @@ class CORE_EXPORT InspectorSession
                    const String& method,
                    const String& message) override;
 
-  String GetStateToSend();
-
   Client* client_;
   std::unique_ptr<v8_inspector::V8InspectorSession> v8_session_;
   int session_id_;
   bool disposed_;
   Member<CoreProbeSink> instrumenting_agents_;
   std::unique_ptr<protocol::UberDispatcher> inspector_backend_dispatcher_;
-  std::unique_ptr<protocol::DictionaryValue> state_;
   InspectorSessionState session_state_;
   HeapVector<Member<InspectorAgent>> agents_;
   class Notification;
   Vector<std::unique_ptr<Notification>> notification_queue_;
-  String last_sent_state_;
+  InspectorAgentState v8_session_state_;
+  InspectorAgentState::String v8_session_state_json_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorSession);
 };
