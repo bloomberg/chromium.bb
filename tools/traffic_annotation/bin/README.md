@@ -74,4 +74,4 @@ The following two lines will be updated by the above script, and the modified
 README should be committed along with the updated .sha1 checksums.
 
 CLANG_REVISION = '338452'
-LASTCHANGE=d8fb3e8fd6e0b637be8af0180d96527541e6b69e-refs/heads/master@{#581194}
+LASTCHANGE=91de2a347a0372128c51c770e912097ce4c07a70-refs/heads/master@{#581211}
