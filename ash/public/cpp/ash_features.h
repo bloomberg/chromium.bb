@@ -58,9 +58,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kOverviewSwipeToClose;
 // Enables new system menu.
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
 
-// Enables the mojo app implementation of 'Show taps'.
-ASH_PUBLIC_EXPORT extern const base::Feature kTapVisualizerApp;
-
 // Enables trilinear filtering.
 ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 

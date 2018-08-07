@@ -1249,12 +1249,11 @@ void Shell::Init(
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
 
-  // The show taps feature can be implemented with a separate mojo app.
   // |connector_| is null in unit tests.
-  // TODO(jamescook): Make this work in ash_shell_with_content.
   if (connector_ &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps) &&
-      base::FeatureList::IsEnabled(features::kTapVisualizerApp)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps)) {
+    // The show taps feature is a separate mojo app.
+    // TODO(jamescook): Make this work in ash_shell_with_content.
     connector_->StartService(tap_visualizer::mojom::kServiceName);
   }
 

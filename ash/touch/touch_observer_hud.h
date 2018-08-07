@@ -25,6 +25,7 @@ namespace ash {
 
 // An event filter which handles system level gesture events. Objects of this
 // class manage their own lifetime.
+// TODO(jamescook): Collapse with TouchHudDebug, the only subclass.
 class ASH_EXPORT TouchObserverHUD
     : public ui::EventHandler,
       public views::WidgetObserver,
@@ -77,7 +78,7 @@ class ASH_EXPORT TouchObserverHUD
   void OnDisplayConfigurationChanged() override;
 
  private:
-  friend class TouchHudTestBase;
+  friend class TouchObserverHUDTest;
 
   const int64_t display_id_;
   aura::Window* root_window_;
