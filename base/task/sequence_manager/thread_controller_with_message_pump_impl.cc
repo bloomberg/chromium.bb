@@ -14,7 +14,7 @@ namespace sequence_manager {
 namespace internal {
 
 ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
-    TickClock* time_source)
+    const TickClock* time_source)
     : associated_thread_(AssociatedThreadId::CreateUnbound()),
       pump_(new MessagePumpDefault()),
       time_source_(time_source) {
