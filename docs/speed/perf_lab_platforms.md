@@ -13,6 +13,7 @@
    7](https://build.chromium.org/p/chromium.perf/builders/Android%20Nexus7v2%20Perf)
  * [Android
    One](https://build.chromium.org/p/chromium.perf/builders/Android%20One%20Perf)
+ * [Android Go](https://ci.chromium.org/buildbot/chromium.perf/android-go-perf/)
 
 ## Mac
 
