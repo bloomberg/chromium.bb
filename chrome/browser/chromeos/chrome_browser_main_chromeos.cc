@@ -186,6 +186,10 @@
 #include "components/rlz/rlz_tracker.h"
 #endif
 
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
+#endif
+
 namespace chromeos {
 
 namespace {
@@ -686,6 +690,12 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   arc_voice_interaction_controller_client_ =
       std::make_unique<arc::VoiceInteractionControllerClient>();
 
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  // Assistant has to be initialized before session_controller_client to avoid
+  // race of SessionChanged event and assistant_client initialization.
+  assistant_client_ = std::make_unique<AssistantClient>();
+#endif
+
   chromeos::ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
 
@@ -1060,6 +1070,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   NoteTakingHelper::Shutdown();
 
   arc_service_launcher_->Shutdown();
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  // Assistant has to shut down before voice interaction controller client to
+  // correctly remove the observer.
+  assistant_client_.reset();
+#endif
 
   arc_voice_interaction_controller_client_.reset();
 
