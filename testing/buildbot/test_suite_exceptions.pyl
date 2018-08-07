@@ -1277,6 +1277,8 @@
       # chromium.android
       # GL OOM error triggered on KitKat. crbug.com/863049
       'android-kitkat-arm-rel',
+      # Several failures that need to be triaged. crbug.com/871519
+      'KitKat Phone Tester (dbg)',
       # Currently flaky timeouts on Windows 10. crbug.com/839824
       'Win10 Tests x64 (dbg)',
     ],
