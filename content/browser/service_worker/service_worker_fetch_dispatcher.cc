@@ -383,16 +383,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
                   base::Time dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    std::move(response), nullptr /* body_as_stream */,
-                   nullptr /* body_as_blob */, FetchEventResult::kGotResponse,
-                   dispatch_event_time);
-  }
-  void OnResponseBlob(blink::mojom::FetchAPIResponsePtr response,
-                      blink::mojom::BlobPtr body_as_blob,
-                      base::Time dispatch_event_time) override {
-    HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
-                   std::move(response), nullptr /* body_as_stream */,
-                   std::move(body_as_blob), FetchEventResult::kGotResponse,
-                   dispatch_event_time);
+                   FetchEventResult::kGotResponse, dispatch_event_time);
   }
   void OnResponseStream(
       blink::mojom::FetchAPIResponsePtr response,
@@ -400,13 +391,12 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
       base::Time dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    std::move(response), std::move(body_as_stream),
-                   nullptr /* body_as_blob */, FetchEventResult::kGotResponse,
-                   dispatch_event_time);
+                   FetchEventResult::kGotResponse, dispatch_event_time);
   }
   void OnFallback(base::Time dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    blink::mojom::FetchAPIResponse::New(),
-                   nullptr /* body_as_stream */, nullptr /* body_as_blob */,
+                   nullptr /* body_as_stream */,
                    FetchEventResult::kShouldFallback, dispatch_event_time);
   }
 
@@ -419,7 +409,6 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
       base::Optional<int> fetch_event_id,
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      blink::mojom::BlobPtr body_as_blob,
       FetchEventResult fetch_result,
       base::Time dispatch_event_time) {
     if (!version->FinishRequest(fetch_event_id.value(),
@@ -430,8 +419,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
     if (!fetch_dispatcher)
       return;
     fetch_dispatcher->DidFinish(fetch_event_id.value(), fetch_result,
-                                std::move(response), std::move(body_as_stream),
-                                std::move(body_as_blob));
+                                std::move(response), std::move(body_as_stream));
   }
 
   mojo::Binding<blink::mojom::ServiceWorkerFetchResponseCallback> binding_;
@@ -634,28 +622,24 @@ void ServiceWorkerFetchDispatcher::DidFail(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_NE(blink::ServiceWorkerStatusCode::kOk, status);
   Complete(status, FetchEventResult::kShouldFallback,
-           blink::mojom::FetchAPIResponse::New(), nullptr /* body_as_stream */,
-           nullptr /* body_as_blob */);
+           blink::mojom::FetchAPIResponse::New(), nullptr /* body_as_stream */);
 }
 
 void ServiceWorkerFetchDispatcher::DidFinish(
     int request_id,
     FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
-    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-    blink::mojom::BlobPtr body_as_blob) {
+    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
   net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
   Complete(blink::ServiceWorkerStatusCode::kOk, fetch_result,
-           std::move(response), std::move(body_as_stream),
-           std::move(body_as_blob));
+           std::move(response), std::move(body_as_stream));
 }
 
 void ServiceWorkerFetchDispatcher::Complete(
     blink::ServiceWorkerStatusCode status,
     FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
-    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-    blink::mojom::BlobPtr body_as_blob) {
+    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
   DCHECK(fetch_callback_);
 
   did_complete_ = true;
@@ -665,7 +649,7 @@ void ServiceWorkerFetchDispatcher::Complete(
 
   std::move(fetch_callback_)
       .Run(status, fetch_result, std::move(response), std::move(body_as_stream),
-           std::move(body_as_blob), version_);
+           version_);
 }
 
 // Non-S13nServiceWorker

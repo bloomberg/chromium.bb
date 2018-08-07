@@ -194,7 +194,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      blink::mojom::BlobPtr body_as_blob,
       scoped_refptr<ServiceWorkerVersion> version);
   void SetResponse(blink::mojom::FetchAPIResponsePtr response);
 

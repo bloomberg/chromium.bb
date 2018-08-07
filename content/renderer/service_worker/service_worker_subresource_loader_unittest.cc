@@ -121,11 +121,13 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   FakeControllerServiceWorker() = default;
   ~FakeControllerServiceWorker() override = default;
 
-  static blink::mojom::FetchAPIResponsePtr OkResponse() {
+  static blink::mojom::FetchAPIResponsePtr OkResponse(
+      blink::mojom::SerializedBlobPtr blob_body) {
     auto response = blink::mojom::FetchAPIResponse::New();
     response->status_code = 200;
     response->status_text = "OK";
     response->response_type = network::mojom::FetchResponseType::kDefault;
+    response->blob = std::move(blob_body);
     return response;
   }
 
@@ -182,9 +184,11 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   void RespondWithBlob(base::Optional<std::vector<uint8_t>> metadata,
                        std::string body) {
     response_mode_ = ResponseMode::kBlob;
+    blob_body_ = blink::mojom::SerializedBlob::New();
+    blob_body_->uuid = "dummy-blob-uuid";
     mojo::MakeStrongBinding(
         std::make_unique<FakeBlob>(std::move(metadata), std::move(body)),
-        mojo::MakeRequest(&blob_));
+        mojo::MakeRequest(&blob_body_->blob));
   }
 
   void ReadRequestBody(std::string* out_string) {
@@ -229,7 +233,8 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
     switch (response_mode_) {
       case ResponseMode::kDefault:
-        response_callback->OnResponse(OkResponse(), base::Time::Now());
+        response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
+                                      base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         break;
@@ -238,14 +243,15 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
                                 base::Time());
         break;
       case ResponseMode::kStream:
-        response_callback->OnResponseStream(
-            OkResponse(), std::move(stream_handle_), base::Time::Now());
+        response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
+                                            std::move(stream_handle_),
+                                            base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         break;
       case ResponseMode::kBlob:
-        response_callback->OnResponseBlob(OkResponse(), std::move(blob_),
-                                          base::Time::Now());
+        response_callback->OnResponse(OkResponse(std::move(blob_body_)),
+                                      base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         break;
@@ -311,7 +317,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
 
   // For ResponseMode::kBlob.
-  blink::mojom::BlobPtr blob_;
+  blink::mojom::SerializedBlobPtr blob_body_;
 
   // For ResponseMode::kRedirectResponse
   std::string redirect_location_header_;

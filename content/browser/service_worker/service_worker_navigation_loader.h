@@ -110,17 +110,14 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
       ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      blink::mojom::BlobPtr body_as_blob,
       scoped_refptr<ServiceWorkerVersion> version);
 
   // Used as the RequestHandler passed to |loader_callback_| when the service
   // worker chooses to handle a resource request. Returns the response to
-  // |client|. |body_as_blob| is kept around until BlobDataHandle is created
-  // from blob_uuid just to make sure the blob is kept alive.
+  // |client|.
   void StartResponse(blink::mojom::FetchAPIResponsePtr response,
                      scoped_refptr<ServiceWorkerVersion> version,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-                     blink::mojom::BlobPtr body_as_blob,
                      network::mojom::URLLoaderRequest request,
                      network::mojom::URLLoaderClientPtr client);
 

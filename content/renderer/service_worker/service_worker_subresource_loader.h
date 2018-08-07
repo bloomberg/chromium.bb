@@ -77,9 +77,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // blink::mojom::ServiceWorkerFetchResponseCallback overrides:
   void OnResponse(blink::mojom::FetchAPIResponsePtr response,
                   base::Time dispatch_event_time) override;
-  void OnResponseBlob(blink::mojom::FetchAPIResponsePtr response,
-                      blink::mojom::BlobPtr blob,
-                      base::Time dispatch_event_time) override;
   void OnResponseStream(
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
@@ -87,7 +84,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnFallback(base::Time dispatch_event_time) override;
 
   void StartResponse(blink::mojom::FetchAPIResponsePtr response,
-                     blink::mojom::BlobPtr body_as_blob,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
 
   // network::mojom::URLLoader overrides:

@@ -283,7 +283,6 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-    blink::mojom::BlobPtr body_as_blob,
     scoped_refptr<ServiceWorkerVersion> version) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -327,15 +326,13 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartResponse,
                           weak_factory_.GetWeakPtr(), std::move(response),
-                          version, std::move(body_as_stream),
-                          std::move(body_as_blob)));
+                          version, std::move(body_as_stream)));
 }
 
 void ServiceWorkerNavigationLoader::StartResponse(
     blink::mojom::FetchAPIResponsePtr response,
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-    blink::mojom::BlobPtr body_as_blob,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
   DCHECK(!binding_.is_bound());
@@ -400,8 +397,9 @@ void ServiceWorkerNavigationLoader::StartResponse(
   }
 
   // Handle a blob response body.
-  if (body_as_blob) {
-    body_as_blob_ = std::move(body_as_blob);
+  if (response->blob) {
+    DCHECK(response->blob->blob.is_valid());
+    body_as_blob_.Bind(std::move(response->blob->blob));
     mojo::ScopedDataPipeConsumerHandle data_pipe;
     int error = ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
         &body_as_blob_, resource_request_.headers,
