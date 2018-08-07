@@ -27,8 +27,10 @@ static void get_mv_projection(MV *output, MV ref, int num, int den) {
   den = AOMMIN(den, MAX_FRAME_DISTANCE);
   num = num > 0 ? AOMMIN(num, MAX_FRAME_DISTANCE)
                 : AOMMAX(num, -MAX_FRAME_DISTANCE);
-  int mv_row = ROUND_POWER_OF_TWO_SIGNED(ref.row * num * div_mult[den], 14);
-  int mv_col = ROUND_POWER_OF_TWO_SIGNED(ref.col * num * div_mult[den], 14);
+  const int mv_row =
+      ROUND_POWER_OF_TWO_SIGNED(ref.row * num * div_mult[den], 14);
+  const int mv_col =
+      ROUND_POWER_OF_TWO_SIGNED(ref.col * num * div_mult[den], 14);
   const int clamp_max = MV_UPP - 1;
   const int clamp_min = MV_LOW + 1;
   output->row = (int16_t)clamp(mv_row, clamp_min, clamp_max);
@@ -903,8 +905,10 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
   const int col_offset = (mv.col >= 0) ? (mv.col >> (4 + MI_SIZE_LOG2))
                                        : -((-mv.col) >> (4 + MI_SIZE_LOG2));
 
-  int row = (sign_bias == 1) ? blk_row - row_offset : blk_row + row_offset;
-  int col = (sign_bias == 1) ? blk_col - col_offset : blk_col + col_offset;
+  const int row =
+      (sign_bias == 1) ? blk_row - row_offset : blk_row + row_offset;
+  const int col =
+      (sign_bias == 1) ? blk_col - col_offset : blk_col + col_offset;
 
   if (row < 0 || row >= (cm->mi_rows >> 1) || col < 0 ||
       col >= (cm->mi_cols >> 1))
@@ -922,37 +926,44 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
   return 1;
 }
 
-static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
-                                   int dir) {
+// Note: motion_filed_projection finds motion vectors of current frame's
+// reference frame, and projects them to current frame. To make it clear,
+// let's call current frame's reference frame as start frame.
+// Call Start frame's reference frames as reference frames.
+// Call ref_offset as frame distances between start frame and its reference
+// frames.
+static int motion_field_projection(AV1_COMMON *cm,
+                                   MV_REFERENCE_FRAME start_frame, int dir) {
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
   int ref_offset[REF_FRAMES] = { 0 };
 
   (void)dir;
 
-  int ref_frame_idx = cm->frame_refs[FWD_RF_OFFSET(ref_frame)].idx;
-  if (ref_frame_idx < 0) return 0;
+  const int start_frame_idx = cm->frame_refs[FWD_RF_OFFSET(start_frame)].idx;
+  if (start_frame_idx < 0) return 0;
 
-  if (cm->buffer_pool->frame_bufs[ref_frame_idx].intra_only) return 0;
+  if (cm->buffer_pool->frame_bufs[start_frame_idx].intra_only) return 0;
 
-  if (cm->buffer_pool->frame_bufs[ref_frame_idx].mi_rows != cm->mi_rows ||
-      cm->buffer_pool->frame_bufs[ref_frame_idx].mi_cols != cm->mi_cols)
+  if (cm->buffer_pool->frame_bufs[start_frame_idx].mi_rows != cm->mi_rows ||
+      cm->buffer_pool->frame_bufs[start_frame_idx].mi_cols != cm->mi_cols)
     return 0;
 
-  int ref_frame_index =
-      cm->buffer_pool->frame_bufs[ref_frame_idx].cur_frame_offset;
-  unsigned int *ref_rf_idx =
-      &cm->buffer_pool->frame_bufs[ref_frame_idx].ref_frame_offset[0];
-  int cur_frame_index = cm->cur_frame->cur_frame_offset;
-  int ref_to_cur = get_relative_dist(cm, ref_frame_index, cur_frame_index);
+  const int start_frame_offset =
+      cm->buffer_pool->frame_bufs[start_frame_idx].cur_frame_offset;
+  const unsigned int *const ref_frame_offsets =
+      &cm->buffer_pool->frame_bufs[start_frame_idx].ref_frame_offset[0];
+  const int cur_frame_offset = cm->cur_frame->cur_frame_offset;
+  int start_to_current_frame_offset =
+      get_relative_dist(cm, start_frame_offset, cur_frame_offset);
 
   for (MV_REFERENCE_FRAME rf = LAST_FRAME; rf <= INTER_REFS_PER_FRAME; ++rf) {
-    ref_offset[rf] =
-        get_relative_dist(cm, ref_frame_index, ref_rf_idx[rf - LAST_FRAME]);
+    ref_offset[rf] = get_relative_dist(cm, start_frame_offset,
+                                       ref_frame_offsets[rf - LAST_FRAME]);
   }
 
-  if (dir == 2) ref_to_cur = -ref_to_cur;
+  if (dir == 2) start_to_current_frame_offset = -start_to_current_frame_offset;
 
-  MV_REF *mv_ref_base = cm->buffer_pool->frame_bufs[ref_frame_idx].mvs;
+  MV_REF *mv_ref_base = cm->buffer_pool->frame_bufs[start_frame_idx].mvs;
   const int mvs_rows = (cm->mi_rows + 1) >> 1;
   const int mvs_cols = (cm->mi_cols + 1) >> 1;
 
@@ -966,19 +977,20 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
         int mi_r, mi_c;
         const int ref_frame_offset = ref_offset[mv_ref->ref_frame];
 
-        int pos_valid = abs(ref_frame_offset) <= MAX_FRAME_DISTANCE &&
-                        ref_frame_offset > 0 &&
-                        abs(ref_to_cur) <= MAX_FRAME_DISTANCE;
+        int pos_valid =
+            abs(ref_frame_offset) <= MAX_FRAME_DISTANCE &&
+            ref_frame_offset > 0 &&
+            abs(start_to_current_frame_offset) <= MAX_FRAME_DISTANCE;
 
         if (pos_valid) {
-          get_mv_projection(&this_mv.as_mv, fwd_mv, ref_to_cur,
-                            ref_frame_offset);
+          get_mv_projection(&this_mv.as_mv, fwd_mv,
+                            start_to_current_frame_offset, ref_frame_offset);
           pos_valid = get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col,
                                          this_mv.as_mv, dir >> 1);
         }
 
         if (pos_valid) {
-          int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
+          const int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
 
           tpl_mvs_base[mi_offset].mfmv0.as_mv.row = fwd_mv.row;
           tpl_mvs_base[mi_offset].mfmv0.as_mv.col = fwd_mv.col;
