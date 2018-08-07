@@ -40,6 +40,8 @@ static_library("core") {
       "android/offline_content_aggregator_bridge.h",
       "android/offline_item_bridge.cc",
       "android/offline_item_bridge.h",
+      "android/offline_item_share_info_bridge.cc",
+      "android/offline_item_share_info_bridge.h",
       "android/offline_item_visuals_bridge.cc",
       "android/offline_item_visuals_bridge.h",
     ]
@@ -68,13 +70,16 @@ if (is_android) {
   android_library("core_java") {
     java_files = [
       "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemShareInfoBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/ContentId.java",
       "android/java/src/org/chromium/components/offline_items_collection/LegacyHelpers.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentProvider.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItem.java",
+      "android/java/src/org/chromium/components/offline_items_collection/OfflineItemShareInfo.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItemVisuals.java",
+      "android/java/src/org/chromium/components/offline_items_collection/ShareCallback.java",
       "android/java/src/org/chromium/components/offline_items_collection/VisualsCallback.java",
     ]
 
@@ -92,6 +97,7 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemShareInfoBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
     ]
 

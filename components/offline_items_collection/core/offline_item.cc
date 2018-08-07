@@ -98,4 +98,9 @@ OfflineItemVisuals::OfflineItemVisuals(const OfflineItemVisuals& other) =
     default;
 OfflineItemVisuals::~OfflineItemVisuals() = default;
 
+OfflineItemShareInfo::OfflineItemShareInfo() = default;
+OfflineItemShareInfo::OfflineItemShareInfo(const OfflineItemShareInfo& other) =
+    default;
+OfflineItemShareInfo::~OfflineItemShareInfo() = default;
+
 }  // namespace offline_items_collection

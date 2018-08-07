@@ -14,10 +14,13 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
 import org.chromium.chrome.browser.download.DownloadMetrics;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
+import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.io.File;
@@ -148,6 +151,13 @@ public class DownloadGlue implements DownloadObserver {
     /** @see OfflineContentProvider#getVisualsForItem(ContentId, VisualsCallback) */
     public void getVisualsForItem(ContentId id, VisualsCallback callback) {
         new Handler().post(() -> callback.onVisualsAvailable(id, null));
+    }
+
+    /** @see OfflineContentProvider#getShareInfoForItem(ContentId, ShareCallback) */
+    public void getShareInfoForItem(OfflineItem item, ShareCallback callback) {
+        OfflineItemShareInfo info = new OfflineItemShareInfo();
+        info.uri = DownloadUtils.getUriForItem(new File(item.filePath));
+        new Handler().post(() -> callback.onShareInfoAvailable(item.id, info));
     }
 
     /**

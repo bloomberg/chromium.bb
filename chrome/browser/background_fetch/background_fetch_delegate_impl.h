@@ -88,7 +88,9 @@ class BackgroundFetchDelegateImpl
                    SingleItemCallback callback) override;
   void GetAllItems(MultipleItemCallback callback) override;
   void GetVisualsForItem(const offline_items_collection::ContentId& id,
-                         const VisualsCallback& callback) override;
+                         VisualsCallback callback) override;
+  void GetShareInfoForItem(const offline_items_collection::ContentId& id,
+                           ShareCallback callback) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 

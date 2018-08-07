@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/offline_items_collection/core/android/offline_item_bridge.h"
+#include "components/offline_items_collection/core/android/offline_item_share_info_bridge.h"
 #include "components/offline_items_collection/core/android/offline_item_visuals_bridge.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/throttled_offline_content_provider.h"
@@ -39,6 +40,8 @@ ContentId JNI_OfflineContentAggregatorBridge_CreateContentId(
                    ConvertJavaStringToUTF8(env, j_id));
 }
 
+// Helper callback that glues the Java-specific callback logic to the native
+// VisualsCallback that is required by the OfflineContentProvider native class.
 void GetVisualsForItemHelperCallback(
     ScopedJavaGlobalRef<jobject> j_callback,
     const ContentId& id,
@@ -49,6 +52,18 @@ void GetVisualsForItemHelperCallback(
       ConvertUTF8ToJavaString(env, id.id),
       OfflineItemVisualsBridge::CreateOfflineItemVisuals(env,
                                                          std::move(visuals)));
+}
+
+void ForwardShareInfoToJavaCallback(
+    ScopedJavaGlobalRef<jobject> j_callback,
+    const ContentId& id,
+    std::unique_ptr<OfflineItemShareInfo> shareInfo) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_OfflineContentAggregatorBridge_onShareInfoAvailable(
+      env, j_callback, ConvertUTF8ToJavaString(env, id.name_space),
+      ConvertUTF8ToJavaString(env, id.id),
+      OfflineItemShareInfoBridge::CreateOfflineItemShareInfo(
+          env, std::move(shareInfo)));
 }
 
 void RunGetAllItemsCallback(const base::android::JavaRef<jobject>& j_callback,
@@ -185,8 +200,21 @@ void OfflineContentAggregatorBridge::GetVisualsForItem(
   provider_->GetVisualsForItem(
       JNI_OfflineContentAggregatorBridge_CreateContentId(env, j_namespace,
                                                          j_id),
-      base::Bind(&GetVisualsForItemHelperCallback,
-                 ScopedJavaGlobalRef<jobject>(env, j_callback)));
+      base::BindOnce(&GetVisualsForItemHelperCallback,
+                     ScopedJavaGlobalRef<jobject>(env, j_callback)));
+}
+
+void OfflineContentAggregatorBridge::GetShareInfoForItem(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jstring>& j_namespace,
+    const JavaParamRef<jstring>& j_id,
+    const JavaParamRef<jobject>& j_callback) {
+  provider_->GetShareInfoForItem(
+      JNI_OfflineContentAggregatorBridge_CreateContentId(env, j_namespace,
+                                                         j_id),
+      base::BindOnce(&ForwardShareInfoToJavaCallback,
+                     ScopedJavaGlobalRef<jobject>(env, j_callback)));
 }
 
 void OfflineContentAggregatorBridge::OnItemsAdded(

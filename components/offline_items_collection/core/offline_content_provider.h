@@ -17,6 +17,7 @@ namespace offline_items_collection {
 
 struct ContentId;
 struct OfflineItem;
+struct OfflineItemShareInfo;
 struct OfflineItemVisuals;
 
 // A provider of a set of OfflineItems that are meant to be exposed to the UI.
@@ -24,8 +25,11 @@ class OfflineContentProvider {
  public:
   using OfflineItemList = std::vector<OfflineItem>;
   using VisualsCallback =
-      base::Callback<void(const ContentId&,
-                          std::unique_ptr<OfflineItemVisuals>)>;
+      base::OnceCallback<void(const ContentId&,
+                              std::unique_ptr<OfflineItemVisuals>)>;
+  using ShareCallback =
+      base::OnceCallback<void(const ContentId&,
+                              std::unique_ptr<OfflineItemShareInfo>)>;
   using MultipleItemCallback = base::OnceCallback<void(const OfflineItemList&)>;
   using SingleItemCallback =
       base::OnceCallback<void(const base::Optional<OfflineItem>&)>;
@@ -92,8 +96,19 @@ class OfflineContentProvider {
   // |id| or |nullptr| if one doesn't exist.  The implementer should post any
   // replies even if the results are available immediately to prevent reentrancy
   // and for consistent behavior.
+  // |callback| should be called no matter what (error, unavailable content,
+  // etc.).
   virtual void GetVisualsForItem(const ContentId& id,
-                                 const VisualsCallback& callback) = 0;
+                                 VisualsCallback callback) = 0;
+
+  // Asks for the right URI to use to share an OfflineItem represented by |id|
+  // or |nullptr| if there is no associated information to use to share the
+  // item.  Implementer should post any replies even if the results are
+  // available immediately to prevent reentrancy and for consistent behavior.
+  // |callback| should be called no matter what (error, unavailable content,
+  // etc.).
+  virtual void GetShareInfoForItem(const ContentId& id,
+                                   ShareCallback callback) = 0;
 
   // Adds an observer that should be notified of OfflineItem list modifications.
   virtual void AddObserver(Observer* observer) = 0;

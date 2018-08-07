@@ -27,6 +27,7 @@ import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.text.SimpleDateFormat;
@@ -161,7 +162,14 @@ public class StubbedProvider implements BackendProvider {
         }
 
         @Override
-        public void getVisualsForItem(ContentId id, VisualsCallback callback) {}
+        public void getVisualsForItem(ContentId id, VisualsCallback callback) {
+            mHandler.post(() -> callback.onVisualsAvailable(id, null));
+        }
+
+        @Override
+        public void getShareInfoForItem(ContentId id, ShareCallback callback) {
+            mHandler.post(() -> callback.onShareInfoAvailable(id, null));
+        }
     }
 
     /** Stubs out all attempts to get thumbnails for files. */

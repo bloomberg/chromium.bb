@@ -182,19 +182,31 @@ void OfflineContentAggregator::OnGetAllItemsDone(
     std::move(callback).Run(item_vec);
 }
 
-void OfflineContentAggregator::GetVisualsForItem(
-    const ContentId& id,
-    const VisualsCallback& callback) {
+void OfflineContentAggregator::GetVisualsForItem(const ContentId& id,
+                                                 VisualsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = providers_.find(id.name_space);
 
   if (it == providers_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, id, nullptr));
+        FROM_HERE, base::BindOnce(std::move(callback), id, nullptr));
     return;
   }
 
-  it->second->GetVisualsForItem(id, callback);
+  it->second->GetVisualsForItem(id, std::move(callback));
+}
+
+void OfflineContentAggregator::GetShareInfoForItem(const ContentId& id,
+                                                   ShareCallback callback) {
+  auto it = providers_.find(id.name_space);
+
+  if (it == providers_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), id, nullptr));
+    return;
+  }
+
+  it->second->GetShareInfoForItem(id, std::move(callback));
 }
 
 void OfflineContentAggregator::AddObserver(
