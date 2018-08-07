@@ -3364,10 +3364,6 @@ const char kSysInternalsDescription[] =
     "If enabled, user can monitor system information at "
     "chrome://sys-internals.";
 
-const char kTapVisualizerAppName[] = "Show taps with mojo app";
-const char kTapVisualizerAppDescription[] =
-    "Use an out-of-process mojo app to show touch points.";
-
 const char kDisableTeamDrivesName[] = "Disable Team Drives Integration";
 const char kDisableTeamDrivesDescription[] =
     "If disabled, files under Team Drives will no longer appear in the Files "

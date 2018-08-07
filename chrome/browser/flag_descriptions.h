@@ -2052,9 +2052,6 @@ extern const char kShowTouchHudDescription[];
 extern const char kSmartTextSelectionName[];
 extern const char kSmartTextSelectionDescription[];
 
-extern const char kTapVisualizerAppName[];
-extern const char kTapVisualizerAppDescription[];
-
 extern const char kUiShowCompositedLayerBordersName[];
 extern const char kUiShowCompositedLayerBordersDescription[];
 extern const char kUiShowCompositedLayerBordersRenderPass[];

@@ -42,9 +42,6 @@ const base::Feature kOverviewSwipeToClose{"OverviewSwipeToClose",
 const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kTapVisualizerApp{"TapVisualizerApp",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 

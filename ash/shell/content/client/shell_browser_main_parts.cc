@@ -12,7 +12,6 @@
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/content/content_gpu_interface_provider.h"
 #include "ash/login_status.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"
@@ -120,11 +119,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->StartService(quick_launch::mojom::kServiceName);
-  if (base::FeatureList::IsEnabled(features::kTapVisualizerApp)) {
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->StartService(tap_visualizer::mojom::kServiceName);
-  }
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->StartService(tap_visualizer::mojom::kServiceName);
   shortcut_viewer::mojom::ShortcutViewerPtr shortcut_viewer;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()

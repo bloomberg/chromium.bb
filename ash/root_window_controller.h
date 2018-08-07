@@ -57,7 +57,6 @@ class SystemTray;
 class SystemWallpaperController;
 class TouchExplorationManager;
 class TouchHudDebug;
-class TouchHudProjection;
 class WallpaperWidgetController;
 class WindowManager;
 class WorkspaceController;
@@ -120,20 +119,8 @@ class ASH_EXPORT RootWindowController {
   // Returns the instance of the sidebar.
   Sidebar* sidebar() { return sidebar_.get(); }
 
-  // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
-  TouchHudProjection* touch_hud_projection() const {
-    return touch_hud_projection_;
-  }
-
-  // Set touch HUDs for this root window controller. The root window controller
-  // will not own the HUDs; their lifetimes are managed by themselves. Whenever
-  // the widget showing a HUD is being destroyed (e.g. because of detaching a
-  // display), the HUD deletes itself.
   void set_touch_hud_debug(TouchHudDebug* hud) { touch_hud_debug_ = hud; }
-  void set_touch_hud_projection(TouchHudProjection* hud) {
-    touch_hud_projection_ = hud;
-  }
 
   wm::RootWindowLayoutManager* root_window_layout_manager() {
     return root_window_layout_manager_;
@@ -313,10 +300,10 @@ class ASH_EXPORT RootWindowController {
   // feedback is on.
   std::unique_ptr<TouchExplorationManager> touch_exploration_manager_;
 
-  // Heads-up displays for touch events. These HUDs are not owned by the root
-  // window controller and manage their own lifetimes.
+  // Heads-up displays for touch events for this root. Not owned. Manages its
+  // own lifetime. Whenever the widget showing a HUD is being destroyed (e.g.
+  // because of detaching a display), the HUD deletes itself.
   TouchHudDebug* touch_hud_debug_ = nullptr;
-  TouchHudProjection* touch_hud_projection_ = nullptr;
 
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
 
