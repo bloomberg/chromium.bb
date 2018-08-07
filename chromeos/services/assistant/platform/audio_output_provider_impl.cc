@@ -181,6 +181,7 @@ AudioOutputProviderImpl::GetSupportedStreamEncodings() {
       assistant_client::OutputStreamEncoding::STREAM_PCM_S16,
       assistant_client::OutputStreamEncoding::STREAM_PCM_S32,
       assistant_client::OutputStreamEncoding::STREAM_PCM_F32,
+      assistant_client::OutputStreamEncoding::STREAM_MP3,
   };
 }
 
@@ -216,14 +217,20 @@ void AudioDeviceOwner::StartOnMainThread(
   DCHECK(!output_device_);
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 
+  delegate_ = delegate;
   format_ = format;
+  // TODO(wutao): Remove this after supporting mp3 encoding.
+  if (format_.encoding == assistant_client::OutputStreamEncoding::STREAM_MP3) {
+    delegate_->OnEndOfStream();
+    return;
+  }
+
   audio_param_ = GetAudioParametersFromBufferFormat(format_);
 
   // |audio_fifo_| contains 3x the number of frames to render.
   audio_fifo_ = std::make_unique<media::AudioBlockFifo>(
       format.pcm_num_channels, audio_param_.frames_per_buffer(), 3);
   audio_data_.resize(GetBufferSizeInBytesFromBufferFormat(format_));
-  delegate_ = delegate;
   ScheduleFillLocked(base::TimeTicks::Now());
 
   // |connector| is null in unittest.
