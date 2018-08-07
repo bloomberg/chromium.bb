@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/paint/paint_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -29,7 +28,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
  public:
   static FirstMeaningfulPaintDetector& From(Document&);
 
-  FirstMeaningfulPaintDetector(PaintTiming*, Document&);
+  explicit FirstMeaningfulPaintDetector(PaintTiming*);
   virtual ~FirstMeaningfulPaintDetector() = default;
 
   void MarkNextPaintAsMeaningfulIfNeeded(const LayoutObjectCounter&,
@@ -38,11 +37,12 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
                                          int visible_height);
   void NotifyInputEvent();
   void NotifyPaint();
-  void CheckNetworkStable();
   void ReportSwapTime(PaintEvent,
                       WebLayerTreeView::SwapResult,
                       base::TimeTicks);
   void NotifyFirstContentfulPaint(TimeTicks swap_stamp);
+  void OnNetwork0Quiet();
+  void OnNetwork2Quiet();
 
   void Trace(blink::Visitor*);
 
@@ -66,9 +66,6 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
 
   Document* GetDocument();
   int ActiveConnections();
-  void SetNetworkQuietTimers(int active_connections);
-  void Network0QuietTimerFired(TimerBase*);
-  void Network2QuietTimerFired(TimerBase*);
   void ReportHistograms();
   void RegisterNotifySwapTime(PaintEvent);
   void SetFirstMeaningfulPaint(TimeTicks stamp, TimeTicks swap_stamp);
@@ -93,8 +90,6 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   TimeTicks first_meaningful_paint2_quiet_;
   unsigned outstanding_swap_promise_count_ = 0;
   DeferFirstMeaningfulPaint defer_first_meaningful_paint_ = kDoNotDefer;
-  TaskRunnerTimer<FirstMeaningfulPaintDetector> network0_quiet_timer_;
-  TaskRunnerTimer<FirstMeaningfulPaintDetector> network2_quiet_timer_;
   DISALLOW_COPY_AND_ASSIGN(FirstMeaningfulPaintDetector);
 };
 

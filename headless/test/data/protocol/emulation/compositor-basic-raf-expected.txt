@@ -1,6 +1,5 @@
 Tests compositor basic rAF operation.
 Advanced to 10ms
-Advanced to 510ms
 Advanced to 1000ms
 Elasped time: 1000
 Requesting first animation frame

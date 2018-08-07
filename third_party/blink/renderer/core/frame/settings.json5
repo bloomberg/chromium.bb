@@ -575,11 +575,11 @@
       initial: false,
     },
 
-    // Set the timeout seconds of NetworkQuietTimers in FirstMeaningfulPainterDetector.
+    // Set the timeout seconds of the network-quiet timers in IdlenessDetector.
     // Used by embedders who want to change the timeout time in order to run web contents
     // on various embedded devices and changeable network bandwidths in different regions.
     {
-      name: "FMPNetworkQuietTimeout",
+      name: "NetworkQuietTimeout",
       initial: "0.5",
       type: "double",
     },

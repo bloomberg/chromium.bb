@@ -9,6 +9,8 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -125,11 +127,11 @@ TimeTicks IdlenessDetector::GetNetworkIdleTime() {
 }
 
 void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
-  // If we have idle time and we are kNetworkQuietWindow seconds past it, emit
+  // If we have idle time and we are network_quiet_window_ seconds past it, emit
   // idle signals.
   DocumentLoader* loader = local_frame_->Loader().GetDocumentLoader();
   if (in_network_2_quiet_period_ && !network_2_quiet_.is_null() &&
-      start_time - network_2_quiet_ > kNetworkQuietWindow) {
+      start_time - network_2_quiet_ > network_quiet_window_) {
     probe::lifecycleEvent(local_frame_, loader, "networkAlmostIdle",
                           TimeTicksInSeconds(network_2_quiet_start_time_));
     if (::resource_coordinator::IsPageAlmostIdleSignalEnabled()) {
@@ -139,14 +141,18 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
       }
     }
     local_frame_->GetDocument()->Fetcher()->OnNetworkQuiet();
+    FirstMeaningfulPaintDetector::From(*local_frame_->GetDocument())
+        .OnNetwork2Quiet();
     in_network_2_quiet_period_ = false;
     network_2_quiet_ = TimeTicks();
   }
 
   if (in_network_0_quiet_period_ && !network_0_quiet_.is_null() &&
-      start_time - network_0_quiet_ > kNetworkQuietWindow) {
+      start_time - network_0_quiet_ > network_quiet_window_) {
     probe::lifecycleEvent(local_frame_, loader, "networkIdle",
                           TimeTicksInSeconds(network_0_quiet_start_time_));
+    FirstMeaningfulPaintDetector::From(*local_frame_->GetDocument())
+        .OnNetwork0Quiet();
     in_network_0_quiet_period_ = false;
     network_0_quiet_ = TimeTicks();
   }
@@ -170,7 +176,12 @@ IdlenessDetector::IdlenessDetector(LocalFrame* local_frame)
       network_quiet_timer_(
           local_frame->GetTaskRunner(TaskType::kInternalLoading),
           this,
-          &IdlenessDetector::NetworkQuietTimerFired) {}
+          &IdlenessDetector::NetworkQuietTimerFired) {
+  if (local_frame->GetSettings()) {
+    network_quiet_window_ = TimeDelta::FromSecondsD(
+        local_frame->GetSettings()->GetNetworkQuietTimeout());
+  }
+}
 
 void IdlenessDetector::Stop() {
   network_quiet_timer_.Stop();

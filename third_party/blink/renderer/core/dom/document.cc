@@ -5930,8 +5930,6 @@ void Document::FinishedParsing() {
 
   if (IsPrefetchOnly())
     WebPrerenderingSupport::Current()->PrefetchFinished();
-
-  FirstMeaningfulPaintDetector::From(*this).CheckNetworkStable();
 }
 
 void Document::ElementDataCacheClearTimerFired(TimerBase*) {
