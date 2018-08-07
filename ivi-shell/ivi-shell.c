@@ -358,6 +358,8 @@ shell_destroy(struct wl_listener *listener, void *data)
 		container_of(listener, struct ivi_shell, destroy_listener);
 	struct ivi_shell_surface *ivisurf, *next;
 
+	wl_list_remove(&shell->destroy_listener.link);
+
 	text_backend_destroy(shell->text_backend);
 	input_panel_destroy(shell);
 
