@@ -373,6 +373,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/textures/canvas/' +
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
         ['passthrough', 'opengl'], bug=602688)
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['passthrough', 'opengl'], bug=795030)
 
     # Passthrough command decoder / OpenGL / Windows
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
@@ -421,12 +423,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=814905)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
-    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
-        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
-    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
-        ['win', 'nvidia', 'opengl'], bug=795030)
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=794341)
+
+    # Passthrough command decoder / Linux / OpenGL / Intel
+    self.Fail('conformance2/renderbuffers/' +
+        'multisampled-depth-renderbuffer-initialization.html',
+        ['linux', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
+    self.Fail('conformance2/renderbuffers/' +
+        'multisampled-stencil-renderbuffer-initialization.html',
+        ['linux', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['linux', 'passthrough', 'opengl', 'intel'], bug=2761) # ANGLE bug
 
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
