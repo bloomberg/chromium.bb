@@ -282,32 +282,6 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         'device_os_flavor': 'google',
       },
     },
-    'Android One Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=android_one_16_shard_map.json',
-              '--assert-gpu-compositing',
-          ],
-        },
-        {
-          'isolate': 'tracing_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Android',
-        'device_type': 'sprout',
-        'device_os': 'LMY47W',
-        'device_os_flavor': 'google',
-      },
-    },
     'Android Nexus5X WebView Perf': {
       'tests': [
         {
