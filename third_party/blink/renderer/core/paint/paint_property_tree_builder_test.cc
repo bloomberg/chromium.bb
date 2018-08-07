@@ -145,12 +145,18 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   auto* positioned_scroll_translation =
       positioned_scroll_properties->ScrollTranslation();
   auto* positioned_scroll_node = positioned_scroll_translation->ScrollNode();
-  EXPECT_EQ(GetDocument()
-                .GetPage()
-                ->GetVisualViewport()
-                .GetScrollTranslationNode()
-                ->ScrollNode(),
-            positioned_scroll_node->Parent());
+  // TODO(bokan): Viewport property node generation has been disabled
+  // temporarily with the flag off to diagnose https//crbug.com/868927.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              positioned_scroll_node->Parent());
+  } else {
+    EXPECT_TRUE(positioned_scroll_node->Parent()->IsRoot());
+  }
   EXPECT_EQ(TransformationMatrix().Translate(0, -3),
             positioned_scroll_translation->Matrix());
   EXPECT_EQ(nullptr, target1_properties->ScrollTranslation());
@@ -177,12 +183,18 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   auto* transformed_scroll_translation =
       transformed_scroll_properties->ScrollTranslation();
   auto* transformed_scroll_node = transformed_scroll_translation->ScrollNode();
-  EXPECT_EQ(GetDocument()
-                .GetPage()
-                ->GetVisualViewport()
-                .GetScrollTranslationNode()
-                ->ScrollNode(),
-            transformed_scroll_node->Parent());
+  // TODO(bokan): Viewport property node generation has been disabled
+  // temporarily with the flag off to diagnose https//crbug.com/868927.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              transformed_scroll_node->Parent());
+  } else {
+    EXPECT_TRUE(transformed_scroll_node->Parent()->IsRoot());
+  }
   EXPECT_EQ(TransformationMatrix().Translate(0, -5),
             transformed_scroll_translation->Matrix());
   EXPECT_EQ(nullptr, target2_properties->ScrollTranslation());
@@ -386,9 +398,15 @@ TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(TransformationMatrix(), DocPreTranslation()->Matrix());
-  EXPECT_EQ(
-      GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
-      DocPreTranslation()->Parent());
+  // TODO(bokan): Viewport property node generation has been disabled
+  // temporarily with the flag off to diagnose https//crbug.com/868927.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(
+        GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
+        DocPreTranslation()->Parent());
+  } else {
+    EXPECT_TRUE(DocPreTranslation()->Parent()->IsRoot());
+  }
   EXPECT_EQ(TransformationMatrix().Translate(0, -100),
             DocScrollTranslation()->Matrix());
   EXPECT_EQ(DocPreTranslation(), DocScrollTranslation()->Parent());
@@ -3307,12 +3325,18 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   auto* scroll_a_translation =
       overflow_a_scroll_properties->ScrollTranslation();
   auto* overflow_a_scroll_node = scroll_a_translation->ScrollNode();
-  EXPECT_EQ(GetDocument()
-                .GetPage()
-                ->GetVisualViewport()
-                .GetScrollTranslationNode()
-                ->ScrollNode(),
-            overflow_a_scroll_node->Parent());
+  // TODO(bokan): Viewport property node generation has been disabled
+  // temporarily with the flag off to diagnose https//crbug.com/868927.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              overflow_a_scroll_node->Parent());
+  } else {
+    EXPECT_TRUE(overflow_a_scroll_node->Parent()->IsRoot());
+  }
   EXPECT_EQ(TransformationMatrix().Translate(0, -37),
             scroll_a_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 5, 3), overflow_a_scroll_node->ContainerRect());
@@ -3429,12 +3453,16 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   auto* fixed_overflow_scroll_node = fixed_scroll_translation->ScrollNode();
   // The fixed position overflow scroll node is parented under the root, not the
   // dom-order parent or frame's scroll.
-  EXPECT_EQ(GetDocument()
-                .GetPage()
-                ->GetVisualViewport()
-                .GetScrollTranslationNode()
-                ->ScrollNode(),
-            fixed_overflow_scroll_node->Parent());
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              fixed_overflow_scroll_node->Parent());
+  } else {
+    EXPECT_TRUE(fixed_overflow_scroll_node->Parent()->IsRoot());
+  }
   EXPECT_EQ(TransformationMatrix().Translate(0, -43),
             fixed_scroll_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 13, 11), fixed_overflow_scroll_node->ContainerRect());
@@ -3490,12 +3518,18 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   auto* scroll_a_translation =
       overflow_a_scroll_properties->ScrollTranslation();
   auto* overflow_a_scroll_node = scroll_a_translation->ScrollNode();
-  EXPECT_EQ(GetDocument()
-                .GetPage()
-                ->GetVisualViewport()
-                .GetScrollTranslationNode()
-                ->ScrollNode(),
-            overflow_a_scroll_node->Parent());
+  // TODO(bokan): Viewport property node generation has been disabled
+  // temporarily with the flag off to diagnose https//crbug.com/868927.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              overflow_a_scroll_node->Parent());
+  } else {
+    EXPECT_TRUE(overflow_a_scroll_node->Parent()->IsRoot());
+  }
   EXPECT_EQ(TransformationMatrix().Translate(0, -37),
             scroll_a_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 20, 20), overflow_a_scroll_node->ContainerRect());
@@ -4749,12 +4783,18 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   auto* scroll_translation = scroll_properties->ScrollTranslation();
   auto* paint_offset_translation = scroll_properties->PaintOffsetTranslation();
   auto* scroll_node = scroll_translation->ScrollNode();
-  EXPECT_EQ(GetDocument()
-                .GetPage()
-                ->GetVisualViewport()
-                .GetScrollTranslationNode()
-                ->ScrollNode(),
-            scroll_node->Parent());
+  // TODO(bokan): Viewport property node generation has been disabled
+  // temporarily with the flag off to diagnose https//crbug.com/868927.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              scroll_node->Parent());
+  } else {
+    EXPECT_TRUE(scroll_node->Parent()->IsRoot());
+  }
   EXPECT_EQ(TransformationMatrix().Translate(0, -42),
             scroll_translation->Matrix());
   // The paint offset node should be offset by the margin.
