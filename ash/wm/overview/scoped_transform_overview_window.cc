@@ -595,7 +595,7 @@ void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {
   // Add the mask which gives the window selector items rounded corners, and add
   // the shadow around the window.
   ui::Layer* layer = minimized_widget_
-                         ? minimized_widget_->GetContentsView()->layer()
+                         ? minimized_widget_->GetNativeWindow()->layer()
                          : window_->layer();
 
   if (!minimized_widget_)
