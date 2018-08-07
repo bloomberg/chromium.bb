@@ -117,6 +117,12 @@ class GridTrackSizingAlgorithm final {
   bool TracksAreWiderThanMinTrackBreadth() const;
 #endif
 
+  LayoutUnit ComputeTrackBasedSize() const;
+
+  bool HasAnyPercentSizedRowsIndefiniteHeight() const {
+    return has_percent_sized_rows_indefinite_height_;
+  }
+
  private:
   base::Optional<LayoutUnit> AvailableSpace() const;
   bool IsRelativeGridLengthAsAuto(const GridLength&,
@@ -127,7 +133,6 @@ class GridTrackSizingAlgorithm final {
                                  size_t translated_index) const;
   GridTrackSize RawGridTrackSize(GridTrackSizingDirection,
                                  size_t translated_index) const;
-  LayoutUnit ComputeTrackBasedSize() const;
 
   // Helper methods for step 1. initializeTrackSizes().
   LayoutUnit InitialBaseSize(const GridTrackSize&) const;
@@ -195,6 +200,7 @@ class GridTrackSizingAlgorithm final {
   // Data.
   bool WasSetup() const { return !!strategy_; }
   bool needs_setup_{true};
+  bool has_percent_sized_rows_indefinite_height_{false};
   base::Optional<LayoutUnit> available_space_columns_;
   base::Optional<LayoutUnit> available_space_rows_;
 

@@ -161,9 +161,6 @@ class LayoutGrid final : public LayoutBlock {
                                    const ComputedStyle& new_style) const;
   void StyleDidChange(StyleDifference, const ComputedStyle*) override;
 
-  base::Optional<LayoutUnit> AvailableSpaceForGutters(
-      GridTrackSizingDirection) const;
-
   bool ExplicitGridDidResize(const ComputedStyle&) const;
   bool NamedGridLinesDefinitionDidChange(const ComputedStyle&) const;
 
@@ -202,7 +199,6 @@ class LayoutGrid final : public LayoutBlock {
                                           GridTrackSizingDirection,
                                           LayoutUnit& min_intrinsic_size,
                                           LayoutUnit& max_intrinsic_size) const;
-  LayoutUnit ComputeTrackBasedLogicalHeight() const;
   void ComputeTrackSizesForDefiniteSize(GridTrackSizingDirection,
                                         LayoutUnit free_space);
 
