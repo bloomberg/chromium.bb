@@ -85,7 +85,9 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -1187,6 +1189,14 @@ bool FrameLoader::PrepareForCommit() {
   if (!frame_->Client())
     return false;
   DCHECK_EQ(provisional_document_loader_, pdl);
+
+  // Flush microtask queue so that they all run on pre-navigation context.
+  Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+
+  // Ensure that the frame_ hasn't detached from running the microtasks.
+  if (!frame_->Client())
+    return false;
+
   // No more events will be dispatched so detach the Document.
   // TODO(yoav): Should we also be nullifying domWindow's document (or
   // domWindow) since the doc is now detached?
