@@ -446,8 +446,6 @@
         # By default, CrOS VMs' ssh servers listen on local port 9222.
         '--remote=127.0.0.1',
         '--remote-ssh-port=9222',
-        # Flaky.
-        '--skip=telemetry.core.tracing_controller_unittest.TracingControllerTest.testBattOrTracing',
         # Always fails.
         '--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView',
         '--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse',
@@ -1916,7 +1914,6 @@
   },
 
   'non_android_and_cast_and_chromeos_chromium_gtests': {
-    'battor_agent_unittests': {},
     'cronet_tests': {},
     'cronet_unittests': {},
     'headless_browsertests': {},
@@ -2176,7 +2173,6 @@
 
   'win7_32_bit_gtests': {
     'base_unittests': {},
-    'battor_agent_unittests': {},
     'browser_tests': {
       'swarming': {
         'shards': 10,
