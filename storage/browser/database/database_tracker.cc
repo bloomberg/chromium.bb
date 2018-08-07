@@ -176,7 +176,7 @@ void DatabaseTracker::HandleSqliteError(
   // a small optimization, see WebDatabaseObserverImpl::HandleSqliteError.
   if (error == SQLITE_CORRUPT || error == SQLITE_NOTADB) {
     DeleteDatabase(origin_identifier, database_name,
-                   net::CompletionCallback());
+                   net::CompletionOnceCallback());
   }
 }
 
@@ -222,8 +222,7 @@ void DatabaseTracker::DeleteDatabaseIfNeeded(
         if (databases.empty()) {
           callback->second.erase(found_origin);
           if (callback->second.empty()) {
-            net::CompletionCallback cb = callback->first;
-            cb.Run(net::OK);
+            std::move(callback->first).Run(net::OK);
             callback = deletion_callbacks_.erase(callback);
             continue;
           }
@@ -640,11 +639,12 @@ void DatabaseTracker::ScheduleDatabaseForDeletion(
 
 void DatabaseTracker::ScheduleDatabasesForDeletion(
     const DatabaseSet& databases,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(!databases.empty());
 
   if (!callback.is_null())
-    deletion_callbacks_.push_back(std::make_pair(callback, databases));
+    deletion_callbacks_.push_back(
+        std::make_pair(std::move(callback), databases));
   for (const auto& origin_dbs : databases) {
     for (const base::string16& db : origin_dbs.second)
       ScheduleDatabaseForDeletion(origin_dbs.first, db);
@@ -653,7 +653,7 @@ void DatabaseTracker::ScheduleDatabasesForDeletion(
 
 int DatabaseTracker::DeleteDatabase(const std::string& origin_identifier,
                                     const base::string16& database_name,
-                                    const net::CompletionCallback& callback) {
+                                    net::CompletionOnceCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!LazyInit())
     return net::ERR_FAILED;
@@ -663,7 +663,7 @@ int DatabaseTracker::DeleteDatabase(const std::string& origin_identifier,
     if (!callback.is_null()) {
       DatabaseSet set;
       set[origin_identifier].insert(database_name);
-      deletion_callbacks_.emplace_back(callback, set);
+      deletion_callbacks_.emplace_back(std::move(callback), set);
     }
     ScheduleDatabaseForDeletion(origin_identifier, database_name);
     return net::ERR_IO_PENDING;
@@ -674,7 +674,7 @@ int DatabaseTracker::DeleteDatabase(const std::string& origin_identifier,
 
 int DatabaseTracker::DeleteDataModifiedSince(
     const base::Time& cutoff,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!LazyInit())
     return net::ERR_FAILED;
@@ -715,14 +715,14 @@ int DatabaseTracker::DeleteDataModifiedSince(
     return rv;
 
   if (!to_be_deleted.empty()) {
-    ScheduleDatabasesForDeletion(to_be_deleted, callback);
+    ScheduleDatabasesForDeletion(to_be_deleted, std::move(callback));
     return net::ERR_IO_PENDING;
   }
   return net::OK;
 }
 
-int DatabaseTracker::DeleteDataForOrigin(
-    const std::string& origin, const net::CompletionCallback& callback) {
+int DatabaseTracker::DeleteDataForOrigin(const std::string& origin,
+                                         net::CompletionOnceCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!LazyInit())
     return net::ERR_FAILED;
@@ -742,7 +742,7 @@ int DatabaseTracker::DeleteDataForOrigin(
   }
 
   if (!to_be_deleted.empty()) {
-    ScheduleDatabasesForDeletion(to_be_deleted, callback);
+    ScheduleDatabasesForDeletion(to_be_deleted, std::move(callback));
     return net::ERR_IO_PENDING;
   }
   return net::OK;

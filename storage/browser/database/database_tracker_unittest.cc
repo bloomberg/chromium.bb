@@ -475,7 +475,7 @@ class DatabaseTracker_TestHelper_Test {
     tracker->DatabaseClosed(kOriginId, kName);
     EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
     EXPECT_EQ(net::OK, tracker->DeleteDatabase(kOriginId, kName,
-                                               net::CompletionCallback()));
+                                               net::CompletionOnceCallback()));
     EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
     test_quota_proxy->reset();
 
@@ -494,9 +494,9 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, 100));
     test_quota_proxy->reset();
 
-    EXPECT_EQ(
-        net::ERR_IO_PENDING,
-        tracker->DeleteDatabase(kOriginId, kName, net::CompletionCallback()));
+    EXPECT_EQ(net::ERR_IO_PENDING,
+              tracker->DeleteDatabase(kOriginId, kName,
+                                      net::CompletionOnceCallback()));
     EXPECT_FALSE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
 
     tracker->DatabaseClosed(kOriginId, kName);
@@ -728,7 +728,7 @@ class DatabaseTracker_TestHelper_Test {
 
     // Deleting it should return to the initial state.
     EXPECT_EQ(net::OK, tracker->DeleteDatabase(kOriginId, kEmptyName,
-                                               net::CompletionCallback()));
+                                               net::CompletionOnceCallback()));
     infos.clear();
     EXPECT_TRUE(tracker->GetAllOriginsInfo(&infos));
     EXPECT_TRUE(infos.empty());
