@@ -250,7 +250,8 @@ void HeaderView::OnTabletModeStarted() {
 void HeaderView::OnTabletModeEnded() {
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
   parent()->Layout();
-  target_widget_->non_client_view()->Layout();
+  if (target_widget_->non_client_view())
+    target_widget_->non_client_view()->Layout();
 }
 
 void HeaderView::OnWindowPropertyChanged(aura::Window* window,
