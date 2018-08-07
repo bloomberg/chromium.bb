@@ -4,7 +4,7 @@
 
 #include "chrome/browser/offline_pages/offline_page_request_handler.h"
 
-#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -415,10 +415,9 @@ void GetPagesToServeURL(
   }
 
   OfflinePageUtils::SelectPagesForURL(
-      web_contents->GetBrowserContext(), url, URLSearchMode::SEARCH_BY_ALL_URLS,
-      tab_id,
-      base::Bind(&SelectPagesForURLDone, url, offline_header, network_state,
-                 job, web_contents_getter));
+      web_contents->GetBrowserContext(), url, tab_id,
+      base::BindOnce(&SelectPagesForURLDone, url, offline_header, network_state,
+                     job, web_contents_getter));
 }
 
 // Do all the things needed to be done on UI thread after a trusted offline
@@ -967,7 +966,7 @@ void OfflinePageRequestHandler::DidOpenForServing(int result) {
 }
 
 void OfflinePageRequestHandler::DidSeekForServing(int64_t result) {
-  DCHECK(result <= 0);
+  DCHECK_LE(result, 0);
 
   ReportSeekResult(result);
 

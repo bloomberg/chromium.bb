@@ -358,7 +358,6 @@ void OfflinePageModelTaskified::GetPagesByClientIds(
 
 void OfflinePageModelTaskified::GetPagesByURL(
     const GURL& url,
-    URLSearchMode url_search_mode,
     MultipleOfflinePageItemCallback callback) {
   auto task = GetPagesTask::CreateTaskMatchingUrl(store_.get(),
                                                   std::move(callback), url);
@@ -748,7 +747,7 @@ void OfflinePageModelTaskified::OnPersistentPageConsistencyCheckDone(
     bool success,
     const std::vector<int64_t>& pages_deleted) {
   // If there's no persistent page expired, save some effort by exiting early.
-  // TODO(https://crbug.com/834909), use the temporary hidden bit in
+  // TODO(https://crbug.com/834909): Use the temporary hidden bit in
   // DownloadUIAdapter instead of calling remove directly.
   if (pages_deleted.size() > 0)
     download_manager_->Remove(pages_deleted);

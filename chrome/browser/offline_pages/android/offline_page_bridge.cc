@@ -576,8 +576,7 @@ void OfflinePageBridge::SelectPageForOnlineUrl(
 
   OfflinePageUtils::SelectPagesForURL(
       browser_context_, GURL(ConvertJavaStringToUTF8(env, j_online_url)),
-      URLSearchMode::SEARCH_BY_ALL_URLS, tab_id,
-      base::Bind(&SelectPageCallback, j_callback_ref));
+      tab_id, base::BindOnce(&SelectPageCallback, j_callback_ref));
 }
 
 void OfflinePageBridge::SavePage(JNIEnv* env,

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_REQUEST_HANDLER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
