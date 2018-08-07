@@ -11,8 +11,18 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
   GoogleServicesSettingsCommandIDNoOp,
   // Enabble/disable all the Google services.
   GoogleServicesSettingsCommandIDToggleSyncEverything,
+
+  // Personalized section.
   // Enable/disabble bookmark sync.
   GoogleServicesSettingsCommandIDToggleDataTypeSync,
+  // Opens the Google activity controls dialog.
+  GoogleServicesSettingsCommandIDOpenGoogleActivityPage,
+  // Opens the encryption dialog.
+  GoogleServicesSettingsCommandIDOpenEncryptionDialog,
+  // Opens manage synced data page.
+  GoogleServicesSettingsCommandIDOpenManageSyncedDataPage,
+
+  // Non-personalized section.
   // Enable/disabble autocomplete searches service.
   GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService,
   // Enable/disabble preload pages service.
@@ -21,32 +31,17 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
   GoogleServicesSettingsCommandIDToggleImproveChromeService,
   // Enable/disabble better search and browsing service.
   GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService,
-  // Opens the Google activity controls dialog.
-  GoogleServicesSettingsCommandIDOpenGoogleActivityPage,
-  // Opens the encryption dialog.
-  GoogleServicesSettingsCommandIDOpenEncryptionDialog,
-  // Opens manage synced data page.
-  GoogleServicesSettingsCommandIDOpenManageSyncedDataPage,
 };
 
 // Protocol to handle Google services settings commands.
 @protocol GoogleServicesSettingsCommandHandler<NSObject>
 
 // Called when GoogleServicesSettingsCommandIDToggleSyncEverything is triggered.
-- (void)toggleSyncEverythingWithValue:(BOOL)on;
+- (void)toggleSyncEverythingWithValue:(BOOL)value;
+
+// Personalized section.
 // Called when GoogleServicesSettingsCommandIDToggleDataTypeSync is triggered.
-- (void)toggleSyncDataSync:(NSInteger)dataType WithValue:(BOOL)on;
-- (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDTogglePreloadPagesService is
-// triggered.
-- (void)togglePreloadPagesServiceWithValue:(BOOL)on;
-// Called when GoogleServicesSettingsCommandIDToggleImproveChromeService is
-// triggered.
-- (void)toggleImproveChromeServiceWithValue:(BOOL)on;
-// Called when
-// GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService is
-// triggered.
-- (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)on;
+- (void)toggleSyncDataSync:(NSInteger)dataType withValue:(BOOL)value;
 // Called when GoogleServicesSettingsCommandIDOpenGoogleActivityPage is
 // triggered.
 - (void)openGoogleActivityPage;
@@ -56,6 +51,21 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
 // Called when GoogleServicesSettingsCommandIDOpenManageSyncedDataPage is
 // triggered.
 - (void)openManageSyncedDataPage;
+
+// Non-personalized section.
+// Called when GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService
+// is triggered.
+- (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)value;
+// Called when GoogleServicesSettingsCommandIDTogglePreloadPagesService is
+// triggered.
+- (void)togglePreloadPagesServiceWithValue:(BOOL)value;
+// Called when GoogleServicesSettingsCommandIDToggleImproveChromeService is
+// triggered.
+- (void)toggleImproveChromeServiceWithValue:(BOOL)value;
+// Called when
+// GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService is
+// triggered.
+- (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)value;
 
 @end
 
