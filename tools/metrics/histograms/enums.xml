@@ -38543,6 +38543,23 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="More than two ports exist"/>
 </enum>
 
+<enum name="PowerMLDimImminentAction">
+  <int value="0" label="ModelIgnored">
+    Dim occurred naturally following a screen dim imminent.
+  </int>
+  <int value="1" label="ModelDim">
+    Dim occurred following model instruction.
+  </int>
+  <int value="2" label="ModelNoDim">
+    Dim deferred following model instruction.
+  </int>
+</enum>
+
+<enum name="PowerMLFinalResult">
+  <int value="0" label="Reactivation">User reactivated after dim.</int>
+  <int value="1" label="Off">System was suspended after dim.</int>
+</enum>
+
 <enum name="PowerMLPreviousEventLoggingResult">
   <int value="0" label="Success">Previous event was logged successfully.</int>
   <int value="1" label="Error">Previous event was not logged successfully.</int>
@@ -38560,6 +38577,35 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="ErrorIdleStartMissing">
     Previous event was not logged successfully because previous idle event had
     no event start time.
+  </int>
+</enum>
+
+<enum name="PowerMLSmartDimModelResult">
+  <int value="0" label="Success">
+    Inactivity score was calculated successfully.
+  </int>
+  <int value="1" label="Preprocessor initialization failed">
+    The ExamplePreprocessorConfig could not be loaded or parsed.
+  </int>
+  <int value="2" label="Preprocessor other error">
+    The ExamplePreprocessor returned an error other than, or in addition to, the
+    kNoFeatureIndexFound error.
+  </int>
+  <int value="3" label="Other internal error">
+    Other error unrelated to preprocessor. This signals a bug in the feature
+    generation process.
+  </int>
+</enum>
+
+<enum name="PowerMLSmartDimParameterResult">
+  <int value="0" label="Success">
+    Threshold parameter was defined and parsed correctly.
+  </int>
+  <int value="1" label="Undefined error">
+    Threshold parameter was undefined.
+  </int>
+  <int value="2" label="Parsing error">
+    Threshold parameter was not parsed correctly from string to double.
   </int>
 </enum>
 

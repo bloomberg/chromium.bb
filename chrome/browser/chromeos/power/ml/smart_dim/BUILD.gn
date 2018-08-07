@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("smart_dim") {
+  # Dependent targets should not include tf_native_inference.h directly.
   public = [
     "model.h",
     "model_impl.h",
@@ -10,13 +11,16 @@ source_set("smart_dim") {
 
   sources = [
     "model_impl.cc",
-    "model_impl.h",
+    "tf_native_inference.cc",
+    "tf_native_inference.h",
   ]
 
   deps = [
     "//base",
     "//chrome/browser:resources",
     "//chrome/browser/chromeos:user_activity_event_proto",
+    "//chrome/browser/chromeos/power/ml:user_activity_ukm_logger_helpers",
+    "//chrome/common:constants",
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
     "//components/sessions",
