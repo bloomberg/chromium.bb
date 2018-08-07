@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -104,9 +105,11 @@ void IntersectionGeometry::InitializeGeometry() {
 }
 
 void IntersectionGeometry::InitializeTargetRect() {
-  if (target_->IsBoxModelObject()) {
+  if (target_->IsBox()) {
     target_rect_ =
         LayoutRect(ToLayoutBoxModelObject(target_)->BorderBoundingBox());
+  } else if (target_->IsLayoutInline()) {
+    target_rect_ = ToLayoutInline(target_)->LinesBoundingBox();
   } else {
     target_rect_ = ToLayoutText(target_)->LinesBoundingBox();
   }
