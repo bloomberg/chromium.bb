@@ -154,6 +154,8 @@ static const size_t kReasonableSizeOfUnusedPages = 1024 * 1024 * 1024;  // 1GB
 // Flags for PartitionAllocGenericFlags.
 enum PartitionAllocFlags {
   PartitionAllocReturnNull = 1 << 0,
+
+  PartitionAllocLastFlag = PartitionAllocReturnNull
 };
 
 }  // namespace base
