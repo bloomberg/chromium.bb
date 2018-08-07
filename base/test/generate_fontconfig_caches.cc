@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/test/fontconfig_util_linux.h"
 
 // GIANT WARNING: The point of this file is to front-load construction of the
@@ -21,7 +22,7 @@
 // deterministic. This executable tries to set some external state to ensure
 // determinism. We have no way of guaranteeing that this produces correct
 // results, or even has the intended effect.
-int main(void) {
+int main() {
   // fontconfig generates a random uuid and uses it to match font folders with
   // the font cache. Rather than letting fontconfig generate a random uuid,
   // which introduces build non-determinism, we place a fixed uuid in the font
@@ -46,13 +47,17 @@ int main(void) {
   new_times.modtime = 123456789;
   utime(test_fonts_file_path.value().c_str(), &new_times);
 
+  base::FilePath fontconfig_caches = dir_module.Append("fontconfig_caches");
+
+  // Delete directory before generating fontconfig caches. This will notify
+  // future fontconfig_caches changes.
+  CHECK(base::DeleteFile(fontconfig_caches, /*recursive=*/true));
+
   base::SetUpFontconfig();
   base::TearDownFontconfig();
 
-  base::FilePath fontconfig_caches = dir_module.Append("fontconfig_caches");
-  CHECK(base::DirectoryExists(fontconfig_caches));
-  base::FilePath stamp = fontconfig_caches.Append("STAMP");
-  CHECK_EQ(0, base::WriteFile(stamp, "", 0));
-
+  // Check existence of intended fontconfig cache file.
+  CHECK(base::PathExists(
+      fontconfig_caches.Append(base::StrCat({uuid, "-le64.cache-7"}))));
   return 0;
 }
