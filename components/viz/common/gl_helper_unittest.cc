@@ -1313,7 +1313,8 @@ TEST_P(GLHelperPixelReadbackTest, ScaleTest) {
   }
 }
 
-TEST_P(GLHelperPixelReadbackTest, ScalePatching) {
+// FLAKY: https://crbug.com/871799
+TEST_P(GLHelperPixelReadbackTest, FLAKY_ScalePatching) {
   for (int flipped_source = 0; flipped_source <= 1; ++flipped_source) {
     for (int pattern = 0; pattern < 3; ++pattern) {
       TestScalePatching(
