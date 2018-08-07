@@ -16,7 +16,7 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/media/router/discovery/discovery_network_info.h"
 #include "net/base/ip_address.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace media_router {
 
@@ -33,7 +33,7 @@ class DiscoveryNetworkMonitorMetricObserver;
 // called from the IO thread.  All observers will be notified of network changes
 // on the thread from which they registered.
 class DiscoveryNetworkMonitor
-    : public net::NetworkChangeNotifier::NetworkChangeObserver {
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   using NetworkInfoFunction = std::vector<DiscoveryNetworkInfo> (*)();
   using NetworkIdCallback = base::OnceCallback<void(const std::string&)>;
@@ -71,6 +71,8 @@ class DiscoveryNetworkMonitor
   void GetNetworkId(NetworkIdCallback callback);
 
  private:
+  friend class CastMediaSinkServiceImplTest;
+  friend class DiscoveryNetworkMonitorTest;
   friend struct std::default_delete<DiscoveryNetworkMonitor>;
   friend struct base::LazyInstanceTraitsBase<DiscoveryNetworkMonitor>;
 
@@ -80,9 +82,8 @@ class DiscoveryNetworkMonitor
 
   void SetNetworkInfoFunctionForTest(NetworkInfoFunction strategy);
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // network::NetworkConnectionTracker::NetworkConnectionObserver overrides.
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   std::string GetNetworkIdOnSequence() const;
   std::string UpdateNetworkInfo();
