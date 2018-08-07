@@ -4887,21 +4887,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_initiated_in_secure_context(frame_document.IsSecureContext());
   extra_data->set_attach_same_site_cookies(attach_same_site_cookies);
 
-  // Renderer process transfers apply only to navigational requests.
-  bool is_navigational_request =
-      request.GetFrameType() != network::mojom::RequestContextFrameType::kNone;
-  if (is_navigational_request) {
-    // For navigation requests, we should copy the flag which indicates if this
-    // was a navigation initiated by the renderer to the new RequestExtraData
-    // instance.
-    RequestExtraData* current_request_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
-    if (current_request_data) {
-      extra_data->set_navigation_initiated_by_renderer(
-          current_request_data->navigation_initiated_by_renderer());
-    }
-  }
-
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
