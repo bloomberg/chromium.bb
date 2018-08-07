@@ -4,7 +4,10 @@
 
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 
+#include <memory>
+
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_container_view.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -41,12 +44,18 @@ void AssistantFooterView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
+// TODO(dmblack): Handle opted out/in state.
 void AssistantFooterView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Suggestion container.
   suggestion_container_ = new SuggestionContainerView(assistant_controller_);
   AddChildView(suggestion_container_);
+
+  // Opt in view.
+  opt_in_view_ = new AssistantOptInView();
+  opt_in_view_->SetVisible(false);
+  AddChildView(opt_in_view_);
 }
 
 }  // namespace ash

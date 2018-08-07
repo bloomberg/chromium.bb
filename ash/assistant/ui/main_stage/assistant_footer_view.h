@@ -11,6 +11,7 @@
 namespace ash {
 
 class AssistantController;
+class AssistantOptInView;
 class SuggestionContainerView;
 
 class AssistantFooterView : public views::View {
@@ -30,6 +31,7 @@ class AssistantFooterView : public views::View {
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   SuggestionContainerView* suggestion_container_;  // Owned by view hierarchy.
+  AssistantOptInView* opt_in_view_;                // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantFooterView);
 };
