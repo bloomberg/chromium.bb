@@ -948,30 +948,6 @@
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
   },
-  'not_site_per_process_browser_tests': {
-    'remove_from': [
-      # chromium.fyi
-      'Site Isolation Android',
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
-      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-    ],
-    'modifications': {
-      'Linux Tests (dbg)(1)': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      # client.v8.chromium
-      'Linux - Future (dbg)': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-    },
-  },
   'site_per_process_components_browsertests': {
     'remove_from': [
       # chromium.linux
