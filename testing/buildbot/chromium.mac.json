@@ -2266,7 +2266,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "none",
+              "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
           ],
@@ -2843,7 +2843,7 @@
       {
         "alternate_swarming_dimensions": [
           {
-            "gpu": "none",
+            "gpu": "8086:0a2e",
             "os": "Mac-10.12.6"
           }
         ],
@@ -2860,7 +2860,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "none",
+              "gpu": "8086:0a2e",
               "os": "Mac-10.13"
             }
           ],
