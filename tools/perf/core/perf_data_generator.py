@@ -450,16 +450,15 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
     },
     'mac-10_12_laptop_low_end-perf': {
       'tests': [
-       # crbug.com/868675
-       # {
-       #   'isolate': 'performance_test_suite',
-       #   'num_shards': 26,
-       #   'extra_args': [
-       #       '--run-ref-build',
-       #       '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
-       #       '--assert-gpu-compositing',
-       #   ],
-       # },
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 26,
+          'extra_args': [
+              # '--run-ref-build', crbug.com/868675
+              '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
+              '--assert-gpu-compositing',
+          ],
+        },
         {
           'isolate': 'load_library_perf_tests',
           'num_shards': 1,
@@ -520,16 +519,15 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
     },
     'mac-10_13_laptop_high_end-perf': {
       'tests': [
-       # crbug.com/868675
-       # {
-       #   'isolate': 'performance_test_suite',
-       #   'extra_args': [
-       #     '--run-ref-build',
-       #     '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
-       #       '--assert-gpu-compositing',
-       #   ],
-       #   'num_shards': 26
-       # },
+        {
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            # '--run-ref-build', crbug.com/868675
+            '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
+              '--assert-gpu-compositing',
+          ],
+          'num_shards': 26
+        },
         {
           'isolate': 'net_perftests',
           'num_shards': 1,
