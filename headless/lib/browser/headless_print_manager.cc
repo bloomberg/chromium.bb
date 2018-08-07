@@ -18,8 +18,6 @@
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(headless::HeadlessPrintManager);
-
 namespace headless {
 
 struct HeadlessPrintManager::FrameDispatchHelper {
