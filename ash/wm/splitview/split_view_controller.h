@@ -317,9 +317,6 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // called before trying to snap the window.
   void RemoveWindowFromOverviewIfApplicable(aura::Window* window);
 
-  // Returns the window that is currently snapped at |snap_position|.
-  aura::Window* GetSnappedWindowAt(SnapPosition snap_position);
-
   // Inserts |window| into overview window grid if overview mode is active. Do
   // nothing if overview mode is inactive at the moment.
   void InsertWindowToOverview(aura::Window* window);
