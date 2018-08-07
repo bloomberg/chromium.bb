@@ -10,7 +10,6 @@
 #include "base/sys_byteorder.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"

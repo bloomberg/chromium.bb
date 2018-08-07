@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/address_family.h"
-#include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/interfaces/address_family.mojom.h"
 #include "net/interfaces/ip_endpoint.mojom.h"

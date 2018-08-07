@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
+#include "net/base/completion_once_callback.h"
 #include "net/cert/cert_verifier.h"
 
 namespace net {

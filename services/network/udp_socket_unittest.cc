@@ -53,7 +53,7 @@ class SocketWrapperTestImpl : public UDPSocket::SocketWrapper {
       net::IOBuffer* buf,
       int buf_len,
       const net::IPEndPoint& dest_addr,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
@@ -73,7 +73,7 @@ class SocketWrapperTestImpl : public UDPSocket::SocketWrapper {
   int Write(
       net::IOBuffer* buf,
       int buf_len,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
@@ -81,7 +81,7 @@ class SocketWrapperTestImpl : public UDPSocket::SocketWrapper {
   int RecvFrom(net::IOBuffer* buf,
                int buf_len,
                net::IPEndPoint* address,
-               const net::CompletionCallback& callback) override {
+               net::CompletionOnceCallback callback) override {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
   }
@@ -116,7 +116,7 @@ class HangingUDPSocket : public SocketWrapperTestImpl {
       net::IOBuffer* buf,
       int buf_len,
       const net::IPEndPoint& address,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     EXPECT_EQ(expected_data_,
               std::vector<unsigned char>(buf->data(), buf->data() + buf_len));
@@ -124,7 +124,7 @@ class HangingUDPSocket : public SocketWrapperTestImpl {
       return net::OK;
     pending_io_buffers_.push_back(buf);
     pending_io_buffer_lengths_.push_back(buf_len);
-    pending_send_requests_.push_back(callback);
+    pending_send_requests_.push_back(std::move(callback));
     return net::ERR_IO_PENDING;
   }
 
@@ -143,8 +143,8 @@ class HangingUDPSocket : public SocketWrapperTestImpl {
   // Completes all pending requests.
   void CompleteAllPendingRequests() {
     should_complete_requests_ = true;
-    for (auto request : pending_send_requests_) {
-      request.Run(net::OK);
+    for (auto& request : pending_send_requests_) {
+      std::move(request).Run(net::OK);
     }
     pending_send_requests_.clear();
   }
@@ -154,7 +154,7 @@ class HangingUDPSocket : public SocketWrapperTestImpl {
   bool should_complete_requests_ = false;
   std::vector<net::IOBuffer*> pending_io_buffers_;
   std::vector<int> pending_io_buffer_lengths_;
-  std::vector<net::CompletionCallback> pending_send_requests_;
+  std::vector<net::CompletionOnceCallback> pending_send_requests_;
 };
 
 // A Mock UDPSocket that returns 0 byte read.
@@ -169,7 +169,7 @@ class ZeroByteReadUDPSocket : public SocketWrapperTestImpl {
   int RecvFrom(net::IOBuffer* buf,
                int buf_len,
                net::IPEndPoint* address,
-               const net::CompletionCallback& callback) override {
+               net::CompletionOnceCallback callback) override {
     *address = GetLocalHostWithAnyPort();
     return 0;
   }

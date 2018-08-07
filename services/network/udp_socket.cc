@@ -67,9 +67,9 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
       net::IOBuffer* buf,
       int buf_len,
       const net::IPEndPoint& dest_addr,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
-    return socket_.SendTo(buf, buf_len, dest_addr, callback);
+    return socket_.SendTo(buf, buf_len, dest_addr, std::move(callback));
   }
   int SetBroadcast(bool broadcast) override {
     return socket_.SetBroadcast(broadcast);
@@ -83,15 +83,15 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
   int Write(
       net::IOBuffer* buf,
       int buf_len,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
-    return socket_.Write(buf, buf_len, callback, traffic_annotation);
+    return socket_.Write(buf, buf_len, std::move(callback), traffic_annotation);
   }
   int RecvFrom(net::IOBuffer* buf,
                int buf_len,
                net::IPEndPoint* address,
-               const net::CompletionCallback& callback) override {
-    return socket_.RecvFrom(buf, buf_len, address, callback);
+               net::CompletionOnceCallback callback) override {
+    return socket_.RecvFrom(buf, buf_len, address, std::move(callback));
   }
 
  private:
