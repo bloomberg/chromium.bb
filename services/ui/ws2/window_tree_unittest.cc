@@ -996,6 +996,17 @@ TEST(WindowTreeTest, DeleteTopLevel) {
       setup.window_tree_test_helper()->GetWindowByClientId(top_level_id));
 }
 
+TEST(WindowTreeTest, ExternalDeleteTopLevel) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  setup.changes()->clear();
+  ASSERT_TRUE(top_level);
+  delete top_level;
+  EXPECT_EQ("WindowDeleted window=0,1",
+            SingleChangeToDescription(*setup.changes()));
+}
+
 TEST(WindowTreeTest, ExternalDeleteWindow) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
