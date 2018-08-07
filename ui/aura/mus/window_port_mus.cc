@@ -628,10 +628,4 @@ void WindowPortMus::UpdateClientSurfaceEmbedder() {
   client_surface_embedder_->SetFallbackSurfaceInfo(fallback_surface_info_);
 }
 
-void WindowPortMus::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
-  // TODO(fsamuel): Rename OnFirstSurfaceActivation() and set primary earlier
-  // based on feedback from LayerTreeFrameSinkLocal.
-  NOTREACHED();
-}
-
 }  // namespace aura

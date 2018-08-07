@@ -5,6 +5,7 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "components/exo/buffer.h"
 #include "components/exo/surface_tree_host.h"
 #include "components/exo/test/exo_test_base.h"
@@ -28,6 +29,17 @@ void Release(int* release_call_count) {
   (*release_call_count)++;
 }
 
+void VerifySyncTokensInCompositorFrame(viz::CompositorFrame* frame) {
+  std::vector<GLbyte*> sync_tokens;
+  for (auto& resource : frame->resource_list)
+    sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
+  gpu::gles2::GLES2Interface* gles2 = aura::Env::GetInstance()
+                                          ->context_factory()
+                                          ->SharedMainThreadContextProvider()
+                                          ->ContextGL();
+  gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
+}
+
 TEST_F(BufferTest, ReleaseCallback) {
   gfx::Size buffer_size(256, 256);
   auto buffer = std::make_unique<Buffer>(
@@ -36,7 +48,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   LayerTreeFrameSinkHolder* frame_sink_holder =
       surface_tree_host->layer_tree_frame_sink_holder();
 
-  // This is needed to ensure that RunAllPendingInMessageLoop() call below
+  // This is needed to ensure that base::RunLoop().RunUntilIdle() call below
   // is always sufficient for buffer to be released.
   buffer->set_wait_for_release_delay_for_testing(base::TimeDelta());
 
@@ -60,7 +72,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   std::vector<viz::ReturnedResource> resources = {returned_resource};
   frame_sink_holder->ReclaimResources(resources);
 
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(release_call_count, 0);
 
   buffer->OnDetach();
@@ -102,7 +114,7 @@ TEST_F(BufferTest, IsLost) {
   returned_resource.lost = is_lost;
   std::vector<viz::ReturnedResource> resources = {returned_resource};
   frame_sink_holder->ReclaimResources(resources);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Producing a new texture transferable resource for the contents of the
   // buffer.
@@ -118,7 +130,7 @@ TEST_F(BufferTest, IsLost) {
   returned_resource2.lost = false;
   std::vector<viz::ReturnedResource> resources2 = {returned_resource2};
   frame_sink_holder->ReclaimResources(resources2);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Buffer::Texture::OnLostResources is called when the gpu crashes. This test
@@ -152,7 +164,7 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
   LayerTreeFrameSinkHolder* frame_sink_holder =
       surface_tree_host->layer_tree_frame_sink_holder();
 
-  // This is needed to ensure that RunAllPendingInMessageLoop() call below
+  // This is needed to ensure that base::RunLoop().RunUntilIdle() call below
   // is always sufficient for buffer to be released.
   buffer->set_wait_for_release_delay_for_testing(base::TimeDelta());
 
@@ -182,13 +194,16 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
                  gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
     frame.resource_list.push_back(resource);
+    VerifySyncTokensInCompositorFrame(&frame);
     frame_sink_holder->SubmitCompositorFrame(std::move(frame));
   }
 
   buffer->OnDetach();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(release_call_count, 0);
 
   surface_tree_host.reset();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(release_call_count, 1);
 }
 
@@ -200,7 +215,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
   LayerTreeFrameSinkHolder* frame_sink_holder =
       surface_tree_host->layer_tree_frame_sink_holder();
 
-  // This is needed to ensure that RunAllPendingInMessageLoop() call below
+  // This is needed to ensure that base::RunLoop().RunUntilIdle() call below
   // is always sufficient for buffer to be released.
   buffer->set_wait_for_release_delay_for_testing(base::TimeDelta());
 
@@ -230,6 +245,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
                  gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
     frame.resource_list.push_back(resource);
+    VerifySyncTokensInCompositorFrame(&frame);
     frame_sink_holder->SubmitCompositorFrame(std::move(frame));
 
     // Try to release buffer in last frame. This can happen during a resize
@@ -238,11 +254,12 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
     returned_resource.id = resource.id;
     returned_resource.sync_token = resource.mailbox_holder.sync_token;
     returned_resource.lost = false;
+
     std::vector<viz::ReturnedResource> resources = {returned_resource};
     frame_sink_holder->ReclaimResources(resources);
   }
 
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   buffer->OnDetach();
 
   // Release() should not have been called as resource is used by last frame.
@@ -264,6 +281,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
     frame_sink_holder->SubmitCompositorFrame(std::move(frame));
   }
 
+  base::RunLoop().RunUntilIdle();
   // Release() should have been called exactly once.
   ASSERT_EQ(release_call_count, 1);
 }

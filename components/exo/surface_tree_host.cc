@@ -248,16 +248,14 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
       root_surface_origin_, device_scale_factor,
       layer_tree_frame_sink_holder_.get(), &frame);
 
-  if (WMHelper::GetInstance()->AreVerifiedSyncTokensNeeded()) {
-    std::vector<GLbyte*> sync_tokens;
-    for (auto& resource : frame.resource_list)
-      sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
-    ui::ContextFactory* context_factory =
-        aura::Env::GetInstance()->context_factory();
-    gpu::gles2::GLES2Interface* gles2 =
-        context_factory->SharedMainThreadContextProvider()->ContextGL();
-    gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
-  }
+  std::vector<GLbyte*> sync_tokens;
+  for (auto& resource : frame.resource_list)
+    sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
+  ui::ContextFactory* context_factory =
+      aura::Env::GetInstance()->context_factory();
+  gpu::gles2::GLES2Interface* gles2 =
+      context_factory->SharedMainThreadContextProvider()->ContextGL();
+  gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
 
   layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
 }

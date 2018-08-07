@@ -6,7 +6,6 @@
 
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/local/layer_tree_frame_sink_local.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"

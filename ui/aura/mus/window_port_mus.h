@@ -20,7 +20,6 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/local/layer_tree_frame_sink_local.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/window_port.h"
@@ -31,6 +30,14 @@ namespace cc {
 namespace mojo_embedder {
 class AsyncLayerTreeFrameSink;
 }
+}
+
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
+namespace viz {
+class ContextProvider;
 }
 
 namespace aura {
@@ -281,8 +288,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   void UpdatePrimarySurfaceId();
   void UpdateClientSurfaceEmbedder();
-
-  void OnSurfaceChanged(const viz::SurfaceInfo& surface_info);
 
   WindowTreeClient* window_tree_client_;
 
