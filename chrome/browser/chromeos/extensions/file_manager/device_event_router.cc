@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chromeos/disks/disk.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace file_manager {
@@ -63,14 +65,12 @@ void DeviceEventRouter::OnDeviceRemoved(const std::string& device_path) {
   OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_REMOVED, device_path);
 }
 
-void DeviceEventRouter::OnDiskAdded(
-    const chromeos::disks::DiskMountManager::Disk& disk,
-    bool mounting) {
+void DeviceEventRouter::OnDiskAdded(const chromeos::disks::Disk& disk,
+                                    bool mounting) {
   // Do nothing.
 }
 
-void DeviceEventRouter::OnDiskRemoved(
-    const chromeos::disks::DiskMountManager::Disk& disk) {
+void DeviceEventRouter::OnDiskRemoved(const chromeos::disks::Disk& disk) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (is_resuming_ || is_starting_up_)

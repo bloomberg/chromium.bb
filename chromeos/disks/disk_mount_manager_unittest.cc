@@ -16,10 +16,12 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
+using chromeos::disks::Disk;
 using chromeos::disks::DiskMountManager;
 using chromeos::CrosDisksClient;
 using chromeos::DBusThreadManager;
@@ -37,7 +39,7 @@ const char kReadOnlyDeviceSourcePath[] = "/device/read_only_source_path";
 const char kFileSystemType1[] = "ntfs";
 const char kFileSystemType2[] = "exfat";
 
-// Holds information needed to create a DiskMountManager::Disk instance.
+// Holds information needed to create a Disk instance.
 struct TestDiskInfo {
   const char* source_path;
   const char* mount_path;
@@ -216,11 +218,10 @@ struct DeviceEvent : public ObserverEvent {
 // DiskMountManager::Observer::OnAutoMountableDiskEvent().
 struct AutoMountableDiskEvent : public ObserverEvent {
   DiskMountManager::DiskEvent event;
-  std::unique_ptr<DiskMountManager::Disk> disk;
+  std::unique_ptr<Disk> disk;
 
-  AutoMountableDiskEvent(DiskMountManager::DiskEvent event,
-                         const DiskMountManager::Disk& disk)
-      : event(event), disk(std::make_unique<DiskMountManager::Disk>(disk)) {}
+  AutoMountableDiskEvent(DiskMountManager::DiskEvent event, const Disk& disk)
+      : event(event), disk(std::make_unique<Disk>(disk)) {}
 
   AutoMountableDiskEvent(AutoMountableDiskEvent&& other)
       : event(other.event), disk(std::move(other.disk)) {}
@@ -243,11 +244,10 @@ struct AutoMountableDiskEvent : public ObserverEvent {
 // TODO(agawronska): Add tests for disks events.
 struct BootDeviceDiskEvent : public ObserverEvent {
   DiskMountManager::DiskEvent event;
-  std::unique_ptr<DiskMountManager::Disk> disk;
+  std::unique_ptr<Disk> disk;
 
-  BootDeviceDiskEvent(DiskMountManager::DiskEvent event,
-                      const DiskMountManager::Disk& disk)
-      : event(event), disk(std::make_unique<DiskMountManager::Disk>(disk)) {}
+  BootDeviceDiskEvent(DiskMountManager::DiskEvent event, const Disk& disk)
+      : event(event), disk(std::make_unique<Disk>(disk)) {}
 
   BootDeviceDiskEvent(BootDeviceDiskEvent&& other)
       : event(other.event), disk(std::move(other.disk)) {}
@@ -322,7 +322,7 @@ struct MountEvent : public ObserverEvent {
 
   // Not passed to callback, but read by handlers. So it's captured upon
   // callback.
-  std::unique_ptr<DiskMountManager::Disk> disk;
+  std::unique_ptr<Disk> disk;
 
   MountEvent(MountEvent&& other)
       : event(other.event),
@@ -332,11 +332,11 @@ struct MountEvent : public ObserverEvent {
   MountEvent(DiskMountManager::MountEvent event,
              chromeos::MountError error_code,
              const DiskMountManager::MountPointInfo& mount_point,
-             const DiskMountManager::Disk& disk)
+             const Disk& disk)
       : event(event),
         error_code(error_code),
         mount_point(mount_point),
-        disk(new DiskMountManager::Disk(disk)) {}
+        disk(std::make_unique<Disk>(disk)) {}
 
   ObserverEventType type() const override { return MOUNT_EVENT; }
 
@@ -365,14 +365,14 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
   }
 
   void OnBootDeviceDiskEvent(DiskMountManager::DiskEvent event,
-                             const DiskMountManager::Disk& disk) override {
+                             const Disk& disk) override {
     // Take a snapshot (copy) of the Disk object at the time of invocation for
     // later verification.
     events_.push_back(std::make_unique<BootDeviceDiskEvent>(event, disk));
   }
 
   void OnAutoMountableDiskEvent(DiskMountManager::DiskEvent event,
-                                const DiskMountManager::Disk& disk) override {
+                                const Disk& disk) override {
     // Take a snapshot (copy) of the Disk object at the time of invocation for
     // later verification.
     events_.push_back(std::make_unique<AutoMountableDiskEvent>(event, disk));
@@ -556,8 +556,8 @@ class DiskMountManagerTest : public testing::Test {
  private:
   // Adds a new disk to the disk mount manager.
   void AddTestDisk(const TestDiskInfo& disk) {
-    EXPECT_TRUE(DiskMountManager::GetInstance()->AddDiskForTest(
-        std::make_unique<DiskMountManager::Disk>(
+    EXPECT_TRUE(
+        DiskMountManager::GetInstance()->AddDiskForTest(std::make_unique<Disk>(
             disk.source_path, disk.mount_path, disk.write_disabled_by_policy,
             disk.system_path, disk.file_path, disk.device_label,
             disk.drive_label, disk.vendor_id, disk.vendor_name, disk.product_id,

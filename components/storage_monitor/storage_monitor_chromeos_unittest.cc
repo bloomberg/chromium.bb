@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/disks/disk.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/storage_monitor/mock_removable_storage_observer.h"
 #include "components/storage_monitor/removable_device_constants.h"
@@ -84,9 +85,8 @@ class TestStorageMonitorCros : public StorageMonitorCros {
     StorageMonitorCros::OnMountEvent(event, error_code, mount_info);
   }
 
-  void OnBootDeviceDiskEvent(
-      DiskMountManager::DiskEvent event,
-      const chromeos::disks::DiskMountManager::Disk& disk) override {
+  void OnBootDeviceDiskEvent(DiskMountManager::DiskEvent event,
+                             const chromeos::disks::Disk& disk) override {
     StorageMonitorCros::OnBootDeviceDiskEvent(event, disk);
   }
 
@@ -549,10 +549,10 @@ TEST_F(StorageMonitorCrosTest, FixedStroageTest) {
 
   // Fixed storage (stateful partition) added.
   const std::string label = "fixed1";
-  const chromeos::disks::DiskMountManager::Disk disk(
-      "", mount_point, false, "", "", label, "", "", "", "", "", uuid, "",
-      chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
-      false, "", "");
+  const chromeos::disks::Disk disk("", mount_point, false, "", "", label, "",
+                                   "", "", "", "", uuid, "",
+                                   chromeos::DEVICE_TYPE_UNKNOWN, 0, false,
+                                   false, false, false, false, false, "", "");
   monitor_->OnBootDeviceDiskEvent(DiskMountManager::DiskEvent::DISK_ADDED,
                                   disk);
   std::vector<StorageInfo> disks = monitor_->GetAllAvailableStorages();
@@ -561,7 +561,7 @@ TEST_F(StorageMonitorCrosTest, FixedStroageTest) {
   EXPECT_EQ(base::ASCIIToUTF16(label), disks[0].storage_label());
 
   // Fixed storage (not stateful partition) added - ignore.
-  const chromeos::disks::DiskMountManager::Disk ignored_disk(
+  const chromeos::disks::Disk ignored_disk(
       "", "usr/share/OEM", false, "", "", "fixed2", "", "", "", "", "",
       "fixed2-uuid", "", chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false,
       false, false, false, "", "");

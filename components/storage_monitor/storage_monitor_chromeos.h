@@ -46,9 +46,8 @@ class StorageMonitorCros : public StorageMonitor,
       device::mojom::MtpManagerPtr test_manager);
 
   // chromeos::disks::DiskMountManager::Observer implementation.
-  void OnBootDeviceDiskEvent(
-      chromeos::disks::DiskMountManager::DiskEvent event,
-      const chromeos::disks::DiskMountManager::Disk& disk) override;
+  void OnBootDeviceDiskEvent(chromeos::disks::DiskMountManager::DiskEvent event,
+                             const chromeos::disks::Disk& disk) override;
   void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
                     chromeos::MountError error_code,
                     const chromeos::disks::DiskMountManager::MountPointInfo&
@@ -78,12 +77,11 @@ class StorageMonitorCros : public StorageMonitor,
 
   // Adds the mount point in |disk| to |mount_map_| and send a device
   // attach notification.
-  void AddFixedStorageDisk(const chromeos::disks::DiskMountManager::Disk& disk);
+  void AddFixedStorageDisk(const chromeos::disks::Disk& disk);
 
   // Removes the mount point in |disk| from |mount_map_| and send a device
   // detach notification.
-  void RemoveFixedStorageDisk(
-      const chromeos::disks::DiskMountManager::Disk& disk);
+  void RemoveFixedStorageDisk(const chromeos::disks::Disk& disk);
 
   // Mapping of relevant mount points and their corresponding mount devices.
   MountMap mount_map_;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 
+#include "chromeos/disks/disk.h"
+
 namespace file_manager {
 
 FakeDiskMountManager::MountRequest::MountRequest(
@@ -55,8 +57,7 @@ FakeDiskMountManager::disks() const {
   return disks_;
 }
 
-const chromeos::disks::DiskMountManager::Disk*
-FakeDiskMountManager::FindDiskBySourcePath(
+const chromeos::disks::Disk* FakeDiskMountManager::FindDiskBySourcePath(
     const std::string& source_path) const {
   DiskMap::const_iterator iter = disks_.find(source_path);
   return iter != disks_.end() ? iter->second.get() : nullptr;
@@ -144,7 +145,8 @@ void FakeDiskMountManager::UnmountDeviceRecursively(
     const UnmountDeviceRecursivelyCallbackType& callback) {
 }
 
-bool FakeDiskMountManager::AddDiskForTest(std::unique_ptr<Disk> disk) {
+bool FakeDiskMountManager::AddDiskForTest(
+    std::unique_ptr<chromeos::disks::Disk> disk) {
   DCHECK(disk);
   return disks_.insert(make_pair(disk->device_path(), std::move(disk))).second;
 }
@@ -156,7 +158,7 @@ bool FakeDiskMountManager::AddMountPointForTest(
 
 void FakeDiskMountManager::InvokeDiskEventForTest(
     chromeos::disks::DiskMountManager::DiskEvent event,
-    const chromeos::disks::DiskMountManager::Disk* disk) {
+    const chromeos::disks::Disk* disk) {
   for (auto& observer : observers_) {
     disk->IsAutoMountable() ? observer.OnAutoMountableDiskEvent(event, *disk)
                             : observer.OnBootDeviceDiskEvent(event, *disk);

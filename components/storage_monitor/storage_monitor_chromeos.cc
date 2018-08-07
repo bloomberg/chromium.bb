@@ -19,6 +19,7 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chromeos/disks/disk.h"
 #include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/mtp_manager_client_chromeos.h"
 #include "components/storage_monitor/removable_device_constants.h"
@@ -26,6 +27,7 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+using chromeos::disks::Disk;
 using chromeos::disks::DiskMountManager;
 
 namespace storage_monitor {
@@ -34,7 +36,7 @@ namespace {
 
 // Constructs a device id using uuid or manufacturer (vendor and product) id
 // details.
-std::string MakeDeviceUniqueId(const DiskMountManager::Disk& disk) {
+std::string MakeDeviceUniqueId(const Disk& disk) {
   std::string uuid = disk.fs_uuid();
   if (!uuid.empty())
     return kFSUniqueIdPrefix + uuid;
@@ -59,7 +61,7 @@ bool GetDeviceInfo(const DiskMountManager::MountPointInfo& mount_info,
   DCHECK(info);
   std::string source_path = mount_info.source_path;
 
-  const DiskMountManager::Disk* disk =
+  const Disk* disk =
       DiskMountManager::GetInstance()->FindDiskBySourcePath(source_path);
   if (!disk || disk->device_type() == chromeos::DEVICE_TYPE_UNKNOWN)
     return false;
@@ -82,8 +84,7 @@ bool GetDeviceInfo(const DiskMountManager::MountPointInfo& mount_info,
 
 // Returns whether the requested device is valid. On success |info| will contain
 // fixed storage device information.
-bool GetFixedStorageInfo(const DiskMountManager::Disk& disk,
-                         StorageInfo* info) {
+bool GetFixedStorageInfo(const Disk& disk, StorageInfo* info) {
   DCHECK(info);
 
   std::string unique_id = MakeDeviceUniqueId(disk);
@@ -164,7 +165,7 @@ void StorageMonitorCros::CheckExistingMountPoints() {
 
 void StorageMonitorCros::OnBootDeviceDiskEvent(
     DiskMountManager::DiskEvent event,
-    const DiskMountManager::Disk& disk) {
+    const Disk& disk) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!disk.IsStatefulPartition())
@@ -341,8 +342,7 @@ void StorageMonitorCros::AddMountedPath(
   receiver()->ProcessAttach(info);
 }
 
-void StorageMonitorCros::AddFixedStorageDisk(
-    const DiskMountManager::Disk& disk) {
+void StorageMonitorCros::AddFixedStorageDisk(const Disk& disk) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(disk.IsStatefulPartition());
 
@@ -357,8 +357,7 @@ void StorageMonitorCros::AddFixedStorageDisk(
   receiver()->ProcessAttach(info);
 }
 
-void StorageMonitorCros::RemoveFixedStorageDisk(
-    const DiskMountManager::Disk& disk) {
+void StorageMonitorCros::RemoveFixedStorageDisk(const Disk& disk) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(disk.IsStatefulPartition());
 

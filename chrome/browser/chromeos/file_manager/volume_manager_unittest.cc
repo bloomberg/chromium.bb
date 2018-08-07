@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/drive/chromeos/dummy_file_system.h"
 #include "components/drive/service/dummy_drive_service.h"
@@ -33,8 +34,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using DiskMountManager = chromeos::disks::DiskMountManager;
-using Disk = DiskMountManager::Disk;
+using chromeos::disks::Disk;
+using chromeos::disks::DiskMountManager;
 
 namespace file_manager {
 namespace {

@@ -132,10 +132,8 @@ class EventRouter : public KeyedService,
                         const base::FilePath& drive_path) override;
 
   // VolumeManagerObserver overrides.
-  void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk& disk,
-                   bool mounting) override;
-  void OnDiskRemoved(
-      const chromeos::disks::DiskMountManager::Disk& disk) override;
+  void OnDiskAdded(const chromeos::disks::Disk& disk, bool mounting) override;
+  void OnDiskRemoved(const chromeos::disks::Disk& disk) override;
   void OnDeviceAdded(const std::string& device_path) override;
   void OnDeviceRemoved(const std::string& device_path) override;
   void OnVolumeMounted(chromeos::MountError error_code,

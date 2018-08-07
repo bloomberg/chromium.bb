@@ -8,7 +8,12 @@
 #include <string>
 
 #include "chromeos/dbus/cros_disks_client.h"
-#include "chromeos/disks/disk_mount_manager.h"
+
+namespace chromeos {
+namespace disks {
+class Disk;
+}  // namespace disks
+}  // namespace chromeos
 
 namespace file_manager {
 
@@ -20,12 +25,11 @@ class VolumeManagerObserver {
   virtual ~VolumeManagerObserver() = default;
 
   // Fired when a new disk is added.
-  virtual void OnDiskAdded(
-      const chromeos::disks::DiskMountManager::Disk& disk, bool mounting) = 0;
+  virtual void OnDiskAdded(const chromeos::disks::Disk& disk,
+                           bool mounting) = 0;
 
   // Fired when a disk is removed.
-  virtual void OnDiskRemoved(
-      const chromeos::disks::DiskMountManager::Disk& disk) = 0;
+  virtual void OnDiskRemoved(const chromeos::disks::Disk& disk) = 0;
 
   // Fired when a new device is added.
   virtual void OnDeviceAdded(const std::string& device_path) = 0;

@@ -12,13 +12,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chromeos/disks/disk.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {
 namespace {
 
 namespace file_manager_private = extensions::api::file_manager_private;
-typedef chromeos::disks::DiskMountManager::Disk Disk;
+using chromeos::disks::Disk;
 
 const char kTestDevicePath[] = "/device/test";
 

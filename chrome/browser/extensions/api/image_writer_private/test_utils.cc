@@ -18,6 +18,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
+#include "chromeos/disks/disk.h"
 #endif
 
 namespace extensions {
