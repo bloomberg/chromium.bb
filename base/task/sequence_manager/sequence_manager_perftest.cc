@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/sequence_manager/test/test_task_queue.h"
 #include "base/task/sequence_manager/test/test_task_time_observer.h"
+#include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -52,7 +53,12 @@ class PerfTestTimeDomain : public MockTimeDomain {
   DISALLOW_COPY_AND_ASSIGN(PerfTestTimeDomain);
 };
 
-class SequenceManagerPerfTest : public testing::Test {
+enum class PerfTestType : int {
+  kUseMessageLoop = 0,
+  kUseMessagePump = 1,
+};
+
+class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
  public:
   SequenceManagerPerfTest()
       : num_queues_(0),
@@ -64,6 +70,42 @@ class SequenceManagerPerfTest : public testing::Test {
   void SetUp() override {
     if (ThreadTicks::IsSupported())
       ThreadTicks::WaitUntilInitialized();
+
+    delayed_task_closure_ = BindRepeating(
+        &SequenceManagerPerfTest::TestDelayedTask, Unretained(this));
+
+    immediate_task_closure_ = BindRepeating(
+        &SequenceManagerPerfTest::TestImmediateTask, Unretained(this));
+
+    switch (GetParam()) {
+      case PerfTestType::kUseMessageLoop:
+        CreateSequenceManagerWithMessageLoop();
+        break;
+      case PerfTestType::kUseMessagePump:
+        CreateSequenceManagerWithMessagePump();
+        break;
+    }
+
+    time_domain_ = std::make_unique<PerfTestTimeDomain>();
+    manager_->RegisterTimeDomain(time_domain_.get());
+    manager_->AddTaskTimeObserver(&test_task_time_observer_);
+  }
+
+  void CreateSequenceManagerWithMessageLoop() {
+    message_loop_ = std::make_unique<MessageLoop>();
+    manager_ = SequenceManagerForTest::Create(message_loop_.get(),
+                                              message_loop_->task_runner(),
+                                              DefaultTickClock::GetInstance());
+  }
+
+  void CreateSequenceManagerWithMessagePump() {
+    manager_ = SequenceManagerForTest::Create(
+        std::make_unique<internal::ThreadControllerWithMessagePumpImpl>(
+            DefaultTickClock::GetInstance()));
+    // ThreadControllerWithMessagePumpImpl doesn't provide a default tas runner.
+    scoped_refptr<TaskQueue> default_task_queue =
+        manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));
+    manager_->SetDefaultTaskRunner(default_task_queue);
   }
 
   void TearDown() override {
@@ -74,25 +116,10 @@ class SequenceManagerPerfTest : public testing::Test {
 
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
-    message_loop_.reset(new MessageLoop());
-    manager_ = SequenceManagerForTest::Create(message_loop_.get(),
-                                              message_loop_->task_runner(),
-                                              DefaultTickClock::GetInstance());
-    manager_->AddTaskTimeObserver(&test_task_time_observer_);
-
-    time_domain_.reset(new PerfTestTimeDomain());
-    manager_->RegisterTimeDomain(time_domain_.get());
-
     for (size_t i = 0; i < num_queues; i++) {
       queues_.push_back(manager_->CreateTaskQueue<TestTaskQueue>(
           TaskQueue::Spec("test").SetTimeDomain(time_domain_.get())));
     }
-
-    delayed_task_closure_ = BindRepeating(
-        &SequenceManagerPerfTest::TestDelayedTask, Unretained(this));
-
-    immediate_task_closure_ = BindRepeating(
-        &SequenceManagerPerfTest::TestImmediateTask, Unretained(this));
   }
 
   void TestDelayedTask() {
@@ -184,8 +211,19 @@ class SequenceManagerPerfTest : public testing::Test {
       now = ThreadTicks::Now();
       num_iterations++;
     } while (now - start < TimeDelta::FromSeconds(5));
+
+    std::string trace_suffix;
+    switch (GetParam()) {
+      case PerfTestType::kUseMessageLoop:
+        trace_suffix = " with message loop";
+        break;
+      case PerfTestType::kUseMessagePump:
+        trace_suffix = " with message pump";
+        break;
+    }
+
     perf_test::PrintResult(
-        "task", "", trace,
+        "task", "", trace + trace_suffix,
         (now - start).InMicroseconds() / static_cast<double>(num_iterations),
         "us/run", true);
   }
@@ -207,7 +245,12 @@ class SequenceManagerPerfTest : public testing::Test {
   TestTaskTimeObserver test_task_time_observer_;
 };
 
-TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
+INSTANTIATE_TEST_CASE_P(,
+                        SequenceManagerPerfTest,
+                        testing::Values(PerfTestType::kUseMessageLoop,
+                                        PerfTestType::kUseMessagePump));
+
+TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(1u);
@@ -218,7 +261,7 @@ TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
                           Unretained(this), 10000));
 }
 
-TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
+TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(4u);
@@ -229,7 +272,7 @@ TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
                           Unretained(this), 10000));
 }
 
-TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
+TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(8u);
@@ -240,7 +283,7 @@ TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
                           Unretained(this), 10000));
 }
 
-TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
+TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(32u);
@@ -251,7 +294,7 @@ TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
                           Unretained(this), 10000));
 }
 
-TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_OneQueue) {
+TEST_P(SequenceManagerPerfTest, RunTenThousandImmediateTasks_OneQueue) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(1u);
@@ -263,7 +306,7 @@ TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_OneQueue) {
                     Unretained(this), 10000));
 }
 
-TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_FourQueues) {
+TEST_P(SequenceManagerPerfTest, RunTenThousandImmediateTasks_FourQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(4u);
@@ -275,7 +318,7 @@ TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_FourQueues) {
                     Unretained(this), 10000));
 }
 
-TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_EightQueues) {
+TEST_P(SequenceManagerPerfTest, RunTenThousandImmediateTasks_EightQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(8u);
@@ -287,7 +330,7 @@ TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_EightQueues) {
                     Unretained(this), 10000));
 }
 
-TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_ThirtyTwoQueues) {
+TEST_P(SequenceManagerPerfTest, RunTenThousandImmediateTasks_ThirtyTwoQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(32u);

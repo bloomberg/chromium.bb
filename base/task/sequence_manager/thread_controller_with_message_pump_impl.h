@@ -27,7 +27,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
       public MessagePump::Delegate,
       public RunLoop::Delegate {
  public:
-  explicit ThreadControllerWithMessagePumpImpl(TickClock* time_source);
+  explicit ThreadControllerWithMessagePumpImpl(const TickClock* time_source);
   ~ThreadControllerWithMessagePumpImpl() override;
 
   // ThreadController implementation:
@@ -100,7 +100,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   MainThreadOnly main_thread_only_;
   std::unique_ptr<MessagePump> pump_;
   debug::TaskAnnotator task_annotator_;
-  TickClock* time_source_;  // Not owned.
+  const TickClock* time_source_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(ThreadControllerWithMessagePumpImpl);
 };
