@@ -24,7 +24,7 @@ void PrefServiceFactory::SetUserPrefsFile(
     const base::FilePath& prefs_file,
     base::SequencedTaskRunner* task_runner) {
   user_prefs_ =
-      base::MakeRefCounted<JsonPrefStore>(prefs_file, task_runner, nullptr);
+      base::MakeRefCounted<JsonPrefStore>(prefs_file, nullptr, task_runner);
 }
 
 std::unique_ptr<PrefService> PrefServiceFactory::Create(

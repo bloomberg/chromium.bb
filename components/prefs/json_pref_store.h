@@ -62,12 +62,20 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // have the base::TaskShutdownBehavior::BLOCK_SHUTDOWN and base::MayBlock()
   // traits. Unless external tasks need to run on the same sequence as
   // JsonPrefStore tasks, keep the default value.
+  // The initial read is done synchronously, the TaskPriority is thus only used
+  // for flushes to disks and BACKGROUND is therefore appropriate. Priority of
+  // remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the TaskScheduler on
+  // shutdown. However, some shutdown use cases happen without
+  // TaskScheduler::Shutdown() (e.g. ChromeRestartRequest::Start() and
+  // BrowserProcessImpl::EndSession()) and we must thus unfortunately make this
+  // USER_VISIBLE until we solve https://crbug.com/747495 to allow bumping
+  // priority of a sequence on demand.
   JsonPrefStore(const base::FilePath& pref_filename,
+                std::unique_ptr<PrefFilter> pref_filter = nullptr,
                 scoped_refptr<base::SequencedTaskRunner> file_task_runner =
                     base::CreateSequencedTaskRunnerWithTraits(
-                        {base::MayBlock(),
-                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-                std::unique_ptr<PrefFilter> pref_filter = nullptr);
+                        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
 
   // PrefStore overrides:
   bool GetValue(const std::string& key,

@@ -29,10 +29,6 @@ class StartupTimeBomb;
 class ShutdownWatcherHelper;
 class WebUsbDetector;
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace chrome_browser {
 // For use by ShowMissingLocaleMessageBox.
 #if defined(OS_WIN)
@@ -130,8 +126,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // If the return value is RESULT_CODE_MISSING_DATA, then
   // |failed_to_load_resource_bundle| indicates if the ResourceBundle couldn't
   // be loaded.
-  int LoadLocalState(base::SequencedTaskRunner* local_state_task_runner,
-                     bool* failed_to_load_resource_bundle);
+  int LoadLocalState(bool* failed_to_load_resource_bundle);
 
   // Applies any preferences (to local state) needed for first run. This is
   // always called and early outs if not first-run. Return value is an exit

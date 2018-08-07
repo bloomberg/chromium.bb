@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -674,6 +675,20 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     }
   }
 #endif
+
+  // It is important that the MessageLoop not pump extra messages during
+  // EndSession() as some of those may be tasks queued to attempt to revive
+  // services and processes that were just intentionally killed. This is a
+  // regression blocker for https://crbug.com/318527.
+  // Need to use this WeakPtr workaround as the browser test harness runs all
+  // tasks until idle when tearing down.
+  struct FailsIfCalledWhileOnStack
+      : public base::SupportsWeakPtr<FailsIfCalledWhileOnStack> {
+    void Fail() { ADD_FAILURE(); }
+  } fails_if_called_while_on_stack;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FailsIfCalledWhileOnStack::Fail,
+                                fails_if_called_while_on_stack.AsWeakPtr()));
 
   // This retry loop reduces flakiness due to the fact that this ultimately
   // tests whether or not a code path hits a timed wait.

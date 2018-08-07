@@ -1030,7 +1030,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   std::unique_ptr<PrefService> pref_service;
   if (params_->http_server_properties_path) {
     scoped_refptr<JsonPrefStore> json_pref_store(new JsonPrefStore(
-        *params_->http_server_properties_path,
+        *params_->http_server_properties_path, nullptr,
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
              base::TaskPriority::BEST_EFFORT})));

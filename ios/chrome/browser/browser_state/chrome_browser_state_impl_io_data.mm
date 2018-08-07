@@ -187,12 +187,11 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   // Set up a persistent store for use by the network stack on the IO thread.
   base::FilePath network_json_store_filepath(
       profile_path_.Append(kIOSChromeNetworkPersistentStateFilename));
-  network_json_store_ =
-      new JsonPrefStore(network_json_store_filepath,
-                        base::CreateSequencedTaskRunnerWithTraits(
-                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-                        std::unique_ptr<PrefFilter>());
+  network_json_store_ = new JsonPrefStore(
+      network_json_store_filepath, std::unique_ptr<PrefFilter>(),
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
   network_json_store_->ReadPrefsAsync(nullptr);
 
   net::URLRequestContext* main_context = main_request_context();

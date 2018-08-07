@@ -215,10 +215,8 @@ rappor::RapporService* GetBrowserRapporService() {
   return nullptr;
 }
 
-BrowserProcessImpl::BrowserProcessImpl(
-    base::SequencedTaskRunner* local_state_task_runner)
-    : local_state_task_runner_(local_state_task_runner),
-      pref_service_factory_(
+BrowserProcessImpl::BrowserProcessImpl()
+    : pref_service_factory_(
           std::make_unique<prefs::InProcessPrefServiceFactory>()) {
   g_browser_process = this;
   platform_part_ = std::make_unique<BrowserProcessPlatformPart>();
@@ -471,15 +469,15 @@ class RundownTaskCounter :
  public:
   RundownTaskCounter();
 
-  // Posts a rundown task to |task_runner|, can be invoked an arbitrary number
-  // of times before calling TimedWait.
-  void Post(base::SequencedTaskRunner* task_runner);
+  // Increments |count_| and returns a closure bound to Decrement(). All
+  // closures returned by this RundownTaskCounter's GetRundownClosure() method
+  // must be invoked for TimedWait() to complete its wait without timing
+  // out.
+  base::OnceClosure GetRundownClosure();
 
-  // Waits until the count is zero or |end_time| is reached.
-  // This can only be called once per instance. Returns true if a count of zero
-  // is reached or false if the |end_time| is reached. It is valid to pass an
-  // |end_time| in the past.
-  bool TimedWaitUntil(const base::TimeTicks& end_time);
+  // Waits until the count is zero or |timeout| expires.
+  // This can only be called once per instance.
+  void TimedWait(base::TimeDelta timeout);
 
  private:
   friend class base::RefCountedThreadSafe<RundownTaskCounter>;
@@ -491,28 +489,22 @@ class RundownTaskCounter :
 
   // The count starts at one to defer the possibility of one->zero transitions
   // until TimedWait is called.
-  base::AtomicRefCount count_;
+  base::AtomicRefCount count_{1};
   base::WaitableEvent waitable_event_;
 
   DISALLOW_COPY_AND_ASSIGN(RundownTaskCounter);
 };
 
-RundownTaskCounter::RundownTaskCounter()
-    : count_(1),
-      waitable_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                      base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+RundownTaskCounter::RundownTaskCounter() = default;
 
-void RundownTaskCounter::Post(base::SequencedTaskRunner* task_runner) {
+base::OnceClosure RundownTaskCounter::GetRundownClosure() {
   // As the count starts off at one, it should never get to zero unless
   // TimedWait has been called.
   DCHECK(!count_.IsZero());
 
   count_.Increment();
 
-  // The task must be non-nestable to guarantee that it runs after all tasks
-  // currently scheduled on |task_runner| have completed.
-  task_runner->PostNonNestableTask(
-      FROM_HERE, base::BindOnce(&RundownTaskCounter::Decrement, this));
+  return base::BindOnce(&RundownTaskCounter::Decrement, this);
 }
 
 void RundownTaskCounter::Decrement() {
@@ -520,20 +512,25 @@ void RundownTaskCounter::Decrement() {
     waitable_event_.Signal();
 }
 
-bool RundownTaskCounter::TimedWaitUntil(const base::TimeTicks& end_time) {
+void RundownTaskCounter::TimedWait(base::TimeDelta timeout) {
   // Decrement the excess count from the constructor.
   Decrement();
 
-  return waitable_event_.TimedWaitUntil(end_time);
+  // RundownTaskCounter::TimedWait() could return
+  // |waitable_event_.TimedWait()|'s result if any user ever cared about whether
+  // it returned per success or timeout. Currently no user of this API cares and
+  // as such this return value is ignored.
+  waitable_event_.TimedWait(timeout);
 }
 
 }  // namespace
 
 void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
-  if (local_state_)
-    local_state_->CommitPendingWrite();
-  local_state_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
-                                             std::move(reply));
+  if (local_state_) {
+    local_state_->CommitPendingWrite(std::move(reply));
+    return;
+  }
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(reply));
 }
 
 void BrowserProcessImpl::EndSession() {
@@ -546,8 +543,8 @@ void BrowserProcessImpl::EndSession() {
     Profile* profile = profiles[i];
     profile->SetExitType(Profile::EXIT_SESSION_ENDED);
     if (profile->GetPrefs()) {
-      profile->GetPrefs()->CommitPendingWrite();
-      rundown_counter->Post(profile->GetIOTaskRunner().get());
+      profile->GetPrefs()->CommitPendingWrite(
+          base::OnceClosure(), rundown_counter->GetRundownClosure());
     }
   }
 
@@ -559,9 +556,8 @@ void BrowserProcessImpl::EndSession() {
     // MetricsService lazily writes to prefs, force it to write now.
     // On ChromeOS, chrome gets killed when hangs, so no need to
     // commit metrics::prefs::kStabilitySessionEndCompleted change immediately.
-    local_state_->CommitPendingWrite();
-
-    rundown_counter->Post(local_state_task_runner_.get());
+    local_state_->CommitPendingWrite(base::OnceClosure(),
+                                     rundown_counter->GetRundownClosure());
 #endif
   }
 
@@ -588,8 +584,7 @@ void BrowserProcessImpl::EndSession() {
   // GPU process synchronously. Because the system may not be allowing
   // processes to launch, this can result in a hang. See
   // http://crbug.com/318527.
-  const base::TimeTicks end_time = base::TimeTicks::Now() + kEndSessionTimeout;
-  rundown_counter->TimedWaitUntil(end_time);
+  rundown_counter->TimedWait(kEndSessionTimeout);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -1117,8 +1112,8 @@ void BrowserProcessImpl::CreateLocalState() {
   auto delegate = pref_service_factory_->CreateDelegate();
   delegate->InitPrefRegistry(pref_registry.get());
   local_state_ = chrome_prefs::CreateLocalState(
-      local_state_path, local_state_task_runner_.get(), policy_service(),
-      std::move(pref_registry), false, std::move(delegate));
+      local_state_path, policy_service(), std::move(pref_registry), false,
+      std::move(delegate));
   DCHECK(local_state_);
 
   sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());

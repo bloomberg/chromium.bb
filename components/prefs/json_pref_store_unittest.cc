@@ -452,8 +452,7 @@ TEST_P(JsonPrefStoreTest, ReadWithInterceptor) {
   InterceptingPrefFilter* raw_intercepting_pref_filter_ =
       intercepting_pref_filter.get();
   auto pref_store = base::MakeRefCounted<JsonPrefStore>(
-      input_file, base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
-      std::move(intercepting_pref_filter));
+      input_file, std::move(intercepting_pref_filter));
 
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE,
             pref_store->ReadPrefs());
@@ -495,8 +494,7 @@ TEST_P(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
   InterceptingPrefFilter* raw_intercepting_pref_filter_ =
       intercepting_pref_filter.get();
   auto pref_store = base::MakeRefCounted<JsonPrefStore>(
-      input_file, base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
-      std::move(intercepting_pref_filter));
+      input_file, std::move(intercepting_pref_filter));
 
   MockPrefStoreObserver mock_observer;
   pref_store->AddObserver(&mock_observer);
@@ -1014,8 +1012,7 @@ TEST_F(JsonPrefStoreCallbackTest, TestSerializeDataCallbacks) {
   std::unique_ptr<InterceptingPrefFilter> intercepting_pref_filter(
       new InterceptingPrefFilter(write_callback_observer_.GetCallbackPair()));
   auto pref_store = base::MakeRefCounted<JsonPrefStore>(
-      input_file, base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
-      std::move(intercepting_pref_filter));
+      input_file, std::move(intercepting_pref_filter));
   ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
 
   EXPECT_EQ(NOT_CALLED,

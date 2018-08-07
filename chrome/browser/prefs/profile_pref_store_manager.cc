@@ -92,7 +92,7 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate) {
   if (!kPlatformSupportsPreferenceTracking) {
     return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
-                             io_task_runner, nullptr);
+                             nullptr, io_task_runner);
   }
   return CreateTrackedPersistentPrefStore(
       CreateTrackedPrefStoreConfiguration(

@@ -349,7 +349,7 @@ void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
-void InitializeLocalState(base::SequencedTaskRunner* local_state_task_runner) {
+void InitializeLocalState() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::InitializeLocalState")
 
   // Load local state.  This includes the application locale so we know which
@@ -406,7 +406,6 @@ void InitializeLocalState(base::SequencedTaskRunner* local_state_task_runner) {
                                    std::string());
       const std::unique_ptr<PrefService> parent_local_state =
           chrome_prefs::CreateLocalState(parent_profile,
-                                         local_state_task_runner,
                                          g_browser_process->policy_service(),
                                          std::move(registry), false, nullptr);
       // Right now, we only inherit the locale setting from the parent profile.
@@ -688,20 +687,6 @@ bool IsWebDriverOverridingPolicy(PrefService* local_state) {
                 prefs::kWebDriverOverridesIncompatiblePolicies) &&
             local_state->GetBoolean(
                 prefs::kWebDriverOverridesIncompatiblePolicies)));
-}
-
-// The initial read is done synchronously, the TaskPriority is thus only used
-// for flushes to disks and BACKGROUND is therefore appropriate. Priority of
-// remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the TaskScheduler on
-// shutdown. However, some shutdown use cases happen without
-// TaskScheduler::Shutdown() (e.g. ChromeRestartRequest::Start() and
-// BrowserProcessImpl::EndSession()) and we must thus unfortunately make this
-// USER_VISIBLE until we solve https://crbug.com/747495 to allow bumping
-// priority of a sequence on demand.
-scoped_refptr<base::SequencedTaskRunner> CreateLocalStateTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
 
 // Initializes the shared instance of ResourceBundle and returns the locale. An
@@ -1005,16 +990,11 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreEarlyInitialization();
 
-  // Create BrowserProcess in PreEarlyInitialization() so that we can load
-  // field trials (and all it depends upon).
-  scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
-      CreateLocalStateTaskRunner();
-  browser_process_ =
-      std::make_unique<BrowserProcessImpl>(local_state_task_runner.get());
+  browser_process_ = std::make_unique<BrowserProcessImpl>();
 
   bool failed_to_load_resource_bundle = false;
-  const int load_local_state_result = LoadLocalState(
-      local_state_task_runner.get(), &failed_to_load_resource_bundle);
+  const int load_local_state_result =
+      LoadLocalState(&failed_to_load_resource_bundle);
   if (load_local_state_result == chrome::RESULT_CODE_MISSING_DATA &&
       failed_to_load_resource_bundle) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1089,13 +1069,12 @@ int ChromeBrowserMainParts::PreCreateThreads() {
 }
 
 int ChromeBrowserMainParts::LoadLocalState(
-    base::SequencedTaskRunner* local_state_task_runner,
     bool* failed_to_load_resource_bundle) {
   *failed_to_load_resource_bundle = false;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
     return chrome::RESULT_CODE_MISSING_DATA;
 
-  InitializeLocalState(local_state_task_runner);
+  InitializeLocalState();
 
   ConvertFlagsToSwitches();
 

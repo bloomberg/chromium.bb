@@ -123,12 +123,12 @@ PersistentPrefStore* CreateTrackedPersistentPrefStore(
   PrefHashFilter* raw_protected_pref_hash_filter =
       protected_pref_hash_filter.get();
 
-  scoped_refptr<JsonPrefStore> unprotected_pref_store(
-      new JsonPrefStore(config->unprotected_pref_filename, io_task_runner.get(),
-                        std::move(unprotected_pref_hash_filter)));
-  scoped_refptr<JsonPrefStore> protected_pref_store(
-      new JsonPrefStore(config->protected_pref_filename, io_task_runner.get(),
-                        std::move(protected_pref_hash_filter)));
+  scoped_refptr<JsonPrefStore> unprotected_pref_store(new JsonPrefStore(
+      config->unprotected_pref_filename,
+      std::move(unprotected_pref_hash_filter), io_task_runner.get()));
+  scoped_refptr<JsonPrefStore> protected_pref_store(new JsonPrefStore(
+      config->protected_pref_filename, std::move(protected_pref_hash_filter),
+      io_task_runner.get()));
 
   SetupTrackedPreferencesMigration(
       unprotected_pref_names, protected_pref_names,

@@ -70,8 +70,8 @@ void SupervisedUserSettingsService::Init(
     bool load_synchronously) {
   base::FilePath path =
       profile_path.Append(chrome::kSupervisedUserSettingsFilename);
-  PersistentPrefStore* store = new JsonPrefStore(path, sequenced_task_runner,
-                                                 std::unique_ptr<PrefFilter>());
+  PersistentPrefStore* store = new JsonPrefStore(
+      path, std::unique_ptr<PrefFilter>(), sequenced_task_runner);
   Init(store);
   if (load_synchronously) {
     store_->ReadPrefs();

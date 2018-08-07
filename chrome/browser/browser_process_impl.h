@@ -47,7 +47,6 @@ class PluginsResourceService;
 
 namespace base {
 class CommandLine;
-class SequencedTaskRunner;
 }
 
 namespace extensions {
@@ -75,9 +74,7 @@ class TabLifecycleUnitSource;
 class BrowserProcessImpl : public BrowserProcess,
                            public KeepAliveStateObserver {
  public:
-  // |local_state_task_runner| must be a shutdown-blocking task runner.
-  explicit BrowserProcessImpl(
-      base::SequencedTaskRunner* local_state_task_runner);
+  BrowserProcessImpl();
   ~BrowserProcessImpl() override;
 
   // Called to complete initialization.
@@ -322,9 +319,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<DownloadStatusUpdater> download_status_updater_;
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
-
-  // Sequenced task runner for local state related I/O tasks.
-  const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;
 
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.
