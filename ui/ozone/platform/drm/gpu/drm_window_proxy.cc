@@ -6,6 +6,8 @@
 
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
@@ -38,6 +40,15 @@ void DrmWindowProxy::GetVSyncParameters(
       FROM_HERE, base::BindOnce(&DrmThread::GetVSyncParameters,
                                 base::Unretained(drm_thread_), widget_,
                                 CreateSafeCallback(callback)));
+}
+
+bool DrmWindowProxy::SupportsGpuFences() const {
+  bool is_atomic = false;
+  PostSyncTask(
+      drm_thread_->task_runner(),
+      base::BindOnce(&DrmThread::IsDeviceAtomic, base::Unretained(drm_thread_),
+                     widget_, &is_atomic));
+  return is_atomic;
 }
 
 }  // namespace ui

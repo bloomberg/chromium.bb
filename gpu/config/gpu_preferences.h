@@ -197,9 +197,6 @@ struct GPU_EXPORT GpuPreferences {
   bool enable_oop_rasterization = false;
   bool disable_oop_rasterization = false;
 
-  // Use GpuFence objects to synchronize display of overlay planes.
-  bool use_gpu_fences_for_overlay_planes = false;
-
   // Start the watchdog suspended, as the app is already backgrounded and won't
   // send a background/suspend signal.
   bool watchdog_starts_backgrounded = false;

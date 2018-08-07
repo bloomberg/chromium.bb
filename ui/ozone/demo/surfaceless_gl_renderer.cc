@@ -184,11 +184,7 @@ bool SurfacelessGlRenderer::Initialize() {
 
   disable_primary_plane_ = command_line->HasSwitch("disable-primary-plane");
 
-  use_gpu_fences_ = command_line->HasSwitch("use-gpu-fences");
-  // The GLSurface needs to be prepared to accept plane fences,
-  // otherwise any fences sent to it will be ignored.
-  if (use_gpu_fences_)
-    surface_->SetUsePlaneGpuFences();
+  use_gpu_fences_ = surface_->SupportsPlaneGpuFences();
 
   // Schedule the initial render.
   PostRenderFrameTask(gfx::SwapResult::SWAP_ACK, nullptr);

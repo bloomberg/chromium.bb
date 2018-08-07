@@ -42,6 +42,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
       weak_factory_(this) {
   surface_factory_->RegisterSurface(window_->widget(), this);
+  supports_plane_gpu_fences_ = window_->SupportsGpuFences();
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 }
 
@@ -99,6 +100,10 @@ bool GbmSurfaceless::SupportsPostSubBuffer() {
   return true;
 }
 
+bool GbmSurfaceless::SupportsPlaneGpuFences() const {
+  return supports_plane_gpu_fences_;
+}
+
 gfx::SwapResult GbmSurfaceless::PostSubBuffer(
     int x,
     int y,
@@ -133,7 +138,7 @@ void GbmSurfaceless::SwapBuffersAsync(
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 
   // TODO(dcastagna): Remove the following workaround once we get explicit sync
-  // on Intel.
+  // on all Intel boards, currently we don't have it on legacy KMS.
   // We can not rely on implicit sync on external devices (crbug.com/692508).
   // NOTE: When on internal devices, |is_on_external_drm_device_| is set to true
   // by default conservatively, and it is correctly computed after the first
@@ -141,7 +146,8 @@ void GbmSurfaceless::SwapBuffersAsync(
   // GbmSurfaceless::SubmitFrame.
   // This means |is_on_external_drm_device_| could be incorrectly set to true
   // the first time we're testing it.
-  if (!use_egl_fence_sync_ && !is_on_external_drm_device_) {
+  if (supports_plane_gpu_fences_ ||
+      (!use_egl_fence_sync_ && !is_on_external_drm_device_)) {
     frame->ready = true;
     SubmitFrame();
     return;
@@ -203,10 +209,6 @@ EGLConfig GbmSurfaceless::GetConfig() {
 }
 
 void GbmSurfaceless::SetRelyOnImplicitSync() {
-  use_egl_fence_sync_ = false;
-}
-
-void GbmSurfaceless::SetUsePlaneGpuFences() {
   use_egl_fence_sync_ = false;
 }
 

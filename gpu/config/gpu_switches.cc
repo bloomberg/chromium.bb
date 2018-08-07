@@ -42,10 +42,6 @@ const char kMaxActiveWebGLContexts[] = "max-active-webgl-contexts";
 // devices.
 const char kShaderDiskCacheSizeKB[] = "shader-disk-cache-size-kb";
 
-// Use GpuFence objects to synchronize display of overlay planes.
-const char kUseGpuFencesForOverlayPlanes[] =
-    "use-gpu-fences-for-overlay-planes";
-
 // Set the antialiasing method used for webgl. (none, explicit, implicit, or
 // screenspace)
 const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";

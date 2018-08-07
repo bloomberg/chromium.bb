@@ -118,8 +118,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->ignore_gpu_blacklist = prefs.ignore_gpu_blacklist();
     out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
-    out->use_gpu_fences_for_overlay_planes =
-        prefs.use_gpu_fences_for_overlay_planes();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
     out->enable_vulkan = prefs.enable_vulkan();
     out->enable_gpu_benchmarking_extension =
@@ -256,10 +254,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool disable_oop_rasterization(const gpu::GpuPreferences& prefs) {
     return prefs.disable_oop_rasterization;
-  }
-  static bool use_gpu_fences_for_overlay_planes(
-      const gpu::GpuPreferences& prefs) {
-    return prefs.use_gpu_fences_for_overlay_planes;
   }
   static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
     return prefs.watchdog_starts_backgrounded;

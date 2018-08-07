@@ -31,6 +31,8 @@ class DrmWindowProxy {
   void GetVSyncParameters(
       const gfx::VSyncProvider::UpdateVSyncCallback& callback);
 
+  bool SupportsGpuFences() const;
+
  private:
   gfx::AcceleratedWidget widget_;
 

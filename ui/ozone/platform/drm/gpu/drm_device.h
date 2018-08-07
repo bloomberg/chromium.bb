@@ -78,6 +78,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   bool is_primary_device() const { return is_primary_device_; }
 
+  bool is_atomic() const { return is_atomic_; }
+
   bool allow_addfb2_modifiers() const { return allow_addfb2_modifiers_; }
 
   // Open device.
@@ -273,7 +275,9 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   bool is_primary_device_;
 
-  bool allow_addfb2_modifiers_;
+  bool is_atomic_ = false;
+
+  bool allow_addfb2_modifiers_ = false;
 
   std::unique_ptr<GbmDevice> gbm_;
 

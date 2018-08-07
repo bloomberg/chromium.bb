@@ -49,6 +49,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   bool SupportsPresentationCallback() override;
   bool SupportsAsyncSwap() override;
   bool SupportsPostSubBuffer() override;
+  bool SupportsPlaneGpuFences() const override;
   gfx::SwapResult PostSubBuffer(int x,
                                 int y,
                                 int width,
@@ -66,7 +67,6 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
       const PresentationCallback& presentation_callback) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
-  void SetUsePlaneGpuFences() override;
 
  protected:
   ~GbmSurfaceless() override;
@@ -109,7 +109,9 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   std::unique_ptr<PendingFrame> submitted_frame_;
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;
+  bool supports_plane_gpu_fences_ = false;
   bool use_egl_fence_sync_ = true;
+
   // Conservatively assume we begin on a device that requires
   // explicit synchronization.
   bool is_on_external_drm_device_ = true;
