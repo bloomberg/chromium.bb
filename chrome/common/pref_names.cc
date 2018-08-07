@@ -2603,6 +2603,9 @@ const char kAutoplayAllowed[] = "media.autoplay_allowed";
 
 // Holds URL patterns that specify URLs that will be allowed to autoplay.
 const char kAutoplayWhitelist[] = "media.autoplay_whitelist";
+
+// Boolean that specifies whether autoplay blocking is enabled.
+const char kBlockAutoplayEnabled[] = "media.block_autoplay";
 #endif  // !defined(OS_ANDROID)
 
 // Integer that holds the value of the next persistent notification ID to be
