@@ -32,6 +32,7 @@ class ASH_EXPORT VoiceInteractionController
   void NotifyNotificationEnabled(bool enabled) override;
   void IsSettingEnabled(IsSettingEnabledCallback callback) override;
   void IsSetupCompleted(IsSetupCompletedCallback callback) override;
+  void IsContextEnabled(IsContextEnabledCallback callback) override;
   void IsHotwordEnabled(IsHotwordEnabledCallback callback) override;
   void AddObserver(mojom::VoiceInteractionObserverPtr observer) override;
 
@@ -60,6 +61,9 @@ class ASH_EXPORT VoiceInteractionController
 
   // Whether voice interaction setup flow has completed.
   bool setup_completed_ = false;
+
+  // Whether screen context is enabled.
+  bool context_enabled_ = false;
 
   // Whether hotword listening is enabled.
   bool hotword_enabled_ = false;

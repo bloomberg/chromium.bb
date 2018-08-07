@@ -58,6 +58,11 @@ void FakeVoiceInteractionController::IsSetupCompleted(
   std::move(callback).Run(voice_interaction_setup_completed_);
 }
 
+void FakeVoiceInteractionController::IsContextEnabled(
+    IsContextEnabledCallback callback) {
+  std::move(callback).Run(voice_interaction_context_enabled_);
+}
+
 void FakeVoiceInteractionController::IsHotwordEnabled(
     IsHotwordEnabledCallback callback) {
   std::move(callback).Run(voice_interaction_hotword_enabled_);
