@@ -12,10 +12,6 @@
 #include "net/log/net_log.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
-namespace base {
-class CommandLine;
-}  // namespace base
-
 namespace net {
 class FileNetLogObserver;
 }  // namespace net
@@ -35,7 +31,7 @@ class MojoNetLog : public net::NetLog {
 
   // If specified by the command line, stream network events (NetLog) to a
   // file on disk. This will last for the duration of the process.
-  void ProcessCommandLine(const base::CommandLine& command_line);
+  void ObserveFileWithConstants(base::File file, base::Value constants);
 
  private:
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;

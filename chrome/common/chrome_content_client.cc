@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -37,6 +38,7 @@
 #include "chrome/grit/common_resources.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/net_log/chrome_net_log.h"
 #include "components/services/heap_profiling/public/cpp/client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/cdm_info.h"
@@ -677,6 +679,16 @@ base::RefCountedMemory* ChromeContentClient::GetDataResourceBytes(
 gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
+}
+
+base::DictionaryValue ChromeContentClient::GetNetLogConstants() const {
+  auto platform_dict = net_log::ChromeNetLog::GetPlatformConstants(
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
+      chrome::GetChannelName());
+  if (platform_dict)
+    return std::move(*platform_dict);
+  else
+    return base::DictionaryValue();
 }
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {

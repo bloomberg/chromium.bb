@@ -91,6 +91,15 @@ class ServiceTest : public testing::Test {
                      const std::string& name,
                      const std::string& userid);
 
+  // Explicitly shuts down the ServiceManager and |context_|. This is called
+  // from TearDown(), but may be called explicitly to test shutdown behavior.
+  void Shutdown();
+
+  // Calls RunUntilIdle() on the current process's ScopedTaskEnvironment. Does
+  // not wait until the task environments of other processes, if there are any,
+  // are idle.
+  void RunUntilIdle();
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;

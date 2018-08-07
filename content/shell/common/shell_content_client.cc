@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
@@ -85,6 +86,17 @@ base::RefCountedMemory* ShellContentClient::GetDataResourceBytes(
 gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
+}
+
+base::DictionaryValue ShellContentClient::GetNetLogConstants() const {
+  base::DictionaryValue client_constants;
+  client_constants.SetString("name", "content_shell");
+  client_constants.SetString(
+      "command_line",
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
+  base::DictionaryValue constants;
+  constants.SetKey("clientInfo", std::move(client_constants));
+  return constants;
 }
 
 blink::OriginTrialPolicy* ShellContentClient::GetOriginTrialPolicy() {
