@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_SOUND_CONTENT_SETTING_OBSERVER_H_
 
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -54,6 +56,14 @@ class SoundContentSettingObserver
 
   // Determine the reason why audio was blocked on the page.
   MuteReason GetSiteMutedReason();
+
+#if !defined(OS_ANDROID)
+  // Update the autoplay policy on the attached |WebContents|.
+  void UpdateAutoplayPolicy();
+
+  // Manages registration of pref change observers.
+  PrefChangeRegistrar pref_change_registrar_;
+#endif
 
   // True if we have already logged a SiteMuted UKM event since last navigation.
   bool logged_site_muted_ukm_;

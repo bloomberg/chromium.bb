@@ -316,6 +316,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/media/unified_autoplay_config.h"
 #include "components/ntp_tiles/custom_links_manager_impl.h"
 #endif
 
@@ -738,6 +739,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   confirm_quit::RegisterLocalState(registry);
+#endif
+
+#if !defined(OS_ANDROID)
+  UnifiedAutoplayConfig::RegisterProfilePrefs(registry);
 #endif
 
   RegisterProfilePrefsForMigration(registry);

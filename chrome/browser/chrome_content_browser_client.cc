@@ -367,6 +367,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -3113,11 +3114,21 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
 #if !defined(OS_ANDROID)
-  // If autoplay is allowed by policy then update the autoplay policy in web
-  // preferences.
   if (IsAutoplayAllowedByPolicy(contents, prefs)) {
+    // If autoplay is allowed by policy then force the no user gesture required
+    // autoplay policy.
     web_prefs->autoplay_policy =
         content::AutoplayPolicy::kNoUserGestureRequired;
+  } else if (base::FeatureList::IsEnabled(media::kAutoplaySoundSettings) &&
+             web_prefs->autoplay_policy ==
+                 content::AutoplayPolicy::kDocumentUserActivationRequired) {
+    // If the autoplay sound settings feature is enabled and the autoplay policy
+    // is set to using the unified policy then set the default autoplay policy
+    // based on user preference.
+    web_prefs->autoplay_policy =
+        UnifiedAutoplayConfig::ShouldBlockAutoplay(profile)
+            ? content::AutoplayPolicy::kDocumentUserActivationRequired
+            : content::AutoplayPolicy::kNoUserGestureRequired;
   }
 #endif  // !defined(OS_ANDROID)
 
