@@ -271,12 +271,12 @@ void NGPaintFragment::PopulateDescendants(
     child->inline_offset_to_container_box_ =
         inline_offset_to_container_box + child_fragment->Offset();
 
-    // Recurse chlidren, except when this is a block layout root.
-    // TODO(kojii): At the block layout root, chlidren maybe for NGPaint,
-    // LayoutNG but not for NGPaint, or legacy. In order to get the maximum
-    // test coverage, split the NGPaintFragment tree at all possible engine
-    // boundaries.
-    if (!child_fragment->IsBlockLayoutRoot()) {
+    // Recurse children, except when this is a block formatting context root.
+    // TODO(kojii): At the block formatting context root, children may be for
+    // NGPaint, LayoutNG but not for NGPaint, or legacy. In order to get the
+    // maximum test coverage, split the NGPaintFragment tree at all possible
+    // engine boundaries.
+    if (!child_fragment->IsBlockFormattingContextRoot()) {
       child->PopulateDescendants(child->inline_offset_to_container_box_,
                                  first_fragment_map, last_fragment_map);
     }

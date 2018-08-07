@@ -331,7 +331,7 @@ namespace {
 bool FragmentRequiresLegacyFallback(const NGPhysicalFragment& fragment) {
   // Fallback to LayoutObject if this is a root of NG block layout.
   // If this box is for this painter, LayoutNGBlockFlow will call back.
-  if (fragment.IsBlockLayoutRoot())
+  if (fragment.IsBlockFormattingContextRoot())
     return true;
 
   // TODO(kojii): Review if this is still needed.

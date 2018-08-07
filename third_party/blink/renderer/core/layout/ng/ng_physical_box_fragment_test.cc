@@ -30,7 +30,7 @@ TEST_F(NGPhysicalBoxFragmentTest, DISABLED_NormalOldLayoutRoot) {
   EXPECT_TRUE(fragment->IsBox());
   EXPECT_EQ(NGPhysicalFragment::kNormalBox, fragment->BoxType());
   EXPECT_TRUE(fragment->IsOldLayoutRoot());
-  EXPECT_TRUE(fragment->IsBlockLayoutRoot());
+  EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
 }
 
 // TODO(editing-dev): Once LayoutNG supports editing, we should change this
@@ -44,7 +44,7 @@ TEST_F(NGPhysicalBoxFragmentTest, DISABLED_FloatOldLayoutRoot) {
   EXPECT_TRUE(fragment->IsBox());
   EXPECT_EQ(NGPhysicalFragment::kFloating, fragment->BoxType());
   EXPECT_TRUE(fragment->IsOldLayoutRoot());
-  EXPECT_TRUE(fragment->IsBlockLayoutRoot());
+  EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
 }
 
 // TODO(editing-dev): Once LayoutNG supports editing, we should change this
@@ -60,7 +60,7 @@ TEST_F(NGPhysicalBoxFragmentTest, DISABLED_InlineBlockOldLayoutRoot) {
   EXPECT_TRUE(fragment->IsBox());
   EXPECT_EQ(NGPhysicalFragment::kAtomicInline, fragment->BoxType());
   EXPECT_TRUE(fragment->IsOldLayoutRoot());
-  EXPECT_TRUE(fragment->IsBlockLayoutRoot());
+  EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
 }
 
 // TODO(editing-dev): Once LayoutNG supports editing, we should change this
@@ -77,7 +77,7 @@ TEST_F(NGPhysicalBoxFragmentTest, DISABLED_OutOfFlowPositionedOldLayoutRoot) {
   EXPECT_TRUE(fragment->IsBox());
   EXPECT_EQ(NGPhysicalFragment::kOutOfFlowPositioned, fragment->BoxType());
   EXPECT_TRUE(fragment->IsOldLayoutRoot());
-  EXPECT_TRUE(fragment->IsBlockLayoutRoot());
+  EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
 }
 
 }  // namespace blink

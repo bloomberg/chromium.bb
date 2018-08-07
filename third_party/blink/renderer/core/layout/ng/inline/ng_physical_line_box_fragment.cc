@@ -72,7 +72,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
   // should compute and store it during layout.
   const TextDirection direction = Style().Direction();
   const NGPhysicalFragment* runner = this;
-  while (runner->IsContainer() && !runner->IsBlockLayoutRoot()) {
+  while (runner->IsContainer() && !runner->IsBlockFormattingContextRoot()) {
     const NGPhysicalContainerFragment* runner_as_container =
         ToNGPhysicalContainerFragment(runner);
     if (runner_as_container->Children().IsEmpty())
@@ -92,7 +92,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
   // should compute and store it during layout.
   const TextDirection direction = Style().Direction();
   const NGPhysicalFragment* runner = this;
-  while (runner->IsContainer() && !runner->IsBlockLayoutRoot()) {
+  while (runner->IsContainer() && !runner->IsBlockFormattingContextRoot()) {
     const NGPhysicalContainerFragment* runner_as_container =
         ToNGPhysicalContainerFragment(runner);
     if (runner_as_container->Children().IsEmpty())

@@ -61,7 +61,7 @@ class NGPhysicalFragmentCollectorBase {
 
     // Traverse descendants unless the fragment is laid out separately from the
     // inline layout algorithm.
-    if (&fragment != root_fragment_ && fragment.IsBlockLayoutRoot())
+    if (&fragment != root_fragment_ && fragment.IsBlockFormattingContextRoot())
       return;
 
     DCHECK(fragment.IsContainer());
