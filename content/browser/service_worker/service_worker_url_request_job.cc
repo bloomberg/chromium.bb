@@ -353,6 +353,7 @@ ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
 
   if (!ShouldRecordResult())
     return;
+
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED;
   if (response_body_type_ == STREAM)
@@ -668,6 +669,10 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   if (!did_navigation_preload_) {
     fetch_dispatcher_.reset();
   }
+  if (IsMainResourceLoad()) {
+    ReportDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::kServiceWorker);
+  }
   ServiceWorkerMetrics::RecordFetchEventStatus(IsMainResourceLoad(), status);
 
   ServiceWorkerMetrics::URLRequestJobResult result =
@@ -950,6 +955,11 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
   if (!success) {
     RecordResult(
         ServiceWorkerMetrics::REQUEST_JOB_ERROR_REQUEST_BODY_BLOB_FAILED);
+    if (IsMainResourceLoad()) {
+      ReportDestination(ServiceWorkerMetrics::MainResourceRequestDestination::
+                            kErrorRequestBodyFailed);
+    }
+
     // TODO(falken): This and below should probably be NotifyStartError, not
     // DeliverErrorResponse. But changing it causes
     // ServiceWorkerURLRequestJobTest.DeletedProviderHostBeforeFetchEvent to
@@ -964,6 +974,10 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
       delegate_->GetServiceWorkerVersion(&result);
   if (!active_worker) {
     RecordResult(result);
+    if (IsMainResourceLoad()) {
+      ReportDestination(ServiceWorkerMetrics::MainResourceRequestDestination::
+                            kErrorNoActiveWorkerFromDelegate);
+    }
     DeliverErrorResponse();
     return;
   }
@@ -985,6 +999,8 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
   }
 
   DCHECK(!fetch_dispatcher_);
+  if (IsMainResourceLoad())
+    delegate_->WillDispatchFetchEventForMainResource();
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       std::move(resource_request), blob_uuid, blob_size, std::move(blob),
       client_id_, base::WrapRefCounted(active_worker), request()->net_log(),
@@ -1008,6 +1024,12 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
 
 void ServiceWorkerURLRequestJob::OnNavigationPreloadResponse() {
   nav_preload_metrics_->ReportNavigationPreloadFinished();
+}
+
+void ServiceWorkerURLRequestJob::ReportDestination(
+    ServiceWorkerMetrics::MainResourceRequestDestination destination) {
+  DCHECK(IsMainResourceLoad());
+  delegate_->ReportDestination(destination);
 }
 
 }  // namespace content

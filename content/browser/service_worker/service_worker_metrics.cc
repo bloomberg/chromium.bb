@@ -951,4 +951,10 @@ void ServiceWorkerMetrics::RecordRegisteredOriginCount(size_t origin_count) {
   UMA_HISTOGRAM_COUNTS_1M("ServiceWorker.RegisteredOriginCount", origin_count);
 }
 
+void ServiceWorkerMetrics::RecordMainResourceRequestDestination(
+    MainResourceRequestDestination destination) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.MainResourceRequestDestination",
+                            destination);
+}
+
 }  // namespace content

@@ -29,6 +29,46 @@ enum class EmbeddedWorkerStatus;
 class ServiceWorkerMetrics {
  public:
   // Used for UMA. Append-only.
+  enum class MainResourceRequestDestination {
+    // The request was routed to the service worker. Fetch event dispatching
+    // possibly succeeded or failed.
+    // ServiceWorker.FetchEvent.MainResource.Status was logged with the result
+    // of the dispatch.
+    kServiceWorker = 0,
+
+    // The request was routed to network for the specified reason.
+    kNetworkBecauseNoActiveVersion = 1,
+    kNetworkBecauseNoActiveVersionAfterContinuing = 2,
+    kNetworkBecauseNoContext = 3,
+    kNetworkBecauseNoFetchEventHandler = 4,
+    kNetworkBecauseNoProvider = 5,
+    kNetworkBecauseNoProviderAfterContinuing = 6,
+    kNetworkBecauseNoRegistration = 7,
+    kNetworkBecauseNotAllowed = 8,
+    kNetworkBecauseNotSecure = 9,
+
+    // The loader couldn't dispatch the fetch event because there was no active
+    // worker.
+    kErrorNoActiveWorkerFromDelegate = 10,
+    // The loader couldn't dispatch the fetch event because the request body
+    // failed.
+    kErrorRequestBodyFailed = 11,
+
+    // The request was being routed to the service worker, but the handler was
+    // destroyed before the result of the fetch event dispatch was received.
+    kAbortedWhileDispatchingFetchEvent = 12,
+    // The handler was destroyed without dispatching a fetch event to the
+    // service
+    // worker.
+    kAbortedWithoutDispatchingFetchEvent = 13,
+
+    // The request was not routed because it was cancelled.
+    kJobWasCancelled = 14,
+
+    kMaxValue = 14,
+  };
+
+  // Used for UMA. Append-only.
   enum ReadResponseResult {
     READ_OK,
     READ_HEADERS_ERROR,
@@ -442,6 +482,9 @@ class ServiceWorkerMetrics {
 
   // Records the number of origins with a registered service worker.
   static void RecordRegisteredOriginCount(size_t origin_count);
+
+  static void RecordMainResourceRequestDestination(
+      MainResourceRequestDestination destination);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

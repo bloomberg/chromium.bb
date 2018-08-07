@@ -173,6 +173,9 @@ void ServiceWorkerNavigationLoader::StartRequest() {
   ServiceWorkerVersion* active_worker =
       delegate_->GetServiceWorkerVersion(&result);
   if (!active_worker) {
+    delegate_->ReportDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kErrorNoActiveWorkerFromDelegate);
     ReturnNetworkError();
     return;
   }
@@ -193,6 +196,7 @@ void ServiceWorkerNavigationLoader::StartRequest() {
          "there are. Add code here to clone the body before proceeding.";
 
   // Dispatch the fetch event.
+  delegate_->WillDispatchFetchEventForMainResource();
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       std::move(request), std::string() /* request_body_blob_uuid */,
       0 /* request_body_blob_size */, nullptr /* request_body_blob */,
@@ -291,6 +295,8 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
       blink::ServiceWorkerStatusToString(status), "result",
       ComposeFetchEventResultString(fetch_result, *response));
+  delegate_->ReportDestination(
+      ServiceWorkerMetrics::MainResourceRequestDestination::kServiceWorker);
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
 

@@ -42880,6 +42880,28 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="META_DATA_SENDER_ERROR"/>
 </enum>
 
+<enum name="ServiceWorkerMainResourceRequestDestination">
+  <summary>
+    Describes whether a main resource request went to service worker or network
+    or errored.
+  </summary>
+  <int value="0" label="kServiceWorker"/>
+  <int value="1" label="kNetworkBecauseNoActiveVersion"/>
+  <int value="2" label="kNetworkBecauseNoActiveVersionAfterContinuing"/>
+  <int value="3" label="kNetworkBecauseNoContext"/>
+  <int value="4" label="kNetworkBecauseNoFetchEventHandler"/>
+  <int value="5" label="kNetworkBecauseNoProvider"/>
+  <int value="6" label="kNetworkBecauseNoProviderAfterContinuing"/>
+  <int value="7" label="kNetworkBecauseNoRegistration"/>
+  <int value="8" label="kNetworkBecauseNotAllowed"/>
+  <int value="9" label="kNetworkBecauseNotSecure"/>
+  <int value="10" label="kErrorNoActiveWorkerFromDelegate"/>
+  <int value="11" label="kErrorRequestBodyFailed"/>
+  <int value="12" label="kAbortedWhileDispatchingFetchEvent"/>
+  <int value="13" label="kAbortedWithoutDispatchingFetchEvent"/>
+  <int value="14" label="kJobWasCancelled"/>
+</enum>
+
 <enum name="ServiceWorkerMetrics.EventType">
   <int value="0" label="ACTIVATE"/>
   <int value="1" label="INSTALL"/>
