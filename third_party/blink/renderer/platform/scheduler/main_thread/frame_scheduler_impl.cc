@@ -296,8 +296,14 @@ void FrameSchedulerImpl::RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
   if (!time_budget_pool)
     return;
 
-  time_budget_pool->RemoveQueue(
-      main_thread_scheduler_->tick_clock()->NowTicks(), task_queue);
+  // On tests, the scheduler helper might already be shut down and tick is not
+  // available.
+  base::TimeTicks now;
+  if (main_thread_scheduler_->tick_clock())
+    now = main_thread_scheduler_->tick_clock()->NowTicks();
+  else
+    now = base::TimeTicks::Now();
+  time_budget_pool->RemoveQueue(now, task_queue);
 }
 
 void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {

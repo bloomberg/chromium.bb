@@ -137,4 +137,10 @@ FocusController& PageTestBase::GetFocusController() const {
   return GetDocument().GetPage()->GetFocusController();
 }
 
+void PageTestBase::EnablePlatform() {
+  DCHECK(!platform_);
+  platform_ = std::make_unique<
+      ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>>();
+}
+
 }  // namespace blink

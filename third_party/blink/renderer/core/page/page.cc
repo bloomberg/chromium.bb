@@ -122,11 +122,16 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
   return page->DeviceScaleFactorDeprecated();
 }
 
-Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
-  Page* page = Create(page_clients);
+Page* Page::Create(PageClients& page_clients) {
+  Page* page = new Page(page_clients);
   page->SetPageScheduler(
       Platform::Current()->CurrentThread()->Scheduler()->CreatePageScheduler(
           page));
+  return page;
+}
+
+Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
+  Page* page = Create(page_clients);
 
   if (opener) {
     // Before: ... -> opener -> next -> ...

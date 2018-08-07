@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -40,11 +39,13 @@ class NotificationImageLoaderTest : public PageTestBase {
          // use.
         loader_(
             new NotificationImageLoader(NotificationImageLoader::Type::kIcon)) {
+    EnablePlatform();
   }
 
   ~NotificationImageLoaderTest() override {
     loader_->Stop();
-    platform_->GetURLLoaderMockFactory()
+    platform()
+        ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -80,7 +81,6 @@ class NotificationImageLoaderTest : public PageTestBase {
 
  protected:
   HistogramTester histogram_tester_;
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 
  private:
   Persistent<NotificationImageLoader> loader_;
@@ -93,7 +93,7 @@ TEST_F(NotificationImageLoaderTest, SuccessTest) {
   histogram_tester_.ExpectTotalCount("Notifications.LoadFinishTime.Icon", 0);
   histogram_tester_.ExpectTotalCount("Notifications.LoadFileSize.Icon", 0);
   histogram_tester_.ExpectTotalCount("Notifications.LoadFailTime.Icon", 0);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_EQ(NotificationLoadState::kLoadSuccessful, Loaded());
   histogram_tester_.ExpectTotalCount("Notifications.LoadFinishTime.Icon", 1);
   histogram_tester_.ExpectUniqueSample("Notifications.LoadFileSize.Icon", 7439,
@@ -102,9 +102,6 @@ TEST_F(NotificationImageLoaderTest, SuccessTest) {
 }
 
 TEST_F(NotificationImageLoaderTest, TimeoutTest) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-
   // To test for a timeout, this needs to override the clock in the platform.
   // Just creating the mock platform will do everything to set it up.
   KURL url = RegisterMockedURL(kNotificationImageLoaderIcon500x500);
@@ -112,14 +109,14 @@ TEST_F(NotificationImageLoaderTest, TimeoutTest) {
 
   // Run the platform for kImageFetchTimeoutInMs-1 seconds. This should not
   // result in a timeout.
-  platform->RunForPeriodSeconds(kImageFetchTimeoutInMs / 1000 - 1);
+  platform()->RunForPeriodSeconds(kImageFetchTimeoutInMs / 1000 - 1);
   EXPECT_EQ(NotificationLoadState::kNotLoaded, Loaded());
   histogram_tester_.ExpectTotalCount("Notifications.LoadFinishTime.Icon", 0);
   histogram_tester_.ExpectTotalCount("Notifications.LoadFileSize.Icon", 0);
   histogram_tester_.ExpectTotalCount("Notifications.LoadFailTime.Icon", 0);
 
   // Now advance time until a timeout should be expected.
-  platform->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
 
   // If the loader times out, it calls the callback and returns an empty bitmap.
   EXPECT_EQ(NotificationLoadState::kLoadFailed, Loaded());

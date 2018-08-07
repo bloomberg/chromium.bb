@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 // The MediaTimelineWidths histogram suffix expected to be encountered in these
@@ -997,10 +996,13 @@ TEST_F(MediaControlsImplTest, TimeIsCorrectlyFormatted) {
 namespace {
 
 class MediaControlsImplTestWithMockScheduler : public MediaControlsImplTest {
+ public:
+  MediaControlsImplTestWithMockScheduler() { EnablePlatform(); }
+
  protected:
   void SetUp() override {
     // DocumentParserTiming has DCHECKS to make sure time > 0.0.
-    platform_->AdvanceClockSeconds(1);
+    platform()->AdvanceClockSeconds(1);
 
     MediaControlsImplTest::SetUp();
   }
@@ -1011,9 +1013,6 @@ class MediaControlsImplTestWithMockScheduler : public MediaControlsImplTest {
       return false;
     return style->GetPropertyValue(CSSPropertyCursor) == "none";
   }
-
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform_;
 };
 
 }  // namespace
@@ -1031,23 +1030,23 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   EXPECT_TRUE(IsElementVisible(*panel));
 
   // Tabbing between controls prevents controls from hiding.
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   MediaControls().DispatchEvent(Event::Create("focusin"));
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   // Seeking on the timeline or volume bar prevents controls from hiding.
   MediaControls().DispatchEvent(Event::Create("input"));
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   // Pressing a key prevents controls from hiding.
   MediaControls().PanelElement()->DispatchEvent(Event::Create("keypress"));
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   // Once user interaction stops, controls can hide.
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   SimulateTransitionEnd(*panel);
   EXPECT_FALSE(IsElementVisible(*panel));
 }
@@ -1067,7 +1066,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler, CursorHidesWhenControlsHide) {
   EXPECT_FALSE(IsCursorHidden());
 
   // Once the controls hide, the cursor is hidden.
-  platform_->RunForPeriodSeconds(4);
+  platform()->RunForPeriodSeconds(4);
   EXPECT_TRUE(IsCursorHidden());
 
   // If the mouse moves, the controls are shown and the cursor is no longer
@@ -1076,7 +1075,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler, CursorHidesWhenControlsHide) {
   EXPECT_FALSE(IsCursorHidden());
 
   // Once the controls hide again, the cursor is hidden again.
-  platform_->RunForPeriodSeconds(4);
+  platform()->RunForPeriodSeconds(4);
   EXPECT_TRUE(IsCursorHidden());
 }
 
@@ -1088,18 +1087,18 @@ TEST_F(MediaControlsImplTestWithMockScheduler, AccessibleFocusShowsControls) {
   MediaControls().MediaElement().SetSrc("http://example.com");
   MediaControls().MediaElement().Play();
 
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   MediaControls().OnAccessibleFocus();
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   EXPECT_FALSE(IsElementVisible(*panel));
 
   MediaControls().OnAccessibleFocus();
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 }
 
@@ -1112,11 +1111,11 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   MediaControls().MediaElement().SetSrc("http://example.com");
   MediaControls().MediaElement().Play();
 
-  platform_->RunForPeriodSeconds(2);
+  platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   MediaControls().OnAccessibleFocus();
-  platform_->RunForPeriodSeconds(4);
+  platform()->RunForPeriodSeconds(4);
   EXPECT_FALSE(IsElementVisible(*panel));
 
   // Display is none but can't be checked via InlineStyle. Adding checks of this

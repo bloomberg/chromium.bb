@@ -135,7 +135,9 @@ void SchedulerHelper::OnExitNestedRunLoop() {
 }
 
 const base::TickClock* SchedulerHelper::GetClock() const {
-  return sequence_manager_->GetTickClock();
+  if (sequence_manager_)
+    return sequence_manager_->GetTickClock();
+  return nullptr;
 }
 
 base::TimeTicks SchedulerHelper::NowTicks() const {
