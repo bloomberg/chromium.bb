@@ -55,7 +55,6 @@ void StubOfflinePageModel::GetPageByGuid(
     SingleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::GetPagesByURL(
     const GURL& url,
-    URLSearchMode url_search_mode,
     MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::GetPagesByRequestOrigin(
     const std::string& origin,
@@ -81,7 +80,7 @@ void StubOfflinePageModel::HasThumbnailForOfflineId(
 void StubOfflinePageModel::PublishInternalArchive(
     const OfflinePageItem& offline_page,
     std::unique_ptr<OfflinePageArchiver> archiver,
-    PublishPageCallback publish_done_callback){};
+    PublishPageCallback publish_done_callback) {}
 const base::FilePath& StubOfflinePageModel::GetInternalArchiveDirectory(
     const std::string& name_space) const {
   return archive_directory_;

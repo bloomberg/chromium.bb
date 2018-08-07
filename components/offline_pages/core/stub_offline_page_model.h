@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_STUB_OFFLINE_PAGE_MODEL_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_STUB_OFFLINE_PAGE_MODEL_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -51,7 +52,6 @@ class StubOfflinePageModel : public OfflinePageModel {
   void GetPageByGuid(const std::string& guid,
                      SingleOfflinePageItemCallback callback) override;
   void GetPagesByURL(const GURL& url,
-                     URLSearchMode url_search_mode,
                      MultipleOfflinePageItemCallback callback) override;
   void GetPagesByRequestOrigin(
       const std::string& origin,

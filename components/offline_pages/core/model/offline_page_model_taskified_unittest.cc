@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -65,9 +66,9 @@ const ClientId kTestUserRequestedClientId(kDownloadNamespace, "714");
 const ClientId kTestBrowserActionsClientId(kBrowserActionsNamespace, "999");
 const int64_t kTestFileSize = 876543LL;
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
-const std::string kTestRequestOrigin("abc.xyz");
-const std::string kEmptyRequestOrigin;
-const std::string kTestDigest("test digest");
+const char kTestRequestOrigin[] = "abc.xyz";
+const char kEmptyRequestOrigin[] = "";
+const char kTestDigest[] = "test digest";
 const int64_t kDownloadId = 42LL;
 
 }  // namespace
@@ -941,21 +942,18 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByUrl_FinalUrl) {
   // Search by kTestUrl.
   base::MockCallback<MultipleOfflinePageItemCallback> callback;
   EXPECT_CALL(callback, Run(ElementsAre(page1)));
-  model()->GetPagesByURL(kTestUrl, URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
-                         callback.Get());
+  model()->GetPagesByURL(kTestUrl, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 
   // Search by kTestUrl2.
   EXPECT_CALL(callback, Run(ElementsAre(page2)));
-  model()->GetPagesByURL(kTestUrl2, URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
-                         callback.Get());
+  model()->GetPagesByURL(kTestUrl2, callback.Get());
   PumpLoop();
 
   // Search by random url, which should return no pages.
   EXPECT_CALL(callback, Run(IsEmpty()));
-  model()->GetPagesByURL(kOtherUrl, URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
-                         callback.Get());
+  model()->GetPagesByURL(kOtherUrl, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 }
@@ -973,22 +971,19 @@ TEST_F(OfflinePageModelTaskifiedTest,
   base::MockCallback<MultipleOfflinePageItemCallback> callback;
   EXPECT_CALL(callback, Run(ElementsAre(page1)));
   model()->GetPagesByURL(kTestUrlWithFragment,
-                         URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
                          callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 
   // Search by kTestUrl2.
   EXPECT_CALL(callback, Run(ElementsAre(page2)));
-  model()->GetPagesByURL(kTestUrl2, URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
-                         callback.Get());
+  model()->GetPagesByURL(kTestUrl2, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 
   // Search by kTestUrl2WithFragment.
   EXPECT_CALL(callback, Run(ElementsAre(page2)));
   model()->GetPagesByURL(kTestUrl2WithFragment,
-                         URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
                          callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
@@ -1006,8 +1001,7 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByUrl_AllUrls) {
 
   base::MockCallback<MultipleOfflinePageItemCallback> callback;
   EXPECT_CALL(callback, Run(UnorderedElementsAre(page1, page2)));
-  model()->GetPagesByURL(kTestUrl2, URLSearchMode::SEARCH_BY_ALL_URLS,
-                         callback.Get());
+  model()->GetPagesByURL(kTestUrl2, callback.Get());
   PumpLoop();
 }
 

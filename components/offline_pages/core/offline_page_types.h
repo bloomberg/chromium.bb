@@ -6,7 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_PAGE_TYPES_H_
 
 #include <stdint.h>
-
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -81,19 +81,9 @@ enum class DeletePageResult {
   RESULT_COUNT,
 };
 
-// Controls how to search on differnt URLs for pages.
-enum class URLSearchMode {
-  // Match against the last committed URL only.
-  SEARCH_BY_FINAL_URL_ONLY,
-  // Match against all stored URLs, including the last committed URL and
-  // the original request URL.
-  SEARCH_BY_ALL_URLS,
-};
-
 typedef std::vector<int64_t> MultipleOfflineIdResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 
-// TODO(carlosk): All or most of these should use base::OnceCallback.
 typedef base::OnceCallback<void(SavePageResult, int64_t)> SavePageCallback;
 typedef base::OnceCallback<void(AddPageResult, int64_t)> AddPageCallback;
 typedef base::OnceCallback<void(DeletePageResult)> DeletePageCallback;
