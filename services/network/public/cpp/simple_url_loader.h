@@ -116,6 +116,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
       base::OnceCallback<void(const GURL& final_url,
                               const ResourceResponseHead& response_head)>;
 
+  // Callback used when an upload progress is reported. It is safe to
+  // delete the SimpleURLLoader during the callback.
+  using UploadProgressCallback =
+      base::RepeatingCallback<void(uint64_t position, uint64_t total)>;
+
   // Creates a SimpleURLLoader for |resource_request|. The request can be
   // started by calling any one of the Download methods once. The loader may not
   // be reused.
@@ -206,6 +211,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // Callback may delete the SimpleURLLoader.
   virtual void SetOnResponseStartedCallback(
       OnResponseStartedCallback on_response_started_callback) = 0;
+
+  // Sets callback to be invoked during resource uploads to provide
+  // progress information. Callback may delete the SimpleURLLoader.
+  virtual void SetOnUploadProgressCallback(
+      UploadProgressCallback on_upload_progress_callback) = 0;
 
   // Sets whether partially received results are allowed. Defaults to false.
   // When true, if an error is received after reading the body starts or the max

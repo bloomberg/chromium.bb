@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using content::RenderFrameHost;
 
@@ -40,7 +41,7 @@ void NavigationUploadCallback(
     std::unique_ptr<const base::DictionaryValue> metadata,
     content::BackgroundTracingManager::FinishedProcessingCallback callback) {
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
-      g_browser_process->system_request_context());
+      g_browser_process->shared_url_loader_factory());
 
   uploader->DoUpload(
       file_contents->data(), content::TraceUploader::UNCOMPRESSED_UPLOAD,

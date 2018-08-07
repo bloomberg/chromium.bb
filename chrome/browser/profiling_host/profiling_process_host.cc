@@ -25,6 +25,7 @@
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/zlib/zlib.h"
 
 #if defined(OS_WIN)
@@ -86,7 +87,7 @@ void UploadTraceToCrashServer(std::string file_contents,
   metadata->SetKey(kConfigScenarioName, base::Value("MEMLOG"));
 
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
-      g_browser_process->system_request_context());
+      g_browser_process->shared_url_loader_factory());
 
   uploader->DoUpload(file_contents, content::TraceUploader::COMPRESSED_UPLOAD,
                      std::move(metadata),

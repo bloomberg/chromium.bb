@@ -78,10 +78,11 @@ const char kShortUploadBody[] =
 // Returns a string longer than
 // SimpleURLLoader::kMaxUploadStringAsStringLength, to test the path where
 // strings are streamed to the URLLoader.
-std::string GetLongUploadBody() {
+std::string GetLongUploadBody(
+    size_t size = SimpleURLLoader::kMaxUploadStringSizeToCopy) {
   std::string long_string;
-  long_string.reserve(SimpleURLLoader::kMaxUploadStringSizeToCopy);
-  while (long_string.length() <= SimpleURLLoader::kMaxUploadStringSizeToCopy) {
+  long_string.reserve(size);
+  while (long_string.length() <= size) {
     long_string.append(kShortUploadBody);
   }
   return long_string;
@@ -654,6 +655,7 @@ class SimpleURLLoaderTest
         std::make_unique<network::ResourceRequest>();
     resource_request->url = url;
     resource_request->method = method;
+    resource_request->enable_upload_progress = true;
     return std::make_unique<SimpleLoaderTestHelper>(std::move(resource_request),
                                                     GetParam());
   }
@@ -2886,6 +2888,62 @@ TEST_F(SimpleURLLoaderStreamTest, OnRetryDestruction) {
   EXPECT_FALSE(test_helper->simple_url_loader());
   // Make sure no pending task results in a crash.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(SimpleURLLoaderTest, OnUploadProgressCallback) {
+  // The size of the payload cannot be bigger than
+  // net::test_server::<anonymous>::kRequestSizeLimit which is
+  // 64Mb. We set a pretty large value in order to ensure multiple
+  // progress update calls even on fast machines.
+  std::string long_string = GetLongUploadBody(63 * 1024 * 1024);
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/echo"), "POST");
+  test_helper->simple_url_loader()->AttachStringForUpload(long_string,
+                                                          "text/plain");
+
+  uint64_t progress = 0;
+  test_helper->simple_url_loader()->SetOnUploadProgressCallback(
+      base::BindRepeating(
+          [](uint64_t* progress, uint64_t current, uint64_t total) {
+            EXPECT_GT(current, *progress);
+            EXPECT_GE(total, current);
+            *progress = current;
+          },
+          base::Unretained(&progress)));
+
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(long_string.size(), progress);
+  if (GetParam() != SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY) {
+    ASSERT_TRUE(test_helper->response_body());
+    EXPECT_EQ(long_string, *test_helper->response_body());
+  }
+}
+
+// Ensure that deleting the SimpleURLLoader in the upload progress
+// callback is safe
+TEST_P(SimpleURLLoaderTest, DeleteInOnUploadProgressCallback) {
+  std::string long_string = GetLongUploadBody();
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/echo"), "POST");
+  test_helper->simple_url_loader()->AttachStringForUpload(long_string,
+                                                          "text/plain");
+
+  SimpleLoaderTestHelper* unowned_test_helper = test_helper.get();
+  base::RunLoop run_loop;
+  unowned_test_helper->simple_url_loader()->SetOnUploadProgressCallback(
+      base::BindRepeating(
+          [](std::unique_ptr<SimpleLoaderTestHelper> test_helper,
+             base::RepeatingClosure quit_closure, uint64_t current,
+             uint64_t total) {
+            test_helper.reset();
+            std::move(quit_closure).Run();
+          },
+          base::Passed(std::move(test_helper)), run_loop.QuitClosure()));
+
+  unowned_test_helper->StartSimpleLoader(url_loader_factory_.get());
+
+  run_loop.Run();
 }
 
 }  // namespace

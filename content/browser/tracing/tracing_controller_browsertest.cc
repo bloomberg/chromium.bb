@@ -23,6 +23,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 
 using base::trace_event::RECORD_CONTINUOUSLY;
@@ -104,7 +105,7 @@ class TracingTestBrowserClient : public TestContentBrowserClient {
   class TestTracingDelegate : public TracingDelegate {
    public:
     std::unique_ptr<TraceUploader> GetTraceUploader(
-        net::URLRequestContextGetter* request_context) override {
+        scoped_refptr<network::SharedURLLoaderFactory>) override {
       return nullptr;
     }
     MetadataFilterPredicate GetMetadataFilterPredicate() override {

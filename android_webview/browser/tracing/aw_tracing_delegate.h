@@ -9,6 +9,10 @@
 
 #include "content/public/browser/tracing_delegate.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace android_webview {
 
 class AwTracingDelegate : public content::TracingDelegate {
@@ -18,7 +22,7 @@ class AwTracingDelegate : public content::TracingDelegate {
 
   // content::TracingDelegate implementation:
   std::unique_ptr<content::TraceUploader> GetTraceUploader(
-      net::URLRequestContextGetter* request_context) override;
+      scoped_refptr<network::SharedURLLoaderFactory> factory) override;
   std::unique_ptr<base::DictionaryValue> GenerateMetadataDict() override;
 };
 
