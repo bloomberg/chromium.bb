@@ -81,7 +81,7 @@ public class GCMDriver {
                                          !registrationId.isEmpty());
             }
         }
-                .execute();
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @CalledByNative
@@ -104,7 +104,7 @@ public class GCMDriver {
                 nativeOnUnregisterFinished(mNativeGCMDriverAndroid, appId, success);
             }
         }
-                .execute();
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     // The caller of this function is responsible for ensuring the browser process is initialized.
