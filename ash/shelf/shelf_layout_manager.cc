@@ -217,10 +217,10 @@ gfx::Size ShelfLayoutManager::GetPreferredSize() {
   return target_bounds.shelf_bounds_in_root.size();
 }
 
-void ShelfLayoutManager::LayoutShelfAndUpdateBounds(bool change_work_area) {
+void ShelfLayoutManager::LayoutShelfAndUpdateBounds() {
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, false, change_work_area, nullptr);
+  UpdateBoundsAndOpacity(target_bounds, false, nullptr);
 
   // Update insets in ShelfWindowTargeter when shelf bounds change.
   for (auto& observer : observers_)
@@ -233,7 +233,7 @@ void ShelfLayoutManager::LayoutShelf() {
   if (in_shutdown_)
     return;
 
-  LayoutShelfAndUpdateBounds(true);
+  LayoutShelfAndUpdateBounds();
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
@@ -496,13 +496,10 @@ void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
 
 void ShelfLayoutManager::OnKeyboardAppearanceChanged(
     const keyboard::KeyboardStateDescriptor& state) {
-  // If displaced bounds changed, then change the work area too.
-  bool change_work_area = state.displaced_bounds != keyboard_displaced_bounds_;
-
   keyboard_occluded_bounds_ = state.occluded_bounds;
   keyboard_displaced_bounds_ = state.displaced_bounds;
 
-  LayoutShelfAndUpdateBounds(change_work_area);
+  LayoutShelfAndUpdateBounds();
 }
 
 void ShelfLayoutManager::OnKeyboardVisibilityStateChanged(
@@ -629,7 +626,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
   UpdateBoundsAndOpacity(
-      target_bounds, true /* animate */, true /* change_work_area */,
+      target_bounds, true /* animate */,
       delay_background_change ? update_shelf_observer_ : nullptr);
 
   // OnAutoHideStateChanged Should be emitted when:
@@ -646,7 +643,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 void ShelfLayoutManager::UpdateBoundsAndOpacity(
     const TargetBounds& target_bounds,
     bool animate,
-    bool change_work_area,
     ui::ImplicitAnimationObserver* observer) {
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
@@ -706,7 +702,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
             shelf_widget_->GetNativeWindow());
     bool in_overview =
         Shell::Get()->window_selector_controller()->IsSelecting();
-    if (!in_overview && !state_.IsScreenLocked() && change_work_area &&
+    if (!in_overview && !state_.IsScreenLocked() &&
         (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
          display.work_area() == display.bounds())) {
       gfx::Insets insets;
@@ -1103,8 +1099,7 @@ void ShelfLayoutManager::OnSessionStateChanged(
 
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, true /* animate */,
-                         true /* change_work_area */, nullptr);
+  UpdateBoundsAndOpacity(target_bounds, true /* animate */, nullptr);
   UpdateVisibilityState();
 }
 
