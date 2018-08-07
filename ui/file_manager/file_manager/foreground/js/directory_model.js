@@ -563,10 +563,13 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
   }
   this.metadataModel_.notifyEntriesRemoved(removedUrls);
 
-  // Retrieve metadata information for the new directory.
-  this.metadataModel_.get(
-      [this.currentDirContents_.getDirectoryEntry()],
-      constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
+  // Retrieve metadata information for the newly selected directory.
+  const currentEntry = this.currentDirContents_.getDirectoryEntry();
+  if (currentEntry && !util.isFakeEntry(assert(currentEntry))) {
+    this.metadataModel_.get(
+        [currentEntry],
+        constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
+  }
 
   // Clear the table, and start scanning.
   cr.dispatchSimpleEvent(this, 'scan-started');
