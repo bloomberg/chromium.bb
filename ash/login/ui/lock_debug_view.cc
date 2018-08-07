@@ -51,6 +51,7 @@ enum {
   kGlobalCycleDetachableBaseId,
   kGlobalCycleAuthErrorMessage,
   kPerUserTogglePin,
+  kPerUserToggleTap,
   kPerUserCycleEasyUnlockState,
   kPerUserCycleFingerprintState,
   kPerUserForceOnlineSignIn,
@@ -94,7 +95,7 @@ struct UserMetadata {
   AccountId account_id;
   std::string display_name;
   bool enable_pin = false;
-  bool enable_click_to_unlock = false;
+  bool enable_tap_to_unlock = false;
   bool enable_auth = true;
   user_manager::UserType type = user_manager::USER_TYPE_REGULAR;
   mojom::EasyUnlockIconId easy_unlock_id = mojom::EasyUnlockIconId::NONE;
@@ -250,6 +251,15 @@ class LockDebugView::DebugDataDispatcherTransformer
                                            debug_user->enable_pin);
   }
 
+  // Activates or deactivates tap unlock for the user at |user_index|.
+  void ToggleTapStateForUserIndex(size_t user_index) {
+    DCHECK(user_index >= 0 && user_index < debug_users_.size());
+    UserMetadata* debug_user = &debug_users_[user_index];
+    debug_user->enable_tap_to_unlock = !debug_user->enable_tap_to_unlock;
+    debug_dispatcher_.SetTapToUnlockEnabledForUser(
+        debug_user->account_id, debug_user->enable_tap_to_unlock);
+  }
+
   // Enables click to auth for the user at |user_index|.
   void CycleEasyUnlockForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
@@ -278,7 +288,7 @@ class LockDebugView::DebugDataDispatcherTransformer
     debug_user->easy_unlock_id = get_next_id(debug_user->easy_unlock_id);
 
     // Enable/disable click to unlock.
-    debug_user->enable_click_to_unlock =
+    debug_user->enable_tap_to_unlock =
         debug_user->easy_unlock_id == mojom::EasyUnlockIconId::UNLOCKED;
 
     // Prepare icon that we will show.
@@ -300,8 +310,8 @@ class LockDebugView::DebugDataDispatcherTransformer
 
     // Show icon and enable/disable click to unlock.
     debug_dispatcher_.ShowEasyUnlockIcon(debug_user->account_id, icon);
-    debug_dispatcher_.SetClickToUnlockEnabledForUser(
-        debug_user->account_id, debug_user->enable_click_to_unlock);
+    debug_dispatcher_.SetTapToUnlockEnabledForUser(
+        debug_user->account_id, debug_user->enable_tap_to_unlock);
   }
 
   // Enables fingerprint auth for the user at |user_index|.
@@ -423,13 +433,13 @@ class LockDebugView::DebugDataDispatcherTransformer
       }
     }
   }
-  void OnClickToUnlockEnabledForUserChanged(const AccountId& user,
-                                            bool enabled) override {
+  void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
+                                          bool enabled) override {
     // Forward notification only if the user is currently being shown.
     for (size_t i = 0u; i < debug_users_.size(); ++i) {
       if (debug_users_[i].account_id == user) {
-        debug_users_[i].enable_click_to_unlock = enabled;
-        debug_dispatcher_.SetClickToUnlockEnabledForUser(user, enabled);
+        debug_users_[i].enable_tap_to_unlock = enabled;
+        debug_dispatcher_.SetTapToUnlockEnabledForUser(user, enabled);
         break;
       }
     }
@@ -899,6 +909,10 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   if (sender->id() == ButtonId::kPerUserTogglePin)
     debug_data_dispatcher_->TogglePinStateForUserIndex(sender->tag());
 
+  // Enable or disable tap.
+  if (sender->id() == ButtonId::kPerUserToggleTap)
+    debug_data_dispatcher_->ToggleTapStateForUserIndex(sender->tag());
+
   // Cycle easy unlock.
   if (sender->id() == ButtonId::kPerUserCycleEasyUnlockState)
     debug_data_dispatcher_->CycleEasyUnlockForUserIndex(sender->tag());
@@ -948,6 +962,7 @@ void LockDebugView::UpdatePerUserActionContainer() {
     row->AddChildView(name);
 
     AddButton("Toggle PIN", ButtonId::kPerUserTogglePin, row)->set_tag(i);
+    AddButton("Toggle Tap", ButtonId::kPerUserToggleTap, row)->set_tag(i);
     AddButton("Cycle easy unlock", ButtonId::kPerUserCycleEasyUnlockState, row)
         ->set_tag(i);
     AddButton("Cycle fingerprint unlock",

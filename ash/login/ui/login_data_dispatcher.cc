@@ -20,7 +20,7 @@ void LoginDataDispatcher::Observer::OnAuthEnabledForUserChanged(
     bool enabled,
     const base::Optional<base::Time>& auth_reenabled_time) {}
 
-void LoginDataDispatcher::Observer::OnClickToUnlockEnabledForUserChanged(
+void LoginDataDispatcher::Observer::OnTapToUnlockEnabledForUserChanged(
     const AccountId& user,
     bool enabled) {}
 
@@ -95,10 +95,10 @@ void LoginDataDispatcher::SetAuthEnabledForUser(
   }
 }
 
-void LoginDataDispatcher::SetClickToUnlockEnabledForUser(const AccountId& user,
-                                                         bool enabled) {
+void LoginDataDispatcher::SetTapToUnlockEnabledForUser(const AccountId& user,
+                                                       bool enabled) {
   for (auto& observer : observers_)
-    observer.OnClickToUnlockEnabledForUserChanged(user, enabled);
+    observer.OnTapToUnlockEnabledForUserChanged(user, enabled);
 }
 
 void LoginDataDispatcher::SetForceOnlineSignInForUser(const AccountId& user) {

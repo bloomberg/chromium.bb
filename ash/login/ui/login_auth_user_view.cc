@@ -491,6 +491,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   disabled_auth_message_->SetVisible(auth_disabled);
 
   password_view_->SetEnabled(has_password);
+  password_view_->SetEnabledOnEmptyPassword(has_tap);
   password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->SetVisible(!hide_auth);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);

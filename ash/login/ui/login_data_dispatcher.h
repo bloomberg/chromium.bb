@@ -57,8 +57,8 @@ class ASH_EXPORT LoginDataDispatcher {
         const base::Optional<base::Time>& auth_reenabled_time);
 
     // Called when the given user can click their pod to unlock.
-    virtual void OnClickToUnlockEnabledForUserChanged(const AccountId& user,
-                                                      bool enabled);
+    virtual void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
+                                                    bool enabled);
 
     // Called when |user| must authenticate online (e.g. when OAuth refresh
     // token is revoked).
@@ -121,7 +121,7 @@ class ASH_EXPORT LoginDataDispatcher {
   void SetAuthEnabledForUser(const AccountId& account_id,
                              bool is_enabled,
                              base::Optional<base::Time> auth_reenabled_time);
-  void SetClickToUnlockEnabledForUser(const AccountId& user, bool enabled);
+  void SetTapToUnlockEnabledForUser(const AccountId& user, bool enabled);
   void SetForceOnlineSignInForUser(const AccountId& user);
   void SetLockScreenNoteState(mojom::TrayActionState state);
   void ShowEasyUnlockIcon(const AccountId& user,
