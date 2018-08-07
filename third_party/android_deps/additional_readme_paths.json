@@ -39,5 +39,6 @@
     "libs/com_google_android_gms_play_services_location",
     "libs/com_google_android_gms_play_services_tasks",
     "libs/com_google_android_gms_play_services_vision",
-    "libs/com_google_android_gms_play_services_vision_common"
+    "libs/com_google_android_gms_play_services_vision_common",
+    "libs/com_google_android_play_core"
 ]
