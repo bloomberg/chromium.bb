@@ -112,7 +112,8 @@ static model_rd_for_sb_type model_rd_fn[MODELRD_TYPES] = {
 // 2: Surface fit model
 // 3: DNN regression model
 // 4: Full rd model
-#define MODEL_RD_TYPE_INTERP_FILTER 0
+#define MODELRD_TYPE_INTERP_FILTER 0
+#define MODELRD_TYPE_TX_SEARCH_PRUNE 1
 
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
@@ -5686,18 +5687,20 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     int model_rate;
     int64_t model_dist;
     int model_skip;
-    model_rd_fn[MODELRD_LEGACY](cpi, bsize, x, xd, 0, 0, mi_row, mi_col,
-                                &model_rate, &model_dist, &model_skip, NULL,
-                                NULL, NULL, NULL);
+    model_rd_fn[MODELRD_TYPE_TX_SEARCH_PRUNE](
+        cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &model_rate, &model_dist,
+        &model_skip, NULL, NULL, NULL, NULL);
     const int64_t model_rd = RDCOST(x->rdmult, model_rate, model_dist);
     // If the modeled rd is a lot worse than the best so far, breakout.
     // TODO(debargha, urvang): Improve the model and make the check below
     // tighter.
     assert(cpi->sf.model_based_prune_tx_search_level >= 0 &&
            cpi->sf.model_based_prune_tx_search_level <= 2);
+    static const int prune_factor_by8[] = { 3, 5 };
     if (!model_skip &&
-        model_rd / (5 - cpi->sf.model_based_prune_tx_search_level) >
-            ref_best_rd)
+        ((model_rd *
+          prune_factor_by8[cpi->sf.model_based_prune_tx_search_level - 1]) >>
+         3) > ref_best_rd)
       return;
   }
 
@@ -7973,7 +7976,7 @@ static INLINE int64_t interpolation_filter_rd(
       select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
       PrintPredictionUnitStats(cpi, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
-      model_rd_fn[MODEL_RD_TYPE_INTERP_FILTER](
+      model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
           cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &tmp_rate[0], &tmp_dist[0],
           &tmp_skip_sb[0], &tmp_skip_sse[0], NULL, NULL, NULL);
       tmp_rate[1] = tmp_rate[0];
@@ -7995,7 +7998,7 @@ static INLINE int64_t interpolation_filter_rd(
         av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                        plane);
         av1_subtract_plane(x, bsize, plane);
-        model_rd_fn[MODEL_RD_TYPE_INTERP_FILTER](
+        model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
             cpi, bsize, x, xd, plane, plane, mi_row, mi_col, &tmp_rate_uv,
             &tmp_dist_uv, &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL, NULL, NULL);
         tmp_rate[1] += tmp_rate_uv;
@@ -8203,11 +8206,11 @@ static int64_t interpolation_filter_search(
   select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   PrintPredictionUnitStats(cpi, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
-  model_rd_fn[MODEL_RD_TYPE_INTERP_FILTER](
+  model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
       cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &tmp_rate[0], &tmp_dist[0],
       &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL, NULL, NULL);
   if (num_planes > 1)
-    model_rd_fn[MODEL_RD_TYPE_INTERP_FILTER](
+    model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
         cpi, bsize, x, xd, 1, num_planes - 1, mi_row, mi_col, &tmp_rate[1],
         &tmp_dist[1], &best_skip_txfm_sb[1], &best_skip_sse_sb[1], NULL, NULL,
         NULL);
