@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -229,9 +230,9 @@ void DemoSetupController::OnDeviceEnrolled(
                        weak_ptr_factory_.GetWeakPtr()));
     return;
   }
-  Reset();
-  if (!on_setup_success_.is_null())
-    std::move(on_setup_success_).Run();
+  StartupUtils::MarkDeviceRegistered(
+      base::BindOnce(&DemoSetupController::OnDeviceRegistered,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DemoSetupController::OnMultipleLicensesAvailable(
@@ -299,6 +300,13 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
   device_local_account_policy_store_->Store(policy);
 }
 
+void DemoSetupController::OnDeviceRegistered() {
+  VLOG(1) << "Demo mode setup finished successfully.";
+  Reset();
+  if (!on_setup_success_.is_null())
+    std::move(on_setup_success_).Run();
+}
+
 void DemoSetupController::SetupFailed(const std::string& message,
                                       DemoSetupError error) {
   Reset();
@@ -322,9 +330,9 @@ void DemoSetupController::Reset() {
 
 void DemoSetupController::OnStoreLoaded(policy::CloudPolicyStore* store) {
   DCHECK_EQ(store, device_local_account_policy_store_);
-  Reset();
-  if (!on_setup_success_.is_null())
-    std::move(on_setup_success_).Run();
+  StartupUtils::MarkDeviceRegistered(
+      base::BindOnce(&DemoSetupController::OnDeviceRegistered,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DemoSetupController::OnStoreError(policy::CloudPolicyStore* store) {

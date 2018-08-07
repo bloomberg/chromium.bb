@@ -103,6 +103,10 @@ class DemoSetupController
   // loaded.
   void OnDeviceLocalAccountPolicyLoaded(base::Optional<std::string> blob);
 
+  // Called when device is marked as registered and the second part of OOBE flow
+  // is completed. This is the last step of demo mode setup flow.
+  void OnDeviceRegistered();
+
   // Finish the flow with an error message.
   void SetupFailed(const std::string& message, DemoSetupError error);
 
