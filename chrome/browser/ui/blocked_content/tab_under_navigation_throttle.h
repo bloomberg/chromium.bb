@@ -28,9 +28,7 @@ constexpr char kBlockTabUnderFormatMessage[] =
 //    a. It has no user gesture.
 //    b. It is renderer-initiated.
 //    c. It is cross site to the last committed URL in the tab.
-//    d. The target site has a Site Engagement score below some threshold (by
-//       default, a score of 0).
-//    e. The navigation started in the background.
+//    d. The navigation started in the background.
 // 2. The tab has opened a popup and hasn't received a user gesture since then.
 //    This information is tracked by the PopupOpenerTabHelper.
 //
@@ -97,12 +95,6 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;
   const char* GetNameForLogging() override;
-
-  // Threshold for a site's engagement score to be considered non-suspicious.
-  // Any tab-under target URL with engagement > |engagement_threshold_| will not
-  // be considered a suspicious redirect. If this member is -1, this threshold
-  // will not apply and all sites will be candidates for blocking.
-  const int engagement_threshold_ = 0;
 
   // Store whether we're off the record as a member to avoid looking it up all
   // the time.
