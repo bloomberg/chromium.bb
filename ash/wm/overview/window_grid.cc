@@ -198,6 +198,10 @@ std::unique_ptr<views::Widget> CreateNewSelectorItemWidget(
   widget->SetContentsView(new NewSelectorItemView());
   widget->Show();
 
+  // Stack the newly created widget below the dragged window.
+  dragged_window->parent()->StackChildBelow(widget->GetNativeWindow(),
+                                            dragged_window);
+
   if (animate) {
     widget->SetOpacity(0.f);
     ui::ScopedLayerAnimationSettings animation_settings(
@@ -572,12 +576,6 @@ void WindowGrid::OnWindowDragStarted(aura::Window* dragged_window,
       CreateNewSelectorItemWidget(dragged_window, animate);
   window_selector_->AddItem(new_selector_item_widget_->GetNativeWindow(),
                             /*reposition=*/true, animate);
-
-  // Stack the newly added window item below |dragged_window|.
-  DCHECK_EQ(dragged_window->parent(),
-            new_selector_item_widget_->GetNativeWindow()->parent());
-  dragged_window->parent()->StackChildBelow(
-      new_selector_item_widget_->GetNativeWindow(), dragged_window);
 
   // Called to set caption and title visibility during dragging.
   OnSelectorItemDragStarted(/*item=*/nullptr);
