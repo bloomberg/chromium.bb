@@ -329,6 +329,8 @@ component("chromeos") {
     "dbus/virtual_file_provider_client.h",
     "dbus/volume_state.cc",
     "dbus/volume_state.h",
+    "disks/disk.cc",
+    "disks/disk.h",
     "disks/disk_mount_manager.cc",
     "disks/disk_mount_manager.h",
     "disks/suspend_unmount_manager.cc",

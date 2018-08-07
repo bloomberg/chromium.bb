@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
+#include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -87,7 +88,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
   }
 
   // Get disks informations that are needed by Android MountService.
-  const chromeos::disks::DiskMountManager::Disk* disk =
+  const chromeos::disks::Disk* disk =
       DiskMountManager::GetInstance()->FindDiskBySourcePath(
           mount_info.source_path);
   std::string fs_uuid, device_label;

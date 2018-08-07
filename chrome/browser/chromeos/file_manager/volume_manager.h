@@ -33,6 +33,11 @@ class Profile;
 
 namespace chromeos {
 class PowerManagerClient;
+
+namespace disks {
+class Disk;
+}  // namespace disks
+
 }  // namespace chromeos
 
 namespace content {
@@ -89,7 +94,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       const base::FilePath& downloads_path);
   static std::unique_ptr<Volume> CreateForRemovable(
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_point,
-      const chromeos::disks::DiskMountManager::Disk* disk);
+      const chromeos::disks::Disk* disk);
   static std::unique_ptr<Volume> CreateForProvidedFileSystem(
       const chromeos::file_system_provider::ProvidedFileSystemInfo&
           file_system_info,
@@ -316,7 +321,7 @@ class VolumeManager : public KeyedService,
   // chromeos::disks::DiskMountManager::Observer overrides.
   void OnAutoMountableDiskEvent(
       chromeos::disks::DiskMountManager::DiskEvent event,
-      const chromeos::disks::DiskMountManager::Disk& disk) override;
+      const chromeos::disks::Disk& disk) override;
   void OnDeviceEvent(chromeos::disks::DiskMountManager::DeviceEvent event,
                      const std::string& device_path) override;
   void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,

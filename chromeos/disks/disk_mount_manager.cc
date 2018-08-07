@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/disks/disk.h"
 #include "chromeos/disks/suspend_unmount_manager.h"
 
 namespace chromeos {
@@ -32,7 +33,6 @@ namespace {
 constexpr char kDefaultFormattedDeviceName[] = "UNTITLED";
 constexpr char kDefaultFormatVFAT[] = "vfat";
 constexpr char kDeviceNotFound[] = "Device could not be found";
-constexpr char kStatefulPartition[] = "/mnt/stateful_partition";
 DiskMountManager* g_disk_mount_manager = NULL;
 
 // The DiskMountManager implementation.
@@ -633,19 +633,9 @@ class DiskMountManagerImpl : public DiskMountManager,
     auto access_mode = access_modes_.find(disk_info.device_path());
     bool write_disabled_by_policy = access_mode != access_modes_.end()
         && access_mode->second == chromeos::MOUNT_ACCESS_MODE_READ_ONLY;
-    // TODO(agawronska): Add constructor for Disk from DiskInfo. Introduce Disk
-    // builder class for tests.
-    Disk* disk = new Disk(
-        disk_info.device_path(), disk_info.mount_path(),
-        write_disabled_by_policy, disk_info.system_path(),
-        disk_info.file_path(), disk_info.label(), disk_info.drive_label(),
-        disk_info.vendor_id(), disk_info.vendor_name(), disk_info.product_id(),
-        disk_info.product_name(), disk_info.uuid(),
-        FindSystemPathPrefix(disk_info.system_path()), disk_info.device_type(),
-        disk_info.total_size_in_bytes(), disk_info.is_drive(),
-        disk_info.is_read_only(), disk_info.has_media(),
-        disk_info.on_boot_device(), disk_info.on_removable_device(),
-        disk_info.is_hidden(), disk_info.file_system_type(), base_mount_path);
+    Disk* disk = new Disk(disk_info, write_disabled_by_policy,
+                          FindSystemPathPrefix(disk_info.system_path()),
+                          base_mount_path);
     disks_.insert(
         std::make_pair(disk_info.device_path(), base::WrapUnique(disk)));
     NotifyDiskStatusUpdate(is_new ? DISK_ADDED : DISK_CHANGED, *disk);
@@ -834,77 +824,6 @@ class DiskMountManagerImpl : public DiskMountManager,
 };
 
 }  // namespace
-
-DiskMountManager::Disk::Disk(const std::string& device_path,
-                             const std::string& mount_path,
-                             bool write_disabled_by_policy,
-                             const std::string& system_path,
-                             const std::string& file_path,
-                             const std::string& device_label,
-                             const std::string& drive_label,
-                             const std::string& vendor_id,
-                             const std::string& vendor_name,
-                             const std::string& product_id,
-                             const std::string& product_name,
-                             const std::string& fs_uuid,
-                             const std::string& system_path_prefix,
-                             DeviceType device_type,
-                             uint64_t total_size_in_bytes,
-                             bool is_parent,
-                             bool is_read_only_hardware,
-                             bool has_media,
-                             bool on_boot_device,
-                             bool on_removable_device,
-                             bool is_hidden,
-                             const std::string& file_system_type,
-                             const std::string& base_mount_path)
-    : device_path_(device_path),
-      mount_path_(mount_path),
-      write_disabled_by_policy_(write_disabled_by_policy),
-      system_path_(system_path),
-      file_path_(file_path),
-      device_label_(device_label),
-      drive_label_(drive_label),
-      vendor_id_(vendor_id),
-      vendor_name_(vendor_name),
-      product_id_(product_id),
-      product_name_(product_name),
-      fs_uuid_(fs_uuid),
-      system_path_prefix_(system_path_prefix),
-      device_type_(device_type),
-      total_size_in_bytes_(total_size_in_bytes),
-      is_parent_(is_parent),
-      is_read_only_hardware_(is_read_only_hardware),
-      has_media_(has_media),
-      on_boot_device_(on_boot_device),
-      on_removable_device_(on_removable_device),
-      is_hidden_(is_hidden),
-      file_system_type_(file_system_type),
-      base_mount_path_(base_mount_path) {}
-
-DiskMountManager::Disk::Disk(const Disk& other) = default;
-
-DiskMountManager::Disk::~Disk() = default;
-
-void DiskMountManager::Disk::SetMountPath(const std::string& mount_path) {
-  mount_path_ = mount_path;
-
-  if (base_mount_path_.empty())
-    base_mount_path_ = mount_path;
-}
-
-bool DiskMountManager::Disk::IsAutoMountable() const {
-  // Disks are considered auto-mountable if they are:
-  // 1. Non-virtual
-  // 2. Not on boot device
-  // Only the second condition is checked here, because Disks are created from
-  // non-virtual mount devices only.
-  return !on_boot_device_;
-}
-
-bool DiskMountManager::Disk::IsStatefulPartition() const {
-  return mount_path_ == kStatefulPartition;
-}
 
 bool DiskMountManager::AddDiskForTest(std::unique_ptr<Disk> disk) {
   return false;

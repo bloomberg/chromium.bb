@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/disks/disk.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/drive/file_change.h"
 #include "components/prefs/pref_service.h"
@@ -38,6 +39,7 @@
 using ::testing::_;
 using ::testing::ReturnRef;
 
+using chromeos::disks::Disk;
 using chromeos::disks::DiskMountManager;
 
 namespace {
@@ -285,7 +287,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
 
         volumes_.insert(DiskMountManager::DiskMap::value_type(
             kTestMountPoints[i].source_path,
-            std::make_unique<DiskMountManager::Disk>(
+            std::make_unique<Disk>(
                 kTestMountPoints[i].source_path, kTestMountPoints[i].mount_path,
                 kTestDisks[disk_info_index].write_disabled_by_policy,
                 kTestDisks[disk_info_index].system_path,
@@ -312,8 +314,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
     }
   }
 
-  const DiskMountManager::Disk* FindVolumeBySourcePath(
-      const std::string& source_path) {
+  const Disk* FindVolumeBySourcePath(const std::string& source_path) {
     auto volume_it = volumes_.find(source_path);
     return (volume_it == volumes_.end()) ? nullptr : volume_it->second.get();
   }

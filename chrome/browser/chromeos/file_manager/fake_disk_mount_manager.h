@@ -73,7 +73,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   const DiskMap& disks() const override;
-  const Disk* FindDiskBySourcePath(
+  const chromeos::disks::Disk* FindDiskBySourcePath(
       const std::string& source_path) const override;
   const MountPointMap& mount_points() const override;
   void EnsureMountInfoRefreshed(
@@ -100,9 +100,10 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
       const std::string& device_path,
       const UnmountDeviceRecursivelyCallbackType& callback) override;
 
-  bool AddDiskForTest(std::unique_ptr<Disk> disk) override;
+  bool AddDiskForTest(std::unique_ptr<chromeos::disks::Disk> disk) override;
   bool AddMountPointForTest(const MountPointInfo& mount_point) override;
-  void InvokeDiskEventForTest(DiskEvent event, const Disk* disk);
+  void InvokeDiskEventForTest(DiskEvent event,
+                              const chromeos::disks::Disk* disk);
 
  private:
   base::ObserverList<Observer> observers_;

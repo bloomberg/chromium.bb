@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
 namespace chromeos {
