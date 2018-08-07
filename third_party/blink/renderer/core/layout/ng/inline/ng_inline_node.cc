@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
@@ -657,9 +658,12 @@ scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
   return algorithm.Layout();
 }
 
-static LayoutUnit ComputeContentSize(NGInlineNode node,
-                                     const MinMaxSizeInput& input,
-                                     NGLineBreakerMode mode) {
+static LayoutUnit ComputeContentSize(
+    NGInlineNode node,
+    WritingMode container_writing_mode,
+    const MinMaxSizeInput& input,
+    NGLineBreakerMode mode,
+    const NGConstraintSpace* constraint_space) {
   const ComputedStyle& style = node.Style();
   WritingMode writing_mode = style.GetWritingMode();
   LayoutUnit available_inline_size =
@@ -717,8 +721,20 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
       const ComputedStyle& float_style = float_node.Style();
 
       MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
+      // We'll need extrinsic sizing data when computing min/max for orthogonal
+      // flow roots.
+      scoped_refptr<NGConstraintSpace> extrinsic_constraint_space;
+      const NGConstraintSpace* optional_constraint_space = nullptr;
+      if (!IsParallelWritingMode(container_writing_mode,
+                                 float_node.Style().GetWritingMode())) {
+        DCHECK(constraint_space);
+        extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
+            *constraint_space, input.extrinsic_block_size, float_node);
+        optional_constraint_space = extrinsic_constraint_space.get();
+      }
+
       MinMaxSize child_sizes = ComputeMinAndMaxContentContribution(
-          writing_mode, float_node, zero_input);
+          writing_mode, float_node, zero_input, optional_constraint_space);
       LayoutUnit child_inline_margins =
           ComputeMinMaxMargins(style, float_node).InlineSum();
 
@@ -754,7 +770,10 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   return result;
 }
 
-MinMaxSize NGInlineNode::ComputeMinMaxSize(const MinMaxSizeInput& input) {
+MinMaxSize NGInlineNode::ComputeMinMaxSize(
+    WritingMode container_writing_mode,
+    const MinMaxSizeInput& input,
+    const NGConstraintSpace* constraint_space) {
   PrepareLayoutIfNeeded();
 
   // Run line breaking with 0 and indefinite available width.
@@ -767,14 +786,16 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize(const MinMaxSizeInput& input) {
   // break opportunity.
   MinMaxSize sizes;
   sizes.min_size =
-      ComputeContentSize(*this, input, NGLineBreakerMode::kMinContent);
+      ComputeContentSize(*this, container_writing_mode, input,
+                         NGLineBreakerMode::kMinContent, constraint_space);
 
   // Compute the sum of inline sizes of all inline boxes with no line breaks.
   // TODO(kojii): NGConstraintSpaceBuilder does not allow NGSizeIndefinite
   // inline available size. We can allow it, or make this more efficient
   // without using NGLineBreaker.
   sizes.max_size =
-      ComputeContentSize(*this, input, NGLineBreakerMode::kMaxContent);
+      ComputeContentSize(*this, container_writing_mode, input,
+                         NGLineBreakerMode::kMaxContent, constraint_space);
 
   // Negative text-indent can make min > max. Ensure min is the minimum size.
   sizes.min_size = std::min(sizes.min_size, sizes.max_size);
