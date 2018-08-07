@@ -106,6 +106,7 @@ class TextSuggestionsTouchBarControllerTest : public InProcessBrowserTest {
 
 // Tests to check if the touch bar shows up properly.
 // DISABLED because it consistently fails "Mac10.12 Tests"
+// https://crbug.com/871740
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
                        DISABLED_MakeTouchBar) {
   if (@available(macOS 10.12.2, *)) {
@@ -126,6 +127,7 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
 
 // Tests that a change in text selection is handled properly.
 // DISABLED because it consistently fails "Mac10.12 Tests"
+// https://crbug.com/871740
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
                        DISABLED_UpdateTextSelection) {
   NSString* const kText = @"text";
@@ -178,7 +180,10 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
 }
 
 // Tests that a change in WebContents is handled properly.
-IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, SetWebContents) {
+// DISABLED because it consistently fails "Mac10.12 Tests"
+// https://crbug.com/871740
+IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
+                       DISABLED_SetWebContents) {
   NSString* const kText = @"text";
   const gfx::Range kRange = gfx::Range(1, 1);
 
