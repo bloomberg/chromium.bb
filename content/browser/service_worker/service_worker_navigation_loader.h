@@ -152,6 +152,9 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void OnConnectionClosed();
   void DeleteIfNeeded();
 
+  void ReportDestination(
+      ServiceWorkerMetrics::MainResourceRequestDestination destination);
+
   ResponseType response_type_ = ResponseType::NOT_DETERMINED;
   NavigationLoaderInterceptor::LoaderCallback loader_callback_;
 

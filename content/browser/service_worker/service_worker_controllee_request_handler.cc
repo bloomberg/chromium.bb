@@ -106,6 +106,36 @@ class ServiceWorkerControlleeRequestHandler::
   DISALLOW_COPY_AND_ASSIGN(ScopedDisallowSetControllerRegistration);
 };
 
+class ServiceWorkerControlleeRequestHandler::MainResourceRequestTracker {
+ public:
+  MainResourceRequestTracker() = default;
+
+  ~MainResourceRequestTracker() {
+    if (recorded_destination_)
+      return;
+    RecordDestination(
+        will_dispatch_fetch_
+            ? ServiceWorkerMetrics::MainResourceRequestDestination::
+                  kAbortedWhileDispatchingFetchEvent
+            : ServiceWorkerMetrics::MainResourceRequestDestination::
+                  kAbortedWithoutDispatchingFetchEvent);
+  }
+
+  void RecordDestination(
+      ServiceWorkerMetrics::MainResourceRequestDestination destination) {
+    CHECK(!recorded_destination_);
+    recorded_destination_ = true;
+    ServiceWorkerMetrics::RecordMainResourceRequestDestination(destination);
+  }
+
+  void WillDispatchFetchEvent() { will_dispatch_fetch_ = true; }
+
+ private:
+  bool recorded_destination_ = false;
+  bool will_dispatch_fetch_ = false;
+  DISALLOW_COPY_AND_ASSIGN(MainResourceRequestTracker);
+};
+
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
@@ -333,6 +363,8 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   DCHECK(!JobWasCanceled());
   DCHECK(context_);
   DCHECK(provider_host_);
+  tracker_ = std::make_unique<MainResourceRequestTracker>();
+
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker",
       "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
@@ -368,6 +400,9 @@ void ServiceWorkerControlleeRequestHandler::
     return;
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNoRegistration);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -378,6 +413,9 @@ void ServiceWorkerControlleeRequestHandler::
   DCHECK(registration);
 
   if (!provider_host_) {
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNoProvider);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -388,6 +426,9 @@ void ServiceWorkerControlleeRequestHandler::
   provider_host_->AddMatchingRegistration(registration.get());
 
   if (!context_) {
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNoContext);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -399,6 +440,9 @@ void ServiceWorkerControlleeRequestHandler::
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host_->topmost_frame_url(),
           resource_context_, provider_host_->web_contents_getter())) {
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNotAllowed);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -410,6 +454,9 @@ void ServiceWorkerControlleeRequestHandler::
   if (!provider_host_->IsContextSecureForServiceWorker()) {
     // TODO(falken): Figure out a way to surface in the page's DevTools
     // console that the service worker was blocked for security.
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNotSecure);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -441,6 +488,9 @@ void ServiceWorkerControlleeRequestHandler::
   scoped_refptr<ServiceWorkerVersion> active_version =
       registration->active_version();
   if (!active_version) {
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNoActiveVersion);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -481,6 +531,8 @@ void ServiceWorkerControlleeRequestHandler::
   // The job may have been canceled before this was invoked. In that
   // case, |url_job_| can't be used, so return.
   if (JobWasCanceled()) {
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::kJobWasCancelled);
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
@@ -489,6 +541,9 @@ void ServiceWorkerControlleeRequestHandler::
   }
 
   if (!provider_host_) {
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNoProviderAfterContinuing);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -517,6 +572,9 @@ void ServiceWorkerControlleeRequestHandler::
     //      retries.
     //   3) If the provider host does not have an active version, just fail the
     //      load.
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNoActiveVersionAfterContinuing);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
@@ -547,6 +605,11 @@ void ServiceWorkerControlleeRequestHandler::
   }
   bool is_forwarded =
       MaybeForwardToServiceWorker(url_job_.get(), active_version.get());
+  if (!is_forwarded) {
+    tracker_->RecordDestination(
+        ServiceWorkerMetrics::MainResourceRequestDestination::
+            kNetworkBecauseNoFetchEventHandler);
+  }
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker",
       "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
@@ -679,6 +742,18 @@ void ServiceWorkerControlleeRequestHandler::MainResourceLoadFailed() {
   DCHECK(provider_host_);
   // Detach the controller so subresource requests also skip the worker.
   provider_host_->NotifyControllerLost();
+}
+
+void ServiceWorkerControlleeRequestHandler::ReportDestination(
+    ServiceWorkerMetrics::MainResourceRequestDestination destination) {
+  DCHECK(is_main_resource_load_);
+  tracker_->RecordDestination(destination);
+}
+
+void ServiceWorkerControlleeRequestHandler::
+    WillDispatchFetchEventForMainResource() {
+  DCHECK(is_main_resource_load_);
+  tracker_->WillDispatchFetchEvent();
 }
 
 void ServiceWorkerControlleeRequestHandler::ClearJob() {
