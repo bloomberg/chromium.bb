@@ -47,6 +47,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
         mModel.setValue(UrlBarProperties.FOCUS_CHANGE_CALLBACK, this::onUrlFocusChange);
         mModel.setValue(UrlBarProperties.SHOW_CURSOR, false);
         mModel.setValue(UrlBarProperties.TEXT_CONTEXT_MENU_DELEGATE, this);
+        setUseDarkTextColors(true);
     }
 
     /**
