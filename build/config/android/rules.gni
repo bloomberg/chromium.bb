@@ -8,8 +8,8 @@ import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
-import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/dcheck_always_on.gni")
+import("//build/config/python.gni")
 import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -76,7 +76,7 @@ template("create_native_executable_dist") {
   _find_deps_target_name = "${target_name}__find_library_dependencies"
 
   # TODO(agrieve): Extract dependent libs from GN rather than readelf.
-  action(_find_deps_target_name) {
+  action_with_pydeps(_find_deps_target_name) {
     deps = invoker.deps + [ ":$_runtime_deps_target_name" ]
     script = "//build/android/gyp/write_ordered_libraries.py"
     depfile = "$target_gen_dir/$target_name.d"
@@ -157,7 +157,7 @@ template("create_native_executable_dist") {
 #     target = "//pkg/foo.py"
 #   }
 template("wrapper_script") {
-  action(target_name) {
+  action_with_pydeps(target_name) {
     _name = get_path_info(invoker.target, "name")
     _output = "$root_out_dir/bin/$_name"
 
@@ -233,17 +233,14 @@ if (enable_java_templates) {
     }
 
     _foreach_target_name = "${target_name}__jni_gen"
-    action_foreach(_foreach_target_name) {
+    action_foreach_with_pydeps(_foreach_target_name) {
       script = "//base/android/jni_generator/jni_generator.py"
-      depfile = "$target_gen_dir/$target_name.{{source_name_part}}.d"
       sources = invoker.sources
       outputs = [
         "${_jni_output_dir}/{{source_name_part}}_jni.h",
       ]
 
       args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
         "--input_file={{source}}",
         "--ptr_type=long",
         "--output_dir",
@@ -338,10 +335,9 @@ if (enable_java_templates) {
       _classname = get_path_info(_class, "name")
       _jni_target_name = "${target_name}__jni_${_classname}"
       _jni_actions += [ ":$_jni_target_name" ]
-      action(_jni_target_name) {
+      action_with_pydeps(_jni_target_name) {
         # The sources aren't compiled so don't check their dependencies.
         check_includes = false
-        depfile = "$target_gen_dir/$target_name.d"
         script = "//base/android/jni_generator/jni_generator.py"
         inputs = [
           _jar_file,
@@ -351,8 +347,6 @@ if (enable_java_templates) {
         ]
 
         args = [
-          "--depfile",
-          rebase_path(depfile, root_build_dir),
           "--jar_file",
           rebase_path(_jar_file, root_build_dir),
           "--input_file",
@@ -413,7 +407,7 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("generate_jni_registration") {
-    action(target_name) {
+    action_with_pydeps(target_name) {
       forward_variables_from(invoker, [ "testonly" ])
       _build_config = get_label_info(invoker.target, "target_gen_dir") + "/" +
                       get_label_info(invoker.target, "name") + ".build_config"
@@ -494,7 +488,7 @@ if (enable_java_templates) {
     _base_gen_dir = "${target_gen_dir}/${target_name}/java_cpp_template"
     _package_path = invoker.package_path
 
-    action_foreach(_apply_gcc_target_name) {
+    action_foreach_with_pydeps(_apply_gcc_target_name) {
       forward_variables_from(invoker,
                              [
                                "deps",
@@ -568,7 +562,7 @@ if (enable_java_templates) {
   #   }
   template("java_cpp_enum") {
     set_sources_assignment_filter([])
-    action(target_name) {
+    action_with_pydeps(target_name) {
       forward_variables_from(invoker,
                              [
                                "sources",
@@ -596,19 +590,6 @@ if (enable_java_templates) {
     }
   }
 
-  if (compute_inputs_for_analyze) {
-    _jinja_template_pydeps =
-        exec_script("//build/print_python_deps.py",
-                    [
-                      rebase_path("//build/android/gyp/jinja_template.py"),
-                      "--no-header",
-                      "--gn-paths",
-                      "--root",
-                      rebase_path("//", root_build_dir),
-                    ],
-                    "list lines")
-  }
-
   # Declare a target for processing a Jinja template.
   #
   # Variables
@@ -624,26 +605,20 @@ if (enable_java_templates) {
   #     output = "$target_gen_dir/AndroidManifest.xml"
   #   }
   template("jinja_template") {
-    forward_variables_from(invoker, [ "testonly" ])
-
-    action(target_name) {
+    action_with_pydeps(target_name) {
       forward_variables_from(invoker,
                              [
                                "visibility",
                                "deps",
+                               "testonly",
                              ])
-
       inputs = [
         invoker.input,
       ]
       if (defined(invoker.includes)) {
         inputs += invoker.includes
       }
-      if (compute_inputs_for_analyze) {
-        inputs += _jinja_template_pydeps
-      }
       script = "//build/android/gyp/jinja_template.py"
-      depfile = "$target_gen_dir/$target_name.d"
 
       outputs = [
         invoker.output,
@@ -656,8 +631,7 @@ if (enable_java_templates) {
         rebase_path(invoker.input, root_build_dir),
         "--output",
         rebase_path(invoker.output, root_build_dir),
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
+        "--check-includes",
       ]
       if (defined(invoker.includes)) {
         _rebased_includes = rebase_path(invoker.includes, root_build_dir)
@@ -753,8 +727,6 @@ if (enable_java_templates) {
   #     variables = ["color=red"]
   #   }
   template("jinja_template_resources") {
-    forward_variables_from(invoker, [ "testonly" ])
-
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
     _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
@@ -762,11 +734,14 @@ if (enable_java_templates) {
 
     _generating_target_name = "${target_name}__template"
 
-    action(_generating_target_name) {
-      forward_variables_from(invoker, [ "deps" ])
+    action_with_pydeps(_generating_target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "testonly",
+                             ])
       inputs = invoker.resources
       script = "//build/android/gyp/jinja_template.py"
-      depfile = "$target_gen_dir/$target_name.d"
 
       outputs = [
         _resources_zip,
@@ -779,8 +754,7 @@ if (enable_java_templates) {
         rebase_path(invoker.res_dir, root_build_dir),
         "--outputs-zip",
         rebase_path(_resources_zip, root_build_dir),
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
+        "--check-includes",
       ]
       if (defined(invoker.variables)) {
         variables = invoker.variables
@@ -789,7 +763,11 @@ if (enable_java_templates) {
     }
 
     android_generated_resources(target_name) {
-      forward_variables_from(invoker, [ "deps" ])
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "testonly",
+                             ])
       generating_target_name = ":$_generating_target_name"
       generated_resources_zip = _resources_zip
     }
@@ -1545,7 +1523,7 @@ if (enable_java_templates) {
         }
       }
     } else {
-      action(_jar_target_name) {
+      action_with_pydeps(_jar_target_name) {
         forward_variables_from(invoker, [ "data" ])
         script = "//build/android/gyp/create_dist_jar.py"
         depfile = "$target_gen_dir/$target_name.d"
@@ -1653,7 +1631,7 @@ if (enable_java_templates) {
 
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
 
-    action(target_name) {
+    action_with_pydeps(target_name) {
       forward_variables_from(invoker, [ "data" ])
       depfile = "$target_gen_dir/$target_name.d"
       deps = _deps
@@ -2156,13 +2134,6 @@ if (enable_java_templates) {
       version_code = _version_code
       version_name = _version_name
 
-      # Subtle: required to avoid GN build errors. "testonly" cannot be added
-      # to the forward_variables_from() above because it was already forwarded
-      # at the start of android_apk(). And if the assignment below is not
-      # performed, GN will complain that some test-only targets depend
-      # on non-test-only ones.
-      testonly = defined(testonly) && testonly
-
       if (defined(invoker.post_process_package_resources_script)) {
         post_process_script = invoker.post_process_package_resources_script
       }
@@ -2211,7 +2182,7 @@ if (enable_java_templates) {
 
       # TODO(agrieve): Make GN write runtime deps in dependency order so as to
       # not need this manual sorting step.
-      action(_ordered_libraries_target) {
+      action_with_pydeps(_ordered_libraries_target) {
         script = "//build/android/gyp/write_ordered_libraries.py"
         deps = [
           ":$_build_config_target",
@@ -2628,9 +2599,8 @@ if (enable_java_templates) {
     }
 
     _write_installer_json_rule_name = "${_template_name}__incremental_json"
-    action(_write_installer_json_rule_name) {
+    action_with_pydeps(_write_installer_json_rule_name) {
       script = "//build/android/incremental_install/write_installer_json.py"
-      depfile = "$target_gen_dir/$target_name.d"
       deps = [
         _native_libs_file_arg_dep,
       ]
@@ -2643,14 +2613,12 @@ if (enable_java_templates) {
           rebase_path(_final_apk_path_no_ext, root_build_dir)
       _rebased_incremental_install_json_path =
           rebase_path(_incremental_install_json_path, root_build_dir)
-      _rebased_depfile = rebase_path(depfile, root_build_dir)
       _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
       args = [
         "--apk-path=${_rebased_apk_path_no_ext}_incremental.apk",
         "--output-path=$_rebased_incremental_install_json_path",
         "--dex-file=$_rebased_lib_dex_path",
         "--dex-file-list=@FileArg($_dex_arg_key)",
-        "--depfile=$_rebased_depfile",
       ]
       if (_proguard_enabled) {
         args += [ "--show-proguard-warning" ]
@@ -2676,7 +2644,7 @@ if (enable_java_templates) {
     # Generate apk operation related script.
     if (!defined(invoker.create_apk_script) || invoker.create_apk_script) {
       _apk_operations_target_name = "${target_name}__apk_operations"
-      action(_apk_operations_target_name) {
+      action_with_pydeps(_apk_operations_target_name) {
         _generated_script = "$root_build_dir/bin/${invoker.target_name}"
         script = "//build/android/gyp/create_apk_operations_script.py"
         outputs = [
@@ -3251,7 +3219,7 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("android_aidl") {
-    action(target_name) {
+    action_with_pydeps(target_name) {
       set_sources_assignment_filter([])
       forward_variables_from(invoker, [ "testonly" ])
 
@@ -3269,14 +3237,11 @@ if (enable_java_templates) {
 
       inputs = [ _aidl_path ] + _imports
 
-      depfile = "${target_gen_dir}/${target_name}.d"
       outputs = [
         _srcjar_path,
       ]
       _rebased_imports = rebase_path(_imports, root_build_dir)
       args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
         "--aidl-path",
         rebase_path(_aidl_path, root_build_dir),
         "--imports=$_rebased_imports",
@@ -3349,7 +3314,7 @@ if (enable_java_templates) {
     _proto_path = invoker.proto_path
     _template_name = target_name
 
-    action("${_template_name}__protoc_java") {
+    action_with_pydeps("${_template_name}__protoc_java") {
       _srcjar_path = "$target_gen_dir/$target_name.srcjar"
       script = "//build/protoc_java.py"
 
@@ -3462,7 +3427,7 @@ if (enable_java_templates) {
                " Use ignore_native_libraries = true to silence this error.")
     assert(_scanned_files.has_classes_jar || _scanned_files.subjars == [])
 
-    action(_unpack_target_name) {
+    action_with_pydeps(_unpack_target_name) {
       script = "//build/android/gyp/aar.py"  # Unzips the AAR
       args = [
         "extract",
@@ -3863,18 +3828,10 @@ if (enable_java_templates) {
       _bundle_keystore_name = _keystore_name
     }
 
-    # NOTE: Keep this consistent with the imports of create_app_bundle.py
-    _create_app_bundle_py_imports =
-        build_utils_py + [
-          "//build/android/gyp/util/resource_utils.py",
-          "//build/android/gyp/bundletool.py",
-        ]
-
     _bundle_target_name = "${target_name}__bundle"
-    action(_bundle_target_name) {
+    action_with_pydeps(_bundle_target_name) {
       script = "//build/android/gyp/create_app_bundle.py"
-      inputs = _all_module_zip_paths + _all_module_build_configs +
-               _create_app_bundle_py_imports
+      inputs = _all_module_zip_paths + _all_module_build_configs
       outputs = [
         _bundle_path,
       ]
@@ -3920,12 +3877,12 @@ if (enable_java_templates) {
     _rebased_base_module_build_config =
         rebase_path(_base_module_build_config, root_build_dir)
 
-    action("${target_name}__wrapper_script") {
+    action_with_pydeps("${target_name}__wrapper_script") {
       script = "//build/android/gyp/create_bundle_wrapper_script.py"
-      inputs = build_utils_py + [
-                 "//build/android/gyp/bundletool.py",
-                 _base_module_build_config,
-               ]
+      inputs = [
+        "//build/android/gyp/bundletool.py",
+        _base_module_build_config,
+      ]
       outputs = [
         _bundle_wrapper_script_path,
       ]
