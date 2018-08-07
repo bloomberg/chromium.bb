@@ -712,18 +712,18 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   TraceWrapperMember<WebGLContextGroup> context_group_;
 
-  bool is_origin_top_left_;
+  bool is_origin_top_left_ = false;
 
-  bool is_hidden_;
-  LostContextMode context_lost_mode_;
-  AutoRecoveryMethod auto_recovery_method_;
+  bool is_hidden_ = false;
+  LostContextMode context_lost_mode_ = kNotLostContext;
+  AutoRecoveryMethod auto_recovery_method_ = kManual;
   // Dispatches a context lost event once it is determined that one is needed.
   // This is used for synthetic, WEBGL_lose_context and real context losses. For
   // real ones, it's likely that there's no JavaScript on the stack, but that
   // might be dependent on how exactly the platform discovers that the context
   // was lost. For better portability we always defer the dispatch of the event.
   TaskRunnerTimer<WebGLRenderingContextBase> dispatch_context_lost_event_timer_;
-  bool restore_allowed_;
+  bool restore_allowed_ = false;
   TaskRunnerTimer<WebGLRenderingContextBase> restore_timer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -771,7 +771,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     void BubbleToFront(size_t idx);
     Vector<std::unique_ptr<CanvasResourceProvider>> resource_providers_;
   };
-  LRUCanvasResourceProviderCache generated_image_cache_;
+  LRUCanvasResourceProviderCache generated_image_cache_ =
+      LRUCanvasResourceProviderCache(4);
 
   GLint max_texture_size_;
   GLint max_cube_map_texture_size_;
@@ -818,10 +819,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   bool is_depth_stencil_supported_;
 
-  bool synthesized_errors_to_console_;
+  bool synthesized_errors_to_console_ = true;
   int num_gl_errors_to_console_allowed_;
 
-  unsigned long one_plus_max_non_default_texture_unit_;
+  unsigned long one_plus_max_non_default_texture_unit_ = 0;
 
   std::unique_ptr<Extensions3DUtil> extensions_util_;
 
@@ -967,14 +968,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Other errors raised by synthesizeGLError().
   Vector<GLenum> synthetic_errors_;
 
-  bool is_web_gl2_formats_types_added_;
-  bool is_web_gl2_tex_image_source_formats_types_added_;
-  bool is_web_gl2_internal_formats_copy_tex_image_added_;
-  bool is_oes_texture_float_formats_types_added_;
-  bool is_oes_texture_half_float_formats_types_added_;
-  bool is_web_gl_depth_texture_formats_types_added_;
-  bool is_ext_srgb_formats_types_added_;
-  bool is_ext_color_buffer_float_formats_added_;
+  bool is_web_gl2_formats_types_added_ = false;
+  bool is_web_gl2_tex_image_source_formats_types_added_ = false;
+  bool is_web_gl2_internal_formats_copy_tex_image_added_ = false;
+  bool is_oes_texture_float_formats_types_added_ = false;
+  bool is_oes_texture_half_float_formats_types_added_ = false;
+  bool is_web_gl_depth_texture_formats_types_added_ = false;
+  bool is_ext_srgb_formats_types_added_ = false;
+  bool is_ext_color_buffer_float_formats_added_ = false;
 
   std::set<GLenum> supported_internal_formats_;
   std::set<GLenum> supported_tex_image_source_internal_formats_;
