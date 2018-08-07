@@ -4911,6 +4911,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 		wl_client_destroy(shell->child.client);
 	}
 
+	wl_list_remove(&shell->destroy_listener.link);
 	wl_list_remove(&shell->idle_listener.link);
 	wl_list_remove(&shell->wake_listener.link);
 	wl_list_remove(&shell->transform_listener.link);

@@ -452,6 +452,7 @@ text_input_manager_notifier_destroy(struct wl_listener *listener, void *data)
 			     struct text_input_manager,
 			     destroy_listener);
 
+	wl_list_remove(&text_input_manager->destroy_listener.link);
 	wl_global_destroy(text_input_manager->text_input_manager_global);
 
 	free(text_input_manager);
@@ -1060,6 +1061,8 @@ text_backend_configuration(struct text_backend *text_backend)
 WL_EXPORT void
 text_backend_destroy(struct text_backend *text_backend)
 {
+	wl_list_remove(&text_backend->seat_created_listener.link);
+
 	if (text_backend->input_method.client) {
 		/* disable respawn */
 		wl_list_remove(&text_backend->client_listener.link);

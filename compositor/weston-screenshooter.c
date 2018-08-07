@@ -162,6 +162,8 @@ screenshooter_destroy(struct wl_listener *listener, void *data)
 	struct screenshooter *shooter =
 		container_of(listener, struct screenshooter, destroy_listener);
 
+	wl_list_remove(&shooter->destroy_listener.link);
+
 	wl_global_destroy(shooter->global);
 	free(shooter);
 }
