@@ -139,7 +139,7 @@ void SVGStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
 }
 
 void SVGStyleElement::DispatchPendingEvent() {
-  DispatchEvent(Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(EventTypeNames::error));
 }
 
 void SVGStyleElement::Trace(blink::Visitor* visitor) {

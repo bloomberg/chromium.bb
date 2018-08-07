@@ -338,7 +338,7 @@ void WebPagePopupImpl::PostMessageToPopup(const String& message) {
     return;
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
   if (LocalDOMWindow* window = ToLocalFrame(page_->MainFrame())->DomWindow())
-    window->DispatchEvent(MessageEvent::Create(message));
+    window->DispatchEvent(*MessageEvent::Create(message));
 }
 
 void WebPagePopupImpl::DestroyPage() {

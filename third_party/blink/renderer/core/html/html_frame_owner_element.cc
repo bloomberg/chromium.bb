@@ -252,7 +252,7 @@ void HTMLFrameOwnerElement::DispatchLoad() {
   if (lazy_load_frame_observer_)
     lazy_load_frame_observer_->RecordMetricsOnLoadFinished();
 
-  DispatchScopedEvent(Event::Create(EventTypeNames::load));
+  DispatchScopedEvent(*Event::Create(EventTypeNames::load));
 }
 
 const ParsedFeaturePolicy& HTMLFrameOwnerElement::ContainerPolicy() const {

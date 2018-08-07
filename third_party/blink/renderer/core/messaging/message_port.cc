@@ -282,7 +282,7 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);
   if (debugger)
     debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);
-  DispatchEvent(evt);
+  DispatchEvent(*evt);
   if (debugger)
     debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
   return true;

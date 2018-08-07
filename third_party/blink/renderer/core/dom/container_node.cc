@@ -1278,15 +1278,15 @@ static void DispatchChildInsertionEvents(Node& child) {
   if (c->parentNode() &&
       document->HasListenerType(Document::kDOMNodeInsertedListener)) {
     c->DispatchScopedEvent(
-        MutationEvent::Create(EventTypeNames::DOMNodeInserted,
-                              Event::Bubbles::kYes, c->parentNode()));
+        *MutationEvent::Create(EventTypeNames::DOMNodeInserted,
+                               Event::Bubbles::kYes, c->parentNode()));
   }
 
   // dispatch the DOMNodeInsertedIntoDocument event to all descendants
   if (c->isConnected() && document->HasListenerType(
                               Document::kDOMNodeInsertedIntoDocumentListener)) {
     for (; c; c = NodeTraversal::Next(*c, &child)) {
-      c->DispatchScopedEvent(MutationEvent::Create(
+      c->DispatchScopedEvent(*MutationEvent::Create(
           EventTypeNames::DOMNodeInsertedIntoDocument, Event::Bubbles::kNo));
     }
   }
@@ -1320,7 +1320,7 @@ static void DispatchChildRemovalEvents(Node& child) {
           Document::InDOMNodeRemovedHandlerState::kDOMNodeRemoved);
     }
     NodeChildRemovalTracker scope(child);
-    c->DispatchScopedEvent(MutationEvent::Create(
+    c->DispatchScopedEvent(*MutationEvent::Create(
         EventTypeNames::DOMNodeRemoved, Event::Bubbles::kYes, c->parentNode()));
     document.SetInDOMNodeRemovedHandlerState(original_document_state);
     c->SetInDOMNodeRemovedHandler(original_node_flag);
@@ -1341,7 +1341,7 @@ static void DispatchChildRemovalEvents(Node& child) {
     }
     NodeChildRemovalTracker scope(child);
     for (; c; c = NodeTraversal::Next(*c, &child)) {
-      c->DispatchScopedEvent(MutationEvent::Create(
+      c->DispatchScopedEvent(*MutationEvent::Create(
           EventTypeNames::DOMNodeRemovedFromDocument, Event::Bubbles::kNo));
     }
     document.SetInDOMNodeRemovedHandlerState(original_document_state);

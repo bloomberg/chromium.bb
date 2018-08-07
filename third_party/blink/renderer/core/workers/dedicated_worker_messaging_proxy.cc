@@ -143,7 +143,7 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerObject(
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(channels));
   debugger->ExternalAsyncTaskStarted(stack_id);
   worker_object_->DispatchEvent(
-      MessageEvent::Create(ports, std::move(message)));
+      *MessageEvent::Create(ports, std::move(message)));
   debugger->ExternalAsyncTaskFinished(stack_id);
 }
 
@@ -165,7 +165,8 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
   ErrorEvent* event =
       ErrorEvent::Create(error_message, location->Clone(), nullptr);
-  if (worker_object_->DispatchEvent(event) != DispatchEventResult::kNotCanceled)
+  if (worker_object_->DispatchEvent(*event) !=
+      DispatchEventResult::kNotCanceled)
     return;
 
   // The worker thread can already be terminated.

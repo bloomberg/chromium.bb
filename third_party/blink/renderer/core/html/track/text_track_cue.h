@@ -109,7 +109,7 @@ class TextTrackCue : public EventTargetWithInlineData {
   void CueWillChange();
   virtual void CueDidChange(
       CueMutationAffectsOrder = kCueMutationDoesNotAffectOrder);
-  DispatchEventResult DispatchEventInternal(Event*) override;
+  DispatchEventResult DispatchEventInternal(Event&) override;
 
  private:
   AtomicString id_;

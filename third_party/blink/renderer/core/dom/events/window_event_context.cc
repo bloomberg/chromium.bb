@@ -53,7 +53,7 @@ bool WindowEventContext::HandleLocalEvents(Event& event) {
 
   event.SetTarget(Target());
   event.SetCurrentTarget(Window());
-  window_->FireEventListeners(&event);
+  window_->FireEventListeners(event);
   return true;
 }
 

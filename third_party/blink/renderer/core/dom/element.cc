@@ -3378,17 +3378,17 @@ Element* Element::AdjustedFocusedElementInTreeScope() const {
 void Element::DispatchFocusEvent(Element* old_focused_element,
                                  WebFocusType type,
                                  InputDeviceCapabilities* source_capabilities) {
-  DispatchEvent(FocusEvent::Create(EventTypeNames::focus, Event::Bubbles::kNo,
-                                   GetDocument().domWindow(), 0,
-                                   old_focused_element, source_capabilities));
+  DispatchEvent(*FocusEvent::Create(EventTypeNames::focus, Event::Bubbles::kNo,
+                                    GetDocument().domWindow(), 0,
+                                    old_focused_element, source_capabilities));
 }
 
 void Element::DispatchBlurEvent(Element* new_focused_element,
                                 WebFocusType type,
                                 InputDeviceCapabilities* source_capabilities) {
-  DispatchEvent(FocusEvent::Create(EventTypeNames::blur, Event::Bubbles::kNo,
-                                   GetDocument().domWindow(), 0,
-                                   new_focused_element, source_capabilities));
+  DispatchEvent(*FocusEvent::Create(EventTypeNames::blur, Event::Bubbles::kNo,
+                                    GetDocument().domWindow(), 0,
+                                    new_focused_element, source_capabilities));
 }
 
 void Element::DispatchFocusInEvent(
@@ -3401,7 +3401,7 @@ void Element::DispatchFocusInEvent(
 #endif
   DCHECK(event_type == EventTypeNames::focusin ||
          event_type == EventTypeNames::DOMFocusIn);
-  DispatchScopedEvent(FocusEvent::Create(
+  DispatchScopedEvent(*FocusEvent::Create(
       event_type, Event::Bubbles::kYes, GetDocument().domWindow(), 0,
       old_focused_element, source_capabilities));
 }
@@ -3415,7 +3415,7 @@ void Element::DispatchFocusOutEvent(
 #endif
   DCHECK(event_type == EventTypeNames::focusout ||
          event_type == EventTypeNames::DOMFocusOut);
-  DispatchScopedEvent(FocusEvent::Create(
+  DispatchScopedEvent(*FocusEvent::Create(
       event_type, Event::Bubbles::kYes, GetDocument().domWindow(), 0,
       new_focused_element, source_capabilities));
 }

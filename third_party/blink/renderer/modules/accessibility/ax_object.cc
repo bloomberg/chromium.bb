@@ -1076,7 +1076,7 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
       break;
 
     event.SetCurrentTarget(event_path[i]);
-    event_path[i]->FireEventListeners(&event);
+    event_path[i]->FireEventListeners(event);
     if (event.PropagationStopped())
       return true;
   }
@@ -1084,7 +1084,7 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
   // Targeting phase.
   event.SetEventPhase(Event::kAtTarget);
   event.SetCurrentTarget(event_path[0]);
-  event_path[0]->FireEventListeners(&event);
+  event_path[0]->FireEventListeners(event);
   if (event.PropagationStopped())
     return true;
 
@@ -1092,7 +1092,7 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
   event.SetEventPhase(Event::kBubblingPhase);
   for (size_t i = 1; i < event_path.size(); i++) {
     event.SetCurrentTarget(event_path[i]);
-    event_path[i]->FireEventListeners(&event);
+    event_path[i]->FireEventListeners(event);
     if (event.PropagationStopped())
       return true;
   }

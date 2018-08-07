@@ -279,7 +279,7 @@ void LocalDOMWindow::AcceptLanguagesChanged() {
   if (navigator_)
     navigator_->SetLanguagesChanged();
 
-  DispatchEvent(Event::Create(EventTypeNames::languagechange));
+  DispatchEvent(*Event::Create(EventTypeNames::languagechange));
 }
 
 TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
@@ -399,7 +399,7 @@ void LocalDOMWindow::EnqueuePopstateEvent(
     scoped_refptr<SerializedScriptValue> state_object) {
   // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs
   // to fire asynchronously
-  DispatchEvent(PopStateEvent::Create(std::move(state_object), history()));
+  DispatchEvent(*PopStateEvent::Create(std::move(state_object), history()));
 }
 
 void LocalDOMWindow::StatePopped(
@@ -498,7 +498,7 @@ void LocalDOMWindow::SendOrientationChangeEvent() {
 
   for (LocalFrame* frame : frames) {
     frame->DomWindow()->DispatchEvent(
-        Event::Create(EventTypeNames::orientationchange));
+        *Event::Create(EventTypeNames::orientationchange));
   }
 }
 
@@ -667,7 +667,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
         GetFrame(), WebFeature::kPostMessageIncomingWouldBeBlockedByConnectSrc);
   }
 
-  DispatchEvent(event);
+  DispatchEvent(*event);
 }
 
 DOMSelection* LocalDOMWindow::getSelection() {
@@ -1487,19 +1487,19 @@ void LocalDOMWindow::DispatchLoadEvent() {
   probe::loadEventFired(GetFrame());
 }
 
-DispatchEventResult LocalDOMWindow::DispatchEvent(Event* event,
+DispatchEventResult LocalDOMWindow::DispatchEvent(Event& event,
                                                   EventTarget* target) {
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
 
-  event->SetTrusted(true);
-  event->SetTarget(target ? target : this);
-  event->SetCurrentTarget(this);
-  event->SetEventPhase(Event::kAtTarget);
+  event.SetTrusted(true);
+  event.SetTarget(target ? target : this);
+  event.SetCurrentTarget(this);
+  event.SetEventPhase(Event::kAtTarget);
 
   TRACE_EVENT1("devtools.timeline", "EventDispatch", "data",
-               InspectorEventDispatchEvent::Data(*event));
+               InspectorEventDispatchEvent::Data(event));
   return FireEventListeners(event);
 }
 

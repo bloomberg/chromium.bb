@@ -55,7 +55,7 @@ void ScopedEventQueue::Initialize() {
   instance_ = instance.release();
 }
 
-void ScopedEventQueue::EnqueueEvent(Event* event) {
+void ScopedEventQueue::EnqueueEvent(Event& event) {
   if (ShouldQueueEvents())
     queued_events_.push_back(event);
   else
@@ -67,12 +67,12 @@ void ScopedEventQueue::DispatchAllEvents() {
   queued_events.swap(queued_events_);
 
   for (auto& event : queued_events)
-    DispatchEvent(event);
+    DispatchEvent(*event);
 }
 
-void ScopedEventQueue::DispatchEvent(Event* event) const {
-  DCHECK(event->target());
-  Node* node = event->target()->ToNode();
+void ScopedEventQueue::DispatchEvent(Event& event) const {
+  DCHECK(event.target());
+  Node* node = event.target()->ToNode();
   EventDispatcher::DispatchEvent(*node, event);
 }
 

@@ -228,7 +228,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool CompositorPendingForTesting() const { return compositor_pending_; }
 
  protected:
-  DispatchEventResult DispatchEventInternal(Event*) override;
+  DispatchEventResult DispatchEventInternal(Event&) override;
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 

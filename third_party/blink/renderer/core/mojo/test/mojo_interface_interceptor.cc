@@ -173,7 +173,7 @@ void MojoInterfaceInterceptor::OnInterfaceRequest(
 
 void MojoInterfaceInterceptor::DispatchInterfaceRequestEvent(
     mojo::ScopedMessagePipeHandle handle) {
-  DispatchEvent(MojoInterfaceRequestEvent::Create(
+  DispatchEvent(*MojoInterfaceRequestEvent::Create(
       MojoHandle::Create(mojo::ScopedHandle::From(std::move(handle)))));
 }
 

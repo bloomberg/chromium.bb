@@ -700,7 +700,7 @@ FloatRect SVGUseElement::GetBBox() {
 void SVGUseElement::DispatchPendingEvent() {
   DCHECK(IsStructurallyExternal());
   DCHECK(have_fired_load_event_);
-  DispatchEvent(Event::Create(EventTypeNames::load));
+  DispatchEvent(*Event::Create(EventTypeNames::load));
 }
 
 void SVGUseElement::NotifyFinished(Resource* resource) {
@@ -710,7 +710,7 @@ void SVGUseElement::NotifyFinished(Resource* resource) {
 
   InvalidateShadowTree();
   if (!ResourceIsValid()) {
-    DispatchEvent(Event::Create(EventTypeNames::error));
+    DispatchEvent(*Event::Create(EventTypeNames::error));
   } else if (!resource->WasCanceled()) {
     if (have_fired_load_event_)
       return;

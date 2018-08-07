@@ -102,9 +102,9 @@ void EventQueue::DispatchEvent(Event* event) {
   probe::AsyncTask async_task(GetExecutionContext(), event);
   EventTarget* target = event->target();
   if (LocalDOMWindow* window = target->ToLocalDOMWindow())
-    window->DispatchEvent(event, nullptr);
+    window->DispatchEvent(*event, nullptr);
   else
-    target->DispatchEvent(event);
+    target->DispatchEvent(*event);
 }
 
 void EventQueue::ContextDestroyed(ExecutionContext* context) {

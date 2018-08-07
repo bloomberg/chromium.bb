@@ -269,7 +269,7 @@ class CORE_EXPORT HTMLCanvasElement final
   }
 
   DispatchEventResult HostDispatchEvent(Event* event) override {
-    return DispatchEvent(event);
+    return DispatchEvent(*event);
   }
 
   bool IsWebGL1Enabled() const override;

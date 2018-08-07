@@ -459,16 +459,16 @@ void FileReader::DidFail(FileError::ErrorCode error_code) {
 void FileReader::FireEvent(const AtomicString& type) {
   probe::AsyncTask async_task(GetExecutionContext(), this, "event");
   if (!loader_) {
-    DispatchEvent(ProgressEvent::Create(type, false, 0, 0));
+    DispatchEvent(*ProgressEvent::Create(type, false, 0, 0));
     return;
   }
 
   if (loader_->TotalBytes()) {
-    DispatchEvent(ProgressEvent::Create(type, true, loader_->BytesLoaded(),
-                                        *loader_->TotalBytes()));
+    DispatchEvent(*ProgressEvent::Create(type, true, loader_->BytesLoaded(),
+                                         *loader_->TotalBytes()));
   } else {
     DispatchEvent(
-        ProgressEvent::Create(type, false, loader_->BytesLoaded(), 0));
+        *ProgressEvent::Create(type, false, loader_->BytesLoaded(), 0));
   }
 }
 

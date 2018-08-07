@@ -52,8 +52,8 @@ class EventDispatcher {
   STACK_ALLOCATED();
 
  public:
-  static DispatchEventResult DispatchEvent(Node&, Event*);
-  static void DispatchScopedEvent(Node&, Event*);
+  static DispatchEventResult DispatchEvent(Node&, Event&);
+  static void DispatchScopedEvent(Node&, Event&);
 
   static void DispatchSimulatedClick(Node&,
                                      Event* underlying_event,
@@ -65,7 +65,7 @@ class EventDispatcher {
   Event& GetEvent() const { return *event_; }
 
  private:
-  EventDispatcher(Node&, Event*);
+  EventDispatcher(Node&, Event&);
 
   EventDispatchContinuation DispatchEventPreProcess(
       Node* activation_target,

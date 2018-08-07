@@ -1318,15 +1318,16 @@ void Internals::setAutofilledValue(Element* element,
   }
 
   if (auto* input = ToHTMLInputElementOrNull(*element)) {
-    input->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keydown));
+    input->DispatchScopedEvent(*Event::CreateBubble(EventTypeNames::keydown));
     input->SetAutofillValue(value);
-    input->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keyup));
+    input->DispatchScopedEvent(*Event::CreateBubble(EventTypeNames::keyup));
   }
 
   if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
-    textarea->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keydown));
+    textarea->DispatchScopedEvent(
+        *Event::CreateBubble(EventTypeNames::keydown));
     textarea->SetAutofillValue(value);
-    textarea->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keyup));
+    textarea->DispatchScopedEvent(*Event::CreateBubble(EventTypeNames::keyup));
   }
 
   if (auto* select = ToHTMLSelectElementOrNull(*element))

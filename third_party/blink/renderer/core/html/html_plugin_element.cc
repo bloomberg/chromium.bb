@@ -636,11 +636,12 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
 }
 
 void HTMLPlugInElement::DispatchErrorEvent() {
-  if (GetDocument().IsPluginDocument() && GetDocument().LocalOwner())
+  if (GetDocument().IsPluginDocument() && GetDocument().LocalOwner()) {
     GetDocument().LocalOwner()->DispatchEvent(
-        Event::Create(EventTypeNames::error));
-  else
-    DispatchEvent(Event::Create(EventTypeNames::error));
+        *Event::Create(EventTypeNames::error));
+  } else {
+    DispatchEvent(*Event::Create(EventTypeNames::error));
+  }
 }
 
 bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,

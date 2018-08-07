@@ -2261,15 +2261,15 @@ void Node::HandleLocalEvents(Event& event) {
     return;
   }
 
-  FireEventListeners(&event);
+  FireEventListeners(event);
 }
 
-void Node::DispatchScopedEvent(Event* event) {
-  event->SetTrusted(true);
+void Node::DispatchScopedEvent(Event& event) {
+  event.SetTrusted(true);
   EventDispatcher::DispatchScopedEvent(*this, event);
 }
 
-DispatchEventResult Node::DispatchEventInternal(Event* event) {
+DispatchEventResult Node::DispatchEventInternal(Event& event) {
   return EventDispatcher::DispatchEvent(*this, event);
 }
 
@@ -2284,8 +2284,8 @@ void Node::DispatchSubtreeModifiedEvent() {
   if (!GetDocument().HasListenerType(Document::kDOMSubtreeModifiedListener))
     return;
 
-  DispatchScopedEvent(MutationEvent::Create(EventTypeNames::DOMSubtreeModified,
-                                            Event::Bubbles::kYes));
+  DispatchScopedEvent(*MutationEvent::Create(EventTypeNames::DOMSubtreeModified,
+                                             Event::Bubbles::kYes));
 }
 
 DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
@@ -2293,16 +2293,16 @@ DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
-  UIEvent* event = UIEvent::Create();
-  event->initUIEvent(EventTypeNames::DOMActivate, true, true,
-                     GetDocument().domWindow(), detail);
-  event->SetUnderlyingEvent(&underlying_event);
-  event->SetComposed(underlying_event.composed());
+  UIEvent& event = *UIEvent::Create();
+  event.initUIEvent(EventTypeNames::DOMActivate, true, true,
+                    GetDocument().domWindow(), detail);
+  event.SetUnderlyingEvent(&underlying_event);
+  event.SetComposed(underlying_event.composed());
   DispatchScopedEvent(event);
 
   // TODO(dtapuska): Dispatching scoped events shouldn't check the return
   // type because the scoped event could get put off in the delayed queue.
-  return EventTarget::GetDispatchEventResult(*event);
+  return EventTarget::GetDispatchEventResult(event);
 }
 
 void Node::CreateAndDispatchPointerEvent(const AtomicString& mouse_event_name,
@@ -2347,7 +2347,7 @@ void Node::CreateAndDispatchPointerEvent(const AtomicString& mouse_event_name,
       static_cast<WebInputEvent::Modifiers>(mouse_event.GetModifiers()));
   pointer_event_init.setView(view);
 
-  DispatchEvent(PointerEvent::Create(pointer_event_name, pointer_event_init));
+  DispatchEvent(*PointerEvent::Create(pointer_event_name, pointer_event_init));
 }
 
 // TODO(crbug.com/665924): This function bypasses all Blink event path.
@@ -2385,7 +2385,7 @@ void Node::DispatchMouseEvent(const WebMouseEvent& event,
                                       ->FiresTouchEvents(event.FromTouch())
                                 : nullptr);
 
-  DispatchEvent(MouseEvent::Create(
+  DispatchEvent(*MouseEvent::Create(
       mouse_event_type, initializer, event.TimeStamp(),
       event.FromTouch() ? MouseEvent::kFromTouch
                         : MouseEvent::kRealOrIndistinguishable,
@@ -2401,7 +2401,7 @@ void Node::DispatchSimulatedClick(Event* underlying_event,
 
 void Node::DispatchInputEvent() {
   // Legacy 'input' event for forms set value and checked.
-  DispatchScopedEvent(Event::CreateBubble(EventTypeNames::input));
+  DispatchScopedEvent(*Event::CreateBubble(EventTypeNames::input));
 }
 
 void Node::DefaultEventHandler(Event* event) {

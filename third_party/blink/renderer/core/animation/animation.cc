@@ -728,8 +728,8 @@ void Animation::ContextDestroyed(ExecutionContext*) {
   pending_finished_event_ = nullptr;
 }
 
-DispatchEventResult Animation::DispatchEventInternal(Event* event) {
-  if (pending_finished_event_ == event)
+DispatchEventResult Animation::DispatchEventInternal(Event& event) {
+  if (pending_finished_event_ == &event)
     pending_finished_event_ = nullptr;
   return EventTargetWithInlineData::DispatchEventInternal(event);
 }

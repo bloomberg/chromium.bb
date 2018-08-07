@@ -68,7 +68,7 @@ void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text) {
 
   CompositionEvent* event = CompositionEvent::Create(
       EventTypeNames::compositionupdate, frame.DomWindow(), text);
-  target->DispatchEvent(event);
+  target->DispatchEvent(*event);
 }
 
 void DispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
@@ -83,7 +83,7 @@ void DispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
 
   CompositionEvent* event = CompositionEvent::Create(
       EventTypeNames::compositionend, frame.DomWindow(), text);
-  EventDispatcher::DispatchScopedEvent(*target, event);
+  EventDispatcher::DispatchScopedEvent(*target, *event);
 }
 
 bool NeedsIncrementalInsertion(const LocalFrame& frame,
@@ -110,7 +110,7 @@ void DispatchBeforeInputFromComposition(EventTarget* target,
   InputEvent* before_input_event = InputEvent::CreateBeforeInput(
       input_type, data, InputEvent::kNotCancelable,
       InputEvent::EventIsComposing::kIsComposing, nullptr);
-  target->DispatchEvent(before_input_event);
+  target->DispatchEvent(*before_input_event);
 }
 
 // Used to insert/replace text during composition update and confirm
@@ -735,7 +735,7 @@ bool InputMethodController::DispatchCompositionStartEvent(const String& text) {
 
   CompositionEvent* event = CompositionEvent::Create(
       EventTypeNames::compositionstart, GetFrame().DomWindow(), text);
-  target->DispatchEvent(event);
+  target->DispatchEvent(*event);
 
   return IsAvailable();
 }

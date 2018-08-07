@@ -579,11 +579,11 @@ void DispatchEditableContentChangedEvents(Element* start_root,
                                           Element* end_root) {
   if (start_root) {
     start_root->DispatchEvent(
-        Event::Create(EventTypeNames::webkitEditableContentChanged));
+        *Event::Create(EventTypeNames::webkitEditableContentChanged));
   }
   if (end_root && end_root != start_root) {
     end_root->DispatchEvent(
-        Event::Create(EventTypeNames::webkitEditableContentChanged));
+        *Event::Create(EventTypeNames::webkitEditableContentChanged));
   }
 }
 
@@ -597,7 +597,7 @@ static void DispatchInputEvent(Element* target,
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
   InputEvent* const input_event =
       InputEvent::CreateInput(input_type, data, is_composing, nullptr);
-  target->DispatchScopedEvent(input_event);
+  target->DispatchScopedEvent(*input_event);
 }
 
 void DispatchInputEventEditableContentChanged(

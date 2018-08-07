@@ -299,7 +299,7 @@ void ApplicationCacheHost::DispatchDOMEvent(
   } else {
     event = Event::Create(event_type);
   }
-  dom_application_cache_->DispatchEvent(event);
+  dom_application_cache_->DispatchEvent(*event);
 }
 
 ApplicationCacheHost::Status ApplicationCacheHost::GetStatus() const {

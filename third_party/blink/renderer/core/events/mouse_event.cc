@@ -427,17 +427,17 @@ DispatchEventResult MouseEvent::DispatchEvent(EventDispatcher& dispatcher) {
   // event. This is not part of the DOM specs, but is used for compatibility
   // with the ondblclick="" attribute. This is treated as a separate event in
   // other DOM-compliant browsers like Firefox, and so we do the same.
-  MouseEvent* double_click_event = MouseEvent::Create();
-  double_click_event->InitMouseEventInternal(
+  MouseEvent& double_click_event = *MouseEvent::Create();
+  double_click_event.InitMouseEventInternal(
       EventTypeNames::dblclick, bubbles(), cancelable(), view(), detail(),
       screenX(), screenY(), clientX(), clientY(), GetModifiers(), button(),
       related_target, sourceCapabilities(), buttons());
-  double_click_event->SetComposed(composed());
+  double_click_event.SetComposed(composed());
 
   // Inherit the trusted status from the original event.
-  double_click_event->SetTrusted(isTrusted());
+  double_click_event.SetTrusted(isTrusted());
   if (DefaultHandled())
-    double_click_event->SetDefaultHandled();
+    double_click_event.SetDefaultHandled();
   DispatchEventResult double_click_dispatch_result =
       EventDispatcher::DispatchEvent(dispatcher.GetNode(), double_click_event);
   if (double_click_dispatch_result != DispatchEventResult::kNotCanceled)

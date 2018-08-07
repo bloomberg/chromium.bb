@@ -1609,7 +1609,7 @@ DispatchEventResult DispatchBeforeInputInsertText(
       input_type, data, InputTypeIsCancelable(input_type),
       InputEvent::EventIsComposing::kNotComposing,
       ranges ? ranges : TargetRangesForInputEvent(*target));
-  return target->DispatchEvent(before_input_event);
+  return target->DispatchEvent(*before_input_event);
 }
 
 DispatchEventResult DispatchBeforeInputEditorCommand(

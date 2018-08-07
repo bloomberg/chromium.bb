@@ -562,7 +562,7 @@ class Document::NetworkStateObserver final
     Document* document = ToDocument(GetExecutionContext());
     if (!document->domWindow())
       return;
-    document->domWindow()->DispatchEvent(Event::Create(event_name));
+    document->domWindow()->DispatchEvent(*Event::Create(event_name));
     probe::networkStateChanged(document->GetFrame(), on_line);
   }
 
@@ -1438,7 +1438,7 @@ void Document::SetReadyState(DocumentReadyState ready_state) {
   }
 
   ready_state_ = ready_state;
-  DispatchEvent(Event::Create(EventTypeNames::readystatechange));
+  DispatchEvent(*Event::Create(EventTypeNames::readystatechange));
 }
 
 bool Document::IsLoadCompleted() const {
@@ -1765,9 +1765,9 @@ void Document::SetWasDiscarded(bool was_discarded) {
 }
 
 void Document::DidChangeVisibilityState() {
-  DispatchEvent(Event::CreateBubble(EventTypeNames::visibilitychange));
+  DispatchEvent(*Event::CreateBubble(EventTypeNames::visibilitychange));
   // Also send out the deprecated version until it can be removed.
-  DispatchEvent(Event::CreateBubble(EventTypeNames::webkitvisibilitychange));
+  DispatchEvent(*Event::CreateBubble(EventTypeNames::webkitvisibilitychange));
 
   if (GetPageVisibilityState() == mojom::PageVisibilityState::kVisible)
     Timeline().SetAllCompositorPending();
@@ -3567,7 +3567,7 @@ void Document::DispatchUnloadEvents() {
         // Dispatch visibilitychange event, but don't bother doing
         // other notifications as we're about to be unloaded.
         const TimeTicks pagevisibility_hidden_event_start = CurrentTimeTicks();
-        DispatchEvent(Event::CreateBubble(EventTypeNames::visibilitychange));
+        DispatchEvent(*Event::CreateBubble(EventTypeNames::visibilitychange));
         const TimeTicks pagevisibility_hidden_event_end = CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(CustomCountHistogram, pagevisibility_histogram,
                             ("DocumentEventTiming.PageVibilityHiddenDuration",
@@ -3576,7 +3576,7 @@ void Document::DispatchUnloadEvents() {
             pagevisibility_hidden_event_end -
             pagevisibility_hidden_event_start);
         DispatchEvent(
-            Event::CreateBubble(EventTypeNames::webkitvisibilitychange));
+            *Event::CreateBubble(EventTypeNames::webkitvisibilitychange));
       }
       if (!frame_)
         return;
@@ -3629,7 +3629,7 @@ void Document::DispatchFreezeEvent() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   const TimeTicks freeze_event_start = CurrentTimeTicks();
   SetFreezingInProgress(true);
-  DispatchEvent(Event::Create(EventTypeNames::freeze));
+  DispatchEvent(*Event::Create(EventTypeNames::freeze));
   SetFreezingInProgress(false);
   const TimeTicks freeze_event_end = CurrentTimeTicks();
   DEFINE_STATIC_LOCAL(CustomCountHistogram, freeze_histogram,
@@ -5863,7 +5863,7 @@ void Document::FinishedParsing() {
   // dispatched in a queued task, see https://crbug.com/425790
   if (document_timing_.DomContentLoadedEventStart().is_null())
     document_timing_.MarkDomContentLoadedEventStart();
-  DispatchEvent(Event::CreateBubble(EventTypeNames::DOMContentLoaded));
+  DispatchEvent(*Event::CreateBubble(EventTypeNames::DOMContentLoaded));
   if (document_timing_.DomContentLoadedEventEnd().is_null())
     document_timing_.MarkDomContentLoadedEventEnd();
   SetParsingState(kFinishedParsing);

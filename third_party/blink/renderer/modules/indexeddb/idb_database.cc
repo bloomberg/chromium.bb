@@ -500,16 +500,16 @@ void IDBDatabase::EnqueueEvent(Event* event) {
   event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
-DispatchEventResult IDBDatabase::DispatchEventInternal(Event* event) {
+DispatchEventResult IDBDatabase::DispatchEventInternal(Event& event) {
   IDB_TRACE("IDBDatabase::dispatchEvent");
   if (!GetExecutionContext())
     return DispatchEventResult::kCanceledBeforeDispatch;
-  DCHECK(event->type() == EventTypeNames::versionchange ||
-         event->type() == EventTypeNames::close);
+  DCHECK(event.type() == EventTypeNames::versionchange ||
+         event.type() == EventTypeNames::close);
 
   DispatchEventResult dispatch_result =
       EventTarget::DispatchEventInternal(event);
-  if (event->type() == EventTypeNames::versionchange && !close_pending_ &&
+  if (event.type() == EventTypeNames::versionchange && !close_pending_ &&
       backend_)
     backend_->VersionChangeIgnored();
   return dispatch_result;

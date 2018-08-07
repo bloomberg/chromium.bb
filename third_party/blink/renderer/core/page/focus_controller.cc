@@ -399,9 +399,10 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
     DispatchBlurEvent(*document, *focused_element);
   }
 
-  if (LocalDOMWindow* window = document->domWindow())
+  if (LocalDOMWindow* window = document->domWindow()) {
     window->DispatchEvent(
-        Event::Create(focused ? EventTypeNames::focus : EventTypeNames::blur));
+        *Event::Create(focused ? EventTypeNames::focus : EventTypeNames::blur));
+  }
   if (focused && document->FocusedElement()) {
     Element* focused_element(document->FocusedElement());
     // Use focus_type kWebFocusTypePage, same as used in DispatchFocusEvent.
@@ -789,12 +790,13 @@ void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {
   // states of both frames.
   if (old_frame && old_frame->View()) {
     old_frame->Selection().SetFrameIsFocused(false);
-    old_frame->DomWindow()->DispatchEvent(Event::Create(EventTypeNames::blur));
+    old_frame->DomWindow()->DispatchEvent(*Event::Create(EventTypeNames::blur));
   }
 
   if (new_frame && new_frame->View() && IsFocused()) {
     new_frame->Selection().SetFrameIsFocused(true);
-    new_frame->DomWindow()->DispatchEvent(Event::Create(EventTypeNames::focus));
+    new_frame->DomWindow()->DispatchEvent(
+        *Event::Create(EventTypeNames::focus));
   }
 
   is_changing_focused_frame_ = false;

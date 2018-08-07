@@ -49,27 +49,26 @@
 
 namespace blink {
 
-DispatchEventResult EventDispatcher::DispatchEvent(Node& node, Event* event) {
+DispatchEventResult EventDispatcher::DispatchEvent(Node& node, Event& event) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                "EventDispatcher::dispatchEvent");
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
   EventDispatcher dispatcher(node, event);
-  return event->DispatchEvent(dispatcher);
+  return event.DispatchEvent(dispatcher);
 }
 
-EventDispatcher::EventDispatcher(Node& node, Event* event)
+EventDispatcher::EventDispatcher(Node& node, Event& event)
     : node_(node), event_(event) {
-  DCHECK(event_.Get());
   view_ = node.GetDocument().View();
   event_->InitEventPath(*node_);
 }
 
-void EventDispatcher::DispatchScopedEvent(Node& node, Event* event) {
+void EventDispatcher::DispatchScopedEvent(Node& node, Event& event) {
   // We need to set the target here because it can go away by the time we
   // actually fire the event.
-  event->SetTarget(EventPath::EventTargetRespectingTargetRules(node));
+  event.SetTarget(EventPath::EventTargetRespectingTargetRules(node));
   ScopedEventQueue::Instance()->EnqueueEvent(event);
 }
 
@@ -95,20 +94,20 @@ void EventDispatcher::DispatchSimulatedClick(
   nodes_dispatching_simulated_clicks.insert(&node);
 
   if (mouse_event_options == kSendMouseOverUpDownEvents)
-    EventDispatcher(node, MouseEvent::Create(EventTypeNames::mouseover,
-                                             node.GetDocument().domWindow(),
-                                             underlying_event, creation_scope))
+    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mouseover,
+                                              node.GetDocument().domWindow(),
+                                              underlying_event, creation_scope))
         .Dispatch();
 
   if (mouse_event_options != kSendNoEvents) {
-    EventDispatcher(node, MouseEvent::Create(EventTypeNames::mousedown,
-                                             node.GetDocument().domWindow(),
-                                             underlying_event, creation_scope))
+    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mousedown,
+                                              node.GetDocument().domWindow(),
+                                              underlying_event, creation_scope))
         .Dispatch();
     node.SetActive(true);
-    EventDispatcher(node, MouseEvent::Create(EventTypeNames::mouseup,
-                                             node.GetDocument().domWindow(),
-                                             underlying_event, creation_scope))
+    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mouseup,
+                                              node.GetDocument().domWindow(),
+                                              underlying_event, creation_scope))
         .Dispatch();
   }
   // Some elements (e.g. the color picker) may set active state to true before
@@ -116,9 +115,9 @@ void EventDispatcher::DispatchSimulatedClick(
   node.SetActive(false);
 
   // always send click
-  EventDispatcher(node, MouseEvent::Create(EventTypeNames::click,
-                                           node.GetDocument().domWindow(),
-                                           underlying_event, creation_scope))
+  EventDispatcher(node, *MouseEvent::Create(EventTypeNames::click,
+                                            node.GetDocument().domWindow(),
+                                            underlying_event, creation_scope))
       .Dispatch();
 
   nodes_dispatching_simulated_clicks.erase(&node);

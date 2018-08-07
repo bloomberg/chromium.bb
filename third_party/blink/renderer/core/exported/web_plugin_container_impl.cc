@@ -453,7 +453,7 @@ void WebPluginContainerImpl::DispatchProgressEvent(const WebString& type,
     event = ResourceProgressEvent::Create(type, length_computable, loaded,
                                           total, url);
   }
-  element_->DispatchEvent(event);
+  element_->DispatchEvent(*event);
 }
 
 void WebPluginContainerImpl::EnqueueMessageEvent(

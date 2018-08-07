@@ -39,7 +39,7 @@ void FontFaceSet::FireLoadingEvent() {
   if (should_fire_loading_event_) {
     should_fire_loading_event_ = false;
     DispatchEvent(
-        FontFaceSetLoadEvent::CreateForFontFaces(EventTypeNames::loading));
+        *FontFaceSetLoadEvent::CreateForFontFaces(EventTypeNames::loading));
   }
 }
 
@@ -244,9 +244,9 @@ void FontFaceSet::FireDoneEvent() {
       failed_fonts_.clear();
     }
     is_loading_ = false;
-    DispatchEvent(done_event);
+    DispatchEvent(*done_event);
     if (error_event)
-      DispatchEvent(error_event);
+      DispatchEvent(*error_event);
   }
 
   if (ready_->GetState() == ReadyProperty::kPending)
