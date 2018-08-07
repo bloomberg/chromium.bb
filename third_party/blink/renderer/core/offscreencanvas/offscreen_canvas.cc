@@ -322,7 +322,7 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     ReplaceResourceProvider(CanvasResourceProvider::Create(
         surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
         context_->ColorParams(), presentation_mode,
-        std::move(dispatcher_weakptr)));
+        std::move(dispatcher_weakptr), false /* is_origin_top_left */));
 
     // The fallback chain for k*CompositedResourceUsage should never fall
     // all the way through to BitmapResourceProvider, except in unit tests.

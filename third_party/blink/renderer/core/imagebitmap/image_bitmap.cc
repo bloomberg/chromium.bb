@@ -623,7 +623,8 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
           0,                    // msaa_sample_count
           CanvasColorParams(),  // TODO: set color space here to avoid clamping
           CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr);  // canvas_resource_dispatcher
+          nullptr,              // canvas_resource_dispatcher
+          IsAccelerated());     // is_origin_top_left
   if (!resource_provider)
     return;
 

@@ -797,7 +797,7 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
           size, CanvasResourceProvider::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(), 0, ColorParams(),
           CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr);  // canvas_resource_dispatcher
+          nullptr /* canvas_resource_dispatcher */, is_origin_top_left_);
   if (!resource_provider || !resource_provider->IsValid())
     return nullptr;
   if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
@@ -5467,10 +5467,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
             IntSize(video->videoWidth(), video->videoHeight()),
             CanvasResourceProvider::kAcceleratedResourceUsage,
             SharedGpuContext::ContextProviderWrapper(),
-            0,  // msaa_sample_count
-            CanvasColorParams(),
+            0 /* msaa_sample_count */, CanvasColorParams(),
             CanvasResourceProvider::kDefaultPresentationMode,
-            nullptr);  // canvas_resource_dispatcher
+            nullptr /* canvas_resource_dispatcher */, is_origin_top_left_);
     if (resource_provider && resource_provider->IsValid()) {
       // The video element paints an RGBA frame into our surface here. By
       // using an AcceleratedImageBufferSurface, we enable the WebMediaPlayer
