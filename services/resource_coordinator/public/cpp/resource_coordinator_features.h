@@ -19,6 +19,8 @@ extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
     kGlobalResourceCoordinator;
 extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
     kPageAlmostIdle;
+extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
+    kPerformanceMeasurement;
 
 }  // namespace features
 
