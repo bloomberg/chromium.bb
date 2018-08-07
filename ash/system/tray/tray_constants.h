@@ -93,6 +93,7 @@ extern const SkColor kMenuSeparatorColor;
 // system tray.
 extern const int kTrayIconSize;
 extern const SkColor kTrayIconColor;
+extern const SkColor kOobeTrayIconColor;
 
 // The total visual padding at the start and end of the icon/label section
 // of the tray.

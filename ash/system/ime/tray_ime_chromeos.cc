@@ -10,6 +10,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
@@ -41,6 +42,28 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+class IMETrayItemView : public TrayItemView, public SessionObserver {
+ public:
+  explicit IMETrayItemView(SystemTrayItem* owner) : TrayItemView(owner) {
+    CreateLabel();
+    SetupLabelForTray(label());
+  }
+  ~IMETrayItemView() override = default;
+
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override {
+    label()->SetEnabledColor(TrayIconColor(state));
+  }
+
+ private:
+  ScopedSessionObserver session_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(IMETrayItemView);
+};
+}  // namespace
+
 namespace tray {
 
 class IMEDefaultView : public TrayItemMore {
@@ -210,9 +233,7 @@ base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {
 
 views::View* TrayIME::CreateTrayView(LoginStatus status) {
   CHECK(tray_label_ == nullptr);
-  tray_label_ = new TrayItemView(this);
-  tray_label_->CreateLabel();
-  SetupLabelForTray(tray_label_->label());
+  tray_label_ = new IMETrayItemView(this);
   // Hide IME tray when it is created, it will be updated when it is notified
   // of the IME refresh event.
   tray_label_->SetVisible(false);

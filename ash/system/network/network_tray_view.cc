@@ -4,6 +4,8 @@
 
 #include "ash/system/network/network_tray_view.h"
 
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -47,8 +49,14 @@ void NetworkTrayView::UpdateNetworkStateHandlerIcon() {
   gfx::ImageSkia image;
   base::string16 name;
   bool animating = false;
-  network_icon::GetDefaultNetworkImageAndLabel(network_icon::ICON_TYPE_TRAY,
-                                               &image, &name, &animating);
+  auto icon_type = network_icon::ICON_TYPE_TRAY_REGULAR;
+  if (Shell::Get()->session_controller()->GetSessionState() ==
+      session_manager::SessionState::OOBE) {
+    icon_type = network_icon::ICON_TYPE_TRAY_OOBE;
+  }
+
+  network_icon::GetDefaultNetworkImageAndLabel(icon_type, &image, &name,
+                                               &animating);
   bool show_in_tray = !image.isNull();
   UpdateIcon(show_in_tray, image);
   if (animating)
@@ -65,6 +73,11 @@ void NetworkTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void NetworkTrayView::NetworkIconChanged() {
   UpdateNetworkStateHandlerIcon();
   UpdateConnectionStatus(GetConnectedNetwork(), false /* notify_a11y */);
+}
+
+void NetworkTrayView::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  UpdateNetworkStateHandlerIcon();
 }
 
 void NetworkTrayView::UpdateConnectionStatus(

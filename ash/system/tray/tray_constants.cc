@@ -55,6 +55,8 @@ const SkColor kMobileNotConnectedXIconColor = SkColorSetRGB(0xb2, 0xb2, 0xb2);
 
 const int kTrayIconSize = 16;
 const SkColor kTrayIconColor = SK_ColorWHITE;
+const SkColor kOobeTrayIconColor = gfx::kGoogleGrey600;
+
 const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = gfx::kChromeIconGrey;
 const SkColor kMenuIconColorDisabled = SkColorSetA(gfx::kChromeIconGrey, 0x61);

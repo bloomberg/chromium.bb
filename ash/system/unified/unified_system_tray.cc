@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
+#include "ash/system/date/tray_system_info.h"
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
@@ -151,9 +152,7 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       ime_mode_view_(new ImeModeView()),
       notification_counter_item_(new NotificationCounterView()),
       quiet_mode_view_(new QuietModeView()),
-      time_view_(
-          new tray::TimeView(tray::TimeView::ClockLayout::HORIZONTAL_CLOCK,
-                             Shell::Get()->system_tray_model()->clock())) {
+      time_view_(new tray::TimeTrayItemView(nullptr, shelf)) {
   tray_container()->AddChildView(ime_mode_view_);
   tray_container()->AddChildView(notification_counter_item_);
   tray_container()->AddChildView(quiet_mode_view_);
@@ -167,10 +166,7 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   }
 
   tray_container()->AddChildView(new tray::PowerTrayView(nullptr));
-
-  TrayItemView* time_item = new TrayItemView(nullptr);
-  time_item->AddChildView(time_view_);
-  tray_container()->AddChildView(time_item);
+  tray_container()->AddChildView(time_view_);
 
   SetInkDropMode(InkDropMode::ON);
   set_separator_visibility(false);
@@ -281,10 +277,7 @@ void UnifiedSystemTray::ClickedOutsideBubble() {
 
 void UnifiedSystemTray::UpdateAfterShelfAlignmentChange() {
   TrayBackgroundView::UpdateAfterShelfAlignmentChange();
-  time_view_->UpdateClockLayout(
-      shelf()->IsHorizontalAlignment()
-          ? tray::TimeView::ClockLayout::HORIZONTAL_CLOCK
-          : tray::TimeView::ClockLayout::VERTICAL_CLOCK);
+  time_view_->UpdateAlignmentForShelf(shelf());
 }
 
 void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {

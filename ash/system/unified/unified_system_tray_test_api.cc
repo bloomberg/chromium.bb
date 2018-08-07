@@ -7,6 +7,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_view.h"
+#include "ash/system/date/tray_system_info.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
@@ -105,7 +106,8 @@ void UnifiedSystemTrayTestApi::GetBubbleLabelText(
 }
 
 void UnifiedSystemTrayTestApi::Is24HourClock(Is24HourClockCallback cb) {
-  base::HourClockType type = tray_->time_view_->GetHourTypeForTesting();
+  base::HourClockType type =
+      tray_->time_view_->time_view()->GetHourTypeForTesting();
   std::move(cb).Run(type == base::k24HourClock);
 }
 

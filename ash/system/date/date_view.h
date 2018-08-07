@@ -13,6 +13,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "components/session_manager/session_manager_types.h"
 #include "ui/views/view.h"
 
 namespace base {
@@ -125,6 +126,9 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
 
   // Updates clock layout.
   void UpdateClockLayout(ClockLayout clock_layout);
+
+  // Updates the time color based on the current session state.
+  void SetTextColorBasedOnSession(session_manager::SessionState session_state);
 
   // ClockObserver:
   void Refresh() override;

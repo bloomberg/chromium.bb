@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_NETWORK_NETWORK_TRAY_VIEW_H_
 #define ASH_SYSTEM_NETWORK_NETWORK_TRAY_VIEW_H_
 
+#include "ash/session/session_observer.h"
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
@@ -22,7 +23,8 @@ namespace tray {
 const chromeos::NetworkState* GetConnectedNetwork();
 
 class NetworkTrayView : public TrayItemView,
-                        public network_icon::AnimationObserver {
+                        public network_icon::AnimationObserver,
+                        public SessionObserver {
  public:
   explicit NetworkTrayView(TrayNetwork* network_tray);
 
@@ -37,6 +39,9 @@ class NetworkTrayView : public TrayItemView,
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
+
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // Updates connection status and notifies accessibility event when necessary.
   void UpdateConnectionStatus(const chromeos::NetworkState* connected_network,
