@@ -49,10 +49,6 @@ SkColor SelectedKeywordView::GetTextColor() const {
   return location_bar_->GetColor(OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD);
 }
 
-bool SelectedKeywordView::ShouldShowExtraInternalSpace() const {
-  return ui::MaterialDesignController::IsRefreshUi();
-}
-
 gfx::Size SelectedKeywordView::CalculatePreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(full_label_.GetPreferredSize().width());
@@ -100,6 +96,13 @@ void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
   // class is calculating the preferred size. It will be updated again in
   // Layout(), taking into account how much space has actually been allotted.
   SetLabel(full_name);
+}
+
+int SelectedKeywordView::GetExtraInternalSpacing() const {
+  // MD Refresh needs more space to align the label text with suggestion text.
+  return ui::MaterialDesignController::IsRefreshUi()
+             ? 11
+             : GetPrefixedSeparatorWidth();
 }
 
 const char* SelectedKeywordView::GetClassName() const {

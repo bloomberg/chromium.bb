@@ -108,12 +108,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // of whether the separator is shown or not.
   virtual bool ShouldShowExtraEndSpace() const;
 
-  // Returns true when additional padding equal to GetPrefixedSeparatorWidth()
-  // should be added between the icon and the label. This is useful in the case
-  // where it's required to align the label in the same position as text that
-  // would normally follow this view.
-  virtual bool ShouldShowExtraInternalSpace() const;
-
   // Returns a multiplier used to calculate the actual width of the view based
   // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
   // full-width view and can be used to animate the width of the view.
@@ -162,14 +156,19 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
- private:
-  // Spacing between the image and the label.
-  int GetInternalSpacing() const;
-
   // Returns the width taken by the separator stroke and the before-padding.
   // If the separator is not shown, and ShouldShowExtraEndSpace() is false,
   // this returns 0.
   int GetPrefixedSeparatorWidth() const;
+
+ private:
+  // Spacing between the image and the label.
+  int GetInternalSpacing() const;
+
+  // Subclasses that want extra spacing added to the internal spacing can
+  // override this method. This may be used when we want to align the label text
+  // to the suggestion text, like in the SelectedKeywordView.
+  virtual int GetExtraInternalSpacing() const;
 
   // Padding after the separator.
   int GetEndPadding() const;

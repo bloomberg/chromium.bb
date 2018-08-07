@@ -185,10 +185,6 @@ bool IconLabelBubbleView::ShouldShowExtraEndSpace() const {
   return false;
 }
 
-bool IconLabelBubbleView::ShouldShowExtraInternalSpace() const {
-  return false;
-}
-
 double IconLabelBubbleView::WidthMultiplier() const {
   return 1.0;
 }
@@ -435,7 +431,7 @@ int IconLabelBubbleView::GetInternalSpacing() const {
     return 0;
 
   // Touch Optimized, Refresh, and Touch Refresh all have custom spacing values.
-  int default_spacing = 0;
+  int default_spacing;
   switch (ui::MaterialDesignController::GetMode()) {
     case ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED:
       default_spacing = 4;
@@ -452,8 +448,11 @@ int IconLabelBubbleView::GetInternalSpacing() const {
           GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
   }
 
-  return default_spacing +
-         (ShouldShowExtraInternalSpace() ? GetPrefixedSeparatorWidth() : 0);
+  return default_spacing + GetExtraInternalSpacing();
+}
+
+int IconLabelBubbleView::GetExtraInternalSpacing() const {
+  return 0;
 }
 
 int IconLabelBubbleView::GetPrefixedSeparatorWidth() const {
