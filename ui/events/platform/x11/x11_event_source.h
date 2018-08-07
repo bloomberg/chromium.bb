@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <random>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -79,6 +80,10 @@ class EVENTS_EXPORT X11EventSource {
   void StopCurrentEventStream();
   void OnDispatcherListChanged();
 
+  // Explicitly asks the X11 server for the current timestamp, and updates
+  // |last_seen_server_time_| with this value.
+  Time GetCurrentServerTime();
+
  protected:
   // Extracts cookie data from |xevent| if it's of GenericType, and dispatches
   // the event. This function also frees up the cookie data after dispatch is
@@ -87,10 +92,6 @@ class EVENTS_EXPORT X11EventSource {
 
   // Handles updates after event has been dispatched.
   void PostDispatchEvent(XEvent* xevent);
-
-  // Explicitly asks the X11 server for the current timestamp, and updates
-  // |last_seen_server_time_| with this value.
-  Time GetCurrentServerTime();
 
  private:
   static X11EventSource* instance_;
@@ -114,6 +115,10 @@ class EVENTS_EXPORT X11EventSource {
   bool continue_stream_ = true;
 
   std::unique_ptr<X11HotplugEventHandler> hotplug_event_handler_;
+
+  // Used to sample RTT measurements, with frequency 1/1000.
+  std::default_random_engine generator_;
+  std::uniform_int_distribution<int> distribution_;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSource);
 };

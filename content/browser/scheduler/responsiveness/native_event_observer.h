@@ -14,6 +14,10 @@
 #include "content/public/browser/native_event_processor_observer_mac.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "ui/events/platform/platform_event_observer.h"
+#endif
+
 namespace content {
 namespace responsiveness {
 
@@ -31,6 +35,8 @@ namespace responsiveness {
 class CONTENT_EXPORT NativeEventObserver
 #if defined(OS_MACOSX)
     : public NativeEventProcessorObserver
+#elif defined(OS_LINUX)
+    : public ui::PlatformEventObserver
 #endif
 {
  public:
@@ -46,7 +52,12 @@ class CONTENT_EXPORT NativeEventObserver
   // processor. The destructor will unregister the object.
   NativeEventObserver(WillRunEventCallback will_run_event_callback,
                       DidRunEventCallback did_run_event_callback);
+
+#if defined(OS_LINUX)
+  ~NativeEventObserver() override;
+#else
   virtual ~NativeEventObserver();
+#endif
 
  protected:
 #if defined(OS_MACOSX)
@@ -55,6 +66,11 @@ class CONTENT_EXPORT NativeEventObserver
   void WillRunNativeEvent(const void* opaque_identifier) override;
   void DidRunNativeEvent(const void* opaque_identifier,
                          base::TimeTicks creation_time) override;
+#elif defined(OS_LINUX)
+  // PlatformEventObserver overrides:
+  // Exposed for tests.
+  void WillProcessEvent(const ui::PlatformEvent& event) override;
+  void DidProcessEvent(const ui::PlatformEvent& event) override;
 #endif
 
  private:
