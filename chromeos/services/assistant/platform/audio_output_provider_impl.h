@@ -5,12 +5,14 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PLATFORM_AUDIO_OUTPUT_PROVIDER_IMPL_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PLATFORM_AUDIO_OUTPUT_PROVIDER_IMPL_H_
 
+#include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "libassistant/shared/public/platform_audio_output.h"
 #include "media/base/audio_block_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/cpp/output_device.h"
 
 namespace service_manager {
@@ -20,9 +22,10 @@ class Connector;
 namespace chromeos {
 namespace assistant {
 
-class VolumeControlImpl : public assistant_client::VolumeControl {
+class VolumeControlImpl : public assistant_client::VolumeControl,
+                          public ash::mojom::VolumeObserver {
  public:
-  VolumeControlImpl();
+  explicit VolumeControlImpl(service_manager::Connector* connector);
   ~VolumeControlImpl() override;
 
   // assistant_client::VolumeControl overrides:
@@ -35,7 +38,17 @@ class VolumeControlImpl : public assistant_client::VolumeControl {
   bool IsSystemMuted() override;
   void SetSystemMuted(bool muted) override;
 
+  // ash::mojom::VolumeObserver overrides:
+  void OnVolumeChanged(int volume) override;
+  void OnMuteStateChanged(bool mute) override;
+
  private:
+  ash::mojom::AssistantVolumeControlPtr volume_control_ptr_;
+  mojo::Binding<ash::mojom::VolumeObserver> binding_;
+
+  int volume_ = 100;
+  bool mute_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(VolumeControlImpl);
 };
 

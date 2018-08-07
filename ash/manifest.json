@@ -15,6 +15,7 @@
           "ash.mojom.AppListController",
           "ash.mojom.AshMessageCenterController",
           "ash.mojom.AssistantController",
+          "ash.mojom.AssistantVolumeControl",
           "ash.mojom.CastConfig",
           "ash.mojom.ClientImageRegistry",
           "ash.mojom.CrosDisplayConfigController",

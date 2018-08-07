@@ -86,6 +86,11 @@ void BindAssistantControllerRequestOnMainThread(
   Shell::Get()->assistant_controller()->BindRequest(std::move(request));
 }
 
+void BindAssistantVolumeControlRequestOnMainThread(
+    mojom::AssistantVolumeControlRequest request) {
+  Shell::Get()->assistant_controller()->BindRequest(std::move(request));
+}
+
 void BindCrosDisplayConfigControllerRequestOnMainThread(
     mojom::CrosDisplayConfigControllerRequest request) {
   Shell::Get()->cros_display_config()->BindRequest(std::move(request));
@@ -235,6 +240,9 @@ void RegisterInterfaces(
   if (chromeos::switches::IsAssistantEnabled()) {
     registry->AddInterface(
         base::BindRepeating(&BindAssistantControllerRequestOnMainThread),
+        main_thread_task_runner);
+    registry->AddInterface(
+        base::BindRepeating(&BindAssistantVolumeControlRequestOnMainThread),
         main_thread_task_runner);
   }
   registry->AddInterface(

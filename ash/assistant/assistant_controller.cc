@@ -21,7 +21,8 @@
 namespace ash {
 
 AssistantController::AssistantController()
-    : assistant_interaction_controller_(
+    : assistant_volume_control_binding_(this),
+      assistant_interaction_controller_(
           std::make_unique<AssistantInteractionController>(this)),
       assistant_notification_controller_(
           std::make_unique<AssistantNotificationController>(this)),
@@ -36,9 +37,11 @@ AssistantController::AssistantController()
 
   AddObserver(this);
   NotifyConstructed();
+  chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 
 AssistantController::~AssistantController() {
+  chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   NotifyDestroying();
   RemoveObserver(this);
 }
@@ -46,6 +49,11 @@ AssistantController::~AssistantController() {
 void AssistantController::BindRequest(
     mojom::AssistantControllerRequest request) {
   assistant_controller_bindings_.AddBinding(this, std::move(request));
+}
+
+void AssistantController::BindRequest(
+    mojom::AssistantVolumeControlRequest request) {
+  assistant_volume_control_binding_.Bind(std::move(request));
 }
 
 void AssistantController::AddObserver(AssistantControllerObserver* observer) {
@@ -187,6 +195,40 @@ void AssistantController::OnDeepLinkReceived(
 
 void AssistantController::OnOpenUrlFromTab(const GURL& url) {
   OpenUrl(url);
+}
+
+void AssistantController::SetVolume(int volume, bool user_initiated) {
+  volume = std::min(100, volume);
+  volume = std::max(volume, 0);
+  chromeos::CrasAudioHandler::Get()->SetOutputVolumePercent(volume);
+}
+
+void AssistantController::SetMuted(bool muted) {
+  chromeos::CrasAudioHandler::Get()->SetOutputMute(muted);
+}
+
+void AssistantController::AddVolumeObserver(mojom::VolumeObserverPtr observer) {
+  volume_observer_.AddPtr(std::move(observer));
+
+  int output_volume =
+      chromeos::CrasAudioHandler::Get()->GetOutputVolumePercent();
+  bool mute = chromeos::CrasAudioHandler::Get()->IsOutputMuted();
+  OnOutputMuteChanged(mute, false /* system_adjust */);
+  OnOutputNodeVolumeChanged(0 /* node */, output_volume);
+}
+
+void AssistantController::OnOutputMuteChanged(bool mute_on,
+                                              bool system_adjust) {
+  volume_observer_.ForAllPtrs([mute_on](mojom::VolumeObserver* observer) {
+    observer->OnMuteStateChanged(mute_on);
+  });
+}
+
+void AssistantController::OnOutputNodeVolumeChanged(uint64_t node, int volume) {
+  // |node| refers to the active volume device, which we don't care here.
+  volume_observer_.ForAllPtrs([volume](mojom::VolumeObserver* observer) {
+    observer->OnVolumeChanged(volume);
+  });
 }
 
 void AssistantController::OpenUrl(const GURL& url) {

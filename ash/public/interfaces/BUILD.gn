@@ -21,6 +21,7 @@ mojom("interfaces_internal") {
     "assistant_controller.mojom",
     "assistant_image_downloader.mojom",
     "assistant_setup.mojom",
+    "assistant_volume_control.mojom",
     "cast_config.mojom",
     "client_image_registry.mojom",
     "constants.mojom",
