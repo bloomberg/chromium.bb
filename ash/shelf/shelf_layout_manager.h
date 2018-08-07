@@ -90,7 +90,7 @@ class ASH_EXPORT ShelfLayoutManager
   }
 
   // Stops any animations and sets the bounds of the shelf and status widgets.
-  void LayoutShelfAndUpdateBounds(bool change_work_area);
+  void LayoutShelfAndUpdateBounds();
 
   // Stops any animations, sets the bounds of the shelf and status widgets, and
   // changes the work area
@@ -259,11 +259,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Updates the bounds and opacity of the shelf and status widgets.
   // If |observer| is specified, it will be called back when the animations, if
-  // any, are complete. |change_work_area| specifies whether or not to update
-  // the work area of the screen.
+  // any, are complete.
   void UpdateBoundsAndOpacity(const TargetBounds& target_bounds,
                               bool animate,
-                              bool change_work_area,
                               ui::ImplicitAnimationObserver* observer);
 
   // Stops any animations and progresses them to the end.
