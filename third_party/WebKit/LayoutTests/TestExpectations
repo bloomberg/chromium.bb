@@ -4849,5 +4849,9 @@ crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure ]
 crbug.com/869726 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
 
+crbug.com/871578 [ Mac ] external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
+crbug.com/871578 [ Mac ] virtual/outofblink-cors/external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
+crbug.com/871578 [ Mac ] virtual/outofblink-cors-ns/external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
+
 # Only passes on bots with GPUs.
 crbug.com/871445 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Timeout ]
