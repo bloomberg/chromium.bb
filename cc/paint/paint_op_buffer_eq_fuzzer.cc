@@ -21,18 +21,19 @@
 //
 // serialized1 -> deserialized1 -> serialized2 -> deserialized2 -> serialized3
 //
-// It does a binary comparison that serialized2 == serialized3
 // Ideally this test would compare serialized1 to serialized2, however:
 // (1) Deserializing is a destructive process on bad input, e.g. SkMatrix
 //     that says it is identity will be clobbered to have identity values.
 // (2) Padding for alignment is skipped and so serialized1 may have garbage.
 //     serialized2 and serialized3 are cleared to zero first.
+// (3) Any internal allocated memory (e.g. DrawRecord ops) also will not
+//     be initialized to zero, and some ops memcpy when serializing or
+//     deserializing, and may copy some of this garbage.
 //
-// Binary comparing serialized2 to serialized3 is not identical to comparing
-// serialized1 to serialized2, as this could overlook some bugs that clobbered
-// object state to something that serialized cleanly at that point.
-// To mitigate those errors, this test also compares the logical equality
-// deserialized1 and deserialized2 using PaintOp::operator==.
+// It'd be nice to be able to binary compare, but because of all the above
+// reasons, this is impossible to do for all ops, so this test only does
+// a logical comparison of deserialized1 and deserialized2, and verifies
+// that serialized2 and serialized3 wrote the exact same number of bytes.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const size_t kMaxSerializedSize = 1000000;
 
@@ -115,7 +116,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   CHECK(*deserialized_op1 == *deserialized_op2)
       << "\n1: " << cc::PaintOpHelper::ToString(deserialized_op1)
       << "\n2: " << cc::PaintOpHelper::ToString(deserialized_op2);
-  CHECK_EQ(0, memcmp(serialized2.get(), serialized3.get(), written_bytes2));
 
   deserialized_op1->DestroyThis();
   deserialized_op2->DestroyThis();
