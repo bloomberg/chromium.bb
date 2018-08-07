@@ -9,19 +9,20 @@ $VerifiedPlatform linux-amd64 mac-amd64 windows-amd64 windows-386
 # them, but we do not test they work. They also may not have all necessary
 # vpython packages.
 $VerifiedPlatform linux-386 linux-ppc64 linux-ppc64le linux-s390x
-$VerifiedPlatform linux-arm64 linux-armv6l linux-mips64
+$VerifiedPlatform linux-arm64 linux-armv6l
+$VerifiedPlatform linux-mips64 linux-mips64le linux-mipsle
 
 # vpython.
-infra/tools/luci/vpython/${platform} git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc
+infra/tools/luci/vpython/${platform} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
 
 # LUCI editor
-infra/tools/luci/led/${platform} git_revision:f8fd394bd671f4cf4da8064a1ee074018c275d15
+infra/tools/luci/led/${platform} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
 
 # Mac toolchain installer
-infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a
+infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
 
 # LUCI rpc command line tool
-infra/tools/prpc/${platform} git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
+infra/tools/prpc/${platform} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
 
 # LUCI authentication command line tool
-infra/tools/luci-auth/${platform} git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
+infra/tools/luci-auth/${platform} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
