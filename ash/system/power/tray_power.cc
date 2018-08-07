@@ -10,6 +10,8 @@
 #include "ash/public/cpp/ash_switches.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/power/battery_notification.h"
@@ -59,6 +61,10 @@ void PowerTrayView::OnPowerStatusChanged() {
   UpdateStatus();
 }
 
+void PowerTrayView::OnSessionStateChanged(session_manager::SessionState state) {
+  UpdateImage();
+}
+
 void PowerTrayView::UpdateStatus() {
   UpdateImage();
   SetVisible(PowerStatus::Get()->IsBatteryPresent());
@@ -68,12 +74,20 @@ void PowerTrayView::UpdateStatus() {
 void PowerTrayView::UpdateImage() {
   const PowerStatus::BatteryImageInfo& info =
       PowerStatus::Get()->GetBatteryImageInfo();
-  // Only change the image when the info changes. http://crbug.com/589348
-  if (info_ && info_->ApproximatelyEqual(info))
+  session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+
+  // Only change the image when the info changes and the icon color has not
+  // changed. http://crbug.com/589348
+  if (info_ && info_->ApproximatelyEqual(info) &&
+      icon_session_state_color_ == session_state)
     return;
   info_ = info;
+  icon_session_state_color_ = session_state;
+
+  SkColor color = TrayIconColor(session_state);
   image_view()->SetImage(PowerStatus::GetBatteryImage(
-      info, kTrayIconSize, SkColorSetA(kTrayIconColor, 0x4C), kTrayIconColor));
+      info, kTrayIconSize, SkColorSetA(color, 0x4C), color));
 }
 
 }  // namespace tray

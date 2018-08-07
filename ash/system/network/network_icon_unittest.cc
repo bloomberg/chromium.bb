@@ -118,7 +118,7 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
 
   const base::MessageLoop message_loop_;
 
-  IconType icon_type_ = ICON_TYPE_TRAY;
+  IconType icon_type_ = ICON_TYPE_TRAY_REGULAR;
 
   chromeos::NetworkStateHandler* handler_;
 

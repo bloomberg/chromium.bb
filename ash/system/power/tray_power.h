@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/session/session_observer.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_item_view.h"
@@ -16,17 +17,22 @@ namespace ash {
 
 namespace tray {
 
-class PowerTrayView : public TrayItemView, public PowerStatus::Observer {
+class PowerTrayView : public TrayItemView,
+                      public PowerStatus::Observer,
+                      public SessionObserver {
  public:
   explicit PowerTrayView(SystemTrayItem* owner);
 
   ~PowerTrayView() override;
 
-  // Overridden from views::View.
+  // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // Overridden from PowerStatus::Observer.
+  // PowerStatus::Observer:
   void OnPowerStatusChanged() override;
+
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
  private:
   void UpdateStatus();
@@ -34,6 +40,9 @@ class PowerTrayView : public TrayItemView, public PowerStatus::Observer {
 
   base::string16 accessible_name_;
   base::Optional<PowerStatus::BatteryImageInfo> info_;
+  session_manager::SessionState icon_session_state_color_ =
+      session_manager::SessionState::UNKNOWN;
+  ScopedSessionObserver session_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
 };

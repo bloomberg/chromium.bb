@@ -13,7 +13,7 @@
 namespace ash {
 
 namespace tray {
-class TimeView;
+class TimeTrayItemView;
 }  // namespace tray
 
 class ImeModeView;
@@ -118,7 +118,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   ImeModeView* const ime_mode_view_;
   NotificationCounterView* const notification_counter_item_;
   QuietModeView* const quiet_mode_view_;
-  tray::TimeView* const time_view_;
+  tray::TimeTrayItemView* const time_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTray);
 };

@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_IME_MODE_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_IME_MODE_VIEW_H_
 
+#include "ash/session/session_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -15,7 +16,8 @@ namespace ash {
 // An IME mode icon view in UnifiedSystemTray button.
 class ImeModeView : public TrayItemView,
                     public IMEObserver,
-                    public TabletModeObserver {
+                    public TabletModeObserver,
+                    public SessionObserver {
  public:
   ImeModeView();
   ~ImeModeView() override;
@@ -28,10 +30,15 @@ class ImeModeView : public TrayItemView,
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+
  private:
   void Update();
 
   bool ime_menu_on_shelf_activated_ = false;
+
+  ScopedSessionObserver session_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImeModeView);
 };

@@ -5,8 +5,10 @@
 #include "ash/system/unified/ime_mode_view.h"
 
 #include "ash/ime/ime_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/views/controls/label.h"
@@ -46,6 +48,10 @@ void ImeModeView::OnTabletModeEnded() {
   Update();
 }
 
+void ImeModeView::OnSessionStateChanged(session_manager::SessionState state) {
+  Update();
+}
+
 void ImeModeView::Update() {
   // Do not show IME mode icon in tablet mode as it's less useful and screen
   // space is limited.
@@ -63,6 +69,8 @@ void ImeModeView::Update() {
              (ime_count > 1 || ime_controller->managed_by_policy()));
 
   label()->SetText(ime_controller->current_ime().short_name);
+  label()->SetEnabledColor(
+      TrayIconColor(Shell::Get()->session_controller()->GetSessionState()));
   Layout();
 }
 

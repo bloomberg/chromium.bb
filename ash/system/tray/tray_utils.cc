@@ -18,4 +18,10 @@ void SetupLabelForTray(views::Label* label) {
       kTrayTextFontSizeIncrease, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
 }
 
+SkColor TrayIconColor(session_manager::SessionState session_state) {
+  if (session_state == session_manager::SessionState::OOBE)
+    return kOobeTrayIconColor;
+  return kTrayIconColor;
+}
+
 }  // namespace ash

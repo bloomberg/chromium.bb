@@ -18,6 +18,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/color_palette.h"
 
 namespace ash {
 namespace {
@@ -369,7 +370,7 @@ TEST_F(ShelfBackgroundTargetColorTest,
   EXPECT_EQ(GetBaseColor(test_api_->shelf_background_target_color()),
             GetBaseColor(SK_ColorTRANSPARENT));
   EXPECT_EQ(GetBaseColor(test_api_->item_background_target_color()),
-            GetBaseColor(SK_ColorTRANSPARENT));
+            GetBaseColor(gfx::kGoogleGrey100));
 
   NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
   EXPECT_EQ(GetBaseColor(test_api_->shelf_background_target_color()),
