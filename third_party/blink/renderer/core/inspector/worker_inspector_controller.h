@@ -71,12 +71,10 @@ class WorkerInspectorController final
       int session_id,
       int call_id,
       const String& response,
-      const String& state,
       mojom::blink::DevToolsSessionStatePtr updates) override;
   void SendProtocolNotification(
       int session_id,
       const String& message,
-      const String& state,
       mojom::blink::DevToolsSessionStatePtr updates) override;
 
   // WebThread::TaskObserver implementation.

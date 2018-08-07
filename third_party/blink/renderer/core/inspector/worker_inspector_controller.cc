@@ -74,7 +74,7 @@ void WorkerInspectorController::ConnectFrontend(int session_id) {
 
   InspectorSession* session = new InspectorSession(
       this, probe_sink_.Get(), session_id, debugger_->GetV8Inspector(),
-      debugger_->ContextGroupId(thread_), String(), nullptr);
+      debugger_->ContextGroupId(thread_), nullptr);
   session->Append(new InspectorLogAgent(thread_->GetConsoleMessageStorage(),
                                         nullptr, session->V8Session()));
   if (thread_->GlobalScope()->IsWorkerGlobalScope()) {
@@ -129,7 +129,6 @@ void WorkerInspectorController::SendProtocolResponse(
     int session_id,
     int call_id,
     const String& response,
-    const String& state,
     mojom::blink::DevToolsSessionStatePtr updates) {
   // Make tests more predictable by flushing all sessions before sending
   // protocol response in any of them.
@@ -143,7 +142,6 @@ void WorkerInspectorController::SendProtocolResponse(
 void WorkerInspectorController::SendProtocolNotification(
     int session_id,
     const String& message,
-    const String& state,
     mojom::blink::DevToolsSessionStatePtr updates) {
   thread_->GetWorkerReportingProxy().PostMessageToPageInspector(session_id,
                                                                 message);

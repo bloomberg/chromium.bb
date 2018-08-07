@@ -100,7 +100,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       mojom::blink::DevToolsSessionHostAssociatedPtrInfo,
       mojom::blink::DevToolsSessionAssociatedRequest main_session,
       mojom::blink::DevToolsSessionRequest io_session,
-      const String& reattach_state,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
   void InspectElement(const WebPoint& point_in_local_root) override;
 

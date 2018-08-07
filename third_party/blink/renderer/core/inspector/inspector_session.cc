@@ -25,7 +25,6 @@ InspectorSession::InspectorSession(
     int session_id,
     v8_inspector::V8Inspector* inspector,
     int context_group_id,
-    const String& reattach_state,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state)
     : client_(client),
       v8_session_(nullptr),
@@ -33,21 +32,13 @@ InspectorSession::InspectorSession(
       disposed_(false),
       instrumenting_agents_(instrumenting_agents),
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
-      session_state_(std::move(reattach_session_state)) {
-  String v8_state;
-  if (!reattach_state.IsNull()) {
-    std::unique_ptr<protocol::Value> state =
-        protocol::StringUtil::parseJSON(reattach_state);
-    if (state)
-      state_ = protocol::DictionaryValue::cast(std::move(state));
-    if (!state_)
-      state_ = protocol::DictionaryValue::create();
-    state_->getString(kV8StateKey, &v8_state);
-  } else {
-    state_ = protocol::DictionaryValue::create();
-  }
-  v8_session_ = inspector->connect(context_group_id, this,
-                                   ToV8InspectorStringView(v8_state));
+      session_state_(std::move(reattach_session_state)),
+      v8_session_state_(kV8StateKey),
+      v8_session_state_json_(&v8_session_state_, /*default_value=*/String()) {
+  v8_session_state_.InitFrom(&session_state_);
+  v8_session_ =
+      inspector->connect(context_group_id, this,
+                         ToV8InspectorStringView(v8_session_state_json_.Get()));
 }
 
 InspectorSession::~InspectorSession() {
@@ -57,7 +48,7 @@ InspectorSession::~InspectorSession() {
 void InspectorSession::Append(InspectorAgent* agent) {
   agents_.push_back(agent);
   agent->Init(instrumenting_agents_.Get(), inspector_backend_dispatcher_.get(),
-              state_.get(), &session_state_);
+              &session_state_);
 }
 
 void InspectorSession::Restore() {
@@ -140,19 +131,9 @@ void InspectorSession::SendProtocolResponse(int call_id,
   if (disposed_)
     return;
   flushProtocolNotifications();
-  client_->SendProtocolResponse(session_id_, call_id, message, GetStateToSend(),
+  v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
+  client_->SendProtocolResponse(session_id_, call_id, message,
                                 session_state_.TakeUpdates());
-}
-
-String InspectorSession::GetStateToSend() {
-  if (v8_session_)
-    state_->setString(kV8StateKey, ToCoreString(v8_session_->stateJSON()));
-  String state_to_send = state_->serialize();
-  if (state_to_send == last_sent_state_)
-    state_to_send = String();
-  else
-    last_sent_state_ = state_to_send;
-  return state_to_send;
 }
 
 class InspectorSession::Notification {
@@ -216,13 +197,11 @@ void InspectorSession::flushProtocolNotifications() {
     agents_[i]->FlushPendingProtocolNotifications();
   if (!notification_queue_.size())
     return;
-  String state_to_send = GetStateToSend();
+  v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
   for (size_t i = 0; i < notification_queue_.size(); ++i) {
-    client_->SendProtocolNotification(
-        session_id_, notification_queue_[i]->Serialize(), state_to_send,
-        session_state_.TakeUpdates());
-    // Only send state once in this series of serialized updates.
-    state_to_send = String();
+    client_->SendProtocolNotification(session_id_,
+                                      notification_queue_[i]->Serialize(),
+                                      session_state_.TakeUpdates());
   }
   notification_queue_.clear();
 }

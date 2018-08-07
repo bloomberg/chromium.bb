@@ -88,11 +88,9 @@ class DevToolsSession : public protocol::FrontendChannel,
   void DispatchProtocolResponse(
       const std::string& message,
       int call_id,
-      const base::Optional<std::string>& state,
       blink::mojom::DevToolsSessionStatePtr updates) override;
   void DispatchProtocolNotification(
       const std::string& message,
-      const base::Optional<std::string>& state,
       blink::mojom::DevToolsSessionStatePtr updates) override;
 
   // Merges the |updates| received from the renderer into session_state_cookie_.
@@ -128,10 +126,9 @@ class DevToolsSession : public protocol::FrontendChannel,
   };
   std::map<int, WaitingMessage> waiting_for_response_messages_;
 
-  // |state_cookie_| always corresponds to a state before
+  // |session_state_cookie_| always corresponds to a state before
   // any of the waiting for response messages have been handled.
-  // Note that |state_cookie_| is not present only before first attach.
-  base::Optional<std::string> state_cookie_;
+  // |session_state_cookie_| is nullptr before first attach.
   blink::mojom::DevToolsSessionStatePtr session_state_cookie_;
 
   base::WeakPtrFactory<DevToolsSession> weak_factory_;

@@ -81,10 +81,9 @@ void DevToolsSession::AttachToAgent(
     const blink::mojom::DevToolsAgentAssociatedPtr& agent) {
   blink::mojom::DevToolsSessionHostAssociatedPtrInfo host_ptr_info;
   binding_.Bind(mojo::MakeRequest(&host_ptr_info));
-  agent->AttachDevToolsSession(std::move(host_ptr_info),
-                               mojo::MakeRequest(&session_ptr_),
-                               mojo::MakeRequest(&io_session_ptr_),
-                               state_cookie_, session_state_cookie_.Clone());
+  agent->AttachDevToolsSession(
+      std::move(host_ptr_info), mojo::MakeRequest(&session_ptr_),
+      mojo::MakeRequest(&io_session_ptr_), session_state_cookie_.Clone());
   session_ptr_.set_connection_error_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
 
@@ -103,9 +102,7 @@ void DevToolsSession::AttachToAgent(
     waiting_for_response_messages_.clear();
   }
 
-  // Set cookie to an empty string to reattach next time instead of attaching.
-  if (!state_cookie_.has_value())
-    state_cookie_ = std::string();
+  // Set cookie to an empty struct to reattach next time instead of attaching.
   if (!session_state_cookie_)
     session_state_cookie_ = blink::mojom::DevToolsSessionState::New();
 }
@@ -221,10 +218,7 @@ void DevToolsSession::flushProtocolNotifications() {
 void DevToolsSession::DispatchProtocolResponse(
     const std::string& message,
     int call_id,
-    const base::Optional<std::string>& state,
     blink::mojom::DevToolsSessionStatePtr updates) {
-  if (state.has_value())
-    state_cookie_ = state.value();
   ApplySessionStateUpdates(std::move(updates));
   waiting_for_response_messages_.erase(call_id);
   client_->DispatchProtocolMessage(agent_host_, message);
@@ -233,10 +227,7 @@ void DevToolsSession::DispatchProtocolResponse(
 
 void DevToolsSession::DispatchProtocolNotification(
     const std::string& message,
-    const base::Optional<std::string>& state,
     blink::mojom::DevToolsSessionStatePtr updates) {
-  if (state.has_value())
-    state_cookie_ = state.value();
   ApplySessionStateUpdates(std::move(updates));
   client_->DispatchProtocolMessage(agent_host_, message);
   // |this| may be deleted at this point.

@@ -38,8 +38,8 @@ interface DevToolsAgent {
   // e.g. requesting a pause. There is no ordering guarantee relative to
   // regular |session|.
   //
-  // If |reattach_state| is present, restores the state of the session to
-  // previously saved one (see DevToolsSessionHost). This is useful when
+  // If |reattach_session_state| is present, restores the state of the session
+  // to previously saved one (see DevToolsSessionHost). This is useful when
   // transferring a session from one agent to another while preserving the
   // state. For example, cross-process navigation in a frame creates a new
   // DevToolsAgent (in a different process), but we can preserve the state of
@@ -65,7 +65,6 @@ interface DevToolsAgent {
   AttachDevToolsSession(associated DevToolsSessionHost host,
                         associated DevToolsSession& session,
                         DevToolsSession& io_session,
-                        string? reattach_state,
                         DevToolsSessionState? reattach_session_state);
 
   // Requests an element at specific position to be inspected in every
@@ -97,16 +96,15 @@ interface DevToolsSession {
 interface DevToolsSessionHost {
   // Dispatches protocol command response to a remote debugging client.
   // |call_id| is a command id as defined in protocol.
-  // |state| is a state for future reattach (see DevToolsAgent),
-  // may be missing if the state did not change since last time.
+  // |updates| are the session state deltas for future reattach (see
+  // DevToolsAgent), may be missing if the state did not change since
+  // last time.
   DispatchProtocolResponse(mojo_base.mojom.BigString message,
                            int32 call_id,
-                           string? state,
                            DevToolsSessionState? updates);
 
   // Dispatches protocol notification to a remote debugging client.
   DispatchProtocolNotification(mojo_base.mojom.BigString message,
-                               string? state,
                                DevToolsSessionState? updates);
 };
 

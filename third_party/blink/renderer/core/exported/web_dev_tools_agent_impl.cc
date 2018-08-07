@@ -207,7 +207,6 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
           mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
           mojom::blink::DevToolsSessionAssociatedRequest main_request,
           mojom::blink::DevToolsSessionRequest io_request,
-          const String& reattach_state,
           mojom::blink::DevToolsSessionStatePtr reattach_session_state);
   ~Session() override;
 
@@ -233,19 +232,16 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
       int session_id,
       int call_id,
       const String& response,
-      const String& state,
       mojom::blink::DevToolsSessionStatePtr updates) override;
   void SendProtocolNotification(
       int session_id,
       const String& message,
-      const String& state,
       mojom::blink::DevToolsSessionStatePtr updates) override;
 
   void DispatchProtocolCommandInternal(int call_id,
                                        const String& method,
                                        const String& message);
   void InitializeInspectorSession(
-      const String& reattach_state,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state);
 
   Member<WebDevToolsAgentImpl> agent_;
@@ -317,7 +313,6 @@ WebDevToolsAgentImpl::Session::Session(
     mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
     mojom::blink::DevToolsSessionAssociatedRequest request,
     mojom::blink::DevToolsSessionRequest io_request,
-    const String& reattach_state,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state)
     : agent_(agent),
       frame_(agent->web_local_frame_impl_),
@@ -331,7 +326,7 @@ WebDevToolsAgentImpl::Session::Session(
   host_ptr_.set_connection_error_handler(WTF::Bind(
       &WebDevToolsAgentImpl::Session::Detach, WrapWeakPersistent(this)));
 
-  InitializeInspectorSession(reattach_state, std::move(reattach_session_state));
+  InitializeInspectorSession(std::move(reattach_session_state));
 }
 
 WebDevToolsAgentImpl::Session::~Session() {
@@ -363,7 +358,6 @@ void WebDevToolsAgentImpl::Session::SendProtocolResponse(
     int session_id,
     int call_id,
     const String& response,
-    const String& state,
     mojom::blink::DevToolsSessionStatePtr updates) {
   if (detached_)
     return;
@@ -372,16 +366,14 @@ void WebDevToolsAgentImpl::Session::SendProtocolResponse(
   // protocol response in any of them.
   if (LayoutTestSupport::IsRunningLayoutTest())
     agent_->FlushProtocolNotifications();
-  host_ptr_->DispatchProtocolResponse(response, call_id, state,
-                                      std::move(updates));
+  host_ptr_->DispatchProtocolResponse(response, call_id, std::move(updates));
 }
 
 void WebDevToolsAgentImpl::Session::SendProtocolNotification(
     int session_id,
     const String& message,
-    const String& state,
     mojom::blink::DevToolsSessionStatePtr updates) {
-  host_ptr_->DispatchProtocolNotification(message, state, std::move(updates));
+  host_ptr_->DispatchProtocolNotification(message, std::move(updates));
 }
 
 void WebDevToolsAgentImpl::Session::DispatchProtocolCommand(
@@ -404,18 +396,19 @@ void WebDevToolsAgentImpl::Session::DispatchProtocolCommand(
 }
 
 void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
-    const String& reattach_state,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state) {
   ClientMessageLoopAdapter::EnsureMainThreadDebuggerCreated();
   MainThreadDebugger* main_thread_debugger = MainThreadDebugger::Instance();
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
   InspectedFrames* inspected_frames = agent_->inspected_frames_.Get();
 
+  bool should_reattach = !reattach_session_state.is_null();
+
   inspector_session_ = new InspectorSession(
       this, agent_->probe_sink_.Get(), 0,
       main_thread_debugger->GetV8Inspector(),
       main_thread_debugger->ContextGroupId(inspected_frames->Root()),
-      reattach_state, std::move(reattach_session_state));
+      std::move(reattach_session_state));
 
   InspectorDOMAgent* dom_agent = new InspectorDOMAgent(
       isolate, inspected_frames, inspector_session_->V8Session());
@@ -489,7 +482,7 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
       inspector_session_, agent_->include_view_agents_, dom_agent,
       inspected_frames, frame_->ViewImpl()->GetPage());
 
-  if (!reattach_state.IsNull()) {
+  if (should_reattach) {
     inspector_session_->Restore();
     if (agent_->worker_client_)
       agent_->worker_client_->ResumeStartup();
@@ -564,14 +557,12 @@ void WebDevToolsAgentImpl::AttachDevToolsSession(
     mojom::blink::DevToolsSessionHostAssociatedPtrInfo host,
     mojom::blink::DevToolsSessionAssociatedRequest session_request,
     mojom::blink::DevToolsSessionRequest io_session_request,
-    const String& reattach_state,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state) {
   if (!sessions_.size())
     Platform::Current()->CurrentThread()->AddTaskObserver(this);
-  Session* session =
-      new Session(this, std::move(host), std::move(session_request),
-                  std::move(io_session_request), reattach_state,
-                  std::move(reattach_session_state));
+  Session* session = new Session(
+      this, std::move(host), std::move(session_request),
+      std::move(io_session_request), std::move(reattach_session_state));
   sessions_.insert(session);
   if (node_to_inspect_) {
     session->overlay_agent()->Inspect(node_to_inspect_);
