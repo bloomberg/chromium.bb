@@ -18,10 +18,12 @@ from chromite.lib import osutils
 from chromite.scripts import cros_oobe_autoconfig
 
 
+_TEST_DOMAIN = 'test.com'
 _TEST_CLI_PARAMETERS = (
     'image.bin', '--x-demo-mode', '--x-network-onc', '{}',
     '--x-network-auto-connect', '--x-eula-send-statistics',
-    '--x-eula-auto-accept', '--x-update-skip', '--x-wizard-auto-enroll')
+    '--x-eula-auto-accept', '--x-update-skip', '--x-wizard-auto-enroll',
+    '--enrollment-domain', _TEST_DOMAIN)
 _TEST_CONFIG_JSON = {
     'demo-mode': True,
     'network-onc': '{}',
@@ -36,6 +38,19 @@ _BLOCK_SIZE = 4096
 _SECTOR_SIZE = 512
 _STATEFUL_SIZE = _IMAGE_SIZE / 2
 _STATEFUL_OFFSET = 120 * _SECTOR_SIZE
+
+
+class SanitizeDomainTests(cros_test_lib.TestCase):
+  """Tests for SanitizeDomain()"""
+
+  def testFullASCII(self):
+    """Tests that ASCII-only domains are not mangled."""
+    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain("FoO.cOm"), "foo.com")
+
+  def testUnicode(self):
+    """Tests that a Unicode domain is punycoded."""
+    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(
+        "t\xd0\xb5\xd1\x95t.com"), "xn--tt-nlc2k.com")
 
 
 class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
@@ -79,6 +94,8 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
     self.oobe_autoconf_path = os.path.join(self.mount, 'unencrypted',
                                            'oobe_auto_config')
     self.config_path = os.path.join(self.oobe_autoconf_path, 'config.json')
+    self.domain_path = os.path.join(self.oobe_autoconf_path,
+                                    'enrollment_domain')
 
   def testChronosOwned(self):
     """Test that the OOBE autoconfig directory is owned by chronos."""
@@ -92,6 +109,11 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
     with self.mount_ctx, open(self.config_path) as conf:
       data = json.load(conf)
       self.assertEqual(data, _TEST_CONFIG_JSON)
+
+  def testDomainContents(self):
+    """Test that the domain file matches the correct data."""
+    with self.mount_ctx, open(self.domain_path) as domain:
+      self.assertEqual(domain.read(), _TEST_DOMAIN)
 
 
 class GetConfigContentTests(cros_test_lib.MockTestCase):

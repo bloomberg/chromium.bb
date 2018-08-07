@@ -6,7 +6,7 @@
 """Provision a recovery image for OOBE autoconfiguration.
 
 This script populates the OOBE autoconfiguration data
-(/stateful/unencrypted/oobe_auto_config/data.config) with the given parameters.
+(/stateful/unencrypted/oobe_auto_config/config.json) with the given parameters.
 
 Additionally, it marks the image as being "hands-free", i.e. requiring no
 physical user interaction to remove the recovery media before rebooting after
@@ -56,7 +56,6 @@ _GENERIC_FLAGS = {
     'eula-send-statistics': True,
     'eula-auto-accept': True,
     'update-skip': True,
-    'wizard-auto-enroll': True,
 }
 
 # Mapping of flag type to argparse kwargs.
@@ -70,6 +69,19 @@ _OOBE_DIRECTORY = 'oobe_auto_config'
 
 # Name of the configuration file in the recovery image.
 _CONFIG_PATH = 'config.json'
+
+# Name of the file containing the enrollment domain.
+_DOMAIN_PATH = 'enrollment_domain'
+
+
+def SanitizeDomain(domain):
+  """Returns a sanitized |domain| for use in recovery."""
+  # Domain is a byte string when passed by command-line flag.
+  domain = domain.decode('utf-8')
+  # Lowercase, so we don't need to ship uppercase glyphs in initramfs.
+  domain = domain.lower()
+  # Encode to IDNA to prevent homograph attacks.
+  return domain.encode('idna')
 
 
 def GetConfigContent(opts):
@@ -112,12 +124,13 @@ def GetConfigContent(opts):
   return json.dumps(conf)
 
 
-def PrepareImage(image, content):
+def PrepareImage(image, content, domain=None):
   """Prepares a recovery image for OOBE autoconfiguration.
 
   Args:
     image: Path to the recovery image.
     content: The content of the OOBE autoconfiguration.
+    domain: Which domain to enroll to.
   """
   parts = cros_build_lib.GetImageDiskPartitionInfo(image)
   stateful_num = parts[constants.CROS_PART_STATEFUL].number
@@ -140,8 +153,13 @@ def PrepareImage(image, content):
     # given data into it.
     config = os.path.join(oobe_autoconf, _CONFIG_PATH)
     osutils.WriteFile(config, content, sudo=True)
-    cros_build_lib.SudoRunCommand(['chown', 'chronos:chronos', config],
-                                  redirect_stderr=True)
+    cros_build_lib.SudoRunCommand(['chown', 'chronos:chronos', config])
+
+    # If we have a plaintext domain name, write it.
+    if domain:
+      domain_path = os.path.join(oobe_autoconf, _DOMAIN_PATH)
+      osutils.WriteFile(domain_path, SanitizeDomain(domain), sudo=True)
+      cros_build_lib.SudoRunCommand(['chown', 'chronos:chronos', domain_path])
 
 
 def ParseArguments(argv):
@@ -169,6 +187,9 @@ def ParseArguments(argv):
   parser.add_argument('--use-ethernet', action='store_true',
                       help='If specified, generates an ONC for auto-connecting '
                            'via ethernet.')
+  parser.add_argument('--enrollment-domain', type=str, required=False,
+                      help='Text to visually identify the enrollment token in '
+                           'recovery.')
 
   opts = parser.parse_args(argv)
 
@@ -198,4 +219,4 @@ def main(argv):
   if opts.dump_config:
     print(config_content)
 
-  PrepareImage(opts.image, config_content)
+  PrepareImage(opts.image, config_content, opts.enrollment_domain)
