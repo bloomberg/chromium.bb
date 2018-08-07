@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/sync_auth_manager.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
@@ -53,7 +52,6 @@
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_string_conversions.h"
-#include "components/sync/js/js_event_details.h"
 #include "components/sync/model/change_processor.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_store_service.h"
@@ -791,14 +789,8 @@ syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsEngineAllowedToStart()) {
-    // We shouldn't have an engine while in a disabled state, with one
-    // exception: When encountering an unrecoverable error, we post a task to
-    // shut down instead of doing it immediately, so there's a brief timeframe
-    // where we have an unrecoverable error but the engine still exists.
-    // TODO(crbug.com/839834): See if we can change this by either shutting down
-    // immediately (not posting a task), or setting the unrecoverable error as
-    // part of the posted task.
-    DCHECK(HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR) || !engine_);
+    // We shouldn't have an engine while in a disabled state.
+    DCHECK(!engine_);
     return TransportState::DISABLED;
   }
 
@@ -913,17 +905,21 @@ void ProfileSyncService::ClearUnrecoverableError() {
 // to do as little work as possible, to avoid further corruption or crashes.
 void ProfileSyncService::OnUnrecoverableError(const base::Location& from_here,
                                               const std::string& message) {
+  // TODO(crbug.com/840720): Get rid of the UnrecoverableErrorHandler interface
+  // and instead pass a callback.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Unrecoverable errors that arrive via the syncer::UnrecoverableErrorHandler
   // interface are assumed to originate within the syncer.
-  unrecoverable_error_reason_ = ERROR_REASON_SYNCER;
-  OnUnrecoverableErrorImpl(from_here, message);
+  OnUnrecoverableErrorImpl(from_here, message, ERROR_REASON_SYNCER);
 }
 
 void ProfileSyncService::OnUnrecoverableErrorImpl(
     const base::Location& from_here,
-    const std::string& message) {
-  DCHECK_NE(unrecoverable_error_reason_, ERROR_REASON_UNSET);
+    const std::string& message,
+    UnrecoverableErrorReason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(reason, ERROR_REASON_UNSET);
+  unrecoverable_error_reason_ = reason;
   unrecoverable_error_message_ = message;
   unrecoverable_error_location_ = from_here;
 
@@ -932,13 +928,8 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
   LOG(ERROR) << "Unrecoverable error detected at " << from_here.ToString()
              << " -- ProfileSyncService unusable: " << message;
 
-  NotifyObservers();
-
   // Shut all data types down.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ProfileSyncService::ShutdownImpl,
-                                sync_enabled_weak_factory_.GetWeakPtr(),
-                                syncer::DISABLE_SYNC));
+  ShutdownImpl(syncer::DISABLE_SYNC);
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
@@ -984,8 +975,8 @@ void ProfileSyncService::OnEngineInitialized(
   if (!success) {
     // Something went unexpectedly wrong.  Play it safe: stop syncing at once
     // and surface error UI to alert the user sync has stopped.
-    OnInternalUnrecoverableError(FROM_HERE, "BackendInitialize failure",
-                                 ERROR_REASON_ENGINE_INIT_FAILURE);
+    OnUnrecoverableErrorImpl(FROM_HERE, "BackendInitialize failure",
+                             ERROR_REASON_ENGINE_INIT_FAILURE);
     return;
   }
 
@@ -1121,9 +1112,9 @@ void ProfileSyncService::OnActionableError(
         expect_sync_configuration_aborted_ = true;
       }
       // Trigger an unrecoverable error to stop syncing.
-      OnInternalUnrecoverableError(FROM_HERE,
-                                   last_actionable_error_.error_description,
-                                   ERROR_REASON_ACTIONABLE_ERROR);
+      OnUnrecoverableErrorImpl(FROM_HERE,
+                               last_actionable_error_.error_description,
+                               ERROR_REASON_ACTIONABLE_ERROR);
       break;
     case syncer::DISABLE_SYNC_ON_CLIENT:
       if (error.error_type == syncer::NOT_MY_BIRTHDAY) {
@@ -1255,8 +1246,8 @@ void ProfileSyncService::OnConfigureDone(
             result.data_type_status_table.GetUnrecoverableErrorTypes()) +
         ": " + error.message();
     LOG(ERROR) << "ProfileSyncService error: " << message;
-    OnInternalUnrecoverableError(error.location(), message,
-                                 ERROR_REASON_CONFIGURATION_FAILURE);
+    OnUnrecoverableErrorImpl(error.location(), message,
+                             ERROR_REASON_CONFIGURATION_FAILURE);
     return;
   }
 
@@ -2076,15 +2067,6 @@ syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
     types.PutAll(provider->GetPreferredDataTypes());
   }
   return types;
-}
-
-void ProfileSyncService::OnInternalUnrecoverableError(
-    const base::Location& from_here,
-    const std::string& message,
-    UnrecoverableErrorReason reason) {
-  DCHECK_EQ(unrecoverable_error_reason_, ERROR_REASON_UNSET);
-  unrecoverable_error_reason_ = reason;
-  OnUnrecoverableErrorImpl(from_here, message);
 }
 
 bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {

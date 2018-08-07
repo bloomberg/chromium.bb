@@ -526,9 +526,10 @@ class ProfileSyncService : public syncer::SyncService,
   // Helper method for managing encryption UI.
   bool IsEncryptedDatatypeEnabled() const;
 
-  // Helper for OnUnrecoverableError and OnInternalUnrecoverableError.
+  // Helper for OnUnrecoverableError.
   void OnUnrecoverableErrorImpl(const base::Location& from_here,
-                                const std::string& message);
+                                const std::string& message,
+                                UnrecoverableErrorReason reason);
 
   // Stops the sync engine. Does NOT set IsSyncRequested to false. Use
   // RequestStop for that. |data_fate| controls whether the local sync data is
@@ -565,12 +566,6 @@ class ProfileSyncService : public syncer::SyncService,
   void UpdateSelectedTypesHistogram(
       bool sync_everything,
       const syncer::ModelTypeSet chosen_types) const;
-
-  // Internal unrecoverable error handler. Used to track error reason via
-  // Sync.UnrecoverableErrors histogram.
-  void OnInternalUnrecoverableError(const base::Location& from_here,
-                                    const std::string& message,
-                                    UnrecoverableErrorReason reason);
 
   // Update UMA for syncing engine.
   void UpdateEngineInitUMA(bool success) const;
