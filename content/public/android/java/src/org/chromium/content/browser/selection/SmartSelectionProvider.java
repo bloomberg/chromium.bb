@@ -112,7 +112,7 @@ public class SmartSelectionProvider {
 
         mClassificationTask =
                 new ClassificationTask(classifier, requestType, text, start, end, locales);
-        mClassificationTask.execute();
+        mClassificationTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     @TargetApi(Build.VERSION_CODES.O)
