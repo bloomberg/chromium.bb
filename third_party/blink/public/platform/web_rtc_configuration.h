@@ -33,35 +33,24 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_certificate.h"
-#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 
 #include <memory>
 
 namespace blink {
 
-class WebString;
-
-struct WebRTCIceServer {
-  WebURL url;
-  WebString username;
-  WebString credential;
-};
-
-enum class WebRTCIceTransportPolicy { kRelay, kAll };
-
-enum class WebRTCBundlePolicy { kBalanced, kMaxCompat, kMaxBundle };
-
-enum class WebRTCRtcpMuxPolicy { kNegotiate, kRequire };
-
+// This is distinct from webrtc::SdpSemantics to add the kDefault option.
 enum class WebRTCSdpSemantics { kDefault, kPlanB, kUnifiedPlan };
 
 struct WebRTCConfiguration {
-  WebVector<WebRTCIceServer> ice_servers;
-  WebRTCIceTransportPolicy ice_transport_policy =
-      WebRTCIceTransportPolicy::kAll;
-  WebRTCBundlePolicy bundle_policy = WebRTCBundlePolicy::kBalanced;
-  WebRTCRtcpMuxPolicy rtcp_mux_policy = WebRTCRtcpMuxPolicy::kRequire;
+  std::vector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
+  webrtc::PeerConnectionInterface::IceTransportsType ice_transport_policy =
+      webrtc::PeerConnectionInterface::kAll;
+  webrtc::PeerConnectionInterface::BundlePolicy bundle_policy =
+      webrtc::PeerConnectionInterface::kBundlePolicyBalanced;
+  webrtc::PeerConnectionInterface::RtcpMuxPolicy rtcp_mux_policy =
+      webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire;
   WebVector<std::unique_ptr<WebRTCCertificate>> certificates;
   int ice_candidate_pool_size = 0;
   WebRTCSdpSemantics sdp_semantics = WebRTCSdpSemantics::kDefault;

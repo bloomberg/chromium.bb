@@ -250,11 +250,12 @@ class WebRTCCertificateObserver : public WebRTCCertificateCallback {
   Persistent<ScriptPromiseResolver> resolver_;
 };
 
-WebRTCIceTransportPolicy IceTransportPolicyFromString(const String& policy) {
+webrtc::PeerConnectionInterface::IceTransportsType IceTransportPolicyFromString(
+    const String& policy) {
   if (policy == "relay")
-    return WebRTCIceTransportPolicy::kRelay;
+    return webrtc::PeerConnectionInterface::kRelay;
   DCHECK_EQ(policy, "all");
-  return WebRTCIceTransportPolicy::kAll;
+  return webrtc::PeerConnectionInterface::kAll;
 }
 
 WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
@@ -262,56 +263,47 @@ WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
                                        ExceptionState& exception_state) {
   DCHECK(context);
 
-  WebRTCIceTransportPolicy ice_transport_policy =
-      WebRTCIceTransportPolicy::kAll;
+  WebRTCConfiguration web_configuration;
+
   if (configuration.hasIceTransportPolicy()) {
     UseCounter::Count(context, WebFeature::kRTCConfigurationIceTransportPolicy);
-    ice_transport_policy =
+    web_configuration.ice_transport_policy =
         IceTransportPolicyFromString(configuration.iceTransportPolicy());
   } else if (configuration.hasIceTransports()) {
     UseCounter::Count(context, WebFeature::kRTCConfigurationIceTransports);
-    ice_transport_policy =
+    web_configuration.ice_transport_policy =
         IceTransportPolicyFromString(configuration.iceTransports());
   }
 
-  WebRTCBundlePolicy bundle_policy = WebRTCBundlePolicy::kBalanced;
-  String bundle_policy_string = configuration.bundlePolicy();
-  if (bundle_policy_string == "max-compat") {
-    bundle_policy = WebRTCBundlePolicy::kMaxCompat;
-  } else if (bundle_policy_string == "max-bundle") {
-    bundle_policy = WebRTCBundlePolicy::kMaxBundle;
+  if (configuration.bundlePolicy() == "max-compat") {
+    web_configuration.bundle_policy =
+        webrtc::PeerConnectionInterface::kBundlePolicyMaxCompat;
+  } else if (configuration.bundlePolicy() == "max-bundle") {
+    web_configuration.bundle_policy =
+        webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle;
   } else {
-    DCHECK_EQ(bundle_policy_string, "balanced");
+    DCHECK_EQ(configuration.bundlePolicy(), "balanced");
   }
 
-  WebRTCRtcpMuxPolicy rtcp_mux_policy = WebRTCRtcpMuxPolicy::kRequire;
-  String rtcp_mux_policy_string = configuration.rtcpMuxPolicy();
-  if (rtcp_mux_policy_string == "negotiate") {
-    rtcp_mux_policy = WebRTCRtcpMuxPolicy::kNegotiate;
+  if (configuration.rtcpMuxPolicy() == "negotiate") {
+    web_configuration.rtcp_mux_policy =
+        webrtc::PeerConnectionInterface::kRtcpMuxPolicyNegotiate;
     Deprecation::CountDeprecation(context, WebFeature::kRtcpMuxPolicyNegotiate);
   } else {
-    DCHECK_EQ(rtcp_mux_policy_string, "require");
+    DCHECK_EQ(configuration.rtcpMuxPolicy(), "require");
   }
 
-  WebRTCSdpSemantics sdp_semantics = WebRTCSdpSemantics::kDefault;
   if (configuration.hasSdpSemantics()) {
-    String sdp_semantics_string = configuration.sdpSemantics();
-    if (sdp_semantics_string == "plan-b") {
-      sdp_semantics = WebRTCSdpSemantics::kPlanB;
+    if (configuration.sdpSemantics() == "plan-b") {
+      web_configuration.sdp_semantics = WebRTCSdpSemantics::kPlanB;
     } else {
-      DCHECK_EQ(sdp_semantics_string, "unified-plan");
-      sdp_semantics = WebRTCSdpSemantics::kUnifiedPlan;
+      DCHECK_EQ(configuration.sdpSemantics(), "unified-plan");
+      web_configuration.sdp_semantics = WebRTCSdpSemantics::kUnifiedPlan;
     }
   }
 
-  WebRTCConfiguration web_configuration;
-  web_configuration.ice_transport_policy = ice_transport_policy;
-  web_configuration.bundle_policy = bundle_policy;
-  web_configuration.rtcp_mux_policy = rtcp_mux_policy;
-  web_configuration.sdp_semantics = sdp_semantics;
-
   if (configuration.hasIceServers()) {
-    Vector<WebRTCIceServer> ice_servers;
+    std::vector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
     for (const RTCIceServer& ice_server : configuration.iceServers()) {
       Vector<String> url_strings;
       if (ice_server.hasURLs()) {
@@ -359,7 +351,11 @@ WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
               "required when the URL scheme is "
               "\"turn\" or \"turns\".");
         }
-        ice_servers.push_back(WebRTCIceServer{url, username, credential});
+        ice_servers.emplace_back();
+        auto& converted_ice_server = ice_servers.back();
+        converted_ice_server.urls.push_back(WebString(url).Utf8());
+        converted_ice_server.username = WebString(username).Utf8();
+        converted_ice_server.password = WebString(credential).Utf8();
       }
     }
     web_configuration.ice_servers = ice_servers;
