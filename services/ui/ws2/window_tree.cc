@@ -1171,11 +1171,8 @@ void WindowTree::OnWindowDestroyed(aura::Window* window) {
   // destructor.
 
   auto iter = FindClientRootWithRoot(window);
-  if (iter != client_roots_.end()) {
-    // TODO(sky): add test coverage of this. I'm pretty sure this isn't wired
-    // up correctly.
+  if (iter != client_roots_.end())
     DeleteClientRoot(iter->get(), WindowTree::DeleteClientRootReason::kDeleted);
-  }
 
   DCHECK_NE(0u, window_to_client_window_id_map_.count(window));
   const ClientWindowId client_window_id =
