@@ -25,6 +25,7 @@ import android.widget.FrameLayout;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 
+import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -142,6 +143,34 @@ public class VrShell extends GvrLayout
         mTabModelSelector = tabModelSelector;
         mVrBrowsingEnabled = mDelegate.isVrBrowsingEnabled();
 
+        mReprojectedRendering = setAsyncReprojectionEnabled(true);
+        if (mReprojectedRendering) {
+            // No need render to a Surface if we're reprojected. We'll be rendering with surfaceless
+            // EGL.
+            mPresentationView = new FrameLayout(mActivity);
+
+            // This can show up behind popups on standalone devices, so make sure it's black.
+            mPresentationView.setBackgroundColor(Color.BLACK);
+
+            // Only enable sustained performance mode when Async reprojection decouples the app
+            // framerate from the display framerate.
+            AndroidCompat.setSustainedPerformanceMode(mActivity, true);
+        } else {
+            if (VrShellDelegate.isDaydreamCurrentViewer()) {
+                // We need Async Reprojection on when entering VR browsing, because otherwise our
+                // GL context will be lost every time we're hidden, like when we go to the dashboard
+                // and come back.
+                // TODO(mthiesse): Supporting context loss turned out to be hard. We should consider
+                // spending more effort on supporting this in the future if it turns out to be
+                // important.
+                Log.e(TAG, "Could not turn async reprojection on for Daydream headset.");
+                throw new VrShellDelegate.VrUnsupportedException();
+            }
+            SurfaceView surfaceView = new SurfaceView(mActivity);
+            surfaceView.getHolder().addCallback(this);
+            mPresentationView = surfaceView;
+        }
+
         mActivity.getToolbarManager().setProgressBarEnabled(false);
 
         DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(activity);
@@ -167,24 +196,6 @@ public class VrShell extends GvrLayout
         // is triggered by resuming the GvrLayout, which is the usual way Daydream apps enter VR.
         // See VrShellDelegate#getEnterVrPendingIntent for why we need to do this.
         setReentryIntent(VrShellDelegate.getEnterVrPendingIntent(activity));
-
-        mReprojectedRendering = setAsyncReprojectionEnabled(true);
-        if (mReprojectedRendering) {
-            // No need render to a Surface if we're reprojected. We'll be rendering with surfaceless
-            // EGL.
-            mPresentationView = new FrameLayout(mActivity);
-
-            // This can show up behind popups on standalone devices, so make sure it's black.
-            mPresentationView.setBackgroundColor(Color.BLACK);
-
-            // Only enable sustained performance mode when Async reprojection decouples the app
-            // framerate from the display framerate.
-            AndroidCompat.setSustainedPerformanceMode(mActivity, true);
-        } else {
-            SurfaceView surfaceView = new SurfaceView(mActivity);
-            surfaceView.getHolder().addCallback(this);
-            mPresentationView = surfaceView;
-        }
 
         setPresentationView(mPresentationView);
 
@@ -940,7 +951,7 @@ public class VrShell extends GvrLayout
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         mVrCompositorSurfaceManager.surfaceDestroyed();
-        if (mNativeVrShell != 0) nativeSetSurface(mNativeVrShell, null);
+        VrShellDelegate.forceExitVrImmediately();
     }
 
     /** Creates and attaches a TabModelSelectorTabObserver to the tab model selector. */

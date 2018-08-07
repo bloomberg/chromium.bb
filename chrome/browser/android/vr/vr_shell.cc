@@ -533,9 +533,8 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void VrShell::SetSurface(JNIEnv* env,
                          const JavaParamRef<jobject>& obj,
                          const JavaParamRef<jobject>& surface) {
-  CHECK(!reprojected_rendering_);
-  if (surface.is_null())
-    return;
+  DCHECK(!reprojected_rendering_);
+  DCHECK(!surface.is_null());
   gfx::AcceleratedWidget window =
       ANativeWindow_fromSurface(base::android::AttachCurrentThread(), surface);
   surface_window_ = window;

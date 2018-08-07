@@ -214,6 +214,8 @@ public class VrShellDelegate
 
     private long mNativeVrShellDelegate;
 
+    /* package */ final static class VrUnsupportedException extends RuntimeException {}
+
     private static final class VrLifecycleObserver
             implements ApplicationStatus.ActivityStateListener {
         @Override
@@ -802,7 +804,7 @@ public class VrShellDelegate
         try {
             return isDaydreamReadyDevice() && DaydreamApi.isInVrSession(context);
         } catch (Exception ex) {
-            Log.e(TAG, "Unable to check if in vr session", ex);
+            Log.e(TAG, "Unable to check if in VR session", ex);
             return false;
         }
     }
@@ -1792,11 +1794,16 @@ public class VrShellDelegate
         // The user has exited VR.
         RecordUserAction.record("VR.DOFF");
 
+        if (disableVrMode) setVrModeEnabled(mActivity, false);
+
+        // We get crashes on Android K related to surfaces if we manipulate the view hierarchy while
+        // finishing.
+        if (mActivity.isFinishing()) return;
+
         restoreWindowMode();
         mVrShell.pause();
         removeVrViews();
         destroyVrShell();
-        if (disableVrMode) setVrModeEnabled(mActivity, false);
 
         promptForFeedbackIfNeeded(stayingInChrome);
 
@@ -1906,6 +1913,8 @@ public class VrShellDelegate
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             mVrShell = new VrShell(mActivity, this, tabModelSelector);
+        } catch (VrUnsupportedException e) {
+            return false;
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
