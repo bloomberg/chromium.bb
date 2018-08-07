@@ -907,8 +907,9 @@ gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
 // ClientControlledShellSurface, private:
 
 void ClientControlledShellSurface::UpdateFrame() {
-  if (!widget_ || !GetFrameView()->visible())
+  if (!widget_)
     return;
+
   gfx::Rect work_area =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(widget_->GetNativeWindow())
