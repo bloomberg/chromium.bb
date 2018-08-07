@@ -17,7 +17,7 @@ class NullMediaLog : public media::MediaLog {
   NullMediaLog() = default;
   ~NullMediaLog() override = default;
 
-  void AddEventLocked(std::unique_ptr<media::MediaLogEvent> event) override {}
+  void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullMediaLog);

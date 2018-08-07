@@ -20,13 +20,9 @@ MojoMediaLog::MojoMediaLog(mojom::MediaLogAssociatedPtrInfo remote_media_log,
 
 MojoMediaLog::~MojoMediaLog() {
   DVLOG(1) << __func__;
-  // Note that we're not invalidating the remote side.  We're only invalidating
-  // anything that was cloned from us.  Effectively, we're a log that just
-  // happens to operate via mojo.
-  InvalidateLog();
 }
 
-void MojoMediaLog::AddEventLocked(std::unique_ptr<MediaLogEvent> event) {
+void MojoMediaLog::AddEvent(std::unique_ptr<MediaLogEvent> event) {
   DVLOG(1) << __func__;
   DCHECK(event);
 
@@ -41,7 +37,12 @@ void MojoMediaLog::AddEventLocked(std::unique_ptr<MediaLogEvent> event) {
     return;
   }
 
-  // From other threads, we have little choice.
+  // From other threads, it's okay to post without worrying about losing a
+  // message.  This is because any message that's causally related to the object
+  // (and thus MediaLog) being destroyed hopefully posts the result back to the
+  // same sequence as |task_runner_| after we do.  Of course, async destruction
+  // (e.g., the renderer destroys a MojoVideoDecoder) can still lose messages,
+  // but that's really a race.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&MojoMediaLog::AddEvent, weak_this_, std::move(event)));

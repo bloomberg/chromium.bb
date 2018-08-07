@@ -127,7 +127,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
   }
 #endif  // defined(OS_WIN)
   return VdaVideoDecoder::Create(
-      task_runner, gpu_task_runner_, media_log->Clone(), target_color_space,
+      task_runner, gpu_task_runner_, media_log, target_color_space,
       gpu_preferences_, gpu_workarounds_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
                           command_buffer_id->channel_token,
