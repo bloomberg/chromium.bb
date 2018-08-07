@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">በ<ph name="PEPPER_PLUGIN_DOMAIN" /> ላይ ያለው <ph name="PEPPER_PLUGIN_NAME" /> ኮምፒውተርዎን መድረስ ይፈልጋል</translation>
 <translation id="2178614541317717477">CA Compromise</translation>
 <translation id="218070003709087997">ስንት ቅጂዎች መታተም እንዳለባቸው ለማመላከት ቁጥር ይጠቀሙ (ከ1 እስከ 999)።</translation>
-<translation id="2183558561014688873">የእርስዎ መሣሪያ ንቁ በሚህንበት እና ክፍት ሲሆን እርስዎ «Ok Google» በሚሉበት በማናቸውም ጊዜ የእርስዎን ረዳት ይድረሱበት።</translation>
 <translation id="2187895286714876935">የአገልጋይ ዕውቅና ማረጋገጫ ስህተት</translation>
 <translation id="2187906491731510095">ቅጥያዎች ተዘምነዋል</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> ክፈት</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">ከኩኪዎች በስተቀር ሁሉም በ<ph name="SITE" /> የተከማቸው ውሂብ ይሰረዛል።</translation>
 <translation id="237058345584060620">ቁልፍዎን ተጠቅመው ወደ መለያዎ ለመግባት ከዚህ መሣሪያ ጋር ያጣምሩት</translation>
 <translation id="2371076942591664043">&amp;ሲጠናቀቅ ክፈት</translation>
-<translation id="2376559921867170420">የእርስዎ Chromebook ሲቀናበር፣ የረዳት አዝራሩን ይጫኑ ወይም ከእርስዎ ረዳት በማናቸውም ጊዜ እገዛ ለማግኘት «Ok Google» ይበሉ።</translation>
 <translation id="2377319039870049694">ወደ የዝርዝር እይታ ቀይር</translation>
 <translation id="2377667304966270281">ከባድ ስህተቶች</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ፋይሎች ተመርጠዋል</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">ሌላ አክል</translation>
 <translation id="3812525830114410218">መጥፎ የእውቅና ማረጋገጫ</translation>
 <translation id="3813296892522778813">የሚፈልጉትን ነገር ማግኘት ካልቻሉ ወደ <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome እገዛ<ph name="END_LINK_CHROMIUM" /> ይሂዱ</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">አልቀረበም</translation>
 <translation id="3819752733757735746">የማብሪያ/ማጥፊያ መዳረሻ (ኮምፒውተሩን በአንድ ወይም ሁለት ማብሪያ ማጥፊያዎች ይቆጣጠሩ)</translation>
 <translation id="3819800052061700452">&amp;በሙሉ ገጽ ማያ አሳይ</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">የተቀመጡ የጣት አሻራዎች</translation>
 <translation id="407173827865827707">ጠቅ ሲደረግ</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />፦ በመለያ የመግባት ስህተት</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">የኢሜይል ፈራሚ ሰርቲፊኬት</translation>
 <translation id="407520071244661467">የልኬት ለውጥ</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" />ን cast ማድረግ አልተቻለም።</translation>

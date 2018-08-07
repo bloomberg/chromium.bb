@@ -136,6 +136,7 @@
 <translation id="405887016757208221">远程计算机未能将该会话初始化。如果问题仍然存在，请尝试重新配置主机。</translation>
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>
+<translation id="4126409073460786861">请在设置完毕后刷新此页面，然后您只需选择设备并输入相应的 PIN 码，便可访问这台计算机</translation>
 <translation id="4145029455188493639">以 <ph name="EMAIL_ADDRESS" /> 的身份登录。</translation>
 <translation id="4155497795971509630">缺少某些必需的组件。请确保您已安装该软件的最新版本，然后重试。</translation>
 <translation id="4156740505453712750">为防止他人擅自访问此计算机，请选用一个<ph name="BOLD_START" />至少 6 位数<ph name="BOLD_END" />的 PIN。当从其他位置连接时，将需要输入此 PIN。</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">至</translation>
 <translation id="7019153418965365059">无法识别的主机错误：<ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">远程协助</translation>
+<translation id="7026930240735156896">按照说明设置计算机以供远程访问</translation>
 <translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程访问。</translation>
 <translation id="7067321367069083429">屏幕充当触摸屏</translation>
 <translation id="7116737094673640201">欢迎使用 Chrome 远程桌面</translation>

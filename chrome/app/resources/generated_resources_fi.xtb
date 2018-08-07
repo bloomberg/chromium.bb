@@ -795,7 +795,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> verkkotunnuksessa <ph name="PEPPER_PLUGIN_DOMAIN" /> haluaa käyttää tietokonettasi.</translation>
 <translation id="2178614541317717477">Myöntäjäkompromissi</translation>
 <translation id="218070003709087997">Määritä tulostettavien kappaleiden määrä antamalla numero (1–999).</translation>
-<translation id="2183558561014688873">Käytä Assistantia sanomalla Ok Google koska vain, kun laite on päällä ja lukitus avattu.</translation>
 <translation id="2187895286714876935">Palvelimen varmenteen tuontivirhe</translation>
 <translation id="2187906491731510095">Laajennukset päivitetty</translation>
 <translation id="2188881192257509750">Avaa <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Tämä poistaa evästeitä lukuun ottamatta kaiken datan, jonka <ph name="SITE" /> tallensi.</translation>
 <translation id="237058345584060620">Yhdistä tämä laite ja suojausavain laitepariksi, jotta voit käyttää avainta kirjautumiseen.</translation>
 <translation id="2371076942591664043">Avaa, kun val&amp;mis</translation>
-<translation id="2376559921867170420">Kun Chromebook on määritetty, paina Assistant-painiketta tai sano Ok Google, niin voit puhua Assistantille koska tahansa.</translation>
 <translation id="2377319039870049694">Vaihda luettelonäkymään</translation>
 <translation id="2377667304966270281">Levyn sivuvirheet</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> tiedostoa on valittu</translation>
@@ -1880,6 +1878,7 @@
 <translation id="381202950560906753">Lisää toinen</translation>
 <translation id="3812525830114410218">Virheellinen varmenne</translation>
 <translation id="3813296892522778813">Jos et löydä etsimääsi, siirry <ph name="BEGIN_LINK_CHROMIUM" />Google Chromen ohjeisiin<ph name="END_LINK_CHROMIUM" />.</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Ei annettu</translation>
 <translation id="3819752733757735746">Valitsimen käyttö (ohjaa tietokonetta yhdellä tai kahdella kytkimellä)</translation>
 <translation id="3819800052061700452">&amp;Koko näyttö</translation>
@@ -2047,7 +2046,6 @@
 <translation id="4068776064906523561">Tallennetut sormenjäljet</translation>
 <translation id="407173827865827707">Klikkaamalla</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: kirjautumisvirhe</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">Sähköpostin allekirjoitusvarmenne</translation>
 <translation id="407520071244661467">Asteikko</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> ei ole suoratoistettavissa.</translation>

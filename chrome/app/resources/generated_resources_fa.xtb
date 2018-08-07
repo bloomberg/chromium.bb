@@ -792,7 +792,6 @@
 <translation id="2178098616815594724">افزایه <ph name="PEPPER_PLUGIN_NAME" /> در <ph name="PEPPER_PLUGIN_DOMAIN" /> می‌خواهد به رایانه شما دسترسی پیدا کند</translation>
 <translation id="2178614541317717477">‏بی اعتبارشدن CA</translation>
 <translation id="218070003709087997">استفاده از شماره برای نشان دادن تعداد کپی‌های چاپ (۱ تا ۹۹۹).</translation>
-<translation id="2183558561014688873">‏هرزمان که هنگام بیدار بودن و باز بودن قفل دستگاه می‌گویید «OK Google»، به «دستیار» دسترسی خواهید داشت.</translation>
 <translation id="2187895286714876935">خطای وارد کردن مجوز سرور</translation>
 <translation id="2187906491731510095">افزونه‌ها به‌روزرسانی شدند</translation>
 <translation id="2188881192257509750">باز کردن <ph name="APPLICATION" /></translation>
@@ -921,7 +920,6 @@
 <translation id="2369536625682139252">همه داده‌هایی که <ph name="SITE" /> ذخیره کرده به‌جز کوکی‌ها حذف خواهد شد.</translation>
 <translation id="237058345584060620">کلیدتان را با این دستگاه مرتبط کنید تا بتوانید از آن برای ورود به سیستم حسابتان استفاده کنید</translation>
 <translation id="2371076942591664043">پس از &amp;تکمیل باز شود</translation>
-<translation id="2376559921867170420">‏وقتی Chromebook راه‌اندازی شد، دکمه «دستیار» را فشار دهید یا بگویید «OK Google» تا در هرزمانی از «دستیار» کمک بگیرید.</translation>
 <translation id="2377319039870049694">جابه‌جایی به نمای فهرستی</translation>
 <translation id="2377667304966270281">خطاهای سخت‌افزاری</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> فایل انتخاب شد</translation>
@@ -1875,6 +1873,7 @@
 <translation id="381202950560906753">افزودن دستگاه دیگر</translation>
 <translation id="3812525830114410218">گواهی نادرست</translation>
 <translation id="3813296892522778813">‏اگر نمی‌توانید چیزی را که می‌خواهید پیدا کنید،‌ به <ph name="BEGIN_LINK_CHROMIUM" />راهنمای Google Chrome‏<ph name="END_LINK_CHROMIUM" /> بروید</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">ارائه نشده است</translation>
 <translation id="3819752733757735746">دسترسی سوئیچ (رایانه را فقط با یک یا دو سوئیچ کنترل کنید)</translation>
 <translation id="3819800052061700452">&amp;تمام صفحه</translation>
@@ -2045,7 +2044,6 @@
 <translation id="4068776064906523561">اثرانگشت‌های ذخیره‌شده</translation>
 <translation id="407173827865827707">با کلیک</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: خطای ورود به سیستم</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">گواهی امضاکننده ایمیل</translation>
 <translation id="407520071244661467">مقیاس</translation>
 <translation id="4075639477629295004">ارسال محتوای <ph name="FILE_NAME" /> امکان‌پذیر نیست.</translation>

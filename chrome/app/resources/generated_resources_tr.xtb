@@ -795,7 +795,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> alanındaki <ph name="PEPPER_PLUGIN_NAME" /> eklentisi bilgisayarınıza erişmek istiyor</translation>
 <translation id="2178614541317717477">CA Uzlaşması</translation>
 <translation id="218070003709087997">Yazdırılacak kopya sayısını göstermek için rakam kullanın (1 - 999 arası).</translation>
-<translation id="2183558561014688873">Cihazınız uyanık durumdayken "Ok Google" diyerek istediğiniz zaman Asistanınıza erişin.</translation>
 <translation id="2187895286714876935">Sunucu Sertifikası İçe Aktarma Hatası</translation>
 <translation id="2187906491731510095">Uzantılar güncellendi</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> adlı uygulamayı aç</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252"><ph name="SITE" /> web sitesinin depoladığı tüm veriler silinecek</translation>
 <translation id="237058345584060620">Anahtarınızı hesabınızda oturum açarken kullanabilmeniz için bu cihazla eşleyin</translation>
 <translation id="2371076942591664043">İşlem tamamlandığın&amp;da aç</translation>
-<translation id="2376559921867170420">Chromebook'unuzu kurarken istediğiniz zaman Asistanınızdan yardım almak için Asistan düğmesine basın veya "OK Google" deyin.</translation>
 <translation id="2377319039870049694">Liste görünümüne geç</translation>
 <translation id="2377667304966270281">Donanım Hataları</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> dosya seçildi</translation>
@@ -1879,6 +1877,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="381202950560906753">Başka ekle</translation>
 <translation id="3812525830114410218">Bozuk sertifika</translation>
 <translation id="3813296892522778813">Aradığınız bilgiyi bulamazsanız <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome yardımına<ph name="END_LINK_CHROMIUM" /> gidin</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Belirtilmedi</translation>
 <translation id="3819752733757735746">Anahtar erişimi (bilgisayarı yalnızca bir veya iki anahtarla kontrol edin)</translation>
 <translation id="3819800052061700452">Tam ek&amp;ran</translation>
@@ -2049,7 +2048,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4068776064906523561">Kayıtlı parmak izleri</translation>
 <translation id="407173827865827707">Tıklandığında</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: Oturum açma hatası</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">E-posta İmza Sahibi Sertifikası</translation>
 <translation id="407520071244661467">Ölçek</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> yayınlanamıyor.</translation>

@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Wtyczka <ph name="PEPPER_PLUGIN_NAME" /> na <ph name="PEPPER_PLUGIN_DOMAIN" /> chce mieć dostęp do Twojego komputera</translation>
 <translation id="2178614541317717477">Naruszenie bezpieczeństwa urzędu certyfikacji</translation>
 <translation id="218070003709087997">Wpisz wartość numeryczną, by określić liczbę kopii do wydrukowania (od 1 do 999).</translation>
-<translation id="2183558561014688873">Uruchamiaj Asystenta, mówiąc „OK Google”, gdy urządzenie jest odblokowane i nieuśpione.</translation>
 <translation id="2187895286714876935">Błąd importowania certyfikatu serwera</translation>
 <translation id="2187906491731510095">Rozszerzenia zaktualizowane</translation>
 <translation id="2188881192257509750">Otwórz <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Zostaną usunięte wszystkie dane zapisane przez witrynę <ph name="SITE" /> (oprócz plików cookie).</translation>
 <translation id="237058345584060620">Sparuj klucz z tym urządzeniem, by używać go do logowania się na konto</translation>
 <translation id="2371076942591664043">Otwórz po &amp;zakończeniu</translation>
-<translation id="2376559921867170420">Gdy skonfigurujesz Chromebooka, powiedz „OK Google” lub naciśnij przycisk Asystenta, by z niego korzystać.</translation>
 <translation id="2377319039870049694">Przełącz na widok listy</translation>
 <translation id="2377667304966270281">Poważne błędy</translation>
 <translation id="2378075407703503998">Wybrano <ph name="SELCTED_FILE_COUNT" /> pliki(ów)</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Dodaj kolejny</translation>
 <translation id="3812525830114410218">Zły certyfikat</translation>
 <translation id="3813296892522778813">Jeśli nie możesz znaleźć potrzebnych informacji, otwórz <ph name="BEGIN_LINK_CHROMIUM" />pomoc dotyczącą Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">OK Google</translation>
 <translation id="3817579325494460411">Brak danych</translation>
 <translation id="3819752733757735746">Switch Access (sterowanie komputerem za pomocą jednego lub dwóch przełączników).</translation>
 <translation id="3819800052061700452">&amp;Pełny ekran</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">Zapisane odciski palców</translation>
 <translation id="407173827865827707">Po kliknięciu</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: błąd logowania</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">Certyfikat podmiotu podpisującego pocztę e-mail</translation>
 <translation id="407520071244661467">Skala</translation>
 <translation id="4075639477629295004">Nie udało się przesłać pliku <ph name="FILE_NAME" />.</translation>

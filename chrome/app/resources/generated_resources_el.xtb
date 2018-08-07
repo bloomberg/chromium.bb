@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Η προσθήκη <ph name="PEPPER_PLUGIN_NAME" /> στον τομέα <ph name="PEPPER_PLUGIN_DOMAIN" /> επιθυμεί να αποκτήσει πρόσβαση στον υπολογιστή σας</translation>
 <translation id="2178614541317717477">Παραβίαση αρχής έκδοσης πιστοποιητικών</translation>
 <translation id="218070003709087997">Χρησιμοποιήστε έναν αριθμό για να υποδείξετε πόσα αντίγραφα θα εκτυπωθούν (1 ή 999).</translation>
-<translation id="2183558561014688873">Μεταβείτε στον Βοηθό οποιαδήποτε στιγμή λέγοντας "OK Google", όταν η συσκευή σας είναι ενεργή και ξεκλείδωτη.</translation>
 <translation id="2187895286714876935">Σφάλμα εισαγωγής του πιστοποιητικού διακομιστή  </translation>
 <translation id="2187906491731510095">Οι επεκτάσεις ενημερώθηκαν</translation>
 <translation id="2188881192257509750">Άνοιγμα <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Όλα τα δεδομένα που αποθηκεύτηκαν από τον ιστότοπο <ph name="SITE" /> θα διαγραφούν, εκτός από τα cookie.</translation>
 <translation id="237058345584060620">Δημιουργήστε σύζευξη μεταξύ του κλειδιού σας και αυτής της συσκευής, για να μπορείτε να τη χρησιμοποιήσετε για σύνδεση στον λογαριασμό σας</translation>
 <translation id="2371076942591664043">Άνοιγμα κατά την &amp;ολοκλήρωση</translation>
-<translation id="2376559921867170420">Μετά τη ρύθμιση του Chromebook, πατήστε το κουμπί Βοηθού ή πείτε "OK Google" για να λάβετε βοήθεια από τον Βοηθό σας οποιαδήποτε στιγμή.</translation>
 <translation id="2377319039870049694">Εναλλαγή σε προβολή λίστας</translation>
 <translation id="2377667304966270281">Σοβαρά σφάλματα</translation>
 <translation id="2378075407703503998">Έχουν επιλεγεί <ph name="SELCTED_FILE_COUNT" /> αρχεία</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Προσθήκη άλλης συσκευής</translation>
 <translation id="3812525830114410218">Ακατάλληλο πιστοποιητικό</translation>
 <translation id="3813296892522778813">Μεταβείτε στη <ph name="BEGIN_LINK_CHROMIUM" />βοήθεια του Google Chrome<ph name="END_LINK_CHROMIUM" /> εάν δεν μπορείτε να βρείτε αυτό που αναζητάτε</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Άγνωστο</translation>
 <translation id="3819752733757735746">Πρόσβαση με διακόπτες (ελέγξτε τον υπολογιστή με έναν ή δύο διακόπτες μόνο)</translation>
 <translation id="3819800052061700452">&amp;Πλήρης οθόνη</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">Αποθηκευμένα δακτυλικά αποτυπώματα</translation>
 <translation id="407173827865827707">Όταν κάνετε κλικ</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: σφάλμα σύνδεσης</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">Πιστοποιητικό υπηρεσίας υπογραφής ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="407520071244661467">Κλίμακα</translation>
 <translation id="4075639477629295004">Δεν είναι δυνατή η μετάδοση του αρχείου <ph name="FILE_NAME" />.</translation>

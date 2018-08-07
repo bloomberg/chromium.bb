@@ -398,6 +398,7 @@
 <translation id="1589055389569595240">Mostrar ortografía y gramática</translation>
 <translation id="1593594475886691512">Aplicando formato...</translation>
 <translation id="159359590073980872">Caché de imagen</translation>
+<translation id="1593926297800505364">Guardar la forma de pago</translation>
 <translation id="1598233202702788831">Tu administrador inhabilitó las actualizaciones.</translation>
 <translation id="1600857548979126453">Acceder al servidor del depurador de páginas</translation>
 <translation id="1601560923496285236">Aplicar</translation>
@@ -508,6 +509,7 @@
 <translation id="1744060673522309905">No se pudo unir el dispositivo al dominio. Asegúrate de no haber superado la cantidad de dispositivos que puedes agregar.</translation>
 <translation id="1744108098763830590">página en segundo plano</translation>
 <translation id="1745520510852184940">Realizar siempre esta acción</translation>
+<translation id="1746417874336251387">Ofrece funciones nuevas que usan la conexión del teléfono a la Chromebook</translation>
 <translation id="174937106936716857">Cantidad total de archivos</translation>
 <translation id="175196451752279553">Volver a abrir una pestaña cerrada</translation>
 <translation id="1753905327828125965">Más visitados</translation>
@@ -638,8 +640,10 @@
 <translation id="1932098463447129402">No antes</translation>
 <translation id="1933809209549026293">Conecta un mouse o un teclado. Si usas un dispositivo Bluetooth, asegúrate de que esté preparado para la sincronización.</translation>
 <translation id="1936157145127842922">Mostrar en carpeta</translation>
+<translation id="1938351510777341717">Tecla externa Comando</translation>
 <translation id="1940546824932169984">Dispositivos conectados</translation>
 <translation id="1942765061641586207">Resolución de imagen</translation>
+<translation id="1943097386230153518">Instalar servicio nuevo</translation>
 <translation id="1944921356641260203">Actualización encontrada</translation>
 <translation id="1951615167417147110">Desplaza hacia arriba una página</translation>
 <translation id="1954813140452229842">Se produjo un error al activar el recurso compartido. Revisa tus credenciales y vuelve a intentarlo.</translation>
@@ -788,7 +792,6 @@
 <translation id="2178098616815594724">El complemento <ph name="PEPPER_PLUGIN_NAME" /> del dominio <ph name="PEPPER_PLUGIN_DOMAIN" /> desea acceder a tu computadora</translation>
 <translation id="2178614541317717477">Compromiso de entidad de certificación</translation>
 <translation id="218070003709087997">Usa un número para indicar la cantidad de copias que deseas imprimir (1 a 999).</translation>
-<translation id="2183558561014688873">Accede a tu Asistente cada vez que digas "OK Google" cuando tu dispositivo esté activo y desbloqueado.</translation>
 <translation id="2187895286714876935">Error en el servidor de importación de certificado</translation>
 <translation id="2187906491731510095">Se actualizaron las extensiones</translation>
 <translation id="2188881192257509750">Abrir <ph name="APPLICATION" /></translation>
@@ -917,7 +920,6 @@
 <translation id="2369536625682139252">Se borrarán todos los datos que almacenó <ph name="SITE" />, excepto las cookies.</translation>
 <translation id="237058345584060620">Sincroniza la llave con este dispositivo y podrás usarla para acceder a tu cuenta</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
-<translation id="2376559921867170420">Cuando tu Chromebook esté configurada, presiona el botón del Asistente o di "Ok Google" para obtener ayuda en cualquier momento.</translation>
 <translation id="2377319039870049694">Cambiar a la vista de lista</translation>
 <translation id="2377667304966270281">Fallos graves</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
@@ -1105,6 +1107,7 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="265390580714150011">Valor de campo</translation>
 <translation id="2654166010170466751">Permitir que los sitios instalen controladores de pago</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Las funciones varían según el dispositivo</translation>
 <translation id="2660779039299703961">Evento</translation>
 <translation id="266079277508604648">No se puede establecer conexión con la impresora. Comprueba que esté encendida y conectada a la Chromebook mediante Wi-Fi o USB.</translation>
 <translation id="2661146741306740526">16 x 9</translation>
@@ -1211,6 +1214,7 @@
 <translation id="2803375539583399270">Ingresar PIN</translation>
 <translation id="2805646850212350655">Sistema de encriptación de archivos de Microsoft</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
+<translation id="2806891468525657116">El acceso directo ya existe</translation>
 <translation id="2807517655263062534">Los archivos que descargas aparecen aquí</translation>
 <translation id="2809586584051668049">y <ph name="NUMBER_ADDITIONAL_DISABLED" /> más</translation>
 <translation id="281133045296806353">Se creó una nueva ventana en la sesión existente del navegador.</translation>
@@ -1597,6 +1601,7 @@
 <translation id="3428419049384081277">¡Accediste!</translation>
 <translation id="3429275422858276529">Agrega esta página a favoritos para encontrarla fácilmente más tarde</translation>
 <translation id="3429599832623003132">$1 elementos</translation>
+<translation id="3430342160185525240">Permite que el Asistente te muestre notificaciones.</translation>
 <translation id="3432227430032737297">Quitar todo lo que se muestra</translation>
 <translation id="3432757130254800023">Enviar audio y video a pantallas en la red local</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1869,6 +1874,7 @@
 <translation id="381202950560906753">Agregar otra</translation>
 <translation id="3812525830114410218">Certificado incorrecto</translation>
 <translation id="3813296892522778813">Consulta la <ph name="BEGIN_LINK_CHROMIUM" />Ayuda de Google Chrome<ph name="END_LINK_CHROMIUM" /> si no encuentras lo que estás buscando</translation>
+<translation id="3813984289128269159">OK Google</translation>
 <translation id="3817579325494460411">No proporcionada</translation>
 <translation id="3819752733757735746">Accesibilidad mejorada (controlar la computadora con solo uno o dos cambios)</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
@@ -1961,6 +1967,7 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" /> en el Panel de control.
 
   ¿Quieres iniciar <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
+<translation id="394183848452296464">No se puede crear el acceso directo</translation>
 <translation id="3943582379552582368">&amp;Atrás</translation>
 <translation id="3943857333388298514">Pegar</translation>
 <translation id="3948116654032448504">Buscar imagen en <ph name="SEARCH_ENGINE" /></translation>
@@ -2038,7 +2045,6 @@
 <translation id="4068776064906523561">Huellas digitales guardadas</translation>
 <translation id="407173827865827707">Al hacer clic</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: error de acceso</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Enviar por correo electrónico el certificado del firmante</translation>
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">No se puede transmitir <ph name="FILE_NAME" />.</translation>
@@ -2268,6 +2274,7 @@
 <translation id="4481530544597605423">Dispositivos no sincronizados</translation>
 <translation id="4482194545587547824">Es posible que Google use tu historial de navegación para personalizar Búsqueda y otros servicios de Google</translation>
 <translation id="4495419450179050807">No mostrar en esta página</translation>
+<translation id="4499718683476608392">Habilita Autocompletar datos de tarjetas de crédito para llenar formularios con un solo clic</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> se bloqueó</translation>
 <translation id="450099669180426158">Ícono de signo de exclamación</translation>
 <translation id="4501530680793980440">Confirmar eliminación</translation>
@@ -3111,6 +3118,7 @@
 <translation id="5752453871435543420">Copia de seguridad en la nube del Sistema operativo Chrome</translation>
 <translation id="5756163054456765343">C&amp;entro de ayuda</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> podrá leer los documentos que envíes a imprimir a través de <ph name="APP_NAME" />.</translation>
+<translation id="5762172915276660232">Configuración de tarjetas de crédito</translation>
 <translation id="5763751966069581670">No se encuentraron dispositivos USB</translation>
 <translation id="5764483294734785780">Guardar audio como...</translation>
 <translation id="57646104491463491">Fecha de modificación</translation>
@@ -3182,6 +3190,7 @@
 <translation id="5855773610748894548">Se produjo un error en el módulo de seguridad.</translation>
 <translation id="5856721540245522153">Habilitar funciones de depuración</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
+<translation id="585979798156957858">Tecla externa Meta</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5860209693144823476">Pestaña 3</translation>
 <translation id="5860491529813859533">Activar</translation>
@@ -3491,6 +3500,7 @@
 <translation id="6327785803543103246">Detección automática de proxy web</translation>
 <translation id="6333064448949140209">El archivo se envió a Google para depurarlo</translation>
 <translation id="6333834492048057036">El cursor se sitúa en la barra de direcciones para la búsqueda.</translation>
+<translation id="6336451774241870485">Nueva pestaña privada</translation>
 <translation id="6339668969738228384">Crear un perfil nuevo para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">No se pudo establecer una conexión con el servidor. Comprueba la conexión de red y vuelve a intentarlo. Si el problema persiste, reinicia la Chromebook.</translation>
 <translation id="6340071272923955280">Protocolo de impresión por Internet (IPPS)</translation>
@@ -3672,6 +3682,7 @@
 <translation id="6606070663386660533">Pestaña 8</translation>
 <translation id="6607272825297743757">Información del archivo</translation>
 <translation id="6607831829715835317">Más herramientas</translation>
+<translation id="6610147964972079463">Cerrar las pestañas privadas</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6613452264606394692">Para regresar aquí rápidamente, agrega esta página a favoritos</translation>
 <translation id="6614893213975402384">Instala actualizaciones y apps. Al continuar, aceptas que este dispositivo también descargue e instale automáticamente actualizaciones y apps de Google, tu administrador y el fabricante del dispositivo, posiblemente a través de datos móviles. Es posible que algunas de estas apps ofrezcan compras directas desde la aplicación. Puedes quitar las apps en cualquier momento. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
@@ -3742,6 +3753,7 @@
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6718273304615422081">Comprimiendo…</translation>
 <translation id="671928215901716392">Bloquear pantalla</translation>
+<translation id="6720847671508630642">Comparte lo mejor de Android con tu Chromebook de forma automática. Conecta tu teléfono para que puedas compartir su conexión a Internet, enviar mensajes de texto desde la computadora y desbloquear la pantalla de tu Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Ver la marca y el modelo de tu llave de seguridad</translation>
 <translation id="6721972322305477112">&amp;Archivo</translation>
 <translation id="672213144943476270">Desbloquea tu perfil antes de navegar como invitado.</translation>
@@ -3888,6 +3900,7 @@
 <translation id="6970856801391541997">Imprimir páginas específicas</translation>
 <translation id="6972180789171089114">Audio/video</translation>
 <translation id="6973630695168034713">Carpetas</translation>
+<translation id="6974609594866392343">Modo de demostración sin conexión</translation>
 <translation id="6976108581241006975">Consola de JavaScript</translation>
 <translation id="6977381486153291903">Revisión de firmware</translation>
 <translation id="6978121630131642226">Motores de búsqueda</translation>
@@ -4482,6 +4495,7 @@
 <translation id="7857949311770343000">¿Esta es la página Nueva pestaña que esperabas ver?</translation>
 <translation id="786073089922909430">Servicio: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Descargas</translation>
+<translation id="7864662577698025113">Agregar un servicio nuevo</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 cookie}other{# cookies}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> sincronizado</translation>
 <translation id="7870730066603611552">Revisar las opciones de sincronización después de la configuración</translation>
@@ -4997,6 +5011,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8666584013686199826">Preguntarme cuando un sitio intente acceder a dispositivos USB</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> se está visualizando en pantalla completa y ha inhabilitado el cursor del mouse.</translation>
 <translation id="8669284339312441707">Cálido</translation>
+<translation id="8669919703154928649">Permitir que el Asistente te muestre notificaciones</translation>
 <translation id="8669949407341943408">Moviendo…</translation>
 <translation id="8671210955687109937">Se puede comentar</translation>
 <translation id="8673026256276578048">Buscar en la Web...</translation>
@@ -5384,6 +5399,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="964286338916298286">El administrador de TI inhabilitó los accesorios de Chrome para tu dispositivo.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplicación}other{Aplicaciones}}</translation>
 <translation id="967007123645306417">Con esta acción, saldrás de tus cuentas de Google. Los cambios en tus favoritos, historial, contraseñas y demás opciones de configuración ya no se sincronizarán con tu cuenta. Sin embargo, los datos existentes permanecerán almacenados allí y se podrán administrar en el <ph name="BEGIN_LINK" />Panel de control de Google<ph name="END_LINK" />.</translation>
+<translation id="967624055006145463">Datos almacenados</translation>
 <translation id="968000525894980488">Activa los Servicios de Google Play.</translation>
 <translation id="968174221497644223">Caché de aplicación</translation>
 <translation id="969096075394517431">Cambiar idiomas</translation>

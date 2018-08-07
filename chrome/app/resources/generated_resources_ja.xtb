@@ -795,7 +795,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> の <ph name="PEPPER_PLUGIN_NAME" /> プラグインから、パソコンへのアクセス許可を求められています</translation>
 <translation id="2178614541317717477">認証局が侵害された</translation>
 <translation id="218070003709087997">印刷部数を数値（1～999）で指定してください。</translation>
-<translation id="2183558561014688873">端末のスリープとロックが解除されている状態で「OK Google」と話すと、いつでもアシスタントにアクセスできます。</translation>
 <translation id="2187895286714876935">サーバー証明書インポート エラー</translation>
 <translation id="2187906491731510095">拡張機能が更新されました</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> を開く</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252"><ph name="SITE" /> により保存された、Cookie 以外の全データが削除されます。</translation>
 <translation id="237058345584060620">アカウントへのログインに使用できるように、キーをこの端末とペア設定します</translation>
 <translation id="2371076942591664043">ダウンロードしたら開く(&amp;D)</translation>
-<translation id="2376559921867170420">Chromebook を設定したら、いつでもアシスタント ボタンを押すか「OK Google」と話しかけてアシスタントを呼び出すことができます。</translation>
 <translation id="2377319039870049694">リスト表示に切り替え</translation>
 <translation id="2377667304966270281">ハードの障害数</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> 個のファイルを選択</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">別の指紋を登録</translation>
 <translation id="3812525830114410218">不適切な証明書</translation>
 <translation id="3813296892522778813">探しているものが見つからない場合は、<ph name="BEGIN_LINK_CHROMIUM" />Google Chrome のヘルプ<ph name="END_LINK_CHROMIUM" />をご覧ください。</translation>
+<translation id="3813984289128269159">OK Google</translation>
 <translation id="3817579325494460411">指定されていません</translation>
 <translation id="3819752733757735746">スイッチ アクセス（スイッチ 1 つまたは 2 つでパソコンを制御）</translation>
 <translation id="3819800052061700452">全画面表示(&amp;F)</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">保存した指紋</translation>
 <translation id="407173827865827707">クリックされた場合のみ</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: ログインエラー</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">メール署名者の証明書</translation>
 <translation id="407520071244661467">倍率</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> をキャストできません。</translation>

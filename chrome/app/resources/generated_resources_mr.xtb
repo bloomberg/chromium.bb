@@ -794,7 +794,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> वरील <ph name="PEPPER_PLUGIN_NAME" /> ला तुमचा काँप्युटर अ‍ॅक्सेस करायचा आहे</translation>
 <translation id="2178614541317717477">CA तडजोड</translation>
 <translation id="218070003709087997">किती प्रती प्रिंट करायच्या ते सूचित करण्यासाठी संख्या वापरा (1 ते 999).</translation>
-<translation id="2183558561014688873">जेव्हा तुमचे डिव्हाइस सक्रिय आणि अनलॉक केलेले असते तेव्हा तुम्ही कधीही "OK Google" म्हणून तुमचे असिस्टंट अॅक्सेस करा.</translation>
 <translation id="2187895286714876935">सर्व्हर प्रमाणपत्र आयात एरर</translation>
 <translation id="2187906491731510095">विस्तार अपडेट केले</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> उघडा</translation>
@@ -923,7 +922,6 @@
 <translation id="2369536625682139252">कुकी वगळता <ph name="SITE" /> द्वारे स्टोअर केलेला सर्व डेटा हटवला जाईल.</translation>
 <translation id="237058345584060620">या डिव्हाइसला तुमची की जोडा जेणेकरुन तुम्ही ते तुमच्या खात्यामध्ये साइन इन करण्यासाठी वापरू शकता</translation>
 <translation id="2371076942591664043">&amp;पूर्ण झाल्यानंतर उघडा</translation>
-<translation id="2376559921867170420">तुमच्या असिस्टंट कडून कधीही मदत मिळवण्यासाठी तुमचे Chromebook सेट केल्यावर, असिस्टंट बटण दाबा किंवा "OK Google" म्हणा.</translation>
 <translation id="2377319039870049694">सूची व्‍ह्यूवर स्विच करा</translation>
 <translation id="2377667304966270281">हार्ड फॉल्ट</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> फायली निवडल्या</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">दुसरे जोडा</translation>
 <translation id="3812525830114410218">खराब प्रमाणपत्र</translation>
 <translation id="3813296892522778813">आपण जे शोधत आहात ते आपल्याला सापडले नसेल तर <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome मदत<ph name="END_LINK_CHROMIUM" /> वर जा</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">प्रदान केले नाही</translation>
 <translation id="3819752733757735746">प्रवेश स्विच करा (केवळ एक किंवा दोन स्विचसह कॉंप्युटर नियंत्रित करा)</translation>
 <translation id="3819800052061700452">&amp;पूर्ण स्क्रीन</translation>
@@ -2050,7 +2049,6 @@
 <translation id="4068776064906523561">फिंगरप्रिंट सेव्ह केले</translation>
 <translation id="407173827865827707">क्लिकवर</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: साइन इन एरर</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">ईमेल स्वाक्षरीकर्ता प्रमाणपत्र</translation>
 <translation id="407520071244661467">स्केल</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> कास्ट करू शकलो नाही.</translation>

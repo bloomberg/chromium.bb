@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="1056775291175587022">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104084341931202936">অ্যাক্সেসেবিলিটি সেটিংস দেখান</translation>
 <translation id="1104621072296271835">আপনার ডিভাইসগুলি একসাথে আরও ভাল কাজ করে</translation>
 <translation id="112308213915226829">তাককে স্বয়ংক্রিয়ভাবে লুকান</translation>
 <translation id="1153356358378277386">যুক্ত করা ডিভাইসগুলি</translation>
@@ -20,17 +21,20 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">সিগন্যালটি ভাল নয়</translation>
 <translation id="1293264513303784526">USB-C ডিভাইস (বাঁ পোর্ট)</translation>
+<translation id="1302880136325416935">ব্লুটুথ সেটিংস দেখান। <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">ডানে</translation>
 <translation id="1351937230027495976">মেনুটি আড়াল করুন</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1467432559032391204">বামে</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{বিজ্ঞপ্তির সেটিংস দেখান। একটি অ্যাপের জন্য বিজ্ঞপ্তির নোটিফিকেশন বন্ধ আছে}one{বিজ্ঞপ্তির সেটিংস দেখান। #টি অ্যাপের জন্য নোটিফিকেশন বন্ধ আছে}other{বিজ্ঞপ্তির সেটিংস দেখান। #টি অ্যাপের জন্য নোটিফিকেশন বন্ধ আছে}}</translation>
 <translation id="1525508553941733066">খারিজ করুন</translation>
 <translation id="1537254971476575106">ফুলস্ক্রিন ম্যাগনিফায়ার</translation>
 <translation id="15373452373711364">বড় মাউস কার্সার</translation>
 <translation id="1550523713251050646">আরও বিকল্পের জন্য ক্লিক করুন</translation>
 <translation id="1567387640189251553">আপনি যখন শেষবার পাসওয়ার্ডটি লিখেছিলেন তার পরে অন্য একটি কীবোর্ডে কানেক্ট করা হয়েছিল। এটি আপনার পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে।</translation>
+<translation id="1570871743947603115">ব্লুটুথ টগল করুন। <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">এই ব্যবহারকারীকে সরান</translation>
 <translation id="1621499497873603021">ব্যাটারি শেষ হতে <ph name="TIME_LEFT" /> সময় বাকি আছে</translation>
 <translation id="1658406695958299976">দুঃখিত, আপনার পাসওয়ার্ড এখনও পর্যন্ত যাচাই করা যায়নি। দ্রষ্টব্য: আপনি যদি সম্প্রতি আপনার পাসওয়ার্ড পরিবর্তন করে থাকেন, তাহলে আপনি সাইন-আউট করার পর আপনার নতুন পাসওয়ার্ড প্রয়োগ করা হবে, অনুগ্রহ করে এখানে পুরানো পাসওয়ার্ড ব্যবহার করুন।</translation>
@@ -40,6 +44,7 @@
 <translation id="1743570585616704562">শনাক্ত করা যায়নি</translation>
 <translation id="1746730358044914197">আপনার প্রশাসক ইনপুটের পদ্ধতিগুলি কনফিগার করে।</translation>
 <translation id="1747827819627189109">অন-স্ক্রিন কীবোর্ড সক্ষম করা রয়েছে</translation>
+<translation id="1761222317188459878">নেটওয়ার্ক কানেকশন টগল করুন। <ph name="STATE_TEXT" /></translation>
 <translation id="1823873187264960516">ইথারনেট: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">সহায়ক (লোড হচ্ছে...)</translation>
 <translation id="1841545962859478868">ডিভাইস প্রশাসক নিম্নল্লিখিত বিষয়গুলি পর্যবেক্ষণ করতে পারেন:</translation>
@@ -63,6 +68,7 @@
 <translation id="2049639323467105390">এই ডিভাইস <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
 <translation id="2067602449040652523">কীবোর্ডের উজ্জ্বলতা</translation>
+<translation id="2075212959500165896">অনেকবার চেষ্টা করা হয়েছে। পরে আবার চেষ্টা করুন।</translation>
 <translation id="2081529251031312395">এখনও $1 পরে সাইন-ইন করতে পারেন।</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
 <translation id="2135456203358955318">ডক করা ম্যাগনিফায়ার</translation>
@@ -76,12 +82,15 @@
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
 <translation id="2338501278241028356">আশেপাশের ডিভাইস খুঁজে পেতে ব্লুটুথ চালু করুন</translation>
 <translation id="2339073806695260576">একটি নোট, স্ক্রিনশট নিতে, লেজার পয়েন্টার বা ম্যাগনিফিকেশনের কাচ ব্যবহার করার জন্য শেল্ফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
+<translation id="2341729377289034582">স্ক্রিনটি পোট্রেট মোডে লক করা আছে</translation>
 <translation id="2352467521400612932">স্টাইলাস সেটিংস</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
 <translation id="2359808026110333948">অবিরত</translation>
 <translation id="2365393535144473978">মোবাইল ডেটা সক্ষম করলে ব্লুটুথও সক্ষম হয়ে যাবে।</translation>
 <translation id="2391579633712104609">১৮০°</translation>
+<translation id="239188844683466770">'বিরক্ত করবেন না' মোড টগল করুন</translation>
 <translation id="2412593942846481727">আপডেট উপলভ্য</translation>
+<translation id="2416346634399901812"><ph name="NETWORK_NAME" />-এর সাথে কানেক্ট হয়েছে</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, দয়া করে এই পাস কীটি যে ডিভাইসে প্রদর্শিত হয়েছে তা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2484513351006226581">কীবোর্ড লে-আউট পরিবর্তন করতে <ph name="KEYBOARD_SHORTCUT" /> টিপুন।</translation>
@@ -114,6 +123,7 @@
 <translation id="2946119680249604491">সংযোগ জুড়ুন</translation>
 <translation id="2961963223658824723">কিছু সমস্যা হয়েছে। কয়েক সেকেন্ডের মধ্যে আবার চেষ্টা করুন।</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2995447421581609334">কাস্ট ডিভাইসগুলি দেখান।</translation>
 <translation id="2996462380875591307">ডক করা ম্যাগনিফায়ার চালু আছে। আবার Ctrl+Search+D প্রেস করে সেটিকে বন্ধ করুন।</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> হল <ph name="DOMAIN" /> এর দ্বারা পরিচালিত একটি সর্বজনীন সেশন</translation>
 <translation id="3000461861112256445">মোনো অডিও</translation>
@@ -128,6 +138,7 @@
 <translation id="315116470104423982">মোবাইল ডেটা</translation>
 <translation id="3151786313568798007">সজ্জা</translation>
 <translation id="3153444934357957346">একধিক সাইন-ইনে আপনার কেবলমাত্র <ph name="MULTI_PROFILE_USER_LIMIT" />টি পর্যন্ত অ্যাকাউন্ট থাকতে পারে।</translation>
+<translation id="3202010236269062730">{NUM_DEVICES,plural, =1{একটি ডিভাইসে কানেক্ট রয়েছে}one{#টি ডিভাইসে কানেক্ট রয়েছে}other{#টি ডিভাইসে কানেক্ট রয়েছে}}</translation>
 <translation id="3236488194889173876">কোনো মোবাইল নেটওয়ার্ক উপলব্ধ নেই</translation>
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">অতিথি</translation>
@@ -159,6 +170,7 @@
 <translation id="3784455785234192852">লক করুন</translation>
 <translation id="3798670284305777884">স্পিকার (অভ্যন্তরীণ)</translation>
 <translation id="380165613292957338">হাই, আমি কীভাবে সাহায্য করতে পারি?</translation>
+<translation id="383629559565718788">কীবোর্ড সেটিংস দেখান</translation>
 <translation id="3846575436967432996">কোনো নেটওয়ার্ক সংক্রান্ত তথ্য উপলব্ধ নেই</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3891340733213178823">প্রস্থান করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
@@ -174,8 +186,10 @@
 <translation id="4072264167173457037">মাঝারি সিগন্যাল</translation>
 <translation id="4200057768455216496">ডক করা ম্যাগনিফায়ারের জন্য আপনি শর্টকাট প্রেস করেছেন। আপনি কি এটি চালু করতে চান?</translation>
 <translation id="4217571870635786043">ডিক্টেশন</translation>
+<translation id="4261870227682513959">বিজ্ঞপ্তি সেটিংস দেখান। বিজ্ঞপ্তি বন্ধ আছে</translation>
 <translation id="4274921305979314545">আপনার ফোনের সাথে Chromebook কানেক্ট করুন</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
+<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> চালু করা হচ্ছে</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">আতস কাচ</translation>
@@ -239,6 +253,7 @@
 <translation id="5673434351075758678">সেটিংস সিঙ্ক করার পরে "<ph name="FROM_LOCALE" />" থেকে "<ph name="TO_LOCALE" />" সেট করা হয়েছে।</translation>
 <translation id="574392208103952083">মাঝারি</translation>
 <translation id="5744083938413354016">ট্যাপ করে টেনে আনা</translation>
+<translation id="5750765938512549687">ব্লুটুথ বন্ধ আছে</translation>
 <translation id="5777841717266010279">স্ক্রিন শেয়ার করা থামাবেন?</translation>
 <translation id="57838592816432529">নিঃশব্দ করুন</translation>
 <translation id="5805697420284793859">উইন্ডো ম্যানেজার</translation>
@@ -273,12 +288,14 @@
 <translation id="6164005077879661055">একবার এই তত্ত্বাবধানে থাকা ব্যবহারকারী সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং
 স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে৷ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য পরিদর্শিত এবং সেটিংস <ph name="MANAGEMENT_URL" /> এ পরিচালকের কাছে এখনো দৃশ্যমান হতে পারে৷</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
+<translation id="6254629735336163724">স্ক্রিনটি ল্যান্ডস্কেপ মোডে লক করা আছে</translation>
 <translation id="6259254695169772643">বেছে নিতে স্টাইলাস ব্যবহার করুন</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
 <translation id="6284232397434400372">রেজোলিউশন পরিবর্তন করা হয়েছে</translation>
 <translation id="6297287540776456956">একটি অঞ্চল নির্বাচন করতে লেখনী ব্যবহার করুন</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
 <translation id="632744581670418035">কীবোর্ড ওভারলে</translation>
+<translation id="6376931439017688372">ব্লুটুথ চালু আছে</translation>
 <translation id="639644700271529076">CAPS LOCK বন্ধ আছে</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="643147933154517414">সব সম্পন্ন!</translation>
@@ -314,6 +331,7 @@
 <translation id="6857811139397017780">সক্রিয় করুন <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">এই আপডেটটির জন্য আপনার ডিভাইস পাওয়ারওয়াশ করা প্রয়োজন। সাম্প্রতিক <ph name="SYSTEM_APP_NAME" /> আপডেট সম্পর্কে আরও জানুন।</translation>
 <translation id="6911468394164995108">অন্যতে যোগদান করুন ...</translation>
+<translation id="6972754398087986839">শুরু করুন</translation>
 <translation id="6981982820502123353">অ্যাক্সেযোগ্যতা</translation>
 <translation id="698231206551913481">একবার এই ব্যবহারকারীকে সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে।</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />-এ আবার ব্যবহার করতে পারবেন।</translation>
@@ -322,6 +340,7 @@
 <translation id="7066646422045619941">এই নেটওয়ার্কটি আপনার প্রশাসকের দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="7067196344162293536">স্বতঃ ঘূর্ণন</translation>
 <translation id="7076293881109082629">প্রবেশ করুন হচ্ছে</translation>
+<translation id="7092922358121866860">নাইট লাইট সেটিংস দেখান</translation>
 <translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাঁ পোর্ট)</translation>
 <translation id="7131634465328662194">আপনি নিজে থেকেই সাইন-আউট হয়ে যাবেন।</translation>
 <translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
@@ -357,6 +376,7 @@
 <translation id="7798302898096527229">Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">জোরালো সিগন্যাল</translation>
+<translation id="7842211907556571265"><ph name="NETWORK_NAME" />-এ কানেক্ট করা হচ্ছে</translation>
 <translation id="7842569679327885685">সতর্কতা: পরীক্ষামূলক বৈশিষ্ট্য</translation>
 <translation id="7846634333498149051">কীবোর্ড</translation>
 <translation id="790040513076446191">গোপনীয়তা-সংক্রান্ত সেটিংস নিপূণভাবে ব্যবহার করুন</translation>
@@ -397,18 +417,24 @@
 <translation id="8484916590211895857"><ph name="NAME" />: আবার সংযোগ করছে...</translation>
 <translation id="8513108775083588393">নিজে থেকে ঘুরবে</translation>
 <translation id="8517041960877371778">আপনার <ph name="DEVICE_TYPE" /> চালু থাকা অবস্থায় চার্জ নাও হতে পারে।</translation>
+<translation id="8627191004499078455"><ph name="DEVICE_NAME" />-এর সাথে কানেক্ট হয়েছে</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> বাকি আছে</translation>
 <translation id="8649101189709089199">বাছুন ও শুনুন</translation>
 <translation id="8652175077544655965">সেটিংস বন্ধ করুন</translation>
+<translation id="8653151467777939995">বিজ্ঞপ্তি সেটিংস দেখান। বিজ্ঞপ্তি চালু আছে</translation>
+<translation id="8664753092453405566">নেটওয়ার্ক তালিকা দেখান। <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">২৭০°</translation>
 <translation id="8676770494376880701">নিম্ন শক্তির চার্জার সংযুক্ত করা হয়েছে</translation>
 <translation id="8683506306463609433">পারফরম্যান্স ট্রেস করার বিকল্প চালু আছে</translation>
 <translation id="8734991477317290293">এটি আপনার পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে</translation>
+<translation id="8735953464173050365">কীবোর্ড সেটিংস দেখান। <ph name="KEYBOARD_NAME" /> বেছে নেওয়া হয়েছে</translation>
+<translation id="875593634123171288">VPN সেটিংস দেখান</translation>
 <translation id="8809737090443522491">একটি অ্যাপ বা ডকুমেন্টের নাম টাইপ করুন</translation>
 <translation id="8814190375133053267">ওয়াই-ফাই</translation>
 <translation id="8825534185036233643">দুটির বেশি প্রদর্শনের সাথে মিররিং সমর্থিত নয়।</translation>
 <translation id="8828714802988429505">৯০°</translation>
 <translation id="8841375032071747811">ফিরে যাওয়ার বোতাম</translation>
+<translation id="8843682306134542540">রোটেশন লক টগল করুন। <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">অ্যাপ্লিকেশনটি বিভক্ত-স্ক্রিন সমর্থন করে না৷</translation>
 <translation id="8874184842967597500">সংযুক্ত নয়</translation>

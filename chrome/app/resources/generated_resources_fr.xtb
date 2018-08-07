@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Le plug-in <ph name="PEPPER_PLUGIN_NAME" /> provenant du domaine <ph name="PEPPER_PLUGIN_DOMAIN" /> demande l'accès à votre ordinateur</translation>
 <translation id="2178614541317717477">Autorité de certification compromise</translation>
 <translation id="218070003709087997">Indiquez le nombre de copies à imprimer (1 à 999).</translation>
-<translation id="2183558561014688873">Accédez à l'Assistant chaque fois que vous dites "Ok Google" quand votre appareil est allumé et déverrouillé.</translation>
 <translation id="2187895286714876935">Erreur d'importation du certificat serveur</translation>
 <translation id="2187906491731510095">Extensions mises à jour</translation>
 <translation id="2188881192257509750">Ouvrir <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Toutes les données stockées par <ph name="SITE" /> seront supprimées, sauf les cookies.</translation>
 <translation id="237058345584060620">Associez votre clé à cet appareil afin de pouvoir l'utiliser pour vous connecter à votre compte</translation>
 <translation id="2371076942591664043">Ouvrir une fois le téléchargement &amp;terminé</translation>
-<translation id="2376559921867170420">Lorsque votre Chromebook est configuré, appuyez sur le bouton de l'Assistant ou dites "Ok Google" pour obtenir son aide à tout moment.</translation>
 <translation id="2377319039870049694">Passer en mode Liste</translation>
 <translation id="2377667304966270281">Défauts matériels</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fichiers sélectionnés</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Ajouter une autre empreinte</translation>
 <translation id="3812525830114410218">Certificat non fiable</translation>
 <translation id="3813296892522778813">Si vous ne trouvez pas ce que vous recherchez, consultez l'<ph name="BEGIN_LINK_CHROMIUM" />Aide Google Chrome<ph name="END_LINK_CHROMIUM" />.</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Non indiqué</translation>
 <translation id="3819752733757735746">Switch Access (contrôler l'ordinateur avec un ou deux commutateurs seulement)</translation>
 <translation id="3819800052061700452">&amp;Plein écran</translation>
@@ -2049,7 +2048,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4068776064906523561">Empreintes digitales enregistrées</translation>
 <translation id="407173827865827707">En cas de clic</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" /> : erreur de connexion</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Certificat du signataire de courrier électronique</translation>
 <translation id="407520071244661467">Mise à l'échelle</translation>
 <translation id="4075639477629295004">Impossible de caster "<ph name="FILE_NAME" />"</translation>

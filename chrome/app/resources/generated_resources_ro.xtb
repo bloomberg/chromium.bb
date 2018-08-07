@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Pluginul <ph name="PEPPER_PLUGIN_NAME" /> de pe <ph name="PEPPER_PLUGIN_DOMAIN" /> dorește să acceseze computerul</translation>
 <translation id="2178614541317717477">Compromitere CA</translation>
 <translation id="218070003709087997">Precizează un număr de exemplare pentru printare (de la 1 la 999).</translation>
-<translation id="2183558561014688873">Accesează Asistentul ori de câte ori rostești „Ok Google” când dispozitivul este activ și deblocat.</translation>
 <translation id="2187895286714876935">Eroare de import a certificatului serverului</translation>
 <translation id="2187906491731510095">Extensiile au fost actualizate</translation>
 <translation id="2188881192257509750">Deschide <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Toate datele stocate de <ph name="SITE" /> vor fi șterse, cu excepția cookie-urilor.</translation>
 <translation id="237058345584060620">Asociază-ți cheia la acest dispozitiv, astfel încât să o poți folosi pentru a te conecta la cont.</translation>
 <translation id="2371076942591664043">Deschide când s-a &amp;descărcat</translation>
-<translation id="2376559921867170420">După configurarea Chromebookului, apasă butonul Asistentului sau rostește „Ok Google” pentru a obține oricând ajutor de la Asistent.</translation>
 <translation id="2377319039870049694">Comută la afișarea listă</translation>
 <translation id="2377667304966270281">Erori de hardware</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fișiere selectate</translation>
@@ -1879,6 +1877,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="381202950560906753">Adaugă alta</translation>
 <translation id="3812525830114410218">Certificat nevalid</translation>
 <translation id="3813296892522778813">Accesează <ph name="BEGIN_LINK_CHROMIUM" />Ajutor Google Chrome<ph name="END_LINK_CHROMIUM" /> dacă nu găsești ceea ce cauți</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Nu s-a specificat</translation>
 <translation id="3819752733757735746">Accesul prin comutare (controlează computerul cu numai un comutator sau două)</translation>
 <translation id="3819800052061700452">&amp;Ecran complet</translation>
@@ -2049,7 +2048,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4068776064906523561">Amprentele salvate</translation>
 <translation id="407173827865827707">Când se dă clic</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: eroare la conectare</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Certificat semnatar pentru e-mail</translation>
 <translation id="407520071244661467">Redimensionează</translation>
 <translation id="4075639477629295004">Nu se poate proiecta <ph name="FILE_NAME" />.</translation>

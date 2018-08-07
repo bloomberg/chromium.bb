@@ -792,7 +792,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> ನಲ್ಲಿ ಇರುವ <ph name="PEPPER_PLUGIN_DOMAIN" />, ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ಗೆ ಪ್ರವೇಶಿಸಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="2178614541317717477">CA ಹೊಂದಾಣಿಕೆ</translation>
 <translation id="218070003709087997">ಎಷ್ಟು ಪ್ರತಿಗಳನ್ನು ಮುದ್ರಿಸಬೇಕೆಂದು (1 ರಿಂದ 999) ಸೂಚಿಸಲು ಸಂಖ್ಯೆಯನ್ನು ಬಳಸಿ.</translation>
-<translation id="2183558561014688873">ನಿಮ್ಮ ಸಾಧನವು ಆನ್ ಮತ್ತು ಅನ್‌ಲಾಕ್ ಆಗಿರುವಾಗ, ಯಾವಾಗ ಬೇಕಾದರೂ "ಓಕೆ Google" ಎಂದು ಹೇಳಿ ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌ಗೆ ಪ್ರವೇಶ ಪಡೆಯಿರಿ.</translation>
 <translation id="2187895286714876935">ಸರ್ವರ್ ಪ್ರಮಾಣಪತ್ರದ ಆಮದು ದೋಷ</translation>
 <translation id="2187906491731510095">ವಿಸ್ತರಣೆಗಳನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> ತೆರೆಯಿರಿ</translation>
@@ -921,7 +920,6 @@
 <translation id="2369536625682139252">ಕುಕೀಗಳನ್ನು ಹೊರತುಪಡಿಸಿ, <ph name="SITE" /> ಸಂಗ್ರಹಣೆ ಮಾಡಿರುವ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುವುದು.</translation>
 <translation id="237058345584060620">ನಿಮ್ಮ ಕೀಯನ್ನು ಈ ಸಾಧನಕ್ಕೆ ಜೋಡಿಸುವುದರಿಂದ, ಅದನ್ನು ನಿಮ್ಮ ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಬಳಸಬಹುದು</translation>
 <translation id="2371076942591664043">&amp;ಮುಗಿಸಿದಾಗ ತೆರೆಯಿರಿ</translation>
-<translation id="2376559921867170420">ನಿಮ್ಮ Chromebook ಅನ್ನು ಹೊಂದಿಸಿದಾಗ, ಅಸಿಸ್ಟೆಂಟ್ ಬಟನ್ ಅನ್ನು ಒತ್ತಿರಿ ಅಥವಾ ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌‌ನಿಂದ ಸಹಾಯ ಪಡೆಯಲು "ಓಕೆ Google" ಎಂದು ಹೇಳಿ.</translation>
 <translation id="2377319039870049694">ಪಟ್ಟಿ ವೀಕ್ಷಣೆಗೆ ಬದಲಾಯಿಸಿ</translation>
 <translation id="2377667304966270281">ಹಾರ್ಡ್ ಫಾಲ್ಟ್ಸ್</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
@@ -1876,6 +1874,7 @@
 <translation id="381202950560906753">ಇನ್ನೊಂದನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="3812525830114410218">ತಪ್ಪು ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="3813296892522778813">ನೀವು ಹುಡುಕುತ್ತಿರುವುದು ದೊರೆಯದೇ ಇದ್ದರೆ <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome ಸಹಾಯ<ph name="END_LINK_CHROMIUM" />ಕ್ಕೆ ಹೋಗಿ</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">ಒದಗಿಸಿಲ್ಲ</translation>
 <translation id="3819752733757735746">ಪ್ರವೇಶವನ್ನು ಬದಲಾಯಿಸಿ (ಒಂದು ಅಥವಾ ಎರಡು ಬದಲಾವಣೆಯಲ್ಲಿ ಕಂಪ್ಯೂಟರ್‌ ಅನ್ನು ನಿಯಂತ್ರಿಸಿ)</translation>
 <translation id="3819800052061700452">&amp;ಪೂರ್ಣ-ಪರದೆ</translation>
@@ -2046,7 +2045,6 @@
 <translation id="4068776064906523561">ಉಳಿಸಿದ ಬೆರಳಚ್ಚುಗಳು</translation>
 <translation id="407173827865827707">ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: ಸೈನ್‌ ಇನ್‌ ದೋಷ</translation>
-<translation id="4071828814509176232">ಓಕೆ Google</translation>
 <translation id="4074900173531346617">ಇಮೇಲ್ ಸಹಿ ಮಾಡುವವರ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="407520071244661467">ಮಾಪಕ</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> ಬಿತ್ತರಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>

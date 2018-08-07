@@ -795,7 +795,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> ใน <ph name="PEPPER_PLUGIN_DOMAIN" /> ต้องการเข้าถึงคอมพิวเตอร์ของคุณ</translation>
 <translation id="2178614541317717477">ผู้มีสิทธิ์ออกใบรับรองไม่สมบูรณ์</translation>
 <translation id="218070003709087997">ใช้ตัวเลขเพื่อระบุจำนวนสำเนาที่ต้องการพิมพ์ (1 ถึง 999)</translation>
-<translation id="2183558561014688873">เข้าถึง Assistant ได้ทุกเมื่อเพียงพูดว่า "Ok Google" เมื่อหน้าจอเปิดอยู่และไม่ได้ล็อก</translation>
 <translation id="2187895286714876935">ข้อผิดพลาดในการนำเข้าใบรับรองเซิร์ฟเวอร์</translation>
 <translation id="2187906491731510095">อัปเดตส่วนขยายแล้ว</translation>
 <translation id="2188881192257509750">เปิด <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">ข้อมูลทั้งหมด (ยกเว้นคุกกี้) ที่ <ph name="SITE" /> จัดเก็บไว้จะถูกลบออก</translation>
 <translation id="237058345584060620">จับคู่คีย์กับอุปกรณ์นี้เพื่อให้คุณใช้คีย์ลงชื่อเข้าใช้บัญชีได้</translation>
 <translation id="2371076942591664043">เปิดเมื่อเ&amp;สร็จ</translation>
-<translation id="2376559921867170420">เมื่อตั้งค่า Chromebook แล้ว ก็กดปุ่ม Assistant หรือพูดว่า "Ok Google" เพื่อรับความช่วยเหลือจาก Assistant ได้ทุกเมื่อ</translation>
 <translation id="2377319039870049694">เปลี่ยนเป็นมุมมองรายการ</translation>
 <translation id="2377667304966270281">ฮาร์ดฟอลต์</translation>
 <translation id="2378075407703503998">เลือก <ph name="SELCTED_FILE_COUNT" /> ไฟล์</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">เพิ่มลายนิ้วมืออีก</translation>
 <translation id="3812525830114410218">ใบรับรองมีปัญหา</translation>
 <translation id="3813296892522778813">ไปที่<ph name="BEGIN_LINK_CHROMIUM" />ความช่วยเหลือของ Google Chrome<ph name="END_LINK_CHROMIUM" /> หากคุณไม่พบข้อมูลที่กำลังค้นหา</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">ไม่ได้ระบุ</translation>
 <translation id="3819752733757735746">การเข้าถึงด้วยสวิตช์ (ควบคุมคอมพิวเตอร์ด้วยสวิตช์เพียง 1-2 ตัว)</translation>
 <translation id="3819800052061700452">เ&amp;ต็มหน้าจอ</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">ลายนิ้วมือที่บันทึกไว้</translation>
 <translation id="407173827865827707">เมื่อคลิก</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: เกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">ใบรับรองผู้เซ็นชื่อในอีเมล</translation>
 <translation id="407520071244661467">ปรับขนาด</translation>
 <translation id="4075639477629295004">ไม่สามารถแคสต์ <ph name="FILE_NAME" /></translation>

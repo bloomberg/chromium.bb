@@ -398,6 +398,7 @@
 <translation id="1589055389569595240">显示拼写和语法</translation>
 <translation id="1593594475886691512">正在格式化…</translation>
 <translation id="159359590073980872">图片缓存</translation>
+<translation id="1593926297800505364">保存付款方式</translation>
 <translation id="1598233202702788831">您的管理员已停用更新。</translation>
 <translation id="1600857548979126453">访问页面调试程序后端</translation>
 <translation id="1601560923496285236">应用</translation>
@@ -508,6 +509,7 @@
 <translation id="1744060673522309905">无法将此设备加入到该网域中。请确保您未超出可添加的设备数量上限。</translation>
 <translation id="1744108098763830590">背景页</translation>
 <translation id="1745520510852184940">一律进行此翻译</translation>
+<translation id="1746417874336251387">提供将手机与 Chromebook 连接便能使用的新功能</translation>
 <translation id="174937106936716857">文件总数</translation>
 <translation id="175196451752279553">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="1753905327828125965">常去网站</translation>
@@ -638,8 +640,10 @@
 <translation id="1932098463447129402">不早于</translation>
 <translation id="1933809209549026293">请连接鼠标或键盘。如果您使用蓝牙设备，请确保它可进行配对。</translation>
 <translation id="1936157145127842922">在文件夹中显示</translation>
+<translation id="1938351510777341717">外部命令</translation>
 <translation id="1940546824932169984">已连接的设备</translation>
 <translation id="1942765061641586207">图片分辨率</translation>
+<translation id="1943097386230153518">安装新服务</translation>
 <translation id="1944921356641260203">发现更新</translation>
 <translation id="1951615167417147110">向上滚动一个网页</translation>
 <translation id="1954813140452229842">装载共享资源时出错。请检查您的凭据，然后重试。</translation>
@@ -788,7 +792,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 上的“<ph name="PEPPER_PLUGIN_NAME" />”想访问您的计算机</translation>
 <translation id="2178614541317717477">CA 泄漏</translation>
 <translation id="218070003709087997">用数字表示要打印多少份（1 到 999 份）。</translation>
-<translation id="2183558561014688873">当设备处于唤醒状态且已解锁时，您可以随时访问自己的 Google 助理，只需说“Ok Google”即可。</translation>
 <translation id="2187895286714876935">服务器证书导入错误</translation>
 <translation id="2187906491731510095">扩展程序已更新</translation>
 <translation id="2188881192257509750">打开 <ph name="APPLICATION" /></translation>
@@ -917,7 +920,6 @@
 <translation id="2369536625682139252">即将删除 <ph name="SITE" /> 存储的所有数据（Cookie 除外）。</translation>
 <translation id="237058345584060620">将您的密钥与此设备配对，即可使用该密钥登录您的帐号</translation>
 <translation id="2371076942591664043">完成时打开(&amp;D)</translation>
-<translation id="2376559921867170420">设置完 Chromebook 后，您只需按 Google 助理按钮或说出“Ok Google”，便可随时获得 Google 助理的帮助。</translation>
 <translation id="2377319039870049694">切换到列表视图</translation>
 <translation id="2377667304966270281">硬故障数</translation>
 <translation id="2378075407703503998">已选择 <ph name="SELCTED_FILE_COUNT" /> 个文件</translation>
@@ -1104,6 +1106,7 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="265390580714150011">字段值</translation>
 <translation id="2654166010170466751">允许网站安装付款处理程序</translation>
+<translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />功能因设备而异</translation>
 <translation id="2660779039299703961">事件</translation>
 <translation id="266079277508604648">无法连接到打印机。请确保该打印机已开机且已通过 Wi-Fi 或 USB 连接到您的 Chromebook。</translation>
 <translation id="2661146741306740526">16x9</translation>
@@ -1210,6 +1213,7 @@
 <translation id="2803375539583399270">输入 PIN 码</translation>
 <translation id="2805646850212350655">Microsoft 加密文件系统</translation>
 <translation id="2805756323405976993">应用</translation>
+<translation id="2806891468525657116">快捷方式已存在</translation>
 <translation id="2807517655263062534">您下载的文件会显示在此处</translation>
 <translation id="2809586584051668049">及另外<ph name="NUMBER_ADDITIONAL_DISABLED" />个扩展程序</translation>
 <translation id="281133045296806353">已在现有的浏览器会话中创建新的窗口。</translation>
@@ -1594,6 +1598,7 @@
 <translation id="3428419049384081277">您已登录！</translation>
 <translation id="3429275422858276529">为此网页添加书签，以便日后查找</translation>
 <translation id="3429599832623003132">$1 项</translation>
+<translation id="3430342160185525240">允许 Google 助理向您显示通知。</translation>
 <translation id="3432227430032737297">移除显示的所有 Cookie</translation>
 <translation id="3432757130254800023">向本地网络上的显示屏发送音频和视频</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1866,6 +1871,7 @@
 <translation id="381202950560906753">添加其他指纹</translation>
 <translation id="3812525830114410218">证书有误</translation>
 <translation id="3813296892522778813">如果您找不到要查找的内容，请参阅 <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome 帮助<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">未提供</translation>
 <translation id="3819752733757735746">开关控制（只需一两个开关即可控制计算机）</translation>
 <translation id="3819800052061700452">全屏(&amp;F)</translation>
@@ -1957,6 +1963,7 @@
 <translation id="3941565636838060942">要禁止使用此程序，您需要使用控制面板中的“<ph name="CONTROL_PANEL_APPLET_NAME" />”将其卸载。
 
   要启动“<ph name="CONTROL_PANEL_APPLET_NAME" />”吗？</translation>
+<translation id="394183848452296464">无法创建快捷方式</translation>
 <translation id="3943582379552582368">返回(&amp;B)</translation>
 <translation id="3943857333388298514">粘贴</translation>
 <translation id="3948116654032448504">通过<ph name="SEARCH_ENGINE" />搜索图片(&amp;S)</translation>
@@ -2034,7 +2041,6 @@
 <translation id="4068776064906523561">已保存的指纹</translation>
 <translation id="407173827865827707">点击时</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />：登录错误</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">电子邮件签名人证书</translation>
 <translation id="407520071244661467">缩放</translation>
 <translation id="4075639477629295004">无法投射“<ph name="FILE_NAME" />”。</translation>
@@ -2264,6 +2270,7 @@
 <translation id="4481530544597605423">未配对的设备</translation>
 <translation id="4482194545587547824">Google 可能会使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置</translation>
 <translation id="4495419450179050807">不要在本页上显示</translation>
+<translation id="4499718683476608392">启用信用卡自动填充功能后，只需点击一次即可填写多个表单</translation>
 <translation id="4500114933761911433">“<ph name="PLUGIN_NAME" />”崩溃了</translation>
 <translation id="450099669180426158">感叹号图标</translation>
 <translation id="4501530680793980440">确认删除</translation>
@@ -3101,6 +3108,7 @@
 <translation id="5752453871435543420">Chrome 操作系统云端备份</translation>
 <translation id="5756163054456765343">帮助中心(&amp;E)</translation>
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME" />”发送以进行打印的文档可由“<ph name="APP_NAME" />”读取。</translation>
+<translation id="5762172915276660232">信用卡设置</translation>
 <translation id="5763751966069581670">未找到任何 USB 设备</translation>
 <translation id="5764483294734785780">音频另存为(&amp;V)...</translation>
 <translation id="57646104491463491">修改日期</translation>
@@ -3172,6 +3180,7 @@
 <translation id="5855773610748894548">糟糕，安全模块出错了。</translation>
 <translation id="5856721540245522153">启用调试功能</translation>
 <translation id="5857090052475505287">新文件夹</translation>
+<translation id="585979798156957858">外部 Meta 键</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5860209693144823476">标签页 3</translation>
 <translation id="5860491529813859533">启用</translation>
@@ -3481,6 +3490,7 @@
 <translation id="6327785803543103246">网络代理自动发现</translation>
 <translation id="6333064448949140209">文件将发送到 Google 进行调试</translation>
 <translation id="6333834492048057036">将光标移到地址栏以进行搜索</translation>
+<translation id="6336451774241870485">新私密标签页</translation>
 <translation id="6339668969738228384">为 <ph name="USER_EMAIL_ADDRESS" /> 创建新的个人资料</translation>
 <translation id="6340017061976355871">无法与此服务器建立连接。请检查您的网络连接，然后重试。如果问题仍然存在，请重新启动您的 Chromebook。</translation>
 <translation id="6340071272923955280">互联网打印协议 (IPPS)</translation>
@@ -3661,6 +3671,7 @@
 <translation id="6606070663386660533">标签页 8</translation>
 <translation id="6607272825297743757">文件信息</translation>
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
+<translation id="6610147964972079463">关闭私密标签页</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6613452264606394692">只需为此网页添加书签，便可在需要时快速返回到此处</translation>
 <translation id="6614893213975402384">安装更新和应用。继续操作即表示您同意此设备还可从 Google、您的运营商以及您设备的制造商处自动下载及安装更新和应用（可能会使用移动数据网络）。部分应用可能会提供应用内购商品。您可以随时卸载这些应用。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
@@ -3731,6 +3742,7 @@
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6718273304615422081">正在压缩…</translation>
 <translation id="671928215901716392">锁定屏幕</translation>
+<translation id="6720847671508630642">自动将最佳 Android 功能分享给您的 Chromebook。连接手机后，您便可通过计算机收发短信、共享手机的互联网连接以及解锁 Chromebook 屏幕。<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">查看您的安全密钥的品牌和型号</translation>
 <translation id="6721972322305477112">文件(&amp;F)</translation>
 <translation id="672213144943476270">在以访客身份浏览前，请先解锁您的个人资料。</translation>
@@ -3877,6 +3889,7 @@
 <translation id="6970856801391541997">打印特定页面</translation>
 <translation id="6972180789171089114">音频/视频</translation>
 <translation id="6973630695168034713">文件夹</translation>
+<translation id="6974609594866392343">离线演示模式</translation>
 <translation id="6976108581241006975">JavaScript 控制台</translation>
 <translation id="6977381486153291903">固件版本</translation>
 <translation id="6978121630131642226">搜索引擎</translation>
@@ -4469,6 +4482,7 @@
 <translation id="7857949311770343000">这是您想要的新标签页吗？</translation>
 <translation id="786073089922909430">服务：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">下载内容(&amp;D)</translation>
+<translation id="7864662577698025113">添加新服务</translation>
 <translation id="7868378670806575181">{NUM_COOKIES,plural, =1{1 个 Cookie}other{# 个 Cookie}}</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - 已配对</translation>
 <translation id="7870730066603611552">完成设置后查看同步选项</translation>
@@ -4983,6 +4997,7 @@
 <translation id="8666584013686199826">当网站要访问 USB 设备时询问您</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> 现处于全屏模式并已隐藏鼠标指针。</translation>
 <translation id="8669284339312441707">暖色调</translation>
+<translation id="8669919703154928649">允许 Google 助理向您显示通知</translation>
 <translation id="8669949407341943408">正在移动…</translation>
 <translation id="8671210955687109937">可以评论</translation>
 <translation id="8673026256276578048">搜索网页...</translation>
@@ -5370,6 +5385,7 @@
 <translation id="964286338916298286">您的 IT 管理员已禁止您的设备享用 Chrome 附赠的好礼。</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{应用}other{应用}}</translation>
 <translation id="967007123645306417">执行此操作会使您退出 Google 帐号。您对自己的书签、历史记录、密码及其他设置所做的更改将不再同步到您的 Google 帐号。但是，您的现有数据将会继续存储在您的 Google 帐号中并可通过 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />进行管理。</translation>
+<translation id="967624055006145463">已存储的数据</translation>
 <translation id="968000525894980488">开启 Google Play 服务。</translation>
 <translation id="968174221497644223">应用缓存</translation>
 <translation id="969096075394517431">更改语言</translation>

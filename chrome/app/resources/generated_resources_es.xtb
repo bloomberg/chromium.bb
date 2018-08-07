@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">El complemento <ph name="PEPPER_PLUGIN_NAME" /> de <ph name="PEPPER_PLUGIN_DOMAIN" /> quiere acceder a tu ordenador</translation>
 <translation id="2178614541317717477">Compromiso de entidad emisora de certificados</translation>
 <translation id="218070003709087997">Usa un número para indicar cuántas copias quieres imprimir (entre 1 y 999).</translation>
-<translation id="2183558561014688873">Accede al Asistente cuando digas "Ok Google" y tu dispositivo esté activo y desbloqueado</translation>
 <translation id="2187895286714876935">Error de importación del certificado de servidor</translation>
 <translation id="2187906491731510095">Se han actualizado las extensiones</translation>
 <translation id="2188881192257509750">Abrir <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Se eliminarán todos los datos que almacena <ph name="SITE" />, excepto las cookies.</translation>
 <translation id="237058345584060620">Vincula la llave con este dispositivo y podrás usarla para iniciar sesión en tu cuenta</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
-<translation id="2376559921867170420">Cuando hayas configurado el Chromebook, pulsa el botón del Asistente o di "Ok Google" para recibir ayuda del Asistente en cualquier momento.</translation>
 <translation id="2377319039870049694">Cambiar a vista de lista</translation>
 <translation id="2377667304966270281">Fallos graves</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
@@ -1877,6 +1875,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="381202950560906753">Añadir otra</translation>
 <translation id="3812525830114410218">Certificado erróneo</translation>
 <translation id="3813296892522778813">Si no puedes encontrar lo que estás buscando, consulta la <ph name="BEGIN_LINK_CHROMIUM" />ayuda de Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">No proporcionada</translation>
 <translation id="3819752733757735746">Acceso a interruptores (controla el ordenador con uno o dos interruptores)</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
@@ -2046,7 +2045,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4068776064906523561">Huellas digitales guardadas</translation>
 <translation id="407173827865827707">Al hacer clic</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: error de inicio de sesión</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Certificado de firma de correo electrónico</translation>
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">No se puede enviar <ph name="FILE_NAME" />.</translation>
@@ -4043,7 +4041,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7175353351958621980">Cargado desde:</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7180865173735832675">Personalizar</translation>
-<translation id="7182359331070524176">Seleccionar un álbum de Google Fotos</translation>
+<translation id="7182359331070524176">Selecciona un álbum de Google Fotos</translation>
 <translation id="7186088072322679094">Mantener en la barra de herramientas</translation>
 <translation id="7187428571767585875">Entradas de registro que se van a eliminar o cambiar:</translation>
 <translation id="7189234443051076392">Deja suficiente espacio en tu dispositivo</translation>

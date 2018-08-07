@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Vtičnik <ph name="PEPPER_PLUGIN_NAME" /> v domeni <ph name="PEPPER_PLUGIN_DOMAIN" /> želi dostopati do vašega računalnika</translation>
 <translation id="2178614541317717477">Overitelj potrdil ni več varen</translation>
 <translation id="218070003709087997">Vnesite število izvodov, ki jih želite natisniti (od 1 do 999).</translation>
-<translation id="2183558561014688873">Do Pomočnika lahko dostopate, kadar koli izgovorite »OK Google«, ko je zaslon vklopljen in odklenjen.</translation>
 <translation id="2187895286714876935">Napaka pri uvozu strežniškega potrdila</translation>
 <translation id="2187906491731510095">Razširitve posodobljene</translation>
 <translation id="2188881192257509750">Odpri aplikacijo <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Izbrisani bodo vsi podatki, ki jih je shranilo spletno mesto <ph name="SITE" />, razen piškotkov.</translation>
 <translation id="237058345584060620">Ključ seznanite s to napravo, če ga želite uporabiti za prijavo v račun</translation>
 <translation id="2371076942591664043">Odpri, ko je &amp;dokončano</translation>
-<translation id="2376559921867170420">Ko je Chromebook nastavljen, pritisnite gumb za Pomočnika ali izgovorite »Ok Google«, če želite, da vam Pomočnik kadar koli pomaga.</translation>
 <translation id="2377319039870049694">Preklop na pogled seznama</translation>
 <translation id="2377667304966270281">Težke napake</translation>
 <translation id="2378075407703503998">Št. izbranih datotek: <ph name="SELCTED_FILE_COUNT" /></translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Dodaj še enega</translation>
 <translation id="3812525830114410218">Poškodovano potrdilo</translation>
 <translation id="3813296892522778813">Odprite <ph name="BEGIN_LINK_CHROMIUM" />pomoč za Google Chrome<ph name="END_LINK_CHROMIUM" />, če ne najdete tega, kar iščete</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Ni navedeno</translation>
 <translation id="3819752733757735746">Preklop dostopa (upravljanje računalnika z enim ali dvema stikaloma)</translation>
 <translation id="3819800052061700452">&amp;Celozaslonsko</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">Shranjeni prstni odtisi</translation>
 <translation id="407173827865827707">Ob kliku</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: napaka pri prijavi</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Potrdilo podpisnika e-pošte</translation>
 <translation id="407520071244661467">Prilagajanje velikosti</translation>
 <translation id="4075639477629295004">Ni mogoče predvajati <ph name="FILE_NAME" />.</translation>

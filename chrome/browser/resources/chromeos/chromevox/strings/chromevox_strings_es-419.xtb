@@ -156,6 +156,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2462626033734746142">Grupo de botones de selección</translation>
 <translation id="2471138580042810658">Encabezado 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisco}other{# asteriscos}}</translation>
+<translation id="249330843868392562">Abrir la configuración de texto a voz</translation>
 <translation id="2523609930580546572">Instructivo de ChromeVox</translation>
 <translation id="2525706221823668172">Combinaciones de teclas para Chromebook</translation>
 <translation id="2549392850788122959">Se restableció <ph name="KEY" />.</translation>
@@ -753,6 +754,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="7241683698754534149">Abrir la descripción larga en una pestaña nueva</translation>
 <translation id="7248671827512403053">Aplicación</translation>
 <translation id="725969808843520477">Siguiente botón de selección</translation>
+<translation id="7261612856573623172">Voz en la función de texto a voz del sistema</translation>
 <translation id="7269119382257320590">Sin puntuación</translation>
 <translation id="7273174640290488576">En blanco</translation>
 <translation id="7274770952766771364">Nota de referencia</translation>

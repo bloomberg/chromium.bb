@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Плагін <ph name="PEPPER_PLUGIN_NAME" /> із сайту <ph name="PEPPER_PLUGIN_DOMAIN" /> хоче отримати доступ до вашого комп’ютера</translation>
 <translation id="2178614541317717477">Дискредитація ЦС</translation>
 <translation id="218070003709087997">Використовуйте число, щоб указати кількість копій для друку (від 1 до 999).</translation>
-<translation id="2183558561014688873">Відкривайте Асистент командою "Ok Google", коли пристрій активовано й розблоковано.</translation>
 <translation id="2187895286714876935">Помилка імпортування сертифіката сервера</translation>
 <translation id="2187906491731510095">Розширення оновлено</translation>
 <translation id="2188881192257509750">Відкрити <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Усі дані, збережені сайтом <ph name="SITE" />, буде видалено (окрім файлів cookie).</translation>
 <translation id="237058345584060620">Підключіть ключ до пристрою, щоб входити з нього в обліковий запис</translation>
 <translation id="2371076942591664043">Відкрити коли &amp;виконано</translation>
-<translation id="2376559921867170420">Налаштувавши Chromebook, натисніть кнопку Асистента або скажіть "Ok Google", щоб будь-коли отримати допомогу від Асистента.</translation>
 <translation id="2377319039870049694">Список</translation>
 <translation id="2377667304966270281">Помилка жорсткого диска</translation>
 <translation id="2378075407703503998">Вибрано файлів: <ph name="SELCTED_FILE_COUNT" /></translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Додати ще</translation>
 <translation id="3812525830114410218">Недійсний сертифікат</translation>
 <translation id="3813296892522778813">Якщо не вдається знайти потрібний вміст, перейдіть на сторінку <ph name="BEGIN_LINK_CHROMIUM" />довідки Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Не вказано</translation>
 <translation id="3819752733757735746">Кнопковий доступ (керуйте комп’ютером однією чи двома кнопками)</translation>
 <translation id="3819800052061700452">&amp;На весь екран</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">Збережені відбитки пальців</translation>
 <translation id="407173827865827707">Після натискання</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: помилка входу</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Сертифікат підписувача електронної пошти</translation>
 <translation id="407520071244661467">Масштаб</translation>
 <translation id="4075639477629295004">Не вдається транслювати файл <ph name="FILE_NAME" />.</translation>

@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">A(z) <ph name="PEPPER_PLUGIN_DOMAIN" /> webhelyen található <ph name="PEPPER_PLUGIN_NAME" /> bővítmény hozzá szeretne férni a számítógéphez</translation>
 <translation id="2178614541317717477">A tanúsítványkibocsátó veszélyeztetve</translation>
 <translation id="218070003709087997">Számmal jelezze, hogy hány példányt kell nyomtatni (1–999).</translation>
-<translation id="2183558561014688873">Segédjéhez bármikor hozzáférhet az „OK Google” kimondásával, ha eszköze nincs alvó üzemmódban, és fel is van oldva.</translation>
 <translation id="2187895286714876935">Hiba a szervertanúsítvány importálásánál</translation>
 <translation id="2187906491731510095">Bővítmények frissítve</translation>
 <translation id="2188881192257509750">A(z) <ph name="APPLICATION" /> megnyitása</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">A cookie-kat kivéve a(z) <ph name="SITE" /> által tárolt minden adat törlődik.</translation>
 <translation id="237058345584060620">Párosítsa a hardverkulcsot az eszközhöz, így bejelentkezhet fiókjába</translation>
 <translation id="2371076942591664043">Megnyitás, amikor &amp;kész</translation>
-<translation id="2376559921867170420">Miután beállította a Chromebookot, a Segéd-gomb megnyomásával, illetve az „Ok Google” kimondásával bármikor segítséget kérhet Segédjétől.</translation>
 <translation id="2377319039870049694">Váltás listanézetre</translation>
 <translation id="2377667304966270281">Súlyos laphiba</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fájl kiválasztva</translation>
@@ -1880,6 +1878,7 @@
 <translation id="381202950560906753">Még egy hozzáadása</translation>
 <translation id="3812525830114410218">Helytelen tanúsítvány</translation>
 <translation id="3813296892522778813">Ha nem találja, amit keres, próbálkozzon a <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome súgójában<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Nincs megadva</translation>
 <translation id="3819752733757735746">Kapcsolóalapú hozzáférés (a számítógép irányítása egy vagy két kapcsolóval)</translation>
 <translation id="3819800052061700452">&amp;Teljes képernyő</translation>
@@ -2049,7 +2048,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4068776064906523561">Mentett ujjlenyomatok</translation>
 <translation id="407173827865827707">Kattintásra</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: bejelentkezési hiba</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">E-mail aláíró tanúsítvány</translation>
 <translation id="407520071244661467">Átméretezés</translation>
 <translation id="4075639477629295004">Nem lehet átküldeni a következőt: <ph name="FILE_NAME" />.</translation>

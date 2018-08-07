@@ -204,7 +204,7 @@
 <translation id="4508225577814909926"><ph name="NAME" />: Bağlanıyor...</translation>
 <translation id="4513946894732546136">Geri Bildirim</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor.</translation>
-<translation id="453661520163887813">Dolması için gereken süre: <ph name="TIME" /></translation>
+<translation id="453661520163887813">Dolmasına <ph name="TIME" /> var</translation>
 <translation id="4544944664594876241">Ekranı kilitleme kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="4564869809620998694">Yazı tipi hizmeti</translation>
 <translation id="4570957409596482333">Seç ve Dinle düğmesi</translation>
@@ -331,6 +331,7 @@
 <translation id="6857811139397017780">Şunu etkinleştir: <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Bu güncelleme, cihazınızda powerwash işlemi yapılmasını gerektiriyor. En yeni <ph name="SYSTEM_APP_NAME" /> güncellemesi ile ilgili daha fazla bilgi edinin.</translation>
 <translation id="6911468394164995108">Başka ağa katıl...</translation>
+<translation id="6972754398087986839">Başlarken</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="698231206551913481">Bu kullanıcıyla ilişkilendirilen tüm dosyalar ve yerel veriler, bu kullanıcı kaldırıldıktan sonra kalıcı olarak silinir.</translation>
 <translation id="7015766095477679451">Saat <ph name="COME_BACK_TIME" /> olduğunda geri gelin.</translation>

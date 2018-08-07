@@ -792,7 +792,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> от <ph name="PEPPER_PLUGIN_DOMAIN" /> иска да осъществи достъп до компютъра ви</translation>
 <translation id="2178614541317717477">Компрометиране на сертифициращия орган</translation>
 <translation id="218070003709087997">Използвайте число, за да укажете колко копия да се отпечатат (от 1 до 999).</translation>
-<translation id="2183558561014688873">Осъществявайте достъп до Асистент всеки път, когато кажете „Ok Google“ и устройството ви е активно и отключено.</translation>
 <translation id="2187895286714876935">Грешка при импортирането на сертификат на сървър</translation>
 <translation id="2187906491731510095">Разширенията бяха актуализирани</translation>
 <translation id="2188881192257509750">Отваряне на <ph name="APPLICATION" /></translation>
@@ -921,7 +920,6 @@
 <translation id="2369536625682139252">Ще бъдат изтрити всички съхранявани от <ph name="SITE" /> данни освен „бисквитките“.</translation>
 <translation id="237058345584060620">Сдвоете ключа си с това устройство, за да можете да използвате ключа за вход в профила си</translation>
 <translation id="2371076942591664043">Отваряне &amp;след изтегляне</translation>
-<translation id="2376559921867170420">Когато вашият Chromebook бъде настроен, натиснете бутона за Асистент или кажете „Ok Google“, за да получите помощ от Асистент по всяко време.</translation>
 <translation id="2377319039870049694">Превключване към списъчен изглед</translation>
 <translation id="2377667304966270281">Съществени грешки</translation>
 <translation id="2378075407703503998">Избрани са <ph name="SELCTED_FILE_COUNT" /> файла</translation>
@@ -1877,6 +1875,7 @@
 <translation id="381202950560906753">Добавяне на друг</translation>
 <translation id="3812525830114410218">Невалиден сертификат</translation>
 <translation id="3813296892522778813">Прегледайте <ph name="BEGIN_LINK_CHROMIUM" />помощното съдържание за Google Chrome<ph name="END_LINK_CHROMIUM" />, ако не можете да намерите търсеното</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Не е посочено</translation>
 <translation id="3819752733757735746">Достъп с превключване (контролиране на компютъра само с един или два превключвателя)</translation>
 <translation id="3819800052061700452">На &amp;цял екран</translation>
@@ -2048,7 +2047,6 @@
 <translation id="4068776064906523561">Запазени отпечатъци</translation>
 <translation id="407173827865827707">При кликване</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: Грешка при влизане в профила</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Сертификат за подписване на имейли</translation>
 <translation id="407520071244661467">Мащаб</translation>
 <translation id="4075639477629295004">Предаването на „<ph name="FILE_NAME" />“ не е възможно.</translation>

@@ -486,6 +486,7 @@
 <translation id="4277028893293644418">重置密码</translation>
 <translation id="4280429058323657511">，到期日期：<ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">切换</translation>
+<translation id="4308131620840579419">想集中保存您的所有卡片吗？</translation>
 <translation id="4312866146174492540">屏蔽（默认）</translation>
 <translation id="4325863107915753736">找不到文章</translation>
 <translation id="4326324639298822553">请检查您的信用卡到期日期，然后重试</translation>
@@ -596,6 +597,7 @@
 <translation id="5190835502935405962">书签栏</translation>
 <translation id="5201306358585911203">此网页上的嵌入式页面显示</translation>
 <translation id="5205222826937269299">需要提供名称</translation>
+<translation id="5215116848420601511">Google Pay 中存储的付款方式和地址信息</translation>
 <translation id="5222812217790122047">需要提供电子邮件地址</translation>
 <translation id="5230733896359313003">送货地址</translation>
 <translation id="5250209940322997802">“连接到网络”</translation>
@@ -672,6 +674,7 @@
 <translation id="5689199277474810259">导出为 JSON 格式</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="570530837424789914">管理…</translation>
+<translation id="5705882733397021510">返回</translation>
 <translation id="57094364128775171">建议安全系数高的密码…</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
 <translation id="5719499550583120431">接受预付卡。</translation>
@@ -689,6 +692,7 @@
 <translation id="5810442152076338065">您与 <ph name="DOMAIN" /> 之间的连接采用过时的加密套件进行了加密。</translation>
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
 <translation id="5838278095973806738">请勿在此网站上输入任何敏感信息（例如密码或信用卡信息），因为攻击者可能会盗取这些信息。</translation>
+<translation id="5863847714970149516">进入接下来的页面后，系统可能会向您收取费用</translation>
 <translation id="5866257070973731571">添加电话号码</translation>
 <translation id="5869405914158311789">无法访问此网站</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
@@ -818,6 +822,7 @@
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
 <translation id="7012363358306927923">中国银联</translation>
+<translation id="7016992613359344582">这些费用可能只收取一次，也可能会周期性收取，而且可能不易察觉。</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7050187094878475250">您尝试访问 <ph name="DOMAIN" />，但服务器提供的证书不可信（有效期过长）。</translation>
 <translation id="7053983685419859001">禁止</translation>
@@ -1083,6 +1088,7 @@
 <translation id="8957210676456822347">强制门户授权</translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8978053250194585037">Google 安全浏览功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />检测到网上诱骗行为<ph name="END_LINK" />。网上诱骗网站会假冒其他网站来欺骗您。</translation>
+<translation id="8983003182662520383">Google Pay 中存储的付款方式和地址信息</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">您要访问的网站包含有害程序</translation>

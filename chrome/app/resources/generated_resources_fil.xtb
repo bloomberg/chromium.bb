@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Gustong i-access ng <ph name="PEPPER_PLUGIN_NAME" /> sa <ph name="PEPPER_PLUGIN_DOMAIN" /> ang iyong computer</translation>
 <translation id="2178614541317717477">CA Compromise</translation>
 <translation id="218070003709087997">Gumamit ng numero upang maisaad kung gaano karaming kopya ang ipi-print (1 hanggang 999).</translation>
-<translation id="2183558561014688873">I-access ang iyong Assistant anumang oras na sabihin mo ang "OK Google" kapag nakailaw at naka-unlock ang iyong device.</translation>
 <translation id="2187895286714876935">Error sa Pag-import ng Certificate ng Server</translation>
 <translation id="2187906491731510095">Na-update ang mga extension</translation>
 <translation id="2188881192257509750">Buksan ang <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Ide-delete ang lahat ng data na na-store ng <ph name="SITE" />, maliban sa cookies.</translation>
 <translation id="237058345584060620">Ipares ang iyong key sa device na ito para magamit mo ito sa pag-sign in sa iyong account.</translation>
 <translation id="2371076942591664043">Buksan kapag &amp;tapos na</translation>
-<translation id="2376559921867170420">Kapag na-set up ang iyong Chromebook, pindutin ang button ng Assistant o sabihin ang "Ok Google" para humingi ng tulong sa Assistant mo anumang oras.</translation>
 <translation id="2377319039870049694">Lumipat sa list view</translation>
 <translation id="2377667304966270281">Mga Hard Fault</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> (na) file ang pinili</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Magdagdag ng isa pa</translation>
 <translation id="3812525830114410218">Maling certificate</translation>
 <translation id="3813296892522778813">Pumunta sa <ph name="BEGIN_LINK_CHROMIUM" />tulong ng Google Chrome<ph name="END_LINK_CHROMIUM" /> kung hindi mo makita ang hinahanap mo</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Hindi naibigay</translation>
 <translation id="3819752733757735746">Switch access (kontrolin ang computer gamit lang ang isa o dalawang switch)</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">Mga naka-save na fingerprint</translation>
 <translation id="407173827865827707">Sa pag-click</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: error sa pag-sign in</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">Certificate ng Email Signer</translation>
 <translation id="407520071244661467">Scale</translation>
 <translation id="4075639477629295004">Hindi ma-cast ang <ph name="FILE_NAME" />.</translation>

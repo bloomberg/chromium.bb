@@ -5,6 +5,7 @@
 <translation id="1036727731225946849">正在添加<ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">来自网站</translation>
 <translation id="1049743911850919806">隐身</translation>
+<translation id="1054301162707478098">您已进入私密模式。</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1068672505746868501">一律不翻译源语言为<ph name="SOURCE_LANGUAGE" />的网页</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
@@ -35,6 +36,9 @@
 <translation id="124116460088058876">更多语言</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1259100630977430756">在您关闭所有私密标签页后，您在其中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
+
+但是，这并不意味着您能完全隐身。即使您进入私密模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="127138278192656016">使用同步功能和所有服务</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">点按即可展开</translation>
@@ -137,6 +141,7 @@
 <translation id="2021896219286479412">全屏网站控件</translation>
 <translation id="2038563949887743358">开启“请求切换到桌面版网站”</translation>
 <translation id="2045104531052923016">其他应用已占用的空间：<ph name="GIGABYTES" /> GB</translation>
+<translation id="2055670718290744343">搜索加速器</translation>
 <translation id="2063713494490388661">点按搜索</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
@@ -164,6 +169,7 @@
 <translation id="2234876718134438132">同步功能和 Google 服务</translation>
 <translation id="2259659629660284697">导出密码…</translation>
 <translation id="2268044343513325586">优化</translation>
+<translation id="2280910239864711607">在私密模式下打开新标签页</translation>
 <translation id="2286841657746966508">帐单邮寄地址</translation>
 <translation id="230115972905494466">未找到任何兼容设备</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
@@ -214,6 +220,7 @@
 <translation id="2621115761605608342">允许特定网站运行 JavaScript。</translation>
 <translation id="2625189173221582860">已复制密码</translation>
 <translation id="2631006050119455616">已节省</translation>
+<translation id="2633278372998075009">私密标签页</translation>
 <translation id="2647434099613338025">添加语言</translation>
 <translation id="2650751991977523696">是否重新下载文件？</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -273,6 +280,7 @@
 <translation id="321773570071367578">如果您忘记了密码或想更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3232754137068452469">网络应用</translation>
+<translation id="3234355010754616171">新私密标签页</translation>
 <translation id="3236059992281584593">还剩 1 分钟</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">为此页添加书签</translation>
@@ -288,6 +296,7 @@
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
 <translation id="3365671512111106261">在流量节省程序处于开启状态时不可用</translation>
 <translation id="3367813778245106622">重新登录以开始同步</translation>
+<translation id="3377025655491224618">私密标签页</translation>
 <translation id="3384347053049321195">分享图片</translation>
 <translation id="3386292677130313581">在允许网站获悉您的位置信息前先询问（推荐）</translation>
 <translation id="3387650086002190359">未能成功下载 <ph name="FILE_NAME" />，因为文件系统出现了错误。</translation>
@@ -385,6 +394,7 @@
 <translation id="4209895695669353772">要获取 Google 推荐的个性化内容，请开启同步功能</translation>
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
+<translation id="4243710787042215766">在私密标签页中打开</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
@@ -465,6 +475,7 @@
 <translation id="4878404682131129617">未能成功通过代理服务器建立隧道</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="488187801263602086">重命名文件</translation>
+<translation id="4883379392681899581">退出私密模式</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4910889077668685004">付款应用</translation>
 <translation id="4913161338056004800">重置统计信息</translation>
@@ -506,6 +517,7 @@
 <translation id="5224771365102442243">包含视频</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
 <translation id="5240817131241497236">Chrome 中控制同步、个性化和其他 Google 服务的设置已发生更改。这可能会影响您的当前设置。</translation>
+<translation id="5264003212305142034">您随时可以自定义<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />。Google 可能会根据您访问的网站上的内容、您在浏览器中的活动和互动行为，为您提供个性化的 Chrome 体验和其他 Google 服务体验（例如翻译、搜索和广告）。</translation>
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="5284584623296338184">对您的书签、历史记录、密码和其他设置所做的更改将不再同步到您的 Google 帐号。但是，您的现有数据将继续存储在您的 Google 帐号中。</translation>
@@ -591,6 +603,7 @@
 <translation id="583281660410589416">未知</translation>
 <translation id="5833397272224757657">根据您访问的网站上的内容以及您在浏览器中的活动和互动行为，提供个性化的使用体验</translation>
 <translation id="5833984609253377421">分享链接</translation>
+<translation id="584427517463557805">所选的私密标签页</translation>
 <translation id="5854790677617711513">30 天之前的</translation>
 <translation id="5858741533101922242">Chrome 无法开启蓝牙适配器</translation>
 <translation id="5860033963881614850">关闭</translation>
@@ -620,6 +633,7 @@
 <translation id="6075798973483050474">修改主页</translation>
 <translation id="60923314841986378">还剩 <ph name="HOURS" /> 小时</translation>
 <translation id="60924377787140961">我们很快将会为您奉上更多文章，伴您度过美好的午后时光！</translation>
+<translation id="6099151465289169210">已切换到私密标签页</translation>
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6111020039983847643">已耗用的流量</translation>
 <translation id="6112702117600201073">正在刷新页面</translation>
@@ -649,6 +663,7 @@
 <translation id="6320088164292336938">振动</translation>
 <translation id="6324034347079777476">Android 系统同步功能已停用</translation>
 <translation id="6333140779060797560">通过<ph name="APPLICATION" />分享</translation>
+<translation id="6336451774241870485">新私密标签页</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="6341580099087024258">询问文件保存位置</translation>
 <translation id="6343192674172527289">未找到任何下载内容</translation>
@@ -686,6 +701,7 @@
 <translation id="6593061639179217415">桌面版网站</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6610147964972079463">关闭私密标签页</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6627583120233659107">修改文件夹</translation>
 <translation id="6643016212128521049">清除</translation>
@@ -789,6 +805,7 @@
 <translation id="7453467225369441013">您会从大多数网站退出，但不会退出自己的 Google 帐号。</translation>
 <translation id="7454641608352164238">空间不足</translation>
 <translation id="7455923816558154057">点按即可查看</translation>
+<translation id="7465104139234185284">关闭所有私密标签页</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
 <translation id="7475688122056506577">找不到 SD 卡。您的某些文件可能会丢失。</translation>
@@ -884,6 +901,7 @@
 <translation id="8220488350232498290">下载内容已占用的空间：<ph name="GIGABYTES" /> GB</translation>
 <translation id="8249310407154411074">移至顶部</translation>
 <translation id="8250920743982581267">文档</translation>
+<translation id="825412236959742607">此网页占用的内存过多，因此 Chrome 移除了部分内容。</translation>
 <translation id="8260126382462817229">请尝试重新登录</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8266862848225348053">下载内容保存位置</translation>
@@ -979,6 +997,7 @@
 <translation id="9070377983101773829">开始语音搜索</translation>
 <translation id="9071742570345586758">要查看虚拟实境内容，请安装 Google VR 服务</translation>
 <translation id="9074336505530349563">要获取 Google 推荐的个性化内容，请登录您的帐号并开启同步功能</translation>
+<translation id="9080642952018487277">进入私密模式</translation>
 <translation id="9086455579313502267">无法访问网络</translation>
 <translation id="9099018167121903954">下载内容已占用的空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">询问是否使用简化版视图显示受支持的文章</translation>

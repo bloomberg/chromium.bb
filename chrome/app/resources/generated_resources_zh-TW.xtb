@@ -795,7 +795,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 的「<ph name="PEPPER_PLUGIN_NAME" />」要求存取你的電腦</translation>
 <translation id="2178614541317717477">CA 洩露</translation>
 <translation id="218070003709087997">使用數字指定列印份數 (1 至 999)。</translation>
-<translation id="2183558561014688873">在裝置已喚醒並解鎖的狀態下，只要說出「Ok Google」，就能隨時存取 Google 助理。</translation>
 <translation id="2187895286714876935">伺服器憑證匯入錯誤</translation>
 <translation id="2187906491731510095">擴充功能已更新</translation>
 <translation id="2188881192257509750">開啟「<ph name="APPLICATION" />」</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">即將刪除 <ph name="SITE" /> 儲存的所有資料 (Cookie 除外)。</translation>
 <translation id="237058345584060620">將你的金鑰與這個裝置配對，即可透過金鑰登入你的帳戶</translation>
 <translation id="2371076942591664043">完成後開啟(&amp;D)</translation>
-<translation id="2376559921867170420">Chromebook 設定完成後，只要按下 Google 助理按鈕或說出「Ok Google」，就能隨時向你的 Google 助理下達指令。</translation>
 <translation id="2377319039870049694">切換為清單檢視</translation>
 <translation id="2377667304966270281">硬性錯誤數</translation>
 <translation id="2378075407703503998">已選取 <ph name="SELCTED_FILE_COUNT" /> 個檔案</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">新增其他指紋</translation>
 <translation id="3812525830114410218">錯誤的憑證</translation>
 <translation id="3813296892522778813">如果你找不到需要的資訊，請參閱 <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome 說明<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">未提供</translation>
 <translation id="3819752733757735746">開關功能 (使用一或兩種切換設定就能操控電腦)</translation>
 <translation id="3819800052061700452">全螢幕(&amp;F)</translation>
@@ -2048,7 +2047,6 @@
 <translation id="4068776064906523561">已儲存的指紋</translation>
 <translation id="407173827865827707">點擊時</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />：登入錯誤</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">電子郵件簽署者憑證</translation>
 <translation id="407520071244661467">縮放比例</translation>
 <translation id="4075639477629295004">無法投放「<ph name="FILE_NAME" />」。</translation>

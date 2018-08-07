@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Plugin <ph name="PEPPER_PLUGIN_NAME" /> di <ph name="PEPPER_PLUGIN_DOMAIN" /> ingin mengakses komputer Anda</translation>
 <translation id="2178614541317717477">CA Mencurigakan</translation>
 <translation id="218070003709087997">Gunakan angka untuk mengindikasikan jumlah salinan yang akan dicetak (1 sampai 999).</translation>
-<translation id="2183558561014688873">Mengakses Asisten setiap kali Anda mengucapkan "Ok Google" saat perangkat aktif dan tidak terkunci</translation>
 <translation id="2187895286714876935">Kesalahan Impor Sertifikat Server</translation>
 <translation id="2187906491731510095">Ekstensi diupdate</translation>
 <translation id="2188881192257509750">Buka <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Semua data yang disimpan oleh <ph name="SITE" /> akan dihapus, kecuali cookie.</translation>
 <translation id="237058345584060620">Sambungkan kunci ke perangkat ini agar dapat digunakan untuk login ke akun</translation>
 <translation id="2371076942591664043">Buka setelah &amp;selesai</translation>
-<translation id="2376559921867170420">Jika Chromebook sudah disiapkan, tekan tombol Asisten dan ucapkan "OK Google" untuk mendapatkan bantuan dari Asisten kapan saja.</translation>
 <translation id="2377319039870049694">Beralih ke tampilan daftar</translation>
 <translation id="2377667304966270281">Hard Fault</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> file dipilih</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Tambahkan yang lain</translation>
 <translation id="3812525830114410218">Sertifikat buruk</translation>
 <translation id="3813296892522778813">Buka <ph name="BEGIN_LINK_CHROMIUM" />bantuan Google Chrome<ph name="END_LINK_CHROMIUM" /> jika tidak dapat menemukan yang Anda cari</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Tidak dicantumkan</translation>
 <translation id="3819752733757735746">Tuas akses (mengontrol komputer hanya menggunakan satu atau dua tuas)</translation>
 <translation id="3819800052061700452">Layar penuh</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">Sidik jari yang disimpan</translation>
 <translation id="407173827865827707">Saat diklik</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: kesalahan saat masuk</translation>
-<translation id="4071828814509176232">“Ok Google”</translation>
 <translation id="4074900173531346617">Sertifikat Penandatangan Email</translation>
 <translation id="407520071244661467">Skala</translation>
 <translation id="4075639477629295004">Tidak dapat mentransmisikan <ph name="FILE_NAME" />.</translation>

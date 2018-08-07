@@ -122,7 +122,7 @@
 <translation id="5479196819031988440">Chromium OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="5480860683791598150">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromiumకు మీ స్థాన యాక్సెస్ అవసరం</translation>
 <translation id="549669000822060376">దయచేసి Chromium తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
-<translation id="5514308096618405748">Linux (బీటా)గా అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS" /> ద్వారా Chrome OS సాధ్యం అవుతుంది.</translation>
+<translation id="5514308096618405748">Linux (బీటా) లాగానే, Chrome OS కూడా అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS" />పై ఎంతగానో ఆధారపడుతుంది.</translation>
 <translation id="5529843986978123325">{0,plural, =1{Chromium OS 1 నిమిషంలో మళ్లీ ప్రారంభించబడుతుంది}other{Chromium OS # నిమిషాల్లో మళ్లీ ప్రారంభించబడుతుంది}}</translation>
 <translation id="5631814766731275228">Chromium పేరు మరియు చిత్రం</translation>
 <translation id="5634636535844844681">Chromiumకి Windows 7 లేదా అంతకంటే ఆధునికమైనది ఉండటం ఆవశ్యకం.</translation>
@@ -164,7 +164,7 @@
 <translation id="6475912303565314141">ఇది మీరు Chromiumని ప్రారంభించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="6485906693002546646">మీరు మీ Chromium అంశాలను సమకాలీకరించడానికి <ph name="PROFILE_EMAIL" />ని ఉపయోగిస్తున్నారు. మీ సమకాలీకరణ ప్రాధాన్యతను నవీకరించడానికి లేదా Google ఖాతా లేకుండా Chromiumని ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
 <translation id="6510925080656968729">Chromiumని అన్ఇన్‌స్టాల్ చేయి</translation>
-<translation id="6570579332384693436">అక్షరక్రమ లోపాలను పరిష్కరించడానికి, Chrome మీరు వచన ఫీల్డ్‌లలో టైప్ చేసే వచనాన్ని Googleకి పంపుతుంది</translation>
+<translation id="6570579332384693436">అక్షరక్రమ లోపాలను పరిష్కరించడానికి, మీరు వచన ఫీల్డ్‌లలో టైప్ చేసే వచనాన్ని, Chromium Googleకి పంపుతుంది</translation>
 <translation id="6598877126913850652">Chromium నోటిఫికేషన్ సెట్టింగ్‌లకు వెళ్లు</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
 <translation id="6717134281241384636">మీ ప్రొఫైల్ క్రొత్త Chromium సంస్కరణ అయినందున ఇది ఉపయోగించబడదు.
@@ -228,11 +228,12 @@
 <translation id="8157153840442649507">Chromium ఈ భాషలో ప్రదర్శించబడుతోంది</translation>
 <translation id="81770708095080097">ఈ ఫైల్ అపాయకరమైనది, కాబట్టి Chromium దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="8222496066431494154">మీ ఫోన్‌లో Chromiumను ఇన్‌స్టాల్ చేయండి. మేము మీ ఖాతా పునరుద్ధరణ ఫోన్ నంబర్‌కు SMSను పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
+<translation id="825412236959742607">ఈ పేజీ చాలా మెమరీని ఉపయోగిస్తుంది, కాబట్టి Chrome కొంత కంటెంట్‌ను తీసివేసింది.</translation>
 <translation id="8269379391216269538">Chromiumని మెరుగుపరచడంలో సహాయం అందించండి</translation>
 <translation id="8290862415967981663">ఈ ఫైల్ అపాయకరం కావచ్చు, కాబట్టి Chromium దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="8330519371938183845">మీ పరికరాల అంతటా Chromiumని సమకాలీకరించడం మరియు వ్యక్తిగతీకరించడం కోసం సైన్ ఇన్ చేయండి</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> మునుపు Chromiumని ఉపయోగించింది</translation>
-<translation id="8375950122744241554">పర్యవేక్షించబడే వినియోగదారు ప్రొఫైల్‌లు Chromium 70తో ప్రారంభమయ్యే వాటిల్లో ఇకపై అందుబాటులో ఉండవు.</translation>
+<translation id="8375950122744241554">Chromium 70తో మొదలు పెట్టి, తర్వాతి వెర్షన్‌లలో పర్యవేక్షించబడే వినియోగదారు ప్రొఫైల్‌లు ఇకపై అందుబాటులో ఉండవు.</translation>
 <translation id="8379713241968949941">{0,plural, =1{ఒక గంటలో Chromium తిరిగి ప్రారంభించబడుతుంది}other{# గంటల్లో Chromium తిరిగి ప్రారంభించబడుతుంది}}</translation>
 <translation id="8453117565092476964">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8493179195440786826">Chromium కాలం చెల్లినది</translation>

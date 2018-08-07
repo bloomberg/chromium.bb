@@ -284,9 +284,9 @@ Pokud tato zásada není nastavena, nebude mít zařízení žádné tiskárny a
       Pokud některá možnost nebude nakonfigurována, použije se výchozí hodnota.
 
       Pokud tato zásada není nastavena, budou pro všechna nastavení použity výchozí hodnoty.</translation>
-<translation id="1958138414749279167">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožňuje uživatelům automaticky ve webových formulářích vyplňovat informace o adresách pomocí dříve uložených údajů.
+<translation id="1958138414749279167">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožňuje uživatelům automaticky ve webových formulářích vyplňovat adresní údaje s použitím dříve uložených dat.
 
-      Pokud je toto nastavení vypnuto, automatické vyplňování nebude navrhovat ani vyplňovat informace o adresách a nebude ani ukládat další informace o adresách, které uživatel při prohlížení webu odešle.
+      Pokud je toto nastavení vypnuto, automatické vyplňování nebude navrhovat ani vyplňovat adresní údaje a nebude ani ukládat další informace o adresách, které uživatel při prohlížení webu odešle.
 
       Pokud je toto nastavení zapnuto nebo nemá žádnou hodnotu, uživatel bude moci automatické vyplňování adres ovládat v uživatelském rozhraní.</translation>
 <translation id="1960840544413786116">Udává, zda mají být povoleny certifikáty vydané místními kotvami vztahu důvěryhodnosti bez rozšíření subjectAlternativeName.</translation>

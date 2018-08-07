@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">يريد <ph name="PEPPER_PLUGIN_NAME" /> الموجود على <ph name="PEPPER_PLUGIN_DOMAIN" /> الوصول إلى جهاز الكمبيوتر.</translation>
 <translation id="2178614541317717477">‏اختراق المرجع المصدق (CA)</translation>
 <translation id="218070003709087997">استخدم رقمًا للإشارة إلى عدد النُسخ المطلوب طباعتها (من 1 إلى 999).</translation>
-<translation id="2183558561014688873">‏يمكنك الوصول إلى "المساعد" في أي وقت تقول فيه "OK Google" عندما يكون جهازك نشطًا وتم إلغاء قفله.</translation>
 <translation id="2187895286714876935">خط استيراد شهادة الخادم</translation>
 <translation id="2187906491731510095">تم تحديث الإضافات.</translation>
 <translation id="2188881192257509750">فتح <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">سيتم حذف جميع البيانات المُخزَّنة بواسطة <ph name="SITE" /> باستثناء ملفات تعريف الارتباط.</translation>
 <translation id="237058345584060620">يمكنك إقران مفتاحك بهذا الجهاز حتى تتمكن من استخدامه لتسجيل الدخول إلى حسابك.</translation>
 <translation id="2371076942591664043">فتح الملفّ عند &amp;انتهاء التحميل</translation>
-<translation id="2376559921867170420">‏بعد إعداد جهاز Chromebook، يُرجى الضغط على زر "مساعد Google" أو قول عبارة "OK Google" لاستخدام المساعد في أي وقت.</translation>
 <translation id="2377319039870049694">تبديل إلى عرض القائمة</translation>
 <translation id="2377667304966270281">الأخطاء الجسيمة</translation>
 <translation id="2378075407703503998">تم تحديد <ph name="SELCTED_FILE_COUNT" /> من الملفات</translation>
@@ -1877,6 +1875,7 @@
 <translation id="381202950560906753">إضافة بصمة إصبع أخرى</translation>
 <translation id="3812525830114410218">شهادة سيئة</translation>
 <translation id="3813296892522778813">‏يمكنك الانتقال إلى <ph name="BEGIN_LINK_CHROMIUM" />مساعدة Google Chrome<ph name="END_LINK_CHROMIUM" /> إذا لم تتمكن من العثور عما تبحث عنه</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">غير متوفِّر</translation>
 <translation id="3819752733757735746">الوصول عبر مفتاح التحويل (التحكم في جهاز الكمبيوتر بمفتاح واحد فقط أو مفتاحين)</translation>
 <translation id="3819800052061700452">م&amp;لء الشاشة</translation>
@@ -2044,7 +2043,6 @@
 <translation id="4068776064906523561">بصمات الإصبع المحفوظة</translation>
 <translation id="407173827865827707">عند النقر</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: خطأ في تسجيل الدخول</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">شهادة توقيع البريد الإلكتروني</translation>
 <translation id="407520071244661467">تغيير الحجم</translation>
 <translation id="4075639477629295004">يتعذَر إرسال <ph name="FILE_NAME" />.</translation>
@@ -4043,7 +4041,7 @@
 <translation id="7175353351958621980">تم التحميل من:</translation>
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7180865173735832675">تخصيص</translation>
-<translation id="7182359331070524176">‏اختيار ألبوم صور Google</translation>
+<translation id="7182359331070524176">‏اختيار ألبوم من "صور Google"</translation>
 <translation id="7186088072322679094">البقاء مثبتًا في شريط الأدوات</translation>
 <translation id="7187428571767585875">إدخالات قاعدة بيانات المسجّلين التي ستتم إزالتها أو تغييرها:</translation>
 <translation id="7189234443051076392">التأكد من توفر مساحة كافية على جهازك</translation>

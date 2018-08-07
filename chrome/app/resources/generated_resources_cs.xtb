@@ -795,7 +795,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2178098616815594724">Plugin <ph name="PEPPER_PLUGIN_NAME" /> v doméně <ph name="PEPPER_PLUGIN_DOMAIN" /> chce získat přístup k vašemu počítači</translation>
 <translation id="2178614541317717477">Ohrožení bezpečnosti certifikační autority</translation>
 <translation id="218070003709087997">Počet kopií, které chcete vytisknout, je třeba zadat jako číslo (od 1 do 999).</translation>
-<translation id="2183558561014688873">Když je zařízení aktivní a je odemknuté, můžete Asistenta kdykoliv aktivovat vyslovením fráze „Ok Google“.</translation>
 <translation id="2187895286714876935">Chyba při importu certifikátu serveru</translation>
 <translation id="2187906491731510095">Rozšíření byla aktualizována</translation>
 <translation id="2188881192257509750">Spustit aplikaci <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2369536625682139252">Všechna data uložená webem <ph name="SITE" /> kromě souborů cookie budou smazána</translation>
 <translation id="237058345584060620">Spárujte klíč s tímto zařízením, abyste se pomocí něj mohli přihlašovat ke svému účtu</translation>
 <translation id="2371076942591664043">Po dokončení otevřít</translation>
-<translation id="2376559921867170420">Když je Chromebook nastaven, získáte pomoc od Asistenta kdykoliv tak, že stisknete tlačítko Asistent nebo řeknete „OK Google“.</translation>
 <translation id="2377319039870049694">Přepnout na zobrazení seznamu</translation>
 <translation id="2377667304966270281">Chyby stránkování na disk</translation>
 <translation id="2378075407703503998">Vybrané soubory: <ph name="SELCTED_FILE_COUNT" /></translation>
@@ -1877,6 +1875,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="381202950560906753">Přidat další</translation>
 <translation id="3812525830114410218">Nesprávný certifikát</translation>
 <translation id="3813296892522778813">Pokud nemůžete najít, co hledáte, navštivte <ph name="BEGIN_LINK_CHROMIUM" />nápovědu Google Chrome<ph name="END_LINK_CHROMIUM" />.</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Neposkytnuto</translation>
 <translation id="3819752733757735746">Přístup pomocí přepínačů (ovládání počítače pouze jedním nebo dvěma přepínači)</translation>
 <translation id="3819800052061700452">&amp;Celá obrazovka</translation>
@@ -2046,7 +2045,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4068776064906523561">Uložené otisky prstu</translation>
 <translation id="407173827865827707">Při kliknutí</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: chyba přihlášení</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Certifikát autora podpisu e-mailu</translation>
 <translation id="407520071244661467">Měřítko</translation>
 <translation id="4075639477629295004">Soubor <ph name="FILE_NAME" /> nelze odeslat.</translation>
