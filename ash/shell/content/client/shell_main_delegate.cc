@@ -13,7 +13,6 @@
 #include "ash/shell/content/client/shell_content_browser_client.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/utility/content_utility_client.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -27,18 +26,15 @@ namespace shell {
 namespace {
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
-  logging::SetLogPrefix("quick");
   return std::make_unique<quick_launch::QuickLaunchApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateShortcutViewer() {
-  logging::SetLogPrefix("shortcut");
   return std::make_unique<
       keyboard_shortcut_viewer::ShortcutViewerApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateTapVisualizer() {
-  logging::SetLogPrefix("tap");
   return std::make_unique<tap_visualizer::TapVisualizerApp>();
 }
 
