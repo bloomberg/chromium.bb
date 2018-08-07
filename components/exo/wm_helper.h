@@ -97,7 +97,6 @@ class WMHelper : public aura::client::DragDropDelegate {
   void RemovePostTargetHandler(ui::EventHandler* handler);
   bool IsTabletModeWindowManagerEnabled() const;
   double GetDefaultDeviceScaleFactor() const;
-  bool AreVerifiedSyncTokensNeeded() const;
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
