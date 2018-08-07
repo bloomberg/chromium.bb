@@ -114,12 +114,44 @@ Platform::Platform() : main_thread_(nullptr) {
 
 Platform::~Platform() = default;
 
+namespace {
+
+class SingleThreadedWebThread : public WebThread {
+ public:
+  bool IsCurrentThread() const override {
+    DCHECK(WTF::IsMainThread());
+    return true;
+  }
+  ThreadScheduler* Scheduler() const override {
+    // TODO(yutak): Implement default scheduler.
+    return nullptr;
+  }
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
+    DCHECK(WTF::IsMainThread());
+    return base::ThreadTaskRunnerHandle::Get();
+  }
+};
+
+}  // namespace
+
 void Platform::Initialize(Platform* platform, WebThread* main_thread) {
   DCHECK(!g_platform);
   DCHECK(platform);
   g_platform = platform;
   g_platform->main_thread_ = main_thread;
+  InitializeCommon(platform);
+}
 
+void Platform::CreateMainThreadAndInitialize(Platform* platform) {
+  DCHECK(!g_platform);
+  DCHECK(platform);
+  g_platform = platform;
+  g_platform->owned_main_thread_ = std::make_unique<SingleThreadedWebThread>();
+  g_platform->main_thread_ = g_platform->owned_main_thread_.get();
+  InitializeCommon(platform);
+}
+
+void Platform::InitializeCommon(Platform* platform) {
   WTF::Initialize(CallOnMainThreadFunction);
 
   ProcessHeap::Init();
@@ -172,6 +204,13 @@ Platform* Platform::Current() {
 }
 
 WebThread* Platform::MainThread() const {
+  return main_thread_;
+}
+
+WebThread* Platform::CurrentThread() {
+  // This version must be called only if the main thread is owned by Platform.
+  // See the comments in the header.
+  DCHECK(owned_main_thread_);
   return main_thread_;
 }
 

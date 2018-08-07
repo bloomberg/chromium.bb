@@ -21,22 +21,9 @@ namespace {
 
 constexpr char kPredictableFlag[] = "--predictable";
 
-class SnapshotThread : public blink::WebThread {
- public:
-  bool IsCurrentThread() const override { return true; }
-  blink::ThreadScheduler* Scheduler() const override { return nullptr; }
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
-    return base::ThreadTaskRunnerHandle::Get();
-  }
-};
-
 class SnapshotPlatform final : public blink::Platform {
  public:
   bool IsTakingV8ContextSnapshot() override { return true; }
-  blink::WebThread* CurrentThread() override {
-    static SnapshotThread dummy_thread;
-    return &dummy_thread;
-  }
 };
 
 }  // namespace
@@ -65,7 +52,7 @@ int main(int argc, char** argv) {
   // Take a snapshot.
   SnapshotPlatform platform;
   service_manager::BinderRegistry empty_registry;
-  blink::Initialize(&platform, &empty_registry, platform.CurrentThread());
+  blink::CreateMainThreadAndInitialize(&platform, &empty_registry);
   v8::StartupData blob = blink::WebV8ContextSnapshot::TakeSnapshot();
 
   // Save the snapshot as a file. Filename is given in a command line option.
