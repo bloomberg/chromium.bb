@@ -43,6 +43,12 @@ public abstract class ListItemViewHolder extends ViewHolder {
                 return new CustomViewHolder(parent);
             case ListUtils.ViewType.PREFETCH:
                 return PrefetchViewHolder.create(parent);
+            case ListUtils.ViewType.SECTION_HEADER:
+                return SectionTitleViewHolder.create(parent);
+            case ListUtils.ViewType.SEPARATOR_DATE:
+                return SeparatorViewHolder.create(parent, true);
+            case ListUtils.ViewType.SEPARATOR_SECTION:
+                return SeparatorViewHolder.create(parent, false);
         }
 
         assert false;

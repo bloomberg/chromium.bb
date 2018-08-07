@@ -39,7 +39,7 @@ public class Filters {
      * @param filter The {@link OfflineItem#filter} type to convert.
      * @return       The corresponding {@link FilterType}.
      */
-    public static @FilterType int fromOfflineItem(@OfflineItemFilter int filter) {
+    public static @FilterType Integer fromOfflineItem(@OfflineItemFilter int filter) {
         switch (filter) {
             case OfflineItemFilter.FILTER_PAGE:
                 return FilterType.SITES;

@@ -72,7 +72,7 @@ class DateOrderedListMediator {
                 boolean selected = mSelectionDelegate.isItemSelected(item);
                 item.showSelectedAnimation = selected && !item.selected;
                 item.selected = selected;
-                mModel.setItem(i, item);
+                mModel.update(i, item);
             }
             mModel.dispatchLastEvent();
             mModel.getProperties().setValue(

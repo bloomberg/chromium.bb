@@ -18,17 +18,17 @@ import org.chromium.components.offline_items_collection.OfflineItemFilter;
 public class FiltersTest {
     @Test
     public void testFilterConversions() {
-        Assert.assertEquals(
-                Filters.FilterType.SITES, Filters.fromOfflineItem(OfflineItemFilter.FILTER_PAGE));
-        Assert.assertEquals(
-                Filters.FilterType.VIDEOS, Filters.fromOfflineItem(OfflineItemFilter.FILTER_VIDEO));
-        Assert.assertEquals(
-                Filters.FilterType.MUSIC, Filters.fromOfflineItem(OfflineItemFilter.FILTER_AUDIO));
-        Assert.assertEquals(
-                Filters.FilterType.IMAGES, Filters.fromOfflineItem(OfflineItemFilter.FILTER_IMAGE));
-        Assert.assertEquals(
-                Filters.FilterType.OTHER, Filters.fromOfflineItem(OfflineItemFilter.FILTER_OTHER));
-        Assert.assertEquals(Filters.FilterType.OTHER,
+        Assert.assertEquals(Integer.valueOf(Filters.FilterType.SITES),
+                Filters.fromOfflineItem(OfflineItemFilter.FILTER_PAGE));
+        Assert.assertEquals(Integer.valueOf(Filters.FilterType.VIDEOS),
+                Filters.fromOfflineItem(OfflineItemFilter.FILTER_VIDEO));
+        Assert.assertEquals(Integer.valueOf(Filters.FilterType.MUSIC),
+                Filters.fromOfflineItem(OfflineItemFilter.FILTER_AUDIO));
+        Assert.assertEquals(Integer.valueOf(Filters.FilterType.IMAGES),
+                Filters.fromOfflineItem(OfflineItemFilter.FILTER_IMAGE));
+        Assert.assertEquals(Integer.valueOf(Filters.FilterType.OTHER),
+                Filters.fromOfflineItem(OfflineItemFilter.FILTER_OTHER));
+        Assert.assertEquals(Integer.valueOf(Filters.FilterType.OTHER),
                 Filters.fromOfflineItem(OfflineItemFilter.FILTER_DOCUMENT));
     }
 }
