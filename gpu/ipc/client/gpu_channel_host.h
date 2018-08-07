@@ -136,6 +136,12 @@ class GPU_EXPORT GpuChannelHost
   // Generate a route ID guaranteed to be unique for this channel.
   int32_t GenerateRouteID();
 
+  // Crashes the GPU process. This functionality is added here because
+  // of instability when creating a new tab just to navigate to
+  // chrome://gpucrash . This only works when running tests and is
+  // otherwise ignored.
+  void CrashGpuProcessForTesting();
+
  protected:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   ~GpuChannelHost() override;

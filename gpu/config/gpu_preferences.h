@@ -207,6 +207,11 @@ struct GPU_EXPORT GpuPreferences {
   // Use Vulkan for rasterization and display compositing.
   bool enable_vulkan = false;
 
+  // ===================================
+  // Settings from //cc/base/switches.h
+  // Enable the GPU benchmarking extension; used by tests only.
+  bool enable_gpu_benchmarking_extension = false;
+
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.
 };

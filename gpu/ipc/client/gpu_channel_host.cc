@@ -209,6 +209,10 @@ int32_t GpuChannelHost::GenerateRouteID() {
   return next_route_id_.GetNext();
 }
 
+void GpuChannelHost::CrashGpuProcessForTesting() {
+  Send(new GpuChannelMsg_CrashForTesting());
+}
+
 GpuChannelHost::~GpuChannelHost() = default;
 
 GpuChannelHost::Listener::RouteInfo::RouteInfo() = default;

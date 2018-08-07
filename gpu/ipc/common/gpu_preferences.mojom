@@ -65,4 +65,5 @@ struct GpuPreferences {
   bool use_gpu_fences_for_overlay_planes;
   bool watchdog_starts_backgrounded;
   bool enable_vulkan;
+  bool enable_gpu_benchmarking_extension;
 };

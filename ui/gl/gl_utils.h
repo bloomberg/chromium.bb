@@ -15,6 +15,7 @@ class ColorSpace;
 
 namespace gl {
 GL_EXPORT int GetGLColorSpace(const gfx::ColorSpace& color_space);
+GL_EXPORT void Crash();
 }  // namespace gl
 
 #endif  // UI_GL_GL_UTILS_H_

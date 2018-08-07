@@ -122,6 +122,8 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
         prefs.use_gpu_fences_for_overlay_planes();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
     out->enable_vulkan = prefs.enable_vulkan();
+    out->enable_gpu_benchmarking_extension =
+        prefs.enable_gpu_benchmarking_extension();
     return true;
   }
 
@@ -264,6 +266,10 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool enable_vulkan(const gpu::GpuPreferences& prefs) {
     return prefs.enable_vulkan;
+  }
+  static bool enable_gpu_benchmarking_extension(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.enable_gpu_benchmarking_extension;
   }
 };
 

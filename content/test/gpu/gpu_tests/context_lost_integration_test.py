@@ -69,7 +69,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # These are options specified for every test.
     return [
       '--disable-gpu-process-crash-limit',
-      # Required for about:gpucrash handling from Telemetry.
+      # Required to call crashGpuProcess.
       '--enable-gpu-benchmarking'] + browser_args
 
   @classmethod
@@ -145,26 +145,20 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           'window.domAutomationController._finished', timeout=wait_timeout)
 
       # Crash the GPU process.
-      gpucrash_tab = tab.browser.tabs.New()
-      # To access these debug URLs from Telemetry, they have to be
-      # written using the chrome:// scheme.
-      # The try/except is a workaround for crbug.com/368107.
-      try:
-        gpucrash_tab.Navigate('chrome://gpucrash')
-      except Exception:
-        print 'Tab crashed while navigating to chrome://gpucrash'
-      # Activate the original tab and wait for completion.
-      tab.Activate()
+      #
+      # This used to create a new tab and navigate it to
+      # chrome://gpucrash, but there was enough unreliability
+      # navigating between these tabs (one of which was created solely
+      # in order to navigate to chrome://gpucrash) that the simpler
+      # solution of provoking the GPU process crash from this renderer
+      # process was chosen.
+      tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
+
       completed = self._WaitForPageToFinish(tab)
 
       if check_crash_count:
         self._CheckCrashCount(tab, expected_kills)
 
-      # The try/except is a workaround for crbug.com/368107.
-      try:
-        gpucrash_tab.Close()
-      except Exception:
-        print 'Tab crashed while closing chrome://gpucrash'
       if not completed:
         self.fail('Test didn\'t complete (no context lost event?)')
       if not tab.EvaluateJavaScript(
@@ -290,27 +284,17 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       else:
         self.fail('Initial page failed to get a WebGL context')
     # Kill the GPU process in order to get WebGL blocked.
-    gpucrash_tab = tab.browser.tabs.New()
-    try:
-      # To access these debug URLs from Telemetry, they have to be
-      # written using the chrome:// scheme.
-      gpucrash_tab.Navigate('chrome://gpucrash')
-      # Activate the original tab.
-      tab.Activate()
-      # The original tab has navigated to a new page. Wait for it to
-      # finish running its onload handler.
-      tab.WaitForJavaScriptCondition('window.initFinished',
+    tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
+    # The original tab will navigate to a new page. Wait for it to
+    # finish running its onload handler.
+    # TODO(kbr): figure out when it's OK to evaluate this JavaScript.
+    # Seems racy to do it immediately after crashing the GPU process.
+    tab.WaitForJavaScriptCondition('window.initFinished',
                                      timeout=wait_timeout)
-      # Make sure the page failed to get a GL context.
-      if tab.EvaluateJavaScript('window.gotGL'):
-        self.fail(
-          'Page should have been blocked from getting a new WebGL context')
-    finally:
-      # This try/except is still needed. crbug.com/832886
-      try:
-        gpucrash_tab.Close()
-      except Exception:
-        print 'Tab crashed while closing chrome://gpucrash'
+    # Make sure the page failed to get a GL context.
+    if tab.EvaluateJavaScript('window.gotGL'):
+      self.fail(
+        'Page should have been blocked from getting a new WebGL context')
     self._RestartBrowser('must restart after tests that kill the GPU process')
 
   def _ContextLost_WebGLUnblockedAfterUserInitiatedReload(self, test_path):
@@ -321,34 +305,23 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
       self.fail('Tab failed to get an initial WebGL context')
     # Kill the GPU process in order to get WebGL blocked.
-    gpucrash_tab = tab.browser.tabs.New()
-    try:
-      # To access these debug URLs from Telemetry, they have to be
-      # written using the chrome:// scheme.
-      gpucrash_tab.Navigate('chrome://gpucrash')
-      # Activate the original tab.
-      tab.Activate()
-      # Wait for the page to receive a context loss event.
-      tab.WaitForJavaScriptCondition('window.contextLostReceived',
-                                     timeout=wait_timeout)
-      # Make sure WebGL is still blocked.
-      if not tab.EvaluateJavaScript(
-          'window.domAutomationController._succeeded'):
-        self.fail('WebGL should have been blocked after a context loss')
-      # Reload the page via Telemetry / DevTools. This is treated as a
-      # user-initiated navigation, so WebGL is unblocked.
-      self._NavigateAndWaitForLoad(test_path)
-      # Ensure WebGL is unblocked.
-      if not tab.EvaluateJavaScript(
-          'window.domAutomationController._succeeded'):
-        self.fail(
-          'WebGL should have been unblocked after a user-initiated navigation')
-    finally:
-      # This try/except is still needed. crbug.com/832886
-      try:
-        gpucrash_tab.Close()
-      except Exception:
-        print 'Tab crashed while closing chrome://gpucrash'
+    tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
+
+    # Wait for the page to receive a context loss event.
+    tab.WaitForJavaScriptCondition('window.contextLostReceived',
+                                   timeout=wait_timeout)
+    # Make sure WebGL is still blocked.
+    if not tab.EvaluateJavaScript(
+        'window.domAutomationController._succeeded'):
+      self.fail('WebGL should have been blocked after a context loss')
+    # Reload the page via Telemetry / DevTools. This is treated as a
+    # user-initiated navigation, so WebGL is unblocked.
+    self._NavigateAndWaitForLoad(test_path)
+    # Ensure WebGL is unblocked.
+    if not tab.EvaluateJavaScript(
+        'window.domAutomationController._succeeded'):
+      self.fail(
+        'WebGL should have been unblocked after a user-initiated navigation')
     self._RestartBrowser('must restart after tests that kill the GPU process')
 
 def load_tests(loader, tests, pattern):
