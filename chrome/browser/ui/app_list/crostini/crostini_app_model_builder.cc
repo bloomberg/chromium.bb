@@ -69,8 +69,20 @@ void CrostiniAppModelBuilder::OnRegistryUpdated(
   for (const std::string& app_id : removed_apps)
     RemoveApp(app_id, unsynced_change);
   for (const std::string& app_id : updated_apps) {
-    RemoveApp(app_id, unsynced_change);
-    InsertCrostiniAppItem(registry_service, app_id);
+    crostini::CrostiniRegistryService::Registration registration =
+        *registry_service->GetRegistration(app_id);
+    if (registration.NoDisplay()) {
+      RemoveApp(app_id, unsynced_change);
+      continue;
+    }
+
+    CrostiniAppItem* app_item =
+        static_cast<CrostiniAppItem*>(GetAppItem(app_id));
+    if (!app_item) {
+      InsertCrostiniAppItem(registry_service, app_id);
+      continue;
+    }
+    app_item->SetName(registration.Name());
   }
   for (const std::string& app_id : inserted_apps) {
     // If the app has been installed before and has not been cleaned up
