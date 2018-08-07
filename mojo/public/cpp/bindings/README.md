@@ -1138,7 +1138,7 @@ Similarly, assume you have already got an `InterfacePtr<Foo> foo_ptr`, and you
 would like to call `SetBar()` on it. You can do:
 
 ``` cpp
-AssociatedBind<Bar> bar_binding(some_bar_impl);
+AssociatedBinding<Bar> bar_binding(some_bar_impl);
 BarAssociatedPtrInfo bar_ptr_info;
 BarAssociatedRequest bar_request = MakeRequest(&bar_ptr_info);
 foo_ptr->SetBar(std::move(bar_ptr_info));
@@ -1148,7 +1148,7 @@ bar_binding.Bind(std::move(bar_request));
 The following code achieves the same purpose:
 
 ``` cpp
-AssociatedBind<Bar> bar_binding(some_bar_impl);
+AssociatedBinding<Bar> bar_binding(some_bar_impl);
 BarAssociatedPtrInfo bar_ptr_info;
 bar_binding.Bind(&bar_ptr_info);
 foo_ptr->SetBar(std::move(bar_ptr_info));
