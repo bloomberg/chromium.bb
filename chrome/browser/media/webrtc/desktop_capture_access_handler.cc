@@ -420,7 +420,8 @@ void DesktopCaptureAccessHandler::HandleRequest(
         content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
             request.requested_video_device_id,
             main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(),
-            request.security_origin, &original_extension_name);
+            request.security_origin, &original_extension_name,
+            content::kRegistryStreamTypeDesktop);
   }
 
   // Received invalid device id.
