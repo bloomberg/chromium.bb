@@ -191,13 +191,8 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
     return;
 
   UserMetricsRecorder* metrics = Shell::Get()->metrics();
-  // Clamshell mode only options should not activate in tablet mode.
-  const bool is_tablet_mode = Shell::Get()
-                                  ->tablet_mode_controller()
-                                  ->IsTabletModeWindowManagerEnabled();
   switch (command_id) {
     case MENU_AUTO_HIDE:
-      DCHECK(!is_tablet_mode);
       SetShelfAutoHideBehaviorPref(
           prefs, display_id_,
           GetShelfAutoHideBehaviorPref(prefs, display_id_) ==
@@ -206,17 +201,14 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
               : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
       break;
     case MENU_ALIGNMENT_LEFT:
-      DCHECK(!is_tablet_mode);
       metrics->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_LEFT);
       SetShelfAlignmentPref(prefs, display_id_, SHELF_ALIGNMENT_LEFT);
       break;
     case MENU_ALIGNMENT_RIGHT:
-      DCHECK(!is_tablet_mode);
       metrics->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_RIGHT);
       SetShelfAlignmentPref(prefs, display_id_, SHELF_ALIGNMENT_RIGHT);
       break;
     case MENU_ALIGNMENT_BOTTOM:
-      DCHECK(!is_tablet_mode);
       metrics->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_BOTTOM);
       SetShelfAlignmentPref(prefs, display_id_, SHELF_ALIGNMENT_BOTTOM);
       break;
