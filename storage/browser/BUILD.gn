@@ -175,6 +175,7 @@ component("browser") {
     "quota/quota_client.h",
     "quota/quota_database.cc",
     "quota/quota_database.h",
+    "quota/quota_macros.h",
     "quota/quota_manager.cc",
     "quota/quota_manager.h",
     "quota/quota_manager_proxy.cc",

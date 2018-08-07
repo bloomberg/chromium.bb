@@ -19,7 +19,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -33,6 +32,7 @@
 #include "base/trace_event/trace_event.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/client_usage_tracker.h"
+#include "storage/browser/quota/quota_macros.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
 #include "storage/browser/quota/storage_monitor.h"
@@ -47,10 +47,6 @@ namespace {
 const int64_t kMBytes = 1024 * 1024;
 const int kMinutesInMilliSeconds = 60 * 1000;
 const int64_t kReportHistogramInterval = 60 * 60 * 1000;  // 1 hour
-
-#define UMA_HISTOGRAM_MBYTES(name, sample)                                     \
-  UMA_HISTOGRAM_CUSTOM_COUNTS((name), static_cast<int>((sample) / kMBytes), 1, \
-                              10 * 1024 * 1024 /* 10TB */, 100)
 
 }  // namespace
 

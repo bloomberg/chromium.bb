@@ -6,16 +6,12 @@
 
 #include <algorithm>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-
-#define UMA_HISTOGRAM_MBYTES(name, sample)                                     \
-  UMA_HISTOGRAM_CUSTOM_COUNTS((name), static_cast<int>((sample) / kMBytes), 1, \
-                              10 * 1024 * 1024 /* 10TB */, 100)
+#include "storage/browser/quota/quota_macros.h"
 
 namespace storage {
 
