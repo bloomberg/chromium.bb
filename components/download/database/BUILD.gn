@@ -30,8 +30,6 @@ source_set("database") {
     "in_progress/in_progress_info.h",
     "in_progress/ukm_info.cc",
     "in_progress/ukm_info.h",
-    "switches.cc",
-    "switches.h",
   ]
 
   deps = [

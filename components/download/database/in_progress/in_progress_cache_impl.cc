@@ -125,6 +125,16 @@ void WriteEntriesToFile(const std::string& entries, base::FilePath file_path) {
                << file_path.value();
   }
 }
+
+void DeleteFile(base::FilePath file_path) {
+  if (file_path.empty())
+    return;
+
+  if (!base::DeleteFile(file_path, false)) {
+    LOG(ERROR) << "Could not delete download cache file: " << file_path.value();
+  }
+}
+
 }  // namespace
 
 InProgressCacheImpl::InProgressCacheImpl(
@@ -218,6 +228,10 @@ std::vector<DownloadEntry> InProgressCacheImpl::GetAllEntries() {
     return std::vector<DownloadEntry>();
   }
   return DownloadDBConversions::DownloadEntriesFromProto(entries_);
+}
+
+void InProgressCacheImpl::Destroy() {
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(&DeleteFile, file_path_));
 }
 
 }  // namespace download

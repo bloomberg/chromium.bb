@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/public/common//download_stats.h"
+#include "components/download/public/common/download_stats.h"
 
 #include <map>
 
@@ -1116,6 +1116,10 @@ void RecordDownloadHttpResponseCode(int response_code) {
       "Download.HttpResponseCode",
       net::HttpUtil::MapStatusCodeForHistogram(response_code),
       net::HttpUtil::GetStatusCodesForHistogram());
+}
+
+void RecordInProgressDBCount(InProgressDBCountTypes type) {
+  UMA_HISTOGRAM_ENUMERATION("Download.InProgressDB.Counts", type);
 }
 
 }  // namespace download

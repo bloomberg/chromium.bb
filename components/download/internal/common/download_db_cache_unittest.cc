@@ -143,9 +143,10 @@ TEST_F(DownloadDBCacheTest, InitializeAndRetrieve) {
   PrepopulateSampleEntries();
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
-  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                       base::Unretained(this), &loaded_entries,
-                                       true));
+  db_cache_->Initialize(
+      std::vector<DownloadEntry>(),
+      base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
+                     &loaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
@@ -163,9 +164,10 @@ TEST_F(DownloadDBCacheTest, AddNewEntry) {
   PrepopulateSampleEntries();
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
-  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                       base::Unretained(this), &loaded_entries,
-                                       true));
+  db_cache_->Initialize(
+      std::vector<DownloadEntry>(),
+      base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
+                     &loaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
@@ -188,9 +190,10 @@ TEST_F(DownloadDBCacheTest, ModifyExistingEntry) {
   PrepopulateSampleEntries();
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
-  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                       base::Unretained(this), &loaded_entries,
-                                       true));
+  db_cache_->Initialize(
+      std::vector<DownloadEntry>(),
+      base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
+                     &loaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
@@ -228,9 +231,10 @@ TEST_F(DownloadDBCacheTest, FilePathChange) {
                      DownloadDBConversions::DownloadDBEntryToProto(entry)));
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
-  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                       base::Unretained(this), &loaded_entries,
-                                       true));
+  db_cache_->Initialize(
+      std::vector<DownloadEntry>(),
+      base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
+                     &loaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 1u);
@@ -257,9 +261,10 @@ TEST_F(DownloadDBCacheTest, RemoveEntry) {
   PrepopulateSampleEntries();
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
-  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                       base::Unretained(this), &loaded_entries,
-                                       true));
+  db_cache_->Initialize(
+      std::vector<DownloadEntry>(),
+      base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
+                     &loaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
@@ -285,14 +290,6 @@ TEST_F(DownloadDBCacheTest, RemoveEntry) {
 // a DownloadDBEntry in the DownloadDB.
 TEST_F(DownloadDBCacheTest, MigrateFromInProgressCache) {
   CreateDBCache();
-  std::vector<DownloadDBEntry> loaded_entries;
-  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                       base::Unretained(this), &loaded_entries,
-                                       true));
-  db_->InitCallback(true);
-  db_->LoadCallback(true);
-  ASSERT_TRUE(loaded_entries.empty());
-
   std::vector<DownloadEntry> download_entries;
   download_entries.emplace_back(
       "guid1", "foo.com", DownloadSource::DRAG_AND_DROP, true,
@@ -301,8 +298,15 @@ TEST_F(DownloadDBCacheTest, MigrateFromInProgressCache) {
       "guid2", "foobar.com", DownloadSource::UNKNOWN, false,
       DownloadUrlParameters::RequestHeadersType(), 200);
 
-  db_cache_->MigrateFromInProgressCache(download_entries);
+  std::vector<DownloadDBEntry> loaded_entries;
+  db_cache_->Initialize(
+      download_entries,
+      base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
+                     &loaded_entries));
+  db_->InitCallback(true);
   db_->UpdateCallback(true);
+  db_->LoadCallback(true);
+  ASSERT_FALSE(loaded_entries.empty());
 
   std::unique_ptr<DownloadItem> item = CreateDownloadItem("guid1");
   OnDownloadUpdated(item.get());

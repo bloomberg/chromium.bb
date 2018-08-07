@@ -31,12 +31,11 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/download/download_crx_util.h"
-#include "components/download/database/switches.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_database.h"
@@ -566,8 +565,8 @@ bool DownloadHistory::NeedToUpdateDownloadHistory(
 
   // When download DB is enabled, only completed download should be added to or
   // updated in history DB.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             download::switches::kEnableDownloadDB) ||
+  return !base::FeatureList::IsEnabled(
+             download::features::kDownloadDBForNewDownloads) ||
          item->IsSavePackageDownload() ||
          item->GetState() == download::DownloadItem::COMPLETE;
 }

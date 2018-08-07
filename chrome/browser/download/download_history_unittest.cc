@@ -14,7 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "components/download/database/switches.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_constants.h"
@@ -910,8 +911,9 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_UpdateWhileAdding) {
 // Test creating and updating an item with DownloadDB enabled.
 TEST_F(DownloadHistoryTest, CreateWithDownloadDB) {
   // Enable download DB.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      download::switches::kEnableDownloadDB);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      download::features::kDownloadDBForNewDownloads);
 
   // Create a fresh item not from download DB
   CreateDownloadHistory(std::unique_ptr<InfoVector>(new InfoVector()));
@@ -935,8 +937,9 @@ TEST_F(DownloadHistoryTest, CreateWithDownloadDB) {
 // Test creating history download item that exists in DownloadDB.
 TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
   // Enable download DB.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      download::switches::kEnableDownloadDB);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      download::features::kDownloadDBForNewDownloads);
 
   history::DownloadRow info;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",

@@ -8,6 +8,8 @@
 #include "components/download/database/download_db_conversions.h"
 #include "components/download/database/download_db_entry.h"
 #include "components/download/database/in_progress/download_entry.h"
+#include "components/download/public/common/download_features.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_utils.h"
 
 namespace download {
@@ -110,6 +112,12 @@ void CleanUpInProgressEntry(DownloadDBEntry& entry) {
   }
 }
 
+void OnDownloadDBUpdated(bool success) {
+  // TODO(qinmin): handle the case that update fails.
+  if (!success)
+    LOG(ERROR) << "Unable to update DB entries";
+}
+
 }  // namespace
 
 DownloadDBCache::DownloadDBCache(std::unique_ptr<DownloadDB> download_db)
@@ -121,21 +129,22 @@ DownloadDBCache::DownloadDBCache(std::unique_ptr<DownloadDB> download_db)
 
 DownloadDBCache::~DownloadDBCache() = default;
 
-void DownloadDBCache::Initialize(InitializeCallback callback) {
+void DownloadDBCache::Initialize(const std::vector<DownloadEntry>& entries,
+                                 InitializeCallback callback) {
   // TODO(qinmin): migrate all the data from InProgressCache into
   // |download_db_|.
   if (!initialized_) {
-    download_db_->Initialize(
-        base::BindOnce(&DownloadDBCache::OnDownloadDBInitialized,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    RecordInProgressDBCount(kInitializationCount);
+    download_db_->Initialize(base::BindOnce(
+        &DownloadDBCache::OnDownloadDBInitialized, weak_factory_.GetWeakPtr(),
+        entries, std::move(callback)));
     return;
   }
 
-  auto entries = std::make_unique<std::vector<DownloadDBEntry>>();
-  for (auto it = entries_.begin(); it != entries_.end(); ++it) {
-    entries->emplace_back(it->second);
-  }
-  std::move(callback).Run(std::move(entries));
+  auto db_entries = std::make_unique<std::vector<DownloadDBEntry>>();
+  for (auto it = entries_.begin(); it != entries_.end(); ++it)
+    db_entries->emplace_back(it->second);
+  std::move(callback).Run(true, std::move(db_entries));
 }
 
 base::Optional<DownloadDBEntry> DownloadDBCache::RetrieveEntry(
@@ -185,13 +194,26 @@ void DownloadDBCache::UpdateDownloadDB() {
     DCHECK(entry);
     entries.emplace_back(entry.value());
   }
-  if (initialized_)
-    download_db_->AddOrReplaceEntries(entries);
+  if (initialized_) {
+    download_db_->AddOrReplaceEntries(entries,
+                                      base::BindOnce(&OnDownloadDBUpdated));
+  }
 }
 
 void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
   // TODO(crbug.com/778425): Properly handle fail/resume/retry for downloads
   // that are in the INTERRUPTED state for a long time.
+  if (!base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads)) {
+    // If history service is still managing in-progress download, we can safely
+    // remove a download from the in-progress DB whenever it is completed or
+    // cancelled. Otherwise, we need to propagate the completed download to
+    // history service before we can remove it.
+    if (download->GetState() == DownloadItem::COMPLETE ||
+        download->GetState() == DownloadItem::CANCELLED) {
+      OnDownloadRemoved(download);
+      return;
+    }
+  }
   base::Optional<DownloadDBEntry> current = RetrieveEntry(download->GetGuid());
   bool fetch_error_body = GetFetchErrorBody(current);
   DownloadUrlParameters::RequestHeadersType request_header_type =
@@ -206,15 +228,20 @@ void DownloadDBCache::OnDownloadRemoved(DownloadItem* download) {
   RemoveEntry(download->GetGuid());
 }
 
-void DownloadDBCache::OnDownloadDBInitialized(InitializeCallback callback,
-                                              bool success) {
+void DownloadDBCache::OnDownloadDBInitialized(
+    const std::vector<DownloadEntry>& entries,
+    InitializeCallback callback,
+    bool success) {
   if (success) {
+    RecordInProgressDBCount(kInitializationSucceededCount);
+    MigrateFromInProgressCache(entries);
     download_db_->LoadEntries(
         base::BindOnce(&DownloadDBCache::OnDownloadDBEntriesLoaded,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   } else {
-    OnDownloadDBEntriesLoaded(std::move(callback), false,
-                              std::make_unique<std::vector<DownloadDBEntry>>());
+    RecordInProgressDBCount(kInitializationFailedCount);
+    std::move(callback).Run(false,
+                            std::make_unique<std::vector<DownloadDBEntry>>());
   }
 }
 
@@ -223,11 +250,12 @@ void DownloadDBCache::OnDownloadDBEntriesLoaded(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
   initialized_ = success;
+  RecordInProgressDBCount(success ? kLoadSucceededCount : kLoadFailedCount);
   for (auto& entry : *entries) {
     CleanUpInProgressEntry(entry);
     entries_[entry.download_info->guid] = entry;
   }
-  std::move(callback).Run(std::move(entries));
+  std::move(callback).Run(success, std::move(entries));
 }
 
 void DownloadDBCache::SetTimerTaskRunnerForTesting(
@@ -237,15 +265,23 @@ void DownloadDBCache::SetTimerTaskRunnerForTesting(
 
 void DownloadDBCache::MigrateFromInProgressCache(
     const std::vector<DownloadEntry>& entries) {
-  DCHECK(initialized_);
-  DCHECK(entries_.empty());
+  if (entries.empty())
+    return;
+  RecordInProgressDBCount(kCacheMigrationCount);
   std::vector<DownloadDBEntry> db_entries;
   for (const auto& entry : entries) {
-    entries_[entry.guid] =
-        DownloadDBConversions::DownloadDBEntryFromDownloadEntry(entry);
-    db_entries.emplace_back(entries_[entry.guid]);
+    DCHECK(entries_.find(entry.guid) == entries_.end());
+    db_entries.emplace_back(
+        DownloadDBConversions::DownloadDBEntryFromDownloadEntry(entry));
   }
-  download_db_->AddOrReplaceEntries(db_entries);
+  download_db_->AddOrReplaceEntries(
+      db_entries, base::BindOnce(&DownloadDBCache::OnInProgressCacheMigrated,
+                                 weak_factory_.GetWeakPtr()));
+}
+
+void DownloadDBCache::OnInProgressCacheMigrated(bool success) {
+  RecordInProgressDBCount(success ? kCacheMigrationSucceededCount
+                                  : kCacheMigrationFailedCount);
 }
 
 }  //  namespace download
