@@ -68,6 +68,9 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
       std::unique_ptr<protocol::ApplicationCache::ApplicationCache>*) override;
 
  private:
+  // Unconditionally enables the agent, even if |enabled_.Get()==true|.
+  // For idempotence, call enable().
+  void InnerEnable();
   explicit InspectorApplicationCacheAgent(InspectedFrames*);
 
   std::unique_ptr<protocol::ApplicationCache::ApplicationCache>
@@ -85,6 +88,7 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
                                                    DocumentLoader*&);
 
   Member<InspectedFrames> inspected_frames_;
+  InspectorAgentState::Boolean enabled_;
   DISALLOW_COPY_AND_ASSIGN(InspectorApplicationCacheAgent);
 };
 
