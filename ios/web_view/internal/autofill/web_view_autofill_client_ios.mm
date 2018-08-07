@@ -73,7 +73,8 @@ WebViewAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
   return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
 }
 
-void WebViewAutofillClientIOS::ShowAutofillSettings() {
+void WebViewAutofillClientIOS::ShowAutofillSettings(
+    bool show_credit_card_settings) {
   NOTREACHED();
 }
 

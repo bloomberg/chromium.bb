@@ -60,8 +60,7 @@ TestAutofillClient::GetSecurityLevelForUmaHistograms() {
   return security_level_;
 }
 
-void TestAutofillClient::ShowAutofillSettings() {
-}
+void TestAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {}
 
 void TestAutofillClient::ShowUnmaskPrompt(
     const CreditCard& card,

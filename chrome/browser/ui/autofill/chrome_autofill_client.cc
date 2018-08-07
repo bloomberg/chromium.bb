@@ -165,13 +165,19 @@ ChromeAutofillClient::GetSecurityLevelForUmaHistograms() {
   return security_info.security_level;
 }
 
-void ChromeAutofillClient::ShowAutofillSettings() {
+void ChromeAutofillClient::ShowAutofillSettings(
+    bool show_credit_card_settings) {
 #if defined(OS_ANDROID)
   chrome::android::PreferencesLauncher::ShowAutofillSettings(web_contents());
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  if (browser)
-    chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
+  if (browser) {
+    if (show_credit_card_settings) {
+      chrome::ShowSettingsSubPage(browser, chrome::kPaymentsSubPage);
+    } else {
+      chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
+    }
+  }
 #endif  // #if defined(OS_ANDROID)
 }
 

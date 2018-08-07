@@ -247,7 +247,7 @@ void AwAutofillClient::SuggestionSelected(JNIEnv* env,
   }
 }
 
-void AwAutofillClient::ShowAutofillSettings() {
+void AwAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {
   NOTIMPLEMENTED();
 }
 
