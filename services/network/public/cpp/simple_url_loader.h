@@ -18,11 +18,15 @@
 
 class GURL;
 
+template <class T>
+class scoped_refptr;
+
 namespace base {
 class FilePath;
 }
 
 namespace net {
+class HttpResponseHeaders;
 struct NetworkTrafficAnnotationTag;
 struct RedirectInfo;
 }  // namespace net
@@ -85,8 +89,14 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   using BodyAsStringCallback =
       base::OnceCallback<void(std::unique_ptr<std::string> response_body)>;
 
-  // Callback used when download the response body to a file. On failure, |path|
-  // will be empty. It is safe to delete the SimpleURLLoader during the
+  // Callback used when ignoring the response body. |headers| are the received
+  // HTTP headers, or nullptr if none were received. It is safe to delete the
+  // SimpleURLLoader during the callback.
+  using HeadersOnlyCallback =
+      base::OnceCallback<void(scoped_refptr<net::HttpResponseHeaders> headers)>;
+
+  // Callback used when downloading the response body to a file. On failure,
+  // |path| will be empty. It is safe to delete the SimpleURLLoader during the
   // callback.
   using DownloadToFileCompleteCallback =
       base::OnceCallback<void(base::FilePath path)>;
@@ -120,7 +130,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
 
   virtual ~SimpleURLLoader();
 
-  // Starts the request using |network_context|. The SimpleURLLoader will
+  // Starts the request using |url_loader_factory|. The SimpleURLLoader will
   // accumulate all downloaded data in an in-memory string of bounded size. If
   // |max_body_size| is exceeded, the request will fail with
   // net::ERR_INSUFFICIENT_RESOURCES. |max_body_size| must be no greater than 1
@@ -144,6 +154,14 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   virtual void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       mojom::URLLoaderFactory* url_loader_factory,
       BodyAsStringCallback body_as_string_callback) = 0;
+
+  // Starts the request using |url_loader_factory|. The SimpleURLLoader will
+  // discard the response body as it is received and |headers_only_callback|
+  // will be invoked on completion. It is safe to delete the SimpleURLLoader in
+  // this callback.
+  virtual void DownloadHeadersOnly(
+      mojom::URLLoaderFactory* url_loader_factory,
+      HeadersOnlyCallback headers_only_callback) = 0;
 
   // SimpleURLLoader will download the entire response to a file at the
   // specified path. File I/O will happen on another sequence, so it's safe to
