@@ -401,7 +401,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                                ui::mojom::EventTargetingPolicy policy) override;
   void OnWindowInputEventAck(uint32_t event_id,
                              mojom::EventResult result) override;
-  void DeactivateWindow(Id window_id) override;
+  void DeactivateWindow(Id transport_window_id) override;
   void StackAbove(uint32_t change_id, Id above_id, Id below_id) override;
   void StackAtTop(uint32_t change_id, Id window_id) override;
   void PerformWmAction(Id window_id, const std::string& action) override;

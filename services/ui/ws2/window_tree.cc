@@ -45,6 +45,7 @@
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ui {
 namespace ws2 {
@@ -1663,8 +1664,34 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
   }
 }
 
-void WindowTree::DeactivateWindow(Id window_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+void WindowTree::DeactivateWindow(Id transport_window_id) {
+  DVLOG(3) << "DeactivateWindow id="
+           << MakeClientWindowId(transport_window_id).ToString();
+  aura::Window* window = GetWindowByTransportId(transport_window_id);
+  if (!window) {
+    DVLOG(1) << "DeactivateWindow failed (no window)";
+    return;
+  }
+
+  if (!IsClientCreatedWindow(window) || !IsTopLevel(window)) {
+    DVLOG(1) << "DeactivateWindow failed (access denied)";
+    return;
+  }
+
+  wm::ActivationClient* activation_client =
+      wm::GetActivationClient(window->GetRootWindow());
+  if (!activation_client) {
+    DVLOG(1) << "DeactivateWindow failed (no activation client)";
+    return;
+  }
+
+  // Only allow deactivation if |window| is the active window.
+  if (activation_client->GetActiveWindow() != window) {
+    DVLOG(1) << "DeactivateWindow failed (window is not active)";
+    return;
+  }
+
+  activation_client->DeactivateWindow(window);
 }
 
 void WindowTree::StackAbove(uint32_t change_id, Id above_id, Id below_id) {

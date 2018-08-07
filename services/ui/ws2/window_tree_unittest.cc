@@ -31,6 +31,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ui {
 namespace ws2 {
@@ -1737,6 +1738,36 @@ TEST(WindowTreeTest, DontSendGestures) {
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
+}
+
+TEST(WindowTreeTest, DeactivateWindow) {
+  // Create two top-levels and focuses (activates) the second.
+  WindowServiceTestSetup setup;
+  aura::Window* top_level1 =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level1);
+  top_level1->Show();
+  aura::Window* top_level2 =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level2);
+  top_level2->Show();
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(top_level2));
+  EXPECT_TRUE(wm::IsActiveWindow(top_level2));
+
+  // Attempting to deactivate |top_level1| should do nothing.
+  setup.window_tree_test_helper()->window_tree()->DeactivateWindow(
+      setup.window_tree_test_helper()->TransportIdForWindow(top_level1));
+  EXPECT_TRUE(wm::IsActiveWindow(top_level2));
+
+  // Similarly, calling Deactivate() with an invalid id should do nothing.
+  setup.window_tree_test_helper()->window_tree()->DeactivateWindow(
+      kInvalidTransportId);
+  EXPECT_TRUE(wm::IsActiveWindow(top_level2));
+
+  // Deactivate() with |top_level2| should activate |top_level1|.
+  setup.window_tree_test_helper()->window_tree()->DeactivateWindow(
+      setup.window_tree_test_helper()->TransportIdForWindow(top_level2));
+  EXPECT_TRUE(wm::IsActiveWindow(top_level1));
 }
 
 }  // namespace
