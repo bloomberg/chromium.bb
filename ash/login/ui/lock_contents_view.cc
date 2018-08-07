@@ -543,6 +543,7 @@ void LockContentsView::OnUsersChanged(
   // The debug view will potentially call this method many times. Make sure to
   // invalidate any child references.
   main_view_->RemoveAllChildViews(true /*delete_children*/);
+  primary_big_view_ = nullptr;
   opt_secondary_big_view_ = nullptr;
   users_list_ = nullptr;
   layout_actions_.clear();
