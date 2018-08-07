@@ -140,17 +140,13 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       item->GetLastAccessTime().ToJavaTime(), item->IsDangerous());
 }
 
-static jlong JNI_DownloadManagerService_Init(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jobj) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+static jlong JNI_DownloadManagerService_Init(JNIEnv* env,
+                                             const JavaParamRef<jobject>& jobj,
+                                             jboolean is_full_browser_started) {
   DownloadManagerService* service = DownloadManagerService::GetInstance();
   service->Init(env, jobj);
-  DownloadCoreService* download_core_service =
-      DownloadCoreServiceFactory::GetForBrowserContext(profile);
-  DownloadHistory* history = download_core_service->GetDownloadHistory();
-  if (history)
-    history->AddObserver(service);
+  if (is_full_browser_started)
+    service->OnFullBrowserStarted(env, jobj);
   return reinterpret_cast<intptr_t>(service);
 }
 
@@ -175,9 +171,18 @@ void DownloadManagerService::NotifyServiceStarted(
 void DownloadManagerService::Init(
     JNIEnv* env,
     jobject obj) {
+  java_ref_.Reset(env, obj);
+}
+
+void DownloadManagerService::OnFullBrowserStarted(JNIEnv* env, jobject obj) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
-  java_ref_.Reset(env, obj);
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  DownloadCoreService* download_core_service =
+      DownloadCoreServiceFactory::GetForBrowserContext(profile);
+  DownloadHistory* history = download_core_service->GetDownloadHistory();
+  if (history)
+    history->AddObserver(this);
 }
 
 void DownloadManagerService::Observe(

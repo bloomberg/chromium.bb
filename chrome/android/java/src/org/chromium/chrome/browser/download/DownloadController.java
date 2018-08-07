@@ -17,11 +17,13 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
@@ -252,6 +254,10 @@ public class DownloadController {
      */
     @CalledByNative
     private static void onDownloadStarted() {
+        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()) {
+            return;
+        }
         if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
         DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
     }
