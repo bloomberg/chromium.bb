@@ -84,6 +84,10 @@ button {
   padding: 0;
 }
 
+.mouse-navigation {
+  outline: none;
+}
+
 #ntp-contents {
   display: flex;
   flex-direction: column;

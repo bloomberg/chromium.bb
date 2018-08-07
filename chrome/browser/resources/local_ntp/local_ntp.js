@@ -911,12 +911,9 @@ function addRippleAnimations() {
  */
 function disableOutlineOnMouseClick(element) {
   element.addEventListener('mousedown', (event) => {
-    element.style.outline = 'none';
+    element.classList.add('mouse-navigation');
     let resetOutline = (event) => {
-      // Clear current focus to prevent the outline from reappearing when the
-      // user switches windows.
-      document.activeElement.blur();
-      element.style.outline = '';
+      element.classList.remove('mouse-navigation');
       element.removeEventListener('blur', resetOutline);
     };
     element.addEventListener('blur', resetOutline);
@@ -956,7 +953,9 @@ function init() {
   registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.SPACE, onRestoreAll);
   restoreAllLink.textContent =
-      configData.translatedStrings.restoreThumbnailsShort;
+      (configData.isCustomLinksEnabled ?
+           configData.translatedStrings.restoreDefaultLinks :
+           configData.translatedStrings.restoreThumbnailsShort);
 
   $(IDS.ATTRIBUTION_TEXT).textContent =
       configData.translatedStrings.attributionIntro;
@@ -1114,6 +1113,9 @@ function init() {
   if (NTP_DESIGN.numTitleLines > 1)
     args.push('ntl=' + NTP_DESIGN.numTitleLines);
 
+  args.push(
+      'title=' +
+      encodeURIComponent(configData.translatedStrings.mostVisitedTitle));
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
 

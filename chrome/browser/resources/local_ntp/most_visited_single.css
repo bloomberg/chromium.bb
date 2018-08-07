@@ -375,6 +375,10 @@ html[dir=rtl] .mv-favicon {
   display: none;
 }
 
+.mouse-navigation {
+  outline: none;
+}
+
 .md-tile-container {
   border-radius: 4px;
   box-sizing: border-box;
@@ -522,7 +526,8 @@ body.using-theme .md-title {
   width: var(--md-menu-size);
 }
 
-.md-menu:focus {
+.md-menu:active,
+.md-menu:focus:not(.mouse-navigation) {
   opacity: 1;
 }
 
