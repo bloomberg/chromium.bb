@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -15,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/database/database_quota_client.h"
 #include "storage/browser/database/database_tracker.h"
@@ -70,20 +71,20 @@ class MockDatabaseTracker : public DatabaseTracker {
   }
 
   int DeleteDataForOrigin(const std::string& origin_identifier,
-                          const net::CompletionCallback& callback) override {
+                          net::CompletionOnceCallback callback) override {
     ++delete_called_count_;
     if (async_delete()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(&MockDatabaseTracker::AsyncDeleteDataForOrigin, this,
-                         callback));
+                         std::move(callback)));
       return net::ERR_IO_PENDING;
     }
     return net::OK;
   }
 
-  void AsyncDeleteDataForOrigin(const net::CompletionCallback& callback) {
-    callback.Run(net::OK);
+  void AsyncDeleteDataForOrigin(net::CompletionOnceCallback callback) {
+    std::move(callback).Run(net::OK);
   }
 
   void AddMockDatabase(const url::Origin& origin, const char* name, int size) {
