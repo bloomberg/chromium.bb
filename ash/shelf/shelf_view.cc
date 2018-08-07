@@ -320,19 +320,23 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
       shelf_(shelf),
       shelf_widget_(shelf_widget),
       view_model_(new views::ViewModel),
+      bounds_animator_(std::make_unique<views::BoundsAnimator>(this)),
       tooltip_(this),
+      focus_search_(std::make_unique<ShelfFocusSearch>(this)),
       shelf_item_background_color_(kShelfDefaultBaseColor),
       weak_factory_(this) {
   DCHECK(model_);
   DCHECK(shelf_);
   DCHECK(shelf_widget_);
-  bounds_animator_ = std::make_unique<views::BoundsAnimator>(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
-  focus_search_ = std::make_unique<ShelfFocusSearch>(this);
 }
 
 ShelfView::~ShelfView() {
+  // Shell destroys the TabletModeController before destroying all root windows.
+  if (Shell::Get()->tablet_mode_controller())
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
 }
@@ -584,6 +588,20 @@ void ShelfView::CreateDragIconProxy(
       location_in_screen_coordinates - drag_image_offset_, size);
   drag_image_->SetBoundsInScreen(drag_image_bounds);
   drag_image_->SetWidgetVisible(true);
+}
+
+void ShelfView::OnTabletModeStarted() {
+  // Close all menus when tablet mode starts to ensure that the clamshell only
+  // context menu options are not available in tablet mode.
+  if (shelf_menu_model_adapter_)
+    shelf_menu_model_adapter_->Cancel();
+}
+
+void ShelfView::OnTabletModeEnded() {
+  // Close all menus when tablet mode ends so that menu options are kept
+  // consistent with device state.
+  if (shelf_menu_model_adapter_)
+    shelf_menu_model_adapter_->Cancel();
 }
 
 void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(
