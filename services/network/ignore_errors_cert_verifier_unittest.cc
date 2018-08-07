@@ -27,7 +27,6 @@
 
 using net::CertVerifier;
 using net::MockCertVerifier;
-using net::CompletionCallback;
 using net::HashValue;
 using net::SHA256HashValue;
 using net::X509Certificate;

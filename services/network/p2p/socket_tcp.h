@@ -15,7 +15,6 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/p2p/socket.h"

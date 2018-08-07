@@ -10,7 +10,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/proxy_resolving_client_socket.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"

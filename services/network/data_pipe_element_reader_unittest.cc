@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"

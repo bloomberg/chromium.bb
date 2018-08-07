@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"

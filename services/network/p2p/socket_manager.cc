@@ -12,7 +12,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/sys_addrinfo.h"

@@ -661,7 +661,7 @@ TEST_P(TCPSocketWithMockSocketTest,
                         mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
                        std::move(callback).Run(result);
                      },
-                     std::move(callback->callback())));
+                     callback->callback()));
     accept_callbacks.push_back(std::move(callback));
   }
 
@@ -688,7 +688,7 @@ TEST_P(TCPSocketWithMockSocketTest,
                       mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
                      std::move(callback).Run(result);
                    },
-                   std::move(callback->callback())));
+                   callback->callback()));
   EXPECT_EQ(net::OK, callback->WaitForResult());
 }
 
@@ -723,7 +723,7 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverReadError) {
               mojom::TCPConnectedSocketPtr connected_socket,
               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
               mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
-            std::move(callback->callback()).Run(result);
+            callback->callback().Run(result);
             connected_socket_result = std::move(connected_socket);
             receive_handle = std::move(receive_pipe_handle);
             send_handle = std::move(send_pipe_handle);
@@ -771,7 +771,7 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverWriteError) {
               mojom::TCPConnectedSocketPtr connected_socket,
               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
               mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
-            std::move(callback->callback()).Run(result);
+            callback->callback().Run(result);
             connected_socket_result = std::move(connected_socket);
             receive_handle = std::move(receive_pipe_handle);
             send_handle = std::move(send_pipe_handle);

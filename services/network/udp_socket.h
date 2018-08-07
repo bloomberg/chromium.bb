@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/address_family.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/interfaces/address_family.mojom.h"
 #include "net/interfaces/ip_endpoint.mojom.h"
@@ -53,12 +53,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
         net::IOBuffer* buf,
         int buf_len,
         const net::IPEndPoint& dest_addr,
-        const net::CompletionCallback& callback,
+        net::CompletionOnceCallback callback,
         const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
     virtual int Write(
         net::IOBuffer* buf,
         int buf_len,
-        const net::CompletionCallback& callback,
+        net::CompletionOnceCallback callback,
         const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
     virtual int SetBroadcast(bool broadcast) = 0;
     virtual int JoinGroup(const net::IPAddress& group_address) = 0;
@@ -66,7 +66,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
     virtual int RecvFrom(net::IOBuffer* buf,
                          int buf_len,
                          net::IPEndPoint* address,
-                         const net::CompletionCallback& callback) = 0;
+                         net::CompletionOnceCallback callback) = 0;
   };
 
   UDPSocket(mojom::UDPSocketReceiverPtr receiver, net::NetLog* net_log);
