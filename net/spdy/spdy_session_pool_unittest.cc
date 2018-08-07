@@ -14,6 +14,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
+#include "net/base/completion_once_callback.h"
 #include "net/dns/host_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log_with_source.h"
@@ -358,8 +359,8 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     std::unique_ptr<HostResolver::Request> request;
     int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &request, NetLogWithSource());
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+        CompletionOnceCallback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
 
     // Setup a SpdySessionKey.
@@ -546,8 +547,8 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     std::unique_ptr<HostResolver::Request> request;
     int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &request, NetLogWithSource());
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+        CompletionOnceCallback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key = SpdySessionKey(
@@ -627,8 +628,8 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     std::unique_ptr<HostResolver::Request> request;
     int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &request, NetLogWithSource());
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+        CompletionOnceCallback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key = SpdySessionKey(
@@ -989,8 +990,8 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebSocket) {
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     std::unique_ptr<HostResolver::Request> request;
     int rv = session_deps_.host_resolver->Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &request, NetLogWithSource());
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+        CompletionOnceCallback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key = SpdySessionKey(

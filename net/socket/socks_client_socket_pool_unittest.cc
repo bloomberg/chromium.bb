@@ -145,7 +145,7 @@ TEST_F(SOCKSClientSocketPoolTest, Simple) {
   ClientSocketHandle handle;
   int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, SocketTag(),
                        ClientSocketPool::RespectLimits::ENABLED,
-                       CompletionCallback(), &pool_, NetLogWithSource());
+                       CompletionOnceCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
@@ -163,10 +163,10 @@ TEST_F(SOCKSClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
         data.data_provider());
 
     ClientSocketHandle handle;
-    EXPECT_EQ(OK,
-              handle.Init("a", CreateSOCKSv5Params(), priority, SocketTag(),
-                          ClientSocketPool::RespectLimits::ENABLED,
-                          CompletionCallback(), &pool_, NetLogWithSource()));
+    EXPECT_EQ(
+        OK, handle.Init("a", CreateSOCKSv5Params(), priority, SocketTag(),
+                        ClientSocketPool::RespectLimits::ENABLED,
+                        CompletionOnceCallback(), &pool_, NetLogWithSource()));
     EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
     handle.socket()->Disconnect();
   }
@@ -183,10 +183,11 @@ TEST_F(SOCKSClientSocketPoolTest, SetResolvePriorityOnInit) {
         data.data_provider());
 
     ClientSocketHandle handle;
-    EXPECT_EQ(ERR_IO_PENDING,
-              handle.Init("a", CreateSOCKSv4Params(), priority, SocketTag(),
-                          ClientSocketPool::RespectLimits::ENABLED,
-                          CompletionCallback(), &pool_, NetLogWithSource()));
+    EXPECT_EQ(
+        ERR_IO_PENDING,
+        handle.Init("a", CreateSOCKSv4Params(), priority, SocketTag(),
+                    ClientSocketPool::RespectLimits::ENABLED,
+                    CompletionOnceCallback(), &pool_, NetLogWithSource()));
     EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
     EXPECT_EQ(priority, host_resolver_.last_request_priority());
     EXPECT_TRUE(handle.socket() == NULL);
@@ -221,7 +222,7 @@ TEST_F(SOCKSClientSocketPoolTest, TransportConnectError) {
   ClientSocketHandle handle;
   int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, SocketTag(),
                        ClientSocketPool::RespectLimits::ENABLED,
-                       CompletionCallback(), &pool_, NetLogWithSource());
+                       CompletionOnceCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_PROXY_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -258,7 +259,7 @@ TEST_F(SOCKSClientSocketPoolTest, SOCKSConnectError) {
   EXPECT_EQ(0, transport_socket_pool_.release_count());
   int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, SocketTag(),
                        ClientSocketPool::RespectLimits::ENABLED,
-                       CompletionCallback(), &pool_, NetLogWithSource());
+                       CompletionOnceCallback(), &pool_, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_SOCKS_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -385,7 +386,7 @@ TEST_F(SOCKSClientSocketPoolTest, Tag) {
   ClientSocketHandle handle;
   int rv = handle.Init("a", params, LOW, tag1,
                        ClientSocketPool::RespectLimits::ENABLED,
-                       CompletionCallback(), &pool, NetLogWithSource());
+                       CompletionOnceCallback(), &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
@@ -398,7 +399,7 @@ TEST_F(SOCKSClientSocketPoolTest, Tag) {
   handle.Reset();
   rv = handle.Init("a", params, LOW, tag2,
                    ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionCallback(), &pool, NetLogWithSource());
+                   CompletionOnceCallback(), &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -427,7 +428,7 @@ TEST_F(SOCKSClientSocketPoolTest, Tag) {
   handle.Reset();
   rv = handle.Init("a", params, LOW, tag2,
                    ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionCallback(), &pool, NetLogWithSource());
+                   CompletionOnceCallback(), &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());

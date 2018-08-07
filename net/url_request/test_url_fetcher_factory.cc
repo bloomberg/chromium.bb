@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -182,16 +183,15 @@ void TestURLFetcher::SaveResponseWithWriter(
   // URLFetcherStringWriter (for testing of this method only).
   if (fake_response_destination_ == STRING) {
     response_writer_ = std::move(response_writer);
-    int response = response_writer_->Initialize(CompletionCallback());
+    int response = response_writer_->Initialize(CompletionOnceCallback());
     // The TestURLFetcher doesn't handle asynchronous writes.
     DCHECK_EQ(OK, response);
 
     scoped_refptr<IOBuffer> buffer(new StringIOBuffer(fake_response_string_));
-    response = response_writer_->Write(buffer.get(),
-                                       fake_response_string_.size(),
-                                       CompletionCallback());
+    response = response_writer_->Write(
+        buffer.get(), fake_response_string_.size(), CompletionOnceCallback());
     DCHECK_EQ(static_cast<int>(fake_response_string_.size()), response);
-    response = response_writer_->Finish(OK, CompletionCallback());
+    response = response_writer_->Finish(OK, CompletionOnceCallback());
     DCHECK_EQ(OK, response);
   } else if (fake_response_destination_ == TEMP_FILE) {
     // SaveResponseToFileAtPath() should be called instead of this method to

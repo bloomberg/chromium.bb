@@ -6548,7 +6548,7 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
   // size increased to default.
   scoped_refptr<IOBuffer> buf(new IOBuffer(kTargetSize));
   EXPECT_EQ(static_cast<int>(kTargetSize),
-            trans->Read(buf.get(), kTargetSize, CompletionCallback()));
+            trans->Read(buf.get(), kTargetSize, CompletionOnceCallback()));
   EXPECT_EQ(static_cast<int>(stream_max_recv_window_size),
             stream->stream()->recv_window_size());
   EXPECT_THAT(base::StringPiece(buf->data(), kTargetSize), Each(Eq('x')));

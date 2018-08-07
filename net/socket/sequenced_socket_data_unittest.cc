@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_with_source.h"
@@ -264,12 +265,12 @@ void SequencedSocketDataTest::Initialize(base::span<const MockRead> reads,
   data_->set_connect_data(connect_data_);
   socket_factory_.AddSocketDataProvider(data_.get());
 
-  EXPECT_EQ(OK,
-            connection_.Init(
-                endpoint_.ToString(), tcp_params_, LOWEST, SocketTag(),
-                ClientSocketPool::RespectLimits::ENABLED, CompletionCallback(),
-                reinterpret_cast<TransportClientSocketPool*>(&socket_pool_),
-                NetLogWithSource()));
+  EXPECT_EQ(OK, connection_.Init(
+                    endpoint_.ToString(), tcp_params_, LOWEST, SocketTag(),
+                    ClientSocketPool::RespectLimits::ENABLED,
+                    CompletionOnceCallback(),
+                    reinterpret_cast<TransportClientSocketPool*>(&socket_pool_),
+                    NetLogWithSource()));
   sock_ = connection_.socket();
 }
 

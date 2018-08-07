@@ -471,7 +471,7 @@ int PreconnectSocketsForHttpRequest(
       ssl_config_for_origin, ssl_config_for_proxy,
       /*force_tunnel=*/false, privacy_mode, SocketTag(), net_log,
       num_preconnect_streams, NULL, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      OnHostResolutionCallback(), CompletionCallback());
+      OnHostResolutionCallback(), CompletionOnceCallback());
 }
 
 }  // namespace net

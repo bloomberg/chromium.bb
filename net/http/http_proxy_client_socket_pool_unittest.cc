@@ -267,9 +267,10 @@ TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   Initialize(base::span<MockRead>(), base::span<MockWrite>(),
              base::span<MockRead>(), base::span<MockWrite>());
 
-  int rv = handle_.Init("a", CreateNoTunnelParams(), LOW, SocketTag(),
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        CompletionCallback(), pool_.get(), NetLogWithSource());
+  int rv =
+      handle_.Init("a", CreateNoTunnelParams(), LOW, SocketTag(),
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   CompletionOnceCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
@@ -287,10 +288,10 @@ TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
 TEST_P(HttpProxyClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
   Initialize(base::span<MockRead>(), base::span<MockWrite>(),
              base::span<MockRead>(), base::span<MockWrite>());
-  EXPECT_EQ(
-      OK, handle_.Init("a", CreateNoTunnelParams(), HIGHEST, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       CompletionCallback(), pool_.get(), NetLogWithSource()));
+  EXPECT_EQ(OK, handle_.Init("a", CreateNoTunnelParams(), HIGHEST, SocketTag(),
+                             ClientSocketPool::RespectLimits::ENABLED,
+                             CompletionOnceCallback(), pool_.get(),
+                             NetLogWithSource()));
   EXPECT_EQ(HIGHEST, GetLastTransportRequestPriority());
 }
 
@@ -897,9 +898,10 @@ TEST_P(HttpProxyClientSocketPoolTest, Tag) {
   SocketTag tag2(getuid(), 0x87654321);
 
   // Verify requested socket is tagged properly.
-  int rv = handle_.Init("a", CreateNoTunnelParams(), LOW, tag1,
-                        ClientSocketPool::RespectLimits::ENABLED,
-                        CompletionCallback(), pool_.get(), NetLogWithSource());
+  int rv =
+      handle_.Init("a", CreateNoTunnelParams(), LOW, tag1,
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   CompletionOnceCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
@@ -913,7 +915,7 @@ TEST_P(HttpProxyClientSocketPoolTest, Tag) {
   handle_.Reset();
   rv = handle_.Init("a", CreateNoTunnelParams(), LOW, tag2,
                     ClientSocketPool::RespectLimits::ENABLED,
-                    CompletionCallback(), pool_.get(), NetLogWithSource());
+                    CompletionOnceCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());

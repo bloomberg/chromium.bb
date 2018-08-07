@@ -36,7 +36,7 @@
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
@@ -321,12 +321,13 @@ TEST(FakeSocketTest, DataTransfer) {
 
   // Write then read.
   int written =
-      server.Write(write_buf.get(), kTestDataSize, CompletionCallback(),
+      server.Write(write_buf.get(), kTestDataSize, CompletionOnceCallback(),
                    TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_GT(written, 0);
   EXPECT_LE(written, kTestDataSize);
 
-  int read = client.Read(read_buf.get(), kReadBufSize, CompletionCallback());
+  int read =
+      client.Read(read_buf.get(), kReadBufSize, CompletionOnceCallback());
   EXPECT_GT(read, 0);
   EXPECT_LE(read, written);
   EXPECT_EQ(0, memcmp(kTestData, read_buf->data(), read));
@@ -336,8 +337,9 @@ TEST(FakeSocketTest, DataTransfer) {
   EXPECT_EQ(ERR_IO_PENDING,
             server.Read(read_buf.get(), kReadBufSize, callback.callback()));
 
-  written = client.Write(write_buf.get(), kTestDataSize, CompletionCallback(),
-                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  written =
+      client.Write(write_buf.get(), kTestDataSize, CompletionOnceCallback(),
+                   TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_GT(written, 0);
   EXPECT_LE(written, kTestDataSize);
 

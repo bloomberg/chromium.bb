@@ -351,7 +351,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {
   std::unique_ptr<UploadDataStream> body(
       std::make_unique<ElementsUploadDataStream>(std::move(element_readers),
                                                  0));
-  ASSERT_THAT(body->Init(CompletionCallback(), NetLogWithSource()), IsOk());
+  ASSERT_THAT(body->Init(CompletionOnceCallback(), NetLogWithSource()), IsOk());
   // Shouldn't be merged if upload data is empty.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       "some header", body.get()));
@@ -410,7 +410,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
 
   std::unique_ptr<UploadDataStream> body(
       new ElementsUploadDataStream(std::move(element_readers), 0));
-  ASSERT_THAT(body->Init(CompletionCallback(), NetLogWithSource()), IsOk());
+  ASSERT_THAT(body->Init(CompletionOnceCallback(), NetLogWithSource()), IsOk());
   // Yes, should be merged if the in-memory body is small here.
   ASSERT_TRUE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       "some header", body.get()));
@@ -424,7 +424,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_LargeBodyInMemory) {
 
   std::unique_ptr<UploadDataStream> body(
       new ElementsUploadDataStream(std::move(element_readers), 0));
-  ASSERT_THAT(body->Init(CompletionCallback(), NetLogWithSource()), IsOk());
+  ASSERT_THAT(body->Init(CompletionOnceCallback(), NetLogWithSource()), IsOk());
   // Shouldn't be merged if the in-memory body is large here.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       "some header", body.get()));

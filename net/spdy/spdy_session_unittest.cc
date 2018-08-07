@@ -3494,7 +3494,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Pre-populate the DNS cache, since a cached entry is required in order to
   // create the alias.
   int rv = session_deps_.host_resolver->Resolve(
-      info, DEFAULT_PRIORITY, &addresses, CompletionCallback(), &request,
+      info, DEFAULT_PRIORITY, &addresses, CompletionOnceCallback(), &request,
       NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
 
