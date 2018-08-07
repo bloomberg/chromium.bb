@@ -26,17 +26,26 @@ namespace {
 // Appearance.
 constexpr int kIconSizeDip = 24;
 
-// Molecule icon animation.
-constexpr base::TimeDelta kMoleculeIconAnimationTranslationDuration =
-    base::TimeDelta::FromMilliseconds(333);
-constexpr base::TimeDelta kMoleculeIconAnimationFadeInDelay =
-    base::TimeDelta::FromMilliseconds(50);
-constexpr base::TimeDelta kMoleculeIconAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(83);
-constexpr base::TimeDelta kMoleculeIconAnimationFadeOutDelay =
+// Appear animation.
+constexpr base::TimeDelta kAppearAnimationFadeInDelay =
     base::TimeDelta::FromMilliseconds(33);
-constexpr base::TimeDelta kMoleculeIconAnimationFadeOutDuration =
+constexpr base::TimeDelta kAppearAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kAppearAnimationTranslateUpDuration =
+    base::TimeDelta::FromMilliseconds(250);
+constexpr int kAppearAnimationTranslationUpDip = 115;
+
+// Response animation.
+constexpr base::TimeDelta kResponseAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(50);
+constexpr base::TimeDelta kResponseAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kResponseAnimationFadeOutDelay =
+    base::TimeDelta::FromMilliseconds(33);
+constexpr base::TimeDelta kResponseAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kResponseAnimationTranslateLeftDuration =
+    base::TimeDelta::FromMilliseconds(333);
 
 }  // namespace
 
@@ -118,30 +127,57 @@ void AssistantHeaderView::OnResponseChanged(const AssistantResponse& response) {
   molecule_icon_->layer()->GetAnimator()->StartTogether(
       {// Animate the translation.
        CreateLayerAnimationSequence(CreateTransformElement(
-           transform, kMoleculeIconAnimationTranslationDuration)),
+           transform, kResponseAnimationTranslateLeftDuration)),
        // Animate the opacity.
        CreateLayerAnimationSequence(
            // Pause...
            ui::LayerAnimationElement::CreatePauseElement(
                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-               kMoleculeIconAnimationFadeOutDelay),
+               kResponseAnimationFadeOutDelay),
            // ...then fade out...
-           CreateOpacityElement(0.f, kMoleculeIconAnimationFadeOutDuration),
+           CreateOpacityElement(0.f, kResponseAnimationFadeOutDuration),
            // ...hold...
            ui::LayerAnimationElement::CreatePauseElement(
                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-               kMoleculeIconAnimationFadeInDelay),
+               kResponseAnimationFadeInDelay),
            // ...and fade back in.
-           CreateOpacityElement(1.f, kMoleculeIconAnimationFadeInDuration))});
+           CreateOpacityElement(1.f, kResponseAnimationFadeInDuration))});
 }
 
 void AssistantHeaderView::OnUiVisibilityChanged(bool visible,
                                                 AssistantSource source) {
-  // Only when the Assistant UI is being hidden do we need to restore the
-  // initial state for the next session.
-  if (visible)
-    return;
+  if (visible) {
+    // When Assistant UI is shown and the motion spec is enabled, we animate in
+    // the appearance of the molecule icon.
+    if (assistant::ui::kIsMotionSpecEnabled) {
+      using namespace assistant::util;
 
+      // We're going to animate the molecule icon up into position so we'll need
+      // to apply an initial transformation.
+      gfx::Transform transform;
+      transform.Translate(0, kAppearAnimationTranslationUpDip);
+
+      // Set up our pre-animation values.
+      molecule_icon_->layer()->SetOpacity(0.f);
+      molecule_icon_->layer()->SetTransform(transform);
+
+      // Start animating molecule icon.
+      molecule_icon_->layer()->GetAnimator()->StartTogether(
+          {// Animate the transformation.
+           CreateLayerAnimationSequence(CreateTransformElement(
+               gfx::Transform(), kAppearAnimationTranslateUpDuration,
+               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+           // Animate the opacity to 100% with delay.
+           CreateLayerAnimationSequence(
+               ui::LayerAnimationElement::CreatePauseElement(
+                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                   kAppearAnimationFadeInDelay),
+               CreateOpacityElement(1.f, kAppearAnimationFadeInDuration))});
+    }
+    return;
+  }
+
+  // When Assistant UI is hidden, we restore initial state for the next session.
   is_first_response_ = true;
 
   if (!assistant::ui::kIsMotionSpecEnabled) {
