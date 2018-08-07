@@ -83,18 +83,8 @@ jumbo_component("views") {
     "bubble/info_bubble.h",
     "bubble/tooltip_icon.h",
     "button_drag_utils.h",
-    "cocoa/bridged_content_view.h",
     "cocoa/bridged_native_widget.h",
-    "cocoa/bridged_native_widget_owner.h",
-    "cocoa/cocoa_mouse_capture.h",
-    "cocoa/cocoa_mouse_capture_delegate.h",
-    "cocoa/cocoa_window_move_loop.h",
-    "cocoa/drag_drop_client_mac.h",
     "cocoa/native_widget_mac_nswindow.h",
-    "cocoa/tooltip_manager_mac.h",
-    "cocoa/views_nswindow_delegate.h",
-    "cocoa/views_scrollbar_bridge.h",
-    "cocoa/widget_owner_nswindow_adapter.h",
     "cocoa/window_touch_bar_delegate.h",
     "color_chooser/color_chooser_listener.h",
     "color_chooser/color_chooser_view.h",
@@ -257,9 +247,9 @@ jumbo_component("views") {
     "window/native_frame_view.h",
     "window/non_client_view.h",
     "window/window_button_order_provider.h",
+    "window/window_resize_utils.h",
     "window/window_resources.h",
     "window/window_shape.h",
-    "window/window_resize_utils.h",
     "word_lookup_client.h",
   ]
 
@@ -289,17 +279,8 @@ jumbo_component("views") {
     "bubble/info_bubble.cc",
     "bubble/tooltip_icon.cc",
     "button_drag_utils.cc",
-    "cocoa/bridged_content_view.mm",
-    "cocoa/bridged_content_view_touch_bar.mm",
     "cocoa/bridged_native_widget.mm",
-    "cocoa/cocoa_mouse_capture.mm",
-    "cocoa/cocoa_window_move_loop.mm",
-    "cocoa/drag_drop_client_mac.mm",
     "cocoa/native_widget_mac_nswindow.mm",
-    "cocoa/tooltip_manager_mac.mm",
-    "cocoa/views_nswindow_delegate.mm",
-    "cocoa/views_scrollbar_bridge.mm",
-    "cocoa/widget_owner_nswindow_adapter.mm",
     "color_chooser/color_chooser_view.cc",
     "controls/animated_icon_view.cc",
     "controls/button/blue_button.cc",
@@ -444,12 +425,31 @@ jumbo_component("views") {
     "window/window_shape.cc",
   ]
 
-  # Internal sources. If a header in this list is used by another target under
-  # //ui/views:* the header can be listed again in that target's sources. See
-  # http://crbug/com/732993 for a possible build system feature to avoid the
-  # repetition. TODO(tapted): Move more headers from public into this list with
-  # the implementation file.
+  # Other targets in this file (e.g. tests) get access to the internal headers.
+  friend = [ ":*" ]
+
+  # Internal sources. TODO(https://crbug.com/871123): Move more headers from
+  # public into this list, along with the implementation file.
   sources += [
+    "cocoa/bridged_content_view.h",
+    "cocoa/bridged_content_view.mm",
+    "cocoa/bridged_content_view_touch_bar.mm",
+    "cocoa/bridged_native_widget_owner.h",
+    "cocoa/cocoa_mouse_capture.h",
+    "cocoa/cocoa_mouse_capture.mm",
+    "cocoa/cocoa_mouse_capture_delegate.h",
+    "cocoa/cocoa_window_move_loop.h",
+    "cocoa/cocoa_window_move_loop.mm",
+    "cocoa/drag_drop_client_mac.h",
+    "cocoa/drag_drop_client_mac.mm",
+    "cocoa/tooltip_manager_mac.h",
+    "cocoa/tooltip_manager_mac.mm",
+    "cocoa/views_nswindow_delegate.h",
+    "cocoa/views_nswindow_delegate.mm",
+    "cocoa/views_scrollbar_bridge.h",
+    "cocoa/views_scrollbar_bridge.mm",
+    "cocoa/widget_owner_nswindow_adapter.h",
+    "cocoa/widget_owner_nswindow_adapter.mm",
     "controls/button/label_button_label.cc",
     "controls/button/label_button_label.h",
   ]
@@ -919,16 +919,6 @@ jumbo_static_library("test_support") {
 source_set("views_unittests_sources") {
   testonly = true
 
-  # Headers used in tests that appear in :views private sources list. Permits
-  # this target to act as a "friend" of :views. The build system doesn't
-  # currently have a way to represent this. See http://crbug.com/732993.
-  public = [
-    "controls/button/label_button_label.h",
-  ]
-  if (has_native_accessibility) {
-    public += [ "accessibility/view_ax_platform_node_delegate.h" ]
-  }
-
   sources = [
     "accessible_pane_view_unittest.cc",
     "animation/bounds_animator_unittest.cc",
@@ -1052,8 +1042,6 @@ source_set("views_unittests_sources") {
   ]
 
   if (is_win) {
-    public += [ "accessibility/view_ax_platform_node_delegate_win.h" ]
-
     public_deps += [
       "//build/win:default_exe_manifest",
       "//third_party/iaccessible2",
