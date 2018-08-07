@@ -15,12 +15,12 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_console_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
-#include "ui/ozone/platform/drm/gpu/drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
@@ -96,8 +96,7 @@ CrtcController* GetCrtcController(HardwareDisplayController* controller,
 
 }  // namespace
 
-ScreenManager::ScreenManager(DrmFramebufferGenerator* buffer_generator)
-    : buffer_generator_(buffer_generator) {}
+ScreenManager::ScreenManager() {}
 
 ScreenManager::~ScreenManager() {
   DCHECK(window_map_.empty());
@@ -387,8 +386,11 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
   }
 
   scoped_refptr<DrmDevice> drm = controller->GetDrmDevice();
-  scoped_refptr<DrmFramebuffer> buffer =
-      buffer_generator_->Create(drm, fourcc_format, modifiers, bounds.size());
+  std::unique_ptr<GbmBuffer> buffer =
+      drm->gbm_device()->CreateBufferWithModifiers(
+          fourcc_format, bounds.size(), GBM_BO_USE_SCANOUT, modifiers);
+  scoped_refptr<DrmFramebuffer> framebuffer =
+      DrmFramebuffer::AddFramebuffer(drm, buffer.get());
   if (!buffer) {
     LOG(ERROR) << "Failed to create scanout buffer";
     return DrmOverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID,
@@ -396,8 +398,8 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
                            /* gpu_fence */ nullptr);
   }
 
-  FillModesetBuffer(drm, controller, buffer.get());
-  return DrmOverlayPlane(buffer, nullptr);
+  FillModesetBuffer(drm, controller, framebuffer.get());
+  return DrmOverlayPlane(framebuffer, nullptr);
 }
 
 bool ScreenManager::EnableController(HardwareDisplayController* controller) {

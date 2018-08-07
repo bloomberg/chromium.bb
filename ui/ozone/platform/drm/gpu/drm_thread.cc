@@ -22,7 +22,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
-#include "ui/ozone/platform/drm/gpu/drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -35,34 +34,6 @@
 namespace ui {
 
 namespace {
-
-scoped_refptr<DrmFramebuffer> AddFramebuffersForBuffer(
-    const scoped_refptr<DrmDevice>& drm,
-    GbmBuffer* buffer) {
-  gfx::Size size = buffer->GetSize();
-  DrmFramebuffer::AddFramebufferParams params;
-  params.format = buffer->GetFormat();
-  params.modifier = buffer->GetFormatModifier();
-  params.width = size.width();
-  params.height = size.height();
-  params.num_planes = buffer->GetNumPlanes();
-  for (size_t i = 0; i < params.num_planes; ++i) {
-    params.handles[i] = buffer->GetPlaneHandle(i);
-    params.strides[i] = buffer->GetPlaneStride(i);
-    params.offsets[i] = buffer->GetPlaneOffset(i);
-  }
-
-  // AddFramebuffer2 only considers the modifiers if addfb_flags has
-  // DRM_MODE_FB_MODIFIERS set. We only set that when we've created
-  // a bo with modifiers, otherwise, we rely on the "no modifiers"
-  // behavior doing the right thing.
-  params.flags = 0;
-  if (drm->allow_addfb2_modifiers() &&
-      params.modifier != DRM_FORMAT_MOD_INVALID)
-    params.flags |= DRM_MODE_FB_MODIFIERS;
-
-  return DrmFramebuffer::AddFramebuffer(drm, params);
-}
 
 uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
   switch (usage) {
@@ -106,7 +77,7 @@ void CreateBufferWithGbmFlags(const scoped_refptr<DrmDevice>& drm,
 
   scoped_refptr<DrmFramebuffer> framebuffer;
   if (flags & GBM_BO_USE_SCANOUT) {
-    framebuffer = AddFramebuffersForBuffer(drm, buffer.get());
+    framebuffer = DrmFramebuffer::AddFramebuffer(drm, buffer.get());
     if (!framebuffer)
       return;
   }
@@ -114,36 +85,6 @@ void CreateBufferWithGbmFlags(const scoped_refptr<DrmDevice>& drm,
   *out_buffer = std::move(buffer);
   *out_framebuffer = std::move(framebuffer);
 }
-
-class GbmBufferGenerator : public DrmFramebufferGenerator {
- public:
-  GbmBufferGenerator() {}
-  ~GbmBufferGenerator() override {}
-
-  // DrmFramebufferGenerator:
-  scoped_refptr<DrmFramebuffer> Create(const scoped_refptr<DrmDevice>& drm,
-                                       uint32_t format,
-                                       const std::vector<uint64_t>& modifiers,
-                                       const gfx::Size& size) override {
-    std::unique_ptr<GbmBuffer> buffer;
-
-    if (modifiers.size() > 0) {
-      buffer = drm->gbm_device()->CreateBufferWithModifiers(
-          format, size, GBM_BO_USE_SCANOUT, modifiers);
-    } else {
-      buffer =
-          drm->gbm_device()->CreateBuffer(format, size, GBM_BO_USE_SCANOUT);
-    }
-
-    if (!buffer)
-      return nullptr;
-
-    return AddFramebuffersForBuffer(drm, buffer.get());
-  }
-
- protected:
-  DISALLOW_COPY_AND_ASSIGN(GbmBufferGenerator);
-};
 
 class GbmDeviceGenerator : public DrmDeviceGenerator {
  public:
@@ -193,8 +134,7 @@ void DrmThread::Start(base::OnceClosure binding_completer) {
 void DrmThread::Init() {
   device_manager_.reset(
       new DrmDeviceManager(std::make_unique<GbmDeviceGenerator>()));
-  buffer_generator_.reset(new GbmBufferGenerator());
-  screen_manager_.reset(new ScreenManager(buffer_generator_.get()));
+  screen_manager_.reset(new ScreenManager());
 
   display_manager_.reset(
       new DrmGpuDisplayManager(screen_manager_.get(), device_manager_.get()));
@@ -262,7 +202,7 @@ void DrmThread::CreateBufferFromFds(
 
   scoped_refptr<DrmFramebuffer> framebuffer;
   if (buffer->GetFlags() & GBM_BO_USE_SCANOUT) {
-    framebuffer = AddFramebuffersForBuffer(drm, buffer.get());
+    framebuffer = DrmFramebuffer::AddFramebuffer(drm, buffer.get());
     if (!framebuffer)
       return;
   }
@@ -328,7 +268,7 @@ void DrmThread::IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic) {
 void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
   std::unique_ptr<DrmWindow> window(
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));
-  window->Initialize(buffer_generator_.get());
+  window->Initialize();
   screen_manager_->AddWindow(widget, std::move(window));
 }
 
