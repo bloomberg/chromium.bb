@@ -60,6 +60,8 @@ void ThirdPartyMetricsRecorder::OnNewModuleFound(
       }
     }
   } else {
+    ++unsigned_module_count_;
+
     // Put unsigned modules into the crash keys.
     if (module_data.module_properties & ModuleInfoData::kPropertyLoadedModule)
       AddUnsignedModuleToCrashkeys(module_data.inspection_result->basename);
@@ -85,6 +87,8 @@ void ThirdPartyMetricsRecorder::OnModuleDatabaseIdle() {
                                  catalog_module_count_, 1, 500, 50);
   base::UmaHistogramCustomCounts("ThirdPartyModules.Modules.Total",
                                  module_count_, 1, 500, 50);
+  base::UmaHistogramCustomCounts("ThirdPartyModules.Modules.Unsigned",
+                                 unsigned_module_count_, 1, 500, 50);
 }
 
 void ThirdPartyMetricsRecorder::AddUnsignedModuleToCrashkeys(
