@@ -508,14 +508,14 @@ void RenderViewImpl::Initialize(
     webview()->GetSettings()->SetPassiveEventListenerDefault(passiveDefault);
   }
 
-  std::string fmp_network_quiet_timeout =
-      command_line.GetSwitchValueASCII(switches::kFMPNetworkQuietTimeout);
-  if (!fmp_network_quiet_timeout.empty()) {
-    double fmp_network_quiet_timeout_seconds = 0.0;
-    if (base::StringToDouble(fmp_network_quiet_timeout,
-                             &fmp_network_quiet_timeout_seconds)) {
-      webview()->GetSettings()->SetFMPNetworkQuietTimeout(
-          fmp_network_quiet_timeout_seconds);
+  std::string network_quiet_timeout =
+      command_line.GetSwitchValueASCII(switches::kNetworkQuietTimeout);
+  if (!network_quiet_timeout.empty()) {
+    double network_quiet_timeout_seconds = 0.0;
+    if (base::StringToDouble(network_quiet_timeout,
+                             &network_quiet_timeout_seconds)) {
+      webview()->GetSettings()->SetNetworkQuietTimeout(
+          network_quiet_timeout_seconds);
     }
   }
 

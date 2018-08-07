@@ -20,15 +20,6 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
   void SetUp() override {
     platform_->AdvanceClock(TimeDelta::FromSeconds(1));
     PageTestBase::SetUp();
-    ResetNetworkQuietTimer();
-  }
-
-  // The initial document doesn't need to load any resources other than itself.
-  // It means initially, the network quiet timers are already active. This
-  // function is used to reset them.
-  void ResetNetworkQuietTimer() {
-    Detector().network2_quiet_timer_.Stop();
-    Detector().network0_quiet_timer_.Stop();
   }
 
   TimeTicks AdvanceClockAndGetTime() {
@@ -53,36 +44,21 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
 
   void SimulateNetworkStable() {
     GetDocument().SetParsingState(Document::kFinishedParsing);
-    Detector().Network0QuietTimerFired(nullptr);
-    Detector().Network2QuietTimerFired(nullptr);
+    Detector().OnNetwork0Quiet();
+    Detector().OnNetwork2Quiet();
   }
 
   void SimulateNetwork0Quiet() {
     GetDocument().SetParsingState(Document::kFinishedParsing);
-    Detector().Network0QuietTimerFired(nullptr);
+    Detector().OnNetwork0Quiet();
   }
 
   void SimulateNetwork2Quiet() {
     GetDocument().SetParsingState(Document::kFinishedParsing);
-    Detector().Network2QuietTimerFired(nullptr);
+    Detector().OnNetwork2Quiet();
   }
 
   void SimulateUserInput() { Detector().NotifyInputEvent(); }
-
-  void SetActiveConnections(int connections) {
-    Detector().SetNetworkQuietTimers(connections);
-  }
-
-  bool IsNetwork0QuietTimerActive() {
-    return Detector().network0_quiet_timer_.IsActive();
-  }
-
-  bool IsNetwork2QuietTimerActive() {
-    return Detector().network2_quiet_timer_.IsActive();
-  }
-
-  bool HadNetwork0Quiet() { return Detector().network0_quiet_reached_; }
-  bool HadNetwork2Quiet() { return Detector().network2_quiet_reached_; }
 
   void ClearFirstPaintSwapPromise() {
     platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
@@ -322,51 +298,6 @@ TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietThen2Quiet) {
             GetPaintTiming().FirstMeaningfulPaintRendered());
   EXPECT_GT(GetPaintTiming().FirstMeaningfulPaint(),
             GetPaintTiming().FirstMeaningfulPaintRendered());
-}
-
-TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietTimer) {
-  MarkFirstContentfulPaintAndClearSwapPromise();
-
-  SetActiveConnections(1);
-  EXPECT_FALSE(IsNetwork0QuietTimerActive());
-
-  SetActiveConnections(0);
-  platform_->RunForPeriod(GetNetwork0QuietWindowTimeout() -
-                          TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(IsNetwork0QuietTimerActive());
-  EXPECT_FALSE(HadNetwork0Quiet());
-
-  SetActiveConnections(0);  // This should reset the 0-quiet timer.
-  platform_->RunForPeriod(GetNetwork0QuietWindowTimeout() -
-                          TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(IsNetwork0QuietTimerActive());
-  EXPECT_FALSE(HadNetwork0Quiet());
-
-  platform_->RunForPeriod(TimeDelta::FromMicroseconds(100100));
-  EXPECT_TRUE(HadNetwork0Quiet());
-}
-
-TEST_F(FirstMeaningfulPaintDetectorTest, Network2QuietTimer) {
-  MarkFirstContentfulPaintAndClearSwapPromise();
-
-  SetActiveConnections(3);
-  EXPECT_FALSE(IsNetwork2QuietTimerActive());
-
-  SetActiveConnections(2);
-  platform_->RunForPeriod(GetNetwork2QuietWindowTimeout() -
-                          TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(IsNetwork2QuietTimerActive());
-  EXPECT_FALSE(HadNetwork2Quiet());
-
-  SetActiveConnections(2);  // This should reset the 2-quiet timer.
-  platform_->RunForPeriod(GetNetwork2QuietWindowTimeout() -
-                          TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(IsNetwork2QuietTimerActive());
-  EXPECT_FALSE(HadNetwork2Quiet());
-
-  SetActiveConnections(1);  // This should not reset the 2-quiet timer.
-  platform_->RunForPeriod(TimeDelta::FromMicroseconds(100100));
-  EXPECT_TRUE(HadNetwork2Quiet());
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest,

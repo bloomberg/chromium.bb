@@ -64,6 +64,7 @@ class CORE_EXPORT IdlenessDetector
   bool in_network_0_quiet_period_ = true;
   bool in_network_2_quiet_period_ = true;
 
+  TimeDelta network_quiet_window_ = kNetworkQuietWindow;
   // Store the accumulated time of network quiet.
   TimeTicks network_0_quiet_;
   TimeTicks network_2_quiet_;
