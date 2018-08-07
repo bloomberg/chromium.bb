@@ -21,7 +21,6 @@
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -33,7 +32,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -68,16 +66,12 @@ const RawPrepopulatedPage kRawPrepopulatedPages[] = {
 #endif
 
 void InitializePrepopulatedPageList(
-    PrefService* prefs,
     history::PrepopulatedPageList* prepopulated_pages) {
 #if !defined(OS_ANDROID)
   DCHECK(prepopulated_pages);
-  bool hide_web_store_icon = prefs->GetBoolean(prefs::kHideWebStoreIcon);
   prepopulated_pages->reserve(arraysize(kRawPrepopulatedPages));
   for (size_t i = 0; i < arraysize(kRawPrepopulatedPages); ++i) {
     const RawPrepopulatedPage& page = kRawPrepopulatedPages[i];
-    if (hide_web_store_icon && page.url_id == IDS_WEBSTORE_URL)
-      continue;
     prepopulated_pages->push_back(history::PrepopulatedPage(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
         l10n_util::GetStringUTF16(page.title_id),
@@ -122,6 +116,7 @@ scoped_refptr<history::TopSites> TopSitesFactory::BuildTopSites(
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
+
   scoped_refptr<history::TopSitesImpl> top_sites(new history::TopSitesImpl(
       profile->GetPrefs(), history_service,
       CreateTopSitesProvider(profile, history_service), prepopulated_page_list,
@@ -147,8 +142,7 @@ TopSitesFactory::~TopSitesFactory() {
 scoped_refptr<RefcountedKeyedService> TopSitesFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   history::PrepopulatedPageList prepopulated_pages;
-  InitializePrepopulatedPageList(
-      Profile::FromBrowserContext(context)->GetPrefs(), &prepopulated_pages);
+  InitializePrepopulatedPageList(&prepopulated_pages);
   return BuildTopSites(context, prepopulated_pages);
 }
 
