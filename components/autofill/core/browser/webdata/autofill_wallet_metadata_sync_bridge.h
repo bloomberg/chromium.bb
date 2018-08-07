@@ -10,12 +10,19 @@
 #include <unordered_set>
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
+#include "components/autofill/core/browser/webdata/autofill_change.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
+
+namespace syncer {
+struct EntityData;
+}  // namespace syncer
 
 namespace autofill {
 
@@ -25,8 +32,10 @@ class AutofillWebDataService;
 
 // Sync bridge responsible for propagating local changes to the processor and
 // applying remote changes to the local database.
-class AutofillWalletMetadataSyncBridge : public base::SupportsUserData::Data,
-                                         public syncer::ModelTypeSyncBridge {
+class AutofillWalletMetadataSyncBridge
+    : public base::SupportsUserData::Data,
+      public syncer::ModelTypeSyncBridge,
+      public AutofillWebDataServiceObserverOnDBSequence {
  public:
   // Factory method that hides dealing with change_processor and also stores the
   // created bridge within |web_data_service|. This method should only be
@@ -58,9 +67,22 @@ class AutofillWalletMetadataSyncBridge : public base::SupportsUserData::Data,
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
+  // AutofillWebDataServiceObserverOnDBSequence implementation.
+  void AutofillProfileChanged(const AutofillProfileChange& change) override;
+  void CreditCardChanged(const CreditCardChange& change) override;
+  void AutofillMultipleChanged() override;
+
  private:
+  // Syncs up an updated entity |entity_after_change| (if needed).
+  void SyncUpUpdatedEntity(
+      std::unique_ptr<syncer::EntityData> entity_after_change);
+
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable();
+
+  // Synchronously load |cache_| and sync metadata from the autofill table
+  // and pass the latter to the processor so that it can start tracking changes.
+  void LoadDataCacheAndMetadata();
 
   // Reads local wallet metadata from the database and passes them into
   // |callback|. If |storage_keys_set| is not set, it returns all data entries.
@@ -72,6 +94,14 @@ class AutofillWalletMetadataSyncBridge : public base::SupportsUserData::Data,
   // AutofillWalletMetadataSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.
   AutofillWebDataBackend* const web_data_backend_;
+
+  ScopedObserver<AutofillWebDataBackend, AutofillWalletMetadataSyncBridge>
+      scoped_observer_;
+
+  // Cache of the data (local data + data that hasn't synced down yet); keyed by
+  // storage keys. Needed for figuring out what to sync up when larger changes
+  // happen in the local database.
+  std::unordered_map<std::string, sync_pb::WalletMetadataSpecifics> cache_;
 
   // The bridge should be used on the same sequence where it is constructed.
   SEQUENCE_CHECKER(sequence_checker_);
