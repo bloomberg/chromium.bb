@@ -192,8 +192,8 @@ void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   autocomplete_history_manager_->SetExternalDelegate(delegate);
 }
 
-void AutofillManager::ShowAutofillSettings() {
-  client_->ShowAutofillSettings();
+void AutofillManager::ShowAutofillSettings(bool show_credit_card_settings) {
+  client_->ShowAutofillSettings(show_credit_card_settings);
 }
 
 bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,

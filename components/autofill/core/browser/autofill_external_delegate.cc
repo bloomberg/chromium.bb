@@ -223,7 +223,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
                                                    int position) {
   if (identifier == POPUP_ITEM_ID_AUTOFILL_OPTIONS) {
     // User selected 'Autofill Options'.
-    manager_->ShowAutofillSettings();
+    manager_->ShowAutofillSettings(popup_type_ == PopupType::kCreditCards);
   } else if (identifier == POPUP_ITEM_ID_CLEAR_FORM) {
     // User selected 'Clear form'.
     driver_->RendererShouldClearFilledSection();

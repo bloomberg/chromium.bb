@@ -79,7 +79,7 @@ class AutofillManager : public AutofillHandler,
   // Sets an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
-  void ShowAutofillSettings();
+  void ShowAutofillSettings(bool show_credit_card_settings);
 
   // Whether the |field| should show an entry to scan a credit card.
   virtual bool ShouldShowScanCreditCard(const FormData& form,

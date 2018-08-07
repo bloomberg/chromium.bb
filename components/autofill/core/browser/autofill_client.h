@@ -123,8 +123,9 @@ class AutofillClient : public RiskDataLoader {
   // context if possible, SECURITY_LEVEL_COUNT otherwise.
   virtual security_state::SecurityLevel GetSecurityLevelForUmaHistograms() = 0;
 
-  // Causes the Autofill settings UI to be shown.
-  virtual void ShowAutofillSettings() = 0;
+  // Causes the Autofill settings UI to be shown. If |show_credit_card_settings|
+  // is true, will show the credit card specific subpage.
+  virtual void ShowAutofillSettings(bool show_credit_card_settings) = 0;
 
   // Runs |callback| if the |profile| should be imported as personal data.
   virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,

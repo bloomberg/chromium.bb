@@ -129,7 +129,8 @@ ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
   return result.security_level;
 }
 
-void ChromeAutofillClientIOS::ShowAutofillSettings() {
+void ChromeAutofillClientIOS::ShowAutofillSettings(
+    bool show_credit_card_settings) {
   NOTREACHED();
 }
 

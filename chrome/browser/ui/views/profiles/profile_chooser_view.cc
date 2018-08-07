@@ -617,7 +617,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == credit_cards_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_PaymentsClicked"));
-    chrome::ShowSettingsSubPage(browser_, chrome::kAutofillSubPage);
+    chrome::ShowSettingsSubPage(browser_, chrome::kPaymentsSubPage);
   } else if (sender == addresses_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_AddressesClicked"));
