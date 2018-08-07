@@ -5349,6 +5349,10 @@ error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
       *static_cast<
           const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE*>(
           cmd_data);
+  if (!features().angle_multiview) {
+    return error::kUnknownCommand;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLuint texture = static_cast<GLuint>(c.texture);
