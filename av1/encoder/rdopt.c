@@ -7014,10 +7014,10 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   switch (mbmi->motion_mode) {
     case SIMPLE_TRANSLATION:
-      bestsme = av1_full_pixel_search(cpi, x, bsize, &mvp_full, step_param,
-                                      sadpb, cond_cost_list(cpi, cost_list),
-                                      &ref_mv, INT_MAX, 1, (MI_SIZE * mi_col),
-                                      (MI_SIZE * mi_row), 0);
+      bestsme = av1_full_pixel_search(
+          cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, 0,
+          sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
+          (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0);
       break;
     case OBMC_CAUSAL:
       bestsme = av1_obmc_full_pixel_diamond(
@@ -9673,8 +9673,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     int sadpb = x->sadperbit16;
     int cost_list[5];
     int bestsme = av1_full_pixel_search(
-        cpi, x, bsize, &mvp_full, step_param, sadpb,
-        cond_cost_list(cpi, cost_list), &dv_ref.as_mv, INT_MAX, 1,
+        cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, 0,
+        sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, INT_MAX, 1,
         (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1);
 
     x->mv_limits = tmp_mv_limits;

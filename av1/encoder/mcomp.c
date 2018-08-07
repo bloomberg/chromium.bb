@@ -2100,11 +2100,11 @@ static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x) {
 }
 
 int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                          MV *mvp_full, int step_param, int error_per_bit,
+                          MV *mvp_full, int step_param, int method,
+                          int run_mesh_search, int error_per_bit,
                           int *cost_list, const MV *ref_mv, int var_max, int rd,
                           int x_pos, int y_pos, int intra) {
   const SPEED_FEATURES *const sf = &cpi->sf;
-  const SEARCH_METHODS method = sf->mv.search_method;
   const aom_variance_fn_ptr_t *fn_ptr = &cpi->fn_ptr[bsize];
   int var = 0;
 
@@ -2169,11 +2169,35 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     default: assert(0 && "Invalid search method.");
   }
 
+  // Should we allow a follow on exhaustive search?
+  if (!run_mesh_search) {
+    if (method == NSTEP) {
+      if (is_exhaustive_allowed(cpi, x)) {
+        int exhuastive_thr = sf->exhaustive_searches_thresh;
+        exhuastive_thr >>=
+            10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
+        // Threshold variance for an exhaustive full search.
+        if (var > exhuastive_thr) run_mesh_search = 1;
+      }
+    }
+  }
+
+  if (run_mesh_search) {
+    int var_ex;
+    MV tmp_mv_ex;
+    var_ex = full_pixel_exhaustive(cpi, x, &x->best_mv.as_mv, error_per_bit,
+                                   cost_list, fn_ptr, ref_mv, &tmp_mv_ex);
+    if (var_ex < var) {
+      var = var_ex;
+      x->best_mv.as_mv = tmp_mv_ex;
+    }
+  }
+
   if (method != NSTEP && rd && var < var_max)
     var = av1_get_mvpred_var(x, &x->best_mv.as_mv, ref_mv, fn_ptr, 1);
 
   do {
-    if (!av1_use_hash_me(&cpi->common)) break;
+    if (!intra || !av1_use_hash_me(&cpi->common)) break;
 
     // already single ME
     // get block size and original buffer of current block

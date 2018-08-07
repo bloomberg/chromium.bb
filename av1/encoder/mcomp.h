@@ -120,8 +120,9 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
 
 int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                           BLOCK_SIZE bsize, MV *mvp_full, int step_param,
-                          int error_per_bit, int *cost_list, const MV *ref_mv,
-                          int var_max, int rd, int x_pos, int y_pos, int intra);
+                          int method, int run_mesh_search, int error_per_bit,
+                          int *cost_list, const MV *ref_mv, int var_max, int rd,
+                          int x_pos, int y_pos, int intra);
 
 int av1_obmc_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                 MV *mvp_full, int step_param, int sadpb,
