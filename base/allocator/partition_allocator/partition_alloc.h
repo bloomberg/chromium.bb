@@ -344,6 +344,8 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
                                                int flags,
                                                size_t size,
                                                const char* type_name) {
+  DCHECK_LT(flags, PartitionAllocLastFlag << 1);
+
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   void* result = malloc(size);
   CHECK(result || flags & PartitionAllocReturnNull);
