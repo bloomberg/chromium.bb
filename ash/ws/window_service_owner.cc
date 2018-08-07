@@ -13,9 +13,12 @@
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/window_service.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/wm/core/focus_controller.h"
 
 namespace ash {
+
 WindowServiceOwner::WindowServiceOwner(
     std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider)
     : gpu_interface_provider_(std::move(gpu_interface_provider)) {}
@@ -38,6 +41,8 @@ void WindowServiceOwner::BindWindowService(
   window_service_->SetFrameDecorationValues(
       NonClientFrameController::GetPreferredClientAreaInsets(),
       NonClientFrameController::GetMaxTitleBarButtonWidth());
+  window_service_->SetDisplayForNewWindows(
+      display::Screen::GetScreen()->GetDisplayForNewWindows().id());
   RegisterWindowProperties(window_service_->property_converter());
   service_context_ = std::make_unique<service_manager::ServiceContext>(
       std::move(window_service), std::move(request));

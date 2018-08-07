@@ -24,10 +24,8 @@ class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
   // ui::mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
                          int64_t primary_display_id,
-                         int64_t internal_display_id) override;
-
- private:
-  friend class ScreenMusTestApi;
+                         int64_t internal_display_id,
+                         int64_t display_id_for_new_windows) override;
 
   // display::Screen:
   display::Display GetDisplayNearestWindow(
@@ -35,8 +33,11 @@ class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) override;
+  display::Display GetDisplayForNewWindows() const override;
 
+ private:
   ScreenMusDelegate* delegate_;
+  int64_t display_id_for_new_windows_ = display::kInvalidDisplayId;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMus);
 };

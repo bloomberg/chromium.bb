@@ -47,7 +47,8 @@ ScreenMus::~ScreenMus() {
 void ScreenMus::OnDisplaysChanged(
     std::vector<ui::mojom::WsDisplayPtr> ws_displays,
     int64_t primary_display_id,
-    int64_t internal_display_id) {
+    int64_t internal_display_id,
+    int64_t display_id_for_new_windows) {
   const bool primary_changed = primary_display_id != GetPrimaryDisplay().id();
   int64_t handled_display_id = display::kInvalidDisplayId;
   const WindowManagerFrameValues initial_frame_values =
@@ -102,6 +103,9 @@ void ScreenMus::OnDisplaysChanged(
       initial_frame_values != WindowManagerFrameValues::instance()) {
     delegate_->OnWindowManagerFrameValuesChanged();
   }
+
+  // GetDisplayForNewWindows() can handle ids that are not in the list.
+  display_id_for_new_windows_ = display_id_for_new_windows;
 }
 
 display::Display ScreenMus::GetDisplayNearestWindow(
@@ -124,6 +128,15 @@ bool ScreenMus::IsWindowUnderCursor(gfx::NativeWindow window) {
 
 aura::Window* ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
   return delegate_->GetWindowAtScreenPoint(point);
+}
+
+display::Display ScreenMus::GetDisplayForNewWindows() const {
+  display::Display display;
+  if (GetDisplayWithDisplayId(display_id_for_new_windows_, &display))
+    return display;
+
+  // Fallback to primary display.
+  return GetPrimaryDisplay();
 }
 
 }  // namespace views

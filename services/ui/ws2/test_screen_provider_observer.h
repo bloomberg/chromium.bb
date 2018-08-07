@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "services/ui/public/interfaces/screen_provider_observer.mojom.h"
 #include "services/ui/ws2/window_service_delegate.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -29,17 +30,22 @@ class TestScreenProviderObserver : public mojom::ScreenProviderObserver {
   std::string& display_ids() { return display_ids_; }
   int64_t primary_display_id() const { return primary_display_id_; }
   int64_t internal_display_id() const { return internal_display_id_; }
+  int64_t display_id_for_new_windows() const {
+    return display_id_for_new_windows_;
+  }
 
   // mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<mojom::WsDisplayPtr> displays,
                          int64_t primary_display_id,
-                         int64_t internal_display_id) override;
+                         int64_t internal_display_id,
+                         int64_t display_id_for_new_windows) override;
 
  private:
   std::vector<mojom::WsDisplayPtr> displays_;
   std::string display_ids_;
-  int64_t primary_display_id_ = 0;
-  int64_t internal_display_id_ = 0;
+  int64_t primary_display_id_ = display::kInvalidDisplayId;
+  int64_t internal_display_id_ = display::kInvalidDisplayId;
+  int64_t display_id_for_new_windows_ = display::kInvalidDisplayId;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreenProviderObserver);
 };

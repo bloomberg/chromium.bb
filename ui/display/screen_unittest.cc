@@ -58,4 +58,12 @@ TEST_F(ScreenTest, GetDisplayWithDisplayId) {
   EXPECT_EQ(DEFAULT_DISPLAY_HEIGHT, display.size().height());
 }
 
+TEST_F(ScreenTest, GetDisplayForNewWindows) {
+  Screen* screen = Screen::GetScreen();
+
+  // Display for new windows defaults to the primary display.
+  EXPECT_EQ(screen->GetPrimaryDisplay().id(),
+            screen->GetDisplayForNewWindows().id());
+}
+
 }  // namespace display

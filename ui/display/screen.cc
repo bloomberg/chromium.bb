@@ -38,6 +38,10 @@ Display Screen::GetDisplayNearestView(gfx::NativeView view) const {
   return GetDisplayNearestWindow(GetWindowForView(view));
 }
 
+Display Screen::GetDisplayForNewWindows() const {
+  return GetPrimaryDisplay();
+}
+
 gfx::Rect Screen::ScreenToDIPRectInWindow(gfx::NativeView view,
                                           const gfx::Rect& screen_rect) const {
   float scale = GetDisplayNearestView(view).device_scale_factor();

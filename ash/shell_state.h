@@ -22,6 +22,9 @@ class Window;
 namespace ash {
 
 // Provides access via mojo to ash::Shell state.
+// TODO(jamescook): Move |root_window_for_new_windows_| to Shell, convert
+// browser code to use display::Screen::GetDisplayForNewWindows() and delete
+// this class.
 class ASH_EXPORT ShellState : public mojom::ShellState {
  public:
   ShellState();

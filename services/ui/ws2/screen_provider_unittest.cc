@@ -93,6 +93,25 @@ TEST(ScreenProviderTest, AddRemoveDisplay) {
   EXPECT_EQ(222, observer.primary_display_id());
 }
 
+TEST(ScreenProviderTest, SetDisplayForNewWindows) {
+  // Set up 2 displays.
+  constexpr int64_t kDisplayId1 = 111;
+  constexpr int64_t kDisplayId2 = 222;
+  TestScreen screen;
+  screen.AddDisplay(Display(kDisplayId1), DisplayList::Type::PRIMARY);
+  screen.AddDisplay(Display(kDisplayId2), DisplayList::Type::NOT_PRIMARY);
+
+  // Set the display for new windows to the second display.
+  ScreenProvider screen_provider;
+  screen_provider.SetDisplayForNewWindows(kDisplayId2);
+
+  TestScreenProviderObserver observer;
+  screen_provider.AddObserver(&observer);
+
+  // The screen information includes the display for new windows.
+  EXPECT_EQ(kDisplayId2, observer.display_id_for_new_windows());
+}
+
 TEST(ScreenProviderTest, SetFrameDecorationValues) {
   // Set up a single display.
   TestScreen screen;

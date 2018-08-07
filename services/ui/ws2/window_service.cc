@@ -100,6 +100,10 @@ void WindowService::SetFrameDecorationValues(
                                              max_title_bar_button_width);
 }
 
+void WindowService::SetDisplayForNewWindows(int64_t display_id) {
+  screen_provider_->SetDisplayForNewWindows(display_id);
+}
+
 // static
 bool WindowService::HasRemoteClient(const aura::Window* window) {
   return ServerWindow::GetMayBeNull(window);
