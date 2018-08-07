@@ -15,28 +15,23 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/policy/upload_job.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class HttpResponseHeaders;
-}
-
-namespace network {
-class SharedURLLoaderFactory;
-class SimpleURLLoader;
-}  // namespace network
-
 namespace policy {
 
 // This implementation of UploadJob uses the OAuth2TokenService to acquire
 // access tokens for the device management (cloud-based policy) server scope and
-// uses a SimpleURLLoader to upload data to the specified upload url.
-class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
+// uses a URLFetcher to upload data to the specified upload url.
+class UploadJobImpl : public UploadJob,
+                      public OAuth2TokenService::Consumer,
+                      public net::URLFetcherDelegate {
  public:
   // UploadJobImpl uses a MimeBoundaryGenerator to generate strings which
   // mark the boundaries between data segments.
@@ -61,15 +56,14 @@ class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
 
   // |task_runner| must belong to the same thread from which the constructor and
   // all the public methods are called.
-  UploadJobImpl(
-      const GURL& upload_url,
-      const std::string& account_id,
-      OAuth2TokenService* token_service,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      Delegate* delegate,
-      std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
-      net::NetworkTrafficAnnotationTag traffic_annotation,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  UploadJobImpl(const GURL& upload_url,
+                const std::string& account_id,
+                OAuth2TokenService* token_service,
+                scoped_refptr<net::URLRequestContextGetter> url_context_getter,
+                Delegate* delegate,
+                std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
+                net::NetworkTrafficAnnotationTag traffic_annotation,
+                scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~UploadJobImpl() override;
 
   // UploadJob:
@@ -109,15 +103,15 @@ class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
-  // Called when the SimpleURLLoader is finished.
-  void OnURLLoadComplete(scoped_refptr<net::HttpResponseHeaders> headers);
+  // net::URLFetcherDelegate:
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   void HandleError(ErrorCode errorCode);
 
   // Requests an access token for the upload scope.
   void RequestAccessToken();
 
-  // Dispatches POST request.
+  // Dispatches POST request to URLFetcher.
   void StartUpload();
 
   // Constructs the body of the POST request by concatenating the
@@ -128,9 +122,9 @@ class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
   // an error, clears |post_data_| and |mime_boundary_| and returns false.
   bool SetUpMultipart();
 
-  // Assembles the request and starts the SimpleURLLoader. Fails if another
-  // upload is still in progress or the content was not successfully encoded.
-  void CreateAndStartURLLoader(const std::string& access_token);
+  // Assembles the request and starts the URLFetcher. Fails if another upload
+  // is still in progress or the content was not successfully encoded.
+  void CreateAndStartURLFetcher(const std::string& access_token);
 
   // The URL to which the POST request should be directed.
   const GURL upload_url_;
@@ -141,8 +135,8 @@ class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
   // The token service used to retrieve the access token.
   OAuth2TokenService* const token_service_;
 
-  // This is used to initialize the network::SimpleURLLoader object.
-  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  // This is used to initialize the net::URLFetcher object.
+  const scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
 
   // The delegate to be notified of events.
   Delegate* const delegate_;
@@ -175,7 +169,7 @@ class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
   std::string access_token_;
 
   // Helper to upload the data.
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  std::unique_ptr<net::URLFetcher> upload_fetcher_;
 
   // The data chunks to be uploaded.
   std::vector<std::unique_ptr<DataSegment>> data_segments_;

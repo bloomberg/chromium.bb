@@ -19,8 +19,7 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
+#include "net/url_request/url_request_status.h"
 
 namespace policy {
 
@@ -28,7 +27,7 @@ namespace {
 
 // Format for bearer tokens in HTTP requests to access OAuth 2.0 protected
 // resources.
-const char kAuthorizationHeaderFormat[] = "Bearer %s";
+const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
 // Value the "Content-Type" field will be set to in the POST request.
 const char kUploadContentType[] = "multipart/form-data";
@@ -152,7 +151,7 @@ UploadJobImpl::UploadJobImpl(
     const GURL& upload_url,
     const std::string& account_id,
     OAuth2TokenService* token_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<net::URLRequestContextGetter> url_context_getter,
     Delegate* delegate,
     std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
     net::NetworkTrafficAnnotationTag traffic_annotation,
@@ -161,7 +160,7 @@ UploadJobImpl::UploadJobImpl(
       upload_url_(upload_url),
       account_id_(account_id),
       token_service_(token_service),
-      url_loader_factory_(std::move(url_loader_factory)),
+      url_context_getter_(url_context_getter),
       delegate_(delegate),
       boundary_generator_(std::move(boundary_generator)),
       traffic_annotation_(traffic_annotation),
@@ -170,7 +169,7 @@ UploadJobImpl::UploadJobImpl(
       task_runner_(task_runner),
       weak_factory_(this) {
   DCHECK(token_service_);
-  DCHECK(url_loader_factory_);
+  DCHECK(url_context_getter_);
   DCHECK(delegate_);
   SYSLOG(INFO) << "Upload job created.";
   if (!upload_url_.is_valid()) {
@@ -300,7 +299,7 @@ bool UploadJobImpl::SetUpMultipart() {
   return true;
 }
 
-void UploadJobImpl::CreateAndStartURLLoader(const std::string& access_token) {
+void UploadJobImpl::CreateAndStartURLFetcher(const std::string& access_token) {
   // Ensure that the content has been prepared and the upload url is valid.
   DCHECK_EQ(PREPARING_CONTENT, state_);
   SYSLOG(INFO) << "Starting URL fetcher.";
@@ -309,20 +308,13 @@ void UploadJobImpl::CreateAndStartURLLoader(const std::string& access_token) {
   content_type.append("; boundary=");
   content_type.append(*mime_boundary_.get());
 
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->method = "POST";
-  resource_request->url = upload_url_;
-  resource_request->headers.SetHeader(
-      net::HttpRequestHeaders::kAuthorization,
+  upload_fetcher_ = net::URLFetcher::Create(upload_url_, net::URLFetcher::POST,
+                                            this, traffic_annotation_);
+  upload_fetcher_->SetRequestContext(url_context_getter_.get());
+  upload_fetcher_->SetUploadData(content_type, *post_data_);
+  upload_fetcher_->AddExtraRequestHeader(
       base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
-
-  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation_);
-  url_loader_->AttachStringForUpload(*post_data_, content_type);
-  url_loader_->DownloadHeadersOnly(
-      url_loader_factory_.get(),
-      base::BindOnce(&UploadJobImpl::OnURLLoadComplete,
-                     base::Unretained(this)));
+  upload_fetcher_->Start();
 }
 
 void UploadJobImpl::StartUpload() {
@@ -334,7 +326,7 @@ void UploadJobImpl::StartUpload() {
     state_ = ERROR;
     return;
   }
-  CreateAndStartURLLoader(access_token_);
+  CreateAndStartURLFetcher(access_token_);
   state_ = UPLOADING;
 }
 
@@ -364,7 +356,7 @@ void UploadJobImpl::OnGetTokenFailure(
 
 void UploadJobImpl::HandleError(ErrorCode error_code) {
   retry_++;
-  url_loader_.reset();
+  upload_fetcher_.reset();
 
   SYSLOG(ERROR) << "Upload failed, error code: " << error_code;
 
@@ -405,31 +397,34 @@ void UploadJobImpl::HandleError(ErrorCode error_code) {
   }
 }
 
-void UploadJobImpl::OnURLLoadComplete(
-    scoped_refptr<net::HttpResponseHeaders> headers) {
+void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK_EQ(upload_fetcher_.get(), source);
   DCHECK_EQ(UPLOADING, state_);
-
   SYSLOG(INFO) << "URL fetch completed.";
-  std::unique_ptr<network::SimpleURLLoader> url_loader = std::move(url_loader_);
-
-  if (!headers) {
-    SYSLOG(ERROR) << "SimpleURLLoader error " << url_loader->NetError();
+  const net::URLRequestStatus& status = source->GetStatus();
+  if (!status.is_success()) {
+    SYSLOG(ERROR) << "URLRequestStatus error " << status.error();
     HandleError(NETWORK_ERROR);
-  } else if (headers->response_code() == net::HTTP_OK) {
-    // Successful upload
-    access_token_.clear();
-    post_data_.reset();
-    state_ = SUCCESS;
-    UMA_HISTOGRAM_EXACT_LINEAR(kUploadJobSuccessHistogram, retry_,
-                               static_cast<int>(UploadJobSuccess::REQUEST_MAX));
-    delegate_->OnSuccess();
-  } else if (headers->response_code() == net::HTTP_UNAUTHORIZED) {
-    SYSLOG(ERROR) << "Unauthorized request.";
-    HandleError(AUTHENTICATION_ERROR);
   } else {
-    SYSLOG(ERROR) << "POST request failed with HTTP status code "
-                  << headers->response_code() << ".";
-    HandleError(SERVER_ERROR);
+    const int response_code = source->GetResponseCode();
+    if (response_code == net::HTTP_OK) {
+      // Successful upload
+      upload_fetcher_.reset();
+      access_token_.clear();
+      post_data_.reset();
+      state_ = SUCCESS;
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          kUploadJobSuccessHistogram, retry_,
+          static_cast<int>(UploadJobSuccess::REQUEST_MAX));
+      delegate_->OnSuccess();
+    } else if (response_code == net::HTTP_UNAUTHORIZED) {
+      SYSLOG(ERROR) << "Unauthorized request.";
+      HandleError(AUTHENTICATION_ERROR);
+    } else {
+      SYSLOG(ERROR) << "POST request failed with HTTP status code "
+                    << response_code << ".";
+      HandleError(SERVER_ERROR);
+    }
   }
 }
 

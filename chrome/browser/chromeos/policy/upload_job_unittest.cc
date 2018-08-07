@@ -27,7 +27,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/test/test_shared_url_loader_factory.h"
+#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -182,8 +183,8 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
 
   // testing::Test:
   void SetUp() override {
-    url_loader_factory_ =
-        base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
+    request_context_getter_ = new net::TestURLRequestContextGetter(
+        base::ThreadTaskRunnerHandle::Get());
     oauth2_service_.AddAccount("robot@gmail.com");
     ASSERT_TRUE(test_server_.Start());
     // Set retry delay to prevent timeouts
@@ -200,9 +201,9 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
       std::unique_ptr<UploadJobImpl::MimeBoundaryGenerator>
           mime_boundary_generator) {
     std::unique_ptr<UploadJob> upload_job(new UploadJobImpl(
-        GetServerURL(), kRobotAccountId, &oauth2_service_, url_loader_factory_,
-        this, std::move(mime_boundary_generator), TRAFFIC_ANNOTATION_FOR_TESTS,
-        base::ThreadTaskRunnerHandle::Get()));
+        GetServerURL(), kRobotAccountId, &oauth2_service_,
+        request_context_getter_.get(), this, std::move(mime_boundary_generator),
+        TRAFFIC_ANNOTATION_FOR_TESTS, base::ThreadTaskRunnerHandle::Get()));
 
     std::map<std::string, std::string> header_entries;
     header_entries.insert(std::make_pair(kCustomField1, "CUSTOM1"));
@@ -219,7 +220,7 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   base::RunLoop run_loop_;
   net::EmbeddedTestServer test_server_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   MockOAuth2TokenService oauth2_service_;
 
   std::unique_ptr<UploadJob::ErrorCode> expected_error_;
