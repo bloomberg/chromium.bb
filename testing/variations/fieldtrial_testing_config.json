@@ -409,7 +409,6 @@
     "AudioService": [
         {
             "platforms": [
-                "linux",
                 "windows"
             ],
             "experiments": [
@@ -430,6 +429,7 @@
             "platforms": [
                 "android",
                 "chromeos",
+                "linux",
                 "mac"
             ],
             "experiments": [
