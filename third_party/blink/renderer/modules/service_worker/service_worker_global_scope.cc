@@ -287,7 +287,7 @@ void ServiceWorkerGlobalScope::DispatchExtendableEvent(
     Event* event,
     WaitUntilObserver* observer) {
   observer->WillDispatchEvent();
-  DispatchEvent(event);
+  DispatchEvent(*event);
 
   // Check if the worker thread is forcibly terminated during the event
   // because of timeout etc.
@@ -300,7 +300,7 @@ void ServiceWorkerGlobalScope::DispatchExtendableEventWithRespondWith(
     RespondWithObserver* respond_with_observer) {
   wait_until_observer->WillDispatchEvent();
   respond_with_observer->WillDispatchEvent();
-  DispatchEventResult dispatch_result = DispatchEvent(event);
+  DispatchEventResult dispatch_result = DispatchEvent(*event);
   respond_with_observer->DidDispatchEvent(dispatch_result);
   // false is okay because waitUntil() for events with respondWith() doesn't
   // care about the promise rejection or an uncaught runtime script error.

@@ -925,7 +925,7 @@ void EventTarget::DispatchEnqueuedEvent(Event* event,
     return;
   }
   probe::AsyncTask async_task(context, event);
-  DispatchEvent(event);
+  DispatchEvent(*event);
 }
 
 STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kFalse,

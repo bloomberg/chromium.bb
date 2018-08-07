@@ -158,7 +158,7 @@ bool IsElementVisible(Element& element) {
 }
 
 void SimulateTransitionEnd(Element& element) {
-  element.DispatchEvent(Event::Create(EventTypeNames::transitionend));
+  element.DispatchEvent(*Event::Create(EventTypeNames::transitionend));
 }
 
 // This must match MediaControlDownloadButtonElement::DownloadActionMetrics.
@@ -1031,17 +1031,17 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
 
   // Tabbing between controls prevents controls from hiding.
   platform()->RunForPeriodSeconds(2);
-  MediaControls().DispatchEvent(Event::Create("focusin"));
+  MediaControls().DispatchEvent(*Event::Create("focusin"));
   platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   // Seeking on the timeline or volume bar prevents controls from hiding.
-  MediaControls().DispatchEvent(Event::Create("input"));
+  MediaControls().DispatchEvent(*Event::Create("input"));
   platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
   // Pressing a key prevents controls from hiding.
-  MediaControls().PanelElement()->DispatchEvent(Event::Create("keypress"));
+  MediaControls().PanelElement()->DispatchEvent(*Event::Create("keypress"));
   platform()->RunForPeriodSeconds(2);
   EXPECT_TRUE(IsElementVisible(*panel));
 
@@ -1062,7 +1062,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler, CursorHidesWhenControlsHide) {
   MediaControls().MediaElement().Play();
 
   // Tabbing into the controls shows the controls and therefore the cursor.
-  MediaControls().DispatchEvent(Event::Create("focusin"));
+  MediaControls().DispatchEvent(*Event::Create("focusin"));
   EXPECT_FALSE(IsCursorHidden());
 
   // Once the controls hide, the cursor is hidden.
@@ -1071,7 +1071,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler, CursorHidesWhenControlsHide) {
 
   // If the mouse moves, the controls are shown and the cursor is no longer
   // hidden.
-  MediaControls().DispatchEvent(Event::Create("pointermove"));
+  MediaControls().DispatchEvent(*Event::Create("pointermove"));
   EXPECT_FALSE(IsCursorHidden());
 
   // Once the controls hide again, the cursor is hidden again.
@@ -1328,7 +1328,7 @@ TEST_F(MediaControlsImplTest, CastOverlayShowsOnSomeEvents) {
 
   for (auto* const event_name :
        {"gesturetap", "click", "pointerover", "pointermove"}) {
-    overlay_enclosure->DispatchEvent(Event::Create(event_name));
+    overlay_enclosure->DispatchEvent(*Event::Create(event_name));
     EXPECT_TRUE(IsElementVisible(*cast_overlay_button));
 
     SimulateHideMediaControlsTimerFired();

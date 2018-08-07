@@ -155,13 +155,6 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   virtual void RemoveAllEventListeners();
 
   DispatchEventResult DispatchEvent(Event&);
-  // Deprecated: Use DispatchEvent(Event&), instead of this.
-  // This will be removed after every callers of this function are replaced.
-  // See crbub.com/871637.
-  DispatchEventResult DispatchEvent(Event* event) {
-    DCHECK(event);
-    return DispatchEvent(*event);
-  }
 
   void EnqueueEvent(Event*, TaskType);
 

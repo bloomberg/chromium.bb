@@ -136,7 +136,7 @@ void XR::OnDisplayConnected(
 
   devices_.push_back(xr_device);
 
-  DispatchEvent(blink::Event::Create(EventTypeNames::devicechange));
+  DispatchEvent(*blink::Event::Create(EventTypeNames::devicechange));
 }
 
 // Called when the XRService has called OnDevicesConnected for all active

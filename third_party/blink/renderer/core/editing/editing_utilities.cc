@@ -1621,7 +1621,7 @@ DispatchEventResult DispatchBeforeInputEditorCommand(
   InputEvent* before_input_event = InputEvent::CreateBeforeInput(
       input_type, g_null_atom, InputTypeIsCancelable(input_type),
       InputEvent::EventIsComposing::kNotComposing, ranges);
-  return target->DispatchEvent(before_input_event);
+  return target->DispatchEvent(*before_input_event);
 }
 
 DispatchEventResult DispatchBeforeInputDataTransfer(
@@ -1653,7 +1653,7 @@ DispatchEventResult DispatchBeforeInputDataTransfer(
         InputEvent::EventIsComposing::kNotComposing,
         TargetRangesForInputEvent(*target));
   }
-  return target->DispatchEvent(before_input_event);
+  return target->DispatchEvent(*before_input_event);
 }
 
 // |IsEmptyNonEditableNodeInEditable()| is introduced for fixing

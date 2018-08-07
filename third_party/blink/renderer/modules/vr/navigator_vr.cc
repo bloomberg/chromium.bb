@@ -239,7 +239,7 @@ void NavigatorVR::DispatchVREvent(VRDisplayEvent* event) {
   LocalDOMWindow* window = GetSupplementable()->GetFrame()->DomWindow();
   DCHECK(window);
   event->SetTarget(window);
-  window->DispatchEvent(event);
+  window->DispatchEvent(*event);
 }
 
 void NavigatorVR::FocusedFrameChanged() {

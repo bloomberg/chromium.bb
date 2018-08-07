@@ -70,7 +70,7 @@ void PresentationAvailability::AvailabilityChanged(
     return;
 
   value_ = value;
-  DispatchEvent(Event::Create(EventTypeNames::change));
+  DispatchEvent(*Event::Create(EventTypeNames::change));
 }
 
 bool PresentationAvailability::HasPendingActivity() const {

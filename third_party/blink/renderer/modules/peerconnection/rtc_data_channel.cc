@@ -373,7 +373,7 @@ void RTCDataChannel::ScheduledEventTimerFired(TimerBase*) {
 
   HeapVector<Member<Event>>::iterator it = events.begin();
   for (; it != events.end(); ++it)
-    DispatchEvent((*it).Release());
+    DispatchEvent(*it->Release());
 
   events.clear();
 }

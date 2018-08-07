@@ -106,7 +106,7 @@ void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
     return;
 
   status_ = status;
-  DispatchEvent(Event::Create(EventTypeNames::change));
+  DispatchEvent(*Event::Create(EventTypeNames::change));
 }
 
 void PermissionStatus::Trace(blink::Visitor* visitor) {

@@ -37,7 +37,7 @@ const AtomicString& ServiceWorkerRegistration::InterfaceName() const {
 }
 
 void ServiceWorkerRegistration::DispatchUpdateFoundEvent() {
-  DispatchEvent(Event::Create(EventTypeNames::updatefound));
+  DispatchEvent(*Event::Create(EventTypeNames::updatefound));
 }
 
 void ServiceWorkerRegistration::SetInstalling(

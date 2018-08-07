@@ -415,7 +415,7 @@ void CookieStore::OnCookieChange(
     // The backend only reported OVERWRITE events, which are dropped.
     return;
   }
-  DispatchEvent(CookieChangeEvent::Create(
+  DispatchEvent(*CookieChangeEvent::Create(
       EventTypeNames::change, std::move(changed), std::move(deleted)));
 }
 

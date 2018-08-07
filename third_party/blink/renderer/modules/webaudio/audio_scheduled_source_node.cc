@@ -243,7 +243,7 @@ void AudioScheduledSourceHandler::NotifyEnded() {
   if (!Context() || !Context()->GetExecutionContext())
     return;
   if (GetNode())
-    GetNode()->DispatchEvent(Event::Create(EventTypeNames::ended));
+    GetNode()->DispatchEvent(*Event::Create(EventTypeNames::ended));
 }
 
 // ----------------------------------------------------------------

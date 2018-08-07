@@ -56,7 +56,7 @@ void SpeechSynthesis::SetPlatformSynthesizer(
 void SpeechSynthesis::VoicesDidChange() {
   voice_list_.clear();
   if (GetExecutionContext())
-    DispatchEvent(Event::Create(EventTypeNames::voiceschanged));
+    DispatchEvent(*Event::Create(EventTypeNames::voiceschanged));
 }
 
 const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
@@ -159,7 +159,7 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
     return;
 
   double elapsed_time_millis = millis - utterance->StartTime() * 1000.0;
-  utterance->DispatchEvent(SpeechSynthesisEvent::Create(
+  utterance->DispatchEvent(*SpeechSynthesisEvent::Create(
       type, utterance, char_index, elapsed_time_millis, name));
 }
 

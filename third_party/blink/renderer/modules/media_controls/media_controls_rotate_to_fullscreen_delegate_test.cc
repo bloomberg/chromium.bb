@@ -150,7 +150,7 @@ class MediaControlsRotateToFullscreenDelegateTest
   }
 
   void DispatchEvent(EventTarget& target, const AtomicString& type) {
-    target.DispatchEvent(Event::Create(type));
+    target.DispatchEvent(*Event::Create(type));
   }
 
   void InitScreenAndVideo(WebScreenOrientationType initial_screen_orientation,

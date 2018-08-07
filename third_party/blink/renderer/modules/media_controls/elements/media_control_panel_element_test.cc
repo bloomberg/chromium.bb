@@ -53,7 +53,7 @@ class MediaControlPanelElementTest : public PageTestBase {
  private:
   void TriggerEvent(const AtomicString& name) {
     Event* event = Event::Create(name);
-    GetPanel().DispatchEvent(event);
+    GetPanel().DispatchEvent(*event);
   }
 
   Persistent<HTMLMediaElement> media_element_;

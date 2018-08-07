@@ -203,7 +203,7 @@ void USB::OnDeviceAdded(UsbDeviceInfoPtr device_info) {
   if (!device_manager_)
     return;
 
-  DispatchEvent(USBConnectionEvent::Create(
+  DispatchEvent(*USBConnectionEvent::Create(
       EventTypeNames::connect, GetOrCreateDevice(std::move(device_info))));
 }
 
@@ -214,7 +214,8 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
     device = USBDevice::Create(std::move(device_info), nullptr,
                                GetExecutionContext());
   }
-  DispatchEvent(USBConnectionEvent::Create(EventTypeNames::disconnect, device));
+  DispatchEvent(
+      *USBConnectionEvent::Create(EventTypeNames::disconnect, device));
   device_cache_.erase(guid);
 }
 

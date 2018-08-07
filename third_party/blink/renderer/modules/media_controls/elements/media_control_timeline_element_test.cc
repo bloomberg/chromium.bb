@@ -84,9 +84,9 @@ TEST_F(MediaControlTimelineElementTest, PointerUpResumesPlayback) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerup", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerup", GetValidPointerEventInit()));
   EXPECT_FALSE(Video()->paused());
 }
 
@@ -95,11 +95,11 @@ TEST_F(MediaControlTimelineElementTest, PointerUpRightClickNoOp) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
 
   PointerEventInit init = GetValidPointerEventInit();
   init.setButton(static_cast<int>(WebPointerProperties::Button::kRight));
-  Timeline()->DispatchEvent(PointerEvent::Create("pointerup", init));
+  Timeline()->DispatchEvent(*PointerEvent::Create("pointerup", init));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -108,11 +108,11 @@ TEST_F(MediaControlTimelineElementTest, PointerUpNotPrimaryNoOp) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
 
   PointerEventInit init = GetValidPointerEventInit();
   init.setIsPrimary(false);
-  Timeline()->DispatchEvent(PointerEvent::Create("pointerup", init));
+  Timeline()->DispatchEvent(*PointerEvent::Create("pointerup", init));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -121,9 +121,9 @@ TEST_F(MediaControlTimelineElementTest, PointerOutDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerout", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerout", GetValidPointerEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -132,9 +132,9 @@ TEST_F(MediaControlTimelineElementTest, PointerMoveDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointermove", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointermove", GetValidPointerEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -143,9 +143,9 @@ TEST_F(MediaControlTimelineElementTest, PointerCancelResumesPlayback) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointercancel", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointercancel", GetValidPointerEventInit()));
   EXPECT_FALSE(Video()->paused());
 }
 
@@ -154,7 +154,7 @@ TEST_F(MediaControlTimelineElementTest, TouchStartPausesPlayback) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -163,9 +163,9 @@ TEST_F(MediaControlTimelineElementTest, TouchEndResumesPlayback) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchend", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchend", GetValidTouchEventInit()));
   EXPECT_FALSE(Video()->paused());
 }
 
@@ -174,9 +174,9 @@ TEST_F(MediaControlTimelineElementTest, TouchCancelResumesPlayback) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchcancel", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchcancel", GetValidTouchEventInit()));
   EXPECT_FALSE(Video()->paused());
 }
 
@@ -185,9 +185,9 @@ TEST_F(MediaControlTimelineElementTest, ChangeResumesPlayback) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("change", GetValidTouchEventInit()));
+      *TouchEvent::Create("change", GetValidTouchEventInit()));
   EXPECT_FALSE(Video()->paused());
 }
 
@@ -196,9 +196,9 @@ TEST_F(MediaControlTimelineElementTest, TouchMoveDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchmove", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchmove", GetValidTouchEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -207,9 +207,9 @@ TEST_F(MediaControlTimelineElementTest, TouchMoveAfterPointerDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchmove", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchmove", GetValidTouchEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -218,9 +218,9 @@ TEST_F(MediaControlTimelineElementTest, TouchEndAfterPointerDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchend", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchend", GetValidTouchEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -229,9 +229,9 @@ TEST_F(MediaControlTimelineElementTest, TouchCancelAfterPointerDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchcancel", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchcancel", GetValidTouchEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -240,9 +240,9 @@ TEST_F(MediaControlTimelineElementTest, ChangeAfterPointerDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("change", GetValidTouchEventInit()));
+      *TouchEvent::Create("change", GetValidTouchEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -251,9 +251,9 @@ TEST_F(MediaControlTimelineElementTest, PointerUpAfterTouchDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerup", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerup", GetValidPointerEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -262,9 +262,9 @@ TEST_F(MediaControlTimelineElementTest, PointerCancelAfterTouchDoesNotResume) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointercancel", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointercancel", GetValidPointerEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -273,11 +273,11 @@ TEST_F(MediaControlTimelineElementTest, UpgradePointerEventToTouchAllowed) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchend", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchend", GetValidTouchEventInit()));
   EXPECT_FALSE(Video()->paused());
 }
 
@@ -286,11 +286,11 @@ TEST_F(MediaControlTimelineElementTest, UpgradeTouchEventToPointerDenied) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      TouchEvent::Create("touchstart", GetValidTouchEventInit()));
+      *TouchEvent::Create("touchstart", GetValidTouchEventInit()));
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerup", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerup", GetValidPointerEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 

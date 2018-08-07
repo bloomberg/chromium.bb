@@ -422,7 +422,7 @@ void ServiceWorkerContainer::SetController(
                       WebFeature::kServiceWorkerControlledPage);
   }
   if (should_notify_controller_change)
-    DispatchEvent(Event::Create(EventTypeNames::controllerchange));
+    DispatchEvent(*Event::Create(EventTypeNames::controllerchange));
 }
 
 void ServiceWorkerContainer::DispatchMessageEvent(
@@ -446,7 +446,7 @@ void ServiceWorkerContainer::DispatchMessageEvent(
     event = MessageEvent::CreateError(
         GetExecutionContext()->GetSecurityOrigin()->ToString(), source);
   }
-  DispatchEvent(event);
+  DispatchEvent(*event);
 }
 
 void ServiceWorkerContainer::CountFeature(mojom::WebFeature feature) {

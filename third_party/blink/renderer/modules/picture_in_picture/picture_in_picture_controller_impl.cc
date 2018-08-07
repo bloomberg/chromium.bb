@@ -118,7 +118,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   picture_in_picture_element_->OnEnteredPictureInPicture();
 
   picture_in_picture_element_->DispatchEvent(
-      Event::CreateBubble(EventTypeNames::enterpictureinpicture));
+      *Event::CreateBubble(EventTypeNames::enterpictureinpicture));
 
   // Closes the current Picture-in-Picture window if any.
   if (picture_in_picture_window_)
@@ -160,7 +160,7 @@ void PictureInPictureControllerImpl::OnExitedPictureInPicture(
 
     element->OnExitedPictureInPicture();
     element->DispatchEvent(
-        Event::CreateBubble(EventTypeNames::leavepictureinpicture));
+        *Event::CreateBubble(EventTypeNames::leavepictureinpicture));
   }
 
   if (resolver)
@@ -178,7 +178,7 @@ void PictureInPictureControllerImpl::OnPictureInPictureControlClicked(
   if (RuntimeEnabledFeatures::PictureInPictureControlEnabled() &&
       picture_in_picture_element_) {
     picture_in_picture_element_->DispatchEvent(
-        PictureInPictureControlEvent::Create(
+        *PictureInPictureControlEvent::Create(
             EventTypeNames::pictureinpicturecontrolclick, control_id));
   }
 }

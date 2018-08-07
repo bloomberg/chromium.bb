@@ -79,7 +79,7 @@ bool BluetoothDevice::IsValidDescriptor(const String& descriptor_instance_id) {
 
 void BluetoothDevice::ClearAttributeInstanceMapAndFireEvent() {
   attribute_instance_map_->Clear();
-  DispatchEvent(Event::CreateBubble(EventTypeNames::gattserverdisconnected));
+  DispatchEvent(*Event::CreateBubble(EventTypeNames::gattserverdisconnected));
 }
 
 const WTF::AtomicString& BluetoothDevice::InterfaceName() const {
