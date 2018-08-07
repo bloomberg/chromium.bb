@@ -100,9 +100,9 @@
       'CFI Linux CF': 'cfi_full_cfi_icall_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'CFI Linux (icall)': 'cfi_full_diag_icall_release_static_dcheck_always_on',
-      'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_x86_release',
-      'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_x86_release',
-      'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_x86_release',
+      'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_release_tot',
+      'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_release_tot',
+      'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_release_tot',
 
       'linux-win_cross-rel': 'clang_tot_win_release_cross',
       'ToTAndroid': 'android_clang_tot_release_minimal_symbols',
@@ -353,6 +353,7 @@
       'Linux MSan Builder': 'msan_release_bot',
       'Linux TSan Builder': 'tsan_disable_nacl_release_bot',
       'Mac ASan 64 Builder': 'asan_disable_nacl_release_bot_dcheck_always_on',
+      'win-asan': 'asan_clang_fuzzer_static_v8_heap_release',
     },
 
     'chromium.perf': {
@@ -906,16 +907,20 @@
       'android_without_codecs', 'release_bot', 'minimal_symbols', 'strip_debug_info',
     ],
 
-    'asan_clang_edge_fuzzer_static_v8_heap_x86_release': [
-      'asan', 'clang_tot', 'edge', 'fuzzer', 'static', 'v8_heap', 'release', 'x64',
+    'asan_clang_edge_fuzzer_static_v8_heap_release_tot': [
+      'asan', 'clang_tot', 'edge', 'fuzzer', 'static', 'v8_heap', 'release',
     ],
 
-    'asan_clang_shared_v8_heap_x86_release': [
-      'asan', 'clang_tot', 'shared', 'v8_heap', 'release', 'x64',
+    'asan_clang_shared_v8_heap_release_tot': [
+      'asan', 'clang_tot', 'shared', 'v8_heap', 'release',
     ],
 
-    'asan_clang_fuzzer_static_v8_heap_x86_release': [
-      'asan', 'clang_tot', 'fuzzer', 'static', 'v8_heap', 'release', 'x64',
+    'asan_clang_fuzzer_static_v8_heap_release': [
+      'asan', 'fuzzer', 'static', 'v8_heap', 'release',
+    ],
+
+    'asan_clang_fuzzer_static_v8_heap_release_tot': [
+      'asan', 'clang_tot', 'fuzzer', 'static', 'v8_heap', 'release',
     ],
 
     'asan_dcheck_disable_nacl_release_bot': [
