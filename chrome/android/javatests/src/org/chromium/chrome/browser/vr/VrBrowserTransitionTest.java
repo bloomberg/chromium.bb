@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -48,6 +49,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * End-to-end tests for state transitions in VR, e.g. exiting WebVR presentation
@@ -502,5 +504,31 @@ public class VrBrowserTransitionTest {
             mTestRule.getActivity().onActivityResult(
                     VrShellDelegate.EXIT_VR_RESULT, Activity.RESULT_OK, null);
         });
+    }
+
+    /**
+     * Verifies that we fail to enter VR when Async Reprojection fails to be turned on with a
+     * Daydream View headset paired.
+     */
+    @Test
+    @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM})
+    @MediumTest
+    public void testVrUnsupportedWhenReprojectionFails() throws InterruptedException {
+        AtomicBoolean failed = new AtomicBoolean(false);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+                VrShell vrShell = new VrShell(
+                        mTestRule.getActivity(), VrShellDelegateUtils.getDelegateInstance(), null) {
+                    @Override
+                    public boolean setAsyncReprojectionEnabled(boolean enabled) {
+                        return false;
+                    }
+                };
+            } catch (VrShellDelegate.VrUnsupportedException e) {
+                failed.set(true);
+            }
+        });
+        Assert.assertTrue(
+                "Creating VrShell didn't fail when Async Reprojection failed.", failed.get());
     }
 }

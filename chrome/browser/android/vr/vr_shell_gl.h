@@ -113,7 +113,6 @@ class VrShellGl : public RenderLoop,
 
   void Initialize(base::WaitableEvent* gl_surface_created_event,
                   base::OnceCallback<gfx::AcceleratedWidget()> callback);
-  void InitializeGl(gfx::AcceleratedWidget surface);
 
   void OnTriggerEvent(bool pressed);
   void OnPause();
@@ -164,6 +163,7 @@ class VrShellGl : public RenderLoop,
   void PerformControllerActionForTesting(ControllerTestInput controller_input);
 
  private:
+  void InitializeGl(gfx::AcceleratedWidget surface);
   void GvrInit(gvr_context* gvr_api);
 
   device::mojom::XRPresentationTransportOptionsPtr
@@ -348,10 +348,9 @@ class VrShellGl : public RenderLoop,
   gfx::Size content_tex_buffer_size_ = {0, 0};
   gfx::Size webvr_surface_size_ = {0, 0};
 
-  std::unique_ptr<WebXrPresentationState> webxr_ = nullptr;
+  WebXrPresentationState webxr_;
 
   bool web_vr_mode_ = false;
-  bool ready_to_draw_ = false;
   bool paused_ = true;
   const bool surfaceless_rendering_;
   bool daydream_support_;
