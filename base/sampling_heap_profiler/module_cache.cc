@@ -30,4 +30,12 @@ const ModuleCache::Module& ModuleCache::GetModuleForAddress(uintptr_t address) {
       .first->second;
 }
 
+std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
+  std::vector<const Module*> result;
+  result.reserve(modules_cache_map_.size());
+  for (const auto& it : modules_cache_map_)
+    result.push_back(&it.second);
+  return result;
+}
+
 }  // namespace base

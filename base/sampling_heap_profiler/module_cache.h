@@ -6,6 +6,7 @@
 #define BASE_SAMPLING_HEAP_PROFILER_MODULE_CACHE_H_
 
 #include <map>
+#include <vector>
 
 #include "base/profiler/stack_sampling_profiler.h"
 
@@ -19,6 +20,7 @@ class BASE_EXPORT ModuleCache {
   ~ModuleCache();
 
   const Module& GetModuleForAddress(uintptr_t address);
+  std::vector<const Module*> GetModules() const;
 
  private:
   std::map<uintptr_t, Module> modules_cache_map_;
