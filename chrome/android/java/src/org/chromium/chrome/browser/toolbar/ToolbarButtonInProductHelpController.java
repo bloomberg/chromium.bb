@@ -10,10 +10,12 @@ import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -112,24 +114,36 @@ public class ToolbarButtonInProductHelpController {
         if (activity.isActivityDestroyed()) return;
 
         assert(stringId != 0 && accessibilityStringId != 0);
-        if (!tracker.shouldTriggerHelpUI(featureName)) return;
 
-        ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
+        // Post a request to show the IPH bubble to allow time for a layout pass. Since the bubble
+        // is shown on startup, the anchor view may not have a height initially see
+        // https://crbug.com/871537.
+        ThreadUtils.postOnUiThread(() -> {
+            if (activity.isActivityDestroyed()) return;
 
-        TextBubble textBubble =
-                new TextBubble(activity, anchorView, stringId, accessibilityStringId, rectProvider);
-        textBubble.setDismissOnTouchInteraction(true);
-        textBubble.addOnDismissListener(() -> anchorView.getHandler().postDelayed(() -> {
-            tracker.dismissed(featureName);
-            turnOffHighlightForTextBubble(appMenuHandler, anchorView);
-        }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS));
+            if (TextUtils.equals(featureName, FeatureConstants.NTP_BUTTON_FEATURE)
+                    && !canShowNTPButtonIPH(activity)) {
+                return;
+            }
 
-        turnOnHighlightForTextBubble(appMenuHandler, highlightMenuItemId, anchorView);
+            if (!tracker.shouldTriggerHelpUI(featureName)) return;
+            ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
 
-        int yInsetPx = activity.getResources().getDimensionPixelOffset(
-                R.dimen.text_bubble_menu_anchor_y_inset);
-        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
-        textBubble.show();
+            TextBubble textBubble = new TextBubble(
+                    activity, anchorView, stringId, accessibilityStringId, rectProvider);
+            textBubble.setDismissOnTouchInteraction(true);
+            textBubble.addOnDismissListener(() -> anchorView.getHandler().postDelayed(() -> {
+                tracker.dismissed(featureName);
+                turnOffHighlightForTextBubble(appMenuHandler, anchorView);
+            }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS));
+
+            turnOnHighlightForTextBubble(appMenuHandler, highlightMenuItemId, anchorView);
+
+            int yInsetPx = activity.getResources().getDimensionPixelOffset(
+                    R.dimen.text_bubble_menu_anchor_y_inset);
+            rectProvider.setInsetPx(0, 0, 0, yInsetPx);
+            textBubble.show();
+        });
     }
 
     private static void turnOnHighlightForTextBubble(
@@ -152,7 +166,8 @@ public class ToolbarButtonInProductHelpController {
     private static boolean canShowNTPButtonIPH(ChromeTabbedActivity activity) {
         View homeButton = activity.findViewById(R.id.home_button);
         return FeatureUtilities.isNewTabPageButtonEnabled()
-                && !activity.getCurrentTabModel().isIncognito() && homeButton != null
+                && !activity.getCurrentTabModel().isIncognito() && activity.getActivityTab() != null
+                && !NewTabPage.isNTPUrl(activity.getActivityTab().getUrl()) && homeButton != null
                 && homeButton.getVisibility() == View.VISIBLE;
     }
 }
