@@ -24,6 +24,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
  public:
   virtual ~WebRTCRtpReceiver();
 
+  virtual std::unique_ptr<WebRTCRtpReceiver> ShallowCopy() const = 0;
   // Two |WebRTCRtpReceiver|s referencing the same WebRTC-layer receiver have
   // the same |id|.
   virtual uintptr_t Id() const = 0;

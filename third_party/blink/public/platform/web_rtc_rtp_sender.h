@@ -23,6 +23,7 @@ class WebRTCDTMFSenderHandler;
 class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
  public:
   virtual ~WebRTCRtpSender();
+  virtual std::unique_ptr<WebRTCRtpSender> ShallowCopy() const = 0;
 
   // Two |WebRTCRtpSender|s referencing the same WebRTC-layer sender have the
   // same |id|. IDs are guaranteed to be unique amongst senders but they are

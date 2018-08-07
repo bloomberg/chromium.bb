@@ -107,13 +107,10 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
 
   RTCRtpReceiver& operator=(const RTCRtpReceiver& other);
 
-  // Creates a shallow copy of the receiver, representing the same underlying
-  // webrtc receiver as the original.
-  std::unique_ptr<RTCRtpReceiver> ShallowCopy() const;
-
   const RtpReceiverState& state() const;
   void set_state(RtpReceiverState state);
 
+  std::unique_ptr<blink::WebRTCRtpReceiver> ShallowCopy() const override;
   uintptr_t Id() const override;
   const blink::WebMediaStreamTrack& Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
@@ -131,7 +128,8 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
 class CONTENT_EXPORT RTCRtpReceiverOnlyTransceiver
     : public blink::WebRTCRtpTransceiver {
  public:
-  RTCRtpReceiverOnlyTransceiver(std::unique_ptr<RTCRtpReceiver> receiver);
+  RTCRtpReceiverOnlyTransceiver(
+      std::unique_ptr<blink::WebRTCRtpReceiver> receiver);
   ~RTCRtpReceiverOnlyTransceiver() override;
 
   blink::WebRTCRtpTransceiverImplementationType ImplementationType()
@@ -149,7 +147,7 @@ class CONTENT_EXPORT RTCRtpReceiverOnlyTransceiver
       const override;
 
  private:
-  std::unique_ptr<RTCRtpReceiver> receiver_;
+  std::unique_ptr<blink::WebRTCRtpReceiver> receiver_;
 };
 
 }  // namespace content

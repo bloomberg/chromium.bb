@@ -275,8 +275,19 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       TransceiverStateSurfacer* transceiver_state_surfacer,
       bool* result);
   std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
+  std::vector<std::unique_ptr<RTCRtpReceiver>>::iterator FindReceiver(
+      uintptr_t id);
   std::vector<std::unique_ptr<RTCRtpTransceiver>>::iterator FindTransceiver(
       uintptr_t id);
+  // For full transceiver implementations, returns the index of
+  // |rtp_transceivers_| that correspond to |web_transceiver|.
+  // For sender-only transceiver implementations, returns the index of
+  // |rtp_senders_| that correspond to |web_transceiver.Sender()|.
+  // For receiver-only transceiver implementations, returns the index of
+  // |rtp_receivers_| that correspond to |web_transceiver.Receiver()|.
+  // NOTREACHED()-crashes if no correspondent is found.
+  size_t GetTransceiverIndex(
+      const blink::WebRTCRtpTransceiver& web_transceiver);
   std::unique_ptr<RTCRtpTransceiver> CreateOrUpdateTransceiver(
       RtpTransceiverState transceiver_state);
 
@@ -325,10 +336,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   blink::WebRTCSdpSemantics sdp_semantics_;
   // Content layer correspondents of |webrtc::RtpSenderInterface|.
   std::vector<std::unique_ptr<RTCRtpSender>> rtp_senders_;
-  // Maps |RTCRtpReceiver::getId|s of |webrtc::RtpReceiverInterface|s to the
-  // corresponding content layer receivers. The set of receivers is needed in
-  // order to keep its associated track's and streams' adapters alive.
-  std::map<uintptr_t, std::unique_ptr<RTCRtpReceiver>> rtp_receivers_;
+  // Content layer correspondents of |webrtc::RtpReceiverInterface|.
+  std::vector<std::unique_ptr<RTCRtpReceiver>> rtp_receivers_;
   // Content layer correspondents of |webrtc::RtpTransceiverInterface|.
   std::vector<std::unique_ptr<RTCRtpTransceiver>> rtp_transceivers_;
 

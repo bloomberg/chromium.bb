@@ -114,18 +114,13 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
       RtpSenderState state);
   RTCRtpSender(const RTCRtpSender& other);
   ~RTCRtpSender() override;
-
   RTCRtpSender& operator=(const RTCRtpSender& other);
-
-  // Creates a shallow copy of the sender, representing the same underlying
-  // webrtc sender as the original.
-  // TODO(hbos): Remove in favor of constructor. https://crbug.com/790007
-  std::unique_ptr<RTCRtpSender> ShallowCopy() const;
 
   const RtpSenderState& state() const;
   void set_state(RtpSenderState state);
 
   // blink::WebRTCRtpSender.
+  std::unique_ptr<blink::WebRTCRtpSender> ShallowCopy() const override;
   uintptr_t Id() const override;
   blink::WebMediaStreamTrack Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
@@ -157,7 +152,7 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
 class CONTENT_EXPORT RTCRtpSenderOnlyTransceiver
     : public blink::WebRTCRtpTransceiver {
  public:
-  RTCRtpSenderOnlyTransceiver(std::unique_ptr<RTCRtpSender> sender);
+  RTCRtpSenderOnlyTransceiver(std::unique_ptr<blink::WebRTCRtpSender> sender);
   ~RTCRtpSenderOnlyTransceiver() override;
 
   blink::WebRTCRtpTransceiverImplementationType ImplementationType()
@@ -175,7 +170,7 @@ class CONTENT_EXPORT RTCRtpSenderOnlyTransceiver
       const override;
 
  private:
-  std::unique_ptr<RTCRtpSender> sender_;
+  std::unique_ptr<blink::WebRTCRtpSender> sender_;
 };
 
 }  // namespace content
