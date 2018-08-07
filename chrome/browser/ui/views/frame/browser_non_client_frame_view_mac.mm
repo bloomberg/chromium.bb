@@ -21,12 +21,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 
-namespace {
-
-constexpr int kTabstripTopInset = 8;
-
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMac, public:
 
@@ -85,6 +79,11 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   if (!browser_view()->IsTabStripVisible())
     return 0;
 
+  // TODO(pkasting): https://crbug.com/862276  Increase this height when we
+  // can't extend the drag handle into the tabstrip.  Mac seems to reserve 1 DIP
+  // of this as resize handle, so the actual top drag height is 7 DIP.
+  constexpr int kTabstripTopInset = 8;
+
   // Calculate the y offset for the tab strip because in fullscreen mode the tab
   // strip may need to move under the slide down menu bar.
   CGFloat y_offset = kTabstripTopInset;
@@ -94,11 +93,12 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
     CGFloat title_bar_height =
         NSHeight([NSWindow frameRectForContentRect:NSZeroRect
                                          styleMask:NSWindowStyleMaskTitled]);
-    y_offset +=
+    CGFloat added_height =
         [[fullscreen_toolbar_controller_ menubarTracker] menubarFraction] *
         (menu_bar_height + title_bar_height);
+    y_offset += added_height;
 
-    if (y_offset > kTabstripTopInset) {
+    if (added_height > 0) {
       // When menubar shows up, we need to update mouse tracking area.
       NSWindow* window = GetWidget()->GetNativeWindow();
       NSRect content_bounds = [[window contentView] bounds];

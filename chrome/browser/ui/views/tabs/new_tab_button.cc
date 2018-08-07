@@ -417,6 +417,9 @@ void NewTabButton::GetBorderPath(float button_y,
   const gfx::Rect contents_bounds = GetContentsBounds();
 
   if (MD::IsRefreshUi()) {
+    // TODO(pkasting): This should really be a circle with (potentially) its top
+    // half extended rectangularly upward... try to reuse
+    // GetTouchOptimizedButtonPath().
     path->addRect(0, extend_to_top ? 0 : button_y,
                   contents_bounds.width() * scale,
                   button_y + contents_bounds.height() * scale);
@@ -470,7 +473,7 @@ void NewTabButton::PaintFill(bool pressed,
       }
 
       const bool succeeded = canvas->InitPaintFlagsForTiling(
-          *tp->GetImageSkiaNamed(bg_id), x, GetContentsBounds().y() + offset_y,
+          *tp->GetImageSkiaNamed(bg_id), x, contents_bounds.y() + offset_y,
           x_scale * scale, scale, 0, 0, SkShader::kRepeat_TileMode,
           SkShader::kRepeat_TileMode, &flags);
       DCHECK(succeeded);

@@ -488,6 +488,8 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
   // TODO(bsep): This override has "dead zones" where you can't click on the
   // custom titlebar buttons. It's not clear why it's necessary at all.
   // Investigate tearing this out.
+  // TODO(pkasting): https://crbug.com/862276  This interferes with drag handle
+  // extension because we never run BrowserNonClientFrameView's code.
   CHECK_EQ(target, this);
   bool hit_incognito_icon =
       profile_indicator_icon() &&
@@ -533,6 +535,8 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
   // not maximized or fullscreen. When maximized, the OS sizes the window such
   // that the border extends beyond the screen edges. In that case, we must
   // return the default value.
+  // TODO(pkasting): https://crbug.com/862276  Increase this height when we
+  // can't extend the drag handle into the tabstrip.
   if (MD::IsRefreshUi() &&
       ((!frame()->IsFullscreen() && !IsMaximized()) || restored)) {
     constexpr int kTopResizeFrameArea = 5;

@@ -333,41 +333,37 @@ void TabStrip::SetBackgroundOffset(int offset) {
 }
 
 bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
-  views::View* v = GetEventHandlerForRect(rect);
-
-  // If there is no control at this location, claim the hit was in the title
-  // bar to get a move action.
+  // If there is no control at this location, the hit is in the caption area.
+  const views::View* v = GetEventHandlerForRect(rect);
   if (v == this)
     return true;
 
-  // Set the hit test overlap to 1 dip above the top edge of the tab separator.
-  const int inactive_tab_hit_test_overlap =
+  // Under refresh, a thin strip at the top of inactive tabs and the new tab
+  // button is treated as part of the window drag handle, to increase
+  // draggability.  This region starts 1 DIP above the top of the separator.
+  const int drag_handle_extension =
       (height() - Tab::GetTabSeparatorHeight()) / 2 - 1;
-  // If there is a tab at this location, this hit is not likely in the title
-  // bar, except under the conditions below.
+  // TODO(pkasting): https://crbug.com/862276  Set this condition false when tab
+  // shapes are visible.
+  const bool extend_drag_handle =
+      MD::IsRefreshUi() && !SizeTabButtonToTopOfTabStrip();
+
+  // A hit on the tab is not in the caption unless it is in the thin strip
+  // mentioned above.
   const int tab_index = tabs_.GetIndexOfView(v);
   if (IsValidModelIndex(tab_index)) {
     Tab* tab = tab_at(tab_index);
-    // Under refresh, a 7 dip area at the top of an inactive tab should be
-    // considered part of the window caption. This makes the window drag region
-    // a little larger which makes it easier to target.
-    if (MD::IsRefreshUi() && !SizeTabButtonToTopOfTabStrip() &&
-        !tab->IsActive()) {
-      return gfx::Rect(tab->bounds().origin(),
-                       gfx::Size(tab->width(), inactive_tab_hit_test_overlap))
-          .Intersects(rect);
-    }
-    return false;
+    gfx::Rect tab_drag_handle = tab->bounds();
+    tab_drag_handle.set_height(drag_handle_extension);
+    return extend_drag_handle && !tab->IsActive() &&
+           tab_drag_handle.Intersects(rect);
   }
 
-  // Under refresh, check if the rect intersects a thin 7 dip strip along the
-  // top of the new tab button. This also makes the window drag region above the
-  // new tab button a little larger for ease of window dragging.
-  if (MD::IsRefreshUi() && !SizeTabButtonToTopOfTabStrip() &&
-      gfx::Rect(
-          new_tab_button_->bounds().origin(),
-          gfx::Size(new_tab_button_->width(), inactive_tab_hit_test_overlap))
-          .Intersects(rect))
+  // Similarly, a hit in the new tab button is considered to be in the caption
+  // if it's in this thin strip.
+  gfx::Rect new_tab_button_drag_handle = new_tab_button_->bounds();
+  new_tab_button_drag_handle.set_height(drag_handle_extension);
+  if (extend_drag_handle && new_tab_button_drag_handle.Intersects(rect))
     return true;
 
   // Check to see if the rect intersects the non-button parts of the new tab
@@ -377,14 +373,8 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
   View::ConvertRectToTarget(this, new_tab_button_, &rect_in_new_tab_coords_f);
   gfx::Rect rect_in_new_tab_coords =
       gfx::ToEnclosingRect(rect_in_new_tab_coords_f);
-  if (new_tab_button_->GetLocalBounds().Intersects(rect_in_new_tab_coords) &&
-      !new_tab_button_->HitTestRect(rect_in_new_tab_coords))
-    return true;
-
-  // All other regions, including the new Tab button, should be considered part
-  // of the containing Window's client area so that regular events can be
-  // processed for them.
-  return false;
+  return new_tab_button_->GetLocalBounds().Intersects(rect_in_new_tab_coords) &&
+         !new_tab_button_->HitTestRect(rect_in_new_tab_coords);
 }
 
 bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {

@@ -289,6 +289,8 @@ int OpaqueBrowserFrameViewLayout::GetNonClientRestoredExtraThickness() {
   // Besides the frame border, there's empty space atop the window in restored
   // mode, to use to drag the window around.
   constexpr int kNonClientRestoredExtraThickness = 11;
+  // TODO(pkasting): https://crbug.com/862276  Increase this height when we
+  // can't extend the drag handle into the tabstrip.
   constexpr int kRefreshNonClientRestoredExtraThickness = 4;
   return MD::IsRefreshUi() ? kRefreshNonClientRestoredExtraThickness
                            : kNonClientRestoredExtraThickness;
