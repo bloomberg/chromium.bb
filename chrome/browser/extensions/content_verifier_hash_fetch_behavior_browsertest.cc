@@ -320,11 +320,6 @@ class ContentVerifierHashTest
   // Installs test extension that is copied from the webstore with actual
   // signatures.
   testing::AssertionResult InstallExtension(ExtensionType type) {
-    // Install the interceptor at the very beginning of the tests' execution
-    // flow, so that it catches all URLLoaderFactory creations.
-    if (!hash_fetching_disabled_ && !InstallInterceptor())
-      return testing::AssertionFailure() << "Failed to install interceptor.";
-
     // This observer will make sure content hash read and computed_hashes.json
     // writing is complete before we proceed.
     VerifierObserver verifier_observer;
@@ -348,8 +343,8 @@ class ContentVerifierHashTest
 
     info_ = std::make_unique<ExtensionInfo>(extension, type);
 
-    // Set up the data needed by the interceptor functor.
-    if (!hash_fetching_disabled_ && !SetUpInterceptorData())
+    // Set up the interceptor functor and data needed by it.
+    if (!hash_fetching_disabled_ && !InstallInterceptor())
       return testing::AssertionFailure() << "Failed to install interceptor.";
 
     return testing::AssertionSuccess();
@@ -360,6 +355,8 @@ class ContentVerifierHashTest
       testing::AssertionFailure() << "Already created interceptor.";
       return false;
     }
+
+    SetUpInterceptorData();
 
     auto interceptor_function =
         [](GURL* fetch_url, base::FilePath* file_path,
