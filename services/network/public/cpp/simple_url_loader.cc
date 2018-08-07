@@ -188,6 +188,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       mojom::URLLoaderFactory* url_loader_factory,
       BodyAsStringCallback body_as_string_callback) override;
+  void DownloadHeadersOnly(mojom::URLLoaderFactory* url_loader_factory,
+                           HeadersOnlyCallback headers_only_callback) override;
   void DownloadToFile(
       mojom::URLLoaderFactory* url_loader_factory,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
@@ -623,6 +625,58 @@ class SaveToStringBodyHandler : public BodyHandler,
   std::unique_ptr<BodyReader> body_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveToStringBodyHandler);
+};
+
+// BodyHandler that discards the response body.
+class HeadersOnlyBodyHandler : public BodyHandler, public BodyReader::Delegate {
+ public:
+  HeadersOnlyBodyHandler(
+      SimpleURLLoaderImpl* simple_url_loader,
+      SimpleURLLoader::HeadersOnlyCallback headers_only_callback)
+      : BodyHandler(simple_url_loader),
+        headers_only_callback_(std::move(headers_only_callback)) {}
+
+  ~HeadersOnlyBodyHandler() override {}
+
+  // BodyHandler implementation
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body_data_pipe) override {
+    // TODO(crbug.com/871420): The request can be completed at this point
+    // however that requires more changes to SimpleURLLoader as OnComplete()
+    // will not have been called yet.
+    DCHECK(!body_reader_);
+    body_reader_ =
+        std::make_unique<BodyReader>(this, std::numeric_limits<int64_t>::max());
+    body_reader_->Start(std::move(body_data_pipe));
+  }
+
+  void NotifyConsumerOfCompletion(bool destroy_results) override {
+    body_reader_.reset();
+    std::move(headers_only_callback_)
+        .Run(simple_url_loader()->ResponseInfo()
+                 ? simple_url_loader()->ResponseInfo()->headers
+                 : nullptr);
+  }
+
+  void PrepareToRetry(base::OnceClosure retry_callback) override {
+    body_reader_.reset();
+    std::move(retry_callback).Run();
+  }
+
+ private:
+  // BodyReader::Delegate implementation
+  net::Error OnDataRead(uint32_t length, const char* data) override {
+    return net::OK;
+  }
+
+  void OnDone(net::Error error, int64_t total_bytes) override {
+    simple_url_loader()->OnBodyHandlerDone(error, total_bytes);
+  }
+
+  SimpleURLLoader::HeadersOnlyCallback headers_only_callback_;
+  std::unique_ptr<BodyReader> body_reader_;
+
+  DISALLOW_COPY_AND_ASSIGN(HeadersOnlyBodyHandler);
 };
 
 // BodyHandler implementation for saving the response to a file
@@ -1061,6 +1115,14 @@ void SimpleURLLoaderImpl::DownloadToStringOfUnboundedSizeUntilCrashAndDie(
   Start(url_loader_factory);
 }
 
+void SimpleURLLoaderImpl::DownloadHeadersOnly(
+    mojom::URLLoaderFactory* url_loader_factory,
+    HeadersOnlyCallback headers_only_callback) {
+  body_handler_ = std::make_unique<HeadersOnlyBodyHandler>(
+      this, std::move(headers_only_callback));
+  Start(url_loader_factory);
+}
+
 void SimpleURLLoaderImpl::DownloadToFile(
     mojom::URLLoaderFactory* url_loader_factory,
     DownloadToFileCompleteCallback download_to_file_complete_callback,
@@ -1246,6 +1308,7 @@ void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
 
   request_state_->finished = true;
   request_state_->net_error = net_error;
+
   // If it's a partial download or an error was received, erase the body.
   bool destroy_results =
       request_state_->net_error != net::OK && !allow_partial_results_;
@@ -1311,7 +1374,6 @@ void SimpleURLLoaderImpl::Retry() {
   url_loader_.reset();
 
   request_state_ = std::make_unique<RequestState>();
-
   body_handler_->PrepareToRetry(base::BindOnce(
       &SimpleURLLoaderImpl::StartRequest, weak_ptr_factory_.GetWeakPtr(),
       url_loader_factory_ptr_.get()));
