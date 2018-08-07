@@ -31,7 +31,7 @@ std::string GetAccountId() {
   // impossible to discover otherwise.
   return "user@gmail.com";
 #else
-  return "gaia-id-user@gmail.com";
+  return "gaia_id_for_user@gmail.com";
 #endif
 }
 
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
 
 IN_PROC_BROWSER_TEST_F(
     SingleClientUserConsentsSyncTest,
-    ShouldPreserveConsentsOnDisableSyncAndResubmitWhenReneabled) {
+    ShouldPreserveConsentsOnDisableSyncAndResubmitWhenReenabled) {
   SetSyncUserConsentSeparateTypeFeature(true);
 
   UserConsentSpecifics specifics;
@@ -158,5 +158,47 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(ExpectUserConsents({specifics}));
 }
+
+// ChromeOS does not support late signin after profile creation, so the test
+// below does not apply, at least in the current form.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
+                       ShouldSubmitIfSignedInAlthoughFullSyncNotEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled.
+      {switches::kSyncStandaloneTransport,
+       switches::kSyncUserConsentSeparateType},
+      // Disabled.
+      {});
+
+  // We avoid calling SetupSync(), because we don't want to turn on full sync,
+  // only sign in such that the standalone transport starts.
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetClient(0)->SignIn());
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncActive())
+      << "Full sync should be disabled";
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::USER_CONSENTS));
+
+  SyncConsent sync_consent;
+  sync_consent.set_confirmation_grd_id(1);
+  sync_consent.set_status(UserConsentTypes::GIVEN);
+
+  ConsentAuditorFactory::GetForProfile(GetProfile(0))
+      ->RecordSyncConsent(GetAccountId(), sync_consent);
+
+  UserConsentSpecifics specifics;
+  specifics.set_confirmation_grd_id(1);
+  // Account id may be compared to the synced account, thus, we need them to
+  // match.
+  specifics.set_account_id(GetAccountId());
+  EXPECT_TRUE(ExpectUserConsents({specifics}));
+}
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace

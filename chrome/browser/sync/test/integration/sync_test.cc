@@ -546,8 +546,12 @@ bool SyncTest::SetupClients() {
       LOG(FATAL) << "Could not create Gaia account.";
   }
 
+  auto* cl = base::CommandLine::ForCurrentProcess();
+  if (!cl->HasSwitch(switches::kSyncDeferredStartupTimeoutSeconds)) {
+    cl->AppendSwitchASCII(switches::kSyncDeferredStartupTimeoutSeconds, "1");
+  }
+
 #if defined(OS_CHROMEOS)
-  const auto* cl = base::CommandLine::ForCurrentProcess();
   // ARC_PACKAGE do not support supervised users, switches::kSupervisedUserId
   // need to be set in SetUpCommandLine() when a test will use supervise users.
   if (!cl->HasSwitch(switches::kSupervisedUserId)) {
@@ -622,8 +626,7 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
 
   DCHECK(!clients_[index]);
   clients_[index] = ProfileSyncServiceHarness::Create(
-      GetProfile(index), username_, "gaia-id-" + username_, password_,
-      singin_type);
+      GetProfile(index), username_, password_, singin_type);
   EXPECT_NE(nullptr, GetClient(index)) << "Could not create Client " << index;
   InitializeInvalidations(index);
 }
