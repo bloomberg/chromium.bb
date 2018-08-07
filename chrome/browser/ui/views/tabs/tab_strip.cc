@@ -572,7 +572,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
     PrepareForAnimation();
 
   Tab* tab = tab_at(model_index);
-  tab->set_closing(true);
+  tab->SetClosing(true);
 
   int old_x = tabs_.ideal_bounds(model_index).x();
   RemoveTabFromViewModel(model_index);
@@ -1823,12 +1823,18 @@ const Tab* TabStrip::GetLastVisibleTab() const {
 }
 
 void TabStrip::RemoveTabFromViewModel(int index) {
+  Tab* closing_tab = tab_at(index);
+  bool closing_tab_was_active = closing_tab->IsActive();
+
   // We still need to paint the tab until we actually remove it. Put it
   // in tabs_closing_map_ so we can find it.
-  tabs_closing_map_[index].push_back(tab_at(index));
+  tabs_closing_map_[index].push_back(closing_tab);
   UpdateTabsClosingMap(index + 1, -1);
   tabs_.Remove(index);
   selected_tabs_.DecrementFrom(index);
+
+  if (closing_tab_was_active)
+    closing_tab->ActiveStateChanged();
 }
 
 void TabStrip::RemoveAndDeleteTab(Tab* tab) {

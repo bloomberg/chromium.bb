@@ -108,7 +108,7 @@ class Tab : public gfx::AnimationDelegate,
   TabController* controller() const { return controller_; }
 
   // Used to set/check whether this Tab is being animated closed.
-  void set_closing(bool closing) { closing_ = closing; }
+  void SetClosing(bool closing);
   bool closing() const { return closing_; }
 
   // See description above field.
