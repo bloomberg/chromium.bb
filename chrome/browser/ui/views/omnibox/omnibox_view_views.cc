@@ -1328,6 +1328,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_SPACE:
+      if (!(control || alt || shift))
       {
         size_t start, end;
         GetSelectionBounds(&start, &end);
