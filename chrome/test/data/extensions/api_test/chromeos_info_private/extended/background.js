@@ -15,6 +15,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
       'managedDeviceStatus',
       'deviceType',
       'stylusStatus',
+      'assistantStatus',
     ], chrome.test.callbackPass(function(values) {
           switch (testName) {
             case 'kiosk':
@@ -55,6 +56,12 @@ chrome.app.runtime.onLaunched.addListener(function() {
               break;
             case 'stylus seen':
               chrome.test.assertEq('seen', values['stylusStatus']);
+              break;
+            case 'assistant unsupported':
+              chrome.test.assertEq('unsupported', values['assistantStatus']);
+              break;
+            case 'assistant supported':
+              chrome.test.assertEq('supported', values['assistantStatus']);
               break;
           }
         }));
