@@ -54,7 +54,7 @@ class CONTENT_EXPORT WebRtcEventLogger {
   // therefore be careful note to call any of BrowserContext's virtual methods.
   // TODO(eladalon): After changing to a Profile-centered interface, change this
   // to not even receive a pointer. https://crbug.com/775415
-  virtual void DisableForBrowserContext(BrowserContext* browser_context,
+  virtual void DisableForBrowserContext(const BrowserContext* browser_context,
                                         base::OnceClosure reply) = 0;
 
   // Call this to let the logger know when a PeerConnection was created.
