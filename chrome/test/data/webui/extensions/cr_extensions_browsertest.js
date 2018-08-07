@@ -92,7 +92,8 @@ TEST_F('CrExtensionsSidebarTest', 'LayoutAndClickHandlers', function() {
   this.runMochaTest(extension_sidebar_tests.TestNames.LayoutAndClickHandlers);
 });
 
-TEST_F('CrExtensionsSidebarTest', 'SetSelected', function() {
+// Flaky, see crbug.com/871541.
+TEST_F('CrExtensionsSidebarTest', 'DISABLED_SetSelected', function() {
   this.runMochaTest(extension_sidebar_tests.TestNames.SetSelected);
 });
 
@@ -346,9 +347,11 @@ TEST_F('CrExtensionsManagerUnitTest', 'Uninstall', function() {
   this.runMochaTest(extension_manager_tests.TestNames.Uninstall);
 });
 
-TEST_F('CrExtensionsManagerUnitTest', 'UninstallFromDetails', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.UninstallFromDetails);
-});
+// Flaky, see crbug.com/871539.
+TEST_F(
+    'CrExtensionsManagerUnitTest', 'DISABLED_UninstallFromDetails', function() {
+      this.runMochaTest(extension_manager_tests.TestNames.UninstallFromDetails);
+    });
 
 TEST_F('CrExtensionsManagerUnitTest', 'ToggleIncognito', function() {
   this.runMochaTest(extension_manager_tests.TestNames.ToggleIncognitoMode);
@@ -651,10 +654,13 @@ TEST_F('CrExtensionsNavigationHelperTest', 'Conversion', function() {
   this.runMochaTest(extension_navigation_helper_tests.TestNames.Conversions);
 });
 
-TEST_F('CrExtensionsNavigationHelperTest', 'PushAndReplaceState', function() {
-  this.runMochaTest(
-      extension_navigation_helper_tests.TestNames.PushAndReplaceState);
-});
+// Flaky, see crbug.com/871540.
+TEST_F(
+    'CrExtensionsNavigationHelperTest', 'DISABLED_PushAndReplaceState',
+    function() {
+      this.runMochaTest(
+          extension_navigation_helper_tests.TestNames.PushAndReplaceState);
+    });
 
 TEST_F('CrExtensionsNavigationHelperTest', 'SupportedRoutes', function() {
   this.runMochaTest(
