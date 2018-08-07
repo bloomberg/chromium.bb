@@ -946,10 +946,6 @@
       name: "PaymentApp",
       status: "experimental",
     },
-    {
-      name: "PaymentDetailsModifierData",
-      status: "stable",
-    },
     // PaymentRequest is enabled by default on Android
     {
       name: "PaymentRequest",

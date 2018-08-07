@@ -8,5 +8,5 @@ dictionary PaymentDetailsModifier {
     [ImplementedAs=supportedMethod] required DOMString supportedMethods;
     PaymentItem total;
     sequence<PaymentItem> additionalDisplayItems;
-    [RuntimeEnabled=PaymentDetailsModifierData] object data;
+    object data;
 };
