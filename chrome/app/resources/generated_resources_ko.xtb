@@ -795,7 +795,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" />의 <ph name="PEPPER_PLUGIN_NAME" />에서 내 컴퓨터에 액세스하려고 합니다</translation>
 <translation id="2178614541317717477">CA 손상</translation>
 <translation id="218070003709087997">숫자로 인쇄 부수를 표시하세요(1부터 999까지).</translation>
-<translation id="2183558561014688873">기기가 켜져 있고 잠금 해제되어 있을 때 "OK Google"이라고 말하면 언제든지 어시스턴트를 이용할 수 있습니다.</translation>
 <translation id="2187895286714876935">서버 인증서 가져오기 오류</translation>
 <translation id="2187906491731510095">확장 프로그램 업데이트됨</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> 열기</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252"><ph name="SITE" />에서 저장한 모든 데이터가 삭제됩니다. 쿠키는 삭제되지 않습니다.</translation>
 <translation id="237058345584060620">키를 사용하여 계정에 로그인할 수 있도록 키를 이 기기와 페어링하세요.</translation>
 <translation id="2371076942591664043">완료되면 열기(&amp;D)</translation>
-<translation id="2376559921867170420">Chromebook 설정이 완료되면 언제든지 어시스턴트 버튼을 누르거나 "Ok Google"이라고 말하여 어시스턴트로부터 도움을 받으세요.</translation>
 <translation id="2377319039870049694">목록 보기로 전환</translation>
 <translation id="2377667304966270281">하드 결함</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" />개의 파일이 선택됨</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">다른 지문 추가</translation>
 <translation id="3812525830114410218">잘못된 인증서</translation>
 <translation id="3813296892522778813">원하는 자료를 찾지 못했다면 <ph name="BEGIN_LINK_CHROMIUM" />Chrome 도움말<ph name="END_LINK_CHROMIUM" />을 참조하세요.</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">입력하지 않음</translation>
 <translation id="3819752733757735746">스위치 제어(스위치 1~2회 사용으로 컴퓨터 제어)</translation>
 <translation id="3819800052061700452">전체화면(&amp;F)</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">저장된 지문</translation>
 <translation id="407173827865827707">클릭 시</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: 로그인 오류</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">이메일 서명자 인증서</translation>
 <translation id="407520071244661467">배율</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" />을(를) 전송할 수 없습니다.</translation>

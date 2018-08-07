@@ -251,6 +251,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8179874765710681175">Instala Chrome en el teléfono. Te enviaremos un SMS a ese dispositivo.</translation>
 <translation id="8183957050892517584">Chromium almacenará de forma segura tus datos personales para que no tengas que volver a escribirlos.</translation>
 <translation id="8226081633851087288">{0,plural, =0{El Sistema operativo Chrome se reiniciará ahora}=1{El Sistema operativo Chrome se reiniciará en 1 segundo}other{El Sistema operativo Chrome se reiniciará en # segundos}}</translation>
+<translation id="825412236959742607">Chrome quitó parte del contenido de esta página porque usa demasiada memoria.</translation>
 <translation id="8255190535488645436">Google Chrome está usando tu cámara y tu micrófono.</translation>
 <translation id="8286862437124483331">Google Chrome está intentando mostrar contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un bloqueo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>

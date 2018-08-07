@@ -480,6 +480,11 @@
       如果此设置未指定，那么用户可以决定是否使用此功能。
 
       29 版及更高版本的 <ph name="PRODUCT_NAME" /> 中已取消此设置。</translation>
+<translation id="2433412232489478893">此政策可控制是否允许用户在 <ph name="PRODUCT_NAME" />使用网络文件共享功能。
+
+      如果未配置此政策或将其设为“True”，用户将能够使用网络文件共享功能。
+
+      如果将此政策设为“False”，用户将无法使用网络文件共享功能。</translation>
 <translation id="2438609638493026652">允许向 Google 报告 Android 应用安装过程中发生的重要事件。系统仅会针对通过政策触发安装的应用捕获相关事件。
 
       如果此政策设为 true，系统将会记录相关事件。
@@ -557,6 +562,7 @@
 <translation id="2598508021807251719">配置 <ph name="PRODUCT_OS_NAME" />可以使用哪些语言区域进行显示。
 
       如果已设置此政策，则用户只能将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策中指定的语言区域之一进行显示。如果此政策设为空列表或未设置，则 <ph name="PRODUCT_OS_NAME" />可以使用所有受支持的界面语言区域进行显示。如果此政策设为一个包含无效值的列表，则系统会忽略所有无效值。如果用户曾将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策所不允许的某种语言区域进行显示，那么当用户下次登录时，相应的显示语言区域将会切换到所允许的某种界面语言区域。如果用户已配置了首选语言区域，并且此政策允许其中的某一种首选语言区域，<ph name="PRODUCT_OS_NAME" />将会切换到此语言区域。否则，<ph name="PRODUCT_OS_NAME" />将会切换到此政策中指定的第一个有效值；如果此政策所含的条目都无效，就会切换到后备语言区域（目前为 en-US）。</translation>
+<translation id="2604182581880595781">配置网络文件共享功能相关政策。</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">为企业打印机提供配置。
@@ -636,6 +642,7 @@
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />客户端的 Windows 注册表位置：</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
 <translation id="2838830882081735096">禁止数据迁移和 ARC</translation>
+<translation id="2839294585867804686">网络文件共享功能设置</translation>
 <translation id="2840269525054388612">指定用户可以使用的打印机。
 
       仅当为 <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_WHITELIST" /> 时，才可使用此政策
@@ -1106,6 +1113,7 @@
       如果未设置此政策，系统将启用包含网址的匿名化数据收集功能，但用户将能够更改此设置。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4261820385751181068">设备登录屏幕语言区域</translation>
+<translation id="4264607809747169568">控制是否允许在 Chrome 操作系统使用网络文件共享功能</translation>
 <translation id="427220754384423013">指定用户可以使用的打印机。
 
       仅当为 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_WHITELIST" /> 时，才可使用此政策。
@@ -1503,6 +1511,15 @@
       该策略值应该以毫秒为单位。</translation>
 <translation id="5511702823008968136">启用书签栏</translation>
 <translation id="5512418063782665071">主页网址</translation>
+<translation id="551639594034811656">此政策可指定一个百分比列表，这些百分比用于界定组织单元中每天（从首次发现相应更新的那一天起算）要更新的那部分 <ph name="PRODUCT_OS_NAME" />设备。发现时间会晚于更新发布时间，这是因为设备可能要在更新发布一段时间之后才会检查是否有更新。
+
+      每个 (天数, 百分比) 对都包含自发现更新当天起的指定天数内，必须完成更新的设备百分比。例如，如果有以下对：[(4, 40), (10, 70), (15, 100)]，则表示在发现更新后的 4 天内，应完成 40% 的设备更新，10 天内完成 70% 的设备更新，以此类推。
+
+      如果为此政策指定了值，相应更新将会忽略 <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> 政策并改为遵守此政策。
+
+      如果此列表为空，系统将不会分阶段进行更新，而是会根据其他设备政策应用更新。
+
+      此政策不适用于版本切换。</translation>
 <translation id="5523812257194833591">延迟后的自动登录公用自助终端。
 
       如果设置了此政策，则用户未与登录屏幕互动的时间达到指定的时长后，将会自动登录指定的会话。此公用自助终端必须已配置（参阅 |DeviceLocalAccounts|）。
@@ -2386,6 +2403,9 @@
       如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 SitePerProcess。
       如果未配置此政策，用户将能够更改此设置。
       </translation>
+<translation id="7902255855035461275">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址使用视频捕获设备，并且不会进行提示。
+
+      请注意：在 45 版之前，只有在自助服务终端模式下此政策才受支持。</translation>
 <translation id="7912255076272890813">配置允许的应用/扩展程序类型</translation>
 <translation id="7915236031252389808">您可以在此指定代理 .pac 文件的网址。
 

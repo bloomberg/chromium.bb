@@ -792,7 +792,6 @@
 <translation id="2178098616815594724">നിങ്ങളുടെ കമ്പ്യൂട്ടർ ആക്‌സസ് ചെയ്യാൻ <ph name="PEPPER_PLUGIN_DOMAIN" /> എന്നതിലെ <ph name="PEPPER_PLUGIN_NAME" /> ആഗ്രഹിക്കുന്നു</translation>
 <translation id="2178614541317717477">CA കോംപ്രമൈസ്</translation>
 <translation id="218070003709087997">എത്ര പകർപ്പുകൾ പ്രിന്റുചെയ്യണമെന്ന് സൂചിപ്പിക്കാൻ ഒരു നമ്പര്‍ ഉപയോഗിക്കുക (1 മുതൽ 999 വരെ).</translation>
-<translation id="2183558561014688873">നിങ്ങളുടെ ഉപകരണം സജീവമായി, അൺലോക്ക് ചെയ്യുമ്പോൾ "OK Google" എന്നുപറഞ്ഞ് ഏതുസമയത്തും നിങ്ങളുടെ അസിസ്‌റ്റന്റിനെ ആക്‌സസ് ചെയ്യുക.</translation>
 <translation id="2187895286714876935">സെര്‍വര്‍ സാക്‍ഷ്യപത്ര ഇറക്കുമതി പിശക്</translation>
 <translation id="2187906491731510095">വിപുലീകരണങ്ങൾ അപ്‌ഡേറ്റ് ചെയ്‌തു</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> തുറക്കുക</translation>
@@ -921,7 +920,6 @@
 <translation id="2369536625682139252">കുക്കികൾ ഒഴികെ, <ph name="SITE" /> സംഭരിച്ച മുഴുവൻ ഡാറ്റയും ഇല്ലാതാക്കപ്പെടും.</translation>
 <translation id="237058345584060620">നിങ്ങളുടെ അക്കൗണ്ടിലേക്ക് സൈൻ ഇൻ ചെയ്യാൻ കീ ഉപയോഗിക്കുന്നതിന് ഈ ഉപകരണവുമായി കീ ജോടിയാക്കുക</translation>
 <translation id="2371076942591664043">ചെയ്തുകഴിയുമ്പോള്‍ &amp;തുറക്കുക</translation>
-<translation id="2376559921867170420">നിങ്ങളുടെ Chromebook സജ്ജീകരിക്കുമ്പോൾ, ഏതുസമയത്തും നിങ്ങളുടെ അസിസ്‌റ്റന്റിൽ നിന്ന് സഹായം ലഭിക്കുന്നതിന് അസിസ്റ്റന്റ് ബട്ടൺ അമർത്തുക അല്ലെങ്കിൽ "Ok Google" എന്ന് പറയുക.</translation>
 <translation id="2377319039870049694">ലിസ്റ്റ് കാഴ്‌ചയിലേക്ക് മാറുക</translation>
 <translation id="2377667304966270281">ഹാർഡ് ഫോൾട്ടുകൾ</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ഫയലുകൾ തിരഞ്ഞെടുത്തു</translation>
@@ -1876,6 +1874,7 @@
 <translation id="381202950560906753">മറ്റൊന്ന് ചേർക്കുക</translation>
 <translation id="3812525830114410218">മോശം സർട്ടിഫിക്കറ്റ്</translation>
 <translation id="3813296892522778813">നിങ്ങൾ തിരയുന്നത് കണ്ടില്ലെങ്കിൽ, <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome സഹായത്തിൽ<ph name="END_LINK_CHROMIUM" /> പോകുക</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">നൽകിയിട്ടില്ല</translation>
 <translation id="3819752733757735746">ആക്‌സസ്സ് മാറുക (ഒന്നോ രണ്ടോ തവണ മാറുന്നതിലൂടെ കമ്പ്യൂട്ടർ നിയന്ത്രിക്കുക)</translation>
 <translation id="3819800052061700452">&amp;പൂര്‍ണ്ണ സ്‌ക്രീന്‍</translation>
@@ -2045,7 +2044,6 @@
 <translation id="4068776064906523561">സംരക്ഷിച്ച വിരലടയാളങ്ങൾ</translation>
 <translation id="407173827865827707">ക്ലിക്കിൽ</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: സൈൻ ഇൻ പിശക്</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">സൈനര്‍‌ സര്‍‌ട്ടിഫിക്കറ്റ് ഇമെയില്‍‌ അയയ്‌ക്കുക</translation>
 <translation id="407520071244661467">സ്കെയിൽ</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> കാസ്‌റ്റുചെയ്യാനാവുന്നില്ല.</translation>

@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Adresu <ph name="PEPPER_PLUGIN_DOMAIN" /> esantis papildinys „<ph name="PEPPER_PLUGIN_NAME" />“ nori pasiekti kompiuterį</translation>
 <translation id="2178614541317717477">CA pažeidimo galimybė</translation>
 <translation id="218070003709087997">Skaičiumi nurodykite, kiek kopijų spausdinti (nuo 1 iki 999).</translation>
-<translation id="2183558561014688873">Pasiekite Padėjėją bet kuriuo metu pasakę „Ok Google“, kai įrenginys veikia ir yra neužrakintas.</translation>
 <translation id="2187895286714876935">Serverio sertifikato importavimo klaida</translation>
 <translation id="2187906491731510095">Plėtiniai atnaujinti</translation>
 <translation id="2188881192257509750">Atidaryti „<ph name="APPLICATION" />“</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Visi <ph name="SITE" /> saugomi duomenys bus ištrinti, išskyrus slapukus.</translation>
 <translation id="237058345584060620">Susiekite raktą su šiuo įrenginiu, kad jį naudodami galėtumėte prisijungti prie paskyros</translation>
 <translation id="2371076942591664043">Baigus &amp;atidaryti</translation>
-<translation id="2376559921867170420">Kai „Chromebook“ nustatytas, norėdami bet kuriuo metu gauti pagalbos iš Padėjėjo, paspauskite Padėjėjo mygtuką arba pasakykite „Ok Google“.</translation>
 <translation id="2377319039870049694">Perjungti į sąrašo rodinį</translation>
 <translation id="2377667304966270281">Sunkūs gedimai</translation>
 <translation id="2378075407703503998">Pasirinkta failų: <ph name="SELCTED_FILE_COUNT" /></translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Pridėti kitą</translation>
 <translation id="3812525830114410218">Netinkamas sertifikatas</translation>
 <translation id="3813296892522778813">Jei nerandate to, ko ieškote, eikite į <ph name="BEGIN_LINK_CHROMIUM" />„Google Chrome“ pagalbos puslapį<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Nepateikta</translation>
 <translation id="3819752733757735746">Prieiga jungikliu (valdykite kompiuterį tik vienu ar dviem jungikliais)</translation>
 <translation id="3819800052061700452">&amp;Visas ekranas</translation>
@@ -2049,7 +2048,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4068776064906523561">Išsaugoti kontroliniai kodai</translation>
 <translation id="407173827865827707">Spustelėjus</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: prisijungimo klaida</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">El. laiškus pasirašančiojo sertifikatas</translation>
 <translation id="407520071244661467">Mastelis</translation>
 <translation id="4075639477629295004">Nepavyko perduoti „<ph name="FILE_NAME" />“.</translation>

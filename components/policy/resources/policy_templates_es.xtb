@@ -297,11 +297,11 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si no se configura una opción, se utilizará el valor predeterminado.
 
       Si no se define esta política, se utilizarán todos los valores predeterminados.</translation>
-<translation id="1958138414749279167">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios rellenen automáticamente formularios web con información almacenada anteriormente, como la información de la dirección.
+<translation id="1958138414749279167">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios rellenen formularios web automáticamente con direcciones almacenadas anteriormente.
 
-      Si inhabilitas esta opción, la función Autocompletar no hará sugerencias ni rellenará la información de la dirección, y tampoco guardará información adicional de la dirección que el usuario envíe cuando esté navegando por la Web.
+      Si inhabilitas esta opción, la función Autocompletar no hará sugerencias ni rellenará los datos de la dirección, y tampoco guardará información adicional de la dirección que el usuario envíe cuando esté navegando por la Web.
 
-      Si habilitas esta opción o no estableces ningún valor, el usuario podrá controlar la función Autocompletar para información de la dirección en la IU.</translation>
+      Si habilitas esta opción o no estableces ningún valor, el usuario podrá controlar la función Autocompletar para datos de la dirección en la UI.</translation>
 <translation id="1960840544413786116">Si se permiten los certificados emitidos por los anclajes de confianza locales que no tienen la extensión subjectAlternativeName</translation>
 <translation id="1964634611280150550">Modo de incógnito inhabilitado</translation>
 <translation id="1964802606569741174">Esta política no influye en la aplicación YouTube para Android. Si se debe aplicar el modo seguro en YouTube, deberás inhabilitar la descarga de la aplicación YouTube para Android.</translation>

@@ -792,7 +792,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> ב-<ph name="PEPPER_PLUGIN_DOMAIN" /> רוצה גישה למחשב שלך</translation>
 <translation id="2178614541317717477">‏רשות האישורים (CA) בסכנה</translation>
 <translation id="218070003709087997">ציין את מספר העותקים שיש להדפיס (1 עד 999).</translation>
-<translation id="2183558561014688873">‏גישה אל Assistant בכל פעם שאומרים "OK Google" כשהמכשיר ער ולא נעול.</translation>
 <translation id="2187895286714876935">שגיאת ייבוא של אישור שרת</translation>
 <translation id="2187906491731510095">התוספים עודכנו</translation>
 <translation id="2188881192257509750">פתח את <ph name="APPLICATION" /></translation>
@@ -921,7 +920,6 @@
 <translation id="2369536625682139252">‏כל הנתונים שאוחסנו על-ידי <ph name="SITE" /> יימחקו, מלבד קובצי ה-Cookie.</translation>
 <translation id="237058345584060620">צריך להתאים את המפתח למכשיר זה כדי שניתן יהיה להשתמש בו לכניסה לחשבון</translation>
 <translation id="2371076942591664043">פתח &amp;בסיום</translation>
-<translation id="2376559921867170420">‏אחרי הגדרת ה-Chromebook, כדי לקבל עזרה מה-Assistant אפשר ללחוץ על לחצן ה-Assistant או לומר "OK Google".</translation>
 <translation id="2377319039870049694">מעבר לתצוגת רשימה</translation>
 <translation id="2377667304966270281">שגיאות חמורות</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> קבצים נבחרו</translation>
@@ -1876,6 +1874,7 @@
 <translation id="381202950560906753">להמשך הוספה</translation>
 <translation id="3812525830114410218">אישור פגום</translation>
 <translation id="3813296892522778813">‏אם אתה לא מוצא את מה שחיפשת, עבור אל <ph name="BEGIN_LINK_CHROMIUM" />מרכז העזרה של Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">לא צוין</translation>
 <translation id="3819752733757735746">גישה באמצעות מתג (שלוט במחשב בעזרת מתג אחד או שניים בלבד)</translation>
 <translation id="3819800052061700452">&amp;מסך מלא</translation>
@@ -2046,7 +2045,6 @@
 <translation id="4068776064906523561">טביעות אצבע שמורות</translation>
 <translation id="407173827865827707">בזמן לחיצה</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: כניסה שגויה</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">אישור חותם אימייל</translation>
 <translation id="407520071244661467">שנה קנה מידה</translation>
 <translation id="4075639477629295004">לא ניתן להעביר את <ph name="FILE_NAME" />.</translation>

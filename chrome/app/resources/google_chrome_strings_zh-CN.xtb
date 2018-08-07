@@ -252,6 +252,7 @@
 <translation id="8179874765710681175">请在您的手机上安装 Chrome。我们会向您的手机发送一条短信。</translation>
 <translation id="8183957050892517584">Chrome 将妥善存储您的个人详细信息，这样您日后就不必重复输入了。</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome 操作系统将会立即重启}=1{Chrome 操作系统将会在 1 秒后重启}other{Chrome 操作系统将会在 # 秒后重启}}</translation>
+<translation id="825412236959742607">此网页占用的内存过多，因此 Chrome 移除了部分内容。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>
 <translation id="8286862437124483331">Google Chrome正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
 <translation id="8290100596633877290">哎呀！Google Chrome 浏览器崩溃了。是否立即重新启动？</translation>

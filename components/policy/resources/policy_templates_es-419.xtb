@@ -503,6 +503,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta opción, el usuario podrá decidir si quiere o no utilizar esta función.
 
       Esta opción se eliminó de la versión 29 de <ph name="PRODUCT_NAME" /> y versiones posteriores.</translation>
+<translation id="2433412232489478893">Esta política controla si un usuario puede usar la función "Network File Shares" para <ph name="PRODUCT_NAME" />.
+
+      Cuando no se configura o se establece como verdadera, los usuarios podrán usar esta función.
+
+      Cuando se establece como falsa, los usuarios no podrán usar esta función.</translation>
 <translation id="2438609638493026652">Permite informar eventos clave durante la instalación de apps de Android en Google. Solo se capturan los eventos de las apps cuya instalación se activó a través de la política.
 
       Si la política se establece como verdadera, se registrarán los eventos.
@@ -580,6 +585,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2598508021807251719">Permite configurar los idiomas en que se puede mostrar <ph name="PRODUCT_OS_NAME" />.
 
       Si se establece esta política, el usuario solo puede configurar <ph name="PRODUCT_OS_NAME" /> para que se muestre en uno de los idiomas especificados por esta política. Si se establece con una lista vacía o no se establece, <ph name="PRODUCT_OS_NAME" /> se puede mostrar en todos los idiomas de IU compatibles. Si se establece con una lista de valores no válidos, se ignorarán todos estos. Si un usuario configuró anteriormente <ph name="PRODUCT_OS_NAME" /> para que se mostrara en un idioma de IU que no se permite según esta política, el idioma de visualización se cambiará a uno permitido la próxima vez que acceda el usuario. Si este configuró los idiomas preferidos y la política permite uno de ellos, <ph name="PRODUCT_OS_NAME" /> se cambiará a ese idioma. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará al primer valor válido que especifica esta política o a un idioma alternativo (actualmente en-US) si esta política solo contiene entradas no válidas.</translation>
+<translation id="2604182581880595781">Configura las políticas relacionadas con la función "Network File Shares".</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona configuraciones para las impresoras empresariales.
@@ -659,6 +665,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2823870601012066791">Ubicación del registro de Windows para los clientes de <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activar el modo de incógnito</translation>
 <translation id="2838830882081735096">No permitir la migración de datos y ARC</translation>
+<translation id="2839294585867804686">Configuración de "Network File Shares"</translation>
 <translation id="2840269525054388612">Especifica las impresoras que puede utilizar el usuario.
 
       Esta política solo se usa si se elige <ph name="PRINTERS_WHITELIST" /> para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1140,6 +1147,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece, se habilitará la recopilación, y el usuario podrá cambiarla.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional de la pantalla de acceso del dispositivo</translation>
+<translation id="4264607809747169568">Controlar la disponibilidad de "Network File Shares" para el Sistema operativo Chrome</translation>
 <translation id="427220754384423013">Especifica las impresoras que puede utilizar el usuario.
 
       Esta política solo se usa si se elige <ph name="PRINTERS_WHITELIST" /> para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1537,6 +1545,14 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       El valor de la política se debe especificar en milisegundos.</translation>
 <translation id="5511702823008968136">Habilitar barra de favoritos</translation>
 <translation id="5512418063782665071">URL de la página principal</translation>
+<translation id="551639594034811656">Esta política define una lista de porcentajes que determinará la fracción de dispositivos <ph name="PRODUCT_OS_NAME" /> en la UO que se actualizará por día a partir del momento en que se descubre la actualización (posterior a la publicación, conforme a lo que tarde el dispositivo en buscar actualizaciones).
+      Cada par (día, porcentaje) contiene el porcentaje de la flota que se debe actualizar en una cantidad dada de días a partir del descubrimiento de la actualización. Por ejemplo, si tenemos los pares [(4, 40), (10, 70), (15, 100)], el 40% de la flota debe haberse actualizado 4 días después de descubrir la actualización. El 70% debe actualizarse después de 10 días, y así sucesivamente.
+
+      Si hay un valor definido para esta política, las actualizaciones ignorarán la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> y, en su lugar, seguirán esta.
+
+      Si esta lista está vacía, no se definirán etapas y se aplicarán las actualizaciones conforme a otras políticas de dispositivo.
+
+      No se aplica esta política para los cambios de canales.</translation>
 <translation id="5523812257194833591">Una sesión pública para acceso automático después de una demora
 
       Si se establece esta política, se accederá automáticamente a la sesión especificada después de que haya transcurrido un período en la pantalla de acceso sin la interacción del usuario. La sesión pública ya debe estar configurada (ver |DeviceLocalAccounts|).
@@ -2438,6 +2454,11 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
       Si se inhabilita, no se aplicará el aislamiento de sitios, y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Aun así, los usuarios podrán habilitar SitePerProcess de forma manual.
       Si no se establece, el usuario podrá cambiar esta configuración.
       </translation>
+<translation id="7902255855035461275">Los patrones de esta lista se compararán con el origen
+      de seguridad de la URL solicitante. Si se encuentra una coincidencia,
+      se concede acceso a los dispositivos de captura de video sin solicitarlo.
+
+      NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</translation>
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
 <translation id="7915236031252389808">Puedes especificar una URL para un archivo .pac de proxy aquí.
 

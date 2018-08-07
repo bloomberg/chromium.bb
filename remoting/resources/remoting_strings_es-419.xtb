@@ -136,6 +136,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="405887016757208221">La computadora remota no pudo inicializar la sesión. Si el problema persiste, intenta volver a configurar el host.</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="409800995205263688">NOTA: La configuración de la política solo permite conexiones entre computadoras que estén dentro de tu red.</translation>
+<translation id="4126409073460786861">Después de completar la configuración, actualiza esta página. Luego, para acceder a la computadora, deberás elegir tu dispositivo y escribir el PIN.</translation>
 <translation id="4145029455188493639">Accediste como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Faltan algunos de los componentes necesarios. Asegúrate de tener instalada la última versión del software y vuelve a intentarlo.</translation>
 <translation id="4156740505453712750">Debes elegir un PIN de <ph name="BOLD_START" />al menos seis dígitos<ph name="BOLD_END" /> para proteger el acceso a esta computadora. Se solicitará ese PIN cada vez que se establezca una conexión con esa computadora desde otra ubicación.</translation>
@@ -270,6 +271,7 @@ PC</translation>
 <translation id="6998989275928107238">A</translation>
 <translation id="7019153418965365059">Error de host no reconocido: <ph name="HOST_OFFLINE_REASON" /></translation>
 <translation id="701976023053394610">Asistencia remota</translation>
+<translation id="7026930240735156896">Sigue las instrucciones para configurar la computadora para acceder de forma remota.</translation>
 <translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
 <translation id="7067321367069083429">La pantalla cuenta con función táctil</translation>
 <translation id="7116737094673640201">Bienvenido a Escritorio remoto de Chrome</translation>

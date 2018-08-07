@@ -795,7 +795,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> पर <ph name="PEPPER_PLUGIN_NAME" /> आपके कंप्यूटर को एक्सेस करना चाहता है</translation>
 <translation id="2178614541317717477">CA समझौता</translation>
 <translation id="218070003709087997">प्रिंट की जाने वाली कॉपी की संख्या (1 से 999) दर्शाने के लिए किसी संख्या का उपयोग करें.</translation>
-<translation id="2183558561014688873">अपना डिवाइस चालू होने और अनलॉक होने पर कभी भी "OK Google" बोलें और अपनी Assistant सेवा एक्सेस करें.</translation>
 <translation id="2187895286714876935">सर्वर प्रमाणपत्र आयात गड़बड़ी</translation>
 <translation id="2187906491731510095">एक्सटेंशन अपडेट किए गए</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> खोलें</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">कुकी को छोड़कर, <ph name="SITE" /> का स्टोर किया हुआ सारा डेटा मिटा दिया जाएगा.</translation>
 <translation id="237058345584060620">अपनी 'सुरक्षा चाबी' को इस डिवाइस से जोड़ें ताकि आप अपने खाते में साइन इन करने के लिए इसका इस्तेमाल कर सकें</translation>
 <translation id="2371076942591664043">&amp;पू्र्ण होने पर खोलें</translation>
-<translation id="2376559921867170420">आपका Chromebook सेट अप हो जाने पर, किसी भी समय अपनी Assistant से मदद पाने के लिए Assistant बटन दबाएं या "OK Google" बोलें.</translation>
 <translation id="2377319039870049694">'सूची की तरह देखें' पर स्विच करें</translation>
 <translation id="2377667304966270281">हार्ड फ़ॉल्ट</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> फ़ाइलें चयनित</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">दूसरा जोड़ें</translation>
 <translation id="3812525830114410218">गलत प्रमाणपत्र</translation>
 <translation id="3813296892522778813">यदि आपको वह चीज़ नहीं मिल रही है जिसे आप खोज रहे हैं, तो <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome सहायता<ph name="END_LINK_CHROMIUM" /> पर जाएं</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">नहीं दिया गया</translation>
 <translation id="3819752733757735746">स्विच एक्सेस (बस एक या दो स्विच से कंप्यूटर नियंत्रित करें)</translation>
 <translation id="3819800052061700452">&amp;पूर्ण स्क्रीन</translation>
@@ -2048,7 +2047,6 @@
 <translation id="4068776064906523561">सहेजे गए फ़िंगरप्रिंट</translation>
 <translation id="407173827865827707">क्लिक करने पर</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: प्रवेश करने संबंधी गड़बड़ी</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">ईमेल हस्ताक्षरकर्ता प्रमाणपत्र</translation>
 <translation id="407520071244661467">स्केल</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> कास्ट नहीं हो पा रहा है.</translation>
@@ -3241,7 +3239,7 @@
 <translation id="5924047253200400718">सहायता प्राप्त करें<ph name="SCANNING_STATUS" /></translation>
 <translation id="5924527146239595929">नई फ़ोटो लें या मौजूदा फ़ोटो या आइकॉन चुनें.
     <ph name="LINE_BREAK" />
-    यह तस्वीर Chromebook के साइन इन स्क्रीन और लॉक स्क्रीन पर दिखाई देगी.</translation>
+    यह तस्वीर Chromebook की साइन इन स्क्रीन और लॉक स्क्रीन पर दिखाई देगी.</translation>
 <translation id="5925147183566400388">प्रमाणन अभ्यास कथन पॉइंटर</translation>
 <translation id="592880897588170157">PDF फ़ाइलों को Chrome में अपने आप खोलने के बजाय उन्हें डाउनलोड करें</translation>
 <translation id="5931146425219109062">आप जिन वेबसाइट पर जाते हैं, उन पर मौजूद अपना सभी डेटा पढ़ें और बदलें</translation>

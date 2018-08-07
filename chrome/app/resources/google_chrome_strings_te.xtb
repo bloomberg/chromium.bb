@@ -154,7 +154,7 @@
 <translation id="4990567037958725628">Google Chrome కేనరీ</translation>
 <translation id="5028489144783860647">Google Chrome మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
 <translation id="5062123544085870375">Chrome OSను మళ్లీ ప్రారంభించండి</translation>
-<translation id="5090044601776247154">పర్యవేక్షించబడే వినియోగదారు ప్రొఫైల్‌లు Google Chrome 70తో ప్రారంభమయ్యే వాటిల్లో ఇకపై అందుబాటులో ఉండవు.</translation>
+<translation id="5090044601776247154">Google Chrome 70తో మొదలు పెట్టి, తర్వాతి వెర్షన్‌లలో పర్యవేక్షించబడే వినియోగదారు ప్రొఫైల్‌లు ఇకపై అందుబాటులో ఉండవు.</translation>
 <translation id="5132929315877954718">Google Chrome కోసం గొప్ప అనువర్తనాలు, ఆటలు, పొడిగింపులు మరియు థీమ్‌లను కనుగొనండి.</translation>
 <translation id="5166975452760862670">Google Chrome ఈ భాషలో ప్రదర్శించబడుతోంది</translation>
 <translation id="5170938038195470297">మీ ప్రొఫైల్ ఉపయోగించబడదు ఎందుకంటే ఇది ఒక క్రొత్త Google Chrome సంస్కరణ నుండి తీసుకోబడింది. కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chrome యొక్క క్రొత్త సంస్కరణను ఉపయోగించండి.</translation>
@@ -165,7 +165,7 @@
 <translation id="5386244825306882791">ఇది మీరు Chromeని ప్రారంభించేటప్పుడు లేదా ఓమ్నిపెట్టె నుండి శోధించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="5430073640787465221">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Google Chrome మీ సెట్టింగ్‌లను తిరిగి పొందలేకపోయింది.</translation>
 <translation id="5483595757826856374">{0,plural, =0{ఇప్పుడు Chrome తిరిగి ప్రారంభించబడుతుంది}=1{1 సెకనులో Chrome తిరిగి ప్రారంభించబడుతుంది}other{# సెకన్లలో Chrome తిరిగి ప్రారంభించబడుతుంది}}</translation>
-<translation id="5514308096618405748">Linux (బీటా)గా అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS" /> ద్వారా Chrome OS సాధ్యం అవుతుంది.</translation>
+<translation id="5514308096618405748">Linux (బీటా) లాగానే, Chrome OS కూడా అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS" />పై ఎంతగానో ఆధారపడుతుంది.</translation>
 <translation id="556024056938947818">Google Chrome పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> హానికరం కావచ్చు, కావున Chrome దాన్ని బ్లాక్ చేసింది.</translation>
@@ -251,6 +251,7 @@
 <translation id="8179874765710681175">మీ ఫోన్‌లో Chromeని ఇన్‌స్టాల్ చేయండి. మేము మీ ఫోన్‌కు SMSను పంపుతాము.</translation>
 <translation id="8183957050892517584">Chrome మీ వ్యక్తిగత వివరాలను సురక్షితంగా నిల్వ చేస్తుంది కాబట్టి మీరు వాటిని మళ్లీ టైప్ చేయాల్సిన అవసరం లేదు.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS ఇప్పుడు మళ్లీ ప్రారంభించబడుతుంది}=1{Chrome OS 1 సెకనులో మళ్లీ ప్రారంభించబడుతుంది}other{Chrome OS # సెకన్లలో మళ్లీ ప్రారంభించబడుతుంది}}</translation>
+<translation id="825412236959742607">ఈ పేజీ చాలా మెమరీని ఉపయోగిస్తుంది, కాబట్టి Chrome కొంత కంటెంట్‌ను తీసివేసింది.</translation>
 <translation id="8255190535488645436">Google Chrome మీ కెమెరా మరియు మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>
 <translation id="8286862437124483331">Google Chrome పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది. దీన్ని అనుమతించడానికి మీ Windows పాస్‌వర్డ్‌ను టైప్ చేయండి.</translation>
 <translation id="8290100596633877290">ఆపండి! Google Chrome క్రాష్ అయ్యింది. ఇప్పుడు మళ్ళీ ప్రారంభించాల?</translation>

@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">O plug-in <ph name="PEPPER_PLUGIN_NAME" /> do domínio <ph name="PEPPER_PLUGIN_DOMAIN" /> quer acessar seu computador</translation>
 <translation id="2178614541317717477">Compromisso da autoridade de certificação</translation>
 <translation id="218070003709087997">Use um número para indicar o número de cópias a serem impressas (1 a 999).</translation>
-<translation id="2183558561014688873">Acesse seu Assistente sempre que disser "Ok Google" quando seu dispositivo estiver ativado e desbloqueado.</translation>
 <translation id="2187895286714876935">Erro de importação do certificado de servidor</translation>
 <translation id="2187906491731510095">Extensões atualizadas</translation>
 <translation id="2188881192257509750">Abrir <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Os dados armazenados pelo <ph name="SITE" /> serão excluídos, exceto os cookies.</translation>
 <translation id="237058345584060620">Pareie sua chave com este dispositivo para fazer login na sua conta</translation>
 <translation id="2371076942591664043">Abrir quando estiver &amp;concluído</translation>
-<translation id="2376559921867170420">Quando o Chromebook estiver configurado, pressione o botão do Assistente ou diga "Ok Google" para receber ajuda do Assistente a qualquer momento.</translation>
 <translation id="2377319039870049694">Alternar para a visualização de lista</translation>
 <translation id="2377667304966270281">Falhas graves</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> arquivos selecionados</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">Adicionar outra</translation>
 <translation id="3812525830114410218">Certificado inválido</translation>
 <translation id="3813296892522778813">Se você não encontrar o que está procurando, acesse a <ph name="BEGIN_LINK_CHROMIUM" />Ajuda do Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Não fornecido</translation>
 <translation id="3819752733757735746">Acesso com interruptor (controlar o computador com apenas um ou dois interruptores)</translation>
 <translation id="3819800052061700452">&amp;Tela cheia</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">Impressões digitais salvas</translation>
 <translation id="407173827865827707">Ao clicar</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: erro de login</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Certificado do signatário do e-mail</translation>
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">Não foi possível transmitir o arquivo <ph name="FILE_NAME" /></translation>

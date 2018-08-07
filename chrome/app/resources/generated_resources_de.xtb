@@ -792,7 +792,6 @@
 <translation id="2178098616815594724">Das Plug-in <ph name="PEPPER_PLUGIN_NAME" /> auf <ph name="PEPPER_PLUGIN_DOMAIN" /> möchte auf Ihren Computer zugreifen</translation>
 <translation id="2178614541317717477">Kompromittierung der Zertifizierungsstelle</translation>
 <translation id="218070003709087997">Geben Sie eine Zahl ein, um die Anzahl der zu druckenden Exemplare festzulegen (1 bis 999).</translation>
-<translation id="2183558561014688873">Bei aktivem Bildschirm und entsperrtem Gerät steht Ihnen Google Assistant jederzeit zur Verfügung, wenn Sie "Ok Google" sagen.</translation>
 <translation id="2187895286714876935">Fehler beim Importieren des Serverzertifikats</translation>
 <translation id="2187906491731510095">Erweiterungen wurden aktualisiert</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> öffnen</translation>
@@ -921,7 +920,6 @@
 <translation id="2369536625682139252">Alle von <ph name="SITE" /> gespeicherten Daten werden gelöscht, mit Ausnahme von Cookies.</translation>
 <translation id="237058345584060620">Koppeln Sie Ihren Schlüssel mit diesem Gerät, um sich damit in Ihrem Konto anmelden zu können</translation>
 <translation id="2371076942591664043">Nach &amp;Download öffnen</translation>
-<translation id="2376559921867170420">Wenn Ihr Chromebook eingerichtet ist, können Sie die Assistant-Taste drücken oder "Ok Google" sagen, um sich jederzeit von Assistant helfen zu lassen.</translation>
 <translation id="2377319039870049694">Zur Listenansicht wechseln</translation>
 <translation id="2377667304966270281">Harte Fehler</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> Dateien ausgewählt</translation>
@@ -1875,6 +1873,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="381202950560906753">Weitere hinzufügen</translation>
 <translation id="3812525830114410218">Ungültiges Zertifikat</translation>
 <translation id="3813296892522778813">Wenn Sie keine Ergebnisse erhalten, <ph name="BEGIN_LINK_CHROMIUM" />rufen Sie die Google Chrome-Hilfe auf<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Keine Angabe</translation>
 <translation id="3819752733757735746">Schalterzugriff (zum Steuern des Computers mit nur einem oder zwei Schaltern)</translation>
 <translation id="3819800052061700452">V&amp;ollbildmodus</translation>
@@ -2045,7 +2044,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4068776064906523561">Gespeicherte Fingerabdrücke</translation>
 <translation id="407173827865827707">Bei Klick</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: Anmeldefehler</translation>
-<translation id="4071828814509176232">Ok Google</translation>
 <translation id="4074900173531346617">Zertifikat für E-Mail-Signaturen</translation>
 <translation id="407520071244661467">Skalieren</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> kann nicht gestreamt werden.</translation>

@@ -155,6 +155,7 @@
 <translation id="2462626033734746142">单选按钮组</translation>
 <translation id="2471138580042810658">6级标题标记</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{1个星号}other{#个星号}}</translation>
+<translation id="249330843868392562">打开文字转语音设置</translation>
 <translation id="2523609930580546572">ChromeVox 教程</translation>
 <translation id="2525706221823668172">Chromebook 键盘快捷键</translation>
 <translation id="2549392850788122959">已重置“<ph name="KEY" />”。</translation>
@@ -752,6 +753,7 @@
 <translation id="7241683698754534149">在新标签页中打开详细说明</translation>
 <translation id="7248671827512403053">应用</translation>
 <translation id="725969808843520477">下一个单选按钮</translation>
+<translation id="7261612856573623172">系统默认文字转语音声音</translation>
 <translation id="7269119382257320590">不读出任何标点符号</translation>
 <translation id="7273174640290488576">空白</translation>
 <translation id="7274770952766771364">备注参考资料</translation>

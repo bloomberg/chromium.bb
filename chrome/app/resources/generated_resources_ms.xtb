@@ -795,7 +795,6 @@
 <translation id="2178098616815594724">Pemalam <ph name="PEPPER_PLUGIN_NAME" /> di <ph name="PEPPER_PLUGIN_DOMAIN" /> ingin mengakses komputer anda</translation>
 <translation id="2178614541317717477">Tolak ansur CA</translation>
 <translation id="218070003709087997">Gunakan nombor untuk menunjukkan bilangan salinan untuk dicetak (1 hingga 999).</translation>
-<translation id="2183558561014688873">Akses Assistant anda pada bila-bila masa anda menyebut "OK Google" semasa skrin anda hidup dan tidak berkunci.</translation>
 <translation id="2187895286714876935">Ralat Import Sijil Pelayan</translation>
 <translation id="2187906491731510095">Sambungan dikemas kini</translation>
 <translation id="2188881192257509750">Buka <ph name="APPLICATION" /></translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">Semua data yang disimpan oleh <ph name="SITE" /> akan dipadamkan, kecuali kuki.</translation>
 <translation id="237058345584060620">Gandingkan kunci anda dengan peranti ini supaya anda boleh menggunakan kunci itu untuk log masuk ke akaun anda</translation>
 <translation id="2371076942591664043">Buka apabila &amp;selesai</translation>
-<translation id="2376559921867170420">Apabila Chromebook anda selesai disediakan, tekan butang Assistant atau sebut "OK Google" untuk mendapatkan bantuan daripada Assistant anda pada bila-bila masa.</translation>
 <translation id="2377319039870049694">Tukar kepada paparan senarai</translation>
 <translation id="2377667304966270281">Kesalahan Keras</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fail dipilih</translation>
@@ -1880,6 +1878,7 @@
 <translation id="381202950560906753">Tambahkan yang lain</translation>
 <translation id="3812525830114410218">Sijil tidak sah</translation>
 <translation id="3813296892522778813">Pergi ke <ph name="BEGIN_LINK_CHROMIUM" />bantuan Google Chrome<ph name="END_LINK_CHROMIUM" /> jika anda tidak menemui perkara yang dicari</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Tidak diberikan</translation>
 <translation id="3819752733757735746">Akses suis (kawal komputer dengan satu atau dua suis sahaja)</translation>
 <translation id="3819800052061700452">&amp;Skrin penuh</translation>
@@ -2050,7 +2049,6 @@
 <translation id="4068776064906523561">Cap jari disimpan</translation>
 <translation id="407173827865827707">Apabila diklik</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" /> : ralat log masuk</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">Sijil Penandatangan E-mel</translation>
 <translation id="407520071244661467">Skala</translation>
 <translation id="4075639477629295004">Tidak dapat menghantar <ph name="FILE_NAME" />.</translation>

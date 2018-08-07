@@ -304,7 +304,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če ta pravilnik ni nastavljen, se za vse nastavitve uporabijo privzete vrednosti.</translation>
 <translation id="1958138414749279167">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje podatkov o naslovu v spletnih obrazcih s predhodno shranjenimi podatki.
 
-      Če je ta nastavitev onemogočena, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o naslovu in prav tako ne bo shranilo dodatnih podatkov o naslovu, ki jih uporabnik lahko pošlje med brskanjem v spletu.
+      Če je ta nastavitev onemogočena, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o naslovu in prav tako ne bo shranilo dodatnih podatkov o naslovu, ki jih uporabnik morda vnese med brskanjem v spletu.
 
       Če je ta nastavitev omogočena ali nima nastavljene vrednosti, bo uporabnik lahko nadziral samodejno izpolnjevanje za naslove v uporabniškem vmesniku.</translation>
 <translation id="1960840544413786116">Ali naj se dovoli potrdila, ki jih izdajo lokalna sidra zaupanja in jim manjka razširitev subjectAlternativeName</translation>

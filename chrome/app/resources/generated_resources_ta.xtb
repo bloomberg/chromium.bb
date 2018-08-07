@@ -795,7 +795,6 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> இல் உள்ள <ph name="PEPPER_PLUGIN_NAME" /> உங்கள் கணினியை அணுக விரும்புகிறது</translation>
 <translation id="2178614541317717477">CA இணக்கம்</translation>
 <translation id="218070003709087997">எத்தனை நகல்கள் அச்சிடப்பட வேண்டும் என்பதைக் குறிக்க, எண்ணைப் (1 - 999) பயன்படுத்தவும்.</translation>
-<translation id="2183558561014688873">சாதனம் பூட்டப்படாமல் இயங்கிக் கொண்டிருக்கும்போது, "OK Google" என்று சொல்லி எந்த நேரத்திலும் அசிஸ்டண்ட்டை அணுகலாம்.</translation>
 <translation id="2187895286714876935">சேவையக சான்றிதழ் இறக்குமதி பிழை</translation>
 <translation id="2187906491731510095">நீட்டிப்புகள் புதுப்பிக்கப்பட்டன</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" />ஐத் திற</translation>
@@ -924,7 +923,6 @@
 <translation id="2369536625682139252">குக்கீகள் தவிர, <ph name="SITE" /> சேமித்த எல்லாத் தரவும் நீக்கப்படும்.</translation>
 <translation id="237058345584060620">இந்தச் சாதனத்துடன் விசையை இணைப்பதன் மூலம், உங்கள் கணக்கில் உள்நுழைய அதைப் பயன்படுத்தலாம்</translation>
 <translation id="2371076942591664043">&amp;முடிந்ததும் திற</translation>
-<translation id="2376559921867170420">Chromebook அமைக்கப்படும்போது, அசிஸ்டண்ட்டிடமிருந்து எந்த நேரத்திலும் உதவி பெற, அசிஸ்டண்ட் பட்டனை அழுத்தவும் அல்லது "OK Google" என்று சொல்லவும்.</translation>
 <translation id="2377319039870049694">பட்டியல் காட்சிக்கு மாறு</translation>
 <translation id="2377667304966270281">ஹார்டு ஃபால்ட்கள்</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> கோப்புகள் தேர்ந்தெடுக்கப்பட்டன</translation>
@@ -1879,6 +1877,7 @@
 <translation id="381202950560906753">மற்றொன்றைச் சேர்</translation>
 <translation id="3812525830114410218">தவறான சான்றிதழ்</translation>
 <translation id="3813296892522778813">தேடுவது கிடைக்கவில்லை எனில், <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome உதவி<ph name="END_LINK_CHROMIUM" /> எனும் இணைப்பிற்குச் செல்லவும்</translation>
+<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">வழங்கப்படவில்லை</translation>
 <translation id="3819752733757735746">சுவிட்ச் அணுகல் (ஒன்று அல்லது இரண்டு சுவிட்ச்கள் மூலம் கணினியைக் கட்டுப்படுத்துதல்)</translation>
 <translation id="3819800052061700452">&amp;முழுத்திரை</translation>
@@ -2049,7 +2048,6 @@
 <translation id="4068776064906523561">சேமித்த கைரேகைகள்</translation>
 <translation id="407173827865827707">கிளிக் செய்யும் போது</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: உள்நுழைவு பிழை</translation>
-<translation id="4071828814509176232">OK Google</translation>
 <translation id="4074900173531346617">மின்னஞ்சல் கையொப்பமிடுநர் சான்றிதழ்</translation>
 <translation id="407520071244661467">அளவு</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" />ஐ அனுப்ப முடியவில்லை.</translation>

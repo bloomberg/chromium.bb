@@ -301,7 +301,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis en innstilling ikke angis, brukes en standardverdi.
 
       Hvis denne planen ikke angis, brukes standardverdiene for alle innstillingene.</translation>
-<translation id="1958138414749279167">Slår på autofyllfunksjonen i <ph name="PRODUCT_NAME" />og gjør det mulig for brukere å fylle ut adresseinformasjon i nettskjemaer automatisk ved hjelp av tidligere lagret informasjon.
+<translation id="1958138414749279167">Slår på autofyllfunksjonen i <ph name="PRODUCT_NAME" /> og gjør det mulig for brukere å fylle ut adresseinformasjon i nettskjemaer automatisk ved hjelp av tidligere lagret informasjon.
 
       Hvis denne innstillingen er av, gir ikke autofyllfunksjonen forslag, og den fyller ikke inn informasjon automatisk. Den lagrer heller ikke lenger informasjon som brukeren sender inn på nettet.
 

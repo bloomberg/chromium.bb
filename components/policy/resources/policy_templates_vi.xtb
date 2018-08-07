@@ -296,7 +296,7 @@
       Nếu cài đặt không được chỉ định, giá trị mặc định sẽ được sử dụng.
 
       Nếu chính sách này không được thiết lập, các giá trị mặc định sẽ được sử dụng cho tất cả cài đặt.</translation>
-<translation id="1958138414749279167">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành thông tin địa chỉ trong biểu mẫu web bằng cách sử dụng thông tin đã lưu trữ trước đây.
+<translation id="1958138414749279167">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành thông tin địa chỉ trong các biểu mẫu web bằng thông tin đã lưu trữ trước đây.
 
       Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Tự động điền sẽ không bao giờ gợi ý hoặc điền thông tin địa chỉ, đồng thời sẽ không lưu thông tin địa chỉ bổ sung mà người dùng có thể gửi trong khi duyệt web.
 
