@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -17,6 +18,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome_elf/third_party_dlls/packed_list_format.h"
 #include "components/component_updater/component_updater_service.h"
 
 class IncompatibleApplicationsUpdater;
@@ -31,12 +33,31 @@ class SequencedTaskRunner;
 class TaskRunner;
 }
 
-// This class owns all the third-party conflicts-related classes and is
-// responsible for their initialization.
+// This class is responsible for the initialization of the
+// IncompatibleApplicationsWarning and ThirdPartyModulesBlocking features. Each
+// feature requires a set of dependencies to be initialized on a background
+// sequence because their main class can be created
+// (IncompatibleApplicationsUpdater and ModuleBlacklistCacheUpdater
+// respectively).
 //
-// The Module List component is received from the component update service,
-// which invokes OnModuleListComponentRegister() and LoadModuleList() when
-// appropriate.
+// Dependencies list
+// For both features:
+// 1. |exe_certificate_info_| contains info about the certificate of the current
+//    executable.
+// 2. |module_list_filter_| is used to determine if a module should be blocked
+//    or allowed. The Module List component is received from the component
+//    update service, which invokes OnModuleListComponentRegister() and
+//    LoadModuleList() when appropriate.
+//
+// For the IncompatibleApplicationsWarning feature only:
+// 3. |installed_applications_| allows to tie a loaded module to an application
+//    installed on the computer.
+//
+// For the ThirdPartyModulesBlocking feature only:
+// 4. |initial_blacklisted_modules_| contains the list of modules that were
+//    blacklisted at the time the browser was launched. Modifications to that
+//    list do not take effect until a restart.
+//
 class ThirdPartyConflictsManager
     : public ModuleDatabaseObserver,
       public component_updater::ComponentUpdateService::Observer {
@@ -130,6 +151,11 @@ class ThirdPartyConflictsManager
   void OnInstalledApplicationsCreated(
       std::unique_ptr<InstalledApplications> installed_applications);
 
+  // Called when |initial_blacklisted_modules_| finishes its initialization.
+  void OnInitialBlacklistedModulesRead(
+      std::unique_ptr<std::vector<third_party_dlls::PackedListModule>>
+          initial_blacklisted_modules);
+
   // Initializes either or both |incompatible_applications_updater_| and
   // |module_blacklist_cache_updater_| when the exe_certificate_info_, the
   // module_list_filter_ and the installed_applications_ are available.
@@ -184,6 +210,11 @@ class ThirdPartyConflictsManager
   // instance is ref counted because the |module_blacklist_cache_updater_| must
   // use it on a background sequence.
   scoped_refptr<ModuleListFilter> module_list_filter_;
+
+  // The blacklisted modules contained in the cache used to initialize the
+  // blocking in chrome_elf.
+  std::unique_ptr<std::vector<third_party_dlls::PackedListModule>>
+      initial_blacklisted_modules_;
 
   // Retrieves the list of installed applications.
   std::unique_ptr<InstalledApplications> installed_applications_;

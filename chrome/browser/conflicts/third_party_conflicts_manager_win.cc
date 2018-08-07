@@ -23,6 +23,7 @@
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/installed_applications_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
+#include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/common/chrome_features.h"
@@ -51,6 +52,26 @@ scoped_refptr<ModuleListFilter> CreateModuleListFilter(
     return nullptr;
 
   return module_list_filter;
+}
+
+std::unique_ptr<std::vector<third_party_dlls::PackedListModule>>
+ReadInitialBlacklistedModules() {
+  base::FilePath path =
+      ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath();
+
+  third_party_dlls::PackedListMetadata metadata;
+  std::vector<third_party_dlls::PackedListModule> blacklisted_modules;
+  base::MD5Digest md5_digest;
+  ReadResult read_result = ReadModuleBlacklistCache(
+      path, &metadata, &blacklisted_modules, &md5_digest);
+
+  // Return an empty vector on failure.
+  auto initial_blacklisted_modules =
+      std::make_unique<std::vector<third_party_dlls::PackedListModule>>();
+  if (read_result == ReadResult::kSuccess)
+    *initial_blacklisted_modules = std::move(blacklisted_modules);
+
+  return initial_blacklisted_modules;
 }
 
 }  // namespace
@@ -123,16 +144,26 @@ void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
 
   // The InstalledApplications instance is only needed for the incompatible
   // applications warning.
-  if (!IncompatibleApplicationsUpdater::IsWarningEnabled())
-    return;
+  if (IncompatibleApplicationsUpdater::IsWarningEnabled()) {
+    base::PostTaskAndReplyWithResult(
+        background_sequence_.get(), FROM_HERE, base::BindOnce([]() {
+          return std::make_unique<InstalledApplications>();
+        }),
+        base::BindOnce(
+            &ThirdPartyConflictsManager::OnInstalledApplicationsCreated,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
 
-  base::PostTaskAndReplyWithResult(
-      background_sequence_.get(), FROM_HERE, base::BindOnce([]() {
-        return std::make_unique<InstalledApplications>();
-      }),
-      base::BindOnce(
-          &ThirdPartyConflictsManager::OnInstalledApplicationsCreated,
-          weak_ptr_factory_.GetWeakPtr()));
+  // And the initial blacklisted modules are only needed for the third-party
+  // modules blocking.
+  if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
+    base::PostTaskAndReplyWithResult(
+        background_sequence_.get(), FROM_HERE,
+        base::BindOnce(&ReadInitialBlacklistedModules),
+        base::BindOnce(
+            &ThirdPartyConflictsManager::OnInitialBlacklistedModulesRead,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void ThirdPartyConflictsManager::OnModuleListComponentRegistered(
@@ -270,23 +301,43 @@ void ThirdPartyConflictsManager::OnInstalledApplicationsCreated(
   InitializeIfReady();
 }
 
+void ThirdPartyConflictsManager::OnInitialBlacklistedModulesRead(
+    std::unique_ptr<std::vector<third_party_dlls::PackedListModule>>
+        initial_blacklisted_modules) {
+  initial_blacklisted_modules_ = std::move(initial_blacklisted_modules);
+
+  InitializeIfReady();
+}
+
 void ThirdPartyConflictsManager::InitializeIfReady() {
   DCHECK(!terminal_state_.has_value());
 
-  // Check if this instance is ready to initialize.
-  if (!exe_certificate_info_ || !module_list_filter_ ||
-      (!installed_applications_ &&
-       IncompatibleApplicationsUpdater::IsWarningEnabled())) {
+  // Check if this instance is ready to initialize. First look at dependencies
+  // that both features need.
+  if (!exe_certificate_info_ || !module_list_filter_)
+    return;
+
+  // Then look at the dependency needed only for the
+  // IncompatibleApplicationsWarning feature.
+  if (IncompatibleApplicationsUpdater::IsWarningEnabled() &&
+      !installed_applications_) {
     return;
   }
 
+  // And the dependency needed only for the ThirdPartyModulesBlocking feature.
+  if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking) &&
+      !initial_blacklisted_modules_) {
+    return;
+  }
+
+  // Now both features are ready to be initialized.
   if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
     // It is safe to use base::Unretained() since the callback will not be
     // invoked if the updater is freed.
     module_blacklist_cache_updater_ =
         std::make_unique<ModuleBlacklistCacheUpdater>(
             module_database_event_source_, *exe_certificate_info_,
-            module_list_filter_,
+            module_list_filter_, *initial_blacklisted_modules_,
             base::BindRepeating(
                 &ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated,
                 base::Unretained(this)));

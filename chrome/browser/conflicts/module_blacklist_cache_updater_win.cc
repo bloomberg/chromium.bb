@@ -156,10 +156,13 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
     ModuleDatabaseEventSource* module_database_event_source,
     const CertificateInfo& exe_certificate_info,
     scoped_refptr<ModuleListFilter> module_list_filter,
+    const std::vector<third_party_dlls::PackedListModule>&
+        initial_blacklisted_modules,
     OnCacheUpdatedCallback on_cache_updated_callback)
     : module_database_event_source_(module_database_event_source),
       exe_certificate_info_(exe_certificate_info),
       module_list_filter_(std::move(module_list_filter)),
+      initial_blacklisted_modules_(initial_blacklisted_modules),
       on_cache_updated_callback_(std::move(on_cache_updated_callback)),
       background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -283,12 +286,26 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
     return;
   }
 
-  // Now it has been determined that the module should be blocked.
+  // Now it has been determined that the module should be blocked. So make sure
+  // it gets added to the blacklist cache.
+  InsertPackedListModule(module_key, &newly_blacklisted_modules_);
+
+  // Check if a blacklisted module was able to bypass the blocking.
+  if (std::binary_search(std::begin(initial_blacklisted_modules_),
+                         std::end(initial_blacklisted_modules_),
+                         newly_blacklisted_modules_.back(),
+                         internal::ModuleLess())) {
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kBypassedBlocking;
+
+    // Return here and don't notify the ModuleDatabase that the module was added
+    // to the blacklist so that it can trigger an incompatible applications
+    // warning.
+    return;
+  }
+
   module_blocking_decisions_[module_key.module_id] =
       ModuleBlockingDecision::kBlacklisted;
-
-  // Insert the blacklisted module.
-  InsertPackedListModule(module_key, &newly_blacklisted_modules_);
 
   // Signal the module database that this module will be added to the cache.
   // Note that observers that care about this information should register to

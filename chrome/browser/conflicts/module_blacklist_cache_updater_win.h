@@ -100,6 +100,8 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     kBlacklisted,
     // The module was blocked from loading into the process.
     kBlocked,
+    // This module should have been blocked but wasn't.
+    kBypassedBlocking,
   };
 
   struct CacheUpdateResult {
@@ -123,6 +125,8 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
       ModuleDatabaseEventSource* module_database_event_source,
       const CertificateInfo& exe_certificate_info,
       scoped_refptr<ModuleListFilter> module_list_filter,
+      const std::vector<third_party_dlls::PackedListModule>&
+          initial_blacklisted_modules,
       OnCacheUpdatedCallback on_cache_updated_callback);
   ~ModuleBlacklistCacheUpdater() override;
 
@@ -161,6 +165,8 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
 
   const CertificateInfo& exe_certificate_info_;
   scoped_refptr<ModuleListFilter> module_list_filter_;
+  const std::vector<third_party_dlls::PackedListModule>&
+      initial_blacklisted_modules_;
 
   OnCacheUpdatedCallback on_cache_updated_callback_;
 

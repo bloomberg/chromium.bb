@@ -117,6 +117,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
   CreateModuleBlacklistCacheUpdater() {
     return std::make_unique<ModuleBlacklistCacheUpdater>(
         this, exe_certificate_info_, module_list_filter_,
+        initial_blacklisted_modules_,
         base::BindRepeating(
             &ModuleBlacklistCacheUpdaterTest::OnModuleBlacklistCacheUpdated,
             base::Unretained(this)));
@@ -184,6 +185,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
 
   CertificateInfo exe_certificate_info_;
   scoped_refptr<ModuleListFilter> module_list_filter_;
+  std::vector<third_party_dlls::PackedListModule> initial_blacklisted_modules_;
 
   base::FilePath module_blacklist_cache_path_;
 
