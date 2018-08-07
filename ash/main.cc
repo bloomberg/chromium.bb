@@ -6,7 +6,6 @@
 #include "ash/ash_service.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -16,7 +15,6 @@
 // This path is only hit in testing, not production. Production launches ash by
 // way of the utility process, which does not use this.
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  logging::SetLogPrefix("ash");
   // Load ash resources and strings.
   // TODO: investigate nuking ash_service_resources and use the same resources
   // that are used when AshService is launched via the utility process.
