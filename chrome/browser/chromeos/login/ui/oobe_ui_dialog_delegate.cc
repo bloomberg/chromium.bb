@@ -118,7 +118,9 @@ void OobeUIDialogDelegate::Hide() {
 void OobeUIDialogDelegate::Close() {
   if (!dialog_widget_)
     return;
-  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(false);
+  // We do not call LoginScreen::NotifyOobeDialogVisibility here, because this
+  // would cause the LoginShelfView to update its button visibility even though
+  // the login screen is about to be destroyed. See http://crbug/836172
   dialog_widget_->Close();
 }
 
