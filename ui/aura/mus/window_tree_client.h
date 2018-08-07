@@ -438,7 +438,8 @@ class AURA_EXPORT WindowTreeClient
   // ui::mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
                          int64_t primary_display_id,
-                         int64_t internal_display_id) override;
+                         int64_t internal_display_id,
+                         int64_t display_id_for_new_windows) override;
 
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(

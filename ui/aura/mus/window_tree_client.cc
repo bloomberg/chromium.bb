@@ -1511,10 +1511,11 @@ void WindowTreeClient::GetScreenProviderObserver(
 void WindowTreeClient::OnDisplaysChanged(
     std::vector<ui::mojom::WsDisplayPtr> ws_displays,
     int64_t primary_display_id,
-    int64_t internal_display_id) {
+    int64_t internal_display_id,
+    int64_t display_id_for_new_windows) {
   got_initial_displays_ = true;
   delegate_->OnDisplaysChanged(std::move(ws_displays), primary_display_id,
-                               internal_display_id);
+                               internal_display_id, display_id_for_new_windows);
 }
 
 void WindowTreeClient::RequestClose(ui::Id window_id) {

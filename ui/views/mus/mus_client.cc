@@ -372,9 +372,10 @@ void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
 void MusClient::OnDisplaysChanged(
     std::vector<ui::mojom::WsDisplayPtr> ws_displays,
     int64_t primary_display_id,
-    int64_t internal_display_id) {
+    int64_t internal_display_id,
+    int64_t display_id_for_new_windows) {
   screen_->OnDisplaysChanged(std::move(ws_displays), primary_display_id,
-                             internal_display_id);
+                             internal_display_id, display_id_for_new_windows);
 }
 
 void MusClient::OnWindowManagerFrameValuesChanged() {

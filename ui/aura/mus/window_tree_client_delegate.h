@@ -70,7 +70,8 @@ class AURA_EXPORT WindowTreeClientDelegate {
   virtual void OnDisplaysChanged(
       std::vector<ui::mojom::WsDisplayPtr> ws_displays,
       int64_t primary_display_id,
-      int64_t internal_display_id) {}
+      int64_t internal_display_id,
+      int64_t display_id_for_new_windows) {}
 
  protected:
   virtual ~WindowTreeClientDelegate() {}

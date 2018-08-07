@@ -30,11 +30,13 @@ TestScreenProviderObserver::~TestScreenProviderObserver() = default;
 void TestScreenProviderObserver::OnDisplaysChanged(
     std::vector<mojom::WsDisplayPtr> displays,
     int64_t primary_display_id,
-    int64_t internal_display_id) {
+    int64_t internal_display_id,
+    int64_t display_id_for_new_windows) {
   displays_ = std::move(displays);
   display_ids_ = DisplayIdsToString(displays_);
   primary_display_id_ = primary_display_id;
   internal_display_id_ = internal_display_id;
+  display_id_for_new_windows_ = display_id_for_new_windows;
 }
 
 }  // namespace ws2

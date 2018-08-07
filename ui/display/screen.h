@@ -74,6 +74,10 @@ class DISPLAY_EXPORT Screen {
   // Returns the primary display.
   virtual Display GetPrimaryDisplay() const = 0;
 
+  // Returns a suggested display to use when creating a new window. On most
+  // platforms just returns the primary display.
+  virtual Display GetDisplayForNewWindows() const;
+
   // Adds/Removes display observers.
   virtual void AddObserver(DisplayObserver* observer) = 0;
   virtual void RemoveObserver(DisplayObserver* observer) = 0;

@@ -49,6 +49,13 @@ void ScreenProvider::SetFrameDecorationValues(
   max_title_bar_button_width_ = max_title_bar_button_width;
 }
 
+void ScreenProvider::SetDisplayForNewWindows(int64_t display_id) {
+  if (display_id == display_id_for_new_windows_)
+    return;
+  display_id_for_new_windows_ = display_id;
+  NotifyAllObservers();
+}
+
 void ScreenProvider::DisplayMetricsChanged(const display::Display& display,
                                            uint32_t changed_metrics) {
   if ((changed_metrics &
@@ -70,7 +77,8 @@ void ScreenProvider::NotifyAllObservers() {
 
 void ScreenProvider::NotifyObserver(mojom::ScreenProviderObserver* observer) {
   observer->OnDisplaysChanged(GetAllDisplays(), GetPrimaryDisplayId(),
-                              GetInternalDisplayId());
+                              GetInternalDisplayId(),
+                              display_id_for_new_windows_);
 }
 
 std::vector<mojom::WsDisplayPtr> ScreenProvider::GetAllDisplays() {

@@ -90,6 +90,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   void SetFrameDecorationValues(const gfx::Insets& client_area_insets,
                                 int max_title_bar_button_width);
 
+  // Sets the display to use for new windows. The window server broadcasts this
+  // over mojo to all remote clients.
+  void SetDisplayForNewWindows(int64_t display_id);
+
   // Whether |window| hosts a remote client.
   static bool HasRemoteClient(const aura::Window* window);
 

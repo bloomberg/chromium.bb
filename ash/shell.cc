@@ -855,9 +855,6 @@ Shell::~Shell() {
   display_speaker_controller_.reset();
   screen_switch_check_controller_.reset();
 
-  // This also deletes all RootWindows. Note that we invoke Shutdown() on
-  // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
-  // destruction of its owned RootWindowControllers relies on the value.
   ScreenAsh::CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
@@ -891,11 +888,17 @@ Shell::~Shell() {
   ime_focus_handler_.reset();
 
   shell_port_->Shutdown();
+
+  // Stop observing window activation changes before closing all windows.
+  focus_controller_->RemoveObserver(this);
+
+  // This also deletes all RootWindows. Note that we invoke Shutdown() on
+  // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
+  // destruction of its owned RootWindowControllers relies on the value.
   window_tree_host_manager_->Shutdown();
 
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
-  focus_controller_->RemoveObserver(this);
   focus_controller_.reset();
   screen_position_controller_.reset();
 
