@@ -19,9 +19,12 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedNewTabPageMediator.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedProcessScopeFactory.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedRefreshTask.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedScheduler.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedStorageBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/StreamLifecycleManager.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/TestFeedScheduler.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/TestNetworkClient.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/action/FeedActionHandler.java",
   ]
 

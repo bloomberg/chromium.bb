@@ -10,8 +10,10 @@ import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecyc
 import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
+import com.google.android.libraries.feed.host.network.NetworkClient;
 import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.concurrent.Executors;
@@ -21,7 +23,7 @@ import java.util.concurrent.Executors;
  */
 public class FeedProcessScopeFactory {
     private static FeedProcessScope sFeedProcessScope;
-    private static FeedSchedulerBridge sFeedSchedulerBridge;
+    private static FeedScheduler sFeedScheduler;
 
     /**
      * @return The shared {@link FeedProcessScope} instance.
@@ -36,33 +38,71 @@ public class FeedProcessScopeFactory {
     /**
      * @return The {@link FeedSchedulerBridge} that was given to the {@link FeedProcessScope}.
      */
-    public static FeedSchedulerBridge getFeedSchedulerBridge() {
-        if (sFeedSchedulerBridge == null) {
+    public static FeedScheduler getFeedSchedulerBridge() {
+        if (sFeedScheduler == null) {
             initialize();
         }
-        return sFeedSchedulerBridge;
+        return sFeedScheduler;
     }
 
     private static void initialize() {
-        assert sFeedSchedulerBridge == null && sFeedProcessScope == null;
+        assert sFeedScheduler == null && sFeedProcessScope == null;
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
-        Configuration configHostApi =
-                new Configuration.Builder()
-                        .put(ConfigKey.FEED_SERVER_HOST, "https://www.google.com")
-                        .put(ConfigKey.FEED_SERVER_PATH_AND_PARAMS,
-                                "/httpservice/noretry/NowStreamService/FeedQuery")
-                        .put(ConfigKey.SESSION_LIFETIME_MS, 300000L)
-                        .build();
-        sFeedSchedulerBridge = new FeedSchedulerBridge(profile);
+        Configuration configHostApi = createConfiguration();
+
+        FeedSchedulerBridge schedulerBridge = new FeedSchedulerBridge(profile);
+        sFeedScheduler = schedulerBridge;
         FeedAppLifecycleListener lifecycleListener =
                 new FeedAppLifecycleListener(new ThreadUtils());
         sFeedProcessScope =
                 new FeedProcessScope
                         .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                 new LoggingApiImpl(), new FeedNetworkBridge(profile),
-                                sFeedSchedulerBridge, lifecycleListener, DebugBehavior.SILENT)
+                                schedulerBridge, lifecycleListener, DebugBehavior.SILENT)
                         .build();
-        sFeedSchedulerBridge.initializeFeedDependencies(
+        schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
+    }
+
+    private static Configuration createConfiguration() {
+        return new Configuration.Builder()
+                .put(ConfigKey.FEED_SERVER_HOST, "https://www.google.com")
+                .put(ConfigKey.FEED_SERVER_PATH_AND_PARAMS,
+                        "/httpservice/noretry/NowStreamService/FeedQuery")
+                .put(ConfigKey.SESSION_LIFETIME_MS, 300000L)
+                .build();
+    }
+
+    /**
+     * Creates a {@link FeedProcessScope} using the provided {@link FeedScheduler} and
+     * {@link NetworkClient}. Call {@link #clearFeedProcessScopeForTesting()} to reset the
+     * FeedProcessScope after testing is complete.
+     *
+     * @param feedScheduler A {@link FeedScheduler} to use for testing.
+     * @param networkClient A {@link NetworkClient} to use for testing.
+     */
+    @VisibleForTesting
+    static void createFeedProcessScopeForTesting(
+            FeedScheduler feedScheduler, NetworkClient networkClient) {
+        Configuration configHostApi = createConfiguration();
+        FeedAppLifecycleListener lifecycleListener =
+                new FeedAppLifecycleListener(new ThreadUtils());
+        sFeedScheduler = feedScheduler;
+        sFeedProcessScope = new FeedProcessScope
+                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                            new LoggingApiImpl(), networkClient, sFeedScheduler,
+                                            lifecycleListener, DebugBehavior.SILENT)
+                                    .build();
+    }
+
+    /** Resets the FeedProcessScope after testing is complete. */
+    @VisibleForTesting
+    static void clearFeedProcessScopeForTesting() {
+        if (sFeedScheduler != null) {
+            sFeedScheduler.destroy();
+            sFeedScheduler = null;
+        }
+
+        sFeedProcessScope = null;
     }
 }

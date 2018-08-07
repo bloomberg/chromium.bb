@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.download.DownloadActivity;
+import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
@@ -70,6 +71,7 @@ import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -129,8 +131,18 @@ public class NewTabPageTest {
         }
     }
 
+    /** Parameter provider for enabling/disabling "Interest Feed Content Suggestions". */
+    public static class InterestFeedParams implements ParameterProvider {
+        @Override
+        public Iterable<ParameterSet> getParameters() {
+            return Arrays.asList(new ParameterSet().value(false).name("DisableInterestFeed"),
+                    new ParameterSet().value(true).name("EnableInterestFeed"));
+        }
+    }
+
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
 
+    private boolean mInterestFeedEnabled;
     private Tab mTab;
     private NewTabPage mNtp;
     private View mFakebox;
@@ -149,6 +161,17 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameterAfter(ModernParams.class)
     public void teardownModernDesign(boolean enabled) {
         mChromeModernProcessor.clearTestState();
+    }
+
+    @ParameterAnnotations.UseMethodParameterBefore(InterestFeedParams.class)
+    public void setupInterestFeed(boolean interestFeedEnabled) {
+        mInterestFeedEnabled = interestFeedEnabled;
+        if (mInterestFeedEnabled) {
+            Features.getInstance().enable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
+            FeedNewTabPage.setInTestMode(true);
+        } else {
+            Features.getInstance().disable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
+        }
     }
 
     @Before
@@ -199,6 +222,7 @@ public class NewTabPageTest {
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        if (mInterestFeedEnabled) FeedNewTabPage.setInTestMode(false);
     }
 
     @Test
@@ -235,7 +259,8 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testSimplifiedNtp_BookmarksShortcuts() {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSimplifiedNtp_BookmarksShortcuts(boolean interestFeedEnabled) {
         ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 BookmarkActivity.class.getName(),
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
@@ -253,7 +278,8 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testSimplifiedNtp_DownloadsShortcuts() {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSimplifiedNtp_DownloadsShortcuts(boolean interestFeedEnabled) {
         ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 DownloadActivity.class.getName(),
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
@@ -271,7 +297,9 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testSimplifiedNtp_DefaultSearchEngineChange() throws Exception {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSimplifiedNtp_DefaultSearchEngineChange(boolean interestFeedEnabled)
+            throws Exception {
         View logo = mNtp.getView().findViewById(R.id.search_provider_logo);
         View shortcuts = mNtp.getView().findViewById(R.id.shortcuts);
         Assert.assertEquals(View.VISIBLE, logo.getVisibility());
@@ -381,7 +409,7 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @Feature({"NewTabPage"})
     public void testClickMostVisitedItem() throws InterruptedException {
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
@@ -412,7 +440,8 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    public void testOpenMostVisitedItemInIncognitoTab()
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testOpenMostVisitedItemInIncognitoTab(boolean interestFeedEnabled)
             throws InterruptedException, ExecutionException {
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
                 mTileGridLayout.getChildAt(0),
@@ -426,7 +455,8 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    public void testRemoveMostVisitedItem() throws ExecutionException {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testRemoveMostVisitedItem(boolean interestFeedEnabled) throws ExecutionException {
         SiteSuggestion testSite = mSiteSuggestions.get(0);
         View mostVisitedItem = mTileGridLayout.getChildAt(0);
         ArrayList<View> views = new ArrayList<>();
@@ -443,7 +473,7 @@ public class NewTabPageTest {
 
     @Test
     @MediumTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @Feature({"NewTabPage"})
     public void testUrlFocusAnimationsDisabledOnLoad() throws InterruptedException {
         Assert.assertFalse(getUrlFocusAnimationsDisabled());
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
@@ -468,7 +498,7 @@ public class NewTabPageTest {
 
     @Test
     @LargeTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @Feature({"NewTabPage"})
     public void testUrlFocusAnimationsEnabledOnFailedLoad() throws Exception {
         // TODO(jbudorick): switch this to EmbeddedTestServer.
         TestWebServer webServer = TestWebServer.start();
@@ -536,7 +566,8 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    public void testSetSearchProviderInfo() throws Throwable {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSetSearchProviderInfo(boolean interestFeedEnabled) throws Throwable {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -558,7 +589,8 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    public void testPlaceholder() {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testPlaceholder(boolean interestFeedEnabled) {
         final NewTabPageLayout ntpLayout = mNtp.getNewTabPageLayout();
         final View logoView = ntpLayout.findViewById(R.id.search_provider_logo);
         final View searchBoxView = ntpLayout.findViewById(R.id.search_box);
