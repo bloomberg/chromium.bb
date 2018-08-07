@@ -125,7 +125,8 @@ class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
     scoped_refptr<MockTransportSocketParams> params;
     transport_socket->Init("a", params, MEDIUM, SocketTag(),
                            ClientSocketPool::RespectLimits::ENABLED,
-                           CompletionCallback(), &pool_, NetLogWithSource());
+                           CompletionOnceCallback(), &pool_,
+                           NetLogWithSource());
     return transport_socket;
   }
 

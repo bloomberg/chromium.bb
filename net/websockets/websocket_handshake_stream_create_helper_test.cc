@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
@@ -70,7 +69,7 @@ class MockClientSocketHandleFactory {
     auto socket_handle = std::make_unique<ClientSocketHandle>();
     socket_handle->Init("a", scoped_refptr<MockTransportSocketParams>(), MEDIUM,
                         SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-                        CompletionCallback(), &pool_, NetLogWithSource());
+                        CompletionOnceCallback(), &pool_, NetLogWithSource());
     return socket_handle;
   }
 

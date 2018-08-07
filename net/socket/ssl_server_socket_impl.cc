@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/client_cert_verifier.h"
@@ -784,8 +785,8 @@ ssl_verify_result_t SSLServerContextImpl::SocketImpl::CertVerifyCallbackImpl(
 
   // TODO(davidben): Support asynchronous verifiers. http://crbug.com/347402
   std::unique_ptr<ClientCertVerifier::Request> ignore_async;
-  int res =
-      verifier->Verify(client_cert.get(), CompletionCallback(), &ignore_async);
+  int res = verifier->Verify(client_cert.get(), CompletionOnceCallback(),
+                             &ignore_async);
   DCHECK_NE(res, ERR_IO_PENDING);
 
   if (res != OK) {

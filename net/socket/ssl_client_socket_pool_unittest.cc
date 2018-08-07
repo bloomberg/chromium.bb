@@ -228,9 +228,10 @@ TEST_F(SSLClientSocketPoolTest, TCPFail) {
   scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_DIRECT);
 
   ClientSocketHandle handle;
-  int rv = handle.Init(kGroupName, params, MEDIUM, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       CompletionCallback(), pool_.get(), NetLogWithSource());
+  int rv =
+      handle.Init(kGroupName, params, MEDIUM, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED,
+                  CompletionOnceCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -757,8 +758,8 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     std::unique_ptr<HostResolver::Request> request;
     int rv = host_resolver_.Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &request, NetLogWithSource());
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+        CompletionOnceCallback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
 
     // Setup a SpdySessionKey
@@ -816,8 +817,8 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     std::unique_ptr<HostResolver::Request> request;
     int rv = host_resolver_.Resolve(
-        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &request, NetLogWithSource());
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+        CompletionOnceCallback(), &request, NetLogWithSource());
     EXPECT_THAT(rv, IsOk());
 
     // Setup a SpdySessionKey

@@ -24,7 +24,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
@@ -426,7 +425,7 @@ class TestConnectJob : public ConnectJob {
   int DoConnect(bool succeed, bool was_async, bool recoverable) {
     int result = OK;
     if (succeed) {
-      socket()->Connect(CompletionCallback());
+      socket()->Connect(CompletionOnceCallback());
     } else if (recoverable) {
       result = ERR_PROXY_AUTH_REQUESTED;
     } else {
@@ -779,7 +778,7 @@ TEST_F(ClientSocketPoolBaseTest, ConnectJob_NoTimeoutOnSynchronousCompletion) {
   TestConnectJobDelegate delegate;
   ClientSocketHandle ignored;
   TestClientSocketPoolBase::Request request(
-      &ignored, CompletionCallback(), DEFAULT_PRIORITY, SocketTag(),
+      &ignored, CompletionOnceCallback(), DEFAULT_PRIORITY, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED,
       internal::ClientSocketPoolBaseHelper::NORMAL, params_,
       NetLogWithSource());
@@ -796,7 +795,7 @@ TEST_F(ClientSocketPoolBaseTest, ConnectJob_TimedOut) {
   TestNetLog log;
 
   TestClientSocketPoolBase::Request request(
-      &ignored, CompletionCallback(), DEFAULT_PRIORITY, SocketTag(),
+      &ignored, CompletionOnceCallback(), DEFAULT_PRIORITY, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED,
       internal::ClientSocketPoolBaseHelper::NORMAL, params_,
       NetLogWithSource());
@@ -2303,7 +2302,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsReuse) {
   ASSERT_THAT(callback.WaitForResult(), IsOk());
 
   // Use and release the socket.
-  EXPECT_EQ(1, handle.socket()->Write(NULL, 1, CompletionCallback(),
+  EXPECT_EQ(1, handle.socket()->Write(NULL, 1, CompletionOnceCallback(),
                                       TRAFFIC_ANNOTATION_FOR_TESTS));
   TestLoadTimingInfoConnectedNotReused(handle);
   handle.Reset();
@@ -2316,7 +2315,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsReuse) {
   BoundTestNetLog log;
   rv = handle.Init("a", params_, LOWEST, SocketTag(),
                    ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionCallback(), pool_.get(), log.bound());
+                   CompletionOnceCallback(), pool_.get(), log.bound());
   ASSERT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_reused());
   TestLoadTimingInfoConnectedReused(handle);
@@ -2366,7 +2365,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsNoReuse) {
   handle.Reset();
   ASSERT_THAT(callback2.WaitForResult(), IsOk());
   // Use the socket.
-  EXPECT_EQ(1, handle2.socket()->Write(NULL, 1, CompletionCallback(),
+  EXPECT_EQ(1, handle2.socket()->Write(NULL, 1, CompletionOnceCallback(),
                                        TRAFFIC_ANNOTATION_FOR_TESTS));
   handle2.Reset();
 
@@ -3068,9 +3067,9 @@ TEST_F(ClientSocketPoolBaseTest, PreferUsedSocketToUnusedSocket) {
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
 
   // Use the socket.
-  EXPECT_EQ(1, handle1.socket()->Write(NULL, 1, CompletionCallback(),
+  EXPECT_EQ(1, handle1.socket()->Write(NULL, 1, CompletionOnceCallback(),
                                        TRAFFIC_ANNOTATION_FOR_TESTS));
-  EXPECT_EQ(1, handle3.socket()->Write(NULL, 1, CompletionCallback(),
+  EXPECT_EQ(1, handle3.socket()->Write(NULL, 1, CompletionOnceCallback(),
                                        TRAFFIC_ANNOTATION_FOR_TESTS));
 
   handle1.Reset();
@@ -3671,7 +3670,7 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithUnreadData) {
   EXPECT_EQ(0, pool_->IdleSocketCountInGroup("a"));
 
   // Drain the pending read.
-  EXPECT_EQ(1, handle.socket()->Read(NULL, 1, CompletionCallback()));
+  EXPECT_EQ(1, handle.socket()->Read(NULL, 1, CompletionOnceCallback()));
 
   TestLoadTimingInfoConnectedReused(handle);
   handle.Reset();

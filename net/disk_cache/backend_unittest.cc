@@ -28,6 +28,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -3389,7 +3390,7 @@ TEST_F(DiskCacheBackendTest, MemoryOnlyUseAfterFree) {
   // Writing this sparse data should not crash. Ignoring the result because
   // we're only concerned with not crashing in this particular test.
   first_parent->WriteSparseData(32768, buffer.get(), 1024,
-                                net::CompletionCallback());
+                                net::CompletionOnceCallback());
 }
 
 TEST_F(DiskCacheBackendTest, MemoryCapsWritesToMaxSize) {

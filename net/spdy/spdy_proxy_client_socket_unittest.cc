@@ -241,7 +241,7 @@ void SpdyProxyClientSocketTest::AssertConnectionEstablished() {
 void SpdyProxyClientSocketTest::AssertSyncReadEquals(const char* data,
                                                      int len) {
   scoped_refptr<IOBuffer> buf(new IOBuffer(len));
-  ASSERT_EQ(len, sock_->Read(buf.get(), len, CompletionCallback()));
+  ASSERT_EQ(len, sock_->Read(buf.get(), len, CompletionOnceCallback()));
   ASSERT_EQ(std::string(data, len), std::string(buf->data(), len));
   ASSERT_TRUE(sock_->IsConnected());
 }
@@ -949,9 +949,9 @@ TEST_F(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsZero) {
   ResumeAndRun();
 
   ASSERT_FALSE(sock_->IsConnected());
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
   ASSERT_FALSE(sock_->IsConnectedAndIdle());
 }
 
@@ -1000,7 +1000,7 @@ TEST_F(SpdyProxyClientSocketTest, ReadOnDisconnectSocketReturnsNotConnected) {
   sock_->Disconnect();
 
   ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-            sock_->Read(NULL, 1, CompletionCallback()));
+            sock_->Read(NULL, 1, CompletionOnceCallback()));
 
   // Let the RST_STREAM write while |rst| is in-scope.
   base::RunLoop().RunUntilIdle();
@@ -1029,14 +1029,14 @@ TEST_F(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsBufferedData) {
 
   ASSERT_FALSE(sock_->IsConnected());
   scoped_refptr<IOBuffer> buf(new IOBuffer(kLen1));
-  ASSERT_EQ(kLen1, sock_->Read(buf.get(), kLen1, CompletionCallback()));
+  ASSERT_EQ(kLen1, sock_->Read(buf.get(), kLen1, CompletionOnceCallback()));
   ASSERT_EQ(std::string(kMsg1, kLen1), std::string(buf->data(), kLen1));
 
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
   sock_->Disconnect();
   ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-            sock_->Read(NULL, 1, CompletionCallback()));
+            sock_->Read(NULL, 1, CompletionOnceCallback()));
 }
 
 // Calling Write() on a closed socket is an error
@@ -1061,7 +1061,7 @@ TEST_F(SpdyProxyClientSocketTest, WriteOnClosedStream) {
   ResumeAndRun();
   scoped_refptr<IOBufferWithSize> buf(CreateBuffer(kMsg1, kLen1));
   EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED,
-            sock_->Write(buf.get(), buf->size(), CompletionCallback(),
+            sock_->Write(buf.get(), buf->size(), CompletionOnceCallback(),
                          TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 
@@ -1088,7 +1088,7 @@ TEST_F(SpdyProxyClientSocketTest, WriteOnDisconnectedSocket) {
 
   scoped_refptr<IOBufferWithSize> buf(CreateBuffer(kMsg1, kLen1));
   EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED,
-            sock_->Write(buf.get(), buf->size(), CompletionCallback(),
+            sock_->Write(buf.get(), buf->size(), CompletionOnceCallback(),
                          TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Let the RST_STREAM write while |rst| is in-scope.
