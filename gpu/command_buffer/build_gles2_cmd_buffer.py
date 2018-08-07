@@ -4102,6 +4102,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoFramebufferTextureMultiviewLayeredANGLE',
     'unit_test': False,
     'extension': 'ANGLE_multiview',
+    'extension_flag': 'angle_multiview',
     'trace_level': 1,
     'es3': True
   },
