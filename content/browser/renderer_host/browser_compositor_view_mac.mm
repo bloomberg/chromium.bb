@@ -496,7 +496,9 @@ void BrowserCompositorMac::LayerDestroyed(ui::Layer* layer) {
   SetParentUiLayer(nullptr);
 }
 
-ui::Compositor* BrowserCompositorMac::GetCompositorForTesting() const {
+ui::Compositor* BrowserCompositorMac::GetCompositor() const {
+  if (parent_ui_layer_)
+    return parent_ui_layer_->GetCompositor();
   if (recyclable_compositor_)
     return recyclable_compositor_->compositor();
   return nullptr;

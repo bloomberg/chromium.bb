@@ -21,14 +21,10 @@ ui::Compositor* FlingSchedulerMac::GetCompositor() {
   // RWHV_child_frame doesn't have DelegatedFrameHost with ui::Compositor.
   if (host_->GetView()->IsRenderWidgetHostViewChildFrame())
     return nullptr;
-
-  // TODO(sahel): Uncomment this once Viz is ready on Mac.
-  // https://crbug.com/833985
-  /* RenderWidgetHostViewMac* view =
+  RenderWidgetHostViewMac* view =
       static_cast<RenderWidgetHostViewMac*>(host_->GetView());
   if (view->BrowserCompositor())
-    return view->BrowserCompositor()->Compositor();
-  } */
+    return view->BrowserCompositor()->GetCompositor();
 
   return nullptr;
 }
