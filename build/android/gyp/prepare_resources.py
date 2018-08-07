@@ -297,7 +297,8 @@ def main(args):
       input_paths=input_paths,
       input_strings=input_strings,
       output_paths=output_paths,
-      depfile_deps=depfile_deps)
+      depfile_deps=depfile_deps,
+      add_pydeps=False)
 
 
 if __name__ == '__main__':

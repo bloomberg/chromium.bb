@@ -1347,7 +1347,6 @@ declarations and print the header file to stdout (or a file).
 See SampleForTests.java for more details.
   """
   option_parser = optparse.OptionParser(usage=usage)
-  build_utils.AddDepfileOption(option_parser)
 
   option_parser.add_option('-j', '--jar_file', dest='jar_file',
                            help='Extract the list of input files from'
@@ -1400,9 +1399,6 @@ See SampleForTests.java for more details.
     root_name = os.path.splitext(os.path.basename(input_file))[0]
     output_file = os.path.join(options.output_dir, root_name) + '_jni.h'
   GenerateJNIHeader(input_file, output_file, options)
-
-  if options.depfile:
-    build_utils.WriteDepfile(options.depfile, output_file)
 
 
 if __name__ == '__main__':

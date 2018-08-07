@@ -447,7 +447,7 @@ def DoMain(argv):
         build_utils.AddToZipHermetic(srcjar, output_path, data=data)
 
   if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.srcjar)
+    build_utils.WriteDepfile(options.depfile, options.srcjar, add_pydeps=False)
 
 
 if __name__ == '__main__':
