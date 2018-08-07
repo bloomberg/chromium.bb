@@ -283,6 +283,7 @@ static_library("zlib") {
 
       deps += [ ":zlib_inflate_chunk_simd" ]
       sources -= [ "inflate.c" ]
+      sources += [ "contrib/optimizations/slide_hash_neon.h" ]
     }
   }
 
