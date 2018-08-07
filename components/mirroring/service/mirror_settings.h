@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MIRRORING_SERVICE_MIRROR_SETTINGS_H_
 #define COMPONENTS_MIRRORING_SERVICE_MIRROR_SETTINGS_H_
 
+#include "base/component_export.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "media/capture/video_capture_types.h"
@@ -22,7 +23,7 @@ namespace mirroring {
 // TODO(xjz): Add the function to generate the audio capture contraints.
 // TODO(xjz): Add setters to the settings that might be overriden by integration
 // tests.
-class MirrorSettings {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) MirrorSettings {
  public:
   MirrorSettings();
   ~MirrorSettings();

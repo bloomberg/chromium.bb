@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -29,8 +30,9 @@ namespace mirroring {
 // RTP sender for a single Cast Remoting RTP stream. The client calls Send() to
 // instruct the sender to read from a Mojo data pipe and transmit the data using
 // a CastTransport.
-class RemotingSender final : public media::mojom::RemotingDataStreamSender,
-                             public media::cast::FrameSender {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) RemotingSender final
+    : public media::mojom::RemotingDataStreamSender,
+      public media::cast::FrameSender {
  public:
   // |transport| is expected to outlive this class.
   RemotingSender(scoped_refptr<media::cast::CastEnvironment> cast_environment,

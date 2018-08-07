@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MIRRORING_SERVICE_SESSION_H_
 #define COMPONENTS_MIRRORING_SERVICE_SESSION_H_
 
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -44,7 +45,9 @@ class SessionMonitor;
 // occurs. |observer| will get notified when status changes. |outbound_channel|
 // is responsible for sending messages to the mirroring receiver through Cast
 // Channel. |inbound_channel| receives message sent from the mirroring receiver.
-class Session final : public RtpStreamClient, public MediaRemoter::Client {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
+    : public RtpStreamClient,
+      public MediaRemoter::Client {
  public:
   Session(mojom::SessionParametersPtr session_params,
           const gfx::Size& max_resolution,

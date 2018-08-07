@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/values.h"
 
 namespace mirroring {
@@ -15,25 +16,32 @@ namespace mirroring {
 // false if |key| exists and the type of the data mismatches. Return true
 // otherwise.
 
+COMPONENT_EXPORT(MIRRORING_SERVICE)
 bool GetInt(const base::Value& value, const std::string& key, int32_t* result);
 
+COMPONENT_EXPORT(MIRRORING_SERVICE)
 bool GetDouble(const base::Value& value,
                const std::string& key,
                double* result);
 
+COMPONENT_EXPORT(MIRRORING_SERVICE)
 bool GetString(const base::Value& value,
                const std::string& key,
                std::string* result);
 
+COMPONENT_EXPORT(MIRRORING_SERVICE)
 bool GetBool(const base::Value& value, const std::string& key, bool* result);
 
+COMPONENT_EXPORT(MIRRORING_SERVICE)
 bool GetIntArray(const base::Value& value,
                  const std::string& key,
                  std::vector<int32_t>* result);
 
+COMPONENT_EXPORT(MIRRORING_SERVICE)
 bool GetStringArray(const base::Value& value,
                     const std::string& key,
                     std::vector<std::string>* result);
+
 }  // namespace mirroring
 
 #endif  // COMPONENTS_MIRRORING_SERVICE_VALUE_UTIL_H_

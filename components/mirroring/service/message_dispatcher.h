@@ -6,6 +6,7 @@
 #define COMPONENTS_MIRRORING_SERVICE_MESSAGE_DISPATCHER_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
@@ -17,7 +18,8 @@ namespace mirroring {
 // Dispatches inbound/outbound messages. The outbound messages are sent out
 // through |outbound_channel|, and the inbound messages are handled by this
 // class.
-class MessageDispatcher final : public mojom::CastMessageChannel {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) MessageDispatcher final
+    : public mojom::CastMessageChannel {
  public:
   using ErrorCallback = base::RepeatingCallback<void(const std::string&)>;
   MessageDispatcher(mojom::CastMessageChannelPtr outbound_channel,

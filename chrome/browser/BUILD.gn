@@ -1742,7 +1742,7 @@ jumbo_split_static_library("browser") {
     "//components/mirroring/browser:browser",
     "//components/mirroring/mojom:host",
     "//components/mirroring/mojom:service",
-    "//components/mirroring/service:service",
+    "//components/mirroring/service:mirroring_service",
     "//components/navigation_interception",
     "//components/navigation_metrics",
     "//components/net_log",

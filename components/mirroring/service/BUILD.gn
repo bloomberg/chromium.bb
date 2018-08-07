@@ -4,7 +4,7 @@
 
 import("//testing/test.gni")
 
-source_set("service") {
+component("mirroring_service") {
   sources = [
     "captured_audio_input.cc",
     "captured_audio_input.h",
@@ -60,6 +60,8 @@ source_set("service") {
     "//services/network/public/mojom",
     "//ui/gfx",
   ]
+
+  defines = [ "IS_MIRRORING_SERVICE_IMPL" ]
 }
 
 source_set("unittests") {
@@ -83,7 +85,7 @@ source_set("unittests") {
   ]
 
   deps = [
-    ":service",
+    ":mirroring_service",
     "//base",
     "//base/test:test_support",
     "//components/mirroring/mojom:service",

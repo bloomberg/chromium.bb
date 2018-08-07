@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -32,7 +33,7 @@ class AudioSender;
 
 namespace mirroring {
 
-class RtpStreamClient {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) RtpStreamClient {
  public:
   virtual ~RtpStreamClient() {}
 
@@ -61,7 +62,8 @@ class RtpStreamClient {
 // regular intervals for a short period of time. This provides the video
 // encoder, downstream, several copies of the last frame so that it may clear up
 // lossy encoding artifacts.
-class VideoRtpStream : public base::SupportsWeakPtr<VideoRtpStream> {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoRtpStream
+    : public base::SupportsWeakPtr<VideoRtpStream> {
  public:
   VideoRtpStream(std::unique_ptr<media::cast::VideoSender> video_sender,
                  base::WeakPtr<RtpStreamClient> client);
@@ -94,7 +96,8 @@ class VideoRtpStream : public base::SupportsWeakPtr<VideoRtpStream> {
 };
 
 // Receives audio data and submits the data to media::cast::AudioSender.
-class AudioRtpStream : public base::SupportsWeakPtr<AudioRtpStream> {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) AudioRtpStream
+    : public base::SupportsWeakPtr<AudioRtpStream> {
  public:
   AudioRtpStream(std::unique_ptr<media::cast::AudioSender> audio_sender,
                  base::WeakPtr<RtpStreamClient> client);
