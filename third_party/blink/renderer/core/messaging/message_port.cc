@@ -47,12 +47,8 @@
 
 namespace blink {
 
-// TODO(altimin): Remove these after per-task mojo dispatching.
 // The maximum number of MessageEvents to dispatch from one task.
-constexpr int kMaximumMessagesPerTask = 200;
-// The threshold to stop processing new tasks.
-constexpr base::TimeDelta kYieldThreshold =
-    base::TimeDelta::FromMilliseconds(50);
+static const int kMaximumMessagesPerTask = 200;
 
 MessagePort* MessagePort::Create(ExecutionContext& execution_context) {
   return new MessagePort(execution_context);
@@ -249,13 +245,12 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
   // the connector is temporarily paused after |kMaximumMessagesPerTask| have
   // been received without other tasks having had a chance to run (in particular
   // the ResetMessageCount task posted here).
-  // TODO(altimin): Remove this after per-task mojo dispatching lands[1].
-  // [1] https://chromium-review.googlesource.com/c/chromium/src/+/1145692
   if (messages_in_current_task_ == 0) {
     task_runner_->PostTask(FROM_HERE, WTF::Bind(&MessagePort::ResetMessageCount,
                                                 WrapWeakPersistent(this)));
   }
-  if (ShouldYieldAfterNewMessage()) {
+  ++messages_in_current_task_;
+  if (messages_in_current_task_ > kMaximumMessagesPerTask) {
     connector_->PauseIncomingMethodCallProcessing();
   }
 
@@ -296,20 +291,9 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
 void MessagePort::ResetMessageCount() {
   DCHECK_GT(messages_in_current_task_, 0);
   messages_in_current_task_ = 0;
-  task_start_time_ = base::nullopt;
   // No-op if not paused already.
   if (connector_)
     connector_->ResumeIncomingMethodCallProcessing();
-}
-
-bool MessagePort::ShouldYieldAfterNewMessage() {
-  ++messages_in_current_task_;
-  if (messages_in_current_task_ > kMaximumMessagesPerTask)
-    return true;
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (!task_start_time_)
-    task_start_time_ = now;
-  return now - task_start_time_.value() > kYieldThreshold;
 }
 
 }  // namespace blink
