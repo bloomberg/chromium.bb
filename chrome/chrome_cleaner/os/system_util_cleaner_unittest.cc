@@ -85,7 +85,7 @@ TEST_F(ServiceUtilCleanerTest, DeleteService) {
 }
 
 // Flaky. https://crbug.com/871784
-TEST_F(ServiceUtilCleanerTest, FLAKY_StopAndDeleteRunningService) {
+TEST_F(ServiceUtilCleanerTest, DISABLED_StopAndDeleteRunningService) {
   // Install and launch the service.
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());
@@ -109,7 +109,7 @@ TEST_F(ServiceUtilCleanerTest, FLAKY_StopAndDeleteRunningService) {
 }
 
 // Flaky. https://crbug.com/871784
-TEST_F(ServiceUtilCleanerTest, FLAKY_DeleteRunningService) {
+TEST_F(ServiceUtilCleanerTest, DISABLED_DeleteRunningService) {
   // Install and launch the service.
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());
