@@ -1642,7 +1642,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'gpu': '8086:0a2e',
+              'gpu': 'none',
               'os': 'Mac-10.12.6',
             },
           ],
@@ -1653,7 +1653,7 @@
         # TODO(crbug.com/853356): Switch this to 10.13.
         'use_multi_dimension_trigger_script': True,
         'alternate_swarming_dimensions': [{
-          'gpu': '8086:0a2e',
+          'gpu': 'none',
           'os': 'Mac-10.12.6',
         }],
 
@@ -1662,7 +1662,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'gpu': '8086:0a2e',
+              'gpu': 'none',
               'os': 'Mac-10.13',
             },
           ],
