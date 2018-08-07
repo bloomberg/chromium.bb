@@ -68,8 +68,15 @@ constexpr base::TimeDelta kFooterAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(100);
 
 // Greeting animation.
+constexpr base::TimeDelta kGreetingAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(33);
+constexpr base::TimeDelta kGreetingAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(167);
 constexpr base::TimeDelta kGreetingAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kGreetingAnimationTranslateUpDuration =
+    base::TimeDelta::FromMilliseconds(250);
+constexpr int kGreetingAnimationTranslationDip = 115;
 
 // Pending query animation.
 constexpr base::TimeDelta kPendingQueryAnimationFadeInDuration =
@@ -532,9 +539,38 @@ void AssistantMainStage::OnResponseChanged(const AssistantResponse& response) {
 
 void AssistantMainStage::OnUiVisibilityChanged(bool visible,
                                                AssistantSource source) {
-  if (visible)
-    return;
+  if (visible) {
+    // When Assistant UI is shown and the motion spec is enabled, we animate in
+    // the appearance of the greeting label.
+    if (assistant::ui::kIsMotionSpecEnabled) {
+      using namespace assistant::util;
 
+      // We're going to animate the greeting label up into position so we'll
+      // need to apply an initial transformation.
+      gfx::Transform transform;
+      transform.Translate(0, kGreetingAnimationTranslationDip);
+
+      // Set up or pre-animation values.
+      greeting_label_->layer()->SetOpacity(0.f);
+      greeting_label_->layer()->SetTransform(transform);
+
+      // Start animating greeting label.
+      greeting_label_->layer()->GetAnimator()->StartTogether(
+          {// Animate the transformation.
+           CreateLayerAnimationSequence(CreateTransformElement(
+               gfx::Transform(), kGreetingAnimationTranslateUpDuration,
+               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+           // Animate the opacity to 100% with delay.
+           CreateLayerAnimationSequence(
+               ui::LayerAnimationElement::CreatePauseElement(
+                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                   kGreetingAnimationFadeInDelay),
+               CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
+    }
+    return;
+  }
+
+  // When Assistant UI is hidden, we restore initial state for the next session.
   is_first_query_ = true;
 
   delete active_query_view_;

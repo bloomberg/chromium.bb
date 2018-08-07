@@ -20,7 +20,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -97,8 +96,6 @@ void DialogPlate::ChildVisibilityChanged(views::View* child) {
 }
 
 void DialogPlate::InitLayout() {
-  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
-
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,

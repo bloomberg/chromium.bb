@@ -14,6 +14,10 @@
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/main_stage/assistant_main_stage.h"
+#include "ash/assistant/util/animation_util.h"
+#include "base/time/time.h"
+#include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -22,6 +26,18 @@ namespace {
 
 // Appearance.
 constexpr int kMinHeightDip = 200;
+
+// Caption bar animation.
+constexpr base::TimeDelta kCaptionBarAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(283);
+constexpr base::TimeDelta kCaptionBarAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(167);
+
+// Dialog plate animation.
+constexpr base::TimeDelta kDialogPlateAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(283);
+constexpr base::TimeDelta kDialogPlateAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(167);
 
 }  // namespace
 
@@ -86,6 +102,11 @@ void AssistantMainView::InitLayout() {
   // Caption bar.
   caption_bar_ = new CaptionBar();
   caption_bar_->SetButtonVisible(CaptionButtonId::kBack, false);
+
+  // The caption bar will be animated on its own layer.
+  caption_bar_->SetPaintToLayer();
+  caption_bar_->layer()->SetFillsBoundsOpaquely(false);
+
   AddChildView(caption_bar_);
 
   // Main stage.
@@ -96,13 +117,42 @@ void AssistantMainView::InitLayout() {
 
   // Dialog plate.
   dialog_plate_ = new DialogPlate(assistant_controller_);
+
+  // The dialog plate will be animated on its own layer.
+  dialog_plate_->SetPaintToLayer();
+  dialog_plate_->layer()->SetFillsBoundsOpaquely(false);
+
   AddChildView(dialog_plate_);
 }
 
 void AssistantMainView::OnUiVisibilityChanged(bool visible,
                                               AssistantSource source) {
-  if (visible)
+  if (visible) {
+    // When Assistant UI is shown and the motion spec is enabled, we animate in
+    // the appearance of the caption bar and dialog plate.
+    if (assistant::ui::kIsMotionSpecEnabled) {
+      using namespace assistant::util;
+
+      // Animate the caption bar from 0% to 100% opacity with delay.
+      caption_bar_->layer()->SetOpacity(0.f);
+      caption_bar_->layer()->GetAnimator()->StartAnimation(
+          CreateLayerAnimationSequence(
+              ui::LayerAnimationElement::CreatePauseElement(
+                  ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                  kCaptionBarAnimationFadeInDelay),
+              CreateOpacityElement(1.f, kCaptionBarAnimationFadeInDuration)));
+
+      // Animate the dialog plate from 0% to 100% opacity with delay.
+      dialog_plate_->layer()->SetOpacity(0.f);
+      dialog_plate_->layer()->GetAnimator()->StartAnimation(
+          CreateLayerAnimationSequence(
+              ui::LayerAnimationElement::CreatePauseElement(
+                  ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                  kDialogPlateAnimationFadeInDelay),
+              CreateOpacityElement(1.f, kDialogPlateAnimationFadeInDuration)));
+    }
     return;
+  }
 
   // When the Assistant UI is being hidden we need to reset our minimum height
   // restriction so that the default restrictions are restored for the next
