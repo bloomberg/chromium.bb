@@ -9,10 +9,13 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/win/scoped_com_initializer.h"
+#include "chrome/chrome_cleaner/crash/crash_client.h"
+#include "chrome/chrome_cleaner/logging/scoped_logging.h"
 #include "chrome/chrome_cleaner/os/rebooter.h"
 #include "chrome/chrome_cleaner/os/secure_dll_loading.h"
 #include "chrome/chrome_cleaner/os/system_util_cleaner.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
+#include "chrome/chrome_cleaner/settings/settings_types.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "sandbox/win/src/sandbox_factory.h"
 
@@ -24,6 +27,24 @@ bool IsSandboxedProcess() {
   return is_sandboxed_process;
 }
 
+// base::TestSuite's Initialize method initializes logging differently than we
+// do. This subclass ensures logging is properly initialized using ScopedLogging
+// after base::TestSuite::Initialize has run.
+class ChromeCleanerTestSuite : public base::TestSuite {
+ public:
+  // Inherit constructors.
+  using base::TestSuite::TestSuite;
+
+ protected:
+  void Initialize() override {
+    base::TestSuite::Initialize();
+    scoped_logging.reset(new chrome_cleaner::ScopedLogging(nullptr));
+  }
+
+ private:
+  std::unique_ptr<chrome_cleaner::ScopedLogging> scoped_logging;
+};
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -34,7 +55,7 @@ int main(int argc, char** argv) {
   // affect the behaviour of functionality that's tested.
   chrome_cleaner::EnableSecureDllLoading();
 
-  base::TestSuite test_suite(argc, argv);
+  ChromeCleanerTestSuite test_suite(argc, argv);
 
   if (!chrome_cleaner::SetupTestConfigs())
     return 1;
@@ -60,6 +81,15 @@ int main(int argc, char** argv) {
 
     success = chrome_cleaner::TaskScheduler::Initialize();
     DCHECK(success) << "TaskScheduler::Initialize() failed.";
+
+    // Crash reporting must be initialized only once, so it cannot be
+    // initialized by individual tests or fixtures. Also, since crashpad does
+    // not actually enable uploading of crash reports in non-official builds
+    // (unless forced to by the --enable-crash-reporting flag) we don't need to
+    // disable crash reporting.
+    chrome_cleaner::CrashClient::GetInstance()->InitializeCrashReporting(
+        chrome_cleaner::CrashClient::Mode::CLEANER,
+        chrome_cleaner::SandboxType::kNonSandboxed);
   }
 
   // Some tests will fail if two tests try to launch test_process.exe
