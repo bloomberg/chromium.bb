@@ -104,6 +104,8 @@ void RecordJsonDataSizeHistogram(const base::FilePath& path, size_t size) {
   // The histogram below is an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
   // macro adapted to allow for a dynamically suffixed histogram name.
   // Note: The factory creates and owns the histogram.
+  // This histogram is expired but the code was intentionally left behind so
+  // it can be re-enabled on Stable in a single config tweak if needed.
   base::HistogramBase* histogram = base::Histogram::FactoryGet(
       "Settings.JsonDataReadSizeKilobytes." + spaceless_basename, 1, 10000, 50,
       base::HistogramBase::kUmaTargetedHistogramFlag);
