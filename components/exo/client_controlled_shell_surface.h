@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/wm/client_controlled_state.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -40,7 +39,6 @@ enum class Orientation { PORTRAIT, LANDSCAPE };
 class ClientControlledShellSurface
     : public ShellSurfaceBase,
       public display::DisplayObserver,
-      public ash::WindowTreeHostManager::Observer,
       public ui::CompositorLockClient {
  public:
   using GeometryChangedCallback =
@@ -216,9 +214,6 @@ class ClientControlledShellSurface
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // Overridden from ash::WindowTreeHostManager::Observer:
-  void OnDisplayConfigurationChanged() override;
-
   // Overridden from ui::CompositorLockClient:
   void CompositorLockTimedOut() override;
 
@@ -268,7 +263,6 @@ class ClientControlledShellSurface
   const ash::CustomFrameViewAsh* GetFrameView() const;
 
   GeometryChangedCallback geometry_changed_callback_;
-  int64_t primary_display_id_;
 
   int top_inset_height_ = 0;
   int pending_top_inset_height_ = 0;

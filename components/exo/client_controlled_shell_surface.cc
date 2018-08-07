@@ -268,10 +268,7 @@ class ClientControlledShellSurface::ScopedLockedToRoot {
 ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
                                                            bool can_minimize,
                                                            int container)
-    : ShellSurfaceBase(surface, gfx::Point(), true, can_minimize, container),
-      primary_display_id_(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id()) {
-  WMHelper::GetInstance()->AddDisplayConfigurationObserver(this);
+    : ShellSurfaceBase(surface, gfx::Point(), true, can_minimize, container) {
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -279,7 +276,6 @@ ClientControlledShellSurface::~ClientControlledShellSurface() {
   if (wide_frame_)
     wide_frame_->Close();
 
-  WMHelper::GetInstance()->RemoveDisplayConfigurationObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
@@ -731,36 +727,6 @@ void ClientControlledShellSurface::OnDisplayMetricsChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ash::WindowTreeHostManager::Observer overrides:
-
-void ClientControlledShellSurface::OnDisplayConfigurationChanged() {
-  const display::Screen* screen = display::Screen::GetScreen();
-  int64_t primary_display_id = screen->GetPrimaryDisplay().id();
-  if (primary_display_id == primary_display_id_)
-    return;
-
-  display::Display old_primary_display;
-  if (screen->GetDisplayWithDisplayId(primary_display_id_,
-                                      &old_primary_display)) {
-    // Give the client a chance to adjust window positions before switching to
-    // the new coordinate system. Retain the old origin by reverting the origin
-    // delta until the next configure is acknowledged.
-    gfx::Vector2d delta = gfx::Point() - old_primary_display.bounds().origin();
-    origin_offset_ -= delta;
-    pending_origin_offset_accumulator_ += delta;
-
-    if (widget_) {
-      UpdateWidgetBounds();
-      UpdateShadow();
-    }
-
-    Configure();
-  }
-
-  primary_display_id_ = primary_display_id;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ui::CompositorLockClient overrides:
 
 void ClientControlledShellSurface::CompositorLockTimedOut() {
@@ -845,7 +811,6 @@ gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
     aura::Window* window = widget_->GetNativeWindow();
 
     // Convert from screen to display coordinates.
-    shadow_bounds -= origin_offset_;
     wm::ConvertRectFromScreen(window->parent(), &shadow_bounds);
 
     // Convert from display to window coordinates.
@@ -888,9 +853,7 @@ gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
     return frame_view->GetWindowBoundsForClientBounds(GetVisibleBounds());
   }
 
-  gfx::Rect bounds(GetVisibleBounds());
-  bounds.Offset(-origin_offset_.x(), -origin_offset_.y());
-  return bounds;
+  return GetVisibleBounds();
 }
 
 gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
@@ -899,8 +862,7 @@ gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
     return gfx::Point();
   // TODO(oshima): geometry_changed_callback_ must be always set by now, so
   // this is not necessary any more. Remove this.
-  return gfx::Point() -
-         (GetVisibleBounds().origin() - origin_offset_).OffsetFromOrigin();
+  return gfx::Point() - GetVisibleBounds().OffsetFromOrigin();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
