@@ -157,4 +157,37 @@ float HarfBuzzUnitsToFloat(int value) {
   return kFloatToHbRatio * value;
 }
 
+#if BUILDFLAG(ENABLE_VULKAN)
+VkFormat SkColorTypeToVkFormat(SkColorType color_type) {
+  switch (color_type) {
+    case kUnknown_SkColorType:
+      break;
+    case kAlpha_8_SkColorType:
+      return VK_FORMAT_R8_UNORM;
+    case kRGB_565_SkColorType:
+      return VK_FORMAT_R5G6B5_UNORM_PACK16;
+    case kARGB_4444_SkColorType:
+      return VK_FORMAT_B4G4R4A4_UNORM_PACK16;
+    case kRGBA_8888_SkColorType:
+      return VK_FORMAT_R8G8B8A8_UNORM;  // or VK_FORMAT_R8G8B8A8_SRGB
+    case kRGB_888x_SkColorType:  // Skia doesn't support it yet.
+      break;
+    case kBGRA_8888_SkColorType:
+      return VK_FORMAT_B8G8R8A8_UNORM;  // or VK_FORMAT_B8G8R8A8_SRGB
+    case kRGBA_1010102_SkColorType:
+      return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+    case kGray_8_SkColorType:
+      return VK_FORMAT_R8_UNORM;
+    case kRGBA_F16_SkColorType:
+      return VK_FORMAT_R16G16B16A16_SFLOAT;
+    case kRGBA_F32_SkColorType:
+      return VK_FORMAT_R32G32B32A32_SFLOAT;
+    case kRGB_101010x_SkColorType:  // Skia doesn't support it yet.
+      break;
+  }
+  NOTREACHED();
+  return VK_FORMAT_UNDEFINED;
+}
+#endif
+
 }  // namespace gfx
