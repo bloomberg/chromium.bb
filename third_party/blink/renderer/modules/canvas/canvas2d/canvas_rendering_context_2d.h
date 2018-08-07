@@ -244,6 +244,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   bool Is2d() const override { return true; }
   bool IsComposited() const override;
   bool IsAccelerated() const override;
+  bool IsOriginTopLeft() const override;
   bool HasAlpha() const override { return CreationAttributes().alpha; }
   void SetIsHidden(bool) override;
   void Stop() final;

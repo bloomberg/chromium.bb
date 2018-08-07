@@ -80,7 +80,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
       unsigned msaa_sample_count,
       const CanvasColorParams&,
       PresentationMode,
-      base::WeakPtr<CanvasResourceDispatcher>);
+      base::WeakPtr<CanvasResourceDispatcher>,
+      bool is_origin_top_left = true);
 
   // Use this method for capturing a frame that is intended to be displayed via
   // the compositor. Cases that need to acquire a snaptshot that is not destined
