@@ -51,12 +51,12 @@ class CORE_EXPORT NGInlineItem {
   enum NGCollapseType {
     // No collapsible spaces.
     kNotCollapsible,
-    // A collapsible space run that does not contain segment breaks.
-    kCollapsibleSpace,
-    // A collapsible space run that contains segment breaks.
-    kCollapsibleNewline,
     // This item is opaque to whitespace collapsing.
-    kOpaqueToCollapsing
+    kOpaqueToCollapsing,
+    // This item ends with collapsible spaces.
+    kCollapsible,
+    // Collapsible spaces at the end of this item were collapsed.
+    kCollapsed,
   };
 
   // The constructor and destructor can't be implicit or inlined, because they
@@ -65,8 +65,7 @@ class CORE_EXPORT NGInlineItem {
                unsigned start,
                unsigned end,
                const ComputedStyle* style = nullptr,
-               LayoutObject* layout_object = nullptr,
-               bool end_may_collapse = false);
+               LayoutObject* layout_object = nullptr);
   ~NGInlineItem();
 
   // Copy constructor adjusting start/end and shape results.
@@ -123,12 +122,12 @@ class CORE_EXPORT NGInlineItem {
   NGCollapseType EndCollapseType() const {
     return static_cast<NGCollapseType>(end_collapse_type_);
   }
-  void SetEndCollapseType(NGCollapseType type) { end_collapse_type_ = type; }
+  void SetEndCollapseType(NGCollapseType type);
 
-  // Whether the item may be affected by whitespace collapsing. Unlike the
-  // EndCollapseType() method this returns true even if a trailing space has
-  // been removed.
-  bool EndMayCollapse() const { return end_may_collapse_; }
+  // Whether the end collapsible space run contains a newline.
+  // Valid only when kCollapsible or kCollapsed.
+  bool IsEndCollapsibleNewline() const { return is_end_collapsible_newline_; }
+  void SetEndCollapseType(NGCollapseType type, bool is_newline);
 
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
 
@@ -189,7 +188,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned should_create_box_fragment_ : 1;
   unsigned style_variant_ : 2;
   unsigned end_collapse_type_ : 2;  // NGCollapseType
-  unsigned end_may_collapse_ : 1;
+  unsigned is_end_collapsible_newline_ : 1;
   unsigned is_symbol_marker_ : 1;
   friend class NGInlineNode;
 };

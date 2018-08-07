@@ -154,12 +154,11 @@ class NGInlineItemsBuilderTemplate {
   void RemoveTrailingCollapsibleSpaceIfExists();
   void RemoveTrailingCollapsibleSpace(NGInlineItem*);
 
+  void RestoreTrailingCollapsibleSpaceIfRemoved();
+  void RestoreTrailingCollapsibleSpace(NGInlineItem*);
+
   void Exit(LayoutObject*);
 };
-
-template <>
-CORE_EXPORT String
-NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ToString();
 
 template <>
 CORE_EXPORT bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(

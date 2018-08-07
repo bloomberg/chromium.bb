@@ -294,16 +294,12 @@ const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
     NGInlineItemsBuilderForOffsetMapping builder(&items);
     CollectInlinesInternal(GetLayoutBlockFlow(), &builder, nullptr);
     String text = builder.ToString();
-
-    // The trailing space of the text for offset mapping may be removed. If not,
-    // share the string instance.
-    if (text == data->text_content)
-      text = data->text_content;
+    DCHECK_EQ(data->text_content, text);
 
     // TODO(xiaochengh): This doesn't compute offset mapping correctly when
     // text-transform CSS property changes text length.
     NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
-    mapping_builder.SetDestinationString(text);
+    mapping_builder.SetDestinationString(data->text_content);
     data->offset_mapping =
         std::make_unique<NGOffsetMapping>(mapping_builder.Build());
   }
