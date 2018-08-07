@@ -98,6 +98,11 @@ bool ChromeOmniboxClientIOS::IsHomePage(const GURL& url) const {
   return false;
 }
 
+bool ChromeOmniboxClientIOS::IsDefaultSearchProviderEnabled() const {
+  // iOS does not have Enterprise policies
+  return true;
+}
+
 const SessionID& ChromeOmniboxClientIOS::GetSessionID() const {
   return IOSChromeSessionTabHelper::FromWebState(controller_->GetWebState())
       ->session_id();

@@ -83,6 +83,9 @@ class OmniboxClient {
   // Returns whether |url| corresponds to the user's home page.
   virtual bool IsHomePage(const GURL& url) const;
 
+  // Returns false if Default Search is disabled by a policy.
+  virtual bool IsDefaultSearchProviderEnabled() const;
+
   // Returns the session ID of the current page.
   virtual const SessionID& GetSessionID() const = 0;
 

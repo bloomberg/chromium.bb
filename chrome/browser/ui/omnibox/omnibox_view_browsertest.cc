@@ -43,6 +43,8 @@
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/test_toolbar_model.h"
@@ -158,6 +160,14 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SetupComponents());
     chrome::FocusLocationBar(browser());
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  }
+
+  void SetUp() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+    InProcessBrowserTest::SetUp();
   }
 
   static void GetOmniboxViewForBrowser(
@@ -377,7 +387,13 @@ class OmniboxViewTest : public InProcessBrowserTest,
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
+  policy::MockConfigurationPolicyProvider* policy_provider() {
+    return &policy_provider_;
+  }
+
  private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+
   test::ScopedMacViewsBrowserMode views_mode_{true};
 
   // Non-owning pointer.
@@ -998,6 +1014,25 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordByTypingQuestionMark) {
   EXPECT_EQ(base::string16(), omnibox_view->model()->keyword());
   EXPECT_FALSE(omnibox_view->model()->is_keyword_hint());
   EXPECT_FALSE(omnibox_view->model()->is_keyword_selected());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SearchDisabledDontCrashOnQuestionMark) {
+  policy::PolicyMap policies;
+  policies.Set("DefaultSearchProviderEnabled", policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
+               std::make_unique<base::Value>(false), nullptr);
+  policy_provider()->UpdateChromePolicy(policies);
+  base::RunLoop().RunUntilIdle();
+
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+
+  base::string16 search_keyword(ASCIIToUTF16(kSearchKeyword));
+
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN));
+  ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
+  ASSERT_FALSE(omnibox_view->model()->is_keyword_selected());
+  ASSERT_EQ(ASCIIToUTF16("?"), omnibox_view->GetText());
 }
 
 // Flaky on Windows and Linux. http://crbug.com/751543
