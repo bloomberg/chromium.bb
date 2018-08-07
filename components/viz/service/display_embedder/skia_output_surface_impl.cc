@@ -17,6 +17,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -324,18 +325,8 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
         *metadata.backend_format.getGLTarget());
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    VkFormat format = VK_FORMAT_UNDEFINED;
-    switch (metadata.color_type) {
-      case kRGBA_8888_SkColorType:
-        format = VK_FORMAT_R8G8B8A8_UNORM;
-        break;
-      case kBGRA_8888_SkColorType:
-        format = VK_FORMAT_B8G8R8A8_UNORM;
-        break;
-      default:
-        NOTREACHED();
-    }
-    metadata.backend_format = GrBackendFormat::MakeVk(format);
+    metadata.backend_format = GrBackendFormat::MakeVk(
+        gfx::SkColorTypeToVkFormat(metadata.color_type));
 #else
     NOTREACHED();
 #endif
@@ -414,7 +405,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   SkSurfaceProps surface_props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   int msaa_sample_count = 0;
   SkColorType color_type =
-      ResourceFormatToClosestSkColorType(true /*gpu_compositing */, format);
+      ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
   SkImageInfo image_info =
       SkImageInfo::Make(surface_size.width(), surface_size.height(), color_type,
                         kPremul_SkAlphaType, nullptr /* color_space */);
@@ -431,7 +422,8 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
         GL_TEXTURE_2D);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    backend_format = GrBackendFormat::MakeVk(VK_FORMAT_B8G8R8A8_UNORM);
+    backend_format =
+        GrBackendFormat::MakeVk(gfx::SkColorTypeToVkFormat(color_type));
 #else
     NOTREACHED();
 #endif
@@ -479,7 +471,8 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
-  SkColorType color_type = kBGRA_8888_SkColorType;
+  SkColorType color_type =
+      ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
   GrBackendFormat backend_format;
 
   if (!gpu_service_->is_using_vulkan()) {
@@ -489,11 +482,10 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
     backend_format = GrBackendFormat::MakeGL(
         gl::GetInternalFormat(version_info, texture_storage_format),
         GL_TEXTURE_2D);
-    color_type =
-        ResourceFormatToClosestSkColorType(true /*gpu_compositing */, format);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    backend_format = GrBackendFormat::MakeVk(VK_FORMAT_B8G8R8A8_UNORM);
+    backend_format =
+        GrBackendFormat::MakeVk(gfx::SkColorTypeToVkFormat(color_type));
 #else
     NOTREACHED();
 #endif

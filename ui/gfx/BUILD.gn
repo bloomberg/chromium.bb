@@ -37,6 +37,7 @@ jumbo_component("geometry_skia") {
   ]
   deps = [
     "//base",
+    "//gpu/vulkan:buildflags",
     "//skia",
     "//ui/gfx/geometry",
   ]
