@@ -32,8 +32,7 @@ RenderProcessProbe* RenderProcessProbe::GetInstance() {
 
 // static
 bool RenderProcessProbe::IsEnabled() {
-  // Check that service_manager is active, GRC is enabled,
-  // and render process CPU profiling is enabled.
+  // Check that service_manager is active and GRC is enabled.
   return content::ServiceManagerConnection::GetForProcess() != nullptr &&
          resource_coordinator::IsResourceCoordinatorEnabled();
 }

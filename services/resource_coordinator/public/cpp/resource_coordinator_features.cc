@@ -25,6 +25,10 @@ const base::Feature kGlobalResourceCoordinator{
 const base::Feature kPageAlmostIdle{"PageAlmostIdle",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables CPU/memory performance measurements on PageAlmostIdle events.
+const base::Feature kPerformanceMeasurement{"PerformanceMeasurement",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 namespace resource_coordinator {
