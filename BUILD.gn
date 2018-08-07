@@ -142,7 +142,7 @@ group("gn_all") {
       "//ppapi/examples/video_encode",
       "//printing:printing_unittests",
       "//third_party/SPIRV-Tools/src:SPIRV-Tools",
-      "//third_party/SPIRV-Tools/src/testing/fuzzers",
+      "//third_party/SPIRV-Tools/src/test/fuzzers",
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
       "//third_party/pdfium/samples:pdfium_test",
       "//third_party/webrtc/rtc_tools:frame_analyzer",
