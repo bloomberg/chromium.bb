@@ -34619,6 +34619,51 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Transport-layer default"/>
 </enum>
 
+<enum name="NTPBackgroundCustomizationAvailability">
+  <int value="0" label="Background customization available"/>
+  <int value="1" label="Background customization feature unavailable"/>
+  <int value="2" label="Background customization unavailable due to theme"/>
+  <int value="3"
+      label="Background customization unavailable due to search provider"/>
+</enum>
+
+<enum name="NTPCustomizeAction">
+  <int value="0" label="'Chrome backgrounds' menu item clicked"/>
+  <int value="1" label="'Upload an image' menu item clicked"/>
+  <int value="2" label="'Restore default background' menu item clicked"/>
+  <int value="3" label="Attribution link on a customized background clicked"/>
+  <int value="4" label="Add shortcut' link clicked."/>
+  <int value="5" label="Edit shortcut' link clicked."/>
+  <int value="6" label="Restore default shortcuts' menu item clicked."/>
+</enum>
+
+<enum name="NTPCustomizeChromeBackgroundAction">
+  <int value="0"
+      label="Collection selected in the 'Chrome backgrounds' dialog"/>
+  <int value="1" label="Image selected in the 'Chrome backgrounds' dialog"/>
+  <int value="2" label="'Cancel' clicked in the 'Chrome backgrounds' dialog"/>
+  <int value="3" label="'Done' clicked in the 'Chrome backgrounds' dialog"/>
+</enum>
+
+<enum name="NTPCustomizedFeatures">
+  <int value="0" label="Background customized"/>
+  <int value="1" label="Shortcut customized"/>
+</enum>
+
+<enum name="NTPCustomizeLocalImageBackgroundAction">
+  <int value="0" label="'Cancel' clicked in the 'Upload an image' dialog"/>
+  <int value="1" label="'Done' clicked in the 'Upload an image' dialog"/>
+</enum>
+
+<enum name="NTPCustomizeShortcutAction">
+  <int value="0" label="Remove' clicked in the 'Edit shortcut' dialog"/>
+  <int value="1" label="Cancel' clicked in the 'Edit shortcut' dialog"/>
+  <int value="2" label="Done' clicked in the 'Edit shortcut' dialog"/>
+  <int value="3" label="'Undo' clicked in the message pop-up"/>
+  <int value="4"
+      label="'Restore default shortcuts' clicked in the message pop-up"/>
+</enum>
+
 <enum name="NtpFollowAction">
   <int value="0" label="PAGE_TRANSITION_LINK"/>
   <int value="1" label="PAGE_TRANSITION_TYPED"/>
@@ -34689,6 +34734,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Background request - quota granted"/>
   <int value="2" label="Background request - quota exceeded"/>
   <int value="3" label="Interactive request - quota exceeded"/>
+</enum>
+
+<enum name="NTPShortcutCustomizationAvailability">
+  <int value="0" label="Shortcut customization available"/>
+  <int value="1" label="Shortcut customization feature unavailable"/>
+  <int value="2"
+      label="Shortcut customization unavailable due to search provider"/>
 </enum>
 
 <enum name="NtpSnippetsFetchResult">

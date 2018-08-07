@@ -9,7 +9,7 @@
 // to transfer information from the NTP javascript to the renderer and is *not*
 // used as a UMA enum histogram's logged value.
 // Note: Keep in sync with browser/resources/local_ntp/local_ntp.js, voice.js,
-// and most_visited_single.js.
+// most_visited_single.js, and custom_backgrounds.js.
 enum NTPLoggingEventType {
   // Deleted: NTP_SERVER_SIDE_SUGGESTION = 0,
   // Deleted: NTP_CLIENT_SIDE_SUGGESTION = 1,
@@ -79,7 +79,52 @@ enum NTPLoggingEventType {
   // The One Google Bar was shown.
   NTP_ONE_GOOGLE_BAR_SHOWN = 37,
 
-  NTP_EVENT_TYPE_LAST = NTP_ONE_GOOGLE_BAR_SHOWN
+  // The NTP background has been customized with an image.
+  NTP_BACKGROUND_CUSTOMIZED = 38,
+  // Shortcuts have been customized on the NTP.
+  NTP_SHORTCUT_CUSTOMIZED = 39,
+
+  // The 'Chrome backgrounds' menu item was clicked.
+  NTP_CUSTOMIZE_CHROME_BACKGROUNDS_CLICKED = 40,
+  // The 'Upload an image' menu item was clicked.
+  NTP_CUSTOMIZE_LOCAL_IMAGE_CLICKED = 41,
+  // The 'Restore default background' menu item was clicked.
+  NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED = 42,
+  // The attribution link on a customized background image was clicked.
+  NTP_CUSTOMIZE_ATTRIBUTION_CLICKED = 43,
+  // The 'Add shortcut' link was clicked.
+  NTP_CUSTOMIZE_ADD_SHORTCUT_CLICKED = 44,
+  // The 'Edit shortcut' link was clicked.
+  NTP_CUSTOMIZE_EDIT_SHORTCUT_CLICKED = 45,
+  // The 'Restore default shortcuts' menu item was clicked.
+  NTP_CUSTOMIZE_RESTORE_SHORTCUTS_CLICKED = 46,
+
+  // A collection was selected in the 'Chrome backgrounds' dialog.
+  NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_COLLECTION = 47,
+  // An image was selected in the 'Chrome backgrounds' dialog.
+  NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_IMAGE = 48,
+  // 'Cancel' was clicked in the 'Chrome backgrounds' dialog.
+  NTP_CUSTOMIZE_CHROME_BACKGROUND_CANCEL = 49,
+  // 'Done' was clicked in the 'Chrome backgrounds' dialog.
+  NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE = 50,
+
+  // 'Cancel' was clicked in the 'Upload an image' dialog.
+  NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL = 51,
+  // 'Done' was clicked in the 'Upload an image' dialog.
+  NTP_CUSTOMIZE_LOCAL_IMAGE_DONE = 52,
+
+  // 'Remove' was clicked in the 'Edit shortcut' dialog.
+  NTP_CUSTOMIZE_SHORTCUT_REMOVE = 53,
+  // 'Cancel' was clicked in the 'Edit shortcut' dialog.
+  NTP_CUSTOMIZE_SHORTCUT_CANCEL = 54,
+  // 'Done' was clicked in the 'Edit shortcut' dialog.
+  NTP_CUSTOMIZE_SHORTCUT_DONE = 55,
+  // 'Undo' was clicked in the message pop-up.
+  NTP_CUSTOMIZE_SHORTCUT_UNDO = 56,
+  // 'Restore default shortcuts' was clicked in the message pop-up.
+  NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL = 57,
+
+  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL
 };
 
 #endif  // CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_

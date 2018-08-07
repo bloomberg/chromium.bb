@@ -60,6 +60,11 @@ var LOG_TYPE = {
   // before the actual DOM elements have loaded (in particular the thumbnail
   // images).
   NTP_ALL_TILES_RECEIVED: 12,
+
+  // The 'Add shortcut' link was clicked.
+  NTP_CUSTOMIZE_ADD_SHORTCUT_CLICKED: 44,
+  // The 'Edit shortcut' link was clicked.
+  NTP_CUSTOMIZE_EDIT_SHORTCUT_CLICKED: 45,
 };
 
 
@@ -678,6 +683,7 @@ function renderMaterialDesignTile(data) {
   mdTileLink.addEventListener('click', function(ev) {
     if (data.isAddButton) {
       editCustomLink();
+      logEvent(LOG_TYPE.NTP_CUSTOMIZE_ADD_SHORTCUT_CLICKED);
     } else {
       logMostVisitedNavigation(
           position, data.tileTitleSource, data.tileSource, tileType,
@@ -795,6 +801,7 @@ function renderMaterialDesignTile(data) {
         editCustomLink(data.tid);
         ev.preventDefault();
         ev.stopPropagation();
+        logEvent(LOG_TYPE.NTP_CUSTOMIZE_EDIT_SHORTCUT_CLICKED);
       });
     } else {
       mdMenu.title = queryArgs['removeTooltip'] || '';

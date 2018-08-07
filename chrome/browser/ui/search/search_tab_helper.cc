@@ -411,10 +411,20 @@ void SearchTabHelper::FileSelected(const base::FilePath& path,
   }
 
   select_file_dialog_ = nullptr;
+  // File selection can happen at any time after NTP load, and is not logged
+  // with the event.
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_DONE,
+                 base::TimeDelta::FromSeconds(0));
 }
 
 void SearchTabHelper::FileSelectionCanceled(void* params) {
   select_file_dialog_ = nullptr;
+  // File selection can happen at any time after NTP load, and is not logged
+  // with the event.
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL,
+                 base::TimeDelta::FromSeconds(0));
 }
 
 void SearchTabHelper::OnSelectLocalBackgroundImage() {
