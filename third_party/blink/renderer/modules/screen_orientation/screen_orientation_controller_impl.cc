@@ -220,7 +220,7 @@ void ScreenOrientationControllerImpl::DispatchEventTimerFired(TimerBase*) {
     return;
 
   ScopedOrientationChangeIndicator orientation_change_indicator;
-  orientation_->DispatchEvent(Event::Create(EventTypeNames::change));
+  orientation_->DispatchEvent(*Event::Create(EventTypeNames::change));
 }
 
 void ScreenOrientationControllerImpl::DidUpdateData() {

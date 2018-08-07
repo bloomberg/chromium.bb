@@ -534,7 +534,7 @@ void PresentationConnection::DidReceiveTextMessage(const WebString& message) {
   if (state_ != mojom::blink::PresentationConnectionState::CONNECTED)
     return;
 
-  DispatchEvent(MessageEvent::Create(message));
+  DispatchEvent(*MessageEvent::Create(message));
 }
 
 void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
@@ -548,12 +548,12 @@ void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
       blob_data->AppendBytes(data, length);
       Blob* blob =
           Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
-      DispatchEvent(MessageEvent::Create(blob));
+      DispatchEvent(*MessageEvent::Create(blob));
       return;
     }
     case kBinaryTypeArrayBuffer:
       DOMArrayBuffer* buffer = DOMArrayBuffer::Create(data, length);
-      DispatchEvent(MessageEvent::Create(buffer));
+      DispatchEvent(*MessageEvent::Create(buffer));
       return;
   }
   NOTREACHED();
@@ -644,7 +644,7 @@ void PresentationConnection::DispatchEventAsync(EventTarget* target,
                                                 Event* event) {
   DCHECK(target);
   DCHECK(event);
-  target->DispatchEvent(event);
+  target->DispatchEvent(*event);
 }
 
 void PresentationConnection::TearDown() {

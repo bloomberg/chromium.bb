@@ -24,7 +24,7 @@ void PictureInPictureWindow::OnResize(const WebSize& size) {
     return;
 
   size_ = size;
-  DispatchEvent(Event::Create(EventTypeNames::resize));
+  DispatchEvent(*Event::Create(EventTypeNames::resize));
 }
 
 const AtomicString& PictureInPictureWindow::InterfaceName() const {

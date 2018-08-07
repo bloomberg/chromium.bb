@@ -1927,7 +1927,7 @@ void RTCPeerConnection::MaybeFireNegotiationNeeded() {
   if (!negotiation_needed_ || closed_)
     return;
   negotiation_needed_ = false;
-  DispatchEvent(Event::Create(EventTypeNames::negotiationneeded));
+  DispatchEvent(*Event::Create(EventTypeNames::negotiationneeded));
 }
 
 void RTCPeerConnection::DidGenerateICECandidate(
@@ -2247,7 +2247,7 @@ void RTCPeerConnection::ChangeSignalingState(
     signaling_state_ = signaling_state;
     Event* event = Event::Create(EventTypeNames::signalingstatechange);
     if (dispatch_event_immediately)
-      DispatchEvent(event);
+      DispatchEvent(*event);
     else
       ScheduleDispatchEvent(event);
   }
@@ -2343,7 +2343,7 @@ void RTCPeerConnection::DispatchScheduledEvent() {
   HeapVector<Member<EventWrapper>>::iterator it = events.begin();
   for (; it != events.end(); ++it) {
     if ((*it)->Setup()) {
-      DispatchEvent((*it)->event_.Release());
+      DispatchEvent(*(*it)->event_.Release());
     }
   }
 

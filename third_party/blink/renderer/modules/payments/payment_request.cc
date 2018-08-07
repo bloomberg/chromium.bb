@@ -1122,7 +1122,7 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
       GetExecutionContext(), EventTypeNames::shippingaddresschange);
   event->SetTarget(this);
   event->SetPaymentDetailsUpdater(this);
-  DispatchEvent(event);
+  DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kWarningMessageLevel,
@@ -1141,7 +1141,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
       GetExecutionContext(), EventTypeNames::shippingoptionchange);
   event->SetTarget(this);
   event->SetPaymentDetailsUpdater(this);
-  DispatchEvent(event);
+  DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kWarningMessageLevel,

@@ -87,7 +87,7 @@ CanvasRenderingContext* WebGL2ComputeRenderingContext::Factory::Create(
 
 void WebGL2ComputeRenderingContext::Factory::OnError(HTMLCanvasElement* canvas,
                                                      const String& error) {
-  canvas->DispatchEvent(WebGLContextEvent::Create(
+  canvas->DispatchEvent(*WebGLContextEvent::Create(
       EventTypeNames::webglcontextcreationerror, error));
 }
 

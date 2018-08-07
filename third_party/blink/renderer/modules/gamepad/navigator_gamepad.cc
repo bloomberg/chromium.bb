@@ -256,7 +256,7 @@ void NavigatorGamepad::DispatchOneEvent() {
   const AtomicString& event_name = gamepad->connected()
                                        ? EventTypeNames::gamepadconnected
                                        : EventTypeNames::gamepaddisconnected;
-  DomWindow()->DispatchEvent(GamepadEvent::Create(
+  DomWindow()->DispatchEvent(*GamepadEvent::Create(
       event_name, Event::Bubbles::kNo, Event::Cancelable::kYes, gamepad));
 
   if (!pending_events_.IsEmpty()) {

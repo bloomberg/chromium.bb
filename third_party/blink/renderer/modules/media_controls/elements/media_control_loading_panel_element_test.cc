@@ -169,7 +169,7 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
 
   void TriggerEvent(const AtomicString& name) {
     Event* event = Event::Create(name);
-    loading_element_->mask1_background_->DispatchEvent(event);
+    loading_element_->mask1_background_->DispatchEvent(*event);
   }
 
   Persistent<HTMLMediaElement> media_element_;

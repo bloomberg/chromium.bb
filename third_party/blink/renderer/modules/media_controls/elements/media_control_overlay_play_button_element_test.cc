@@ -39,7 +39,7 @@ class MediaControlOverlayPlayButtonElementTest : public PageTestBase {
 
   void SimulateAnimationIteration() {
     Event* event = Event::Create(EventTypeNames::animationiteration);
-    GetElementById("arrow-3")->DispatchEvent(event);
+    GetElementById("arrow-3")->DispatchEvent(*event);
   }
 
  private:

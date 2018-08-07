@@ -728,7 +728,7 @@ void FrameSelection::SelectAll(SetSelectionBy set_selection_by) {
 
   if (select_start_target) {
     const Document& expected_document = GetDocument();
-    if (select_start_target->DispatchEvent(Event::CreateCancelableBubble(
+    if (select_start_target->DispatchEvent(*Event::CreateCancelableBubble(
             EventTypeNames::selectstart)) != DispatchEventResult::kNotCanceled)
       return;
     // The frame may be detached due to selectstart event.

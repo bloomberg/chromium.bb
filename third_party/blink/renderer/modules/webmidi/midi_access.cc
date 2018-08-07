@@ -146,7 +146,7 @@ void MIDIAccess::DidAddInputPort(const String& id,
   MIDIInput* port = MIDIInput::Create(this, id, manufacturer, name, version,
                                       ToDeviceState(state));
   inputs_.push_back(port);
-  DispatchEvent(MIDIConnectionEvent::Create(port));
+  DispatchEvent(*MIDIConnectionEvent::Create(port));
 }
 
 void MIDIAccess::DidAddOutputPort(const String& id,
@@ -159,7 +159,7 @@ void MIDIAccess::DidAddOutputPort(const String& id,
   MIDIOutput* port = MIDIOutput::Create(this, port_index, id, manufacturer,
                                         name, version, ToDeviceState(state));
   outputs_.push_back(port);
-  DispatchEvent(MIDIConnectionEvent::Create(port));
+  DispatchEvent(*MIDIConnectionEvent::Create(port));
 }
 
 void MIDIAccess::DidSetInputPortState(unsigned port_index, PortState state) {

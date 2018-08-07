@@ -269,7 +269,7 @@ void HTMLTrackElement::DidCompleteLoad(LoadStatus status) {
   // readiness state to loaded, and fire a simple event named load at the track
   // element.
   SetReadyState(kLoaded);
-  DispatchEvent(Event::Create(EventTypeNames::load));
+  DispatchEvent(*Event::Create(EventTypeNames::load));
 }
 
 void HTMLTrackElement::NewCuesAvailable(TextTrackLoader* loader) {

@@ -89,7 +89,7 @@ ScriptPromise ServiceWorker::InternalsTerminate(ScriptState* script_state) {
 }
 
 void ServiceWorker::DispatchStateChangeEvent() {
-  this->DispatchEvent(Event::Create(EventTypeNames::statechange));
+  this->DispatchEvent(*Event::Create(EventTypeNames::statechange));
 }
 
 String ServiceWorker::scriptURL() const {

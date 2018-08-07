@@ -53,8 +53,8 @@ void XMLHttpRequestUpload::DispatchProgressEvent(
   last_total_bytes_to_be_sent_ = total_bytes_to_be_sent;
   probe::AsyncTask async_task(GetExecutionContext(), xml_http_request_,
                               "progress", xml_http_request_->IsAsync());
-  DispatchEvent(ProgressEvent::Create(EventTypeNames::progress, true,
-                                      bytes_sent, total_bytes_to_be_sent));
+  DispatchEvent(*ProgressEvent::Create(EventTypeNames::progress, true,
+                                       bytes_sent, total_bytes_to_be_sent));
 }
 
 void XMLHttpRequestUpload::DispatchEventAndLoadEnd(
@@ -67,9 +67,9 @@ void XMLHttpRequestUpload::DispatchEventAndLoadEnd(
   probe::AsyncTask async_task(GetExecutionContext(), xml_http_request_, "event",
                               xml_http_request_->IsAsync());
   DispatchEvent(
-      ProgressEvent::Create(type, length_computable, bytes_sent, total));
-  DispatchEvent(ProgressEvent::Create(EventTypeNames::loadend,
-                                      length_computable, bytes_sent, total));
+      *ProgressEvent::Create(type, length_computable, bytes_sent, total));
+  DispatchEvent(*ProgressEvent::Create(EventTypeNames::loadend,
+                                       length_computable, bytes_sent, total));
 }
 
 void XMLHttpRequestUpload::HandleRequestError(const AtomicString& type) {
@@ -77,9 +77,9 @@ void XMLHttpRequestUpload::HandleRequestError(const AtomicString& type) {
                            last_bytes_sent_ <= last_total_bytes_to_be_sent_;
   probe::AsyncTask async_task(GetExecutionContext(), xml_http_request_, "error",
                               xml_http_request_->IsAsync());
-  DispatchEvent(ProgressEvent::Create(EventTypeNames::progress,
-                                      length_computable, last_bytes_sent_,
-                                      last_total_bytes_to_be_sent_));
+  DispatchEvent(*ProgressEvent::Create(EventTypeNames::progress,
+                                       length_computable, last_bytes_sent_,
+                                       last_total_bytes_to_be_sent_));
   DispatchEventAndLoadEnd(type, length_computable, last_bytes_sent_,
                           last_total_bytes_to_be_sent_);
 }

@@ -254,7 +254,7 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
   if (classic_script_loader_->Canceled()) {
     // Do nothing.
   } else if (classic_script_loader_->Failed()) {
-    DispatchEvent(Event::CreateCancelable(EventTypeNames::error));
+    DispatchEvent(*Event::CreateCancelable(EventTypeNames::error));
   } else {
     ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
     if (!classic_script_loader_->GetReferrerPolicy().IsNull()) {

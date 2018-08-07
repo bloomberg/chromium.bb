@@ -279,7 +279,7 @@ void ScriptProcessorHandler::FireProcessEvent(unsigned double_buffer_index) {
                            static_cast<double>(Context()->sampleRate());
 
     // Call the JavaScript event handler which will do the audio processing.
-    GetNode()->DispatchEvent(AudioProcessingEvent::Create(
+    GetNode()->DispatchEvent(*AudioProcessingEvent::Create(
         input_buffer, output_buffer, playback_time));
   }
 }
@@ -311,7 +311,7 @@ void ScriptProcessorHandler::FireProcessEventForOfflineAudioContext(
     // is locked by the waitable event.
     double playback_time = (Context()->CurrentSampleFrame() + buffer_size_) /
                            static_cast<double>(Context()->sampleRate());
-    GetNode()->DispatchEvent(AudioProcessingEvent::Create(
+    GetNode()->DispatchEvent(*AudioProcessingEvent::Create(
         input_buffer, output_buffer, playback_time));
   }
 

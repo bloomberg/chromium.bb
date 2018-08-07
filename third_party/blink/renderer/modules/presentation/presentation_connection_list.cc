@@ -54,7 +54,7 @@ bool PresentationConnectionList::RemoveConnection(
 
 void PresentationConnectionList::DispatchConnectionAvailableEvent(
     PresentationConnection* connection) {
-  DispatchEvent(PresentationConnectionAvailableEvent::Create(
+  DispatchEvent(*PresentationConnectionAvailableEvent::Create(
       EventTypeNames::connectionavailable, connection));
 }
 
