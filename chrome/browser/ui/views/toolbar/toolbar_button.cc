@@ -25,7 +25,6 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 ToolbarButton::ToolbarButton(views::ButtonListener* listener)
@@ -43,7 +42,6 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   set_context_menu_controller(this);
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
-  SetInstallFocusRingOnFocus(views::PlatformStyle::kPreferFocusRings);
 
   // Make sure icons are flipped by default so that back, forward, etc. follows
   // UI direction.

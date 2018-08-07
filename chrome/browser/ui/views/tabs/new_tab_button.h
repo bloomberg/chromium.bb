@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/focus_ring.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -165,9 +164,6 @@ class NewTabButton : public views::ImageButton,
   // Observes the NewTabPromo's Widget.  Used to tell whether the promo is
   // open and get called back when it closes.
   ScopedObserver<views::Widget, WidgetObserver> new_tab_promo_observer_{this};
-
-  // The FocusRing for this new tab button.
-  std::unique_ptr<views::FocusRing> focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabButton);
 };

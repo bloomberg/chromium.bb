@@ -25,7 +25,6 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -73,7 +72,7 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
   // When using focus rings are visible we should hide the separator instantly
   // when the IconLabelBubbleView is focused. Otherwise we should follow the
   // inkdrop.
-  if (views::PlatformStyle::kPreferFocusRings && owner_->HasFocus()) {
+  if (owner_->focus_ring() && owner_->HasFocus()) {
     layer()->SetOpacity(0.0f);
     return;
   }
@@ -146,8 +145,6 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
 
   // Flip the canvas in RTL so the separator is drawn on the correct side.
   separator_view_->EnableCanvasFlippingForRTLUI(true);
-
-  SetInstallFocusRingOnFocus(views::PlatformStyle::kPreferFocusRings);
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {
@@ -307,7 +304,7 @@ void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
+  ink_drop->SetShowHighlightOnFocus(!focus_ring());
   ink_drop->AddObserver(this);
   return std::move(ink_drop);
 }
