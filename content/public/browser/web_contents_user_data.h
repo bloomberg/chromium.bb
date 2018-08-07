@@ -25,9 +25,6 @@ namespace content {
 //   friend class content::WebContentsUserData<FooTabHelper>;
 //   // ... more private stuff here ...
 // }
-// --- in foo_tab_helper.cc ---
-// DEFINE_WEB_CONTENTS_USER_DATA_KEY(FooTabHelper);
-//
 template <typename T>
 class WebContentsUserData : public base::SupportsUserData::Data {
  public:
@@ -57,10 +54,6 @@ class WebContentsUserData : public base::SupportsUserData::Data {
     return &kId;
   }
 };
-
-// Macro previously used to define the UserDataKey().
-// TODO(fdoray): Remove this. https://crbug.com/589840
-#define DEFINE_WEB_CONTENTS_USER_DATA_KEY(TYPE)
 
 }  // namespace content
 

@@ -63,8 +63,6 @@ class TitleLoggerTabHelper
 
   DISALLOW_COPY_AND_ASSIGN(TitleLoggerTabHelper);
 };
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TitleLoggerTabHelper);
 ```
 
 We want each tab to have this `WebContentsObserver` attached to it, so that it
