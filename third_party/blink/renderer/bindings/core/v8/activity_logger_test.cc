@@ -90,14 +90,14 @@ class ActivityLoggerTest : public testing::Test {
   void ExecuteScriptInMainWorld(const String& script) const {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
     script_controller_->ExecuteScriptInMainWorld(script);
-    PumpPendingRequestsForFrameToLoad();
+    PumpPendingRequestsForFrameToLoad(web_view_helper_.LocalMainFrame());
   }
 
   void ExecuteScriptInIsolatedWorld(const String& script) const {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
     script_controller_->ExecuteScriptInIsolatedWorld(kIsolatedWorldId,
                                                      ScriptSourceCode(script));
-    PumpPendingRequestsForFrameToLoad();
+    PumpPendingRequestsForFrameToLoad(web_view_helper_.LocalMainFrame());
   }
 
   bool VerifyActivities(const String& activities) {
