@@ -43,7 +43,7 @@ const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kViewsLogin{"ViewsLogin", base::FEATURE_ENABLED_BY_DEFAULT};
 
