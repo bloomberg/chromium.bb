@@ -34,6 +34,9 @@ const base::Feature kOfflinePagesCTFeature{"OfflinePagesCT",
 const base::Feature kOfflinePagesSharingFeature{
     "OfflinePagesSharing", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kOfflinePagesLivePageSharingFeature{
+    "OfflinePagesLivePageSharing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature{
     "OfflinePagesSvelteConcurrentLoading", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -97,6 +100,10 @@ bool IsOfflinePagesCTEnabled() {
 
 bool IsOfflinePagesSharingEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesSharingFeature);
+}
+
+bool IsOfflinePagesLivePageSharingEnabled() {
+  return base::FeatureList::IsEnabled(kOfflinePagesLivePageSharingFeature);
 }
 
 bool IsBackgroundLoaderForDownloadsEnabled() {

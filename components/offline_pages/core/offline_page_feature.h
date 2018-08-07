@@ -15,6 +15,7 @@ extern const base::Feature kOffliningRecentPagesFeature;
 extern const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature;
 extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesSharingFeature;
+extern const base::Feature kOfflinePagesLivePageSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
 extern const base::Feature kPrefetchingOfflinePagesFeature;
 extern const base::Feature kOfflinePagesLoadSignalCollectingFeature;
@@ -44,6 +45,9 @@ bool IsOfflinePagesCTEnabled();
 
 // Returns true if offline page sharing is enabled.
 bool IsOfflinePagesSharingEnabled();
+
+// Returns true if live page sharing of offline page is enabled.
+bool IsOfflinePagesLivePageSharingEnabled();
 
 // Returns true if saving a foreground tab that is taking too long using the
 // background scheduler is enabled.
