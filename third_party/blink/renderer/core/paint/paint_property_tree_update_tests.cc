@@ -268,12 +268,25 @@ TEST_P(PaintPropertyTreeUpdateTest,
                    ->ScrollTranslation()
                    ->ScrollNode()
                    ->HasBackgroundAttachmentFixedDescendants());
-  EXPECT_EQ(visual_viewport.GetScrollNode(), overflow_b->GetLayoutObject()
-                                                 ->FirstFragment()
-                                                 .PaintProperties()
-                                                 ->ScrollTranslation()
-                                                 ->ScrollNode()
-                                                 ->Parent());
+
+  // TODO(bokan): Viewport property node generation has been disabled
+  // temporarily with the flag off to diagnose https//crbug.com/868927.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(visual_viewport.GetScrollNode(), overflow_b->GetLayoutObject()
+                                                   ->FirstFragment()
+                                                   .PaintProperties()
+                                                   ->ScrollTranslation()
+                                                   ->ScrollNode()
+                                                   ->Parent());
+  } else {
+    EXPECT_TRUE(overflow_b->GetLayoutObject()
+                  ->FirstFragment()
+                  .PaintProperties()
+                  ->ScrollTranslation()
+                  ->ScrollNode()
+                  ->Parent()
+                  ->IsRoot());
+  }
 
   // Removing a main thread scrolling reason should update the entire tree.
   overflow_b->removeAttribute("class");
