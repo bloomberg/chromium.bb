@@ -173,19 +173,19 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     bool succeeded));
   MOCK_METHOD4(TrackAddTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
-                    PeerConnectionTracker::TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpSender* sender,
-                    const blink::WebRTCRtpReceiver* receiver));
+                    TransceiverUpdatedReason reason,
+                    const blink::WebRTCRtpTransceiver& transceiver,
+                    size_t transceiver_index));
   MOCK_METHOD4(TrackModifyTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
-                    PeerConnectionTracker::TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpSender* sender,
-                    const blink::WebRTCRtpReceiver* receiver));
+                    TransceiverUpdatedReason reason,
+                    const blink::WebRTCRtpTransceiver& transceiver,
+                    size_t transceiver_index));
   MOCK_METHOD4(TrackRemoveTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
-                    PeerConnectionTracker::TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpSender* sender,
-                    const blink::WebRTCRtpReceiver* receiver));
+                    TransceiverUpdatedReason reason,
+                    const blink::WebRTCRtpTransceiver& transceiver,
+                    size_t transceiver_index));
   MOCK_METHOD1(TrackOnIceComplete,
                void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD3(TrackCreateDataChannel,

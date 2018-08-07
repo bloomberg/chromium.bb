@@ -362,16 +362,16 @@ RTCRtpSender& RTCRtpSender::operator=(const RTCRtpSender& other) {
   return *this;
 }
 
-std::unique_ptr<RTCRtpSender> RTCRtpSender::ShallowCopy() const {
-  return std::make_unique<RTCRtpSender>(*this);
-}
-
 const RtpSenderState& RTCRtpSender::state() const {
   return internal_->state();
 }
 
 void RTCRtpSender::set_state(RtpSenderState state) {
   internal_->set_state(std::move(state));
+}
+
+std::unique_ptr<blink::WebRTCRtpSender> RTCRtpSender::ShallowCopy() const {
+  return std::make_unique<RTCRtpSender>(*this);
 }
 
 uintptr_t RTCRtpSender::Id() const {
@@ -432,7 +432,7 @@ bool RTCRtpSender::RemoveFromPeerConnection(
 }
 
 RTCRtpSenderOnlyTransceiver::RTCRtpSenderOnlyTransceiver(
-    std::unique_ptr<RTCRtpSender> sender)
+    std::unique_ptr<blink::WebRTCRtpSender> sender)
     : sender_(std::move(sender)) {
   DCHECK(sender_);
 }
@@ -445,12 +445,12 @@ RTCRtpSenderOnlyTransceiver::ImplementationType() const {
 }
 
 uintptr_t RTCRtpSenderOnlyTransceiver::Id() const {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return 0u;
 }
 
 blink::WebString RTCRtpSenderOnlyTransceiver::Mid() const {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return blink::WebString();
 }
 
@@ -461,34 +461,34 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCRtpSenderOnlyTransceiver::Sender()
 
 std::unique_ptr<blink::WebRTCRtpReceiver>
 RTCRtpSenderOnlyTransceiver::Receiver() const {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return nullptr;
 }
 
 bool RTCRtpSenderOnlyTransceiver::Stopped() const {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return false;
 }
 
 webrtc::RtpTransceiverDirection RTCRtpSenderOnlyTransceiver::Direction() const {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
 void RTCRtpSenderOnlyTransceiver::SetDirection(
     webrtc::RtpTransceiverDirection direction) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 base::Optional<webrtc::RtpTransceiverDirection>
 RTCRtpSenderOnlyTransceiver::CurrentDirection() const {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
 base::Optional<webrtc::RtpTransceiverDirection>
 RTCRtpSenderOnlyTransceiver::FiredDirection() const {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 

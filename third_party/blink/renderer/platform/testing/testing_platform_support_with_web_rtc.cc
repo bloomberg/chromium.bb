@@ -25,6 +25,9 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
       : id_(++last_id_), track_(std::move(track)) {}
   ~DummyWebRTCRtpSender() override {}
 
+  std::unique_ptr<WebRTCRtpSender> ShallowCopy() const override {
+    return nullptr;
+  }
   uintptr_t Id() const override { return id_; }
   WebMediaStreamTrack Track() const override { return track_; }
   WebVector<WebString> StreamIds() const override {

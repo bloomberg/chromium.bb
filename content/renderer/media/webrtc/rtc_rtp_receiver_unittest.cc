@@ -123,7 +123,7 @@ TEST_F(RTCRtpReceiverTest, ShallowCopy) {
   scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
       MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track);
-  auto copy = receiver_->ShallowCopy();
+  auto copy = std::make_unique<RTCRtpReceiver>(*receiver_);
   EXPECT_EQ(receiver_->state().track_ref()->webrtc_track(), webrtc_track);
   const auto& webrtc_receiver = receiver_->state().webrtc_receiver();
   auto web_track_unique_id = receiver_->Track().UniqueId();
