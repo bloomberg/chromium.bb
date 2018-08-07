@@ -503,6 +503,9 @@ class TestImporter(object):
         if directory_owners:
             description += self._format_directory_owners(directory_owners) + '\n\n'
 
+        # Prevent FindIt from auto-reverting import CLs.
+        description += 'NOAUTOREVERT=true\n'
+
         # Move any No-Export tag to the end of the description.
         description = description.replace('No-Export: true', '')
         description = description.replace('\n\n\n\n', '\n\n')
