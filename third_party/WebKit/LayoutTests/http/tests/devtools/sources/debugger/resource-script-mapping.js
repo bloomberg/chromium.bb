@@ -48,7 +48,7 @@
       var rawLocation = TestRunner.debuggerModel.createRawLocation(script, line, column);
       var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
       SourcesTestRunner.checkUILocation(uiSourceCode, line, column, uiLocation);
-      var reverseLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode, line, column);
+      var reverseLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, line, column)[0];
       SourcesTestRunner.checkRawLocation(script, line, column, reverseLocation);
     }
     TestRunner.completeTest();
