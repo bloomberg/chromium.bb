@@ -6,6 +6,9 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_CONTEXT_H_
 
 #include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,6 +18,7 @@
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
+#include "content/renderer/service_worker/service_worker_provider_state_for_client.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -205,7 +209,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   friend class WebServiceWorkerImpl;
   friend class WebServiceWorkerRegistrationImpl;
   friend struct ServiceWorkerProviderContextDeleter;
-  struct ProviderStateForClient;
 
   ~ServiceWorkerProviderContext() override;
   void DestructOnMainThread() const;
@@ -264,7 +267,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   mojom::ServiceWorkerContainerHostAssociatedPtr container_host_;
 
   // State for service worker clients.
-  std::unique_ptr<ProviderStateForClient> state_for_client_;
+  std::unique_ptr<ServiceWorkerProviderStateForClient> state_for_client_;
 
   // NOTE: Add new members to |state_for_client_| if they are relevant only for
   // service worker clients. Not here!
