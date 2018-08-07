@@ -2420,7 +2420,6 @@
     {
       name: "overscroll-behavior-x",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSOverscrollBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
       default_value: "auto",
@@ -2430,7 +2429,6 @@
     {
       name: "overscroll-behavior-y",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSOverscrollBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
       default_value: "auto",
@@ -4868,7 +4866,6 @@
       name: "overscroll-behavior",
       longhands: ["overscroll-behavior-x", "overscroll-behavior-y"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSOverscrollBehavior",
     },
     {
       name: "padding",

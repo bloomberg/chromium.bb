@@ -309,10 +309,6 @@
       name: "CSSOMSmoothScroll",
       status: "stable",
     },
-    {
-      name: "CSSOverscrollBehavior",
-      status: "stable",
-    },
     // Do not ship CSSPaintAPIArguments without shipping CSSVariables2 first.
     //
     // CSSPaintAPIArguments depends on parts of the the 'CSS Properties and
