@@ -2014,8 +2014,8 @@
       'args': [
         '--enable-surface-synchronization',
       ],
-      'swarming': {
-        'shards': 2,
+      'android_swarming': {
+        'shards': 9,
       },
       'test': 'content_browsertests',
     },
