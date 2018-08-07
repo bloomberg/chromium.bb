@@ -17,6 +17,7 @@
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/barrier_builder.h"
 #include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
@@ -26,9 +27,9 @@
 
 namespace content {
 namespace {
-using test::MakeSuccessCallback;
-using test::MakeGetAllCallback;
 using test::GetAllCallback;
+using test::MakeGetAllCallback;
+using test::MakeSuccessCallback;
 using CacheMode = StorageAreaImpl::CacheMode;
 using DatabaseError = leveldb::mojom::DatabaseError;
 
@@ -42,53 +43,6 @@ std::string ToString(const std::vector<uint8_t>& input) {
 std::vector<uint8_t> ToBytes(const std::string& input) {
   return leveldb::StdStringToUint8Vector(input);
 }
-
-class InternalIncrementalBarrier {
- public:
-  InternalIncrementalBarrier(base::OnceClosure done_closure)
-      : num_callbacks_left_(1), done_closure_(std::move(done_closure)) {}
-
-  void Dec() {
-    // This is the same as in BarrierClosure.
-    DCHECK(!num_callbacks_left_.IsZero());
-    if (!num_callbacks_left_.Decrement()) {
-      base::OnceClosure done = std::move(done_closure_);
-      delete this;
-      std::move(done).Run();
-    }
-  }
-
-  base::OnceClosure Inc() {
-    num_callbacks_left_.Increment();
-    return base::BindOnce(&InternalIncrementalBarrier::Dec,
-                          base::Unretained(this));
-  }
-
- private:
-  base::AtomicRefCount num_callbacks_left_;
-  base::OnceClosure done_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(InternalIncrementalBarrier);
-};
-
-// The callbacks returned by Get might get called after destruction of this
-// class (and thus the done_closure), so there needs to be an internal class
-// to hold the final callback & manage the refcount.
-class IncrementalBarrier {
- public:
-  explicit IncrementalBarrier(base::OnceClosure done_closure)
-      : internal_barrier_(
-            new InternalIncrementalBarrier(std::move(done_closure))) {}
-
-  ~IncrementalBarrier() { internal_barrier_->Dec(); }
-
-  base::OnceClosure Get() { return internal_barrier_->Inc(); }
-
- private:
-  InternalIncrementalBarrier* internal_barrier_;  // self-deleting
-
-  DISALLOW_COPY_AND_ASSIGN(IncrementalBarrier);
-};
 
 class MockDelegate : public StorageAreaImpl::Delegate {
  public:
@@ -382,11 +336,12 @@ TEST_F(StorageAreaImplTest, GetFromPutOverwrite) {
   std::vector<uint8_t> result;
   bool get_success = false;
   {
-    IncrementalBarrier barrier(loop.QuitClosure());
-    storage_area()->Put(key, value, test_value2_bytes_, test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_success));
-    storage_area()->Get(key,
-                        MakeGetCallback(barrier.Get(), &get_success, &result));
+    BarrierBuilder barrier(loop.QuitClosure());
+    storage_area()->Put(
+        key, value, test_value2_bytes_, test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &put_success));
+    storage_area()->Get(
+        key, MakeGetCallback(barrier.AddClosure(), &get_success, &result));
   }
 
   loop.Run();
@@ -454,17 +409,17 @@ TEST_P(StorageAreaImplParamTest, CommitPutToDB) {
   bool put_success2 = false;
   bool put_success3 = false;
   {
-    IncrementalBarrier barrier(loop.QuitClosure());
+    BarrierBuilder barrier(loop.QuitClosure());
 
-    storage_area()->Put(ToBytes(key1), ToBytes(value1), test_value2_bytes_,
-                        test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_success1));
-    storage_area()->Put(ToBytes(key2), ToBytes("old value"), base::nullopt,
-                        test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_success2));
-    storage_area()->Put(ToBytes(key2), ToBytes(value2), ToBytes("old value"),
-                        test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_success3));
+    storage_area()->Put(
+        ToBytes(key1), ToBytes(value1), test_value2_bytes_, test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &put_success1));
+    storage_area()->Put(
+        ToBytes(key2), ToBytes("old value"), base::nullopt, test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &put_success2));
+    storage_area()->Put(
+        ToBytes(key2), ToBytes(value2), ToBytes("old value"), test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &put_success3));
   }
 
   loop.Run();
@@ -877,16 +832,18 @@ TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
   bool put_result1 = false;
   bool put_result2 = false;
   {
-    IncrementalBarrier barrier(loop.QuitClosure());
+    BarrierBuilder barrier(loop.QuitClosure());
 
-    storage_area()->Put(key, value, value2, test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_result1));
+    storage_area()->Put(
+        key, value, value2, test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &put_result1));
 
     storage_area()->GetAll(
-        GetAllCallback::CreateAndBind(&result, barrier.Get()),
+        GetAllCallback::CreateAndBind(&result, barrier.AddClosure()),
         MakeGetAllCallback(&get_all_success, &data));
-    storage_area()->Put(key, value2, value, test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_result2));
+    storage_area()->Put(
+        key, value2, value, test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &put_result2));
     FlushAreaBinding();
   }
 
@@ -946,10 +903,11 @@ TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
   bool get_all_callback_success = false;
   bool delete_success = false;
   {
-    IncrementalBarrier barrier(loop.QuitClosure());
+    BarrierBuilder barrier(loop.QuitClosure());
 
-    storage_area()->Put(key, value, value2, test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_success));
+    storage_area()->Put(
+        key, value, value2, test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &put_success));
 
     // Put task triggers database upgrade, so there are no more changes
     // to commit.
@@ -958,12 +916,13 @@ TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
     EXPECT_TRUE(storage_area_impl()->has_pending_load_tasks());
 
     storage_area()->GetAll(
-        GetAllCallback::CreateAndBind(&get_all_success, barrier.Get()),
+        GetAllCallback::CreateAndBind(&get_all_success, barrier.AddClosure()),
         MakeGetAllCallback(&get_all_callback_success, &data));
 
     // This Delete() should not affect the value returned by GetAll().
-    storage_area()->Delete(key, value, test_source_,
-                           MakeSuccessCallback(barrier.Get(), &delete_success));
+    storage_area()->Delete(
+        key, value, test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &delete_success));
   }
   loop.Run();
 
@@ -1093,7 +1052,7 @@ TEST_P(StorageAreaImplParamTest, PrefixForking) {
   bool put_success3 = false;
   base::RunLoop loop;
   {
-    IncrementalBarrier barrier(loop.QuitClosure());
+    BarrierBuilder barrier(loop.QuitClosure());
 
     // Create fork 1.
     fork1 = storage_area_impl()->ForkToNewPrefix(test_copy_prefix1_,
@@ -1103,16 +1062,17 @@ TEST_P(StorageAreaImplParamTest, PrefixForking) {
     // Note - these are 'skipping' the mojo layer, which is why the fork isn't
     // scheduled.
     fork1->Put(test_key2_bytes_, ToBytes(value4), test_value2_bytes_,
-               test_source_, MakeSuccessCallback(barrier.Get(), &put_success1));
+               test_source_,
+               MakeSuccessCallback(barrier.AddClosure(), &put_success1));
     fork2 =
         fork1->ForkToNewPrefix(test_copy_prefix2_, &fork2_delegate, options);
     fork1->Put(test_key2_bytes_, ToBytes(value5), ToBytes(value4), test_source_,
-               MakeSuccessCallback(barrier.Get(), &put_success2));
+               MakeSuccessCallback(barrier.AddClosure(), &put_success2));
 
     // Do a put on original and create fork 3, which is key-only.
-    storage_area_impl()->Put(test_key1_bytes_, ToBytes(value3),
-                             test_value1_bytes_, test_source_,
-                             MakeSuccessCallback(barrier.Get(), &put_success3));
+    storage_area_impl()->Put(
+        test_key1_bytes_, ToBytes(value3), test_value1_bytes_, test_source_,
+        MakeSuccessCallback(barrier.AddClosure(), &put_success3));
     fork3 = storage_area_impl()->ForkToNewPrefix(
         test_copy_prefix3_, &fork3_delegate,
         GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE));
@@ -1203,7 +1163,7 @@ TEST_F(StorageAreaImplTest, PrefixForkingPsuedoFuzzer) {
 
   base::RunLoop loop;
   {
-    IncrementalBarrier barrier(loop.QuitClosure());
+    BarrierBuilder barrier(loop.QuitClosure());
     for (int64_t i = 0; i < kTotalAreas; i++) {
       FuzzState& state = states[i];
       if (!areas[i]) {
@@ -1223,26 +1183,27 @@ TEST_F(StorageAreaImplTest, PrefixForkingPsuedoFuzzer) {
         FuzzState old_state = state;
         state.val1 = base::nullopt;
         successes.push_back(false);
-        areas[i]->Delete(kKey1Vec, old_state.val1, test_source_,
-                         MakeSuccessCallback(barrier.Get(), &successes.back()));
+        areas[i]->Delete(
+            kKey1Vec, old_state.val1, test_source_,
+            MakeSuccessCallback(barrier.AddClosure(), &successes.back()));
       }
       if (i % 4 == 0) {
         FuzzState old_state = state;
         state.val2 = base::make_optional<std::vector<uint8_t>>(
             {static_cast<uint8_t>(i)});
         successes.push_back(false);
-        areas[i]->Put(kKey2Vec, state.val2.value(), old_state.val2,
-                      test_source_,
-                      MakeSuccessCallback(barrier.Get(), &successes.back()));
+        areas[i]->Put(
+            kKey2Vec, state.val2.value(), old_state.val2, test_source_,
+            MakeSuccessCallback(barrier.AddClosure(), &successes.back()));
       }
       if (i % 3 == 0) {
         FuzzState old_state = state;
         state.val1 = base::make_optional<std::vector<uint8_t>>(
             {static_cast<uint8_t>(i + 5)});
         successes.push_back(false);
-        areas[i]->Put(kKey1Vec, state.val1.value(), old_state.val1,
-                      test_source_,
-                      MakeSuccessCallback(barrier.Get(), &successes.back()));
+        areas[i]->Put(
+            kKey1Vec, state.val1.value(), old_state.val1, test_source_,
+            MakeSuccessCallback(barrier.AddClosure(), &successes.back()));
       }
       if (i % 11 == 0) {
         state.val1 = base::nullopt;
@@ -1250,7 +1211,7 @@ TEST_F(StorageAreaImplTest, PrefixForkingPsuedoFuzzer) {
         successes.push_back(false);
         areas[i]->DeleteAll(
             test_source_,
-            MakeSuccessCallback(barrier.Get(), &successes.back()));
+            MakeSuccessCallback(barrier.AddClosure(), &successes.back()));
       }
       if (i % 2 == 0 && forks + 1 < kTotalAreas) {
         CacheMode mode = i % 3 == 0 ? CacheMode::KEYS_AND_VALUES
@@ -1266,9 +1227,9 @@ TEST_F(StorageAreaImplTest, PrefixForkingPsuedoFuzzer) {
         state.val1 = base::make_optional<std::vector<uint8_t>>(
             {static_cast<uint8_t>(i + 9)});
         successes.push_back(false);
-        areas[i]->Put(kKey1Vec, state.val1.value(), old_state.val1,
-                      test_source_,
-                      MakeSuccessCallback(barrier.Get(), &successes.back()));
+        areas[i]->Put(
+            kKey1Vec, state.val1.value(), old_state.val1, test_source_,
+            MakeSuccessCallback(barrier.AddClosure(), &successes.back()));
       }
     }
   }
