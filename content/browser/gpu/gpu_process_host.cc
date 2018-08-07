@@ -703,8 +703,9 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       process_launched_(false),
       status_(UNKNOWN),
 #if defined(OS_MACOSX)
-      ca_transaction_gpu_coordinator_(
-          base::MakeRefCounted<CATransactionGPUCoordinator>(this)),
+      // TODO(ccameron): This is temporarily disabled to see if it is the cause
+      // of https://crbug.com/871430
+      ca_transaction_gpu_coordinator_(nullptr),
 #endif
       gpu_host_binding_(this),
       weak_ptr_factory_(this) {
@@ -733,8 +734,10 @@ GpuProcessHost::~GpuProcessHost() {
   SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
 
 #if defined(OS_MACOSX)
-  ca_transaction_gpu_coordinator_->HostWillBeDestroyed();
-  ca_transaction_gpu_coordinator_ = nullptr;
+  if (ca_transaction_gpu_coordinator_) {
+    ca_transaction_gpu_coordinator_->HostWillBeDestroyed();
+    ca_transaction_gpu_coordinator_ = nullptr;
+  }
 #endif
 
   if (status_ == UNKNOWN) {
