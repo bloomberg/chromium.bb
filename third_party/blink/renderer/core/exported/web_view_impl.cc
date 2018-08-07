@@ -1604,6 +1604,9 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
 
   PageWidgetDelegate::UpdateLifecycle(*page_, *MainFrameImpl()->GetFrame(),
                                       requested_update);
+  if (requested_update == LifecycleUpdate::kLayout)
+    return;
+
   UpdateLayerTreeBackgroundColor();
 
   if (requested_update == LifecycleUpdate::kPrePaint)
@@ -2663,19 +2666,16 @@ IntSize WebViewImpl::ContentsSize() const {
 }
 
 WebSize WebViewImpl::ContentsPreferredMinimumSize() {
-  if (MainFrameImpl()) {
-    MainFrameImpl()
-        ->GetFrame()
-        ->View()
-        ->UpdateLifecycleToLayoutClean();
-  }
-
   Document* document = page_->MainFrame()->IsLocalFrame()
                            ? page_->DeprecatedLocalMainFrame()->GetDocument()
                            : nullptr;
   if (!document || !document->GetLayoutView() || !document->documentElement() ||
       !document->documentElement()->GetLayoutBox())
     return WebSize();
+
+  // The preferred size requires an up-to-date layout tree.
+  DCHECK(!document->NeedsLayoutTreeUpdate() &&
+         !document->View()->NeedsLayout());
 
   // Needed for computing MinPreferredWidth.
   FontCachePurgePreventer fontCachePurgePreventer;

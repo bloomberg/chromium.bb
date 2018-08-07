@@ -73,10 +73,10 @@ TEST_F(TextControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
   // Force layout if document().updateStyleAndLayoutIgnorePendingStylesheets()
   // is called.
   GetDocument().body()->AppendChild(GetDocument().createTextNode("foo"));
-  const int start_layout_count = Page().GetFrameView().LayoutCount();
+  unsigned start_layout_count = Page().GetFrameView().LayoutCountForTesting();
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
   Input().SetSelectionRange(2, 2);
-  EXPECT_EQ(start_layout_count, Page().GetFrameView().LayoutCount());
+  EXPECT_EQ(start_layout_count, Page().GetFrameView().LayoutCountForTesting());
 }
 
 TEST_F(TextControlElementTest, IndexForPosition) {

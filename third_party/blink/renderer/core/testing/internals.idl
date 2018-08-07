@@ -407,4 +407,8 @@ enum EffectiveConnectionType {
     // PerformanceMonitor for testing. "PerformanceObserver should be observing
     // 'longtask' while calling BypassLongCompileThresholdOnce.
     [RaisesException] void BypassLongCompileThresholdOnce();
+
+    // The number of calls to update the blink lifecycle (see:
+    // LocalFrameView::UpdateLifecyclePhasesInternal).
+    unsigned long LifecycleUpdateCount();
 };

@@ -61,7 +61,9 @@ void PageWidgetDelegate::UpdateLifecycle(
     Page& page,
     LocalFrame& root,
     WebWidget::LifecycleUpdate requested_update) {
-  if (requested_update == WebWidget::LifecycleUpdate::kPrePaint) {
+  if (requested_update == WebWidget::LifecycleUpdate::kLayout) {
+    page.Animator().UpdateLifecycleToLayoutClean(root);
+  } else if (requested_update == WebWidget::LifecycleUpdate::kPrePaint) {
     page.Animator().UpdateAllLifecyclePhasesExceptPaint(root);
   } else {
     page.Animator().UpdateAllLifecyclePhases(root);

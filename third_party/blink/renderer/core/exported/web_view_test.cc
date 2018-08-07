@@ -4132,25 +4132,6 @@ TEST_F(WebViewTest, PreferredSize) {
   EXPECT_EQ(2, size.height);
 }
 
-TEST_F(WebViewTest, PreferredSizeDirtyLayout) {
-  std::string url = base_url_ + "specify_size.html?100px:100px";
-  URLTestHelpers::RegisterMockedURLLoad(
-      ToKURL(url), test::CoreTestDataPath("specify_size.html"));
-  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(url);
-  WebElement document_element =
-      web_view->MainFrameImpl()->GetDocument().DocumentElement();
-
-  WebSize size = web_view->ContentsPreferredMinimumSize();
-  EXPECT_EQ(100, size.width);
-  EXPECT_EQ(100, size.height);
-
-  document_element.SetAttribute("style", "display: none");
-
-  size = web_view->ContentsPreferredMinimumSize();
-  EXPECT_EQ(0, size.width);
-  EXPECT_EQ(0, size.height);
-}
-
 TEST_F(WebViewTest, PreferredSizeWithGrid) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");

@@ -72,6 +72,7 @@ class WebView : protected WebWidget {
 
   // WebWidget overrides.
   using WebWidget::Close;
+  using WebWidget::LifecycleUpdate;
   using WebWidget::Size;
   using WebWidget::Resize;
   using WebWidget::ResizeVisualViewport;
@@ -79,6 +80,7 @@ class WebView : protected WebWidget {
   using WebWidget::DidExitFullscreen;
   using WebWidget::BeginFrame;
   using WebWidget::UpdateAllLifecyclePhases;
+  using WebWidget::UpdateLifecycle;
   using WebWidget::PaintContent;
   using WebWidget::LayoutAndPaintAsync;
   using WebWidget::CompositeAndReadbackAsync;
@@ -266,7 +268,8 @@ class WebView : protected WebWidget {
   // Returns the "preferred" contents size, defined as the preferred minimum
   // width of the main document's contents and the minimum height required to
   // display the main document without scrollbars.  The returned size has the
-  // page zoom factor applied.
+  // page zoom factor applied. The lifecycle must be updated to at least layout
+  // before calling this (see: |UpdateLifecycle|).
   virtual WebSize ContentsPreferredMinimumSize() = 0;
 
   // Sets the display mode of the web app.

@@ -51,8 +51,8 @@ class FrameSelectionTest : public EditingTestBase {
   }
 
   Text* AppendTextNode(const String& data);
-  int LayoutCount() const {
-    return GetDummyPageHolder().GetFrameView().LayoutCount();
+  unsigned LayoutCount() const {
+    return GetDummyPageHolder().GetFrameView().LayoutCountForTesting();
   }
 
   PositionWithAffinity CaretPosition() const {
@@ -133,7 +133,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   EXPECT_TRUE(ToLayoutBlock(GetDocument().body()->GetLayoutObject())
                   ->ShouldPaintCursorCaret());
 
-  int start_count = LayoutCount();
+  unsigned start_count = LayoutCount();
   {
     // To force layout in next updateLayout calling, widen view.
     LocalFrameView& frame_view = GetDummyPageHolder().GetFrameView();

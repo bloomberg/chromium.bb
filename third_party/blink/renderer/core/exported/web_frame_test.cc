@@ -2577,8 +2577,8 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout) {
                                     &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  int prev_layout_count =
-      web_view_helper.LocalMainFrame()->GetFrameView()->LayoutCount();
+  unsigned prev_layout_count =
+      web_view_helper.LocalMainFrame()->GetFrameView()->LayoutCountForTesting();
   web_view_helper.GetWebView()->SetPageScaleFactor(3);
   EXPECT_FALSE(web_view_helper.GetWebView()
                    ->MainFrameImpl()
@@ -2587,7 +2587,7 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout) {
   EXPECT_EQ(prev_layout_count, web_view_helper.GetWebView()
                                    ->MainFrameImpl()
                                    ->GetFrameView()
-                                   ->LayoutCount());
+                                   ->LayoutCountForTesting());
 }
 
 TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout) {
@@ -2603,8 +2603,8 @@ TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout) {
                                     &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  int prev_layout_count =
-      web_view_helper.LocalMainFrame()->GetFrameView()->LayoutCount();
+  unsigned prev_layout_count =
+      web_view_helper.LocalMainFrame()->GetFrameView()->LayoutCountForTesting();
   web_view_helper.GetWebView()->SetPageScaleFactor(30);
   EXPECT_FALSE(web_view_helper.GetWebView()
                    ->MainFrameImpl()
@@ -2613,7 +2613,7 @@ TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout) {
   EXPECT_EQ(prev_layout_count, web_view_helper.GetWebView()
                                    ->MainFrameImpl()
                                    ->GetFrameView()
-                                   ->LayoutCount());
+                                   ->LayoutCountForTesting());
 }
 
 TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem) {

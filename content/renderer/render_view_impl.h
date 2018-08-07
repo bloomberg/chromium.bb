@@ -480,8 +480,9 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // and put it in the same position in the .cc file.
 
   // Misc private functions ----------------------------------------------------
-  // Check whether the preferred size has changed.
-  void CheckPreferredSize();
+  // Check whether the preferred size has changed. This should only be called
+  // with up-to-date layout.
+  void UpdatePreferredSize();
 
 #if defined(OS_ANDROID)
   // Make the video capture devices (e.g. webcam) stop/resume delivering video
@@ -639,10 +640,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // Cache the preferred size of the page in order to prevent sending the IPC
   // when layout() recomputes but doesn't actually change sizes.
   gfx::Size preferred_size_;
-
-  // Used to delay determining the preferred size (to avoid intermediate
-  // states for the sizes).
-  base::OneShotTimer check_preferred_size_timer_;
 
   // Used to indicate the zoom level to be used during subframe loads, since
   // they should match page zoom level.
