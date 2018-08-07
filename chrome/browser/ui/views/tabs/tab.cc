@@ -982,6 +982,11 @@ void Tab::OnThemeChanged() {
   OnButtonColorMaybeChanged();
 }
 
+void Tab::SetClosing(bool closing) {
+  closing_ = closing;
+  ActiveStateChanged();
+}
+
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
   // If theme provider is not yet available, return the default button
