@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/message_center/message_center_button_bar.h"
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/message_list_view.h"
@@ -236,8 +237,10 @@ MessageCenterViewTest::~MessageCenterViewTest() = default;
 void MessageCenterViewTest::SetUp() {
   AshTestBase::SetUp();
 
-  if (is_lock_screen_notifications_enabled_)
+  if (is_lock_screen_notifications_enabled_) {
     SetLockScreenNotificationsEnabled();
+    ASSERT_TRUE(AshMessageCenterLockScreenController::IsEnabled());
+  }
 
   MessageCenterView::disable_animation_for_testing = true;
   message_center_.reset(new FakeMessageCenterImpl());
@@ -834,8 +837,9 @@ TEST_P(MessageCenterViewTest, CheckModeWithLockingAndUnlocking) {
 
   // Lock!
   SetLockedState(true);
-  EXPECT_EQ(features::IsLockScreenNotificationsEnabled() ? Mode::NOTIFICATIONS
-                                                         : Mode::LOCKED,
+  EXPECT_EQ(AshMessageCenterLockScreenController::IsEnabled()
+                ? Mode::NOTIFICATIONS
+                : Mode::LOCKED,
             GetMessageCenterViewInternalMode());
 
   // Unlock!
@@ -848,7 +852,7 @@ TEST_P(MessageCenterViewTest, CheckModeWithLockingAndUnlocking) {
 
   // Lock!
   SetLockedState(true);
-  EXPECT_EQ(features::IsLockScreenNotificationsEnabled()
+  EXPECT_EQ(AshMessageCenterLockScreenController::IsEnabled()
                 ? Mode::NO_NOTIFICATIONS
                 : Mode::LOCKED,
             GetMessageCenterViewInternalMode());
@@ -864,13 +868,14 @@ TEST_P(MessageCenterViewTest, CheckModeWithRemovingNotificationDuringLock) {
 
   // Lock!
   SetLockedState(true);
-  EXPECT_EQ(features::IsLockScreenNotificationsEnabled() ? Mode::NOTIFICATIONS
-                                                         : Mode::LOCKED,
+  EXPECT_EQ(AshMessageCenterLockScreenController::IsEnabled()
+                ? Mode::NOTIFICATIONS
+                : Mode::LOCKED,
             GetMessageCenterViewInternalMode());
 
   // Remove all existing notifications.
   RemoveDefaultNotifications();
-  EXPECT_EQ(features::IsLockScreenNotificationsEnabled()
+  EXPECT_EQ(AshMessageCenterLockScreenController::IsEnabled()
                 ? Mode::NO_NOTIFICATIONS
                 : Mode::LOCKED,
             GetMessageCenterViewInternalMode());
@@ -902,7 +907,7 @@ TEST_P(MessageCenterViewTest, LockScreen) {
   // Lock!
   SetLockedState(true);
 
-  if (features::IsLockScreenNotificationsEnabled()) {
+  if (AshMessageCenterLockScreenController::IsEnabled()) {
     EXPECT_TRUE(GetNotificationView(kNotificationId1)->IsDrawn());
     EXPECT_TRUE(GetNotificationView(kNotificationId2)->IsDrawn());
   } else {
@@ -911,7 +916,7 @@ TEST_P(MessageCenterViewTest, LockScreen) {
   }
 
   GetMessageCenterView()->SizeToPreferredSize();
-  if (features::IsLockScreenNotificationsEnabled()) {
+  if (AshMessageCenterLockScreenController::IsEnabled()) {
     EXPECT_NE(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
     EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
   } else {
@@ -921,7 +926,7 @@ TEST_P(MessageCenterViewTest, LockScreen) {
   RemoveNotification(kNotificationId1, false);
 
   GetMessageCenterView()->SizeToPreferredSize();
-  if (features::IsLockScreenNotificationsEnabled()) {
+  if (AshMessageCenterLockScreenController::IsEnabled()) {
     EXPECT_NE(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
     EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
   } else {
@@ -931,7 +936,7 @@ TEST_P(MessageCenterViewTest, LockScreen) {
   RemoveNotification(kNotificationId2, false);
 
   GetMessageCenterView()->SizeToPreferredSize();
-  if (features::IsLockScreenNotificationsEnabled())
+  if (AshMessageCenterLockScreenController::IsEnabled())
     EXPECT_EQ(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
   else
     EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
@@ -942,20 +947,20 @@ TEST_P(MessageCenterViewTest, LockScreen) {
       base::UTF8ToUTF16("display source"), GURL(),
       NotifierId(NotifierId::APPLICATION, "extension_id"),
       message_center::RichNotificationData(), nullptr));
-  if (features::IsLockScreenNotificationsEnabled())
+  if (AshMessageCenterLockScreenController::IsEnabled())
     EXPECT_TRUE(GetNotificationView(kNotificationId1)->IsDrawn());
   else
     EXPECT_FALSE(GetNotificationView(kNotificationId1)->IsDrawn());
 
   GetMessageCenterView()->SizeToPreferredSize();
-  if (features::IsLockScreenNotificationsEnabled()) {
+  if (AshMessageCenterLockScreenController::IsEnabled()) {
     EXPECT_NE(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
     EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
   } else {
     EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
   }
 
-  if (features::IsLockScreenNotificationsEnabled()) {
+  if (AshMessageCenterLockScreenController::IsEnabled()) {
     EXPECT_TRUE(close_button->visible());
     EXPECT_TRUE(quiet_mode_button->visible());
   } else {
@@ -981,20 +986,20 @@ TEST_P(MessageCenterViewTest, LockScreen) {
   // Lock!
   SetLockedState(true);
 
-  if (features::IsLockScreenNotificationsEnabled())
+  if (AshMessageCenterLockScreenController::IsEnabled())
     EXPECT_TRUE(GetNotificationView(kNotificationId1)->IsDrawn());
   else
     EXPECT_FALSE(GetNotificationView(kNotificationId1)->IsDrawn());
 
   GetMessageCenterView()->SizeToPreferredSize();
-  if (features::IsLockScreenNotificationsEnabled()) {
+  if (AshMessageCenterLockScreenController::IsEnabled()) {
     EXPECT_NE(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
     EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
   } else {
     EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
   }
 
-  if (features::IsLockScreenNotificationsEnabled()) {
+  if (AshMessageCenterLockScreenController::IsEnabled()) {
     EXPECT_TRUE(close_button->visible());
     EXPECT_TRUE(quiet_mode_button->visible());
   } else {
