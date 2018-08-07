@@ -38,7 +38,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -321,18 +320,16 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
       shelf_(shelf),
       shelf_widget_(shelf_widget),
       view_model_(new views::ViewModel),
-      bounds_animator_(std::make_unique<views::BoundsAnimator>(this)),
       tooltip_(this),
-      focus_search_(std::make_unique<ShelfFocusSearch>(this)),
-      tablet_mode_observer_(this),
       shelf_item_background_color_(kShelfDefaultBaseColor),
       weak_factory_(this) {
   DCHECK(model_);
   DCHECK(shelf_);
   DCHECK(shelf_widget_);
-  tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
+  bounds_animator_ = std::make_unique<views::BoundsAnimator>(this);
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
+  focus_search_ = std::make_unique<ShelfFocusSearch>(this);
 }
 
 ShelfView::~ShelfView() {
@@ -587,20 +584,6 @@ void ShelfView::CreateDragIconProxy(
       location_in_screen_coordinates - drag_image_offset_, size);
   drag_image_->SetBoundsInScreen(drag_image_bounds);
   drag_image_->SetWidgetVisible(true);
-}
-
-void ShelfView::OnTabletModeStarted() {
-  // Close all menus when tablet mode starts to ensure that the clamshell only
-  // context menu options are not available in tablet mode.
-  if (shelf_menu_model_adapter_)
-    shelf_menu_model_adapter_->Cancel();
-}
-
-void ShelfView::OnTabletModeEnded() {
-  // Close all menus when tablet mode ends so that menu options are kept
-  // consistent with device state.
-  if (shelf_menu_model_adapter_)
-    shelf_menu_model_adapter_->Cancel();
 }
 
 void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(
