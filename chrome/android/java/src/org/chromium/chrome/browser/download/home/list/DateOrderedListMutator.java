@@ -37,8 +37,11 @@ import java.util.TreeMap;
 class DateOrderedListMutator implements OfflineItemFilterObserver {
     private final ListItemModel mModel;
 
-    private Map<Date, DateGroup> mDateGroups =
+    private final Map<Date, DateGroup> mDateGroups =
             new TreeMap<>((lhs, rhs) -> { return rhs.compareTo(lhs); });
+
+    private boolean mHideAllHeaders;
+    private boolean mHideSectionHeaders;
 
     /**
      * Creates an DateOrderedList instance that will reflect {@code source}.
@@ -49,6 +52,15 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
         mModel = model;
         source.addObserver(this);
         onItemsAdded(source.getItems());
+    }
+
+    /**
+     * Called when the selected tab or chip has changed.
+     * @param filter The currently selected filter type.
+     */
+    public void onFilterTypeSelected(@Filters.FilterType int filter) {
+        mHideAllHeaders = filter == Filters.FilterType.PREFETCHED;
+        mHideSectionHeaders = filter != Filters.FilterType.NONE;
     }
 
     // OfflineItemFilterObserver implementation.
@@ -121,17 +133,21 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
             int sectionIndex = 0;
 
             // Add an item for the date header.
-            listItems.add(new DateListItem(CalendarUtils.getStartOfDay(date.getTime())));
+            if (!mHideAllHeaders) {
+                listItems.add(new DateListItem(CalendarUtils.getStartOfDay(date.getTime())));
+            }
 
             // For each section.
             for (Integer filter : dateGroup.sections.keySet()) {
                 Section section = dateGroup.sections.get(filter);
 
                 // Add a section header.
-                SectionHeaderListItem sectionHeaderItem =
-                        new SectionHeaderListItem(filter, date.getTime());
-                sectionHeaderItem.isFirstSectionOfDay = sectionIndex == 0;
-                listItems.add(sectionHeaderItem);
+                if (!mHideSectionHeaders && !mHideAllHeaders) {
+                    SectionHeaderListItem sectionHeaderItem =
+                            new SectionHeaderListItem(filter, date.getTime());
+                    sectionHeaderItem.isFirstSectionOfDay = sectionIndex == 0;
+                    listItems.add(sectionHeaderItem);
+                }
 
                 // Add the items in the section.
                 for (OfflineItem item : section.items.values()) {
@@ -139,14 +155,14 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                 }
 
                 // Add a section separator if needed.
-                if (sectionIndex < dateGroup.sections.size() - 1) {
+                if (!mHideAllHeaders && sectionIndex < dateGroup.sections.size() - 1) {
                     listItems.add(new SeparatorViewListItem(date.getTime(), filter));
                 }
                 sectionIndex++;
             }
 
             // Add a date separator if needed.
-            if (dateIndex < mDateGroups.size() - 1) {
+            if (!mHideAllHeaders && dateIndex < mDateGroups.size() - 1) {
                 listItems.add(new SeparatorViewListItem(date.getTime()));
             }
             dateIndex++;
