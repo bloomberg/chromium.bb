@@ -71,19 +71,20 @@ class __thisIsHereToForceASemicolonAfterThisMacro;
   friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
 #if defined(__clang__)
-#define STACK_ALLOCATED()                                                \
- public:                                                                 \
-  using IsStackAllocatedTypeMarker[[maybe_unused]] = int;                \
-                                                                         \
- private:                                                                \
-  __attribute__((annotate("blink_stack_allocated"))) void* operator new( \
-      size_t) = delete;                                                  \
-  void* operator new(size_t, NotNullTag, void*) = delete;                \
-  void* operator new(size_t, void*) = delete
-
+#define ANNOTATE_STACK_ALLOCATED \
+  __attribute__((annotate("blink_stack_allocated")))
 #else
-#define STACK_ALLOCATED() DISALLOW_NEW()
+#define ANNOTATE_STACK_ALLOCATED
 #endif
+
+#define STACK_ALLOCATED()                                       \
+ public:                                                        \
+  using IsStackAllocatedTypeMarker[[maybe_unused]] = int;       \
+                                                                \
+ private:                                                       \
+  ANNOTATE_STACK_ALLOCATED void* operator new(size_t) = delete; \
+  void* operator new(size_t, NotNullTag, void*) = delete;       \
+  void* operator new(size_t, void*) = delete
 
 // Provides customizable overrides of fastMalloc/fastFree and operator
 // new/delete
