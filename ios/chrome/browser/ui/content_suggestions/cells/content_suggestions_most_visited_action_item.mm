@@ -93,14 +93,20 @@
 - (UIImage*)imageForAction:(ContentSuggestionsMostVisitedAction)action {
   switch (action) {
     case ContentSuggestionsMostVisitedActionBookmark:
-      return [UIImage imageNamed:@"ntp_bookmarks_icon"];
+      return [self imageGettingTintedNamed:@"ntp_bookmarks_icon"];
     case ContentSuggestionsMostVisitedActionReadingList:
-      return [UIImage imageNamed:@"ntp_readinglist_icon"];
+      return [self imageGettingTintedNamed:@"ntp_readinglist_icon"];
     case ContentSuggestionsMostVisitedActionRecentTabs:
-      return [UIImage imageNamed:@"ntp_recent_icon"];
+      return [self imageGettingTintedNamed:@"ntp_recent_icon"];
     case ContentSuggestionsMostVisitedActionHistory:
-      return [UIImage imageNamed:@"ntp_history_icon"];
+      return [self imageGettingTintedNamed:@"ntp_history_icon"];
   }
+}
+
+// Returns the image named |imageName| with a rendering mode "AlwaysTemplate".
+- (UIImage*)imageGettingTintedNamed:(NSString*)imageName {
+  return [[UIImage imageNamed:imageName]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 
 // Updates self.accessibilityLabel based on the current property values.
