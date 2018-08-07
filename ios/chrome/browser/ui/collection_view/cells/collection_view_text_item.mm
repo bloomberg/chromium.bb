@@ -25,6 +25,7 @@
 @synthesize detailTextColor = _detailTextColor;
 @synthesize numberOfDetailTextLines = _numberOfDetailTextLines;
 @synthesize commandID = _commandID;
+@synthesize enabled = _enabled;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -32,6 +33,7 @@
     self.cellClass = [CollectionViewTextCell class];
     _numberOfTextLines = 1;
     _numberOfDetailTextLines = 1;
+    _enabled = YES;
   }
   return self;
 }
@@ -45,7 +47,8 @@
 
 - (UIColor*)textColor {
   if (!_textColor) {
-    _textColor = [[MDCPalette greyPalette] tint900];
+    return self.enabled ? [[MDCPalette greyPalette] tint900]
+                        : [[MDCPalette greyPalette] tint500];
   }
   return _textColor;
 }

@@ -476,7 +476,7 @@ textItemWithItemType:(NSInteger)itemType
     } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
       CollectionViewTextItem* textItem =
           base::mac::ObjCCast<CollectionViewTextItem>(item);
-      textItem.textColor = textColor;
+      textItem.enabled = enabled;
     } else {
       NOTREACHED();
     }

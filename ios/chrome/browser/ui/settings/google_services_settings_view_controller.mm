@@ -201,7 +201,7 @@ constexpr NSInteger kSectionOffset = 1000;
   } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
     CollectionViewTextItem* textItem =
         base::mac::ObjCCast<CollectionViewTextItem>(item);
-    return textItem.commandID != 0;
+    return textItem.enabled;
   }
   return NO;
 }
