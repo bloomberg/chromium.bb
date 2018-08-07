@@ -524,6 +524,7 @@ jumbo_static_library("browsertest_support") {
     "//gin",
     "//media",
     "//net",
+    "//services/catalog:lib",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility:ax_enums_mojo",
@@ -535,6 +536,10 @@ jumbo_static_library("browsertest_support") {
     deps += [ "//content/public/app:both" ]
   } else {
     deps += [ "//content/public/browser" ]
+  }
+
+  if (is_chromeos) {
+    deps += [ ":content_browsertests_catalog_source" ]
   }
 
   if (use_aura && toolkit_views) {
@@ -1137,6 +1142,7 @@ test("content_browsertests") {
 
   if (is_chromeos) {
     deps += [ "//chromeos" ]
+    data_deps += [ "//services/ui/test_ws" ]
   }
 
   if (use_aura && !is_win) {
@@ -1217,6 +1223,21 @@ test("content_browsertests") {
       # exclude them all.
       "../browser/snapshot_browsertest.cc",
     ]
+  }
+}
+
+if (is_chromeos) {
+  catalog("content_browsertests_catalog") {
+    testonly = true
+
+    standalone_services = [ "//services/ui/test_ws:manifest" ]
+  }
+
+  catalog_cpp_source("content_browsertests_catalog_source") {
+    testonly = true
+
+    catalog = ":content_browsertests_catalog"
+    generated_function_name = "content::CreateContentBrowserTestsCatalog"
   }
 }
 
