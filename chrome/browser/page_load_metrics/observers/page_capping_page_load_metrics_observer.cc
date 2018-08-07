@@ -281,6 +281,8 @@ void PageCappingPageLoadMetricsObserver::ReportOptOut() {
   if (page_capping_state_ == PageCappingState::kInfoBarNotShown)
     return;
   auto* blacklist = GetPageLoadCappingBlacklist();
+  if (!blacklist)
+    return;
   // Opt outs are when the InfoBar is shown and either ignored or clicked
   // through twice to resume the page. Currently, reloads are not treated as opt
   // outs.
