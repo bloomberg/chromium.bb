@@ -21,6 +21,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
@@ -338,7 +339,15 @@ void TapSuppressDialogsButton() {
 #pragma mark - Tests
 
 // Tests that an alert is shown, and that the completion block is called.
+// TODO(crbug.com/871685): Re-enable this test.
 - (void)testShowJavaScriptAlert {
+#if TARGET_IPHONE_SIMULATOR
+  if (IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Failing on iOS 10 iPad simulator, for "
+        @"ios_chrome_multitasking_egtests");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   // Load the blank test page and show an alert.
   [self loadBlankTestPage];
   ShowJavaScriptDialog(JavaScriptAlertType::ALERT);
