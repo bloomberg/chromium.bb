@@ -25,18 +25,18 @@ class QUIC_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
 
   // New creates a new object from a private key. If the private key is
   // invalid, nullptr is returned.
-  static Curve25519KeyExchange* New(QuicStringPiece private_key);
+  static std::unique_ptr<Curve25519KeyExchange> New(
+      QuicStringPiece private_key);
 
   // NewPrivateKey returns a private key, generated from |rand|, suitable for
   // passing to |New|.
   static QuicString NewPrivateKey(QuicRandom* rand);
 
   // KeyExchange interface.
-  KeyExchange* NewKeyPair(QuicRandom* rand) const override;
+  const Factory& GetFactory() const override;
   bool CalculateSharedKey(QuicStringPiece peer_public_value,
                           QuicString* shared_key) const override;
   QuicStringPiece public_value() const override;
-  QuicTag tag() const override;
 
  private:
   Curve25519KeyExchange();

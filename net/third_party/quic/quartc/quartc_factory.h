@@ -13,28 +13,6 @@
 
 namespace quic {
 
-// Options that control the BBR algorithm.
-enum class QuartcBbrOptions {
-  kSlowerStartup,    // Once a loss is encountered in STARTUP,
-                     // switches startup to a 1.5x pacing gain.
-  kFullyDrainQueue,  // Fully drains the queue once per cycle.
-  kReduceProbeRtt,   // Probe RTT reduces CWND to 0.75 * BDP instead of 4
-                     // packets.
-  kSkipProbeRtt,     // Skip Probe RTT and extend the existing min_rtt if a
-                     // recent min_rtt is within 12.5% of the current min_rtt.
-  kSkipProbeRttAggressively,  //  Skip ProbeRTT and extend the existing min_rtt
-                              //  as long as you've been app limited at least
-                              //  once.
-  kFillUpLinkDuringProbing,   // Sends probing retransmissions whenever we
-                              // become application limited.
-  kInitialWindow3,            // Use a 3-packet initial congestion window.
-  kInitialWindow10,           // Use a 10-packet initial congestion window.
-  kInitialWindow20,           // Use a 20-packet initial congestion window.
-  kInitialWindow50,           // Use a 50-packet initial congestion window.
-  kStartup1RTT,               // Stay in STARTUP for 1 RTT.
-  kStartup2RTT,               // Stay in STARTUP for 2 RTTs.
-};
-
 // The configuration for creating a QuartcFactory.
 struct QuartcFactoryConfig {
   // Factory for |QuicAlarm|s. Implemented by the Quartc user with different
@@ -62,9 +40,6 @@ struct QuartcSessionConfig {
   // The maximum size of the packet can be written with the packet writer.
   // 1200 bytes by default.
   QuicPacketLength max_packet_size = 1200;
-  // Options to control the BBR algorithm. In case the congestion control is
-  // set to anything but BBR, these options are ignored.
-  std::vector<QuartcBbrOptions> bbr_options;
   // Timeouts for the crypto handshake. Set them to higher values to
   // prevent closing the session before it started on a slow network.
   // Zero entries are ignored and QUIC defaults are used in that case.

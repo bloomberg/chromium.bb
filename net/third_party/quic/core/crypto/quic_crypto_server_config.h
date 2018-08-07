@@ -513,18 +513,17 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   friend class EvaluateClientHelloCallback;
 
   // Continuation of EvaluateClientHello after the call to
-  // ProofSource::GetProof.  |found_error| indicates whether an error was
-  // detected in EvaluateClientHello, and |get_proof_failed| indicates whether
-  // GetProof failed.  If GetProof was not run, then |get_proof_failed| will be
+  // ProofSource::GetProof. |get_proof_failed| indicates whether GetProof
+  // failed.  If GetProof was not run, then |get_proof_failed| will be
   // set to false.
   void EvaluateClientHelloAfterGetProof(
-      bool found_error,
       const QuicIpAddress& server_ip,
       QuicTransportVersion version,
       QuicReferenceCountedPointer<Config> requested_config,
       QuicReferenceCountedPointer<Config> primary_config,
       QuicReferenceCountedPointer<QuicSignedServerConfig> crypto_proof,
       std::unique_ptr<ProofSource::Details> proof_source_details,
+      bool use_get_cert_chain,
       bool get_proof_failed,
       QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
           client_hello_state,

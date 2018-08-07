@@ -244,7 +244,7 @@ bool TcpCubicSenderBytes::InRecovery() const {
          largest_acked_packet_number_ != 0;
 }
 
-bool TcpCubicSenderBytes::IsProbingForMoreBandwidth() const {
+bool TcpCubicSenderBytes::ShouldSendProbingPacket() const {
   return false;
 }
 

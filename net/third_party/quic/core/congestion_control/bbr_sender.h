@@ -103,7 +103,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // Start implementation of SendAlgorithmInterface.
   bool InSlowStart() const override;
   bool InRecovery() const override;
-  bool IsProbingForMoreBandwidth() const override;
+  bool ShouldSendProbingPacket() const override;
 
   void SetFromConfig(const QuicConfig& config,
                      Perspective perspective) override;

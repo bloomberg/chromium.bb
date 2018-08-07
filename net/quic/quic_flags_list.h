@@ -187,3 +187,7 @@ QUIC_FLAG(bool,
 // Enables the BBQ5 connection option, which forces saved aggregation values to
 // expire when the bandwidth increases more than 25% in QUIC BBR STARTUP.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)
+
+// If true, QuicCryptoServerConfig::EvaluateClientHello will use GetCertChain
+// instead of the more expensive GetProof.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_cert_chain, false)

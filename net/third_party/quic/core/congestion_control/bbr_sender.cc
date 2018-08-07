@@ -208,7 +208,8 @@ bool BbrSender::InRecovery() const {
   return recovery_state_ != NOT_IN_RECOVERY;
 }
 
-bool BbrSender::IsProbingForMoreBandwidth() const {
+bool BbrSender::ShouldSendProbingPacket() const {
+  // TODO(ianswett): Determine if we have sent enough before returning true.
   return (mode_ == PROBE_BW && pacing_gain_ > 1) || mode_ == STARTUP;
 }
 
@@ -464,7 +465,7 @@ bool BbrSender::UpdateBandwidthAndMinRtt(
                   << ", new value: " << sample_min_rtt
                   << ", current time: " << now.ToDebuggingValue();
 
-    if (ShouldExtendMinRttExpiry()) {
+    if (min_rtt_expired && ShouldExtendMinRttExpiry()) {
       min_rtt_expired = false;
     } else {
       min_rtt_ = sample_min_rtt;
@@ -474,6 +475,8 @@ bool BbrSender::UpdateBandwidthAndMinRtt(
     min_rtt_since_last_probe_rtt_ = QuicTime::Delta::Infinite();
     app_limited_since_last_probe_rtt_ = false;
   }
+  DCHECK(!min_rtt_.IsZero());
+  DCHECK_GE(min_rtt_, rtt_stats_->min_rtt());
 
   return min_rtt_expired;
 }

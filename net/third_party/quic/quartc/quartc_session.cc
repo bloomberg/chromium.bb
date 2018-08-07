@@ -28,17 +28,15 @@ class DummyProofSource : public ProofSource {
   ~DummyProofSource() override {}
 
   // ProofSource override.
-  void GetProof(const QuicSocketAddress& server_addr,
+  void GetProof(const QuicSocketAddress& server_address,
                 const QuicString& hostname,
                 const QuicString& server_config,
                 QuicTransportVersion transport_version,
                 QuicStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override {
-    QuicReferenceCountedPointer<ProofSource::Chain> chain;
+    QuicReferenceCountedPointer<ProofSource::Chain> chain =
+        GetCertChain(server_address, hostname);
     QuicCryptoProof proof;
-    std::vector<QuicString> certs;
-    certs.push_back("Dummy cert");
-    chain = new ProofSource::Chain(certs);
     proof.signature = "Dummy signature";
     proof.leaf_cert_scts = "Dummy timestamp";
     callback->Run(true, chain, proof, nullptr /* details */);
@@ -47,7 +45,10 @@ class DummyProofSource : public ProofSource {
   QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
       const QuicString& hostname) override {
-    return QuicReferenceCountedPointer<Chain>();
+    std::vector<QuicString> certs;
+    certs.push_back("Dummy cert");
+    return QuicReferenceCountedPointer<ProofSource::Chain>(
+        new ProofSource::Chain(certs));
   }
 
   void ComputeTlsSignature(

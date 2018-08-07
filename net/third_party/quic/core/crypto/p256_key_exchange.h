@@ -24,7 +24,7 @@ class QUIC_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
 
   // New creates a new key exchange object from a private key. If
   // |private_key| is invalid, nullptr is returned.
-  static P256KeyExchange* New(QuicStringPiece private_key);
+  static std::unique_ptr<P256KeyExchange> New(QuicStringPiece private_key);
 
   // |NewPrivateKey| returns a private key, suitable for passing to |New|.
   // If |NewPrivateKey| can't generate a private key, it returns an empty
@@ -32,11 +32,10 @@ class QUIC_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   static QuicString NewPrivateKey();
 
   // KeyExchange interface.
-  KeyExchange* NewKeyPair(QuicRandom* rand) const override;
+  const Factory& GetFactory() const override;
   bool CalculateSharedKey(QuicStringPiece peer_public_value,
                           QuicString* shared_key) const override;
   QuicStringPiece public_value() const override;
-  QuicTag tag() const override;
 
  private:
   enum {

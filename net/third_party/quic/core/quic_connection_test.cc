@@ -6256,8 +6256,53 @@ TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
   EXPECT_FALSE(connection_.connected());
 }
 
+TEST_P(QuicConnectionTest, SetRetransmissionAlarmForCryptoPacket) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.SendCryptoStreamData();
+
+  // Verify retransmission timer is correctly set after crypto packet has been
+  // sent.
+  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
+  QuicTime retransmission_time =
+      QuicConnectionPeer::GetSentPacketManager(&connection_)
+          ->GetRetransmissionTime();
+  EXPECT_NE(retransmission_time, clock_.ApproximateNow());
+  EXPECT_EQ(retransmission_time,
+            connection_.GetRetransmissionAlarm()->deadline());
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.GetRetransmissionAlarm()->Fire();
+}
+
+TEST_P(QuicConnectionTest, PathDegradingAlarmForCryptoPacket) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.IsPathDegrading());
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.SendCryptoStreamData();
+
+  EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  QuicTime::Delta delay = QuicConnectionPeer::GetSentPacketManager(&connection_)
+                              ->GetPathDegradingDelay();
+  EXPECT_EQ(clock_.ApproximateNow() + delay,
+            connection_.GetPathDegradingAlarm()->deadline());
+
+  // Fire the path degrading alarm, path degrading signal should be sent to
+  // the visitor.
+  EXPECT_CALL(visitor_, OnPathDegrading());
+  clock_.AdvanceTime(delay);
+  connection_.GetPathDegradingAlarm()->Fire();
+  EXPECT_TRUE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+}
+
 // Includes regression test for https://b.corp.google.com/issues/69979024.
-TEST_P(QuicConnectionTest, PathDegradingAlarm) {
+TEST_P(QuicConnectionTest, PathDegradingAlarmForNonCryptoPackets) {
   EXPECT_TRUE(connection_.connected());
   EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
   EXPECT_FALSE(connection_.IsPathDegrading());
@@ -6269,7 +6314,8 @@ TEST_P(QuicConnectionTest, PathDegradingAlarm) {
   for (int i = 0; i < 2; ++i) {
     // Send a packet. Now there's a retransmittable packet on the wire, so the
     // path degrading alarm should be set.
-    connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+    connection_.SendStreamDataWithString(kClientDataStreamId1, data, offset,
+                                         NO_FIN);
     offset += data_size;
     EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
     // Check the deadline of the path degrading alarm.
@@ -6284,7 +6330,8 @@ TEST_P(QuicConnectionTest, PathDegradingAlarm) {
     // Regression test for https://b.corp.google.com/issues/69979024.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
     QuicTime prev_deadline = connection_.GetPathDegradingAlarm()->deadline();
-    connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+    connection_.SendStreamDataWithString(kClientDataStreamId1, data, offset,
+                                         NO_FIN);
     offset += data_size;
     EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
     EXPECT_EQ(prev_deadline, connection_.GetPathDegradingAlarm()->deadline());
@@ -6648,7 +6695,7 @@ TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedDueToWriteBlock) {
 // the connection becomes application-limited.
 TEST_P(QuicConnectionTest, SendDataWhenApplicationLimited) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(*send_algorithm_, IsProbingForMoreBandwidth())
+  EXPECT_CALL(*send_algorithm_, ShouldSendProbingPacket())
       .WillRepeatedly(Return(true));
   {
     InSequence seq;

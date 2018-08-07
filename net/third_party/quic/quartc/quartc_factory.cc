@@ -46,52 +46,30 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   // Enable time-based loss detection.
   copt.push_back(kTIME);
 
+  // Use BBR for congestion control.
   copt.push_back(kTBBR);
 
-  // Note: These settings have no effect for Exoblaze builds since
+  // Note: flag settings have no effect for Exoblaze builds since
   // SetQuicReloadableFlag() gets stubbed out.
-  SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);
-  SetQuicReloadableFlag(quic_unified_iw_options, true);
-  for (const auto option : quartc_session_config.bbr_options) {
-    switch (option) {
-      case (QuartcBbrOptions::kSlowerStartup):
-        copt.push_back(kBBRS);
-        break;
-      case (QuartcBbrOptions::kFullyDrainQueue):
-        copt.push_back(kBBR3);
-        break;
-      case (QuartcBbrOptions::kReduceProbeRtt):
-        copt.push_back(kBBR6);
-        break;
-      case (QuartcBbrOptions::kSkipProbeRtt):
-        copt.push_back(kBBR7);
-        break;
-      case (QuartcBbrOptions::kSkipProbeRttAggressively):
-        copt.push_back(kBBR8);
-        break;
-      case (QuartcBbrOptions::kFillUpLinkDuringProbing):
-        quic_connection->set_fill_up_link_during_probing(true);
-        break;
-      case (QuartcBbrOptions::kInitialWindow3):
-        copt.push_back(kIW03);
-        break;
-      case (QuartcBbrOptions::kInitialWindow10):
-        copt.push_back(kIW10);
-        break;
-      case (QuartcBbrOptions::kInitialWindow20):
-        copt.push_back(kIW20);
-        break;
-      case (QuartcBbrOptions::kInitialWindow50):
-        copt.push_back(kIW50);
-        break;
-      case (QuartcBbrOptions::kStartup1RTT):
-        copt.push_back(k1RTT);
-        break;
-      case (QuartcBbrOptions::kStartup2RTT):
-        copt.push_back(k2RTT);
-        break;
-    }
-  }
+  SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);   // Enable BBR6,7,8.
+  SetQuicReloadableFlag(quic_unified_iw_options, true);   // Enable IWXX opts.
+  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);  // Enable BBQX opts.
+  copt.push_back(kBBR3);  // Stay in low-gain until in-flight < BDP.
+  copt.push_back(kBBR5);  // 40 RTT ack aggregation.
+  copt.push_back(kBBR6);  // Use a 0.75 * BDP cwnd during PROBE_RTT.
+  copt.push_back(kBBR8);  // Skip PROBE_RTT if app-limited.
+  copt.push_back(kBBQ1);  // 2.773 pacing gain in STARTUP.
+  copt.push_back(kBBQ2);  // 2.0 CWND gain in STARTUP.
+  copt.push_back(kBBQ4);  // 0.75 pacing gain in DRAIN.
+  copt.push_back(k1RTT);  // Exit STARTUP after 1 RTT with no gains.
+  copt.push_back(kIW10);  // 10-packet (14600 byte) initial cwnd.
+
+  // TODO(b/112192494):  Enable pipe-filling once it no longer starves Quartc.
+  // quic_connection->set_fill_up_link_during_probing(true);
+
+  // TODO(b/112192153):  Test and possible enable slower startup when pipe
+  // filling is ready to use.  Slower startup is kBBRS.
+
   QuicConfig quic_config;
 
   // Use the limits for the session & stream flow control. The default 16KB

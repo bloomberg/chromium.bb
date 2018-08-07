@@ -267,14 +267,19 @@ class FakeQuartcStreamDelegate : public QuartcStream::Delegate {
     received_data_[stream->id()] += QuicString(data, size);
   }
 
-  void OnClose(QuartcStream* stream) override {}
+  void OnClose(QuartcStream* stream) override {
+    errors_[stream->id()] = stream->stream_error();
+  }
 
   void OnBufferChanged(QuartcStream* stream) override {}
 
   std::map<QuicStreamId, QuicString> data() { return received_data_; }
 
+  QuicRstStreamErrorCode stream_error(QuicStreamId id) { return errors_[id]; }
+
  private:
   std::map<QuicStreamId, QuicString> received_data_;
+  std::map<QuicStreamId, QuicRstStreamErrorCode> errors_;
 };
 
 class QuartcSessionForTest : public QuartcSession,
@@ -546,6 +551,71 @@ TEST_F(QuartcSessionTest, CloseConnection) {
   EXPECT_FALSE(client_peer_->session_delegate()->connected());
   RunTasks();
   EXPECT_FALSE(server_peer_->session_delegate()->connected());
+}
+
+TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
+  ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
+
+  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuicStreamId stream_id = stream->id();
+  stream->SetDelegate(client_peer_->stream_delegate());
+  stream->set_cancel_on_loss(false);
+
+  client_transport_->set_packets_to_lose(1);
+
+  char kClientMessage[] = "Hello";
+  test::QuicTestMemSliceVector stream_data(
+      {std::make_pair(kClientMessage, strlen(kClientMessage))});
+  stream->WriteMemSlices(stream_data.span(), /*fin=*/false);
+  RunTasks();
+
+  // Stream data should make it despite packet loss.
+  ASSERT_TRUE(server_peer_->has_data());
+  EXPECT_EQ(server_peer_->data()[stream_id], kClientMessage);
+}
+
+TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
+  ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
+
+  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuicStreamId stream_id = stream->id();
+  stream->SetDelegate(client_peer_->stream_delegate());
+  stream->set_cancel_on_loss(true);
+
+  client_transport_->set_packets_to_lose(1);
+
+  char kMessage[] = "Hello";
+  test::QuicTestMemSliceVector stream_data(
+      {std::make_pair(kMessage, strlen(kMessage))});
+  stream->WriteMemSlices(stream_data.span(), /*fin=*/false);
+  alarm_factory_.Run(1);
+
+  // Send another packet to trigger loss detection.
+  QuartcStream* stream_1 = client_peer_->CreateOutgoingDynamicStream();
+  stream_1->SetDelegate(client_peer_->stream_delegate());
+
+  char kMessage1[] = "Second message";
+  test::QuicTestMemSliceVector stream_data_1(
+      {std::make_pair(kMessage1, strlen(kMessage1))});
+  stream_1->WriteMemSlices(stream_data_1.span(), /*fin=*/false);
+  RunTasks();
+
+  // QUIC should try to retransmit the first stream by loss detection.  Instead,
+  // it will cancel itself.
+  EXPECT_THAT(server_peer_->data()[stream_id], testing::IsEmpty());
+
+  EXPECT_TRUE(client_peer_->IsClosedStream(stream_id));
+  EXPECT_TRUE(server_peer_->IsClosedStream(stream_id));
+  EXPECT_EQ(client_peer_->stream_delegate()->stream_error(stream_id),
+            QUIC_STREAM_CANCELLED);
+  EXPECT_EQ(server_peer_->stream_delegate()->stream_error(stream_id),
+            QUIC_STREAM_CANCELLED);
 }
 
 }  // namespace
