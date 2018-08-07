@@ -56,80 +56,6 @@ void CreateSubresourceLoaderFactoryForProviderContext(
 
 }  // namespace
 
-// Holds state for service worker clients.
-struct ServiceWorkerProviderContext::ProviderStateForClient {
-  explicit ProviderStateForClient(
-      scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory)
-      : fallback_loader_factory(std::move(fallback_loader_factory)) {}
-  ~ProviderStateForClient() = default;
-
-  // |controller| will be set by SetController() and taken by TakeController().
-  blink::mojom::ServiceWorkerObjectInfoPtr controller;
-  // Keeps version id of the current controller service worker object.
-  int64_t controller_version_id = blink::mojom::kInvalidServiceWorkerVersionId;
-
-  // S13nServiceWorker:
-  // Used to intercept requests from the controllee and dispatch them
-  // as events to the controller ServiceWorker.
-  network::mojom::URLLoaderFactoryPtr subresource_loader_factory;
-
-  // S13nServiceWorker:
-  // Used when we create |subresource_loader_factory|.
-  scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory;
-
-  // S13nServiceWorker:
-  // The Client#id value of the client.
-  std::string client_id;
-
-  blink::mojom::ControllerServiceWorkerMode controller_mode =
-      blink::mojom::ControllerServiceWorkerMode::kNoController;
-
-  // Tracks feature usage for UseCounter.
-  std::set<blink::mojom::WebFeature> used_features;
-
-  // Corresponds to a ServiceWorkerContainer. We notify it when
-  // ServiceWorkerContainer#controller should be changed.
-  base::WeakPtr<WebServiceWorkerProviderImpl> web_service_worker_provider;
-
-  // Keeps ServiceWorkerWorkerClient pointers of dedicated or shared workers
-  // which are associated with the ServiceWorkerProviderContext.
-  // - If this ServiceWorkerProviderContext is for a Document, then
-  //   |worker_clients| contains all its dedicated workers.
-  // - If this ServiceWorkerProviderContext is for a SharedWorker (technically
-  //   speaking, for its shadow page), then |worker_clients| has one element:
-  //   the shared worker.
-  std::vector<mojom::ServiceWorkerWorkerClientPtr> worker_clients;
-
-  // For adding new ServiceWorkerWorkerClients.
-  mojo::BindingSet<mojom::ServiceWorkerWorkerClientRegistry>
-      worker_client_registry_bindings;
-
-  // S13nServiceWorker
-  // Used in |subresource_loader_factory| to get the connection to the
-  // controller service worker.
-  //
-  // |controller_endpoint| is a Mojo pipe to the controller service worker,
-  // and is to be passed to (i.e. taken by) a subresource loader factory when
-  // GetSubresourceLoaderFactory() is called for the first time when a valid
-  // controller exists.
-  //
-  // |controller_connector| is a Mojo pipe to the
-  // ControllerServiceWorkerConnector that is attached to the newly created
-  // subresource loader factory and lives on a background thread. This is
-  // populated when GetSubresourceLoader() creates the subresource loader
-  // factory and takes |controller_endpoint|.
-  mojom::ControllerServiceWorkerPtrInfo controller_endpoint;
-  mojom::ControllerServiceWorkerConnectorPtr controller_connector;
-
-  // For service worker clients. Map from registration id to JavaScript
-  // ServiceWorkerRegistration object.
-  std::map<int64_t, WebServiceWorkerRegistrationImpl*> registrations_;
-
-  // For service worker clients. Map from version id to JavaScript ServiceWorker
-  // object.
-  std::map<int64_t, WebServiceWorkerImpl*> workers_;
-};
-
 // For service worker clients.
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     int provider_id,
@@ -144,7 +70,7 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
       binding_(this, std::move(request)),
       weak_factory_(this) {
   container_host_.Bind(std::move(host_ptr_info));
-  state_for_client_ = std::make_unique<ProviderStateForClient>(
+  state_for_client_ = std::make_unique<ServiceWorkerProviderStateForClient>(
       std::move(fallback_loader_factory));
 
   // Set up the URL loader factory for sending subresource requests to
@@ -330,7 +256,7 @@ void ServiceWorkerProviderContext::PingContainerHost(
 
 void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  ProviderStateForClient* state = state_for_client_.get();
+  ServiceWorkerProviderStateForClient* state = state_for_client_.get();
   DCHECK(state);
 
   // In non-S13nSW, this hint isn't needed because the browser process
@@ -362,7 +288,7 @@ void ServiceWorkerProviderContext::SetController(
     const std::vector<blink::mojom::WebFeature>& used_features,
     bool should_notify_controllerchange) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  ProviderStateForClient* state = state_for_client_.get();
+  ServiceWorkerProviderStateForClient* state = state_for_client_.get();
   DCHECK(state);
 
   state->controller = std::move(controller_info->object_info);
@@ -440,7 +366,7 @@ void ServiceWorkerProviderContext::PostMessageToClient(
     blink::TransferableMessage message) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 
-  ProviderStateForClient* state = state_for_client_.get();
+  ServiceWorkerProviderStateForClient* state = state_for_client_.get();
   DCHECK(state);
   if (state->web_service_worker_provider) {
     state->web_service_worker_provider->PostMessageToClient(std::move(source),
@@ -495,7 +421,7 @@ void ServiceWorkerProviderContext::CountFeature(
     blink::mojom::WebFeature feature) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
-  ProviderStateForClient* state = state_for_client_.get();
+  ServiceWorkerProviderStateForClient* state = state_for_client_.get();
 
   // ServiceWorkerProviderContext keeps track of features in order to propagate
   // it to WebServiceWorkerProviderClient, which actually records the

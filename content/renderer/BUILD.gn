@@ -572,6 +572,8 @@ target(link_target_type, "renderer") {
     "service_worker/service_worker_network_provider.h",
     "service_worker/service_worker_provider_context.cc",
     "service_worker/service_worker_provider_context.h",
+    "service_worker/service_worker_provider_state_for_client.cc",
+    "service_worker/service_worker_provider_state_for_client.h",
     "service_worker/service_worker_subresource_loader.cc",
     "service_worker/service_worker_subresource_loader.h",
     "service_worker/service_worker_timeout_timer.cc",
