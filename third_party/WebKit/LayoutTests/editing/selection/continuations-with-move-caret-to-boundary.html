@@ -1,105 +1,46 @@
 <!DOCTYPE HTML>
+<script src="../../resources/ahem.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../assert_selection.js"></script>
 <script>
-// Mac supports the 'moveCaretToBoundary' editing behavior.
-if (window.internals)
-    internals.settings.setEditingBehavior('mac');
+const isMac = navigator.platform.indexOf('Mac') === 0;
 
-test(() =>
-    assert_selection(
-        '<font color="blue" id="font">|AAAAA<div>BLOCK</div><p>BBBBB</p><p id="secondP">CCCCC</p></font>',
-        selection => {
-            var document = selection.document;
-            var font = document.getElementById('font');
-            var secondP = document.getElementById('secondP');
+function dragOverBlocks(selection, offsetTopToDestination) {
+  const document = selection.document;
+  const divlist = document.querySelectorAll('p');
+  const div0 = divlist[0];
+  const div1 = divlist[1];
+  eventSender.mouseMoveTo(document.offsetLeft + div0.offsetLeft,
+                          document.offsetTop + div0.offsetTop + 5);
+  eventSender.mouseDown();
+  eventSender.mouseMoveTo(document.offsetLeft + div1.offsetLeft + 40,
+                          document.offsetTop + div1.offsetTop
+                          + offsetTopToDestination);
+  eventSender.mouseUp();
+}
 
-            eventSender.mouseMoveTo(document.offsetLeft + font.offsetLeft, document.offsetTop + font.offsetTop + 5);
-            eventSender.mouseDown();
-            eventSender.mouseMoveTo(document.offsetLeft + secondP.offsetLeft + 20, document.offsetTop + secondP.offsetTop + 5);
-            eventSender.mouseUp();
-        },
-        '<font color="blue" id="font">^AAAAA<div>BLOCK</div><p>BBBBB</p><p id="secondP">CC|CCC</p></font>'),
-    'Continuations across a block when not hitting the margin');
+const kStyle = '<style>* { font: 20px Ahem; }</style>';
 
-test(() =>
-    assert_selection(
-        '<font color="blue" id="font">|AAAAA<p>BBBBB</p><p id="secondP">CCCCC</p></font>',
-        selection => {
-            var document = selection.document;
-            var font = document.getElementById('font');
-            var secondP = document.getElementById('secondP');
+selection_test(
+    [kStyle, '<p>AAAAA</p><p>BBBBB</p>'],
+    selection => dragOverBlocks(selection, -20),
+    [kStyle, '<p>^AA|AAA</p><p>BBBBB</p>'],
+    'Continuations across a block -20');
 
-            eventSender.mouseMoveTo(document.offsetLeft + font.offsetLeft, document.offsetTop + font.offsetTop + 5);
-            eventSender.mouseDown();
-            eventSender.mouseMoveTo(document.offsetLeft + secondP.offsetLeft + 20, document.offsetTop + secondP.offsetTop - 5);
-            eventSender.mouseUp();
-        },
-        '<font color="blue" id="font">^AAAAA<p>BBBBB</p><p id="secondP">|CCCCC</p></font>'),
-    'Continuation margin');
+selection_test(
+    [kStyle, '<p>AAAAA</p><p>BBBBB</p>'],
+    selection => dragOverBlocks(selection, -15),
+    [kStyle,
+    isMac
+    ? '<p>^AAAAA</p><p>|BBBBB</p>'
+    : '<p>^AAAAA</p><p>BB|BBB</p>'
+    ],
+    'Continuations across a block -15');
 
-test(() =>
-    assert_selection(
-        '<font color="blue" id="font">|AAAAA<div>BLOCK</div><p>BBBBB</p><p id="secondP">CCCCC</p></font>',
-        selection => {
-            var document = selection.document;
-            var font = document.getElementById('font');
-            var secondP = document.getElementById('secondP');
-
-            eventSender.mouseMoveTo(document.offsetLeft + font.offsetLeft, document.offsetTop + font.offsetTop + 5);
-            eventSender.mouseDown();
-            eventSender.mouseMoveTo(document.offsetLeft + secondP.offsetLeft + 20, document.offsetTop + secondP.offsetTop - 5);
-            eventSender.mouseUp();
-        },
-        '<font color="blue" id="font">^AAAAA<div>BLOCK</div><p>BBBBB</p><p id="secondP">|CCCCC</p></font>'),
-    'Continuation margin across a block 1');
-
-test(() =>
-    assert_selection(
-        '<font color="blue" id="font">|AAAAA<p>BBBBB</p><div>BLOCK</div><p id="secondP">CCCCC</p></font>',
-        selection => {
-            var document = selection.document;
-            var font = document.getElementById('font');
-            var secondP = document.getElementById('secondP');
-
-            eventSender.mouseMoveTo(document.offsetLeft + font.offsetLeft, document.offsetTop + font.offsetTop + 5);
-            eventSender.mouseDown();
-            eventSender.mouseMoveTo(document.offsetLeft + secondP.offsetLeft + 20, document.offsetTop + secondP.offsetTop - 5);
-            eventSender.mouseUp();
-        },
-        '<font color="blue" id="font">^AAAAA<p>BBBBB</p><div>BLOCK</div><p id="secondP">|CCCCC</p></font>'),
-    'Continuation margin across a block 2');
-
-test(() =>
-    assert_selection(
-        '<font color="blue" id="font">|AAAAA<div style="position: relative; margin-top: 50px;">BLOCK</div><p>BBBBB</p><p id="secondP">CCCCC</p></font>',
-        selection => {
-            var document = selection.document;
-            var font = document.getElementById('font');
-            var secondP = document.getElementById('secondP');
-
-            eventSender.mouseMoveTo(document.offsetLeft + font.offsetLeft, document.offsetTop + font.offsetTop + 5);
-            eventSender.mouseDown();
-            eventSender.mouseMoveTo(document.offsetLeft + secondP.offsetLeft + 20, document.offsetTop + secondP.offsetTop - 5);
-            eventSender.mouseUp();
-        },
-        '<font color="blue" id="font">^AAAAA<div style="position: relative; margin-top: 50px;">BLOCK</div><p>BBBBB</p><p id="secondP">|CCCCC</p></font>'),
-    'Continuation margin across a relative block 1');
-
-test(() =>
-    assert_selection(
-        '<font color="blue" id="font">|AAAAA<p>BBBBB</p><div style="position: relative; margin-top: 50px;">BLOCK</div><p id="secondP">CCCCC</p></font>',
-        selection => {
-            var document = selection.document;
-            var font = document.getElementById('font');
-            var secondP = document.getElementById('secondP');
-
-            eventSender.mouseMoveTo(document.offsetLeft + font.offsetLeft, document.offsetTop + font.offsetTop + 5);
-            eventSender.mouseDown();
-            eventSender.mouseMoveTo(document.offsetLeft + secondP.offsetLeft + 20, document.offsetTop + secondP.offsetTop - 5);
-            eventSender.mouseUp();
-        },
-        '<font color="blue" id="font">^AAAAA<p>BBBBB</p><div style="position: relative; margin-top: 50px;">BLOCK</div><p id="secondP">|CCCCC</p></font>'),
-    'Continuation margin across a relative block 2');
+selection_test(
+    [kStyle, '<p>AAAAA</p><p>BBBBB</p>'],
+    selection => dragOverBlocks(selection, 5),
+    [kStyle,'<p>^AAAAA</p><p>BB|BBB</p>'],
+    'Continuations across a block 5');
 </script>
