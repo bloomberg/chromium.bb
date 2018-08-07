@@ -131,11 +131,7 @@ bool LayoutTreeBuilderForElement::ShouldCreateLayoutObject() const {
 }
 
 ComputedStyle& LayoutTreeBuilderForElement::Style() const {
-  if (!style_) {
-    DCHECK(!node_->GetNonAttachedStyle());
-    DCHECK(node_->IsFirstLetterPseudoElement());
-    style_ = node_->StyleForLayoutObject();
-  }
+  DCHECK(style_);
   return *style_;
 }
 

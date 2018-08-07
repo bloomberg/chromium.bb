@@ -985,7 +985,14 @@ class CORE_EXPORT Element : public ContainerNode {
                                        const Node* node_after_change);
 
   void UpdatePseudoElement(PseudoId, StyleRecalcChange);
-  bool UpdateFirstLetter(Element*);
+
+  enum class StyleUpdatePhase {
+    kRecalc,
+    kRebuildLayoutTree,
+    kAttachLayoutTree,
+  };
+
+  void UpdateFirstLetterPseudoElement(StyleUpdatePhase);
 
   inline PseudoElement* CreatePseudoElementIfNeeded(PseudoId);
   void AttachPseudoElement(PseudoId, AttachContext&);
