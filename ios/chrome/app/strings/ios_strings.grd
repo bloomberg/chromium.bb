@@ -789,6 +789,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT" desc="Feature in the settings for the user to enable/disable, to sync reading list links between devices. [iOS only]">
         Reading List
       </message>
+      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SETTINGS_TEXT" desc="Feature in the settings for the user to enable/disable, to sync settings data between devices. [iOS only]">
+        Settings
+      </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_EVERYTHING" desc="Feature in the settings for the user enable or disable all the Google sync features. [iOS only]">
         Use sync and all services
       </message>

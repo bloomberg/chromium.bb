@@ -202,6 +202,8 @@ using unified_consent::prefs::kUnifiedConsentGiven;
                    detailTextID:0];
     [self assertCellWithTitleID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOFILL_TEXT
                    detailTextID:0];
+    [self assertCellWithTitleID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SETTINGS_TEXT
+                   detailTextID:0];
     [self
         assertCellWithTitleID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT
                  detailTextID:0];
