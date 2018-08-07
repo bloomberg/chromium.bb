@@ -14,6 +14,7 @@ typedef unsigned char GLboolean;
 #include "drv.h"
 
 struct dri_driver {
+	int fd;
 	void *driver_handle;
 	__DRIscreen *device;
 	__DRIcontext *context; /* Needed for map/unmap operations. */

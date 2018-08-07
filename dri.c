@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -111,9 +112,14 @@ int dri_init(struct driver *drv, const char *dri_so_path, const char *driver_suf
 	const __DRIextension *loader_extensions[] = { NULL };
 
 	struct dri_driver *dri = drv->priv;
+
+	dri->fd = open(drmGetRenderDeviceNameFromFd(drv_get_fd(drv)), O_RDWR);
+	if (dri->fd < 0)
+		return -ENODEV;
+
 	dri->driver_handle = dlopen(dri_so_path, RTLD_NOW | RTLD_GLOBAL);
 	if (!dri->driver_handle)
-		return -ENODEV;
+		goto close_dri_fd;
 
 	snprintf(fname, sizeof(fname), __DRI_DRIVER_GET_EXTENSIONS "_%s", driver_suffix);
 	get_extensions = dlsym(dri->driver_handle, fname);
@@ -133,7 +139,7 @@ int dri_init(struct driver *drv, const char *dri_so_path, const char *driver_suf
 			      (const __DRIextension **)&dri->dri2_extension))
 		goto free_handle;
 
-	dri->device = dri->dri2_extension->createNewScreen2(0, drv_get_fd(drv), loader_extensions,
+	dri->device = dri->dri2_extension->createNewScreen2(0, dri->fd, loader_extensions,
 							    dri->extensions, &dri->configs, NULL);
 	if (!dri->device)
 		goto free_handle;
@@ -161,6 +167,8 @@ free_screen:
 free_handle:
 	dlclose(dri->driver_handle);
 	dri->driver_handle = NULL;
+close_dri_fd:
+	close(dri->fd);
 	return -ENODEV;
 }
 
@@ -175,6 +183,7 @@ void dri_close(struct driver *drv)
 	dri->core_extension->destroyScreen(dri->device);
 	dlclose(dri->driver_handle);
 	dri->driver_handle = NULL;
+	close(dri->fd);
 }
 
 int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
