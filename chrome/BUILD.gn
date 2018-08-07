@@ -232,6 +232,7 @@ if (!is_android && !is_mac) {
           "/DELAYLOAD:uxtheme.dll",
           "/DELAYLOAD:ole32.dll",
           "/DELAYLOAD:oleaut32.dll",
+          "/DELAYLOAD:winhttp.dll",
         ]
 
         if (current_cpu == "x64") {
