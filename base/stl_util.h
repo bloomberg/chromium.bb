@@ -172,11 +172,7 @@ bool ContainsValue(const Collection& collection, const Value& value) {
 // Returns true if the container is sorted.
 template <typename Container>
 bool STLIsSorted(const Container& cont) {
-  // Note: Use reverse iterator on container to ensure we only require
-  // value_type to implement operator<.
-  return std::adjacent_find(cont.rbegin(), cont.rend(),
-                            std::less<typename Container::value_type>())
-      == cont.rend();
+  return std::is_sorted(std::begin(cont), std::end(cont));
 }
 
 // Returns a new ResultType containing the difference of two sorted containers.
