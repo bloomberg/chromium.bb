@@ -39,6 +39,7 @@ class CORE_EXPORT NGLineTruncator final {
   bool TruncateChild(LayoutUnit space_for_this_child,
                      bool is_first_child,
                      NGLineBoxFragmentBuilder::Child* child);
+  void HideChild(NGLineBoxFragmentBuilder::Child* child);
 
   NGInlineNode& node_;
   scoped_refptr<const ComputedStyle> line_style_;

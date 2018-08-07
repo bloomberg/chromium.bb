@@ -12,8 +12,7 @@ layer at (0,0) size 800x104
             text run at (0,0) width 212: "Lorem ipsum dolor sit amet"
 layer at (208,52) size 344x22 scrollX 873.00 scrollWidth 1217
   LayoutNGBlockFlow {DD} at (0,0) size 344x22
-    LayoutText {#text} at (-873,0) size 1217x21
-      text run at (-873,0) width 5: "."
+    LayoutText {#text} at (21,0) size 342x21
       text run at (21,0) width 323: "e magna aliquyam erat, sed diam voluptua"
       text run at (2,0) width 19: "\x{2026}"
 selection start: position 0 of child 0 {#text} of child 1 {DD} of child 2 {DL} of body

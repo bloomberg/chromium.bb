@@ -112,6 +112,16 @@ LayoutUnit NGLineTruncator::TruncateLine(
   return std::max(ellipsis_inline_offset + ellipsis_width, line_width);
 }
 
+// Hide this child from being painted.
+void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
+  DCHECK(child->HasInFlowFragment());
+  // TODO(kojii): Not producing fragments is the most clean and efficient way to
+  // hide them, but we may want to revisit how to do this to reduce special
+  // casing in other code.
+  child->layout_result = nullptr;
+  child->fragment = nullptr;
+}
+
 // Return the offset to place the ellipsis.
 //
 // This function may truncate or move the child so that the ellipsis can fit.
@@ -131,16 +141,24 @@ base::Optional<LayoutUnit> NGLineTruncator::EllipsisOffset(
           ? child->offset.inline_offset
           : line_width - (child->offset.inline_offset + child->inline_size);
   LayoutUnit space_for_child = available_width_ - child_inline_offset;
-  if (space_for_child <= 0)
+  if (space_for_child <= 0) {
+    // This child is outside of the content box, but we still need to hide it.
+    // When the box has paddings, this child outside of the content box maybe
+    // still inside of the clipping box.
+    if (!is_first_child)
+      HideChild(child);
     return base::nullopt;
+  }
 
+  // At least part of this child is in the box.
   // If not all of this child can fit, try to truncate.
   space_for_child -= ellipsis_width;
   if (space_for_child < child->inline_size &&
       !TruncateChild(space_for_child, is_first_child, child)) {
-    // This child maybe partially visible. When it can't be truncated, move it
-    // out so that none of this child should be visible.
-    child->offset.inline_offset = line_width;
+    // This child is partially in the box, but it should not be visible because
+    // earlier sibling will be truncated and ellipsized.
+    if (!is_first_child)
+      HideChild(child);
     return base::nullopt;
   }
 
