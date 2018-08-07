@@ -28,6 +28,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/paint/display_item_list.h"
@@ -41,6 +42,7 @@
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -520,6 +522,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
 
   // AutoHide
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  surface->Commit();
   EXPECT_TRUE(frame_view->visible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(fullscreen_bounds,
@@ -552,6 +555,61 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   EXPECT_EQ(client_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
             frame_view->GetClientBoundsForWindowBounds(client_bounds));
+}
+
+namespace {
+
+class TestEventHandler : public ui::EventHandler {
+ public:
+  TestEventHandler() = default;
+  ~TestEventHandler() override = default;
+
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override { received_event_ = true; }
+
+  bool received_event() const { return received_event_; }
+
+ private:
+  bool received_event_ = false;
+  DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
+};
+
+}  // namespace
+
+TEST_F(ClientControlledShellSurfaceTest, NoSynthesizedEventOnFrameChange) {
+  UpdateDisplay("800x600");
+
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+
+  gfx::Rect fullscreen_bounds(0, 0, 800, 600);
+
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->Attach(buffer.get());
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+
+  // Maximized
+  shell_surface->SetMaximized();
+  shell_surface->SetGeometry(fullscreen_bounds);
+  surface->Commit();
+
+  // AutoHide
+  base::RunLoop().RunUntilIdle();
+  auto* env = aura::Env::GetInstance();
+  gfx::Rect cropped_fullscreen_bounds(0, 0, 800, 400);
+  env->SetLastMouseLocation(gfx::Point(100, 100));
+  TestEventHandler handler;
+  env->AddPreTargetHandler(&handler);
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  shell_surface->SetGeometry(cropped_fullscreen_bounds);
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(handler.received_event());
+  env->RemovePreTargetHandler(&handler);
 }
 
 TEST_F(ClientControlledShellSurfaceTest, CompositorLockInRotation) {
@@ -691,11 +749,11 @@ TEST_F(ClientControlledShellSurfaceTest, Maximize) {
   EXPECT_TRUE(HasBackdrop());
   EXPECT_TRUE(shell_surface->GetWidget()->IsMaximized());
 
-  // Enable backdrop only if the shell surface doesn't cover the display.
+  // We always show backdrop because the window may be cropped.
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   shell_surface->SetGeometry(display.bounds());
   surface->Commit();
-  EXPECT_FALSE(HasBackdrop());
+  EXPECT_TRUE(HasBackdrop());
 
   shell_surface->SetGeometry(gfx::Rect(0, 0, 100, display.bounds().height()));
   surface->Commit();
@@ -754,11 +812,11 @@ TEST_F(ClientControlledShellSurfaceTest, SetFullscreen) {
   surface->Commit();
   EXPECT_TRUE(HasBackdrop());
 
-  // Enable backdrop only if the shell surface doesn't cover the display.
+  // We always show backdrop becaues the window can be cropped.
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   shell_surface->SetGeometry(display.bounds());
   surface->Commit();
-  EXPECT_FALSE(HasBackdrop());
+  EXPECT_TRUE(HasBackdrop());
 
   shell_surface->SetGeometry(gfx::Rect(0, 0, 100, display.bounds().height()));
   surface->Commit();
