@@ -13,14 +13,16 @@ DownloadDB::DownloadDB() = default;
 
 DownloadDB::~DownloadDB() = default;
 
-void DownloadDB::Initialize(InitializeCallback callback) {
+void DownloadDB::Initialize(DownloadDBCallback callback) {
   std::move(callback).Run(true);
 }
 
 void DownloadDB::AddOrReplace(const DownloadDBEntry& entry) {}
 
-void DownloadDB::AddOrReplaceEntries(
-    const std::vector<DownloadDBEntry>& entry) {}
+void DownloadDB::AddOrReplaceEntries(const std::vector<DownloadDBEntry>& entry,
+                                     DownloadDBCallback callback) {
+  std::move(callback).Run(true);
+}
 
 void DownloadDB::LoadEntries(LoadEntriesCallback callback) {
   std::move(callback).Run(true,

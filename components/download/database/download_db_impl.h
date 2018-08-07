@@ -33,10 +33,10 @@ class DownloadDBImpl : public DownloadDB {
   ~DownloadDBImpl() override;
 
   // DownloadDB implementation.
-  void Initialize(InitializeCallback callback) override;
+  void Initialize(DownloadDBCallback callback) override;
   void AddOrReplace(const DownloadDBEntry& entry) override;
-  void AddOrReplaceEntries(
-      const std::vector<DownloadDBEntry>& entries) override;
+  void AddOrReplaceEntries(const std::vector<DownloadDBEntry>& entries,
+                           DownloadDBCallback callback) override;
   void LoadEntries(LoadEntriesCallback callback) override;
   void Remove(const std::string& guid) override;
 
@@ -45,19 +45,16 @@ class DownloadDBImpl : public DownloadDB {
 
   bool IsInitialized();
 
-  void DestroyAndReinitialize(InitializeCallback callback);
+  void DestroyAndReinitialize(DownloadDBCallback callback);
 
   // Returns the key of the db entry.
   std::string GetEntryKey(const std::string& guid) const;
 
   // Called when database is initialized.
-  void OnDatabaseInitialized(InitializeCallback callback, bool success);
+  void OnDatabaseInitialized(DownloadDBCallback callback, bool success);
 
   // Called when database is destroyed.
-  void OnDatabaseDestroyed(InitializeCallback callback, bool success);
-
-  // Called when entry is updated.
-  void OnUpdateDone(bool success);
+  void OnDatabaseDestroyed(DownloadDBCallback callback, bool success);
 
   // Called when entry is removed.
   void OnRemoveDone(bool success);

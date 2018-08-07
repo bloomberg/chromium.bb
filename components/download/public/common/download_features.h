@@ -14,6 +14,11 @@ namespace features {
 // Whether a download can be handled by parallel jobs.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
 
+// Whether metadata for new in-progress downloads will be be stored in download
+// DB, rather than history DB.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kDownloadDBForNewDownloads;
+
 }  // namespace features
 }  // namespace download
 

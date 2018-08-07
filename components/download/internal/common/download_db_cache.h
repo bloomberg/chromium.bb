@@ -31,17 +31,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
   ~DownloadDBCache() override;
 
   using InitializeCallback =
-      base::OnceCallback<void(std::unique_ptr<std::vector<DownloadDBEntry>>)>;
-  void Initialize(InitializeCallback callback);
+      base::OnceCallback<void(bool /* success */,
+                              std::unique_ptr<std::vector<DownloadDBEntry>>)>;
+  void Initialize(const std::vector<DownloadEntry>& entries,
+                  InitializeCallback callback);
 
   base::Optional<DownloadDBEntry> RetrieveEntry(const std::string& guid);
   void AddOrReplaceEntry(const DownloadDBEntry& entry);
 
   // Remove an entry from the DownloadDB.
   void RemoveEntry(const std::string& guid);
-
-  // Migrate DownloadEntry from in-progress cache.
-  void MigrateFromInProgressCache(const std::vector<DownloadEntry>& entries);
 
  private:
   friend class DownloadDBCacheTest;
@@ -55,13 +54,21 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
   void OnDownloadRemoved(DownloadItem* download) override;
 
   // Called when the |download_db_| is initialized.
-  void OnDownloadDBInitialized(InitializeCallback callback, bool success);
+  void OnDownloadDBInitialized(const std::vector<DownloadEntry>& entries,
+                               InitializeCallback callback,
+                               bool success);
 
   // Called when all the download db entries are loaded.
   void OnDownloadDBEntriesLoaded(
       InitializeCallback callback,
       bool success,
       std::unique_ptr<std::vector<DownloadDBEntry>> entries);
+
+  // Migrate DownloadEntry from in-progress cache.
+  void MigrateFromInProgressCache(const std::vector<DownloadEntry>& entries);
+
+  // Called when InProgressCache is migrated.
+  void OnInProgressCacheMigrated(bool success);
 
   void SetTimerTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner);

@@ -23,8 +23,8 @@
 #include "build/build_config.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/database/in_progress/in_progress_cache_impl.h"
-#include "components/download/database/switches.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item_factory.h"
@@ -626,8 +626,8 @@ void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
 void DownloadManagerImpl::OnHistoryQueryComplete(
     base::OnceClosure load_history_downloads_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          download::switches::kEnableDownloadDB) &&
+  if (base::FeatureList::IsEnabled(
+          download::features::kDownloadDBForNewDownloads) &&
       !in_progress_cache_initialized_) {
     load_history_downloads_cb_ = std::move(load_history_downloads_cb);
   } else {

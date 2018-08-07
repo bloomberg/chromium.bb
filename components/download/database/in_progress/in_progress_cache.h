@@ -38,6 +38,9 @@ class InProgressCache {
 
   // Returns all entries.
   virtual std::vector<DownloadEntry> GetAllEntries() = 0;
+
+  // Destroys the file associated with the object.
+  virtual void Destroy() = 0;
 };
 
 }  // namespace download

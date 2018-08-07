@@ -151,6 +151,36 @@ enum DownloadDiscardReason {
   DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN
 };
 
+// Enum for in-progress download DB, used in histogram
+// "Download.InProgressDB.Counts".
+enum InProgressDBCountTypes {
+  // Count of initialization attempts.
+  kInitializationCount = 0,
+
+  // Count of initialization attempts that succeeded.
+  kInitializationSucceededCount = 1,
+
+  // Count of initialization attempts that failed.
+  kInitializationFailedCount = 2,
+
+  // Count of load attempts that succeeded.
+  kLoadSucceededCount = 3,
+
+  // Count of load attempts that failed.
+  kLoadFailedCount = 4,
+
+  // Count of in-progress cache migration attempts.
+  kCacheMigrationCount = 5,
+
+  // Count of in-progress cache migration attempts that succeeded.
+  kCacheMigrationSucceededCount = 6,
+
+  // Count of in-progress cache migration attempts that failed.
+  kCacheMigrationFailedCount = 7,
+
+  kMaxValue = kCacheMigrationFailedCount
+};
+
 // When parallel download is enabled, the download may fall back to a normal
 // download for various reasons. This enum counts the number of parallel
 // download and fallbacks. Also records the reasons why the download falls back
@@ -389,6 +419,9 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadSourcePageTransitionType(
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadHttpResponseCode(
     int response_code);
+
+COMPONENTS_DOWNLOAD_EXPORT void RecordInProgressDBCount(
+    InProgressDBCountTypes type);
 
 }  // namespace download
 

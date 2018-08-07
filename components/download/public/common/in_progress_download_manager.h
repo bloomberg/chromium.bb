@@ -165,8 +165,12 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void OnUrlDownloadHandlerCreated(
       UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;
 
+  // Called when |download_metadata_cache_| is initialized.
+  void OnMetadataCacheInitialized(const base::FilePath& metadata_cache_dir);
+
   // Called when the object is initialized.
-  void OnInitialized(std::unique_ptr<std::vector<DownloadDBEntry>> entries);
+  void OnInitialized(bool success,
+                     std::unique_ptr<std::vector<DownloadDBEntry>> entries);
 
   // Start a DownloadItemImpl.
   void StartDownloadWithItem(

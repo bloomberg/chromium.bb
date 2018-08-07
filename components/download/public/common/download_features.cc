@@ -18,5 +18,8 @@ const base::Feature kParallelDownloading {
 #endif
 };
 
+const base::Feature kDownloadDBForNewDownloads{
+    "DownloadDBForNewDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace download

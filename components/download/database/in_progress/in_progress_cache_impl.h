@@ -34,6 +34,7 @@ class InProgressCacheImpl : public InProgressCache {
   base::Optional<DownloadEntry> RetrieveEntry(const std::string& guid) override;
   void RemoveEntry(const std::string& guid) override;
   std::vector<DownloadEntry> GetAllEntries() override;
+  void Destroy() override;
 
  private:
   // States to keep track of initialization status.
