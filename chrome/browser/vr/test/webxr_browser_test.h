@@ -16,46 +16,46 @@ class WebXrBrowserTestBase : public XrBrowserTestBase {
   // Checks whether an XRDevice was actually found.
   virtual bool XrDeviceFound(content::WebContents* web_contents);
 
-  // Convenience function for calling XrDeviceFound with the return value of
-  // GetFirstTabWebContents.
-  bool XrDeviceFound();
-
   // Enters a WebXR or WebVR session of some kind.
   virtual void EnterSessionWithUserGesture(
       content::WebContents* web_contents) = 0;
 
-  // Convenience function for calling EnterSessionWithUserGesture with the
-  // return value of GetFirstTabWebContents.
-  void EnterSessionWithUserGesture();
-
   // Enters a WebXR or WebVR session of some kind and waits until the page
   // page reports it is finished with its JavaScript step.
   void EnterSessionWithUserGestureAndWait(content::WebContents* web_contents);
-
-  // Convenience function for calling EnterSessionWithUserGestureAndWait with
-  // the return value of GetFirstTabWebContents.
-  void EnterSessionWithUserGestureAndWait();
 
   // Attempts to enter a WebXR or WebVR session of some kind, failing if it is
   // unable to.
   virtual void EnterSessionWithUserGestureOrFail(
       content::WebContents* web_contents) = 0;
 
-  // Convenience function for calling EnterSessionWithUserGestureOrFail with the
-  // return value of GetFirstTabWebContents.
-  void EnterSessionWithUserGestureOrFail();
-
   // Ends whatever type of session a subclass enters with
   // EnterSessionWithUserGesture.
   virtual void EndSession(content::WebContents* web_contents) = 0;
 
-  // Convenience function for calling EndSession with the return value of
-  // GetFirstTabWebContents.
-  void EndSession();
-
   // Attempts to end whatever type of session a subclass enters with
   // EnterSessionWithUserGesture, failing if it is unable to.
   virtual void EndSessionOrFail(content::WebContents* web_contents) = 0;
+
+  // Convenience function for calling XrDeviceFound with the return value of
+  // GetFirstTabWebContents.
+  bool XrDeviceFound();
+
+  // Convenience function for calling EnterSessionWithUserGesture with the
+  // return value of GetFirstTabWebContents.
+  void EnterSessionWithUserGesture();
+
+  // Convenience function for calling EnterSessionWithUserGestureAndWait with
+  // the return value of GetFirstTabWebContents.
+  void EnterSessionWithUserGestureAndWait();
+
+  // Convenience function for calling EnterSessionWithUserGestureOrFail with the
+  // return value of GetFirstTabWebContents.
+  void EnterSessionWithUserGestureOrFail();
+
+  // Convenience function for calling EndSession with the return value of
+  // GetFirstTabWebContents.
+  void EndSession();
 
   // Convenience function for calling EndSessionOrFail with the return value of
   // GetFirstTabWebContents.

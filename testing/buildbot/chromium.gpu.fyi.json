@@ -11064,7 +11064,7 @@
           "--enable-pixel-output-in-tests",
           "--gtest_also_run_disabled_tests"
         ],
-        "name": "vr_browser_tests",
+        "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11433,7 +11433,7 @@
           "--enable-pixel-output-in-tests",
           "--gtest_also_run_disabled_tests"
         ],
-        "name": "vr_browser_tests",
+        "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12029,7 +12029,7 @@
           "--enable-pixel-output-in-tests",
           "--gtest_also_run_disabled_tests"
         ],
-        "name": "vr_browser_tests",
+        "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12701,6 +12701,28 @@
       },
       {
         "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--gtest_filter=WebVrBrowserTest*:WebXrVrBrowserTest*",
+          "--enable-pixel-output-in-tests",
+          "--gtest_also_run_disabled_tests"
+        ],
+        "name": "xr_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6025",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
@@ -13351,7 +13373,7 @@
           "--enable-pixel-output-in-tests",
           "--gtest_also_run_disabled_tests"
         ],
-        "name": "vr_browser_tests",
+        "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14082,7 +14104,7 @@
           "--enable-pixel-output-in-tests",
           "--gtest_also_run_disabled_tests"
         ],
-        "name": "vr_browser_tests",
+        "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16050,6 +16072,28 @@
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--gtest_filter=WebVrBrowserTest*:WebXrVrBrowserTest*",
+          "--enable-pixel-output-in-tests",
+          "--gtest_also_run_disabled_tests"
+        ],
+        "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

@@ -81,7 +81,8 @@ void MyOpenVRMock::OnFrameSubmitted(device::SubmittedFrameData frame_data) {
     wait_loop_ = nullptr;
   }
 
-  EXPECT_TRUE(has_last_immersive_frame_data_);
+  EXPECT_TRUE(has_last_immersive_frame_data_)
+      << "Frame submitted without any frame data provided";
 
   // We expect a waitGetPoses, then 2 submits (one for each eye), so after 2
   // submitted frames don't use the same frame_data again.
@@ -148,7 +149,7 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
   t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
   t->EnterSessionWithUserGestureOrFail();
 
-  // Wait for javascript to submit at least one frame.
+  // Wait for JavaScript to submit at least one frame.
   EXPECT_TRUE(
       t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutShort))
       << "No frame submitted";
@@ -180,28 +181,32 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
     // Validate that each frame is only seen once for each eye.
     DLOG(ERROR) << "Frame id: " << frame_id;
     if (data.left_eye) {
-      EXPECT_TRUE(seen_left.find(frame_id) == seen_left.end());
+      EXPECT_TRUE(seen_left.find(frame_id) == seen_left.end())
+          << "Frame for left eye submitted more than once";
       seen_left.insert(frame_id);
     } else {
-      EXPECT_TRUE(seen_right.find(frame_id) == seen_right.end());
+      EXPECT_TRUE(seen_right.find(frame_id) == seen_right.end())
+          << "Frame for right eye submitted more than once";
       seen_right.insert(frame_id);
     }
 
     // Validate that frames arrive in order.
-    EXPECT_TRUE(frame_id >= max_frame_id);
+    EXPECT_TRUE(frame_id >= max_frame_id) << "Frame received out of order";
     max_frame_id = std::max(frame_id, max_frame_id);
 
-    // Validate that the javascript-side cache of frames contains our submitted
+    // Validate that the JavaScript-side cache of frames contains our submitted
     // frame.
     EXPECT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
-        base::StringPrintf("checkFrameOccurred(%d)", frame_id)));
+        base::StringPrintf("checkFrameOccurred(%d)", frame_id)))
+        << "JavaScript-side frame cache does not contain submitted frame";
 
-    // Validate that the javascript-side cache of frames has the correct pose.
+    // Validate that the JavaScript-side cache of frames has the correct pose.
     EXPECT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(base::StringPrintf(
-        "checkFramePose(%d, %s)", frame_id, GetPoseAsString(frame).c_str())));
+        "checkFramePose(%d, %s)", frame_id, GetPoseAsString(frame).c_str())))
+        << "JavaScript-side frame cache has incorrect pose";
   }
 
-  // Tell javascript that it is done with the test.
+  // Tell JavaScript that it is done with the test.
   t->ExecuteStepAndWait("finishTest()");
   t->EndTest();
 }

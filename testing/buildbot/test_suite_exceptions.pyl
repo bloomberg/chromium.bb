@@ -1417,18 +1417,7 @@
       'Win10 Tests x64',
     ],
   },
-  'vr_browser_tests': {
-    'remove_from': [
-      # chromium.gpu.fyi
-      # TODO(kbr): remove the following two exceptions after switching
-      # to the new generate_buildbot_json script.
-      'Win10 FYI Exp Release (Intel HD 630)',
-      'Win7 FYI Release (AMD)',
-      # This exception probably needs to stay due to lack of capacity
-      # on the Win AMD bots.
-      'Win7 FYI Debug (AMD)',
-    ],
-  },
+
   'vr_pixeltests': {
     'remove_from': [
       # chromium.fyi
@@ -1818,5 +1807,13 @@
         'experiment_percentage': 100,
       },
     },
+  },
+  'xr_browser_tests': {
+    'remove_from': [
+      # chromium.gpu.fyi
+      # This exception probably needs to stay due to lack of capacity
+      # on the Win AMD bots.
+      'Win7 FYI Debug (AMD)',
+    ],
   },
 }

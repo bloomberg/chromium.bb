@@ -7,7 +7,7 @@
 
 // Browser test equivalent of
 // chrome/android/javatests/src/.../browser/vr/WebXrVrInputTest.java.
-// End-to-end tests for user input interaction with WebVR.
+// End-to-end tests for user input interaction with WebXR/WebVR.
 
 namespace vr {
 

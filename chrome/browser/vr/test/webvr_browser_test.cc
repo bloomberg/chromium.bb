@@ -19,25 +19,25 @@ void WebVrBrowserTestBase::EnterSessionWithUserGesture(
   // ExecuteScript runs with a user gesture, so we can just directly call
   // requestPresent instead of having to do the hacky workaround the
   // instrumentation tests use of actually sending a click event to the canvas.
-  EXPECT_TRUE(content::ExecuteScript(web_contents, "onVrRequestPresent()"));
+  RunJavaScriptOrFail("onVrRequestPresent()", web_contents);
 }
 
 void WebVrBrowserTestBase::EnterSessionWithUserGestureOrFail(
     content::WebContents* web_contents) {
   EnterSessionWithUserGesture(web_contents);
-  EXPECT_TRUE(PollJavaScriptBoolean("vrDisplay.isPresenting", kPollTimeoutLong,
-                                    web_contents));
+  PollJavaScriptBooleanOrFail("vrDisplay.isPresenting", kPollTimeoutLong,
+                              web_contents);
 }
 
 void WebVrBrowserTestBase::EndSession(content::WebContents* web_contents) {
-  EXPECT_TRUE(content::ExecuteScript(web_contents, "vrDisplay.exitPresent()"));
+  RunJavaScriptOrFail("vrDisplay.exitPresent()", web_contents);
 }
 
 void WebVrBrowserTestBase::EndSessionOrFail(
     content::WebContents* web_contents) {
   EndSession(web_contents);
-  EXPECT_TRUE(PollJavaScriptBoolean("vrDisplay.isPresenting == false",
-                                    kPollTimeoutLong, web_contents));
+  PollJavaScriptBooleanOrFail("vrDisplay.isPresenting == false",
+                              kPollTimeoutLong, web_contents);
 }
 
 }  // namespace vr

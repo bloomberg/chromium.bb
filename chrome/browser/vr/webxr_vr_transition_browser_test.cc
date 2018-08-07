@@ -8,17 +8,18 @@
 
 // Browser test equivalent of
 // chrome/android/javatests/src/.../browser/vr/WebXrVrTransitionTest.java.
-// End-to-end tests for transitioning between WebVR's magic window and
-// presentation modes.
+// End-to-end tests for transitioning between immersive and non-immersive
+// sessions.
 
 namespace vr {
 
 // Tests that a successful requestPresent or requestSession call enters
-// presentation.
+// an immersive session.
 void TestPresentationEntryImpl(WebXrVrBrowserTestBase* t,
                                std::string filename) {
   t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
   t->EnterSessionWithUserGestureOrFail();
+  t->AssertNoJavaScriptErrors();
 }
 
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
@@ -80,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWebXrDisabled,
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestOpenVrDisabled,
                        TestWebVrNoDevicesWithoutOpenVr) {
   LoadUrlAndAwaitInitialization(GetHtmlTestFile("generic_webvr_page"));
-  EXPECT_FALSE(XrDeviceFound());
+  EXPECT_FALSE(XrDeviceFound())
+      << "Found a VRDisplay even with OpenVR disabled";
   AssertNoJavaScriptErrors();
 }
 
@@ -95,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
 }
 
 // Tests that window.requestAnimationFrame continues to fire when we have a
-// non-immersive WebXR session
+// non-immersive WebXR session.
 IN_PROC_BROWSER_TEST_F(
     WebXrVrBrowserTestStandard,
     REQUIRES_GPU(TestWindowRafFiresDuringNonImmersiveSession)) {

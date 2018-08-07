@@ -1240,7 +1240,7 @@
   },
 
   'gpu_default_and_optional_win_specific_gtests': {
-    'vr_browser_tests': {
+    'xr_browser_tests': {
       'args': [
       '--enable-gpu',
         '--test-launcher-bot-mode',
