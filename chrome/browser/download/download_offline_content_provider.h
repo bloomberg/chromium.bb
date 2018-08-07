@@ -45,7 +45,9 @@ class DownloadOfflineContentProvider
       OfflineContentProvider::MultipleItemCallback callback) override;
   void GetVisualsForItem(
       const ContentId& id,
-      const OfflineContentProvider::VisualsCallback& callback) override;
+      OfflineContentProvider::VisualsCallback callback) override;
+  void GetShareInfoForItem(const ContentId& id,
+                           ShareCallback callback) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
@@ -55,7 +57,7 @@ class DownloadOfflineContentProvider
   void OnDownloadRemoved(DownloadManager* manager, DownloadItem* item) override;
 
   void OnThumbnailRetrieved(const ContentId& id,
-                            const VisualsCallback& callback,
+                            VisualsCallback callback,
                             const SkBitmap& bitmap);
 
   DownloadManager* manager_;

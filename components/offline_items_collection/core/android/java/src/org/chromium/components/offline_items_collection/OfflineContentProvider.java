@@ -52,6 +52,9 @@ public interface OfflineContentProvider {
     /** See OfflineContentProvider::GetVisualsForItem(...). */
     void getVisualsForItem(ContentId id, VisualsCallback callback);
 
+    /** See OfflineContentProvider::GetShareInfoForItem(...). */
+    void getShareInfoForItem(ContentId id, ShareCallback callback);
+
     /** See OfflineContentProvider::AddObserver(...). */
     void addObserver(Observer observer);
 

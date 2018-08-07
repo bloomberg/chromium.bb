@@ -87,6 +87,12 @@ public class OfflineContentAggregatorBridge implements OfflineContentProvider {
     }
 
     @Override
+    public void getShareInfoForItem(ContentId id, ShareCallback callback) {
+        nativeGetShareInfoForItem(
+                mNativeOfflineContentAggregatorBridge, id.namespace, id.id, callback);
+    }
+
+    @Override
     public void addObserver(final OfflineContentProvider.Observer observer) {
         mObservers.addObserver(observer);
     }
@@ -128,6 +134,12 @@ public class OfflineContentAggregatorBridge implements OfflineContentProvider {
         callback.onVisualsAvailable(new ContentId(nameSpace, id), visuals);
     }
 
+    @CalledByNative
+    private static void onShareInfoAvailable(
+            ShareCallback callback, String nameSpace, String id, OfflineItemShareInfo shareInfo) {
+        callback.onShareInfoAvailable(new ContentId(nameSpace, id), shareInfo);
+    }
+
     /**
      * Called when the C++ OfflineContentAggregatorBridge is destroyed.  This tears down the Java
      * component of the JNI bridge so that this class, which may live due to other references, no
@@ -167,4 +179,6 @@ public class OfflineContentAggregatorBridge implements OfflineContentProvider {
             long nativeOfflineContentAggregatorBridge, Callback<ArrayList<OfflineItem>> callback);
     private native void nativeGetVisualsForItem(long nativeOfflineContentAggregatorBridge,
             String nameSpace, String id, VisualsCallback callback);
+    private native void nativeGetShareInfoForItem(long nativeOfflineContentAggregatorBridge,
+            String nameSpace, String id, ShareCallback callback);
 }

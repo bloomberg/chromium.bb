@@ -41,8 +41,8 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   MOCK_METHOD1(CancelDownload, void(const ContentId&));
   MOCK_METHOD1(PauseDownload, void(const ContentId&));
   MOCK_METHOD2(ResumeDownload, void(const ContentId&, bool));
-  MOCK_METHOD2(GetVisualsForItem,
-               void(const ContentId&, const VisualsCallback&));
+  MOCK_METHOD2(GetVisualsForItem, void(const ContentId&, VisualsCallback));
+  MOCK_METHOD2(GetShareInfoForItem, void(const ContentId&, ShareCallback));
   void GetAllItems(MultipleItemCallback callback) override;
   void GetItemById(const ContentId& id, SingleItemCallback callback) override;
   void AddObserver(Observer* observer) override;

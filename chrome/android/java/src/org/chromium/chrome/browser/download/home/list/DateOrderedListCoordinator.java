@@ -71,8 +71,8 @@ public class DateOrderedListCoordinator {
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
         mView = new DateOrderedListView(context, decoratedModel);
-        mMediator = new DateOrderedListMediator(
-                offTheRecord, provider, deleteController, selectionDelegate, model);
+        mMediator = new DateOrderedListMediator(offTheRecord, provider, context::startActivity,
+                deleteController, selectionDelegate, model);
 
         mEmptyCoordinator =
                 new EmptyCoordinator(context, prefetchProvider, mMediator.getEmptySource());

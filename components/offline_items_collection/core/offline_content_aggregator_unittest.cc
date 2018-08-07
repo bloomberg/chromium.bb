@@ -187,6 +187,8 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   EXPECT_CALL(provider2, PauseDownload(id2)).Times(1);
   EXPECT_CALL(provider1, GetVisualsForItem(id1, _)).Times(1);
   EXPECT_CALL(provider2, GetVisualsForItem(id2, _)).Times(1);
+  EXPECT_CALL(provider1, GetShareInfoForItem(id1, _)).Times(1);
+  EXPECT_CALL(provider2, GetShareInfoForItem(id2, _)).Times(1);
   aggregator_.OpenItem(id1);
   aggregator_.OpenItem(id2);
   aggregator_.RemoveItem(id1);
@@ -199,6 +201,8 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   aggregator_.PauseDownload(id2);
   aggregator_.GetVisualsForItem(id1, OfflineContentProvider::VisualsCallback());
   aggregator_.GetVisualsForItem(id2, OfflineContentProvider::VisualsCallback());
+  aggregator_.GetShareInfoForItem(id1, OfflineContentProvider::ShareCallback());
+  aggregator_.GetShareInfoForItem(id2, OfflineContentProvider::ShareCallback());
 }
 
 TEST_F(OfflineContentAggregatorTest, ActionPropagatesImmediately) {

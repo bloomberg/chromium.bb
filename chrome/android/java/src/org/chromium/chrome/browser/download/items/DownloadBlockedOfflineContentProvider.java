@@ -10,6 +10,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.util.ArrayList;
@@ -124,4 +125,7 @@ class DownloadBlockedOfflineContentProvider
         }
         return filteredList;
     }
+
+    @Override
+    public void getShareInfoForItem(ContentId id, ShareCallback callback) {}
 }

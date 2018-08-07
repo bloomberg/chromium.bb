@@ -11,6 +11,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.util.ArrayList;
@@ -131,6 +132,15 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
     public void removeVisualsForItem(ThumbnailProvider provider, ContentId id) {
         if (!LegacyHelpers.isLegacyDownload(id)) return;
         provider.removeThumbnailsFromDisk(id.id);
+    }
+
+    /** @see OfflineContentProvider#getShareInfoForItem(ContentId, ShareCallback) */
+    public void getShareInfoForItem(OfflineItem item, ShareCallback callback) {
+        if (LegacyHelpers.isLegacyDownload(item.id)) {
+            mDownloadProvider.getShareInfoForItem(item, callback);
+        } else {
+            mProvider.getShareInfoForItem(item.id, callback);
+        }
     }
 
     /** @see OfflineContentProvider#addObserver(OfflineContentProvider.Observer) */

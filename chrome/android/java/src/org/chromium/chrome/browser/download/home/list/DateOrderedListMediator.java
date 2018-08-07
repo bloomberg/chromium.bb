@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
+import android.content.Intent;
 import android.os.Handler;
+import android.support.v4.util.Pair;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
@@ -25,6 +27,7 @@ import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.io.Closeable;
@@ -37,9 +40,20 @@ import java.util.List;
  * home.  This includes support for filtering, deleting, etc..
  */
 class DateOrderedListMediator {
+    /** Helper interface for handling share requests by the UI. */
+    @FunctionalInterface
+    public interface ShareController {
+        /**
+         * Will be called whenever {@link OfflineItem}s are being requested to be shared by the UI.
+         * @param intent The {@link Intent} representing the share action to broadcast to Android.
+         */
+        void share(Intent intent);
+    }
+
     private final Handler mHandler = new Handler();
 
     private final OfflineContentProviderGlue mProvider;
+    private final ShareController mShareController;
     private final ListItemModel mModel;
     private final DeleteController mDeleteController;
 
@@ -86,11 +100,12 @@ class DateOrderedListMediator {
      * @param offTheRecord     Whether or not to include off the record items.
      * @param provider         The {@link OfflineContentProvider} to visually represent.
      * @param deleteController A class to manage whether or not items can be deleted.
+     * @param shareController  A class responsible for sharing downloaded item {@link Intent}s.
      * @param model            The {@link ListItemModel} to push {@code provider} into.
      */
     public DateOrderedListMediator(boolean offTheRecord, OfflineContentProvider provider,
-            DeleteController deleteController, SelectionDelegate<ListItem> selectionDelegate,
-            ListItemModel model) {
+            ShareController shareController, DeleteController deleteController,
+            SelectionDelegate<ListItem> selectionDelegate, ListItemModel model) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -102,6 +117,7 @@ class DateOrderedListMediator {
         //                             [ListItemModel]
 
         mProvider = new OfflineContentProviderGlue(provider, offTheRecord);
+        mShareController = shareController;
         mModel = model;
         mDeleteController = deleteController;
 
@@ -122,7 +138,7 @@ class DateOrderedListMediator {
         mModel.getProperties().setValue(
                 ListProperties.CALLBACK_RESUME, item -> mProvider.resumeDownload(item, true));
         mModel.getProperties().setValue(ListProperties.CALLBACK_CANCEL, mProvider::cancelDownload);
-        mModel.getProperties().setValue(ListProperties.CALLBACK_SHARE, item -> {});
+        mModel.getProperties().setValue(ListProperties.CALLBACK_SHARE, this ::onShareItem);
         mModel.getProperties().setValue(ListProperties.CALLBACK_REMOVE, this ::onDeleteItem);
         mModel.getProperties().setValue(ListProperties.PROVIDER_VISUALS, this ::getVisuals);
         mModel.getProperties().setValue(
@@ -201,6 +217,26 @@ class DateOrderedListMediator {
                 mDeleteUndoFilter.removePendingDeletions(itemsToDelete);
             }
         });
+    }
+
+    private void onShareItem(OfflineItem item) {
+        onShareItems(CollectionUtil.newHashSet(item));
+    }
+
+    private void onShareItems(Collection<OfflineItem> items) {
+        final Collection<Pair<OfflineItem, OfflineItemShareInfo>> shareInfo = new ArrayList<>();
+
+        for (OfflineItem item : items) {
+            mProvider.getShareInfoForItem(item, (id, info) -> {
+                shareInfo.add(Pair.create(item, info));
+
+                // When we've gotten callbacks for all items, create and share the intent.
+                if (shareInfo.size() == items.size()) {
+                    Intent intent = ShareUtils.createIntent(shareInfo);
+                    if (intent != null) mShareController.share(intent);
+                }
+            });
+        }
     }
 
     private Runnable getVisuals(

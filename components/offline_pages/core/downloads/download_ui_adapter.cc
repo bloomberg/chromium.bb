@@ -231,26 +231,35 @@ void DownloadUIAdapter::GetAllItems(
       std::move(callback), std::move(offline_items)));
 }
 
-void DownloadUIAdapter::GetVisualsForItem(
-    const ContentId& id,
-    const VisualsCallback& visuals_callback) {
-  model_->GetPageByGuid(
-      id.id,
-      base::BindOnce(&DownloadUIAdapter::OnPageGetForVisuals,
-                     weak_ptr_factory_.GetWeakPtr(), id, visuals_callback));
+void DownloadUIAdapter::GetVisualsForItem(const ContentId& id,
+                                          VisualsCallback visuals_callback) {
+  model_->GetPageByGuid(id.id,
+                        base::BindOnce(&DownloadUIAdapter::OnPageGetForVisuals,
+                                       weak_ptr_factory_.GetWeakPtr(), id,
+                                       std::move(visuals_callback)));
 }
 
-void DownloadUIAdapter::OnPageGetForVisuals(
-    const ContentId& id,
-    const VisualsCallback& visuals_callback,
-    const OfflinePageItem* page) {
+void DownloadUIAdapter::GetShareInfoForItem(const ContentId& id,
+                                            ShareCallback callback) {
+  // TODO(853850): Publish and expose the content URI here instead of in
+  // DownloadUtils.java.
+  // TODO(xingliu): Provide OfflineItemShareInfo to |callback|.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), id,
+                                nullptr /* OfflineItemShareInfo */));
+}
+
+void DownloadUIAdapter::OnPageGetForVisuals(const ContentId& id,
+                                            VisualsCallback visuals_callback,
+                                            const OfflinePageItem* page) {
   if (!page) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(visuals_callback, id, nullptr));
+        FROM_HERE, base::BindOnce(std::move(visuals_callback), id, nullptr));
     return;
   }
 
-  VisualResultCallback callback = base::BindOnce(visuals_callback, id);
+  VisualResultCallback callback =
+      base::BindOnce(std::move(visuals_callback), id);
   if (page->client_id.name_space == kSuggestedArticlesNamespace) {
     // Report PrefetchedItemHasThumbnail along with result callback.
     auto report_and_callback =

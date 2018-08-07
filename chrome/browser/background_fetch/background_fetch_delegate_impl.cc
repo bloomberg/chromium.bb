@@ -516,7 +516,7 @@ void BackgroundFetchDelegateImpl::GetAllItems(MultipleItemCallback callback) {
 
 void BackgroundFetchDelegateImpl::GetVisualsForItem(
     const offline_items_collection::ContentId& id,
-    const VisualsCallback& callback) {
+    VisualsCallback callback) {
   // GetVisualsForItem mustn't be called directly since offline_items_collection
   // is not re-entrant and it must be called even if there are no visuals.
   auto visuals =
@@ -529,7 +529,16 @@ void BackgroundFetchDelegateImpl::GetVisualsForItem(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, id, std::move(visuals)));
+      FROM_HERE, base::BindOnce(std::move(callback), id, std::move(visuals)));
+}
+
+void BackgroundFetchDelegateImpl::GetShareInfoForItem(
+    const offline_items_collection::ContentId& id,
+    ShareCallback callback) {
+  // TODO(xingliu): Provide OfflineItemShareInfo to |callback|.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), id,
+                                nullptr /* OfflineItemShareInfo */));
 }
 
 void BackgroundFetchDelegateImpl::AddObserver(Observer* observer) {
