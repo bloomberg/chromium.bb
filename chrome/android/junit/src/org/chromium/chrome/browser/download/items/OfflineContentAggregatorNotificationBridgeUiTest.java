@@ -272,6 +272,7 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
             {
                 add(buildOfflineItem(new ContentId("1", "A"), OfflineItemState.IN_PROGRESS));
                 add(buildOfflineItem(new ContentId("2", "B"), OfflineItemState.PENDING));
+                add(buildOfflineItem(new ContentId("3", "C"), OfflineItemState.COMPLETE));
                 add(buildOfflineItem(new ContentId("5", "E"), OfflineItemState.INTERRUPTED));
                 add(buildOfflineItem(new ContentId("7", "G"), OfflineItemState.PAUSED));
             }
@@ -279,7 +280,6 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
 
         ArrayList<OfflineItem> uninterestingItems = new ArrayList<OfflineItem>() {
             {
-                add(buildOfflineItem(new ContentId("3", "C"), OfflineItemState.COMPLETE));
                 add(buildOfflineItem(new ContentId("6", "F"), OfflineItemState.FAILED));
             }
         };
