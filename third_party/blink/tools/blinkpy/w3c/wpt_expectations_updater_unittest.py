@@ -257,10 +257,19 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             updater.get_expectations(SimpleTestResult('FAIL', 'PASS', 'bug')),
             {'Pass'})
         self.assertEqual(
+            updater.get_expectations(SimpleTestResult('FAIL', 'PASS PASS', 'bug')),
+            {'Pass'})
+        self.assertEqual(
             updater.get_expectations(SimpleTestResult('FAIL', 'TIMEOUT', 'bug')),
             {'Timeout'})
         self.assertEqual(
+            updater.get_expectations(SimpleTestResult('FAIL', 'TIMEOUT TIMEOUT', 'bug')),
+            {'Timeout'})
+        self.assertEqual(
             updater.get_expectations(SimpleTestResult('TIMEOUT', 'PASS', 'bug')),
+            {'Pass'})
+        self.assertEqual(
+            updater.get_expectations(SimpleTestResult('TIMEOUT', 'PASS PASS', 'bug')),
             {'Pass'})
         self.assertEqual(
             updater.get_expectations(SimpleTestResult('PASS', 'TEXT PASS', 'bug')),
@@ -276,6 +285,9 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             {'Failure'})
         self.assertEqual(
             updater.get_expectations(SimpleTestResult('Pass', 'MISSING', 'bug')),
+            {'Skip'})
+        self.assertEqual(
+            updater.get_expectations(SimpleTestResult('Pass', 'MISSING MISSING', 'bug')),
             {'Skip'})
         self.assertEqual(
             updater.get_expectations(SimpleTestResult('Pass', 'TIMEOUT', 'bug'), test_name='foo/bar-manual.html'),
@@ -580,6 +592,26 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         })
         # The original dict isn't modified.
         self.assertEqual(results, results_copy)
+
+    def test_get_tests_to_rebaseline_handles_retries(self):
+        host = self.mock_host()
+        results = {
+            'external/wpt/test/foo.html': {
+                'bot': SimpleTestResult(expected='PASS', actual='TEXT TEXT', bug='bug'),
+            },
+            'external/wpt/test/bar.html': {
+                'bot': SimpleTestResult(expected='PASS', actual='TIMEOUT TIMEOUT', bug='bug'),
+            },
+        }
+        updater = WPTExpectationsUpdater(host)
+        tests_to_rebaseline, modified_test_results = updater.get_tests_to_rebaseline(results)
+        self.assertEqual(tests_to_rebaseline, ['external/wpt/test/foo.html'])
+        self.assertEqual(modified_test_results, {
+            'external/wpt/test/foo.html': {},
+            'external/wpt/test/bar.html': {
+                'bot': SimpleTestResult(expected='PASS', actual='TIMEOUT TIMEOUT', bug='bug'),
+            },
+        })
 
     def test_run_no_issue_number(self):
         updater = WPTExpectationsUpdater(self.mock_host())

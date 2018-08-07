@@ -41,15 +41,19 @@ class WPTExpectationsUpdater(object):
         self.finder = PathFinder(self.host.filesystem)
         self.ports_with_no_results = set()
         self.ports_with_all_pass = set()
+        self.patchset = None
 
     def run(self, args=None):
         parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument('--patchset', default=None,
+                            help='Patchset number to fetch new baselines from.')
         parser.add_argument('-v', '--verbose', action='store_true', help='More verbose logging.')
         args = parser.parse_args(args)
 
         log_level = logging.DEBUG if args.verbose else logging.INFO
         configure_logging(logging_level=log_level, include_time=True)
 
+        self.patchset = args.patchset
         self.update_expectations()
 
         return 0
@@ -105,7 +109,7 @@ class WPTExpectationsUpdater(object):
 
     def get_latest_try_jobs(self):
         """Returns the latest finished try jobs as Build objects."""
-        return self.git_cl.latest_try_jobs(self._get_try_bots())
+        return self.git_cl.latest_try_jobs(self._get_try_bots(), patchset=self.patchset)
 
     def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.
@@ -255,21 +259,22 @@ class WPTExpectationsUpdater(object):
 
         Returns:
             A set of one or more test expectation strings with the first letter
-            capitalized. Example: set(['Failure', 'Timeout']).
+            capitalized. Example: {'Failure', 'Timeout'}.
         """
+        actual_results = set(result.actual.split())
         # If the result is MISSING, this implies that the test was not
         # rebaselined and has an actual result but no baseline. We can't
         # add a Missing expectation (this is not allowed), but no other
         # expectation is correct.
         # We also want to skip any new manual tests that are not automated;
         # see crbug.com/708241 for context.
-        if (result.actual == 'MISSING' or
-                '-manual.' in test_name and result.actual == 'TIMEOUT'):
+        if ('MISSING' in actual_results or
+                '-manual.' in test_name and 'TIMEOUT' in actual_results):
             return {'Skip'}
         expectations = set()
-        failure_types = ('TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO')
-        other_types = ('TIMEOUT', 'CRASH', 'PASS')
-        for actual in result.actual.split():
+        failure_types = {'TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO'}
+        other_types = {'TIMEOUT', 'CRASH', 'PASS'}
+        for actual in actual_results:
             if actual in failure_types:
                 expectations.add('Failure')
             if actual in other_types:
@@ -496,14 +501,18 @@ class WPTExpectationsUpdater(object):
             _log.info('  %s', test)
 
         blink_tool = self.finder.path_from_blink_tools('blink_tool.py')
-        self.host.executive.run_command([
+        command = [
             'python',
             blink_tool,
             'rebaseline-cl',
             '--verbose',
             '--no-trigger-jobs',
             '--fill-missing',
-        ] + tests_to_rebaseline)
+        ]
+        if self.patchset:
+            command.append('--patchset=' + str(self.patchset))
+        command += tests_to_rebaseline
+        self.host.executive.run_command(command)
         return tests_to_rebaseline, test_results
 
     def get_tests_to_rebaseline(self, test_results):
@@ -540,7 +549,7 @@ class WPTExpectationsUpdater(object):
         """
         if self.is_reference_test(test_name):
             return False
-        if result.actual in ('CRASH', 'TIMEOUT', 'MISSING'):
+        if any(x in result.actual for x in ('CRASH', 'TIMEOUT', 'MISSING')):
             return False
         return True
 
