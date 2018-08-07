@@ -289,7 +289,7 @@ void HTMLFormElement::PrepareForSubmission(
                 "the end of the file. Please add an explicit end tag "
                 "('</" +
                 tag_name + ">')"));
-        DispatchEvent(Event::Create(EventTypeNames::error));
+        DispatchEvent(*Event::Create(EventTypeNames::error));
         return;
       }
     }
@@ -311,7 +311,7 @@ void HTMLFormElement::PrepareForSubmission(
                                                      true);
     frame->Client()->DispatchWillSendSubmitEvent(this);
     should_submit =
-        DispatchEvent(Event::CreateCancelableBubble(EventTypeNames::submit)) ==
+        DispatchEvent(*Event::CreateCancelableBubble(EventTypeNames::submit)) ==
         DispatchEventResult::kNotCanceled;
   }
   if (should_submit) {
@@ -409,7 +409,7 @@ void HTMLFormElement::ConstructFormDataSet(
   // TODO(tkent): We might move the event dispatching later than the
   // ListedElements iteration.
   if (RuntimeEnabledFeatures::FormDataEventEnabled())
-    DispatchEvent(FormDataEvent::Create(form_data));
+    DispatchEvent(*FormDataEvent::Create(form_data));
 
   if (submit_button)
     submit_button->SetActivatedSubmit(true);
@@ -502,7 +502,7 @@ void HTMLFormElement::reset() {
 
   is_in_reset_function_ = true;
 
-  if (DispatchEvent(Event::CreateCancelableBubble(EventTypeNames::reset)) !=
+  if (DispatchEvent(*Event::CreateCancelableBubble(EventTypeNames::reset)) !=
       DispatchEventResult::kNotCanceled) {
     is_in_reset_function_ = false;
     return;

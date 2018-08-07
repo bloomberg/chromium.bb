@@ -379,7 +379,7 @@ MessagePort* AudioWorkletNode::port() const {
 }
 
 void AudioWorkletNode::FireProcessorError() {
-  DispatchEvent(Event::Create(EventTypeNames::processorerror));
+  DispatchEvent(*Event::Create(EventTypeNames::processorerror));
 }
 
 scoped_refptr<AudioWorkletHandler> AudioWorkletNode::GetWorkletHandler() const {

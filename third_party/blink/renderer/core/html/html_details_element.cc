@@ -67,7 +67,7 @@ bool HTMLDetailsElement::IsFirstSummary(const Node& node) {
 }
 
 void HTMLDetailsElement::DispatchPendingEvent() {
-  DispatchEvent(Event::Create(EventTypeNames::toggle));
+  DispatchEvent(*Event::Create(EventTypeNames::toggle));
 }
 
 LayoutObject* HTMLDetailsElement::CreateLayoutObject(

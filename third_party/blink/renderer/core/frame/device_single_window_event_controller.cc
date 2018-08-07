@@ -30,7 +30,7 @@ void DeviceSingleWindowEventController::DispatchDeviceEvent(Event* event) {
       GetDocument().IsContextDestroyed())
     return;
 
-  GetDocument().domWindow()->DispatchEvent(event);
+  GetDocument().domWindow()->DispatchEvent(*event);
 
   if (needs_checking_null_events_) {
     if (IsNullEvent(event))

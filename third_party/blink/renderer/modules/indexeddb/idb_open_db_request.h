@@ -71,7 +71,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   bool ShouldEnqueueEvent() const override;
 
   // EventTarget
-  DispatchEventResult DispatchEventInternal(Event*) override;
+  DispatchEventResult DispatchEventInternal(Event&) override;
 
  private:
   IDBOpenDBRequest(ScriptState*,

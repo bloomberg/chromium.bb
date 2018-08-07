@@ -155,12 +155,12 @@ Element* SVGScriptElement::CloneWithoutAttributesAndChildren(
 }
 
 void SVGScriptElement::DispatchLoadEvent() {
-  DispatchEvent(Event::Create(EventTypeNames::load));
+  DispatchEvent(*Event::Create(EventTypeNames::load));
   have_fired_load_ = true;
 }
 
 void SVGScriptElement::DispatchErrorEvent() {
-  DispatchEvent(Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(EventTypeNames::error));
 }
 
 void SVGScriptElement::SetScriptElementForBinding(

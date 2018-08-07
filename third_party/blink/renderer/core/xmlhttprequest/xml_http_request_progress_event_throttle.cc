@@ -96,7 +96,7 @@ void XMLHttpRequestProgressEventThrottle::DispatchProgressEvent(
   // we don't have to worry about event dispatching while suspended.
   if (type != EventTypeNames::progress) {
     target_->DispatchEvent(
-        ProgressEvent::Create(type, length_computable, loaded, total));
+        *ProgressEvent::Create(type, length_computable, loaded, total));
     return;
   }
 
@@ -133,7 +133,7 @@ void XMLHttpRequestProgressEventThrottle::DispatchReadyStateChangeEvent(
     // readystatechange should have been already dispatched if necessary.
     probe::AsyncTask async_task(target_->GetExecutionContext(), target_,
                                 "progress", target_->IsAsync());
-    target_->DispatchEvent(event);
+    target_->DispatchEvent(*event);
   }
 }
 
@@ -147,7 +147,7 @@ void XMLHttpRequestProgressEventThrottle::DispatchProgressProgressEvent(
                      target_->GetExecutionContext(), target_));
     probe::AsyncTask async_task(target_->GetExecutionContext(), target_,
                                 "progress", target_->IsAsync());
-    target_->DispatchEvent(Event::Create(EventTypeNames::readystatechange));
+    target_->DispatchEvent(*Event::Create(EventTypeNames::readystatechange));
   }
 
   if (target_->readyState() != state)
@@ -156,7 +156,7 @@ void XMLHttpRequestProgressEventThrottle::DispatchProgressProgressEvent(
   has_dispatched_progress_progress_event_ = true;
   probe::AsyncTask async_task(target_->GetExecutionContext(), target_,
                               "progress", target_->IsAsync());
-  target_->DispatchEvent(progress_event);
+  target_->DispatchEvent(*progress_event);
 }
 
 void XMLHttpRequestProgressEventThrottle::Fired() {

@@ -55,7 +55,7 @@ TEST_F(MediaControlTimelineElementTest, PointerDownPausesPlayback) {
   ASSERT_FALSE(Video()->paused());
 
   Timeline()->DispatchEvent(
-      PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
+      *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
   EXPECT_TRUE(Video()->paused());
 }
 
@@ -65,7 +65,7 @@ TEST_F(MediaControlTimelineElementTest, PointerDownRightClickNoOp) {
 
   PointerEventInit init = GetValidPointerEventInit();
   init.setButton(static_cast<int>(WebPointerProperties::Button::kRight));
-  Timeline()->DispatchEvent(PointerEvent::Create("pointerdown", init));
+  Timeline()->DispatchEvent(*PointerEvent::Create("pointerdown", init));
   EXPECT_FALSE(Video()->paused());
 }
 
@@ -75,7 +75,7 @@ TEST_F(MediaControlTimelineElementTest, PointerDownNotPrimaryNoOp) {
 
   PointerEventInit init = GetValidPointerEventInit();
   init.setIsPrimary(false);
-  Timeline()->DispatchEvent(PointerEvent::Create("pointerdown", init));
+  Timeline()->DispatchEvent(*PointerEvent::Create("pointerdown", init));
   EXPECT_FALSE(Video()->paused());
 }
 

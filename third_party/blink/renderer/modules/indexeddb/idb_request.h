@@ -344,7 +344,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   virtual void EnqueueResponse(int64_t);
 
   // EventTarget
-  DispatchEventResult DispatchEventInternal(Event*) override;
+  DispatchEventResult DispatchEventInternal(Event&) override;
 
   // Can be nullptr for requests that are not associated with a transaction,
   // i.e. delete requests and completed or unsuccessful open requests.

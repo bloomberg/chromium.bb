@@ -217,7 +217,7 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
   if (source != kUpdateFromParser && !IsInShadowTree()) {
     if (GetDocument().HasListenerType(
             Document::kDOMCharacterDataModifiedListener)) {
-      DispatchScopedEvent(MutationEvent::Create(
+      DispatchScopedEvent(*MutationEvent::Create(
           EventTypeNames::DOMCharacterDataModified, Event::Bubbles::kYes,
           nullptr, old_data, data_));
     }

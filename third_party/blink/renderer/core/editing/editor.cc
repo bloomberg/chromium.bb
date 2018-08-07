@@ -556,12 +556,12 @@ bool Editor::InsertParagraphSeparator() {
 }
 
 static void CountEditingEvent(ExecutionContext* execution_context,
-                              const Event* event,
+                              const Event& event,
                               WebFeature feature_on_input,
                               WebFeature feature_on_text_area,
                               WebFeature feature_on_content_editable,
                               WebFeature feature_on_non_node) {
-  EventTarget* event_target = event->target();
+  EventTarget* event_target = event.target();
   Node* node = event_target->ToNode();
   if (!node) {
     UseCounter::Count(execution_context, feature_on_non_node);
@@ -593,11 +593,11 @@ static void CountEditingEvent(ExecutionContext* execution_context,
 }
 
 void Editor::CountEvent(ExecutionContext* execution_context,
-                        const Event* event) {
+                        const Event& event) {
   if (!execution_context)
     return;
 
-  if (event->type() == EventTypeNames::textInput) {
+  if (event.type() == EventTypeNames::textInput) {
     CountEditingEvent(execution_context, event,
                       WebFeature::kTextInputEventOnInput,
                       WebFeature::kTextInputEventOnTextArea,
@@ -606,7 +606,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (event->type() == EventTypeNames::webkitBeforeTextInserted) {
+  if (event.type() == EventTypeNames::webkitBeforeTextInserted) {
     CountEditingEvent(execution_context, event,
                       WebFeature::kWebkitBeforeTextInsertedOnInput,
                       WebFeature::kWebkitBeforeTextInsertedOnTextArea,
@@ -615,7 +615,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (event->type() == EventTypeNames::webkitEditableContentChanged) {
+  if (event.type() == EventTypeNames::webkitEditableContentChanged) {
     CountEditingEvent(
         execution_context, event,
         WebFeature::kWebkitEditableContentChangedOnInput,

@@ -440,7 +440,7 @@ void FireEvent(const AtomicString& type, Element* element, Document* document) {
   // set to true, at |target|.
   Event* event = Event::CreateBubble(type);
   event->SetComposed(true);
-  target->DispatchEvent(event);
+  target->DispatchEvent(*event);
 }
 
 const AtomicString& AdjustEventType(const AtomicString& type,

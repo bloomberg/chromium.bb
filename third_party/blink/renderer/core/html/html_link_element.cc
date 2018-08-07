@@ -261,27 +261,28 @@ bool HTMLLinkElement::StyleSheetIsLoading() const {
 }
 
 void HTMLLinkElement::LinkLoaded() {
-  DispatchEvent(Event::Create(EventTypeNames::load));
+  DispatchEvent(*Event::Create(EventTypeNames::load));
 }
 
 void HTMLLinkElement::LinkLoadingErrored() {
-  DispatchEvent(Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(EventTypeNames::error));
 }
 
 void HTMLLinkElement::DidStartLinkPrerender() {
-  DispatchEvent(Event::Create(EventTypeNames::webkitprerenderstart));
+  DispatchEvent(*Event::Create(EventTypeNames::webkitprerenderstart));
 }
 
 void HTMLLinkElement::DidStopLinkPrerender() {
-  DispatchEvent(Event::Create(EventTypeNames::webkitprerenderstop));
+  DispatchEvent(*Event::Create(EventTypeNames::webkitprerenderstop));
 }
 
 void HTMLLinkElement::DidSendLoadForLinkPrerender() {
-  DispatchEvent(Event::Create(EventTypeNames::webkitprerenderload));
+  DispatchEvent(*Event::Create(EventTypeNames::webkitprerenderload));
 }
 
 void HTMLLinkElement::DidSendDOMContentLoadedForLinkPrerender() {
-  DispatchEvent(Event::Create(EventTypeNames::webkitprerenderdomcontentloaded));
+  DispatchEvent(
+      *Event::Create(EventTypeNames::webkitprerenderdomcontentloaded));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

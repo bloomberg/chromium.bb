@@ -74,7 +74,7 @@ String DispatchBeforeTextInsertedEvent(const String& text,
   // necessary.
   const Document& document = start_node->GetDocument();
   BeforeTextInsertedEvent* evt = BeforeTextInsertedEvent::Create(text);
-  RootEditableElement(*start_node)->DispatchEvent(evt);
+  RootEditableElement(*start_node)->DispatchEvent(*evt);
   if (IsValidDocument(document) && selection.IsValidFor(document))
     return evt->GetText();
   // editing/inserting/webkitBeforeTextInserted-removes-frame.html
@@ -98,7 +98,7 @@ DispatchEventResult DispatchTextInputEvent(LocalFrame* frame,
   TextEvent* event = TextEvent::Create(frame->DomWindow(), text,
                                        kTextEventInputIncrementalInsertion);
   event->SetUnderlyingEvent(nullptr);
-  DispatchEventResult result = target->DispatchEvent(event);
+  DispatchEventResult result = target->DispatchEvent(*event);
   if (IsValidDocument(document))
     return result;
   // editing/inserting/insert-text-remove-iframe-on-textInput-event.html
@@ -147,7 +147,7 @@ bool CanAppendNewLineFeedToSelection(const VisibleSelection& selection,
   const Document& document = element->GetDocument();
   BeforeTextInsertedEvent* event =
       BeforeTextInsertedEvent::Create(String("\n"));
-  element->DispatchEvent(event);
+  element->DispatchEvent(*event);
   // event may invalidate frame or selection
   if (IsValidDocument(document) && selection.IsValidFor(document))
     return event->GetText().length();

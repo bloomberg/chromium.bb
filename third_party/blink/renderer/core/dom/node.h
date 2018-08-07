@@ -776,7 +776,7 @@ class CORE_EXPORT Node : public EventTarget {
   }
   virtual void PostDispatchEventHandler(Event*, EventDispatchHandlingState*) {}
 
-  void DispatchScopedEvent(Event*);
+  void DispatchScopedEvent(Event&);
 
   virtual void HandleLocalEvents(Event&);
 
@@ -959,7 +959,7 @@ class CORE_EXPORT Node : public EventTarget {
                           RegisteredEventListener&) override;
   void RemovedEventListener(const AtomicString& event_type,
                             const RegisteredEventListener&) override;
-  DispatchEventResult DispatchEventInternal(Event*) override;
+  DispatchEventResult DispatchEventInternal(Event&) override;
 
   bool HasRareData() const { return GetFlag(kHasRareDataFlag); }
 

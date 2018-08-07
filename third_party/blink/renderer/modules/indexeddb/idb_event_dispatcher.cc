@@ -34,37 +34,37 @@
 namespace blink {
 
 DispatchEventResult IDBEventDispatcher::Dispatch(
-    Event* event,
+    Event& event,
     HeapVector<Member<EventTarget>>& event_targets) {
   size_t size = event_targets.size();
   DCHECK(size);
 
-  event->SetEventPhase(Event::kCapturingPhase);
+  event.SetEventPhase(Event::kCapturingPhase);
   for (size_t i = size - 1; i; --i) {  // Don't do the first element.
-    event->SetCurrentTarget(event_targets[i].Get());
+    event.SetCurrentTarget(event_targets[i].Get());
     event_targets[i]->FireEventListeners(event);
-    if (event->PropagationStopped())
+    if (event.PropagationStopped())
       goto doneDispatching;
   }
 
-  event->SetEventPhase(Event::kAtTarget);
-  event->SetCurrentTarget(event_targets[0].Get());
+  event.SetEventPhase(Event::kAtTarget);
+  event.SetCurrentTarget(event_targets[0].Get());
   event_targets[0]->FireEventListeners(event);
-  if (event->PropagationStopped() || !event->bubbles() || event->cancelBubble())
+  if (event.PropagationStopped() || !event.bubbles() || event.cancelBubble())
     goto doneDispatching;
 
-  event->SetEventPhase(Event::kBubblingPhase);
+  event.SetEventPhase(Event::kBubblingPhase);
   for (size_t i = 1; i < size; ++i) {  // Don't do the first element.
-    event->SetCurrentTarget(event_targets[i].Get());
+    event.SetCurrentTarget(event_targets[i].Get());
     event_targets[i]->FireEventListeners(event);
-    if (event->PropagationStopped() || event->cancelBubble())
+    if (event.PropagationStopped() || event.cancelBubble())
       goto doneDispatching;
   }
 
 doneDispatching:
-  event->SetCurrentTarget(nullptr);
-  event->SetEventPhase(Event::kNone);
-  return EventTarget::GetDispatchEventResult(*event);
+  event.SetCurrentTarget(nullptr);
+  event.SetEventPhase(Event::kNone);
+  return EventTarget::GetDispatchEventResult(event);
 }
 
 }  // namespace blink

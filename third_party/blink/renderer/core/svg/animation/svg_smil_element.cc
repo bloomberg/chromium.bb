@@ -1253,9 +1253,9 @@ void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {
   if (event_type == "repeatn") {
     unsigned repeat_event_count = repeat_event_count_list_.front();
     repeat_event_count_list_.EraseAt(0);
-    DispatchEvent(RepeatEvent::Create(event_type, repeat_event_count));
+    DispatchEvent(*RepeatEvent::Create(event_type, repeat_event_count));
   } else {
-    DispatchEvent(Event::Create(event_type));
+    DispatchEvent(*Event::Create(event_type));
   }
 }
 

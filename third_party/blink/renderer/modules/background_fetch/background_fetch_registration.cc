@@ -59,7 +59,7 @@ void BackgroundFetchRegistration::OnProgress(uint64_t upload_total,
     return;
 
   DCHECK(context->IsContextThread());
-  DispatchEvent(Event::Create(EventTypeNames::progress));
+  DispatchEvent(*Event::Create(EventTypeNames::progress));
 }
 
 String BackgroundFetchRegistration::id() const {

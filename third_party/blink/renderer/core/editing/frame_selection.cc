@@ -334,7 +334,7 @@ static DispatchEventResult DispatchSelectStart(
     return DispatchEventResult::kNotCanceled;
 
   return select_start_target->DispatchEvent(
-      Event::CreateCancelableBubble(EventTypeNames::selectstart));
+      *Event::CreateCancelableBubble(EventTypeNames::selectstart));
 }
 
 // The return value of |FrameSelection::modify()| is different based on

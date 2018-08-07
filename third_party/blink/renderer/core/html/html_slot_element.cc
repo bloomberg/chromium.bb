@@ -278,7 +278,7 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
   DCHECK(!IsInUserAgentShadowRoot());
   Event* event = Event::CreateBubble(EventTypeNames::slotchange);
   event->SetTarget(this);
-  DispatchScopedEvent(event);
+  DispatchScopedEvent(*event);
 }
 
 Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {

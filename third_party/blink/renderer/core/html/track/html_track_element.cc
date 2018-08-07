@@ -259,7 +259,7 @@ void HTMLTrackElement::DidCompleteLoad(LoadStatus status) {
   // simple event named error at the track element.
   if (status == kFailure) {
     SetReadyState(kError);
-    DispatchEvent(Event::Create(EventTypeNames::error));
+    DispatchEvent(*Event::Create(EventTypeNames::error));
     return;
   }
 

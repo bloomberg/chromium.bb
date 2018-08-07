@@ -361,7 +361,7 @@ void HTMLFormControlElement::FieldSetAncestorsSetNeedsValidityCheck(
 }
 
 void HTMLFormControlElement::DispatchChangeEvent() {
-  DispatchScopedEvent(Event::CreateBubble(EventTypeNames::change));
+  DispatchScopedEvent(*Event::CreateBubble(EventTypeNames::change));
 }
 
 HTMLFormElement* HTMLFormControlElement::formOwner() const {
@@ -544,7 +544,7 @@ bool HTMLFormControlElement::checkValidity(
     return false;
   Document* original_document = &GetDocument();
   DispatchEventResult dispatch_result =
-      DispatchEvent(Event::CreateCancelable(EventTypeNames::invalid));
+      DispatchEvent(*Event::CreateCancelable(EventTypeNames::invalid));
   if (dispatch_result == DispatchEventResult::kNotCanceled &&
       unhandled_invalid_controls && isConnected() &&
       original_document == GetDocument())

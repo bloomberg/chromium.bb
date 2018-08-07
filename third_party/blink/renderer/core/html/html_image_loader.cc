@@ -52,7 +52,7 @@ void HTMLImageLoader::DispatchLoadEvent() {
     // An <object> considers a 404 to be an error and should fire onerror.
     error_occurred = (GetContent()->GetResponse().HttpStatusCode() >= 400);
   }
-  GetElement()->DispatchEvent(Event::Create(
+  GetElement()->DispatchEvent(*Event::Create(
       error_occurred ? EventTypeNames::error : EventTypeNames::load));
 }
 

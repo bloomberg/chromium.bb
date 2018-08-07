@@ -130,7 +130,7 @@ void SpeechRecognition::ResultRetrieved(
   final_results_ = std::move(new_final_results);
 
   // We dispatch an event with (1) + (2) + (3).
-  DispatchEvent(SpeechRecognitionEvent::CreateResult(
+  DispatchEvent(*SpeechRecognitionEvent::CreateResult(
       aggregated_results.size() - results.size(),
       std::move(aggregated_results)));
 }
@@ -138,33 +138,33 @@ void SpeechRecognition::ResultRetrieved(
 void SpeechRecognition::ErrorOccurred(
     mojom::blink::SpeechRecognitionErrorPtr error) {
   if (error->code == mojom::blink::SpeechRecognitionErrorCode::kNoMatch) {
-    DispatchEvent(SpeechRecognitionEvent::CreateNoMatch(nullptr));
+    DispatchEvent(*SpeechRecognitionEvent::CreateNoMatch(nullptr));
   } else {
     // TODO(primiano): message?
-    DispatchEvent(SpeechRecognitionError::Create(error->code, String()));
+    DispatchEvent(*SpeechRecognitionError::Create(error->code, String()));
   }
 }
 
 void SpeechRecognition::Started() {
-  DispatchEvent(Event::Create(EventTypeNames::start));
+  DispatchEvent(*Event::Create(EventTypeNames::start));
 }
 
 void SpeechRecognition::AudioStarted() {
-  DispatchEvent(Event::Create(EventTypeNames::audiostart));
+  DispatchEvent(*Event::Create(EventTypeNames::audiostart));
 }
 
 void SpeechRecognition::SoundStarted() {
-  DispatchEvent(Event::Create(EventTypeNames::soundstart));
-  DispatchEvent(Event::Create(EventTypeNames::speechstart));
+  DispatchEvent(*Event::Create(EventTypeNames::soundstart));
+  DispatchEvent(*Event::Create(EventTypeNames::speechstart));
 }
 
 void SpeechRecognition::SoundEnded() {
-  DispatchEvent(Event::Create(EventTypeNames::speechend));
-  DispatchEvent(Event::Create(EventTypeNames::soundend));
+  DispatchEvent(*Event::Create(EventTypeNames::speechend));
+  DispatchEvent(*Event::Create(EventTypeNames::soundend));
 }
 
 void SpeechRecognition::AudioEnded() {
-  DispatchEvent(Event::Create(EventTypeNames::audioend));
+  DispatchEvent(*Event::Create(EventTypeNames::audioend));
 }
 
 void SpeechRecognition::Ended() {
@@ -172,7 +172,7 @@ void SpeechRecognition::Ended() {
   stopping_ = false;
   session_.reset();
   binding_.Close();
-  DispatchEvent(Event::Create(EventTypeNames::end));
+  DispatchEvent(*Event::Create(EventTypeNames::end));
 }
 
 const AtomicString& SpeechRecognition::InterfaceName() const {

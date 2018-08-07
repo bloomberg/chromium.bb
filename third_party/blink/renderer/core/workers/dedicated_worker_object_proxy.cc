@@ -87,7 +87,7 @@ void DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject(
 
   ThreadDebugger* debugger = ThreadDebugger::From(worker_thread->GetIsolate());
   debugger->ExternalAsyncTaskStarted(stack_id);
-  global_scope->DispatchEvent(MessageEvent::Create(ports, std::move(message)));
+  global_scope->DispatchEvent(*MessageEvent::Create(ports, std::move(message)));
   debugger->ExternalAsyncTaskFinished(stack_id);
 }
 

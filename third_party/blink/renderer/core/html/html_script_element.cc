@@ -208,11 +208,11 @@ Document& HTMLScriptElement::GetDocument() const {
 }
 
 void HTMLScriptElement::DispatchLoadEvent() {
-  DispatchEvent(Event::Create(EventTypeNames::load));
+  DispatchEvent(*Event::Create(EventTypeNames::load));
 }
 
 void HTMLScriptElement::DispatchErrorEvent() {
-  DispatchEvent(Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(EventTypeNames::error));
 }
 
 void HTMLScriptElement::SetScriptElementForBinding(

@@ -122,7 +122,7 @@ void ScriptedAnimationController::DispatchEvents(
     if (LocalDOMWindow* window = event_target->ToLocalDOMWindow())
       window->DispatchEvent(event, nullptr);
     else
-      event_target->DispatchEvent(event);
+      event_target->DispatchEvent(*event);
   }
 }
 

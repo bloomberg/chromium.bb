@@ -632,15 +632,15 @@ ExecutionContext* IDBRequest::GetExecutionContext() const {
   return PausableObject::GetExecutionContext();
 }
 
-DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
+DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
   IDB_TRACE("IDBRequest::dispatchEvent");
   if (!GetExecutionContext())
     return DispatchEventResult::kCanceledBeforeDispatch;
   DCHECK_EQ(ready_state_, PENDING);
   DCHECK(has_pending_activity_);
-  DCHECK_EQ(event->target(), this);
+  DCHECK_EQ(event.target(), this);
 
-  if (event->type() != EventTypeNames::blocked)
+  if (event.type() != EventTypeNames::blocked)
     ready_state_ = DONE;
 
   HeapVector<Member<EventTarget>> targets;
@@ -657,7 +657,7 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
   // Cursor properties should not be updated until the success event is being
   // dispatched.
   IDBCursor* cursor_to_notify = nullptr;
-  if (event->type() == EventTypeNames::success) {
+  if (event.type() == EventTypeNames::success) {
     cursor_to_notify = GetResultCursor();
     if (cursor_to_notify) {
       cursor_to_notify->SetValueReady(std::move(cursor_key_),
@@ -666,23 +666,23 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
     }
   }
 
-  if (event->type() == EventTypeNames::upgradeneeded) {
+  if (event.type() == EventTypeNames::upgradeneeded) {
     DCHECK(!did_fire_upgrade_needed_event_);
     did_fire_upgrade_needed_event_ = true;
   }
 
   // FIXME: When we allow custom event dispatching, this will probably need to
   // change.
-  DCHECK(event->type() == EventTypeNames::success ||
-         event->type() == EventTypeNames::error ||
-         event->type() == EventTypeNames::blocked ||
-         event->type() == EventTypeNames::upgradeneeded)
-      << "event type was " << event->type();
+  DCHECK(event.type() == EventTypeNames::success ||
+         event.type() == EventTypeNames::error ||
+         event.type() == EventTypeNames::blocked ||
+         event.type() == EventTypeNames::upgradeneeded)
+      << "event type was " << event.type();
   const bool set_transaction_active =
       transaction_ &&
-      (event->type() == EventTypeNames::success ||
-       event->type() == EventTypeNames::upgradeneeded ||
-       (event->type() == EventTypeNames::error && !request_aborted_));
+      (event.type() == EventTypeNames::success ||
+       event.type() == EventTypeNames::upgradeneeded ||
+       (event.type() == EventTypeNames::error && !request_aborted_));
 
   if (set_transaction_active)
     transaction_->SetActive(true);
@@ -708,7 +708,7 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
             DOMException::Create(DOMExceptionCode::kAbortError,
                                  "Uncaught exception in event handler."));
         transaction_->abort(IGNORE_EXCEPTION_FOR_TESTING);
-      } else if (event->type() == EventTypeNames::error &&
+      } else if (event.type() == EventTypeNames::error &&
                  dispatch_result == DispatchEventResult::kNotCanceled) {
         transaction_->SetError(error_);
         transaction_->abort(IGNORE_EXCEPTION_FOR_TESTING);
@@ -726,7 +726,7 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
 
   // An upgradeneeded event will always be followed by a success or error event,
   // so must be kept alive.
-  if (ready_state_ == DONE && event->type() != EventTypeNames::upgradeneeded)
+  if (ready_state_ == DONE && event.type() != EventTypeNames::upgradeneeded)
     has_pending_activity_ = false;
 
   return dispatch_result;

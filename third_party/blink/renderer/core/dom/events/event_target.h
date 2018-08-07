@@ -154,7 +154,14 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
                            EventListenerOptions&);
   virtual void RemoveAllEventListeners();
 
-  DispatchEventResult DispatchEvent(Event*);
+  DispatchEventResult DispatchEvent(Event&);
+  // Deprecated: Use DispatchEvent(Event&), instead of this.
+  // This will be removed after every callers of this function are replaced.
+  // See crbub.com/871637.
+  DispatchEventResult DispatchEvent(Event* event) {
+    DCHECK(event);
+    return DispatchEvent(*event);
+  }
 
   void EnqueueEvent(Event*, TaskType);
 
@@ -175,13 +182,14 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   EventListenerVector* GetEventListeners(const AtomicString& event_type);
   Vector<AtomicString> EventTypes();
 
-  DispatchEventResult FireEventListeners(Event*);
+  DispatchEventResult FireEventListeners(Event&);
 
   static DispatchEventResult GetDispatchEventResult(const Event&);
 
   virtual bool KeepEventInNode(Event*) { return false; }
 
-  // Returns true if the target is window, window.document, or window.document.body.
+  // Returns true if the target is window, window.document, or
+  // window.document.body.
   bool IsTopLevelNode();
 
  protected:
@@ -203,7 +211,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   virtual void RemovedEventListener(const AtomicString& event_type,
                                     const RegisteredEventListener&);
 
-  virtual DispatchEventResult DispatchEventInternal(Event*);
+  virtual DispatchEventResult DispatchEventInternal(Event&);
 
   // Subclasses should likely not override these themselves; instead, they
   // should subclass EventTargetWithInlineData.
@@ -219,7 +227,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   RegisteredEventListener* GetAttributeRegisteredEventListener(
       const AtomicString& event_type);
 
-  bool FireEventListeners(Event*, EventTargetData*, EventListenerVector&);
+  bool FireEventListeners(Event&, EventTargetData*, EventListenerVector&);
   void CountLegacyEvents(const AtomicString& legacy_type_name,
                          EventListenerVector*,
                          EventListenerVector*);

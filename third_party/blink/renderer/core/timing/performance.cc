@@ -309,7 +309,7 @@ void Performance::clearResourceTimings() {
 void Performance::setResourceTimingBufferSize(unsigned size) {
   resource_timing_buffer_size_ = size;
   if (IsResourceTimingBufferFull())
-    DispatchEvent(Event::Create(EventTypeNames::resourcetimingbufferfull));
+    DispatchEvent(*Event::Create(EventTypeNames::resourcetimingbufferfull));
 }
 
 bool Performance::PassesTimingAllowCheck(
@@ -490,7 +490,7 @@ void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
   event_timing_buffer_.push_back(&entry);
 
   if (IsEventTimingBufferFull())
-    DispatchEvent(Event::Create(EventTypeNames::eventtimingbufferfull));
+    DispatchEvent(*Event::Create(EventTypeNames::eventtimingbufferfull));
 }
 
 unsigned Performance::EventTimingBufferSize() const {

@@ -119,7 +119,8 @@ class MediaControlsDisplayCutoutDelegateTest : public PageTestBase {
   }
 
   void SimulateEvent(TouchEvent* event) {
-    GetVideoElement().FireEventListeners(event);
+    DCHECK(event);
+    GetVideoElement().FireEventListeners(*event);
   }
 
   TouchList* CreateTouchListWithOnePoint(int x, int y) {

@@ -135,7 +135,7 @@ class MODULES_EXPORT Notification final
 
  protected:
   // EventTarget interface.
-  DispatchEventResult DispatchEventInternal(Event* event) final;
+  DispatchEventResult DispatchEventInternal(Event& event) final;
 
  private:
   // The type of notification this instance represents. Non-persistent

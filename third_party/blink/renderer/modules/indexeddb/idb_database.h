@@ -172,7 +172,7 @@ class MODULES_EXPORT IDBDatabase final
 
  protected:
   // EventTarget
-  DispatchEventResult DispatchEventInternal(Event*) override;
+  DispatchEventResult DispatchEventInternal(Event&) override;
 
  private:
   IDBDatabase(ExecutionContext*,

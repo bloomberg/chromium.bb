@@ -437,7 +437,7 @@ size_t Notification::maxActions() {
   return kWebNotificationMaxActions;
 }
 
-DispatchEventResult Notification::DispatchEventInternal(Event* event) {
+DispatchEventResult Notification::DispatchEventInternal(Event& event) {
   DCHECK(GetExecutionContext()->IsContextThread());
   return EventTarget::DispatchEventInternal(event);
 }

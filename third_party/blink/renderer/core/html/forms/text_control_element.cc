@@ -733,7 +733,7 @@ void TextControlElement::SelectionChanged(bool user_triggered) {
       frame->Selection().GetSelectionInDOMTree();
   if (selection.Type() != kRangeSelection)
     return;
-  DispatchEvent(Event::CreateBubble(EventTypeNames::select));
+  DispatchEvent(*Event::CreateBubble(EventTypeNames::select));
 }
 
 void TextControlElement::ScheduleSelectEvent() {

@@ -76,7 +76,7 @@ class RejectedPromises::Message final {
           script_state_, EventTypeNames::unhandledrejection, init);
       // Log to console if event was not canceled.
       should_log_to_console_ =
-          target->DispatchEvent(event) == DispatchEventResult::kNotCanceled;
+          target->DispatchEvent(*event) == DispatchEventResult::kNotCanceled;
     }
 
     if (should_log_to_console_) {
@@ -113,7 +113,7 @@ class RejectedPromises::Message final {
       init.setReason(ScriptValue(script_state_, reason));
       PromiseRejectionEvent* event = PromiseRejectionEvent::Create(
           script_state_, EventTypeNames::rejectionhandled, init);
-      target->DispatchEvent(event);
+      target->DispatchEvent(*event);
     }
 
     if (should_log_to_console_ && promise_rejection_id_) {

@@ -1490,7 +1490,7 @@ void WebLocalFrameImpl::DispatchPrintEventRecursively(
     }
     if (!frame->Tree().IsDescendantOf(frame_))
       continue;
-    ToLocalFrame(frame)->DomWindow()->DispatchEvent(Event::Create(event_type));
+    ToLocalFrame(frame)->DomWindow()->DispatchEvent(*Event::Create(event_type));
   }
 }
 

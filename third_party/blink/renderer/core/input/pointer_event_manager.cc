@@ -181,7 +181,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
 
     DCHECK(!dispatching_pointer_id_);
     base::AutoReset<int> dispatch_holder(&dispatching_pointer_id_, pointer_id);
-    DispatchEventResult dispatch_result = target->DispatchEvent(pointer_event);
+    DispatchEventResult dispatch_result = target->DispatchEvent(*pointer_event);
     return EventHandlingUtil::ToWebInputEventResult(dispatch_result);
   }
   return WebInputEventResult::kNotHandled;

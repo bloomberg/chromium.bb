@@ -46,7 +46,7 @@ class CORE_EXPORT ScopedEventQueue {
  public:
   ~ScopedEventQueue();
 
-  void EnqueueEvent(Event*);
+  void EnqueueEvent(Event&);
   static ScopedEventQueue* Instance();
 
   void IncrementScopingLevel();
@@ -57,7 +57,7 @@ class CORE_EXPORT ScopedEventQueue {
   ScopedEventQueue();
   static void Initialize();
   void DispatchAllEvents();
-  void DispatchEvent(Event*) const;
+  void DispatchEvent(Event&) const;
 
   PersistentHeapVector<Member<Event>> queued_events_;
   unsigned scoping_level_;
