@@ -50,7 +50,8 @@ std::string DesktopStreamsRegistryImpl::RegisterStream(
     int render_frame_id,
     const GURL& origin,
     const DesktopMediaID& source,
-    const std::string& extension_name) {
+    const std::string& extension_name,
+    const DesktopStreamRegistryType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::string id = GenerateRandomStreamId();
@@ -61,6 +62,7 @@ std::string DesktopStreamsRegistryImpl::RegisterStream(
   stream.origin = origin;
   stream.source = source;
   stream.extension_name = extension_name;
+  stream.type = type;
 
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
@@ -76,7 +78,8 @@ DesktopMediaID DesktopStreamsRegistryImpl::RequestMediaForStreamId(
     int render_process_id,
     int render_frame_id,
     const GURL& origin,
-    std::string* extension_name) {
+    std::string* extension_name,
+    const DesktopStreamRegistryType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   StreamsMap::iterator it = approved_streams_.find(id);
@@ -86,7 +89,7 @@ DesktopMediaID DesktopStreamsRegistryImpl::RequestMediaForStreamId(
   if (it == approved_streams_.end() ||
       render_process_id != it->second.render_process_id ||
       render_frame_id != it->second.render_frame_id ||
-      origin != it->second.origin) {
+      origin != it->second.origin || type != it->second.type) {
     return DesktopMediaID();
   }
 

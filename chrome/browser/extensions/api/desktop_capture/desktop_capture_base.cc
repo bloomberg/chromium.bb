@@ -242,7 +242,7 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
     content::RenderFrameHost* const main_frame = web_contents()->GetMainFrame();
     result = content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
         main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(), origin_,
-        source, extension()->name());
+        source, extension()->name(), content::kRegistryStreamTypeDesktop);
   }
 
   Options options;

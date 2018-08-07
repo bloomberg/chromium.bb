@@ -28,13 +28,16 @@ class CONTENT_EXPORT DesktopStreamsRegistryImpl
                              int render_frame_id,
                              const GURL& origin,
                              const DesktopMediaID& source,
-                             const std::string& extension_name) override;
+                             const std::string& extension_name,
+                             const DesktopStreamRegistryType type) override;
 
-  DesktopMediaID RequestMediaForStreamId(const std::string& id,
-                                         int render_process_id,
-                                         int render_frame_id,
-                                         const GURL& origin,
-                                         std::string* extension_name) override;
+  DesktopMediaID RequestMediaForStreamId(
+      const std::string& id,
+      int render_process_id,
+      int render_frame_id,
+      const GURL& origin,
+      std::string* extension_name,
+      const DesktopStreamRegistryType type) override;
 
  private:
   // Type used to store list of accepted desktop media streams.
@@ -46,6 +49,7 @@ class CONTENT_EXPORT DesktopStreamsRegistryImpl
     GURL origin;
     DesktopMediaID source;
     std::string extension_name;
+    DesktopStreamRegistryType type;
   };
   typedef std::map<std::string, ApprovedDesktopMediaStream> StreamsMap;
 

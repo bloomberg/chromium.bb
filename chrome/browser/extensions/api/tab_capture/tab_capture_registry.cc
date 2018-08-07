@@ -321,7 +321,7 @@ std::string TabCaptureRegistry::AddRequest(
   if (main_frame) {
     device_id = content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
         main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(), origin,
-        source, extension_name);
+        source, extension_name, content::kRegistryStreamTypeTab);
   }
 
   return device_id;
