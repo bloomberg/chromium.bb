@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace blink {
 
@@ -173,6 +174,50 @@ TEST_F(BackgroundFetchManagerTest, SequenceWithNullValue) {
   ASSERT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(scope.GetExceptionState().CodeAs<ESErrorType>(),
             ESErrorType::kTypeError);
+}
+
+TEST_F(BackgroundFetchManagerTest, BlobsExtracted) {
+  V8TestingScope scope;
+
+  KURL image_url("https://www.example.com/my_image.png");
+  KURL icon_url("https://www.example.com/my_icon.jpg");
+
+  // Create first request with a body.
+  String body_text = "cat_pic";
+  RequestInit request_init;
+  request_init.setMethod("POST");
+  request_init.setBody(blink::ScriptValue(
+      scope.GetScriptState(), ToV8(body_text, scope.GetScriptState())));
+  Request* image_request =
+      Request::Create(scope.GetScriptState(), image_url.GetString(),
+                      request_init, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
+  ASSERT_TRUE(image_request);
+  ASSERT_TRUE(image_request->HasBody());
+
+  // Create second request without a body.
+  RequestOrUSVString icon_request =
+      RequestOrUSVString::FromUSVString(icon_url.GetString());
+
+  // Create a request sequence with both requests.
+  HeapVector<RequestOrUSVString> request_sequence;
+  request_sequence.push_back(RequestOrUSVString::FromRequest(image_request));
+  request_sequence.push_back(icon_request);
+
+  RequestOrUSVStringOrRequestOrUSVStringSequence requests =
+      RequestOrUSVStringOrRequestOrUSVStringSequence::
+          FromRequestOrUSVStringSequence(request_sequence);
+
+  // Extract the blobs.
+  auto web_requests = CreateWebRequestVector(scope, requests);
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
+
+  ASSERT_EQ(web_requests.size(), 2u);
+
+  ASSERT_TRUE(web_requests[0].GetBlobDataHandle());
+  EXPECT_EQ(web_requests[0].GetBlobDataHandle()->size(), body_text.length());
+
+  EXPECT_FALSE(web_requests[1].GetBlobDataHandle());
 }
 
 }  // namespace blink
