@@ -68,10 +68,11 @@ public class SigninActivity extends SynchronousInitializationActivity {
 
     /**
      * Creates an {@link Intent} which can be used to start consent bump flow.
+     * @param accountName The name of the signed in account.
      */
-    public static Intent createIntentForConsentBump(Context context) {
-        return createIntentInternal(
-                context, ConsentBumpFragment.class, ConsentBumpFragment.createArguments());
+    public static Intent createIntentForConsentBump(Context context, String accountName) {
+        return createIntentInternal(context, ConsentBumpFragment.class,
+                ConsentBumpFragment.createArguments(accountName));
     }
 
     private static Intent createIntentInternal(

@@ -157,10 +157,14 @@ public abstract class SigninFragmentBase
         return result;
     }
 
-    /** Creates an argument bundle for the consent bump screen. */
-    protected static Bundle createArgumentsForConsentBumpFlow() {
+    /**
+     * Creates an argument bundle for the consent bump screen.
+     * @param accountName The name of the signed in account.
+     */
+    protected static Bundle createArgumentsForConsentBumpFlow(String accountName) {
         Bundle result = new Bundle();
         result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SigninFlowType.CONSENT_BUMP);
+        result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
         return result;
     }
 
@@ -198,6 +202,11 @@ public abstract class SigninFragmentBase
     /** Returns whether this fragment is in "force sign-in" mode. */
     protected boolean isForcedSignin() {
         return mSigninFlowType == SigninFlowType.FORCED;
+    }
+
+    /** Returns whether this fragment is in Consent bump mode. */
+    protected boolean isConsentBump() {
+        return mSigninFlowType == SigninFlowType.CONSENT_BUMP;
     }
 
     @Override
@@ -363,7 +372,7 @@ public abstract class SigninFragmentBase
     }
 
     private void onAccountPickerClicked() {
-        if (isForcedSignin() || !areControlsEnabled()) return;
+        if (isForcedSignin() || isConsentBump() || !areControlsEnabled()) return;
         showAccountPicker();
     }
 
