@@ -46,8 +46,8 @@ class SchedulerWorkerObserver;
 //
 // The instance methods of this class are thread-safe.
 //
-// Note: All base/task_scheduler users should go through post_task.h instead of
-// TaskScheduler except for the one callsite per process which manages the
+// Note: All TaskScheduler users should go through base/task/post_task.h instead
+// of this interface except for the one callsite per process which manages the
 // process's instance.
 class BASE_EXPORT TaskScheduler {
  public:
