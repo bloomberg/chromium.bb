@@ -27,4 +27,9 @@ namespace arcAppsPrivate {
     // called as soon as the launch is scheduled.
     static void launchApp(DOMString app_id, optional VoidCallback callback);
   };
+
+  interface Events {
+    // Fires when a new app can be launched via $(ref:launchApp).
+    static void onInstalled(AppInfo app_info);
+  };
 };

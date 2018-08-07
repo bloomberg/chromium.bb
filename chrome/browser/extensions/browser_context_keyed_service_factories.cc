@@ -52,6 +52,7 @@
 #include "ppapi/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/arc_apps_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
@@ -74,6 +75,9 @@ namespace chrome_extensions {
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ActivityLog::GetFactoryInstance();
   extensions::ActivityLogAPI::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  extensions::ArcAppsPrivateAPI::GetFactoryInstance();
+#endif
   extensions::AutofillPrivateEventRouterFactory::GetInstance();
   extensions::BluetoothLowEnergyAPI::GetFactoryInstance();
   extensions::BookmarksAPI::GetFactoryInstance();
