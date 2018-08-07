@@ -370,8 +370,7 @@ class InternalDataSource : public AppSearchProvider::DataSource,
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
     const base::Time time;
-    for (const auto& internal_app :
-         GetInternalAppList(profile()->IsGuestSession())) {
+    for (const auto& internal_app : GetInternalAppList()) {
       if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading) &&
           !features::IsContinueReadingEnabled()) {
         continue;
