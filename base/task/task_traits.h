@@ -113,7 +113,7 @@ struct MayBlock {};
 // removing usage of methods listed above in the labeled tasks would still
 // result in tasks that may block (per MayBlock()'s definition).
 //
-// In doubt, consult with //base/task_scheduler/OWNERS.
+// In doubt, consult with //base/task/OWNERS.
 struct WithBaseSyncPrimitives {};
 
 // Describes immutable metadata for a single task or a group of tasks.
