@@ -2505,6 +2505,24 @@
             ]
         }
     ],
+    "NewExtensionUpdaterService": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NewExtensionUpdaterService"
+                    ]
+                }
+            ]
+        }
+    ],
     "NewPrintPreview": [
         {
             "platforms": [
