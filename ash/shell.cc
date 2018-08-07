@@ -399,7 +399,7 @@ bool Shell::HasRemoteClient(aura::Window* window) {
 
 // static
 Config Shell::GetAshConfig() {
-  return Get()->shell_port_->GetAshConfig();
+  return Config::CLASSIC;
 }
 
 // static
@@ -950,8 +950,6 @@ void Shell::Init(
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
     std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider) {
-  const Config config = shell_port_->GetAshConfig();
-
   // This creates the MessageCenter object which is used by some other objects
   // initialized here, so it needs to come early.
   message_center_controller_ = std::make_unique<MessageCenterController>();
@@ -1027,15 +1025,13 @@ void Shell::Init(
 
   InitializeDisplayManager();
 
-  if (config == Config::CLASSIC) {
-    // This will initialize aura::Env which requires |display_manager_| to
-    // be initialized first.
-    if (context_factory)
-      aura::Env::GetInstance()->set_context_factory(context_factory);
-    if (context_factory_private) {
-      aura::Env::GetInstance()->set_context_factory_private(
-          context_factory_private);
-    }
+  // This will initialize aura::Env which requires |display_manager_| to
+  // be initialized first.
+  if (context_factory)
+    aura::Env::GetInstance()->set_context_factory(context_factory);
+  if (context_factory_private) {
+    aura::Env::GetInstance()->set_context_factory_private(
+        context_factory_private);
   }
 
   // Night Light depends on the display manager, the display color manager, and
@@ -1175,7 +1171,10 @@ void Shell::Init(
   viz::mojom::VideoDetectorObserverPtr observer;
   video_detector_ =
       std::make_unique<VideoDetector>(mojo::MakeRequest(&observer));
-  shell_port_->AddVideoDetectorObserver(std::move(observer));
+  aura::Env::GetInstance()
+      ->context_factory_private()
+      ->GetHostFrameSinkManager()
+      ->AddVideoDetectorObserver(std::move(observer));
 
   tooltip_controller_.reset(new views::corewm::TooltipController(
       std::unique_ptr<views::corewm::Tooltip>(new views::corewm::TooltipAura)));
@@ -1218,12 +1217,10 @@ void Shell::Init(
       std::make_unique<SystemNotificationController>();
 
   window_tree_host_manager_->InitHosts();
-  shell_port_->OnHostsInitialized();
 
   // Needs to be created after InitDisplays() since it may cause the virtual
   // keyboard to be deployed.
-  if (config != Config::MASH_DEPRECATED)
-    virtual_keyboard_controller_.reset(new VirtualKeyboardController);
+  virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::CursorType::kPointer);
@@ -1448,8 +1445,6 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
         break;
     }
   }
-
-  shell_port_->UpdateSystemModalAndBlockingContainers();
 }
 
 void Shell::OnLoginStatusChanged(LoginStatus login_status) {

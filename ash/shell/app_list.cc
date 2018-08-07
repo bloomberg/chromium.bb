@@ -264,7 +264,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   void DismissAppList() override {
-    DCHECK(ShellPort::HasInstance());
     Shell::Get()->app_list_controller()->DismissAppList();
   }
 

@@ -6,7 +6,6 @@
 #define ASH_SHELL_PORT_CLASSIC_H_
 
 #include <memory>
-#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/shell_port.h"
@@ -25,23 +24,12 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
   ShellPortClassic();
   ~ShellPortClassic() override;
 
-  static ShellPortClassic* Get();
-
   // ShellPort:
   void Shutdown() override;
-  Config GetAshConfig() const override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
                          views::PointerWatcherEventTypes events) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
-  bool IsTouchDown() override;
-  void ToggleIgnoreExternalKeyboard() override;
   void CreatePointerWatcherAdapter() override;
-  void OnCreatedRootWindowContainers(
-      RootWindowController* root_window_controller) override;
-  void UpdateSystemModalAndBlockingContainers() override;
-  void OnHostsInitialized() override;
-  void AddVideoDetectorObserver(
-      viz::mojom::VideoDetectorObserverPtr observer) override;
 
  private:
   std::unique_ptr<PointerWatcherAdapterClassic> pointer_watcher_adapter_;

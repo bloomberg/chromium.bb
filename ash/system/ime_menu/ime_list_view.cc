@@ -6,11 +6,11 @@
 
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
+#include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -330,7 +330,7 @@ void ImeListView::HandleButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   DCHECK_EQ(sender, keyboard_status_row_->toggle());
 
-  ShellPort::Get()->ToggleIgnoreExternalKeyboard();
+  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
   last_selected_item_id_.clear();
   last_item_selected_with_keyboard_ = false;
 }
