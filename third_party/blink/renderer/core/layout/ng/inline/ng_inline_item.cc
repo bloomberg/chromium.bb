@@ -56,8 +56,7 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
                            unsigned start,
                            unsigned end,
                            const ComputedStyle* style,
-                           LayoutObject* layout_object,
-                           bool end_may_collapse)
+                           LayoutObject* layout_object)
     : start_offset_(start),
       end_offset_(end),
       style_(style),
@@ -72,7 +71,7 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       should_create_box_fragment_(false),
       style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)),
       end_collapse_type_(kNotCollapsible),
-      end_may_collapse_(end_may_collapse),
+      is_end_collapsible_newline_(false),
       is_symbol_marker_(false) {
   DCHECK_GE(end, start);
   ComputeBoxProperties();
@@ -97,7 +96,7 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
       should_create_box_fragment_(other.should_create_box_fragment_),
       style_variant_(other.style_variant_),
       end_collapse_type_(other.end_collapse_type_),
-      end_may_collapse_(other.end_may_collapse_),
+      is_end_collapsible_newline_(other.is_end_collapsible_newline_),
       is_symbol_marker_(other.is_symbol_marker_) {
   DCHECK_GE(end, start);
 }
@@ -327,6 +326,17 @@ bool NGInlineItem::HasEndEdge() const {
   // TODO(kojii): Should use break token when NG has its own tree building.
   return !GetLayoutObject()->IsLayoutInline() ||
          !ToLayoutInline(GetLayoutObject())->Continuation();
+}
+
+void NGInlineItem::SetEndCollapseType(NGCollapseType type) {
+  DCHECK(Type() == NGInlineItem::kText || type == kOpaqueToCollapsing ||
+         (Type() == NGInlineItem::kControl && type == kCollapsible));
+  end_collapse_type_ = type;
+}
+
+void NGInlineItem::SetEndCollapseType(NGCollapseType type, bool is_newline) {
+  SetEndCollapseType(type);
+  is_end_collapsible_newline_ = is_newline;
 }
 
 }  // namespace blink
