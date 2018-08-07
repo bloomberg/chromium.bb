@@ -4,8 +4,6 @@
 
 #include "chromecast/browser/extensions/cast_extension_web_contents_observer.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::CastExtensionWebContentsObserver);
-
 namespace extensions {
 
 CastExtensionWebContentsObserver::CastExtensionWebContentsObserver(
