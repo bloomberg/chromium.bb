@@ -32,10 +32,12 @@
 
 #include <stddef.h>
 #include <memory>
+#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_array_buffer.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/websockets/web_pepper_socket_channel_client_proxy.h"
@@ -64,6 +66,7 @@ WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document,
   Document* core_document = document;
   private_ = WebSocketChannelImpl::Create(core_document, channel_proxy_.Get(),
                                           SourceLocation::Capture());
+  Deprecation::CountDeprecation(*core_document, WebFeature::kPPAPIWebSocket);
   DCHECK(private_);
 }
 

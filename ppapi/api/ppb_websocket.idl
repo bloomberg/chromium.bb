@@ -177,6 +177,8 @@ enum PP_WebSocketCloseCode {
 /** 
  * The <code>PPB_WebSocket</code> interface provides bi-directional,
  * full-duplex, communications over a single TCP socket.
+ *
+ * This interface is deprecated and scheduled to be removed in mid-2019.
  */
 interface PPB_WebSocket {
   /**
