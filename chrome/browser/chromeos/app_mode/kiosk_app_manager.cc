@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
@@ -53,6 +54,7 @@
 #include "components/user_manager/user_manager.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace chromeos {
@@ -165,9 +167,11 @@ std::unique_ptr<ExternalCache> CreateExternalCache(
   if (g_test_overrides)
     return g_test_overrides->CreateExternalCache(delegate, true);
 
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory =
+      g_browser_process->shared_url_loader_factory();
   auto cache = std::make_unique<ExternalCacheImpl>(
-      GetCrxCacheDir(), g_browser_process->system_request_context(),
-      GetBackgroundTaskRunner(), delegate, true /* always_check_updates */,
+      GetCrxCacheDir(), shared_url_loader_factory, GetBackgroundTaskRunner(),
+      delegate, true /* always_check_updates */,
       false /* wait_for_cache_initialization */);
   cache->set_flush_on_put(true);
   return cache;

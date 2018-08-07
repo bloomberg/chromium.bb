@@ -16,20 +16,23 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/update_client/update_query_params.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/updater/extension_downloader.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using extensions::ExtensionDownloader;
 using extensions::ExtensionDownloaderDelegate;
 using update_client::UpdateQueryParams;
 
 std::unique_ptr<ExtensionDownloader>
-ChromeExtensionDownloaderFactory::CreateForRequestContext(
-    net::URLRequestContextGetter* request_context,
+ChromeExtensionDownloaderFactory::CreateForURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     ExtensionDownloaderDelegate* delegate,
-    service_manager::Connector* connector) {
-  std::unique_ptr<ExtensionDownloader> downloader(
-      new ExtensionDownloader(delegate, request_context, connector));
+    service_manager::Connector* connector,
+    const base::FilePath& profile_path) {
+  std::unique_ptr<ExtensionDownloader> downloader(new ExtensionDownloader(
+      delegate, std::move(url_loader_factory), connector, profile_path));
 #if defined(GOOGLE_CHROME_BUILD)
   std::string brand;
   google_brand::GetBrand(&brand);
@@ -54,9 +57,10 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
     ExtensionDownloaderDelegate* delegate) {
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  std::unique_ptr<ExtensionDownloader> downloader =
-      CreateForRequestContext(profile->GetRequestContext(), delegate,
-        connector);
+  std::unique_ptr<ExtensionDownloader> downloader = CreateForURLLoaderFactory(
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess(),
+      delegate, connector, profile->GetPath());
 
   // NOTE: It is not obvious why it is OK to pass raw pointers to the token
   // service and signin manager here. The logic is as follows:

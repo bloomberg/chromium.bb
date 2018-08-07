@@ -30,8 +30,8 @@ namespace extensions {
 class ExtensionDownloader;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace service_manager {
@@ -47,15 +47,15 @@ class ExternalCacheImpl : public ExternalCache,
                           public content::NotificationObserver,
                           public extensions::ExtensionDownloaderDelegate {
  public:
-  // The |request_context| is used for update checks. All file I/O is done via
-  // the |backend_task_runner|. If |always_check_updates| is |false|, update
+  // The |url_loader_factory| is used for update checks. All file I/O is done
+  // via the |backend_task_runner|. If |always_check_updates| is |false|, update
   // checks are performed for extensions that have an |external_update_url|
   // only. If |wait_for_cache_initialization| is |true|, the cache contents will
   // not be read until a flag file appears in the cache directory, signaling
   // that the cache is ready.
   ExternalCacheImpl(
       const base::FilePath& cache_dir,
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
       ExternalCacheDelegate* delegate,
       bool always_check_updates,
@@ -129,8 +129,8 @@ class ExternalCacheImpl : public ExternalCache,
 
   extensions::LocalExtensionCache local_cache_;
 
-  // Request context used by the |downloader_|.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  // URL lader factory used by the |downloader_|.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Task runner for executing file I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;

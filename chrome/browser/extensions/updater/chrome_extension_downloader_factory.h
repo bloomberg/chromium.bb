@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_CHROME_EXTENSION_DOWNLOADER_FACTORY_H_
 
 #include <memory>
+#include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 
 class Profile;
 
@@ -14,9 +16,9 @@ class ExtensionDownloader;
 class ExtensionDownloaderDelegate;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace service_manager {
 class Connector;
@@ -26,12 +28,22 @@ class Connector;
 // ExtensionDownloader suitable for use from within Chrome.
 class ChromeExtensionDownloaderFactory {
  public:
-  // Creates a downloader with the given request context. No profile identity
-  // is associated with this downloader.
+  // Creates a downloader with a given "global" url loader factory instance.
+  // No profile identity is associated with this downloader, which means:
+  //
+  // - when this method is called directly, |file_path| is empty.
+  // - when this method is called through CreateForProfile, |profile_path| is
+  //   non-empty.
+  //
+  // |profile_path| is used exclusely to support download of extensions through
+  // the file:// protocol. In practice, it whitelists specific directories the
+  // the browser has access to.
   static std::unique_ptr<extensions::ExtensionDownloader>
-  CreateForRequestContext(net::URLRequestContextGetter* request_context,
-                          extensions::ExtensionDownloaderDelegate* delegate,
-                          service_manager::Connector* connector);
+  CreateForURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      extensions::ExtensionDownloaderDelegate* delegate,
+      service_manager::Connector* connector,
+      const base::FilePath& profile_path = base::FilePath());
 
   // Creates a downloader for a given Profile. This downloader will be able
   // to authenticate as the signed-in user in the event that it's asked to

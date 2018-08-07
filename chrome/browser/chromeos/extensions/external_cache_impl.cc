@@ -31,7 +31,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -67,13 +67,13 @@ void WrapOnceClosure(base::OnceClosure closure) {
 
 ExternalCacheImpl::ExternalCacheImpl(
     const base::FilePath& cache_dir,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
     ExternalCacheDelegate* delegate,
     bool always_check_updates,
     bool wait_for_cache_initialization)
     : local_cache_(cache_dir, 0, base::TimeDelta(), backend_task_runner),
-      request_context_(request_context),
+      url_loader_factory_(std::move(url_loader_factory)),
       backend_task_runner_(backend_task_runner),
       delegate_(delegate),
       always_check_updates_(always_check_updates),
@@ -267,10 +267,10 @@ void ExternalCacheImpl::CheckCache() {
   if (local_cache_.is_shutdown())
     return;
 
-  // If request_context_ is missing we can't download anything.
-  if (request_context_.get()) {
-    downloader_ = ChromeExtensionDownloaderFactory::CreateForRequestContext(
-        request_context_.get(), this, GetConnector());
+  // If url_loader_factory_ is missing we can't download anything.
+  if (url_loader_factory_) {
+    downloader_ = ChromeExtensionDownloaderFactory::CreateForURLLoaderFactory(
+        url_loader_factory_, this, GetConnector());
   }
 
   cached_extensions_->Clear();
