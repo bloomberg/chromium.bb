@@ -48,6 +48,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_utils.h"
 
 namespace gpu {
 namespace {
@@ -497,6 +498,7 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CrashForTesting, OnCrashForTesting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -678,6 +680,16 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   }
 
   RemoveRoute(route_id);
+}
+
+void GpuChannel::OnCrashForTesting() {
+  // Only pay attention to this message if Telemetry's GPU
+  // benchmarking extension was enabled via the command line, which
+  // exposes privileged APIs to JavaScript.
+  if (!gpu_channel_manager_->gpu_preferences()
+           .enable_gpu_benchmarking_extension)
+    return;
+  gl::Crash();
 }
 
 void GpuChannel::CacheShader(const std::string& key,

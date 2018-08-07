@@ -54,6 +54,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
@@ -843,10 +844,7 @@ void GpuServiceImpl::CommitCATransaction(CommitCATransactionCallback callback) {
 
 void GpuServiceImpl::Crash() {
   DCHECK(io_runner_->BelongsToCurrentThread());
-  DVLOG(1) << "GPU: Simulating GPU crash";
-  // Good bye, cruel world.
-  volatile int* it_s_the_end_of_the_world_as_we_know_it = nullptr;
-  *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
+  gl::Crash();
 }
 
 void GpuServiceImpl::Hang() {

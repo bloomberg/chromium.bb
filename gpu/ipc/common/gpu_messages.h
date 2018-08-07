@@ -97,6 +97,10 @@ IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
 IPC_MESSAGE_CONTROL1(GpuChannelMsg_FlushCommandBuffers,
                      std::vector<gpu::FlushParams> /* flush_list */)
 
+// Crash the GPU process in similar way to how chrome://gpucrash does.
+// This is only supported in testing environments, and is otherwise ignored.
+IPC_MESSAGE_CONTROL0(GpuChannelMsg_CrashForTesting)
+
 // Simple NOP message which can be used as fence to ensure all previous sent
 // messages have been received.
 IPC_SYNC_MESSAGE_CONTROL0_0(GpuChannelMsg_Nop)

@@ -547,6 +547,7 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
                  &GpuBenchmarking::SendMessageToMicroBenchmark)
       .SetMethod("hasGpuChannel", &GpuBenchmarking::HasGpuChannel)
       .SetMethod("hasGpuProcess", &GpuBenchmarking::HasGpuProcess)
+      .SetMethod("crashGpuProcess", &GpuBenchmarking::CrashGpuProcess)
       .SetMethod("getGpuDriverBugWorkarounds",
                  &GpuBenchmarking::GetGpuDriverBugWorkarounds)
       .SetMethod("startProfiling", &GpuBenchmarking::StartProfiling)
@@ -1077,6 +1078,14 @@ bool GpuBenchmarking::HasGpuProcess() {
     return false;
   }
   return has_gpu_process;
+}
+
+void GpuBenchmarking::CrashGpuProcess() {
+  gpu::GpuChannelHost* gpu_channel =
+      RenderThreadImpl::current()->GetGpuChannel();
+  if (!gpu_channel)
+    return;
+  gpu_channel->CrashGpuProcessForTesting();
 }
 
 void GpuBenchmarking::GetGpuDriverBugWorkarounds(gin::Arguments* args) {

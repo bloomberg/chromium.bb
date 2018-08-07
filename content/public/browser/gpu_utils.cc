@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -97,6 +98,9 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_vulkan =
       command_line->HasSwitch(switches::kEnableVulkan);
+
+  gpu_preferences.enable_gpu_benchmarking_extension =
+      command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking);
 
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.

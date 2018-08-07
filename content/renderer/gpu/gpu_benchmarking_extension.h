@@ -80,6 +80,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   bool SendMessageToMicroBenchmark(int id, v8::Local<v8::Object> message);
   bool HasGpuChannel();
   bool HasGpuProcess();
+  void CrashGpuProcess();
   void GetGpuDriverBugWorkarounds(gin::Arguments* args);
 
   // Starts/stops the sampling profiler. StartProfiling takes one optional

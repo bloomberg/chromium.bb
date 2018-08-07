@@ -57,6 +57,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.enable_threaded_texture_mailboxes);
   EXPECT_EQ(left.gl_shader_interm_output, right.gl_shader_interm_output);
   EXPECT_EQ(left.emulate_shader_precision, right.emulate_shader_precision);
+  EXPECT_EQ(left.max_active_webgl_contexts, right.max_active_webgl_contexts);
   EXPECT_EQ(left.enable_gpu_service_logging, right.enable_gpu_service_logging);
   EXPECT_EQ(left.enable_gpu_service_tracing, right.enable_gpu_service_tracing);
   EXPECT_EQ(left.use_passthrough_cmd_decoder,
@@ -75,6 +76,8 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.watchdog_starts_backgrounded,
             right.watchdog_starts_backgrounded);
   EXPECT_EQ(left.enable_vulkan, right.enable_vulkan);
+  EXPECT_EQ(left.enable_gpu_benchmarking_extension,
+            right.enable_gpu_benchmarking_extension);
 }
 
 }  // namespace
@@ -140,6 +143,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_threaded_texture_mailboxes, true)
     GPU_PREFERENCES_FIELD(gl_shader_interm_output, true)
     GPU_PREFERENCES_FIELD(emulate_shader_precision, true)
+    GPU_PREFERENCES_FIELD(max_active_webgl_contexts, 1)
     GPU_PREFERENCES_FIELD(enable_gpu_service_logging, true)
     GPU_PREFERENCES_FIELD(enable_gpu_service_tracing, true)
     GPU_PREFERENCES_FIELD(use_passthrough_cmd_decoder, true)
@@ -152,6 +156,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(use_gpu_fences_for_overlay_planes, true)
     GPU_PREFERENCES_FIELD(watchdog_starts_backgrounded, true)
     GPU_PREFERENCES_FIELD(enable_vulkan, true)
+    GPU_PREFERENCES_FIELD(enable_gpu_benchmarking_extension, true)
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);
