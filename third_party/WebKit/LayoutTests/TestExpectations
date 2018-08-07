@@ -4847,3 +4847,6 @@ crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure ]
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure ]
 crbug.com/869726 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
+
+# Only passes on bots with GPUs.
+crbug.com/871445 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Timeout ]
