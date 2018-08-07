@@ -59,6 +59,16 @@
             "value": ["autofillEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome offers to automatically fill in forms. This preference's value is a boolean, defaulting to <code>true</code>."
           },
+          "autofillAddressEnabled": {
+            "$ref": "types.ChromeSetting",
+            "value": ["autofillAddressEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome offers to automatically fill in address forms. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "autofillCreditCardEnabled": {
+            "$ref": "types.ChromeSetting",
+            "value": ["autofillCreditCardEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome offers to automatically fill in credit card forms. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
           "passwordSavingEnabled": {
             "$ref": "types.ChromeSetting",
             "value": ["passwordSavingEnabled", {"type":"boolean"}],
