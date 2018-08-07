@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -144,6 +145,7 @@ struct SharedMemoryViaRawFileDescriptor {
 
 union VideoBufferHandle {
   handle<shared_buffer> shared_buffer_handle;
+  mojo_base.mojom.ReadOnlySharedMemoryRegion read_only_shmem_region;
   SharedMemoryViaRawFileDescriptor shared_memory_via_raw_file_descriptor;
   MailboxBufferHandleSet mailbox_handles;
 };

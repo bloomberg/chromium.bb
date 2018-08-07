@@ -41,6 +41,10 @@ struct VideoCaptureImpl::BufferContext
         InitializeFromSharedMemory(
             std::move(buffer_handle->get_shared_buffer_handle()));
         break;
+      case VideoFrameBufferHandleType::READ_ONLY_SHMEM_REGION:
+        InitializeFromReadOnlyShmemRegion(
+            std::move(buffer_handle->get_read_only_shmem_region()));
+        break;
       case VideoFrameBufferHandleType::SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR:
         NOTREACHED();
         break;
@@ -51,8 +55,10 @@ struct VideoCaptureImpl::BufferContext
   }
 
   VideoFrameBufferHandleType buffer_type() const { return buffer_type_; }
-  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
+  base::SharedMemory* shared_memory() const { return shared_memory_.get(); }
   size_t shared_memory_size() const { return shared_memory_size_; }
+  const void* read_only_shmem() const { return read_only_mapping_.memory(); }
+  size_t read_only_shmem_size() const { return read_only_mapping_.size(); }
   const std::vector<gpu::MailboxHolder>& mailbox_holders() const {
     return mailbox_holders_;
   }
@@ -79,6 +85,13 @@ struct VideoCaptureImpl::BufferContext
     }
   }
 
+  void InitializeFromReadOnlyShmemRegion(
+      base::ReadOnlySharedMemoryRegion region) {
+    DCHECK(region.IsValid());
+    read_only_mapping_ = region.Map();
+    DCHECK(read_only_mapping_.IsValid());
+  }
+
   void InitializeFromMailbox(
       media::mojom::MailboxBufferHandleSetPtr mailbox_handles) {
     DCHECK_EQ(media::VideoFrame::kMaxPlanes,
@@ -91,11 +104,14 @@ struct VideoCaptureImpl::BufferContext
 
   VideoFrameBufferHandleType buffer_type_;
 
-  // Only valid for |buffer_type_ == kSharedMemory|.
+  // Only valid for |buffer_type_ == SHARED_BUFFER_HANDLE|.
   std::unique_ptr<base::SharedMemory> shared_memory_;
   size_t shared_memory_size_;
 
-  // Only valid for |buffer_type_ == kMailboxHolder|.
+  // Only valid for |buffer_type_ == READ_ONLY_SHMEM_REGION|.
+  base::ReadOnlySharedMemoryMapping read_only_mapping_;
+
+  // Only valid for |buffer_type_ == MAILBOX_HANDLES|.
   std::vector<gpu::MailboxHolder> mailbox_holders_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferContext);
@@ -349,6 +365,14 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
           buffer_context->shared_memory()->handle(),
           0 /* shared_memory_offset */, info->timestamp);
       break;
+    case VideoFrameBufferHandleType::READ_ONLY_SHMEM_REGION:
+      frame = media::VideoFrame::WrapExternalData(
+          static_cast<media::VideoPixelFormat>(info->pixel_format),
+          info->coded_size, info->visible_rect, info->visible_rect.size(),
+          const_cast<uint8_t*>(
+              static_cast<const uint8_t*>(buffer_context->read_only_shmem())),
+          buffer_context->read_only_shmem_size(), info->timestamp);
+      break;
     case VideoFrameBufferHandleType::SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR:
       NOTREACHED();
       break;
@@ -402,7 +426,7 @@ void VideoCaptureImpl::OnAllClientsFinishedConsumingFrame(
     double consumer_resource_utilization) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
-// Subtle race note: It's important that the |buffer| argument be
+// Subtle race note: It's important that the |buffer_context| argument be
 // std::move()'ed to this method and never copied. This is so that the caller,
 // DidFinishConsumingFrame(), does not implicitly retain a reference while it
 // is running the trampoline callback on another thread. This is necessary to
