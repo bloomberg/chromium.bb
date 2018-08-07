@@ -58,6 +58,9 @@ class DownloadManagerService
   // Called to Initialize this object.
   void Init(JNIEnv* env, jobject obj);
 
+  // Called when full browser process starts.
+  void OnFullBrowserStarted(JNIEnv* env, jobject obj);
+
   // Called to open a given download item.
   void OpenDownload(download::DownloadItem* download, int source);
 

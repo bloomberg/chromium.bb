@@ -1113,7 +1113,9 @@ public class DownloadManagerService
      */
     private long getNativeDownloadManagerService() {
         if (mNativeDownloadManagerService == 0) {
-            mNativeDownloadManagerService = nativeInit();
+            mNativeDownloadManagerService =
+                    nativeInit(BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                                       .isStartupSuccessfullyCompleted());
         }
         return mNativeDownloadManagerService;
     }
@@ -1887,7 +1889,7 @@ public class DownloadManagerService
     private static native boolean nativeIsSupportedMimeType(String mimeType);
     private static native int nativeGetAutoResumptionLimit();
 
-    private native long nativeInit();
+    private native long nativeInit(boolean isFullBrowserStarted);
     private native void nativeOpenDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord, int source);
     private native void nativeResumeDownload(
