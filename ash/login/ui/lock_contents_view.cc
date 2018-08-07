@@ -25,6 +25,7 @@
 #include "ash/login/ui/note_action_launch_button.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -33,6 +34,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -1608,9 +1610,15 @@ void LockContentsView::RegisterAccelerators() {
       AcceleratorAction::kFocusNextUser;
   accel_map_[ui::Accelerator(ui::VKEY_LEFT, 0)] =
       AcceleratorAction::kFocusPreviousUser;
-  accel_map_[ui::Accelerator(
-      ui::VKEY_R, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
-      AcceleratorAction::kShowResetScreen;
+
+  // Show reset conflicts with rotate screen when --ash-dev-shortcuts is passed.
+  // Favor --ash-dev-shortcuts since that is explicitly added.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDeveloperShortcuts)) {
+    accel_map_[ui::Accelerator(
+        ui::VKEY_R, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN |
+                        ui::EF_ALT_DOWN)] = AcceleratorAction::kShowResetScreen;
+  }
 
   AcceleratorController* controller = Shell::Get()->accelerator_controller();
   for (const auto& item : accel_map_)
