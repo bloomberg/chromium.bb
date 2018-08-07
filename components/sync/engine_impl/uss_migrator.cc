@@ -44,9 +44,13 @@ bool ExtractSyncEntity(ReadTransaction* trans,
   entity->set_client_defined_unique_tag(entry.GetUniqueClientTag());
   // Required fields for bookmarks only.
   entity->set_folder(entry.GetServerIsDir());
-  entity->set_parent_id_string(entry.GetServerParentId().GetServerId());
-  *entity->mutable_unique_position() =
-      entry.GetServerUniquePosition().ToProto();
+  if (!entry.GetServerParentId().IsNull()) {
+    entity->set_parent_id_string(entry.GetServerParentId().GetServerId());
+  }
+  if (entry.GetServerUniquePosition().IsValid()) {
+    *entity->mutable_unique_position() =
+        entry.GetServerUniquePosition().ToProto();
+  }
   entity->set_server_defined_unique_tag(entry.GetUniqueServerTag());
 
   // It looks like there are fancy other ways to get e.g. passwords specifics
