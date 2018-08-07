@@ -17,7 +17,7 @@ namespace content {
 
 namespace {
 
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cert-chain-format
 std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
     base::span<const uint8_t> message,
     SignedExchangeDevToolsProxy* devtools_proxy) {
@@ -94,9 +94,9 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
 
     auto ocsp_iter = cert_map.find(cbor::CBORValue(kOcspKey));
     if (i == 1) {
-      // Step 2. The first certificate’s ocsp value if any MUST be a complete,
+      // Step 2. The first certificate’s ocsp value MUST be a complete,
       // DER-encoded OCSP response for that certificate (using the ASN.1 type
-      // OCSPResponse defined in [RFC2560]). ... [spec text]
+      // OCSPResponse defined in [RFC6960]). ... [spec text]
       if (ocsp_iter == cert_map.end() || !ocsp_iter->second.is_bytestring()) {
         signed_exchange_utils::ReportErrorAndTraceEvent(
             devtools_proxy,
@@ -119,13 +119,11 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
       return nullptr;
     }
 
-    // Step 3. Each certificate’s sct value MUST be a
+    // Step 3. Each certificate’s sct value if any MUST be a
     // SignedCertificateTimestampList for that certificate as defined by Section
     // 3.3 of [RFC6962]. [spec text]
     //
     // We use SCTs only of the main certificate.
-    // TODO(crbug.com/815025): Update the spec text once
-    // https://github.com/WICG/webpackage/issues/175 is resolved.
     if (i == 1) {
       auto sct_iter = cert_map.find(cbor::CBORValue(kSctKey));
       if (sct_iter != cert_map.end()) {
