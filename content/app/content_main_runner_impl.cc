@@ -43,6 +43,7 @@
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/startup_data_impl.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/url_schemes.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_constants.h"
@@ -73,8 +74,8 @@
 #include "base/trace_event/trace_event_etw_export_win.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
+#include "base/mac/mach_port_broker.h"
 #include "base/power_monitor/power_monitor_device_source.h"
-#include "content/browser/mach_broker_mac.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif  // OS_WIN
 
@@ -718,7 +719,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     }
 
     if (!process_type.empty() && delegate_->ShouldSendMachPort(process_type)) {
-      MachBroker::ChildSendTaskPortToParent();
+      base::MachPortBroker::ChildSendTaskPortToParent(kMachBootstrapName);
     }
 #endif
 
