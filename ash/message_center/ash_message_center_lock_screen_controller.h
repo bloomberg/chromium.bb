@@ -17,6 +17,16 @@ class AshMessageCenterLockScreenController
     : public message_center::LockScreenController,
       public SessionObserver {
  public:
+  // Modes of the lock screen notification.
+  enum class Mode { HIDE, SHOW, HIDE_SENSITIVE };
+
+  // Returns if the message center shows the notifications on the lock screen
+  // or not. True if it shows, false if doesn't.
+  static ASH_EXPORT bool IsEnabled();
+
+  // Returns the current mode of the lock screen notification.
+  static Mode GetMode();
+
   AshMessageCenterLockScreenController();
   ~AshMessageCenterLockScreenController() override;
 

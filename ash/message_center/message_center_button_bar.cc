@@ -4,9 +4,9 @@
 
 #include "ash/message_center/message_center_button_bar.h"
 
+#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/message_center_view.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
@@ -121,7 +121,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   SetBorder(views::CreateEmptyBorder(kButtonBarBorder));
 
   notification_label_ = new views::Label(
-      GetTitle(!locked || features::IsLockScreenNotificationsEnabled()));
+      GetTitle(!locked || AshMessageCenterLockScreenController::IsEnabled()));
   notification_label_->SetAutoColorReadabilityEnabled(false);
   notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   notification_label_->SetEnabledColor(kTextColor);
@@ -272,7 +272,7 @@ void MessageCenterButtonBar::OnImplicitAnimationsCompleted() {
 
 void MessageCenterButtonBar::SetIsLocked(bool locked) {
   SetButtonsVisible(locked);
-  UpdateLabel(!locked || features::IsLockScreenNotificationsEnabled());
+  UpdateLabel(!locked || AshMessageCenterLockScreenController::IsEnabled());
 }
 
 base::string16 MessageCenterButtonBar::GetTitle(
@@ -294,7 +294,7 @@ void MessageCenterButtonBar::UpdateLabel(bool message_center_visible) {
 
 void MessageCenterButtonBar::SetButtonsVisible(bool locked) {
   bool message_center_visible =
-      !locked || features::IsLockScreenNotificationsEnabled();
+      !locked || AshMessageCenterLockScreenController::IsEnabled();
   if (close_all_button_)
     close_all_button_->SetVisible(message_center_visible);
   separator_1_->SetVisible(message_center_visible);

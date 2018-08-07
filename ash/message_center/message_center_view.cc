@@ -7,12 +7,11 @@
 #include <list>
 #include <map>
 
+#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/message_center/message_center_button_bar.h"
 #include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/notifier_settings_view.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -189,7 +188,7 @@ MessageCenterView::MessageCenterView(
     : message_center_(message_center),
       settings_visible_(initially_settings_visible),
       is_locked_(Shell::Get()->session_controller()->IsScreenLocked()) {
-  if (is_locked_ && !features::IsLockScreenNotificationsEnabled())
+  if (is_locked_ && !AshMessageCenterLockScreenController::IsEnabled())
     mode_ = Mode::LOCKED;
   else if (initially_settings_visible)
     mode_ = Mode::SETTINGS;
@@ -577,7 +576,7 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
 void MessageCenterView::Update(bool animate) {
   bool no_message_views = (message_list_view_->GetNotificationCount() == 0);
 
-  if (is_locked_ && !features::IsLockScreenNotificationsEnabled())
+  if (is_locked_ && !AshMessageCenterLockScreenController::IsEnabled())
     SetVisibilityMode(Mode::LOCKED, animate);
   else if (settings_visible_)
     SetVisibilityMode(Mode::SETTINGS, animate);

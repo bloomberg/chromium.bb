@@ -6,6 +6,7 @@
 
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_window.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -18,6 +19,20 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
+
+// static
+bool AshMessageCenterLockScreenController::IsEnabled() {
+  return GetMode() != Mode::HIDE;
+}
+
+// static
+AshMessageCenterLockScreenController::Mode
+AshMessageCenterLockScreenController::GetMode() {
+  if (!features::IsLockScreenNotificationsEnabled())
+    return Mode::HIDE;
+
+  return Mode::SHOW;
+}
 
 namespace {
 const char kToastId[] = "ash-lock-screen-manager";

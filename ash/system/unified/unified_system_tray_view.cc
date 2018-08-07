@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray_view.h"
 
+#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
@@ -281,7 +282,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   notification_hidden_view_->SetVisible(
       session_controller->GetUserSession(0) &&
       session_controller->IsScreenLocked() &&
-      !features::IsLockScreenNotificationsEnabled());
+      !AshMessageCenterLockScreenController::IsEnabled());
   AddChildView(notification_hidden_view_);
 
   AddChildView(system_tray_container_);

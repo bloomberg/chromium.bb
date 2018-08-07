@@ -4,7 +4,7 @@
 
 #include "ash/system/message_center/session_state_notification_blocker.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ui/message_center/message_center.h"
@@ -21,7 +21,7 @@ bool CalculateShouldShowNotification() {
 
   return !session_controller->IsRunningInAppMode() &&
          (!session_controller->IsScreenLocked() ||
-          features::IsLockScreenNotificationsEnabled());
+          AshMessageCenterLockScreenController::IsEnabled());
 }
 
 bool CalculateShouldShowPopup() {
