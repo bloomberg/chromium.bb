@@ -56,7 +56,7 @@ class InlineFilter {
   }
   bool IsTraverse(const NGPaintFragment* fragment) {
     return fragment->PhysicalFragment().IsContainer() &&
-           !fragment->PhysicalFragment().IsBlockLayoutRoot();
+           !fragment->PhysicalFragment().IsBlockFormattingContextRoot();
   }
 };
 

@@ -63,9 +63,10 @@ class CORE_EXPORT NGPhysicalFragment
     // When adding new values, make sure the bit size of |sub_type_| is large
     // enough to store.
 
-    // Also, add after kMinimumBlockLayoutRoot if the box type is a block layout
-    // root, or before otherwise. See IsBlockLayoutRoot().
-    kMinimumBlockLayoutRoot = kAtomicInline
+    // Also, add after kMinimumBlockFormattingContextRoot if the box type is a
+    // block formatting context root, or before otherwise. See
+    // IsBlockFormattingContextRoot().
+    kMinimumBlockFormattingContextRoot = kAtomicInline
   };
 
   ~NGPhysicalFragment();
@@ -113,11 +114,9 @@ class CORE_EXPORT NGPhysicalFragment
   // Returns whether the fragment is old layout root.
   bool IsOldLayoutRoot() const { return is_old_layout_root_; }
 
-  // A block sub-layout starts on this fragment. Inline blocks, floats, out of
-  // flow positioned objects are such examples. This is also true on NG/legacy
-  // boundary.
-  bool IsBlockLayoutRoot() const {
-    return (IsBox() && BoxType() >= NGBoxType::kMinimumBlockLayoutRoot) ||
+  bool IsBlockFormattingContextRoot() const {
+    return (IsBox() &&
+            BoxType() >= NGBoxType::kMinimumBlockFormattingContextRoot) ||
            IsOldLayoutRoot();
   }
 
