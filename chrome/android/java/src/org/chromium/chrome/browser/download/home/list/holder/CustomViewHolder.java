@@ -14,8 +14,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /** A {@link RecyclerView.ViewHolder} that holds a {@link View} that is opaque to the holder. */
 public class CustomViewHolder extends ListItemViewHolder {
-    /** Creates a new {@link org.chromium.chrome.browser.download.home.list.holder.CustomViewHolder}
-     * instance. */
+    /** Creates a new {@link CustomViewHolder} instance. */
     public CustomViewHolder(ViewGroup parent) {
         super(new FrameLayout(parent.getContext()));
         itemView.setLayoutParams(new ViewGroup.LayoutParams(

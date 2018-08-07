@@ -25,17 +25,14 @@ public class PrefetchViewHolder extends ThumbnailAwareViewHolder {
     private final TextView mTimestamp;
 
     /**
-     * Creates a new instance of a {@link
-     * org.chromium.chrome.browser.download.home.list.holder.PrefetchViewHolder}.
+     * Creates a new instance of a {@link PrefetchViewHolder}.
      */
-    public static org.chromium.chrome.browser.download.home.list.holder.PrefetchViewHolder create(
-            ViewGroup parent) {
+    public static PrefetchViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
                             .inflate(R.layout.download_manager_prefetch_item, null);
         int imageSize = parent.getContext().getResources().getDimensionPixelSize(
                 R.dimen.download_manager_prefetch_thumbnail_size);
-        return new org.chromium.chrome.browser.download.home.list.holder.PrefetchViewHolder(
-                view, imageSize);
+        return new PrefetchViewHolder(view, imageSize);
     }
 
     private PrefetchViewHolder(View view, int thumbnailSizePx) {

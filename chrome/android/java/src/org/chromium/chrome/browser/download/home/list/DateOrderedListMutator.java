@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListIt
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SeparatorViewListItem;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -150,8 +151,13 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                 }
 
                 // Add the items in the section.
-                for (OfflineItem item : section.items.values()) {
-                    listItems.add(new OfflineItemListItem(item));
+                for (OfflineItem offlineItem : section.items.values()) {
+                    OfflineItemListItem item = new OfflineItemListItem(offlineItem);
+                    if (section.items.size() == 1
+                            && offlineItem.filter == OfflineItemFilter.FILTER_IMAGE) {
+                        item.spanFullWidth = true;
+                    }
+                    listItems.add(item);
                 }
 
                 // Add a section separator if needed.

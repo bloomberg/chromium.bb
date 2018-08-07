@@ -18,8 +18,10 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
-/** A {@link RecyclerView.ViewHolder} specifically meant to display an in-progress {@code
- * OfflineItem}. */
+/**
+ * A {@link RecyclerView.ViewHolder} specifically meant to display an in-progress {@code
+ * OfflineItem}.
+ */
 public class InProgressViewHolder extends ListItemViewHolder {
     private final ProgressBar mProgressBar;
     private final TextView mTitle;
@@ -28,20 +30,15 @@ public class InProgressViewHolder extends ListItemViewHolder {
     private final TintedImageButton mCancelButton;
 
     /**
-     * Creates a new {@link
-     * org.chromium.chrome.browser.download.home.list.holder.InProgressViewHolder} instance.
+     * Creates a new {@link InProgressViewHolder} instance.
      */
-    public static org.chromium.chrome.browser.download.home.list.holder.InProgressViewHolder create(
-            ViewGroup parent) {
+    public static InProgressViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
                             .inflate(R.layout.download_manager_in_progress_item, null);
-        return new org.chromium.chrome.browser.download.home.list.holder.InProgressViewHolder(view);
+        return new InProgressViewHolder(view);
     }
 
-    /**
-     * Creates a new {@link
-     * org.chromium.chrome.browser.download.home.list.holder.InProgressViewHolder} instance.
-     */
+    /** Constructor. */
     public InProgressViewHolder(View view) {
         super(view);
         mProgressBar = view.findViewById(R.id.progress_bar);

@@ -16,18 +16,19 @@ import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 
 /** A {@link RecyclerView.ViewHolder} specifically meant to display an image {@code OfflineItem}. */
 public class ImageViewHolder extends ThumbnailAwareViewHolder {
-    public static org.chromium.chrome.browser.download.home.list.holder.ImageViewHolder create(
-            ViewGroup parent) {
+    private final int mImageHeightPx;
+
+    public static ImageViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
                             .inflate(R.layout.download_manager_image_item, null);
         int imageSize = parent.getContext().getResources().getDimensionPixelSize(
                 R.dimen.download_manager_image_width);
-        return new org.chromium.chrome.browser.download.home.list.holder.ImageViewHolder(
-                view, imageSize);
+        return new ImageViewHolder(view, imageSize);
     }
 
     public ImageViewHolder(View view, int thumbnailSizePx) {
         super(view, thumbnailSizePx, thumbnailSizePx);
+        mImageHeightPx = thumbnailSizePx;
     }
 
     // ThumbnailAwareViewHolder implementation.
@@ -37,6 +38,9 @@ public class ImageViewHolder extends ThumbnailAwareViewHolder {
         ListItem.OfflineItemListItem offlineItem = (ListItem.OfflineItemListItem) item;
         View imageView = itemView.findViewById(R.id.thumbnail);
         imageView.setContentDescription(offlineItem.item.title);
+        ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
+        layoutParams.height =
+                offlineItem.spanFullWidth ? ViewGroup.LayoutParams.WRAP_CONTENT : mImageHeightPx;
     }
 
     @Override

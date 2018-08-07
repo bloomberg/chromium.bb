@@ -16,8 +16,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /** A {@link RecyclerView.ViewHolder} specifically meant to display a date header. */
 public class DateViewHolder extends ListItemViewHolder {
-    /** Creates a new {@link org.chromium.chrome.browser.download.home.list.holder.DateViewHolder}
-     * instance. */
+    /** Creates a new {@link DateViewHolder} instance. */
     public static org.chromium.chrome.browser.download.home.list.holder.DateViewHolder create(
             ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())

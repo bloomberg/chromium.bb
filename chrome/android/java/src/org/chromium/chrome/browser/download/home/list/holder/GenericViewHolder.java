@@ -38,16 +38,13 @@ public class GenericViewHolder extends ThumbnailAwareViewHolder {
     /** The icon to use when there is no thumbnail. */
     private @DrawableRes int mIconId = INVALID_ID;
 
-    /** Creates a new {@link
-     * org.chromium.chrome.browser.download.home.list.holder.GenericViewHolder} instance. */
-    public static org.chromium.chrome.browser.download.home.list.holder.GenericViewHolder create(
-            ViewGroup parent) {
+    /** Creates a new {@link GenericViewHolder} instance. */
+    public static GenericViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
                             .inflate(R.layout.download_manager_generic_item, null);
         int imageSize = parent.getContext().getResources().getDimensionPixelSize(
                 R.dimen.download_manager_generic_thumbnail_size);
-        return new org.chromium.chrome.browser.download.home.list.holder.GenericViewHolder(
-                view, imageSize);
+        return new GenericViewHolder(view, imageSize);
     }
 
     private GenericViewHolder(View view, int thumbnailSizePx) {
