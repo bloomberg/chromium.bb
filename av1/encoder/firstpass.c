@@ -52,9 +52,10 @@
 #define FACTOR_PT_LOW 0.70
 #define FACTOR_PT_HIGH 0.90
 #define FIRST_PASS_Q 10.0
-#define GF_MAX_BOOST 96.0
+#define GF_MAX_BOOST 90.0
 #define INTRA_MODE_PENALTY 1024
-#define KF_MAX_BOOST 128.0
+#define KF_MIN_FRAME_BOOST 96.0
+#define KF_MAX_FRAME_BOOST 128.0
 #define MIN_ARF_GF_BOOST 240
 #define MIN_DECAY_FACTOR 0.01
 #define MIN_KF_BOOST 300
@@ -2454,17 +2455,21 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   assert(num_mbs > 0);
   if (i) avg_sr_coded_error /= i;
 
-#if REDUCE_LAST_GF_LENGTH
+#define REDUCE_GF_LENGTH_THRESH 10
+#define REDUCE_GF_LENGTH_TO_KEY_THRESH 9
+#define REDUCE_GF_LENGTH_BY 1
   int alt_offset = 0;
+#if REDUCE_LAST_GF_LENGTH
   // We are going to have an alt ref.
   if (allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
       (i >= rc->min_gf_interval)) {
     // If the last gf is too long, then we have to reduce
     // the current gf length
-    if (rc->frames_to_key - i < 9 && i > 10) {
+    if (rc->frames_to_key - i < REDUCE_GF_LENGTH_TO_KEY_THRESH &&
+        i > REDUCE_GF_LENGTH_THRESH) {
       // too long, reduce the length by one
-      alt_offset = -1;
-      i -= 1;
+      alt_offset = -REDUCE_GF_LENGTH_BY;
+      i -= REDUCE_GF_LENGTH_BY;
     }
   }
 #endif
@@ -2474,11 +2479,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       (i >= rc->min_gf_interval)) {
     // Calculate the boost for alt ref.
     rc->gfu_boost =
-#if REDUCE_LAST_GF_LENGTH
         calc_arf_boost(cpi, alt_offset, (i - 1), (i - 1), &f_boost, &b_boost);
-#else
-        calc_arf_boost(cpi, 0, (i - 1), (i - 1), &f_boost, &b_boost);
-#endif
     rc->source_alt_ref_pending = 1;
   } else {
     rc->gfu_boost = AOMMAX((int)boost_score, MIN_ARF_GF_BOOST);
@@ -2504,7 +2505,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   if (rc->source_alt_ref_pending) {
     // If the last gf is too long, then we have to reduce
     // the boost factor on current alt ref
-    if (rc->frames_to_key - i == 0 && i > 10) {
+    if (rc->frames_to_key - i == REDUCE_GF_LENGTH_BY &&
+        i > REDUCE_GF_LENGTH_THRESH) {
       rc->arf_boost_factor = 0;
     }
   }
@@ -2894,6 +2896,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // how many bits to spend on it.
   decay_accumulator = 1.0;
   boost_score = 0.0;
+  const double kf_max_boost = AOMMIN(
+      AOMMAX(rc->frames_to_key * 2.0, KF_MIN_FRAME_BOOST), KF_MAX_FRAME_BOOST);
   for (i = 0; i < (rc->frames_to_key - 1); ++i) {
     if (EOF == input_stats(twopass, &next_frame)) break;
 
@@ -2905,7 +2909,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     if ((i <= rc->max_gf_interval) ||
         ((i <= (rc->max_gf_interval * 4)) && (decay_accumulator > 0.5))) {
       const double frame_boost =
-          calc_frame_boost(cpi, this_frame, 0, KF_MAX_BOOST);
+          calc_frame_boost(cpi, this_frame, 0, kf_max_boost);
 
       // How fast is prediction quality decaying.
       if (!detect_flash(twopass, 0)) {

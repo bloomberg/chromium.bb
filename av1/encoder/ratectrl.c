@@ -1025,9 +1025,9 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
           active_best_quality = get_gf_active_quality(rc, q, bit_depth);
           *arf_q = active_best_quality;
 #if REDUCE_LAST_ALT_BOOST
-          int min_boost =
-              (get_gf_high_motion_quality(q, bit_depth) + active_best_quality) /
-              2;
+          int min_boost = (get_gf_high_motion_quality(q, bit_depth) +
+                           3 * active_best_quality) /
+                          4;
           int boost = min_boost - active_best_quality;
 
           active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
