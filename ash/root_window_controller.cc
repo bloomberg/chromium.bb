@@ -48,6 +48,7 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_action_handler_layout_manager.h"
 #include "ash/wm/lock_layout_manager.h"
+#include "ash/wm/overlay_layout_manager.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/switchable_windows.h"
@@ -948,6 +949,8 @@ void RootWindowController::CreateContainers() {
                       lock_screen_related_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(overlay_container);
   overlay_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+  overlay_container->SetLayoutManager(
+      new OverlayLayoutManager(overlay_container));  // Takes ownership.
 
   CreateContainer(kShellWindowId_DockedMagnifierContainer,
                   "DockedMagnifierContainer", lock_screen_related_containers);
