@@ -267,6 +267,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncAutofill];
+    SyncSwitchItem* syncSettingsItem = [self
+        switchItemWithItemType:SyncAutofillItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SETTINGS_TEXT
+                detailStringID:0
+                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
+                      dataType:SyncSetupService::kSyncPreferences];
     SyncSwitchItem* syncReadingListItem = [self
         switchItemWithItemType:SyncReadingListItemType
                   textStringID:
@@ -308,8 +314,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                        GoogleServicesSettingsCommandIDOpenManageSyncedDataPage];
     _personalizedItems = @[
       syncBookmarksItem, syncHistoryItem, syncPasswordsItem, syncOpenTabsItem,
-      syncAutofillItem, syncReadingListItem, syncActivityAndInteractionsItem,
-      syncGoogleActivityControlsItem, encryptionItem, manageSyncedDataItem
+      syncAutofillItem, syncSettingsItem, syncReadingListItem,
+      syncActivityAndInteractionsItem, syncGoogleActivityControlsItem,
+      encryptionItem, manageSyncedDataItem
     ];
   }
   return _personalizedItems;
