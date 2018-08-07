@@ -2079,6 +2079,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Arc.SmartTextSelection.Request">
+  <owner>jorgegil@google.com</owner>
+  <description>
+    Recorded when a request to the ARC++ container to generate Smart Text
+    Selection actions is made. This happens when the user opens the Context Menu
+    via a right-click.
+  </description>
+</action>
+
 <action name="AutoDetectChange">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

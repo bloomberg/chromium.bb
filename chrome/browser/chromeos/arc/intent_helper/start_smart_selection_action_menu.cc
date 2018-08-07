@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -53,6 +54,7 @@ void StartSmartSelectionActionMenu::InitMenu(
   if (!instance)
     return;
 
+  base::RecordAction(base::UserMetricsAction("Arc.SmartTextSelection.Request"));
   instance->RequestTextSelectionActions(
       base::UTF16ToUTF8(params.selection_text),
       mojom::ScaleFactor(ui::GetSupportedScaleFactors().back()),
