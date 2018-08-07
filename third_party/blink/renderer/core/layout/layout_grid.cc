@@ -198,34 +198,6 @@ bool LayoutGrid::NamedGridLinesDefinitionDidChange(
          old_style.NamedGridColumnLines() != StyleRef().NamedGridColumnLines();
 }
 
-// This method optimizes the gutters computation by skiping the available size
-// call if gaps are fixed size (it's only needed for percentages).
-base::Optional<LayoutUnit> LayoutGrid::AvailableSpaceForGutters(
-    GridTrackSizingDirection direction) const {
-  bool is_row_axis = direction == kForColumns;
-
-  const GapLength& gap =
-      is_row_axis ? StyleRef().ColumnGap() : StyleRef().RowGap();
-  if (!gap.IsNormal() && !gap.GetLength().IsPercentOrCalc())
-    return base::nullopt;
-
-  return is_row_axis ? AvailableLogicalWidth()
-                     : AvailableLogicalHeightForPercentageComputation();
-}
-
-LayoutUnit LayoutGrid::ComputeTrackBasedLogicalHeight() const {
-  LayoutUnit logical_height;
-
-  const Vector<GridTrack>& all_rows = track_sizing_algorithm_.Tracks(kForRows);
-  for (const auto& row : all_rows)
-    logical_height += row.BaseSize();
-
-  logical_height += GuttersSize(*grid_, kForRows, 0, all_rows.size(),
-                                AvailableSpaceForGutters(kForRows));
-
-  return logical_height;
-}
-
 void LayoutGrid::ComputeTrackSizesForDefiniteSize(
     GridTrackSizingDirection direction,
     LayoutUnit available_space) {
@@ -249,7 +221,8 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
   // all the cases with orthogonal flows require this extra cycle; we need a
   // more specific condition to detect whether child's min-content contribution
   // has changed or not.
-  if (!has_any_orthogonal_item_)
+  if (!has_any_orthogonal_item_ &&
+      !track_sizing_algorithm_.HasAnyPercentSizedRowsIndefiniteHeight())
     return;
 
   // TODO (lajava): Whenever the min-content contribution of a grid item changes
@@ -336,9 +309,9 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
                                          min_content_height_,
                                          max_content_height_);
     }
-    LayoutUnit track_based_logical_height = ComputeTrackBasedLogicalHeight() +
-                                            BorderAndPaddingLogicalHeight() +
-                                            ScrollbarLogicalHeight();
+    LayoutUnit track_based_logical_height =
+        track_sizing_algorithm_.ComputeTrackBasedSize() +
+        BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
     SetLogicalHeight(track_based_logical_height);
 
     LayoutUnit old_client_after_edge = ClientLogicalBottom();
@@ -404,10 +377,10 @@ LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction) const {
   if (gap.IsNormal())
     return LayoutUnit();
 
-  if (gap.GetLength().IsPercentOrCalc())
-    available_size = is_row_axis
-                         ? AvailableLogicalWidth()
-                         : AvailableLogicalHeightForPercentageComputation();
+  if (gap.GetLength().IsPercentOrCalc()) {
+    available_size =
+        is_row_axis ? AvailableLogicalWidth() : ContentLogicalHeight();
+  }
 
   // TODO(rego): Maybe we could cache the computed percentage as a performance
   // improvement.
@@ -2032,12 +2005,14 @@ LayoutUnit LayoutGrid::GridAreaBreadthForOutOfFlowChild(
     end = positions[end_line];
     // These vectors store line positions including gaps, but we shouldn't
     // consider them for the edges of the grid.
-    base::Optional<LayoutUnit> available_size_for_gutters =
-        AvailableSpaceForGutters(direction);
     if (end_line > 0 && end_line < last_line) {
       DCHECK(!grid_->NeedsItemsPlacement());
-      end -= GuttersSize(*grid_, direction, end_line - 1, 2,
-                         available_size_for_gutters);
+      // TODO(rego): It would be more efficient to call GridGap(direction) and
+      // pass that value to GuttersSize(), so we could avoid the call to
+      // available size if the gutter doesn't use percentages.
+      end -= GuttersSize(
+          *grid_, direction, end_line - 1, 2,
+          is_row_axis ? AvailableLogicalWidth() : ContentLogicalHeight());
       end -= is_row_axis ? offset_between_columns_.distribution_offset
                          : offset_between_rows_.distribution_offset;
     }

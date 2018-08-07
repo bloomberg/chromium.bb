@@ -22,7 +22,7 @@
 }
 .gridWithPercent {
     grid-template-columns: 50% [last];
-    grid-template-rows: 27% [last];
+    grid-template-rows: 25% [last];
 }
 .gridWithAuto {
     grid-template-columns: [first] auto;
@@ -104,9 +104,9 @@
 
     debug("Test getting grid-template-columns and grid-template-rows set through CSS");
     testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "[first] 10px", "[first] 15px");
-    testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "400px [last]", "162px [last]");
+    testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "400px [last]", "150px [last]");
     testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSize"), "0px [last]", "0px [last]");
-    testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSizeWithChildren"), "38.5px [last]", "22px [last]");
+    testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSizeWithChildren"), "38.5px [last]", "5.5px [last]");
     testGridDefinitionsValues(document.getElementById("gridWithAutoElement"), "[first] 0px", "0px [last]");
     testGridDefinitionsValues(document.getElementById("gridWithAutoWithChildrenElement"), "[first] 77px", "22px [last]");
     testGridDefinitionsValues(document.getElementById("gridWithMinMax"), "[first] 80px", "300px [last]");
