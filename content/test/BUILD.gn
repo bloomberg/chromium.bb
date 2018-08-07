@@ -1959,12 +1959,6 @@ test("content_unittests") {
       "../browser/media/capture/desktop_capture_device_unittest.cc",
       "../browser/media/capture/frame_sink_video_capture_device_unittest.cc",
     ]
-    if (use_aura) {
-      sources += [ "../browser/media/capture/cursor_renderer_aura_unittest.cc" ]
-    }
-    if (is_mac) {
-      sources += [ "../browser/media/capture/cursor_renderer_mac_unittest.mm" ]
-    }
     if (is_chromeos) {
       sources += [
         "../browser/media/capture/lame_capture_overlay_chromeos_unittest.cc",
@@ -2071,10 +2065,6 @@ test("content_unittests") {
     ]
   }
 
-  # Avoid windows due to non-availability of cursor resources in test.
-  if (is_win) {
-    sources -= [ "../browser/media/capture/cursor_renderer_aura_unittest.cc" ]
-  }
   if (use_aura || toolkit_views) {
     deps += [ "//ui/events:test_support" ]
   }
