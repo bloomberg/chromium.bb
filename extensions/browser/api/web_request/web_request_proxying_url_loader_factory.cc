@@ -62,11 +62,11 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       target_client_(std::move(client)),
       proxied_client_binding_(this),
       weak_factory_(this) {
-  // If there is a client error, clean up the request.
+  // If there is a client error, remove this request from the proxy. |factory_|
+  // outlives this class, so base::Unretained is safe.
   target_client_.set_connection_error_handler(base::BindOnce(
-      &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
-      weak_factory_.GetWeakPtr(),
-      network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
+      &WebRequestProxyingURLLoaderFactory::RemoveRequest,
+      base::Unretained(factory_), network_service_request_id_, request_id_));
 }
 
 WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
@@ -79,7 +79,6 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
-  request_completed_ = false;
   // Derive a new WebRequestInfo value any time |Restart()| is called, because
   // the details in |request_| may have changed e.g. if we've been redirected.
   info_.emplace(
@@ -497,7 +496,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       redirect_info.new_url);
   target_client_->OnReceiveRedirect(redirect_info, current_response_);
   request_.url = redirect_info.new_url;
-  request_completed_ = true;
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -531,14 +529,13 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   continuation.Run(net::OK);
 }
+
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
-  if (!request_completed_) {
-    target_client_->OnComplete(status);
-    ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-        factory_->browser_context_, factory_->info_map_, &info_.value(),
-        true /* started */, status.error_code);
-  }
+  target_client_->OnComplete(status);
+  ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
+      factory_->browser_context_, factory_->info_map_, &info_.value(),
+      true /* started */, status.error_code);
 
   // Deletes |this|.
   factory_->RemoveRequest(network_service_request_id_, request_id_);
