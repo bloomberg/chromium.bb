@@ -4,9 +4,7 @@
 
 // https://wicg.github.io/ResizeObserver/#resize-observer-entry-interface
 
-[
-    RuntimeEnabled=ResizeObserver
-] interface ResizeObserverEntry {
+interface ResizeObserverEntry {
     readonly attribute Element target;
     readonly attribute DOMRectReadOnly contentRect;
 };
