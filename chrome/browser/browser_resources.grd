@@ -686,6 +686,9 @@
       <if expr="not is_android">
         <include name="IDR_TAB_RANKER_EXAMPLE_PREPROCESSOR_CONFIG_PB" file="resource_coordinator\tab_ranker\example_preprocessor_config.pb" type="BINDATA" />
       </if>
+      <if expr="chromeos">
+        <include name="IDR_SMART_DIM_EXAMPLE_PREPROCESSOR_CONFIG_PB" file="chromeos\power\ml\smart_dim\example_preprocessor_config.pb" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

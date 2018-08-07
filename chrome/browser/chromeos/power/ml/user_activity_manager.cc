@@ -27,9 +27,53 @@ namespace power {
 namespace ml {
 
 namespace {
+
 void LogPowerMLPreviousEventLoggingResult(PreviousEventLoggingResult result) {
   UMA_HISTOGRAM_ENUMERATION("PowerML.PreviousEventLogging.Result", result);
 }
+
+void LogPowerMLDimImminentAction(DimImminentAction action) {
+  UMA_HISTOGRAM_ENUMERATION("PowerML.DimImminent.Action", action);
+}
+
+void LogPowerMLNonModelDimResult(FinalResult result) {
+  UMA_HISTOGRAM_ENUMERATION("PowerML.NonModelDim.Result", result);
+}
+
+void LogPowerMLModelDimResult(FinalResult result) {
+  UMA_HISTOGRAM_ENUMERATION("PowerML.ModelDim.Result", result);
+}
+
+void LogPowerMLModelNoDimResult(FinalResult result) {
+  UMA_HISTOGRAM_ENUMERATION("PowerML.ModelNoDim.Result", result);
+}
+
+void LogMetricsToUMA(const UserActivityEvent& event) {
+  const FinalResult result =
+      event.event().type() == UserActivityEvent::Event::REACTIVATE
+          ? FinalResult::kReactivation
+          : FinalResult::kOff;
+  if (!event.has_model_prediction() ||
+      !event.model_prediction().model_applied()) {
+    LogPowerMLDimImminentAction(DimImminentAction::kModelIgnored);
+    LogPowerMLNonModelDimResult(result);
+    return;
+  }
+
+  if (event.model_prediction().response() ==
+      UserActivityEvent::ModelPrediction::DIM) {
+    LogPowerMLDimImminentAction(DimImminentAction::kModelDim);
+    LogPowerMLModelDimResult(result);
+    return;
+  }
+
+  CHECK_EQ(UserActivityEvent::ModelPrediction::NO_DIM,
+           event.model_prediction().response());
+
+  LogPowerMLDimImminentAction(DimImminentAction::kModelNoDim);
+  LogPowerMLModelNoDimResult(result);
+}
+
 }  // namespace
 
 struct UserActivityManager::PreviousIdleEventData {
@@ -428,6 +472,7 @@ void UserActivityManager::MaybeLogEvent(
 
   // Log to metrics.
   ukm_logger_->LogActivity(activity_event);
+  LogMetricsToUMA(activity_event);
 
   // If there's an earlier idle event that has not received its own event, log
   // it here too.
@@ -442,6 +487,7 @@ void UserActivityManager::MaybeLogEvent(
     *activity_event.mutable_model_prediction() =
         previous_idle_event_data_->model_prediction;
     ukm_logger_->LogActivity(activity_event);
+    LogMetricsToUMA(activity_event);
   }
 
   // Update the counters for next event logging.
