@@ -386,10 +386,6 @@ public class WebXrVrInputTest {
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
-        // TODO(https://crbug.com/870031): Remove this sleep if/when the controller disconnect/
-        // reconnect issue caused by DON flow skipping that flakily eats the app button press is
-        // resolved.
-        SystemClock.sleep(500);
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         controller.pressReleaseAppButton();
         assertAppButtonEffect(true /* shouldHaveExited */, framework);
