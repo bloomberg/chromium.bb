@@ -136,18 +136,6 @@ using navigation_interception::InterceptNavigationDelegate;
 
 namespace {
 
-void NotifyDownloadInitiatedOnUI(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter) {
-  content::WebContents* web_contents = wc_getter.Run();
-  if (!web_contents)
-    return;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_DOWNLOAD_INITIATED,
-      content::Source<content::WebContents>(web_contents),
-      content::NotificationService::NoDetails());
-}
-
 prerender::PrerenderManager* GetPrerenderManager(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -448,11 +436,6 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   const content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&NotifyDownloadInitiatedOnUI,
-                     info->GetWebContentsGetterForRequest()));
-
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
     throttles->push_back(std::make_unique<DownloadResourceThrottle>(

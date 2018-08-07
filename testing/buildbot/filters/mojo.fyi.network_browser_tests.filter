@@ -13,8 +13,6 @@
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
--SSLUITest.TestBadHTTPSDownload/0
--SSLUITest.TestBadHTTPSDownload/1
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -WebViewTest.WebViewInBackgroundPage
 
@@ -109,12 +107,6 @@
 
 # https://crbug.com/721398
 -WebViewTest.ClearDataCache
-
-# Need a test interface API that allows us to check on the CT status.
-# Then in ssl_browsertest.cc we can use that instead of the direct
-# call to the transport_security_state()
--SSLUITest.CertificateTransparencyEnforcementDisabledForUrls/0
--SSLUITest.CertificateTransparencyEnforcementDisabledForUrls/1
 
 # https://crbug.com/853256
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked/0
