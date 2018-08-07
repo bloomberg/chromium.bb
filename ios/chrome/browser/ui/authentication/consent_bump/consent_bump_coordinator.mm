@@ -16,7 +16,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ConsentBumpCoordinator ()<ConsentBumpViewControllerDelegate>
+@interface ConsentBumpCoordinator ()<ConsentBumpViewControllerDelegate,
+                                     UnifiedConsentCoordinatorDelegate>
 
 // Which child coordinator is currently presented.
 @property(nonatomic, assign) ConsentBumpScreen presentedCoordinatorType;
@@ -67,6 +68,7 @@
   self.mediator.consumer = self.consentBumpViewController;
 
   self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
+  self.unifiedConsentCoordinator.delegate = self;
   [self.unifiedConsentCoordinator start];
   self.presentedCoordinatorType = ConsentBumpScreenUnifiedConsent;
 
@@ -135,6 +137,28 @@
       self.presentedCoordinatorType = ConsentBumpScreenUnifiedConsent;
       break;
   }
+}
+
+- (void)consentBumpViewControllerDidTapMoreButton:
+    (ConsentBumpViewController*)consentBumpViewController {
+  [self.unifiedConsentCoordinator scrollToBottom];
+}
+
+#pragma mark - UnifiedConsentCoordinatorDelegate
+
+- (void)unifiedConsentCoordinatorDidReachBottom:
+    (UnifiedConsentCoordinator*)coordinator {
+  [self.mediator consumerCanProceed];
+}
+
+- (void)unifiedConsentCoordinatorDidTapSettingsLink:
+    (UnifiedConsentCoordinator*)coordinator {
+  NOTREACHED();
+}
+
+- (void)unifiedConsentCoordinatorDidTapOnAddAccount:
+    (UnifiedConsentCoordinator*)coordinator {
+  NOTREACHED();
 }
 
 @end

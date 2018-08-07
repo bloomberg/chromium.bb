@@ -32,8 +32,13 @@
           setPrimaryButtonTitle:l10n_util::GetNSString(IDS_ACCNAME_OK)];
       [self.consumer
           setSecondaryButtonTitle:l10n_util::GetNSString(IDS_ACCNAME_BACK)];
+      [self consumerCanProceed];
       break;
   }
+}
+
+- (void)consumerCanProceed {
+  [self.consumer showPrimaryButton];
 }
 
 @end
