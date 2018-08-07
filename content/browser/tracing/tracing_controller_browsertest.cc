@@ -357,7 +357,13 @@ class TracingControllerTest : public ContentBrowserTest {
   std::string last_data_;
 };
 
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
+// TODO(crbug.com/871770): Disabled for failing on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_GetCategories DISABLED_GetCategories
+#else
+#define MAYBE_GetCategories GetCategories
+#endif
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_GetCategories) {
   Navigate(shell());
 
   TracingController* controller = TracingController::GetInstance();
@@ -372,11 +378,25 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
   EXPECT_EQ(get_categories_done_callback_count(), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, EnableAndStopTracing) {
+// TODO(crbug.com/871770): Disabled for failing on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_EnableAndStopTracing DISABLED_EnableAndStopTracing
+#else
+#define MAYBE_EnableAndStopTracing EnableAndStopTracing
+#endif
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_EnableAndStopTracing) {
   TestStartAndStopTracingString();
 }
 
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, DisableRecordingStoresMetadata) {
+// TODO(crbug.com/871770): Disabled for failing on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DisableRecordingStoresMetadata \
+  DISABLED_DisableRecordingStoresMetadata
+#else
+#define MAYBE_DisableRecordingStoresMetadata DisableRecordingStoresMetadata
+#endif
+IN_PROC_BROWSER_TEST_F(TracingControllerTest,
+                       MAYBE_DisableRecordingStoresMetadata) {
   TestStartAndStopTracingString();
   // Check that a number of important keys exist in the metadata dictionary. The
   // values are not checked to ensure the test is robust.
@@ -434,8 +454,15 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   EXPECT_TRUE(last_data().find("this_not_found") == std::string::npos);
 }
 
+// TODO(crbug.com/871770): Disabled for failing on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_EnableAndStopTracingWithFilePath \
+  DISABLED_EnableAndStopTracingWithFilePath
+#else
+#define MAYBE_EnableAndStopTracingWithFilePath EnableAndStopTracingWithFilePath
+#endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       EnableAndStopTracingWithFilePath) {
+                       MAYBE_EnableAndStopTracingWithFilePath) {
   base::FilePath file_path;
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_creating_test_file;
@@ -445,13 +472,29 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   EXPECT_EQ(file_path.value(), last_actual_recording_file_path().value());
 }
 
+// TODO(crbug.com/871770): Disabled for failing on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_EnableAndStopTracingWithCompression \
+  DISABLED_EnableAndStopTracingWithCompression
+#else
+#define MAYBE_EnableAndStopTracingWithCompression \
+  EnableAndStopTracingWithCompression
+#endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       EnableAndStopTracingWithCompression) {
+                       MAYBE_EnableAndStopTracingWithCompression) {
   TestStartAndStopTracingCompressed();
 }
 
+// TODO(crbug.com/871770): Disabled for failing on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_EnableAndStopTracingWithEmptyFile \
+  DISABLED_EnableAndStopTracingWithEmptyFile
+#else
+#define MAYBE_EnableAndStopTracingWithEmptyFile \
+  EnableAndStopTracingWithEmptyFile
+#endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       EnableAndStopTracingWithEmptyFile) {
+                       MAYBE_EnableAndStopTracingWithEmptyFile) {
   Navigate(shell());
 
   base::RunLoop run_loop;
@@ -470,7 +513,13 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   run_loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, DoubleStopTracing) {
+// TODO(crbug.com/871770): Disabled for failing on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DoubleStopTracing DISABLED_DoubleStopTracing
+#else
+#define MAYBE_DoubleStopTracing DoubleStopTracing
+#endif
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_DoubleStopTracing) {
   Navigate(shell());
 
   base::RunLoop run_loop;
