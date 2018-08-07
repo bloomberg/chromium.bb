@@ -1452,6 +1452,7 @@ jumbo_split_static_library("ui") {
       "search/new_tab_page_navigation_throttle.h",
       "search/ntp_user_data_logger.cc",
       "search/ntp_user_data_logger.h",
+      "search/ntp_user_data_types.h",
       "search/search_ipc_router.cc",
       "search/search_ipc_router.h",
       "search/search_ipc_router_policy_impl.cc",

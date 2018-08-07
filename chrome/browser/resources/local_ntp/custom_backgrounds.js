@@ -8,6 +8,45 @@
 let customBackgrounds = {};
 
 /**
+ * The browser embeddedSearch.newTabPage object.
+ * @type {Object}
+ */
+var ntpApiHandle;
+
+/**
+ * The different types of events that are logged from the NTP. This enum is
+ * used to transfer information from the NTP JavaScript to the renderer and is
+ * not used as a UMA enum histogram's logged value.
+ * Note: Keep in sync with common/ntp_logging_events.h
+ * @enum {number}
+ * @const
+ */
+var BACKGROUND_CUSTOMIZATION_LOG_TYPE = {
+  // The 'Chrome backgrounds' menu item was clicked.
+  NTP_CUSTOMIZE_CHROME_BACKGROUNDS_CLICKED: 40,
+  // The 'Upload an image' menu item was clicked.
+  NTP_CUSTOMIZE_LOCAL_IMAGE_CLICKED: 41,
+  // The 'Restore default background' menu item was clicked.
+  NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED: 42,
+  // The attribution link on a customized background image was clicked.
+  NTP_CUSTOMIZE_ATTRIBUTION_CLICKED: 43,
+  // The 'Restore default shortcuts' menu item was clicked.
+  NTP_CUSTOMIZE_RESTORE_SHORTCUTS_CLICKED: 46,
+  // A collection was selected in the 'Chrome backgrounds' dialog.
+  NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_COLLECTION: 47,
+  // An image was selected in the 'Chrome backgrounds' dialog.
+  NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_IMAGE: 48,
+  // 'Cancel' was clicked in the 'Chrome backgrounds' dialog.
+  NTP_CUSTOMIZE_CHROME_BACKGROUND_CANCEL: 49,
+  // 'Done' was clicked in the 'Chrome backgrounds' dialog.
+  NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE: 50,
+  // 'Cancel' was clicked in the 'Upload an image' dialog.
+  NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL: 51,
+  // 'Done' was clicked in the 'Upload an image' dialog.
+  NTP_CUSTOMIZE_LOCAL_IMAGE_DONE: 52,
+};
+
+/**
  * Enum for key codes.
  * @enum {int}
  * @const
@@ -210,6 +249,8 @@ customBackgrounds.setAttribution = function(
     attributionBox.classList.add(customBackgrounds.CLASSES.ATTR_LINK);
     attributionBox.onclick = function() {
       window.open(attributionActionUrl, '_blank');
+      ntpApiHandle.logEvent(
+          BACKGROUND_CUSTOMIZATION_LOG_TYPE.NTP_CUSTOMIZE_ATTRIBUTION_CLICKED);
     };
     attributionBox.style.cursor = 'pointer';
   }
@@ -238,7 +279,7 @@ customBackgrounds.resetSelectionDialog = function() {
   customBackgrounds.selectedTile = null;
 };
 
-/* Close the collection selection dailog and cleanup the state
+/* Close the collection selection dialog and cleanup the state
  * @param {dialog} menu The dialog to be closed
  */
 customBackgrounds.closeCollectionDialog = function(menu) {
@@ -255,6 +296,8 @@ customBackgrounds.setBackground = function(
   customBackgrounds.closeCollectionDialog($(customBackgrounds.IDS.MENU));
   window.chrome.embeddedSearch.newTabPage.setBackgroundURLWithAttributions(
       url, attributionLine1, attributionLine2, attributionActionUrl);
+  ntpApiHandle.logEvent(
+      BACKGROUND_CUSTOMIZATION_LOG_TYPE.NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE);
 };
 
 /**
@@ -399,6 +442,9 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
       if (sourceIsChromeBackgrounds) {
         imgScript.src = 'chrome-search://local-ntp/ntp-background-images.js?' +
             'collection_type=background&collection_id=' + tile.dataset.id;
+        ntpApiHandle.logEvent(
+            BACKGROUND_CUSTOMIZATION_LOG_TYPE
+                .NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_COLLECTION);
       } else {
         imgScript.src = 'chrome-search://local-ntp/ntp-background-images.js?' +
             'collection_type=album&album_id=' + tile.dataset.id +
@@ -591,6 +637,8 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       $(customBackgrounds.IDS.REFRESH_TOGGLE).children[0].checked = false;
       $(customBackgrounds.IDS.DONE)
           .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
+      ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
+                                .NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_IMAGE);
     };
 
     tile.onclick = function(event) {
@@ -710,6 +758,7 @@ customBackgrounds.networkStateChanged = function(online) {
  * menu items. Set the text and event handlers for the various elements.
  */
 customBackgrounds.init = function() {
+  ntpApiHandle = window.chrome.embeddedSearch.newTabPage;
   let editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
   let menu = $(customBackgrounds.IDS.MENU);
 
@@ -723,6 +772,8 @@ customBackgrounds.init = function() {
   // Edit gear icon interaction events.
   let editBackgroundInteraction = function() {
     editDialog.showModal();
+    ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
+                              .NTP_CUSTOMIZE_CHROME_BACKGROUNDS_CLICKED);
   };
   $(customBackgrounds.IDS.EDIT_BG).onclick = function(event) {
     editDialog.classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
@@ -796,6 +847,8 @@ customBackgrounds.initCustomLinksItems = function() {
   let customLinksRestoreDefaultInteraction = function() {
     editDialog.close();
     window.chrome.embeddedSearch.newTabPage.resetCustomLinks();
+    ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
+                              .NTP_CUSTOMIZE_RESTORE_SHORTCUTS_CLICKED);
   };
   $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).onclick =
       customLinksRestoreDefaultInteraction;
@@ -862,6 +915,8 @@ customBackgrounds.initCustomBackgrounds = function() {
   // Interactions with the "Upload an image" option.
   var uploadImageInteraction = function(event) {
     window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage();
+    ntpApiHandle.logEvent(
+        BACKGROUND_CUSTOMIZATION_LOG_TYPE.NTP_CUSTOMIZE_LOCAL_IMAGE_CLICKED);
   };
 
   $(customBackgrounds.IDS.UPLOAD_IMAGE).onclick = uploadImageInteraction;
@@ -888,6 +943,8 @@ customBackgrounds.initCustomBackgrounds = function() {
     editDialog.close();
     customBackgrounds.clearAttribution();
     window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
+    ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
+                              .NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED);
   };
   $(customBackgrounds.IDS.RESTORE_DEFAULT).onclick = restoreDefaultInteraction;
   $(customBackgrounds.IDS.RESTORE_DEFAULT).onkeyup = function(event) {
@@ -996,10 +1053,14 @@ customBackgrounds.initCustomBackgrounds = function() {
   // Interactions with the cancel button on the background picker dialog.
   $(customBackgrounds.IDS.CANCEL).onclick = function(event) {
     customBackgrounds.closeCollectionDialog(menu);
+    ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
+                              .NTP_CUSTOMIZE_CHROME_BACKGROUND_CANCEL);
   };
   $(customBackgrounds.IDS.CANCEL).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       customBackgrounds.closeCollectionDialog(menu);
+      ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
+                                .NTP_CUSTOMIZE_CHROME_BACKGROUND_CANCEL);
     }
   };
 

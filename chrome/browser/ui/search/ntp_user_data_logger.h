@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -78,6 +79,9 @@ class NTPUserDataLogger
   // for testing.
   virtual bool DefaultSearchProviderIsGoogle() const;
 
+  // Returns whether a theme is configured. Virtual for testing.
+  virtual bool ThemeIsConfigured() const;
+
   // Logs a number of statistics regarding the NTP. Called when an NTP tab is
   // about to be deactivated (be it by switching tabs, losing focus or closing
   // the tab/shutting down Chrome), or when the user navigates to a URL.
@@ -112,6 +116,9 @@ class NTPUserDataLogger
 
   // The URL of this New Tab Page - varies based on NTP version.
   GURL ntp_url_;
+
+  // The profile in which this New Tab Page was loaded.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPUserDataLogger);
 };
