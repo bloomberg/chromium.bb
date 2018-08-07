@@ -120,6 +120,10 @@ public class ListUtils {
      * @see             GridLayoutManager.SpanSizeLookup
      */
     public static int getSpanSize(ListItem item, int spanCount) {
+        if (item instanceof OfflineItemListItem && ((OfflineItemListItem) item).spanFullWidth) {
+            return spanCount;
+        }
+
         return getViewTypeForItem(item) == ViewType.IMAGE ? 1 : spanCount;
     }
 }
