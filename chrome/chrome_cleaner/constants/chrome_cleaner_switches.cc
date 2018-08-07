@@ -29,7 +29,8 @@ const char kCrashSwitch[] = "crash";
 
 // Dump the raw logs to a file with the same base name as the executable. The
 // dumped file is a raw protobuf and has a "pb" extension.
-// WARNING: this switch is used internally. Be careful when making changes.
+// WARNING: this switch is used by internal test systems. Be careful when making
+// changes.
 const char kDumpRawLogsSwitch[] = "dump-raw-logs";
 
 // Identify that the process is already supposed to be elevated, so that we
@@ -48,7 +49,8 @@ const char kForceSelfDeleteSwitch[] = "force-self-delete";
 
 // Log all removable UwS that were not detected, but the scanner found some
 // UwS-related footprints.
-// WARNING: this switch is used internally. Be careful when making changes.
+// WARNING: this switch is used by internal test systems. Be careful when making
+// changes.
 const char kForceUwsDetectionSwitch[] = "force-uws-detection";
 
 // The handle of an event to signal when the initialization of the main process
@@ -82,7 +84,8 @@ const char kNoCrashUploadSwitch[] = "no-crash-upload";
 const char kNoRecoveryComponentSwitch[] = "no-recovery-component";
 
 // Prevent the logging service from uploading logs and reports.
-// WARNING: this switch is used internally, be careful when making changes.
+// WARNING: this switch is used by internal test systems, be careful when making
+// changes.
 const char kNoReportUploadSwitch[] = "no-report-upload";
 
 // Prevent the executable from deleting itself after running.
@@ -131,7 +134,8 @@ const char kTestLoggingURLSwitch[] = "test-logging-url";
 
 // Flag set during testing and stored as a crash key, to differentiate from
 // crashes received from actual users.
-// WARNING: this switch is used internally, be careful when making changes.
+// WARNING: this switch is used by internal test systems, be careful when making
+// changes.
 const char kTestingSwitch[] = "testing";
 
 // Specifies the full path to a protocol buffer log file to be uploaded.

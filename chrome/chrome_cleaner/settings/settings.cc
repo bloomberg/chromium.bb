@@ -43,7 +43,8 @@ Engine::Name GetEngine(const base::CommandLine& command_line) {
 
 ExecutionMode GetExecutionMode(const base::CommandLine& command_line) {
   int val = -1;
-  // WARNING: this switch is used in Bineval, be careful when making changes.
+  // WARNING: this switch is used by internal test systems, be careful when
+  // making changes.
   if (base::StringToInt(command_line.GetSwitchValueASCII(kExecutionModeSwitch),
                         &val) &&
       val > static_cast<int>(ExecutionMode::kNone) &&
@@ -60,8 +61,8 @@ bool GetLogsCollectionEnabled(const base::CommandLine& command_line,
     case TargetBinary::kReporter:
       // For the reporter, if logging collection is enabled, then we will save
       // UwS matching to a proto that can be saved to disk or sent to Google if
-      // logs upload is allowed. WARNING: this switch is used in Bineval, be
-      // careful when making changes.
+      // logs upload is allowed. WARNING: this switch is used by internal test
+      // systems, be careful when making changes.
       return command_line.HasSwitch(kExtendedSafeBrowsingEnabledSwitch);
     case TargetBinary::kCleaner:
       // Logs collection is only enabled if the user did not opt out, which
@@ -79,7 +80,8 @@ bool GetLogsCollectionEnabled(const base::CommandLine& command_line,
 bool GetLogsUploadAllowed(const base::CommandLine& command_line,
                           TargetBinary target_binary,
                           ExecutionMode execution_mode) {
-  // WARNING: this switch is used in Bineval, be careful when making changes.
+  // WARNING: this switch is used by internal test systems, be careful when
+  // making changes.
   if (command_line.HasSwitch(kNoReportUploadSwitch))
     return false;
 
@@ -90,7 +92,8 @@ bool GetAllowCrashReportUpload(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(kNoCrashUploadSwitch))
     return false;
 
-  // WARNING: this switch is used in Bineval, be careful when making changes.
+  // WARNING: this switch is used by internal test systems, be careful when
+  // making changes.
   return command_line.HasSwitch(kEnableCrashReportingSwitch);
 }
 
@@ -308,7 +311,8 @@ void Settings::Initialize(const base::CommandLine& command_line,
   engine_ = GetEngine(command_line);
 
   metrics_enabled_ = command_line.HasSwitch(kUmaUserSwitch);
-  // WARNING: this switch is used in Bineval, be careful when making changes.
+  // WARNING: this switch is used by internal test systems, be careful when
+  // making changes.
   sber_enabled_ = command_line.HasSwitch(kExtendedSafeBrowsingEnabledSwitch);
   execution_mode_ = GetExecutionMode(command_line);
   logs_upload_allowed_ =
