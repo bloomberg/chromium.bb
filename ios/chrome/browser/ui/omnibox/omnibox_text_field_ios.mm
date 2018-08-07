@@ -707,6 +707,14 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     return YES;
   }
 
+  // Allow key commands to be recognized.
+  if (action == @selector(keyCommandUp) ||
+      action == @selector(keyCommandDown) ||
+      action == @selector(keyCommandLeft) ||
+      action == @selector(keyCommandRight)) {
+    return YES;
+  }
+
   // Note that this NO does not keep other elements in the responder chain from
   // adding actions they handle to the menu.
   // No special handling is necessary for pre-edit and autocomplete states.
