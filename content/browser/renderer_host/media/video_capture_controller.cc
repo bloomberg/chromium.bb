@@ -174,6 +174,9 @@ VideoCaptureController::BufferContext::CloneBufferHandle() {
     result->set_shared_buffer_handle(
         buffer_handle_->get_shared_buffer_handle()->Clone(
             mojo::SharedBufferHandle::AccessMode::READ_WRITE));
+  } else if (buffer_handle_->is_read_only_shmem_region()) {
+    result->set_read_only_shmem_region(
+        buffer_handle_->get_read_only_shmem_region().Duplicate());
   } else if (buffer_handle_->is_mailbox_handles()) {
     result->set_mailbox_handles(buffer_handle_->get_mailbox_handles()->Clone());
   } else {

@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
@@ -146,12 +147,19 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   void SimulateOnBufferCreated(int buffer_id, const base::SharedMemory& shm) {
-    media::mojom::VideoBufferHandlePtr buffer_handle =
-        media::mojom::VideoBufferHandle::New();
-    buffer_handle->set_shared_buffer_handle(mojo::WrapSharedMemoryHandle(
-        shm.GetReadOnlyHandle(), shm.mapped_size(),
-        mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly));
-    video_capture_impl_->OnNewBuffer(buffer_id, std::move(buffer_handle));
+    video_capture_impl_->OnNewBuffer(
+        buffer_id,
+        media::mojom::VideoBufferHandle::NewSharedBufferHandle(
+            mojo::WrapSharedMemoryHandle(
+                shm.GetReadOnlyHandle(), shm.mapped_size(),
+                mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly)));
+  }
+
+  void SimulateReadOnlyBufferCreated(int buffer_id,
+                                     base::ReadOnlySharedMemoryRegion region) {
+    video_capture_impl_->OnNewBuffer(
+        buffer_id, media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
+                       std::move(region)));
   }
 
   void SimulateBufferReceived(int buffer_id, const gfx::Size& size) {
@@ -284,7 +292,7 @@ TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
 }
 
 TEST_F(VideoCaptureImplTest, BufferReceived) {
-  const int kBufferId = 11;
+  const int kArbitraryBufferId = 11;
 
   base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
@@ -296,20 +304,48 @@ TEST_F(VideoCaptureImplTest, BufferReceived) {
   EXPECT_CALL(*this, OnFrameReady(_, _));
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
-  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kBufferId, _))
+  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kArbitraryBufferId, _))
       .Times(0);
 
   StartCapture(0, params_small_);
-  SimulateOnBufferCreated(kBufferId, shm);
-  SimulateBufferReceived(kBufferId, params_small_.requested_format.frame_size);
+  SimulateOnBufferCreated(kArbitraryBufferId, shm);
+  SimulateBufferReceived(kArbitraryBufferId,
+                         params_small_.requested_format.frame_size);
   StopCapture(0);
-  SimulateBufferDestroyed(kBufferId);
+  SimulateBufferDestroyed(kArbitraryBufferId);
+
+  EXPECT_EQ(mock_video_capture_host_.released_buffer_count(), 0);
+}
+
+TEST_F(VideoCaptureImplTest, BufferReceived_ReadOnlyShmemRegion) {
+  const int kArbitraryBufferId = 11;
+
+  const size_t frame_size = media::VideoFrame::AllocationSize(
+      media::PIXEL_FORMAT_I420, params_small_.requested_format.frame_size);
+  base::MappedReadOnlyRegion shm =
+      base::ReadOnlySharedMemoryRegion::Create(frame_size);
+  ASSERT_TRUE(shm.IsValid());
+
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
+  EXPECT_CALL(*this, OnFrameReady(_, _));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
+  EXPECT_CALL(mock_video_capture_host_, Stop(_));
+  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kArbitraryBufferId, _))
+      .Times(0);
+
+  StartCapture(0, params_small_);
+  SimulateReadOnlyBufferCreated(kArbitraryBufferId, std::move(shm.region));
+  SimulateBufferReceived(kArbitraryBufferId,
+                         params_small_.requested_format.frame_size);
+  StopCapture(0);
+  SimulateBufferDestroyed(kArbitraryBufferId);
 
   EXPECT_EQ(mock_video_capture_host_.released_buffer_count(), 0);
 }
 
 TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
-  const int kBufferId = 12;
+  const int kArbitraryBufferId = 12;
 
   base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
@@ -321,14 +357,44 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
-  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kBufferId, _));
+  EXPECT_CALL(mock_video_capture_host_,
+              ReleaseBuffer(_, kArbitraryBufferId, _));
 
   StartCapture(0, params_large_);
-  SimulateOnBufferCreated(kBufferId, shm);
+  SimulateOnBufferCreated(kArbitraryBufferId, shm);
   StopCapture(0);
   // A buffer received after StopCapture() triggers an instant ReleaseBuffer().
-  SimulateBufferReceived(kBufferId, params_large_.requested_format.frame_size);
-  SimulateBufferDestroyed(kBufferId);
+  SimulateBufferReceived(kArbitraryBufferId,
+                         params_large_.requested_format.frame_size);
+  SimulateBufferDestroyed(kArbitraryBufferId);
+
+  EXPECT_EQ(mock_video_capture_host_.released_buffer_count(), 1);
+}
+
+TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop_ReadOnlyShmemRegion) {
+  const int kArbitraryBufferId = 12;
+
+  const size_t frame_size = media::VideoFrame::AllocationSize(
+      media::PIXEL_FORMAT_I420, params_large_.requested_format.frame_size);
+  base::MappedReadOnlyRegion shm =
+      base::ReadOnlySharedMemoryRegion::Create(frame_size);
+  ASSERT_TRUE(shm.IsValid());
+
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
+  EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_large_));
+  EXPECT_CALL(mock_video_capture_host_, Stop(_));
+  EXPECT_CALL(mock_video_capture_host_,
+              ReleaseBuffer(_, kArbitraryBufferId, _));
+
+  StartCapture(0, params_large_);
+  SimulateReadOnlyBufferCreated(kArbitraryBufferId, std::move(shm.region));
+  StopCapture(0);
+  // A buffer received after StopCapture() triggers an instant ReleaseBuffer().
+  SimulateBufferReceived(kArbitraryBufferId,
+                         params_large_.requested_format.frame_size);
+  SimulateBufferDestroyed(kArbitraryBufferId);
 
   EXPECT_EQ(mock_video_capture_host_.released_buffer_count(), 1);
 }
@@ -377,7 +443,7 @@ TEST_F(VideoCaptureImplTest, ErrorBeforeStop) {
 }
 
 TEST_F(VideoCaptureImplTest, BufferReceivedBeforeOnStarted) {
-  const int kBufferId = 16;
+  const int kArbitraryBufferId = 16;
 
   base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
@@ -387,10 +453,46 @@ TEST_F(VideoCaptureImplTest, BufferReceivedBeforeOnStarted) {
   InSequence s;
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_))
       .WillOnce(DoNothing());
-  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kBufferId, _));
+  EXPECT_CALL(mock_video_capture_host_,
+              ReleaseBuffer(_, kArbitraryBufferId, _));
   StartCapture(0, params_small_);
-  SimulateOnBufferCreated(kBufferId, shm);
-  SimulateBufferReceived(kBufferId, params_small_.requested_format.frame_size);
+  SimulateOnBufferCreated(kArbitraryBufferId, shm);
+  SimulateBufferReceived(kArbitraryBufferId,
+                         params_small_.requested_format.frame_size);
+
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+  EXPECT_CALL(mock_video_capture_host_, RequestRefreshFrame(_));
+  video_capture_impl_->OnStateChanged(media::mojom::VideoCaptureState::STARTED);
+
+  // Additional STARTED will cause RequestRefreshFrame a second time.
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+  EXPECT_CALL(mock_video_capture_host_, RequestRefreshFrame(_));
+  video_capture_impl_->OnStateChanged(media::mojom::VideoCaptureState::STARTED);
+
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
+  EXPECT_CALL(mock_video_capture_host_, Stop(_));
+  StopCapture(0);
+}
+
+TEST_F(VideoCaptureImplTest,
+       BufferReceivedBeforeOnStarted_ReadOnlyShmemRegion) {
+  const int kArbitraryBufferId = 16;
+
+  const size_t frame_size = media::VideoFrame::AllocationSize(
+      media::PIXEL_FORMAT_I420, params_small_.requested_format.frame_size);
+  base::MappedReadOnlyRegion shm =
+      base::ReadOnlySharedMemoryRegion::Create(frame_size);
+  ASSERT_TRUE(shm.IsValid());
+
+  InSequence s;
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_))
+      .WillOnce(DoNothing());
+  EXPECT_CALL(mock_video_capture_host_,
+              ReleaseBuffer(_, kArbitraryBufferId, _));
+  StartCapture(0, params_small_);
+  SimulateReadOnlyBufferCreated(kArbitraryBufferId, std::move(shm.region));
+  SimulateBufferReceived(kArbitraryBufferId,
+                         params_small_.requested_format.frame_size);
 
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(mock_video_capture_host_, RequestRefreshFrame(_));
