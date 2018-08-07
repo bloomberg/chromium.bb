@@ -440,10 +440,12 @@ void SearchTabHelper::OnSelectLocalBackgroundImage() {
 
   ui::SelectFileDialog::FileTypeInfo file_types;
   file_types.allowed_paths = ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH;
-  file_types.extensions.resize(2);
+  file_types.extensions.resize(1);
   file_types.extensions[0].push_back(FILE_PATH_LITERAL("jpg"));
   file_types.extensions[0].push_back(FILE_PATH_LITERAL("jpeg"));
-  file_types.extensions[1].push_back(FILE_PATH_LITERAL("png"));
+  file_types.extensions[0].push_back(FILE_PATH_LITERAL("png"));
+  file_types.extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_UPLOAD_IMAGE_FORMAT));
 
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(), directory,
