@@ -308,6 +308,13 @@ TEST(STLUtilTest, STLIsSorted) {
     vector.back() = 1;
     EXPECT_FALSE(STLIsSorted(vector));
   }
+
+  {
+    int array[] = {1, 1, 4, 64, 12432};
+    EXPECT_TRUE(STLIsSorted(array));
+    array[4] = 1;
+    EXPECT_FALSE(STLIsSorted(array));
+  }
 }
 
 TEST(STLUtilTest, STLSetDifference) {
