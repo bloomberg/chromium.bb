@@ -25,6 +25,8 @@ void ExtensionDownloaderDelegate::OnExtensionDownloadFailed(
     const std::set<int>& request_id) {
 }
 
+void ExtensionDownloaderDelegate::OnExtensionDownloadRetryForTests() {}
+
 bool ExtensionDownloaderDelegate::GetPingDataForExtension(
     const std::string& id,
     ManifestFetchData::PingData* ping) {

@@ -12,10 +12,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/external_cache_impl.h"
 #include "chrome/browser/extensions/policy_handlers.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/prefs/pref_value_map.h"
 #include "extensions/browser/pref_names.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -34,9 +35,12 @@ void DeviceLocalAccountExternalPolicyLoader::StartCache(
     const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner) {
   DCHECK(!external_cache_);
   store_->AddObserver(this);
+
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory =
+      g_browser_process->shared_url_loader_factory();
   external_cache_ = std::make_unique<ExternalCacheImpl>(
-      cache_dir_, g_browser_process->system_request_context(),
-      cache_task_runner, this, true /* always_check_updates */,
+      cache_dir_, shared_url_loader_factory, cache_task_runner, this,
+      true /* always_check_updates */,
       false /* wait_for_cache_initialization */);
 
   if (store_->is_initialized())

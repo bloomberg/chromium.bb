@@ -20,9 +20,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/update_client/update_query_params.h"
+#include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -37,12 +39,12 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -112,15 +114,21 @@ ExtensionDownloaderTestDelegate* g_test_delegate = nullptr;
                                 kMaxRetries + 1);                         \
   }
 
-bool ShouldRetryRequest(const net::URLRequestStatus& status,
-                        int response_code) {
-  // Retry if the response code is a server error, or the request failed because
-  // of network errors as opposed to file errors.
-  return (response_code >= 500 && status.is_success()) ||
-         status.status() == net::URLRequestStatus::FAILED ||
-         // Note: URLRequestJob::OnSuspend() results in a canceled status; if
-         // the request is suspended, we should retry.
-         status.status() == net::URLRequestStatus::CANCELED;
+bool ShouldRetryRequest(network::SimpleURLLoader* loader) {
+  DCHECK(loader);
+
+  // Since HTTP errors are now presented as ERR_FAILED by default, this will
+  // let both network and HTTP errors through.
+  if (loader->NetError() == net::OK)
+    return false;
+
+  // If it failed without receiving response headers, retry.
+  if (!loader->ResponseInfo() || !loader->ResponseInfo()->headers)
+    return true;
+
+  // If a response code was received, only retry on 5xx codes (server errors).
+  int response_code = loader->ResponseInfo()->headers->response_code();
+  return response_code >= 500 && response_code < 600;
 }
 
 // This parses and updates a URL query such that the value of the |authuser|
@@ -200,25 +208,27 @@ ExtensionDownloader::ExtraParams::ExtraParams() : is_corrupt_reinstall(false) {}
 
 ExtensionDownloader::ExtensionDownloader(
     ExtensionDownloaderDelegate* delegate,
-    net::URLRequestContextGetter* request_context,
-    service_manager::Connector* connector)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    service_manager::Connector* connector,
+    const base::FilePath& profile_path)
     : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
       delegate_(delegate),
-      request_context_(request_context),
+      url_loader_factory_(std::move(url_loader_factory)),
+      profile_path_for_url_loader_factory_(profile_path),
       connector_(connector),
       manifests_queue_(
           &kDefaultBackoffPolicy,
-          base::BindRepeating(&ExtensionDownloader::CreateManifestFetcher,
+          base::BindRepeating(&ExtensionDownloader::CreateManifestLoader,
                               base::Unretained(this))),
       extensions_queue_(
           &kDefaultBackoffPolicy,
-          base::BindRepeating(&ExtensionDownloader::CreateExtensionFetcher,
+          base::BindRepeating(&ExtensionDownloader::CreateExtensionLoader,
                               base::Unretained(this))),
       extension_cache_(nullptr),
       token_service_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
-  DCHECK(request_context_.get());
+  DCHECK(url_loader_factory_);
 }
 
 ExtensionDownloader::~ExtensionDownloader() {
@@ -239,7 +249,7 @@ bool ExtensionDownloader::AddExtension(
 
   // If the extension updates itself from the gallery, ignore any update URL
   // data.  At the moment there is no extra data that an extension can
-  // communicate to the the gallery update servers.
+  // communicate to the gallery update servers.
   std::string update_url_data;
   if (!ManifestURL::UpdatesFromGallery(&extension))
     extra.update_url_data = delegate_->GetUpdateUrlData(extension.id());
@@ -487,7 +497,21 @@ void ExtensionDownloader::StartUpdateCheck(
   }
 }
 
-void ExtensionDownloader::CreateManifestFetcher() {
+network::mojom::URLLoaderFactory* ExtensionDownloader::GetURLLoaderFactoryToUse(
+    const GURL& url) {
+  if (!url.SchemeIsFile()) {
+    DCHECK(url_loader_factory_);
+    return url_loader_factory_.get();
+  }
+
+  // file:// URL support.
+  auto file_url_loader_factory =
+      content::CreateFileURLLoaderFactory(profile_path_for_url_loader_factory_);
+  file_url_loader_factory_ = std::move(file_url_loader_factory);
+  return file_url_loader_factory_.get();
+}
+
+void ExtensionDownloader::CreateManifestLoader() {
   const ManifestFetchData* active_request = manifests_queue_.active_request();
   std::vector<base::StringPiece> id_vector(
       active_request->extension_ids().begin(),
@@ -531,69 +555,61 @@ void ExtensionDownloader::CreateManifestFetcher() {
             }
           }
         })");
-  manifest_fetcher_ =
-      net::URLFetcher::Create(kManifestFetcherId, active_request->full_url(),
-                              net::URLFetcher::GET, this, traffic_annotation);
-  manifest_fetcher_->SetRequestContext(request_context_.get());
-  manifest_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                  net::LOAD_DO_NOT_SAVE_COOKIES |
-                                  net::LOAD_DISABLE_CACHE);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = active_request->full_url(),
+  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DISABLE_CACHE;
 
   // Send traffic-management headers to the webstore.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=647516
   if (extension_urls::IsWebstoreUpdateUrl(active_request->full_url())) {
-    manifest_fetcher_->AddExtraRequestHeader(base::StringPrintf(
-        "%s: %s", kUpdateInteractivityHeader,
-        active_request->foreground_check() ? kUpdateInteractivityForeground
-                                           : kUpdateInteractivityBackground));
-    manifest_fetcher_->AddExtraRequestHeader(
-        base::StringPrintf("%s: %s", kUpdateAppIdHeader, id_list.c_str()));
-    manifest_fetcher_->AddExtraRequestHeader(base::StringPrintf(
-        "%s: %s-%s", kUpdateUpdaterHeader,
-        UpdateQueryParams::GetProdIdString(UpdateQueryParams::CRX),
-        UpdateQueryParams::GetProdVersion().c_str()));
+    resource_request->headers.SetHeader(kUpdateInteractivityHeader,
+                                        active_request->foreground_check()
+                                            ? kUpdateInteractivityForeground
+                                            : kUpdateInteractivityBackground);
+    resource_request->headers.SetHeader(kUpdateAppIdHeader, id_list);
+    resource_request->headers.SetHeader(
+        kUpdateUpdaterHeader,
+        base::StringPrintf(
+            "%s-%s", UpdateQueryParams::GetProdIdString(UpdateQueryParams::CRX),
+            UpdateQueryParams::GetProdVersion().c_str()));
   }
 
+  manifest_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
   // Update checks can be interrupted if a network change is detected; this is
   // common for the retail mode AppPack on ChromeOS. Retrying once should be
   // enough to recover in those cases; let the fetcher retry up to 3 times
   // just in case. http://crosbug.com/130602
-  manifest_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
-  manifest_fetcher_->Start();
+  const int kMaxRetries = 3;
+  manifest_loader_->SetRetryOptions(
+      kMaxRetries,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
+
+  network::mojom::URLLoaderFactory* url_loader_factory_to_use =
+      GetURLLoaderFactoryToUse(active_request->full_url());
+  manifest_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_to_use,
+      base::BindOnce(&ExtensionDownloader::OnManifestLoadComplete,
+                     base::Unretained(this)));
 }
 
-void ExtensionDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
-  VLOG(2) << source->GetResponseCode() << " " << source->GetURL();
+void ExtensionDownloader::OnManifestLoadComplete(
+    std::unique_ptr<std::string> response_body) {
+  GURL url = manifest_loader_->GetFinalURL();
+  int response_code = -1;
+  if (manifest_loader_->ResponseInfo() &&
+      manifest_loader_->ResponseInfo()->headers)
+    response_code = manifest_loader_->ResponseInfo()->headers->response_code();
 
-  if (source == manifest_fetcher_.get()) {
-    std::string data;
-    source->GetResponseAsString(&data);
-    OnManifestFetchComplete(source->GetURL(),
-                            source->GetStatus(),
-                            source->GetResponseCode(),
-                            source->GetBackoffDelay(),
-                            data);
-  } else if (source == extension_fetcher_.get()) {
-    OnCRXFetchComplete(source,
-                       source->GetURL(),
-                       source->GetStatus(),
-                       source->GetResponseCode(),
-                       source->GetBackoffDelay());
-  } else {
-    NOTREACHED();
-  }
-}
+  VLOG(2) << response_code << " " << url;
 
-void ExtensionDownloader::OnManifestFetchComplete(
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const base::TimeDelta& backoff_delay,
-    const std::string& data) {
+  const base::TimeDelta& backoff_delay = base::TimeDelta::FromMilliseconds(0);
+
   // We want to try parsing the manifest, and if it indicates updates are
   // available, we want to fire off requests to fetch those updates.
-  if (status.status() == net::URLRequestStatus::SUCCESS &&
-      (response_code == 200 || (url.SchemeIsFile() && data.length() > 0))) {
+  if (response_body && !response_body->empty()) {
     RETRY_HISTOGRAM("ManifestFetchSuccess",
                     manifests_queue_.active_request_failure_count(),
                     url);
@@ -601,11 +617,11 @@ void ExtensionDownloader::OnManifestFetchComplete(
     auto callback = base::BindOnce(&ExtensionDownloader::HandleManifestResults,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    manifests_queue_.reset_active_request());
-    ParseUpdateManifest(connector_, data, std::move(callback));
+    ParseUpdateManifest(connector_, *response_body, std::move(callback));
   } else {
     VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
-    if (ShouldRetryRequest(status, response_code) &&
+    if (ShouldRetryRequest(manifest_loader_.get()) &&
         manifests_queue_.active_request_failure_count() < kMaxRetries) {
       manifests_queue_.RetryRequest(backoff_delay);
     } else {
@@ -618,7 +634,8 @@ void ExtensionDownloader::OnManifestFetchComplete(
           ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED);
     }
   }
-  manifest_fetcher_.reset();
+  manifest_loader_.reset();
+  file_url_loader_factory_.reset();
   manifests_queue_.reset_active_request();
 
   // If we have any pending manifest requests, fire off the next one.
@@ -905,8 +922,44 @@ void ExtensionDownloader::CacheInstallDone(
   }
 }
 
-void ExtensionDownloader::CreateExtensionFetcher() {
+void ExtensionDownloader::CreateExtensionLoader() {
   const ExtensionFetch* fetch = extensions_queue_.active_request();
+  extension_loader_resource_request_ =
+      std::make_unique<network::ResourceRequest>();
+  extension_loader_resource_request_->url = fetch->url;
+
+  int load_flags = net::LOAD_DISABLE_CACHE;
+  bool is_secure = fetch->url.SchemeIsCryptographic();
+  if (fetch->credentials != ExtensionFetch::CREDENTIALS_COOKIES || !is_secure) {
+    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  }
+  extension_loader_resource_request_->load_flags = load_flags;
+
+  if (fetch->credentials == ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN &&
+      is_secure) {
+    if (access_token_.empty()) {
+      // We should try OAuth2, but we have no token cached. This
+      // ExtensionLoader will be started once the token fetch is complete,
+      // in either OnTokenFetchSuccess or OnTokenFetchFailure.
+      DCHECK(token_service_);
+      DCHECK(!webstore_account_callback_.is_null());
+      OAuth2TokenService::ScopeSet webstore_scopes;
+      webstore_scopes.insert(kWebstoreOAuth2Scope);
+      access_token_request_ = token_service_->StartRequest(
+          webstore_account_callback_.Run(), webstore_scopes, this);
+      return;
+    }
+    extension_loader_resource_request_->headers.SetHeader(
+        net::HttpRequestHeaders::kAuthorization,
+        base::StringPrintf("Bearer %s", access_token_.c_str()));
+  }
+
+  VLOG(2) << "Starting load of " << fetch->url << " for " << fetch->id;
+
+  StartExtensionLoader();
+}
+
+void ExtensionDownloader::StartExtensionLoader() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("extension_crx_fetcher", R"(
         semantics {
@@ -937,66 +990,44 @@ void ExtensionDownloader::CreateExtensionFetcher() {
             }
           }
         })");
-  extension_fetcher_ =
-      net::URLFetcher::Create(kExtensionFetcherId, fetch->url,
-                              net::URLFetcher::GET, this, traffic_annotation);
-  extension_fetcher_->SetRequestContext(request_context_.get());
-  extension_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
 
-  int load_flags = net::LOAD_DISABLE_CACHE;
-  bool is_secure = fetch->url.SchemeIsCryptographic();
-  if (fetch->credentials != ExtensionFetch::CREDENTIALS_COOKIES || !is_secure) {
-    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  }
-  extension_fetcher_->SetLoadFlags(load_flags);
+  last_extension_loader_resource_request_headers_for_testing_ =
+      extension_loader_resource_request_->headers;
+  last_extension_loader_load_flags_for_testing_ =
+      extension_loader_resource_request_->load_flags;
 
-  // Download CRX files to a temp file. The blacklist is small and will be
-  // processed in memory, so it is fetched into a string.
-  if (fetch->id != kBlacklistAppID) {
-    extension_fetcher_->SaveResponseToTemporaryFile(
-        GetExtensionFileTaskRunner());
-  }
+  network::mojom::URLLoaderFactory* url_loader_factory_to_use =
+      GetURLLoaderFactoryToUse(extension_loader_resource_request_->url);
+  extension_loader_ = network::SimpleURLLoader::Create(
+      std::move(extension_loader_resource_request_), traffic_annotation);
+  const int kMaxRetries = 3;
+  extension_loader_->SetRetryOptions(
+      kMaxRetries,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
 
-  if (fetch->credentials == ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN &&
-      is_secure) {
-    if (access_token_.empty()) {
-      // We should try OAuth2, but we have no token cached. This
-      // ExtensionFetcher will be started once the token fetch is complete,
-      // in either OnTokenFetchSuccess or OnTokenFetchFailure.
-      DCHECK(token_service_);
-      DCHECK(!webstore_account_callback_.is_null());
-      OAuth2TokenService::ScopeSet webstore_scopes;
-      webstore_scopes.insert(kWebstoreOAuth2Scope);
-      access_token_request_ = token_service_->StartRequest(
-          webstore_account_callback_.Run(), webstore_scopes, this);
-      return;
-    }
-    extension_fetcher_->AddExtraRequestHeader(
-        base::StringPrintf("%s: Bearer %s",
-                           net::HttpRequestHeaders::kAuthorization,
-                           access_token_.c_str()));
-  }
-
-  VLOG(2) << "Starting fetch of " << fetch->url << " for " << fetch->id;
-  extension_fetcher_->Start();
+  extension_loader_->DownloadToTempFile(
+      url_loader_factory_to_use,
+      base::BindOnce(&ExtensionDownloader::OnExtensionLoadComplete,
+                     base::Unretained(this)));
 }
 
-void ExtensionDownloader::OnCRXFetchComplete(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const base::TimeDelta& backoff_delay) {
+void ExtensionDownloader::OnExtensionLoadComplete(base::FilePath crx_path) {
+  GURL url = extension_loader_->GetFinalURL();
+  net::URLRequestStatus status =
+      net::URLRequestStatus::FromError(extension_loader_->NetError());
+  int response_code = -1;
+  if (extension_loader_->ResponseInfo() &&
+      extension_loader_->ResponseInfo()->headers) {
+    response_code = extension_loader_->ResponseInfo()->headers->response_code();
+  }
+  const base::TimeDelta& backoff_delay = base::TimeDelta::FromMilliseconds(0);
+
   ExtensionFetch& active_request = *extensions_queue_.active_request();
   const std::string& id = active_request.id;
-  if (status.status() == net::URLRequestStatus::SUCCESS &&
-      (response_code == 200 || url.SchemeIsFile())) {
+  if (!crx_path.empty()) {
     RETRY_HISTOGRAM("CrxFetchSuccess",
                     extensions_queue_.active_request_failure_count(),
                     url);
-    base::FilePath crx_path;
-    // Take ownership of the file at |crx_path|.
-    CHECK(source->GetResponseAsFilePath(true, &crx_path));
     std::unique_ptr<ExtensionFetch> fetch_data =
         extensions_queue_.reset_active_request();
     if (extension_cache_) {
@@ -1015,14 +1046,16 @@ void ExtensionDownloader::OnCRXFetchComplete(
   } else if (IterateFetchCredentialsAfterFailure(
                  &active_request, status, response_code)) {
     extensions_queue_.RetryRequest(backoff_delay);
+    delegate_->OnExtensionDownloadRetryForTests();
   } else {
     const std::set<int>& request_ids = active_request.request_ids;
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[id];
     VLOG(1) << "Failed to fetch extension '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
-    if (ShouldRetryRequest(status, response_code) &&
+    if (ShouldRetryRequest(extension_loader_.get()) &&
         extensions_queue_.active_request_failure_count() < kMaxRetries) {
       extensions_queue_.RetryRequest(backoff_delay);
+      delegate_->OnExtensionDownloadRetryForTests();
     } else {
       RETRY_HISTOGRAM("CrxFetchFailure",
                       extensions_queue_.active_request_failure_count(),
@@ -1036,7 +1069,8 @@ void ExtensionDownloader::OnCRXFetchComplete(
     extensions_queue_.reset_active_request();
   }
 
-  extension_fetcher_.reset();
+  extension_loader_.reset();
+  file_url_loader_factory_.reset();
 
   // If there are any pending downloads left, start the next one.
   extensions_queue_.StartNextRequest();
@@ -1070,10 +1104,8 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
     ExtensionFetch* fetch,
     const net::URLRequestStatus& status,
     int response_code) {
-  bool auth_failure = status.status() == net::URLRequestStatus::CANCELED ||
-                      (status.status() == net::URLRequestStatus::SUCCESS &&
-                       (response_code == net::HTTP_UNAUTHORIZED ||
-                        response_code == net::HTTP_FORBIDDEN));
+  bool auth_failure = response_code == net::HTTP_UNAUTHORIZED ||
+                      response_code == net::HTTP_FORBIDDEN;
   if (!auth_failure) {
     return false;
   }
@@ -1130,11 +1162,10 @@ void ExtensionDownloader::OnGetTokenSuccess(
     const std::string& access_token,
     const base::Time& expiration_time) {
   access_token_ = access_token;
-  extension_fetcher_->AddExtraRequestHeader(
-      base::StringPrintf("%s: Bearer %s",
-                         net::HttpRequestHeaders::kAuthorization,
-                         access_token_.c_str()));
-  extension_fetcher_->Start();
+  extension_loader_resource_request_->headers.SetHeader(
+      net::HttpRequestHeaders::kAuthorization,
+      base::StringPrintf("Bearer %s", access_token_.c_str()));
+  StartExtensionLoader();
 }
 
 void ExtensionDownloader::OnGetTokenFailure(
@@ -1142,7 +1173,7 @@ void ExtensionDownloader::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   // If we fail to get an access token, kick the pending fetch and let it fall
   // back on cookies.
-  extension_fetcher_->Start();
+  StartExtensionLoader();
 }
 
 ManifestFetchData* ExtensionDownloader::CreateManifestFetchData(
