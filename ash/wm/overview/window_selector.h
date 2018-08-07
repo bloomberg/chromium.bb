@@ -139,8 +139,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
 
-  // Called when a window's tab(s) start/continue/end being dragged around if
-  // overview mode is active.
+  // Called when a window (either it's browser window or an app window)
+  // start/continue/end being dragged in tablet mode.
   // TODO(xdai): Currently it doesn't work for multi-display scenario.
   void OnWindowDragStarted(aura::Window* dragged_window, bool animate);
   void OnWindowDragContinued(aura::Window* dragged_window,

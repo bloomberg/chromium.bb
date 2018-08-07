@@ -124,8 +124,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   void OnSelectorItemDragStarted(WindowSelectorItem* item);
   void OnSelectorItemDragEnded();
 
-  // Called when a window's tab(s) start/continue/end being dragged around in
-  // WindowGrid.
+  // Called when a window (either it's browser window or an app window)
+  // start/continue/end being dragged in tablet mode.
   void OnWindowDragStarted(aura::Window* dragged_window, bool animate);
   void OnWindowDragContinued(aura::Window* dragged_window,
                              const gfx::Point& location_in_screen,
