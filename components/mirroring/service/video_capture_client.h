@@ -6,6 +6,7 @@
 #define COMPONENTS_MIRRORING_SERVICE_VIDEO_CAPTURE_CLIENT_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -25,7 +26,8 @@ namespace mirroring {
 // media::mojom::VideoCaptureHost interface and requests to launch a video
 // capture device. After the device is started, the captured video frames are
 // received through the media::mojom::VideoCaptureObserver interface.
-class VideoCaptureClient : public media::mojom::VideoCaptureObserver {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
+    : public media::mojom::VideoCaptureObserver {
  public:
   VideoCaptureClient(const media::VideoCaptureParams& params,
                      media::mojom::VideoCaptureHostPtr host);

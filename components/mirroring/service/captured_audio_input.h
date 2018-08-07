@@ -6,6 +6,7 @@
 #define COMPONENTS_MIRRORING_SERVICE_CAPTURED_AUDIO_INPUT_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "components/mirroring/mojom/resource_provider.mojom.h"
@@ -17,9 +18,10 @@ namespace mirroring {
 
 // CapturedAudioInput handles the creation, initialization and control of an
 // audio input stream created by Audio Service.
-class CapturedAudioInput final : public media::AudioInputIPC,
-                                 public mojom::AudioStreamCreatorClient,
-                                 public media::mojom::AudioInputStreamClient {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) CapturedAudioInput final
+    : public media::AudioInputIPC,
+      public mojom::AudioStreamCreatorClient,
+      public media::mojom::AudioInputStreamClient {
  public:
   using StreamCreatorCallback =
       base::RepeatingCallback<void(mojom::AudioStreamCreatorClientPtr client,

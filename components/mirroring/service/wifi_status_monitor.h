@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -27,7 +28,7 @@ struct WifiStatus {
 // updates, processes responses, and maintains a recent history of data points.
 // This data can be included in feedback logs to help identify and diagnose
 // issues related to lousy network performance.
-class WifiStatusMonitor {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) WifiStatusMonitor {
  public:
   // |message_dispatcher| must keep alive during the lifetime of this class.
   explicit WifiStatusMonitor(MessageDispatcher* message_dispatcher);

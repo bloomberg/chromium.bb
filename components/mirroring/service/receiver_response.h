@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/values.h"
 
 namespace mirroring {
@@ -22,7 +23,7 @@ enum ResponseType {
   RPC,                    // Rpc binary messages. The payload is base64 encoded.
 };
 
-struct Answer {
+struct COMPONENT_EXPORT(MIRRORING_SERVICE) Answer {
   Answer();
   ~Answer();
   Answer(const Answer& answer);
@@ -43,7 +44,7 @@ struct Answer {
   std::string cast_mode;
 };
 
-struct ReceiverStatus {
+struct COMPONENT_EXPORT(MIRRORING_SERVICE) ReceiverStatus {
   ReceiverStatus();
   ~ReceiverStatus();
   ReceiverStatus(const ReceiverStatus& status);
@@ -56,7 +57,7 @@ struct ReceiverStatus {
   std::vector<int32_t> wifi_speed;
 };
 
-struct ReceiverKeySystem {
+struct COMPONENT_EXPORT(MIRRORING_SERVICE) ReceiverKeySystem {
   ReceiverKeySystem();
   ~ReceiverKeySystem();
   ReceiverKeySystem(const ReceiverKeySystem& receiver_key_system);
@@ -82,7 +83,7 @@ struct ReceiverKeySystem {
   std::string distinctive_identifier_support;
 };
 
-struct ReceiverCapability {
+struct COMPONENT_EXPORT(MIRRORING_SERVICE) ReceiverCapability {
   ReceiverCapability();
   ~ReceiverCapability();
   ReceiverCapability(const ReceiverCapability& capabilities);
@@ -93,7 +94,7 @@ struct ReceiverCapability {
   std::vector<ReceiverKeySystem> key_systems;
 };
 
-struct ReceiverError {
+struct COMPONENT_EXPORT(MIRRORING_SERVICE) ReceiverError {
   ReceiverError();
   ~ReceiverError();
   bool Parse(const base::Value& raw_value);
@@ -103,7 +104,7 @@ struct ReceiverError {
   std::string details;  // In JSON format.
 };
 
-struct ReceiverResponse {
+struct COMPONENT_EXPORT(MIRRORING_SERVICE) ReceiverResponse {
   ReceiverResponse();
   ~ReceiverResponse();
   ReceiverResponse(ReceiverResponse&& receiver_response);

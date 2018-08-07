@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MIRRORING_SERVICE_MEDIA_REMOTER_H_
 #define COMPONENTS_MIRRORING_SERVICE_MEDIA_REMOTER_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "media/cast/cast_config.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
@@ -37,7 +38,8 @@ class RemotingSender;
 // browser and the Cast Receiver. The audio/video data streams are delivered
 // from the media renderer to the Mirroring Service through mojo datapipes, and
 // are then sent out to Cast Receiver through Cast Streaming.
-class MediaRemoter final : public media::mojom::Remoter {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
+    : public media::mojom::Remoter {
  public:
   class Client {
    public:

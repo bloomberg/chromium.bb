@@ -6,6 +6,7 @@
 #define COMPONENTS_MIRRORING_SERVICE_UDP_SOCKET_CLIENT_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_endpoint.h"
@@ -20,8 +21,9 @@ namespace mirroring {
 // |remote_endpoint_| when StartReceiving() is called. Sending/Receiving ends
 // when StopReceiving() is called or this class is destructed. |error_callback|
 // will be called if the UDPSocket is failed to be created or connected.
-class UdpSocketClient final : public media::cast::PacketTransport,
-                              public network::mojom::UDPSocketReceiver {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
+    : public media::cast::PacketTransport,
+      public network::mojom::UDPSocketReceiver {
  public:
   UdpSocketClient(const net::IPEndPoint& remote_endpoint,
                   network::mojom::NetworkContext* context,

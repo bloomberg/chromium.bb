@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -47,7 +48,7 @@ class WifiStatusMonitor;
 //
 // To avoid unbounded memory use, older data is discarded automatically if too
 // much is accumulating.
-class SessionMonitor {
+class COMPONENT_EXPORT(MIRRORING_SERVICE) SessionMonitor {
  public:
   using EventsAndStats =
       std::pair<std::string /* events */, std::string /* stats */>;
