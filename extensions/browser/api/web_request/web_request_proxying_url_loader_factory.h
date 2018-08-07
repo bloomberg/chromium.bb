@@ -163,6 +163,8 @@ class WebRequestProxyingURLLoaderFactory
     // lifetime.
     base::Optional<net::AuthCredentials> auth_credentials_;
 
+    bool request_completed_ = false;
+
     base::WeakPtrFactory<InProgressRequest> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
