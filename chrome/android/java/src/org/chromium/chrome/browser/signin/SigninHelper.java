@@ -171,7 +171,7 @@ public class SigninHelper {
                     }
                 }
             };
-            task.execute();
+            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
             return;
         }
 

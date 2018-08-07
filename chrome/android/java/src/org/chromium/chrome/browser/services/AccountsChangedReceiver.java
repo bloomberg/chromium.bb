@@ -46,7 +46,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
                 continueHandleAccountChangeIfNeeded(appContext);
             }
         };
-        task.execute();
+        task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private void continueHandleAccountChangeIfNeeded(final Context context) {
