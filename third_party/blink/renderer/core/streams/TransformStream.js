@@ -66,31 +66,33 @@
         useCounted = true;
       }
 
-      // readable and writableType are extension points for future byte streams.
-      const readableType = transformer.readableType;
-      if (readableType !== undefined) {
-        throw new RangeError(streamErrors.invalidType);
-      }
+      const writableSizeFunction = writableStrategy.size;
+      let writableHighWaterMark = writableStrategy.highWaterMark;
 
+      const readableSizeFunction = readableStrategy.size;
+      let readableHighWaterMark = readableStrategy.highWaterMark;
+
+      // readable and writableType are extension points for future byte streams.
       const writableType = transformer.writableType;
       if (writableType !== undefined) {
         throw new RangeError(streamErrors.invalidType);
       }
 
-      const writableSizeFunction = writableStrategy.size;
       const writableSizeAlgorithm =
           MakeSizeAlgorithmFromSizeFunction(writableSizeFunction);
-      let writableHighWaterMark = writableStrategy.highWaterMark;
       if (writableHighWaterMark === undefined) {
         writableHighWaterMark = 1;
       }
       writableHighWaterMark =
           ValidateAndNormalizeHighWaterMark(writableHighWaterMark);
 
-      const readableSizeFunction = readableStrategy.size;
+      const readableType = transformer.readableType;
+      if (readableType !== undefined) {
+        throw new RangeError(streamErrors.invalidType);
+      }
+
       const readableSizeAlgorithm =
           MakeSizeAlgorithmFromSizeFunction(readableSizeFunction);
-      let readableHighWaterMark = readableStrategy.highWaterMark;
       if (readableHighWaterMark === undefined) {
         readableHighWaterMark = 0;
       }
@@ -207,6 +209,8 @@
   }
 
   function TransformStreamErrorWritableAndUnblockWrite(stream, e) {
+    TransformStreamDefaultControllerClearAlgorithms(
+        stream[_transformStreamController]);
     binding.WritableStreamDefaultControllerErrorIfNeeded(
         binding.getWritableStreamController(stream[_writable]), e);
 
@@ -324,6 +328,11 @@
         stream, controller, transformAlgorithm, flushAlgorithm);
   }
 
+  function TransformStreamDefaultControllerClearAlgorithms(controller) {
+    controller[_transformAlgorithm] = undefined;
+    controller[_flushAlgorithm] = undefined;
+  }
+
   function TransformStreamDefaultControllerEnqueue(controller, chunk) {
     const stream = controller[_controlledTransformStream];
     const readableController =
@@ -402,8 +411,9 @@
 
   function TransformStreamDefaultSinkCloseAlgorithm(stream) {
     const readable = stream[_readable];
-
-    const flushPromise = stream[_transformStreamController][_flushAlgorithm]();
+    const controller = stream[_transformStreamController];
+    const flushPromise = controller[_flushAlgorithm]();
+    TransformStreamDefaultControllerClearAlgorithms(controller);
 
     return thenPromise(
         flushPromise,
