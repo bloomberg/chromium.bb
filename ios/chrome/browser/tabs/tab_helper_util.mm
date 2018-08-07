@@ -40,10 +40,12 @@
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
+#import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -93,6 +95,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   if (base::FeatureList::IsEnabled(web::kWebPageTextAccessibility)) {
     FontSizeTabHelper::CreateForWebState(web_state);
+  }
+
+  if (base::FeatureList::IsEnabled(kCopyImage)) {
+    ImageFetchTabHelper::CreateForWebState(web_state);
   }
 
   ReadingListModel* model =
