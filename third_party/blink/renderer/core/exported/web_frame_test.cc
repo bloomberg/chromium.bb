@@ -4498,7 +4498,8 @@ TEST_F(WebFrameTest, ReloadPreservesState) {
   // Reload the page and end up at the same url. State should not be propagated.
   web_view_helper.GetWebView()->MainFrameImpl()->StartReload(
       WebFrameLoadType::kReload);
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad();
+  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
+      web_view_helper.LocalMainFrame());
   EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().width);
   EXPECT_EQ(0, web_view_helper.LocalMainFrame()->GetScrollOffset().height);
   EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
@@ -4551,7 +4552,8 @@ TEST_F(WebFrameTest, IframeRedirect) {
   web_view_helper.InitializeAndLoad(base_url_ + "iframe_redirect.html");
   // Pump pending requests one more time. The test page loads script that
   // navigates.
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad();
+  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
+      web_view_helper.LocalMainFrame());
 
   WebFrame* iframe = web_view_helper.LocalMainFrame()->FindFrameByName(
       WebString::FromUTF8("ifr"));
@@ -7277,7 +7279,8 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
       ->Loader()
       .StartNavigation(frame_request, WebFrameLoadType::kStandard,
                        NavigationPolicyFromEvent(event));
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad();
+  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
+      web_view_helper.LocalMainFrame());
 
   // decidePolicyForNavigation should be called for the ctrl+click.
   EXPECT_EQ(1, web_frame_client.DecidePolicyCallCount());
@@ -7352,7 +7355,8 @@ TEST_F(WebFrameTest, ReloadPost) {
                               "javascript:document.forms[0].submit()");
   // Pump requests one more time after the javascript URL has executed to
   // trigger the actual POST load request.
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad();
+  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
+      web_view_helper.LocalMainFrame());
   EXPECT_EQ(WebString::FromUTF8("POST"),
             frame->GetDocumentLoader()->GetRequest().HttpMethod());
 
@@ -7507,7 +7511,8 @@ TEST_F(WebFrameTest, NavigateToSame) {
   ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
       ->Loader()
       .StartNavigation(frame_request);
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad();
+  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
+      web_view_helper.LocalMainFrame());
 
   EXPECT_TRUE(client.FrameLoadTypeReloadSeen());
 }
@@ -7865,7 +7870,8 @@ TEST_F(WebFrameTest, CurrentHistoryItem) {
   // Before commit, there is no history item.
   EXPECT_FALSE(main_frame_loader.GetDocumentLoader()->GetHistoryItem());
 
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad();
+  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
+      web_view_helper.LocalMainFrame());
 
   // After commit, there is.
   HistoryItem* item = main_frame_loader.GetDocumentLoader()->GetHistoryItem();
