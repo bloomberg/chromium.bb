@@ -183,55 +183,10 @@ void GetNativeRtcConfiguration(
     webrtc::PeerConnectionInterface::RTCConfiguration* webrtc_config) {
   DCHECK(webrtc_config);
 
-  webrtc_config->servers.clear();
-  for (const blink::WebRTCIceServer& blink_server : blink_config.ice_servers) {
-    webrtc::PeerConnectionInterface::IceServer server;
-    server.username = blink_server.username.Utf8();
-    server.password = blink_server.credential.Utf8();
-    server.uri = blink_server.url.GetString().Utf8();
-    webrtc_config->servers.push_back(server);
-  }
-
-  switch (blink_config.ice_transport_policy) {
-    case blink::WebRTCIceTransportPolicy::kRelay:
-      webrtc_config->type = webrtc::PeerConnectionInterface::kRelay;
-      break;
-    case blink::WebRTCIceTransportPolicy::kAll:
-      webrtc_config->type = webrtc::PeerConnectionInterface::kAll;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  switch (blink_config.bundle_policy) {
-    case blink::WebRTCBundlePolicy::kBalanced:
-      webrtc_config->bundle_policy =
-          webrtc::PeerConnectionInterface::kBundlePolicyBalanced;
-      break;
-    case blink::WebRTCBundlePolicy::kMaxBundle:
-      webrtc_config->bundle_policy =
-          webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle;
-      break;
-    case blink::WebRTCBundlePolicy::kMaxCompat:
-      webrtc_config->bundle_policy =
-          webrtc::PeerConnectionInterface::kBundlePolicyMaxCompat;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  switch (blink_config.rtcp_mux_policy) {
-    case blink::WebRTCRtcpMuxPolicy::kNegotiate:
-      webrtc_config->rtcp_mux_policy =
-          webrtc::PeerConnectionInterface::kRtcpMuxPolicyNegotiate;
-      break;
-    case blink::WebRTCRtcpMuxPolicy::kRequire:
-      webrtc_config->rtcp_mux_policy =
-          webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire;
-      break;
-    default:
-      NOTREACHED();
-  }
+  webrtc_config->servers = blink_config.ice_servers;
+  webrtc_config->type = blink_config.ice_transport_policy;
+  webrtc_config->bundle_policy = blink_config.bundle_policy;
+  webrtc_config->rtcp_mux_policy = blink_config.rtcp_mux_policy;
 
   switch (blink_config.sdp_semantics) {
     case blink::WebRTCSdpSemantics::kPlanB:
