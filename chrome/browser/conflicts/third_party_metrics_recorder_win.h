@@ -47,6 +47,7 @@ class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
 
   // Counters for different types of modules.
   size_t module_count_ = 0;
+  size_t unsigned_module_count_ = 0;
   size_t signed_module_count_ = 0;
   size_t catalog_module_count_ = 0;
   size_t microsoft_module_count_ = 0;
