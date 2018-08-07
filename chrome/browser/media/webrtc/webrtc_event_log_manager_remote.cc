@@ -217,9 +217,9 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
     return;
   }
 
-  AddPendingLogs(browser_context_id, remote_bound_logs_dir);
-
   enabled_browser_contexts_.insert(browser_context_id);
+
+  AddPendingLogs(browser_context_id, remote_bound_logs_dir);
 
   if (!proactive_prune_scheduling_delta_.is_zero() &&
       !proactive_prune_scheduling_started_) {
@@ -228,7 +228,6 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
   }
 }
 
-// TODO(crbug.com/775415): Add unit tests.
 void WebRtcRemoteEventLogManager::DisableForBrowserContext(
     BrowserContextId browser_context_id) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -240,8 +239,14 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
   enabled_browser_contexts_.erase(browser_context_id);
 
 #if DCHECK_IS_ON()
-  // All of the RPHs associated with this BrowserContext must already have
-  // exited, which should have implicitly stopped all active logs.
+  // DisableForBrowserContext() is called in one of two cases:
+  // 1. If Chrome is shutting down. In that case, all the RPHs associated with
+  //    this BrowserContext must already have exited, which should have
+  //    implicitly stopped all active logs.
+  // 2. Remote-bound logging is no longer allowed for this BrowserContext.
+  //    In that case, some peer connections associated with this BrowserContext
+  //    might still be active, or become active at a later time, but all
+  //    logs must have already been stopped.
   auto pred = [browser_context_id](decltype(active_logs_)::value_type& log) {
     return log.first.browser_context_id == browser_context_id;
   };
@@ -249,7 +254,6 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
 #endif
 
   // Pending logs for this BrowserContext are no longer eligible for upload.
-  // (Active uploads, if any, are not affected.)
   for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
     if (it->browser_context_id == browser_context_id) {
       it = pending_logs_.erase(it);
@@ -257,6 +261,9 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
       ++it;
     }
   }
+
+  // Active uploads of logs associated with this BrowserContext must be stopped.
+  MaybeCancelUpload(base::Time::Min(), base::Time::Max(), browser_context_id);
 
   // Active logs may have been removed, which could remove upload suppression,
   // or pending logs which were about to be uploaded may have been removed,
