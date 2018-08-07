@@ -548,7 +548,6 @@ mojom("mojo_bindings") {
     "service_worker/embedded_worker.mojom",
     "service_worker/service_worker.mojom",
     "service_worker/service_worker_container.mojom",
-    "service_worker/service_worker_fetch_response_callback.mojom",
     "service_worker/service_worker_provider.mojom",
     "shared_worker/shared_worker.mojom",
     "shared_worker/shared_worker_client.mojom",

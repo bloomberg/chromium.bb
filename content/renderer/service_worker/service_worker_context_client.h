@@ -249,7 +249,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // client, which means it is coming through the ControllerServiceWorkerImpl.
   void DispatchOrQueueFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback);
 
  private:
@@ -305,7 +305,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       DispatchExtendableMessageEventCallback callback) override;
   void DispatchFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override;
   void DispatchNotificationClickEvent(
       const std::string& notification_id,

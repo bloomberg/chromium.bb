@@ -218,7 +218,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   // mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
     EXPECT_FALSE(ServiceWorkerUtils::IsMainResourceType(
         static_cast<ResourceType>(params->request.resource_type)));

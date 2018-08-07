@@ -97,7 +97,7 @@ class NavigationPreloadLoaderClient final
  public:
   NavigationPreloadLoaderClient(
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       : url_loader_(std::move(preload_handle->url_loader)),
         binding_(this, std::move(preload_handle->url_loader_client_request)),
@@ -161,7 +161,7 @@ class NavigationPreloadLoaderClient final
   mojo::ScopedDataPipeConsumerHandle body_;
 
   // Callbacks that complete Helper::OnFetchEvent().
-  mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
+  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
   mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPreloadLoaderClient);
@@ -249,7 +249,7 @@ class Helper : public EmbeddedWorkerTestHelper {
       int embedded_worker_id,
       const network::ResourceRequest& request,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     // Basic checks on DispatchFetchEvent parameters.
