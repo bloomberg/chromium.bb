@@ -1635,6 +1635,7 @@ interface Document : Node
     method createDocumentFragment
     method createElement
     method createElementNS
+    method createEmptyCSSStyleSheet
     method createEvent
     method createExpression
     method createNSResolver

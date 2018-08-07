@@ -76,6 +76,8 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [NewObject] Range createRange();
 
     [CallWith=ScriptState, NewObject, RaisesException, RuntimeEnabled=ConstructableStylesheets] Promise<CSSStyleSheet> createCSSStyleSheet(DOMString text, optional CSSStyleSheetInit options);
+    [CallWith=ScriptState, NewObject, RaisesException, RuntimeEnabled=ConstructableStylesheets] CSSStyleSheet createEmptyCSSStyleSheet(optional CSSStyleSheetInit options);
+
 
     // NodeFilter.SHOW_ALL = 0xFFFFFFFF
     [NewObject] NodeIterator createNodeIterator(Node root, optional unsigned long whatToShow = 0xFFFFFFFF, optional NodeFilter? filter = null);
