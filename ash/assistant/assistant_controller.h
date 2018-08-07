@@ -14,13 +14,16 @@
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
 #include "ash/public/interfaces/assistant_setup.mojom.h"
+#include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
@@ -38,12 +41,15 @@ class ASH_EXPORT AssistantController
     : public mojom::AssistantController,
       public AssistantControllerObserver,
       public mojom::ManagedWebContentsOpenUrlDelegate,
-      public mojom::VoiceInteractionObserver {
+      public mojom::VoiceInteractionObserver,
+      public mojom::AssistantVolumeControl,
+      public chromeos::CrasAudioHandler::AudioObserver {
  public:
   AssistantController();
   ~AssistantController() override;
 
   void BindRequest(mojom::AssistantControllerRequest request);
+  void BindRequest(mojom::AssistantVolumeControlRequest request);
 
   // Adds/removes the specified |observer|.
   void AddObserver(AssistantControllerObserver* observer);
@@ -95,6 +101,15 @@ class ASH_EXPORT AssistantController
   // mojom::ManagedWebContentsOpenUrlDelegate:
   void OnOpenUrlFromTab(const GURL& url) override;
 
+  // mojom::VolumeControl:
+  void SetVolume(int volume, bool user_initiated) override;
+  void SetMuted(bool muted) override;
+  void AddVolumeObserver(mojom::VolumeObserverPtr observer) override;
+
+  // chromeos::CrasAudioHandler::AudioObserver:
+  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
+  void OnOutputNodeVolumeChanged(uint64_t node, int volume) override;
+
   // Opens the specified |url| in a new browser tab.
   // TODO(dmblack): Support opening specific URLs in the Assistant container.
   void OpenUrl(const GURL& url);
@@ -145,6 +160,10 @@ class ASH_EXPORT AssistantController
 
   mojo::BindingSet<mojom::ManagedWebContentsOpenUrlDelegate>
       web_contents_open_url_delegate_bindings_;
+
+  mojo::Binding<mojom::AssistantVolumeControl>
+      assistant_volume_control_binding_;
+  mojo::InterfacePtrSet<mojom::VolumeObserver> volume_observer_;
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
 

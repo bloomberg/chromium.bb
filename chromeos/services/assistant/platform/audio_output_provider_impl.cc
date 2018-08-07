@@ -4,6 +4,7 @@
 
 #include "chromeos/services/assistant/platform/audio_output_provider_impl.h"
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
 #include "media/audio/audio_device_description.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -122,7 +123,13 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
 }  // namespace
 
-VolumeControlImpl::VolumeControlImpl() = default;
+VolumeControlImpl::VolumeControlImpl(service_manager::Connector* connector)
+    : binding_(this) {
+  connector->BindInterface(ash::mojom::kServiceName, &volume_control_ptr_);
+  ash::mojom::VolumeObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  volume_control_ptr_->AddVolumeObserver(std::move(observer));
+}
 
 VolumeControlImpl::~VolumeControlImpl() = default;
 
@@ -130,12 +137,11 @@ void VolumeControlImpl::SetAudioFocus(
     assistant_client::OutputStreamType focused_stream) {}
 
 float VolumeControlImpl::GetSystemVolume() {
-  // TODO(muyuanli): implement.
-  return 100.0f;
+  return volume_;
 }
 
 void VolumeControlImpl::SetSystemVolume(float new_volume, bool user_initiated) {
-  // TODO(muyuanli): implement.
+  volume_control_ptr_->SetVolume(new_volume, user_initiated);
 }
 
 float VolumeControlImpl::GetAlarmVolume() {
@@ -148,17 +154,25 @@ void VolumeControlImpl::SetAlarmVolume(float new_volume, bool user_initiated) {
 }
 
 bool VolumeControlImpl::IsSystemMuted() {
-  // TODO(muyuanli): implement.
-  return false;
+  return mute_;
 }
 
 void VolumeControlImpl::SetSystemMuted(bool muted) {
-  // TODO(muyuanli): implement.
+  volume_control_ptr_->SetMuted(muted);
+}
+
+void VolumeControlImpl::OnVolumeChanged(int volume) {
+  volume_ = volume;
+}
+
+void VolumeControlImpl::OnMuteStateChanged(bool mute) {
+  mute_ = mute;
 }
 
 AudioOutputProviderImpl::AudioOutputProviderImpl(
     service_manager::Connector* connector)
-    : connector_(connector),
+    : volume_control_impl_(connector),
+      connector_(connector),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 AudioOutputProviderImpl::~AudioOutputProviderImpl() = default;
