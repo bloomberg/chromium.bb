@@ -130,6 +130,7 @@ js_library("find_shortcut_behavior") {
   deps = [
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr/ui:command",
   ]
 }
 

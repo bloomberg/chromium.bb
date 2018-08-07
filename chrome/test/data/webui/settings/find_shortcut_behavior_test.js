@@ -25,6 +25,9 @@ suite('find-shortcut', () => {
       fns.reduce((acc, fn) => acc.then(fn), Promise.resolve());
 
   /**
+   * This method registers the |testElement| as a find shortcut listener, runs
+   * the |wrapped| function, then removes |testElement| from being a listener.
+   * The listeners stack is global and should be empty after a successful test.
    * @param {!HTMLElement} testElement
    * @return {!function(!Function)): !Promise}
    */
@@ -35,6 +38,9 @@ suite('find-shortcut', () => {
   ]);
 
   /**
+   * Checks that the handleFindShortcut method is being called for all the
+   * |expectedSelves| element references in the order that they are passed in
+   * when a single find shortcut is invoked.
    * @param {!Array<!HTMLElement>} expectedSelves
    * @param {?boolean} expectedModalContextOpen
    * @return {!Promise}
@@ -53,6 +59,8 @@ suite('find-shortcut', () => {
   };
 
   /**
+   * Checks that the handleFindShortcut method is being called for the
+   * element reference |expectedSelf| when a find shortcut is invoked.
    * @param {!HTMLElement} expectedSelf
    * @param {?boolean} expectedModalContextOpen
    * @return {!Promise}
@@ -61,12 +69,31 @@ suite('find-shortcut', () => {
       checkMultiple([expectedSelf], expectedModalContextOpen);
 
   /**
+   * Register |expectedSelf| element as a listener, check that
+   * handleFindShortcut is called, then remove as a listener.
    * @param {!HTMLElement} expectedSelf
    * @param {?boolean} expectedModalContextOpen
    * @return {!Promise}
    */
   const wrappedCheck = (expectedSelf, expectedModalContextOpen) => listenScope(
       expectedSelf)(() => check(expectedSelf, expectedModalContextOpen));
+
+  /**
+   * Registers for a keydown event to check whether the bubbled up event has
+   * defaultPrevented set to true, in which case the event was handled.
+   * @param {boolean} defaultPrevented
+   * @return {!Promise}
+   */
+  const listenOnceAndCheckDefaultPrevented = defaultPrevented => {
+    const resolver = new PromiseResolver();
+    const handler = e => {
+      window.removeEventListener('keydown', handler);
+      if (e.defaultPrevented == defaultPrevented)
+        resolver.resolve();
+    };
+    window.addEventListener('keydown', handler);
+    return resolver.promise;
+  };
 
   suiteSetup(() => {
     document.body.innerHTML = `
@@ -92,8 +119,6 @@ suite('find-shortcut', () => {
   setup(() => {
     PolymerTest.clearBody();
   });
-
-  test('no listeners are okay', () => checkMultiple([]));
 
   test('handled', () => {
     document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
@@ -148,5 +173,29 @@ suite('find-shortcut', () => {
     return listenScope(testElement)(() => {
       assertThrows(() => testElement.becomeActiveFindShortcutListener());
     });
+  });
+
+  test('cmd+ctrl+f bubbles up (defaultPrevented=false)', () => {
+    const bubbledUp = listenOnceAndCheckDefaultPrevented(false);
+    document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
+    const testElement = document.body.querySelector('find-shortcut-element');
+    return listenScope(testElement)(() => {
+      MockInteractions.pressAndReleaseKeyOn(window, 70, ['meta', 'ctrl'], 'f');
+      return bubbledUp;
+    });
+  });
+
+  test('find shortcut bubbles up (defaultPrevented=true)', () => {
+    const bubbledUp = listenOnceAndCheckDefaultPrevented(true);
+    document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
+    const testElement = document.body.querySelector('find-shortcut-element');
+    return Promise.all([wrappedCheck(testElement), bubbledUp]);
+  });
+
+  test('shortcut with no listeners bubbles up (defaultPrevented=false)', () => {
+    const bubbledUp = listenOnceAndCheckDefaultPrevented(false);
+    MockInteractions.pressAndReleaseKeyOn(
+        window, 70, cr.isMac ? 'meta' : 'ctrl', 'f');
+    return bubbledUp;
   });
 });
