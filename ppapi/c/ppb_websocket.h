@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_websocket.idl modified Thu May 31 15:47:38 2012. */
+/* From ppb_websocket.idl modified Fri Aug  3 14:53:49 2018. */
 
 #ifndef PPAPI_C_PPB_WEBSOCKET_H_
 #define PPAPI_C_PPB_WEBSOCKET_H_
@@ -178,6 +178,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketCloseCode, 4);
 /**
  * The <code>PPB_WebSocket</code> interface provides bi-directional,
  * full-duplex, communications over a single TCP socket.
+ *
+ * This interface is deprecated and scheduled to be removed in mid-2019.
  */
 struct PPB_WebSocket_1_0 {
   /**

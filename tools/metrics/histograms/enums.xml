@@ -19545,6 +19545,7 @@ Called by update_net_error_codes.py.-->
       label="DocumentLevelPassiveDefaultEventListenerPreventedWheel"/>
   <int value="2522" label="ShapeDetectionAPI"/>
   <int value="2523" label="V8SourceBuffer_ChangeType_Method"/>
+  <int value="2524" label="PPAPIWebSocket"/>
 </enum>
 
 <enum name="FeedbackSource">

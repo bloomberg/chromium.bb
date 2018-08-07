@@ -584,6 +584,12 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               WillBeRemoved("speechSynthesis.speak() without user activation",
                             kM71, "5687444770914304")};
 
+    case WebFeature::kPPAPIWebSocket:
+      // TODO(ricea): Update once we have an expected release date for M74.
+      return {"PPAPIWebSocket", kUnknown,
+              "The Native Client Pepper WebSocket API is deprecated and will "
+              "be disabled in M74, mid-2019"};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};
