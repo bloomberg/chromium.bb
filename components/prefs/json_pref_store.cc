@@ -132,8 +132,8 @@ std::unique_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
 
 JsonPrefStore::JsonPrefStore(
     const base::FilePath& pref_filename,
-    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-    std::unique_ptr<PrefFilter> pref_filter)
+    std::unique_ptr<PrefFilter> pref_filter,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner)
     : path_(pref_filename),
       file_task_runner_(std::move(file_task_runner)),
       prefs_(new base::DictionaryValue()),

@@ -31,8 +31,7 @@ class BrowserProcessImplTest : public ::testing::Test {
         loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &loop_),
         command_line_(base::CommandLine::NO_PROGRAM),
-        browser_process_impl_(
-            new BrowserProcessImpl(base::ThreadTaskRunnerHandle::Get().get())) {
+        browser_process_impl_(new BrowserProcessImpl()) {
     // Create() and StartWithDefaultParams() TaskScheduler in seperate steps to
     // properly simulate the browser process' lifecycle.
     base::TaskScheduler::Create("BrowserProcessImplTest");

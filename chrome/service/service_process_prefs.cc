@@ -13,8 +13,8 @@
 ServiceProcessPrefs::ServiceProcessPrefs(const base::FilePath& pref_filename,
                                          base::SequencedTaskRunner* task_runner)
     : prefs_(new JsonPrefStore(pref_filename,
-                               task_runner,
-                               std::unique_ptr<PrefFilter>())) {}
+                               std::unique_ptr<PrefFilter>(),
+                               task_runner)) {}
 
 ServiceProcessPrefs::~ServiceProcessPrefs() {}
 
