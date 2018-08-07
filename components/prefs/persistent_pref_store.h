@@ -62,10 +62,16 @@ class COMPONENTS_PREFS_EXPORT PersistentPrefStore : public WriteablePrefStore {
   // Owns |error_delegate|.
   virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) = 0;
 
-  // Starts an asynchronous attempt to commit pending writes to disk. Posts a
-  // task to run |done_callback| on the current sequence when disk operations,
-  // if any, are complete (even if they are unsuccessful).
-  virtual void CommitPendingWrite(base::OnceClosure done_callback);
+  // Lands pending writes to disk. |reply_callback| will be posted to the
+  // current sequence when changes have been written.
+  // |synchronous_done_callback| on the other hand will be invoked right away
+  // wherever the writes complete (could even be invoked synchronously if no
+  // writes need to occur); this is useful when the current thread cannot pump
+  // messages to observe the reply (e.g. nested loops banned on main thread
+  // during shutdown). |synchronous_done_callback| must be thread-safe.
+  virtual void CommitPendingWrite(
+      base::OnceClosure reply_callback = base::OnceClosure(),
+      base::OnceClosure synchronous_done_callback = base::OnceClosure());
 
   // Schedule a write if there is any lossy data pending. Unlike
   // CommitPendingWrite() this does not immediately sync to disk, instead it

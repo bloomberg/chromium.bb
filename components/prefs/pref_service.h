@@ -176,13 +176,16 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   virtual ~PrefService();
 
   // Lands pending writes to disk. This should only be used if we need to save
-  // immediately (basically, during shutdown).
-  void CommitPendingWrite();
-
-  // Lands pending writes to disk. This should only be used if we need to save
-  // immediately. |done_callback| will be invoked when changes have been
-  // written.
-  void CommitPendingWrite(base::OnceClosure done_callback);
+  // immediately (basically, during shutdown). |reply_callback| will be posted
+  // to the current sequence when changes have been written.
+  // |synchronous_done_callback| on the other hand will be invoked right away
+  // wherever the writes complete (could even be invoked synchronously if no
+  // writes need to occur); this is useful when the current thread cannot pump
+  // messages to observe the reply (e.g. nested loops banned on main thread
+  // during shutdown). |synchronous_done_callback| must be thread-safe.
+  void CommitPendingWrite(
+      base::OnceClosure reply_callback = base::OnceClosure(),
+      base::OnceClosure synchronous_done_callback = base::OnceClosure());
 
   // Schedule a write if there is any lossy data pending. Unlike
   // CommitPendingWrite() this does not immediately sync to disk, instead it

@@ -8,11 +8,20 @@
 
 #include "base/threading/sequenced_task_runner_handle.h"
 
-void PersistentPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
+void PersistentPrefStore::CommitPendingWrite(
+    base::OnceClosure reply_callback,
+    base::OnceClosure synchronous_done_callback) {
   // Default behavior for PersistentPrefStore implementation that don't issue
   // disk operations: schedule the callback immediately.
-  if (done_callback) {
+  // |synchronous_done_callback| is allowed to be invoked synchronously (and
+  // must be here since we have no other way to post it which isn't the current
+  // sequence).
+
+  if (synchronous_done_callback)
+    std::move(synchronous_done_callback).Run();
+
+  if (reply_callback) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     std::move(done_callback));
+                                                     std::move(reply_callback));
   }
 }

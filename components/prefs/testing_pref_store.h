@@ -45,7 +45,8 @@ class TestingPrefStore : public PersistentPrefStore {
   PrefReadError GetReadError() const override;
   PersistentPrefStore::PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
-  void CommitPendingWrite(base::OnceClosure done_callback) override;
+  void CommitPendingWrite(base::OnceClosure reply_callback,
+                          base::OnceClosure synchronous_done_callback) override;
   void SchedulePendingLossyWrites() override;
 
   // Marks the store as having completed initialization.

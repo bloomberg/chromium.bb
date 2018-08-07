@@ -180,8 +180,11 @@ void OverlayUserPrefStore::ReadPrefsAsync(
   OnInitializationCompleted(/* ephemeral */ false, true);
 }
 
-void OverlayUserPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
-  persistent_user_pref_store_->CommitPendingWrite(std::move(done_callback));
+void OverlayUserPrefStore::CommitPendingWrite(
+    base::OnceClosure reply_callback,
+    base::OnceClosure synchronous_done_callback) {
+  persistent_user_pref_store_->CommitPendingWrite(
+      std::move(reply_callback), std::move(synchronous_done_callback));
   // We do not write our content intentionally.
 }
 

@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -56,8 +57,13 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
 };
 
 enum class CommitPendingWriteMode {
+  // Basic mode.
   WITHOUT_CALLBACK,
+  // With reply callback.
   WITH_CALLBACK,
+  // With synchronous notify callback (synchronous after the write -- shouldn't
+  // require pumping messages to observe).
+  WITH_SYNCHRONOUS_CALLBACK,
 };
 
 class SegregatedPrefStoreTest
@@ -131,13 +137,28 @@ TEST_P(SegregatedPrefStoreTest, StoreValues) {
   ASSERT_FALSE(selected_store_->committed());
   ASSERT_FALSE(default_store_->committed());
 
-  if (GetParam() == CommitPendingWriteMode::WITHOUT_CALLBACK) {
-    segregated_store_->CommitPendingWrite(base::OnceClosure());
-    base::RunLoop().RunUntilIdle();
-  } else {
-    base::RunLoop run_loop;
-    segregated_store_->CommitPendingWrite(run_loop.QuitClosure());
-    run_loop.Run();
+  switch (GetParam()) {
+    case CommitPendingWriteMode::WITHOUT_CALLBACK: {
+      segregated_store_->CommitPendingWrite();
+      base::RunLoop().RunUntilIdle();
+      break;
+    }
+
+    case CommitPendingWriteMode::WITH_CALLBACK: {
+      base::RunLoop run_loop;
+      segregated_store_->CommitPendingWrite(run_loop.QuitClosure());
+      run_loop.Run();
+      break;
+    }
+
+    case CommitPendingWriteMode::WITH_SYNCHRONOUS_CALLBACK: {
+      base::WaitableEvent written;
+      segregated_store_->CommitPendingWrite(
+          base::OnceClosure(),
+          base::BindOnce(&base::WaitableEvent::Signal, Unretained(&written)));
+      written.Wait();
+      break;
+    }
   }
 
   ASSERT_TRUE(selected_store_->committed());
@@ -327,3 +348,7 @@ INSTANTIATE_TEST_CASE_P(
     WithCallback,
     SegregatedPrefStoreTest,
     ::testing::Values(CommitPendingWriteMode::WITH_CALLBACK));
+INSTANTIATE_TEST_CASE_P(
+    WithSynchronousCallback,
+    SegregatedPrefStoreTest,
+    ::testing::Values(CommitPendingWriteMode::WITH_SYNCHRONOUS_CALLBACK));

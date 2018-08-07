@@ -272,7 +272,9 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
       base::Bind(&JsonPrefStore::OnFileRead, AsWeakPtr()));
 }
 
-void JsonPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
+void JsonPrefStore::CommitPendingWrite(
+    base::OnceClosure reply_callback,
+    base::OnceClosure synchronous_done_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Schedule a write for any lossy writes that are outstanding to ensure that
@@ -282,13 +284,19 @@ void JsonPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
   if (writer_.HasPendingWrite() && !read_only_)
     writer_.DoScheduledWrite();
 
-  if (done_callback) {
-    // Since disk operations occur on |file_task_runner_|, the reply of a task
-    // posted to |file_task_runner_| will run after currently pending disk
-    // operations. Also, by definition of PostTaskAndReply(), the reply will run
-    // on the current sequence.
+  // Since disk operations occur on |file_task_runner_|, the reply of a task
+  // posted to |file_task_runner_| will run after currently pending disk
+  // operations. Also, by definition of PostTaskAndReply(), the reply (in the
+  // |reply_callback| case will run on the current sequence.
+
+  if (synchronous_done_callback) {
+    file_task_runner_->PostTask(FROM_HERE,
+                                std::move(synchronous_done_callback));
+  }
+
+  if (reply_callback) {
     file_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
-                                        std::move(done_callback));
+                                        std::move(reply_callback));
   }
 }
 
@@ -444,7 +452,7 @@ void JsonPrefStore::OnFileRead(std::unique_ptr<ReadResult> read_result) {
 
 JsonPrefStore::~JsonPrefStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CommitPendingWrite(base::OnceClosure());
+  CommitPendingWrite();
 }
 
 bool JsonPrefStore::SerializeData(std::string* output) {

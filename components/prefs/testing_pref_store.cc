@@ -98,9 +98,12 @@ void TestingPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
     NotifyInitializationCompleted();
 }
 
-void TestingPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
+void TestingPrefStore::CommitPendingWrite(
+    base::OnceClosure reply_callback,
+    base::OnceClosure synchronous_done_callback) {
   committed_ = true;
-  PersistentPrefStore::CommitPendingWrite(std::move(done_callback));
+  PersistentPrefStore::CommitPendingWrite(std::move(reply_callback),
+                                          std::move(synchronous_done_callback));
 }
 
 void TestingPrefStore::SchedulePendingLossyWrites() {}
