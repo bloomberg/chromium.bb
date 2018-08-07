@@ -24,6 +24,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -138,7 +139,6 @@ NetworkService::NetworkService(
     // Note: The command line switches are only checked when not using the
     // embedder's NetLog, as it may already be writing to the destination log
     // file.
-    owned_net_log_->ProcessCommandLine(*command_line);
     net_log_ = owned_net_log_.get();
   }
 
@@ -235,6 +235,16 @@ void NetworkService::CreateNetLogEntriesForActiveObjects(
 
 void NetworkService::SetClient(mojom::NetworkServiceClientPtr client) {
   client_ = std::move(client);
+}
+
+void NetworkService::StartNetLog(base::File file,
+                                 base::Value client_constants) {
+  DCHECK(client_constants.is_dict());
+  std::unique_ptr<base::DictionaryValue> constants = net::GetNetConstants();
+  constants->MergeDictionary(&client_constants);
+
+  owned_net_log_->ObserveFileWithConstants(std::move(file),
+                                           std::move(*constants));
 }
 
 void NetworkService::CreateNetworkContext(

@@ -6,6 +6,7 @@ module network.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
@@ -182,6 +183,15 @@ struct CryptConfig {
 // Browser interface to the network service.
 interface NetworkService {
   SetClient(NetworkServiceClient client);
+
+  // Starts observing the NetLog event stream and writing entries to |file|.
+  // |constants| is a legend used for decoding constant values in the log; it
+  // will be merged with the |GetNetConstants()| dictionary before being passed
+  // through to the FileObserver. (See |FileNetLogObserver::CreateBounded()|
+  // for more details). Most clients will just be adding a dictionary under
+  // the key "clientInfo".
+  StartNetLog(mojo_base.mojom.File file,
+              mojo_base.mojom.DictionaryValue constants);
 
   // Creates a new network context with the given parameters.
   CreateNetworkContext(NetworkContext& context,

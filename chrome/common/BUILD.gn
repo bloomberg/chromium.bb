@@ -242,6 +242,7 @@ static_library("common") {
     "//components/nacl/common:buildflags",
     "//components/nacl/common:process_type",
     "//components/nacl/common:switches",
+    "//components/net_log",
     "//components/network_session_configurator/common",
     "//components/ntp_tiles",
     "//components/offline_pages/buildflags",

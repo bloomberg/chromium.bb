@@ -29,19 +29,14 @@ MojoNetLog::~MojoNetLog() {
                                           base::OnceClosure());
 }
 
-void MojoNetLog::ProcessCommandLine(const base::CommandLine& command_line) {
-  if (!command_line.HasSwitch(switches::kLogNetLog))
-    return;
-
-  base::FilePath log_path =
-      command_line.GetSwitchValuePath(switches::kLogNetLog);
-
+void MojoNetLog::ObserveFileWithConstants(base::File file,
+                                          base::Value constants) {
   // TODO(eroman): Should get capture mode from the command line.
   net::NetLogCaptureMode capture_mode =
       net::NetLogCaptureMode::IncludeCookiesAndCredentials();
 
-  file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
-      log_path, nullptr /* constants */);
+  file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
+      std::move(file), std::make_unique<base::Value>(std::move(constants)));
   file_net_log_observer_->StartObserving(this, capture_mode);
 }
 

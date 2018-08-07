@@ -87,6 +87,7 @@ class ChromeContentClient : public content::ContentClient {
   base::RefCountedMemory* GetDataResourceBytes(
       int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
+  base::DictionaryValue GetNetLogConstants() const override;
   std::string GetProcessTypeNameInEnglish(int type) override;
 
   bool AllowScriptExtensionForServiceWorker(const GURL& script_url) override;

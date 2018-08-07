@@ -5,7 +5,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/scoped_temp_dir.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -727,6 +730,38 @@ TEST_F(NetworkServiceTestWithService, Basic) {
   CreateNetworkContext();
   LoadURL(test_server()->GetURL("/echo"));
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
+}
+
+// Verifies that a passed net log file is successfully opened and sane data
+// written to it.
+TEST_F(NetworkServiceTestWithService, StartsNetLog) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath log_dir = temp_dir.GetPath();
+  base::FilePath log_path = log_dir.Append(FILE_PATH_LITERAL("test_log.json"));
+
+  base::DictionaryValue dict;
+  dict.SetString("amiatest", "iamatest");
+
+  base::File log_file(log_path,
+                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  network_service_->StartNetLog(std::move(log_file), std::move(dict));
+  CreateNetworkContext();
+  LoadURL(test_server()->GetURL("/echo"));
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+
+  // |log_file| is closed on destruction of the NetworkService.
+  Shutdown();
+
+  // |log_file| is closed on another thread, so have to wait for that to happen.
+  RunUntilIdle();
+
+  JSONFileValueDeserializer deserializer(log_path);
+  std::unique_ptr<base::Value> log_dict =
+      deserializer.Deserialize(nullptr, nullptr);
+  ASSERT_TRUE(log_dict);
+  ASSERT_EQ(log_dict->FindKey("constants")->FindKey("amiatest")->GetString(),
+            "iamatest");
 }
 
 // Verifies that raw headers are only reported if requested.

@@ -60,6 +60,15 @@ void ServiceTest::OnStartCalled(Connector* connector,
   initialize_called_.Run();
 }
 
+void ServiceTest::Shutdown() {
+  background_service_manager_.reset();
+  context_.reset();
+}
+
+void ServiceTest::RunUntilIdle() {
+  scoped_task_environment_.RunUntilIdle();
+}
+
 void ServiceTest::SetUp() {
   background_service_manager_ =
       std::make_unique<service_manager::BackgroundServiceManager>(
@@ -80,8 +89,7 @@ void ServiceTest::SetUp() {
 }
 
 void ServiceTest::TearDown() {
-  background_service_manager_.reset();
-  context_.reset();
+  Shutdown();
 }
 
 }  // namespace test
