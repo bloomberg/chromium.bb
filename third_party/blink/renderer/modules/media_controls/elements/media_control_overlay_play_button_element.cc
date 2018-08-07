@@ -273,7 +273,7 @@ bool MediaControlOverlayPlayButtonElement::KeepEventInNode(Event* event) {
     return false;
 
   // For mouse events, only keep in node if they're on the internal button.
-  if (event->IsMouseEvent())
+  if (event->IsMouseEvent() && MediaControlsImpl::IsModern())
     return IsMouseEventOnInternalButton(ToMouseEvent(event));
 
   return true;
