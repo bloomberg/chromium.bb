@@ -779,13 +779,11 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
       base::Time::Now());
 
   Browser* browser = chrome::FindBrowserWithWebContents(contents_);
-  if (!browser) {
-    // The browser can be null in tests.
-    callback_.Run(extension, web_app_info_);
-    return;
-  }
+  // If there is no browser, it means that the app is being installed in the
+  // background. We skip some steps in this case.
+  const bool silent_install = !browser;
 
-  if (banners::AppBannerManagerDesktop::IsEnabled() &&
+  if (!silent_install && banners::AppBannerManagerDesktop::IsEnabled() &&
       web_app_info_.open_as_window) {
     banners::AppBannerManagerDesktop::FromWebContents(contents_)->OnInstall(
         false /* is_native app */, blink::kWebDisplayModeStandalone);
@@ -812,20 +810,24 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
                            creation_locations, current_profile, extension);
 #else
-  ChromeLauncherController::instance()->shelf_model()->PinAppWithID(
-      extension->id());
+  // ChromeLauncherController does not exist in unit tests.
+  if (ChromeLauncherController::instance()) {
+    ChromeLauncherController::instance()->shelf_model()->PinAppWithID(
+        extension->id());
+  }
 #endif  // !defined(OS_CHROMEOS)
 
   // Reparent the tab into an app window immediately when opening as a window.
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
+  if (!silent_install &&
+      base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
       launch_type == LAUNCH_TYPE_WINDOW && !profile_->IsOffTheRecord()) {
     ReparentWebContentsIntoAppBrowser(contents_, extension);
   }
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_MACOSX)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableHostedAppShimCreation)) {
+  if (!silent_install && !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             ::switches::kDisableHostedAppShimCreation)) {
     web_app::RevealAppShimInFinderForApp(current_profile, extension);
   }
 #endif

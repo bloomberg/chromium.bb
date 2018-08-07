@@ -113,6 +113,10 @@ void CreateShortcutsWithInfo(ShortcutCreationReason reason,
   // If the shortcut is for an application shortcut with the new bookmark app
   // flow disabled, there will be no corresponding extension.
   if (!shortcut_info->extension_id.empty()) {
+    // The profile manager does not exist in some unit tests.
+    if (!g_browser_process->profile_manager())
+      return;
+
     // It's possible for the extension to be deleted before we get here.
     // For example, creating a hosted app from a website. Double check that
     // it still exists.
