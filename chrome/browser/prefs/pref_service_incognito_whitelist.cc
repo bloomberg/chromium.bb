@@ -49,7 +49,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chromeos/chromeos_pref_names.h"
-#include "components/cryptauth/pref_names.h"
 #include "components/drive/drive_pref_names.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/chromeos/events/pref_names.h"
@@ -630,8 +629,8 @@ const char* temporary_incognito_whitelist[] = {
     prefs::kQuickCheckEnabled, prefs::kPacHttpsUrlStrippingEnabled,
     prefs::kBrowserGuestModeEnabled, prefs::kBrowserAddPersonEnabled,
 
-    prefs::kCryptAuthDeviceId, prefs::kEasyUnlockHardlockState,
-    prefs::kEasyUnlockLocalStateTpmKeys, prefs::kEasyUnlockLocalStateUserPrefs,
+    prefs::kEasyUnlockHardlockState, prefs::kEasyUnlockLocalStateTpmKeys,
+    prefs::kEasyUnlockLocalStateUserPrefs,
 
     prefs::kRecoveryComponentNeedsElevation,
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -762,20 +761,6 @@ const char* temporary_incognito_whitelist[] = {
 
     // components/consent_auditor/pref_names.h
     consent_auditor::prefs::kLocalConsentsDictionary,
-
-// components/cryptauth/pref_names.h
-#if defined(CHROMEOS)
-    cryptauth::prefs::kCryptAuthDeviceSyncLastSyncTimeSeconds,
-    cryptauth::prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure,
-    cryptauth::prefs::kCryptAuthDeviceSyncReason,
-    cryptauth::prefs::kCryptAuthDeviceSyncUnlockKeys,
-    cryptauth::prefs::kCryptAuthEnrollmentIsRecoveringFromFailure,
-    cryptauth::prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds,
-    cryptauth::prefs::kCryptAuthEnrollmentReason,
-    cryptauth::prefs::kCryptAuthEnrollmentUserPublicKey,
-    cryptauth::prefs::kCryptAuthEnrollmentUserPrivateKey,
-    cryptauth::prefs::kCryptAuthGCMRegistrationId,
-#endif  // defined(CHROMEOS)
 
     // components/dom_distiller/core/pref_names.h
     dom_distiller::prefs::kFont, dom_distiller::prefs::kTheme,
