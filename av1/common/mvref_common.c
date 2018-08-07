@@ -54,8 +54,7 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm,
       for (int idx = 0; idx < 2; ++idx) {
         MV_REFERENCE_FRAME ref_frame = mi->ref_frame[idx];
         if (ref_frame > INTRA_FRAME) {
-          int8_t ref_idx = cm->ref_frame_side[ref_frame];
-          if (ref_idx) continue;
+          if (cm->ref_frame_sign_bias[ref_frame] == 1) continue;
           if ((abs(mi->mv[idx].as_mv.row) > REFMVS_LIMIT) ||
               (abs(mi->mv[idx].as_mv.col) > REFMVS_LIMIT))
             continue;
@@ -993,7 +992,6 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
 }
 
 void av1_setup_motion_field(AV1_COMMON *cm) {
-  memset(cm->ref_frame_side, 0, sizeof(cm->ref_frame_side));
   if (!cm->seq_params.enable_order_hint) return;
 
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
@@ -1018,11 +1016,6 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
     ref_buf_idx[ref_idx] = buf_idx;
     ref_order_hint[ref_idx] = order_hint;
-
-    if (get_relative_dist(cm, order_hint, cur_order_hint) > 0)
-      cm->ref_frame_side[ref_frame] = 1;
-    else if (order_hint == cur_order_hint)
-      cm->ref_frame_side[ref_frame] = -1;
   }
 
   int ref_stamp = MFMV_STACK_SIZE - 1;
