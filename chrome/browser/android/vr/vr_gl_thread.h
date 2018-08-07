@@ -69,8 +69,11 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void DialogSurfaceCreated(jobject surface,
                             gl::SurfaceTexture* texture) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
-  void ForceExitVr() override;
   void ToggleCardboardGamepad(bool enabled) override;
+  // RenderLoopBrowserInterface implementation (RenderLoop calling to VrShell).
+  void ForceExitVr() override;
+  void ReportUiActivityResultForTesting(
+      const VrUiTestActivityResult& result) override;
 
   // PlatformInputHandler
   void ForwardEventToPlatformUi(std::unique_ptr<InputEvent> event) override;
@@ -145,9 +148,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       const base::string16& title) override;
   void RemoveTab(int id, bool incognito) override;
   void RemoveAllTabs() override;
-
-  void ReportUiActivityResultForTesting(
-      const VrUiTestActivityResult& result) override;
 
  protected:
   void Init() override;

@@ -63,7 +63,6 @@ namespace vr {
 class BrowserUiInterface;
 class FPSMeter;
 class GlBrowserInterface;
-class GraphicsDelegate;
 class MailboxToSurfaceBridge;
 class ScopedGpuTrace;
 class SlidingTimeDeltaAverage;
@@ -101,7 +100,7 @@ class VrShellGl : public RenderLoop,
                   public device::mojom::XRPresentationProvider,
                   public device::mojom::XRFrameDataProvider {
  public:
-  VrShellGl(GlBrowserInterface* browser_interface,
+  VrShellGl(GlBrowserInterface* browser,
             std::unique_ptr<UiInterface> ui,
             gvr_context* gvr_api,
             bool reprojected_rendering,
@@ -158,8 +157,6 @@ class VrShellGl : public RenderLoop,
   void CancelToast();
 
   void AcceptDoffPromptForTesting();
-  void SetUiExpectingActivityForTesting(
-      UiTestActivityExpectation ui_expectation);
   void PerformControllerActionForTesting(ControllerTestInput controller_input);
 
  private:
@@ -191,15 +188,6 @@ class VrShellGl : public RenderLoop,
   void DrawWebVr();
   void DrawContentQuad(bool draw_overlay_texture);
   bool WebVrPoseByteIsValid(int pose_index_byte);
-
-  void UpdateController(const RenderInfo& render_info,
-                        base::TimeTicks current_time);
-
-  void HandleControllerInput(const gfx::Point3F& laser_origin,
-                             const RenderInfo& render_info,
-                             base::TimeTicks current_time);
-  void HandleControllerAppButtonActivity(
-      const gfx::Vector3dF& controller_direction);
 
   void OnContentFrameAvailable();
   void OnContentOverlayFrameAvailable();
@@ -241,8 +229,6 @@ class VrShellGl : public RenderLoop,
   // Returns true if OK to proceed.
   bool SubmitFrameCommon(int16_t frame_index, base::TimeDelta time_waited);
 
-  void ForceExitVr();
-
   // Sends a GetFrameData response to the presentation client.
   void SendVSync();
 
@@ -278,10 +264,6 @@ class VrShellGl : public RenderLoop,
 
   device::mojom::XRInputSourceStatePtr GetGazeInputSourceState();
 
-  void ReportUiStatusForTesting(const base::TimeTicks& current_time,
-                                bool ui_updated);
-  void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
-
   std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
 
   // samplerExternalOES texture data for WebVR content image.
@@ -293,7 +275,6 @@ class VrShellGl : public RenderLoop,
   bool webvr_vsync_align_;
 
   scoped_refptr<gl::GLSurface> surface_;
-  std::unique_ptr<GraphicsDelegate> graphics_delegate_;
   scoped_refptr<gl::SurfaceTexture> content_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> content_overlay_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> ui_surface_texture_;
@@ -351,7 +332,6 @@ class VrShellGl : public RenderLoop,
   WebXrPresentationState webxr_;
 
   bool web_vr_mode_ = false;
-  bool paused_ = true;
   const bool surfaceless_rendering_;
   bool daydream_support_;
   bool content_paused_;
@@ -403,9 +383,6 @@ class VrShellGl : public RenderLoop,
   SlidingTimeDeltaAverage webvr_acquire_time_;
   SlidingTimeDeltaAverage webvr_submit_time_;
 
-  SlidingTimeDeltaAverage ui_processing_time_;
-  SlidingTimeDeltaAverage ui_controller_update_time_;
-
   gfx::Point3F pointer_start_;
 
   RenderInfo render_info_;
@@ -424,14 +401,12 @@ class VrShellGl : public RenderLoop,
 
   std::vector<gvr::BufferSpec> specs_;
 
-  bool content_frame_available_ = false;
   gfx::Transform last_used_head_pose_;
 
   ControllerModel controller_model_;
 
   std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
   bool showing_vr_dialog_ = false;
-  std::unique_ptr<UiTestState> ui_test_state_;
   bool using_controller_delegate_for_testing_ = false;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
