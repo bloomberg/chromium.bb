@@ -39,6 +39,9 @@ class GlowHoverController : public gfx::AnimationDelegate {
   // constructor.
   void SetLocation(const gfx::Point& location);
 
+  // Set opacity scale to use when Show is called with SUBTLE.
+  void SetSubtleOpacityScale(double opacity_scale);
+
   const gfx::Point& location() const { return location_; }
 
   // Initiates showing the hover.
@@ -73,6 +76,7 @@ class GlowHoverController : public gfx::AnimationDelegate {
   // Location of the glow, relative to view.
   gfx::Point location_;
   double opacity_scale_;
+  double subtle_opacity_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(GlowHoverController);
 };

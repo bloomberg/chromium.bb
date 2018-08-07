@@ -478,21 +478,6 @@ gfx::Path GetBorderPath(float scale,
   return path;
 }
 
-float Lerp(float v0, float v1, float t) {
-  return v0 + (v1 - v0) * t;
-}
-
-// Produces lerp parameter from a range and value within the range, then uses
-// it to Lerp from v0 to v1.
-float LerpFromRange(float v0,
-                    float v1,
-                    float range_start,
-                    float range_end,
-                    float value_in_range) {
-  const float t = (value_in_range - range_start) / (range_end - range_start);
-  return Lerp(v0, v1, t);
-}
-
 }  // namespace
 
 // Tab -------------------------------------------------------------------------
@@ -551,6 +536,8 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   title_animation_.SetContainer(animation_container_.get());
 
   hover_controller_.SetAnimationContainer(animation_container_.get());
+
+  UpdateOpacities();
 }
 
 Tab::~Tab() {
@@ -865,6 +852,7 @@ void Tab::OnMouseMoved(const ui::MouseEvent& event) {
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_hovered_ = true;
+  hover_controller_.SetSubtleOpacityScale(radial_highlight_opacity_);
   hover_controller_.Show(GlowHoverController::SUBTLE);
   Layout();
 }
@@ -980,6 +968,7 @@ void Tab::AddedToWidget() {
 
 void Tab::OnThemeChanged() {
   OnButtonColorMaybeChanged();
+  UpdateOpacities();
 }
 
 void Tab::SetClosing(bool closing) {
@@ -1678,13 +1667,16 @@ float Tab::GetThrobValue() const {
 
   // Wrapping in closure to only compute offset when needed (animate or hover).
   const auto offset = [=] {
-    // Opacity boost varies on tab width.
-    constexpr float kHoverOpacityMin = 0.5f;
-    constexpr float kHoverOpacityMax = 0.65f;
-    const float hoverOpacity = LerpFromRange(
-        kHoverOpacityMin, kHoverOpacityMax, float{GetStandardWidth()},
-        float{GetMinimumInactiveWidth()}, float{bounds().width()});
-    return is_selected ? (kSelectedTabThrobScale * hoverOpacity) : hoverOpacity;
+    // Opacity boost varies on tab width.  The interpolation is nonlinear so
+    // that most tabs will fall on the low end of the opacity range, but very
+    // narrow tabs will still stand out on the high end.
+    const float range_start = float{GetStandardWidth()};
+    const float range_end = float{GetMinimumInactiveWidth()};
+    const float value_in_range = float{bounds().width()};
+    const float t = (value_in_range - range_start) / (range_end - range_start);
+    const float opacity = gfx::Tween::FloatValueBetween(
+        t * t, hover_opacity_min_, hover_opacity_max_);
+    return is_selected ? (kSelectedTabThrobScale * opacity) : opacity;
   };
 
   if (pulse_animation_.is_animating())
@@ -1733,6 +1725,45 @@ void Tab::UpdateTabIconNeedsAttentionBlocked() {
     icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents,
                         data_.blocked);
   }
+}
+
+void Tab::UpdateOpacities() {
+  // The contrast ratio for the hover effect on standard-width tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.4.
+  constexpr float kDesiredContrastHoveredStandardWidthTab = 1.11f;
+
+  // The contrast ratio for the hover effect on min-width tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.65.
+  constexpr float kDesiredContrastHoveredMinWidthTab = 1.19f;
+
+  // The contrast ratio for the radial gradient effect on hovered tabs.
+  // In the default Refresh color scheme, this corresponds to a hover
+  // opacity of 0.45.
+  constexpr float kDesiredContrastRadialGradient = 1.13728f;
+
+  const SkColor active_tab_bg_color =
+      controller_->GetTabBackgroundColor(TAB_ACTIVE);
+  const SkColor inactive_tab_bg_color =
+      controller_->GetTabBackgroundColor(TAB_INACTIVE);
+
+  const SkAlpha hover_base_alpha_wide =
+      color_utils::GetBlendValueWithMinimumContrast(
+          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
+          kDesiredContrastHoveredStandardWidthTab);
+  const SkAlpha hover_base_alpha_narrow =
+      color_utils::GetBlendValueWithMinimumContrast(
+          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
+          kDesiredContrastHoveredMinWidthTab);
+  const SkAlpha radial_highlight_alpha =
+      color_utils::GetBlendValueWithMinimumContrast(
+          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
+          kDesiredContrastRadialGradient);
+
+  hover_opacity_min_ = hover_base_alpha_wide / 255.0f;
+  hover_opacity_max_ = hover_base_alpha_narrow / 255.0f;
+  radial_highlight_opacity_ = radial_highlight_alpha / 255.0f;
 }
 
 Tab::BackgroundCache::BackgroundCache() = default;

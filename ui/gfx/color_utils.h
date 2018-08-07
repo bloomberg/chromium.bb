@@ -130,9 +130,32 @@ GFX_EXPORT SkColor PickContrastingColor(SkColor foreground1,
 // |background|. If |default_foreground| already meets the minimum contrast
 // ratio, this function will simply return it. Otherwise it will blend the color
 // darker/lighter until either the contrast ratio is acceptable or the color
-// cannot become any more extreme. Only use with opaque colors.
+// cannot become any more extreme. Only use with opaque background.
 GFX_EXPORT SkColor GetColorWithMinimumContrast(SkColor default_foreground,
                                                SkColor background);
+
+// Attempts to select an alpha value such that blending |target| onto |source|
+// with that alpha produces a color of at least |contrast_ratio| against |base|.
+// If |source| already meets the minimum contrast ratio, this function will
+// simply return 0. Otherwise it will blend the |target| onto |source| until
+// either the contrast ratio is acceptable or the color cannot become any more
+// extreme. |base| must be opaque.
+GFX_EXPORT SkAlpha GetBlendValueWithMinimumContrast(SkColor source,
+                                                    SkColor target,
+                                                    SkColor base,
+                                                    float contrast_ratio);
+
+// Returns the minimum alpha value such that blending |target| onto |source|
+// produces a color that contrasts against |base| with at least |contrast_ratio|
+// unless this is impossible, in which case SK_AlphaOPAQUE is returned.
+// Use only with opaque colors. |alpha_error_tolerance| should normally be 0 for
+// best accuracy, but if performance is critical then it can be a positive value
+// (4 is recommended) to save a few cycles and give "close enough" alpha.
+GFX_EXPORT SkAlpha FindBlendValueForContrastRatio(SkColor source,
+                                                  SkColor target,
+                                                  SkColor base,
+                                                  float contrast_ratio,
+                                                  int alpha_error_tolerance);
 
 // Invert a color.
 GFX_EXPORT SkColor InvertColor(SkColor color);
