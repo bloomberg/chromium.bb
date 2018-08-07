@@ -23,7 +23,6 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/sidebar/sidebar.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_state_controller.h"
@@ -970,12 +969,6 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_HIDDEN;
 
   if (shelf_widget_->IsShowingAppList())
-    return SHELF_AUTO_HIDE_SHOWN;
-
-  Sidebar* sidebar =
-      RootWindowController::ForWindow(shelf_widget_->GetNativeView())
-          ->sidebar();
-  if (sidebar && sidebar->IsVisible())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->status_area_widget() &&

@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/sidebar/sidebar.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
@@ -49,7 +48,6 @@ class LockScreenActionBackgroundController;
 enum class LoginStatus;
 class Shelf;
 class ShelfLayoutManager;
-class Sidebar;
 class StackingController;
 class StatusAreaWidget;
 class SystemModalContainerLayoutManager;
@@ -115,9 +113,6 @@ class ASH_EXPORT RootWindowController {
   wm::WorkspaceWindowState GetWorkspaceWindowState();
 
   Shelf* shelf() const { return shelf_.get(); }
-
-  // Returns the instance of the sidebar.
-  Sidebar* sidebar() { return sidebar_.get(); }
 
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
   void set_touch_hud_debug(TouchHudDebug* hud) { touch_hud_debug_ = hud; }
@@ -288,7 +283,6 @@ class ASH_EXPORT RootWindowController {
   // of the RootWindowController so that it is safe for observers to be added
   // to it during construction of the shelf widget and status tray.
   std::unique_ptr<Shelf> shelf_;
-  std::unique_ptr<Sidebar> sidebar_;
 
   // TODO(jamescook): Eliminate this. It is left over from legacy shelf code and
   // doesn't mean anything in particular.
