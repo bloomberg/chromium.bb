@@ -2358,6 +2358,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoPreferencesCanceled) {

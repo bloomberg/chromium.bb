@@ -15,6 +15,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -81,7 +83,8 @@ class DemoSetupControllerTestHelper {
 
 class DemoSetupControllerTest : public testing::Test {
  protected:
-  DemoSetupControllerTest() = default;
+  DemoSetupControllerTest()
+      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
   ~DemoSetupControllerTest() override = default;
 
   void SetUp() override {
@@ -103,6 +106,7 @@ class DemoSetupControllerTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  ScopedTestingLocalState testing_local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupControllerTest);
 };
