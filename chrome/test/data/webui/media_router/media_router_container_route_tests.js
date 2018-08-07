@@ -121,7 +121,7 @@ cr.define('media_router_container_route', function() {
 
         setTimeout(function() {
           var sinkList = container.shadowRoot.getElementById('sink-list')
-                             .querySelectorAll('paper-item');
+                             .querySelectorAll('button.selectable-item');
           container.addEventListener('create-route', function(data) {
             // Container is initially in auto mode since a cast mode has not
             // been selected.
@@ -149,7 +149,7 @@ cr.define('media_router_container_route', function() {
 
         setTimeout(function() {
           var sinkList = container.shadowRoot.getElementById('sink-list')
-                             .querySelectorAll('paper-item');
+                             .querySelectorAll('button.selectable-item');
 
           // Start from the SINK_LIST view.
           container.showSinkList_();
@@ -325,13 +325,13 @@ cr.define('media_router_container_route', function() {
             container.$$('#container-header').$['arrow-drop-icon']);
         setTimeout(function() {
           // Select cast mode 2.
-          var castModeList =
-              container.$$('#cast-mode-list').querySelectorAll('paper-item');
+          var castModeList = container.$$('#cast-mode-list')
+                                 .querySelectorAll('button.selectable-item');
           MockInteractions.tap(castModeList[1]);
           assertEquals(fakeCastModeList[1].description, container.headerText);
           setTimeout(function() {
             var sinkList = container.shadowRoot.getElementById('sink-list')
-                               .querySelectorAll('paper-item');
+                               .querySelectorAll('button.selectable-item');
             container.addEventListener('create-route', function(data) {
               assertEquals(fakeSinkList[2].id, data.detail.sinkId);
               // Cast mode 2 is used, since we selected it explicitly.
@@ -354,8 +354,8 @@ cr.define('media_router_container_route', function() {
         container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
         setTimeout(function() {
-          var sinkList =
-              container.$$('#sink-list').querySelectorAll('paper-item');
+          var sinkList = container.$$('#sink-list')
+                             .querySelectorAll('button.selectable-item');
           MockInteractions.tap(sinkList[2]);
           setTimeout(function() {
             assertTrue(!!container.currentLaunchingSinkId_);
@@ -391,7 +391,8 @@ cr.define('media_router_container_route', function() {
         setTimeout(function() {
           assertTrue(!container.currentLaunchingSinkId_);
           MockInteractions.tap(
-              container.$$('#sink-list').querySelectorAll('paper-item')[0]);
+              container.$$('#sink-list')
+                  .querySelectorAll('button.selectable-item')[0]);
           setTimeout(function() {
             assertEquals(undefined, container.currentRoute_.currentCastMode);
             checkElementVisible(
@@ -417,12 +418,14 @@ cr.define('media_router_container_route', function() {
         MockInteractions.tap(
             container.$$('#container-header').$$('#arrow-drop-icon'));
         setTimeout(function() {
-          MockInteractions.tap(container.$$('#cast-mode-list')
-                                   .querySelectorAll('paper-item')[2]);
+          MockInteractions.tap(
+              container.$$('#cast-mode-list')
+                  .querySelectorAll('button.selectable-item')[2]);
           setTimeout(function() {
             assertTrue(container.shownCastModeValue_ != 2);
             MockInteractions.tap(
-                container.$$('#sink-list').querySelectorAll('paper-item')[0]);
+                container.$$('#sink-list')
+                    .querySelectorAll('button.selectable-item')[0]);
             setTimeout(function() {
               checkElementVisible(
                   true,
@@ -447,12 +450,14 @@ cr.define('media_router_container_route', function() {
         MockInteractions.tap(
             container.$$('#container-header').$$('#arrow-drop-icon'));
         setTimeout(function() {
-          MockInteractions.tap(container.$$('#cast-mode-list')
-                                   .querySelectorAll('paper-item')[1]);
+          MockInteractions.tap(
+              container.$$('#cast-mode-list')
+                  .querySelectorAll('button.selectable-item')[1]);
           setTimeout(function() {
             assertEquals(2, container.shownCastModeValue_);
             MockInteractions.tap(
-                container.$$('#sink-list').querySelectorAll('paper-item')[0]);
+                container.$$('#sink-list')
+                    .querySelectorAll('button.selectable-item')[0]);
             setTimeout(function() {
               checkElementVisible(
                   false,
@@ -480,7 +485,8 @@ cr.define('media_router_container_route', function() {
         setTimeout(function() {
           assertEquals(-1, container.shownCastModeValue_);
           MockInteractions.tap(
-              container.$$('#sink-list').querySelectorAll('paper-item')[0]);
+              container.$$('#sink-list')
+                  .querySelectorAll('button.selectable-item')[0]);
           setTimeout(function() {
             checkElementVisible(
                 false,

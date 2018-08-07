@@ -93,7 +93,7 @@ cr.define('media_router_container_sink_list', function() {
 
         setTimeout(function() {
           var sinkList = container.shadowRoot.getElementById('sink-list')
-                             .querySelectorAll('paper-item');
+                             .querySelectorAll('button.selectable-item');
           assertEquals(fakeSinkList.length, sinkList.length);
           for (var i = 0; i < fakeSinkList.length; i++) {
             checkElementText(fakeSinkList[i].name, sinkList[i]);
@@ -127,7 +127,7 @@ cr.define('media_router_container_sink_list', function() {
         container.allSinks = listOne;
         setTimeout(function() {
           var sinkList = container.shadowRoot.getElementById('sink-list')
-                             .querySelectorAll('paper-item');
+                             .querySelectorAll('button.selectable-item');
           assertEquals(listOne.length, sinkList.length);
           for (var i = 0; i < listOneExpected.length; i++) {
             checkElementText(listOneExpected[i].name, sinkList[i]);
@@ -141,7 +141,7 @@ cr.define('media_router_container_sink_list', function() {
           container.allSinks = listTwo;
           setTimeout(function() {
             sinkList = container.shadowRoot.getElementById('sink-list')
-                           .querySelectorAll('paper-item');
+                           .querySelectorAll('button.selectable-item');
             assertEquals(listTwo.length, sinkList.length);
             for (var i = 0; i < listTwoExpected.length; i++) {
               checkElementText(listTwoExpected[i].name, sinkList[i]);
@@ -154,7 +154,7 @@ cr.define('media_router_container_sink_list', function() {
             container.allSinks = listThree;
             setTimeout(function() {
               sinkList = container.shadowRoot.getElementById('sink-list')
-                             .querySelectorAll('paper-item');
+                             .querySelectorAll('button.selectable-item');
               assertEquals(listThree.length, sinkList.length);
               for (var i = 0; i < listThreeExpected.length; i++) {
                 checkElementText(listThreeExpected[i].name, sinkList[i]);
@@ -184,7 +184,7 @@ cr.define('media_router_container_sink_list', function() {
 
         setTimeout(function() {
           var sinkList = container.shadowRoot.getElementById('sink-list')
-                             .querySelectorAll('paper-item');
+                             .querySelectorAll('button.selectable-item');
           assertEquals(2, sinkList.length);
 
           // |sinkList[0]| has sink name only.
@@ -218,7 +218,7 @@ cr.define('media_router_container_sink_list', function() {
 
         setTimeout(function() {
           var sinkList = container.shadowRoot.getElementById('sink-list')
-                             .querySelectorAll('paper-item');
+                             .querySelectorAll('button.selectable-item');
           assertEquals(2, sinkList.length);
 
           // |sinkList[0]| has sink name only.
@@ -348,7 +348,7 @@ cr.define('media_router_container_sink_list', function() {
               media_router.CastModeType.AUTO, container.shownCastModeValue_);
           assertFalse(container.userHasSelectedCastMode_);
           var sinkList = container.shadowRoot.getElementById('sink-list')
-                             .querySelectorAll('paper-item');
+                             .querySelectorAll('button.selectable-item');
 
           // All sinks are shown in auto mode.
           assertEquals(3, sinkList.length);
@@ -377,7 +377,7 @@ cr.define('media_router_container_sink_list', function() {
             assertFalse(container.userHasSelectedCastMode_);
 
             var sinkList = container.shadowRoot.getElementById('sink-list')
-                               .querySelectorAll('paper-item');
+                               .querySelectorAll('button.selectable-item');
             assertEquals(3, sinkList.length);
 
             // When compatible cast modes size is no longer exactly 1, switch
@@ -392,7 +392,7 @@ cr.define('media_router_container_sink_list', function() {
                   container.shownCastModeValue_);
               assertFalse(container.userHasSelectedCastMode_);
               var sinkList = container.shadowRoot.getElementById('sink-list')
-                                 .querySelectorAll('paper-item');
+                                 .querySelectorAll('button.selectable-item');
 
               // All sinks are shown in auto mode.
               assertEquals(3, sinkList.length);

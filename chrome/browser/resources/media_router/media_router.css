@@ -2,6 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+html {
+  /* Remove 300ms delay for 'click' event, when using touch interface. */
+  touch-action: manipulation;
+}
+
 body {
   font-size: 0.75em;
   margin: 0;

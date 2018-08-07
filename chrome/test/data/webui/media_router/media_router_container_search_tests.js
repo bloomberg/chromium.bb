@@ -55,8 +55,8 @@ cr.define('media_router_container_search', function() {
    * @param {media_router.Sink} targetSink
    */
   var checkSpinningSinkInFilter = function(targetSink) {
-    var searchResults =
-        container.$$('#search-results').querySelectorAll('paper-item');
+    var searchResults = container.$$('#search-results')
+                            .querySelectorAll('button.selectable-item');
     var targets = 0;
     searchResults.forEach(function(sink) {
       var item = container.$$('#searchResults').itemForElement(sink).sinkItem;
@@ -78,7 +78,8 @@ cr.define('media_router_container_search', function() {
    * @param {number} length
    */
   var checkSpinningSinkInSinkList = function(targetSink, length) {
-    var sinkList = container.$$('#sink-list').querySelectorAll('paper-item');
+    var sinkList =
+        container.$$('#sink-list').querySelectorAll('button.selectable-item');
     assertEquals(length, sinkList.length);
     var targets = 0;
     sinkList.forEach(function(sink) {
@@ -172,13 +173,13 @@ cr.define('media_router_container_search', function() {
 
       test('pseudo sink hidden without filter input', function(done) {
         setTimeout(function() {
-          var sinkList =
-              container.$$('#sink-list').querySelectorAll('paper-item');
+          var sinkList = container.$$('#sink-list')
+                             .querySelectorAll('button.selectable-item');
           assertEquals(fakeSinkList.length, sinkList.length);
           MockInteractions.tap(container.$$('#sink-search-icon'));
           chainOnAnimationPromise(function() {
-            var searchResults =
-                container.$$('#search-results').querySelectorAll('paper-item');
+            var searchResults = container.$$('#search-results')
+                                    .querySelectorAll('button.selectable-item');
             assertEquals(fakeSinkList.length, searchResults.length);
             done();
           });
@@ -189,8 +190,8 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = 'no existing sink';
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           assertEquals(1, searchResults.length);
           var item =
               container.$$('#searchResults').itemForElement(searchResults[0]);
@@ -203,8 +204,8 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = fakeSinkList[0].name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           assertEquals(1, searchResults.length);
           var item =
               container.$$('#searchResults').itemForElement(searchResults[0]);
@@ -217,8 +218,8 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = 'no existing sink';
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           container.addEventListener(
               'search-sinks-and-create-route', function(data) {
                 assertEquals(pseudoSink.id, data.detail.id);
@@ -234,12 +235,12 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[0]);
           setTimeout(function() {
-            searchResults =
-                container.$$('#search-results').querySelectorAll('paper-item');
+            searchResults = container.$$('#search-results')
+                                .querySelectorAll('button.selectable-item');
             assertEquals(1, searchResults.length);
             checkSpinningSinkInFilter(pseudoSink);
 
@@ -261,8 +262,8 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[0]);
           MockInteractions.tap(
               container.$['container-header'].$$('#back-button'));
@@ -286,14 +287,14 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[0]);
           container.allSinks = fakeSinkListWithPseudoSink.concat([foundSink]);
           container.onReceiveSearchResult(foundSink.id);
           setTimeout(function() {
-            searchResults =
-                container.$$('#search-results').querySelectorAll('paper-item');
+            searchResults = container.$$('#search-results')
+                                .querySelectorAll('button.selectable-item');
             assertEquals(1, searchResults.length);
             checkSpinningSinkInFilter(foundSink);
             done();
@@ -305,15 +306,15 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[0]);
           setTimeout(function() {
             container.onReceiveSearchResult(foundSink.id);
             container.allSinks = fakeSinkListWithPseudoSink.concat([foundSink]);
             setTimeout(function() {
               searchResults = container.$$('#search-results')
-                                  .querySelectorAll('paper-item');
+                                  .querySelectorAll('button.selectable-item');
               assertEquals(1, searchResults.length);
               checkSpinningSinkInFilter(foundSink);
               done();
@@ -329,8 +330,8 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[0]);
           container.allSinks = fakeSinkListWithPseudoSink.concat([foundSink]);
           container.onReceiveSearchResult(foundSink.id);
@@ -342,8 +343,8 @@ cr.define('media_router_container_search', function() {
                 container.$['container-header'].$$('#back-button'));
             chainOnAnimationPromise(function() {
               checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-              sinkList =
-                  container.$$('#sink-list').querySelectorAll('paper-item');
+              sinkList = container.$$('#sink-list')
+                             .querySelectorAll('button.selectable-item');
               sinkList.forEach(function(sink) {
                 var spinner = sink.querySelector('paper-spinner-lite');
                 checkElementVisible(spinner, false);
@@ -368,14 +369,14 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[0]);
           MockInteractions.tap(
               container.$['container-header'].$$('#back-button'));
           chainOnAnimationPromise(function() {
-            var sinkList =
-                container.$$('#sink-list').querySelectorAll('paper-item');
+            var sinkList = container.$$('#sink-list')
+                               .querySelectorAll('button.selectable-item');
             sinkList = [...sinkList];
             var sink = sinkList.find(function(sink) {
               var item = container.$$('#sinkList').itemForElement(sink);
@@ -409,8 +410,8 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[0]);
           container.allSinks = fakeSinkListWithPseudoSink.concat([foundSink]);
           container.onReceiveSearchResult(foundSink.id);
@@ -418,8 +419,8 @@ cr.define('media_router_container_search', function() {
           assertEquals(null, container.pseudoSinkSearchState_);
           setTimeout(function() {
             checkCurrentView(media_router.MediaRouterView.FILTER);
-            searchResults =
-                container.$$('#search-results').querySelectorAll('paper-item');
+            searchResults = container.$$('#search-results')
+                                .querySelectorAll('button.selectable-item');
             searchResults.forEach(function(sink) {
               var spinner = sink.querySelector('paper-spinner-lite');
               checkElementVisible(spinner, false);
@@ -433,8 +434,8 @@ cr.define('media_router_container_search', function() {
         var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
-          var searchResults =
-              container.$$('#search-results').querySelectorAll('paper-item');
+          var searchResults = container.$$('#search-results')
+                                  .querySelectorAll('button.selectable-item');
           MockInteractions.tap(searchResults[0]);
 
           // A found sink is added as part of the search but is removed right
@@ -447,8 +448,8 @@ cr.define('media_router_container_search', function() {
           assertEquals(null, container.pseudoSinkSearchState_);
           setTimeout(function() {
             checkCurrentView(media_router.MediaRouterView.FILTER);
-            searchResults =
-                container.$$('#search-results').querySelectorAll('paper-item');
+            searchResults = container.$$('#search-results')
+                                .querySelectorAll('button.selectable-item');
             assertTrue(container.searchResultsToShow_.some(function(sink) {
               return sink.sinkItem.id == pseudoSink.id;
             }));
