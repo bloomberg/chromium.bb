@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
@@ -57,7 +57,7 @@ void CrostiniDialogBrowserTest::CreatedBrowserMainParts(
 }
 
 void CrostiniDialogBrowserTest::SetUp() {
-  scoped_feature_list_.InitAndEnableFeature(features::kExperimentalCrostiniUI);
+  SetCrostiniUIAllowedForTesting(true);
   DialogBrowserTest::SetUp();
 }
 

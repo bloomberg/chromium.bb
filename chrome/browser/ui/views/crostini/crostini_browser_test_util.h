@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_BROWSER_TEST_UTIL_H_
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_BROWSER_TEST_UTIL_H_
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "net/base/network_change_notifier.h"
 
@@ -31,8 +30,6 @@ class CrostiniDialogBrowserTest : public DialogBrowserTest {
   ChromeBrowserMainExtraPartsNetFactoryInstaller* extra_parts_ = nullptr;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(CrostiniDialogBrowserTest);
 };
 
