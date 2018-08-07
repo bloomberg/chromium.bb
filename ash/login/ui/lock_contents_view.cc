@@ -886,6 +886,11 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
     FindFirstOrLastFocusableChild(this, reverse)->RequestFocus();
 }
 
+void LockContentsView::OnOobeDialogVisibilityChanged(bool visible) {
+  if (!visible && primary_big_view_)
+    primary_big_view_->RequestFocus();
+}
+
 void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {
   // This function is called when the system tray is losing focus. We want to
   // focus the first or last child in this view, or a lock screen app window if

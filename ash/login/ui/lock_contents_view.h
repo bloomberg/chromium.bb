@@ -135,6 +135,7 @@ class ASH_EXPORT LockContentsView
   void SetAvatarForUser(const AccountId& account_id,
                         const mojom::UserAvatarPtr& avatar) override;
   void OnFocusLeavingLockScreenApps(bool reverse) override;
+  void OnOobeDialogVisibilityChanged(bool visible) override;
 
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(

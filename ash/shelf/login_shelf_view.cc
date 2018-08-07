@@ -274,7 +274,8 @@ LoginShelfView::LoginShelfView(
     : lock_screen_action_background_(lock_screen_action_background),
       tray_action_observer_(this),
       lock_screen_action_background_observer_(this),
-      shutdown_controller_observer_(this) {
+      shutdown_controller_observer_(this),
+      login_screen_controller_observer_(this) {
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the lock screen or status area. This view should otherwise not
   // be focusable.
@@ -309,6 +310,8 @@ LoginShelfView::LoginShelfView(
   tray_action_observer_.Add(Shell::Get()->tray_action());
   shutdown_controller_observer_.Add(Shell::Get()->shutdown_controller());
   lock_screen_action_background_observer_.Add(lock_screen_action_background);
+  login_screen_controller_observer_.Add(
+      Shell::Get()->login_screen_controller());
   UpdateUi();
 }
 
@@ -431,6 +434,10 @@ void LoginShelfView::OnLockScreenActionBackgroundStateChanged(
 
 void LoginShelfView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
   UpdateUi();
+}
+
+void LoginShelfView::OnOobeDialogVisibilityChanged(bool visible) {
+  SetLoginDialogVisible(visible);
 }
 
 bool LoginShelfView::LockScreenActionBackgroundAnimating() const {

@@ -415,10 +415,8 @@ void LoginScreenController::SetKioskApps(
 }
 
 void LoginScreenController::NotifyOobeDialogVisibility(bool visible) {
-  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
-      ->shelf_widget()
-      ->login_shelf_view()
-      ->SetLoginDialogVisible(visible);
+  for (auto& observer : observers_)
+    observer.OnOobeDialogVisibilityChanged(visible);
 }
 
 void LoginScreenController::SetAddUserButtonEnabled(bool enable) {
