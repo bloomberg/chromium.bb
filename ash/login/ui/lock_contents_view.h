@@ -145,8 +145,8 @@ class ASH_EXPORT LockContentsView
       bool enabled,
       const base::Optional<base::Time>& auth_reenabled_time) override;
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
-  void OnClickToUnlockEnabledForUserChanged(const AccountId& user,
-                                            bool enabled) override;
+  void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
+                                          bool enabled) override;
   void OnForceOnlineSignInForUser(const AccountId& user) override;
   void OnShowEasyUnlockIcon(
       const AccountId& user,

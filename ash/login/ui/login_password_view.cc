@@ -435,6 +435,11 @@ void LoginPasswordView::Init(
                           on_easy_unlock_icon_tapped);
 }
 
+void LoginPasswordView::SetEnabledOnEmptyPassword(bool enabled) {
+  enabled_on_empty_password_ = enabled;
+  UpdateUiState();
+}
+
 void LoginPasswordView::SetEasyUnlockIcon(
     mojom::EasyUnlockIconId id,
     const base::string16& accessibility_label) {
@@ -509,7 +514,8 @@ void LoginPasswordView::RequestFocus() {
 }
 
 bool LoginPasswordView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() == ui::KeyboardCode::VKEY_RETURN) {
+  if (event.key_code() == ui::KeyboardCode::VKEY_RETURN &&
+      submit_button_->enabled()) {
     SubmitPassword();
     return true;
   }
@@ -558,7 +564,8 @@ bool LoginPasswordView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void LoginPasswordView::UpdateUiState() {
-  bool is_enabled = !textfield_->text().empty() && !textfield_->read_only();
+  bool is_enabled = !textfield_->read_only() &&
+                    (enabled_on_empty_password_ || !textfield_->text().empty());
   submit_button_->SetEnabled(is_enabled);
   SkColor color = is_enabled
                       ? login_constants::kButtonEnabledColor
@@ -575,6 +582,7 @@ void LoginPasswordView::OnCapsLockChanged(bool enabled) {
 }
 
 void LoginPasswordView::SubmitPassword() {
+  DCHECK(submit_button_->enabled());
   if (textfield_->read_only())
     return;
   on_submit_.Run(textfield_->text());

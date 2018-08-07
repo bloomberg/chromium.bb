@@ -636,9 +636,8 @@ void LockContentsView::OnAuthEnabledForUserChanged(
   }
 }
 
-void LockContentsView::OnClickToUnlockEnabledForUserChanged(
-    const AccountId& user,
-    bool enabled) {
+void LockContentsView::OnTapToUnlockEnabledForUserChanged(const AccountId& user,
+                                                          bool enabled) {
   LockContentsView::UserState* state = FindStateForUser(user);
   if (!state) {
     LOG(ERROR) << "Unable to find user enabling click to auth";
@@ -1422,7 +1421,7 @@ void LockContentsView::OnEasyUnlockIconTapped() {
         CurrentBigUserView()->GetCurrentUser()->basic_user_info->account_id;
     Shell::Get()->login_screen_controller()->HardlockPod(user);
     // TODO(jdufault): This should get called as a result of HardlockPod.
-    OnClickToUnlockEnabledForUserChanged(user, false /*enabled*/);
+    OnTapToUnlockEnabledForUserChanged(user, false /*enabled*/);
   }
 }
 

@@ -306,8 +306,8 @@ void LoginScreenController::SetAuthType(
     proximity_auth::mojom::AuthType auth_type,
     const base::string16& initial_value) {
   if (auth_type == proximity_auth::mojom::AuthType::USER_CLICK) {
-    DataDispatcher()->SetClickToUnlockEnabledForUser(account_id,
-                                                     true /*enabled*/);
+    DataDispatcher()->SetTapToUnlockEnabledForUser(account_id,
+                                                   true /*enabled*/);
   } else if (auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN) {
     DataDispatcher()->SetForceOnlineSignInForUser(account_id);
   } else {
