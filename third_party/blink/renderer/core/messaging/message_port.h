@@ -135,12 +135,15 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   // mojo::MessageReceiver implementation.
   bool Accept(mojo::Message*) override;
   void ResetMessageCount();
+  bool ShouldYieldAfterNewMessage();
 
   std::unique_ptr<mojo::Connector> connector_;
   int messages_in_current_task_ = 0;
 
   bool started_ = false;
   bool closed_ = false;
+
+  base::Optional<base::TimeTicks> task_start_time_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
