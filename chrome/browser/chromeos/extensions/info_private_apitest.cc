@@ -6,6 +6,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
@@ -134,6 +136,26 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, UnknownDeviceType) {
   SetDeviceType("UNKNOWN");
   ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
                                         "unknown device type"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, AssistantSupported) {
+  // Enable native Assistant.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::switches::kAssistantFeature);
+
+  ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
+                                        "assistant supported"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, AssistantUnsupported) {
+  // Disable native Assistant.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(chromeos::switches::kAssistantFeature);
+
+  ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
+                                        "assistant unsupported"))
       << message_;
 }
 

@@ -27,11 +27,11 @@ const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
 // all stored user keys will be converted to GaiaId)
 const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
-// Controls whether enable assistant for locale.
+// Controls whether to enable assistant for locale.
 const base::Feature kAssistantFeatureForLocale{
     "ChromeOSAssistantForLocale", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether enable voice interaction feature.
+// Controls whether to enable voice interaction feature.
 const base::Feature kVoiceInteractionFeature{"ChromeOSVoiceInteraction",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -47,7 +47,7 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAccountManager{"ChromeOSAccountManager",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether enable Google Assistant feature.
+// Controls whether to enable Google Assistant feature.
 const base::Feature kAssistantFeature{"ChromeOSAssistant",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -59,6 +59,12 @@
         "type": "string",
         "enum": ["unsupported", "supported", "seen"],
         "description": "Status of stylus."
+      },
+      {
+        "id": "AssistantStatus",
+        "type": "string",
+        "enum": ["unsupported", "supported"],
+        "description": "Status of Google Assistant."
       }
     ],
     "functions": [
@@ -93,6 +99,7 @@
                   "managedDeviceStatus": {"$ref": "ManagedDeviceStatus", "optional": true},
                   "deviceType": {"$ref": "DeviceType", "optional": true},
                   "stylusStatus": {"$ref": "StylusStatus", "optional": true},
+                  "assistantStatus": {"$ref": "AssistantStatus", "optional": true},
                   "clientId" : {"type": "string", "optional": true, "description": "Device client id"},
                   "timezone" : {"type": "string", "optional": true, "description": "Timezone"},
                   "a11yLargeCursorEnabled" : {"type": "boolean", "optional": true, "description": "If true, ChromeOS is showing enlarged cursor."},

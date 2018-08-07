@@ -168,7 +168,7 @@ CHROMEOS_EXPORT extern const char kWakeOnWifiPacket[];
 // Controls whether to enable Chrome OS Account Manager.
 CHROMEOS_EXPORT extern const base::Feature kAccountManager;
 
-// Controls whether enable Google Assistant feature.
+// Controls whether to enable Google Assistant feature.
 CHROMEOS_EXPORT extern const base::Feature kAssistantFeature;
 
 // Returns true if the system should wake in response to wifi traffic.
