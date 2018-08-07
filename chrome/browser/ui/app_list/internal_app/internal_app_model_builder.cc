@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/internal_app/internal_app_model_builder.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
@@ -13,7 +14,8 @@ InternalAppModelBuilder::InternalAppModelBuilder(
     : AppListModelBuilder(controller, InternalAppItem::kItemType) {}
 
 void InternalAppModelBuilder::BuildModel() {
-  for (const auto& internal_app : app_list::GetInternalAppList()) {
+  for (const auto& internal_app :
+       app_list::GetInternalAppList(profile()->IsGuestSession())) {
     if (!internal_app.show_in_launcher)
       continue;
 
