@@ -34,7 +34,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/shell_state.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
@@ -656,8 +655,6 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   shell->InitRootWindow(root_window);
 
   CreateContainers();
-  ShellPort::Get()->OnCreatedRootWindowContainers(this);
-
   CreateSystemWallpaper(root_window_type);
 
   InitLayoutManagers();

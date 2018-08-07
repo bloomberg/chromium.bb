@@ -131,15 +131,6 @@ specific_include_rules = {
   "shell.cc": [
     "+ash/host/ash_window_tree_host_init_params.h"
   ],
-  "shell_port_classic.cc": [
-    "+ash/host/ash_window_tree_host.h",
-    "+ash/host/ash_window_tree_host_init_params.h",
-    "+ui/ozone/public"
-  ],
-  "shell_port_mash\.cc": [
-    "+ash/host/ash_window_tree_host_init_params.h",
-    "+ash/host/ash_window_tree_host_mus.h",
-  ],
   "window_manager.cc": [
     "+ash/host/ash_window_tree_host.h"
   ],
