@@ -404,9 +404,6 @@ const FilterMask above_mask_univariant_reordered[67] = {
 
 LoopFilterMask *get_loop_filter_mask(const AV1_COMMON *const cm, int mi_row,
                                      int mi_col) {
-  if ((mi_row << MI_SIZE_LOG2) >= cm->height ||
-      (mi_col << MI_SIZE_LOG2) >= cm->width)
-    return NULL;
   assert(cm->lf.lfm != NULL);
   const int row = mi_row >> MIN_MIB_SIZE_LOG2;  // 64x64
   const int col = mi_col >> MIN_MIB_SIZE_LOG2;
@@ -1469,50 +1466,46 @@ void av1_build_bitmask_vert_info(
   int skip, prev_skip = 0;
   int is_coding_block_border;
 
-  for (int r = 0; r < cm->mi_rows; r += row_step) {
-    // boundary check in pixel.
-    const int y = r << MI_SIZE_LOG2;
-    if (y >= plane_ptr->dst.height) break;
-    for (int c = 0; c < cm->mi_cols;) {
-      const int x = c << MI_SIZE_LOG2;
-      if (x >= plane_ptr->dst.width) break;
-      const int mi_row = r << subsampling_y;
+  for (int r = 0; (r << MI_SIZE_LOG2) < plane_ptr->dst.height; r += row_step) {
+    const int mi_row = r << subsampling_y;
+    const int row = mi_row % MI_SIZE_64X64;
+    int index = 0;
+    const int shift = get_index_shift(0, row, &index);
+
+    for (int c = 0; (c << MI_SIZE_LOG2) < plane_ptr->dst.width;
+         c += (tx_size_wide_unit[TX_64X64] >> subsampling_x)) {
       const int mi_col = c << subsampling_x;
       LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
-      const int row = mi_row % MI_SIZE_64X64;
-      const int col = mi_col % MI_SIZE_64X64;
-      int index = 0;
-      const int shift = get_index_shift(col, row, &index);
-      const uint64_t mask = ((uint64_t)1 << shift);
-      skip = lfm->skip.bits[index] & mask;
-      is_coding_block_border = lfm->is_vert_border.bits[index] & mask;
-      switch (plane) {
-        case 0: level = lfm->lfl_y_ver[row][col]; break;
-        case 1: level = lfm->lfl_u[row][col]; break;
-        case 2: level = lfm->lfl_v[row][col]; break;
-        default: assert(plane >= 0 && plane <= 2); return;
-      }
-      int tx_size_found = 0;
-      for (TX_SIZE ts = TX_4X4; ts <= TX_64X64; ++ts) {
-        if (is_uv && ts == TX_64X64) continue;
-        if (lfm->tx_size_ver[is_uv][ts].bits[index] & mask) {
-          tx_size = ts;
-          tx_size_found = 1;
-          break;
+
+      for (int col_in_unit = 0;
+           col_in_unit < (tx_size_wide_unit[TX_64X64] >> subsampling_x);) {
+        const int x = (c + col_in_unit) << MI_SIZE_LOG2;
+        if (x >= plane_ptr->dst.width) break;
+        const int col = col_in_unit << subsampling_x;
+        const uint64_t mask = ((uint64_t)1 << (shift | col));
+        skip = lfm->skip.bits[index] & mask;
+        is_coding_block_border = lfm->is_vert_border.bits[index] & mask;
+        switch (plane) {
+          case 0: level = lfm->lfl_y_ver[row][col]; break;
+          case 1: level = lfm->lfl_u[row][col]; break;
+          case 2: level = lfm->lfl_v[row][col]; break;
+          default: assert(plane >= 0 && plane <= 2); return;
         }
-      }
-      assert(tx_size_found);
-      (void)tx_size_found;
-      if ((level || prev_level) &&
-          (!prev_skip || !skip || is_coding_block_border)) {
-        const TX_SIZE min_tx_size =
-            AOMMIN(TX_16X16, AOMMIN(tx_size, prev_tx_size));
-        if (c > 0) {
+        for (TX_SIZE ts = TX_4X4; ts <= TX_64X64; ++ts) {
+          if (is_uv && ts == TX_64X64) continue;
+          if (lfm->tx_size_ver[is_uv][ts].bits[index] & mask) {
+            tx_size = ts;
+            break;
+          }
+        }
+        if ((c + col_in_unit > 0) && (level || prev_level) &&
+            (!prev_skip || !skip || is_coding_block_border)) {
+          const TX_SIZE min_tx_size =
+              AOMMIN(TX_16X16, AOMMIN(tx_size, prev_tx_size));
           const int tmp_row = (mi_row | subsampling_y) % MI_SIZE_64X64;
-          const int tmp_col = (mi_col | subsampling_x) % MI_SIZE_64X64;
+          const int tmp_col = (col | subsampling_x) % MI_SIZE_64X64;
           const int shift_1 = get_index_shift(tmp_col, tmp_row, &index);
           const uint64_t mask_1 = ((uint64_t)1 << shift_1);
-
           switch (plane) {
             case 0: lfm->left_y[min_tx_size].bits[index] |= mask_1; break;
             case 1: lfm->left_u[min_tx_size].bits[index] |= mask_1; break;
@@ -1520,14 +1513,14 @@ void av1_build_bitmask_vert_info(
             default: assert(plane >= 0 && plane <= 2); return;
           }
         }
-      }
 
-      // update prev info
-      prev_level = level;
-      prev_skip = skip;
-      prev_tx_size = tx_size;
-      // advance
-      c += tx_size_wide_unit[tx_size];
+        // update prev info
+        prev_level = level;
+        prev_skip = skip;
+        prev_tx_size = tx_size;
+        // advance
+        col_in_unit += tx_size_wide_unit[tx_size];
+      }
     }
   }
 }
@@ -1544,45 +1537,43 @@ void av1_build_bitmask_horz_info(
   int skip, prev_skip = 0;
   int is_coding_block_border;
 
-  for (int c = 0; c < cm->mi_cols; c += col_step) {
-    const int x = c << MI_SIZE_LOG2;
-    if (x >= plane_ptr->dst.width) break;
-    for (int r = 0; r < cm->mi_rows;) {
-      const int y = r << MI_SIZE_LOG2;
-      if (y >= plane_ptr->dst.height) break;
+  for (int c = 0; (c << MI_SIZE_LOG2) < plane_ptr->dst.width; c += col_step) {
+    const int mi_col = c << subsampling_x;
+    const int col = mi_col % MI_SIZE_64X64;
+
+    for (int r = 0; (r << MI_SIZE_LOG2) < plane_ptr->dst.height;
+         r += (tx_size_high_unit[TX_64X64] >> subsampling_y)) {
       const int mi_row = r << subsampling_y;
-      const int mi_col = c << subsampling_x;
       LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
-      const int row = mi_row % MI_SIZE_64X64;
-      const int col = mi_col % MI_SIZE_64X64;
-      int index = 0;
-      const int shift = get_index_shift(col, row, &index);
-      const uint64_t mask = ((uint64_t)1 << shift);
-      skip = lfm->skip.bits[index] & mask;
-      is_coding_block_border = lfm->is_horz_border.bits[index] & mask;
-      switch (plane) {
-        case 0: level = lfm->lfl_y_hor[row][col]; break;
-        case 1: level = lfm->lfl_u[row][col]; break;
-        case 2: level = lfm->lfl_v[row][col]; break;
-        default: assert(plane >= 0 && plane <= 2); return;
-      }
-      int tx_size_found = 0;
-      for (TX_SIZE ts = TX_4X4; ts <= TX_64X64; ++ts) {
-        if (is_uv && ts == TX_64X64) continue;
-        if (lfm->tx_size_hor[is_uv][ts].bits[index] & mask) {
-          tx_size = ts;
-          tx_size_found = 1;
-          break;
+
+      for (int r_in_unit = 0;
+           r_in_unit < (tx_size_high_unit[TX_64X64] >> subsampling_y);) {
+        const int y = (r + r_in_unit) << MI_SIZE_LOG2;
+        if (y >= plane_ptr->dst.height) break;
+        const int row = r_in_unit << subsampling_y;
+        int index = 0;
+        const int shift = get_index_shift(col, row, &index);
+        const uint64_t mask = ((uint64_t)1 << shift);
+        skip = lfm->skip.bits[index] & mask;
+        is_coding_block_border = lfm->is_horz_border.bits[index] & mask;
+        switch (plane) {
+          case 0: level = lfm->lfl_y_hor[row][col]; break;
+          case 1: level = lfm->lfl_u[row][col]; break;
+          case 2: level = lfm->lfl_v[row][col]; break;
+          default: assert(plane >= 0 && plane <= 2); return;
         }
-      }
-      assert(tx_size_found);
-      (void)tx_size_found;
-      if ((level || prev_level) &&
-          (!prev_skip || !skip || is_coding_block_border)) {
-        const TX_SIZE min_tx_size =
-            AOMMIN(TX_16X16, AOMMIN(tx_size, prev_tx_size));
-        if (r > 0) {
-          const int tmp_row = (mi_row | subsampling_y) % MI_SIZE_64X64;
+        for (TX_SIZE ts = TX_4X4; ts <= TX_64X64; ++ts) {
+          if (is_uv && ts == TX_64X64) continue;
+          if (lfm->tx_size_hor[is_uv][ts].bits[index] & mask) {
+            tx_size = ts;
+            break;
+          }
+        }
+        if ((r + r_in_unit > 0) && (level || prev_level) &&
+            (!prev_skip || !skip || is_coding_block_border)) {
+          const TX_SIZE min_tx_size =
+              AOMMIN(TX_16X16, AOMMIN(tx_size, prev_tx_size));
+          const int tmp_row = (row | subsampling_y) % MI_SIZE_64X64;
           const int tmp_col = (mi_col | subsampling_x) % MI_SIZE_64X64;
           const int shift_1 = get_index_shift(tmp_col, tmp_row, &index);
           const uint64_t mask_1 = ((uint64_t)1 << shift_1);
@@ -1594,14 +1585,14 @@ void av1_build_bitmask_horz_info(
             default: assert(plane >= 0 && plane <= 2); return;
           }
         }
-      }
 
-      // update prev info
-      prev_level = level;
-      prev_skip = skip;
-      prev_tx_size = tx_size;
-      // advance
-      r += tx_size_high_unit[tx_size];
+        // update prev info
+        prev_level = level;
+        prev_skip = skip;
+        prev_tx_size = tx_size;
+        // advance
+        r_in_unit += tx_size_high_unit[tx_size];
+      }
     }
   }
 }
