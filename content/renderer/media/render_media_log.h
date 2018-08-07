@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/media_log.h"
@@ -38,16 +39,15 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~RenderMediaLog() override;
 
+  // MediaLog implementation.
+  void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override;
+  std::string GetErrorMessage() override;
+  void RecordRapporWithSecurityOrigin(const std::string& metric) override;
+
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
   void SetTickClockForTesting(const base::TickClock* tick_clock);
   void SetTaskRunnerForTesting(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
- protected:
-  // MediaLog implementation.
-  void AddEventLocked(std::unique_ptr<media::MediaLogEvent> event) override;
-  std::string GetErrorMessageLocked() override;
-  void RecordRapporWithSecurityOriginLocked(const std::string& metric) override;
 
  private:
   // Posted as a delayed task on |task_runner_| to throttle ipc message
@@ -62,9 +62,7 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   // |lock_| protects access to all of the following member variables.  It
   // allows any render process thread to AddEvent(), while preserving their
   // sequence for throttled send on |task_runner_| and coherent retrieval by
-  // GetErrorMessage().  This is needed in addition to the synchronization
-  // guarantees provided by MediaLog, since SendQueuedMediaEvents must also
-  // be synchronized with respect to AddEvent.
+  // GetErrorMessage().
   mutable base::Lock lock_;
   const base::TickClock* tick_clock_;
   base::TimeTicks last_ipc_send_time_;

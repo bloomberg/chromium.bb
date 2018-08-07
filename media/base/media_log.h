@@ -14,7 +14,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log_event.h"
@@ -26,14 +25,8 @@ namespace media {
 
 // Interface for media components to log to chrome://media-internals log.
 //
-// To provide a logging implementation, derive from MediaLog instead.
-//
-// Implementations only need to implement AddEventLocked(), which must be thread
-// safe in the sense that it may be called from multiple threads, though it will
-// not be called concurrently.  See below for more details.
-//
-// Implementations should also call InvalidateLog during destruction, to signal
-// to any child logs that the underlying log is no longer available.
+// Implementations only need to implement AddEvent(), which must be thread-safe.
+// AddEvent() is expected to be called from multiple threads.
 class MEDIA_EXPORT MediaLog {
  public:
   enum MediaLogLevel {
@@ -76,23 +69,21 @@ class MEDIA_EXPORT MediaLog {
   MediaLog();
   virtual ~MediaLog();
 
-  // Add an event to this log.  Inheritors should override AddEventLocked to
-  // do something.
-  void AddEvent(std::unique_ptr<MediaLogEvent> event);
+  // Add an event to this log. Overriden by inheritors to actually do something
+  // with it.
+  virtual void AddEvent(std::unique_ptr<MediaLogEvent> event);
 
   // Returns a string usable as the contents of a MediaError.message.
   // This method returns an incomplete message if it is called before the
   // pertinent events for the error have been added to the log.
   // Note: The base class definition only produces empty messages. See
   // RenderMediaLog for where this method is meaningful.
-  // Inheritors should override GetErrorMessageLocked().
-  std::string GetErrorMessage();
+  virtual std::string GetErrorMessage();
 
   // Records the domain and registry of the current frame security origin to a
   // Rappor privacy-preserving metric. See:
   //   https://www.chromium.org/developers/design-documents/rappor
-  // Inheritors should override RecordRapportWithSecurityOriginLocked().
-  void RecordRapporWithSecurityOrigin(const std::string& metric);
+  virtual void RecordRapporWithSecurityOrigin(const std::string& metric);
 
   // Helper methods to create events and their parameters.
   std::unique_ptr<MediaLogEvent> CreateEvent(MediaLogEvent::Type type);
@@ -131,59 +122,8 @@ class MEDIA_EXPORT MediaLog {
   // event with a specific media playback.
   int32_t id() const { return id_; }
 
-  // Provide a MediaLog which can have a separate lifetime from this one, but
-  // still write to the same log.  It is not guaranteed that this will log
-  // forever; it might start silently discarding log messages if the original
-  // log is closed by whoever owns it.
-  virtual std::unique_ptr<MediaLog> Clone();
-
- protected:
-  // Methods that may be overridden by inheritors.  All calls may arrive on any
-  // thread, but will be synchronized with respect to any other *Locked calls on
-  // any other thread, and with any parent log invalidation.
-  //
-  // Please see the documentation for the corresponding public methods.
-  virtual void AddEventLocked(std::unique_ptr<MediaLogEvent> event);
-  virtual std::string GetErrorMessageLocked();
-  virtual void RecordRapporWithSecurityOriginLocked(const std::string& metric);
-
-  // Notify all child logs that they should stop working.  This should be called
-  // to guarantee that no further calls into AddEvent should be allowed.
-  // Further, since calls into this log may happen on any thread, it's important
-  // to call this while the log is still in working order.  For example, calling
-  // it immediately during destruction is a good idea.
-  void InvalidateLog();
-
-  struct ParentLogRecord : base::RefCountedThreadSafe<ParentLogRecord> {
-    ParentLogRecord(MediaLog* log);
-
-    // |lock_| protects the rest of this structure.
-    base::Lock lock;
-
-    // Original media log, or null.
-    MediaLog* media_log = nullptr;
-
-   protected:
-    friend class base::RefCountedThreadSafe<ParentLogRecord>;
-    virtual ~ParentLogRecord();
-
-    DISALLOW_COPY_AND_ASSIGN(ParentLogRecord);
-  };
-
-  // Use |parent_log_record| instead of making a new one.
-  MediaLog(scoped_refptr<ParentLogRecord> parent_log_record);
-
  private:
-  // Return a lock that will be taken during InvalidateLog on the parent log,
-  // and before calls to the *Locked methods.
-  base::Lock& lock() { return parent_log_record_->lock; }
-
-  // The underlying media log.
-  scoped_refptr<ParentLogRecord> parent_log_record_;
-
   friend class MediaLogTest;
-  FRIEND_TEST_ALL_PREFIXES(MediaLogTest, EventsAreForwarded);
-  FRIEND_TEST_ALL_PREFIXES(MediaLogTest, EventsAreNotForwardedAfterInvalidate);
 
   enum : size_t {
     // Max length of URLs in Created/Load events. Exceeding triggers truncation.
@@ -197,6 +137,7 @@ class MEDIA_EXPORT MediaLog {
 
   // A unique (to this process) id for this MediaLog.
   int32_t id_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaLog);
 };
 
@@ -204,8 +145,6 @@ class MEDIA_EXPORT MediaLog {
 class MEDIA_EXPORT LogHelper {
  public:
   LogHelper(MediaLog::MediaLogLevel level, MediaLog* media_log);
-  LogHelper(MediaLog::MediaLogLevel level,
-            const std::unique_ptr<MediaLog>& media_log);
   ~LogHelper();
 
   std::ostream& stream() { return stream_; }

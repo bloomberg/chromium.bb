@@ -7,10 +7,7 @@
 
 #include "base/macros.h"
 #include "media/base/media_log.h"
-#include "media/base/mock_media_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using testing::_;
 
 namespace media {
 
@@ -77,24 +74,6 @@ TEST_F(MediaLogTest, TruncateLongUrlStrings) {
   EXPECT_EQ(stored_url.compare(0, MediaLogTest::kMaxUrlLength - 3, long_url, 0,
                                MediaLogTest::kMaxUrlLength - 3),
             0);
-}
-
-TEST_F(MediaLogTest, EventsAreForwarded) {
-  // Make sure that |root_log_| receives events.
-  std::unique_ptr<MockMediaLog> root_log(std::make_unique<MockMediaLog>());
-  std::unique_ptr<MediaLog> child_media_log(root_log->Clone());
-  EXPECT_CALL(*root_log, DoAddEventLogString(_)).Times(1);
-  child_media_log->AddLogEvent(MediaLog::MediaLogLevel::MEDIALOG_ERROR, "test");
-}
-
-TEST_F(MediaLogTest, EventsAreNotForwardedAfterInvalidate) {
-  // Make sure that |root_log_| doesn't forward things after we invalidate the
-  // underlying log.
-  std::unique_ptr<MockMediaLog> root_log(std::make_unique<MockMediaLog>());
-  std::unique_ptr<MediaLog> child_media_log(root_log->Clone());
-  EXPECT_CALL(*root_log, DoAddEventLogString(_)).Times(0);
-  root_log.reset();
-  child_media_log->AddLogEvent(MediaLog::MediaLogLevel::MEDIALOG_ERROR, "test");
 }
 
 }  // namespace media
