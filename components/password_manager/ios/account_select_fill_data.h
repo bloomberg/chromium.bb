@@ -1,9 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_PASSWORDS_ACCOUNT_SELECT_FILL_DATA_H_
-#define IOS_CHROME_BROWSER_PASSWORDS_ACCOUNT_SELECT_FILL_DATA_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_IOS_ACCOUNT_SELECT_FILL_DATA_H_
+#define COMPONENTS_PASSWORD_MANAGER_IOS_ACCOUNT_SELECT_FILL_DATA_H_
 
 #include <map>
 #include <memory>
@@ -127,4 +127,4 @@ class AccountSelectFillData {
 
 }  // namespace  password_manager
 
-#endif  // IOS_CHROME_BROWSER_PASSWORDS_ACCOUNT_SELECT_FILL_DATA_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_IOS_ACCOUNT_SELECT_FILL_DATA_H_

@@ -1,8 +1,8 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright (c) 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/passwords/test_helpers.h"
+#include "components/password_manager/ios/test_helpers.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
