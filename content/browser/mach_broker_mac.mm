@@ -8,21 +8,13 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
-
-namespace {
-const char kBootstrapName[] = "rohitfork";
-}
-
-// static
-bool MachBroker::ChildSendTaskPortToParent() {
-  return base::MachPortBroker::ChildSendTaskPortToParent(kBootstrapName);
-}
 
 MachBroker* MachBroker::GetInstance() {
   return base::Singleton<MachBroker,
@@ -88,10 +80,10 @@ std::string MachBroker::GetMachPortName() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   const bool is_child = command_line->HasSwitch(switches::kProcessType);
-  return base::MachPortBroker::GetMachPortName(kBootstrapName, is_child);
+  return base::MachPortBroker::GetMachPortName(kMachBootstrapName, is_child);
 }
 
-MachBroker::MachBroker() : initialized_(false), broker_(kBootstrapName) {
+MachBroker::MachBroker() : initialized_(false), broker_(kMachBootstrapName) {
   broker_.AddObserver(this);
 }
 

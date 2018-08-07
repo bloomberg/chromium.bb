@@ -5,10 +5,12 @@
 #include "content/browser/mach_broker_mac.h"
 
 #include "base/command_line.h"
+#include "base/mac/mach_port_broker.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "content/common/content_constants_internal.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -77,7 +79,7 @@ class MachBrokerTest : public testing::Test,
 };
 
 MULTIPROCESS_TEST_MAIN(MachBrokerTestChild) {
-  CHECK(MachBroker::ChildSendTaskPortToParent());
+  CHECK(base::MachPortBroker::ChildSendTaskPortToParent(kMachBootstrapName));
   return 0;
 }
 
