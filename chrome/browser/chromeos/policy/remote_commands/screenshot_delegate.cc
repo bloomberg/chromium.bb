@@ -53,6 +53,8 @@ std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
   chromeos::DeviceOAuth2TokenService* device_oauth2_token_service =
       chromeos::DeviceOAuth2TokenServiceFactory::Get();
 
+  scoped_refptr<net::URLRequestContextGetter> system_request_context =
+      g_browser_process->system_request_context();
   std::string robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();
 
@@ -78,7 +80,7 @@ std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
       )");
   return std::unique_ptr<UploadJob>(new UploadJobImpl(
       upload_url, robot_account_id, device_oauth2_token_service,
-      g_browser_process->shared_url_loader_factory(), delegate,
+      system_request_context, delegate,
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator),
       traffic_annotation, base::ThreadTaskRunnerHandle::Get()));
 }
