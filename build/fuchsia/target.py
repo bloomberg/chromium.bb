@@ -4,7 +4,6 @@
 
 import boot_data
 import common
-import log_reader
 import logging
 import remote_cmd
 import sys
@@ -29,7 +28,6 @@ class Target(object):
     self._started = False
     self._dry_run = False
     self._target_cpu = target_cpu
-    self._system_logs_reader = None
 
   # Functions used by the Python context manager for teardown.
   def __enter__(self):
@@ -145,32 +143,17 @@ class Target(object):
   def _AssertIsStarted(self):
     assert self.IsStarted()
 
-  def _SetSystemLogsReader(self, reader):
-    if self._system_logs_reader:
-      _system_logs_reader.Close()
-    self._system_logs_reader = reader
-
   def _WaitUntilReady(self, retries=_ATTACH_MAX_RETRIES):
     logging.info('Connecting to Fuchsia using SSH.')
 
-    try:
-      for retry in xrange(retries + 1):
-        if retry == 2 and self._system_logs_reader:
-          # Log system logs after 2 failed SSH connection attempt.
-          self._system_logs_reader.RedirectTo(sys.stdout);
-
-        host, port = self._GetEndpoint()
-        if remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, ['true'],
-                             True) == 0:
-          logging.info('Connected!')
-          self._started = True
-          return True
-        time.sleep(_ATTACH_RETRY_INTERVAL)
-    finally:
-      # Redirect logs to /dev/null. run_package.py will use SSH+dlog to get
-      # logs from the machine to console.
-      if self._system_logs_reader:
-        self._system_logs_reader.RedirectTo(open('/dev/null', 'w'));
+    for retry in xrange(retries + 1):
+      host, port = self._GetEndpoint()
+      if remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, ['true'],
+                           True) == 0:
+        logging.info('Connected!')
+        self._started = True
+        return True
+      time.sleep(_ATTACH_RETRY_INTERVAL)
 
     logging.error('Timeout limit reached.')
 

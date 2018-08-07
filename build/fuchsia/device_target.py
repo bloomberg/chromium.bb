@@ -5,7 +5,6 @@
 """Implements commands for running and interacting with Fuchsia on devices."""
 
 import boot_data
-import log_reader
 import logging
 import os
 import subprocess
@@ -24,7 +23,7 @@ CONNECT_RETRY_COUNT_BEFORE_LOGGING = 10
 
 class DeviceTarget(target.Target):
   def __init__(self, output_dir, target_cpu, host=None, port=None,
-               ssh_config=None):
+               ssh_config=None, system_log_file=None):
     """output_dir: The directory which will contain the files that are
                    generated to support the deployment.
     target_cpu: The CPU architecture of the deployment target. Can be
@@ -38,6 +37,8 @@ class DeviceTarget(target.Target):
     self._port = 22
     self._auto = not host or not ssh_config
     self._new_instance = True
+    self._system_log_file = system_log_file
+    self._loglistener = None
 
     if self._auto:
       self._ssh_config_path = EnsurePathExists(
@@ -48,6 +49,10 @@ class DeviceTarget(target.Target):
       if port:
         self._port = port
       self._new_instance = False
+
+  def __exit__(self, exc_type, exc_val, exc_tb):
+    if self._loglistener:
+      self._loglistener.kill()
 
   def __Discover(self, node_name):
     """Returns the IP address and port of a Fuchsia instance discovered on
@@ -98,20 +103,16 @@ class DeviceTarget(target.Target):
       logging.debug(' '.join(bootserver_command))
       subprocess.check_call(bootserver_command)
 
-      # Setup loglistener. Logs will be redirected to stdout if the device takes
-      # longer than expected to boot.
-      loglistener_path = os.path.join(SDK_ROOT, 'tools', 'loglistener')
-      loglistener = subprocess.Popen([loglistener_path, node_name],
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT,
-                                     stdin=open(os.devnull))
-      self._SetSystemLogsReader(
-          log_reader.LogReader(loglistener, loglistener.stdout))
+      # Start loglistener to save system logs.
+      if self._system_log_file:
+        loglistener_path = os.path.join(SDK_ROOT, 'tools', 'loglistener')
+        self._loglistener = subprocess.Popen(
+            [loglistener_path, node_name],
+            stdout=open(self._system_log_file, 'w'),
+            stderr=subprocess.STDOUT, stdin=open(os.devnull))
 
       logging.debug('Waiting for device to join network.')
       for retry in xrange(CONNECT_RETRY_COUNT):
-        if retry == CONNECT_RETRY_COUNT_BEFORE_LOGGING:
-          self._system_logs_reader.RedirectTo(sys.stdout);
         self._host = self.__Discover(node_name)
         if self._host:
           break

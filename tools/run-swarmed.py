@@ -11,7 +11,7 @@ etc. and allowing greater parallelism.
 
 To use, run in a new shell (it blocks until all Swarming jobs complete):
 
-  tools/fuchsia/run-swarmed.py -t content_unittests --out-dir=out/fuch
+  tools/run-swarmed.py -t content_unittests --out-dir=out/fuch
 
 The logs of the runs will be stored in results/ (or specify a results directory
 with --results=some_dir). You can then do something like `grep -L SUCCESS
@@ -62,7 +62,8 @@ def _Spawn(args):
     trigger_args += [ '-d', 'os', 'Windows' ]
   trigger_args += [
       '--',
-      '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json']
+      '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json',
+      '--system-log-file=${ISOLATED_OUTDIR}/system_log']
   if gtest_filter:
     trigger_args.append('--gtest_filter=' + gtest_filter)
   elif args.target_os == 'fuchsia':
