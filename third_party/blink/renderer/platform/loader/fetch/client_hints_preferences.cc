@@ -30,8 +30,7 @@ void ParseAcceptChHeader(const String& header_value,
 
   enabled_hints.SetIsEnabled(
       mojom::WebClientHintsType::kDeviceMemory,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kDeviceMemory) &&
-          RuntimeEnabledFeatures::DeviceMemoryHeaderEnabled());
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kDeviceMemory));
 
   enabled_hints.SetIsEnabled(
       mojom::WebClientHintsType::kRtt,
