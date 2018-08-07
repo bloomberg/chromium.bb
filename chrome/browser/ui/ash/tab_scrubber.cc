@@ -52,7 +52,7 @@ gfx::Point TabScrubber::GetStartPoint(TabStrip* tab_strip,
 
   // Start the swipe where the tab contents start/end.  This provides a small
   // amount of slop inside the tab before a swipe will change tabs.
-  auto contents_insets = Tab::GetContentsInsets();
+  auto contents_insets = tab->GetContentsInsets();
   int left = contents_insets.left();
   int right = contents_insets.right();
 

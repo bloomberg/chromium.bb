@@ -382,6 +382,10 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
   immersive_reveal_lock_.reset();
 }
 
+SkColor BrowserTabStripController::GetFrameColor() const {
+  return GetFrameView()->GetFrameColor();
+}
+
 SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
   return GetFrameView()->GetToolbarTopSeparatorColor();
 }

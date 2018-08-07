@@ -146,12 +146,16 @@ void FakeBaseTabStripController::OnStartedDraggingTabs() {
 void FakeBaseTabStripController::OnStoppedDraggingTabs() {
 }
 
+SkColor FakeBaseTabStripController::GetFrameColor() const {
+  return gfx::kPlaceholderColor;
+}
+
 SkColor FakeBaseTabStripController::GetToolbarTopSeparatorColor() const {
-  return SK_ColorBLACK;
+  return gfx::kPlaceholderColor;
 }
 
 SkColor FakeBaseTabStripController::GetTabSeparatorColor() const {
-  return SK_ColorBLACK;
+  return gfx::kPlaceholderColor;
 }
 
 SkColor FakeBaseTabStripController::GetTabBackgroundColor(

@@ -302,11 +302,6 @@ TabStrip::~TabStrip() {
 }
 
 // static
-bool TabStrip::ShouldDrawStrokes() {
-  return !MD::IsRefreshUi();
-}
-
-// static
 int TabStrip::GetPinnedToNonPinnedOffset() {
   return MD::IsRefreshUi() ? 0 : kPinnedToNonPinnedOffset;
 }
@@ -852,6 +847,17 @@ void TabStrip::StopAnimating(bool layout) {
     DoLayout();
 }
 
+bool TabStrip::ShouldDrawStrokes() const {
+  if (!MD::IsRefreshUi())
+    return true;
+
+  // Refresh normally avoids strokes and relies on the active tab contrasting
+  // sufficiently with the frame background.  When there isn't enough contrast,
+  // fall back to a stroke.
+  return color_utils::GetContrastRatio(GetTabBackgroundColor(TAB_ACTIVE),
+                                       controller_->GetFrameColor()) < 1.3;
+}
+
 const ui::ListSelectionModel& TabStrip::GetSelectionModel() const {
   return controller_->GetSelectionModel();
 }
@@ -1137,6 +1143,10 @@ bool TabStrip::ShouldPaintTab(
   return true;
 }
 
+int TabStrip::GetStrokeThickness() const {
+  return ShouldDrawStrokes() ? 1 : 0;
+}
+
 bool TabStrip::CanPaintThrobberToLayer() const {
   // Disable layer-painting of throbbers if dragging, if any tab animation is in
   // progress, or if stacked tabs are enabled. Also disable in fullscreen: when
@@ -1341,8 +1351,8 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
           gfx::RectToSkRect(active_tab->GetMirroredBounds()),
           SkClipOp::kDifference);
     }
-    BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
-                                        GetLocalBounds(), true);
+    BrowserView::PaintToolbarTopSeparator(canvas, GetToolbarTopSeparatorColor(),
+                                          GetLocalBounds());
   }
 }
 

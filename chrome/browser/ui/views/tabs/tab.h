@@ -174,9 +174,21 @@ class Tab : public gfx::AnimationDelegate,
 
   bool mouse_hovered() const { return mouse_hovered_; }
 
+  // Returns the thickness of the stroke drawn around the tab.  If
+  // |should_paint_as_active| is true, the tab is treated as an active tab
+  // regardless of its true current state; this affects Refresh, which never
+  // paints strokes on inactive tabs.
+  float GetStrokeThickness(bool should_paint_as_active = false) const;
+
   // Returns the width of the largest part of the tab that is available for the
   // user to click to select/activate the tab.
   int GetWidthOfLargestSelectableRegion() const;
+
+  // Returns the insets to use for laying out tab contents.
+  gfx::Insets GetContentsInsets() const;
+
+  // Returns the horizontal insets to use for laying out tab contents.
+  static gfx::Insets GetContentsHorizontalInsets();
 
   // Returns the minimum possible width of a single unselected Tab.
   static int GetMinimumInactiveWidth();
@@ -193,10 +205,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the width for pinned tabs. Pinned tabs always have this width.
   static int GetPinnedWidth();
 
-  // Returns the height of any area reserved for a stroke at the top and bottom
-  // of the tab, in DIP.
-  static int GetStrokeHeight();
-
   // Returns the height of the separator between tabs.
   static int GetTabSeparatorHeight();
 
@@ -211,9 +219,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // Returns the radius of the outer corners of the tab shape.
   static int GetCornerRadius();
-
-  // Returns the insets to use for laying out tab contents.
-  static gfx::Insets GetContentsInsets();
 
   // Returns an offset into the leading edge of the tab which delineates the
   // "main body" of the tab from the user's perspective; dragging based on this
@@ -387,22 +392,27 @@ class Tab : public gfx::AnimationDelegate,
                          const gfx::Size& size,
                          SkColor active_color,
                          SkColor inactive_color,
-                         SkColor stroke_color) {
+                         SkColor stroke_color,
+                         float stroke_thickness) {
       return scale_ == scale && size_ == size &&
              active_color_ == active_color &&
-             inactive_color_ == inactive_color && stroke_color_ == stroke_color;
+             inactive_color_ == inactive_color &&
+             stroke_color_ == stroke_color &&
+             stroke_thickness_ == stroke_thickness;
     }
 
     void SetCacheKey(float scale,
                      const gfx::Size& size,
                      SkColor active_color,
                      SkColor inactive_color,
-                     SkColor stroke_color) {
+                     SkColor stroke_color,
+                     float stroke_thickness) {
       scale_ = scale;
       size_ = size;
       active_color_ = active_color;
       inactive_color_ = inactive_color;
       stroke_color_ = stroke_color;
+      stroke_thickness_ = stroke_thickness;
     }
 
     // The PaintRecords being cached based on the input parameters.
@@ -416,6 +426,12 @@ class Tab : public gfx::AnimationDelegate,
     SkColor active_color_ = 0;
     SkColor inactive_color_ = 0;
     SkColor stroke_color_ = 0;
+
+    // The stroke thickness needs to be recorded because tabs may switch between
+    // a zero and non-zero stroke thickness depending on their state.  This
+    // changes the "stroke_thickness > 0" logic in tab.cc which changes if
+    // |stroke_record| gets recorded.
+    float stroke_thickness_ = 0.f;
   };
 
   // Cache of the paint output for tab backgrounds.

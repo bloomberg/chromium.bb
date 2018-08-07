@@ -80,6 +80,7 @@ class FakeTabController : public TabController {
       gfx::Path* clip) override {
     return true;
   }
+  int GetStrokeThickness() const override { return 0; }
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
   }
@@ -602,7 +603,7 @@ TEST_F(TabTest, SmallTabsHideCloseButton) {
   controller.set_active_tab(false);
   Tab tab(&controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
-  const int width = Tab::GetContentsInsets().width() +
+  const int width = Tab::GetContentsHorizontalInsets().width() +
                     Tab::kMinimumContentsWidthForCloseButtons;
   tab.SetBounds(0, 0, width, 50);
   const views::View* close = GetCloseButton(tab);

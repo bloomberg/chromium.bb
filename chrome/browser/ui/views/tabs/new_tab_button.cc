@@ -455,7 +455,8 @@ void NewTabButton::PaintFill(bool pressed,
     if (has_custom_image && !new_tab_promo_observer_.IsObservingSources()) {
       // For non-refresh touch UI, the background is that of the active tab, so
       // the positioning must match that in Tab::PaintTab().
-      const int offset_y = non_refresh_touch_ui ? -Tab::GetStrokeHeight() : 0;
+      const int offset_y =
+          non_refresh_touch_ui ? -tab_strip_->GetStrokeThickness() : 0;
       // The new tab background is mirrored in RTL mode, but the theme
       // background should never be mirrored. Mirror it here to compensate.
       float x_scale = 1.0f;

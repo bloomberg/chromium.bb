@@ -108,6 +108,10 @@ gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
   return gfx::CreateVectorIcon(kIncognitoIcon, icon_color);
 }
 
+SkColor BrowserNonClientFrameView::GetFrameColor() const {
+  return GetFrameColor(ShouldPaintAsActive());
+}
+
 SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
   const int color_id =
       ShouldPaintAsActive()
@@ -288,10 +292,6 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
              : gfx::ImageSkia();
 }
 
-SkColor BrowserNonClientFrameView::GetFrameColor() const {
-  return GetFrameColor(ShouldPaintAsActive());
-}
-
 gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage() const {
   return GetFrameImage(ShouldPaintAsActive());
 }
@@ -367,8 +367,12 @@ void BrowserNonClientFrameView::LayoutIncognitoButton() {
 
 void BrowserNonClientFrameView::PaintToolbarTopStroke(
     gfx::Canvas* canvas) const {
-  if (TabStrip::ShouldDrawStrokes()) {
+  if (browser_view()->tabstrip()->ShouldDrawStrokes()) {
     gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
+    gfx::Point toolbar_origin(toolbar_bounds.origin());
+    ConvertPointToTarget(browser_view(), this, &toolbar_origin);
+    toolbar_bounds.set_origin(toolbar_origin);
+
     gfx::Rect tabstrip_bounds =
         GetMirroredRect(GetBoundsForTabStrip(browser_view()->tabstrip()));
 
@@ -377,8 +381,8 @@ void BrowserNonClientFrameView::PaintToolbarTopStroke(
 
     const gfx::Rect separator_rect(toolbar_bounds.x(), tabstrip_bounds.bottom(),
                                    toolbar_bounds.width(), 0);
-    BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
-                                        separator_rect, true);
+    BrowserView::PaintToolbarTopSeparator(canvas, GetToolbarTopSeparatorColor(),
+                                          separator_rect);
   }
 }
 
