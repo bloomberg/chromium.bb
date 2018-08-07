@@ -127,7 +127,7 @@ class BackgroundFetchDelegateProxy::Core
     if (fetch_request.mode == network::mojom::FetchRequestMode::kCORS ||
         fetch_request.mode ==
             network::mojom::FetchRequestMode::kCORSWithForcedPreflight ||
-        (fetch_request.method != "GET" && fetch_request.method != "POST")) {
+        (fetch_request.method != "GET" && fetch_request.method != "HEAD")) {
       headers.SetHeader("Origin", origin.Serialize());
     }
 
