@@ -584,10 +584,6 @@
       status: "stable",
     },
     {
-      name: "ImageDecodingAttribute",
-      status: "stable",
-    },
-    {
       name: "ImageOrientation",
       status: "test",
     },

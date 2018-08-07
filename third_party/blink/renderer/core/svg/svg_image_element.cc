@@ -154,8 +154,7 @@ void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 
 void SVGImageElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == SVGNames::decodingAttr &&
-      RuntimeEnabledFeatures::ImageDecodingAttributeEnabled()) {
+  if (params.name == SVGNames::decodingAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
   } else {
