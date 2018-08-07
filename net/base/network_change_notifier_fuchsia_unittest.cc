@@ -121,13 +121,6 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
   fidl::Binding<fuchsia::netstack::Netstack>& binding() { return binding_; }
 
  private:
-  // fuchsia::netstack::Netstack implementation.
-  void RegisterListener(
-      ::fidl::InterfaceHandle<fuchsia::netstack::NotificationListener> listener)
-      override {
-    NOTREACHED();
-  }
-
   void GetInterfaces(GetInterfacesCallback callback) override {
     callback(std::move(interfaces_));
   }
