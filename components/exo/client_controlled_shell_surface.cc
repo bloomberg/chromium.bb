@@ -511,7 +511,7 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
 
     // The client's geometry uses fullscreen in client controlled,
     // (but the surface is placed under the frame), so just use
-    // the window bounds instead for maximixed stte.
+    // the window bounds instead for maximixed state.
     gfx::Rect client_bounds =
         widget_->IsMaximized()
             ? window_bounds
@@ -615,7 +615,6 @@ bool ClientControlledShellSurface::IsInputEnabled(Surface* surface) const {
 
 void ClientControlledShellSurface::OnSetFrame(SurfaceFrameType type) {
   ShellSurfaceBase::OnSetFrame(type);
-  frame_type_ = type;
   UpdateAutoHideFrame();
 }
 
@@ -955,11 +954,11 @@ void ClientControlledShellSurface::UpdateCaptionButtonModel() {
 
 void ClientControlledShellSurface::UpdateBackdrop() {
   aura::Window* window = widget_->GetNativeWindow();
-  const display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-  bool enable_backdrop =
-      (widget_->IsFullscreen() || widget_->IsMaximized()) &&
-      !widget_->GetWindowBoundsInScreen().Contains(display.work_area());
+
+  // Always create a backdrop regardless of the geometry because
+  // maximized/fullscreen widget's geometry can be cropped.
+  bool enable_backdrop = (widget_->IsFullscreen() || widget_->IsMaximized());
+
   ash::BackdropWindowMode target_backdrop_mode =
       enable_backdrop ? ash::BackdropWindowMode::kEnabled
                       : ash::BackdropWindowMode::kAuto;
