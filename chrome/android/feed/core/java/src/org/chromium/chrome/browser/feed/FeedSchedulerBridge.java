@@ -22,7 +22,7 @@ import org.chromium.components.feed.NativeRequestBehavior;
  * Provides access to native implementations of SchedulerApi.
  */
 @JNINamespace("feed")
-public class FeedSchedulerBridge implements SchedulerApi {
+public class FeedSchedulerBridge implements FeedScheduler {
     private long mNativeBridge;
     private RequestManager mRequestManager;
     private SessionManager mSessionManager;
@@ -37,6 +37,7 @@ public class FeedSchedulerBridge implements SchedulerApi {
     }
 
     /** Cleans up the native half of this bridge. */
+    @Override
     public void destroy() {
         assert mNativeBridge != 0;
         nativeDestroy(mNativeBridge);
@@ -103,22 +104,26 @@ public class FeedSchedulerBridge implements SchedulerApi {
         nativeOnRequestError(mNativeBridge, networkResponseCode);
     }
 
+    @Override
     public void onForegrounded() {
         assert mNativeBridge != 0;
         nativeOnForegrounded(mNativeBridge);
     }
 
+    @Override
     public void onFixedTimer(Runnable onCompletion) {
         assert mNativeBridge != 0;
         // Convert to single argument Callback to make invoking from native more convenient.
         nativeOnFixedTimer(mNativeBridge, (Void ignored) -> onCompletion.run());
     }
 
+    @Override
     public void onTaskReschedule() {
         assert mNativeBridge != 0;
         nativeOnTaskReschedule(mNativeBridge);
     }
 
+    @Override
     public void onSuggestionConsumed() {
         assert mNativeBridge != 0;
         nativeOnSuggestionConsumed(mNativeBridge);

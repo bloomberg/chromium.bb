@@ -23,4 +23,12 @@ public class FeedNewTabPage extends NewTabPage {
             TabModelSelector tabModelSelector) {
         super(activity, nativePageHost, tabModelSelector);
     }
+
+    /**
+     * Configures the FeedNewTabPage for testing.
+     * @param inTestMode Whether test mode is enabled. If true, test implementations of Feed
+     *                   interfaces will be used to create the {@link FeedProcessScope}. If false,
+     *                   the FeedProcessScope will be reset.
+     */
+    public static void setInTestMode(boolean inTestMode) {}
 }
