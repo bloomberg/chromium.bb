@@ -97,9 +97,20 @@ void AssistantProgressIndicator::RemovedFromWidget() {
   VisibilityChanged(/*starting_from=*/this, /*is_visible=*/false);
 }
 
+void AssistantProgressIndicator::OnLayerOpacityChanged(
+    ui::PropertyChangeReason reason) {
+  VisibilityChanged(/*starting_from=*/this,
+                    /*is_visible=*/layer()->opacity() > 0.f);
+}
+
 void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
                                                    bool is_visible) {
-  if (!is_visible) {
+  if (is_visible == is_visible_)
+    return;
+
+  is_visible_ = is_visible;
+
+  if (!is_visible_) {
     // Stop all animations.
     for (int i = 0; i < child_count(); ++i) {
       child_at(i)->layer()->GetAnimator()->StopAnimating();

@@ -20,10 +20,15 @@ class AssistantProgressIndicator : public views::View {
   // views::View:
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  void OnLayerOpacityChanged(ui::PropertyChangeReason reason) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
  private:
   void InitLayout();
+
+  // Caches the last call to VisibilityChanged. Because we trigger this event
+  // artificially, we want to make sure that we don't over trigger.
+  bool is_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantProgressIndicator);
 };
