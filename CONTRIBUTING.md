@@ -85,7 +85,7 @@ We won't reject patches that lack S-o-b, but it is strongly recommended.
 
 When you re-send patches, revised or not, it would be very good to document the
 changes compared to the previous revision in the commit message and/or the
-cover letter. If you have already received Reviewed-by or Acked-by tags, you
+merge request. If you have already received Reviewed-by or Acked-by tags, you
 should evaluate whether they still apply and include them in the respective
 commit messages. Otherwise the tags may be lost, reviewers miss the credit they
 deserve, and the patches may cause redundant review effort.
@@ -134,7 +134,7 @@ You should follow the style of the file you're editing. In general, we
 try to follow the rules below.
 
 **Note: this file uses spaces due to markdown rendering issues for tabs.
-  Code must be implemented using tabs.**
+  Code must be indented using tabs.**
 
 - indent with tabs, and a tab is always 8 characters wide
 - opening braces are on the same line as the if statement;
