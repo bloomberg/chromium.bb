@@ -1816,6 +1816,8 @@
       # This exception probably needs to stay due to lack of capacity
       # on the Win AMD bots.
       'Win7 FYI Debug (AMD)',
+      # Fails on the bot, http://crbug.com/868143
+      'Win7 FYI Release (AMD)',
     ],
   },
 }
