@@ -33,6 +33,8 @@ var preferences_to_test = [
     preferences: {
       alternateErrorPagesEnabled: false,
       autofillEnabled: false,
+      autofillAddressEnabled: false,
+      autofillCreditCardEnabled: false,
       passwordSavingEnabled: false,
       safeBrowsingEnabled: false,
       safeBrowsingExtendedReportingEnabled: false,

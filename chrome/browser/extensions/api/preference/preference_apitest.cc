@@ -47,6 +47,8 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     EXPECT_TRUE(pref->IsExtensionControlled());
     EXPECT_TRUE(prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled));
     EXPECT_TRUE(prefs->GetBoolean(autofill::prefs::kAutofillEnabled));
+    EXPECT_TRUE(prefs->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled));
+    EXPECT_TRUE(prefs->GetBoolean(autofill::prefs::kAutofillProfileEnabled));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kEnableHyperlinkAuditing));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kEnableReferrers));
@@ -67,6 +69,9 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     EXPECT_FALSE(pref->IsExtensionControlled());
     EXPECT_FALSE(prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled));
     EXPECT_FALSE(prefs->GetBoolean(autofill::prefs::kAutofillEnabled));
+    EXPECT_FALSE(
+        prefs->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled));
+    EXPECT_FALSE(prefs->GetBoolean(autofill::prefs::kAutofillProfileEnabled));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kEnableHyperlinkAuditing));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kEnableReferrers));
@@ -118,6 +123,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(prefs::kAlternateErrorPagesEnabled, false);
   prefs->SetBoolean(autofill::prefs::kAutofillEnabled, false);
+  prefs->SetBoolean(autofill::prefs::kAutofillCreditCardEnabled, false);
+  prefs->SetBoolean(autofill::prefs::kAutofillProfileEnabled, false);
   prefs->SetBoolean(prefs::kBlockThirdPartyCookies, true);
   prefs->SetBoolean(prefs::kEnableHyperlinkAuditing, false);
   prefs->SetBoolean(prefs::kEnableReferrers, false);
