@@ -31,6 +31,7 @@
 @synthesize unifiedConsentMediator = _unifiedConsentMediator;
 @synthesize unifiedConsentViewController = _unifiedConsentViewController;
 @synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
+@synthesize interactable = _interactable;
 @synthesize identityChooserCoordinator = _identityChooserCoordinator;
 
 - (instancetype)init {
@@ -45,6 +46,7 @@
 }
 
 - (void)start {
+  self.unifiedConsentViewController.interactable = self.interactable;
   [self.unifiedConsentMediator start];
 }
 

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -35,13 +36,22 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
 
 @property(nonatomic, strong) IdentityView* identityView;
 @property(nonatomic, strong) MDCInkView* inkView;
+// Image View for the down arrow, letting the user know that more profiles can
+// be selected.
+@property(nonatomic, strong) UIImageView* arrowDownImageView;
+// Image View for the checkmark, indicating that the selected identity cannot be
+// changed.
+@property(nonatomic, strong) UIImageView* checkmarkImageView;
 
 @end
 
 @implementation IdentityPickerView
 
+@synthesize canChangeIdentity = _canChangeIdentity;
 @synthesize identityView = _identityView;
 @synthesize inkView = _inkView;
+@synthesize arrowDownImageView = _arrowDownImageView;
+@synthesize checkmarkImageView = _checkmarkImageView;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -58,12 +68,21 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
     [self addSubview:_inkView];
 
     // Arrow down.
-    UIImageView* arrowDownImageView =
-        [[UIImageView alloc] initWithFrame:CGRectZero];
-    arrowDownImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    arrowDownImageView.image =
+    _arrowDownImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    _arrowDownImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _arrowDownImageView.image =
         [UIImage imageNamed:@"identity_picker_view_arrow_down"];
-    [self addSubview:arrowDownImageView];
+    [self addSubview:_arrowDownImageView];
+
+    // Checkmark.
+    _checkmarkImageView = [[UIImageView alloc] init];
+    _checkmarkImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _checkmarkImageView.image =
+        [[UIImage imageNamed:kAuthenticationCheckmarkImageName]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _checkmarkImageView.tintColor =
+        UIColorFromRGB(kAuthenticationCheckmarkColor);
+    [self addSubview:_checkmarkImageView];
 
     // Main view with avatar, name and email.
     _identityView = [[IdentityView alloc] initWithFrame:CGRectZero];
@@ -73,11 +92,13 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
     // Layout constraints.
     NSDictionary* views = @{
       @"identityview" : _identityView,
-      @"arrow" : arrowDownImageView,
+      @"arrow" : _arrowDownImageView,
+      @"checkmark" : _checkmarkImageView,
     };
     NSDictionary* metrics = @{
       @"ArrowMargin" : @(kArrowDownMargin),
       @"ArrowSize" : @(kArrowDownSize),
+      @"CheckmarkSize" : @(kAuthenticationCheckmarkSize),
       @"HAvatMrg" : @(kHorizontalAvatarMargin),
       @"VMargin" : @(kVerticalMargin),
     };
@@ -89,14 +110,24 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
       // Size constraints.
       @"H:[arrow(ArrowSize)]",
       @"V:[arrow(ArrowSize)]",
+      @"H:[checkmark(CheckmarkSize)]",
+      @"V:[checkmark(CheckmarkSize)]",
     ];
-    AddSameCenterYConstraint(self, arrowDownImageView);
+    AddSameCenterYConstraint(self, _arrowDownImageView);
+    AddSameCenterConstraints(_checkmarkImageView, _arrowDownImageView);
     ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
   }
   return self;
 }
 
 #pragma mark - Setter
+
+- (void)setCanChangeIdentity:(BOOL)canChangeIdentity {
+  _canChangeIdentity = canChangeIdentity;
+  self.enabled = canChangeIdentity;
+  self.arrowDownImageView.hidden = !canChangeIdentity;
+  self.checkmarkImageView.hidden = canChangeIdentity;
+}
 
 - (void)setIdentityAvatar:(UIImage*)identityAvatar {
   [self.identityView setAvatar:identityAvatar];

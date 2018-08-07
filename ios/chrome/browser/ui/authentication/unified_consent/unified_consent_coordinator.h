@@ -52,6 +52,8 @@
 @property(nonatomic, readonly) BOOL isScrolledToBottom;
 // Returns YES if the user tapped on the setting link.
 @property(nonatomic, readonly) BOOL settingsLinkWasTapped;
+// Whether the ViewController configured by this coordinator is interactable.
+@property(nonatomic, assign) BOOL interactable;
 
 // Starts this coordinator.
 - (void)start;

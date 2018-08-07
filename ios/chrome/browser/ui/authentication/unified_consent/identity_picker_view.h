@@ -16,6 +16,9 @@ extern NSString* const kIdentityPickerViewIdentifier;
 // -[UIControl addTarget:action:forControlEvents:].
 @interface IdentityPickerView : UIControl
 
+// Whether the identity displayed by this view can be changed.
+@property(nonatomic, assign) BOOL canChangeIdentity;
+
 // Initialises IdentityPickerView.
 - (instancetype)initWithFrame:(CGRect)frame NS_DESIGNATED_INITIALIZER;
 

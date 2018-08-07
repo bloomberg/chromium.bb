@@ -617,6 +617,7 @@ enum AuthenticationState {
   // Add the account selector view controller.
   if (_unifiedConsentEnabled) {
     _unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
+    _unifiedConsentCoordinator.interactable = YES;
     _unifiedConsentCoordinator.delegate = self;
     if (_selectedIdentity)
       _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;

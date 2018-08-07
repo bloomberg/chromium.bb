@@ -18,9 +18,6 @@ const CGFloat kTitleTextMargin = 4;
 
 const CGFloat kImageViewMargin = 16;
 
-const CGFloat kCheckmarkSize = 18;
-const int kCheckmarkColor = 0x1A73E8;
-
 const CGFloat kHighlightAlpha = 0.07;
 
 const CGFloat kAnimationDuration = 0.15;
@@ -63,12 +60,12 @@ const CGFloat kAnimationDuration = 0.15;
 
   UIImageView* checkMarkImageView = [[UIImageView alloc]
       initWithImage:
-          [[UIImage imageNamed:@"consent_bump_checkmark"]
+          [[UIImage imageNamed:kAuthenticationCheckmarkImageName]
               imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
   option.checkMarkImageView = checkMarkImageView;
   checkMarkImageView.translatesAutoresizingMaskIntoConstraints = NO;
   checkMarkImageView.hidden = YES;
-  checkMarkImageView.tintColor = UIColorFromRGB(kCheckmarkColor);
+  checkMarkImageView.tintColor = UIColorFromRGB(kAuthenticationCheckmarkColor);
   [option addSubview:checkMarkImageView];
 
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(option);
@@ -127,8 +124,10 @@ const CGFloat kAnimationDuration = 0.15;
     [checkMarkImageView.bottomAnchor
         constraintLessThanOrEqualToAnchor:option.bottomAnchor
                                  constant:-kImageViewMargin],
-    [checkMarkImageView.heightAnchor constraintEqualToConstant:kCheckmarkSize],
-    [checkMarkImageView.widthAnchor constraintEqualToConstant:kCheckmarkSize],
+    [checkMarkImageView.heightAnchor
+        constraintEqualToConstant:kAuthenticationCheckmarkSize],
+    [checkMarkImageView.widthAnchor
+        constraintEqualToConstant:kAuthenticationCheckmarkSize],
 
     // Separator.
     [separator.heightAnchor
