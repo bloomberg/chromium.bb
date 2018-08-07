@@ -7,11 +7,46 @@ component("ios") {
 
   deps = [
     "//base",
+    "//components/autofill/core/common",
     "//ios/web/public",
+    "//url",
   ]
 
   sources = [
+    "account_select_fill_data.cc",
+    "account_select_fill_data.h",
     "js_password_manager.h",
     "js_password_manager.mm",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "test_helpers.cc",
+    "test_helpers.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/autofill/core/common",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "account_select_fill_data_unittest.cc",
+  ]
+  deps = [
+    ":ios",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//components/autofill/core/common",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

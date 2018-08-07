@@ -190,6 +190,7 @@ test("components_unittests") {
       "//components/autofill/ios/browser:unit_tests",
       "//components/autofill/ios/form_util:unit_tests",
       "//components/image_fetcher/ios:unit_tests",
+      "//components/password_manager/ios:unit_tests",
       "//components/signin/ios/browser:unit_tests",
       "//components/translate/ios/browser:unit_tests",
     ]

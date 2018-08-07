@@ -8,6 +8,25 @@
 #include "base/ios/block_types.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
+namespace autofill {
+struct PasswordFormFillData;
+}  // namespace autofill
+
+namespace password_manager {
+
+struct FillData;
+
+// Serializes |fillData| into a JSON string that can be used by the JS side
+// of PasswordController.
+NSString* SerializeFillData(const password_manager::FillData& fillData);
+
+// Serializes |formData| into a JSON string that can be used by the JS side
+// of PasswordController.
+NSString* SerializePasswordFormFillData(
+    const autofill::PasswordFormFillData& formData);
+
+}  // namespace password_manager
+
 // Loads the JavaScript file, password_controller.js, which contains password
 // form parsing and autofill functions. It will be evaluated on a page that
 // is known to have at least one password form (see hasPasswordField_ in

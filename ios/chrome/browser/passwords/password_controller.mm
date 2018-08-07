@@ -13,8 +13,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -35,11 +33,11 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/js_password_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/passwords/account_select_fill_data.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
@@ -71,6 +69,8 @@ using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
+using password_manager::SerializeFillData;
+using password_manager::SerializePasswordFormFillData;
 
 typedef void (^PasswordSuggestionsAvailableCompletion)(
     const AccountSelectFillData*);
@@ -230,60 +230,14 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   return [suggestions copy];
 }
 
-// Serializes arguments into a JSON string that can be used by the JS side
-// of PasswordController.
-NSString* SerializeFillData(const GURL& origin,
-                            const GURL& action,
-                            const base::string16& username_element,
-                            const base::string16& username_value,
-                            const base::string16& password_element,
-                            const base::string16& password_value) {
-  base::DictionaryValue rootDict;
-  rootDict.SetString("origin", origin.spec());
-  rootDict.SetString("action", action.spec());
-
-  auto fieldList = std::make_unique<base::ListValue>();
-
-  auto usernameField = std::make_unique<base::DictionaryValue>();
-  usernameField->SetString("name", username_element);
-  usernameField->SetString("value", username_value);
-  fieldList->Append(std::move(usernameField));
-
-  auto passwordField = std::make_unique<base::DictionaryValue>();
-  passwordField->SetString("name", password_element);
-  passwordField->SetString("value", password_value);
-  fieldList->Append(std::move(passwordField));
-
-  rootDict.Set("fields", std::move(fieldList));
-
-  std::string jsonString;
-  base::JSONWriter::Write(rootDict, &jsonString);
-  return base::SysUTF8ToNSString(jsonString);
-}
-
-// Serializes |formData| into a JSON string that can be used by the JS side
-// of PasswordController.
-NSString* SerializePasswordFormFillData(
-    const autofill::PasswordFormFillData& formData) {
-  return SerializeFillData(
-      formData.origin, formData.action, formData.username_field.name,
-      formData.username_field.value, formData.password_field.name,
-      formData.password_field.value);
-}
-
-NSString* SerializeFillData(const FillData& fillData) {
-  return SerializeFillData(fillData.origin, fillData.action,
-                           fillData.username_element, fillData.username_value,
-                           fillData.password_element, fillData.password_value);
-}
-
 // Returns true if the trust level for the current page URL of |web_state| is
 // kAbsolute. If |page_url| is not null, fills it with the current page URL.
 bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   auto trustLevel = web::URLVerificationTrustLevel::kNone;
   GURL dummy;
-  if (!page_url)
+  if (!page_url) {
     page_url = &dummy;
+  }
   *page_url = web_state->GetCurrentURL(&trustLevel);
   return trustLevel == web::URLVerificationTrustLevel::kAbsolute;
 }
