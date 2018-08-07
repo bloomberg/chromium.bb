@@ -2585,6 +2585,8 @@ jumbo_split_static_library("browser") {
       "lifetime/browser_close_manager.h",
       "lifetime/termination_notification.cc",
       "lifetime/termination_notification.h",
+      "media/unified_autoplay_config.cc",
+      "media/unified_autoplay_config.h",
       "media/webrtc/tab_desktop_media_list.cc",
       "media/webrtc/tab_desktop_media_list.h",
       "media_galleries/chromeos/mtp_device_delegate_impl_chromeos.cc",
