@@ -51,6 +51,9 @@
 #include <assert.h>
 #include "deflate.h"
 #include "x86.h"
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+#include "contrib/optimizations/slide_hash_neon.h"
+#endif
 
 const char deflate_copyright[] =
    " deflate 1.2.11 Copyright 1995-2017 Jean-loup Gailly and Mark Adler ";
@@ -226,6 +229,10 @@ local INLINE Pos insert_string(deflate_state *const s, const Pos str)
 local void slide_hash(s)
     deflate_state *s;
 {
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+    /* NEON based hash table rebase. */
+    return neon_slide_hash(s->head, s->prev, s->w_size, s->hash_size);
+#endif
     unsigned n, m;
     Posf *p;
     uInt wsize = s->w_size;
