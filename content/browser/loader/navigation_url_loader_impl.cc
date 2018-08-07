@@ -313,10 +313,11 @@ bool IsURLHandledByDefaultLoader(const GURL& url) {
 
 // Determines whether it is safe to redirect to |url|.
 bool IsSafeRedirectTarget(const GURL& url, ResourceContext* resource_context) {
-  static base::NoDestructor<std::set<std::string>> kUnsafeSchemes({
-      url::kAboutScheme, url::kDataScheme, url::kFileScheme,
-      url::kFileSystemScheme,
-  });
+  static base::NoDestructor<std::set<std::string>> kUnsafeSchemes(
+      std::set<std::string>({
+          url::kAboutScheme, url::kDataScheme, url::kFileScheme,
+          url::kFileSystemScheme,
+      }));
   return !HasWebUIScheme(url) &&
          kUnsafeSchemes->find(url.scheme()) == kUnsafeSchemes->end() &&
          GetContentClient()->browser()->IsSafeRedirectTarget(url,
