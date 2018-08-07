@@ -11,11 +11,22 @@ test("chrome_cleaner_unittests") {
   ]
 
   deps = [
+    # Dependencies of the test harness.
     ":other_executable_definitions",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/chrome_cleaner/crash:crashpad_lib",
     "//chrome/chrome_cleaner/engines:resources",
+    "//chrome/chrome_cleaner/logging:common",
+    "//chrome/chrome_cleaner/os:cleaner_os",
+    "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
+    "//chrome/chrome_cleaner/settings:settings_types",
     "//chrome/chrome_cleaner/test:test_pup_data",
+    "//chrome/chrome_cleaner/test:test_util",
+    "//sandbox/win:sandbox",
+    "//testing/gtest",
 
     # Tests from sub-directories.
     "//chrome/chrome_cleaner/http:unittest_sources",
@@ -25,15 +36,6 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/settings:unittest_sources",
     "//chrome/chrome_cleaner/strings:unittest_sources",
     "//chrome/chrome_cleaner/test:unittest_sources",
-
-    # Dependencies of the test harness.
-    "//base",
-    "//base/test:test_support",
-    "//chrome/chrome_cleaner/os:cleaner_os",
-    "//chrome/chrome_cleaner/os:common_os",
-    "//chrome/chrome_cleaner/test:test_util",
-    "//sandbox/win:sandbox",
-    "//testing/gtest",
   ]
 }
 
